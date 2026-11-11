@@ -1,6 +1,6 @@
 # HarbourYard.java - 508 lines · 31 methods · 28 constants · model
 
-`ham/citybuildersim/HarbourYard.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HarbourYard.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The picture of one work on the shore at the near view (HB2, 2026-11-09): its
 > open cargo yard by what it handles, the stock on it at a level, and the quay

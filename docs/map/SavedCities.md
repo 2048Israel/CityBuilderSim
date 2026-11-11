@@ -1,6 +1,6 @@
 # SavedCities.java - 304 lines · 22 methods · 4 constants · model
 
-`ham/citybuildersim/SavedCities.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SavedCities.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The player's other saved cities as the Rankings board reads them (spec-leaderboards 5, LB3): slots 1 to GameFiles.SLOT_COUNT of a GameFiles, read only,
 > the autosave (slot 0) left out, each as a Rankings.City at its last save (now(played)) or at the active city's age (at(month, played)), the ones that never

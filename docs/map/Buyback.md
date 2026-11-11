@@ -1,6 +1,6 @@
 # Buyback.java - 408 lines · 27 methods · 1 constants · model
 
-`ham/citybuildersim/Buyback.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Buyback.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The city's paper bought back in a reverse auction: every holder offers what
 > it holds in slices, each at the price where its own buying rule would stop
@@ -35,7 +35,7 @@
 
 **Uses:** [Auction](Auction.md) (7), [OutwardInvestment](OutwardInvestment.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Debt](Debt.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
-**Used by (9):** [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (11):** [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [GovernmentView](GovernmentView.md), [GovernmentViewCheck](GovernmentViewCheck.md), [HoldersCheck](HoldersCheck.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Sections
 

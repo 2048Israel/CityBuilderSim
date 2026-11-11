@@ -1,6 +1,6 @@
 # Unemployment.java - 607 lines · 40 methods · 8 constants · model
 
-`ham/citybuildersim/Unemployment.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Unemployment.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The people out of work: how many, who they were, what Employment Insurance
 > pays them, and who has lost their home.
@@ -66,7 +66,7 @@
 
 **Uses:** [PayTier](PayTier.md) (4), [Crime](Crime.md) (3), [AgeBand](AgeBand.md) (1)
 
-**Used by (12):** [DeathRecordCheck](DeathRecordCheck.md), [Game](Game.md), [Health](Health.md), [HistorySave](HistorySave.md), [LongPlaytest](LongPlaytest.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ScaleCheck](ScaleCheck.md), [TaxPolicy](TaxPolicy.md)
+**Used by (14):** [DeathRecordCheck](DeathRecordCheck.md), [Game](Game.md), [GovernmentPlayer](GovernmentPlayer.md), [GovernmentViewCheck](GovernmentViewCheck.md), [Health](Health.md), [HistorySave](HistorySave.md), [LongPlaytest](LongPlaytest.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ScaleCheck](ScaleCheck.md), [TaxPolicy](TaxPolicy.md)
 
 ## Sections
 

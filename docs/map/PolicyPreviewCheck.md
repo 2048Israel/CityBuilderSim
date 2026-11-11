@@ -1,6 +1,6 @@
 # PolicyPreviewCheck.java - 1,182 lines · 23 methods · 3 constants · harnesses
 
-`ham/citybuildersim/PolicyPreviewCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyPreviewCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The Policy tab's previews (0.7.36): PolicyPreview and the reads it is made
 > of, held to the month's own books in a played city.
@@ -65,6 +65,8 @@
 > ... (4 more lines in the source)
 
 **Uses:** [PolicyPreview](PolicyPreview.md) (91), [FloorView](FloorView.md) (55), [Sectors](Sectors.md) (30), [JobType](JobType.md) (28), [Game](Game.md) (27), [LabourMarket](LabourMarket.md) (26), [TaxPolicy](TaxPolicy.md) (23), [WageBand](WageBand.md) (19), [Formats](Formats.md) (14), [TreasuryFund](TreasuryFund.md) (9), [EconomyManager](EconomyManager.md) (7), [HouseholdAccounts](HouseholdAccounts.md) (7), [CentralBank](CentralBank.md) (7), [WorldMeasures](WorldMeasures.md) (7), [Ports](Ports.md) (7), [GameFiles](GameFiles.md) (6), [Zoning](Zoning.md) (5), [PriceLevel](PriceLevel.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [BuildingType](BuildingType.md) (4), [LongPlaytest](LongPlaytest.md) (3), [Sector](Sector.md) (3), [DebtManager](DebtManager.md) (3), [Unemployment](Unemployment.md) (2), [PopulationManager](PopulationManager.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [Research](Research.md) (2), [LandManager](LandManager.md) (2), [HaulageCheck](HaulageCheck.md) (2), [PortDivision](PortDivision.md) (2)... and 9 more
+
+**Used by (1):** [GovernmentViewCheck](GovernmentViewCheck.md)
 
 ## Sections
 

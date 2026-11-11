@@ -41,6 +41,9 @@ public class Inbox {
     /** How long the "nowhere to build" notice stands before the wait is told again in a new one (PT1-M2): a year. */
     public static final int LANDLOCK_REPEAT_MONTHS = 12;
 
+    /** The standing wealth band's saved key (GV1): the suffix is GovernmentView.Band's name. */
+    public static final String WEALTH_BAND_PREFIX = "wealth-band:";
+
     /*
      * Newest LAST, because that is the order they happened in and appending is
      * the honest way to record a sequence. The screen reverses it.
@@ -209,7 +212,43 @@ public class Inbox {
 
         takeResearch(game, month);
 
+        takeWealth(game, month);
+
         cull(month);
+    }
+
+    /**
+     * The government's wealth band (GV1), remembered by its standing notice's
+     * key. The first measured year establishes a read baseline, not a change
+     * to announce. Later changes settle that notice and raise an unread one.
+     * Keeping the current notice live preserves the baseline beyond the
+     * resolved notices' two-year cull, including across a save and a load.
+     */
+    private void takeWealth(Game game, int month) {
+        GovernmentView view = GovernmentView.of(game);
+        if (!Double.isFinite(view.wealthYears()) || view.band() == null) return;
+
+        String key = WEALTH_BAND_PREFIX + view.band().name();
+        Notice previous = null;
+        for (int i = notices.size() - 1; i >= 0; i--) {
+            Notice notice = notices.get(i);
+            if (!notice.isResolved() && notice.getKey().startsWith(WEALTH_BAND_PREFIX)) {
+                previous = notice;
+                break;
+            }
+        }
+        String title = "Government wealth: " + view.band().label();
+        List<String> body = wrapped(String.format(
+                "The government holds %.1f years of its revenue. Its wealth band is %s.",
+                view.wealthYears(), view.band().label()), BODY_COLUMNS);
+        if (previous != null && previous.getKey().equals(key)) {
+            previous.refresh(title, body);
+            return;
+        }
+        if (previous != null) previous.markResolved(month);
+        Notice current = new Notice(key, title, body, month);
+        if (previous == null) current.markRead(month);
+        notices.add(current);
     }
 
     /** The influenza's notice (R0b): its dead last month and in the last twelve, and the share of the workforce off sick with it. */

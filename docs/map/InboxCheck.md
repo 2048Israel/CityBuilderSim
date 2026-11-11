@@ -1,6 +1,6 @@
-# InboxCheck.java - 527 lines · 8 methods · 2 constants · harnesses
+# InboxCheck.java - 652 lines · 13 methods · 2 constants · harnesses
 
-`ham/citybuildersim/InboxCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InboxCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > Verifies the inbox: raising, refreshing, resolving, culling and the round
 > trip. Not part of the game.
@@ -30,6 +30,9 @@
 >    standing condition told again: a new notice each year it lasts, naming
 >    the sectors and the ground each needs, on a rhythm a save and a load
 >    keep, and silent once the ground is bought (section 7).
+> 6. FORGOTTEN WEALTH BAND (GV1). The first measured band is a quiet
+>    baseline; a crossing raises one notice, and the saved standing band
+>    survives reading, loading and the resolved notices' two-year cull.
 > 
 > The awkward part of testing this is that the four conditions are hard to
 > cause on purpose - a bank does not fail when you ask it to. So the lifecycle
@@ -37,45 +40,51 @@
 > healthcare has nowhere to bury anybody and no doctors, which is the notice a
 > new city raises on its own), and the rest is checked structurally.
 
-**Uses:** [Notice](Notice.md) (26), [Inbox](Inbox.md) (20), [Game](Game.md) (15), [GameFiles](GameFiles.md) (3), [TempDirs](TempDirs.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Notice](Notice.md) (41), [Inbox](Inbox.md) (29), [GovernmentView](GovernmentView.md) (26), [Game](Game.md) (22), [GameFiles](GameFiles.md) (4), [TempDirs](TempDirs.md) (1), [Sector](Sector.md) (1), [HistorySave](HistorySave.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 69 | · 1. a new city has an empty inbox |
-| 79 | · 2. living raises what is true |
-| 145 | · 3. unread, urgent, and then read |
-| 189 | · 4. a live notice is refreshed, never re-raised |
-| 264 | · 5. it survives a save and a reload |
-| 296 | · 6. resolving and culling |
-| 347 | · 7. the wait on ground, told again each year (PT1-M2) |
-| 350 | · 8. a new game forgets it |
+| 72 | · 1. a new city has an empty inbox |
+| 82 | · 2. living raises what is true |
+| 148 | · 3. unread, urgent, and then read |
+| 192 | · 4. a live notice is refreshed, never re-raised |
+| 267 | · 5. it survives a save and a reload |
+| 299 | · 6. resolving and culling |
+| 350 | · 7. the wait on ground, told again each year (PT1-M2) |
+| 353 | · 8. wealth changes, rather than every month's reading (GV1) |
+| 356 | · 9. a new game forgets it |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 49 | `InboxCheck.OUT` | `System.out` |  |
-| 50 | `InboxCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 52 | `InboxCheck.OUT` | `System.out` |  |
+| 53 | `InboxCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 47 | `static int fails` |  |
+| 50 | `static int fails` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 483 | **type** `public class InboxCheck` | Verifies the inbox: raising, refreshing, resolving, culling and the round trip. |
-| 54 | 4 | `static void quietly(Runnable work)` |  |
-| 59 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 64 | 297 | `public static void main(String[] args) throws Exception` |  |
-| 367 | 10 | `static boolean yearlyRetell(Inbox inbox, Notice notice, int previous)` | Whether `notice` is the wait on ground told again a year on (PT1-M2): the "landlock" notice raised Inbox.LANDLOCK_REPEAT_MONTHS after the one raised in `previous`, which was settled the month this one was raised. |
-| 387 | 118 | `static void landWaitRetold(GameFiles files)` | Section 7 (PT1-M2, Jerus 2026-10-12, "a notice repeated"). |
-| 507 | 3 | `static boolean waitStanding(Game city)` | Whether the city has the wait on ground standing now. |
-| 512 | 7 | `static Notice stale(int month)` | A notice settled longer ago than the inbox keeps them. |
-| 520 | 7 | `static void cleanUp(Path root)` |  |
+| 48 | 605 | **type** `public class InboxCheck` | Verifies the inbox: raising, refreshing, resolving, culling and the round trip. |
+| 57 | 4 | `static void quietly(Runnable work)` |  |
+| 62 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 67 | 300 | `public static void main(String[] args) throws Exception` |  |
+| 373 | 10 | `static boolean yearlyRetell(Inbox inbox, Notice notice, int previous)` | Whether `notice` is the wait on ground told again a year on (PT1-M2): the "landlock" notice raised Inbox.LANDLOCK_REPEAT_MONTHS after the one raised in `previous`, which was settled the month this one was raised. |
+| 393 | 118 | `static void landWaitRetold(GameFiles files)` | Section 7 (PT1-M2, Jerus 2026-10-12, "a notice repeated"). |
+| 513 | 3 | `static boolean waitStanding(Game city)` | Whether the city has the wait on ground standing now. |
+| 518 | 99 | `static void wealthBandChanges(GameFiles files)` | Section 8 (GV1): cause each band with treasury cash, leaving the measured revenue and the rest of the wealth alone. |
+| 619 | 4 | `static void setWealthYears(Game city, double years)` | Set only treasury cash, so the government's measured wealth reaches the stated interior of a band. |
+| 624 | 1 | `static List<Notice> wealthNotices(Inbox inbox)` |  |
+| 625 | 3 | `static List<Notice> wealthNotices(List<Notice> notices)` |  |
+| 630 | 5 | `static boolean sameNotice(Notice was, Notice now)` | The saved identity and state, rather than Java object identity across a load. |
+| 637 | 7 | `static Notice stale(int month)` | A notice settled longer ago than the inbox keeps them. |
+| 645 | 7 | `static void cleanUp(Path root)` |  |
 

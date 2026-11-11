@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-10 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-11 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**199 harness files, 23,484 labelled assertions.** AllChecks runs 199 of them.
+**201 harness files, 23,599 labelled assertions.** AllChecks runs 201 of them.
 
 ## Which harnesses read which class
 
@@ -46,7 +46,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, LongPlaytest, PrizeCheck |
-| [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, ReadPathCheck |
+| [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
 | [CallPartners](map/CallPartners.md) | PartnerCallsCheck |
 | [CallTree](map/CallTree.md) | BuybackCheck, CallCheck |
 | [CameraPath](map/CameraPath.md) | ReplayCheck |
@@ -62,7 +62,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ChipRender](map/ChipRender.md) | **none** |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, KeptCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
+| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, KeptCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, ConversionCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
@@ -83,7 +83,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest, ScaleCheck |
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, MoneySignCheck, MoneyWordsCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | EarthTerrainCheck, FittingCheck, LandmassCheck, MapCheck, MoneySignCheck, PopulationCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
-| [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, HoldersCheck, KeptCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck |
+| [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, MoneyCheck, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, HoldersCheck, HousingCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyCheck, MortgageCheck, OwnerCheck, PartnersCheck, PegAnchorCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, RestructureCheck |
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, GoldStandardCheck, KeptCheck, LabourCheck, LongPlaytest, OilCheck, PegAnchorCheck, PolicyDatesCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
@@ -97,13 +97,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandNationsCheck, LandmassCheck, MapCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, GdpCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, GdpCheck, GovernmentViewCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
 | [Equipment](map/Equipment.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
-| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HouseholdCheck, InterestAbroadCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, OwnerCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
+| [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, GovernmentViewCheck, HistoryCheck, HouseholdCheck, InterestAbroadCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, OwnerCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, OwnerCheck, PrizeCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck, RecipeCheck |
@@ -130,8 +130,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
-| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldStandardCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, ConversionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorBooksCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | TruckCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, LandmassCheck, MaterialsCheck, RankingsCheck, ReplayCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -143,7 +143,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GoldPrice](map/GoldPrice.md) | GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, VaultMoneysCheck |
 | [Good](map/Good.md) | AgricultureCheck, BankCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MoneyCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorBooksCheck, SectorFlowCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GdpCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
+| [GovernmentPlayer](map/GovernmentPlayer.md) | GovernmentPlayerCheck, LongPlaytest |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
+| [GovernmentView](map/GovernmentView.md) | GovernmentPlayerCheck, GovernmentViewCheck, InboxCheck |
 | [GridConversion](map/GridConversion.md) | ConversionCheck, EarthTerrainCheck, LandCheck |
 | [GridOffers](map/GridOffers.md) | BuildCardCheck, ConversionCheck, GridCheck, LandCheck, LandmassCheck, MapCheck |
 | [HarbourRenders](map/HarbourRenders.md) | **none** |
@@ -154,7 +156,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Healthcare](map/Healthcare.md) | BuildAdviceCheck, CausesOfDeathCheck, ChildcareCheck, DeathCareFirstCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, FreightViewCheck, GdpCheck, HaulageCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
 | [HistoryGrapher](map/HistoryGrapher.md) | **none** |
-| [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ClockCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, HistoryCheck, HouseholdMemoryCheck, InterestAbroadCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, ReplayCheck, ResearchViewCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
+| [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ClockCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, GovernmentPlayerCheck, GovernmentViewCheck, HistoryCheck, HouseholdMemoryCheck, InboxCheck, InterestAbroadCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, ReplayCheck, ResearchViewCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [HistoryScreen](map/HistoryScreen.md) | **none** |
 | [HomeFuel](map/HomeFuel.md) | BasketYearCheck, Forms1900Check |
 | [Household](map/Household.md) | BankCheck, BasketYearCheck, BondCheck, BusinessServicesCheck, CarCheck, DenominationCheck, EducationCheck, EquityCheck, ExchangeCheck, Forms1900Check, FundCheck, FundLedgerCheck, GroceryCheck, HealthCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InvestCheck, LongPlaytest, MarketCheck, OutsideCheck, OwnerCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ShortSellingCheck |
@@ -199,7 +201,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, CapitalFlowCheck, FittingCheck, IslandLinkCheck, IslandRailCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [LegacyLand](map/LegacyLand.md) | ConversionCheck, GridCheck, LandCheck, MiningCheck, OilCheck |
 | [Levers](map/Levers.md) | **none** |
-| [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, FundCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
+| [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, FundCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
 | [LuxuryRetail](map/LuxuryRetail.md) | **none** |
 | [ManualToMarkdown](map/ManualToMarkdown.md) | **none** |
@@ -238,11 +240,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PartnerTrade](map/PartnerTrade.md) | DenominationCheck, PartnerCallsCheck, PartnersCheck, ReadPathCheck, RealDollarCheck, ReplayCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [PartnersPage](map/PartnersPage.md) | **none** |
 | [PartnersView](map/PartnersView.md) | PartnersCheck |
-| [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
+| [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, ResearchViewCheck |
-| [PolicyDates](map/PolicyDates.md) | BusinessServicesCheck, DiscoveryCheck, EquipmentCheck, ForestryCheck, KeptCheck, LandmassCheck, ManufacturingCheck, PolicyDatesCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, WageLadderCheck, ZoningViewCheck |
-| [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
+| [PolicyDates](map/PolicyDates.md) | BusinessServicesCheck, DiscoveryCheck, EquipmentCheck, ForestryCheck, GovernmentPlayerCheck, KeptCheck, LandmassCheck, ManufacturingCheck, PolicyDatesCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, WageLadderCheck, ZoningViewCheck |
+| [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, GovernmentViewCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
 | [PopulationCohorts](map/PopulationCohorts.md) | ArrivalMixCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LongPlaytest, OutsideCheck, OwnerCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, StaffingDrawCheck |
@@ -306,7 +308,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
 | [ShipShapes](map/ShipShapes.md) | PortCheck |
-| [ShortTermTBill](map/ShortTermTBill.md) | AuctionCheck, BankCheck, CentralBankCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
+| [ShortTermTBill](map/ShortTermTBill.md) | AuctionCheck, BankCheck, CentralBankCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, LongPlaytest, RestructureCheck, TreasuryCheck |
 | [Sickness](map/Sickness.md) | CausesOfDeathCheck, LongPlaytest, PopulationCheck, ReadPathCheck, ScaleCheck, SicknessCheck |
 | [SignFont](map/SignFont.md) | MoneySignCheck |
 | [SimulationEngine](map/SimulationEngine.md) | **none** |
@@ -323,8 +325,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [StudentHousehold](map/StudentHousehold.md) | EducationCheck, HouseholdCheck, OutsideCheck, PolicyDatesCheck |
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
-| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, Forms1900Check, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
-| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaffingDrawCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, ZoningCheck, ZoningViewCheck |
+| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, FoodProcessingCheck, Forms1900Check, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, LandlordPortCheck, LongPlaytest, MoneyCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
+| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConservationCheck, ConstructionControlCheck, ConstructionTrapCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, FoundingYardCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaffingDrawCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, PortCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
@@ -339,14 +341,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckCheck, VanCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, PartnerCallsCheck, RailCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TrainShapes](map/TrainShapes.md) | ReadPathCheck |
-| [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, CopperRefiningCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, HomeRailCheck, LandmassCheck, LongPlaytest, MapCheck, OrderSearchCheck, OwnerCheck, PlanCheck, PolicyPreviewCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, TreasuryCheck |
+| [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, CopperRefiningCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, GovernmentPlayerCheck, HomeRailCheck, LandmassCheck, LongPlaytest, MapCheck, OrderSearchCheck, OwnerCheck, PlanCheck, PolicyPreviewCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, TreasuryCheck |
 | [TreasuryJournal](map/TreasuryJournal.md) | CentralBankCheck, ConstructionControlCheck, CurrencyRegimeCheck, DebtExchangeCheck, EducationCheck, FloatLinkCheck, FundCheck, LandCheck, OilCheck, SaveFileCheck, TreasuryCheck |
 | [TreasuryLine](map/TreasuryLine.md) | BankCheck, CentralBankCheck, DiscoveryCheck, FundCheck, GroceryCheck, KeptCheck, LongPlaytest, PrizeCheck |
 | [TruckSchedule](map/TruckSchedule.md) | MapCheck, TruckCheck, TruckRouteCheck |
 | [TruckShapes](map/TruckShapes.md) | **none** |
 | [UiProbe](map/UiProbe.md) | **none** |
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
-| [Unemployment](map/Unemployment.md) | DeathRecordCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
+| [Unemployment](map/Unemployment.md) | DeathRecordCheck, GovernmentViewCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
 | [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, LandCheck, MapCheck, ZoningViewCheck |
 | [UtilitiesHandler](map/UtilitiesHandler.md) | BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, Forms1900Check, HydroCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
 | [VaultTable](map/VaultTable.md) | **none** |
@@ -796,41 +798,41 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1337 a rollover that sold with no tail past a point says nothing of one
 - **L1402 10. automatic building's own cap; the ask a short sale keeps open (D28, D30)**
   - L1412 fixture: the builders are not short - no foreign crews and the order price at its base, so a quote does not jump between the passes
-  - L1417 automatic building's cap is its own: set to fair, the rollover's stays at fair plus a point
-  - L1432 fixture: the town is short of streets and its cash at the reserve; the bank's room used up and the deposit rate
-  - L1455 a short sale opens an ask for the order the money refused: one for the streets' Paved Road, its count one, and at most
-  - L1460 no order is placed on money that is not there: no order, no site, nothing in its log
-  - L1462 the paper sold is in the treasury: the cash rose by what the asks raised
-  - L1465 ...and the city owes the face it sold: the principal rose by it
-  - L1466 it raised less than the order costs, with the rest still to raise (the cost less what is held for it) and the month it opened
-  - L1469 what it raised counts against the order: the cash over the reserve is all asks' money
-  - L1470 ...so the builder has nothing to spend on any other order: AutoBuilder.spendable() is nothing
-  - L1471 every sale was short at the builder's cap of fair, and the skip's report has it
-  - L1476 the inbox says an ask was opened, and that the order waits for the money
-  - L1480 ...and so does the log
-  - L1494 save and load keep the asks, each as it was (the order, what is raised, what is to raise, the month), and automatic
-  - L1504 next month, before the pass ranks anything new, every open ask is offered again at the builder's cap: a sale each in
-  - L1508 ...what the asks raised grew (the bank's D$100k of room, sold again), and no ask raised less than it had
-  - L1510 ...its order is still not placed, and it opened in the month it opened in
-  - L1512 (the pass held the measure on its ask rather than ordering again: one hold, no second ask)
-  - L1521 the room back, the ask is covered by the sale that month and its order is placed on the same path as any other:
-  - L1525 ...paid for by the bond sales it raised: the log shows all of them as its borrowing, the cost of the order covered
-  - L1528 ...and says it waited, and the inbox says the order was placed
-  - L1547 the treasury can pay for what is left of the orders: they are placed with no sale at all - no bond, no new paper,
-  - L1551 ...the streets' log entry shows the bond money its ask had raised, borrowed on an earlier month, and no more
-  - L1568 treasury at the reserve, the room back: each ask is offered what it still has to raise and sells it in full (the
-  - L1572 ...but the money it raised before was drawn by the month's bills, so the treasury does not hold the cost for any: no
-  - L1579 next month, drawn again, the asks have raised their whole cost and the paper is not sold twice: the only sales are a
-  - L1585 ...and the inbox says the month's bills drew the money and that nothing more is borrowed for it
-  - L1592 the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt
-  - L1616 fixture: the town had an ask open for its general care, with money raised for it, and then twenty Health Centres stand:
-  - L1620 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
-  - L1628 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
-  - L1641 fixture: the debt limit is under what the city owes
-  - L1642 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
-  - L1655 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
-  - L1666 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
-  - L1671 ...and its headlines say automatic building came up short at its cap, and how many times it sold
+  - L1428 automatic building's cap is its own: set to fair, the rollover's stays at fair plus a point
+  - L1443 fixture: the town is short of streets and its cash at the reserve; the bank's room used up and the deposit rate
+  - L1466 a short sale opens an ask for the order the money refused: one for the streets' Paved Road, its count one, and at most
+  - L1471 no order is placed on money that is not there: no order, no site, nothing in its log
+  - L1473 the paper sold is in the treasury: the cash rose by what the asks raised
+  - L1476 ...and the city owes the face it sold: the principal rose by it
+  - L1477 it raised less than the order costs, with the rest still to raise (the cost less what is held for it) and the month it opened
+  - L1480 what it raised counts against the order: the cash over the reserve is all asks' money
+  - L1481 ...so the builder has nothing to spend on any other order: AutoBuilder.spendable() is nothing
+  - L1482 every sale was short at the builder's cap of fair, and the skip's report has it
+  - L1487 the inbox says an ask was opened, and that the order waits for the money
+  - L1491 ...and so does the log
+  - L1505 save and load keep the asks, each as it was (the order, what is raised, what is to raise, the month), and automatic
+  - L1515 next month, before the pass ranks anything new, every open ask is offered again at the builder's cap: a sale each in
+  - L1519 ...what the asks raised grew (the bank's D$100k of room, sold again), and no ask raised less than it had
+  - L1521 ...its order is still not placed, and it opened in the month it opened in
+  - L1523 (the pass held the measure on its ask rather than ordering again: one hold, no second ask)
+  - L1532 the room back, the ask is covered by the sale that month and its order is placed on the same path as any other:
+  - L1536 ...paid for by the bond sales it raised: the log shows all of them as its borrowing, the cost of the order covered
+  - L1539 ...and says it waited, and the inbox says the order was placed
+  - L1558 the treasury can pay for what is left of the orders: they are placed with no sale at all - no bond, no new paper,
+  - L1562 ...the streets' log entry shows the bond money its ask had raised, borrowed on an earlier month, and no more
+  - L1579 treasury at the reserve, the room back: each ask is offered what it still has to raise and sells it in full (the
+  - L1583 ...but the money it raised before was drawn by the month's bills, so the treasury does not hold the cost for any: no
+  - L1590 next month, drawn again, the asks have raised their whole cost and the paper is not sold twice: the only sales are a
+  - L1596 ...and the inbox says the month's bills drew the money and that nothing more is borrowed for it
+  - L1603 the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt
+  - L1627 fixture: the town had an ask open for its general care, with money raised for it, and then twenty Health Centres stand:
+  - L1631 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
+  - L1639 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
+  - L1652 fixture: the debt limit is under what the city owes
+  - L1653 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
+  - L1666 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
+  - L1677 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
+  - L1682 ...and its headlines say automatic building came up short at its cap, and how many times it sold
 
 ## AutoBuildCheck.java - 61 labelled assertions
 
@@ -918,7 +920,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 - **L1910 8. care of every kind is essential, on a deficit (CC1-S)**
   - L1951 a school is not an essential service: on the same sort of deficit it is held for the payback, not ordered
 
-## BankCheck.java - 526 labelled assertions
+## BankCheck.java - 527 labelled assertions
 
 > The commercial bank, and the families it discharges.
 > 
@@ -1068,447 +1070,448 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1392 a bank with the customers for another, and their fees to pay for it, does ask
   - L1393 ...and a branch is worth real money to it: its fees over what it costs
 - **L1396 8. the accounting identities, on a played city**
-  - L1614 the fixture's bank is actually running a book
-  - L1616 ASSETS = LIABILITIES + EQUITY, every month
-  - L1617 ...and equity moves by net income and capital, and nothing else
-  - L1623 fixture: the played city's households paid account fees
-  - L1624 (4) what the households' books show they paid in account fees is what the bank took, to the cent
-  - L1626 fixture: the played city's businesses borrowed
-  - L1627 ...a business loan's fee is LOAN_FEE of what was lent, every month it lent
-  - L1629 ...and the money audit closes with the fees crossing it
-  - L1630 fixture: the bank paid its owners
-  - L1631 (6) the bank's dividend is its payout rule on its profit after tax, every month it paid
-  - L1633 ...and what lands after a close reaches the next month's taxed profit
-  - L1666 the city takes exactly its share of what the bank made
-  - L1668 ...and the figure the treasury books is the figure the bank paid
-  - L1677 a profitable bank hands over its share
-  - L1678 ...out of its own cash
-  - L1679 ...and reports it
-  - L1680 ...which comes off the month's net income
-  - L1686 a bank that lost money is not paid a refund
-  - L1690 it pays its savers something
-  - L1711 ...and never more than it earned
-  - L1713 ...and its staff are on its own books, not the shops'
-- **L1716 8b. the trading desk's statement foots**
-  - L1765 fixture: the desk traded
-  - L1766 fixture: ...at its bid, which is the last trade and so the mark
-  - L1767 the re-mark is the inventory at the closing mark, from nothing
-  - L1769 ...and the desk's total is what it paid against that re-mark
-  - L1771 the opened lines and the re-mark sum to the total, exactly
-  - L1777 the re-mark is cleared with the trading result at the top of a month
-  - L1789 fixture: the played city's desk actually traded
-  - L1790 ...and its opened lines and re-mark summed to its total every month
-- **L1793 12. a reload reads the same month (0.7.8)**
-- **L1806 (12) a reload between two months reads the same income lines, allowance and target**
-  - L1827 fixture: Retail owes the bank alone, no bond, a sound book
-  - L1852 fixture: the played bank had set something aside
-  - L1853 the allowance reloads to the cent
-  - L1854 ...the capital target it chose
-  - L1855 ...the month's provision
-  - L1856 ...its interest, its fees and its profit, as the Profit page reads them
-  - L1859 ...what it kept, and what it paid its owners
-  - L1866 ...every statement line and the target's record, exactly
-  - L1867 ...and the allowance, book by book
-  - L1871 a save from before 0.7.8 loads with an allowance set up from its borrowers
-  - L1920 fixture: Materials, held out of building, is levered no further than it was when the premise was written (0.17)
-  - L1922 fixture: Luxury Retail, held out of building since round 5, owes nothing
-  - L1924 fixture: so every book reads alike on a month and on a quarter, within a hundredth of the allowance
-  - L1956 ...by the same rule on the same borrowers, as the load reads them
-  - L1958 fixture: some of its books are sound ones, held at BASE_LOSS_RATE
-  - L1959 ...which, wherever the curve does not read the borrower's assets, is the saved bank's to the cent
-  - L1961 ...booked as no month's provision
-  - L1962 ...so its equity is lower by what it set aside, and by nothing else
-  - L1984 fixture: Materials, held out through the next month too, borrowed nothing in it
-  - L1992 ...and its next month articulates like any other
-  - L1993 ...with the provision the saved city made, within a hundredth of the allowance - not the allowance again
-  - L1995 ...and a money audit that closes
-- **L1998 9. capital is the constraint, and it can run out**
-  - L2004 a bank can lend its capital over the regulator's ratio
-  - L2010 ...and does
-  - L2017 a bank that loses more than it owns is insolvent
-  - L2018 ...and can lend nothing at all
-  - L2019 ...and it says what it would take to fix
-  - L2034 a failed bank prices off the window: its money is all the window's
-  - L2036 ...and its prime is the four parts on it, not a premium on every rate
-  - L2042 recapitalised, it is solvent again
-  - L2043 ...and lending again
-  - L2044 ...and above the ratio it is required to hold, by at least the exit buffer
-  - L2046 ...and holding at least what one branch is capitalised with
-  - L2048 ...which is exactly what it was asked for, and not a dollar more
-  - L2064 fixture: a bank that lost its whole book has failed
-  - L2065 fixture: ...and has no book left to strike a ratio on
-  - L2066 a failed bank with no book is still asked for one branch's capital
-  - L2069 ...and can lend again once it has it
-- **L2144 (14) the normal curve, and what it gives**
-  - L2147 N(0) is a half
-  - L2148 N(1.96) is 0.975
-  - L2149 N(-1) is 0.1587
-  - L2150 N(-3) is 0.00135, to the tail's own figures
-  - L2157 ...and N(x) + N(-x) is one
-  - L2158 a loan's loss given default is what it does not recover: 1 - LOAN_RECOVERY (0.7.12, round 2)
-  - L2160 ...and a bond's 1 - BOND_RECOVERY
-  - L2162 at the default point half its firms default in a year
-- **L2174 (14) a sector held at a leverage loses its defaulted firms' slice, pro rata**
-  - L2179 fixture: the lender's hazard is the brief's, 1 - (1 - PD)^(1/12)
-  - L2184 a sector at leverage L writes off principal x h(L) x (1 - LOAN_RECOVERY) in the month
-  - L2186 ...which is what the month's sweep returns
-  - L2187 ...and the debt that defaulted is h of it
-  - L2189 ...every loan falls pro rata: the first
-  - L2191 ...and the second
-  - L2192 ...its assets are untouched - the firms keep their plant
-  - L2193 ...it is not restructured, not on its record and not shut out
-  - L2201 ...and owing less against the same assets, its next loan is quoted less
-  - L2210 held a year at a leverage, the share of its debt that defaulted is PD(L)
-- **L2213 (14) more defaults the deeper in debt, and nothing past dust under the watch line**
-  - L2228 the default rate and the monthly slice rise with leverage, and never fall
-  - L2229 ...from nothing with no debt to all of it against no assets
-  - L2232 under the watch line no month's slice costs more than a sound book's year, BASE_LOSS_RATE
-  - L2238 a sector at 1.2 times its assets loses a slice and is not news; one at the default point is
-  - L2243 ...and at 0.3 a month's slice of $30M of debt is under a cent
-- **L2246 (14) past the default point with its plant standing, it is not written down whole**
-  - L2250 fixture:
-  - L2253 at
-  - L2255 ...not down to RESTRUCTURE_TARGET of its assets in one month
-  - L2257 ...and not banned, and not on its record
-- **L2262 (14) the backstop: a sector with nothing left is written down whole, and banned**
-  - L2266 fixture: owing against assets below nothing is insolvent
-  - L2267 the whole of its debt is written off - RESTRUCTURE_TARGET of nothing
-  - L2269 ...its overdraft is forgiven
-  - L2270 ...it is restructured, not sliced
-  - L2272 ...one default on its record
-  - L2273 ...and shut out for exclusionFor() of it
-  - L2275 ...which is news
-- **L2277 (14) the allowance reads the same curve, staged firm by firm: a year on its sound firms, a loan's term on those past the watch line**
-  - L2287 far under the watch line its firms are sound: a year's BASE_LOSS_RATE, never less
-  - L2289 fixture: at 0.5 even a loan's term of the curve is under BASE_LOSS_RATE
-  - L2303 fixture: the curve's year passes BASE_LOSS_RATE under the watch line
-  - L2305 fixture: at
-  - L2307 ...nearer it, a year on its sound firms and a loan's term on the share past the line
-  - L2309 ...the share past it being N(ln(L / SECTOR_WATCH_LEVERAGE) / ASSET_VOLATILITY)
-  - L2312 ...half of them at the watch line itself
-  - L2313 ...so there, half a year's loss and half a lifetime's
-  - L2318 past it, most of the lifetime loss over a loan's term, staged
-  - L2320 ...between a year's loss and the whole lifetime's
-  - L2323 ...and a sector with nothing left holds all it owes, which the backstop writes off
-  - L2340 the allowance rises with leverage and never falls
-  - L2341 ...and has no cliff at the watch line: the step across it shrinks with the step, as a continuous one does
-  - L2380 moving past the watch line provides the rise in its staged loss, less the year it held
-  - L2382 ...which is the staged loss at its new leverage
-  - L2383 ...which is more than the year of slices that follow
-  - L2384 every slice after is drawn from the allowance
-  - L2385 ...and none of it reaches the month past it
-  - L2386 ...so the year's provisions are less than its write-offs: the loss was taken when it crossed
-  - L2388 ...and every month its equity moved by its net income and nothing else
-- **L2390 (14) a played city through months of slices: the money audit closes**
-  - L2444 fixture: the city has a standing bank, and retail has plant to lend against
-  - L2479 fixture: retail's firms really did default, a slice a month, for months
-  - L2480 every month of it closes to the cent
-  - L2481 ...and within 0.01% of what moved
-  - L2482 ...and the bank wrote off what the lender did, every month
-  - L2484 fixture: months went by with retail's firms defaulting and nothing past the line
-  - L2486 the defaults notice is live exactly in the months that were news, and in no other
-  - L2499 fixture: retail's month was past the default point
-  - L2500 ...and the inbox says so, naming it
-  - L2502 ...and the month still closes
-- **L2541 (15) a failing sector's plant is sold to the builders, as its materials**
-  - L2637 fixture: retail in distress retired plant, and the rule that did it was the distress rule
-  - L2644 the material sold is the share a demolition recovers of the template's own, times the buildings retired
-  - L2647 ...a shop's material, the shops the city lost
-  - L2648 fixture: the builders could pay for all of it
-  - L2649 the builders paid the units at the day's price for material
-  - L2650 ...the materials market's own price, as it stood that day
-  - L2651 their stock rose by the units, less what the month's sites drew from it
-  - L2653 ...and it is on their balance sheet at the day's price
-  - L2655 the builders' cash moved out by what they paid
-  - L2656 ...and the seller's in by the same
-  - L2659 ...both on their cash-flow statements
-  - L2660 ...which close for the seller, but for the overdraft the fixture handed it
-  - L2662 ...and for the builders
-  - L2664 and the month's money audit closes, to the cent
-  - L2700 fixture: the city ordered work its yard does not cover
-  - L2701 fixture: the builders built with it in a later month
-  - L2704 what they built with from it is on their income statement, at what they paid for it
-  - L2706 ...as a named input
-  - L2709 ...and no cash: the cash flow adds it back
-  - L2710 ...and closes
-  - L2711 ...and that month's money audit closes, to the cent
-  - L2737 fixture: retail owns a shop of its own to retire
-  - L2740 fixture: retail has no order in flight (the distress rule does not shrink a sector that is building)
-  - L2767 fixture: retail retired plant again, with the builders overdrawn
-  - L2769 builders who cannot pay buy nothing, and pay nothing
-  - L2771 ...so the seller is paid nothing for it
-- **L2791 (16) the bank reads a borrower from its last quarter**
-  - L2797 with no statements yet, the bank reads a borrower's month
-  - L2806 the price reads the last quarter's statements: their average debt over their average assets
-  - L2808 ...not the month's own
-  - L2809 ...and so does the allowance: its staged loss at the quarter's leverage
-  - L2815 the quarter is saved and restored by the sector's name
-  - L2818 a fourth reading drops the oldest: STATEMENT_MONTHS of them
-  - L2820 ...and the count stops there
-  - L2823 the hazard stays on the month's own leverage: firms fail on what they owe against what they have
-  - L2825 ...and a slice, continuous and small, does not restart the quarter
-  - L2846 fixture: the sector with nothing left was written down whole
-  - L2847 after the backstop its quarter restarts: no reading from before it counts
-  - L2852 ...so its next loan's price reads the restructured books, what it owes now over what it owns now
-  - L2855 ...which is far under what the quarter before the backstop would have charged
-- **L2903 (19) the branches, by their customers**
-  - L3053 fixture: the charter's fees covered under a tenth of its cost, every month
-  - L3055 the founding branch never closes on the rule, however far its fees are from its cost
-  - L3059 fixture: the charter's template carries an operating cost
-  - L3061 ...and the charter, standing alone, is charged none of it
-  - L3068 fixture: five branches stood on fees that cover two
-  - L3070 fixture: the branch's operating cost is what makes the fees cover two, not nothing
-  - L3072 every branch past what the fees cover closed at once, the month after: two stand
-  - L3077 ...before the month paid them: it ran two branches, not five, and paid the operating cost of
-  - L3080 ...and that month closes the audit, the operating cost in it
-  - L3082 fixture: two branches stood every month until what a branch costs rose
-  - L3084 while what a branch costs held still, the fees covered the branches the rule kept
-  - L3086 fixture: the month the cost rose, the rule had kept two on last month's cost and the month's fees fell short of them
-  - L3088 ...and the next month the rule, reading that cost, closed the one the fees no longer cover
-  - L3090 every month the fees fell short of the branches standing, the next month's rule closed one
-- **L3115 (17) the desk bids for the bank's own shares only with what it holds over its target**
-  - L3126 fixture: a bank a little over its target
-  - L3127 fixture: ...which by its own rule buys its shares back
-  - L3131 fixture: its shares have a record neither new nor bad
-  - L3140 its desk bids half a spread under fair value
-  - L3141 ...for what its spare capital pays for at the bid, under the pace
-  - L3147 fixture: the household offers more than the pace, and the pace more than the spare
-  - L3156 a bank a little over its target, offered more than its spare capital, buys back exactly the spare
-  - L3158 ...and ends at its target
-  - L3159 ...not under it
-  - L3160 ...so the household raised what the desk took, and no more - the rest of its need goes on to credit
-  - L3162 ...and the rest of what it offered waits on the book: the desk is not obliged
-  - L3165 a second offer the same month, at its target, finds no bid
-- **L3167 (17) ...and other companies' shares only on the capital it has to spare, at the desk's weight**
-  - L3181 its desk bids for what its spare capital carries at RISK_EQUITY, marked at the price it pays
-  - L3185 fixture: the household offers more than that
-  - L3191 a bank a little over its target buys only what its spare capital carries at the weight
-  - L3194 ...the weight the weighted book already gives the desk, RISK_EQUITY, at the price it paid
-  - L3196 ...and marked, it holds its target
-  - L3197 ...its ratio at or over the target
-  - L3198 ...the household raised what the desk paid
-  - L3199 ...and the rest of its offer waits on the book
-  - L3204 its selling is unchanged: at its target it still asks for what it holds
-  - L3206 ...and bids for no more than rounding
-  - L3215 fixture: a bank under its target, its desk still posting
-  - L3216 ...bids for nothing
-  - L3219 a bank under its target buys none: the household raises nothing from its shares
-  - L3220 ...and the desk holds none
-  - L3233 fixture: twenty households leave with their shares
-  - L3240 fixture: the desk was posting
-  - L3241 the leavers' shares a bank under its target will not bid for stay abroad with them, as with no market
-  - L3243 ...resting on the book, unpaid
-- **L3265 (13) the ladder's four parts are its prime, at every dial**
-  - L3283 the funds-transfer price, running costs, expected loss and capital charge add up to prime, at six dials
-  - L3285 ...and every other rung is the bank's own rate for it
-  - L3286 fixture: at 3% every part is priced
-  - L3288 ...and past the owners' return the capital part is nothing
-  - L3289 the step from the policy rate is the window's penalty on its share and the term premium
-  - L3292 ...and the step to prime is the three costs over it
-- **L3295 (13) the weight table foots to the weighted book, term and desk included**
-  - L3316 the weight table's weighed column foots to the weighted book capacity reads
-  - L3318 fixture: the desk's shares are on it, at RISK_EQUITY
-  - L3319 ...a book halfway through its loans' terms shows the share its term counts for
-  - L3321 ...and every row is its face, term and risk weight multiplied
-  - L3322 ...where face times risk, with no term and no desk, did not foot
-- **L3333 (13) what it gathers is in today's money after a reform**
-  - L3337 three branches gather all the city has banked, whatever their number
-  - L3340 ...and after a hundred-for-one reform, a hundredth of it
-  - L3342 ...which is the city's own savings with it, all of them
-  - L3344 ...and their owners' capital for a branch
-- **L3347 (13) the bank's state in a sentence, with the figure that decides it**
-  - L3350 with no branch: there is no bank
-  - L3357 fixture: the four banks are healthy, rebuilding, under the minimum and failed
-  - L3362 a bank at or over its target is healthy and lending freely, at its ratio and its target
-  - L3366 ...one under its target is rebuilding, at the growth its rule allows
-  - L3369 ...one under the minimum lends only to keep its borrowers going, at its ratio
-  - L3372 ...and a failed one says what it must hold again
-- **L3377 (13) on a played city: the interest by who paid it, last month, the year, and the equity's movement**
-  - L3385 the city's coupons, the businesses', the families' and the discount each on its own line
-  - L3389 ...and together they are its interest
-  - L3567 fixture: the played city's first branch opened in it
-  - L3568 fixture: the bank paid its owners in it
-  - L3569 fixture: the treasury bought paper back from it, at a gain or a loss
-  - L3570 fixture: the city put capital into it
-  - L3571 its equity's movement left nothing unexplained, every month
-  - L3573 ...nor between two presses, after a buyback and after a rescue
-  - L3575 fixture: the city and the businesses paid it interest
-  - L3576 its interest by who paid it is the whole of its interest, every month
-  - L3577 fixture: last month and the year were read in most months
-  - L3578 last month's column is what that month read, whole
-  - L3579 ...and the last twelve months add up to the last twelve read
-  - L3580 the played bank's weight table foots every month
-- **L3582 (13) the Balance sheet page: it foots this month and a year ago, and a year ago survives a save**
-  - L3585 fixture: a year ago was on file in most of the months played
-  - L3586 fixture: the businesses owed the bank in most of them
-  - L3590 its asset lines are what totalAssets() sums
-  - L3591 ...its liability lines what totalLiabilities() sums
-  - L3592 so its lines foot, assets less liabilities less equity, every month
-  - L3593 ...and a year ago, every month one was on file
-  - L3594 a year ago is the sheet as it stood twelve months before, line for line
-  - L3595 the businesses' loans by sector add to their line, and the interim financing to its
-  - L3617 the year of sheets survives a save, whole
-  - L3619 ...so the reloaded page has a year ago
-  - L3620 ...the same equity a year ago
-  - L3622 ...and the same loans to the businesses a year ago
-  - L3624 a save from before 0.7.13 has no year ago - the page reads it as \"\u2014\"
-- **L3627 (13) its equity in parts: paid in, retained and the city's preferred add up to it, to the cent, every month**
-  - L3631 fixture: a branch opened, its capital sold as shares
-  - L3632 fixture: it bought its own shares back
-  - L3633 fixture: it paid a dividend
-  - L3634 fixture: it lost money in a month
-  - L3635 a bank founded in this build keeps the split, every month
-  - L3636 paid in, retained and the preferred add up to its equity, to the cent, every month and between two presses
-  - L3638 paid in moved by what its owners and the city put in: offerings, new shares, a resolution, less buybacks
-  - L3640 ...and retained by everything else: what it kept, less dividends, and the rest of the causes
-  - L3642 both survive a save
-  - L3645 ...and still add up to the reloaded bank's equity
-  - L3646 ...and the page's lines read them - with the city's preferred, equity's third part since 0.7.14
-  - L3649 a save from before them keeps neither: the page shows its equity whole, the parts \"\u2014\"
-  - L3652 ...its equity the same total
-  - L3659 ...and a month played does not invent them
-- **L3675 (13) the interest margin is on what earns it interest: its loans, its paper and bonds, and its reserves**
-  - L3678 fixture: the played bank has lent
-  - L3688 fixture: its reserves are at least a hundred times its book, and it still lends
-  - L3695 its earning assets are the eight sheet lines that earn it interest: its reserves, loans, interim financing,
-  - L3699 ...which are its assets less the desk's shares, which earn no interest, and the allowance, which is negative
-  - L3702 the month's margin is its net interest, a year of it, over its earning assets
-  - L3710 a margin on what earns it interest cannot pass the best rate any of it earned that month
-  - L3711 ...where the old reading, over the book alone, passed it - the absurd figure the issue saw
-  - L3721 fixture: a whole year is on file, more months were played than that, and its window holds months before the capital
-  - L3724 the earning assets averaged over the year are the mean of those read at the close of each of its months
-  - L3727 ...and the year's margin is its average net interest, a year of it, over them
-- **L3739 (13) the rescue's guard is the model's**
-  - L3740 fixture: the bank stands and needs nothing
-  - L3741 a bank that needs nothing is not offered a rescue
-  - L3745 fixture: the bank is under water
-  - L3746 ...a treasury holding half of what it needs resolves it all the same
-  - L3747 ...paying the hole and the capital to reopen, the whole of what it is asked
-  - L3748 ...half of it from its cash and the rest for the central bank to advance
-  - L3750 ...and doing it stands the bank back up
-- **L3784 (7) a loan is met by its year's allowance, a weakening borrower by its lifetime loss, a write-off by the allowance first**
-  - L3797 a new loan to a sound borrower is met by its year's expected loss, BASE_LOSS_RATE of it
-  - L3799 ...a stage-1 book
-  - L3800 ...and that is the month's provision
-  - L3818 a borrower past SECTOR_WATCH_LEVERAGE moves to stage 2
-  - L3819 ...and its allowance rises toward its lifetime loss: a loan's term of defaults on the share of its firms past the line
-  - L3821 ...which is more than a year's loss
-  - L3822 ...and the rise is the month's provision, before anything is written off
-  - L3838 fixture: the month's slice is written off, and the sector is not restructured
-  - L3845 a write-off is drawn against the allowance its book held first
-  - L3847 ...and only what that did not cover reaches the month
-  - L3849 ...so the provision is the allowance's move plus the write-off
-  - L3851 ...and the month's hit to equity is less than the write-off, because most was taken already
-  - L3854 ...and a borrower still past the watch line stays in stage 2, its staged loss struck on what it owes now
-  - L3866 a repaid book holds nothing, and its allowance comes back as a release
-  - L3871 over the episode the provisions add up to the write-offs, to the cent
-  - L3872 ...and every month its equity moved by its net income and nothing else
-  - L3875 a family owing under the watch line holds a year's loss
-  - L3877 ...halfway from there to the discharge line, half its debt
-  - L3880 ...and at the line, all of it - a discharge writes the whole debt off
-  - L3900 fixture: a family borrowing to eat does pass the watch line
-  - L3901 ...and its book then holds more than a year's loss
-  - L3903 ...which is the rule cell by cell
-- **L3905 (8) a bank that has lived through a bad year chooses more capital than a young one**
-  - L3936 a bank whose worst year was under the conservation buffer targets the minimum and the buffer
-  - L3938 fixture: the scarred bank's worst year was past the conservation buffer
-  - L3940 ...one that has lived through a worse year holds a buffer that would take it and leave the minimum
-  - L3942 ...which is more than the young one holds
-  - L3943 ...its worst year is its year's provisions over its weighted book
-  - L3945 ...and never more than the whole Basel stack, MAX_BUFFER, however bad the year
-  - L3948 ...and a loss on a book smaller than its founding capital carries is read over that capacity
-  - L3954 no bank ever targets less than the minimum and the conservation buffer
-  - L3955 ...and it prices a loan's capital at the target it chose
-- **L3960 (9) under its target it keeps its profit and lends slower, and under its minimum only to keep borrowers going**
-  - L3965 fixture: halfway between its minimum and its target
-  - L3967 it keeps every dollar of a profit
-  - L3968 ...and says so
-  - L3969 ...and a borrower's debt may grow RATIONED_GROWTH a month halfway there
-  - L3981 the limit is RATIONED_GROWTH x x/(1-x) from the minimum to the target
-  - L3982 ...rising smoothly, never falling, as the ratio rises
-  - L3983 ...from nothing at the minimum
-  - L3984 ...to no limit at all at the target
-  - L3995 a sector owing 100,000 may borrow that share of it more this month
-  - L3996 ...a project inside it is funded
-  - L3997 ...and one past it is not
-  - L3998 ...and the investor can say it was the bank's capital
-  - L4003 ...and its short month is lent whole, its fee on top: a working-capital line the rule does not ration
-  - L4007 under its minimum it lends only to keep its borrowers going
-  - L4015 ...no project, however small
-  - L4017 ...but a borrower short of cash is still lent its short month: the line is honoured under the minimum too
-  - L4028 fixture: its loan fell due
-  - L4029 ...and what fell due may be lent again under the minimum
-  - L4034 ...and a borrower past the line still has its defaulted firms written off
-  - L4037 ...and one with nothing left is still restructured whole
-  - L4054 fixture: free, it borrows more than its interest
-  - L4055 a family's debt may grow the month's share and its interest, and no more
-  - L4058 ...and under the minimum it may draw its interest and nothing else
-- **L4061 (10) inside its band it pays a share of its profit, over the top it returns the excess**
-  - L4065 fixture: inside its band, with no reserves at all
-  - L4067 inside its band it pays PAYOUT_IN_BAND of its profit after tax
-  - L4071 ...and pays it though it holds no reserves - out of what it borrows, like any bank
-  - L4073 ...nothing on a loss
-  - L4075 ...and never so much that it would fall under its target
-  - L4079 fixture: far over the top of its band
-  - L4080 over the top it pays its share and a twelfth of the excess
-  - L4089 ...so a year returns all but (11/12)^12 of it, on no profit at all
-  - L4091 ...and it counts what it paid over the year
-  - L4095 under its target, under its minimum, failed or with no bank it pays nothing
-- **L4099 (11) while the bank stands, there is always something it will lend**
-  - L4115 a standing bank at any capital has capacity
-  - L4116 ...lends more than nothing a month whenever it is over its minimum
-  - L4117 ...and at any capital lends a borrower short of cash its interest
-  - L4121 ...where a failed one, in resolution, has none - resolution is as it was
-- **L4179 and the bank pays for the city's paper**
-  - L4209 fixture: the city has a working bank and owes nothing yet
-  - L4238 fixture: the city issued a note and a serial bond, below par
-  - L4240 between the presses the bank has not paid yet
-  - L4241 ...and owes the treasury exactly what it received
-  - L4254 a city saved between the issue and the settle still owes its bank's payment
-  - L4267 fixture: the households held their paper through the settle - the desk bought none
-  - L4301 the bank's cash fell by exactly what the treasury received less what the households
-  - L4304 ...which is the figure the settle reports
-  - L4305 ...and between them the holders paid every dollar the treasury received
-  - L4308 ...its book rose by its own face, less what the city repaid it this month
-  - L4310 ...and its equity by net income and capital, and nothing else - the discount, not the face
-  - L4313 ...and once it has paid it owes nothing for the paper
-  - L4317 MoneyAudit still closes, on the month the bank paid
-  - L4319 the reloaded city's bank paid the same, at its settle
-  - L4321 ...and its households the same
-  - L4322 ...and its businesses
-  - L4323 ...and its world
-  - L4324 ...and its month closes too
-  - L4333 fixture: the note and the serial are on the books
-  - L4335 each piece carries its own discount, which together is face less what it raised
-  - L4345 the bank's interest in the settle month carries one month of its share of the discount,
-  - L4347 ...which is well short of the whole (the old rule booked all of it)
-  - L4349 the rest sits against its book, unearned, so its equity did not move for the discount
-  - L4352 ...and it is exactly the bank's share less what accreted
-  - L4366 over the note's life its accretion adds up to its face less what it raised
-  - L4368 ...and nothing of it is left unearned once it is repaid
-  - L4369 ...and it is off the books
-- **L4391 (13b) the tab draws each rate in its parts (0.7.33)**
-  - L4403 an insured mortgage's money, running costs and capital add up to its rate, at six dials
-  - L4405 ...its running part is prime's own running costs
-  - L4406 the losses' watch line is past what a sound book loses
-  - L4454 fixture: every sector is priced
-  - L4455 fixture: the sector given a record carries it in its quote
-  - L4457 fixture: the book's concentration prices at least one sector
-  - L4458 prime and a sector's three parts are its rate, to the bit, for every sector
-  - L4459 ...on the prime it was priced on, its record and the charge pushed for it
-  - L4460 ...and the three are its spread over prime
-  - L4471 ...and a played month later, still to the bit
-  - L4498 a city just loaded quotes every sector with its record, as the city it was saved from
-  - L4500 ...the fixture's record among them, in its rate
-  - L4502 ...and the book's concentration on it, the charge the bank prices it at now
-  - L4503 ...each quote still its parts, to the bit
-  - L4520 fixture: no branch stands and the bank's own rule wants its first - the page said \"Yes\"
-  - L4522 fixture: the city could not staff one
-  - L4523 the planner the tab's verdict reads does not build it
-  - L4524 ...and holds on the staffing, the words the verdict prints after \"Not yet\"
-  - L4526 asked twice, the planner answers the same and moves nothing - it is a read
-  - L4543 the rates' flags carry the central bank's and the bank's decisions and nothing else
-  - L4545 ...a month with both one flag holding both
+  - L1625 the fixture's bank is actually running a book
+  - L1627 ASSETS = LIABILITIES + EQUITY, every month
+  - L1628 ...and equity moves by net income and capital, and nothing else
+  - L1634 fixture: the played city's households paid account fees
+  - L1635 (4) what the households' books show they paid in account fees is what the bank took, to the cent
+  - L1637 fixture: the played city's businesses borrowed
+  - L1638 ...a business loan's fee is LOAN_FEE of what was lent, every month it lent
+  - L1640 ...and the money audit closes with the fees crossing it
+  - L1641 fixture: the bank paid its owners
+  - L1642 (6) the bank's dividend is its payout rule on its profit after tax, every month it paid
+  - L1644 ...and what lands after a close reaches the next month's taxed profit
+  - L1677 the city takes exactly its share of what the bank made
+  - L1679 ...and the figure the treasury books is the figure the bank paid
+  - L1688 a profitable bank hands over its share
+  - L1689 ...out of its own cash
+  - L1690 ...and reports it
+  - L1691 ...which comes off the month's net income
+  - L1697 a bank that lost money is not paid a refund
+  - L1701 it pays its savers something
+  - L1722 ...and never more than it earned
+  - L1724 ...and its staff are on its own books, not the shops'
+- **L1727 8b. the trading desk's statement foots**
+  - L1776 fixture: the desk traded
+  - L1777 fixture: ...at its bid, which is the last trade and so the mark
+  - L1778 the re-mark is the inventory at the closing mark, from nothing
+  - L1780 ...and the desk's total is what it paid against that re-mark
+  - L1782 the opened lines and the re-mark sum to the total, exactly
+  - L1788 the re-mark is cleared with the trading result at the top of a month
+  - L1800 fixture: the played city's desk actually traded
+  - L1801 ...and its opened lines and re-mark summed to its total every month
+- **L1804 12. a reload reads the same month (0.7.8)**
+- **L1817 (12) a reload between two months reads the same income lines, allowance and target**
+  - L1838 fixture: Retail owes the bank alone, no bond, a sound book
+  - L1863 fixture: the played bank had set something aside
+  - L1864 the allowance reloads to the cent
+  - L1865 ...the capital target it chose
+  - L1866 ...the month's provision
+  - L1867 ...its interest, its fees and its profit, as the Profit page reads them
+  - L1870 ...what it kept, and what it paid its owners
+  - L1877 ...every statement line and the target's record, exactly
+  - L1878 ...and the allowance, book by book
+  - L1882 a save from before 0.7.8 loads with an allowance set up from its borrowers
+  - L1931 fixture: Materials, held out of building, is levered no further than it was when the premise was written (0.17)
+  - L1933 fixture: Luxury Retail, held out of building since round 5, owes nothing
+  - L1937 fixture: Freight, held out of building and given the cash for its fleet, owes nothing
+  - L1939 fixture: so every book reads alike on a month and on a quarter, within a hundredth of the allowance
+  - L1971 ...by the same rule on the same borrowers, as the load reads them
+  - L1973 fixture: some of its books are sound ones, held at BASE_LOSS_RATE
+  - L1974 ...which, wherever the curve does not read the borrower's assets, is the saved bank's to the cent
+  - L1976 ...booked as no month's provision
+  - L1977 ...so its equity is lower by what it set aside, and by nothing else
+  - L1999 fixture: Materials, held out through the next month too, borrowed nothing in it
+  - L2007 ...and its next month articulates like any other
+  - L2008 ...with the provision the saved city made, within a hundredth of the allowance - not the allowance again
+  - L2010 ...and a money audit that closes
+- **L2013 9. capital is the constraint, and it can run out**
+  - L2019 a bank can lend its capital over the regulator's ratio
+  - L2025 ...and does
+  - L2032 a bank that loses more than it owns is insolvent
+  - L2033 ...and can lend nothing at all
+  - L2034 ...and it says what it would take to fix
+  - L2049 a failed bank prices off the window: its money is all the window's
+  - L2051 ...and its prime is the four parts on it, not a premium on every rate
+  - L2057 recapitalised, it is solvent again
+  - L2058 ...and lending again
+  - L2059 ...and above the ratio it is required to hold, by at least the exit buffer
+  - L2061 ...and holding at least what one branch is capitalised with
+  - L2063 ...which is exactly what it was asked for, and not a dollar more
+  - L2079 fixture: a bank that lost its whole book has failed
+  - L2080 fixture: ...and has no book left to strike a ratio on
+  - L2081 a failed bank with no book is still asked for one branch's capital
+  - L2084 ...and can lend again once it has it
+- **L2159 (14) the normal curve, and what it gives**
+  - L2162 N(0) is a half
+  - L2163 N(1.96) is 0.975
+  - L2164 N(-1) is 0.1587
+  - L2165 N(-3) is 0.00135, to the tail's own figures
+  - L2172 ...and N(x) + N(-x) is one
+  - L2173 a loan's loss given default is what it does not recover: 1 - LOAN_RECOVERY (0.7.12, round 2)
+  - L2175 ...and a bond's 1 - BOND_RECOVERY
+  - L2177 at the default point half its firms default in a year
+- **L2189 (14) a sector held at a leverage loses its defaulted firms' slice, pro rata**
+  - L2194 fixture: the lender's hazard is the brief's, 1 - (1 - PD)^(1/12)
+  - L2199 a sector at leverage L writes off principal x h(L) x (1 - LOAN_RECOVERY) in the month
+  - L2201 ...which is what the month's sweep returns
+  - L2202 ...and the debt that defaulted is h of it
+  - L2204 ...every loan falls pro rata: the first
+  - L2206 ...and the second
+  - L2207 ...its assets are untouched - the firms keep their plant
+  - L2208 ...it is not restructured, not on its record and not shut out
+  - L2216 ...and owing less against the same assets, its next loan is quoted less
+  - L2225 held a year at a leverage, the share of its debt that defaulted is PD(L)
+- **L2228 (14) more defaults the deeper in debt, and nothing past dust under the watch line**
+  - L2243 the default rate and the monthly slice rise with leverage, and never fall
+  - L2244 ...from nothing with no debt to all of it against no assets
+  - L2247 under the watch line no month's slice costs more than a sound book's year, BASE_LOSS_RATE
+  - L2253 a sector at 1.2 times its assets loses a slice and is not news; one at the default point is
+  - L2258 ...and at 0.3 a month's slice of $30M of debt is under a cent
+- **L2261 (14) past the default point with its plant standing, it is not written down whole**
+  - L2265 fixture:
+  - L2268 at
+  - L2270 ...not down to RESTRUCTURE_TARGET of its assets in one month
+  - L2272 ...and not banned, and not on its record
+- **L2277 (14) the backstop: a sector with nothing left is written down whole, and banned**
+  - L2281 fixture: owing against assets below nothing is insolvent
+  - L2282 the whole of its debt is written off - RESTRUCTURE_TARGET of nothing
+  - L2284 ...its overdraft is forgiven
+  - L2285 ...it is restructured, not sliced
+  - L2287 ...one default on its record
+  - L2288 ...and shut out for exclusionFor() of it
+  - L2290 ...which is news
+- **L2292 (14) the allowance reads the same curve, staged firm by firm: a year on its sound firms, a loan's term on those past the watch line**
+  - L2302 far under the watch line its firms are sound: a year's BASE_LOSS_RATE, never less
+  - L2304 fixture: at 0.5 even a loan's term of the curve is under BASE_LOSS_RATE
+  - L2318 fixture: the curve's year passes BASE_LOSS_RATE under the watch line
+  - L2320 fixture: at
+  - L2322 ...nearer it, a year on its sound firms and a loan's term on the share past the line
+  - L2324 ...the share past it being N(ln(L / SECTOR_WATCH_LEVERAGE) / ASSET_VOLATILITY)
+  - L2327 ...half of them at the watch line itself
+  - L2328 ...so there, half a year's loss and half a lifetime's
+  - L2333 past it, most of the lifetime loss over a loan's term, staged
+  - L2335 ...between a year's loss and the whole lifetime's
+  - L2338 ...and a sector with nothing left holds all it owes, which the backstop writes off
+  - L2355 the allowance rises with leverage and never falls
+  - L2356 ...and has no cliff at the watch line: the step across it shrinks with the step, as a continuous one does
+  - L2395 moving past the watch line provides the rise in its staged loss, less the year it held
+  - L2397 ...which is the staged loss at its new leverage
+  - L2398 ...which is more than the year of slices that follow
+  - L2399 every slice after is drawn from the allowance
+  - L2400 ...and none of it reaches the month past it
+  - L2401 ...so the year's provisions are less than its write-offs: the loss was taken when it crossed
+  - L2403 ...and every month its equity moved by its net income and nothing else
+- **L2405 (14) a played city through months of slices: the money audit closes**
+  - L2459 fixture: the city has a standing bank, and retail has plant to lend against
+  - L2494 fixture: retail's firms really did default, a slice a month, for months
+  - L2495 every month of it closes to the cent
+  - L2496 ...and within 0.01% of what moved
+  - L2497 ...and the bank wrote off what the lender did, every month
+  - L2499 fixture: months went by with retail's firms defaulting and nothing past the line
+  - L2501 the defaults notice is live exactly in the months that were news, and in no other
+  - L2514 fixture: retail's month was past the default point
+  - L2515 ...and the inbox says so, naming it
+  - L2517 ...and the month still closes
+- **L2556 (15) a failing sector's plant is sold to the builders, as its materials**
+  - L2652 fixture: retail in distress retired plant, and the rule that did it was the distress rule
+  - L2659 the material sold is the share a demolition recovers of the template's own, times the buildings retired
+  - L2662 ...a shop's material, the shops the city lost
+  - L2663 fixture: the builders could pay for all of it
+  - L2664 the builders paid the units at the day's price for material
+  - L2665 ...the materials market's own price, as it stood that day
+  - L2666 their stock rose by the units, less what the month's sites drew from it
+  - L2668 ...and it is on their balance sheet at the day's price
+  - L2670 the builders' cash moved out by what they paid
+  - L2671 ...and the seller's in by the same
+  - L2674 ...both on their cash-flow statements
+  - L2675 ...which close for the seller, but for the overdraft the fixture handed it
+  - L2677 ...and for the builders
+  - L2679 and the month's money audit closes, to the cent
+  - L2715 fixture: the city ordered work its yard does not cover
+  - L2716 fixture: the builders built with it in a later month
+  - L2719 what they built with from it is on their income statement, at what they paid for it
+  - L2721 ...as a named input
+  - L2724 ...and no cash: the cash flow adds it back
+  - L2725 ...and closes
+  - L2726 ...and that month's money audit closes, to the cent
+  - L2752 fixture: retail owns a shop of its own to retire
+  - L2755 fixture: retail has no order in flight (the distress rule does not shrink a sector that is building)
+  - L2782 fixture: retail retired plant again, with the builders overdrawn
+  - L2784 builders who cannot pay buy nothing, and pay nothing
+  - L2786 ...so the seller is paid nothing for it
+- **L2806 (16) the bank reads a borrower from its last quarter**
+  - L2812 with no statements yet, the bank reads a borrower's month
+  - L2821 the price reads the last quarter's statements: their average debt over their average assets
+  - L2823 ...not the month's own
+  - L2824 ...and so does the allowance: its staged loss at the quarter's leverage
+  - L2830 the quarter is saved and restored by the sector's name
+  - L2833 a fourth reading drops the oldest: STATEMENT_MONTHS of them
+  - L2835 ...and the count stops there
+  - L2838 the hazard stays on the month's own leverage: firms fail on what they owe against what they have
+  - L2840 ...and a slice, continuous and small, does not restart the quarter
+  - L2861 fixture: the sector with nothing left was written down whole
+  - L2862 after the backstop its quarter restarts: no reading from before it counts
+  - L2867 ...so its next loan's price reads the restructured books, what it owes now over what it owns now
+  - L2870 ...which is far under what the quarter before the backstop would have charged
+- **L2918 (19) the branches, by their customers**
+  - L3068 fixture: the charter's fees covered under a tenth of its cost, every month
+  - L3070 the founding branch never closes on the rule, however far its fees are from its cost
+  - L3074 fixture: the charter's template carries an operating cost
+  - L3076 ...and the charter, standing alone, is charged none of it
+  - L3083 fixture: five branches stood on fees that cover two
+  - L3085 fixture: the branch's operating cost is what makes the fees cover two, not nothing
+  - L3087 every branch past what the fees cover closed at once, the month after: two stand
+  - L3092 ...before the month paid them: it ran two branches, not five, and paid the operating cost of
+  - L3095 ...and that month closes the audit, the operating cost in it
+  - L3097 fixture: two branches stood every month until what a branch costs rose
+  - L3099 while what a branch costs held still, the fees covered the branches the rule kept
+  - L3101 fixture: the month the cost rose, the rule had kept two on last month's cost and the month's fees fell short of them
+  - L3103 ...and the next month the rule, reading that cost, closed the one the fees no longer cover
+  - L3105 every month the fees fell short of the branches standing, the next month's rule closed one
+- **L3130 (17) the desk bids for the bank's own shares only with what it holds over its target**
+  - L3141 fixture: a bank a little over its target
+  - L3142 fixture: ...which by its own rule buys its shares back
+  - L3146 fixture: its shares have a record neither new nor bad
+  - L3155 its desk bids half a spread under fair value
+  - L3156 ...for what its spare capital pays for at the bid, under the pace
+  - L3162 fixture: the household offers more than the pace, and the pace more than the spare
+  - L3171 a bank a little over its target, offered more than its spare capital, buys back exactly the spare
+  - L3173 ...and ends at its target
+  - L3174 ...not under it
+  - L3175 ...so the household raised what the desk took, and no more - the rest of its need goes on to credit
+  - L3177 ...and the rest of what it offered waits on the book: the desk is not obliged
+  - L3180 a second offer the same month, at its target, finds no bid
+- **L3182 (17) ...and other companies' shares only on the capital it has to spare, at the desk's weight**
+  - L3196 its desk bids for what its spare capital carries at RISK_EQUITY, marked at the price it pays
+  - L3200 fixture: the household offers more than that
+  - L3206 a bank a little over its target buys only what its spare capital carries at the weight
+  - L3209 ...the weight the weighted book already gives the desk, RISK_EQUITY, at the price it paid
+  - L3211 ...and marked, it holds its target
+  - L3212 ...its ratio at or over the target
+  - L3213 ...the household raised what the desk paid
+  - L3214 ...and the rest of its offer waits on the book
+  - L3219 its selling is unchanged: at its target it still asks for what it holds
+  - L3221 ...and bids for no more than rounding
+  - L3230 fixture: a bank under its target, its desk still posting
+  - L3231 ...bids for nothing
+  - L3234 a bank under its target buys none: the household raises nothing from its shares
+  - L3235 ...and the desk holds none
+  - L3248 fixture: twenty households leave with their shares
+  - L3255 fixture: the desk was posting
+  - L3256 the leavers' shares a bank under its target will not bid for stay abroad with them, as with no market
+  - L3258 ...resting on the book, unpaid
+- **L3280 (13) the ladder's four parts are its prime, at every dial**
+  - L3298 the funds-transfer price, running costs, expected loss and capital charge add up to prime, at six dials
+  - L3300 ...and every other rung is the bank's own rate for it
+  - L3301 fixture: at 3% every part is priced
+  - L3303 ...and past the owners' return the capital part is nothing
+  - L3304 the step from the policy rate is the window's penalty on its share and the term premium
+  - L3307 ...and the step to prime is the three costs over it
+- **L3310 (13) the weight table foots to the weighted book, term and desk included**
+  - L3331 the weight table's weighed column foots to the weighted book capacity reads
+  - L3333 fixture: the desk's shares are on it, at RISK_EQUITY
+  - L3334 ...a book halfway through its loans' terms shows the share its term counts for
+  - L3336 ...and every row is its face, term and risk weight multiplied
+  - L3337 ...where face times risk, with no term and no desk, did not foot
+- **L3348 (13) what it gathers is in today's money after a reform**
+  - L3352 three branches gather all the city has banked, whatever their number
+  - L3355 ...and after a hundred-for-one reform, a hundredth of it
+  - L3357 ...which is the city's own savings with it, all of them
+  - L3359 ...and their owners' capital for a branch
+- **L3362 (13) the bank's state in a sentence, with the figure that decides it**
+  - L3365 with no branch: there is no bank
+  - L3372 fixture: the four banks are healthy, rebuilding, under the minimum and failed
+  - L3377 a bank at or over its target is healthy and lending freely, at its ratio and its target
+  - L3381 ...one under its target is rebuilding, at the growth its rule allows
+  - L3384 ...one under the minimum lends only to keep its borrowers going, at its ratio
+  - L3387 ...and a failed one says what it must hold again
+- **L3392 (13) on a played city: the interest by who paid it, last month, the year, and the equity's movement**
+  - L3400 the city's coupons, the businesses', the families' and the discount each on its own line
+  - L3404 ...and together they are its interest
+  - L3582 fixture: the played city's first branch opened in it
+  - L3583 fixture: the bank paid its owners in it
+  - L3584 fixture: the treasury bought paper back from it, at a gain or a loss
+  - L3585 fixture: the city put capital into it
+  - L3586 its equity's movement left nothing unexplained, every month
+  - L3588 ...nor between two presses, after a buyback and after a rescue
+  - L3590 fixture: the city and the businesses paid it interest
+  - L3591 its interest by who paid it is the whole of its interest, every month
+  - L3592 fixture: last month and the year were read in most months
+  - L3593 last month's column is what that month read, whole
+  - L3594 ...and the last twelve months add up to the last twelve read
+  - L3595 the played bank's weight table foots every month
+- **L3597 (13) the Balance sheet page: it foots this month and a year ago, and a year ago survives a save**
+  - L3600 fixture: a year ago was on file in most of the months played
+  - L3601 fixture: the businesses owed the bank in most of them
+  - L3605 its asset lines are what totalAssets() sums
+  - L3606 ...its liability lines what totalLiabilities() sums
+  - L3607 so its lines foot, assets less liabilities less equity, every month
+  - L3608 ...and a year ago, every month one was on file
+  - L3609 a year ago is the sheet as it stood twelve months before, line for line
+  - L3610 the businesses' loans by sector add to their line, and the interim financing to its
+  - L3632 the year of sheets survives a save, whole
+  - L3634 ...so the reloaded page has a year ago
+  - L3635 ...the same equity a year ago
+  - L3637 ...and the same loans to the businesses a year ago
+  - L3639 a save from before 0.7.13 has no year ago - the page reads it as \"\u2014\"
+- **L3642 (13) its equity in parts: paid in, retained and the city's preferred add up to it, to the cent, every month**
+  - L3646 fixture: a branch opened, its capital sold as shares
+  - L3647 fixture: it bought its own shares back
+  - L3648 fixture: it paid a dividend
+  - L3649 fixture: it lost money in a month
+  - L3650 a bank founded in this build keeps the split, every month
+  - L3651 paid in, retained and the preferred add up to its equity, to the cent, every month and between two presses
+  - L3653 paid in moved by what its owners and the city put in: offerings, new shares, a resolution, less buybacks
+  - L3655 ...and retained by everything else: what it kept, less dividends, and the rest of the causes
+  - L3657 both survive a save
+  - L3660 ...and still add up to the reloaded bank's equity
+  - L3661 ...and the page's lines read them - with the city's preferred, equity's third part since 0.7.14
+  - L3664 a save from before them keeps neither: the page shows its equity whole, the parts \"\u2014\"
+  - L3667 ...its equity the same total
+  - L3674 ...and a month played does not invent them
+- **L3690 (13) the interest margin is on what earns it interest: its loans, its paper and bonds, and its reserves**
+  - L3693 fixture: the played bank has lent
+  - L3703 fixture: its reserves are at least a hundred times its book, and it still lends
+  - L3710 its earning assets are the eight sheet lines that earn it interest: its reserves, loans, interim financing,
+  - L3714 ...which are its assets less the desk's shares, which earn no interest, and the allowance, which is negative
+  - L3717 the month's margin is its net interest, a year of it, over its earning assets
+  - L3725 a margin on what earns it interest cannot pass the best rate any of it earned that month
+  - L3726 ...where the old reading, over the book alone, passed it - the absurd figure the issue saw
+  - L3736 fixture: a whole year is on file, more months were played than that, and its window holds months before the capital
+  - L3739 the earning assets averaged over the year are the mean of those read at the close of each of its months
+  - L3742 ...and the year's margin is its average net interest, a year of it, over them
+- **L3754 (13) the rescue's guard is the model's**
+  - L3755 fixture: the bank stands and needs nothing
+  - L3756 a bank that needs nothing is not offered a rescue
+  - L3760 fixture: the bank is under water
+  - L3761 ...a treasury holding half of what it needs resolves it all the same
+  - L3762 ...paying the hole and the capital to reopen, the whole of what it is asked
+  - L3763 ...half of it from its cash and the rest for the central bank to advance
+  - L3765 ...and doing it stands the bank back up
+- **L3799 (7) a loan is met by its year's allowance, a weakening borrower by its lifetime loss, a write-off by the allowance first**
+  - L3812 a new loan to a sound borrower is met by its year's expected loss, BASE_LOSS_RATE of it
+  - L3814 ...a stage-1 book
+  - L3815 ...and that is the month's provision
+  - L3833 a borrower past SECTOR_WATCH_LEVERAGE moves to stage 2
+  - L3834 ...and its allowance rises toward its lifetime loss: a loan's term of defaults on the share of its firms past the line
+  - L3836 ...which is more than a year's loss
+  - L3837 ...and the rise is the month's provision, before anything is written off
+  - L3853 fixture: the month's slice is written off, and the sector is not restructured
+  - L3860 a write-off is drawn against the allowance its book held first
+  - L3862 ...and only what that did not cover reaches the month
+  - L3864 ...so the provision is the allowance's move plus the write-off
+  - L3866 ...and the month's hit to equity is less than the write-off, because most was taken already
+  - L3869 ...and a borrower still past the watch line stays in stage 2, its staged loss struck on what it owes now
+  - L3881 a repaid book holds nothing, and its allowance comes back as a release
+  - L3886 over the episode the provisions add up to the write-offs, to the cent
+  - L3887 ...and every month its equity moved by its net income and nothing else
+  - L3890 a family owing under the watch line holds a year's loss
+  - L3892 ...halfway from there to the discharge line, half its debt
+  - L3895 ...and at the line, all of it - a discharge writes the whole debt off
+  - L3915 fixture: a family borrowing to eat does pass the watch line
+  - L3916 ...and its book then holds more than a year's loss
+  - L3918 ...which is the rule cell by cell
+- **L3920 (8) a bank that has lived through a bad year chooses more capital than a young one**
+  - L3951 a bank whose worst year was under the conservation buffer targets the minimum and the buffer
+  - L3953 fixture: the scarred bank's worst year was past the conservation buffer
+  - L3955 ...one that has lived through a worse year holds a buffer that would take it and leave the minimum
+  - L3957 ...which is more than the young one holds
+  - L3958 ...its worst year is its year's provisions over its weighted book
+  - L3960 ...and never more than the whole Basel stack, MAX_BUFFER, however bad the year
+  - L3963 ...and a loss on a book smaller than its founding capital carries is read over that capacity
+  - L3969 no bank ever targets less than the minimum and the conservation buffer
+  - L3970 ...and it prices a loan's capital at the target it chose
+- **L3975 (9) under its target it keeps its profit and lends slower, and under its minimum only to keep borrowers going**
+  - L3980 fixture: halfway between its minimum and its target
+  - L3982 it keeps every dollar of a profit
+  - L3983 ...and says so
+  - L3984 ...and a borrower's debt may grow RATIONED_GROWTH a month halfway there
+  - L3996 the limit is RATIONED_GROWTH x x/(1-x) from the minimum to the target
+  - L3997 ...rising smoothly, never falling, as the ratio rises
+  - L3998 ...from nothing at the minimum
+  - L3999 ...to no limit at all at the target
+  - L4010 a sector owing 100,000 may borrow that share of it more this month
+  - L4011 ...a project inside it is funded
+  - L4012 ...and one past it is not
+  - L4013 ...and the investor can say it was the bank's capital
+  - L4018 ...and its short month is lent whole, its fee on top: a working-capital line the rule does not ration
+  - L4022 under its minimum it lends only to keep its borrowers going
+  - L4030 ...no project, however small
+  - L4032 ...but a borrower short of cash is still lent its short month: the line is honoured under the minimum too
+  - L4043 fixture: its loan fell due
+  - L4044 ...and what fell due may be lent again under the minimum
+  - L4049 ...and a borrower past the line still has its defaulted firms written off
+  - L4052 ...and one with nothing left is still restructured whole
+  - L4069 fixture: free, it borrows more than its interest
+  - L4070 a family's debt may grow the month's share and its interest, and no more
+  - L4073 ...and under the minimum it may draw its interest and nothing else
+- **L4076 (10) inside its band it pays a share of its profit, over the top it returns the excess**
+  - L4080 fixture: inside its band, with no reserves at all
+  - L4082 inside its band it pays PAYOUT_IN_BAND of its profit after tax
+  - L4086 ...and pays it though it holds no reserves - out of what it borrows, like any bank
+  - L4088 ...nothing on a loss
+  - L4090 ...and never so much that it would fall under its target
+  - L4094 fixture: far over the top of its band
+  - L4095 over the top it pays its share and a twelfth of the excess
+  - L4104 ...so a year returns all but (11/12)^12 of it, on no profit at all
+  - L4106 ...and it counts what it paid over the year
+  - L4110 under its target, under its minimum, failed or with no bank it pays nothing
+- **L4114 (11) while the bank stands, there is always something it will lend**
+  - L4130 a standing bank at any capital has capacity
+  - L4131 ...lends more than nothing a month whenever it is over its minimum
+  - L4132 ...and at any capital lends a borrower short of cash its interest
+  - L4136 ...where a failed one, in resolution, has none - resolution is as it was
+- **L4194 and the bank pays for the city's paper**
+  - L4224 fixture: the city has a working bank and owes nothing yet
+  - L4253 fixture: the city issued a note and a serial bond, below par
+  - L4255 between the presses the bank has not paid yet
+  - L4256 ...and owes the treasury exactly what it received
+  - L4269 a city saved between the issue and the settle still owes its bank's payment
+  - L4282 fixture: the households held their paper through the settle - the desk bought none
+  - L4316 the bank's cash fell by exactly what the treasury received less what the households
+  - L4319 ...which is the figure the settle reports
+  - L4320 ...and between them the holders paid every dollar the treasury received
+  - L4323 ...its book rose by its own face, less what the city repaid it this month
+  - L4325 ...and its equity by net income and capital, and nothing else - the discount, not the face
+  - L4328 ...and once it has paid it owes nothing for the paper
+  - L4332 MoneyAudit still closes, on the month the bank paid
+  - L4334 the reloaded city's bank paid the same, at its settle
+  - L4336 ...and its households the same
+  - L4337 ...and its businesses
+  - L4338 ...and its world
+  - L4339 ...and its month closes too
+  - L4348 fixture: the note and the serial are on the books
+  - L4350 each piece carries its own discount, which together is face less what it raised
+  - L4360 the bank's interest in the settle month carries one month of its share of the discount,
+  - L4362 ...which is well short of the whole (the old rule booked all of it)
+  - L4364 the rest sits against its book, unearned, so its equity did not move for the discount
+  - L4367 ...and it is exactly the bank's share less what accreted
+  - L4381 over the note's life its accretion adds up to its face less what it raised
+  - L4383 ...and nothing of it is left unearned once it is repaid
+  - L4384 ...and it is off the books
+- **L4406 (13b) the tab draws each rate in its parts (0.7.33)**
+  - L4418 an insured mortgage's money, running costs and capital add up to its rate, at six dials
+  - L4420 ...its running part is prime's own running costs
+  - L4421 the losses' watch line is past what a sound book loses
+  - L4469 fixture: every sector is priced
+  - L4470 fixture: the sector given a record carries it in its quote
+  - L4472 fixture: the book's concentration prices at least one sector
+  - L4473 prime and a sector's three parts are its rate, to the bit, for every sector
+  - L4474 ...on the prime it was priced on, its record and the charge pushed for it
+  - L4475 ...and the three are its spread over prime
+  - L4486 ...and a played month later, still to the bit
+  - L4513 a city just loaded quotes every sector with its record, as the city it was saved from
+  - L4515 ...the fixture's record among them, in its rate
+  - L4517 ...and the book's concentration on it, the charge the bank prices it at now
+  - L4518 ...each quote still its parts, to the bit
+  - L4535 fixture: no branch stands and the bank's own rule wants its first - the page said \"Yes\"
+  - L4537 fixture: the city could not staff one
+  - L4538 the planner the tab's verdict reads does not build it
+  - L4539 ...and holds on the staffing, the words the verdict prints after \"Not yet\"
+  - L4541 asked twice, the planner answers the same and moves nothing - it is a read
+  - L4558 the rates' flags carry the central bank's and the bank's decisions and nothing else
+  - L4560 ...a month with both one flag holding both
 
 ## BasketYearCheck.java - 109 labelled assertions
 
@@ -4006,274 +4009,274 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L668 ...every dollar paid down to a till is on a statement
   - L671 ...and every sector's statement reconciles to its cash
 - **L673 7. the autopilot**
-  - L678 fixture: there is a year of prices to read
-  - L681 fixture: the rule wants something else
-  - L683 with the rule's hand on it, the month opens with the dial where the rule says
-  - L686 the player's hand takes it back
-  - L688 ...and the rule leaves it where the player put it
-  - L697 the toggle survives a save
-  - L704 ...off, too
-  - L705 ...and a dial at 0% reloads at 0%, not the 3% default
-- **L709 9. the save**
-  - L717 fixture: advances and arrears to carry
-  - L728 the central bank's whole balance sheet reloads exactly
-  - L729 ...M0
-  - L730 ...what the treasury owes it
-  - L732 ...the ceiling
-  - L733 ...and the arrears, line by line
-  - L735 ...and M2
-  - L737 ...and a year of M0 behind it
-- **L740 8. a currency reform**
-  - L748 fixture: the reform happened
-  - L749 M0 is a hundredth
-  - L750 ...the treasury's advances
-  - L751 ...the bank's at the window
-  - L752 ...the loss carried
-  - L753 ...printed since founding
-  - L754 ...the ceiling
-  - L755 ...and the arrears
-  - L756 but the policy rate is the policy rate
-  - L757 ...the advances against the ceiling are where they were
-  - L759 ...and M0 against M2
-  - L762 ...and the first month in the new money closes
-- **L764 10. an old save**
-  - L770 fixture: the city carries a note
-  - L776 fixture: the save carried
-  - L785 it loads
-  - L787 with an empty central bank: nothing made
-  - L788 ...nothing advanced
-  - L789 ...nothing printed
-  - L790 ...nothing owed in arrears
-  - L791 ...and the player's hand on the dial
-  - L794 and it runs, closing the audit and the M0 identity every month
-  - L798 ...and runs its note off
-  - L801 a new game after a load founds a fresh central bank
-  - L803 ...with nothing owed
-- **L835 11. the holdings dial buys the bank's term paper with money it makes**
-  - L864 fixture: the treasury sold a twenty-year bond
-  - L875 fixture: ...and the bank holds all of it
-  - L877 fixture: ...and the central bank none
-  - L878 with nothing held, the long end is the table's premium over the note
-  - L892 after one month the central bank holds QE_SPEED x 30% of it, at face
-  - L894 ...which is what the paper says it holds
-  - L895 it paid the market value at the curve
-  - L896 ...and the bank was paid exactly that
-  - L897 ...money it made: the audit's issue carries the price
-  - L900 ...and M0 moved by exactly what it made less what it destroyed
-  - L902 the bank's book fell by the face
-  - L903 ...and its book on the bank's own sheet with it
-  - L904 the bank booked its gain against what it carried the paper at
-  - L906 ...and the central bank its own against face, into the month's profit
-  - L909 compression(240) is the twenty-year premium times the share held over the share it is whole at
-  - L912 the twenty-year rate sits exactly compression(240) under the table
-  - L914 ...and the note carries none of it
-  - L915 ...so the short end is where it was: the dial and the spreads
-- **L920 12. the coupon on its share is the central bank's, destroyed, and remitted**
-  - L925 the coupon on its share arrived at the central bank
-  - L926 ...and was destroyed with the rest of what it took back
-  - L930 the month's profit carries it
-  - L932 ...owed back to the treasury once any loss is made good
-  - L935 ...and remitted the month after
-- **L938 13. the dial to nothing sells it back, and the curve returns to the table**
-  - L940 fixture: the central bank holds some of the bond
-  - L951 the dial to 0 sells it all back within the speed's months
-  - L952 ...the paper agrees
-  - L953 ...a step at a time, not in one month
-  - L954 money retired equals what the bank paid
-  - L955 ...and the curve returns to the table
-- **L958 14. the holdings survive a save**
-  - L962 fixture: holdings to carry
-  - L968 fixture: the dial was moved, so the setting before it is not the dial
-  - L978 the paper it holds
-  - L979 ...the dial
-  - L980 ...and the setting before it, which sets the pace
-  - L982 ...so the reloaded city steps at the same pace
-  - L984 ...what the paper says it holds
-  - L986 ...and the long end of the curve
-- **L989 15. a reform scales the holdings and not the dial**
-  - L994 fixture: the reform happened
-  - L995 the paper it holds is a hundredth
-  - L996 ...on the paper too
-  - L997 the dial does not move
-  - L998 ...nor the compression it buys
-  - L1001 ...and the first month in the new money closes
-- **L1013 16. the ceiling is the player's dial, up to three years of revenue**
-  - L1031 a city opens at the default
-  - L1033 fixture: a year of revenue to set it on, nothing owed, nothing in arrears
-  - L1042 ...which is DEFAULT_ADVANCES_MONTHS of trailing revenue
-  - L1045 fixture: overdrawn by the whole ceiling, the treasury has no room
-  - L1047 ...so a purchase is refused
-  - L1050 set to twelve months, the ceiling doubles
-  - L1051 ...and the room is the six months it added
-  - L1052 ...so the same purchase is paid, overdrawing further
-  - L1058 a treasury that was at the old ceiling draws past it
-  - L1060 ...and is still inside the new one
-  - L1062 the dial stops at MAX_ADVANCES_CEILING
-  - L1065 ...and at nothing below
-  - L1074 the setting survives a save
-  - L1075 ...and so the ceiling
-  - L1079 fixture: the save carried the dial under its own key
-  - L1086 a save from before the dial reads the default: six months, the constant it was
-  - L1092 fixture: the reform happened
-  - L1093 a reform does not move the dial: months are not money
-  - L1094 ...while the ceiling, which is money, is a hundredth
-- **L1114 17. the dial takes the whole of the paper, and the compression is whole from half**
-  - L1117 the dial takes MAX_QE_SHARE
-  - L1118 ...which is all of the term paper, Jerus's 100%
-  - L1120 ...and no more
-  - L1122 ...as the load path restores it, unclamped at a half
-  - L1127 fixture: twenty-year paper carries the table's twenty-year premium
-  - L1130 at a quarter held, half the premium, as it always was
-  - L1137 ...so the long end over the note is flat at the whole book
-- **L1142 18. the floor is split by who holds the paper**
-  - L1156 fixture: the bank at the window - its cost of funds over the policy rate
-  - L1158 the central bank holding nothing, the floor is 0.7.14's, to the bit
-  - L1160 ...and so is the bank's own floor beside it
-  - L1164 fixture: it holds all the term paper
-  - L1165 ...which is three quarters of the city's paper, the note the bank's
-  - L1167 the floor is the policy rate on its share and the bank's on the rest
-  - L1169 ...and the bank's own floor has not moved
-  - L1170 the short end moves with it: the note sits on the split floor
-  - L1172 ...lower than it was with the bank holding everything
-  - L1174 what another dial would be quoted splits the same way
-  - L1185 in between, proportional: a quarter, a half and three quarters held
-  - L1196 the central bank holding all of it, the floor is the policy rate
-  - L1198 ...whatever the bank's money costs it
-  - L1200 ...even ten points dearer
-- **L1245 19. what the central bank holds of a maturing piece it takes again at issue, par for par**
-  - L1268 fixture: the treasury sold a five-year serial
-  - L1280 fixture: the households, the bank and the central bank each hold part of it
-  - L1282 fixture: ...the central bank its dial's share of the term paper, and no more
-  - L1298 fixture: a slice falls due next month and the central bank holds part of it
-  - L1300 the plan names its par in what falls due
-  - L1301 ...and, at its dial, rolls all of it
-  - L1302 ...so the market's issue is sized for the rest, less what is netted
-  - L1304 fixture: ...nothing netted, and the rest is issued
-  - L1307 the rollover sold one piece, a serial like the one falling due
-  - L1310 it holds exactly its maturing par of the new paper, from issue
-  - L1311 ...which is what its books say it rolled
-  - L1312 ...paid at the issue's price on each unit of face
-  - L1314 ...under par, as the market paid
-  - L1315 the bank's book of the new issue excludes its par: the bank, the households, the businesses and the world hold the market's face
-  - L1318 ...and the households took part of it
-  - L1319 ...for which they, the businesses, the world and the bank paid what the rollover raised, and no more
-  - L1322 ...which is what the bank's own book carries
-  - L1324 ...and the households' cells hold what the paper says they do
-  - L1326 the treasury repaid it its maturing par, as it always has
-  - L1327 so it holds what it held: the replacement in, the maturing par out
-  - L1332 a month on it buys its dial's share of what the roll capitalised, and not its par back
-  - L1334 ...which puts it at its dial of the term paper
-  - L1341 by hand, the plan still names its par
-  - L1345 fixture: by hand, the one term loan the player sold in the gap
-  - L1347 the player's issue the month its holding falls due carries its par on top
-  - L1349 ...at that issue's price on each unit of face
-  - L1359 by hand with nothing sold, there is nothing to add it on to
-  - L1360 ...and its holding runs off, repaid it
-  - L1361 ...off its book
-  - L1370 fixture: its dial under what it holds, by more than its par in the slice
-  - L1373 in its QT the plan rolls nothing of its own
-  - L1374 ...all of its par runs off
-  - L1375 ...and the market's issue is sized for all of what falls due, less what is netted
-  - L1378 it takes nothing at issue
-  - L1381 ...holds none of the new paper
-  - L1382 ...and what it held of the slice is repaid it
-  - L1393 fixture: over its dial by less than its par in the slice
-  - L1395 over its dial, it rolls its par less how far over it is
-  - L1396 ...that much runs off
-  - L1397 ...and the market's issue is sized for the rest
-  - L1402 it holds that much of the new paper
-  - L1403 ...so what it held past its dial ran off, and the rest was rolled
-  - L1415 fixture: it holds all of the term paper
-  - L1419 the plan rolls all of what falls due as its own
-  - L1423 ...so there is nothing for the market to be sold
-  - L1426 the rollover issues it one serial like the one falling due
-  - L1429 ...its par exactly, all of it the central bank's
-  - L1430 ...none of it the bank's
-  - L1431 ...paid for at its quote's price on each unit of face
-  - L1433 ...under par, and settled: nobody owes for it
-  - L1435 so it holds what it held, the whole of the term paper
-  - L1436 ...all of it
-  - L1450 through a save: the new paper is there
-  - L1451 ...the central bank's par in it
-  - L1452 ...the households'
-  - L1453 ...its discount still to accrete
-  - L1454 ...the central bank's book
-  - L1455 ...what it has rolled at issue since founding
-  - L1457 ...and paid for it
-  - L1460 a month on, both hold the same
-  - L1461 ...and have made the same money
-  - L1579 fixture: the treasury sold a two-year term bond
-  - L1584 fixture: the central bank took the whole of the first bond, through its dial
-  - L1593 fixture: the treasury sold a new line of the same term with the first bond two months from its end
-  - L1600 fixture: the households and the bank each hold part of the line
-  - L1602 fixture: the first bond is in its last month, and the line is the benchmark the roll will reopen
-  - L1613 fixture: the benchmark line is a two-year line the households and the bank each hold part of
-  - L1615 fixture: the central bank holds the first bond, which falls due next month and is not the line
-  - L1618 fixture: the plan rolls the central bank's whole par, nets none of it and leaves the market nothing
-  - L1621 fixture: nothing is sold between the presses
-  - L1622 fixture: ...and the central bank's book is at its dial, so none of it runs off or is bought on
-  - L1636 fixture: the sale reopened the same line - no new piece - and has yet to settle
-  - L1640 fixture: the households and the bank each hold part of the line, and the central bank the first bond
-  - L1645 fixture: the plan rolls the central bank's whole par, nets none of it, and sells the market nothing more
-  - L1648 fixture: term paper was sold between the presses, and the central bank is at its dial
-- **L1725 20. last year's surplus pays the market's part first, then the central bank's par**
-  - L1766 fixture: the treasury sold a small two-year serial
-  - L1778 fixture: the central bank at its dial holds part of the slice
-  - L1780 fixture: last year's surplus, unused, is more than all of the slice
-  - L1790 S nets all of what falls due
-  - L1791 ...the market's part first, then all of the central bank's par
-  - L1792 ...so it rolls nothing at issue
-  - L1793 ...and nothing is sold to the market
-  - L1796 no add-on is issued
-  - L1797 ...nor any other paper
-  - L1798 its maturing par is paid off, repaid it at the maturity
-  - L1799 ...and off its book
-  - L1800 the one ledger carries what was netted, once
-  - L1801 ...and the serial is down by the slice
-  - L1810 with less, S is what the treasury can net
-  - L1811 ...the market's part netted first, then what is left of S off the central bank's par
-  - L1813 ...and it rolls the remainder
-  - L1814 ...with nothing sold to the market
-  - L1817 the add-on is the remainder
-  - L1819 ...issued it alone, one serial like the one falling due
-  - L1821 ...its face the remainder
-  - L1822 ...all of it the central bank's but what the step then sold on to the bank
-  - L1824 ...at its quote's price on each unit of face
-  - L1826 its whole maturing par is repaid it
-  - L1830 with the market's part paid down, the remainder left it over its dial, and the step sold to the bank
-  - L1832 ...back to its dial's share of the term paper
-  - L1834 ...its book what it held, less the part of its par the surplus paid, less what it sold
-  - L1836 the one ledger carries S, once
-  - L1847 through a save: the paper issued it alone is there
-  - L1848 ...its par the central bank's
-  - L1849 ...the central bank's book
-  - L1850 ...what it has rolled at issue since founding
-  - L1852 ...and the ledger: what the year's surplus has paid
-  - L1856 a month on, both hold the same
-  - L1857 ...and have made the same money
-- **L1975 21. how strict: Standard is the old rule to the bit, loose minds low inflation as Standard does, and neither end spirals**
-  - L2018 ...and a new city's is Standard: its rule, advice, neutral rate and holdingRate() are the old
-  - L2023 very strict aims STRICTEST_AIM under the target
-  - L2024 ...never under MIN_INFLATION_TARGET: at half that target it aims at the bottom
-  - L2045 a strict step on its aim sets the neutral real rate plus the aim
-  - L2046 a loose step holds the neutral rate from the target to the top of its band
-  - L2047 ...and past the top answers only the excess, at its weight
-  - L2078 every step's weight is over one: past its band, inflation makes money dearer
-  - L2079 three points over the target, each step sets more than the one looser
-  - L2080 the words: Standard aims at the target
-  - L2082 ...very strict under it, at its aim:
-  - L2085 ...very loose acts only past its band, or under the target (0.7.81; under the band until then):
-  - L2097 fixture: the city is at its branch, on the rule, at Standard and the default target
-  - L2173 the Policy tab's preview at the step in force is the rule's own, to the bit
-  - L2205 fixture: each city of the set is at its branch, on the rule, at Standard and the default target
-  - L2210 STRICT_SHARE is over a half, so a set that holds the share holds the median too
-  - L2258 ...and its last year is within a full miss of the target, no spiral
-  - L2261 very loose costs trust, through the lean measured against holding the target
-  - L2269 setting it is a decision on the central bank's record
-  - L2276 it survives a save
-  - L2279 fixture: the save carries it by name
-  - L2287 a save without it reads Standard
-  - L2289 ...as does a name this build does not know
+  - L694 fixture: there is a year of prices to read
+  - L697 fixture: the rule wants something else
+  - L699 with the rule's hand on it, the month opens with the dial where the rule says
+  - L702 the player's hand takes it back
+  - L704 ...and the rule leaves it where the player put it
+  - L713 the toggle survives a save
+  - L720 ...off, too
+  - L721 ...and a dial at 0% reloads at 0%, not the 3% default
+- **L725 9. the save**
+  - L733 fixture: advances and arrears to carry
+  - L744 the central bank's whole balance sheet reloads exactly
+  - L745 ...M0
+  - L746 ...what the treasury owes it
+  - L748 ...the ceiling
+  - L749 ...and the arrears, line by line
+  - L751 ...and M2
+  - L753 ...and a year of M0 behind it
+- **L756 8. a currency reform**
+  - L764 fixture: the reform happened
+  - L765 M0 is a hundredth
+  - L766 ...the treasury's advances
+  - L767 ...the bank's at the window
+  - L768 ...the loss carried
+  - L769 ...printed since founding
+  - L770 ...the ceiling
+  - L771 ...and the arrears
+  - L772 but the policy rate is the policy rate
+  - L773 ...the advances against the ceiling are where they were
+  - L775 ...and M0 against M2
+  - L778 ...and the first month in the new money closes
+- **L780 10. an old save**
+  - L786 fixture: the city carries a note
+  - L792 fixture: the save carried
+  - L801 it loads
+  - L803 with an empty central bank: nothing made
+  - L804 ...nothing advanced
+  - L805 ...nothing printed
+  - L806 ...nothing owed in arrears
+  - L807 ...and the player's hand on the dial
+  - L810 and it runs, closing the audit and the M0 identity every month
+  - L814 ...and runs its note off
+  - L817 a new game after a load founds a fresh central bank
+  - L819 ...with nothing owed
+- **L851 11. the holdings dial buys the bank's term paper with money it makes**
+  - L880 fixture: the treasury sold a twenty-year bond
+  - L891 fixture: ...and the bank holds all of it
+  - L893 fixture: ...and the central bank none
+  - L894 with nothing held, the long end is the table's premium over the note
+  - L908 after one month the central bank holds QE_SPEED x 30% of it, at face
+  - L910 ...which is what the paper says it holds
+  - L911 it paid the market value at the curve
+  - L912 ...and the bank was paid exactly that
+  - L913 ...money it made: the audit's issue carries the price
+  - L916 ...and M0 moved by exactly what it made less what it destroyed
+  - L918 the bank's book fell by the face
+  - L919 ...and its book on the bank's own sheet with it
+  - L920 the bank booked its gain against what it carried the paper at
+  - L922 ...and the central bank its own against face, into the month's profit
+  - L925 compression(240) is the twenty-year premium times the share held over the share it is whole at
+  - L928 the twenty-year rate sits exactly compression(240) under the table
+  - L930 ...and the note carries none of it
+  - L931 ...so the short end is where it was: the dial and the spreads
+- **L936 12. the coupon on its share is the central bank's, destroyed, and remitted**
+  - L941 the coupon on its share arrived at the central bank
+  - L942 ...and was destroyed with the rest of what it took back
+  - L946 the month's profit carries it
+  - L948 ...owed back to the treasury once any loss is made good
+  - L951 ...and remitted the month after
+- **L954 13. the dial to nothing sells it back, and the curve returns to the table**
+  - L956 fixture: the central bank holds some of the bond
+  - L967 the dial to 0 sells it all back within the speed's months
+  - L968 ...the paper agrees
+  - L969 ...a step at a time, not in one month
+  - L970 money retired equals what the bank paid
+  - L971 ...and the curve returns to the table
+- **L974 14. the holdings survive a save**
+  - L978 fixture: holdings to carry
+  - L984 fixture: the dial was moved, so the setting before it is not the dial
+  - L994 the paper it holds
+  - L995 ...the dial
+  - L996 ...and the setting before it, which sets the pace
+  - L998 ...so the reloaded city steps at the same pace
+  - L1000 ...what the paper says it holds
+  - L1002 ...and the long end of the curve
+- **L1005 15. a reform scales the holdings and not the dial**
+  - L1010 fixture: the reform happened
+  - L1011 the paper it holds is a hundredth
+  - L1012 ...on the paper too
+  - L1013 the dial does not move
+  - L1014 ...nor the compression it buys
+  - L1017 ...and the first month in the new money closes
+- **L1029 16. the ceiling is the player's dial, up to three years of revenue**
+  - L1047 a city opens at the default
+  - L1049 fixture: a year of revenue to set it on, nothing owed, nothing in arrears
+  - L1058 ...which is DEFAULT_ADVANCES_MONTHS of trailing revenue
+  - L1061 fixture: overdrawn by the whole ceiling, the treasury has no room
+  - L1063 ...so a purchase is refused
+  - L1066 set to twelve months, the ceiling doubles
+  - L1067 ...and the room is the six months it added
+  - L1068 ...so the same purchase is paid, overdrawing further
+  - L1074 a treasury that was at the old ceiling draws past it
+  - L1076 ...and is still inside the new one
+  - L1078 the dial stops at MAX_ADVANCES_CEILING
+  - L1081 ...and at nothing below
+  - L1090 the setting survives a save
+  - L1091 ...and so the ceiling
+  - L1095 fixture: the save carried the dial under its own key
+  - L1102 a save from before the dial reads the default: six months, the constant it was
+  - L1108 fixture: the reform happened
+  - L1109 a reform does not move the dial: months are not money
+  - L1110 ...while the ceiling, which is money, is a hundredth
+- **L1130 17. the dial takes the whole of the paper, and the compression is whole from half**
+  - L1133 the dial takes MAX_QE_SHARE
+  - L1134 ...which is all of the term paper, Jerus's 100%
+  - L1136 ...and no more
+  - L1138 ...as the load path restores it, unclamped at a half
+  - L1143 fixture: twenty-year paper carries the table's twenty-year premium
+  - L1146 at a quarter held, half the premium, as it always was
+  - L1153 ...so the long end over the note is flat at the whole book
+- **L1158 18. the floor is split by who holds the paper**
+  - L1172 fixture: the bank at the window - its cost of funds over the policy rate
+  - L1174 the central bank holding nothing, the floor is 0.7.14's, to the bit
+  - L1176 ...and so is the bank's own floor beside it
+  - L1180 fixture: it holds all the term paper
+  - L1181 ...which is three quarters of the city's paper, the note the bank's
+  - L1183 the floor is the policy rate on its share and the bank's on the rest
+  - L1185 ...and the bank's own floor has not moved
+  - L1186 the short end moves with it: the note sits on the split floor
+  - L1188 ...lower than it was with the bank holding everything
+  - L1190 what another dial would be quoted splits the same way
+  - L1201 in between, proportional: a quarter, a half and three quarters held
+  - L1212 the central bank holding all of it, the floor is the policy rate
+  - L1214 ...whatever the bank's money costs it
+  - L1216 ...even ten points dearer
+- **L1261 19. what the central bank holds of a maturing piece it takes again at issue, par for par**
+  - L1284 fixture: the treasury sold a five-year serial
+  - L1296 fixture: the households, the bank and the central bank each hold part of it
+  - L1298 fixture: ...the central bank its dial's share of the term paper, and no more
+  - L1314 fixture: a slice falls due next month and the central bank holds part of it
+  - L1316 the plan names its par in what falls due
+  - L1317 ...and, at its dial, rolls all of it
+  - L1318 ...so the market's issue is sized for the rest, less what is netted
+  - L1320 fixture: ...nothing netted, and the rest is issued
+  - L1323 the rollover sold one piece, a serial like the one falling due
+  - L1326 it holds exactly its maturing par of the new paper, from issue
+  - L1327 ...which is what its books say it rolled
+  - L1328 ...paid at the issue's price on each unit of face
+  - L1330 ...under par, as the market paid
+  - L1331 the bank's book of the new issue excludes its par: the bank, the households, the businesses and the world hold the market's face
+  - L1334 ...and the households took part of it
+  - L1335 ...for which they, the businesses, the world and the bank paid what the rollover raised, and no more
+  - L1338 ...which is what the bank's own book carries
+  - L1340 ...and the households' cells hold what the paper says they do
+  - L1342 the treasury repaid it its maturing par, as it always has
+  - L1343 so it holds what it held: the replacement in, the maturing par out
+  - L1348 a month on it buys its dial's share of what the roll capitalised, and not its par back
+  - L1350 ...which puts it at its dial of the term paper
+  - L1357 by hand, the plan still names its par
+  - L1361 fixture: by hand, the one term loan the player sold in the gap
+  - L1363 the player's issue the month its holding falls due carries its par on top
+  - L1365 ...at that issue's price on each unit of face
+  - L1375 by hand with nothing sold, there is nothing to add it on to
+  - L1376 ...and its holding runs off, repaid it
+  - L1377 ...off its book
+  - L1386 fixture: its dial under what it holds, by more than its par in the slice
+  - L1389 in its QT the plan rolls nothing of its own
+  - L1390 ...all of its par runs off
+  - L1391 ...and the market's issue is sized for all of what falls due, less what is netted
+  - L1394 it takes nothing at issue
+  - L1397 ...holds none of the new paper
+  - L1398 ...and what it held of the slice is repaid it
+  - L1409 fixture: over its dial by less than its par in the slice
+  - L1411 over its dial, it rolls its par less how far over it is
+  - L1412 ...that much runs off
+  - L1413 ...and the market's issue is sized for the rest
+  - L1418 it holds that much of the new paper
+  - L1419 ...so what it held past its dial ran off, and the rest was rolled
+  - L1431 fixture: it holds all of the term paper
+  - L1435 the plan rolls all of what falls due as its own
+  - L1439 ...so there is nothing for the market to be sold
+  - L1442 the rollover issues it one serial like the one falling due
+  - L1445 ...its par exactly, all of it the central bank's
+  - L1446 ...none of it the bank's
+  - L1447 ...paid for at its quote's price on each unit of face
+  - L1449 ...under par, and settled: nobody owes for it
+  - L1451 so it holds what it held, the whole of the term paper
+  - L1452 ...all of it
+  - L1466 through a save: the new paper is there
+  - L1467 ...the central bank's par in it
+  - L1468 ...the households'
+  - L1469 ...its discount still to accrete
+  - L1470 ...the central bank's book
+  - L1471 ...what it has rolled at issue since founding
+  - L1473 ...and paid for it
+  - L1476 a month on, both hold the same
+  - L1477 ...and have made the same money
+  - L1595 fixture: the treasury sold a two-year term bond
+  - L1600 fixture: the central bank took the whole of the first bond, through its dial
+  - L1609 fixture: the treasury sold a new line of the same term with the first bond two months from its end
+  - L1616 fixture: the households and the bank each hold part of the line
+  - L1618 fixture: the first bond is in its last month, and the line is the benchmark the roll will reopen
+  - L1629 fixture: the benchmark line is a two-year line the households and the bank each hold part of
+  - L1631 fixture: the central bank holds the first bond, which falls due next month and is not the line
+  - L1634 fixture: the plan rolls the central bank's whole par, nets none of it and leaves the market nothing
+  - L1637 fixture: nothing is sold between the presses
+  - L1638 fixture: ...and the central bank's book is at its dial, so none of it runs off or is bought on
+  - L1652 fixture: the sale reopened the same line - no new piece - and has yet to settle
+  - L1656 fixture: the households and the bank each hold part of the line, and the central bank the first bond
+  - L1661 fixture: the plan rolls the central bank's whole par, nets none of it, and sells the market nothing more
+  - L1664 fixture: term paper was sold between the presses, and the central bank is at its dial
+- **L1741 20. last year's surplus pays the market's part first, then the central bank's par**
+  - L1782 fixture: the treasury sold a small two-year serial
+  - L1794 fixture: the central bank at its dial holds part of the slice
+  - L1796 fixture: last year's surplus, unused, is more than all of the slice
+  - L1806 S nets all of what falls due
+  - L1807 ...the market's part first, then all of the central bank's par
+  - L1808 ...so it rolls nothing at issue
+  - L1809 ...and nothing is sold to the market
+  - L1812 no add-on is issued
+  - L1813 ...nor any other paper
+  - L1814 its maturing par is paid off, repaid it at the maturity
+  - L1815 ...and off its book
+  - L1816 the one ledger carries what was netted, once
+  - L1817 ...and the serial is down by the slice
+  - L1826 with less, S is what the treasury can net
+  - L1827 ...the market's part netted first, then what is left of S off the central bank's par
+  - L1829 ...and it rolls the remainder
+  - L1830 ...with nothing sold to the market
+  - L1833 the add-on is the remainder
+  - L1835 ...issued it alone, one serial like the one falling due
+  - L1837 ...its face the remainder
+  - L1838 ...all of it the central bank's but what the step then sold on to the bank
+  - L1840 ...at its quote's price on each unit of face
+  - L1842 its whole maturing par is repaid it
+  - L1846 with the market's part paid down, the remainder left it over its dial, and the step sold to the bank
+  - L1848 ...back to its dial's share of the term paper
+  - L1850 ...its book what it held, less the part of its par the surplus paid, less what it sold
+  - L1852 the one ledger carries S, once
+  - L1863 through a save: the paper issued it alone is there
+  - L1864 ...its par the central bank's
+  - L1865 ...the central bank's book
+  - L1866 ...what it has rolled at issue since founding
+  - L1868 ...and the ledger: what the year's surplus has paid
+  - L1872 a month on, both hold the same
+  - L1873 ...and have made the same money
+- **L1991 21. how strict: Standard is the old rule to the bit, loose minds low inflation as Standard does, and neither end spirals**
+  - L2034 ...and a new city's is Standard: its rule, advice, neutral rate and holdingRate() are the old
+  - L2039 very strict aims STRICTEST_AIM under the target
+  - L2040 ...never under MIN_INFLATION_TARGET: at half that target it aims at the bottom
+  - L2061 a strict step on its aim sets the neutral real rate plus the aim
+  - L2062 a loose step holds the neutral rate from the target to the top of its band
+  - L2063 ...and past the top answers only the excess, at its weight
+  - L2094 every step's weight is over one: past its band, inflation makes money dearer
+  - L2095 three points over the target, each step sets more than the one looser
+  - L2096 the words: Standard aims at the target
+  - L2098 ...very strict under it, at its aim:
+  - L2101 ...very loose acts only past its band, or under the target (0.7.81; under the band until then):
+  - L2113 fixture: the city is at its branch, on the rule, at Standard and the default target
+  - L2189 the Policy tab's preview at the step in force is the rule's own, to the bit
+  - L2221 fixture: each city of the set is at its branch, on the rule, at Standard and the default target
+  - L2226 STRICT_SHARE is over a half, so a set that holds the share holds the median too
+  - L2274 ...and its last year is within a full miss of the target, no spiral
+  - L2277 very loose costs trust, through the lean measured against holding the target
+  - L2285 setting it is a decision on the central bank's record
+  - L2292 it survives a save
+  - L2295 fixture: the save carries it by name
+  - L2303 a save without it reads Standard
+  - L2305 ...as does a name this build does not know
 
 ## ChartCheck.java - 111 labelled assertions
 
@@ -4451,45 +4454,45 @@ _(this harness does not label its checks through a helper - it prints its findin
 > (runs/fixN2-notes.md). Since 0.7.71 ids 15, 16 and 17 are centres of 80,
 > ...
 
-- **L250 1. three centres, a place cheaper the bigger**
-  - L262 ids 15, 16 and 17 are childcare (
-  - L263 ...named centres, and no building in the catalogue is a daycare any more (
-  - L292 every centre keeps between Ontario's infant (3:10) and preschool (1:8) ratios: children an adult
-- **L299 2. the size that fits the need**
-  - L310 fixture: the town sixteen times over lacks more places than five Large Childcare Centres hold
-  - L314 ...and short of thousands it is not the Small Childcare Centre (
-  - L327 fixture: the town four times over lacks more places than one Large Childcare Centre holds
-  - L345 ...where the advice still orders
-  - L361 Build's childcare page shows the three centres
-  - L375 the card is the centre whose order over its life - quote, ground and running - over the places it will fill
-  - L378 ...its figure is that, recomputed here, to the bit
-- **L384 3. a city's buildings keep their type**
-  - L398 a save holds the city's buildings by id: index 15 holds
-  - L403 ...and loads as that many of id 15, the Small Childcare Centre
-  - L405 ...with its places: the founding's and
-  - L414 ...its posts:
-  - L424 overbuilt so, the advice says nothing for childcare
-  - L428 ...nor does the overview, and NEEDS YOU does not list childcare
-- **L435 4. the test player's rule (-Dplaytest.childcare)**
-  - L439 fixture: NEEDS YOU lists the town's childcare
-  - L450 it orders the advice's card
-  - L455 ...and that is what went on site:
-  - L469 overbuilt, it orders nothing
-- **L475 5. the map draws a centre as care**
-  - L483 id 15 is drawn as care, not as a home
-  - L486 ...and home care (22) still as a home
-- **L492 6. the places a city wants at real demand (0.7.139)**
-  - L494 a baby wants the share of under-6s in centre-based care of a place
-  - L496 ...a child the share of 6-to-12s in a before- or after-school programme
-  - L502 ...and nobody else any
-  - L505 childcare counts places, as senior care does, and general care heads
-  - L513 fixture: the pyramid holds its 4,000 babies and 5,000 children
-  - L516 a city of 4,000 babies and 5,000 children wants their places at those weights
-  - L522 the founding's nursery is twelve hundred people's babies and children at those weights
-  - L531 fixture: the catalogue has the Large Childcare Centre
-  - L549 fixture: NEEDS YOU has a childcare row for the city
-  - L550 NEEDS YOU's childcare row wants those places
-  - L555 ...and the month's coverage is its places over them, times the share who can pay
+- **L259 1. three centres, a place cheaper the bigger**
+  - L271 ids 15, 16 and 17 are childcare (
+  - L272 ...named centres, and no building in the catalogue is a daycare any more (
+  - L301 every centre keeps between Ontario's infant (3:10) and preschool (1:8) ratios: children an adult
+- **L308 2. the size that fits the need**
+  - L319 fixture: the town sixteen times over lacks more places than five Large Childcare Centres hold
+  - L323 ...and short of thousands it is not the Small Childcare Centre (
+  - L336 fixture: the town four times over lacks more places than one Large Childcare Centre holds
+  - L354 ...where the advice still orders
+  - L370 Build's childcare page shows the three centres
+  - L384 the card is the centre whose order over its life - quote, ground and running - over the places it will fill
+  - L387 ...its figure is that, recomputed here, to the bit
+- **L393 3. a city's buildings keep their type**
+  - L407 a save holds the city's buildings by id: index 15 holds
+  - L412 ...and loads as that many of id 15, the Small Childcare Centre
+  - L414 ...with its places: the founding's and
+  - L423 ...its posts:
+  - L433 overbuilt so, the advice says nothing for childcare
+  - L437 ...nor does the overview, and NEEDS YOU does not list childcare
+- **L444 4. the test player's rule (-Dplaytest.childcare)**
+  - L448 fixture: NEEDS YOU lists the town's childcare
+  - L459 it orders the advice's card
+  - L464 ...and that is what went on site:
+  - L478 overbuilt, it orders nothing
+- **L484 5. the map draws a centre as care**
+  - L492 id 15 is drawn as care, not as a home
+  - L495 ...and home care (22) still as a home
+- **L501 6. the places a city wants at real demand (0.7.139)**
+  - L503 a baby wants the share of under-6s in centre-based care of a place
+  - L505 ...a child the share of 6-to-12s in a before- or after-school programme
+  - L511 ...and nobody else any
+  - L514 childcare counts places, as senior care does, and general care heads
+  - L522 fixture: the pyramid holds its 4,000 babies and 5,000 children
+  - L525 a city of 4,000 babies and 5,000 children wants their places at those weights
+  - L531 the founding's nursery is twelve hundred people's babies and children at those weights
+  - L540 fixture: the catalogue has the Large Childcare Centre
+  - L558 fixture: NEEDS YOU has a childcare row for the city
+  - L559 NEEDS YOU's childcare row wants those places
+  - L564 ...and the month's coverage is its places over them, times the share who can pay
 
 ## ClockCheck.java - 35 labelled assertions
 
@@ -4672,172 +4675,172 @@ _(this harness does not label its checks through a helper - it prints its findin
 > so this is the only place it is played.
 > ...
 
-- **L201 1. the overtime table: the report's figures, week by week, and time and a half**
-  - L208 month 1's factor: weeks 0 to 4.33 of the table, each week weighted
-  - L210 month 2's: weeks 4.33 to 8.67
-  - L211 month 3's: weeks 8.67 to 13
-  - L212 month 4's and after: the last step, 0.750
-  - L213 ...and month 12's
-  - L218 a month's work on overtime is the factor x 50/40
-  - L220 month 1 does about 1.14 times a normal month's work
-  - L222 month 2 about 1.02 times (within 0.01 of the brief's estimate, 1.03)
-  - L223 month 3 LESS than a normal month, about 0.94
-  - L225 the wage bill on overtime is (40 + 10 x 1.5) / 40
-  - L227 ...1.375, so the premium is 0.375 of the bill
-  - L228 demolition is 5% of the work: $14,855 over $289,415 is 5.1%, taken at 5%
-- **L235 2. no order: the rule's own split, to the bit**
-  - L239 fixture: the city has sites of its own and the landlords one
-  - L242 fixture: the twins stand alike, to the bit
-  - L244 a city whose player has done nothing is not engaged
-  - L253 its plan is the rule's shares, every slot to the bit
-  - L257 an order set and taken back leaves the twin not engaged
-  - L267 ...and plays the month as the untouched city does: every site, to the bit
-  - L269 ...and its treasury
-  - L270 the month's advance applied no plan of the hand's
-- **L276 3. priority: the city's share, top down in the player's order; nobody else's moves**
-  - L284 setting an order moves no money
-  - L285 ...and engages the hand
-  - L290 fixture: the month applied the city's order
-  - L299 every site not the city's keeps the rule's share, to the bit
-  - L300 the city's sites together keep the share the rule gave them
-  - L309 ...handed out top down: each what it owes, at most, of what is left
-  - L311 fixture: the first in the order owes more than the rule gave it
-  - L313 ...so it took more than the rule's share
-  - L315 the landlords' site built the month the twin without an order built
-  - L318 the builders built the same points in all
-- **L324 4. rush: the table's work for 1.375 times the wages, paid out as wages**
-  - L328 fixture: the University is the city's own site
-  - L330 a rush moves no money when it is set
-  - L331 a landlords' site cannot be rushed
-  - L348 month
-  - L350 its work is its share x 50/40 x the month's factor
-  - L352 ...and is what the site was built by
-  - L353 ...its progress moved by it
-  - L354 the wage bill a point is a depot's posts at today's wages over its points
-  - L356 the premium is 0.375 of its crews' bill
-  - L358 the treasury paid it with the builders' tax in it
-  - L360 ...which the builders earned
-  - L365 the builders pay the premium out as wages
-  - L372 ...which the households are paid, on top of the posts' wages
-  - L374 month 3 does less than a normal month's work on the share
-  - L378 after month 2 the inbox says the third month costs more than it gains
-  - L384 a month off overtime: the site was not worked on it
-  - L386 ...and its count is forgotten
-  - L387 ...and the inbox's notice is settled
-  - L392 rushed again, it starts at month 1
-- **L398 5. cancel: the contract left comes back; the shell keeps its work and its ground**
-  - L405 fixture: the city's Middle Schools are part built
-  - L407 a landlords' site cannot be cancelled
-  - L410 a cancel moves no money until the month's end
-  - L422 the month's end stopped it: one refund
-  - L425 fixture: the month's work did not finish it
-  - L426 the refund is the city's contract left after the month's work
-  - L428 ...the allowance not drawn in it
-  - L436 the builders' book fell by the month's work and by the refund, no more
-  - L440 a shell stands
-  - L441 ...with the buildings that were on site
-  - L442 ...the work in them
-  - L443 ...and the material they had still to draw
-  - L444 the site has nothing on it, and no contract of the city's
-  - L446 the shell holds its ground
-  - L447 ...the land office still has it allocated
-  - L450 a month on, a shell gets no crews: its work is where it stopped
-  - L455 a restart's work is the remainder's non-material cost at today's wages, at the builders' multiple
-  - L457 ...its material what the shell has still to draw
-  - L458 ...priced by the builders' rule, the tax in it
-  - L463 a restart moves the money from the treasury to the builders' book, no more
-  - L465 ...the treasury paid the quote
-  - L466 ...into the builders' book
-  - L467 its buildings are back on site, the shell gone
-  - L469 ...with the work they held
-- **L475 6. demolition: 5% of the work; closed as the next month starts; material to the builders, ground back**
-  - L480 fixture: the city has three schools standing
-  - L481 the city's own to demolish; a landlords' House is not
-  - L484 its work is 5% of the template's points
-  - L486 its price is that share of the building's work at the builders' rate today, at their multiple (FC1)
-  - L490 ...no material, and the tax in it
-  - L497 the order moves money from the treasury to the builders' book only
-  - L498 ...the treasury paid the quote
-  - L499 until the month starts the two still stand, and no third can be ordered twice
-  - L502 ...and hold their own ground, once
-  - L504 a demolition is on site, the city's
-  - L511 as the month after the order starts, they close: one school stands
-  - L513 ...its school places gone with them
-  - L517 ...and their posts
-  - L518 the ground is held until the demolition is done
-  - L523 it finished, in
-  - L527 its material was sold
-  - L529 ...the share of the material the buildings held a demolition recovers (SALVAGE_SHARE)
-  - L531 ...less than all of it: the rest is debris, and fetches nothing
-  - L533 ...as much as the builders' cash covered
-  - L534 ...paid for at the price it was sold at
-  - L535 ...into the treasury, on the journal
-  - L540 ...where the treasury's bridge names it
-  - L541 its ground came back
-  - L542 ...free on the land office's books
-  - L544 the inbox says it is done
-  - L562 the rule: the builders buy the material at the materials market's price
-  - L564 ...as much of it as their cash covers
-  - L565 ...and the treasury has what they paid
-  - L566 ...out of their till
-  - L567 ...money between two pools, no more
-  - L568 ...and the ground is free
-- **L574 7. buy-out: market value and the business loss, to the owner; its debts its own**
-  - L579 a landlords' House is bought out, not demolished outright
-  - L582 fixture: there is a quote
-  - L585 the building at its owner's value: its cash cost and its material at today's price
-  - L587 its ground at the land market's price
-  - L590 its share of its owner's buildings, at that value
-  - L591 the business loss: that share of the operating income, for a replacement's months
-  - L593 ...and nothing for a loss
-  - L604 fixture: every home is taken - the households outnumber the homes
-  - L606 the buy-out moves money between the pools only
-  - L607 the owner's cash rose by exactly the compensation
-  - L608 the treasury paid it and the demolition
-  - L609 the owner still owes what it owed
-  - L613 the purchase is on record
-  - L615 its demolition is on site
-  - L618 the month starts with the Houses gone: what stands is what stood, less them, and the month's new ones
-  - L620 ...and the households who lived in them are not deleted: the families did not fall with the homes
-  - L622 ...nor the people (fixture: a growing city)
-- **L628 8. money is conserved through every one**
-  - L630 the money audit's worst month is within 0.01% of what moved
-  - L631 ...and nothing moved a pool after it
-- **L637 9. a save and a load round-trip all of it; a format-27 save loads with none**
-  - L654 fixture: an order, a rush a month in, a cancel waiting, a shell, two demolitions, a buy-out
-  - L661 saved
-  - L670 the state, every field of it, reads back as it was written
-  - L673 the overtime wages the next statement charges, to the bit
-  - L674 ...and the households' wage bill that pays them
-  - L676 the ground the shells and the demolitions hold
-  - L677 ...as the land office allocates it
-  - L681 a month on, the two treasuries agree
-  - L688 ...and every site's work, to the bit
-  - L689 ...and the hand's state
-  - L695 the save says format
-  - L712 a save without the hand's key loads
-  - L713 ...with none of it: no order, no rush, no cancel, no shell, no demolition, no buy-out
-  - L722 ...and a format-27 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
-- **L729 10. one wait for a site everywhere; an order lasts as long as its sites**
-  - L740 no order, no rush: every site's wait is waitOnSite()'s, to the bit
-  - L742 ...and a city order's quote is quoteMonths()'s
-  - L743 ...and the build quote's months with it
-  - L770 with an order set, a card's, the panel's and the Needs-you line's wait is the page's
-  - L771 ...which is everything ahead of it in the order and itself over the city's share
-  - L772 fixture: the order starves a city site the rule would have crewed
-  - L775 ...and that site reads the order's wait, not the rule's
-  - L782 a new city order's quote: a new site at the bottom of the order
-  - L785 ...and the build quote says so
-  - L794 ...one more of a city site's building joins that site where it stands in the order
-  - L803 a city site placed while an order is set is served at its bottom
-  - L807 ...and the month's end writes it into the order, at the bottom
-  - L812 fixture: none of the order's sites is left on site
-  - L813 an order with none of its sites left is cleared
-  - L816 ...so the next city site is the crews' rule's: the hand is off the queue
-  - L826 fixture: two demolitions of one Elementary School each, closed
-  - L839 the first sale is its own: all the material that comes back
-  - L840 ...the second its own: what the till had left
-  - L843 the notice says each one's sale, not the last one's twice
+- **L205 1. the overtime table: the report's figures, week by week, and time and a half**
+  - L212 month 1's factor: weeks 0 to 4.33 of the table, each week weighted
+  - L214 month 2's: weeks 4.33 to 8.67
+  - L215 month 3's: weeks 8.67 to 13
+  - L216 month 4's and after: the last step, 0.750
+  - L217 ...and month 12's
+  - L222 a month's work on overtime is the factor x 50/40
+  - L224 month 1 does about 1.14 times a normal month's work
+  - L226 month 2 about 1.02 times (within 0.01 of the brief's estimate, 1.03)
+  - L227 month 3 LESS than a normal month, about 0.94
+  - L229 the wage bill on overtime is (40 + 10 x 1.5) / 40
+  - L231 ...1.375, so the premium is 0.375 of the bill
+  - L232 demolition is 5% of the work: $14,855 over $289,415 is 5.1%, taken at 5%
+- **L239 2. no order: the rule's own split, to the bit**
+  - L243 fixture: the city has sites of its own and the landlords one
+  - L246 fixture: the twins stand alike, to the bit
+  - L248 a city whose player has done nothing is not engaged
+  - L257 its plan is the rule's shares, every slot to the bit
+  - L261 an order set and taken back leaves the twin not engaged
+  - L271 ...and plays the month as the untouched city does: every site, to the bit
+  - L273 ...and its treasury
+  - L274 the month's advance applied no plan of the hand's
+- **L280 3. priority: the city's share, top down in the player's order; nobody else's moves**
+  - L288 setting an order moves no money
+  - L289 ...and engages the hand
+  - L294 fixture: the month applied the city's order
+  - L303 every site not the city's keeps the rule's share, to the bit
+  - L304 the city's sites together keep the share the rule gave them
+  - L313 ...handed out top down: each what it owes, at most, of what is left
+  - L315 fixture: the first in the order owes more than the rule gave it
+  - L317 ...so it took more than the rule's share
+  - L319 the landlords' site built the month the twin without an order built
+  - L322 the builders built the same points in all
+- **L328 4. rush: the table's work for 1.375 times the wages, paid out as wages**
+  - L332 fixture: the University is the city's own site
+  - L334 a rush moves no money when it is set
+  - L335 a landlords' site cannot be rushed
+  - L352 month
+  - L354 its work is its share x 50/40 x the month's factor
+  - L356 ...and is what the site was built by
+  - L357 ...its progress moved by it
+  - L358 the wage bill a point is a depot's posts at today's wages over its points
+  - L360 the premium is 0.375 of its crews' bill
+  - L362 the treasury paid it with the builders' tax in it
+  - L364 ...which the builders earned
+  - L369 the builders pay the premium out as wages
+  - L376 ...which the households are paid, on top of the posts' wages
+  - L378 month 3 does less than a normal month's work on the share
+  - L382 after month 2 the inbox says the third month costs more than it gains
+  - L388 a month off overtime: the site was not worked on it
+  - L390 ...and its count is forgotten
+  - L391 ...and the inbox's notice is settled
+  - L396 rushed again, it starts at month 1
+- **L402 5. cancel: the contract left comes back; the shell keeps its work and its ground**
+  - L409 fixture: the city's Middle Schools are part built
+  - L411 a landlords' site cannot be cancelled
+  - L414 a cancel moves no money until the month's end
+  - L426 the month's end stopped it: one refund
+  - L429 fixture: the month's work did not finish it
+  - L430 the refund is the city's contract left after the month's work
+  - L432 ...the allowance not drawn in it
+  - L440 the builders' book fell by the month's work and by the refund, no more
+  - L444 a shell stands
+  - L445 ...with the buildings that were on site
+  - L446 ...the work in them
+  - L447 ...and the material they had still to draw
+  - L448 the site has nothing on it, and no contract of the city's
+  - L450 the shell holds its ground
+  - L451 ...the land office still has it allocated
+  - L454 a month on, a shell gets no crews: its work is where it stopped
+  - L459 a restart's work is the remainder's non-material cost at today's wages, at the builders' multiple
+  - L461 ...its material what the shell has still to draw
+  - L462 ...priced by the builders' rule, the tax in it
+  - L467 a restart moves the money from the treasury to the builders' book, no more
+  - L469 ...the treasury paid the quote
+  - L470 ...into the builders' book
+  - L471 its buildings are back on site, the shell gone
+  - L473 ...with the work they held
+- **L479 6. demolition: 5% of the work; closed as the next month starts; material to the builders, ground back**
+  - L484 fixture: the city has three schools standing
+  - L485 the city's own to demolish; a landlords' House is not
+  - L488 its work is 5% of the template's points
+  - L490 its price is that share of the building's work at the builders' rate today, at their multiple (FC1)
+  - L494 ...no material, and the tax in it
+  - L501 the order moves money from the treasury to the builders' book only
+  - L502 ...the treasury paid the quote
+  - L503 until the month starts the two still stand, and no third can be ordered twice
+  - L506 ...and hold their own ground, once
+  - L508 a demolition is on site, the city's
+  - L515 as the month after the order starts, they close: one school stands
+  - L517 ...its school places gone with them
+  - L521 ...and their posts
+  - L522 the ground is held until the demolition is done
+  - L527 it finished, in
+  - L531 its material was sold
+  - L533 ...the share of the material the buildings held a demolition recovers (SALVAGE_SHARE)
+  - L535 ...less than all of it: the rest is debris, and fetches nothing
+  - L537 ...as much as the builders' cash covered
+  - L538 ...paid for at the price it was sold at
+  - L539 ...into the treasury, on the journal
+  - L544 ...where the treasury's bridge names it
+  - L545 its ground came back
+  - L546 ...free on the land office's books
+  - L548 the inbox says it is done
+  - L566 the rule: the builders buy the material at the materials market's price
+  - L568 ...as much of it as their cash covers
+  - L569 ...and the treasury has what they paid
+  - L570 ...out of their till
+  - L571 ...money between two pools, no more
+  - L572 ...and the ground is free
+- **L578 7. buy-out: market value and the business loss, to the owner; its debts its own**
+  - L583 a landlords' House is bought out, not demolished outright
+  - L586 fixture: there is a quote
+  - L589 the building at its owner's value: its cash cost and its material at today's price
+  - L591 its ground at the land market's price
+  - L594 its share of its owner's buildings, at that value
+  - L595 the business loss: that share of the operating income, for a replacement's months
+  - L597 ...and nothing for a loss
+  - L608 fixture: every home is taken - the households outnumber the homes
+  - L610 the buy-out moves money between the pools only
+  - L611 the owner's cash rose by exactly the compensation
+  - L612 the treasury paid it and the demolition
+  - L613 the owner still owes what it owed
+  - L617 the purchase is on record
+  - L619 its demolition is on site
+  - L622 the month starts with the Houses gone: what stands is what stood, less them, and the month's new ones
+  - L624 ...and the households who lived in them are not deleted: the families did not fall with the homes
+  - L626 ...nor the people (fixture: a growing city)
+- **L632 8. money is conserved through every one**
+  - L634 the money audit's worst month is within 0.01% of what moved
+  - L635 ...and nothing moved a pool after it
+- **L641 9. a save and a load round-trip all of it; a format-27 save loads with none**
+  - L658 fixture: an order, a rush a month in, a cancel waiting, a shell, two demolitions, a buy-out
+  - L665 saved
+  - L674 the state, every field of it, reads back as it was written
+  - L677 the overtime wages the next statement charges, to the bit
+  - L678 ...and the households' wage bill that pays them
+  - L680 the ground the shells and the demolitions hold
+  - L681 ...as the land office allocates it
+  - L685 a month on, the two treasuries agree
+  - L692 ...and every site's work, to the bit
+  - L693 ...and the hand's state
+  - L699 the save says format
+  - L716 a save without the hand's key loads
+  - L717 ...with none of it: no order, no rush, no cancel, no shell, no demolition, no buy-out
+  - L726 ...and a format-27 save is refused since 0.7.120, below the floor: in P7's words, nothing of it applied, its file as it was
+- **L733 10. one wait for a site everywhere; an order lasts as long as its sites**
+  - L744 no order, no rush: every site's wait is waitOnSite()'s, to the bit
+  - L746 ...and a city order's quote is quoteMonths()'s
+  - L747 ...and the build quote's months with it
+  - L774 with an order set, a card's, the panel's and the Needs-you line's wait is the page's
+  - L775 ...which is everything ahead of it in the order and itself over the city's share
+  - L776 fixture: the order starves a city site the rule would have crewed
+  - L779 ...and that site reads the order's wait, not the rule's
+  - L786 a new city order's quote: a new site at the bottom of the order
+  - L789 ...and the build quote says so
+  - L798 ...one more of a city site's building joins that site where it stands in the order
+  - L807 a city site placed while an order is set is served at its bottom
+  - L811 ...and the month's end writes it into the order, at the bottom
+  - L816 fixture: none of the order's sites is left on site
+  - L817 an order with none of its sites left is cleared
+  - L820 ...so the next city site is the crews' rule's: the hand is off the queue
+  - L830 fixture: two demolitions of one Elementary School each, closed
+  - L843 the first sale is its own: all the material that comes back
+  - L844 ...the second its own: what the till had left
+  - L847 the notice says each one's sale, not the last one's twice
 
 ## ConstructionTrapCheck.java - 228 labelled assertions
 
@@ -9168,7 +9171,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L557 ...its month's move in credibility at nothing (0.7.45)
   - L558 ...and the level at 1, so nothing jumps: its constants are at founding money
 
-## FittingCheck.java - 190 labelled assertions
+## FittingCheck.java - 191 labelled assertions
 
 > Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city
 > founded the 1900 way, what a building that finishes comes with, and the fitting itself - ordered, paid, bought and worked, ranked with the
@@ -9269,123 +9272,124 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L618 ...where the drive pays
   - L620 the plan builds nothing: the month's decision is to fit the drive to a Bakery, one, and it builds (it spends)
   - L623 ...its reason in the planner's words: the piece, the building, what it earns a month on what it costs at the city's prices, and the rate a month
-  - L630 fixture: at three times the break-even the fitting earns more on its cost than a Bakery would (the investors' estimate over its cost of one)
-  - L633 the plan builds a Bakery and the fitting earns more on its cost: the month's decision is the fitting, and not the plan's
-  - L634 fixture: the price of coal moves to one and a half times the break-even
-  - L648 fixture: bread's price moves until a Bakery earns on its cost the mean of what the drive earns at one and a half times and at three times the break-even
-  - L651 ...where the drive still pays but earns less on its cost than a Bakery would
-  - L653 the plan builds a Bakery and the building earns more on its cost: the plan's own decision comes back, the very object
-  - L654 ...but the plan that builds nothing still gets the fitting that pays, however little
-  - L657 a tie keeps the one listed first (the building is listed first): SpreadPlanner.best() on equal earnings on cost
-  - L662 a sector with a fitting on site of its own gets the plan's decision, the very object, though the drive pays
-  - L665 ...with none on site the drive is the choice again
-  - L667 the city's own job takes the only Bakery that lacks the drive: it is not Industry's fitting, but there is none left to fit, and the plan's decision comes back
-  - L671 no stack unfitted: the plan's own decision comes back
-  - L675 a sector whose only unfitted piece is not known (Agriculture's tractor) gets its plan's decision
-  - L683 fixture: the price of coal moves to ten times the break-even and the drive pays; two Bakeries lack it, one has a long job of the city's ahead
-  - L688 one month of the real round: Industry's line says it Fitted the drive
-  - L690 ...a job of its own is on site behind the city's, the drive on the Bakery, with all its work still to do (the crews' points went to the job ahead), and the c...
-  - L694 the next round orders no second while that job is on site: still one of Industry's, and not another Fitted line
-- **L701 6. the money and the goods: the goods drawn by the builders at the city's market, the payer pays, the builders are paid, the work at the ...**
-  - L714 fixture: the drive buys machinery and nothing else, and has work; the builders are paid a point
-  - L717 fixture: two Bakeries lack the drive, and what it should cost is a price
-  - L726 Industry orders the fitting: taken (no reason given)
-  - L727 with cash above the total its cash falls by the total: the quote's goods and the work at the builders' price a point
-  - L728 ...and nothing is borrowed
-  - L729 the market's draw of machinery is the piece's units
-  - L731 ...the builders are the buyer in the market's own records, for the same units
-  - L732 ...local fills and imports together are those units (the makers' stock down, or the import up)
-  - L734 an electric drive delivers nothing into Freight's fleet: only the motor truck does
-  - L735 the builders' fitting revenue this month is the total
-  - L736 ...and the total is the draws' cost in the market's records plus the work at the price a point
-  - L738 a job is on site for it: the Bakery, the drive, Industry's, with the piece's work to do, and the count has not moved
-  - L747 with cash under the total the second order is taken too (the second Bakery lacks it)
-  - L748 ...the shortfall borrowed: the sector's debt rose and its till, after paying the whole total, is empty to a rounding
-  - L750 ...and the builders were paid the whole total
-  - L756 a third order is refused: no Bakery lacking the drive is left that is not being fitted
-  - L757 ...with nothing drawn, nothing paid and no job added
-  - L760 a piece not known in the city's year is refused, with a reason in words (the tractor)
-  - L762 a piece not on the stack's template is refused
-  - L763 ...with nothing drawn, nothing paid and no job added
-  - L772 the press after two orders: the money audit closes (what the payer spent is in the builders' pool, in the order book, until their strike banks it)
-  - L775 ...the builders' statement names the equipment fitted, at what they were paid for it
-  - L776 ...and the parts it names add up to its other revenue
-  - L777 the national accounts' construction investment is the work recognised plus the equipment fitted, once, on the builders' side
-  - L779 ...and the ledger is banked: nothing is booked for the next strike
-- **L785 7. the work: the crews work the fittings after the repairs and before the sites, in the order placed; the count falls in the month the po...**
-  - L792 the list: 3 jobs, 130 points owed, two of a on template 1 and one of b on 2, X has some on site and Z has none
-  - L794 working 60 points finishes none: the first job is worked first
-  - L796 working 40 more finishes the first and only it: the second is not touched while the points are gone (30 left)
-  - L799 working 30 more finishes the second, and the job of no points behind it with the same call, in the order placed
-  - L802 a job of no points finishes at the first call, whatever the points
-  - L806 the view is a copy: changing it moves nothing
-  - L809 restore() puts back what view() gave, and replaces what was there
-  - L812 restore(null) and clear() leave none
-  - L825 fixture: the twins stand alike, with twelve Bakeries on site each to take every point the sites are given, and the sites are offered output after the repairs
-  - L830 fixture: the city orders one drive in A
-  - L831 the output between the presses reads what the next advance will give the sites: the repairs' left less the fittings' points, whole
-  - L835 one press on: the sites in A were given exactly the points the fitting took fewer than the sites in B, the piece's work
-  - L837 ...the repairs the same in both, and the job done in the month: its count down by one and nothing left on site
-  - L839 ...and with no job on site the output is the repairs' left, to the bit, as it always was
-  - L863 fixture: a Fabrication Works stands and lacks its drive, and fitting it is more work than a month's output after the repairs
-  - L869 fixture: the city orders the Works' drive first and a Bakery's second
-  - L871 fixture: the Works' share of steam is up (a building in it lacks its drive)
-  - L888 each press worked exactly what the month left the crews after the repairs, or what was owed if less
-  - L889 the Works' drive took more than one press, as the work exceeds a month's output
-  - L890 ...its count fell only in the month its points were done, not before, and the job placed second had not been touched while the first was worked
-  - L891 ...and then both are fitted, in the order placed: the Works and the Bakery, nothing left on site
-  - L893 ...and the Works' steam share went with its count, at the month's end: the counts' at rest (nothing in its sector lacks a drive now)
-- **L900 8. one at a time: a sector with a fitting on site orders no second, and a stack whose unfitted are all on site is left out of the rank**
-  - L908 fixture: the drive pays at three times the break-even coal price, two Bakeries lack it and Industry has no job on site
-  - L911 with none on site the rank holds the drive
-  - L914 one of the two is on site: the rank still holds the other (the unfitted count less the fittings on site is 1)
-  - L916 ...but the sector has a fitting on site and orders no second: its plan's decision comes back
-  - L919 three months of the real round on, the sector still orders no second: nothing Fitted and the one job is all there is
-  - L924 a stack whose unfitted are all on site (two lack it, two are being fitted by the city) is left out of the rank, and the sector orders none
-  - L927 ...and ordering one is refused
-  - L929 ...two months of the real round on, still none ordered
-- **L935 9. the depot's trucks: the trucks a fitting buys are delivered into Freight's fleet and the builders' draw of them is the same**
-  - L944 fixture: a Truck Depot lacks its trucks, the piece buys trucks and nothing else, a month is played and the carts' horse share is up
-  - L953 Freight orders the trucks: taken
-  - L954 Freight's trucks held rose by the piece's TRUCKS, added to what it held
-  - L955 the builders' draw of TRUCKS is the same units, in the market's own count
-  - L956 ...and in the market's records: the builders are the buyer
-  - L957 Freight paid the draws' cost, and the piece has no work
-  - L958 the depot is not yet fitted (a job of no points is on site): the horse share has not moved
-  - L961 the next press works it (no points): the depot is fitted and the carts' horse share is 0
-- **L968 10. the player's Fit: the city pays whatever the verdict says, not limited to one at a time, refused with nothing drawn and nothing paid**
-  - L985 fixture: three Bakeries lack the drive and, with the city's coal at half the break-even, it does not pay (NOT_YET), and the treasury can pay
-  - L991 the player's Fit is taken though the verdict is NOT_YET: it is the player's money
-  - L992 ...the treasury fell by the total: the goods at the market and the work at the builders' price a point
-  - L993 ...a \"City\" job is on site, and the count has not moved
-  - L995 ...the units drawn are the piece's
-  - L996 ...and the builders earned the total
-  - L998 it is not limited to one at a time: a second goes on site beside the first
-  - L1007 a treasury short of the total refuses it (the city does not borrow for it), with a reason that names the treasury
-  - L1008 ...nothing drawn, nothing paid, no job added
-  - L1018 the tractor is refused: it is not known in the city's year
+  - L637 fixture: bread's price moves until a Bakery earns on its cost half of what the drive earns at three times the break-even
+  - L641 fixture: at three times the break-even the fitting earns more on its cost than a Bakery would (the investors' estimate over its cost of one)
+  - L644 the plan builds a Bakery and the fitting earns more on its cost: the month's decision is the fitting, and not the plan's
+  - L645 fixture: the price of coal moves to one and a half times the break-even
+  - L659 fixture: bread's price moves until a Bakery earns on its cost the mean of what the drive earns at one and a half times and at three times the break-even
+  - L662 ...where the drive still pays but earns less on its cost than a Bakery would
+  - L664 the plan builds a Bakery and the building earns more on its cost: the plan's own decision comes back, the very object
+  - L665 ...but the plan that builds nothing still gets the fitting that pays, however little
+  - L668 a tie keeps the one listed first (the building is listed first): SpreadPlanner.best() on equal earnings on cost
+  - L673 a sector with a fitting on site of its own gets the plan's decision, the very object, though the drive pays
+  - L676 ...with none on site the drive is the choice again
+  - L678 the city's own job takes the only Bakery that lacks the drive: it is not Industry's fitting, but there is none left to fit, and the plan's decision comes back
+  - L682 no stack unfitted: the plan's own decision comes back
+  - L686 a sector whose only unfitted piece is not known (Agriculture's tractor) gets its plan's decision
+  - L694 fixture: the price of coal moves to ten times the break-even and the drive pays; two Bakeries lack it, one has a long job of the city's ahead
+  - L699 one month of the real round: Industry's line says it Fitted the drive
+  - L701 ...a job of its own is on site behind the city's, the drive on the Bakery, with all its work still to do (the crews' points went to the job ahead), and the c...
+  - L705 the next round orders no second while that job is on site: still one of Industry's, and not another Fitted line
+- **L712 6. the money and the goods: the goods drawn by the builders at the city's market, the payer pays, the builders are paid, the work at the ...**
+  - L725 fixture: the drive buys machinery and nothing else, and has work; the builders are paid a point
+  - L728 fixture: two Bakeries lack the drive, and what it should cost is a price
+  - L737 Industry orders the fitting: taken (no reason given)
+  - L738 with cash above the total its cash falls by the total: the quote's goods and the work at the builders' price a point
+  - L739 ...and nothing is borrowed
+  - L740 the market's draw of machinery is the piece's units
+  - L742 ...the builders are the buyer in the market's own records, for the same units
+  - L743 ...local fills and imports together are those units (the makers' stock down, or the import up)
+  - L745 an electric drive delivers nothing into Freight's fleet: only the motor truck does
+  - L746 the builders' fitting revenue this month is the total
+  - L747 ...and the total is the draws' cost in the market's records plus the work at the price a point
+  - L749 a job is on site for it: the Bakery, the drive, Industry's, with the piece's work to do, and the count has not moved
+  - L758 with cash under the total the second order is taken too (the second Bakery lacks it)
+  - L759 ...the shortfall borrowed: the sector's debt rose and its till, after paying the whole total, is empty to a rounding
+  - L761 ...and the builders were paid the whole total
+  - L767 a third order is refused: no Bakery lacking the drive is left that is not being fitted
+  - L768 ...with nothing drawn, nothing paid and no job added
+  - L771 a piece not known in the city's year is refused, with a reason in words (the tractor)
+  - L773 a piece not on the stack's template is refused
+  - L774 ...with nothing drawn, nothing paid and no job added
+  - L783 the press after two orders: the money audit closes (what the payer spent is in the builders' pool, in the order book, until their strike banks it)
+  - L786 ...the builders' statement names the equipment fitted, at what they were paid for it
+  - L787 ...and the parts it names add up to its other revenue
+  - L788 the national accounts' construction investment is the work recognised plus the equipment fitted, once, on the builders' side
+  - L790 ...and the ledger is banked: nothing is booked for the next strike
+- **L796 7. the work: the crews work the fittings after the repairs and before the sites, in the order placed; the count falls in the month the po...**
+  - L803 the list: 3 jobs, 130 points owed, two of a on template 1 and one of b on 2, X has some on site and Z has none
+  - L805 working 60 points finishes none: the first job is worked first
+  - L807 working 40 more finishes the first and only it: the second is not touched while the points are gone (30 left)
+  - L810 working 30 more finishes the second, and the job of no points behind it with the same call, in the order placed
+  - L813 a job of no points finishes at the first call, whatever the points
+  - L817 the view is a copy: changing it moves nothing
+  - L820 restore() puts back what view() gave, and replaces what was there
+  - L823 restore(null) and clear() leave none
+  - L836 fixture: the twins stand alike, with twelve Bakeries on site each to take every point the sites are given, and the sites are offered output after the repairs
+  - L841 fixture: the city orders one drive in A
+  - L842 the output between the presses reads what the next advance will give the sites: the repairs' left less the fittings' points, whole
+  - L846 one press on: the sites in A were given exactly the points the fitting took fewer than the sites in B, the piece's work
+  - L848 ...the repairs the same in both, and the job done in the month: its count down by one and nothing left on site
+  - L850 ...and with no job on site the output is the repairs' left, to the bit, as it always was
+  - L874 fixture: a Fabrication Works stands and lacks its drive, and fitting it is more work than a month's output after the repairs
+  - L880 fixture: the city orders the Works' drive first and a Bakery's second
+  - L882 fixture: the Works' share of steam is up (a building in it lacks its drive)
+  - L899 each press worked exactly what the month left the crews after the repairs, or what was owed if less
+  - L900 the Works' drive took more than one press, as the work exceeds a month's output
+  - L901 ...its count fell only in the month its points were done, not before, and the job placed second had not been touched while the first was worked
+  - L902 ...and then both are fitted, in the order placed: the Works and the Bakery, nothing left on site
+  - L904 ...and the Works' steam share went with its count, at the month's end: the counts' at rest (nothing in its sector lacks a drive now)
+- **L911 8. one at a time: a sector with a fitting on site orders no second, and a stack whose unfitted are all on site is left out of the rank**
+  - L919 fixture: the drive pays at three times the break-even coal price, two Bakeries lack it and Industry has no job on site
+  - L922 with none on site the rank holds the drive
+  - L925 one of the two is on site: the rank still holds the other (the unfitted count less the fittings on site is 1)
+  - L927 ...but the sector has a fitting on site and orders no second: its plan's decision comes back
+  - L930 three months of the real round on, the sector still orders no second: nothing Fitted and the one job is all there is
+  - L935 a stack whose unfitted are all on site (two lack it, two are being fitted by the city) is left out of the rank, and the sector orders none
+  - L938 ...and ordering one is refused
+  - L940 ...two months of the real round on, still none ordered
+- **L946 9. the depot's trucks: the trucks a fitting buys are delivered into Freight's fleet and the builders' draw of them is the same**
+  - L955 fixture: a Truck Depot lacks its trucks, the piece buys trucks and nothing else, a month is played and the carts' horse share is up
+  - L964 Freight orders the trucks: taken
+  - L965 Freight's trucks held rose by the piece's TRUCKS, added to what it held
+  - L966 the builders' draw of TRUCKS is the same units, in the market's own count
+  - L967 ...and in the market's records: the builders are the buyer
+  - L968 Freight paid the draws' cost, and the piece has no work
+  - L969 the depot is not yet fitted (a job of no points is on site): the horse share has not moved
+  - L972 the next press works it (no points): the depot is fitted and the carts' horse share is 0
+- **L979 10. the player's Fit: the city pays whatever the verdict says, not limited to one at a time, refused with nothing drawn and nothing paid**
+  - L996 fixture: three Bakeries lack the drive and, with the city's coal at half the break-even, it does not pay (NOT_YET), and the treasury can pay
+  - L1002 the player's Fit is taken though the verdict is NOT_YET: it is the player's money
+  - L1003 ...the treasury fell by the total: the goods at the market and the work at the builders' price a point
+  - L1004 ...a \"City\" job is on site, and the count has not moved
+  - L1006 ...the units drawn are the piece's
+  - L1007 ...and the builders earned the total
+  - L1009 it is not limited to one at a time: a second goes on site beside the first
+  - L1018 a treasury short of the total refuses it (the city does not borrow for it), with a reason that names the treasury
   - L1019 ...nothing drawn, nothing paid, no job added
-  - L1024 the third Bakery is taken, and then every one that lacks the drive is on site
-  - L1029 a fourth is refused: every unfitted building of the stack is on site
+  - L1029 the tractor is refused: it is not known in the city's year
   - L1030 ...nothing drawn, nothing paid, no job added
-  - L1031 a template with no stack, or a piece it does not carry, is refused
-  - L1036 the press after the city's three orders: the money audit closes
-  - L1037 ...the national accounts' construction investment carries the three, once
-- **L1054 11. the save: no job, no key; the jobs saved are the jobs loaded, and a loaded city and the one it was saved from stay equal to the bit**
-  - L1065 a city with no job on site saves no fittings key
-  - L1069 ...and loads with none on site
-  - L1072 fixture: two jobs on site (the Works' first), ordered between two presses so that the builders' ledger holds their revenue
-  - L1076 a city with jobs on site saves them (the key is in the file)
-  - L1082 ...and loads without a failure, in the same month, with the same jobs in the same order, every field to the bit
-  - L1085 ...the builders' fitting revenue booked in the ledger is back, so that its strike names it
-  - L1087 the twin and the loaded city are equal to the bit in the treasury, every sector's cash, the counts and the jobs, before any press
-  - L1100 ...and equal to the bit after each press until the jobs are worked
-  - L1101 ...the jobs worked in both, the counts equal and down by one each
-  - L1106 ...and two presses beyond, equal still
-- **L1112 12. a default city orders none: a town founded the default way, played 24 months, has no job ever on site and no decision with a piece**
-  - L1127 fixture: nothing is unfitted in the town in any of the 24 months
-  - L1128 no job is on site in any of the 24 months, and the builders were paid no fitting
-  - L1129 no sector's line says Fitted in any month, and the choice hands every sector's plan back, the very object, every month
+  - L1035 the third Bakery is taken, and then every one that lacks the drive is on site
+  - L1040 a fourth is refused: every unfitted building of the stack is on site
+  - L1041 ...nothing drawn, nothing paid, no job added
+  - L1042 a template with no stack, or a piece it does not carry, is refused
+  - L1047 the press after the city's three orders: the money audit closes
+  - L1048 ...the national accounts' construction investment carries the three, once
+- **L1065 11. the save: no job, no key; the jobs saved are the jobs loaded, and a loaded city and the one it was saved from stay equal to the bit**
+  - L1076 a city with no job on site saves no fittings key
+  - L1080 ...and loads with none on site
+  - L1083 fixture: two jobs on site (the Works' first), ordered between two presses so that the builders' ledger holds their revenue
+  - L1087 a city with jobs on site saves them (the key is in the file)
+  - L1093 ...and loads without a failure, in the same month, with the same jobs in the same order, every field to the bit
+  - L1096 ...the builders' fitting revenue booked in the ledger is back, so that its strike names it
+  - L1098 the twin and the loaded city are equal to the bit in the treasury, every sector's cash, the counts and the jobs, before any press
+  - L1111 ...and equal to the bit after each press until the jobs are worked
+  - L1112 ...the jobs worked in both, the counts equal and down by one each
+  - L1117 ...and two presses beyond, equal still
+- **L1123 12. a default city orders none: a town founded the default way, played 24 months, has no job ever on site and no decision with a piece**
+  - L1138 fixture: nothing is unfitted in the town in any of the 24 months
+  - L1139 no job is on site in any of the 24 months, and the builders were paid no fitting
+  - L1140 no sector's line says Fitted in any month, and the choice hands every sector's plan back, the very object, every month
 
 ## FloatLinkCheck.java - 253 labelled assertions
 
@@ -10558,7 +10562,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L683 ...and no figure of any strip is NaN or infinite (the quote is the estimate)
 - **L687 7. the works' strip: each sector's tonnes by leg and mode, its bill by division, what a siding saves**
 
-## FundCheck.java - 234 labelled assertions
+## FundCheck.java - 236 labelled assertions
 
 > Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). Not part of the game.
 > 
@@ -10575,255 +10579,257 @@ _(this harness does not label its checks through a helper - it prints its findin
 > ...
 
 - **L175 the city**
-  - L207 fixture: a standing bank, owned by somebody other than the city
-  - L210 fixture: a constructor city resolves on the button and its fund's dial is 0
-- **L235 1. a failed bank, automatic: resolved for its shares the month it fails**
-  - L246 fixture: the bank has lost more than it owns
-  - L249 the month resolved it
-  - L255 the city paid the hole the bank failed with and the capital to reopen
-  - L257 ...the hole as the bank recorded it failing
-  - L258 ...its cash first, and the rest for the central bank to advance
-  - L260 every share passed to the city: the households', the world's and the fund's own
-  - L262 ...and it holds every one it took, in its rescue book
-  - L264 the bank failed once and is open again the same month
-  - L266 nothing arrived from outside the city: no creditor absorbed a hole
-  - L267 the audit closed on the month of the resolution
-  - L268 ...and declared the world's loss as a valuation, at its last price
-  - L272 the treasury's journal says what the city put in
-  - L276 the next month's settle advanced the treasury past the central bank's ceiling
-  - L278 ...and its audit closed too
-  - L279 the inbox said what happened, and it is settled the month after
-  - L295 fixture: twelve banks frozen on holes in the trillions
-  - L296 fixture: ...and after the resolution, equity misses the exit level by more than a billionth
-  - L297 ...and the resolution still leaves the bank open, paid for once
-- **L310 2. on the button: frozen, carrying its hole, until the player presses**
-  - L314 fixture: the setting is the button
-  - L318 a month on, it is frozen and nobody has resolved it
-  - L320 ...its hole carried, not absorbed: its equity is still under nothing
-  - L322 ...the owners still own it
-  - L324 ...and the month's audit closed
-  - L327 another month: still frozen, the failure counted once
-  - L334 pressed: the city paid the hole and the capital to reopen
-  - L335 the old owners hold nothing: no household, nobody abroad
-  - L337 the city holds every share, the count in issue unmoved
-  - L338 ...and the bank is open again
-  - L339 the next month's audit closes
-- **L341 3. dilution: the bank's new shares go to others, and the city's stake falls**
-  - L344 fixture: the city holds all of it
-  - L378 fixture: the town's fees would cover a second branch
-  - L391 fixture: the fund's rule buys nothing, its withdrawal over the default
-  - L394 fixture: a second branch stands
-  - L399 fixture: the bank sold new shares
-  - L400 the city bought none of them: its shares are what it took
-  - L401 ...so its stake fell
-  - L402 ...to what it holds over what is in issue
-  - L417 the fund's bid over the desk's new-issue ask does not fill
-  - L419 ...by rule or by hand
-  - L420 ...and the ask keeps its place for a household's bid, which does
-- **L427 4. the preferred: TARP's terms**
-  - L431 fixture: a standing bank under its minimum
-  - L437 its size is at least 1% of its risk-weighted assets and at most 3%
-  - L439 ...what takes it back to its target, inside that band
-  - L444 deeper under, it asks for 3% and says the rest is its own share issues'
-  - L454 accepted
-  - L456 the treasury paid its par, a purchase
-  - L457 ...and it is an equity line of its own, the city's
-  - L458 its warrants are struck at last month's price
-  - L459 ...on shares worth 15% of the preferred at it
-  - L460 ...for ten years
-  - L461 its dividend is 5% a year until the fifth anniversary
-  - L463 ...and 9% from it
-  - L469 fixture: its target is over its minimum
-  - L472 a month over its minimum but under its target pays the preferred nothing
-  - L473 ...and owes a twelfth of 5% of its par
-  - L475 with a dividend unpaid, the common gets nothing however much it holds
-  - L478 the next month pays the arrears and the month's, cumulative
-  - L479 ...and the common is paid again
-  - L483 over its target but in its third year, it buys no share back
-  - L486 ...and pays its common no more a share than the year before the city bought in
-  - L489 from the third anniversary it may
-  - L498 at expiry in the money, the city takes shares worth what they are over the strike
-  - L500 ...and the preferred stays
-  - L509 a failure cancels the preferred and its warrants: the hole took them
-  - L511 ...and the equity's parts move by exactly the resolution's causes: the preferred to retained,
-  - L513 ...the old owners' paid-in gone: paid in is what the city paid
-- **L526 5. repaid at its third anniversary: its capital over target, then new shares to the public**
-  - L541 fixture: a block three years old, a month's dividend on it unpaid
-  - L548 at its third anniversary a block is redeemed whole
-  - L549 ...at par with its unpaid dividends, to the city's fund
-  - L551 ...out of its capital over its target: nothing raised, no new share
-  - L553 its unpaid dividends paid with it, as a dividend
-  - L555 ...and the city's consent lifts with it
-  - L556 fixture: its warrants were worth something
-  - L557 with no preferred left, the warrants are bought back at their fair value
-  - L559 ...and nothing is left out
-  - L560 the bank's equity fell by exactly what it paid
-  - L561 ...and its three parts moved by exactly those causes: par off the preferred, the dividend out of
-  - L591 with nothing over its target, it is still redeemed whole
-  - L592 ...by an offering sized to what it owes: the par, then the warrants' value
-  - L593 ...whose shares went to the households and the world
-  - L596 ...none to the city
-  - L597 so the city's stake fell by exactly the dilution
-  - L598 the fund was paid the par and the warrants
-  - L599 the bank ends at its target, where it began
-  - L600 ...its three parts still footing: the new common paid in, the par off the preferred
-  - L620 under its target, it is redeemed whole all the same
-  - L621 ...the offering raising exactly what it pays
-  - L622 ...and its equity where it was, still under its target
-  - L641 a save before the anniversary carries the block
-  - L642 played: the month it comes due, its audit closes
-  - L643 ...and the preferred is repaid
-  - L644 ...partly with new shares sold that month
-  - L645 the reloaded city's month closes too
-  - L646 ...and repays the same
-  - L647 ...raising the same
-  - L648 ...to the same shares in issue
-  - L649 ...and the same fund
-  - L662 an offering half taken up repays half
-  - L663 ...and the rest stays due, to be repaid the next month
-  - L665 ...when it is
-  - L669 fixture: with the preferred gone its warrants are worth something, and nothing is over its target
-  - L673 an offering half taken up for the warrants buys back half their value
-  - L674 ...half of every block's warrant shares
-  - L675 ...and pays out all it raised: the bank's equity where it was
-  - L676 ...counted as a repayment left part-paid
-  - L677 the rest the next month
-  - L679 ...and none is left out
-  - L690 a failed bank repays nothing and offers no share
-- **L697 6. the offer: in the inbox, a quarter after it is declined, and through a save**
-  - L719 fixture: the bank stands, under its minimum, at the month's end
-  - L721 a standing bank under its minimum asks, at the month's end
-  - L723 ...and the inbox has it, the popup Jerus asked for
-  - L744 fixture: it stood, under its minimum, at the end of both months
-  - L745 declined, it does not ask for two months
-  - L748 ...and asks again a quarter after
-  - L753 a pending offer survives a save, its month and the refusal before it
-- **L761 7. the dial: a share of the year's surplus, the floor, and the surplus used once**
-  - L765 at 0 it takes nothing
-  - L766 at 100% it takes the year's surplus, all from the surplus
-  - L767 at 300% three times it, the extra from the treasury's cash
-  - L769 never taking the treasury under a month of its spending
-  - L770 ...the surplus's part first
-  - L772 a deficit year saves nothing
-  - L774 ...and what the rollover already netted of it is not taken again
-  - L775 through the year the rollover leaves the dial's share of the year so far
-  - L777 ...nothing at a dial of 0, which is 0.7.13's rollover
-  - L794 the press after December closed paid the dial's share in
-  - L795 ...what the rule says, from the surplus
-  - L796 ...entered on the rollover's ledger, so the rollover cannot net it again
-- **L803 8. the rule: 70/30, the 10% limit, the band, and cash that waits**
-  - L824 it bids for shares up to 70% of its market book and cash, and no further
-  - L826 ...never for more than 10% of any company
-  - L827 what does not fit waits as its cash
-  - L828 ...and nothing was lost in the placing: at the marks it is what was paid in, less its transfer
-  - L841 fixture: the rule's bids rest on the books
-  - L842 the rule's bid stands at the desk's ask
-  - L855 fixture: a listed company the households hold 15% of
-  - L859 fixture: a listed company whose households can hand the fund 5% of it
-  - L870 over 74% in shares, it asks for the excess
-  - L872 ...at fair value
-  - L875 the excess is what takes it back to 70%
-  - L876 ...and inside the band nothing is sold
-  - L878 four points under 70%, it sells the bonds over their 30%
-  - L879 ...but a fund short of shares only for want of a seller sells nothing
-  - L887 fixture: the households can hand the fund 15% of the company
-  - L894 fixture: its shares are inside the band, so it has no mix to sell for
-  - L901 over 10% of a company, it asks what is over the limit at fair value
-  - L902 ...down to the limit and no further
-- **L909 8b. the city's mark: a quote that is a last trade a year old gives way to fair value; a bid and an ask resting do not**
-  - L919 fixture: a listed company that has traded away from its fair value
-  - L926 fixture: the fund holds it and nothing else
-  - L942 fixture: a bid and an ask rest on it, the last trade older than STALE_MARK_MONTHS, and the middle of them is neither that trade nor fair value
-  - L945 a holding whose last trade is older than STALE_MARK_MONTHS but whose book has a bid and an ask resting is marked at the quote, not at fair value
-  - L958 fixture: no side rests, so the quote is the last trade
-  - L959 a holding whose last trade is older than STALE_MARK_MONTHS is marked at fair value
-  - L963 ...and the price trading reads is still the last trade
-- **L969 9. the transfer at Norway's 3%, the default: a twelfth a month, from its cash only**
-  - L978 a twelfth of 3% of all it is worth
-  - L979 ...paid from its cash
-  - L980 ...a revenue line in the budget
-  - L983 a fund worth something with no cash pays nothing
-  - L984 ...and says so
-  - L986 with some cash, what it has
-  - L987 fixture: the treasury was not what paid it
-- **L1026 the withdrawal dial**
-  - L1035 at the default the withdrawal is today's transfer to the bit
-  - L1049 the dial takes whole steps from nothing to MAX_WITHDRAWAL_STEPS
-  - L1050 ...the most of them 10% of its value a month
-  - L1063 fixture: at nothing the fund holds cash its rule places
-  - L1064 at nothing it pays nothing and sells nothing
-  - L1084 fixture: its twin at the default bids for its book with the same cash
-  - L1086 it buys nothing while over the default
-  - L1093 fixture: a market book in two companies, a rescue book, no cash and no bonds
-  - L1104 fixture: its cash could not cover the month, all of it to raise
-  - L1120 over the default, what the cash cannot cover is sold from the market book at the step, pro rata
-  - L1122 ...asked at the desk's bid, fair value less RULE_PREMIUM, where at fair value nobody bid
-  - L1124 ...and the desk's bid meets it at the step: some of it sold, into the fund's cash
-  - L1133 fixture: a bid took every share the fund asked
-  - L1138 ...and paid at the next month's top
-  - L1139 ...to the treasury with the month's own
-  - L1141 ...off the short it was counted in
-  - L1142 ...and into the paid
-  - L1143 the rescue book is never sold to pay it
-  - L1154 fixture: at the default its cash could not cover the month either
-  - L1156 at or under the default a short is not paid
-  - L1159 ...and what it asked is the band's, no more than its 30% - under what the withdrawal asked of the same fund
-- **L1166 10. the hand: its orders at fair value, and pay-in and draw-out off the surplus**
-  - L1176 a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more
-  - L1178 ...and the journal names it
-  - L1180 a draw-out moves what the fund's cash holds back
-  - L1182 the hand's order waits for the step
-  - L1184 ...and is posted at it, at fair value
-  - L1191 fixture: two orders wait for the step, one at a price the player named
-  - L1193 ...and the second can be cancelled
-  - L1195 a limit posts at its limit
-  - L1199 a cancelled order never reaches the step
-- **L1206 11. every piece through a save, and an older save's fund**
-  - L1225 the dial and the rescue setting
-  - L1226 its cash
-  - L1232 its shares, both books, on the register
-  - L1233 its bonds, on the bonds
-  - L1234 the preferred
-  - L1235 ...its arrears
-  - L1236 ...its anniversary and warrants
-  - L1239 the player's order waiting for the step
-  - L1241 its record of the offers
-  - L1243 its value
-  - L1244 fixture: the month just closed paid a transfer and bought something
-  - L1246 ...and the month's transfer and flows, which the Fund page reads, come back with it
-  - L1253 a save from before the fund loads it empty, the dial at 0, the rescue on the button
-- **L1261 12. Insane: nothing, and the ground owed abroad**
-  - L1263 D$0 and US$0 read back as Insane
-  - L1265 ...and a custom founding still takes at least D$6M
-  - L1268 the treasury holds nothing and the vault nothing
-  - L1273 it owes one piece of paper
-  - L1274 ...a dollar term loan abroad
-  - L1276 ...at 3%
-  - L1277 ...for twenty years
-  - L1281 ...for the plots it was founded on, as the land office charges ground, at the opening dollar price
-  - L1285 ...the figure the founding screen quotes for its world
-  - L1287 ...more than STARTING_SQ_FT at that price: its dry plots are a little more, and its lake is in it
-  - L1301 a day-0 city is quoted a bond
-  - L1305 ...and the note
-  - L1307 the build screen at D$0: a house asks for funding, the whole of it
-  - L1310 the land office at D$0: a plot asks for funding, and is quoted both offers
-  - L1315 borrowed, the treasury holds cash
-  - L1317 ...a month
-  - L1319 ...and its audit closes
-- **L1333 13. Insane, never borrowing: play runs on the central bank's advances**
-  - L1338 day 0: nothing in the treasury and no revenue behind it, so the central bank's ceiling is nothing
-  - L1340 ...and nothing that is not a promise may be spent
-  - L1343 ...a purchase asked of it is refused whole, and nothing is owed for it
-  - L1345 ...a discretionary line is refused, and owed as arrears
-  - L1348 ...and a promise is paid past it, taking the treasury under nothing
-  - L1377 an Insane city that never borrowed runs twelve months through the time skip
-  - L1378 ...and the audit closes every month, nothing moving after it
-  - L1379 month one pays the land bond's coupon, a twelfth of INSANE_LAND_COUPON on its face at the month's rate
-  - L1381 ...from a treasury that held nothing, which the month leaves overdrawn
-  - L1382 month two's settle: the central bank advances the whole shortfall
-  - L1383 every month's coupon is paid, the land bond owed whole and never missed
-  - L1387 nothing that is not a promise was spent past the room the month opened with
-  - L1388 ...and it borrowed nothing: the land bond is still all it owes
+  - L225 fixture: a standing bank, owned by somebody other than the city
+  - L228 fixture: a constructor city resolves on the button and its fund's dial is 0
+- **L253 1. a failed bank, automatic: resolved for its shares the month it fails**
+  - L264 fixture: the bank has lost more than it owns
+  - L266 fixture: the bank's shares were neither split nor consolidated in the resolution month, so the register counts them in one unit
+  - L269 the month resolved it
+  - L275 the city paid the hole the bank failed with and the capital to reopen
+  - L277 ...the hole as the bank recorded it failing
+  - L278 ...its cash first, and the rest for the central bank to advance
+  - L280 every share passed to the city: the households', the world's and the fund's own
+  - L282 ...and it holds every one it took, in its rescue book
+  - L284 the bank failed once and is open again the same month
+  - L286 nothing arrived from outside the city: no creditor absorbed a hole
+  - L287 the audit closed on the month of the resolution
+  - L288 ...and declared the world's loss as a valuation, at its last price
+  - L292 the treasury's journal says what the city put in
+  - L296 the next month's settle advanced the treasury past the central bank's ceiling
+  - L298 ...and its audit closed too
+  - L299 the inbox said what happened, and it is settled the month after
+  - L315 fixture: twelve banks frozen on holes in the trillions
+  - L316 fixture: ...and after the resolution, equity misses the exit level by more than a billionth
+  - L317 ...and the resolution still leaves the bank open, paid for once
+- **L330 2. on the button: frozen, carrying its hole, until the player presses**
+  - L334 fixture: the setting is the button
+  - L338 a month on, it is frozen and nobody has resolved it
+  - L340 ...its hole carried, not absorbed: its equity is still under nothing
+  - L342 ...the owners still own it
+  - L344 ...and the month's audit closed
+  - L347 another month: still frozen, the failure counted once
+  - L354 pressed: the city paid the hole and the capital to reopen
+  - L355 the old owners hold nothing: no household, nobody abroad
+  - L357 the city holds every share, the count in issue unmoved
+  - L358 ...and the bank is open again
+  - L359 the next month's audit closes
+- **L361 3. dilution: the bank's new shares go to others, and the city's stake falls**
+  - L364 fixture: the city holds all of it
+  - L398 fixture: the town's fees would cover a second branch
+  - L411 fixture: the fund's rule buys nothing, its withdrawal over the default
+  - L414 fixture: a second branch stands
+  - L419 fixture: the bank sold new shares
+  - L420 the city bought none of them: its shares are what it took
+  - L421 ...so its stake fell
+  - L422 ...to what it holds over what is in issue
+  - L437 the fund's bid over the desk's new-issue ask does not fill
+  - L439 ...by rule or by hand
+  - L440 ...and the ask keeps its place for a household's bid, which does
+- **L447 4. the preferred: TARP's terms**
+  - L451 fixture: a standing bank under its minimum
+  - L457 its size is at least 1% of its risk-weighted assets and at most 3%
+  - L459 ...what takes it back to its target, inside that band
+  - L464 deeper under, it asks for 3% and says the rest is its own share issues'
+  - L474 accepted
+  - L476 the treasury paid its par, a purchase
+  - L477 ...and it is an equity line of its own, the city's
+  - L478 its warrants are struck at last month's price
+  - L479 ...on shares worth 15% of the preferred at it
+  - L480 ...for ten years
+  - L481 its dividend is 5% a year until the fifth anniversary
+  - L483 ...and 9% from it
+  - L489 fixture: its target is over its minimum
+  - L492 a month over its minimum but under its target pays the preferred nothing
+  - L493 ...and owes a twelfth of 5% of its par
+  - L495 with a dividend unpaid, the common gets nothing however much it holds
+  - L498 the next month pays the arrears and the month's, cumulative
+  - L499 ...and the common is paid again
+  - L503 over its target but in its third year, it buys no share back
+  - L506 ...and pays its common no more a share than the year before the city bought in
+  - L509 from the third anniversary it may
+  - L518 at expiry in the money, the city takes shares worth what they are over the strike
+  - L520 ...and the preferred stays
+  - L529 a failure cancels the preferred and its warrants: the hole took them
+  - L531 ...and the equity's parts move by exactly the resolution's causes: the preferred to retained,
+  - L533 ...the old owners' paid-in gone: paid in is what the city paid
+- **L546 5. repaid at its third anniversary: its capital over target, then new shares to the public**
+  - L561 fixture: a block three years old, a month's dividend on it unpaid
+  - L568 at its third anniversary a block is redeemed whole
+  - L569 ...at par with its unpaid dividends, to the city's fund
+  - L571 ...out of its capital over its target: nothing raised, no new share
+  - L573 its unpaid dividends paid with it, as a dividend
+  - L575 ...and the city's consent lifts with it
+  - L576 fixture: its warrants were worth something
+  - L577 with no preferred left, the warrants are bought back at their fair value
+  - L579 ...and nothing is left out
+  - L580 the bank's equity fell by exactly what it paid
+  - L581 ...and its three parts moved by exactly those causes: par off the preferred, the dividend out of
+  - L611 with nothing over its target, it is still redeemed whole
+  - L612 ...by an offering sized to what it owes: the par, then the warrants' value
+  - L613 ...whose shares went to the households and the world
+  - L616 ...none to the city
+  - L617 so the city's stake fell by exactly the dilution
+  - L618 the fund was paid the par and the warrants
+  - L619 the bank ends at its target, where it began
+  - L620 ...its three parts still footing: the new common paid in, the par off the preferred
+  - L640 under its target, it is redeemed whole all the same
+  - L641 ...the offering raising exactly what it pays
+  - L642 ...and its equity where it was, still under its target
+  - L661 a save before the anniversary carries the block
+  - L662 played: the month it comes due, its audit closes
+  - L663 ...and the preferred is repaid
+  - L664 ...partly with new shares sold that month
+  - L665 the reloaded city's month closes too
+  - L666 ...and repays the same
+  - L667 ...raising the same
+  - L668 ...to the same shares in issue
+  - L669 ...and the same fund
+  - L682 an offering half taken up repays half
+  - L683 ...and the rest stays due, to be repaid the next month
+  - L685 ...when it is
+  - L689 fixture: with the preferred gone its warrants are worth something, and nothing is over its target
+  - L693 an offering half taken up for the warrants buys back half their value
+  - L694 ...half of every block's warrant shares
+  - L695 ...and pays out all it raised: the bank's equity where it was
+  - L696 ...counted as a repayment left part-paid
+  - L697 the rest the next month
+  - L699 ...and none is left out
+  - L710 a failed bank repays nothing and offers no share
+- **L717 6. the offer: in the inbox, a quarter after it is declined, and through a save**
+  - L739 fixture: the bank stands, under its minimum, at the month's end
+  - L741 a standing bank under its minimum asks, at the month's end
+  - L743 ...and the inbox has it, the popup Jerus asked for
+  - L764 fixture: it stood, under its minimum, at the end of both months
+  - L765 declined, it does not ask for two months
+  - L768 ...and asks again a quarter after
+  - L773 a pending offer survives a save, its month and the refusal before it
+- **L781 7. the dial: a share of the year's surplus, the floor, and the surplus used once**
+  - L785 at 0 it takes nothing
+  - L786 at 100% it takes the year's surplus, all from the surplus
+  - L787 at 300% three times it, the extra from the treasury's cash
+  - L789 never taking the treasury under a month of its spending
+  - L790 ...the surplus's part first
+  - L792 a deficit year saves nothing
+  - L794 ...and what the rollover already netted of it is not taken again
+  - L795 through the year the rollover leaves the dial's share of the year so far
+  - L797 ...nothing at a dial of 0, which is 0.7.13's rollover
+  - L814 the press after December closed paid the dial's share in
+  - L815 ...what the rule says, from the surplus
+  - L816 ...entered on the rollover's ledger, so the rollover cannot net it again
+- **L823 8. the rule: 70/30, the 10% limit, the band, and cash that waits**
+  - L844 it bids for shares up to 70% of its market book and cash, and no further
+  - L846 ...never for more than 10% of any company
+  - L847 what does not fit waits as its cash
+  - L848 ...and nothing was lost in the placing: at the marks it is what was paid in, less its transfer
+  - L861 fixture: the rule's bids rest on the books
+  - L862 the rule's bid stands at the desk's ask
+  - L875 fixture: a listed company the households hold 15% of
+  - L879 fixture: a listed company whose households can hand the fund 5% of it
+  - L890 over 74% in shares, it asks for the excess
+  - L892 ...at fair value
+  - L895 the excess is what takes it back to 70%
+  - L896 ...and inside the band nothing is sold
+  - L898 four points under 70%, it sells the bonds over their 30%
+  - L899 ...but a fund short of shares only for want of a seller sells nothing
+  - L907 fixture: the households can hand the fund 15% of the company
+  - L914 fixture: its shares are inside the band, so it has no mix to sell for
+  - L921 over 10% of a company, it asks what is over the limit at fair value
+  - L922 ...down to the limit and no further
+- **L929 8b. the city's mark: a quote that is a last trade a year old gives way to fair value; a bid and an ask resting do not**
+  - L939 fixture: a listed company that has traded away from its fair value
+  - L946 fixture: the fund holds it and nothing else
+  - L962 fixture: a bid and an ask rest on it, the last trade older than STALE_MARK_MONTHS, and the middle of them is neither that trade nor fair value
+  - L965 a holding whose last trade is older than STALE_MARK_MONTHS but whose book has a bid and an ask resting is marked at the quote, not at fair value
+  - L978 fixture: no side rests, so the quote is the last trade
+  - L979 a holding whose last trade is older than STALE_MARK_MONTHS is marked at fair value
+  - L983 ...and the price trading reads is still the last trade
+- **L989 9. the transfer at Norway's 3%, the default: a twelfth a month, from its cash only**
+  - L998 a twelfth of 3% of all it is worth
+  - L999 ...paid from its cash
+  - L1000 ...a revenue line in the budget
+  - L1003 a fund worth something with no cash pays nothing
+  - L1004 ...and says so
+  - L1006 with some cash, what it has
+  - L1007 fixture: the treasury was not what paid it
+- **L1046 the withdrawal dial**
+  - L1055 at the default the withdrawal is today's transfer to the bit
+  - L1069 the dial takes whole steps from nothing to MAX_WITHDRAWAL_STEPS
+  - L1070 ...the most of them 10% of its value a month
+  - L1083 fixture: at nothing the fund holds cash its rule places
+  - L1084 at nothing it pays nothing and sells nothing
+  - L1104 fixture: its twin at the default bids for its book with the same cash
+  - L1106 it buys nothing while over the default
+  - L1113 fixture: a market book in two companies, a rescue book, no cash and no bonds
+  - L1125 fixture: its cash could not cover the month, all of it to raise
+  - L1141 over the default, what the cash cannot cover is sold from the market book at the step, pro rata
+  - L1143 ...asked at the desk's bid, fair value less RULE_PREMIUM, where at fair value nobody bid
+  - L1145 ...and the desk's bid meets it at the step: some of it sold, into the fund's cash
+  - L1154 fixture: a bid took every share the fund asked
+  - L1160 ...and paid at the next month's top
+  - L1161 ...to the treasury with the month's own
+  - L1163 ...off the short it was counted in
+  - L1164 ...and into the paid
+  - L1165 fixture: the bank's shares were neither split nor consolidated in either month, so the rescue book is counted in one unit
+  - L1166 the rescue book is never sold to pay it
+  - L1177 fixture: at the default its cash could not cover the month either
+  - L1179 at or under the default a short is not paid
+  - L1182 ...and what it asked is the band's, no more than its 30% - under what the withdrawal asked of the same fund
+- **L1189 10. the hand: its orders at fair value, and pay-in and draw-out off the surplus**
+  - L1199 a pay-in is not spending: the budget moves by the fund's transfer on it and nothing more
+  - L1201 ...and the journal names it
+  - L1203 a draw-out moves what the fund's cash holds back
+  - L1205 the hand's order waits for the step
+  - L1207 ...and is posted at it, at fair value
+  - L1214 fixture: two orders wait for the step, one at a price the player named
+  - L1216 ...and the second can be cancelled
+  - L1218 a limit posts at its limit
+  - L1222 a cancelled order never reaches the step
+- **L1229 11. every piece through a save, and an older save's fund**
+  - L1248 the dial and the rescue setting
+  - L1249 its cash
+  - L1255 its shares, both books, on the register
+  - L1256 its bonds, on the bonds
+  - L1257 the preferred
+  - L1258 ...its arrears
+  - L1259 ...its anniversary and warrants
+  - L1262 the player's order waiting for the step
+  - L1264 its record of the offers
+  - L1266 its value
+  - L1267 fixture: the month just closed paid a transfer and bought something
+  - L1269 ...and the month's transfer and flows, which the Fund page reads, come back with it
+  - L1276 a save from before the fund loads it empty, the dial at 0, the rescue on the button
+- **L1284 12. Insane: nothing, and the ground owed abroad**
+  - L1286 D$0 and US$0 read back as Insane
+  - L1288 ...and a custom founding still takes at least D$6M
+  - L1291 the treasury holds nothing and the vault nothing
+  - L1296 it owes one piece of paper
+  - L1297 ...a dollar term loan abroad
+  - L1299 ...at 3%
+  - L1300 ...for twenty years
+  - L1304 ...for the plots it was founded on, as the land office charges ground, at the opening dollar price
+  - L1308 ...the figure the founding screen quotes for its world
+  - L1310 ...more than STARTING_SQ_FT at that price: its dry plots are a little more, and its lake is in it
+  - L1324 a day-0 city is quoted a bond
+  - L1328 ...and the note
+  - L1330 the build screen at D$0: a house asks for funding, the whole of it
+  - L1333 the land office at D$0: a plot asks for funding, and is quoted both offers
+  - L1338 borrowed, the treasury holds cash
+  - L1340 ...a month
+  - L1342 ...and its audit closes
+- **L1356 13. Insane, never borrowing: play runs on the central bank's advances**
+  - L1361 day 0: nothing in the treasury and no revenue behind it, so the central bank's ceiling is nothing
+  - L1363 ...and nothing that is not a promise may be spent
+  - L1366 ...a purchase asked of it is refused whole, and nothing is owed for it
+  - L1368 ...a discretionary line is refused, and owed as arrears
+  - L1371 ...and a promise is paid past it, taking the treasury under nothing
+  - L1400 an Insane city that never borrowed runs twelve months through the time skip
+  - L1401 ...and the audit closes every month, nothing moving after it
+  - L1402 month one pays the land bond's coupon, a twelfth of INSANE_LAND_COUPON on its face at the month's rate
+  - L1404 ...from a treasury that held nothing, which the month leaves overdrawn
+  - L1405 month two's settle: the central bank advances the whole shortfall
+  - L1406 every month's coupon is paid, the land bond owed whole and never missed
+  - L1410 nothing that is not a promise was spent past the room the month opened with
+  - L1411 ...and it borrowed nothing: the land bond is still all it owes
 
 ## FundLedgerCheck.java - 137 labelled assertions
 
@@ -11763,6 +11769,128 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L850 a new town: Lean, the aim Inflation, no mint price, no event, not tied
   - L853 24 months on: no gold in the vault, no gold event, no mint price, nothing dealt in gold, still Lean and untied
 
+## GovernmentPlayerCheck.java - 34 labelled assertions
+
+> The test player's annual wealth policy: both directions, boundaries, caps, historical dates and the actual skip/reload path.
+> 
+> WHY (GV1/GV2). The study's December modulo missed January's newly opened levers, and a driver that only reviewed its skip's endpoint
+> could cross years without ever reviewing policy. The fixtures cause each balance directly; the last section plays through two actual
+> Januaries, saving and loading between them, and counts how often taxes really move. Every city and its slot 10 live in scratch data.
+
+  - L54 fixture causes the requested years of wealth
+  - L68 profit tax
+  - L69 sales tax
+  - L70 pension replacement
+  - L71 EI replacement
+  - L72 fund withdrawal steps
+- **L76 wealth moves all three lever families in both directions, to their caps**
+  - L82 a rich January changes policy
+  - L85 another invocation in the same January changes nothing
+  - L91 a poor January changes policy
+  - L95 next poor January reduces the fund one more literal step
+  - L99 poor-side floors and ceilings stop further moves
+  - L105 rich-side caps take a partial last step
+  - L108 rich-side caps stop further moves
+  - L113 poor policy never raises a zero promise or cuts a tax already above its ceiling
+- **L118 only a new completed January outside the band moves policy**
+  - L124 founding January does not act even with seeded history
+  - L126 December does not act
+  - L129 exactly two years stays in the band
+  - L131 an already reviewed January cannot act after its wealth changes
+  - L134 exactly half a year stays in the band
+  - L137 inside the band does nothing
+  - L140 less than a full year of revenue does nothing
+  - L143 an unmeasurable January was still reviewed only once
+  - L146 zero annual revenue does nothing
+  - L150 a later measurable January can act
+- **L154 historical setters stay closed and newly opened January levers can move**
+- **L189 borrowed fixture months retain the supplied policy across January**
+  - L196 the fixture crosses a January with measurable wealth above the band
+- **L203 actual skips cross each January once, and a loaded January is not replayed**
+  - L215 the first twelve-month skip finishes in January
+  - L216 the played city really is above the band
+  - L218 one annual tax move inside the first long skip
+  - L219 the scratch January save succeeds
+  - L223 the loaded January retains its policy
+  - L225 resuming a loaded January runs February without another annual move
+  - L227 the second skip reaches the next January
+  - L229 two actual annual tax moves over two played years
+  - L230 an immediate repeated review after the skip does nothing
+
+## GovernmentViewCheck.java - 56 labelled assertions
+
+> The government's wealth bands and advice, measured without moving its books (GV1).
+> 
+> WHY. A ratio that omits the vault, counts the fund's cash twice, annualises
+> an unfinished history or changes the market by being read misleads a player.
+> 1. Boundaries and missing revenue. 2. Every asset and the debt counted once.
+> 3. The last twelve months, including folded history. 4. Existing policy
+> previews and buyback quotes, without changing cash, dials or debt.
+> 5. A save restores the same reading before another month passes.
+
+- **L36 1. the five bands, their exact boundaries, and no comparable year**
+  - L37 negative net wealth is broke
+  - L38 a tenth is thin
+  - L39 half a year is sound
+  - L40 two years is still sound
+  - L41 just over two is rich
+  - L42 five years is still rich
+  - L43 just over five is hoarding
+  - L44 NaN and infinity are not a wealth band
+  - L49 a new city has no invented annual revenue
+  - L52 eleven recorded months are not treated as twelve
+  - L54 the first full year is its twelve receipts
+- **L56 2. the asset bridge and the debt counted once**
+  - L64 fixture: treasury, fund cash, vault and paper are all material
+  - L66 fixture: the fund owns a marked holding, not cash alone
+  - L67 the fund's cash is counted once alongside its marked holdings
+  - L68 the vault is converted to local money
+  - L69 net wealth is the full bridge
+  - L71 years uses the recorded revenue
+  - L74 a treasury-to-fund transfer does not make government wealth
+- **L76 3. trailing revenue, zero receipts, and old folded history**
+  - L78 month thirteen replaces the oldest month
+  - L80 twelve zero receipts yield no band, not infinite wealth
+  - L89 old folded years are excluded from the last twelve months
+- **L92 4. advice reads the current policy and quote, never moving either**
+  - L103 fixture: coupon-bearing paper and cash above debt make a buyback available
+  - L107 monthly saving is the quoted face's coupon stopped
+  - L109 a cut and a transfer preview are never negative
+  - L110 advice leaves treasury cash alone
+  - L111 advice leaves fund cash alone
+  - L112 advice leaves debt alone
+  - L113 advice leaves profit tax alone
+  - L114 advice leaves sales tax alone
+  - L115 advice leaves pensions alone
+  - L116 advice leaves a deliberately stale standing rate alone
+  - L117 advice preserves every saved market input and its last strike
+  - L120 cash equal to debt is not an excess-cash buyback
+  - L126 fixture: a bill offers no coupon and costs less than its maturity payment
+  - L128 positive-yield discount paper is offered for buyback despite no coupon
+  - L129 a bill invents no monthly coupon saving
+  - L140 fixture: cash exceeds face debt, but only part of a premium bond is affordable
+  - L144 an affordable partial premium buyback is advised
+  - L146 quoting the affordable part spends no cash
+  - L148 no treasury cash means no buyback advice
+- **L152 5. the same reading after a save, before another month**
+  - L158 the loaded city has the same net wealth
+  - L159 the loaded history has the same annual revenue
+  - L160 the loaded city starts in the same band
+- **L167 positive tax and transfer advice on the model's own previews**
+  - L189 fixture:
+  - L192 the largest tax is selected:
+  - L193 the selected tax's current take:
+  - L194 the exact one-point revenue change:
+  - L195 the tax preview leaves every policy dial alone:
+  - L199 zero tax receipts offer no invented tax cut
+  - L211 fixture: pensioners and EI claimants both draw positive transfers
+  - L221 capped transfers offer no invented increase
+  - L243 both five-point transfer previews have a positive cost
+  - L247 the positive transfer alternative is selected:
+  - L248 the selected transfer's current monthly bill:
+  - L249 the exact five-point transfer increase:
+  - L250 the transfer preview leaves every policy dial alone:
+
 ## GridCheck.java - 45 labelled assertions
 
 > The block grid (0.7.65, batch M1): the city's owned ground as a quadtree, every plot's owner exact against a raster, and its offers six a side - apart, against its edge and whole blocks at 2:1 after every one of 600 purchases, a notch offered before ground farther out, and a plot's owner found in time.
@@ -12493,7 +12621,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L782 ...and a year on, both have folded the next year alike
   - L787 a history from before 0.7.55 has no folded years: every entry a month
 
-## HoldersCheck.java - 445 labelled assertions
+## HoldersCheck.java - 447 labelled assertions
 
 > Proves who holds the city's own paper (0.7.1): that the households buy it at
 > the settle, are paid on it, sell it back, and are paid when it is bought
@@ -12648,325 +12776,327 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L941 the bank paid exactly the rest, after the world as well
   - L943 ...and holds exactly the rest of the face
   - L945 the audit closed on the settle month: a till paying the bank is a pool paying a pool
-  - L955 fixture: the businesses hold paper that pays a coupon
-  - L957 the businesses were paid their share of the month's coupon
-  - L958 ...and the audit closes: the treasury paid the tills
-  - L960 the two books still agree
-  - L964 each sector's books carry its coupon on the city's paper among the coupons on the bonds it holds
-  - L965 ...and explain every cent of its till: the paper is a bond it holds, bought, paid and sold like the others
-  - L978 a coupon reaches each sector's till in proportion to the paper it holds
-  - L987 principal reaches the tills in the same proportion
-  - L988 ...with each sector's paper down by the same
-  - L989 ...so the paper is down by exactly the principal
-  - L997 fixture: the treasury sold a thirty-year bond
-  - L1000 fixture: the businesses were allotted some
-  - L1028 fixture: the till is under what its share of the allotment asks
-  - L1031 it paid the whole of its till and not a unit more
-  - L1032 ...for that share of its face: the cut is the same on the face as on the cash
-  - L1042 every other sector paid its share in full
-  - L1043 the businesses paid the others' shares and the capped one's till, no more
-  - L1045 the paper's businesses' share is the face the sectors took
-  - L1046 the bank paid exactly the rest, the shortfall included
-  - L1048 ...and holds the rest of the face
-  - L1050 the two books still agree
-  - L1051 the audit closed on it
-  - L1071 with no spread, every sector sold HOME_SPEED of what it held, the pace the dollars come home at
-  - L1072 ...to the desk at the month's ratio: the cash it paid
-  - L1073 ...and the sectors' record of what they were paid is the same
-  - L1074 ...its book rose by the face
-  - L1075 ...and it booked the gain against what it carries the paper at, the unearned discount riding on it
-  - L1077 the two books still agree
-  - L1083 fixture: the borrower owes something
-  - L1088 fixture: the borrower holds some
-  - L1091 a sector that borrows sells HOME_SPEED of all it holds
-  - L1093 ...while the sectors with money and nothing owed keep theirs, the paper paying what it does
-  - L1095 the two books still agree
-  - L1106 asked for less than its dollars abroad are worth, the dollars come
-  - L1107 ...and the paper is not touched
-  - L1108 ...into the till
-  - L1111 asked for more than its dollars, it gets all of them and the rest from its paper, at the month's ratio
-  - L1112 ...the dollars gone
-  - L1113 ...and a tenth of the paper sold to the desk
-  - L1114 ...the desk paying the paper's market value
-  - L1116 asked for more than it has, it sells all its paper and no more
-  - L1117 ...and holds none
-  - L1118 the two books still agree
-  - L1126 fixture: the businesses still hold some of the thirty-year bond
-  - L1134 fixture: the buyback was at the quoted price
-  - L1135 fixture: the quote took the businesses' whole holding
-  - L1143 the businesses' share of the price went into their tills, in proportion to the paper each holds
-  - L1144 ...and their paper is down by the face they held of it, in the same proportion
-  - L1145 the bank's share of the price went to its cash
-  - L1146 the two books still agree
-  - L1148 the audit closes on the month after: the businesses are paid between two pools, nothing is carried
-  - L1157 fixture: the treasury sold a two-year bond
-  - L1159 fixture: the businesses took part of it at the settle
-  - L1170 every month of its life, the sectors' paper was the paper's (a coupon, a sale, a settle among them)
-  - L1171 ...and the sectors' books explained their tills to the cent, the principal's month among them
-  - L1172 fixture: it fell due
-  - L1173 fixture: and the businesses held some of it to the end
-  - L1174 the businesses were paid, as principal, the face they held of it
-  - L1175 ...and the two books agree after it
-  - L1179 fixture: the businesses still hold some of the twenty-year bond
-  - L1191 every sector's paper came back exactly
-  - L1192 ...the ratio and the yield it was struck at
-  - L1194 ...what the businesses have bought and sold since founding
-  - L1200 ...and every piece's businesses' share
-  - L1201 ...and the two books agree in the reloaded city
-  - L1203 a month on, both pay the businesses the same coupon
-  - L1204 ...and hold the same
-  - L1205 ...and both months close
-  - L1213 fixture: the save carries the sectors' paper at the end of the array
-  - L1225 it loads
-  - L1226 the businesses hold none of the city's paper
-  - L1227 ...nor does the paper say they do
-  - L1228 ...so the bank holds what the households, the central bank and the world do not
-  - L1234 ...and it runs, the audit closing every month
-  - L1235 ...with the two books agreeing
-  - L1251 the dial is reached: the central bank holds all of the term paper
-  - L1252 ...the businesses none of it, the last it reached
-  - L1253 ...and the sectors' book says the same
-  - L1254 every month on the way the books agreed
-  - L1255 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the businesses' purchase among it
-- **L1280 11. the world is a holder: it buys from abroad, is paid abroad, leaves with its money, and the books agree**
-  - L1287 it holds the face it was allotted, whatever it paid
-  - L1288 ...and remembers what it paid
-  - L1292 a save carries the book
-  - L1293 ...and what it has paid and been paid
-  - L1297 a save from before the world held any has none (the array ends at the carry trade)
-  - L1299 a reform scales the book
-  - L1301 ...and a new game clears it
-  - L1310 fixture: money came for a seven-point rate
-  - L1315 fixture: the spread is gone, so the money leaves, and nobody has panicked
-  - L1317 the paper that leaves is what departs, over the world's whole position (its stock and the paper at market),
-  - L1319 ...and at a market below face the same departure is a smaller share of a smaller position
-  - L1321 ...which is less than the face, whatever the book
-  - L1330 a month in which no money leaves sends none of the paper home
-  - L1339 fixture: a twenty-point fall on thin reserves is a run
-  - L1340 in a run PANIC_EXIT of the paper leaves, the same share as of the stock
-  - L1343 ...and what is sold comes off the book
-  - L1344 ...and is remembered
-  - L1384 fixture: the world is not in a run, so its rule bids
-  - L1385 fixture: and the two books of its paper agree going in
-  - L1396 fixture: the world holds a tenth of the hot money it had, and has the appetite for the rest
-  - L1404 fixture: the treasury sold a twenty-year bond between the presses
-  - L1410 fixture: the stop is over what the world pays, so its rule bids
-  - L1411 fixture: the auction filled the world
-  - L1412 ...for the issue's price: its cash over its face is what the issue raised over its face
-  - L1414 it holds none of it until the settle
-  - L1421 the world paid exactly what the auction allotted it
-  - L1422 ...and the paper's world share is the face it was allotted
-  - L1423 ...and the world's book, CapitalFlows', is up by the same face
-  - L1424 ...for what it paid, remembered
-  - L1425 ...and the two books agree
-  - L1426 the bank paid exactly the rest
-  - L1428 ...and holds exactly the rest of the face
-  - L1430 the audit's financial inflow line for it is what it paid
-  - L1432 ...inside the financial account the currency reads
-  - L1433 ...which the balance of payments took
-  - L1434 the audit closed on the settle month: the world's money is declared coming in
-  - L1444 fixture: the world holds paper that pays a coupon
-  - L1446 the world was paid its share of the month's coupon
-  - L1447 ...declared to the audit as income paid abroad
-  - L1449 ...so the current account carries it
-  - L1450 ...and the audit closes: the treasury's pool paid a stranger
-  - L1452 the two books still agree
-  - L1457 fixture: the world still holds some of the twenty-year bond
-  - L1466 fixture: the buyback was at the quoted price
-  - L1467 the world's paper is down by the face it held of it
-  - L1468 ...and it sold exactly that face
-  - L1469 ...and the treasury's pool carries its share of the price until the month declares it leaving
-  - L1471 the two books still agree
-  - L1473 the month after, the audit closes: the world's share left the country, declared as a financial outflow
-  - L1475 ...and the financial account carries at least that share
-  - L1485 fixture: the treasury sold a thirty-year bond
-  - L1489 fixture: the treasury sold a two-year bond
-  - L1491 fixture: the world took part of it at the settle
-  - L1492 fixture: and the world took part of the thirty-year bond
-  - L1505 fixture: it fell due
-  - L1506 every month of its life, the world's book was the paper's (a coupon, a sale, a settle among them)
-  - L1507 ...and the audit closed every month of it
-  - L1508 the world was paid, as principal, the face it held of it at the end
-  - L1509 ...declared to the audit as a financial outflow
-  - L1510 ...and the financial account carries it
-  - L1514 fixture: the world still holds paper
-  - L1524 the book came back exactly
-  - L1525 ...and what it paid and was paid for it since founding
-  - L1531 ...and every piece's world share
-  - L1532 ...and the two books agree in the reloaded city
-  - L1534 a month on, both pay the world the same coupon
-  - L1535 ...and hold the same
-  - L1536 ...and both months close
-  - L1546 fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 24 slots long
-  - L1559 it loads
-  - L1560 the world holds none of the city's paper
-  - L1561 ...nor does the paper say it does
-  - L1564 ...and it runs, the audit closing every month
-  - L1565 ...with the two books agreeing
-  - L1575 fixture: the world holds paper going into the month
-  - L1579 fixture: the stock was over its target, so money left, and nobody panicked
-  - L1584 part of the paper left with the money
-  - L1585 ...the departure over the world's whole position, of the face
-  - L1586 ...sold to the bank's desk at a market price, below or at face
-  - L1588 ...which is what the world was paid, remembered
-  - L1589 ...declared to the audit as a financial outflow
-  - L1591 the two books still agree
-  - L1592 the audit closes on it: the desk's cash and the deposits that left are both declared
-  - L1594 the bank's book rose, whatever its room: it buys what the world sells
-  - L1602 fixture: confidence is broken
-  - L1604 the auction's bidders say the world is in a run
-  - L1605 ...so its bid is nothing, at any yield
-  - L1607 fixture: the world still holds paper
-  - L1611 fixture: the treasury sold a ten-year bond in the run
-  - L1612 the auction allotted the world none of it
-  - L1616 the month after, PANIC_EXIT of the paper has gone to the desk
-  - L1618 ...declared as a financial outflow
-  - L1619 ...with the two books agreeing and the audit closed
-  - L1626 every month of the run the books agreed and the audit closed
-  - L1627 ...and the paper has been running home: a third a month leaves it under what it was
-  - L1646 fixture: the treasury sold a twenty-year bond
-  - L1649 fixture: the world took part of it
-  - L1664 the dial is reached: the central bank holds all of the term paper
-  - L1665 ...the world none of it, the last it reached
-  - L1666 ...having paid the world for it, abroad
-  - L1667 every month on the way the two books agreed
-  - L1668 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the world's purchase among it
-  - L1855 fixture: the treasury sold a twenty-year bond between the presses
-  - L1856 a fresh line's settle re-strikes nothing
-  - L1858 ...its equity's movement leaves nothing unexplained
-  - L1859 ...and its equity's two parts and the preferred still add up to its equity, as they did
-  - L1861 fixture: the households and the bank each hold a material part of the line
-  - L1866 fixture: the twin is the same city going in
-  - L1872 fixture: the second sale reopened the same line, and the households held part of it going in
-  - L1874 fixture: ...the households' own discount is something to keep: it is on the line before the reopening
-  - L1875 the reopening did not re-blend the households' own discount per face of the line (BK2)
-  - L1879 fixture: ...and the twin's line was reopened to the same face and the same price
-  - L1907 the households took their share of the reopening at the settle
-  - L1909 the reopened settle re-strikes nothing: each holder's own discount moved with its own face and its own price
-  - L1911 ...so the movement's own re-strike is nothing
-  - L1912 ...and the gains on the city's paper are the twin's
-  - L1914 ...the twin, which books no re-strike, booked none
-  - L1915 ...so the month's movement leaves nothing unexplained
-  - L1916 ...and its equity's two parts and the preferred add up to its equity
-  - L1917 ...the twin, which books no re-strike, closes too: its split is nothing
-  - L1919 ...and its movement's residual is nothing
-  - L1921 fixture: at the settle the bank took a material part of the sale's face and the households took more of the line
-  - L1924 the households' own discount per face of the line is what it was before the reopening, going into the settle
-  - L1926 ...the households' own discount rose by the face they took less what they paid for it
-  - L1928 the bank's book rose by exactly the face it took at the settle
-  - L1930 ...and the bank's own discount on the line rose by that face less what it paid for it
-  - L1932 the audit closed on the settle month
-  - L1933 ...and on the twin's
-  - L1959 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-  - L1961 three months on, the movement left nothing unexplained and the split still added up to the equity, every month
-  - L1962 ...and the twin's split stayed shut too, every month
-  - L2031 fixture: the bank holds part of a settled line, the line has discount left and the book carries the bank's share of it
-  - L2033 fixture: ...the bank's unearned discount is the book's going in, in the city
-  - L2034 fixture: ...and the twin's is the same city
-  - L2044 fixture: the second sale reopened the same line, between the presses, for proceeds over its face
-  - L2046 fixture: ...the premium is the unsettled sale's discount, below nothing: its face less what it raised
-  - L2048 fixture: ...so the line's discount left did not move at the sale: the premium is nobody's until the settle
-  - L2050 fixture: ...and the twin's line was reopened to the same face, price and discount
-  - L2056 nothing was re-struck at the sale: the premium waits for the settle
-  - L2057 ...the bank's own discount on the line did not move
-  - L2058 ...nor did the book's figure for the bank
-  - L2059 the bank's unearned discount is the book's
-  - L2060 ...its equity's movement leaves nothing unexplained
-  - L2061 ...and its equity's two parts and the preferred add up to its equity
-  - L2062 ...the twin, which books none, booked none
-  - L2063 ...and carries the book's figure too: nothing was re-struck for the two to differ by
-  - L2067 the statement's net income, tax and gains on the city's paper are the twin's, at once
-  - L2090 fixture: the bank paid more than the face it took at the settle: a premium
-  - L2091 the bank's premium came off its own discount on the line, floored at nothing
-  - L2093 ...so the settle re-strikes nothing but the shortfall of that discount under the premium (nothing, where it covers it)
-  - L2095 the month's movement leaves nothing unexplained
-  - L2096 ...and its equity's two parts and the preferred add up to its equity
-  - L2097 ...the audit closed on the month
-  - L2098 ...and on the twin's
-  - L2099 ...the twin, which books none, closes as the city's re-strike leaves it: its split is that, and nothing else
-  - L2101 ...and its movement left only that unexplained
-  - L2105 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-  - L2125 fixture: the second sale reopened the same line and it is unsettled: the market owes for it
-  - L2130 fixture: ...and the households hold part of the line, all the paper they hold
-  - L2136 fixture: the bank's unearned discount is the book's going in
-  - L2151 fixture: the desk bought some of the households' paper of the line, in the city and in its twin
-  - L2153 fixture: ...and the households' own discount is not the line's pool per face: far over what the movement's tolerance would pass
-  - L2155 fixture: ...and the two books of the households' paper still agree
-  - L2156 the book's figure for the bank rose by exactly the households' own discount on the face the desk bought
-  - L2158 ...and the households' own discount per face of what they keep did not move
-  - L2165 the bank's unearned discount is the book's
-  - L2166 ...nothing is re-struck: the desk was handed the households' own discount, and the book's figure rose by that
-  - L2168 ...its equity's movement leaves nothing unexplained
-  - L2169 ...and its equity's two parts and the preferred add up to its equity
-  - L2170 ...the twin, which books none, booked none
-  - L2171 ...and carries the book's figure too: nothing was re-struck for the two to differ by
-  - L2175 the statement's net income, tax and gains on the city's paper are the twin's, at once
-  - L2186 the settle re-strikes nothing: the month's re-strike is nothing
-  - L2187 ...so the month's movement leaves nothing unexplained
-  - L2188 ...and its equity's two parts and the preferred add up to its equity
-  - L2189 ...the audit closed on the month
-  - L2190 ...and on the twin's
-  - L2191 ...the twin, which books none, closes too: its split is nothing
-  - L2193 ...and its movement's residual is nothing
-  - L2196 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-  - L2256 fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance
-  - L2258 fixture: ...the bank's book covers the face it sells back, and its unearned discount the piece's
-  - L2260 fixture: ...bought straight back whole, all of it the bank's face, and off the books
-  - L2262 fixture: ...and the twin's the same, bit for bit
-  - L2264 the buyback re-struck nothing
-  - L2269 two months on, the bank's equity's parts are its equity again, as before the sale: the settle's payment cancelled what it sold back
-  - L2271 ...and the twin's (main before BK1) too
-  - L2276 ...the audit closed on both months, in the city and in the twin
-  - L2279 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-- **L2289 14. a holder left within HOLDING_ROUNDING of the face moved holds none, and one left more holds it (RT1)**
-  - L2298 fixture: the businesses hold exactly the face the desk takes all but an ulp or two of
-  - L2299 fixture: the old rule would have left them a hair above nothing, and the hair is under the floor on the face moved
-  - L2302 a sale meant to take all a holder holds, struck an ulp short, leaves it none
-  - L2305 ...and the face it held is the bank's: the holders' faces and the bank's still add up to the piece, to a part in HOLDING_ROUNDING
-  - L2312 a sale of part of a holding leaves the rest, exactly: not snapped
-  - L2321 a remainder of ten times the floor stays: above nothing, and within an ulp of the
-  - L2323 ...and one of half the floor, built the same way, is snapped to none
-  - L2331 the same holds for the households
-  - L2332 ...and the central bank
-  - L2333 ...and the world
-  - L2334 ...and for a buyback that takes the businesses' paper by the same ulp-short face (retirePart)
-  - L2340 fixture: scaled by the founding's FACTOR the old rule still leaves a hair above nothing
-  - L2342 at the founding's price level as at today's, the ulp-short sale leaves the businesses none: the floor is a share of the face moved
-  - L2344 fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped
-  - L2346 ...yet it stays, because the floor is a share of the face moved
-- **L2381 15. each holder's discount is its own, at the price it paid (BK2)**
-  - L2391 fixture: the treasury sold a twenty-year bond between the presses, and the fixture's settle of it was watched at both edges
-  - L2395 fixture: ...a new line, all of it unsettled going in, and no holder's discount on it yet
-  - L2397 fixture: ...the sale's discount is the unsettled sale's: its face less what it raised
-  - L2399 fixture: ...the households and the bank each took part of it, and the central bank none
-  - L2408 BANK: its own discount is the face it took less what it paid, the residual buyer's
-  - L2410 CENTRAL_BANK: it took none, so it has none of the discount
-  - L2411 ...and the line's discount left is the five owners' sum
-  - L2412 ...with nothing of the sale left unsettled
-  - L2413 ...and the five together are the sale's whole discount: its face less what it raised
-  - L2423 fixture: the second sale reopened the same line at a discount and is unsettled: the market owes for it
-  - L2427 a reopening at another price moves no owner's discount at the sale: the five are what they were, bit for bit
-  - L2428 ...the unsettled sales' discount is the reopening's face less what it raised
-  - L2432 after its settle the owners' sum, with nothing unsettled, is the line's discount left
-  - L2434 ...nothing of the sale is left unsettled
-  - L2435 ...and at the settle the owners' sum rose by the sale's discount, whole
-  - L2441 fixture: the households hold part of the line, and own discount on it
-  - L2445 the bank is handed the households' own discount times the face over their holding
-  - L2446 ...the bank's own discount rose by exactly that
-  - L2447 ...the households' fell by exactly that
-  - L2448 ...and the households' discount per face of what they keep did not move
-  - L2452 the bank handing face to the households hands them its own discount per face on it, whatever they paid
-  - L2454 ...the households' own rose by exactly that
-  - L2455 ...and the bank's discount per face of what it keeps did not move
-  - L2462 fixture: months are left past the last, and nothing is unsettled: the old pool's step is its discount over the months left
-  - L2471 the step the line returns is the bank's: the one income books
-  - L2472 ...and the five steps add up to the old pool's step: its discount left over the months left, the city's accretion unchanged
-  - L2486 fixture: the five holders' discounts per face are five different figures
-  - L2487 fixture: ...and together they are the discount of what was sold: 1,110 of face less the 1,001 it raised
-  - L2495 principal repaid moves no owner's discount: the five are what they were, bit for bit
-  - L2516 CENTRAL_BANK: the central bank does not sell, so its own discount stays, bit for bit
-  - L2525 fixture: a sale unsettled, and every owner has discount
-  - L2530 the unsettled sales' discount scales by it too
+  - L967 fixture: the businesses hold paper that pays a coupon
+  - L969 fixture: the businesses held all of their paper through the month, none sold to pay its way
+  - L970 the businesses were paid their share of the month's coupon
+  - L971 ...and the audit closes: the treasury paid the tills
+  - L973 the two books still agree
+  - L977 each sector's books carry its coupon on the city's paper among the coupons on the bonds it holds
+  - L978 ...and explain every cent of its till: the paper is a bond it holds, bought, paid and sold like the others
+  - L991 a coupon reaches each sector's till in proportion to the paper it holds
+  - L1000 principal reaches the tills in the same proportion
+  - L1001 ...with each sector's paper down by the same
+  - L1002 ...so the paper is down by exactly the principal
+  - L1010 fixture: the treasury sold a thirty-year bond
+  - L1013 fixture: the businesses were allotted some
+  - L1041 fixture: the till is under what its share of the allotment asks
+  - L1044 it paid the whole of its till and not a unit more
+  - L1045 ...for that share of its face: the cut is the same on the face as on the cash
+  - L1055 every other sector paid its share in full
+  - L1056 the businesses paid the others' shares and the capped one's till, no more
+  - L1058 the paper's businesses' share is the face the sectors took
+  - L1059 the bank paid exactly the rest, the shortfall included
+  - L1061 ...and holds the rest of the face
+  - L1063 the two books still agree
+  - L1064 the audit closed on it
+  - L1084 with no spread, every sector sold HOME_SPEED of what it held, the pace the dollars come home at
+  - L1085 ...to the desk at the month's ratio: the cash it paid
+  - L1086 ...and the sectors' record of what they were paid is the same
+  - L1087 ...its book rose by the face
+  - L1088 ...and it booked the gain against what it carries the paper at, the unearned discount riding on it
+  - L1090 the two books still agree
+  - L1096 fixture: the borrower owes something
+  - L1101 fixture: the borrower holds some
+  - L1104 a sector that borrows sells HOME_SPEED of all it holds
+  - L1106 ...while the sectors with money and nothing owed keep theirs, the paper paying what it does
+  - L1108 the two books still agree
+  - L1119 asked for less than its dollars abroad are worth, the dollars come
+  - L1120 ...and the paper is not touched
+  - L1121 ...into the till
+  - L1124 asked for more than its dollars, it gets all of them and the rest from its paper, at the month's ratio
+  - L1125 ...the dollars gone
+  - L1126 ...and a tenth of the paper sold to the desk
+  - L1127 ...the desk paying the paper's market value
+  - L1129 asked for more than it has, it sells all its paper and no more
+  - L1130 ...and holds none
+  - L1131 the two books still agree
+  - L1139 fixture: the businesses still hold some of the thirty-year bond
+  - L1147 fixture: the buyback was at the quoted price
+  - L1148 fixture: the quote took the businesses' whole holding
+  - L1156 the businesses' share of the price went into their tills, in proportion to the paper each holds
+  - L1157 ...and their paper is down by the face they held of it, in the same proportion
+  - L1158 the bank's share of the price went to its cash
+  - L1159 the two books still agree
+  - L1161 the audit closes on the month after: the businesses are paid between two pools, nothing is carried
+  - L1170 fixture: the treasury sold a two-year bond
+  - L1172 fixture: the businesses took part of it at the settle
+  - L1183 every month of its life, the sectors' paper was the paper's (a coupon, a sale, a settle among them)
+  - L1184 ...and the sectors' books explained their tills to the cent, the principal's month among them
+  - L1185 fixture: it fell due
+  - L1186 fixture: and the businesses held some of it to the end
+  - L1187 the businesses were paid, as principal, the face they held of it
+  - L1188 ...and the two books agree after it
+  - L1192 fixture: the businesses still hold some of the twenty-year bond
+  - L1204 every sector's paper came back exactly
+  - L1205 ...the ratio and the yield it was struck at
+  - L1207 ...what the businesses have bought and sold since founding
+  - L1213 ...and every piece's businesses' share
+  - L1214 ...and the two books agree in the reloaded city
+  - L1216 a month on, both pay the businesses the same coupon
+  - L1217 ...and hold the same
+  - L1218 ...and both months close
+  - L1226 fixture: the save carries the sectors' paper at the end of the array
+  - L1238 it loads
+  - L1239 the businesses hold none of the city's paper
+  - L1240 ...nor does the paper say they do
+  - L1241 ...so the bank holds what the households, the central bank and the world do not
+  - L1247 ...and it runs, the audit closing every month
+  - L1248 ...with the two books agreeing
+  - L1264 the dial is reached: the central bank holds all of the term paper
+  - L1265 ...the businesses none of it, the last it reached
+  - L1266 ...and the sectors' book says the same
+  - L1267 every month on the way the books agreed
+  - L1268 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the businesses' purchase among it
+- **L1293 11. the world is a holder: it buys from abroad, is paid abroad, leaves with its money, and the books agree**
+  - L1300 it holds the face it was allotted, whatever it paid
+  - L1301 ...and remembers what it paid
+  - L1305 a save carries the book
+  - L1306 ...and what it has paid and been paid
+  - L1310 a save from before the world held any has none (the array ends at the carry trade)
+  - L1312 a reform scales the book
+  - L1314 ...and a new game clears it
+  - L1323 fixture: money came for a seven-point rate
+  - L1328 fixture: the spread is gone, so the money leaves, and nobody has panicked
+  - L1330 the paper that leaves is what departs, over the world's whole position (its stock and the paper at market),
+  - L1332 ...and at a market below face the same departure is a smaller share of a smaller position
+  - L1334 ...which is less than the face, whatever the book
+  - L1343 a month in which no money leaves sends none of the paper home
+  - L1352 fixture: a twenty-point fall on thin reserves is a run
+  - L1353 in a run PANIC_EXIT of the paper leaves, the same share as of the stock
+  - L1356 ...and what is sold comes off the book
+  - L1357 ...and is remembered
+  - L1397 fixture: the world is not in a run, so its rule bids
+  - L1398 fixture: and the two books of its paper agree going in
+  - L1409 fixture: the world holds a tenth of the hot money it had, and has the appetite for the rest
+  - L1417 fixture: the treasury sold a twenty-year bond between the presses
+  - L1423 fixture: the stop is over what the world pays, so its rule bids
+  - L1424 fixture: the auction filled the world
+  - L1425 ...for the issue's price: its cash over its face is what the issue raised over its face
+  - L1427 it holds none of it until the settle
+  - L1434 the world paid exactly what the auction allotted it
+  - L1435 ...and the paper's world share is the face it was allotted
+  - L1436 ...and the world's book, CapitalFlows', is up by the same face
+  - L1437 ...for what it paid, remembered
+  - L1438 ...and the two books agree
+  - L1439 the bank paid exactly the rest
+  - L1441 ...and holds exactly the rest of the face
+  - L1443 the audit's financial inflow line for it is what it paid
+  - L1445 ...inside the financial account the currency reads
+  - L1446 ...which the balance of payments took
+  - L1447 the audit closed on the settle month: the world's money is declared coming in
+  - L1457 fixture: the world holds paper that pays a coupon
+  - L1459 the world was paid its share of the month's coupon
+  - L1460 ...declared to the audit as income paid abroad
+  - L1462 ...so the current account carries it
+  - L1463 ...and the audit closes: the treasury's pool paid a stranger
+  - L1465 the two books still agree
+  - L1470 fixture: the world still holds some of the twenty-year bond
+  - L1479 fixture: the buyback was at the quoted price
+  - L1480 the world's paper is down by the face it held of it
+  - L1481 ...and it sold exactly that face
+  - L1482 ...and the treasury's pool carries its share of the price until the month declares it leaving
+  - L1484 the two books still agree
+  - L1486 the month after, the audit closes: the world's share left the country, declared as a financial outflow
+  - L1488 ...and the financial account carries at least that share
+  - L1498 fixture: the treasury sold a thirty-year bond
+  - L1502 fixture: the treasury sold a two-year bond
+  - L1504 fixture: the world took part of it at the settle
+  - L1505 fixture: and the world took part of the thirty-year bond
+  - L1518 fixture: it fell due
+  - L1519 every month of its life, the world's book was the paper's (a coupon, a sale, a settle among them)
+  - L1520 ...and the audit closed every month of it
+  - L1521 the world was paid, as principal, the face it held of it at the end
+  - L1522 ...declared to the audit as a financial outflow
+  - L1523 ...and the financial account carries it
+  - L1527 fixture: the world still holds paper
+  - L1537 the book came back exactly
+  - L1538 ...and what it paid and was paid for it since founding
+  - L1544 ...and every piece's world share
+  - L1545 ...and the two books agree in the reloaded city
+  - L1547 a month on, both pay the world the same coupon
+  - L1548 ...and hold the same
+  - L1549 ...and both months close
+  - L1559 fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 24 slots long
+  - L1572 it loads
+  - L1573 the world holds none of the city's paper
+  - L1574 ...nor does the paper say it does
+  - L1577 ...and it runs, the audit closing every month
+  - L1578 ...with the two books agreeing
+  - L1600 fixture: the world holds paper going into the month
+  - L1607 fixture: the stock was over its target, so money left, and nobody panicked
+  - L1612 part of the paper left with the money
+  - L1613 ...the departure over the world's whole position, of the face
+  - L1622 fixture: the paper that left stands at or under its face on the city's curve, by the model's own valuation of it
+  - L1624 ...sold to the bank's desk at a market price, below or at face
+  - L1626 ...which is what the world was paid, remembered
+  - L1627 ...declared to the audit as a financial outflow
+  - L1629 the two books still agree
+  - L1630 the audit closes on it: the desk's cash and the deposits that left are both declared
+  - L1632 the bank's book rose, whatever its room: it buys what the world sells
+  - L1640 fixture: confidence is broken
+  - L1642 the auction's bidders say the world is in a run
+  - L1643 ...so its bid is nothing, at any yield
+  - L1645 fixture: the world still holds paper
+  - L1649 fixture: the treasury sold a ten-year bond in the run
+  - L1650 the auction allotted the world none of it
+  - L1654 the month after, PANIC_EXIT of the paper has gone to the desk
+  - L1656 ...declared as a financial outflow
+  - L1657 ...with the two books agreeing and the audit closed
+  - L1664 every month of the run the books agreed and the audit closed
+  - L1665 ...and the paper has been running home: a third a month leaves it under what it was
+  - L1684 fixture: the treasury sold a twenty-year bond
+  - L1687 fixture: the world took part of it
+  - L1702 the dial is reached: the central bank holds all of the term paper
+  - L1703 ...the world none of it, the last it reached
+  - L1704 ...having paid the world for it, abroad
+  - L1705 every month on the way the two books agreed
+  - L1706 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the world's purchase among it
+  - L1903 fixture: the treasury sold a twenty-year bond between the presses
+  - L1904 a fresh line's settle re-strikes nothing
+  - L1906 ...its equity's movement leaves nothing unexplained
+  - L1907 ...and its equity's two parts and the preferred still add up to its equity, as they did
+  - L1909 fixture: the households and the bank each hold a material part of the line
+  - L1914 fixture: the twin is the same city going in
+  - L1920 fixture: the second sale reopened the same line, and the households held part of it going in
+  - L1922 fixture: ...the households' own discount is something to keep: it is on the line before the reopening
+  - L1923 the reopening did not re-blend the households' own discount per face of the line (BK2)
+  - L1927 fixture: ...and the twin's line was reopened to the same face and the same price
+  - L1955 the households took their share of the reopening at the settle
+  - L1957 the reopened settle re-strikes nothing: each holder's own discount moved with its own face and its own price
+  - L1959 ...so the movement's own re-strike is nothing
+  - L1960 ...and the gains on the city's paper are the twin's
+  - L1962 ...the twin, which books no re-strike, booked none
+  - L1963 ...so the month's movement leaves nothing unexplained
+  - L1964 ...and its equity's two parts and the preferred add up to its equity
+  - L1965 ...the twin, which books no re-strike, closes too: its split is nothing
+  - L1967 ...and its movement's residual is nothing
+  - L1969 fixture: at the settle the bank took a material part of the sale's face and the households took more of the line
+  - L1972 the households' own discount per face of the line is what it was before the reopening, going into the settle
+  - L1974 ...the households' own discount rose by the face they took less what they paid for it
+  - L1976 the bank's book rose by exactly the face it took at the settle
+  - L1978 ...and the bank's own discount on the line rose by that face less what it paid for it
+  - L1980 the audit closed on the settle month
+  - L1981 ...and on the twin's
+  - L2007 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+  - L2009 three months on, the movement left nothing unexplained and the split still added up to the equity, every month
+  - L2010 ...and the twin's split stayed shut too, every month
+  - L2079 fixture: the bank holds part of a settled line, the line has discount left and the book carries the bank's share of it
+  - L2081 fixture: ...the bank's unearned discount is the book's going in, in the city
+  - L2082 fixture: ...and the twin's is the same city
+  - L2092 fixture: the second sale reopened the same line, between the presses, for proceeds over its face
+  - L2094 fixture: ...the premium is the unsettled sale's discount, below nothing: its face less what it raised
+  - L2096 fixture: ...so the line's discount left did not move at the sale: the premium is nobody's until the settle
+  - L2098 fixture: ...and the twin's line was reopened to the same face, price and discount
+  - L2104 nothing was re-struck at the sale: the premium waits for the settle
+  - L2105 ...the bank's own discount on the line did not move
+  - L2106 ...nor did the book's figure for the bank
+  - L2107 the bank's unearned discount is the book's
+  - L2108 ...its equity's movement leaves nothing unexplained
+  - L2109 ...and its equity's two parts and the preferred add up to its equity
+  - L2110 ...the twin, which books none, booked none
+  - L2111 ...and carries the book's figure too: nothing was re-struck for the two to differ by
+  - L2115 the statement's net income, tax and gains on the city's paper are the twin's, at once
+  - L2138 fixture: the bank paid more than the face it took at the settle: a premium
+  - L2139 the bank's premium came off its own discount on the line, floored at nothing
+  - L2141 ...so the settle re-strikes nothing but the shortfall of that discount under the premium (nothing, where it covers it)
+  - L2143 the month's movement leaves nothing unexplained
+  - L2144 ...and its equity's two parts and the preferred add up to its equity
+  - L2145 ...the audit closed on the month
+  - L2146 ...and on the twin's
+  - L2147 ...the twin, which books none, closes as the city's re-strike leaves it: its split is that, and nothing else
+  - L2149 ...and its movement left only that unexplained
+  - L2153 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+  - L2173 fixture: the second sale reopened the same line and it is unsettled: the market owes for it
+  - L2178 fixture: ...and the households hold part of the line, all the paper they hold
+  - L2184 fixture: the bank's unearned discount is the book's going in
+  - L2199 fixture: the desk bought some of the households' paper of the line, in the city and in its twin
+  - L2201 fixture: ...and the households' own discount is not the line's pool per face: far over what the movement's tolerance would pass
+  - L2203 fixture: ...and the two books of the households' paper still agree
+  - L2204 the book's figure for the bank rose by exactly the households' own discount on the face the desk bought
+  - L2206 ...and the households' own discount per face of what they keep did not move
+  - L2213 the bank's unearned discount is the book's
+  - L2214 ...nothing is re-struck: the desk was handed the households' own discount, and the book's figure rose by that
+  - L2216 ...its equity's movement leaves nothing unexplained
+  - L2217 ...and its equity's two parts and the preferred add up to its equity
+  - L2218 ...the twin, which books none, booked none
+  - L2219 ...and carries the book's figure too: nothing was re-struck for the two to differ by
+  - L2223 the statement's net income, tax and gains on the city's paper are the twin's, at once
+  - L2234 the settle re-strikes nothing: the month's re-strike is nothing
+  - L2235 ...so the month's movement leaves nothing unexplained
+  - L2236 ...and its equity's two parts and the preferred add up to its equity
+  - L2237 ...the audit closed on the month
+  - L2238 ...and on the twin's
+  - L2239 ...the twin, which books none, closes too: its split is nothing
+  - L2241 ...and its movement's residual is nothing
+  - L2244 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+  - L2304 fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance
+  - L2306 fixture: ...the bank's book covers the face it sells back, and its unearned discount the piece's
+  - L2308 fixture: ...bought straight back whole, all of it the bank's face, and off the books
+  - L2310 fixture: ...and the twin's the same, bit for bit
+  - L2312 the buyback re-struck nothing
+  - L2317 two months on, the bank's equity's parts are its equity again, as before the sale: the settle's payment cancelled what it sold back
+  - L2319 ...and the twin's (main before BK1) too
+  - L2324 ...the audit closed on both months, in the city and in the twin
+  - L2327 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+- **L2337 14. a holder left within HOLDING_ROUNDING of the face moved holds none, and one left more holds it (RT1)**
+  - L2346 fixture: the businesses hold exactly the face the desk takes all but an ulp or two of
+  - L2347 fixture: the old rule would have left them a hair above nothing, and the hair is under the floor on the face moved
+  - L2350 a sale meant to take all a holder holds, struck an ulp short, leaves it none
+  - L2353 ...and the face it held is the bank's: the holders' faces and the bank's still add up to the piece, to a part in HOLDING_ROUNDING
+  - L2360 a sale of part of a holding leaves the rest, exactly: not snapped
+  - L2369 a remainder of ten times the floor stays: above nothing, and within an ulp of the
+  - L2371 ...and one of half the floor, built the same way, is snapped to none
+  - L2379 the same holds for the households
+  - L2380 ...and the central bank
+  - L2381 ...and the world
+  - L2382 ...and for a buyback that takes the businesses' paper by the same ulp-short face (retirePart)
+  - L2388 fixture: scaled by the founding's FACTOR the old rule still leaves a hair above nothing
+  - L2390 at the founding's price level as at today's, the ulp-short sale leaves the businesses none: the floor is a share of the face moved
+  - L2392 fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped
+  - L2394 ...yet it stays, because the floor is a share of the face moved
+- **L2429 15. each holder's discount is its own, at the price it paid (BK2)**
+  - L2439 fixture: the treasury sold a twenty-year bond between the presses, and the fixture's settle of it was watched at both edges
+  - L2443 fixture: ...a new line, all of it unsettled going in, and no holder's discount on it yet
+  - L2445 fixture: ...the sale's discount is the unsettled sale's: its face less what it raised
+  - L2447 fixture: ...the households and the bank each took part of it, and the central bank none
+  - L2456 BANK: its own discount is the face it took less what it paid, the residual buyer's
+  - L2458 CENTRAL_BANK: it took none, so it has none of the discount
+  - L2459 ...and the line's discount left is the five owners' sum
+  - L2460 ...with nothing of the sale left unsettled
+  - L2461 ...and the five together are the sale's whole discount: its face less what it raised
+  - L2471 fixture: the second sale reopened the same line at a discount and is unsettled: the market owes for it
+  - L2475 a reopening at another price moves no owner's discount at the sale: the five are what they were, bit for bit
+  - L2476 ...the unsettled sales' discount is the reopening's face less what it raised
+  - L2480 after its settle the owners' sum, with nothing unsettled, is the line's discount left
+  - L2482 ...nothing of the sale is left unsettled
+  - L2483 ...and at the settle the owners' sum rose by the sale's discount, whole
+  - L2489 fixture: the households hold part of the line, and own discount on it
+  - L2493 the bank is handed the households' own discount times the face over their holding
+  - L2494 ...the bank's own discount rose by exactly that
+  - L2495 ...the households' fell by exactly that
+  - L2496 ...and the households' discount per face of what they keep did not move
+  - L2500 the bank handing face to the households hands them its own discount per face on it, whatever they paid
+  - L2502 ...the households' own rose by exactly that
+  - L2503 ...and the bank's discount per face of what it keeps did not move
+  - L2510 fixture: months are left past the last, and nothing is unsettled: the old pool's step is its discount over the months left
+  - L2519 the step the line returns is the bank's: the one income books
+  - L2520 ...and the five steps add up to the old pool's step: its discount left over the months left, the city's accretion unchanged
+  - L2534 fixture: the five holders' discounts per face are five different figures
+  - L2535 fixture: ...and together they are the discount of what was sold: 1,110 of face less the 1,001 it raised
+  - L2543 principal repaid moves no owner's discount: the five are what they were, bit for bit
+  - L2564 CENTRAL_BANK: the central bank does not sell, so its own discount stays, bit for bit
+  - L2573 fixture: a sale unsettled, and every owner has discount
+  - L2578 the unsettled sales' discount scales by it too
 
 ## HomeRailCheck.java - 45 labelled assertions
 
@@ -13630,7 +13760,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L605 ...an order for one more station than the slots free is refused NO_RIVER; one for the slots free is not (
   - L608 ...and one station goes ahead on the Earth's ground
 
-## InboxCheck.java - 44 labelled assertions
+## InboxCheck.java - 63 labelled assertions
 
 > Verifies the inbox: raising, refreshing, resolving, culling and the round
 > trip. Not part of the game.
@@ -13646,59 +13776,80 @@ _(this harness does not label its checks through a helper - it prints its findin
 >    notice that keeps its wording current, not forty notices saying the same
 > ...
 
-- **L69 1. a new city has an empty inbox**
-  - L75 the inbox starts empty
-  - L76 and nothing is urgent
-  - L77 and the envelope shows no count
-- **L79 2. living raises what is true**
-  - L124 something got raised
-  - L135 no condition has two live notices at once
-  - L138 
-  - L139 
+- **L72 1. a new city has an empty inbox**
+  - L78 the inbox starts empty
+  - L79 and nothing is urgent
+  - L80 and the envelope shows no count
+- **L82 2. living raises what is true**
+  - L127 something got raised
+  - L138 no condition has two live notices at once
   - L141 
-- **L145 3. unread, urgent, and then read**
-  - L164 a resolved notice never becomes urgent
-  - L172 it counts toward the envelope
-  - L175 reading it clears its urgency
-  - L176 and takes it off the count
-  - L177 but it is still in the inbox
-  - L178 and it still says what it said
-  - L186 reading it did not resolve it
-- **L189 4. a live notice is refreshed, never re-raised**
-  - L243 the run produced a standing problem to test
-  - L244 a live notice is never raised a second time
-  - L257 and keeps the month it was first raised
-- **L264 5. it survives a save and a reload**
-  - L267 the city saved
-  - L277 every notice came back
-  - L278 and so did what had been read
-  - L294 key, title, body and all three months round-trip
-- **L296 6. resolving and culling**
-  - L310 a fresh notice is urgent
-  - L312 a resolved notice is not urgent any more
-  - L313 but it is still there to read
-  - L314 and it still counts as unread
-  - L315 it knows how long ago it settled
-  - L317 just inside two years, it stays
-  - L331 a stale notice is loaded
-  - L345 and the next month drops it
-- **L347 7. the wait on ground, told again each year (PT1-M2)**
-- **L350 8. a new game forgets it**
-  - L354 nothing carried over from the old city
-- **L388 the wait on ground is told again each year (PT1-M2)**
-  - L407 the fixture made a sector wait on ground
-  - L475 the wait held to the end of the three years (the fixture held)
-  - L477 a wait back inside its year reopens that year's notice
-  - L478 told once a year: the first month and every LANDLOCK_REPEAT_MONTHS after
-  - L483 each new notice settles the one before it the same month
-  - L484 never two notices of the wait standing at once
-  - L485 each names every sector waiting
-  - L486 and the ground each needs, as its refusal gave it
-  - L487 saved mid-wait
-  - L488 and loaded with the standing notice's month
-  - L490 each notice toasted once: not again when reopened, nor on the load
-  - L502 once the ground is bought the standing notice settles
-  - L503 and is not told again for the year after
+  - L142 
+  - L144 
+- **L148 3. unread, urgent, and then read**
+  - L167 a resolved notice never becomes urgent
+  - L175 it counts toward the envelope
+  - L178 reading it clears its urgency
+  - L179 and takes it off the count
+  - L180 but it is still in the inbox
+  - L181 and it still says what it said
+  - L189 reading it did not resolve it
+- **L192 4. a live notice is refreshed, never re-raised**
+  - L246 the run produced a standing problem to test
+  - L247 a live notice is never raised a second time
+  - L260 and keeps the month it was first raised
+- **L267 5. it survives a save and a reload**
+  - L270 the city saved
+  - L280 every notice came back
+  - L281 and so did what had been read
+  - L297 key, title, body and all three months round-trip
+- **L299 6. resolving and culling**
+  - L313 a fresh notice is urgent
+  - L315 a resolved notice is not urgent any more
+  - L316 but it is still there to read
+  - L317 and it still counts as unread
+  - L318 it knows how long ago it settled
+  - L320 just inside two years, it stays
+  - L334 a stale notice is loaded
+  - L348 and the next month drops it
+- **L350 7. the wait on ground, told again each year (PT1-M2)**
+- **L353 8. wealth changes, rather than every month's reading (GV1)**
+- **L356 9. a new game forgets it**
+  - L360 nothing carried over from the old city
+- **L394 the wait on ground is told again each year (PT1-M2)**
+  - L413 the fixture made a sector wait on ground
+  - L481 the wait held to the end of the three years (the fixture held)
+  - L483 a wait back inside its year reopens that year's notice
+  - L484 told once a year: the first month and every LANDLOCK_REPEAT_MONTHS after
+  - L489 each new notice settles the one before it the same month
+  - L490 never two notices of the wait standing at once
+  - L491 each names every sector waiting
+  - L492 and the ground each needs, as its refusal gave it
+  - L493 saved mid-wait
+  - L494 and loaded with the standing notice's month
+  - L496 each notice toasted once: not again when reopened, nor on the load
+  - L508 once the ground is bought the standing notice settles
+  - L509 and is not told again for the year after
+- **L519 government wealth is told when its band changes (GV1)**
+  - L524 no wealth notice before a measured revenue year
+  - L527 fixture has a measured year of positive revenue
+  - L534 the first band is a read baseline, without urgency
+  - L537 the baseline produces no wealth toast
+  - L539 a stable band keeps its original notice
+  - L554 reading
+  - L559 crossing into
+  - L562 the notice names
+  - L564 the
+  - L568 a stable
+  - L573 an unread wealth change saves in scratch slot 10
+  - L577 loading preserves the unread change and its identity
+  - L583 loading and measuring a stable band do not repeat its toast
+  - L587 reading a change does not announce the band again
+  - L598 a standing band older than KEEP_MONTHS survives culling
+  - L600 the read standing band saves in scratch slot 10
+  - L605 a read band older than two years loads without a new notice
+  - L610 the remembered old band still detects the next crossing
+  - L614 unavailable revenue retains the last measured band
 
 ## IndustryViewCheck.java - 55 labelled assertions
 
@@ -17332,8 +17483,8 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L3250 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3305 AND EVERYTHING THAT IS A PURCHASE.**
 - **L3651 AND THE BEST OF THEM WINS.**
-- **L6168 founding: a few months at a time, by hand**
-- **L6265 then the real rhythm**
+- **L6183 founding: a few months at a time, by hand**
+- **L6280 then the real rhythm**
 - **L6413 the report**
 - **L6436 ==**
 - **L6533 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
@@ -22023,81 +22174,81 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   B is founded at today's prices (-Dcbs.priceLevel=1, PriceLevel's one door).
 > ...
 
-- **L233 1. the series: 126 years of the US consumer price index**
-- **L236 2. the world file's US dollar, from the founding to 2025, times the factor, is one**
-- **L239 3. each funnel carries the factor**
-- **L242 4. the rankings' bridge is the series' ratio**
-  - L249 the twin runs:
-- **L253 5. the named literals and the cross-file ratios, against today's figures**
-- **L270 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown**
-  - L284 the series' first year is the calendar's (CityCalendar.EPOCH_YEAR)
-  - L285 ...its last is the year the literals are priced in (WorldMarket.REFERENCE_YEAR)
-  - L286 ...so it spans 126 years
-  - L292 every year has a positive index
-  - L296 a year outside the series is refused
-  - L297 1913 is the BLS's first published year, and 1912 is Rees's
-  - L298 the factor is the first year's index over the last's (8.333 / 321.943)
-  - L300 ...about a thirty-eighth (the 1900 dollar buys 38.6 of today's)
-  - L301 atFounding(x) is x times the factor
-  - L315 no fixture:
-  - L320 the file -D
-  - L364 PayTier: each of the
-  - L365 ...and the ladder's shape (each rung over the unskilled) is today's
-  - L367 LabourMarket.GOING_RATE is the unskilled rung, not scaled again
-  - L368 ...and DEFAULT_MINIMUM_WAGE its share of it, not scaled again
-  - L370 ...and its dial's bounds are the rung's x.25 and x5
-  - L372 TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again
-  - L391 Good: the
-  - L392 ...a good that cannot be imported or exported still cannot (
-  - L393 ...and the wedge (freight and export over import) is each good's today's
-  - L394 BuildingManager.MATERIALS_WORLD_PRICE is Good.MATERIALS's import price, the one copy
-  - L409 ui.Money.unitPrice shows every one of the
-  - L413 consumption.json loads
-  - L427 consumption.json: its
-  - L428 ...to the bit what Good prices them at (ConsumptionCheck's equality)
-  - L433 buildings.json loads
-  - L457 buildings.json: the
-  - L458 ...the
-  - L459 ...the
-  - L460 ...and the
-  - L461 ...and the points, materials, land and capacity are the file's, untouched
-  - L467 the built-in definitions are priced at the founding's level too (the House, as the file's)
-  - L486 RealDollar.BRIDGE is the 2015 index over the founding year's (
-  - L488 ...a founding dollar is worth more than a 2015 one, because 1900's dollar bought more
-  - L489 a real 2015 dollar costs 1/BRIDGE of a founding one at the founding's rate (D$ per real US$)
-  - L490 a month's GDP over the index and the founding rate is bridged into real 2015 dollars
-  - L491 the founding game dollar is BRIDGE real ones; the factor makes the 2025 literals 1/BRIDGE-th of that again (1900 -> 2015 -> 2025)
-  - L566 the child at the factor ran with the factor (
-  - L567 the child at today's prices ran with 1
-  - L646 ...the
-  - L648 ...and the city really lived (more people at the end than the start)
-  - L759 some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them):
-  - L763 the default founding shows lines at the factor that the old half-thousand would have hidden:
-  - L1116 cash
-  - L1117 gdp.month
-  - L1118 bank.deposits
-  - L1119 retail.shelf
-  - L1120 rent
-  - L1121 wage.minimum
-  - L1122 rate
-  - L1123 world.level
-  - L1124 priceIndex
-  - L1125 pop
-  - L1126 workforce
-  - L1127 unemployed
-  - L1128 homes
-  - L1129 stores
-  - L1131 jobs.
-  - L1143 stock.
-  - L1145 sector.
-  - L1167 h.
-  - L1172 h.
-  - L1260 holdings.folded
-  - L1261 holdings.shown
-  - L1269 shown.
-  - L1272 band
-  - L1311 lanes
-  - L1312 arrows
+- **L242 1. the series: 126 years of the US consumer price index**
+- **L245 2. the world file's US dollar, from the founding to 2025, times the factor, is one**
+- **L248 3. each funnel carries the factor**
+- **L251 4. the rankings' bridge is the series' ratio**
+  - L258 the twin runs:
+- **L262 5. the named literals and the cross-file ratios, against today's figures**
+- **L279 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown**
+  - L293 the series' first year is the calendar's (CityCalendar.EPOCH_YEAR)
+  - L294 ...its last is the year the literals are priced in (WorldMarket.REFERENCE_YEAR)
+  - L295 ...so it spans 126 years
+  - L301 every year has a positive index
+  - L305 a year outside the series is refused
+  - L306 1913 is the BLS's first published year, and 1912 is Rees's
+  - L307 the factor is the first year's index over the last's (8.333 / 321.943)
+  - L309 ...about a thirty-eighth (the 1900 dollar buys 38.6 of today's)
+  - L310 atFounding(x) is x times the factor
+  - L324 no fixture:
+  - L329 the file -D
+  - L373 PayTier: each of the
+  - L374 ...and the ladder's shape (each rung over the unskilled) is today's
+  - L376 LabourMarket.GOING_RATE is the unskilled rung, not scaled again
+  - L377 ...and DEFAULT_MINIMUM_WAGE its share of it, not scaled again
+  - L379 ...and its dial's bounds are the rung's x.25 and x5
+  - L381 TaxPolicy.DEFAULT_FIXED_GRANT is its share of the unskilled rung, not scaled again
+  - L400 Good: the
+  - L401 ...a good that cannot be imported or exported still cannot (
+  - L402 ...and the wedge (freight and export over import) is each good's today's
+  - L403 BuildingManager.MATERIALS_WORLD_PRICE is Good.MATERIALS's import price, the one copy
+  - L418 ui.Money.unitPrice shows every one of the
+  - L422 consumption.json loads
+  - L436 consumption.json: its
+  - L437 ...to the bit what Good prices them at (ConsumptionCheck's equality)
+  - L442 buildings.json loads
+  - L466 buildings.json: the
+  - L467 ...the
+  - L468 ...the
+  - L469 ...and the
+  - L470 ...and the points, materials, land and capacity are the file's, untouched
+  - L476 the built-in definitions are priced at the founding's level too (the House, as the file's)
+  - L495 RealDollar.BRIDGE is the 2015 index over the founding year's (
+  - L497 ...a founding dollar is worth more than a 2015 one, because 1900's dollar bought more
+  - L498 a real 2015 dollar costs 1/BRIDGE of a founding one at the founding's rate (D$ per real US$)
+  - L499 a month's GDP over the index and the founding rate is bridged into real 2015 dollars
+  - L500 the founding game dollar is BRIDGE real ones; the factor makes the 2025 literals 1/BRIDGE-th of that again (1900 -> 2015 -> 2025)
+  - L575 the child at the factor ran with the factor (
+  - L576 the child at today's prices ran with 1
+  - L655 ...the
+  - L657 ...and the city really lived (more people at the end than the start)
+  - L768 some partner is given a lane in some month of at least one of the two cities (the floor at the factor draws them):
+  - L772 the default founding shows lines at the factor that the old half-thousand would have hidden:
+  - L1125 cash
+  - L1126 gdp.month
+  - L1127 bank.deposits
+  - L1128 retail.shelf
+  - L1129 rent
+  - L1130 wage.minimum
+  - L1131 rate
+  - L1132 world.level
+  - L1133 priceIndex
+  - L1134 pop
+  - L1135 workforce
+  - L1136 unemployed
+  - L1137 homes
+  - L1138 stores
+  - L1140 jobs.
+  - L1152 stock.
+  - L1154 sector.
+  - L1176 h.
+  - L1181 h.
+  - L1269 holdings.folded
+  - L1270 holdings.shown
+  - L1278 shown.
+  - L1281 band
+  - L1320 lanes
+  - L1321 arrows
 
 ## PrizeCheck.java - 215 labelled assertions
 
@@ -24319,150 +24470,150 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L735 a year of the founding's January (1900) is known at the founding: none
   - L740 the four labs are labs, and a school (the University), a house and nothing at all are not
 - **L773 9. the series: the researchers, the spend and the share fitted, every month as the model says, through a save, the year book and a reform**
-  - L809 fixture:
-  - L820 each field's researchers are recorded every month, the same length as the axis (
-  - L823 ...the lab's are in them: in the month the lab first worked, engineering's
-  - L828 researchSpend is every month's own figure, the month's research bill and prize paid, in each of the
-  - L829 ...in the find's month it is the bill and the prize together,
-  - L834 equipmentFitted is the share of the equipment fitted, between 0 and 1, in each month, as the stacks say (the last
-  - L841 a load restores the history whole: the three kinds of series, the same length and the same figures
-  - L844 ...and a month recorded on it follows: every series is still the axis' length
-  - L850 the year book rules each: the researchers are levels, the spend a flow, the share fitted a rate, each with a note, and nothing in the history is left without...
-  - L862 a reform of the money halves the spend and leaves the researchers and the share fitted alone
-  - L900 fixture: no equipment stands, so the share fitted is not a number
-  - L905 two months with nothing to count: the share fitted has not begun (no series), while the researchers and the spend have, month for month
-  - L916 a bakery built, it begins at the first month with equipment: NaN (not counting) in the
-  - L922 a cut at a month before the series began leaves no such series (not an empty one), the others kept; a cut at the end keeps it whole
-  - L930 through a save it comes back as it began: the same months blank, the same figures
-  - L938 every bakery pulled down, the month after records 0 on the series that has begun (a gap cannot be kept: the series lines up with the axis' end)
-- **L946 10. researchTown(): each of its guarantees**
-  - L948 founded the 1900 way, in month
-  - L952 (a) a discovery found HERE and at least two from ABROAD are on the timeline:
-  - L954 ...the find is PE1 at month 3, the world's are PE2 (month 6) and PE3 (month 13), in that order of months
-  - L966 (b) a stack stands with a known piece some of its buildings lack, and its sector's equipment lists it with a verdict that is not FITTED:
-  - L977 (c) a template is NEW, its origin within NEW_MONTHS of the month:
-  - L986 (d) a recipe is in use on a template with a recipe piece (the farms' horses) and on one with none (the Pulp Mill's):
-- **L1037 11. the Overview: each field's row is the model's own reads, and the words say them**
-  - L1040 fixture: a 1900 city with schools and grants that bought posts in engineering, medicine and business, none in law, and the posts struck at a fill
-  - L1045 a row for each field, in the enum's order
-  - L1071 each field's researchers, lab researchers, idle (the city's and the labs'), problems in reach, what they touch, and finds here and from abroad are the model'...
-  - L1073 fixture: some field has problems in reach and some has none, so \"nothing in reach\" and \"N in reach\" are both on the page
-  - L1074 the page's totals: found here and from abroad are the timeline's, and the rows add up
-  - L1084 the researchers of all the fields are the model's (the city's and the labs')
-  - L1085 ...and the idle among them
-  - L1086 ...the researchers at work are above nothing (the faculty and the filled posts)
-  - L1087 the money a month: the research bill is the economy's
-  - L1088 ...and is above nothing, the grants having bought posts the labour market filled
-  - L1089 ...the prizes paid the labs are Game.getPrizePaid() (none: no prize is set)
-  - L1091 researchers to each 1,000 at work: the researchers over the jobs filled, times 1,000 (
-  - L1093 ...and none where nobody works, whatever the researchers
-  - L1097 engineering is hosted by an Institute of Technology and two Universities: \"
-  - L1100 medicine by a Medical School and the Universities, business and law by the Universities alone (a school of the field first, the Universities after)
-  - L1107 ...the engineering count is every standing school the model's staffByField() gives it a share of:
-  - L1111 \"nothing in reach\" for none, \"1 in reach: rail\" for one, \"2 in reach: a; b\" for two, the count alone where the texts are blank
-  - L1115 the schools' words: none is \"no school\", one is singular, many plural (\"Universities\", \"Institutes of Technology\", \"Law Schools\")
-- **L1126 12. the Funding card: grant, prize, posts, room, researchers, bill, unspent grant, labs and the least prize that brings one, at the grant...**
-  - L1152 each field's card is the model's: grant, prize, posts struck and the grant's own (no pot here), room, post cost, the grant that fills the room, researchers
-  - L1154 the cards' bills add to the economy's research bill: the whole month's bill is the posts'
-  - L1155 some of a grant is unspent: a grant of half a post over its whole posts leaves most of that half unspent, never more than the grant
-  - L1158 law has no grant and the card says so: no posts, nothing unspent, and the room its Universities give it
-  - L1168 a field whose pot bought posts beyond the grant says so: the posts are the grant's and the pot's, the potPosts the difference, and the unspent grant is the g...
-  - L1196 the least prize that brings a lab to a field: at it the field's chase has a problem, a unit under it none, and none where no open problem could be finished b...
-  - L1198 fixture: some field has such a prize and some has none (
-  - L1199 no wages, no cost of a post, no threshold
-  - L1222 a staged grant buys the posts Research.posts() says within the room (none for none, the room's whole posts for a grant past it), gives the faculty and the fi...
-  - L1227 fixture: the catalogue has a Research Lab for medicine
-  - L1231 a lab built is a lab standing in its field's card, and only there:
-- **L1253 13. the preview through the game: the model's researchers, ResearchPreview's draws, cached, and a staged dial equal to the one in force i...**
-  - L1258 the first read of the preview runs it once
-  - L1259 the as-is preview is ResearchPreview's over the researchers the model has now and the prizes set, from ResearchPreview.DRAWS draws of ResearchPreview.SEED
-  - L1261 ...and finds something to say: the small problems of a young century are found in a good share of its draws (
-  - L1263 read again with nothing staged, or a null stage: the very same Result, no run
-  - L1273 a staged grant runs the preview once, with that field's researchers the faculty and the filled posts it buys (
-  - L1275 ...and the as-is is still kept: no run
-  - L1276 ...and the same stage read again is kept too
-  - L1280 a staged grant of nothing leaves the faculty alone to research (
-  - L1283 more researchers in a field find no less in it, fewer no more, from the same draws, and the three differ
-  - L1289 a staged grant equal to the grant in force is the as-is answer itself, kept, with no run
-  - L1296 a staged prize is the field's prize in the model's question, and runs once more
-  - L1298 ...and a prize pays: the field's purse is the prize times its finds
-  - L1304 a new month runs the preview again
-- **L1310 14. R5's gate review: the found-here and abroad counts laid on History's months, what is still to come, the bars' shares**
-  - L1315 fixture: the history has an axis of at least two months and the timeline has finds both ways
-  - L1327 the counts laid on History's months are, at each month of its axis, the discoveries at or before it, here and from abroad (
-  - L1328 ...and the last of them is the timeline's counts
-  - L1330 an axis with gaps is read at each of its own months: 3, 5, 6 and 40 (PE1 found in 3, PE2 abroad in 6, PE3 abroad in 13)
-  - L1334 an empty axis is empty, one month is one entry, and an axis that runs backwards is not a number throughout
-  - L1340 what is still to come is the catalogue's entries the city does not yet know (
-  - L1342 ...and the pure core subtracts and never goes below none
-  - L1358 the equipment bars' share is the fitted buildings over the buildings, 0 to 1, for each of the
-  - L1360 ...and a stack of no buildings has the share 0 on either bar, and a whole one 1
-- **L1369 15. a city founded the default way: nothing in reach, nothing to find, no lab to come, though the catalogue's dates say otherwise of the ...**
-  - L1379 fixture: founded the default way, with a University and a grant that bought posts; the catalogue, read by the date, would have problems open in engineering
-  - L1387 the Overview has nothing in reach, nothing found and nothing from abroad, and every researcher idle (the posts are jobs and the faculty is there, with nothin...
-  - L1389 ...and the Funding cards have no lab threshold
-  - L1391 ...the posts a grant buys are still the model's (the grant is paid and the posts are jobs)
-  - L1393 the preview has nothing to find, as is and staged
-  - L1395 what is still to come is none, the city having known them all at its founding
-- **L1405 16. the figures across the top and the dials' ranges: the sums, the words, the posts the room holds, and a range that reaches past what i...**
-  - L1413 the researchers at work are everyone less the idle, field by field
-  - L1414 ...and no more than all of them, and above nothing in the town
-  - L1415 the problems in reach are the fields' added (
-  - L1423 in reach by field: \"engineering 6 · medicine 2 · business and law none\" for two with some
-  - L1432 ...\"law none\" for one with none, no \"none\" for all with some, \"nothing in reach in any field\" for none
-  - L1436 ...and the town's own: it names the fields with something in reach with their counts
-  - L1445 the room in whole posts is the room floored, field by field
-  - L1450 ...58.7 is 58 whole posts (Research.posts() floors, so a grant that fills the room buys 58), none is none, and what is not a number is none
-  - L1465 the grant dial runs from nothing in round steps (1, 2 or 5 times a power of ten, not above a post's cost and over two fifths of it), a whole number of them, ...
-  - L1469 ...a grant in force beyond what the room asks for is still on the dial (2,500 posts), 20% past the room otherwise (100 posts: 120), and a post with no cost i...
-  - L1473 niceFloor: the greatest of 1, 2 and 5 times a power of ten not above the figure; a step stays put while the cost walks (0.5158 and 0.53 are both 0.5; 0.99 is...
-  - L1478 ...so a month's wages moving a post's cost by a little leave the grant dial's step where it was (
-  - L1482 niceCeil: the least of 1, 2 and 5 times a power of ten not below the figure
-  - L1495 the prize dial runs from nothing to a round number that reaches
-  - L1499 ...a prize in force past it, and a threshold past it, are on the dial
-  - L1501 the researchers in labs are the posts of a lab for each, none for none or fewer
-- **L1508 17. the card: nothing staged is the same figure on both sides; a staged grant and prize are the model's posts, bill, labs and preview**
-  - L1523 nothing staged: every row has the same figure on both sides, the grant and the prize are the ones in force
-  - L1524 ...and the preview's words are one on both sides
-  - L1530 the card's \"now\" is the Funding read and the Overview's: researchers = the faculty and the posts' (
-  - L1533 ...and the preview's figures for the field are the Result's: finds
-  - L1543 a staged grant: the card is moved, the grant shown is the staged one, the prize is not
-  - L1544 ...its posts, researchers and bill are atGrant()'s (
-  - L1547 ...the unspent is what the grant leaves of the posts' pay (the grant less the grant's posts' bill, never below none)
-  - L1549 ...and the preview is the staged Result's, the \"now\" the one in force
-  - L1551 ...and the grant in force staged is no change (nothing is moved by staging what is set)
-  - L1558 a grant past the room buys the room's posts (
-  - L1560 ...and what it leaves unspent is above nothing (the grant over the posts' pay), the card says so
-  - L1561 ...and a card with a hundredth of a dollar unspent says nothing of it
-  - L1566 fixture: engineering has a least prize that brings a lab in this town (
-  - L1571 a staged prize: the card is moved by the prize alone, the labs are the staged preview's first month (
-  - L1574 ...whatever labs it brings are a lab's posts each (
-  - L1577 ...and the card without a prize move keeps the labs the town has (
-  - L1581 a chance under one is a percent and a count from one up: asChance() of the pair, and previewWords() says \"none\", \"under 1%\", \"25%\", \"1.10\"
-- **L1589 18. the schools' research posts: a kind's share of each field's posts by its share of the room, and THE BUDGET with the staged grants' posts**
-  - L1611 the kinds of school together stand up the game's own staff in each field (Game.researchStaff()), and give it their rooms' sum as the field's room
-  - L1612 ...the posts struck, over the kinds that carry them, are the research's own (
-  - L1615 the University hosts all four fields (
-  - L1618 ...the Medical School, with the Universities, carries medicine's posts between them: its share is its room over the field's
-  - L1620 a kind of school that hosts none (a high school, a college), and one of which none stands (a Law school), carries nothing
-  - L1623 the kinds that host research are the University, the Institute of technology and the Medical, Business and Law schools, and no other
-  - L1628 the Overview's schools are the hosting kinds that stand, with how many: the University (2), the Medical School (1) and the Institute of technology (1) - in t...
-  - L1635 THE BUDGET with nothing staged is the books' balance on both sides (
-  - L1640 a staged grant adds its posts' bill to the research bill and takes it off the balance:
-  - L1642 ...a prize moves nothing (it is paid on a find), and two grants together move it by the two bills
-- **L1661 20. a city founded the default way with a University and no grant now: its researchers are the faculty's own, and they survive a save**
-  - L1670 fixture: founded the default way with a University, its grant taken away a month ago, its faculty at research (
-  - L1672 the Overview counts no post where no grant bought one (
-  - L1673 the research has nothing of its own (empty) and still has the month's counts to show
-  - L1676 the city is saved
-  - L1678 ...with its research written for the faculty's counts alone
-  - L1681 loaded without a failure
-  - L1682 the loaded city reads the same counts in every field before it plays a month:
-  - L1685 ...so its Overview (and the hub's card) show the same researchers and idle (
-- **L1692 19. a lab standing: the card counts it and its researchers, and the same lab is on both sides of a card that moves a grant**
-  - L1701 fixture: an Engineering Research Lab stands and its researchers are counted (
-  - L1703 the card counts the lab and its researchers with the field's: researchers
-  - L1709 a grant staged lower moves the field's researchers and not the lab's: the lab is on both sides (
+  - L817 fixture:
+  - L828 each field's researchers are recorded every month, the same length as the axis (
+  - L831 ...the lab's are in them: in the month the lab first worked, engineering's
+  - L836 researchSpend is every month's own figure, the month's research bill and prize paid, in each of the
+  - L837 ...in the find's month it is the bill and the prize together,
+  - L842 equipmentFitted is the share of the equipment fitted, between 0 and 1, in each month, as the stacks say (the last
+  - L849 a load restores the history whole: the three kinds of series, the same length and the same figures
+  - L852 ...and a month recorded on it follows: every series is still the axis' length
+  - L858 the year book rules each: the researchers are levels, the spend a flow, the share fitted a rate, each with a note, and nothing in the history is left without...
+  - L870 a reform of the money halves the spend and leaves the researchers and the share fitted alone
+  - L908 fixture: no equipment stands, so the share fitted is not a number
+  - L913 two months with nothing to count: the share fitted has not begun (no series), while the researchers and the spend have, month for month
+  - L924 a bakery built, it begins at the first month with equipment: NaN (not counting) in the
+  - L930 a cut at a month before the series began leaves no such series (not an empty one), the others kept; a cut at the end keeps it whole
+  - L938 through a save it comes back as it began: the same months blank, the same figures
+  - L946 every bakery pulled down, the month after records 0 on the series that has begun (a gap cannot be kept: the series lines up with the axis' end)
+- **L954 10. researchTown(): each of its guarantees**
+  - L956 founded the 1900 way, in month
+  - L960 (a) a discovery found HERE and at least two from ABROAD are on the timeline:
+  - L962 ...the find is PE1 at month 3, the world's are PE2 (month 6) and PE3 (month 13), in that order of months
+  - L974 (b) a stack stands with a known piece some of its buildings lack, and its sector's equipment lists it with a verdict that is not FITTED:
+  - L985 (c) a template is NEW, its origin within NEW_MONTHS of the month:
+  - L994 (d) a recipe is in use on a template with a recipe piece (the farms' horses) and on one with none (the Pulp Mill's):
+- **L1045 11. the Overview: each field's row is the model's own reads, and the words say them**
+  - L1048 fixture: a 1900 city with schools and grants that bought posts in engineering, medicine and business, none in law, and the posts struck at a fill
+  - L1053 a row for each field, in the enum's order
+  - L1079 each field's researchers, lab researchers, idle (the city's and the labs'), problems in reach, what they touch, and finds here and from abroad are the model'...
+  - L1081 fixture: some field has problems in reach and some has none, so \"nothing in reach\" and \"N in reach\" are both on the page
+  - L1082 the page's totals: found here and from abroad are the timeline's, and the rows add up
+  - L1092 the researchers of all the fields are the model's (the city's and the labs')
+  - L1093 ...and the idle among them
+  - L1094 ...the researchers at work are above nothing (the faculty and the filled posts)
+  - L1095 the money a month: the research bill is the economy's
+  - L1096 ...and is above nothing, the grants having bought posts the labour market filled
+  - L1097 ...the prizes paid the labs are Game.getPrizePaid() (none: no prize is set)
+  - L1099 researchers to each 1,000 at work: the researchers over the jobs filled, times 1,000 (
+  - L1101 ...and none where nobody works, whatever the researchers
+  - L1105 engineering is hosted by an Institute of Technology and two Universities: \"
+  - L1108 medicine by a Medical School and the Universities, business and law by the Universities alone (a school of the field first, the Universities after)
+  - L1115 ...the engineering count is every standing school the model's staffByField() gives it a share of:
+  - L1119 \"nothing in reach\" for none, \"1 in reach: rail\" for one, \"2 in reach: a; b\" for two, the count alone where the texts are blank
+  - L1123 the schools' words: none is \"no school\", one is singular, many plural (\"Universities\", \"Institutes of Technology\", \"Law Schools\")
+- **L1134 12. the Funding card: grant, prize, posts, room, researchers, bill, unspent grant, labs and the least prize that brings one, at the grant...**
+  - L1160 each field's card is the model's: grant, prize, posts struck and the grant's own (no pot here), room, post cost, the grant that fills the room, researchers
+  - L1162 the cards' bills add to the economy's research bill: the whole month's bill is the posts'
+  - L1163 some of a grant is unspent: a grant of half a post over its whole posts leaves most of that half unspent, never more than the grant
+  - L1166 law has no grant and the card says so: no posts, nothing unspent, and the room its Universities give it
+  - L1176 a field whose pot bought posts beyond the grant says so: the posts are the grant's and the pot's, the potPosts the difference, and the unspent grant is the g...
+  - L1204 the least prize that brings a lab to a field: at it the field's chase has a problem, a unit under it none, and none where no open problem could be finished b...
+  - L1206 fixture: some field has such a prize and some has none (
+  - L1207 no wages, no cost of a post, no threshold
+  - L1230 a staged grant buys the posts Research.posts() says within the room (none for none, the room's whole posts for a grant past it), gives the faculty and the fi...
+  - L1235 fixture: the catalogue has a Research Lab for medicine
+  - L1239 a lab built is a lab standing in its field's card, and only there:
+- **L1261 13. the preview through the game: the model's researchers, ResearchPreview's draws, cached, and a staged dial equal to the one in force i...**
+  - L1266 the first read of the preview runs it once
+  - L1267 the as-is preview is ResearchPreview's over the researchers the model has now and the prizes set, from ResearchPreview.DRAWS draws of ResearchPreview.SEED
+  - L1269 ...and finds something to say: the small problems of a young century are found in a good share of its draws (
+  - L1271 read again with nothing staged, or a null stage: the very same Result, no run
+  - L1281 a staged grant runs the preview once, with that field's researchers the faculty and the filled posts it buys (
+  - L1283 ...and the as-is is still kept: no run
+  - L1284 ...and the same stage read again is kept too
+  - L1288 a staged grant of nothing leaves the faculty alone to research (
+  - L1291 more researchers in a field find no less in it, fewer no more, from the same draws, and the three differ
+  - L1297 a staged grant equal to the grant in force is the as-is answer itself, kept, with no run
+  - L1304 a staged prize is the field's prize in the model's question, and runs once more
+  - L1306 ...and a prize pays: the field's purse is the prize times its finds
+  - L1312 a new month runs the preview again
+- **L1318 14. R5's gate review: the found-here and abroad counts laid on History's months, what is still to come, the bars' shares**
+  - L1323 fixture: the history has an axis of at least two months and the timeline has finds both ways
+  - L1335 the counts laid on History's months are, at each month of its axis, the discoveries at or before it, here and from abroad (
+  - L1336 ...and the last of them is the timeline's counts
+  - L1338 an axis with gaps is read at each of its own months: 3, 5, 6 and 40 (PE1 found in 3, PE2 abroad in 6, PE3 abroad in 13)
+  - L1342 an empty axis is empty, one month is one entry, and an axis that runs backwards is not a number throughout
+  - L1348 what is still to come is the catalogue's entries the city does not yet know (
+  - L1350 ...and the pure core subtracts and never goes below none
+  - L1366 the equipment bars' share is the fitted buildings over the buildings, 0 to 1, for each of the
+  - L1368 ...and a stack of no buildings has the share 0 on either bar, and a whole one 1
+- **L1377 15. a city founded the default way: nothing in reach, nothing to find, no lab to come, though the catalogue's dates say otherwise of the ...**
+  - L1387 fixture: founded the default way, with a University and a grant that bought posts; the catalogue, read by the date, would have problems open in engineering
+  - L1395 the Overview has nothing in reach, nothing found and nothing from abroad, and every researcher idle (the posts are jobs and the faculty is there, with nothin...
+  - L1397 ...and the Funding cards have no lab threshold
+  - L1399 ...the posts a grant buys are still the model's (the grant is paid and the posts are jobs)
+  - L1401 the preview has nothing to find, as is and staged
+  - L1403 what is still to come is none, the city having known them all at its founding
+- **L1413 16. the figures across the top and the dials' ranges: the sums, the words, the posts the room holds, and a range that reaches past what i...**
+  - L1421 the researchers at work are everyone less the idle, field by field
+  - L1422 ...and no more than all of them, and above nothing in the town
+  - L1423 the problems in reach are the fields' added (
+  - L1431 in reach by field: \"engineering 6 · medicine 2 · business and law none\" for two with some
+  - L1440 ...\"law none\" for one with none, no \"none\" for all with some, \"nothing in reach in any field\" for none
+  - L1444 ...and the town's own: it names the fields with something in reach with their counts
+  - L1453 the room in whole posts is the room floored, field by field
+  - L1458 ...58.7 is 58 whole posts (Research.posts() floors, so a grant that fills the room buys 58), none is none, and what is not a number is none
+  - L1473 the grant dial runs from nothing in round steps (1, 2 or 5 times a power of ten, not above a post's cost and over two fifths of it), a whole number of them, ...
+  - L1477 ...a grant in force beyond what the room asks for is still on the dial (2,500 posts), 20% past the room otherwise (100 posts: 120), and a post with no cost i...
+  - L1481 niceFloor: the greatest of 1, 2 and 5 times a power of ten not above the figure; a step stays put while the cost walks (0.5158 and 0.53 are both 0.5; 0.99 is...
+  - L1486 ...so a month's wages moving a post's cost by a little leave the grant dial's step where it was (
+  - L1490 niceCeil: the least of 1, 2 and 5 times a power of ten not below the figure
+  - L1503 the prize dial runs from nothing to a round number that reaches
+  - L1507 ...a prize in force past it, and a threshold past it, are on the dial
+  - L1509 the researchers in labs are the posts of a lab for each, none for none or fewer
+- **L1516 17. the card: nothing staged is the same figure on both sides; a staged grant and prize are the model's posts, bill, labs and preview**
+  - L1531 nothing staged: every row has the same figure on both sides, the grant and the prize are the ones in force
+  - L1532 ...and the preview's words are one on both sides
+  - L1538 the card's \"now\" is the Funding read and the Overview's: researchers = the faculty and the posts' (
+  - L1541 ...and the preview's figures for the field are the Result's: finds
+  - L1551 a staged grant: the card is moved, the grant shown is the staged one, the prize is not
+  - L1552 ...its posts, researchers and bill are atGrant()'s (
+  - L1555 ...the unspent is what the grant leaves of the posts' pay (the grant less the grant's posts' bill, never below none)
+  - L1557 ...and the preview is the staged Result's, the \"now\" the one in force
+  - L1559 ...and the grant in force staged is no change (nothing is moved by staging what is set)
+  - L1566 a grant past the room buys the room's posts (
+  - L1568 ...and what it leaves unspent is above nothing (the grant over the posts' pay), the card says so
+  - L1569 ...and a card with a hundredth of a dollar unspent says nothing of it
+  - L1574 fixture: engineering has a least prize that brings a lab in this town (
+  - L1579 a staged prize: the card is moved by the prize alone, the labs are the staged preview's first month (
+  - L1582 ...whatever labs it brings are a lab's posts each (
+  - L1585 ...and the card without a prize move keeps the labs the town has (
+  - L1589 a chance under one is a percent and a count from one up: asChance() of the pair, and previewWords() says \"none\", \"under 1%\", \"25%\", \"1.10\"
+- **L1597 18. the schools' research posts: a kind's share of each field's posts by its share of the room, and THE BUDGET with the staged grants' posts**
+  - L1619 the kinds of school together stand up the game's own staff in each field (Game.researchStaff()), and give it their rooms' sum as the field's room
+  - L1620 ...the posts struck, over the kinds that carry them, are the research's own (
+  - L1623 the University hosts all four fields (
+  - L1626 ...the Medical School, with the Universities, carries medicine's posts between them: its share is its room over the field's
+  - L1628 a kind of school that hosts none (a high school, a college), and one of which none stands (a Law school), carries nothing
+  - L1631 the kinds that host research are the University, the Institute of technology and the Medical, Business and Law schools, and no other
+  - L1636 the Overview's schools are the hosting kinds that stand, with how many: the University (2), the Medical School (1) and the Institute of technology (1) - in t...
+  - L1643 THE BUDGET with nothing staged is the books' balance on both sides (
+  - L1648 a staged grant adds its posts' bill to the research bill and takes it off the balance:
+  - L1650 ...a prize moves nothing (it is paid on a find), and two grants together move it by the two bills
+- **L1669 20. a city founded the default way with a University and no grant now: its researchers are the faculty's own, and they survive a save**
+  - L1678 fixture: founded the default way with a University, its grant taken away a month ago, its faculty at research (
+  - L1680 the Overview counts no post where no grant bought one (
+  - L1681 the research has nothing of its own (empty) and still has the month's counts to show
+  - L1684 the city is saved
+  - L1686 ...with its research written for the faculty's counts alone
+  - L1689 loaded without a failure
+  - L1690 the loaded city reads the same counts in every field before it plays a month:
+  - L1693 ...so its Overview (and the hub's card) show the same researchers and idle (
+- **L1700 19. a lab standing: the card counts it and its researchers, and the same lab is on both sides of a card that moves a grant**
+  - L1709 fixture: an Engineering Research Lab stands and its researchers are counted (
+  - L1711 the card counts the lab and its researchers with the field's: researchers
+  - L1717 a grant staged lower moves the field's researchers and not the lab's: the lab is on both sides (
 
 ## RestaurantsCheck.java - 36 labelled assertions
 

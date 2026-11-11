@@ -1,6 +1,6 @@
 # PolicyPreview.java - 661 lines · 55 methods · 0 constants · model
 
-`ham/citybuildersim/PolicyPreview.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyPreview.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > What a staged set of the Policy tab's dials would do, by the model's own
 > arithmetic (0.7.36): the tax take under another policy, line by line, and
@@ -56,7 +56,7 @@
 
 **Uses:** [Game](Game.md) (41), [TaxPolicy](TaxPolicy.md) (17), [WageBand](WageBand.md) (8), [EconomyManager](EconomyManager.md) (8), [Ports](Ports.md) (6), [Sectors](Sectors.md) (6), [TreasuryFund](TreasuryFund.md) (6), [Zoning](Zoning.md) (5), [DebtManager](DebtManager.md) (5), [Freight](Freight.md) (4), [JobType](JobType.md) (4), [Sector](Sector.md) (3), [Healthcare](Healthcare.md) (3), [LandManager](LandManager.md) (3), [HouseholdBalance](HouseholdBalance.md) (2), [Retail](Retail.md) (2), [PortDivision](PortDivision.md) (2), [LabourMarket](LabourMarket.md) (2), [BuildingType](BuildingType.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [Unemployment](Unemployment.md) (1), [Research](Research.md) (1), [EducationType](EducationType.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [Resource](Resource.md) (1), [PriceIndex](PriceIndex.md) (1)
 
-**Used by (15):** [CentralBankCheck](CentralBankCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [FloorView](FloorView.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (17):** [CentralBankCheck](CentralBankCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [FloorView](FloorView.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [GovernmentView](GovernmentView.md), [GovernmentViewCheck](GovernmentViewCheck.md), [GroceryCheck](GroceryCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 

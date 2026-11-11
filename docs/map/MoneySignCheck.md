@@ -1,6 +1,6 @@
 # MoneySignCheck.java - 397 lines · 9 methods · 5 constants · harnesses
 
-`ham/citybuildersim/MoneySignCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneySignCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The money's sign is the city's to choose and place, and with the default it
 > writes what it always wrote (FM1). Not part of the game.

@@ -1,6 +1,6 @@
 # KeptBench.java - 4,894 lines · 545 methods · 11 constants · interface
 
-`ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The People page on a scene of its own - no stage, no window - drawn kept and built new, for
 > KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui

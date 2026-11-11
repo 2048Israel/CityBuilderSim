@@ -1,6 +1,6 @@
 # SignFont.java - 71 lines · 4 methods · 2 constants · interface
 
-`ham/citybuildersim/ui/SignFont.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SignFont.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > Which signs for the city's money the interface's own faces can draw.
 > 

@@ -35,6 +35,9 @@ import java.util.List;
  *    standing condition told again: a new notice each year it lasts, naming
  *    the sectors and the ground each needs, on a rhythm a save and a load
  *    keep, and silent once the ground is bought (section 7).
+ * 6. FORGOTTEN WEALTH BAND (GV1). The first measured band is a quiet
+ *    baseline; a crossing raises one notice, and the saved standing band
+ *    survives reading, loading and the resolved notices' two-year cull.
  *
  * The awkward part of testing this is that the four conditions are hard to
  * cause on purpose - a bank does not fail when you ask it to. So the lifecycle
@@ -347,7 +350,10 @@ public class InboxCheck {
         /* ============ 7. the wait on ground, told again each year (PT1-M2) ============ */
         landWaitRetold(files);
 
-        /* ============ 8. a new game forgets it ============ */
+        /* ============ 8. wealth changes, rather than every month's reading (GV1) ============ */
+        wealthBandChanges(files);
+
+        /* ============ 9. a new game forgets it ============ */
         System.out.println("\n--- and a new game starts with a clean inbox ---");
 
         quietly(reloaded::newGame);
@@ -506,6 +512,125 @@ public class InboxCheck {
     /** Whether the city has the wait on ground standing now. */
     static boolean waitStanding(Game city) {
         return city.getInbox().live("landlock") != null;
+    }
+
+    /** Section 8 (GV1): cause each band with treasury cash, leaving the measured revenue and the rest of the wealth alone. */
+    static void wealthBandChanges(GameFiles files) {
+        System.out.println("\n--- government wealth is told when its band changes (GV1) ---");
+        Game city = new Game(files);
+        quietly(city::newGame);
+        Inbox inbox = city.getInbox();
+        quietly(() -> inbox.takeMonth(city));
+        assertTrue("no wealth notice before a measured revenue year", wealthNotices(inbox).isEmpty());
+        quietly(() -> city.simulateMonths(Math.max(Inbox.KEEP_MONTHS + 2, GovernmentView.REVENUE_MONTHS)));
+        boolean measured = Double.isFinite(GovernmentView.of(city).wealthYears());
+        assertTrue("fixture has a measured year of positive revenue", measured);
+        if (!measured) return;
+
+        inbox.reset();
+        setWealthYears(city, GovernmentView.THIN_MIN / 2);
+        quietly(() -> inbox.takeMonth(city));
+        Notice first = inbox.live(Inbox.WEALTH_BAND_PREFIX + GovernmentView.Band.BROKE.name());
+        assertTrue("the first band is a read baseline, without urgency", first != null && first.isRead() && !first.isUrgent());
+        if (first == null) return;
+        java.util.Set<String> toasted = new java.util.HashSet<>();
+        assertTrue("the baseline produces no wealth toast", wealthNotices(inbox.toToast(toasted)).isEmpty());
+        for (int i = 0; i < 3; i++) quietly(() -> inbox.takeMonth(city));
+        assertTrue("a stable band keeps its original notice", wealthNotices(inbox).size() == 1
+                && inbox.live(first.getKey()) == first);
+
+        GovernmentView.Band[] bands = { GovernmentView.Band.THIN, GovernmentView.Band.SOUND,
+                GovernmentView.Band.RICH, GovernmentView.Band.HOARDING };
+        double[] years = { (GovernmentView.THIN_MIN + GovernmentView.SOUND_MIN) / 2,
+                (GovernmentView.SOUND_MIN + GovernmentView.RICH_MIN) / 2,
+                (GovernmentView.RICH_MIN + GovernmentView.HOARDING_MIN) / 2, GovernmentView.HOARDING_MIN + 1 };
+        Notice current = first;
+        for (int i = 0; i < bands.length; i++) {
+            GovernmentView.Band band = bands[i];
+            setWealthYears(city, years[i]);
+            int before = wealthNotices(inbox).size();
+            GovernmentView view = GovernmentView.of(city);
+            inbox.newestFirst(); inbox.urgent(); inbox.unread();
+            assertTrue("reading " + band.label() + " does not raise a notice", view.band() == band
+                    && wealthNotices(inbox).size() == before && !current.isResolved());
+            double cash = city.getCash();
+            quietly(() -> inbox.takeMonth(city));
+            Notice next = inbox.live(Inbox.WEALTH_BAND_PREFIX + band.name());
+            assertTrue("crossing into " + band.label() + " raises one unread notice", next != null && next.isUrgent()
+                    && current.isResolved() && wealthNotices(inbox).size() == before + 1);
+            if (next == null) return;
+            assertTrue("the notice names " + band.label() + " from the model", next.getTitle().contains(band.label())
+                    && String.join(" ", next.getBody()).contains(band.label()) && city.getCash() == cash);
+            assertTrue("the " + band.label() + " change is toasted once", wealthNotices(inbox.toToast(toasted)).size() == 1
+                    && wealthNotices(inbox.toToast(toasted)).isEmpty());
+            if (i < bands.length - 1) inbox.markRead(next, city.getMonth());
+            quietly(() -> inbox.takeMonth(city));
+            assertTrue("a stable " + band.label() + " band keeps its read state", inbox.live(next.getKey()) == next
+                    && wealthNotices(inbox).size() == before + 1 && next.isRead() == (i < bands.length - 1));
+            current = next;
+        }
+
+        assertTrue("an unread wealth change saves in scratch slot 10", city.saveGame(10, "inbox-wealth").ok);
+        Game loaded = new Game(files);
+        quietly(() -> loaded.loadGameSave(10));
+        Notice returned = loaded.getInbox().live(current.getKey());
+        assertTrue("loading preserves the unread change and its identity", sameNotice(current, returned) && returned.isUrgent());
+        if (returned == null) return;
+        int count = wealthNotices(loaded.getInbox()).size();
+        java.util.Set<String> afterLoad = new java.util.HashSet<>();
+        loaded.getInbox().markAllToasted(afterLoad);
+        quietly(() -> loaded.getInbox().takeMonth(loaded));
+        assertTrue("loading and measuring a stable band do not repeat its toast", loaded.getInbox().live(returned.getKey()) == returned
+                && wealthNotices(loaded.getInbox()).size() == count && wealthNotices(loaded.getInbox().toToast(afterLoad)).isEmpty());
+        loaded.getInbox().markRead(returned, loaded.getMonth());
+        quietly(() -> loaded.getInbox().takeMonth(loaded));
+        assertTrue("reading a change does not announce the band again", returned.isRead()
+                && loaded.getInbox().live(returned.getKey()) == returned && wealthNotices(loaded.getInbox()).size() == count);
+
+        // The current band is older than the cull's window; the previous band
+        // is resolved equally long ago. Only the standing baseline must stay.
+        Notice oldBand = new Notice(returned.getKey(), returned.getTitle(), returned.getBody(), 1);
+        oldBand.markRead(1);
+        Notice settled = new Notice(Inbox.WEALTH_BAND_PREFIX + GovernmentView.Band.RICH.name(), "Old band", List.of("Old band"), 1);
+        settled.markResolved(1);
+        loaded.getInbox().restoreFrom(List.of(settled, oldBand));
+        quietly(() -> loaded.getInbox().takeMonth(loaded));
+        assertTrue("a standing band older than KEEP_MONTHS survives culling", loaded.getMonth() - oldBand.getRaised() > Inbox.KEEP_MONTHS
+                && loaded.getInbox().live(oldBand.getKey()) == oldBand && wealthNotices(loaded.getInbox()).size() == 1);
+        assertTrue("the read standing band saves in scratch slot 10", loaded.saveGame(10, "inbox-wealth-aged").ok);
+        Game aged = new Game(files);
+        quietly(() -> aged.loadGameSave(10));
+        Notice remembered = aged.getInbox().live(oldBand.getKey());
+        quietly(() -> aged.getInbox().takeMonth(aged));
+        assertTrue("a read band older than two years loads without a new notice", sameNotice(oldBand, remembered)
+                && aged.getInbox().live(oldBand.getKey()) == remembered && wealthNotices(aged.getInbox()).size() == 1);
+        setWealthYears(aged, (GovernmentView.THIN_MIN + GovernmentView.SOUND_MIN) / 2);
+        quietly(() -> aged.getInbox().takeMonth(aged));
+        Notice changed = aged.getInbox().live(Inbox.WEALTH_BAND_PREFIX + GovernmentView.Band.THIN.name());
+        assertTrue("the remembered old band still detects the next crossing", changed != null && changed.isUrgent()
+                && remembered != null && remembered.isResolved() && wealthNotices(aged.getInbox()).size() == 2);
+        aged.getHistorySave().restoreFrom(new HistorySave());
+        quietly(() -> aged.getInbox().takeMonth(aged));
+        assertTrue("unavailable revenue retains the last measured band", GovernmentView.of(aged).band() == null
+                && changed != null && aged.getInbox().live(changed.getKey()) == changed && wealthNotices(aged.getInbox()).size() == 2);
+    }
+
+    /** Set only treasury cash, so the government's measured wealth reaches the stated interior of a band. */
+    static void setWealthYears(Game city, double years) {
+        GovernmentView view = GovernmentView.of(city);
+        city.setCashForTest(city.getCash() + (years - view.wealthYears()) * view.annualRevenue());
+    }
+
+    static List<Notice> wealthNotices(Inbox inbox) { return wealthNotices(inbox.all()); }
+    static List<Notice> wealthNotices(List<Notice> notices) {
+        return notices.stream().filter(n -> n.getKey().startsWith(Inbox.WEALTH_BAND_PREFIX)).toList();
+    }
+
+    /** The saved identity and state, rather than Java object identity across a load. */
+    static boolean sameNotice(Notice was, Notice now) {
+        return was != null && now != null && was.getKey().equals(now.getKey()) && was.getTitle().equals(now.getTitle())
+                && was.getBody().equals(now.getBody()) && was.getRaised() == now.getRaised()
+                && was.getRead() == now.getRead() && was.getResolved() == now.getResolved();
     }
 
     /** A notice settled longer ago than the inbox keeps them. */

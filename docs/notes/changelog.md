@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.91 — GV1, the government's wealth and the test player's January — 2026-11-10, ready, see docs/queue/GV1-notes.md
+Government > Overview shows net financial wealth in years of recorded revenue, its five bands,
+and the existing buyback, tax and transfer controls with monthly previews. Band changes are saved
+notices; the first full year's band is a quiet baseline. GV2 is folded in: the playtest, ensemble
+and WealthRun share one January player rule, moving taxes, pensions/EI and fund withdrawal by
+the wealth band, replacing scripted taxes; live cities remain under the player's hand. Discount
+bills and affordable partial buybacks use the existing auction without repricing on a screen read.
+GovernmentViewCheck, GovernmentPlayerCheck and InboxCheck hold the figures, gates and save path;
+the final picked checks exit 0, eleven passed, and the kept page and its three doors were checked.
+The ensemble finishes 80/80, 20/26 criteria, all audits clean: main's A2/A3 remain, H2 and three
+population-size criteria newly fail. These findings stand, with calibration left as GV1-E.
+
 ### 0.9.90 — BO1, business owners, built and switched off — 2026-11-10, ready, see docs/queue/BO1-notes.md
 The owner families (Jerus, 2026-11-02: "few in nature and very rich", "one per
 listed company", "No job"): a household row after the prisoners',

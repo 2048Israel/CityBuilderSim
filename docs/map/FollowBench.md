@@ -1,6 +1,6 @@
 # FollowBench.java - 795 lines · 28 methods · 13 constants · interface
 
-`ham/citybuildersim/ui/FollowBench.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FollowBench.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The Reenactor on the real window (TR2, 2026-11-09): a city's window made as the game makes it (UserInterface.start on an
 > undecorated stage that is invisible and off every screen, laid out at 1600 x 900), and logged events played into it, with
