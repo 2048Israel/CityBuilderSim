@@ -1,4 +1,4 @@
-# AuctionCheck.java - 1,686 lines · 42 methods · 4 constants · harnesses
+# AuctionCheck.java - 1,700 lines · 42 methods · 4 constants · harnesses
 
 `ham/citybuildersim/AuctionCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      and the inbox name which. Filled, the same sale covers at the higher
 > ... (21 more lines in the source)
 
-**Uses:** [Auction](Auction.md) (130), [Game](Game.md) (56), [AutoBuilder](AutoBuilder.md) (42), [PriceLevel](PriceLevel.md) (31), [LongPlaytest](LongPlaytest.md) (25), [DebtQuote](DebtQuote.md) (21), [CapSetting](CapSetting.md) (13), [BuildAdvice](BuildAdvice.md) (12), [OutwardInvestment](OutwardInvestment.md) (11), [Debt](Debt.md) (11), [LongTermBond](LongTermBond.md) (8), [CapitalFlows](CapitalFlows.md) (7), [HouseholdBalance](HouseholdBalance.md) (6), [ChildcareCheck](ChildcareCheck.md) (5), [MediumTermBond](MediumTermBond.md) (5), [Notice](Notice.md) (5), [CityNeeds](CityNeeds.md) (5), [YieldCurve](YieldCurve.md) (4), [DebtManager](DebtManager.md) (4), [GameFiles](GameFiles.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [TimeSkipReport](TimeSkipReport.md) (4), [Rollover](Rollover.md) (4), [Bank](Bank.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Founding](Founding.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [AuctionTally](AuctionTally.md) (2), [TempDirs](TempDirs.md) (1)... and 2 more
+**Uses:** [Auction](Auction.md) (130), [Game](Game.md) (56), [AutoBuilder](AutoBuilder.md) (44), [PriceLevel](PriceLevel.md) (31), [LongPlaytest](LongPlaytest.md) (25), [DebtQuote](DebtQuote.md) (21), [CapSetting](CapSetting.md) (13), [BuildAdvice](BuildAdvice.md) (12), [OutwardInvestment](OutwardInvestment.md) (11), [Debt](Debt.md) (11), [LongTermBond](LongTermBond.md) (8), [CapitalFlows](CapitalFlows.md) (7), [HouseholdBalance](HouseholdBalance.md) (6), [ChildcareCheck](ChildcareCheck.md) (5), [MediumTermBond](MediumTermBond.md) (5), [Notice](Notice.md) (5), [CityNeeds](CityNeeds.md) (5), [YieldCurve](YieldCurve.md) (4), [DebtManager](DebtManager.md) (4), [GameFiles](GameFiles.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [TimeSkipReport](TimeSkipReport.md) (4), [Rollover](Rollover.md) (4), [Bank](Bank.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Founding](Founding.md) (2), [BusinessDebtManager](BusinessDebtManager.md) (2), [AuctionTally](AuctionTally.md) (2), [TempDirs](TempDirs.md) (1)... and 2 more
 
 ## Sections
 
@@ -114,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 100 | 1587 | **type** `public class AuctionCheck` | The city's paper sold at auction: one clearing yield, and what it costs. |
+| 100 | 1601 | **type** `public class AuctionCheck` | The city's paper sold at auction: one clearing yield, and what it costs. |
 | 106 | 5 | `static void assertTrue(String label, boolean ok)` |  |
 | 113 | 6 | `static void close(String label, double actual, double expected, double tol)` | Equal within tol, or within tol of the expected figure's size, whichever is larger. |
 | 121 | 6 | `static void near(String label, double actual, double expected, double abs)` | Equal within an absolute tolerance, for prices per 100. |
@@ -219,7 +219,7 @@
 | 1188 | 12 | `static Scene scene(Game g, double cash)` | The rollover's one issue as the city stands with `cash` in the treasury and the deposit rate at 3% (so the households' appetite has a slope), with the bank's room ample, and the room that leaves the default cap short ... |
 | 1201 | 139 | `static void section9(Path root) throws Exception` |  |
 
-### 10. automatic building: its own cap, and the ask a short sale keeps open (lines 1341-1686)
+### 10. automatic building: its own cap, and the ask a short sale keeps open (lines 1341-1700)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -228,5 +228,5 @@
 | 1377 | 4 | `static void useUpTheRoom(Game g)` | The room used up and the deposit rate tuneDeposit() found, so that at a cap of fair the buyers bid a real share of an issue and the bank bids D$100k of face: a bond for an order sells short, over the smallest deal wor... |
 | 1387 | 6 | `static String month(Game g, boolean ample)` | One month of the fixture's, run and printed: the room used up as above (unless `ample`), and the treasury's cash set to the reserve plus what the asks hold - the month's other bills are met from elsewhere, so what an ... |
 | 1395 | 5 | `static double placedIn(AutoBuilder ab, int month)` | What the builder's orders placed in a month cost, ground with them: the cash they took out of the treasury. |
-| 1401 | 285 | `static void section10(Path root) throws Exception` |  |
+| 1401 | 299 | `static void section10(Path root) throws Exception` |  |
 

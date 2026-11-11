@@ -1,4 +1,4 @@
-# DebtExchangeCheck.java - 703 lines · 23 methods · 6 constants · harnesses
+# DebtExchangeCheck.java - 750 lines · 23 methods · 9 constants · harnesses
 
 `ham/citybuildersim/DebtExchangeCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -47,25 +47,25 @@
 >      does not), and the EARNED-to-budget residual is nothing of it - minus the domestic coupons the holders outside the
 >      bank were paid, where there are any (FloatLinkCheck's X_EARNED), which is not this batch's to change.
 
-**Uses:** [Debt](Debt.md) (27), [Game](Game.md) (21), [MoneyAudit](MoneyAudit.md) (20), [BookDesk](BookDesk.md) (10), [TaxPolicy](TaxPolicy.md) (9), [PriceLevel](PriceLevel.md) (8), [NationalAccounts](NationalAccounts.md) (8), [TreasuryJournal](TreasuryJournal.md) (6), [FamilyModel](FamilyModel.md) (5), [ForeignAccounts](ForeignAccounts.md) (3), [DebtManager](DebtManager.md) (3), [GameFiles](GameFiles.md) (2), [EducationCheck](EducationCheck.md) (2), [Rollover](Rollover.md) (2), [EconomyManager](EconomyManager.md) (2), [HistorySave](HistorySave.md) (1), [CityCalendar](CityCalendar.md) (1), [LongTermBond](LongTermBond.md) (1)
+**Uses:** [Debt](Debt.md) (27), [MoneyAudit](MoneyAudit.md) (21), [Game](Game.md) (21), [BookDesk](BookDesk.md) (10), [TaxPolicy](TaxPolicy.md) (9), [PriceLevel](PriceLevel.md) (8), [NationalAccounts](NationalAccounts.md) (8), [TreasuryJournal](TreasuryJournal.md) (6), [FamilyModel](FamilyModel.md) (5), [DebtManager](DebtManager.md) (4), [ForeignAccounts](ForeignAccounts.md) (3), [GameFiles](GameFiles.md) (2), [EducationCheck](EducationCheck.md) (2), [Rollover](Rollover.md) (2), [EconomyManager](EconomyManager.md) (2), [HistorySave](HistorySave.md) (1), [CityCalendar](CityCalendar.md) (1), [LongTermBond](LongTermBond.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 259 | · 1. the fixture |
-| 299 | · 2. the D$ falls 10% |
-| 323 | · 3. the bridge foots |
-| 357 | · 4. MoneyAudit untouched |
-| 367 | · 5. the book after the fall |
-| 390 | · 6. the D$ rises back |
-| 427 | · 7. the book after the rise |
-| 441 | · 8. the cash rules leave it out |
-| 485 | · 9. across a save and a load |
-| 520 | · 10. the rule alone |
-| 563 | · 11. the student grant on a surplus share reads the cash |
-| 619 | · 12. ...and a buyback below book |
-| 651 | · 13. EARNED carries the coupons abroad (CD9, CD7-E) |
+| 268 | · 1. the fixture |
+| 308 | · 2. the D$ falls 10% |
+| 332 | · 3. the bridge foots |
+| 366 | · 4. MoneyAudit untouched |
+| 376 | · 5. the book after the fall |
+| 399 | · 6. the D$ rises back |
+| 436 | · 7. the book after the rise |
+| 450 | · 8. the cash rules leave it out |
+| 494 | · 9. across a save and a load |
+| 529 | · 10. the rule alone |
+| 572 | · 11. the student grant on a surplus share reads the cash |
+| 649 | · 12. ...and a buyback below book |
+| 698 | · 13. EARNED carries the coupons abroad (CD9, CD7-E) |
 
 ## Constants
 
@@ -76,7 +76,10 @@
 | 67 | `DebtExchangeCheck.SHARE` | `.5` | The share of the surplus the grant is set to in section 11. |
 | 70 | `DebtExchangeCheck.GRANT_BOND` | `60_000 * PriceLevel.FACTOR` | The dollar bond section 11 sells, in US$ thousands: large beside the surplus, so its exchange line is. |
 | 73 | `DebtExchangeCheck.BUYBACK_BOND` | `100_000 * PriceLevel.FACTOR` | The domestic bond section 12 sells and buys back, in thousands: large beside the surplus, so its gain is. |
-| 76 | `DebtExchangeCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a thousandth of a thousandth is plenty (TreasuryCheck.TOLERANCE). |
+| 76 | `DebtExchangeCheck.LOSS_OVER_SURPLUS` | `2.0` | The loss section 11's fall books, as a multiple of the largest cash surplus the city ran before it: the dollar paper is topped up to that much, so the loss takes the balance below nothing (HL1). |
+| 79 | `DebtExchangeCheck.EXPECTATION_STEP` | `.01` | One step of section 12's push on the market, the inflation the curve was struck at and the one it expects, both up a point a year (CallCheck's way of raising yields after a sale; HL1). |
+| 82 | `DebtExchangeCheck.MOST_STEPS` | `30` | The most steps section 12 takes before it gives the premise to its assertion (HL1). |
+| 85 | `DebtExchangeCheck.TOLERANCE` | `1e-6` | Everything here is in thousands, so a thousandth of a thousandth is plenty (TreasuryCheck.TOLERANCE). |
 
 ## Fields (state)
 
@@ -85,36 +88,36 @@
 | 56 | `static int fails` |  |
 | 57 | `static int asserted` |  |
 | 58 | `static PrintStream out` |  |
-| 223 | `final double rateBefore, rateAfter, line, gainByRule, gainAsCarrying, domesticWould` |  |
-| 224 | `final MoneyAudit.Result audit` |  |
+| 232 | `final double rateBefore, rateAfter, line, gainByRule, gainAsCarrying, domesticWould` |  |
+| 233 | `final MoneyAudit.Result audit` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 650 | **type** `public class DebtExchangeCheck` | The exchange gain (loss) on the city's foreign-currency debt (CD7, spec-city-debt.md section 5): each dollar piece carried in US$ and read in D$ at the rate it was last valued at, so a month in which the D$ moves move... |
-| 78 | 5 | `static void check(String label, boolean ok)` |  |
-| 85 | 3 | `static void near(String label, double actual, double expected)` | Two figures of the books that must agree to the tolerance MoneyAudit gives at their size, the figures printed on a failure. |
-| 89 | 10 | `static void near(String label, double actual, double expected, double tolerance)` |  |
-| 101 | 5 | `static void press(Game g)` | One press, its printing thrown away. |
-| 107 | 5 | `static void quietly(Runnable work)` |  |
-| 113 | 5 | `static Game founded(String label)` |  |
-| 119 | 5 | `static List<Debt> foreign(Game g)` |  |
-| 125 | 5 | `static List<Debt> domestic(Game g)` |  |
-| 131 | 3 | `static NationalAccounts accounts(Game g)` |  |
-| 135 | 3 | `static double sizeOf(Game g)` |  |
-| 140 | 5 | `static double[] ratesOf(List<Debt> pieces)` | The rates each piece was last valued at, before a press, in the ledger's order. |
-| 150 | 5 | `static double ruleGain(List<Debt> pieces, double[] ratesBefore, double rateAfter)` | The month's exchange gain by the rule alone: for each piece, its carrying value in its own money (at the reprice, which nothing after changes) times the rate it was last valued at less the rate now. |
-| 157 | 5 | `static double asCarryingMove(List<Debt> pieces, double[] ratesBefore)` | The same figure said as the D$ carrying value the pieces had at the old rate less the one they have at the new. |
-| 169 | 15 | `static Game schooledCity(String label)` | A city with homes and the schools to fill, as the grant's own harness builds it (EducationCheck), so somebody is studying; every tax at its ceiling, because the schools' running costs leave it a deficit otherwise and ... |
-| 186 | 9 | `static Month untilSharing(Game g)` | Presses, the D$ not moving, until somebody is studying and the month closed on a cash surplus to share; returns that month. |
-| 201 | 4 | `static double cashByRule(Game g)` | The month's cash surplus by the rule alone: the balance less the lines it books that no cash moves on - the gain on paper retired and the exchange gain - and plus the discount amortised and the uplift, which it charge... |
-| 211 | 3 | `static double outsideCoupons(Game g)` | What the month paid the holders of the domestic paper OUTSIDE the bank (CD9): the households', the businesses' and the world's coupons and the central bank's paper coupons, the figures FloatLinkCheck's X_EARNED premis... |
-| 216 | 4 | `static TreasuryJournal.Entry entry(List<TreasuryJournal.Entry> entries, String label)` | The journal's or the walk's entry with this label, or null. |
-| 222 | 16 | **type** `static final class Month` | What a month's press left that the sections read afterwards. |
-| 226 | 11 | `Month(Game g, double rateBefore, List<Debt> abroad, double[] ownBefore, List<Debt> home, double[] homeBefore)` _(in DebtExchangeCheck.Month)_ |  |
-| 240 | 9 | `static Month move(Game g, double factorOfTheRate)` | Moves the D$ by this factor of its rate before the press (pinned, so the reprice leaves it where it is) and presses. |
-| 250 | 434 | `public static void main(String[] args)` |  |
-| 686 | 10 | `static void accountsAlone()` | The government account's setter alone: a figure that is no number reads nothing, a number is kept. |
-| 698 | 5 | `static String quote(Game g, String type, double usd, int years)` | Sells dollar paper through the game's own door: returns what it said. |
+| 54 | 697 | **type** `public class DebtExchangeCheck` | The exchange gain (loss) on the city's foreign-currency debt (CD7, spec-city-debt.md section 5): each dollar piece carried in US$ and read in D$ at the rate it was last valued at, so a month in which the D$ moves move... |
+| 87 | 5 | `static void check(String label, boolean ok)` |  |
+| 94 | 3 | `static void near(String label, double actual, double expected)` | Two figures of the books that must agree to the tolerance MoneyAudit gives at their size, the figures printed on a failure. |
+| 98 | 10 | `static void near(String label, double actual, double expected, double tolerance)` |  |
+| 110 | 5 | `static void press(Game g)` | One press, its printing thrown away. |
+| 116 | 5 | `static void quietly(Runnable work)` |  |
+| 122 | 5 | `static Game founded(String label)` |  |
+| 128 | 5 | `static List<Debt> foreign(Game g)` |  |
+| 134 | 5 | `static List<Debt> domestic(Game g)` |  |
+| 140 | 3 | `static NationalAccounts accounts(Game g)` |  |
+| 144 | 3 | `static double sizeOf(Game g)` |  |
+| 149 | 5 | `static double[] ratesOf(List<Debt> pieces)` | The rates each piece was last valued at, before a press, in the ledger's order. |
+| 159 | 5 | `static double ruleGain(List<Debt> pieces, double[] ratesBefore, double rateAfter)` | The month's exchange gain by the rule alone: for each piece, its carrying value in its own money (at the reprice, which nothing after changes) times the rate it was last valued at less the rate now. |
+| 166 | 5 | `static double asCarryingMove(List<Debt> pieces, double[] ratesBefore)` | The same figure said as the D$ carrying value the pieces had at the old rate less the one they have at the new. |
+| 178 | 15 | `static Game schooledCity(String label)` | A city with homes and the schools to fill, as the grant's own harness builds it (EducationCheck), so somebody is studying; every tax at its ceiling, because the schools' running costs leave it a deficit otherwise and ... |
+| 195 | 9 | `static Month untilSharing(Game g)` | Presses, the D$ not moving, until somebody is studying and the month closed on a cash surplus to share; returns that month. |
+| 210 | 4 | `static double cashByRule(Game g)` | The month's cash surplus by the rule alone: the balance less the lines it books that no cash moves on - the gain on paper retired and the exchange gain - and plus the discount amortised and the uplift, which it charge... |
+| 220 | 3 | `static double outsideCoupons(Game g)` | What the month paid the holders of the domestic paper OUTSIDE the bank (CD9): the households', the businesses' and the world's coupons and the central bank's paper coupons, the figures FloatLinkCheck's X_EARNED premis... |
+| 225 | 4 | `static TreasuryJournal.Entry entry(List<TreasuryJournal.Entry> entries, String label)` | The journal's or the walk's entry with this label, or null. |
+| 231 | 16 | **type** `static final class Month` | What a month's press left that the sections read afterwards. |
+| 235 | 11 | `Month(Game g, double rateBefore, List<Debt> abroad, double[] ownBefore, List<Debt> home, double[] homeBefore)` _(in DebtExchangeCheck.Month)_ |  |
+| 249 | 9 | `static Month move(Game g, double factorOfTheRate)` | Moves the D$ by this factor of its rate before the press (pinned, so the reprice leaves it where it is) and presses. |
+| 259 | 472 | `public static void main(String[] args)` |  |
+| 733 | 10 | `static void accountsAlone()` | The government account's setter alone: a figure that is no number reads nothing, a number is kept. |
+| 745 | 5 | `static String quote(Game g, String type, double usd, int years)` | Sells dollar paper through the game's own door: returns what it said. |
 

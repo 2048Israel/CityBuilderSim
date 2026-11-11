@@ -1,4 +1,4 @@
-# AutoBuildCheck.java - 1,986 lines · 45 methods · 10 constants · harnesses
+# AutoBuildCheck.java - 2,012 lines · 47 methods · 10 constants · harnesses
 
 `ham/citybuildersim/AutoBuildCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      and its central bank's advances counted - and a young city's year
 > ... (43 more lines in the source)
 
-**Uses:** [AutoBuilder](AutoBuilder.md) (347), [Game](Game.md) (102), [BuildAdvice](BuildAdvice.md) (76), [LongPlaytest](LongPlaytest.md) (52), [DecisionLog](DecisionLog.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (26), [ChildcareCheck](ChildcareCheck.md) (22), [CityNeeds](CityNeeds.md) (20), [GameFiles](GameFiles.md) (13), [LandManager](LandManager.md) (10), [LandParcel](LandParcel.md) (9), [DebtQuote](DebtQuote.md) (7), [CareType](CareType.md) (7), [EducationType](EducationType.md) (6), [Notice](Notice.md) (6), [LandMarket](LandMarket.md) (4), [NationalAccounts](NationalAccounts.md) (3), [TreasuryFund](TreasuryFund.md) (2), [ConstructionControl](ConstructionControl.md) (2), [PriceLevel](PriceLevel.md) (2), [CityLand](CityLand.md) (2), [Resource](Resource.md) (2), [WantedPosts](WantedPosts.md) (1), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [Sector](Sector.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [AutoBuilder](AutoBuilder.md) (349), [Game](Game.md) (106), [BuildAdvice](BuildAdvice.md) (76), [LongPlaytest](LongPlaytest.md) (52), [DecisionLog](DecisionLog.md) (37), [BuildingsTemplate](BuildingsTemplate.md) (26), [ChildcareCheck](ChildcareCheck.md) (22), [CityNeeds](CityNeeds.md) (20), [GameFiles](GameFiles.md) (13), [LandManager](LandManager.md) (10), [LandParcel](LandParcel.md) (9), [DebtQuote](DebtQuote.md) (7), [CareType](CareType.md) (7), [EducationType](EducationType.md) (6), [Notice](Notice.md) (6), [LandMarket](LandMarket.md) (4), [NationalAccounts](NationalAccounts.md) (3), [TreasuryFund](TreasuryFund.md) (2), [ConstructionControl](ConstructionControl.md) (2), [PriceLevel](PriceLevel.md) (2), [CityLand](CityLand.md) (2), [Resource](Resource.md) (2), [WantedPosts](WantedPosts.md) (1), [TempDirs](TempDirs.md) (1), [Founding](Founding.md) (1), [BuildingManager](BuildingManager.md) (1), [Sector](Sector.md) (1), [EconomyManager](EconomyManager.md) (1), [CentralBank](CentralBank.md) (1)
 
 **Used by (1):** [IslandLinkCheck](IslandLinkCheck.md)
 
@@ -79,7 +79,7 @@
 | 846 | · 5 |
 | 1004 | · 6 |
 | 1074 | · 7 |
-| 1900 | · 8 |
+| 1926 | · 8 |
 
 ## Constants
 
@@ -117,7 +117,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 117 | 1870 | **type** `public class AutoBuildCheck` | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of the things that hold it back. |
+| 117 | 1896 | **type** `public class AutoBuildCheck` | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of the things that hold it back. |
 | 123 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 129 | 5 | `static void cents(String label, double actual, double expected)` | Two money figures, in thousands, equal to the cent. |
 | 135 | 5 | `static void quietly(Runnable r)` |  |
@@ -168,7 +168,7 @@
 |---:|---:|---|---|
 | 1016 | 57 | `static void theCardsVerdict(Path root)` | THE ADVICE'S CARD CARRIES THE PAYBACK'S VERDICT (PT1-M3; Jerus, 2026-10-12: "yes do rec"). |
 
-### 7 (lines 1074-1899)
+### 7 (lines 1074-1925)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -192,15 +192,17 @@
 | 1714 | 5 | `static double annualised(Game g)` | A year of GDP as SummaryScreen's Debt/GDP reads it (Pieces.annualGdp()): the history's last twelve, scaled up from fewer. |
 | 1721 | 3 | `static double justOver(Game g)` | The debt limit's next step over a city's debt now (0.7.81): a limit it is within. |
 | 1734 | 12 | `static double nearTheLimit(Game g)` | A town brought just under the debt limit's next step over its debt (0.7.101): a twenty-year bond on the funding page as large as keeps the city's debt within that step - found by halving, to the bond's granule - so th... |
-| 1751 | 6 | `static Game overTheLimit(Game g)` | A town over the debt limit (0.7.81): a twenty-year bond on the funding page for twice a year of its GDP, so the city's debt is past DEFAULT_DEBT_LIMIT whatever the bond's price, and its cash back where it was - the ca... |
-| 1763 | 136 | `static void theLimit(Path root, BuildAdvice.Measure roads)` | THE LIMIT, A SHARE OF GDP (0.7.81): a bond's face is what it adds to the debt; under the limit a bond that would cross it is not taken; over it nothing is built and nothing borrowed, with the cash to pay; and with Bui... |
+| 1758 | 5 | `static Game repay(Game g)` | HL1 (2026-11-11): THE TOWN'S CENTRAL BANK REPAID OUT OF THE CASH IT WAS GIVEN, SO IT STANDS WITHIN THE DEBT LIMIT WHEN THE PASS READS IT. |
+| 1765 | 7 | `static Game repaid(Game g)` | ...and the fixture line saying so, with the ratio it gives. |
+| 1777 | 6 | `static Game overTheLimit(Game g)` | A town over the debt limit (0.7.81): a twenty-year bond on the funding page for twice a year of its GDP, so the city's debt is past DEFAULT_DEBT_LIMIT whatever the bond's price, and its cash back where it was - the ca... |
+| 1789 | 136 | `static void theLimit(Path root, BuildAdvice.Measure roads)` | THE LIMIT, A SHARE OF GDP (0.7.81): a bond's face is what it adds to the debt; under the limit a bond that would cross it is not taken; over it nothing is built and nothing borrowed, with the cash to pay; and with Bui... |
 
-### 8 (lines 1900-1986)
+### 8 (lines 1926-2012)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1909 | 47 | `static void careOfEveryKind(Path root)` | Care of every kind is essential (CC1-S), and a school is not: a town spending past its revenue, short of general care, of senior care or of childcare, orders that kind with nothing weighed for its payback; the same so... |
-| 1962 | 13 | `static Game deficitTown(Path root, String name, BuildAdvice.Measure retired)` | ChildcareCheck's town with every building that serves a measure retired, the auto-builder on and the town spending past its revenue - every service's bill as section 5's deficit town has it, and as much again: short o... |
-| 1976 | 4 | `static AutoBuilder.Step stepFor(AutoBuilder ab, BuildAdvice.Measure m)` |  |
-| 1981 | 5 | `static int siteCount(Game g)` |  |
+| 1935 | 47 | `static void careOfEveryKind(Path root)` | Care of every kind is essential (CC1-S), and a school is not: a town spending past its revenue, short of general care, of senior care or of childcare, orders that kind with nothing weighed for its payback; the same so... |
+| 1988 | 13 | `static Game deficitTown(Path root, String name, BuildAdvice.Measure retired)` | ChildcareCheck's town with every building that serves a measure retired, the auto-builder on and the town spending past its revenue - every service's bill as section 5's deficit town has it, and as much again: short o... |
+| 2002 | 4 | `static AutoBuilder.Step stepFor(AutoBuilder ab, BuildAdvice.Measure m)` |  |
+| 2007 | 5 | `static int siteCount(Game g)` |  |
 

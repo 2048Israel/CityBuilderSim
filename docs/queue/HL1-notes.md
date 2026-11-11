@@ -122,11 +122,14 @@ to 3.1), the record and the cells by the same factor, and no money moves.
 
 ## The checks
 
-`./batch-check.sh --pick` on the final tree (91b976d2): 85 of 201 harnesses, exit 4, three NEW red
-lines, each of a class queued on main and none in HL1's code. `--timing` is the gate's.
+`./batch-check.sh --pick` on the final tree with main merged in (43565dc3: RB1 shipped meanwhile, and
+its fund's hold moves money beside this identity, so the two were checked together): 86 of 201
+harnesses, exit 4, four NEW red lines, each of a class queued on main and none in HL1's code. Without
+RB1 (91b976d2) the same three and not the first. `--timing` is the gate's.
 
 | the line, word for word | whose | the figures |
 |---|---|---|
+| `CentralBankCheck \| ...and in at least STRICT_SHARE of them, 9 of 12 (8 hold) FAIL` | CB2's own line | main sits on the line at 9 of 12 and "a batch that moves the paths tips it about one time in three" (its row; RT1 read 8 too). 9 on HL1 alone, 8 with RB1 merged in |
 | `CentralBankCheck \| very loose costs trust, through the lean measured against holding the target FAIL` | CB2's class | very loose's trust is under Standard's in 12 of 12 `STRICT_SHAPES` on main and in 11 of 12 on HL1; only the probe city's path moved, the mean 240-month inflation is the same on both builds. CB2's row should list this line |
 | `HealthCheck \| ...and it buries more of its people over the run FAIL` | HX1's | 15.67 deaths per 1,000 against 15.67; the fee twins differ by 0.00-0.02, their noise; main records its sibling "its old first" |
 | `KeptCheck \| most months make no node at all (12 of 25) FAIL` | KS1's class | a count on one city's path: 16 quiet months of 25 on main, 12 on HL1, the line needs 13 |
