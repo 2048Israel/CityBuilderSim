@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.90 — BO1, business owners, built and switched off — 2026-11-10, ready, see docs/queue/BO1-notes.md
+The owner families (Jerus, 2026-11-02: "few in nature and very rich", "one per
+listed company", "No job"): a household row after the prisoners',
+`OwnerHousehold`, alone takes a listing company's founders' shares, two adults
+a company, out of the labour force; it offers a twentieth of each stake a year
+on the exchange (`BY_OWNERS`), a year at the floor or a failed bank sends a
+family back to the population with its money and none of the shares, and
+everyone else still buys. Saved, no format bump (an older save's rows read
+with the owners' empty); OwnerCheck, ten sections.
+Shipped switched off (`OwnerHousehold.IN_CITIES`): with it on, the playtest
+city had a third of its people at month 120, the retired losing the dividends
+that paid their care. The trace is byte-identical; switching on is Pending.
+
 ### 0.9.89 — GW1, the gate counts the draw — 2026-11-10, ready, see docs/queue/GW1-notes.md
 The staffing gate counts, beside the workers the city has spare, the ones a building's own posts would bring within
 a year (`Migration.drawFor()`, `Sector.GATE_DRAW_MONTHS` 12): only the part of migration's gap the order opens,

@@ -1,39 +1,16 @@
-# gate of Merge batch/GW1: the gate counts the draw: `Sector.staffing()` counts, beside the spare workers, those `Migration.drawFor()` says the order's posts would bring within `GATE_DRAW_MONTHS` (12), each band's drawn workers stepping down as the cascade does, the band test unchanged; the hold's words name both counts on the build card and the sector screen; no new field; a `StaffingDrawCheck`, the 19 harnesses that name the gate read again for a premise of "only the spare"; ensemble. Before WG2. GW0-C settled on its recommendations by the orchestrator (BP1, 2026-11-09): C1a count the draw, C2a a 12-month window, C3a WG2's aim as taken, C4a GW1 before WG2 (with the draw first WG2's aim costs the young city nothing, against 42% at month 240 alone), 0.9.89
+# gate of Merge batch/BO1: business owners (Jerus, 2026-11-02: "few in nature and very rich", "one per listed company", "No job, lives of dividends or sells"): the founders' shares go to one founding family per listed company, not to every household; the families sell 5% of a stake a year and rejoin the population when their company goes broke; everyone else still buys shares, 0.9.90
 # date: 2026-11-10
 # earth-2.bin: named
 # nightly: 2026-11-10 01:25 0.9.80 d9f61df3 4,000 months: OK in 178 s
-# suite: 198 harnesses run in 1548s: 193 passed, 5 failed
-# timing: 18 harnesses run in 1175s: 14 passed, 4 failed; its red lines were judged side by side with main's, below
-# timing red not the batch's (paired): EarthTerrainCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): EarthTerrainCheck | the Earth screen: 198 tiles at Rotterdam's site - ground, plans, paint and raster - in no more than MapCheck.SCREEN_MS FAIL  84.6 ms (0.427 a tile), 17,690 buildings; the first time, its plans made, 725 ms; the square city 121 districts a side, laid in 20102 ms; the screen 3% sea, 4% fresh   [main 76.9 ms, batch 64.5 ms (-16.2%), budget 80 ms: within 15% of main's]
-# timing red not the batch's (paired): EarthTerrainCheck | 1 FAILED   [the harness's own count of the timing reds above]
+# suite: 199 harnesses run in 1230s: 194 passed, 5 failed
+# timing: 18 harnesses run in 881s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 56.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 48.4 ms, batch 40.0 ms (-17.5%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 40.0 ms (gate.txt, today), batch 29.1 ms (-27.1%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock       FAIL   [main 4.69 ms, batch 4.9 ms (+4.5%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 29.8 ms, batch 28.5 ms (-4.6%), budget 19 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 5 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | exit 2   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS (8.0 ms)      FAIL   [main 8.42 ms, batch 5.51 ms (-34.6%), budget 8 ms: within 15% of main's]
-# timing red not the batch's (paired): KeptCheck | 2 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 56.1 ms, holds the clock at most CLOCK_MS (25 ms)	39.9713	25	ms	FAIL	1	1
-# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	28.4639	19	ms	FAIL	1	1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MonetaryCheck | exit 1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MonetaryCheck | 1 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): HealthCheck | ...its old first, whom a fee on senior care turns away FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): HealthCheck | ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): HealthCheck | 2 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 53 of the plan before's 590 boxes lie under the yard and the railway, and 60 are not in the plan after (each of the rest stands where it stood) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 53 boxes left a district in the yard's month because a run laid in it lies across them, 7 are counted as moved FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | the highways reaching a street: a reserve that appears in a district already built moves off it the boxes it lies across or beside the highways laid with it and no others: 86 of the plan before's 590 boxes lie across, 87 are not in the plan after FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | 3 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the BuybackLadder on Close it now: no month draws it again with nothing changed in it (2) FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 1 FAILED
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DeathRecordCheck | exit 1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): DeathRecordCheck | 1 FAILED
+# timing red not the batch's (paired): MapCheck | a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month FAIL   [main 28.5 ms (gate.txt, today), batch 19.3 ms (-32.4%), budget 19 ms: main over the budget too, no round]
+# timing red not the batch's (paired): MapCheck | 4 FAILED   [the harness's own count of the timing reds above]
+# figure	SaveSlotCheck	the median due month, 29.1 ms, holds the clock at most CLOCK_MS (25 ms)	29.1402	25	ms	FAIL	1	1
+# figure	MapCheck	a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than 19 ms of the wall clock, the median month	19.2557	19	ms	FAIL	1	1
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED

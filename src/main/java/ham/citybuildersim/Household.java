@@ -79,10 +79,21 @@ public abstract class Household {
      * in this row's ledger while they are inside. See PrisonerHousehold.
      */
     public static final int PRISON_ROW = RETIRED_ROW + 4;
-    /** Every row: the six tiers, the retired, and the four above. */
-    public static final int ROWS = RETIRED_ROW + 5;
-    /** The rows a save from before the prisons carries. */
-    public static final int ROWS_BEFORE_PRISON = ROWS - 1;
+    /**
+     * The owner families (BO1): one two-adult household per company that has
+     * listed and not gone broke. Jerus, 2026-11-02, on the households study:
+     * business owners are "few in nature and very rich", "one per listed
+     * company", "No job, lives of dividends or sells or whatever"; "the others
+     * still have shares, they just dont get the initial ownership"; "if sector
+     * goes broke he just joins the regular pop pool". See OwnerHousehold.
+     */
+    public static final int OWNER_ROW = RETIRED_ROW + 5;
+    /** Every row: the six tiers, the retired, and the five above. */
+    public static final int ROWS = RETIRED_ROW + 6;
+    /** The rows a save from before the prisons carries (pinned: ROWS has moved on). */
+    public static final int ROWS_BEFORE_PRISON = RETIRED_ROW + 4;
+    /** The rows a save from before the owner families carries. */
+    public static final int ROWS_BEFORE_OWNER = RETIRED_ROW + 5;
 
     /**
      * How long a graduate takes to repay a student loan, in months: nine and
@@ -641,6 +652,13 @@ public abstract class Household {
      * the ledger until they come out.
      */
     public boolean canInvest() { return true; }
+
+    /**
+     * True when the household buys and sells shares by the households' rules:
+     * at an offering and on the exchange. False for the owner families, whose
+     * founding stakes are sold down by their own rule (BO1).
+     */
+    public boolean tradesShares() { return canInvest(); }
 
     /* ------------------------------ reading ------------------------------ */
 

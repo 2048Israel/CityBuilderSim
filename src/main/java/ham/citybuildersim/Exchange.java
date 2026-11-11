@@ -615,6 +615,9 @@ public class Exchange {
     /** The register's reckoning of a share, struck at the step: its money past the cushion at face and its earnings capitalised (Equity.fairValue(), EM1). */
     public double fair(int c)        { return fair[c]; }
 
+    /** ...true when that is the exchange's floor (minFair), which a company whose book and record are gone sits at (BO1: the owner family's broke rule). */
+    public boolean atFloor(int c)    { return fair[c] <= minFair; }
+
     /** A company's money past its cushion at the last step, total: its till, its dollars abroad and its bonds, less six months of its costs, never under nothing (EM1). */
     public double spareOf(int c)       { return spare[c]; }
     /** ...its net income over the last year, total: what its business earned, after tax (EM1). */
@@ -814,6 +817,7 @@ public class Exchange {
         postCompanies();
         postWorldPrice();
         postShorts();
+        postOwners();
         postHouseholds(depositRate, worldRate, paperYield);
         postFund();
 
@@ -1343,6 +1347,32 @@ public class Exchange {
         return excess > 0 ? excess * c.households : 0;
     }
 
+    /* ----- the owner families sell slowly (BO1) -----------------------------
+       Jerus, 2026-11-02, on the households study: business owners are "few in
+       nature and very rich", "No job, lives of dividends or sells or whatever".
+       ----------------------------------------------------------------------- */
+
+    /**
+     * THE OWNER FAMILIES SELL SLOWLY. Each month the line offers
+     * OwnerHousehold.OWNER_SELL_A_MONTH of each stake it holds - a twentieth
+     * of it a year (OWNER_SELL_A_YEAR), compounded - at the market, a
+     * price-taker as the cushion sale is, in each company that is valued above
+     * the exchange's floor (what is at the floor is worth nothing to offer).
+     * The sellers rest before the households' buyers, as postHouseholds' own
+     * do. The line neither rebalances, sells on value nor buys: only this, and
+     * the waterfall's sale when a cell is short of money.
+     */
+    private void postOwners() {
+        if (households == null) return;
+        Household cell = households.owners();
+        if (cell == null || cell.isEmpty()) return;
+        String who = CELL + cell.key();
+        for (int c = 0; c < n; c++) {
+            if (!(cell.shares[c] > 0) || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+            post(c, who, OrderBook.Side.SELL, price(c), OwnerHousehold.OWNER_SELL_A_MONTH * cell.shares[c] * cell.households());
+        }
+    }
+
     /**
      * THE CELLS REBALANCE THEIR SHARES BY THE BOND RULE (0.7.12 round 3;
      * Jerus: "Yes, same rule"): a cell over its target sells HOME_SPEED of the
@@ -1411,6 +1441,9 @@ public class Exchange {
 
         /* ---- the cells over their target: HOME_SPEED of the cushion's shortfall, pro rata, at the market ---- */
         for (Household cell : households.cellsForMarket()) {
+            // The owner line neither rebalances, sells on value nor buys (BO1): it sells by its own rule, postOwners(). Not by !tradesShares():
+            // a prisoner's cell trades none by the households' rules either, and the city's numbers must not move with the line off.
+            if (cell instanceof OwnerHousehold) continue;
             double excess = shortOfCushion(cell);
             if (!(excess > 1e-12)) continue;
             double worth = 0;
@@ -1451,6 +1484,7 @@ public class Exchange {
 
         /* ---- the cells not under it sell a share on its value: a bid over it, or a return under the alternatives and the other shares (EM1) ---- */
         for (Household cell : households.cellsForMarket()) {
+            if (cell instanceof OwnerHousehold) continue;
             if (shortOfCushion(cell) > 1e-12) continue;
             String who = CELL + cell.key();
             for (int c = 0; c < n; c++) {
@@ -1471,6 +1505,7 @@ public class Exchange {
 
         /* ---- ...and the cells under it: OUT_SPEED of what is past the cushion, the best return first ---- */
         for (Household cell : households.cellsForMarket()) {
+            if (cell instanceof OwnerHousehold) continue;
             double budget = spareOf(cell) * OutwardInvestment.OUT_SPEED;
             if (!(budget > 1e-12)) continue;
             String who = CELL + cell.key();
@@ -1867,13 +1902,17 @@ public class Exchange {
         books[c].submit(who, side, limit, left, month, clearing(c));
     }
 
-    /** Who sells, by class: the desk, the world, the leavers, a household cell, and since 0.7.14 the city's fund - for the fill rate by seller. */
-    public static final int BY_DESK = 0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3, BY_FUND = 4;
+    /**
+     * Who sells, by class: the desk, the world, the leavers, a household cell, since 0.7.14 the city's fund, and since BO1 the
+     * owner families (their own class: a cell that sells on a rule of its own and not the households') - for the fill rate by seller.
+     */
+    public static final int BY_DESK = 0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3, BY_FUND = 4, BY_OWNERS = 5;
     private static int classOf(String who) {
         if (DESK.equals(who)) return BY_DESK;
         if (WORLD.equals(who) || WORLD_SHORT.equals(who)) return BY_WORLD;
         if (EMIGRANTS.equals(who)) return BY_EMIGRANTS;
         if (isFund(who)) return BY_FUND;
+        if ((CELL + OwnerHousehold.KEY).equals(who)) return BY_OWNERS;
         return BY_HOUSEHOLDS;
     }
     /**
@@ -1882,7 +1921,7 @@ public class Exchange {
      * happened - so the ratio is a fill rate, as the book's own is, and not
      * a comparison of a seller's floor with the bid it was paid.
      */
-    private final double[] lifePostedSellBy = new double[5], lifeFilledSellBy = new double[5];
+    private final double[] lifePostedSellBy = new double[6], lifeFilledSellBy = new double[6];
 
     /** Company-months each of the desk's limits held its bid, in BOUND_ order: the last step's and the city's life (round 3). */
     private final int[] lastDeskBound = new int[4], lifeDeskBound = new int[4];
@@ -2366,7 +2405,9 @@ public class Exchange {
                 // ...and the city's fund as a seller (0.7.14).
                 lifePostedSellBy[BY_FUND], lifeFilledSellBy[BY_FUND],
                 // ...and what the cells sold on a share's value (EM1).
-                lifeValueSold };
+                lifeValueSold,
+                // ...and the owner families as a seller (BO1).
+                lifePostedSellBy[BY_OWNERS], lifeFilledSellBy[BY_OWNERS] };
         s.last = new double[] { lastPostedSellValue, lastFilledValue, lastSellsPosted, lastSellsWaited, lastTrades,
                 lastDeskBound[0], lastDeskBound[1], lastDeskBound[2], lastDeskBound[3] };
         return s;
@@ -2423,6 +2464,7 @@ public class Exchange {
             if (s.life.length >= 26) { lifeExcessOffered = s.life[24]; lifeExcessSold = s.life[25]; }
             if (s.life.length >= 28) { lifePostedSellBy[BY_FUND] = s.life[26]; lifeFilledSellBy[BY_FUND] = s.life[27]; }
             if (s.life.length >= 29) lifeValueSold = s.life[28];
+            if (s.life.length >= 31) { lifePostedSellBy[BY_OWNERS] = s.life[29]; lifeFilledSellBy[BY_OWNERS] = s.life[30]; }
         }
         if (s.last != null && s.last.length >= 5) {
             lastPostedSellValue = s.last[0]; lastFilledValue = s.last[1];

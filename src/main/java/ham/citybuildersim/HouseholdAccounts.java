@@ -538,6 +538,8 @@ public class HouseholdAccounts {
     public static final int ORPHANS = Household.ORPHAN_ROW;
     /** ...and the prisoners, since 2026-09-11 (night). */
     public static final int PRISONERS = Household.PRISON_ROW;
+    /** ...and the owner families, one two-adult household a company that has listed (BO1). */
+    public static final int OWNERS = Household.OWNER_ROW;
     private static final int ROWS = Household.ROWS;
 
     /** The rows a save from before 2026-09-11 carries: the tiers and the retired. */
@@ -700,7 +702,8 @@ public class HouseholdAccounts {
         java.util.Arrays.fill(rowCareFull, 0);
 
         // A caller from before the people outside the families had rows hands
-        // seven, and one from before the prisons ten; the missing rows are
+        // seven, one from before the prisons ten, and one from before the owner
+        // families (BO1) eleven; the missing rows are
         // empty for it.
         peoplePerRow = padOlder(peoplePerRow);
         housePerRow = padOlder(housePerRow);
@@ -1163,6 +1166,19 @@ public class HouseholdAccounts {
     private static final int SCALARS_BEFORE_FARES = 15, ROWS_BEFORE_FARES = 14;
 
     /**
+     * True when a statement this long is one of the shapes from the fare's
+     * onward with this many rows in each row array: today's rows, or a save's
+     * from before the owner families had one (BO1).
+     */
+    private static boolean statementShape(int length, int rows) {
+        return length == STATE_SCALARS + rows * STATE_ROWS
+                || length == SCALARS_BEFORE_FUEL + rows * ROWS_BEFORE_FUEL
+                || length == SCALARS_BEFORE_ACCOUNT_FEES + rows * ROWS_BEFORE_ACCOUNT_FEES
+                || length == SCALARS_BEFORE_HEALTH + rows * ROWS_BEFORE_HEALTH
+                || length == SCALARS_BEFORE_FARES + rows * ROWS_BEFORE_FARES;
+    }
+
+    /**
      * Puts a saved statement back, exactly as it was written.
      *
      * @return false if the array is not this build's shape, in which case
@@ -1188,14 +1204,22 @@ public class HouseholdAccounts {
          * array fewer, and the premium reads zero, which is what that city
          * charged. The same tail-append the fare got, and the same reading.
          */
+        /*
+         * ...AND EACH OF THE SHAPES BELOW FROM BEFORE THE OWNER FAMILIES HAD A
+         * ROW (BO1), which every save written before that batch is: each row
+         * array one row short, and the owners' row reads empty - which is what
+         * that city had. R is the rows the save's arrays carry.
+         */
+        final int R = in != null && !statementShape(in.length, ROWS)
+                && statementShape(in.length, Household.ROWS_BEFORE_OWNER) ? Household.ROWS_BEFORE_OWNER : ROWS;
         boolean beforePrison = in != null
                 && (in.length == SCALARS_BEFORE_HEALTH + Household.ROWS_BEFORE_PRISON * ROWS_BEFORE_HEALTH
                     || in.length == SCALARS_BEFORE_FARES + Household.ROWS_BEFORE_PRISON * ROWS_BEFORE_FARES);
         boolean beforeFares = in != null
-                && (in.length == SCALARS_BEFORE_FARES + ROWS * ROWS_BEFORE_FARES
+                && (in.length == SCALARS_BEFORE_FARES + R * ROWS_BEFORE_FARES
                     || in.length == SCALARS_BEFORE_FARES + Household.ROWS_BEFORE_PRISON * ROWS_BEFORE_FARES);
         boolean beforeHealth = beforeFares || beforePrison
-                || (in != null && in.length == SCALARS_BEFORE_HEALTH + ROWS * ROWS_BEFORE_HEALTH);
+                || (in != null && in.length == SCALARS_BEFORE_HEALTH + R * ROWS_BEFORE_HEALTH);
         /*
          * ...OR THE SHAPE FROM BEFORE THE BANK'S ACCOUNT FEE WAS ON IT (0.7.7),
          * which every save written before that batch is: one scalar and one
@@ -1203,7 +1227,7 @@ public class HouseholdAccounts {
          * bank charged.
          */
         boolean beforeAccountFees = beforeHealth
-                || (in != null && in.length == SCALARS_BEFORE_ACCOUNT_FEES + ROWS * ROWS_BEFORE_ACCOUNT_FEES);
+                || (in != null && in.length == SCALARS_BEFORE_ACCOUNT_FEES + R * ROWS_BEFORE_ACCOUNT_FEES);
         /*
          * ...OR THE SHAPE FROM BEFORE THE HOUSEHOLDS' FUEL WAS ON IT (0.7.49),
          * which every save written before that batch is: one scalar and one
@@ -1211,17 +1235,17 @@ public class HouseholdAccounts {
          * city's drivers paid. The same tail-append the fare had.
          */
         boolean beforeFuel = beforeAccountFees
-                || (in != null && in.length == SCALARS_BEFORE_FUEL + ROWS * ROWS_BEFORE_FUEL);
+                || (in != null && in.length == SCALARS_BEFORE_FUEL + R * ROWS_BEFORE_FUEL);
         boolean older = in != null && in.length == 12 + ROWS_BEFORE_OUTSIDE * 11;
         boolean current = in != null
-                && (in.length == STATE_SCALARS + ROWS * STATE_ROWS
-                    || in.length == SCALARS_BEFORE_FUEL + ROWS * ROWS_BEFORE_FUEL
-                    || in.length == SCALARS_BEFORE_ACCOUNT_FEES + ROWS * ROWS_BEFORE_ACCOUNT_FEES
-                    || in.length == SCALARS_BEFORE_HEALTH + ROWS * ROWS_BEFORE_HEALTH
-                    || in.length == SCALARS_BEFORE_FARES + ROWS * ROWS_BEFORE_FARES
+                && (in.length == STATE_SCALARS + R * STATE_ROWS
+                    || in.length == SCALARS_BEFORE_FUEL + R * ROWS_BEFORE_FUEL
+                    || in.length == SCALARS_BEFORE_ACCOUNT_FEES + R * ROWS_BEFORE_ACCOUNT_FEES
+                    || in.length == SCALARS_BEFORE_HEALTH + R * ROWS_BEFORE_HEALTH
+                    || in.length == SCALARS_BEFORE_FARES + R * ROWS_BEFORE_FARES
                     || beforePrison);
         if (!current && !older) return false;
-        int rows = beforePrison ? Household.ROWS_BEFORE_PRISON : current ? ROWS : ROWS_BEFORE_OUTSIDE;
+        int rows = beforePrison ? Household.ROWS_BEFORE_PRISON : current ? R : ROWS_BEFORE_OUTSIDE;
         int i = 0;
         wages = in[i++];         wageTax = in[i++];
         rent = in[i++];          shopping = in[i++];
@@ -1294,7 +1318,8 @@ public class HouseholdAccounts {
     /** A row array from an older caller, padded to today's rows; anything else as it came. */
     private static double[] padOlder(double[] rows) {
         if (rows == null) return null;
-        if (rows.length == ROWS_BEFORE_OUTSIDE || rows.length == Household.ROWS_BEFORE_PRISON) {
+        if (rows.length == ROWS_BEFORE_OUTSIDE || rows.length == Household.ROWS_BEFORE_PRISON
+                || rows.length == Household.ROWS_BEFORE_OWNER) {
             return java.util.Arrays.copyOf(rows, ROWS);
         }
         return rows;
@@ -1337,6 +1362,7 @@ public class HouseholdAccounts {
         if (row == STUDENTS)   return "Full-time students";
         if (row == ORPHANS)    return "Orphans";
         if (row == PRISONERS)  return "In prison";
+        if (row == OWNERS)     return "Owner families";
         return PayTier.values()[row].getLabel();
     }
 

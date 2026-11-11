@@ -1,0 +1,208 @@
+# BO1 - business owners (0.9.90, 2026-11-10)
+
+The batch's record. Its brief is the households study, section 3.5
+(`docs/studies/spec-households.md`), with Jerus's answers of 2026-11-02 in its
+section 7: one owner family per listed company, no job, living on dividends and
+what it sells; a company that goes broke sends its family back into the
+population; everyone else still buys shares.
+
+## 0. Decisions as taken (kept current while the batch runs)
+
+- **The line runs in a city by a dial, `OwnerHousehold.IN_CITIES`, shipped OFF**
+  (section 1 says why: a call for Jerus). The owner cell
+  is always in the cell list (so a save keys it, `OWNER`), but
+  `HouseholdBalance.grantFounders` gives it the founders' shares only once Game
+  has switched the line on. A bare fixture, which never does, keeps today's rule
+  (the study: "With no owner household (a bare fixture), today's rule"), so the
+  thirty-odd harness fixtures that list a company keep their premise.
+- **The line's state is one map, company key to months at the floor**: a
+  company is in it while it has a family. Saved in `DataSave`, read back on the
+  load path; a save without it loads with an empty line and the founders'
+  shares where they were (the study's section 4: incomplete, not wrong; no
+  `SAVE_FORMAT` bump).
+- **The new row is `OWNER_ROW`, after `PRISON_ROW`**, and the cell's save key
+  `OWNER`: cells are saved by key, so an old save has no owner cell and loads it
+  empty.
+- **The sale**: the owner cell is left out of the households' three share
+  loops on the exchange and posts its own sell, each month, of
+  `1 - (1 - OWNER_SELL_A_YEAR)^(1/12)` of each holding at the market, under a
+  new seller class `BY_OWNERS` (the life tallies appended to the save's array).
+- **No offering is subscribed by the line** ("its stakes also dilute at every
+  offering"); it keeps its bonds and its money abroad by the ordinary rules.
+- **A company's first listing waits for its family while the owner cell is
+  empty.** The census runs inside the month's simulation and
+  `Game.payDividends` lists the companies after it, so the first family a city
+  has is counted only at the next month's census. Until then the owner cell
+  holds nobody and cannot hold a stake, so `grantFounders` reserves the family
+  and refuses: `Equity.listIfUnlisted` lists nothing that month and an
+  offering's founders' branch raises nothing. The next month the family is
+  there and the company lists into it. This happens only while the cell is
+  empty: a founding city's first listings, or after every family has left.
+  The other way to do it, holding the stake aside for a month, would have had
+  to carry its dividend, its lending fee, its splits and its deposits through
+  every reader of the households' holdings. A later family joins a cell that
+  is not empty: the grant goes straight to it and the new household, arriving
+  at the next census from the population, dilutes the stake equally.
+- **A family that leaves takes its money and none of the shares**: in
+  `followThePeople` the owner cell's share stocks are kept whole when it
+  shrinks; every other stock leaves with the leaver as today.
+- **Broke** is a failed bank's resolution (`Game.resolveBank`), or a fair value
+  at the exchange's floor for `OWNER_BROKE_MONTHS` running, tallied in
+  `Game.tradeShares` after the exchange values the month.
+- **The owners take no job and are out of the housing match.** They are out
+  of `PopulationManager`'s labour force, as the prisoners are. The study had
+  them seek a door like a family, but `FamilyModel`'s squeeze splits the
+  unplaced between the matrix and the seekers, and a third bucket broke
+  HousingCheck and ReadPathCheck. So they pay a door's rent by the default
+  share and are not placed; placing them is queued with the switch-on.
+- **The owner adults are saved** (`DataSave.ownerAdults`): the census's
+  count, which the line at the save can differ from (a listing at the
+  month's dividends adds a family, a year at the floor drops one). The first
+  draft read them back off the outside adults; that rebuilt a flow from the
+  state, which the rule forbids.
+
+## 1. Why the line ships switched off (the call for Jerus)
+
+The playtest city (`LongPlaytest.founding()`, the auto-builder, the rhythm of
+AuctionCheck's founding), line on against line off, same build:
+
+| month | people, on | people, off | senior-care pull on / off |
+|---|---|---|---|
+| 13 | 97 | 123 | 1.05 / 1.25 |
+| 37 | 522 | 699 | 1.00 / 1.25 |
+| 61 | 1,249 | 1,885 | 1.00 / 1.25 |
+| 121 | 1,102 | 3,500 | (not read) |
+
+With the line on, the city stops building at month 55 (jobs 818 to 504,
+homes 1,948 for the next 65 months) and loses people until month 97. Two
+channels, measured:
+
+- **The retired lose their care.** The retired have no income of their own at
+  a founding (`disposable` 0); today they pay senior care out of the
+  dividends on the founders' shares they were granted. Without them,
+  `careAffordability(SENIOR)` is 0.17 until month 13 and 0 from month 14
+  (1.0 with the line off), so `Migration.SENIOR_CARE_PULL`'s 30% is lost
+  from the target every month, and general care's affordability falls to
+  0.84 (1.0 off).
+- **The owners bank the dividends.** Five families take every founders'
+  dividend; their plan asks the grocer for 80% of it, which two people
+  cannot eat, so it is banked or sent abroad. By month 61 they hold 81% of
+  the city's bank savings (2,514 of 3,091) and 2,289 abroad.
+- **Letting the owners subscribe to offerings** (a variant, not shipped)
+  recovers half: 1,977 people at month 121, still stalled from month 73.
+
+The study expected this (its risks 2 and 5) and left the size to the
+ensemble; the size is a city a third as large at ten years. That is not
+BO1's to settle: what pays the retired's care without the founders'
+dividends (pensions, HS1's flows, estates) and where a fortune spends (the
+wealth study's) are other batches'. So BO1 ships the line built, tested
+(OwnerCheck switches it on in its own fixtures and in a real city) and
+off, the trace byte-identical; switching it on is a Pending row with this
+section as its brief.
+
+## 2. The People screen waits for the switch
+
+Slice C (the owner families on the People screen) was not run: with the line
+off the row never holds a family, so every place it would draw is empty, and
+KeptCheck could not see it. The switch-on batch draws it where the prisoners
+are drawn in `ui/PeopleScreen.java`: the outside tiles (`outsideTiles`, an
+"Owner families" tile, its `openOutside` case to Household money), the
+mosaic's outside strip, `belowTheRule`, `otherRows`, the outside table if its
+columns grow cleanly, and the three texts that list the groups
+(`OUTSIDE_INFO`, `BELOW_THE_RULE`, the verdict's javadoc). HS3's household
+money page names the line too. The Government screen's vouchers list only
+the rows paid, so the empty row shows nowhere today.
+
+## 3. The slices, the review, the checks
+
+- **Slice A** (Sonnet 5.5, `brief-BO1-A`): the row, the cell, the line's state
+  and save, the grant, the census, the labour force, OwnerCheck 1-5. Amended
+  in review: the owner adults saved (section 0), the dial, two premises the
+  new cell moves (HouseholdCheck counts 79 cells; CrimeCheck's fixture names
+  the cell before the prisoners', which was the last but one).
+- **Slice B** (Sonnet 5.5, `brief-BO1-B`): the sale, the broke rule, the
+  leaver, OwnerCheck 6-9. Taken as written. It skips the owner cell in the
+  exchange's three household loops by type, not by `tradesShares()`, since a
+  prisoners' cell trades none by that rule either and a default city must
+  not move. What section 9's real city found (the line switched on, 120
+  months, 5 s):
+  - 5 families formed, none dropped, the cell empty 3 months (before the first);
+  - six companies were in issue with no family: their first shares were not
+    founders' (the bank's desk issues its own; four offered on a book of
+    nothing), so "one per listed company" is one per company that listed
+    with a founding book, as the study's grant has it;
+  - a growing owner cell takes the pool's average of every stock, shares
+    included ("they bring what the pool gives them", the study's 3.5), so
+    it can hold crumbs of a company without a family: at most 1.2e-5 of an
+    issue, asserted under a thousandth;
+  - the owners offered $6,199 in the run and sold $1,803 (29%).
+- **The trace**: the default playtest traced (`-Dplaytest.trace`) on main's
+  classes (a1008449) and on the batch's last model (96487da1): the eight
+  files byte-identical, the reports apart only in run time (60 s, 70 s, the
+  second beside `--pick`) and both exiting 1 alike. The ensemble is skipped
+  (EN1).
+- **Review lines** for the gate: the save gains two fields (`ownerFamilies`,
+  `ownerAdults`, both null on an old save) and two numbers at the end of the
+  exchange's life array (read only from a save that has them); no format
+  bump. The money: with the line off nothing moves; with it on the grant,
+  the sale and the leaver conserve the shares (OwnerCheck 3, 6, 8). No
+  threading.
+- **`--pick`** (the data files named): exit 3, the reds main's recorded ones
+  (HealthCheck 1, MapCheck 4, LongPlaytest with no FAIL line), no new red,
+  74 of 198 harnesses run for the 45 files changed; `review needed - saves:
+  DataSave.java` is the two fields above. Not run here: `--timing` (the gate's).
+
+## 4. The stranger's review sent it back (2026-11-10), and the fixes
+
+- **Two blockers, one cause: a 0.9.88 save's rows were refused whole.**
+  The new row takes `Household.ROWS` from 11 to 12, and two readers keyed
+  to it accepted only twelve-row shapes: `HouseholdAccounts.restoreStatement`
+  (239 numbers against 259; the statement fell back to the rebuild) and
+  `HouseholdBalance.restore` (93 against 101; the delivered share read 1.0
+  instead of the saved figure, the hungry at full shelves 0). Both now read
+  every shape with eleven rows per array as well (`ROWS_BEFORE_OWNER`, as
+  `ROWS_BEFORE_PRISON` was read), the owners' row empty; `padOlder` and
+  `padRows` take eleven too. The lengths were checked for collisions: none.
+  No format bump: the readers take the old shapes.
+- **The check that missed it.** OwnerCheck's "save from before" line compared
+  constants. Section 10 feeds main's two shapes (today's statement with every
+  figure marked by its place and the owner row cut from each of its twenty
+  arrays; a row array of eleven rows with the hunger's halves and the
+  prisoners' row marked) and asserts each figure comes back where the save
+  put it. Against the readers before the fix: 9 FAIL, every line of the
+  section; after: all OK.
+- **The low item, fixed** (a few lines): a family reserved for a company
+  that never lists sat in the line, out of the labour force, until a year at
+  a floor it never had. `tallyOwnersAtFloor` now takes the company in issue
+  (`Equity.getShares > 0`): a company not in issue counts no floor months,
+  and once the owner cell holds families and it has still not listed, the
+  listing was not retried and the family is let go at once. OwnerCheck 7
+  has the wait, the listing and the lapse; section 9's city still forms 5
+  families and drops none.
+- **The trace**, retraced on the fixed classes (6eb366e5): the eight files
+  byte-identical to main's, exiting 1 alike; unmoved by construction too (the
+  tally returns before either
+  predicate with the line off; the readers run only on a load).
+- **`--pick`** again, with SaveFileCheck, ReadPathCheck, OwnerCheck and
+  HouseholdCheck named: exit 3, main's recorded reds only (HealthCheck 1,
+  MapCheck 4, LongPlaytest with no FAIL line), the four named all OK. Main
+  had not moved (0.9.88), so nothing was merged.
+
+## 5. Merged with 0.9.89 (GW1), 2026-11-10
+
+- **The gate stopped on a conflict** in `AllChecks.HARNESSES`: GW1's
+  `StaffingDrawCheck` where OwnerCheck went. Both kept; the generated docs
+  taken from main and regenerated. Nothing of BO1's touches GW1's code
+  (Migration, `Sector.staffing()`, the draw).
+- **The fixtures on the faster city**: OwnerCheck and HouseholdCheck all OK.
+  Section 9's city (563 people at month 120) still forms 5 families and
+  drops none; the owners sold 38% of what they offered (29% on 0.9.88), and
+  the largest crumb in a company without a family is 1.3e-4 of its issue
+  (1.2e-5 before), still under CRUMB.
+- **The trace against 0.9.89** (main built from ee6130b1 in the scratchpad,
+  the batch at the merge): the eight files byte-identical, both exiting 0,
+  the reports apart only in run time (86 s, 87 s).
+- **`--pick`** with SaveFileCheck, ReadPathCheck, OwnerCheck and
+  HouseholdCheck named: exit 3, main's recorded reds only (HealthCheck 2,
+  MapCheck 3, GW1's lines in gate.txt), the four named all OK; 75 of 199
+  harnesses for 45 files.
