@@ -451,6 +451,24 @@ public class FamilyModel {
     /** Adults outside the families who took their children with them. */
     public double getAtHomeAdults() { return atHomeAdults; }
 
+    /** Adults of the owner families (BO1): outside the families, no dependants. NOT in the housing match yet: squeeze splits the unplaced between the matrix and the seekers, and a third bucket is not built. */
+    private double ownerAdults;
+
+    public double getOwnerAdults() { return ownerAdults; }
+
+    /** The owner families this month: two adults each. */
+    public double getOwnerFamilies() { return ownerAdults / 2; }
+
+    /**
+     * On a load: the owner adults the save's census counted (DataSave's, zero on
+     * a save from before BO1). The families array does not carry them as a
+     * number of their own, and the line at the save may have gained or lost a
+     * family since the census, so they are saved apart and read back as they were.
+     */
+    public void restoreOwnerAdults(double adults) {
+        ownerAdults = Math.max(0, adults);
+    }
+
     /**
      * Dependants per outside household, for the cells that carry them.
      *
@@ -472,6 +490,17 @@ public class FamilyModel {
      */
     public void rebuild(PopulationCohorts cohorts, double[] jobsByTier,
                         double awayAdults, double atHomeAdults) {
+        rebuild(cohorts, jobsByTier, awayAdults, atHomeAdults, 0);
+    }
+
+    /**
+     * @param ownerAdults adults the families are not built from because they
+     *                    are the owner families' (two a company; BO1): no job
+     *                    and no dependants, so they take none with them. Taken
+     *                    after the two above, from what is left of the adults.
+     */
+    public void rebuild(PopulationCohorts cohorts, double[] jobsByTier,
+                        double awayAdults, double atHomeAdults, double ownerAdults) {
 
         for (double[] row : households) java.util.Arrays.fill(row, 0);
         unhoused = 0;
@@ -496,7 +525,9 @@ public class FamilyModel {
          */
         double away = Math.max(0, Math.min(allAdults, awayAdults));
         this.atHomeAdults = Math.max(0, Math.min(allAdults - away, atHomeAdults));
-        this.outsideAdults = away + this.atHomeAdults;
+        // ...and the owner families' adults last (BO1): outside the families, with the outside adults.
+        this.ownerAdults = Math.max(0, Math.min(allAdults - away - this.atHomeAdults, ownerAdults));
+        this.outsideAdults = away + this.atHomeAdults + this.ownerAdults;
 
         /*
          * The children who went with them, at the city's own rate. Taken out
@@ -2062,6 +2093,7 @@ public class FamilyModel {
         }
         outsideAdults = 0;
         atHomeAdults = 0;
+        ownerAdults = 0;
         java.util.Arrays.fill(outsideDependants, 0);
         java.util.Arrays.fill(orphans, 0);
         java.util.Arrays.fill(seekers, 0);
@@ -2194,6 +2226,7 @@ public class FamilyModel {
         doubledUp = 0;
         outsideAdults = 0;
         atHomeAdults = 0;
+        ownerAdults = 0;
         java.util.Arrays.fill(outsideDependants, 0);
         java.util.Arrays.fill(orphans, 0);
         java.util.Arrays.fill(seekers, 0);
