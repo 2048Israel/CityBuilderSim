@@ -41,19 +41,23 @@ path).
    `LongPlaytest.audit()` (held at this open == held at the last strike, but for what the player did
    between presses) keeps it so.
 6. **The lines no measured city exercised** each get a caused month in `MoneyCheck`, the households'
-   identity asserted in it: schools' fees and payroll, research, the bank's operating cost,
-   student grants and loans, food assistance, fuel duty, a buyback, the central bank buying of
-   households, the fund's shares. (HL1 found two such lines a press out of step the moment a city
-   exercised them, the yards' old metal in the ensemble and the contributions and premiums off the
-   payslips in `BondCheck`'s town, and carries both now, `MoneyCheck` 16 and its old-metal fixtures:
-   any of these may be the same, and only a caused month says.)
+   identity asserted in it: schools' fees and payroll, research, student grants and loans, food
+   assistance, fuel duty, a buyback, the central bank buying of households, the fund's shares. (HL1
+   found two such lines a press out of step the moment a city exercised them, the yards' old metal
+   in the ensemble and the contributions and premiums off the payslips in `BondCheck`'s town, and
+   carries both now, `MoneyCheck` 16 and its old-metal fixtures: any of these may be the same, and
+   only a caused month says. The bank's operating cost has its caused months, `MoneyCheck`'s upkeep
+   section, and is in step.)
 7. **A bond's record follows its cells.** After the census the bond's households' face is the
    cells' own (`recountHouseholds()`'s rule, as after a load), what was stranded named as a line
    (whose it becomes: the issuer's debt forgiven, or the world's face, as a leaver's is), and
    `LongPlaytest.audit()` compares the two records every month as it does the city's paper.
 8. Then the own lines are asserted at nought (`Households.own` within the tolerance) and the
-   accumulators that are now always zero are deleted, with their labels. The ensemble (the trace
-   moves: fewer bankruptcies, fewer leavers).
+   accumulators that are now always zero are deleted, with their labels, and with them
+   `LongPlaytest`'s table of the nine over the run and its bounds (`ownLinesOverTheRun()`,
+   `OWN_BOUND_*`: HL1's stopgap, because two of the nine cancel by construction and the residual
+   cannot see them grow; until this item the run's report is where a line's size is read, before
+   and after each mend). The ensemble (the trace moves: fewer bankruptcies, fewer leavers).
 
 ## Calls
 

@@ -1,7 +1,7 @@
 # Ensemble baseline: {next}
 
-The ensemble on the model of **{next}**: classes snapshot of commit 91b976d2 (2026-11-11T18:32Z), label HL1, 80 of 80 runs.
-Scored against `docs/ensemble/0.9.92.md` for T1, T2 and F1. Commit this file on the batch's branch as `docs/ensemble/<batch id>.md` when its playtest trace moved, with the version above (this heading and the line under it) written as the next-version token in braces, as the batch's ship file writes it: ship.sh gives the file its version at the gate, renames it to `docs/ensemble/<version>.md` and fills the token. A batch whose trace is byte-identical to main's does not rerun the ensemble.
+The ensemble on the model of **{next}**: classes snapshot of commit fe1a0930 (2026-11-11T20:28Z), label HL1, 80 of 80 runs.
+Scored against `docs/ensemble/0.9.93.md` for T1, T2 and F1. Commit this file on the batch's branch as `docs/ensemble/<batch id>.md` when its playtest trace moved, with the version above (this heading and the line under it) written as the next-version token in braces, as the batch's ship file writes it: ship.sh gives the file its version at the gate, renames it to `docs/ensemble/<version>.md` and fills the token. A batch whose trace is byte-identical to main's does not rerun the ensemble.
 
 | policy | id | measure | median [min to max] | threshold | verdict |
 |---|---|---|---|---|---|
@@ -56,7 +56,7 @@ Scored against `docs/ensemble/0.9.92.md` for T1, T2 and F1. Commit this file on 
 | ALL | pairing | runs identical to their AUTO2 twin before the switch | 64/64 | all | PASS |
 
 criteria passed: 22/26 (vacuous, not counted: 0; retired, not counted: 1); missing runs: none; short runs: none
-time per run (median s): AUTO2 118.5, ZERO_SLACK 99.5, ZERO_HOT 24.0, SHOCK 38.7, HIGH 32.7; total 85.1 min
+time per run (median s): AUTO2 89.8, ZERO_SLACK 90.9, ZERO_HOT 21.1, SHOCK 41.6, HIGH 40.0; total 75.4 min
 
 ## summary.json
 

@@ -2,7 +2,8 @@
 
 Brief: `docs/studies/spec-wealth.md` 2.4 and 3.4. Four slices (A the instrument, B the upkeep, C the
 books closed and asserted, D what the ensemble then found), each coded by a Sonnet slice and reviewed;
-E is the fixtures the new path moved.
+E is the fixtures the new path moved; F and G are two findings of the stranger's review, sent back
+before the gate ("The review's three findings", below).
 
 ## What it was, measured on main before any fix (e6bb1787, 0.9.92)
 
@@ -39,7 +40,9 @@ So the study's "44% transit and the bank" was the lags and the faults, not a bil
   (`BusinessServices.UPKEEP_IMPORTED = 0.75`, measured: the grocers import 0.75-0.78 of their inputs,
   the restaurants 0.73-0.77, the builders 0.62-0.80), all of it where the sector has no seats. The
   buyers pay what and when they paid. In transit in the seller's pool until its strike
-  (`Ledger.upkeepSold`, saved; a missing key reads 0, no format bump).
+  (`Ledger.upkeepSold`, saved; a missing key reads 0, no format bump). The bank's operating cost is
+  bought the same way on an input line of its own (`BANK_UPKEEP_SUPPLIES`, `sellBankUpkeep()`),
+  which the national accounts leave out of their imports (slice F, below).
 - **The bankrupt's savings repay the bank first** (my call, below): `seized = min(savings, debt)` per
   bankrupt household is a repayment through the channel that exists, the write-off is the rest, and
   what is left of the savings stays theirs.
@@ -69,17 +72,26 @@ and 3,862 households in 661 months): HL2's ★2.
 
 ## What moves for the player
 
-- **GDP falls by the upkeep's imported share**: the upkeep was counted in the government's spending
-  and earned by nobody; it is now an import but for Business Services' quarter. On the two seeds the
-  upkeep is 0-0.3% of GDP in the first five years, 1.8-3.2% in years 5-20 and 0.7-2.1% after, and no
-  month reads negative. A town with schools and no offices imports the whole bill: the harness towns
-  that are mostly schools fell by 39% (`ChildcareCheck.town`: 383 a month to 238) and one reads a
-  month under nothing, where the debt market charges its whole spread. Debt against GDP rises by the
-  same.
-- **Cities grow more slowly in the ensemble**: 15 of 16 AUTO2 seeds reach 40,000 people, at month
-  1,526 at the median (16 of 16 at 1,212 on 0.9.92; the range is as wide as it was, 788-2,003 against
-  829-2,224), and the final population's median is 11% lower. Not traced to one cause; the builder's
-  debt limit is read against a GDP that is now lower, which is the likeliest.
+- **GDP falls by the imported share of the five services' upkeep** (care, schools, research, safety,
+  transit): that upkeep was counted in the government's spending (G holds the services' gross cost)
+  and earned by nobody; it is now an import but for Business Services' quarter. The bank's operating
+  cost was never in G, and the bank's output is in no term of GDP, so its import is kept out of the
+  accounts' (slice F): GDP does not move by it. On the two seeds the upkeep is 0-0.3% of GDP in the
+  first five years, 1.8-3.2% in years 5-20 and 0.7-2.1% after, and no month reads negative.
+- **A young town that is mostly services reads a GDP of nothing.** With no office the whole bill is
+  imported. `ChildcareCheck.town` fell 39% (383 a month to 238: the schools' 143 and the care's 2)
+  and stands at 283% of a year's GDP against the builder's 240% limit, where main's stood at 189%:
+  its builder borrows nothing. `DebtExchangeCheck`'s young city, month 3: G is the upkeep alone
+  (179.58, the clinic's 54.36 and the schools' 125.22, before a payroll is struck), all imported,
+  and GDP reads -12.02, where main read 167.6, which was that upkeep and nothing else. The debt
+  market charges a city with no GDP its whole five points: a bond sold that month clears at 8.21%
+  where main's cleared at 3.26%; two months on, the payroll struck, GDP is 198. One bank, no
+  operating cost: the bank's mend does not move either town. A player who builds a clinic and
+  schools before homes, shops and an office will see this in the first months.
+- **The ensemble's cities do not grow more slowly; the seeds reshuffle** (measured after slice F,
+  "The review's three findings", 3): the median month of reaching 40,000 people is 1,526 against
+  main's 1,212 and the median final population 11% lower, but seed by seed 9 reach it earlier, 6
+  later and one never, the means are 1,394 against 1,373 months and 268,000 against 271,000 people.
 - **Households keep more**: nothing is destroyed at a discharge, the bank writes off less.
 - **Business Services earns more** (other revenue, a quarter of it kept), in every city with seats.
 
@@ -89,8 +101,14 @@ and 3,862 households in 661 months): HL2's ★2.
 a household between presses is seen), 15 (a bond's face no cell holds, caused, is named), 16 (the
 contributions and premiums off the payslips, the levers opened and the rates moved twice, are in
 transit a press), the old steel and old copper fixtures (the households' books close with the yards'
-purchase in transit; each asserts the books would not close without its carrier), the upkeep section (bought, struck, saved and reloaded in transit, no seats); `BankCheck` (the bankrupt's
-savings repay the bank first, at half and at twice the debt); `LongPlaytest.audit()` every month.
+purchase in transit; each asserts the books would not close without its carrier), the upkeep section
+(bought, struck, saved and reloaded in transit, no seats; the services' line and the bank's read
+apart, and the households' books closing in the months the bank's operating cost is paid and
+struck); `GdpCheck`'s last section (a city with three bank branches and no Business Services seats:
+GDP is higher by exactly the bank's operating cost, 14.75, than C + I + G + exports less the sectors'
+whole imports; with an office by three quarters of it, 11.07); `BankCheck` (the bankrupt's savings
+repay the bank first, at half and at twice the debt); `LongPlaytest.audit()` every month, and its
+run's report, which prints the nine own lines over the run and holds each to a bound (slice G).
 
 Fixtures the new path moved, each re-caused or re-picked with a dated paragraph in its file, no
 tolerance or claim changed: `ScaleCheck` (the free copies' month 172 to 165 by a scan of 160-195; the
@@ -120,12 +138,87 @@ After it the four seeds replayed close to 1e-14 of what moved in the months that
 59 presses with every month closed: the issuer's bond is written down in its defaults (its face 31.8
 to 3.1), the record and the cells by the same factor, and no money moves.
 
+## The review's three findings (sent back before the gate, 2026-11-11)
+
+The stranger's review said ship; the orchestrator sent three of its findings back first.
+
+**1. The bank's upkeep came off GDP without its output ever being in it** (slice F). True: the
+bank's operating cost, bought of Business Services since slice B, was booked as an import, and the
+bank's output is in no term of GDP (not in G: the bank is not the government; not in C: nobody buys
+it over a counter). The accounts' own rule is already written of the drivers' fuel, "the world's
+part of their fuel is in neither C nor the imports": so the bank's part is kept out of the import
+sum (not counted in G). It is booked on an input line of its own and
+`EconomyManager.updateNationalAccounts()` leaves that line out; the sector's statement, the money
+audit and the balance of payments keep it, because the cash did leave. Caused in `GdpCheck` (above).
+What the review expected of it does not hold, though: the bank's upkeep is not what moved the
+fixtures. An operating cost is paid only from the second branch on, and `DebtExchangeCheck`'s young
+city and `ChildcareCheck`'s town have one. With main's own versions of the four re-caused fixtures
+put back on the mended tree, all four fail as before (`AutoBuildCheck`'s town still at 283% of
+240%). What moved them is the five services' upkeep, which is in G and is rightly netted ("What
+moves for the player"). And the mend moves no ensemble run: no bank there pays an operating cost.
+
+**2. Two own lines cancel by construction** (slice G). True: `PublicWagesRestruck` is the live public
+wages less the struck payrolls while `householdsInTransit()` adds the same live figure, and
+`BondFaceOrphaned` likewise for the bonds, so the residual cannot go red through those channels.
+`LongPlaytest.audit()` now sums the nine lines over the run, checks every month that the nine named
+lines are all of `own` (a tenth added to `households()` and not to `MoneyAudit.OWN_LINES` would
+escape), and the run's report prints a row a line and flags one past its bound. The bound is on the
+**mean monthly share** of what moved, not the run's total over the run's total: what moved is
+nominal, the last years' prices are the whole sum (5.3e14 over the nightly's 4,000 months against
+5.7e11 over the gate's 2,400), and a total share reads 1,000 times smaller on the longer run, so it
+would bound nothing early. Each bound is three times the larger of the gate's and the nightly's
+measured mean, rounded up to one figure:
+
+| the line | fired, of 2,404 months | mean monthly share (gate; nightly) | bound |
+|---|---|---|---|
+| Unfunded | 1,073 | 2.77e-3; 1.66e-3 | 9e-3 |
+| UnsettledIncome | 2,402 | 1.53e-3; 9.19e-4 | 5e-3 |
+| UnsettledRent | 2,403 | 1.45e-4; 8.69e-5 | 5e-4 |
+| UnsettledFees | 2,402 | 7.77e-6; 4.67e-6 | 3e-5 |
+| UnsettledShopping | 161 | 2.06e-5; 1.24e-5 | 7e-5 |
+| CensusStranded | 125 | 6.21e-8; 3.73e-8 | 2e-7 |
+| CensusCreated | 43 | 2.16e-8; 1.29e-8 | 7e-8 |
+| BondFaceOrphaned | 0 | under 1e-16 | 1e-7, the identity's own part in ten million |
+| PublicWagesRestruck | 1,817 | 1.32e-4; 7.95e-5 | 4e-4 |
+
+The run itself is not moved (its output is the untouched tree's to the digit). The ensemble's driver
+does not print the table (`ownLinesOverTheRun()` is there for it to call); HL2 deletes all of it.
+Seen on the way, not HL1's: the nightly's 4,000 months flag "a building on the map moved" three
+times (months 3,008-3,989), on the untouched tree as well.
+
+**3. "Cities grow more slowly ... not traced."** Measured again after (1): nothing moved, the 80
+runs are the same to the month. So the figures stand (15 of 16 seeds reach 40,000, month 1,526 at
+the median against 1,212, the median final population 199,236 against 224,453), and they do not
+mean what the notes said. Three measurements on the 16 AUTO2 seeds:
+
+| | main (0.9.93's own runs) | HL1 | HL1 with GDP counted as main counted it (a probe) |
+|---|---|---|---|
+| seeds reaching 40,000 | 16 | 15 (seed 5 stalls at 12-20,000 from month 600) | 15 (seed 3 stalls at 10,656; seed 5 reaches it) |
+| month reached, median; mean of those that reach it | 1,212; 1,373 | 1,526; 1,394 | 1,213; 1,326 |
+| final population, median; mean | 224,453; 271,300 | 199,236; 268,016 | 270,526; 256,573 |
+| seed by seed against main: earlier, later | | 9, 6 (from 836 months earlier to 910 later) | 9, 6 |
+| city-months with the treasury's debt over 240% of twelve times the month's GDP (the builder's limit, read off the runs' columns), of 36,496 | 1,588 | 621 | 1,067 |
+
+The probe is the review's cause tested directly: the same build with the one change that the
+services' imported upkeep is not taken off GDP (so the builder's limit, the debt market's spread and
+everything else that reads GDP see main's figure; no money moves differently at the start). It moves
+each seed by hundreds of months either way against HL1 (from 1,083 earlier to 335 later, 8 earlier
+and 6 later), which is the size of the noise: a seed's month of reaching 40,000 is decided by its
+path, and any change to the trace reshuffles the sixteen. The medians move with the reshuffle (HL1's
+sits in a cluster of nine seeds between 1,446 and 1,761); the means do not, and seed by seed more
+cities are earlier on HL1 than later. Two seeds that stalled on main (1 and 10: 44,799 and 68,356
+people) grow to 166,000 on HL1; one that grew (5) stalls. And the builder's debt limit is not what
+holds HL1's cities: they are over it in fewer months than main's, not more. So: no slower growth
+that 16 seeds can show, and the review's mechanism, real in a town that is mostly services (above:
+283% of 240%), is not at work in cities whose upkeep is 0-3% of GDP.
+
 ## The checks
 
-`./batch-check.sh --pick` on the final tree with main merged in (43565dc3: RB1 shipped meanwhile, and
-its fund's hold moves money beside this identity, so the two were checked together): 86 of 201
-harnesses, exit 4, four NEW red lines, each of a class queued on main and none in HL1's code. Without
-RB1 (91b976d2) the same three and not the first. `--timing` is the gate's.
+`./batch-check.sh --pick` on the final tree (fe1a0930: the review's two mends, and main merged in,
+85573582: RB1 shipped meanwhile, and its fund's hold moves money beside this identity, so the two
+were checked together): 86 of 201 harnesses, exit 4, four NEW red lines, each of a class queued on
+main and none in HL1's code; the same four, word for word, as before the review's mends (43565dc3).
+Without RB1 (91b976d2) the same three and not the first. `--timing` is the gate's.
 
 | the line, word for word | whose | the figures |
 |---|---|---|
@@ -145,10 +238,14 @@ that city's month, not traced further.
 
 ## The ensemble
 
-`docs/ensemble/HL1.md` (80 runs on 91b976d2): 22 of 26, as 0.9.92 scored. A2 and A3 fail as they did;
-ZERO_HOT's T2 and HIGH's R3 now pass; F1 fails in AUTO2 and ZERO_SLACK on one finding, the same
-city-month in a run and its twin (below). No run has a households' or a pools' finding (M1 0 months).
-The run on slice C (20 of 26) had the households' identity flagged in 16 runs: slice D.
+`docs/ensemble/HL1.md` (80 runs on fe1a0930, the final tree): 22 of 26, where 0.9.93 scores 23. A2
+and A3 fail as they do on main; HIGH's R3, main's third, passes; F1 fails in AUTO2 and ZERO_SLACK on
+one finding, the same city-month in a run and its twin (below). No run has a households' or a pools'
+finding (M1 0 months). Every one of the 80 runs is the same, month by month (people, GDP, deposits),
+as the run on 91b976d2 before the review's mends and before RB1 was merged in: no bank in an
+ensemble city pays an operating cost in any month (GDP would differ by it), and RB1's merge moves
+none of them either. The run on slice C (20 of 26) had the households' identity flagged in 16 runs:
+slice D.
 
 **The negative month** (seed 12, month 902): GDP reads -263.06 between 4,271.91 and 2,104.81.
 Manufacturing imports 12,608 that month against 4,876 a month before, builds no stock with it, and
@@ -176,9 +273,14 @@ For Jerus (in `docs/queue/HL2.md`, both with a recommendation):
 - NG1, queued: a month's imported inputs with no stock built read GDP negative (the ensemble, above).
 - BI1, queued: the Bank page's integrity cards on float dust (the checks, above).
 - CB2's row should list `CentralBankCheck`'s trust line (the checks, above): the orchestrator's file.
+- HL1-R (the orchestrator's, after the tag): the review's two lows, left as told: Business Services'
+  kept share is a cliff at one seat, and `ScaleCheck`'s month 165 holds in 7 of 36 months. The young
+  town's GDP of nothing ("What moves for the player") is the first one's matter: with no seat the
+  whole upkeep is imported, with one a quarter is kept.
 - The write-up for the project (`claude/<title>.md`; the batch changes how the game plays and leaves
   calls): this session has no way to write to the project; these notes are its matter.
 
 ## One in, one out
 
-No process file changed (no script, no check's machinery, no rule a session reads).
+No process file changed (no script, no check's machinery, no rule a session reads). `LongPlaytest`
+gained 120 lines of harness for the own lines' table and bounds, which HL2 deletes.
