@@ -184,7 +184,8 @@ public final class CityLand {
      * than asked: the default city 315 plots for 309.7 (+1.7%), 21 blocks of
      * 120 m, 0.3024 km2. These are the rings alone; since 0.7.106 a new
      * city's founding takes its water after them, since LM1 as one patch of
-     * blocks within FRESH_PATCH of the one it starts from (the next found()).
+     * blocks within FRESH_PATCH of the one it starts from, widened to
+     * FRESH_PATCH_MOST where that is too little (the next found()).
      */
     public static CityLand found(World world, long x, long y, double dryKm2) {
         return found(world, x, y, dryKm2, 0);
@@ -230,9 +231,14 @@ public final class CityLand {
      * block. The first seed whose patch reaches freshKm2 is taken (the
      * default world's 33 blocks of lake are the same, from its first seed;
      * the Stockholm city takes a lake of 36 to 41 blocks); where none
-     * does, the patch holding the most fresh plots, the earliest seed on a
-     * tie - a city on a river alone, Rome, founds with 0.14 km2 of the 0.49
-     * and buys the rest.
+     * does, the square widens a block at a time, to FRESH_PATCH_MOST
+     * (freshWater()): A24 is Jerus's own word, and a river 1 to 5 plots wide
+     * holds 0.14 to 0.18 km2 in 3 blocks of its seed, a plant's water a
+     * third full. Where none does at FRESH_PATCH_MOST either, the patch
+     * holding the most fresh plots there, the earliest seed on a tie: a
+     * city on a river alone founds short and buys the rest (Paris 0.33 km2
+     * of the 0.49, Rome 0.25, the full file; they would hold it at 10 and
+     * 14 blocks).
      */
 
     /** How far the founding takes blocks for its fresh water, in plots from the site, L-infinity: the founding lake's far shore at the most (World.RIVER_LAKE_NEAR + RIVER_LAKE_SPAN + LAKE_R_MIN + LAKE_R_SPAN, 107 plots, 3.2 km). */
@@ -241,6 +247,9 @@ public final class CityLand {
 
     /** The founding's water is one patch within this many blocks of the block it starts from, L-infinity (a 7 x 7 square, 840 m at the default level), so it is never a strip along a river (LM1, Jerus's Stockholm city). */
     static final int FRESH_PATCH = 3;
+
+    /** Where no patch within FRESH_PATCH holds one plant's water, the square widens a block at a time up to this many blocks (a 13 x 13 square, 1.56 km at the default level), so a city on a river alone founds with A24's water where the river holds it that near (LM1; A24 is Jerus's own word). */
+    static final int FRESH_PATCH_MOST = 6;
 
     /** A city's land at founding with at least freshKm2 of lake and river in its centre as well (0.7.106): the rings, then the water as one patch (LM1) - see above. freshKm2 0 is the rings alone. */
     public static CityLand found(World world, long x, long y, double dryKm2, double freshKm2) {
@@ -278,12 +287,32 @@ public final class CityLand {
         Map<Long, Long> fresh = new HashMap<>();
         java.util.Set<Long> owned = new java.util.HashSet<>();
         for (LandGrid.Fill f : centreRects) owned.add(blockKey(f.x0() >> level, f.y0() >> level));
-        for (long k : freshPatch((bx, by) -> freshPlots(world, tiles, fresh, blockKey(bx, by), b), owned, sbx, sby, reach, last,
-                river.lakeX(), river.lakeY(), b, target, FRESH_PATCH)) {
+        for (long k : freshWater((bx, by) -> freshPlots(world, tiles, fresh, blockKey(bx, by), b), owned, sbx, sby, reach, last,
+                river.lakeX(), river.lakeY(), b, target)) {
             long bx = k >> 32, by = (int) k;
             grid.fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE);
             centreRects.add(new LandGrid.Fill(bx * b, by * b, bx * b + b, by * b + b, CENTRE));
         }
+    }
+
+    /**
+     * The founding's water, widened where it must be (LM1): freshPatch() within FRESH_PATCH of its seed, and where no
+     * patch that near brings the owned blocks' fresh plots to `target`, within one block more at a time up to
+     * FRESH_PATCH_MOST - the first square whose patch reaches it, else the widest square's best patch. The arguments are
+     * freshPatch()'s.
+     */
+    static List<Long> freshWater(java.util.function.LongBinaryOperator freshOf, java.util.Set<Long> owned, long sbx, long sby,
+            long reach, long last, double lx, double ly, long b, long target) {
+        long have = 0;
+        for (long k : owned) have += freshOf.applyAsLong(k >> 32, (int) k);
+        List<Long> taken = List.of();
+        for (int patch = FRESH_PATCH; patch <= FRESH_PATCH_MOST; patch++) {
+            taken = freshPatch(freshOf, owned, sbx, sby, reach, last, lx, ly, b, target, patch);
+            long held = have;
+            for (long k : taken) held += freshOf.applyAsLong(k >> 32, (int) k);
+            if (held >= target) return taken;
+        }
+        return taken;
     }
 
     /** A block with its distance from the lake's centre and its fresh plots, for freshPatch(). */
