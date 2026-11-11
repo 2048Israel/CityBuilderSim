@@ -301,7 +301,7 @@ public final class AutoBuilder {
         public double borrowed;
         public boolean paving;
         public String why;
-        /** The ground it bought for the order (0.7.77): its dry square feet, its price in local money at the day's rate, and the offers' places ("West 3, North 1"); 0 and null for none. */
+        /** The ground it bought for the order (0.7.77): its dry square feet, its price in local money at the day's rate, and the offers' names ("West 21, North 1", LandParcel.where()); 0 and null for none. */
         public double landSqFt;
         public double landCost;
         public String landWhere;

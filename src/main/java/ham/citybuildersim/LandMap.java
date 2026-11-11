@@ -559,9 +559,9 @@ public final class LandMap {
         return made;
     }
 
-    /** What the map writes on an offer: its place, 1 to 6 from the left as you face out, as its row in the land office reads it. */
+    /** What the map writes on an offer: its number, one to each place across the city (LandParcel.number(), LM1), as its row in the land office and its name read it. */
     public static String placeLabel(LandParcel o) {
-        return String.valueOf(o.getPlace() + 1);
+        return String.valueOf(o.number());
     }
 
     /**
@@ -860,7 +860,7 @@ public final class LandMap {
             case CENTRE:
                 return "The city's centre, its land at the founding";
             case BOUGHT: {
-                if (p.purchase() < 0) return "The city's: " + CityLand.sideName(p.side()) + " " + (p.place() + 1);
+                if (p.purchase() < 0) return "The city's: " + CityLand.sideName(p.side()) + " " + LandParcel.number(p.side(), p.place());
                 CityLand.Purchase bought = land.purchases().get(p.purchase());
                 return String.format("The city's: %s, bought in month %,d", bought.offer().where(), bought.month());
             }

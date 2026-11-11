@@ -94,9 +94,11 @@ public final class Founding {
        ON THE PLOTS IT OWNS (0.7.106, batch P5; Jerus's B, 2026-10-10). The
        bond was sized on LandManager.STARTING_SQ_FT, US$2.1M, the figure the
        centre is drawn to hold - though since 0.7.67 the city owns the dry
-       plots drawn, 1.7% more, and since 0.7.106 the founding lake its first
-       water plant needs as well (CityLand.found(), A24). It is now the
-       centre's plots as the land office charges ground (LandMarket.
+       plots drawn, 1.7% more, and since 0.7.106 the water its first
+       water plant needs as well, since LM1 one patch of blocks (the lake
+       and its banks, or what a river's best patch holds; CityLand.found(),
+       A24). It is now the centre's plots as the land office charges ground
+       (LandMarket.
        groundKm2(): dry ground whole, fresh water at FRESH_PRICE_SHARE, sea
        at SEA_PRICE_SHARE) at that opening price - what the same plots would
        have cost on the office's shelf before any premium. The fields under

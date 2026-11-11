@@ -162,8 +162,11 @@ public class LandManager {
      * the figure a new city's centre of whole blocks is drawn to hold, and it
      * owns the dry plots drawn, a little more (CityLand.found(): 3,051,569
      * sq ft on the default world) - and since 0.7.106 the founding lake
-     * besides (FOUNDING_FRESH_KM2), whose banks it owns where the lake is too
-     * small for one plant (none on the default world).
+     * besides (FOUNDING_FRESH_KM2), since LM1 one patch of blocks within
+     * CityLand.FRESH_PATCH of the one it starts from: the banks come with it
+     * where the lake is too small for one plant (none on the default world),
+     * and a city with a river and no lake near founds with what the river's
+     * best patch holds.
      *
      * Sized off the two buildings the player cannot avoid: a coal plant is
      * twenty blocks and a water plant eight, so putting up both leaves two.
