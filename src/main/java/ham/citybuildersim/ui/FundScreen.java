@@ -286,6 +286,16 @@ final class FundScreen {
         return Double.isFinite(share) ? String.format("%.1f%%", share * 100).replace('-', '−') : "—";
     }
 
+    /** A unit share as "a tenth" or "a 24th": the dial the sentence names (the fund's sale of the excess, its idle cash's transfer), not a copy of it. */
+    static String nth(double share) {
+        long n = Math.round(1 / share);
+        if (n == 10) return "a tenth";
+        long tens = n % 100, ones = n % 10;
+        String suffix = tens >= 11 && tens <= 13 ? "th" : ones == 1 ? "st" : ones == 2 ? "nd" : ones == 3 ? "rd" : "th";
+        boolean an = String.valueOf(n).startsWith("8") || n == 11 || n == 18;
+        return (an ? "an " : "a ") + n + suffix;
+    }
+
     /** ...signed: "+14.4%". */
     static String signedPct(double share) {
         if (!Double.isFinite(share)) return "—";
@@ -580,7 +590,8 @@ final class FundScreen {
                     : "both books"});
             double mkt = reg.getShares(c) > 0 ? reg.getCityMarketShares(c) / reg.getShares(c) : 0;
             facts.add(new String[] {"AGAINST THE CAP", pct1(mkt) + " of " + pct1(TreasuryFund.OWNERSHIP_LIMIT).replace(".0", ""),
-                    "the market book; past the cap the rule asks the excess at fair value"});
+                    "the market book; past the cap the rule asks " + nth(TreasuryFund.LIMIT_SALE_SHARE)
+                            + " of the excess a month at fair value, ahead of the buybacks"});
             facts.add(new String[] {"IN ISSUE", shares(reg.getShares(c)), "shares"});
             double bid = ex.bestBid(c), ask = ex.bestAsk(c);
             facts.add(new String[] {"BID / ASK / LAST", (Double.isNaN(bid) ? "none" : price(g, false, bid)) + " / "
@@ -745,7 +756,8 @@ final class FundScreen {
         if (q.units() > 0) {
             lines.add(new PositionLine(buy ? "You would buy" : "You would sell", unitsWord + " · " + d(g, q.money()), null,
                     q.capped() ? "capped at the room under the " + pct1(TreasuryFund.OWNERSHIP_LIMIT).replace(".0", "")
-                            + " cap: past it the rule asks the excess back at fair value from the next step" : null));
+                            + " cap: past it the rule asks the excess back " + nth(TreasuryFund.LIMIT_SALE_SHARE)
+                            + " a month at fair value, from the next step, ahead of the companies' buybacks" : null));
             lines.add(new PositionLine(buy ? "Offered at or under it today" : "Bid at or over it today",
                     q.offeredUnits() > FundLedger.DUST ? (bond ? d(g, q.offeredUnits()) + " of face" : shares(q.offeredUnits()))
                             + " for " + d(g, q.offeredMoney()) + ", " + price(g, bond, q.offeredAverage()) + " on average" : "nothing",
@@ -971,8 +983,10 @@ final class FundScreen {
                         + "its warrants at their Black-Scholes value. The rule keeps %s of its market book and cash in "
                         + "shares and the rest in bonds, and trades back when shares pass %s or fall %.0f points under "
                         + "the aim. It buys only on the market - never a new issue, never the city's own paper - and what "
-                        + "does not fit waits as cash, which earns nothing, as the treasury's own does not.",
-                pct1(TreasuryFund.EQUITY_WEIGHT), pct1(TreasuryFund.REBALANCE_OVER), TreasuryFund.REBALANCE_UNDER * 100);
+                        + "does not fit waits as cash, which earns nothing, as the treasury's own does not; cash past the "
+                        + "room its caps leave - %s of each company, and the bonds in issue - goes to the budget, %s a month.",
+                pct1(TreasuryFund.EQUITY_WEIGHT), pct1(TreasuryFund.REBALANCE_OVER), TreasuryFund.REBALANCE_UNDER * 100,
+                pct1(TreasuryFund.OWNERSHIP_LIMIT).replace(".0", ""), nth(TreasuryFund.IDLE_TRANSFER_SHARE));
     }
 
     /** THE CITY'S FUND's (i). */
@@ -1922,7 +1936,8 @@ final class FundScreen {
             + "place it until it fills or lapses, and the rule bids with the rest. A buy goes no further than the room "
             + "under the cap the rule keeps of a company, counting what the fund holds of it and your other buys on it, on "
             + "the book or waiting, as if all of them filled; the rule's own bid makes way for yours, from the moment you "
-            + "place it. Past the cap the rule would sell the excess back at fair value. "
+            + "place it. Past the cap the rule asks the excess back " + nth(TreasuryFund.LIMIT_SALE_SHARE)
+            + " a month at fair value, from the next step, ahead of the companies' buybacks. "
             + "The quote reads today's book, which the step withdraws and posts afresh, so it says what stands now, not "
             + "what will fill.";
 
@@ -2424,9 +2439,11 @@ final class FundScreen {
         return String.format("The withdrawal's share of everything the fund holds, every month - %s a month now, %.0f%% a "
                 + "year - as the budget's revenue line \"Transfer from the fund\". At or under Norway's rule, %.0f%% a year "
                 + "and the default, it is paid from the fund's cash only, and what the cash cannot cover is not paid; over "
-                + "it, what the cash cannot cover is sold from its market book and paid the month after. THE WITHDRAWAL, "
-                + "above, sets it.", pct2(fund.getWithdrawal()), fund.getWithdrawal() * TreasuryFund.YEAR_MONTHS * 100,
-                TreasuryFund.TRANSFER_RATE * 100);
+                + "it, what the cash cannot cover is sold from its market book and paid the month after. Cash past "
+                + "the room the rule's caps leave is withdrawn at the larger of the dial and %s a month; at "
+                + "a dial of 0 nothing is. THE WITHDRAWAL, above, sets it.", pct2(fund.getWithdrawal()),
+                fund.getWithdrawal() * TreasuryFund.YEAR_MONTHS * 100, TreasuryFund.TRANSFER_RATE * 100,
+                nth(TreasuryFund.IDLE_TRANSFER_SHARE));
     }
 
     /** TO THE TREASURY: last month's, paid and not, this year's, next month's, and what came in. */
@@ -2434,6 +2451,10 @@ final class FundScreen {
         TreasuryFund fund = g.getFund();
         VBox card = card(caption("TO THE TREASURY", transferInfo(fund)));
         card.getChildren().add(cardLine("Last month's, on what it was worth", d(g, fund.getTransferDue()), null));
+        // The part of it taken from cash the rule cannot invest (RB1): shown only when there was one, as the card says only sometimes.
+        if (fund.getTransferFromIdle() > 0) {
+            card.getChildren().add(Kept.scope("fromIdle", () -> cardLine("...of it from cash its rule cannot invest", d(g, fund.getTransferFromIdle()), null)));
+        }
         card.getChildren().add(cardLine("...paid from its cash", d(g, fund.getTransferPaid()), null));
         // Over the default the short is what the step sells for, paid at the next top (0.7.48): its own words, no warning.
         // Kept (KP5): what the card says only sometimes is a scope of its own.
@@ -2452,6 +2473,10 @@ final class FundScreen {
         card.getChildren().add(cardLine("This year so far", d(g, fund.getTransfersThisYear())
                 + (notPaidThisYear > 0 ? " · " + d(g, notPaidThisYear) + " not paid" : ""), null));
         card.getChildren().add(cardLine("Next month's, on what it is worth now", d(g, g.fundTransferDue()), null));
+        if (g.fundTransferFromIdleDue() > 0) {
+            card.getChildren().add(Kept.scope("fromIdleNext", () -> cardLine("...of it from cash its rule cannot invest",
+                    d(g, g.fundTransferFromIdleDue()), null)));
+        }
         card.getChildren().add(caption("WHAT CAME IN LAST MONTH", null));
         card.getChildren().add(cardLine("Dividends", d(g, fund.getMonthDividends()), null));
         card.getChildren().add(cardLine("Coupons", d(g, fund.getMonthCoupons()), null));
@@ -2555,11 +2580,14 @@ final class FundScreen {
     static String capRule() {
         return String.format("It holds no more than %s of any company on its market book, counting its bid and your "
                         + "orders as if they filled, its own bid making way for yours; past it - a company's buyback can "
-                        + "lift it there - it asks the excess back at fair value from the next "
-                        + "step. The rescue book is outside the cap. Each month it bids for its aim - a share at the desk's ask, "
-                        + "fair value plus %s, a bond at its value - and takes only what is asked at or under it; what does "
-                        + "not fit waits as cash.",
-                pct1(TreasuryFund.OWNERSHIP_LIMIT).replace(".0", ""), pct1(TreasuryFund.RULE_PREMIUM).replace(".0", ""));
+                        + "lift it there - it asks the excess back %s a month at fair value, from the next "
+                        + "step, ahead of the companies' buybacks. The rescue book is outside the cap. Each month it bids "
+                        + "for its aim - a share at the desk's ask, fair value plus %s, a bond at its value - and takes "
+                        + "only what is asked at or under it; what does not fit waits as cash, and cash past what its caps "
+                        + "leave room for - %s of each company, and the bonds in issue - goes to the budget, %s a month.",
+                pct1(TreasuryFund.OWNERSHIP_LIMIT).replace(".0", ""), nth(TreasuryFund.LIMIT_SALE_SHARE),
+                pct1(TreasuryFund.RULE_PREMIUM).replace(".0", ""), pct1(TreasuryFund.OWNERSHIP_LIMIT).replace(".0", ""),
+                nth(TreasuryFund.IDLE_TRANSFER_SHARE));
     }
 
     /** THE RULE: the shares against the aim, the cap in words, and the treasury's rescue setting. */

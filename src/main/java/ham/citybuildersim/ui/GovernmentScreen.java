@@ -1909,13 +1909,18 @@ final class GovernmentScreen {
     /** P20: the fund's transfer. */
     static final String FUND_INFO = String.format("The withdrawal dial's share of everything the city's fund holds, a "
             + "month - by default a twelfth of %.0f%% a year, Norway's fiscal rule - from its cash, and over the default "
-            + "from what it sells. The Finances tab has the fund and its dial.", TreasuryFund.TRANSFER_RATE * 100);
+            + "from what it sells; cash its rule cannot invest goes at the larger of the dial and %s a month. The "
+            + "Finances tab has the fund and its dial.", TreasuryFund.TRANSFER_RATE * 100,
+            FundScreen.nth(TreasuryFund.IDLE_TRANSFER_SHARE));
 
     /** THE TRANSFER FROM THE CITY'S FUND (0.7.14), opened from its line: due, paid and short this month, and the fund it is struck on. Every figure a getter. */
     VBox fundTransferDetail() {
         TreasuryFund fund = ui.game.getFund();
         return column(noteLine("due, paid and short this month", FUND_INFO, STATEMENT - 22),
                 statementLine("Due on what the fund was worth", moneyFull(fund.getTransferDue())),
+                // The part of it taken from cash the rule cannot invest (RB1): a line shown only when there was one, a scope of its own (KP5).
+                fund.getTransferFromIdle() > 0 ? Kept.scope("fromIdle", () -> statementLine("...of it from cash its rule cannot invest",
+                        moneyFull(fund.getTransferFromIdle()))) : null,
                 statementLine("Paid from its cash", moneyFull(fund.getTransferPaid())),
                 // Over the default withdrawal (0.7.48): the short is what the step sells for, and last month's sale paid late.
                 fund.getToRaise() > 0 ? statementLine("Sold for, to pay next month", moneyFull(fund.getToRaise()))
