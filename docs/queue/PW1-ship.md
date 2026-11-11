@@ -11,7 +11,7 @@ grid from the first month, so it orders no plant before it draws. The probe city
 on main, at 31 turns and none after month 607 on PW1. The Services screen shows the prices, the coal, the wind turned
 away and the load not served; the Trade tab the power plants' coal and upkeep. The ensemble scores 24 of 26
 (`docs/ensemble/PW1.md`; 0.9.93 23), R2 newly red (PW1-E). New: PowerDispatchCheck, PowerPriceCheck, BuildAdviceCheck
-14-15. PW5 and PW8 pending.
+14-15; CallCheck 4's sale on a bank that stands. PW5 and PW8 pending.
 ## pending
 | PW5 | Substations: one per 100 MW of peak, built by the auto-builder, their cost the wires' part of the bills ({next}) | Left out of PW1 (its notes §0): a new building and an AutoBuilder rule that change every city's builds, the cost to be priced from the bills PW1 now strikes. Recommendation: its own batch, next in the power lane | [PW1 notes §0](docs/queue/PW1-notes.md) |
 | PW8 | Homes pay for their power: a household power bill at the market's price ({next}) | Left out of PW1 (its notes §0): it changes `HouseholdBalance`, which HL1 (the households' books closed) was changing beside it. Recommendation: its own batch once HL1 is on main | [PW1 notes §0](docs/queue/PW1-notes.md) |
