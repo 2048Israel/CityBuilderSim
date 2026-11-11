@@ -44,7 +44,7 @@ import java.util.Map;
  * What it does NOT do that LongPlaytest does: the save/reload round trip every
  * seventh stop (it tests the save, not the economy; it costs time and disk), the
  * report and the traces. Everything else - the founding, the advisor, the skip
- * rhythm, the tax fiddles, the borrowing, the land, the demolitions, the player's
+ * rhythm, the annual wealth policy, the borrowing, the land, the demolitions, the player's
  * answer to a failed bank and to its offer, and the audit of every month - is
  * LongPlaytest's own code, called rather than copied where it can be.
  */
@@ -261,7 +261,7 @@ public class Ensemble {
         int flagsBefore = Adapter.findingCount();
         List<String> namesBefore = new ArrayList<>(Adapter.findingNames());
         // System.out is already the quiet stream (foundAndPlay); progress goes to `real`.
-        LongPlaytest.run(g, 1);
+        LongPlaytest.runPlayer(g, 1);
         if (g.getMonth() == before) stuck = true;
         StringBuilder names = new StringBuilder();
         for (String n : Adapter.findingNames()) {
@@ -392,16 +392,6 @@ public class Ensemble {
                 }
                 run(g, 2);
 
-                if (stop % 11 == 0) {
-                    TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
-                    double income = tax.getIncomeTaxRate();
-                    tax.setIncomeTaxRate(income > .25 ? .12 : income + .06);
-                }
-                if (stop % 17 == 0) {
-                    TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
-                    double prop = tax.getPropertyTaxRate();
-                    tax.setPropertyTaxRate(prop > .03 ? .01 : prop + .01);
-                }
                 if (stop % 19 == 0) {
                     DebtManager m = g.getDebtManager();
                     if (m.foreignWindowOpen() && m.foreignRate() < m.getRate()) {

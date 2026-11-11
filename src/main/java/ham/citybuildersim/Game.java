@@ -19543,6 +19543,16 @@ public class Game {
         if (debt == null) return Buyback.Result.none(face);
         priceTheDebtMarket();
         debtManager.updateInterest();
+        return quoteBuybackAtRest(debt, face, maxPer100);
+    }
+
+    /**
+     * The same CD4 quote on the market already struck, without repricing it (GV1).
+     * Government advice is a read: opening its page must not reset interest or
+     * advance the debt market. The dealing page still uses quoteBuyback().
+     */
+    public Buyback.Result quoteBuybackAtRest(Debt debt, double face, double maxPer100) {
+        if (debt == null) return Buyback.Result.none(face);
         double principal = debt.getOustandingPrincipal();
         if (!(principal > 0)) return Buyback.Result.none(face);
         double fair = debtManager.marketValue(debt) / principal * 100;
