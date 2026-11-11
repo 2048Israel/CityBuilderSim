@@ -119,3 +119,5 @@ fixtures cause their conditions (borrow a piece of paper, open a book row, a bus
   only into the buyback's bid: at fair value nobody else buys. Saves need not load until the game is published,
   so this is noted, not handled.
 - The manual names neither the cap's sale nor the idle cash; nothing in it is now untrue.
+- Not done here: the write-up for the project (`claude/<title>.md`; this batch changes how the game plays). This
+  session has no way to write to the project; sections 1-4 are its matter.
