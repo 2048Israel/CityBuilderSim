@@ -134,42 +134,56 @@ the share out of work as the seeds' mean over the span, medians. Variants as unc
 - AQ1's seed (AUTO2-2, GW1: 50.1% out of work in months 560-700, a 12-month deflation spell ending at month 632):
   14.0% and 7 months as first written; 12.2% and 3 months from month 240. A3 passes in every seed in both.
 
-## 4. The ensemble (`docs/ensemble/WG2.md`, 843ebffb, 80 of 80 runs)
+## 4. The ensemble (`docs/ensemble/WG2.md`, 99279a93 on 0.9.91, 80 of 80 runs)
 
-24 of 26, against GW1's 24 of 26. The AUTO2 runs are byte-identical to the month-240 prototype's (section 3).
+WG2 scores 22 of 26, against `docs/ensemble/0.9.91.md`. GV1's city is GovernmentPlayer's, and the auto city is
+about 57% smaller there. The first run (843ebffb, on GW1's 0.9.89) scored 24 of 26, failing A2 and ZERO_HOT's T2.
 
-| measure (median [min to max]) | GW1 (0.9.89) | WG2 |
+| measure (median [min to max]) | GV1 (0.9.91) | WG2 on 0.9.91 |
 |---|---|---|
-| AUTO2 inflation m240-end, a year (A1) | 2.08% | 2.24% |
-| AUTO2 young city, inflation m240-600 | 2.74% | 3.18% |
-| AUTO2 founding m120-240, longest spell of yoy > 10% | 13 [0 to 27] | 4 [0 to 20] |
-| A2: longest spell of yoy > 10% from m240 (< 12 in every seed) | 10 [7 to 24], FAIL | 10 [8 to 26], FAIL |
-| A3: longest spell of yoy < -10% from m240 (< 12 in every seed) | 1 [0 to 12], FAIL | 2 [0 to 8], PASS |
-| H2: ZERO_HOT m342-402 minus its twin | 0.13%, 15/16 | -0.27%, 13/16 |
-| AUTO2 bank, months under `CAPITAL_RATIO` to m600 | 2 [0 to 21] | 0 [0 to 8] |
-| AUTO2 out of work m24-240; m240-600; from m600 | 6.0%; 12.9%; 10.7% | 5.4%; 8.9%; 8.6% |
-| AUTO2 final population (T2) | 618,792 | 592,212 |
-| ZERO_SLACK final population | 409,599 | 402,986 |
-| ZERO_HOT final population (T2, at least 75% of GW1's) | 12,898 | 9,518, FAIL (73.8%) |
-| SHOCK final population | 34,660 | 28,526 |
-| HIGH final population | 14,570 | 11,957 |
+| AUTO2 inflation m240-end, a year (A1) | 2.64%, 13/16 | 2.74%, 13/16 |
+| AUTO2 young city, inflation m240-600 | 3.58% | 3.77% |
+| AUTO2 founding m120-240, longest spell of yoy > 10% | 12 [1 to 33] | 11 [0 to 24] |
+| A2: longest spell of yoy > 10% from m240 (< 12 in every seed) | 27 [11 to 55], FAIL | 32 [15 to 41], FAIL |
+| A3: longest spell of yoy < -10% from m240 (< 12 in every seed) | 6 [1 to 17], FAIL (seeds 9 and 11) | 4 [0 to 12], FAIL (seed 10, 12 months) |
+| H2: ZERO_HOT m342-402 minus its twin | -0.14%, 10/16 below, FAIL | -1.15%, 16/16, PASS |
+| R3: HIGH m660-720 minus its twin (at most 2 seeds > +1 pt) | -2.25%, 1 above, PASS | -2.15%, 5 above, FAIL |
+| AUTO2 out of work m24-240; m240-600; from m600 | 5.8%; 10.0%; 16.1% | 4.9%; 6.7%; 11.6% |
+| AUTO2 final population (T2) | 268,306 | 224,453 (83.7%) |
+| ZERO_SLACK final population | 173,386 | 147,125 (84.9%) |
+| ZERO_HOT final population (T2, at least 75% of GV1's) | 10,502 | 7,704, FAIL (73.4%) |
+| SHOCK final population | 23,388 | 19,820 (84.7%) |
+| HIGH final population | 18,155 | 14,282 (78.7%) |
+| T1: AUTO2 seeds reaching 40,000 (month reached) | 16/16 (m1,100) | 16/16 (m1,212) |
 
-- **AQ1 clears on this run.** Its seed, AUTO2-2, peaks at 12.2% out of work in months 560-700 (GW1: 50.1%) and its
-  longest spell under -10% a year is 3 months (GW1: 12); A3 passes in every seed. The town is a different town by
-  then (18,684 people at month 600 against 20,534), so this is the bust not happening, not the bust explained:
-  AQ1's question (what laid off 30 points in ten months) is unanswered, and the row is the orchestrator's to close
-  or keep.
-- **ZERO_HOT's T2 is new red**, 73.8% of GW1's against the 75% floor. ZERO_HOT's city ends at month 402, a young
-  city, and tracks its AUTO2 twin (96.5% of it): this is part 1's cost to the young decades, which C2(a) accepted
-  ("smaller in its young decades"). It is above 0.9.83's 9,262; GW1 had raised it 39%. Not moved: T2 is the
-  ensemble's premise.
+- **A2 and A3 are main's reds.** GV1 fails both. WG2's A3 is nearer the line than main's: its worst seed has 12
+  months under -10% a year, where the criterion allows fewer than 12. Main's two failing seeds have 17 and 13.
+- **R3 is new red, and the drift causes it** (★, call 2 in section 5). In the HIGH runs the 15% rate makes out of
+  work, and under WG2 that slack leaves the city instead of staying in it:
+  - HIGH's population grows 11.9 points less than its twin's over m600-720. GV1's grows 5.1 points less.
+  - HIGH's out of work stands 1.8 points over its twin's in m600-660 and 1.2 points under it in m660-720. On GV1
+    it is 1.6 points over in both.
+  - So in R3's last 60 months the high-rate city has less slack than its twin. Five seeds run from +1.69 to +2.84
+    points over their twins, and four of the five have less out of work than their twins in those months.
+  - The median is unchanged (-2.15% against -2.25%), and R1 (the whole window) passes at -2.91%.
+  - On the first run the two seeds above the line had the same sign: 6.4 and 9.7 points less out of work than
+    their twins.
+- **AQ1's seed** (AUTO2-2) busts on both. Its longest spell under -10% is 8 months on GV1 and 9 on WG2. Its out
+  of work peaks at 37.9% on GV1 and 39.1% on WG2 in m560-700. The first run's clearing was a different town.
+  AQ1's question stays open and its row stays as it is.
+- **ZERO_HOT's T2** stays red, at 73.4% against 75%. This is call 1: the young city's cost, accepted.
 
 ## 5. Calls
 
 - Taken, with its recommendation (spec-wages section 6): the brake and the drift from month 240 (section 3).
-- **★ ZERO_HOT's T2** (section 4), taken with its recommendation: it is accepted as part 1's cost to the young
-  city, as C2(a) chose. Jerus can overturn it. The other way is to hold WG2 for a young-city remedy to part 1, and
-  none is studied: every rule that brought fewer people cost the young city (spec-wages 10).
+- **★ Call 1, ZERO_HOT's T2** (section 4), taken with its recommendation: it is accepted as part 1's cost to the
+  young city, as C2(a) chose. Jerus can overturn it. The other way is to hold WG2 for a young-city remedy to part 1,
+  and none is studied: every rule that brought fewer people cost the young city (spec-wages 10).
+- **★ Call 2, HIGH's R3** (section 4, on 0.9.91), taken with its recommendation: it is accepted as the drift doing
+  what spec-wages asks. A 15% rate makes out of work, and the jobless past 6% now leave. By the window's last 60
+  months the high-rate city has less slack than its twin, so five seeds' inflation runs 1.7-2.8 points over their
+  twins'. The median is unchanged. R3's premise is not moved. Jerus can overturn it. The other way is to hold WG2
+  for a slower drift, or for one that waits out a rate the bank holds high, and neither is studied.
 - Not done here: the write-up for the project (`claude/<title>.md`; this batch changes how the game plays). This
   session has no way to write to the project; sections 1-5 are its matter.
 
@@ -288,3 +302,26 @@ KeptCheck's section 61 plays 25 plain months, m2391-2416. In them, its city lose
 | m3296 / m3298 | 1,124,586 | 1,132,868 |
 | m3537 / m3539 | 1,351,077 | 985,007 |
 | m4000 / m4002 | 1,533,142 | 1,104,653 |
+
+## 9. The merge with 0.9.91 (GV1) and the whole suite on it
+
+- **The merge.** WG2 merged origin/main at 9a58e04e (0.9.91, GV1's GovernmentPlayer). The generated documents
+  were taken from main and regenerated, and no source file conflicted. The ensemble's rerun is in section 4.
+- **The whole suite** (`./batch-check.sh`, with the Earth and world files named, on 99279a93) exits 4, with 17
+  NEW red lines once main's recorded reds are aside. Each is passed by name, and none is in WG2's code:
+  - **HealthCheck** `1 FAILED`: HX1. Main's count is `2 FAILED`. Here only `...its old first` fails (`[known]`),
+    and HX1's other line passes on this path.
+  - **MapCheck**, 6 lines and `6 FAILED`:
+    - Section 1, `at every 30th month the map draws exactly what the city has ...`, is DM3, queued in the ship
+      file.
+    - The five section 2d yard lines (66 of 369, 84 off the plan; 11 moved; 18 counted; 45 of 510; 72 of 589, 129)
+      are DM2's class.
+  - **SlopeCheck**, `the run played its months and found nothing ... [a building on the map moved] FAIL`. In
+    district (-1,0), at m611, 19 of 327 boxes moved. This is DM2's class.
+  - **KeptCheck**, the redraw line (KS1) and the signature line (KF1, folded into KS1). Both are in section 7. Main's
+    BuybackLadder line passes on this path.
+  - **LongPlaytest** `exit 1` with no FAIL line. Its one finding is `industry stands farther out than the homes`,
+    1 time, m2400: industry 3.42 km from the founding site (748 boxes), the homes' band 3.03 km (2,822), the outer
+    kinds 4.65 km (43). This is CL3's layout watch, on a map WG2 does not touch. The city grew from 51,001 people
+    at m2006 to 176,987 at m2358. CL6 is queued in the ship file; the finding is not traced here.
+- **The 4,000-month LongPlaytest** in section 8 ran on 0.9.90's base. It was not rerun on 0.9.91.
