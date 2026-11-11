@@ -3736,9 +3736,13 @@ public class HouseholdBalance {
      * paid in: its coupons are spread over the cells that are left, by
      * households, as a folded cell's stocks are. Untaxed, as the city's
      * paper's coupon is.
+     *
+     * @return what the cells were credited in all: the shares that reached a cell, the
+     *         orphaned part too when a live cell took it, 0 for the part nobody took (HL1)
      */
-    public void creditBondCoupons(java.util.Map<String, Double> dueByCell) {
-        if (dueByCell == null || dueByCell.isEmpty()) return;
+    public double creditBondCoupons(java.util.Map<String, Double> dueByCell) {
+        if (dueByCell == null || dueByCell.isEmpty()) return 0;
+        double credited = 0;
         double orphaned = 0;
         for (java.util.Map.Entry<String, Double> e : dueByCell.entrySet()) {
             double v = e.getValue() == null ? 0 : e.getValue();
@@ -3749,11 +3753,12 @@ public class HouseholdBalance {
             c.savings += each;
             c.investmentIncome += each;
             c.bondIncome += each;
+            credited += v;
         }
         if (orphaned > 0) {
             double live = 0;
             for (Household c : cells) if (!c.isEmpty()) live += c.households;
-            if (live <= 0) return;
+            if (live <= 0) return credited;
             for (Household c : cells) {
                 if (c.isEmpty()) continue;
                 double each = orphaned / live;
@@ -3761,7 +3766,9 @@ public class HouseholdBalance {
                 c.investmentIncome += each;
                 c.bondIncome += each;
             }
+            credited += orphaned;
         }
+        return credited;
     }
 
     /** One bond's principal at maturity: every cell paid its own face of it, into savings, and the bond gone from it. @return what the cells were paid in all */

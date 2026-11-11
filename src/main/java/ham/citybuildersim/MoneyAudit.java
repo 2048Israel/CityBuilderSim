@@ -61,14 +61,19 @@ package ham.citybuildersim;
  * Two kinds of term close it besides the pools' DOMESTIC lines. (K) Money in
  * transit goes INTO householdsHeld(): the pools pay or are credited in one
  * press, the households are handed or charged the same money at their next
- * monthly sync, so the public wages, the pensions, the wage tax, the fares and
+ * monthly sync, so the public wages, the pensions, the wage tax, the pension
+ * contributions and the EI and health premiums off the same payslips, the fares and
  * the clinic's and schools' fees, and the cars, boutiques and kitchens that are
  * paid out of the savings after the sectors' strike, are read live at the open
- * and at the strike (householdsInTransit()). (O) The households' OWN lines are
+ * and at the strike (householdsInTransit()), and so are the households' old
+ * steel and copper the yards have paid into their savings that the yards' books
+ * strike a press later (oldMetalInTransit(), taken OFF what they hold). (O) The households' OWN lines are
  * money their own settling made or lost with no pool on the other side: the
  * bills they could not fund, the income, rent, fees and shopping handed to
  * cells too small to settle, savings the census left in a pool nobody is handed
- * or made on a growing cell, and the public payrolls struck again. They are
+ * or made on a growing cell, the principal and coupons paid on a bond's face
+ * no cell holds (BondMarket.getOrphanedToHouseholds()), and the public payrolls
+ * struck again. They are
  * open FAULTS of the model, NAMED and measured here and mended by HL2, not by
  * being measured; Households.detail prints each and Households.figure()
  * reads it. What the identity cannot see: a carrier revalued BETWEEN presses
@@ -403,6 +408,11 @@ public final class MoneyAudit {
                 - e.getTransitFares()
                 // ...and the clinic's and the schools' fees, the same: the city has them, the households are charged next.
                 - g.getHealthcare().getFees() - g.getEducation().getFees()
+                // ...and what else comes off the payslips: the pension contributions and the EI and health premiums, which the
+                // treasury banks at the strike and the sync charges at those stored figures a press later (HL1, 2026-11-11;
+                // found in BondCheck's town, the one harness city with every lever open: its households' books missed by the
+                // month's change in the three, 0.01 to 0.5 a month, in 40 months of 40).
+                - e.getContributions() - e.getEiPremiums() - e.getHealthPremiums()
                 // ...and the three counters paid out of the savings AFTER the sectors' strike (Game.startOfMonthUpdate():
                 // motoring.month() sells the cars on Automotive, luxuryCounter.shop() the boutiques' pieces on Luxury Retail,
                 // luxuryCounter.dine() the meals on Restaurants): the savings are down already, the sale is on the sector's pending
@@ -410,7 +420,12 @@ public final class MoneyAudit {
                 // at the sync, in the statement's own month, so they are not in transit.
                 + sectors.automotive().pending().salesToHouseholds
                 + sectors.luxuryRetail().pending().salesToHouseholds
-                + sectors.restaurants().pending().salesToHouseholds;
+                + sectors.restaurants().pending().salesToHouseholds
+                // ...and the households' old steel and copper the yards have bought and paid into their savings at once
+                // (HouseholdBalance.creditScrappedCars()), which the buyer's books strike a press later, where the line
+                // "- sectors OldMetalToHouseholds" reads it: in the savings, not yet out of the pools, so it comes OFF what
+                // they hold (HL1, 2026-11-11; the ensemble found it: no measuring city had a yard).
+                - oldMetalInTransit(sectors);
     }
 
     /** The public wages as the households are handed them live: everyone's wages less the sectors' own payrolls, what is left being the bank's, utilities', care's, schools', research's, safety's and transit's. */
@@ -448,6 +463,10 @@ public final class MoneyAudit {
         own += ownLine(detail, figures, "- households CensusStranded", hb.getCensusStranded(), -1);
         // ...and savings the census made, a growing cell with no grown-ups keeping its per-household savings on more households.
         own += ownLine(detail, figures, "+ households CensusCreated", hb.getCensusCreated(), 1);
+        // Principal and coupons the issuers paid on the households' face that no cell holds, the bond's record less the cells' own
+        // (the census's orphans of the bond stock, BondMarket.getOrphanedToHouseholds()): the pools paid it, no household was given
+        // it. Signed, as the two records can drift either way.
+        own += ownLine(detail, figures, "- households BondFaceOrphaned", g.getBondMarket().getOrphanedToHouseholds(), -1);
         // The public wages struck again: the treasury and the bank paid the payrolls the month's strike read earlier; the households
         // are handed the live figure. Signed, because the two can miss either way.
         double struck = 0;
@@ -1625,6 +1644,13 @@ public final class MoneyAudit {
             Double v = s.statement().purchasesBySupplier.get(Trade.HOUSEHOLDS);
             if (v != null) t += v;
         }
+        return t;
+    }
+
+    /** What the yards have bought of the households and paid into their savings (HouseholdBalance.creditScrappedCars()) that their books have not struck yet: in the savings, not yet out of the pools. */
+    static double oldMetalInTransit(Sectors sectors) {
+        double t = 0;
+        for (Sector s : sectors.all()) t += s.pending().purchasesBySupplier.getOrDefault(Trade.HOUSEHOLDS, 0.0);
         return t;
     }
 }

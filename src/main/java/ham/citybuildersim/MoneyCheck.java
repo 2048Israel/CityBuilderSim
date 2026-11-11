@@ -50,7 +50,7 @@ public class MoneyCheck {
     static final String[] OWN_LINES = {
             "+ households Unfunded", "- households UnsettledIncome", "+ households UnsettledRent", "+ households UnsettledFees",
             "+ households UnsettledShopping", "- households CensusStranded", "+ households CensusCreated",
-            "+ households PublicWagesRestruck" };
+            "+ households PublicWagesRestruck", "- households BondFaceOrphaned" };
 
     /** The households' identity (HL1) over one play(): the months struck, the worst, the ones that did not close, and how often each own line fired. */
     static final class HouseholdsRun {
@@ -65,6 +65,53 @@ public class MoneyCheck {
     /** The households' identity closes by the test the pools' does (LongPlaytest.audit()): a cent, or a part in ten million of what moved. */
     static boolean householdsClose(MoneyAudit.Households h) {
         return !(Math.abs(h.residual) > MoneyAudit.CENT && h.relative() > 1e-7);
+    }
+
+    /** The same test for a residual that is not the households' own: `residual` read against what the month moved, a cent or a part in ten million. */
+    static boolean closes(double residual, MoneyAudit.Households h) {
+        return !(Math.abs(residual) > MoneyAudit.CENT && Math.abs(residual) / Math.max(1, h.moved()) > 1e-7);
+    }
+
+    /**
+     * HL1's old-metal fixtures, press by press: what a yard's pending ledger holds of the households' old metal at the press's end
+     * (MoneyAudit.oldMetalInTransit(): in their savings, not yet out of the pools) and how the households' identity closed that month.
+     * householdsHeld() carries "- oldMetalInTransit()", so without the carrier it would be higher by the amount in transit: at the close by
+     * `now`, at the open by `previous`, the change in what they hold by (now - previous), and the residual, which is that change less what
+     * the pools' lines name, by the same: the audit's residual plus (now - previous).
+     */
+    static final class OldMetalTransit {
+        private final Game city;
+        private double previous;
+        int months = 0, heldMonths = 0, movedMonths = 0, breaches = 0;
+        double worstResidual = 0;
+        /** The press the amount in transit moved most in: by how much (signed) and the audit struck that month. */
+        double movedMostBy = 0;
+        MoneyAudit.Households movedMostIn = MoneyAudit.Households.NONE;
+
+        /** Read once the yard is built and before the first press: the amount in transit then is the first press's opening figure. */
+        OldMetalTransit(Game city) {
+            this.city = city;
+            this.previous = MoneyAudit.oldMetalInTransit(city.getSectors());
+        }
+
+        /** Read at the end of every press. */
+        void pressed() {
+            double now = MoneyAudit.oldMetalInTransit(city.getSectors());
+            MoneyAudit.Households hh = city.getLastHouseholdsAudit();
+            months++;
+            if (now > MoneyAudit.CENT) heldMonths++;
+            double by = now - previous;
+            if (Math.abs(by) > MoneyAudit.CENT) movedMonths++;
+            if (!householdsClose(hh)) breaches++;
+            if (Math.abs(hh.residual) > Math.abs(worstResidual)) worstResidual = hh.residual;
+            if (Math.abs(by) > Math.abs(movedMostBy)) { movedMostBy = by; movedMostIn = hh; }
+            previous = now;
+        }
+
+        /** The residual of the press the amount moved most in, had the carrier not been counted. */
+        double residualWithoutCarrier() {
+            return movedMostIn.residual + movedMostBy;
+        }
     }
 
     /** Runs `months` and returns the worst relative residual seen, printing the worst month. */
@@ -126,6 +173,33 @@ public class MoneyCheck {
             // ...the branches last, and held: the branch rule closes a branch the fees do not cover (Bank.branchesToClose()), and a young city's do not.
             c.getBusinessInvestment().holdBranches();
             b.addStack(b.getTemplateByName("Commercial Bank"), 3, true);
+        });
+        return c;
+    }
+
+    /**
+     * HL1's bond fixture: section 1's founding city rebuilt (the build list the first play() of this file starts from) and played 120 months,
+     * the town whose sectors have issued bonds the households hold, and whose households' books close in every one of those months. (BondCheck's
+     * town, tried first, issues bonds from its second year and left 0.01 to 0.5 of its households' money unnamed every month: the contributions
+     * and premiums off its payslips, a press out of step, which section 16 causes on this city and householdsInTransit() now carries.)
+     */
+    static Game foundingCity(GameFiles files) {
+        Game c = new Game(files);
+        quietly(() -> {
+            c.run();
+            c.setCashForTest(Founding.WEALTHY_CASH);
+            c.getLandManager().setOwnedSqFt(c.getLandManager().getOwnedSqFt() + 400_000_000L);
+            c.buildStack(t(c, "House"), 400, false);
+            c.buildStack(t(c, "Low-Rise Apartments"), 4, false);
+            c.buildStack(t(c, "Small Grocery Store"), 4, false);
+            c.buildStack(t(c, "Industrial Bakery"), 3, false);
+            c.buildStack(t(c, "Construction Depot"), 3, false);
+            c.buildStack(t(c, "Coal Power Plant"), 1, false);
+            c.buildStack(t(c, "Water Treatment Plant"), 1, false);
+            c.buildStack(t(c, "Paved Road"), 10, false);
+            c.buildStack(t(c, "Walk-in Clinic"), 2, false);
+            c.buildStack(t(c, "Elementary School"), 1, false);
+            c.simulateMonths(120);
         });
         return c;
     }
@@ -458,10 +532,12 @@ public class MoneyCheck {
         });
         MoneyAudit.Result worstYard = MoneyAudit.Result.NONE;
         double householdsDeclared = 0, sectorsSold = 0, yardBought = 0;
+        OldMetalTransit steelTransit = new OldMetalTransit(yards);
         for (int m = 0; m < 24; m++) {
             yards.getOldMetal().carsScrapped(6_000 / OldMetal.STEEL_A_CAR / OldMetal.RECOVERY);
             yards.getOldMetal().fabricated(Sectors.MANUFACTURING, 6_000 / OldMetal.OFFCUTS_A_TONNE_FABRICATED / OldMetal.RECOVERY);
             quietly(() -> yards.simulateMonths(1));
+            steelTransit.pressed();
             MoneyAudit.Result r = yards.getLastMoneyAudit();
             if (r.relative() > worstYard.relative()) worstYard = r;
             householdsDeclared += MoneyAudit.oldMetalBoughtOfHouseholds(yards.getSectors());
@@ -483,6 +559,20 @@ public class MoneyCheck {
         assertTrue("...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it",
                 lastYard.detail.contains("- sectors OldMetalToHouseholds") && lastYard.detail.contains("chk + households OldMetalSold")
                         && lastYard.detail.contains("chk + sectors OldMetalSold") && lastYard.detail.contains("chk - sectors OldMetalBought"));
+        // HL1 (2026-11-11; the ensemble found it): the yard pays the households' savings at once and its books strike the purchase a press
+        // later, so in a press the savings rise by this month's and the line "- sectors OldMetalToHouseholds" says last month's. The
+        // households' held figure takes the amount still on the yard's pending ledger OFF (MoneyAudit.householdsInTransit()).
+        System.out.printf("   the households' old steel in transit at a press's end in %d of %d months, moved by more than a cent between"
+                        + " two presses in %d; the worst household residual %,.6f (%d months open); the month it moved most (m%d, by %,.4f):"
+                        + " %,.6f without the carrier%n",
+                steelTransit.heldMonths, steelTransit.months, steelTransit.movedMonths, steelTransit.worstResidual, steelTransit.breaches,
+                steelTransit.movedMostIn.month, steelTransit.movedMostBy, steelTransit.residualWithoutCarrier());
+        assertTrue("fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses",
+                steelTransit.heldMonths >= 1 && steelTransit.movedMonths >= 1);
+        assertTrue("the households' books close in every one of the yard's months (worst residual "
+                        + String.format("%.6f", steelTransit.worstResidual) + ")", steelTransit.breaches == 0);
+        assertTrue("...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close",
+                !closes(steelTransit.residualWithoutCarrier(), steelTransit.movedMostIn));
 
         /* ==================================================================
            OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):
@@ -510,10 +600,12 @@ public class MoneyCheck {
         });
         MoneyAudit.Result worstCopper = MoneyAudit.Result.NONE;
         double copperHouseholds = 0, copperSectors = 0, copperBought = 0;
+        OldMetalTransit copperTransit = new OldMetalTransit(refiners);
         for (int m = 0; m < 24; m++) {
             refiners.getOldMetal().carsScrapped(3_000 / OldMetal.COPPER_A_CAR / OldMetal.RECOVERY);
             refiners.getOldMetal().copper().arise(OldMetal.Source.DEMOLITIONS, Sectors.MANUFACTURING, 3_000 / OldMetal.RECOVERY);
             quietly(() -> refiners.simulateMonths(1));
+            copperTransit.pressed();
             MoneyAudit.Result r = refiners.getLastMoneyAudit();
             if (r.relative() > worstCopper.relative()) worstCopper = r;
             copperHouseholds += MoneyAudit.oldMetalBoughtOfHouseholds(refiners.getSectors());
@@ -532,6 +624,18 @@ public class MoneyCheck {
                         + " leaves the pools (\"- sectors OldMetalToHouseholds\"), the sectors' a pool paying a pool",
                 Math.abs(copperBought - copperHouseholds - copperSectors) < .01
                         && refiners.getLastMoneyAudit().detail.contains("- sectors OldMetalToHouseholds"));
+        // HL1: the same carrier, the refinery's pending ledger (see the old steel above).
+        System.out.printf("   the households' old copper in transit at a press's end in %d of %d months, moved by more than a cent between"
+                        + " two presses in %d; the worst household residual %,.6f (%d months open); the month it moved most (m%d, by %,.4f):"
+                        + " %,.6f without the carrier%n",
+                copperTransit.heldMonths, copperTransit.months, copperTransit.movedMonths, copperTransit.worstResidual, copperTransit.breaches,
+                copperTransit.movedMostIn.month, copperTransit.movedMostBy, copperTransit.residualWithoutCarrier());
+        assertTrue("fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses",
+                copperTransit.heldMonths >= 1 && copperTransit.movedMonths >= 1);
+        assertTrue("the households' books close in every one of the refinery's months (worst residual "
+                        + String.format("%.6f", copperTransit.worstResidual) + ")", copperTransit.breaches == 0);
+        assertTrue("...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close",
+                !closes(copperTransit.residualWithoutCarrier(), copperTransit.movedMostIn));
 
         /* ==================================================================
            THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;
@@ -764,6 +868,162 @@ public class MoneyCheck {
         assertTrue("the game's own strike, whose opening figure was read after the theft, closes", householdsClose(games));
         assertTrue("...and a strike from the figure read BEFORE the theft shows -X, to the cent",
                 Math.abs(mine.residual + stolen) <= MoneyAudit.CENT);
+
+        /* ==================== 15. a bond's face that no cell holds is named ==================== */
+        System.out.println("--- and a bond's face that no cell holds is named (HL1) ---");
+        /*
+         * HL1 (2026-11-11; the ensemble found it, seeds 10 and 14): a corporate bond keeps the households' face twice, in its own record
+         * (CorporateBond.households()) and in each cell's (Household.bondFace(), HouseholdBalance.bondFaceHeld()). The census moves the
+         * cells' stocks with its orphan clamps and tells the record nothing, so the two drift; the issuer pays the record, the cells are
+         * credited their own, and the difference is money the pools paid that no household was given: "- households BondFaceOrphaned"
+         * (BondMarket.getOrphanedToHouseholds(), the coupons' part and the principal's). HL2 reconciles the two records.
+         * THE FIXTURE CAUSES THE DRIFT, as the census does, on section 1's founding city rebuilt at its 121st month (foundingCity(): the
+         * industrial city above has no bond the households hold left by its end, all its issues having matured): the households' bond
+         * that matures soonest has the face of the cells that hold it halved, the biggest cell first, until the coupon on what the
+         * record exceeds the cells by is a few times what the identity can tell from rounding. A bond is issued for TERM_MONTHS (ten
+         * years) and this town's first was issued in its 60th month, so the maturity is about sixty presses on (printed below), played
+         * one by one to it: a few seconds.
+         */
+        final String bondLine = "- households BondFaceOrphaned";
+        Game bondTown = foundingCity(GameFiles.scratch("moneycheck-bonds"));
+        BondMarket bondMarket = bondTown.getBondMarket();
+        HouseholdBalance gBooks = bondTown.getHouseholdBalance();
+        CorporateBond soonest = null;
+        for (CorporateBond b : bondMarket.getBonds()) {
+            if (!(b.households() > 0) || !(gBooks.bondFaceHeld(b.id) > 0)) continue;
+            if (soonest == null || b.maturityMonth() < soonest.maturityMonth()) soonest = b;
+        }
+        assertTrue("fixture: the bond town's households hold a corporate bond", soonest != null);
+        if (soonest != null) {
+            final int bondId = soonest.id;
+            final double monthlyCoupon = soonest.coupon / CorporateBond.COUPONS_A_YEAR;
+            java.util.List<Household> holders = new java.util.ArrayList<>();
+            for (Household c : gBooks.cellsForMarket()) if (c.bondFace(bondId) > 0 && c.households() > 0) holders.add(c);
+            holders.sort((a, z) -> Double.compare(z.bondFace(bondId) * z.households(), a.bondFace(bondId) * a.households()));
+            // Seen from the identity: a residual it can tell from rounding is a cent, and a part in ten million of what the month moves.
+            double visible = 4 * Math.max(MoneyAudit.CENT, 1e-7 * Math.max(1, bondTown.getLastHouseholdsAudit().moved()));
+            int halved = 0;
+            for (Household c : holders) {
+                c.setBondFace(bondId, c.bondFace(bondId) / 2);
+                halved++;
+                if ((soonest.households() - gBooks.bondFaceHeld(bondId)) * monthlyCoupon > visible) break;
+            }
+            double drift = soonest.households() - gBooks.bondFaceHeld(bondId);
+            System.out.printf("   bond %d (%s, maturing m%d, now m%d): the record %,.2f, the cells' own %,.2f; %d of %d holding cells halved,"
+                            + " D %,.4f, its coupon a month %,.6f (visible from %,.6f)%n",
+                    bondId, soonest.issuer, soonest.maturityMonth(), bondTown.getMonth(), soonest.households(), gBooks.bondFaceHeld(bondId),
+                    halved, holders.size(), drift, drift * monthlyCoupon, visible);
+            assertTrue("fixture: the bond's record now exceeds the cells' own by D, over a cent", drift > MoneyAudit.CENT);
+
+            // The coupon month: one press.
+            quietly(() -> bondTown.simulateMonths(1));
+            MoneyAudit.Households couponMonth = bondTown.getLastHouseholdsAudit();
+            double orphanedCoupon = bondMarket.getOrphanedToHouseholds();
+            System.out.printf("   the coupon month: orphaned %,.6f, the line %,.6f; %s; without the line %,.6f%n",
+                    orphanedCoupon, couponMonth.figure(bondLine), couponMonth, couponMonth.residual - orphanedCoupon);
+            assertTrue("the press that paid the coupon on D declares it orphaned: " + String.format("%.6f", orphanedCoupon)
+                            + " against the coupon on D " + String.format("%.6f", drift * monthlyCoupon),
+                    orphanedCoupon > MoneyAudit.CENT && orphanedCoupon >= .5 * drift * monthlyCoupon);
+            assertTrue("...and the own line fired with that figure", Math.abs(couponMonth.figure(bondLine) - orphanedCoupon) <= 1e-9);
+            assertTrue("...the households' books close", householdsClose(couponMonth));
+            // The pools paid the record and the cells were credited their own, so the households gained the line less than the pools paid:
+            // the residual is own's (-orphaned) taken off, and without the line it is the audit's residual less the orphaned.
+            assertTrue("...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved",
+                    !closes(couponMonth.residual - orphanedCoupon, couponMonth));
+
+            // On to the maturity, every month struck.
+            int presses = 1, breaches = 0;
+            boolean matured = false;
+            double driftBeforeMaturity = drift, maturityFigure = 0;
+            MoneyAudit.Households maturityMonth = null;
+            while (!matured && presses < CorporateBond.TERM_MONTHS) {
+                double driftBefore = soonest.households() - gBooks.bondFaceHeld(bondId);
+                quietly(() -> bondTown.simulateMonths(1));
+                presses++;
+                MoneyAudit.Households hh = bondTown.getLastHouseholdsAudit();
+                if (!householdsClose(hh)) breaches++;
+                if (!bondMarket.getBonds().contains(soonest)) {
+                    matured = true;
+                    maturityMonth = hh;
+                    maturityFigure = hh.figure(bondLine);
+                    driftBeforeMaturity = driftBefore;
+                }
+            }
+            System.out.printf("   %d presses to the maturity: the record less the cells' own at the end of the press before %,.4f, the line"
+                            + " in the month it matured %,.4f (%s)%n", presses, driftBeforeMaturity, maturityFigure, maturityMonth);
+            assertTrue("the bond matured within its term (m" + soonest.maturityMonth() + ", " + presses + " presses on)",
+                    matured && soonest.isMatured(maturityMonth.month));
+            assertTrue("...every month on the way closed its households' books", breaches == 0);
+            assertTrue("...the month it matured the line is at least the principal part of the drift, half of what it was the press before"
+                            + " (a default may have written both records down in between, so not equal)",
+                    maturityFigure >= .5 * driftBeforeMaturity);
+            assertTrue("...and the households' books close that month, the principal paid on a face no cell held",
+                    maturityMonth != null && householdsClose(maturityMonth));
+        }
+
+        /* ==================== 16. what comes off the payslips is in transit a press ==================== */
+        System.out.println("--- and the contributions and premiums off the payslips are in transit a press (HL1) ---");
+        /*
+         * HL1 (2026-11-11; found in BondCheck's town, the one harness city with every lever open): the pension contributions and the EI and
+         * health premiums are struck off the staffed wage bill and banked by the treasury at the strike (EconomyManager's stored figures, the
+         * lines "+ e Contributions", "+ e EiPremiums", "+ e HealthPremiums"), and Game.syncHouseholdAccounts() charges the households those
+         * stored figures at the NEXT press. So in a month the three move the pools are paid this month's and the savings lose last month's,
+         * and the households' books missed by the change: 0.01 to 0.5 a month in that town, in 40 months of 40. householdsInTransit() carries
+         * them now ("- contributions - EI premiums - health premiums"), as it does the wage tax.
+         * THE FIXTURE CAUSES IT on section 15's founding city, whose three levers are shut in 1900 (nothing comes off its payslips but the
+         * wage tax): the three levers opened (TaxPolicy.openNow(), the others as they were), the three rates set to half their caps a press
+         * later and to a quarter a year on, so the amount in transit moves from nothing, and twice more.
+         * householdsHeld() carries the three with a minus, so without the carrier it would be higher by the stored figure: at the close by
+         * this press's, at the open by the last's, and the residual by (now - previous), as the old metal's is.
+         */
+        Game slips = foundingCity(GameFiles.scratch("moneycheck-payslips"));
+        EconomyManager slipsBooks = slips.getEconomyManager();
+        TaxPolicy slipsTax = slipsBooks.getTaxPolicy();
+        java.util.function.DoubleSupplier offThePayslips =
+                () -> slipsBooks.getContributions() + slipsBooks.getEiPremiums() + slipsBooks.getHealthPremiums();
+        assertTrue("fixture: with the three levers shut nothing comes off the payslips but the wage tax", offThePayslips.getAsDouble() == 0);
+        slipsTax.openNow(PolicyDates.Lever.PENSION_CONTRIBUTION);
+        slipsTax.openNow(PolicyDates.Lever.EI);
+        slipsTax.openNow(PolicyDates.Lever.HEALTH_PREMIUM);
+        final int slipPresses = 24, ratesSetAt = 1, ratesMovedAt = 13;
+        int slipBreaches = 0, slipMoved = 0;
+        double slipWorst = 0, slipMovedMostBy = 0, slipPrevious = offThePayslips.getAsDouble();
+        MoneyAudit.Households slipMovedMostIn = MoneyAudit.Households.NONE;
+        for (int i = 0; i < slipPresses; i++) {
+            if (i == ratesSetAt || i == ratesMovedAt) {
+                double share = i == ratesSetAt ? .5 : .25;
+                slipsTax.setContributionRate(share * TaxPolicy.MAX_CONTRIBUTION);
+                slipsTax.setEiPremiumRate(share * TaxPolicy.MAX_EI_PREMIUM);
+                slipsTax.setHealthPremiumRate(share * TaxPolicy.MAX_HEALTH_PREMIUM);
+            }
+            quietly(() -> slips.simulateMonths(1));
+            MoneyAudit.Households hh = slips.getLastHouseholdsAudit();
+            double now = offThePayslips.getAsDouble(), movedBy = now - slipPrevious;
+            if (!householdsClose(hh)) slipBreaches++;
+            slipWorst = Math.max(slipWorst, Math.abs(hh.residual));
+            if (Math.abs(movedBy) > MoneyAudit.CENT) slipMoved++;
+            if (Math.abs(movedBy) > Math.abs(slipMovedMostBy)) { slipMovedMostBy = movedBy; slipMovedMostIn = hh; }
+            if (i == ratesSetAt) {
+                System.out.printf("   the press the rates were set: contributions %,.4f, EI premiums %,.4f, health premiums %,.4f%n",
+                        slipsBooks.getContributions(), slipsBooks.getEiPremiums(), slipsBooks.getHealthPremiums());
+                assertTrue("fixture: the treasury banked all three that press",
+                        slipsBooks.getContributions() > MoneyAudit.CENT && slipsBooks.getEiPremiums() > MoneyAudit.CENT
+                                && slipsBooks.getHealthPremiums() > MoneyAudit.CENT);
+                assertTrue("...by the lines the pools' identity reads",
+                        Math.abs(slips.getLastMoneyAudit().figure("+ e Contributions") - slipsBooks.getContributions()) <= 1e-9
+                                && Math.abs(slips.getLastMoneyAudit().figure("+ e EiPremiums") - slipsBooks.getEiPremiums()) <= 1e-9
+                                && Math.abs(slips.getLastMoneyAudit().figure("+ e HealthPremiums") - slipsBooks.getHealthPremiums()) <= 1e-9);
+            }
+            slipPrevious = now;
+        }
+        double slipWithout = slipMovedMostIn.residual + slipMovedMostBy;
+        System.out.printf("   %d presses: what comes off the payslips moved by over a cent in %d; worst residual %.3e; m%d moved it most,"
+                        + " by %,.4f (%s; without the carrier %,.6f)%n",
+                slipPresses, slipMoved, slipWorst, slipMovedMostIn.month, slipMovedMostBy, slipMovedMostIn, slipWithout);
+        assertTrue("fixture: what comes off the payslips moved by over a cent in at least three presses", slipMoved >= 3);
+        assertTrue("the households' books close in every one of the " + slipPresses + " months", slipBreaches == 0);
+        assertTrue("...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part"
+                + " in ten million of what moved", !closes(slipWithout, slipMovedMostIn));
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

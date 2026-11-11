@@ -222,6 +222,12 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     private double worldBought, worldSold;                    // cash, the world <-> the pools
     private double couponsToHouseholds, couponsToBank, couponsToCompanies, couponsAbroad;
     private double principalToHouseholds, principalToBank, principalToCompanies, principalAbroad;
+    /**
+     * What the issuers paid this month on the households' face (principal and coupons, by the bond's record) that no cell was credited, the
+     * record less the cells' own, signed: the census moves a cell's bond stock with the orphan clamps and nothing tells the bond's record, so
+     * the two drift. HL1 names it (MoneyAudit's "- households BondFaceOrphaned"), HL2 mends it; not saved, struck and read inside one press.
+     */
+    private double orphanedToHouseholds;
     private double lossHouseholds, lossBank, lossCompanies, lossWorld;  // face written off, by holder
     private double bankLossCost;                              // what the bank's holdings cost it, written off
     private double issuedFace, issuedCosts;
@@ -1027,7 +1033,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             repaidSoFar.merge(b.issuer, b.face, Double::sum);
             if (b.households > 0) {
                 // Each cell its own face (round 2).
-                if (households != null) households.creditBondPrincipal(b.id);
+                if (households != null) {
+                    double paid = households.creditBondPrincipal(b.id);
+                    orphanedToHouseholds += b.households - paid;
+                }
                 principalToHouseholds += b.households;
             }
             if (b.bank > 0) {
@@ -1056,7 +1065,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     private void payCoupons() {
         if (dueHouseholds > 0) {
             // To the cells that held them at the record date (round 2).
-            if (households != null) households.creditBondCoupons(dueCells);
+            if (households != null) {
+                double paid = households.creditBondCoupons(dueCells);
+                orphanedToHouseholds += dueHouseholds - paid;
+            }
             couponsToHouseholds += dueHouseholds;
             lifeCouponsHouseholds += dueHouseholds;
         }
@@ -1111,6 +1123,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         worldBought = worldSold = 0;
         couponsToHouseholds = couponsToBank = couponsToCompanies = couponsAbroad = 0;
         principalToHouseholds = principalToBank = principalToCompanies = principalAbroad = 0;
+        orphanedToHouseholds = 0;
         lifeLossHouseholds += lossHouseholds;
         lifeLossBank += lossBank;
         lifeLossCompanies += lossCompanies;
@@ -1766,6 +1779,8 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     public double getPrincipalToBank()         { return principalToBank; }
     public double getPrincipalToCompanies()    { return principalToCompanies; }
     public double getPrincipalAbroad()         { return principalAbroad; }
+    /** The principal and coupons the issuers paid this month on the households' face that no cell was credited (HL1): the bond's record less the cells' own. */
+    public double getOrphanedToHouseholds()    { return orphanedToHouseholds; }
     /** Face written off this month's defaults, by holder. The world's is declared across the border. */
     public double getLossHouseholds()          { return lossHouseholds; }
     public double getLossBank()                { return lossBank; }
@@ -2068,6 +2083,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         worldBought *= scale; worldSold *= scale;
         couponsToHouseholds *= scale; couponsToBank *= scale; couponsToCompanies *= scale; couponsAbroad *= scale;
         principalToHouseholds *= scale; principalToBank *= scale; principalToCompanies *= scale; principalAbroad *= scale;
+        orphanedToHouseholds *= scale;
         lossHouseholds *= scale; lossBank *= scale; lossCompanies *= scale; lossWorld *= scale;
         bankLossCost *= scale; issuedFace *= scale; issuedCosts *= scale; emigrantsFace *= scale;
         lastPostedBuy *= scale; lastPostedSell *= scale; lastFilled *= scale; lastSellQuantityWaited *= scale;
