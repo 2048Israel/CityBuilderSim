@@ -214,11 +214,12 @@ that 16 seeds can show, and the review's mechanism, real in a town that is mostl
 
 ## The checks
 
-`./batch-check.sh --pick` on the final tree (fe1a0930: the review's two mends, and main merged in,
-85573582: RB1 shipped meanwhile, and its fund's hold moves money beside this identity, so the two
-were checked together): 86 of 201 harnesses, exit 4, four NEW red lines, each of a class queued on
-main and none in HL1's code; the same four, word for word, as before the review's mends (43565dc3).
-Without RB1 (91b976d2) the same three and not the first. `--timing` is the gate's.
+`./batch-check.sh --pick` on the final tree (9cc2f755: the review's two mends, fe1a0930, with main
+merged in, 13549f70: RB1 and LM1 shipped meanwhile, and RB1's fund's hold moves money beside this
+identity, so they were checked together): 86 of 201 harnesses, exit 4, four NEW red assertions (nine
+lines with their harnesses' exit and count lines), each of a class queued on main and none in HL1's
+code; the same four, word for word, as on fe1a0930 before LM1 and as before the review's mends
+(43565dc3). Without RB1 (91b976d2) the same three and not the first. `--timing` is the gate's.
 
 | the line, word for word | whose | the figures |
 |---|---|---|
@@ -244,8 +245,10 @@ one finding, the same city-month in a run and its twin (below). No run has a hou
 finding (M1 0 months). Every one of the 80 runs is the same, month by month (people, GDP, deposits),
 as the run on 91b976d2 before the review's mends and before RB1 was merged in: no bank in an
 ensemble city pays an operating cost in any month (GDP would differ by it), and RB1's merge moves
-none of them either. The run on slice C (20 of 26) had the households' identity flagged in 16 runs:
-slice D.
+none of them either. LM1 shipped (0.9.94) after the run and was merged in (9cc2f755): its notes say
+the trace did not move, and AUTO2's 16 runs played again on the merged tree are the same month by
+month as the record's, so the record of fe1a0930 stands and the 80 were not run a third time. The
+run on slice C (20 of 26) had the households' identity flagged in 16 runs: slice D.
 
 **The negative month** (seed 12, month 902): GDP reads -263.06 between 4,271.91 and 2,104.81.
 Manufacturing imports 12,608 that month against 4,876 a month before, builds no stock with it, and
