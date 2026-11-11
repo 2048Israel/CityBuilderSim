@@ -355,11 +355,6 @@ public class ServicesManager {
         utilitiesHandler.setExchangeRate(rate);
     }
 
-    /** The world's prices against the founding's, which the plants' upkeep follows (PW1); null: 1. */
-    public void setWorldPriceLevel(DoubleSupplier level) {
-        utilitiesHandler.setWorldPriceLevel(level);
-    }
-
     /** The calendar month, 1 to 12, for the season of the month's load (PW1); null: none. */
     public void setCalendarMonth(IntSupplier month) {
         utilitiesHandler.setCalendarMonth(month);

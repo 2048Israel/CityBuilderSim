@@ -419,7 +419,7 @@ public class PowerPriceCheck {
         base.u.updateEnergyRatio();
         shock.u.updateEnergyRatio();
         PowerDispatch.Row now = coalRow(base.u);
-        final double p0 = now == null ? 0 : (now.marginal - plant.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR * base.g.getWorldEconomy().getPriceLevel() * base.g.getMarkets().getExchangeRate()) / plant.fuelPerKwh();
+        final double p0 = now == null ? 0 : (now.marginal - plant.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR * base.g.getMarkets().getExchangeRate()) / plant.fuelPerKwh();
         check("fixture: the coal's price in force is positive, and the two copies' dispatch agree on it", p0 > 0 && near(coalRow(shock.u).marginal, now == null ? 0 : now.marginal, 1e-12), f(p0));
         base.g.getServicesManager().setFuelPrice(good -> p0);
         shock.g.getServicesManager().setFuelPrice(good -> SHOCK * p0);
@@ -453,11 +453,11 @@ public class PowerPriceCheck {
         base.u.updateEnergyRatio();
         shock.u.updateEnergyRatio();
         // PW1: this read the upkeep as variableUpkeep / 1e6 x the exchange rate, the code's own formula, so it held while the upkeep was
-        // 38.6 times too dear (today's dollars, not the founding's); the row's upkeep is checked against FACTOR and the world's level first now.
-        check("the coal row's upkeep a kWh is the plant's US$ a MWh in the month's world money: at the founding's price level and the world's inflation since (variableUpkeep / 1e6 x PriceLevel.FACTOR x WorldEconomy.getPriceLevel())",
-                coalRow(base.u) != null && near(coalRow(base.u).upkeepPerKwh, plant.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR * base.g.getWorldEconomy().getPriceLevel(), 1e-12),
-                (coalRow(base.u) == null ? "no row" : f(coalRow(base.u).upkeepPerKwh)) + " against " + f(plant.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR * base.g.getWorldEconomy().getPriceLevel()));
-        double upkeep = plant.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR * base.g.getWorldEconomy().getPriceLevel() * base.g.getMarkets().getExchangeRate();
+        // 38.6 times too dear (today's dollars, not the founding's); the row's upkeep is checked against FACTOR first now.
+        check("the coal row's upkeep a kWh is the plant's US$ a MWh at the founding's price level, world money as a good's world price is struck (variableUpkeep / 1e6 x PriceLevel.FACTOR); the exchange rate carries the world's inflation since",
+                coalRow(base.u) != null && near(coalRow(base.u).upkeepPerKwh, plant.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR, 1e-12),
+                (coalRow(base.u) == null ? "no row" : f(coalRow(base.u).upkeepPerKwh)) + " against " + f(plant.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR));
+        double upkeep = plant.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR * base.g.getMarkets().getExchangeRate();
         double wantBase = p0 * plant.fuelPerKwh() + upkeep, wantShock = SHOCK * p0 * plant.fuelPerKwh() + upkeep;
         PowerDispatch.Row again = coalRow(base.u), againShock = coalRow(shock.u);
         check("dispatched again, the coal row's marginal is the price it was told x the fuel a kWh plus the upkeep at the exchange rate, to 1e-12",
