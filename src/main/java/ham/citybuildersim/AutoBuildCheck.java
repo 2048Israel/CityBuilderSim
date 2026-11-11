@@ -243,7 +243,7 @@ public class AutoBuildCheck {
 
     static void theAdvicesCard(Path root) {
         out.println("\n--- 2. the advice's card ---");
-        Game g = ChildcareCheck.town(root, "card");
+        Game g = repay(ChildcareCheck.town(root, "card"));   // HL1: see repay()
         AutoBuilder ab = g.getAutoBuilder();
         ab.setOn(true, null);
         ab.setSlack(BuildAdvice.SLACK, null);
@@ -890,7 +890,7 @@ public class AutoBuildCheck {
         // AN ESSENTIAL SERVICE ON A DEFICIT (0.7.104, Jerus: "Only the debt limit applies to them, and running a deficit to
         // have them is fine"): a town spending past its revenue - every one of its services' bills, and as much again - is
         // short of general care, and orders it; the budget held it there until then.
-        Game f = ChildcareCheck.town(root, "deficit");
+        Game f = repaid(ChildcareCheck.town(root, "deficit"));   // HL1: see repay()
         AutoBuilder af = f.getAutoBuilder();
         af.setOn(true, null);
         double[] balance = { Double.NaN };
@@ -963,7 +963,7 @@ public class AutoBuildCheck {
                 + " a month each and cost it " + DecisionLog.money(pk == null ? 0 : pk.costs())));
         // ...and its twin given room (withRoom()) - its health and education bills cleared, ROOM more in property tax: one
         // pays back, and is ordered.
-        Game k2 = ChildcareCheck.town(root, "school-room");
+        Game k2 = repaid(ChildcareCheck.town(root, "school-room"));   // HL1: see repay()
         BuildingsTemplate sc1 = k2.getBuildingManager().getTemplateByName(sc.getName());
         quietly(() -> k2.getBuildingManager().retire(sc1, k2.getBuildingManager().getQuantity(sc1.getId())));
         withRoom(k2);
@@ -1374,7 +1374,7 @@ public class AutoBuildCheck {
 
     /** ChildcareCheck's town with its elementary schools retired: its first school one that would not pay back (section 5). */
     static Game noElementary(Path root, String name) {
-        Game g = ChildcareCheck.town(root, name);
+        Game g = repaid(ChildcareCheck.town(root, name));   // HL1: see repay()
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (t.getTeaches() != EducationType.ELEMENTARY) continue;
             int had = g.getBuildingManager().getQuantity(t.getId());
@@ -1552,7 +1552,7 @@ public class AutoBuildCheck {
     /** THE GROUND IT BUYS (0.7.77): none free, at a limit of nothing and of the most, only ore on offer. */
     static void theGround(Path root) {
         // None free: it buys what Build's land shortcut offers for the shortfall, and places the order.
-        Game g = noGround(root, "noground");
+        Game g = repaid(noGround(root, "noground"));   // HL1: see repay()
         LandManager land = g.getLandManager();
         AutoBuilder ab = g.getAutoBuilder();
         ab.setOn(true, null);
@@ -1742,6 +1742,32 @@ public class AutoBuildCheck {
         double borrow = lo;
         if (borrow > 0) quietly(() -> g.handleLongBondForCash(borrow, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
         return limit;
+    }
+
+    /**
+     * HL1 (2026-11-11): THE TOWN'S CENTRAL BANK REPAID OUT OF THE CASH IT WAS GIVEN, SO IT STANDS WITHIN THE DEBT LIMIT WHEN THE PASS READS IT. ChildcareCheck's town
+     * ends its three years owing the central bank the advances that paid for its stacks (the treasury repays them out of any cash it has at a month's
+     * close, so a month on they are gone, but the fixtures read the town before that month and its pass has read the debt already) with the cash set to
+     * Founding.WEALTHY_CASH. Main's town owed 8,537 against a year's GDP of 4,515, 189% of the 240% limit. HL1's B buys the services' upkeep of Business
+     * Services, which imports three quarters of it - all of it where the sector has no seats, as in this town - so the schools' 143 a month and the care's
+     * 2 are an import now: the monthly GDP fell from 383 to 238, the year's from 4,515 to 2,769, the advances only to 7,844, and the same town stood at 283%,
+     * over the limit, where a pass borrows nothing and orders what the cash alone does not pay for (main's 189% was only where its GDP stood; the claims
+     * here are about what the pass orders, not about the limit). The advances are repaid here, as the treasury repays them, from the cash: the debt is nothing and the
+     * town is within the limit by its own figures, whatever its GDP. The towns the limit is the claim of (overTheLimit(), nearTheLimit()) are not repaid.
+     */
+    static Game repay(Game g) {
+        CentralBank bank = g.getCentralBank();
+        g.setCashForTest(g.getCash() - bank.repayFromTreasury(bank.getAdvancesToTreasury()));
+        return g;
+    }
+
+    /** ...and the fixture line saying so, with the ratio it gives. */
+    static Game repaid(Game g) {
+        repay(g);
+        AutoBuilder ab = g.getAutoBuilder();
+        assertTrue(String.format("fixture: the town's advances repaid out of its cash (HL1), within the debt limit - %.0f%% of a year's GDP against %.0f%%",
+                AutoBuilder.ratio(g) * 100, ab.getDebtLimit() * 100), ab.within(g));
+        return g;
     }
 
     /**
@@ -1960,7 +1986,7 @@ public class AutoBuildCheck {
      * within the limit, and not paying its way.
      */
     static Game deficitTown(Path root, String name, BuildAdvice.Measure retired) {
-        Game g = ChildcareCheck.town(root, name);
+        Game g = repaid(ChildcareCheck.town(root, name));   // HL1: see repay()
         quietly(() -> {
             for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
                 int n = retired.serves(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;

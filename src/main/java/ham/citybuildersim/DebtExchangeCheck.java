@@ -72,6 +72,15 @@ public class DebtExchangeCheck {
     /** The domestic bond section 12 sells and buys back, in thousands: large beside the surplus, so its gain is. */
     static final double BUYBACK_BOND = 100_000 * PriceLevel.FACTOR;   // today's figure, priced at the founding's level (EP1)
 
+    /** The loss section 11's fall books, as a multiple of the largest cash surplus the city ran before it: the dollar paper is topped up to that much, so the loss takes the balance below nothing (HL1). */
+    static final double LOSS_OVER_SURPLUS = 2.0;
+
+    /** One step of section 12's push on the market, the inflation the curve was struck at and the one it expects, both up a point a year (CallCheck's way of raising yields after a sale; HL1). */
+    static final double EXPECTATION_STEP = .01;
+
+    /** The most steps section 12 takes before it gives the premise to its assertion (HL1). */
+    static final int MOST_STEPS = 30;
+
     /** Everything here is in thousands, so a thousandth of a thousandth is plenty (TreasuryCheck.TOLERANCE). */
     static final double TOLERANCE = 1e-6;
 
@@ -599,6 +608,27 @@ public class DebtExchangeCheck {
         near("the grant is what it is in a month the D$ did not move: the share of revenue less expenses and the discount's amortising, the line nowhere in it",
                 schooled.studentGrantBill(), SHARE * upNoMove, 1e-9);
 
+        /*
+         * HL1 (2026-11-11): THE DOLLAR PAPER IS TOPPED UP SO THE FALL'S LOSS IS LOSS_OVER_SURPLUS TIMES THE SURPLUS THE CITY HAS RUN. The 10% fall booked a
+         * D$193.43k loss on GRANT_BOND and that took the balance below nothing only while the cash surplus stayed under it: main's, $147.90k
+         * (the balance $-45.62k; a quiet month $207.23k, the rise's $92.29k). HL1's B makes the services' upkeep Business Services' revenue and
+         * this city taxes everything at its ceiling, so its tax take rose from 1,320 to 1,428 a month and its cash surplus by that: a quiet month
+         * $314.97k, the rise's $146.16k and the fall's $228.27k, the balance $34.75k with the same loss. The claim - the grant reads the cash
+         * surplus, a loss in the balance does not take it to nothing - is the rule's, not the surplus's; so the paper is sold more of at the rate it
+         * stands at, until its loss on the way back (the rise's gain a piece of the same size booked, per US$) is LOSS_OVER_SURPLUS times the larger
+         * of the surpluses seen, whatever they are.
+         */
+        double lossPerUsd = up.line / GRANT_BOND;
+        double topUp = LOSS_OVER_SURPLUS * Math.max(stillCash, upCash) / lossPerUsd - GRANT_BOND;
+        if (topUp > 0) {
+            double owedBefore = schooled.getDebtManager().getForeignPrincipalUsd();
+            schooled.getDebtManager().setTrade(10_000_000, 6);   // the window abroad shuts on a city that sells nothing abroad (section 6), and the months since have shut it
+            String saidUp = quote(schooled, "Term", topUp, 5);
+            check("fixture: the dollar paper is topped up by US$" + String.format("%,.2fk", topUp) + " at the rate it stands at, so the fall's loss is "
+                    + LOSS_OVER_SURPLUS + " times the larger cash surplus seen", saidUp.startsWith("Issued abroad")
+                    && schooled.getDebtManager().getForeignPrincipalUsd() > owedBefore);
+        }
+
         Month down = move(schooled, 1 / KEEPS);
         double downBalance = gna.getBalance(), downCash = cashByRule(schooled);
         out.printf("   the D$ fell 10%%: the balance is $%,.2fk, of which D$%,.2fk is the exchange loss; the cash surplus is $%,.2fk%n", downBalance, down.line, downCash);
@@ -628,6 +658,23 @@ public class DebtExchangeCheck {
         check("fixture: the term bond is on the books, a few months old, with somebody studying and the city sharing a cash surplus",
                 bond != null && buyStill.line == 0 && bought.getFamilies().getSeekers(FamilyModel.Seeker.STUDENT) >= 1 && cashByRule(bought) > 0);
         double buyStillCash = cashByRule(bought);
+        /*
+         * HL1 (2026-11-11): THE MARKET IS PUSHED UP, A POINT AT A TIME, UNTIL THE BOND'S PRICE IS UNDER ITS BOOK. The premise was a thing of the path: the bond
+         * sold at 3.26% and the market stood at 3.33% when it was bought back, a price of $2,578.68k against the books' $2,586.49k, a gain of $7.81k by drift
+         * alone. HL1's B takes the young city's GDP under nothing (the services' upkeep is now work bought abroad: this city's monthly GDP read
+         * $-12.0k at the sale, 167.6 on main), and DebtManager.spreadFor() charges a city with no GDP to measure against the whole five points of spread:
+         * the sale cleared at 8.21%, a coupon of 8.13%, and a month later, GDP back at 198.1, the market stood at 3.35% - the bond was bought back at
+         * $3,139.23k against books of $2,579.40k, a gain of $-559.83k. What the premise asks is a market that has risen since the sale, so the
+         * fixture causes it as CallCheck does, by striking the curve's expectations up (EXPECTATION_STEP, at most MOST_STEPS), and on main, where the
+         * price is already under the books, takes no step. The premise itself, below, is what it was.
+         */
+        DebtManager market = bought.getDebtManager();
+        int steps = 0;
+        while (!(SHARE * bought.repurchaseGain(bond) > 1000 * MoneyAudit.tolerance(TOLERANCE, buyStillCash)) && steps < MOST_STEPS) {
+            market.strikeExpectations(market.getStruckInflation() + EXPECTATION_STEP, market.getStruckExpected() + EXPECTATION_STEP);
+            steps++;
+        }
+        out.printf("   (the market pushed up %d step(s) of a point a year, to %.2f%% on the bond)%n", steps, market.yieldOf(bond) * 100);
         double price = bought.quoteRepurchase(bond), buyGain = bought.repurchaseGain(bond);
         near("the gain the screen quotes is the carrying value less the price paid", buyGain, bond.getCarryingValue() - price, 1e-9);
         check("premise: the bond is bought back below its book, a gain large enough to tell a grant on the balance from a grant on the cash",

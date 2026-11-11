@@ -2731,11 +2731,24 @@ public class KeptCheck {
      * that the industries' month is counted; what it found or did, in a line. Which materials industries the long-played city
      * has works for is its AutoBuilder's choice (a city of 150 months had wood works, one of 600 had none, one of 1,400 iron and
      * steel's), so the fixture takes the one it can build whatever the city did: the sawmill's.
+     *
+     * HL1 (2026-11-11): the industry is held for the month played (BusinessInvestment.holdSector(), which the investment loop and
+     * the distress rule both honour), and released after if this held it. The played month is the business's own, and on HL1's path
+     * (the city of 4,820 months: the services' upkeep bought of Business Services, the bankrupt's savings repaying the bank) the
+     * distress rule sold the sawmill the fixture had just put up ("1 Sawmill (Wood Products) month 4821"), so the page had no works to
+     * draw; on main's path it happened to keep it. What the pages draw of works standing is the claim, not what the business does
+     * with a mill it was handed.
      */
     static String ensureWorks(Game g) throws Exception {
         if (IndustryView.of(g, g.getSectors().byKey(Sectors.WOOD_PRODUCTS)).standing() > 0) return "the city has wood products works standing already";
         String said = putUpWorks(g);
-        if (said.startsWith("a ")) month(g);
+        if (said.startsWith("a ")) {
+            BusinessInvestment plans = g.getBusinessInvestment();
+            boolean heldAlready = plans.isHeld(Sectors.WOOD_PRODUCTS);
+            plans.holdSector(Sectors.WOOD_PRODUCTS);
+            month(g);
+            if (!heldAlready) plans.releaseSector(Sectors.WOOD_PRODUCTS);
+        }
         return said.startsWith("a ") ? "the city had no materials works standing: " + said + ", a month played" : said;
     }
 

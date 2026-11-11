@@ -182,9 +182,32 @@ public class ScaleCheck {
      * 1.88e-2, 2.04e-2, 4.00e-2, 3.37e-2), and at 190 the deposits too; it holds every line at 160 to 162, 165 to 168, 170 to 175, 177,
      * 179 to 184, 186, 187 and 189. 172 is the middle of 170 to 175, and its worst line is the GDP's, at .49 of its dial.
      *
+     * 165, HL1 (2026-11-11): THE TOWN RUNS A THIRD PATH, AND ITS GRANULE IS WIDER. Business Services now sells the city's services' and
+     * the bank's upkeep (BusinessServices.sellUpkeep(): other revenue, three quarters of it an imported service), and a bankrupt share's
+     * savings repay the bank before the rest of its debt is written off (Household.discharge()), so the town's profits, imports and
+     * savings moved: it is 7,061 people at 172 where the scan above had 7,663, and 172 missed section 9's savings by 1.94e-2 (past .0160,
+     * the 6th month; people 2.76e-5, cash 1.11e-3, GDP 8.29e-2, deposits 1.43e-2 held). Everything HL1 added is a sum or a per-household
+     * figure that scales by K: the upkeep sold and the transit upkeep are money (Sector.Ledger.scale(), EconomyManager's scale), the
+     * seizure is per household of a cell (Household.discharge(), scaled with `repaid`), the audit's new accumulators are scaled with
+     * the rest (HouseholdBalance.redenominate()). Measured, not read: this section at 172, 175, 177 and 160 with the copies at
+     * K = 1,000 and 1,000,000 in place of 1 and 1,000 (the town the same) holds its savings to 1.90e-5, 2.07e-5, 2.21e-5 and 2.45e-5
+     * where K = 1 against 1,000 misses 1.94e-2, 2.28e-2, 2.40e-2 and 2.34e-2; at 172 and 175 K = 1 against 10 misses 1.38e-2 and 2.08e-2,
+     * and K = 10 against 1,000 7.65e-3 and 1.97e-3. So the miss is the K = 1 town's granule (a cell under a household, as at 122-143
+     * and in WG2's scan above) and it falls as K grows: the fixture is the month and not the model. HL1's path misses it more often than
+     * main's did (main at 172: 4.90e-3), so fewer months hold. The scan was this check's sections 6 and 9 at every month from 160 to 195,
+     * the month the only thing moved (the scratch copy took the month from a property; no line of section 6 missed in any month): it
+     * holds every line at 163 to 167, 169 and 171. It misses on the savings line alone at 160 to 162, 168, 170, 172 to 178, 182 to 184,
+     * 186 to 188 and 191 to 195 (1.76e-2 at 170 to 3.98e-2 at 184), with the prices too at 179 to 181 (1.98e-2, 5.26e-2,
+     * 6.64e-2 against .004), the deposits too at 185 and 190 (3.04e-2, 3.51e-2 against .0260) and on the deposits alone at 189 (3.05e-2).
+     * 165 is the middle of 163 to 167, the widest run (five months; the savings 1.19e-2, 1.10e-2, 1.38e-2, 1.42e-2, 1.40e-2). Its worst
+     * line is the savings', at .86 of its dial (1.38e-2), then GDP .51 (7.20e-2), deposits .37 (9.65e-3), cash .09 (1.14e-3), prices .05
+     * (2.07e-4) and people .005 (7.24e-5); 6,415 people, six mortgage orders in the city and in the copy, the largest order 11,272,251,
+     * the pull 1 in all six months. The margin on the savings is thinner than 172's was on GDP, and it is the granule's: a dial moved
+     * to buy room would be a premise moved, and the next batch to move the path scans again.
+     *
      * The picks' history is in git and in docs/queue/ST2-notes.md and docs/queue/RE2-notes.md.
      */
-    static final int FREE_FIXTURE_MONTHS = 172;
+    static final int FREE_FIXTURE_MONTHS = 165;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;

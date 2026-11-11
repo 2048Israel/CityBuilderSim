@@ -1428,6 +1428,20 @@ public class AuctionCheck {
         assertTrue("automatic building's cap is its own: set to fair, the rollover's stays at fair plus a point",
                 CapSetting.same(ab.getCap(), Cap.tail(0)) && CapSetting.same(a.getRolloverCap(), Cap.DEFAULT));
 
+        /*
+         * HL1, 2026-11-11: THE BUILDER'S DEBT LIMIT IS SET TO ITS MOST, SO THE TOWN BORROWS. The ask is the builder's, not the limit's, and the
+         * town it asks in must be within the limit for the builder to borrow at all (AutoBuilder.within(): over it a pass sells no bond, so no ask
+         * opens). The town stood at 189% of a year's GDP against the default 240% (debt 8,537 of advances to the treasury, annual GDP 4,515) and the
+         * pass borrowed. HL1's B makes the city's services' upkeep Business Services' revenue, three quarters of it an imported service (and all of
+         * it where the sector has no seats, as in this town): the town's schools cost 143 a month and its care 2, imports rose by that and its GDP fell
+         * from 383 a month to 238, annual 4,515 to 2,769, the debt only from 8,537 to 7,844. At 283% the town was over its 240%, where a pass
+         * sells no bond, and no ask opened (0 open). So the limit is opened as AutoBuildCheck's copies open theirs (DEBT_LIMIT_MOST), and the
+         * fixture says the town is within it.
+         */
+        ab.setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
+        assertTrue(String.format("fixture: the town is within the builder's debt limit (HL1) - %.0f%% of a year's GDP against %.0f%% - so a pass borrows and a short sale opens an ask",
+                AutoBuilder.ratio(a) * 100, ab.getDebtLimit() * 100), ab.within(a));
+
         /* THE FIXTURE: the cash at the reserve, so every order needs its bond; the room used up. */
         BuildAdvice.Measure streets = streets();
         a.setCashForTest(AutoBuilder.reserve(a));
