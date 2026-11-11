@@ -1,4 +1,4 @@
-# GamePrefs.java - 249 lines · 27 methods · 3 constants · model
+# GamePrefs.java - 260 lines · 29 methods · 3 constants · model
 
 `ham/citybuildersim/GamePrefs.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
@@ -25,13 +25,13 @@
 
 **Uses:** [GameFiles](GameFiles.md) (3), [GameLog](GameLog.md) (2)
 
-**Used by (5):** [HistoryScreen](HistoryScreen.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckCheck](TruckCheck.md), [UiProbe](UiProbe.md), [UserInterface](UserInterface.md)
+**Used by (6):** [HistoryScreen](HistoryScreen.md), [MapCheck](MapCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckCheck](TruckCheck.md), [UiProbe](UiProbe.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 208 | THE FILE |
+| 219 | THE FILE |
 
 ## Constants
 
@@ -54,15 +54,16 @@
 | 156 | `private boolean constructionOpen` | Whether the construction panel is open over the stage or folded to its tab (0.7.24). |
 | 170 | `private boolean trucksOnMap` | Whether Haulage's trucks are drawn on the map's roads at the near view (0.8.8, batch FR5). |
 | 180 | `private boolean nationsOnMap` | Whether the expanded map on the real Earth writes the nations on it: a dot at each nation's largest place by its output, its name and figures where they fit, and the card a click opens (WN2; Jerus: "a toggle on the ma... |
-| 186 | `private boolean bordersOnMap` | Whether the map draws the nations' borders, dashed white - at the far views, and up close where one crosses the city's ground (WN2; Jerus: "a map button to ... |
-| 197 | `private boolean tradeRoutesOnMap` | Whether the map draws the city's trade as routes: on the Earth's globe a lane from the city toward each partner over D$0.3M a month at today's prices (TradeLanes.minLane(): TP1), the lanes that go the same way shared,... |
-| 203 | `private boolean mapLegendFolded` | Whether the expanded map's legend is folded to its head line (WN2; Jerus: "legend should be collapsable"). |
+| 191 | `private boolean resourcesOnMap` | Whether the map draws the deposits: at its far views (a view holding more tiles than MapFrame.NEAR_TILES_MOST, the scale bar's 2 km under 75 px or so) an icon a deposit in its resource's colour with its mark (DepositM... |
+| 197 | `private boolean bordersOnMap` | Whether the map draws the nations' borders, dashed white - at the far views, and up close where one crosses the city's ground (WN2; Jerus: "a map button to ... |
+| 208 | `private boolean tradeRoutesOnMap` | Whether the map draws the city's trade as routes: on the Earth's globe a lane from the city toward each partner over D$0.3M a month at today's prices (TradeLanes.minLane(): TP1), the lanes that go the same way shared,... |
+| 214 | `private boolean mapLegendFolded` | Whether the expanded map's legend is folded to its head line (WN2; Jerus: "legend should be collapsable"). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 30 | 220 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
+| 30 | 231 | **type** `public final class GamePrefs` | How the player likes the window, kept between runs. |
 | 44 | 1 | `public boolean isFullScreen()` |  |
 | 45 | 1 | `public void setFullScreen(boolean value)` |  |
 | 61 | 1 | `public boolean isPanelDashboard()` |  |
@@ -81,18 +82,20 @@
 | 173 | 1 | `public void setTrucksOnMap(boolean value)` |  |
 | 182 | 1 | `public boolean isNationsOnMap()` |  |
 | 183 | 1 | `public void setNationsOnMap(boolean value)` |  |
-| 188 | 1 | `public boolean isBordersOnMap()` |  |
-| 189 | 1 | `public void setBordersOnMap(boolean value)` |  |
-| 199 | 1 | `public boolean isTradeRoutesOnMap()` |  |
-| 200 | 1 | `public void setTradeRoutesOnMap(boolean value)` |  |
-| 205 | 1 | `public boolean isMapLegendFolded()` |  |
-| 206 | 1 | `public void setMapLegendFolded(boolean value)` |  |
+| 193 | 1 | `public boolean isResourcesOnMap()` |  |
+| 194 | 1 | `public void setResourcesOnMap(boolean value)` |  |
+| 199 | 1 | `public boolean isBordersOnMap()` |  |
+| 200 | 1 | `public void setBordersOnMap(boolean value)` |  |
+| 210 | 1 | `public boolean isTradeRoutesOnMap()` |  |
+| 211 | 1 | `public void setTradeRoutesOnMap(boolean value)` |  |
+| 216 | 1 | `public boolean isMapLegendFolded()` |  |
+| 217 | 1 | `public void setMapLegendFolded(boolean value)` |  |
 
-### THE FILE (lines 208-249)
+### THE FILE (lines 219-260)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 212 | 3 | `private static Path fileIn(GameFiles files)` |  |
-| 217 | 16 | `public static GamePrefs load(GameFiles files)` | Whatever is on disk, or the defaults. |
-| 240 | 9 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
+| 223 | 3 | `private static Path fileIn(GameFiles files)` |  |
+| 228 | 16 | `public static GamePrefs load(GameFiles files)` | Whatever is on disk, or the defaults. |
+| 251 | 9 | `public boolean save(GameFiles files)` | Writes them back, through the same atomic replace the saves use. |
 

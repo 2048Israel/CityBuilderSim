@@ -67,7 +67,8 @@ import ham.citybuildersim.sectors.Mining;
  * the model's rows (OreView) iron's, coal's, copper's, stone's and uranium's
  * as the getters the sector pages read give them, "nothing is digging" for an
  * ore with a deposit and no mine, and not for one a mine stands on, iron's as
- * it was (30).
+ * it was (30); and, since LM1, the founding's water as one patch of blocks,
+ * never a strip along a river (section 1, theFoundingsWaterIsOnePatch()).
  */
 public class LandCheck {
 
@@ -175,6 +176,7 @@ public class LandCheck {
         check("thirty blocks and a little", lm.getAvailableBlocks(), founded / LandManager.BLOCK_SQ_FT);
         check("nothing built on -> 0% used", lm.getUtilisation(), 0);
         check("no blocks bought yet", lm.getBlocksPurchased(), 0);
+        theFoundingsWaterIsOnePatch(opening, r0);
 
         /* ==================== 2. allocating ==================== */
         System.out.println("\n--- building on it ---");
@@ -845,6 +847,180 @@ public class LandCheck {
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* =====================================================================
+       LM1: THE FOUNDING'S WATER IS ONE PATCH (2026-11-11, Jerus's city 7.8 km
+       west-northwest of Stockholm). CityLand.freshPatch() takes the fresh
+       plots a block holds as a function, so the fixtures paint a map of
+       them: blocks of the default level round a site in the middle of the
+       world, rings of dry ground on it that hold none unless a fixture says
+       so, and the lake's centre at the site, as on an Earth world. Each
+       fixture is built to cause its condition and asserts that it does.
+       ===================================================================== */
+
+    /** A painted map of fresh plots a block (by CityLand.blockKey()), as CityLand.freshPatch() reads one. */
+    static java.util.function.LongBinaryOperator painted(java.util.Map<Long, Long> map) {
+        return (bx, by) -> map.getOrDefault(CityLand.blockKey(bx, by), 0L);
+    }
+
+    /** Whether the blocks (CityLand.blockKey()s) are one piece, each edge to edge with another. */
+    static boolean onePiece(java.util.Collection<Long> blocks) {
+        if (blocks.isEmpty()) return true;
+        java.util.Set<Long> in = new java.util.HashSet<>(blocks), seen = new java.util.HashSet<>();
+        java.util.ArrayDeque<Long> todo = new java.util.ArrayDeque<>();
+        long first = in.iterator().next();
+        seen.add(first);
+        todo.add(first);
+        while (!todo.isEmpty()) {
+            long k = todo.poll();
+            for (long[] d : new long[][] { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }) {
+                long nk = CityLand.blockKey((k >> 32) + d[0], (int) k + d[1]);
+                if (in.contains(nk) && seen.add(nk)) todo.add(nk);
+            }
+        }
+        return seen.size() == in.size();
+    }
+
+    /** The fresh plots the blocks (CityLand.blockKey()s) hold on a map. */
+    static long freshOn(java.util.Collection<Long> blocks, java.util.Map<Long, Long> map) {
+        long n = 0;
+        for (long k : blocks) n += map.getOrDefault(k, 0L);
+        return n;
+    }
+
+    /** Whether every block lies within `patch` blocks of the first, L-infinity: the square the patch grew in. */
+    static boolean inSquareOfFirst(java.util.List<Long> blocks, long patch) {
+        long first = blocks.get(0);
+        for (long k : blocks) if (Math.abs((k >> 32) - (first >> 32)) > patch || Math.abs((int) k - (int) first) > patch) return false;
+        return true;
+    }
+
+    /**
+     * What the best patch on a map holds, worked out apart from the model: from each fresh block as a seed, the fresh
+     * blocks edge to edge with it inside its square of `patch` blocks, which is all a patch takes when no target stops it.
+     */
+    static long bestSquareHolds(java.util.Map<Long, Long> map, long patch) {
+        long best = 0;
+        for (long seed : map.keySet()) {
+            java.util.Set<Long> in = new java.util.HashSet<>(java.util.List.of(seed));
+            java.util.ArrayDeque<Long> todo = new java.util.ArrayDeque<>(java.util.List.of(seed));
+            while (!todo.isEmpty()) {
+                long k = todo.poll();
+                for (long[] d : new long[][] { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }) {
+                    long bx = (k >> 32) + d[0], by = (int) k + d[1];
+                    if (Math.abs(bx - (seed >> 32)) > patch || Math.abs(by - (int) seed) > patch) continue;
+                    long nk = CityLand.blockKey(bx, by);
+                    if (map.containsKey(nk) && in.add(nk)) todo.add(nk);
+                }
+            }
+            best = Math.max(best, freshOn(in, map));
+        }
+        return best;
+    }
+
+    static void theFoundingsWaterIsOnePatch(CityLand opening, int r0) {
+        System.out.println("\n--- LM1: the founding's water is one patch ---");
+        long b = 1L << opening.level(), last = World.SIDE / b - 1, reach = (CityLand.FRESH_REACH + b - 1) / b, patch = CityLand.FRESH_PATCH;
+        long target = (long) Math.ceil(LandManager.FOUNDING_FRESH_KM2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
+        long sbx = last / 2, sby = last / 2;
+        double lx = sbx * b + b / 2.0, ly = sby * b + b / 2.0;
+        java.util.Set<Long> rings = new java.util.HashSet<>();
+        for (long dx = -2; dx <= 2; dx++) for (long dy = -2; dy <= 2; dy++) rings.add(CityLand.blockKey(sbx + dx, sby + dy));
+        // A lake of whole blocks, in blocks round its centre: it fits a square of 2 * FRESH_PATCH + 1 blocks and holds more than the target there.
+        double lakeRadius = 3.6;
+        // The Stockholm city's river winds at least this many blocks between its lakes (its strip was over a hundred).
+        long winds = 30;
+
+        /* (a) the Stockholm city's shape: two lakes joined by a river one plot wide that winds far, the nearest of it about 12 blocks off */
+        java.util.Map<Long, Long> river = new java.util.LinkedHashMap<>(), both = new java.util.HashMap<>();
+        long prev = -15;
+        for (long x = -13; x <= 16; x++) {
+            long y = Math.round(-15 + 3 * Math.sin(x / 2.0));
+            for (long yy = Math.min(prev, y); yy <= Math.max(prev, y); yy++) river.put(CityLand.blockKey(sbx + x, sby + yy), b);
+            prev = y;
+        }
+        for (long yy = prev; yy <= 11; yy++) river.put(CityLand.blockKey(sbx + 16, sby + yy), b);
+        both.putAll(river);
+        java.util.Set<Long> lakes = new java.util.HashSet<>();
+        for (double[] c : new double[][] { { -17, -15 }, { 16, 15 } }) {
+            for (long dx = (long) c[0] - 5; dx <= c[0] + 5; dx++) for (long dy = (long) c[1] - 5; dy <= c[1] + 5; dy++) {
+                if (Math.hypot(dx - c[0], dy - c[1]) > lakeRadius) continue;
+                both.put(CityLand.blockKey(sbx + dx, sby + dy), b * b);
+                lakes.add(CityLand.blockKey(sbx + dx, sby + dy));
+            }
+        }
+        double nearestRiver = Double.MAX_VALUE, nearestLake = Double.MAX_VALUE;
+        long nearestFresh = Long.MIN_VALUE;
+        for (long k : both.keySet()) {
+            double d = Math.hypot((k >> 32) - sbx, (int) k - sby);
+            if (lakes.contains(k)) nearestLake = Math.min(nearestLake, d); else nearestRiver = Math.min(nearestRiver, d);
+            if (nearestFresh == Long.MIN_VALUE || d < Math.hypot((nearestFresh >> 32) - sbx, (int) nearestFresh - sby)) nearestFresh = k;
+        }
+        assertTrue("the fixture: a river one plot wide (a block of it holds its side in fresh plots) that winds " + winds + " blocks and more",
+                river.size() >= winds && river.values().stream().allMatch(v -> v == b));
+        assertTrue("...its nearest point nearer the site than either lake, and so the fresh block nearest the lake's centre a river block",
+                nearestRiver < nearestLake && !lakes.contains(nearestFresh));
+        System.out.printf("   %d river blocks, the nearest %.1f blocks from the site; the lakes' %d blocks, the nearest %.1f; the target %d plots, reach %d blocks%n",
+                river.size(), nearestRiver, lakes.size(), nearestLake, target, reach);
+        java.util.List<Long> water = CityLand.freshPatch(painted(both), rings, sbx, sby, reach, last, lx, ly, b, target, patch);
+        long held = freshOn(water, both), inLakes = freshOn(water.stream().filter(lakes::contains).toList(), both);
+        long riverBest = bestSquareHolds(river, patch);
+        System.out.printf("   the patch: %d blocks holding %d plots, %d of them in a lake; the river alone, its best patch holds %d%n",
+                water.size(), held, inLakes, riverBest);
+        assertTrue("...the river alone could not hold the target in a patch, its best holds less: the water has to come from a lake", riverBest < target);
+        assertTrue("the Stockholm shape: the patch reaches the target", held >= target);
+        assertTrue("...is one piece, edge to edge, outside the rings", onePiece(water) && water.stream().noneMatch(rings::contains));
+        assertTrue("...lies inside the square of 2 * FRESH_PATCH + 1 blocks round its first block", inSquareOfFirst(water, patch));
+        assertTrue("...starts in a lake and not on the river that was nearest, and holds more lake than river",
+                lakes.contains(water.get(0)) && water.get(0) != nearestFresh && inLakes > held - inLakes);
+
+        /* (b) a river and no lake: its best patch, whatever the target */
+        java.util.List<Long> bank = CityLand.freshPatch(painted(river), rings, sbx, sby, reach, last, lx, ly, b, target, patch);
+        long bankHeld = freshOn(bank, river);
+        System.out.printf("   river only: a patch of %d blocks holding %d plots of the target's %d (the best square of the river holds %d)%n",
+                bank.size(), bankHeld, target, riverBest);
+        assertTrue("a river and no lake: the patch holds less than the target", !bank.isEmpty() && bankHeld < target);
+        assertTrue("...it is the river's best patch: what the best seed's square holds of the river edge to edge with it", bankHeld == riverBest);
+        assertTrue("...one piece inside the square of 2 * FRESH_PATCH + 1 blocks round its first block", onePiece(bank) && inSquareOfFirst(bank, patch));
+        assertTrue("...and no river and no lake takes nothing",
+                CityLand.freshPatch(painted(new java.util.HashMap<>()), rings, sbx, sby, reach, last, lx, ly, b, target, patch).isEmpty());
+
+        /* (c) a lake edge to edge with the rings and partly in them: the patch touches the rings, so the centre is one piece */
+        java.util.Map<Long, Long> shore = new java.util.HashMap<>();
+        for (long dx = -2; dx <= 11; dx++) for (long dy = -5; dy <= 5; dy++) {
+            if (Math.hypot(dx - 5, dy) <= lakeRadius) shore.put(CityLand.blockKey(sbx + dx, sby + dy), b * b);
+        }
+        long ringsHold = 0;
+        boolean edgeToEdge = false;
+        for (long k : shore.keySet()) {
+            if (rings.contains(k)) ringsHold += shore.get(k);
+            else for (long[] d : new long[][] { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } }) edgeToEdge |= rings.contains(CityLand.blockKey((k >> 32) + d[0], (int) k + d[1]));
+        }
+        java.util.List<Long> beach = CityLand.freshPatch(painted(shore), rings, sbx, sby, reach, last, lx + 5 * b, ly, b, target, patch);
+        long beachHeld = freshOn(beach, shore);
+        java.util.List<Long> centre = new java.util.ArrayList<>(rings);
+        centre.addAll(beach);
+        System.out.printf("   a lake against the rings: they hold %d plots of it, the patch %d blocks and %d more, for the target's %d%n", ringsHold, beach.size(), beachHeld, target);
+        assertTrue("the fixture: a lake with blocks in the rings and blocks edge to edge with them, the rings holding some of its water", ringsHold > 0 && edgeToEdge);
+        assertTrue("a lake against the rings: the rings' water counts, so the centre reaches the target with a patch that holds less",
+                ringsHold + beachHeld >= target && beachHeld < target);
+        assertTrue("...the patch touches the rings, so the centre is one piece", !beach.isEmpty() && onePiece(centre));
+        assertTrue("...inside the square of 2 * FRESH_PATCH + 1 blocks round its first block", inSquareOfFirst(beach, patch));
+        assertTrue("...and rings that hold the target already take no water",
+                CityLand.freshPatch(painted(shore), rings, sbx, sby, reach, last, lx + 5 * b, ly, b, ringsHold, patch).isEmpty());
+
+        /* (d) the default world: its water, the blocks after the rings, is one patch inside FRESH_PATCH of its first block */
+        java.util.List<Long> lake = new java.util.ArrayList<>();
+        for (int i = r0; i < opening.centreRects().size(); i++) {
+            LandGrid.Fill f = opening.centreRects().get(i);
+            lake.add(CityLand.blockKey(f.x0() >> opening.level(), f.y0() >> opening.level()));
+        }
+        System.out.printf("   the default world: %d blocks of water, %.4f km2 of fresh water in the centre (FOUNDING_FRESH_KM2 %.4f)%n",
+                lake.size(), opening.centreKm2(CityLand.FRESH), LandManager.FOUNDING_FRESH_KM2);
+        assertTrue("the default world's water is one patch inside FRESH_PATCH of its first block", !lake.isEmpty() && onePiece(lake) && inSquareOfFirst(lake, patch));
+        assertTrue("...holding FOUNDING_FRESH_KM2, and less than a block more", opening.centreKm2(CityLand.FRESH) >= LandManager.FOUNDING_FRESH_KM2
+                && opening.centreKm2(CityLand.FRESH) - LandManager.FOUNDING_FRESH_KM2 < b * b * World.KM2_PER_PLOT);
     }
 
     /* ==================================================================

@@ -182,6 +182,17 @@ public final class GamePrefs {
     public boolean isNationsOnMap()            { return nationsOnMap; }
     public void setNationsOnMap(boolean value) { this.nationsOnMap = value; }
 
+    /**
+     * Whether the map draws the deposits: at its far views (a view holding more tiles than MapFrame.NEAR_TILES_MOST, the scale bar's 2 km under
+     * 75 px or so) an icon a deposit in its resource's colour with its mark (DepositMarks; LM1, Jerus, 2026-11-02: "that makes it super hard to find
+     * resources"), and at the middle views the dots in and about the city's land and offers. ON BY DEFAULT; an older settings.json has no key and
+     * reads on ... never in a save. How the player likes the map drawn, so kept here. Unlike Nations and Borders it is on every world, a generated one too.
+     */
+    private boolean resourcesOnMap = true;
+
+    public boolean isResourcesOnMap()            { return resourcesOnMap; }
+    public void setResourcesOnMap(boolean value) { this.resourcesOnMap = value; }
+
     /** Whether the map draws the nations' borders, dashed white - at the far views, and up close where one crosses the city's ground (WN2; Jerus: "a map button to ... toggle borders"). ON BY DEFAULT, kept here for the same reason. */
     private boolean bordersOnMap = true;
 

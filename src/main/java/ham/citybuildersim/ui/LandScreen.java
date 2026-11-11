@@ -551,15 +551,16 @@ final class LandScreen {
     String offerInfo() {
         LandMarket market = ui.game.getLandManager().getMarket();
         return String.format("The office lists up to %d offers on each side of the city, %d in all: each a rectangle "
-                        + "of whole blocks against the city's edge in one of a side's %d places, numbered 1 to %d from the "
-                        + "left as you face out; a place with no room waits. Pick a side by its chip or on the map to see "
+                        + "of whole blocks against the city's edge in one of a side's %d places. They are numbered 1 to %d "
+                        + "across the city, north's first, then east's, south's and west's, each side's from the left as "
+                        + "you face out, so the map and the list name an offer by one number; a place with no room waits.Pick a side by its chip or on the map to see "
                         + "its offers; the map hatches them all, and a row lights its own. "
                         + "BEST VALUE is the cheapest dry ground a km², any ore and water in an offer paid for "
                         + "inside its price; \"Buy the best N\" buys the N cheapest so, from every side. Blocks are %s "
                         + "a side now, the largest of which six fit across the city. "
                         + "An offer keeps the ground and the US$ price it was listed at; buying one lists the next in its "
                         + "place, the nearest free ground there.",
-                LandMarket.OFFERS_A_SIDE, LandMarket.OFFERS, LandMarket.OFFERS_A_SIDE, LandMarket.OFFERS_A_SIDE,
+                LandMarket.OFFERS_A_SIDE, LandMarket.OFFERS, LandMarket.OFFERS_A_SIDE, LandMarket.OFFERS,
                 blockSide(Math.max(LandGrid.MIN_LEVEL, market.getLevel())));
     }
 
@@ -667,7 +668,7 @@ final class LandScreen {
     record DepositWords(String colour, String words, String tip) { }
 
     /**
-     * One place as its row: its offer, its place (1 to 6), its size in km2
+     * One place as its row: its offer, its number (LandParcel.number(): 1 to 24 across the city, LM1), its size in km2
      * and the size's tooltip - its blocks and its ground (0.7.69, spec-grid
      * 2.5) - its dry, fresh and sea shares for the bar, its deposits (the
      * first ROW_DEPOSITS, and "+N" for the rest), its price in the toggle's
@@ -703,8 +704,8 @@ final class LandScreen {
 
     /** A place waiting for room: its number, EMPTY_PLACE, and a tooltip naming it. */
     Row emptyRow(int side, int at) {
-        String where = CityLand.sideName(side) + " " + (at + 1);
-        return new Row(null, String.valueOf(at + 1), "", "", 0, 0, 0, List.of(), "", "", Palette.TEXT_MUTED, "", null, "", "",
+        String where = CityLand.sideName(side) + " " + LandParcel.number(side, at);
+        return new Row(null, String.valueOf(LandParcel.number(side, at)), "","", 0, 0, 0, List.of(), "", "", Palette.TEXT_MUTED, "", null, "", "",
                 false, where + " waits: the free ground along this edge is all in the side's other offers. It lists after "
                         + "the next purchase or month that leaves room for one here.");
     }
@@ -803,7 +804,7 @@ final class LandScreen {
         StringBuilder tip = new StringBuilder(String.format("%s: %s%nListed in month %,d at %s: %s at today's rate.",
                 p.where(), size, p.getListedMonth(), listedUsd, todayHere));
         for (DepositWords d : deposits) tip.append("\n").append(d.tip()).append(WHOLE_FIELDS);
-        return new Row(p, String.valueOf(p.getPlace() + 1), LandMap.area(km2), size,
+        return new Row(p, LandMap.placeLabel(p), LandMap.area(km2), size,
                 km2 > 0 ? p.getKm2(CityLand.DRY) / km2 : 0, km2 > 0 ? p.getKm2(CityLand.FRESH) / km2 : 0,
                 km2 > 0 ? p.getKm2(CityLand.SEA) / km2 : 0,
                 deposits.subList(0, shown), more,

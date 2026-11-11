@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.94 — LM1, the land office map: a compact start, one number an offer, the deposits zoomed out — 2026-11-11, ready, see docs/queue/LM1-notes.md
+A new city starts compact (Jerus, 2026-11-02, his city 7.8 km west-northwest of Stockholm on a river strip 5 km long). Its
+water, one plant's, is one patch within `CityLand.FRESH_PATCH` (3 blocks) of the block it starts from, never through dry
+ground, where A24 ran it along the river: Stockholm 61 blocks in 30 x 14 where it was 113 in 37 x 32. Where no patch that
+compact holds a plant's water the city starts short and buys the rest (Paris 0.16 km2 of 0.49; 75 of 200 generated worlds,
+5 on main); the default world founds block for block as before and the trace did not move (no ensemble). The map writes one
+number an offer across the city, North 1-6 to West 19-24, as its row and its name do. Past the zoom where the deposits'
+shading stops (a 2 km bar under 70 px) the map draws one icon a deposit, its resource's colour and mark (Fe, O, St, C, Cu, U),
+thinned to one a 12 px square, with a Resources chip beside Nations, on by default. New: LandCheck's patch section,
+EarthTerrainCheck 19 (Stockholm), MapCheck LM1. Moved fixtures: LandNationsCheck's Windsor (downtown on the bank) and
+MapCheck 2c's second-block share; the new founding quiets main's six MapCheck reds, the fault not reached. Red by name:
+PlanCheck 6, two + junctions 4 plots apart that CL4's curves lay on the new ground (PX1).
+
 ### 0.9.93 — RB1, the fund holds to its 10% — 2026-11-11, ready, see docs/queue/RB1-notes.md
 The city's fund holds at most 10% of a company on its market book, now read on the holding too (Jerus, 2026-11-02:
 "Sell the excess"). Past it, where the companies' buybacks push it, a tenth of the excess is asked each month at fair
