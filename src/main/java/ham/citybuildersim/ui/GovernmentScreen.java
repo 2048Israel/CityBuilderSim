@@ -728,6 +728,7 @@ final class GovernmentScreen {
 
     void overviewPage(VBox page, EconomyManager em, NationalAccounts na, List<CityNeeds.Need> all) {
         // Kept (KP6): each card is a scope of its own, keyed by what it is.
+        page.getChildren().add(Kept.scope("wealth", this::wealthCard));
         page.getChildren().add(Kept.scope("budget", () -> budgetCard(em, na, all)));
         VBox bridge = Kept.scope("bridge", () -> bridgeCard(na));
         targets.put(BRIDGE, bridge);
@@ -749,6 +750,81 @@ final class GovernmentScreen {
         } else {
             page.getChildren().add(economy);
         }
+    }
+
+    /* ----------------------------- government wealth (GV1) ----------------------------- */
+
+    /** The government's net financial wealth and three existing doors for returning it; every amount comes from the pure view. */
+    VBox wealthCard() {
+        GovernmentView view = GovernmentView.of(ui.game);
+        String info = "Net financial wealth is treasury cash + fund cash + the fund's holdings at market value + "
+                + "the vault's reserves in local money, less the city's debt. It is compared with the last twelve "
+                + "months of revenue once a full year has been recorded.\n\nTreasury: " + m(view.treasury())
+                + "\nFund cash: " + m(view.fundCash()) + "\nFund holdings: " + m(view.fundHoldings())
+                + "\nVault: " + m(view.vault()) + "\nDebt: " + m(view.debt())
+                + "\nNet wealth: " + m(view.netWealth()) + "\nRevenue, last twelve months: "
+                + (Double.isFinite(view.annualRevenue()) ? m(view.annualRevenue()) : "not yet a full year");
+        VBox card = card(cardHead(Icons.SAFE, Palette.MONEY, "GOVERNMENT WEALTH", info, null),
+                words(wealthWords(view), Palette.SIZE_HEADING + 3, wealthColour(view.band())),
+                caption("THREE WAYS BACK", "These open the existing controls. The tax and transfer amounts are "
+                        + "illustrations at today's tax base and recipients, before wider economic changes."));
+
+        boolean buyback = view.buybackAvailable() && view.buybackDebt() != null;
+        card.getChildren().add(wealthAdvice("buyback", "Buy back the paper you owe",
+                m(view.buybackMonthlySaving()) + " a month in coupons", buyback ? "Open buyback" : null,
+                buyback ? () -> ui.financesScreen.openClose(view.buybackDebt()) : null,
+                buyback ? "The coupon stopped by the quoted buyback. A discount bill has no coupon; its saving is the price below its maturity payment. Open the ticket and ladder to review the price."
+                        : view.debt() <= 0 ? "There is no paper to buy back."
+                        : "Needs treasury cash above the city's debt and paper with a positive yield. Cash earns nothing."));
+
+        String tax = view.largestTaxName();
+        Door taxDoor = tax == null ? null : doorOf(tax);
+        boolean cut = taxDoor != null && view.taxCutMonthly() > 0;
+        card.getChildren().add(wealthAdvice("tax", tax == null ? "Cut the tax that raises most" : "Cut " + tax + " by 1 point",
+                m(view.taxCutMonthly()) + " a month back", cut ? "Set the tax" : null,
+                cut ? taxDoor.go() : null, tax == null ? "No tax currently raises revenue."
+                        : tax + " raises " + m(view.largestTaxMonthly()) + " a month. This illustrates a one-percentage-point cut."));
+
+        String transfer = view.transferName();
+        Door transferDoor = transfer == null ? null : doorOf(transfer);
+        boolean raise = transferDoor != null && view.transferRaiseMonthly() > 0;
+        card.getChildren().add(wealthAdvice("transfer", transfer == null ? "Raise a transfer" : "Raise " + transfer + " by 5 points",
+                m(view.transferRaiseMonthly()) + " a month back", raise ? "Set the transfer" : null,
+                raise ? transferDoor.go() : null, transfer == null ? "No transfer can currently be raised for existing recipients."
+                        : transfer + " pays " + m(view.transferMonthly()) + " a month. This illustrates a five-percentage-point rise in replacement."));
+        return card;
+    }
+
+    /** A full year's comparable wealth, or the reason the ratio cannot yet be measured. */
+    static String wealthWords(GovernmentView view) {
+        if (Double.isFinite(view.wealthYears())) return "The government holds "
+                + minus(String.format("%.1f", view.wealthYears())) + " years of its revenue · " + view.band().label();
+        return "Government wealth: " + m(view.netWealth()) + (view.annualRevenue() <= 0
+                ? " · no revenue to compare" : " · needs a full year of revenue");
+    }
+
+    /** Both too little and too much wealth call for attention; no band is drawn before a comparable year exists. */
+    static String wealthColour(GovernmentView.Band band) {
+        if (band == null) return Palette.TEXT_MUTED;
+        return switch (band) {
+            case BROKE, HOARDING -> Palette.BAD;
+            case THIN, RICH -> Palette.WARN;
+            case SOUND -> Palette.GOOD;
+        };
+    }
+
+    /** One kept advice row, with an illustrative monthly amount and a door only while that action is available. */
+    HBox wealthAdvice(String key, String text, String monthly, String action, Runnable go, String info) {
+        return Kept.scope(key, () -> {
+            Label what = words(text, Palette.SIZE_LABEL + 1, Palette.TEXT_BODY);
+            what.setMaxWidth(Double.MAX_VALUE);
+            HBox.setHgrow(what, Priority.ALWAYS);
+            HBox row = Kept.row(TILE_GAP, what, figure(monthly, Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD));
+            if (go != null) row.getChildren().add(door(action, Palette.ACCENT, go));
+            row.setAlignment(Pos.CENTER_LEFT);
+            Kept.tip(row, info, 300);
+            return row;
+        });
     }
 
     /* ------------------------------ the rings and the balance ------------------------------ */

@@ -5495,6 +5495,8 @@ public class LongPlaytest {
             // The food law's opening stock (GT1): taken here, after the player's move and before the month runs.
             breadOpening = g.getSectors().industry().getStock(Good.BREAD);
             g.simulateMonths(1);
+            // The player's annual move sees every completed January, including one crossed inside a long skip (GV1/GV2).
+            if (g.getMonth() > before) GovernmentPlayer.step(g);
             if (g.hasCityMap()) {
                 mapMonths++;
                 /*
@@ -6297,21 +6299,6 @@ public class LongPlaytest {
                 }
                 run(g, 2);
 
-                // Policy changes, occasionally, the way a player fiddles.
-                if (stop % 11 == 0) {
-                    TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
-                    double income = tax.getIncomeTaxRate();
-                    tax.setIncomeTaxRate(income > .25 ? .12 : income + .06);
-                    log.add(String.format("  m%-5d income tax -> %.0f%%",
-                            g.getMonth(), tax.getIncomeTaxRate() * 100));
-                }
-                if (stop % 17 == 0) {
-                    TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
-                    double prop = tax.getPropertyTaxRate();
-                    tax.setPropertyTaxRate(prop > .03 ? .01 : prop + .01);
-                    log.add(String.format("  m%-5d property tax -> %.1f%%",
-                            g.getMonth(), tax.getPropertyTaxRate() * 100));
-                }
                 /*
                  * ...AND IT BORROWS ABROAD NOW AND AGAIN.
                  *

@@ -162,7 +162,7 @@ public class WealthRun {
         for (Sector s : g.getSectors().all()) pay += s.statement().payroll;
         add("payroll", pay);
 
-        if (g.getMonth() % 12 == 0) { revenueYear = year.getOrDefault("revenue", 0.0); row(g); }
+        if (g.getMonth() % 12 == 0) row(g);
         if (g.getMonth() % 600 == 0) {
             real.printf(Locale.ROOT, "  seed %d month %d pop %.0f (%.0fs)%n", seed, g.getMonth(),
                     (double) g.getEconomyManager().getPopulation(), (System.currentTimeMillis() - started) / 1000.0);
@@ -340,45 +340,10 @@ public class WealthRun {
         csv.flush();
     }
 
-    /* =====================================================================
-       -Dwealth.rule=on: THE PROTOTYPE PLAYER WHO READS THE GOVERNMENT'S
-       WEALTH (spec-wealth.md section 3.2). Each January it reads the
-       treasury's and the fund's cash against a year's revenue and moves the
-       player's own levers: past RULE_RICH years it cuts the profit tax by
-       five points and the sales tax by two (to nought at most), raises the
-       pension's replacement by five points (to 100% at most) and sets the
-       fund's withdrawal to its most, so the fund's idle cash reaches the
-       budget; under RULE_BROKE it moves each back one step. The scripted
-       tax steps of the playtest are left out while it plays (they would
-       fight it). No code of the game's changes: these are the setters the
-       Policy and Finances screens call.
-       ===================================================================== */
-    static final boolean RULE = "on".equals(System.getProperty("wealth.rule"));
-    static final double RULE_RICH = Double.parseDouble(System.getProperty("wealth.rich", "2"));
-    static final double RULE_BROKE = Double.parseDouble(System.getProperty("wealth.broke", "0.5"));
-    static double revenueYear;
-
-    static void rule(Game g) {
-        if (!RULE || g.getMonth() % 12 != 0 || !(revenueYear > 0)) return;
-        TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
-        double years = (g.getCash() + g.getFund().getCash()) / revenueYear;
-        if (years > RULE_RICH) {
-            tax.setProfitTaxRate(Math.max(0, tax.getProfitTaxRate() - .05));
-            tax.setSalesTaxRate(Math.max(0, tax.getSalesTaxRate() - .02));
-            tax.setPensionReplacement(Math.min(1.0, tax.getPensionReplacement() + .05));
-            g.getFund().setWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
-        } else if (years < RULE_BROKE) {
-            tax.setPensionReplacement(Math.max(.3, tax.getPensionReplacement() - .05));
-            tax.setSalesTaxRate(Math.min(.15, tax.getSalesTaxRate() + .02));
-            tax.setProfitTaxRate(Math.min(.30, tax.getProfitTaxRate() + .05));
-            g.getFund().setWithdrawal(TreasuryFund.WITHDRAWAL_STEP * TreasuryFund.DEFAULT_WITHDRAWAL_STEPS);
-        }
-    }
-
     static void run(Game g, int months) {
         for (int i = 0; i < months && !stuck && g.getMonth() < endMonth; i++) {
+            // LongPlaytest.run owns the same GovernmentPlayer move as the ensemble; no separate study rule can move it twice.
             step(g);
-            rule(g);
         }
     }
 
@@ -462,16 +427,6 @@ public class WealthRun {
                     run(g, 1);
                 }
                 run(g, 2);
-                if (stop % 11 == 0 && !RULE) {
-                    TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
-                    double income = tax.getIncomeTaxRate();
-                    tax.setIncomeTaxRate(income > .25 ? .12 : income + .06);
-                }
-                if (stop % 17 == 0 && !RULE) {
-                    TaxPolicy tax = g.getEconomyManager().getTaxPolicy();
-                    double prop = tax.getPropertyTaxRate();
-                    tax.setPropertyTaxRate(prop > .03 ? .01 : prop + .01);
-                }
                 if (stop % 19 == 0) {
                     DebtManager m = g.getDebtManager();
                     if (m.foreignWindowOpen() && m.foreignRate() < m.getRate()) {
