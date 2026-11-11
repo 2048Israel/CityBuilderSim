@@ -57,7 +57,9 @@ import java.util.Locale;
  *   8. THE FUND'S WITHDRAWAL (0.7.48, C2): at the dial in force the
  *      preview's due is next month's, struck when it comes; and a year on,
  *      earning nothing, the fund is its value times (1 - the rate) to the
- *      twelfth, which is what twelve of the model's own withdrawals leave.
+ *      twelfth, which is what twelve of the model's own withdrawals leave. With
+ *      cash paid in past what the rule can place (RB1), the same two on the
+ *      idle cash's withdrawal, the larger of the dial and a 24th.
  *   9. ZONING'S BEFORE AND AFTER (0.7.107, batch Z1): a zone and a forest
  *      law staged on a copy move nothing in the city, and applied read as
  *      the copy did - what the zone holds, what that ground would fetch, the
@@ -1005,13 +1007,19 @@ public class PolicyPreviewCheck {
 
     static void theWithdrawal(Game g) {
         out.println("\n--- 8. the fund's withdrawal: next month's due, and a year on earning nothing ---");
-        double payIn = 100_000;
+        // RB1: a pay-in the rule can place - past the room its caps leave (the share bids' and the bond bids'), cash is idle and is
+        // withdrawn at IDLE_TRANSFER_SHARE, which the idle case below is about: 100,000 when the fund's cash with it fits the room,
+        // else half the room that is left.
+        double left = Math.max(0, g.getExchange().fundShareRoom() + g.getBondMarket().fundBondRoom(g.getMonth())
+                - Math.max(0, g.getFund().getCash()));
+        double payIn = 100_000 <= left ? 100_000 : left / 2;
         g.setCashForTest(g.getCash() + payIn);
         quietly(() -> g.fundPayIn(payIn));
         quietly(() -> g.setFundWithdrawal(3 * TreasuryFund.WITHDRAWAL_STEP));
         TreasuryFund fund = g.getFund();
-        assertTrue("fixture: a fund of cash alone, three steps a month, its year-end dial at nothing",
-                fund.getCash() > 0 && g.fundSharesValue() == 0 && g.fundBondsValue() == 0 && g.fundPreferredValue() == 0
+        assertTrue("fixture: a fund of cash alone, three steps a month, its year-end dial at nothing, none of its cash idle",
+                payIn > 0 && g.fundIdleCash() == 0
+                && fund.getCash() > 0 && g.fundSharesValue() == 0 && g.fundBondsValue() == 0 && g.fundPreferredValue() == 0
                 && g.fundWarrantsValue() == 0 && fund.getWithdrawalSteps() == 3 && fund.getDial() == 0);
         PolicyPreview.Withdrawal w = PolicyPreview.fundWithdrawalAt(g, g.getFundWithdrawal());
         boolean asTheModel = w.due() == g.fundTransferDue();
@@ -1030,6 +1038,40 @@ public class PolicyPreviewCheck {
                     && Math.abs(at.yearOn() - bare.getCash()) <= 1e-12 * value;
         }
         assertTrue("a year on, earning nothing, is the value x (1 - rate)^12 - what twelve of its withdrawals leave", yearOn);
+
+        // ---- RB1: cash paid in past the rooms is idle, and is withdrawn at the larger of the dial and IDLE_TRANSFER_SHARE ----
+        double roomsNow = g.getExchange().fundShareRoom() + g.getBondMarket().fundBondRoom(g.getMonth());
+        assertTrue("fixture: the rule's rooms are a finite number", Double.isFinite(roomsNow) && roomsNow >= 0);
+        double more = 4 * roomsNow + payIn;
+        g.setCashForTest(g.getCash() + more);
+        quietly(() -> g.fundPayIn(more));
+        double idle = g.fundIdleCash(), whole = g.fundValue();
+        assertTrue("fixture: paid in past its rooms, the fund holds idle cash, less than its value", idle > 0 && idle < whole);
+        PolicyPreview.Withdrawal inForce = PolicyPreview.fundWithdrawalAt(g, g.getFundWithdrawal());
+        assertTrue("with idle cash the preview's due is the city's, and the model's on the idle cash it holds",
+                inForce.due() == g.fundTransferDue()
+                && g.fundTransferDue() == TreasuryFund.dueAt(fund.getWithdrawalSteps(), whole, idle)
+                && g.fundTransferDue() > TreasuryFund.dueAt(fund.getWithdrawalSteps(), whole, 0)
+                && g.fundTransferFromIdleDue() == TreasuryFund.idlePartAt(fund.getWithdrawalSteps(), whole, idle));
+        boolean idleYear = true, idleDue = true;
+        for (int steps : new int[] { 0, TreasuryFund.DEFAULT_WITHDRAWAL_STEPS, 3, TreasuryFund.MAX_WITHDRAWAL_STEPS }) {
+            double rate = steps * TreasuryFund.WITHDRAWAL_STEP, wi = steps * TreasuryFund.WITHDRAWAL_STEP;
+            double i = Math.min(idle, whole), r = steps > 0 ? Math.max(wi, TreasuryFund.IDLE_TRANSFER_SHARE) : 0;
+            PolicyPreview.Withdrawal at = PolicyPreview.fundWithdrawalAt(g, rate);
+            TreasuryFund bare = new TreasuryFund();
+            bare.receive(whole);
+            bare.setWithdrawal(rate);
+            double iLeft = i;
+            for (int m = 0; m < TreasuryFund.YEAR_MONTHS; m++) {
+                bare.payTransfer(bare.getCash(), iLeft, 2000);
+                iLeft *= 1 - r;
+            }
+            idleDue &= at.due() == TreasuryFund.dueAt(steps, whole, idle);
+            idleYear &= at.yearOn() == (whole - i) * Math.pow(1 - wi, TreasuryFund.YEAR_MONTHS) + i * Math.pow(1 - r, TreasuryFund.YEAR_MONTHS)
+                    && Math.abs(at.yearOn() - bare.getCash()) <= 1e-12 * whole;
+        }
+        assertTrue("with idle cash, at each step of the dial the preview's due is the model's on it", idleDue);
+        assertTrue("...and a year on is the invested part x (1 - rate)^12 and the idle x (1 - the larger of rate and the 24th)^12, what twelve withdrawals leave", idleYear);
     }
 
     /* ============================ 5. AFTER A LOAD ============================ */

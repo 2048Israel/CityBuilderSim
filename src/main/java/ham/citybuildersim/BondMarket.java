@@ -1471,6 +1471,18 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     /** The city's fund's face in every bond, together (0.7.14). */
     public double faceHeldByCity() { double t = 0; for (CorporateBond b : bonds) t += b.city; return t; }
 
+    /** The money that would buy every live bond's face the city's fund does not hold, at the bonds' value this month (RB1): the room its rule's bond bids could still take, for TreasuryFund.idleCash(). */
+    public double fundBondRoom(int month) {
+        double room = 0;
+        for (CorporateBond b : bonds) {
+            if (b.remainingMonths(month) <= 0 || !(b.face > 0)) continue;
+            double price = modelPrice(b, month);
+            if (!Double.isFinite(price)) continue;
+            room += Math.max(0, (b.face - b.city) * price);
+        }
+        return room;
+    }
+
     /* =====================================================================
        A HOUSEHOLD SHORT OF MONEY SELLS
 

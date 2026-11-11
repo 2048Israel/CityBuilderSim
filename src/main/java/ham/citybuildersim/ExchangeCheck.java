@@ -51,6 +51,12 @@ import java.nio.file.Path;
  *      its till while its bid rests at that limit, where a seller who comes
  *      later is met (round 4: no special dividend by any path); the cushion
  *      counts its debt service; a bad year or a company at target does nothing.
+ *  7b. THE FUND PAST ITS CAP (RB1; Jerus, 2026-11-02, "Sell the excess"): a
+ *      buyback retires shares under the city's fund and lifts it past
+ *      TreasuryFund.OWNERSHIP_LIMIT; a tenth of the excess is asked at fair
+ *      value ahead of the world, the buyback and the households, so the
+ *      buyback meets it before the desk's higher ask; over a run of months the
+ *      share goes past the limit and never past L x s / (s - b).
  *   8. THE SPLIT: counts, resting orders and the last trade move by the
  *      factor and nothing anybody owns changes in value.
  *   9. THE SAVE: the books with their resting orders, the last trade, fair
@@ -882,6 +888,96 @@ public class ExchangeCheck {
         Exchange ex7t = exchange();
         step(ex7t, atTarget, owners7t, bankWith(1_000_000), firms7t, book7, W, DEPOSIT_AT_HURDLE, 1);
         close("a company at its target buys nothing back", atTarget.getBoughtBackThisMonth(RETAIL), 0, 1e-12);
+
+        /* ================= 7b. the fund past its cap (RB1) ================= */
+        out.println("\n--- 7b. the fund past its cap: the buybacks lift it, a tenth of the excess is asked first, at fair value ---");
+
+        // (a) ONE STEP. Section 7's company, its buyback over target and the desk holding 1,000 and asking over fair value, and the
+        // city's fund holding 15% of it on its market book (taken from the owners' cells, as a fixture of a holding): the fund's tenth of
+        // the excess is asked at fair value ahead of the world, the buyback and the households, so the buyback meets it before it meets
+        // the desk's ask. The sale is read in the register (the fund's market shares before and after, the step's only sale of its) and
+        // in the money the fund was paid (TreasuryFund.getMonthSold(), the fund's own count of what its sales brought).
+        double heldShare7f = .15;
+        Equity reg7f = withRecord(RETAIL, normal);
+        HouseholdBalance owners7f = savers(20.0, 4.0);
+        reg7f.listIfUnlisted(RETAIL, 10_000, owners7f);
+        couple(owners7f).shares[RETAIL] -= 10;
+        reg7f.moveDesk(RETAIL, 1_000);
+        couple(owners7f).shares[RETAIL] -= heldShare7f * 10_000 / 100;
+        reg7f.moveCity(RETAIL, heldShare7f * 10_000);
+        TreasuryFund fund7f = new TreasuryFund();
+        fund7f.receive(1_500);                               // cash beside its shares: not so overweight that the band sells them too
+        Exchange ex7f = exchange();
+        ex7f.attachFund(fund7f);
+        Firms firms7f = new Firms();
+        firms7f.assets[RETAIL] = 10_000; firms7f.equity[RETAIL] = 10_000;
+        firms7f.cash[RETAIL] = 5_000; firms7f.opex[RETAIL] = 100;
+        double held7f = reg7f.getCityMarketShares(RETAIL), issue7f = reg7f.getShares(RETAIL), outstanding7f = reg7f.getOutstanding(RETAIL);
+        double asked7f = TreasuryFund.limitSale(held7f, issue7f);
+        assertTrue("fixture: the fund holds 15% of the company, over the limit, so it has an excess to offer",
+                Math.abs(held7f / issue7f - heldShare7f) < 1e-12 && held7f / issue7f > TreasuryFund.OWNERSHIP_LIMIT && asked7f > 0);
+        step(ex7f, reg7f, owners7f, bankWith(1_000_000), firms7f, book7, W, DEPOSIT_AT_HURDLE, 1);
+        double fair7f = ex7f.fair(RETAIL);
+        double pace7f = Exchange.BUYBACK_PACE / 12 * outstanding7f * fair7f;   // the month's money, on what was outstanding when it bid
+        assertTrue("fixture: the buyback fired, and its money buys at least what the fund asks, at fair value",
+                reg7f.getBoughtBackThisMonth(RETAIL) > 0 && pace7f >= asked7f * fair7f);
+        close("the fund sold the tenth of its excess over the limit that month, in shares",
+                held7f - reg7f.getCityMarketShares(RETAIL), asked7f, 1e-9);
+        close("...at fair value: what it was paid", fund7f.getMonthSold(), asked7f * fair7f, 1e-9);
+        close("...ahead of the desk's ask: the desk was paid for the rest of the buyback's money alone",
+                ex7f.getBuybackToDesk(RETAIL), pace7f - asked7f * fair7f, 1e-9);
+        close("...the desk's ask still rests above fair value, by half a spread", ex7f.bestAsk(RETAIL), fair7f * (1 + Exchange.SPREAD / 2), 1e-12);
+        assertTrue("...and the fund's share of the company is lower than the 15% it started at",
+                reg7f.getCityMarketShares(RETAIL) / reg7f.getShares(RETAIL) < heldShare7f);
+
+        // (b) A RUN. The fund at exactly the limit and the buyback firing every month (the till refilled, the desk restocked from the owners'
+        // cells): the buyback retires shares under the fund and lifts it past the limit, and each month it offers a tenth of the excess,
+        // which the buyback takes first. If a month retires the fraction b of the shares, the fund's share f goes to
+        // (f - s(f - L)) / (1 - b), L the limit and s the tenth, and that settles at L s / (s - b) and no higher; the largest month's b
+        // bounds every month's, the map rising with both f and b.
+        int months7g = 120;
+        double issue7g = 10_000;
+        Equity reg7g = withRecord(RETAIL, normal);
+        HouseholdBalance owners7g = savers(20.0, 4.0);
+        reg7g.listIfUnlisted(RETAIL, (int) issue7g, owners7g);
+        couple(owners7g).shares[RETAIL] -= 10;
+        reg7g.moveDesk(RETAIL, 1_000);
+        couple(owners7g).shares[RETAIL] -= TreasuryFund.OWNERSHIP_LIMIT * issue7g / 100;
+        reg7g.moveCity(RETAIL, TreasuryFund.OWNERSHIP_LIMIT * issue7g);
+        TreasuryFund fund7g = new TreasuryFund();
+        fund7g.receive(1_500);
+        Exchange ex7g = exchange();
+        ex7g.attachFund(fund7g);
+        Firms firms7g = new Firms();
+        firms7g.assets[RETAIL] = 10_000; firms7g.equity[RETAIL] = 10_000; firms7g.opex[RETAIL] = 100;
+        Bank bank7g = bankWith(1_000_000);
+        double start7g = reg7g.getCityMarketShares(RETAIL) / reg7g.getShares(RETAIL);
+        assertTrue("fixture: the fund starts at exactly the limit", Math.abs(start7g - TreasuryFund.OWNERSHIP_LIMIT) < 1e-12);
+        double top7g = start7g, b7g = 0;
+        int fired7g = 0;
+        for (int m = 1; m <= months7g; m++) {
+            reg7g.startMonth();
+            firms7g.cash[RETAIL] = 5_000;
+            double short7g = 1_000 - reg7g.getDealerShares(RETAIL);
+            if (short7g > 0) {
+                couple(owners7g).shares[RETAIL] -= short7g / 100;
+                reg7g.moveDesk(RETAIL, short7g);
+            }
+            double before7g = reg7g.getShares(RETAIL);
+            step(ex7g, reg7g, owners7g, bank7g, firms7g, book7, W, DEPOSIT_AT_HURDLE, m);
+            double retired7g = reg7g.getBoughtBackThisMonth(RETAIL);
+            if (retired7g > 0) fired7g++;
+            b7g = Math.max(b7g, retired7g / before7g);
+            top7g = Math.max(top7g, reg7g.getCityMarketShares(RETAIL) / reg7g.getShares(RETAIL));
+        }
+        double fixed7g = TreasuryFund.OWNERSHIP_LIMIT * TreasuryFund.LIMIT_SALE_SHARE / (TreasuryFund.LIMIT_SALE_SHARE - b7g);
+        out.printf(java.util.Locale.ROOT, "   the buyback fired in %d of %d months, the most of the shares it retired in one month %.4f%%; the fund's share went from %.4f%% to at most %.4f%% against a fixed point of %.4f%%%n",
+                fired7g, months7g, b7g * 100, start7g * 100, top7g * 100, fixed7g * 100);
+        assertTrue("fixture: the buyback fired in every month of the run", fired7g == months7g);
+        assertTrue("fixture: a month's buyback retires less than the tenth the fund offers, or there is no fixed point",
+                b7g > 0 && b7g < TreasuryFund.LIMIT_SALE_SHARE);
+        assertTrue("the buybacks lifted the fund's share past the limit", top7g > TreasuryFund.OWNERSHIP_LIMIT * (1 + 1e-9));
+        assertTrue("...and never past L x s / (s - b), b the fastest month's buyback of the shares in issue", top7g <= fixed7g + 1e-12);
 
         /* ================= 8. the split ================= */
         out.println("\n--- 8. a share that gets too dear is split, and one too cheap consolidated ---");

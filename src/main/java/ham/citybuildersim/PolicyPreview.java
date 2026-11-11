@@ -547,22 +547,32 @@ public final class PolicyPreview {
 
     /**
      * ...struck as TreasuryFund.payTransfer() strikes it: the due at the
-     * rate's whole steps on Game.fundValue() (TreasuryFund.withdrawalAt() -
-     * Game.fundTransferDue() at the dial in force, to the bit); its cash
+     * rate's whole steps on Game.fundValue() and the idle cash
+     * (Game.fundIdleCash(), RB1) - TreasuryFund.dueAt(), which is
+     * Game.fundTransferDue() at the dial in force, to the bit; its cash
      * after what last month's sale still owes (getToRaise()), which the top
      * of the month pays first; and the value times (1 - the rate) to the
-     * twelfth, a year of withdrawals with nothing earned. Prices, dividends
+     * twelfth, a year of withdrawals with nothing earned - the idle cash
+     * in it at the larger of the rate and IDLE_TRANSFER_SHARE, as the due
+     * takes it, and the rest at the rate. Prices, dividends
      * and what the book takes of a sale all move it by the month's top.
      */
     public static Withdrawal fundWithdrawalAt(Game g, double rate) {
         TreasuryFund f = g.getFund();
         double value = g.fundValue();
         int steps = TreasuryFund.stepsFor(rate);
-        double due = TreasuryFund.withdrawalAt(rate, value);
+        double idle = g.fundIdleCash();
+        double due = TreasuryFund.dueAt(steps, value, idle);
         double cash = Math.max(0, f.getCash() - Math.max(0, f.getToRaise()));
         double fromCash = Math.max(0, Math.min(due, cash));
         boolean sells = steps > TreasuryFund.DEFAULT_WITHDRAWAL_STEPS;
-        double yearOn = value > 0 ? value * Math.pow(1 - steps * TreasuryFund.WITHDRAWAL_STEP, TreasuryFund.YEAR_MONTHS) : 0;
+        // ...the idle cash held to 0 and the fund's value, as dueAt() holds it.
+        double i = idle > 0 ? Math.min(idle, value) : 0;
+        double w = steps * TreasuryFund.WITHDRAWAL_STEP;
+        double yearOn = !(value > 0) ? 0
+                : !(i > 0) ? value * Math.pow(1 - steps * TreasuryFund.WITHDRAWAL_STEP, TreasuryFund.YEAR_MONTHS)
+                : (value - i) * Math.pow(1 - w, TreasuryFund.YEAR_MONTHS)
+                        + i * Math.pow(1 - (steps > 0 ? Math.max(w, TreasuryFund.IDLE_TRANSFER_SHARE) : 0), TreasuryFund.YEAR_MONTHS);
         return new Withdrawal(due, fromCash, sells ? due - fromCash : 0, sells ? 0 : due - fromCash, yearOn);
     }
 

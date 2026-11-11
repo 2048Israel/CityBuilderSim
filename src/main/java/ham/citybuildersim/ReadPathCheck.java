@@ -167,6 +167,9 @@ public class ReadPathCheck {
         into.put("fund.withdrawal", fund.getWithdrawal());
         into.put("fund.toRaise", fund.getToRaise());
         into.put("fund.transferPaidLate", fund.getTransferPaidLate());
+        // ...and RB1's: the part of the month's due struck on the idle cash, and the life of it.
+        into.put("fund.transferFromIdle", fund.getTransferFromIdle());
+        into.put("fund.transfersFromIdle", fund.getTransfersFromIdle());
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             into.put("fund.shares" + c, g.getEquity().getCityShares(c));
             into.put("fund.rescueShares" + c, g.getEquity().getCityRescueShares(c));
@@ -693,7 +696,7 @@ public class ReadPathCheck {
         TreasuryFund fund = g.getFund();
         fund.getCash(); fund.getDial(); fund.getRescueMode(); fund.getTransferDue(); fund.getTransferPaid();
         fund.getWithdrawal(); fund.getWithdrawalSteps(); fund.withdrawalOn(g.fundValue()); fund.sellsToPay();
-        fund.getToRaise(); fund.getTransferPaidLate();
+        fund.getToRaise(); fund.getTransferPaidLate(); fund.getTransferFromIdle(); fund.getTransfersFromIdle();
         fund.getTransferShort(); fund.getTransfersThisYear(); fund.getTransferShortThisYear(); fund.getRescueCost();
         fund.isOfferPending(); fund.getOfferMonth(); fund.getDeclinedMonth(); fund.getAcceptedMonth();
         fund.mayOffer(g.getMonth()); fund.getOffersMade(); fund.getOffersAccepted(); fund.getOffersDeclined();

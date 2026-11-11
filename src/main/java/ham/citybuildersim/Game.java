@@ -5515,8 +5515,20 @@ public class Game {
         double v = fundMarketSharesValue() + fundBondsValue() + Math.max(0, fund.getCash());
         return v > 0 ? fundMarketSharesValue() / v : 0;
     }
-    /** What this month's transfer is on the fund as it stands, at the withdrawal in force: TreasuryFund.withdrawalOn(fundValue()) - transferOn() at the default. */
-    public double fundTransferDue()       { return fund.withdrawalOn(fundValue()); }
+    /**
+     * The fund's idle cash (RB1): the cash its caps leave no room for - TreasuryFund.idleCash() on its cash less the hand's reserve,
+     * past the room its share bids (Exchange.fundShareRoom()) and bond bids (BondMarket.fundBondRoom()) have left. The part of the
+     * transfer that is struck on it, at the larger of the dial and IDLE_TRANSFER_SHARE (TreasuryFund.dueAt()).
+     */
+    public double fundIdleCash() {
+        return TreasuryFund.idleCash(fund.getCash(), fund.handReserve(), exchange.fundShareRoom(), bondMarket.fundBondRoom(month));
+    }
+    /** What this month's transfer is on the fund as it stands, at the withdrawal in force and the idle cash it holds: TreasuryFund.dueOn(fundValue(), fundIdleCash()) - transferOn() at the default with none idle (RB1). */
+    public double fundTransferDue()       { return fund.dueOn(fundValue(), fundIdleCash()); }
+    /** ...the part of it that is the idle cash's, withdrawn at the larger of the dial and IDLE_TRANSFER_SHARE: TreasuryFund.idlePartAt() on the fund as it stands, 0 with none idle (RB1). */
+    public double fundTransferFromIdleDue() {
+        return TreasuryFund.idlePartAt(fund.getWithdrawalSteps(), fundValue(), fundIdleCash());
+    }
 
     /** One company's shares in the fund, both books, at the city's mark: the Holdings page's line for it until 0.7.39 (FundView reads each book itself now). */
     public double fundCompanyValue(int company) {
@@ -19282,9 +19294,12 @@ public class Game {
          * and over the default, last month's sale first - a revenue line
          * beside the remittance. Before the advances are settled below, so a
          * treasury it lifts over nothing repays them with it. Nothing from an
-         * empty fund.
+         * empty fund. The cash its rule cannot invest under its caps and its
+         * mix (fundIdleCash()) is taken at the larger of the dial and
+         * TreasuryFund.IDLE_TRANSFER_SHARE, so it does not pile up (RB1);
+         * at a dial of nothing, nothing.
          */
-        double transfer = fund.payTransfer(fundValue(), CityCalendar.yearOf(month));
+        double transfer = fund.payTransfer(fundValue(), fundIdleCash(), CityCalendar.yearOf(month));
         cash += transfer;
         economyManager.setFundTransfer(transfer);
         fund.getLedger().flow(FundLedger.TRANSFER, transfer, false, month);
