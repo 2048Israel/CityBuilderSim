@@ -549,6 +549,8 @@ public class UtilitiesHandler {
         public double upkeepWorld;
         /** Fuel burned: good name to units. */
         public LinkedHashMap<String, Double> fuel = new LinkedHashMap<>();
+        /** True once a month has been struck into this book; false in the founding book, for the screens to say "still at founding". */
+        public boolean cleared;
 
         /** The book before any month has cleared: the founding tariff, ratio 1, nothing made. */
         public static Book founding() {
@@ -567,6 +569,7 @@ public class UtilitiesHandler {
             b.fuelledKwh = fuelledKwh; b.windKwh = windKwh; b.hydroKwh = hydroKwh; b.worksKwh = worksKwh; b.gridKwh = gridKwh;
             b.upkeepWorld = upkeepWorld;
             b.fuel = new LinkedHashMap<>(fuel);
+            b.cleared = cleared;
             return b;
         }
     }
@@ -602,10 +605,37 @@ public class UtilitiesHandler {
             if (r.fuel != null && r.fuelUnits > 0) b.fuel.merge(r.fuel.name(), r.fuelUnits, Double::sum);
             b.upkeepWorld += r.kwh * r.upkeepPerKwh;
         }
+        b.cleared = true;
         struck = b;
     }
 
     public Book getStruckBook() { return struck; }
+
+    /** True while no month has been struck: the prices are the founding tariff (the book's own flag, so a load keeps it). */
+    public boolean isFoundingBook() { return !struck.cleared; }
+
+    /** What the month's energy cleared at, city money (thousands) a MWh delivered. */
+    public double getEnergyPricePerMwh() { return struck.energyPrice * 1000; }
+
+    /** Units of a good the plants burned in the month last struck (tonnes, for coal). */
+    public double getFuelBurned(Good g) { return struck.fuel.getOrDefault(g.name(), 0.0); }
+
+    /** kWh of the wind and the works' surplus turned away in the month last struck, for want of a load. */
+    public double getCurtailedKwh() { return struck.curtailedKwh; }
+
+    /** kWh of the load left unserved in the month last struck, summed over its six half-blocks. */
+    public double getUnservedKwh() {
+        double kwh = 0;
+        for (int s = 0; s < struck.unserved.length; s++) kwh += struck.unserved[s] * PowerDispatch.halfHours(s);
+        return kwh;
+    }
+
+    /** How many of the month's six half-blocks left some load unserved. */
+    public int getHalfBlocksShort() {
+        int n = 0;
+        for (double u : struck.unserved) if (u > 0) n++;
+        return n;
+    }
 
     /** What commerce and light industry pay a kW a month (the struck commerce price). */
     public double getPricePerWatt() { return struck.commercePrice; }

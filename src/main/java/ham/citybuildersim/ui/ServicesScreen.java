@@ -2667,13 +2667,27 @@ final class ServicesScreen {
     VBox utilityStatement(String key) {
         UtilitiesHandler uh = ui.game.getServicesManager().getUtilitiesHandler();
         if (key.equals("power")) {
-            return column(statementLine("Price per kW a month", cash(uh.getPricerPerWatt())),
+            // Lines that come and go with the month are a scope each (Kept): the lines after them keep their nodes.
+            double coalBurned = uh.getFuelBurned(Good.THERMAL_COAL);
+            double windTurnedAwayMwh = uh.getCurtailedKwh() / 1000, unservedMwh = uh.getUnservedKwh() / 1000;
+            int halfBlocksShort = uh.getHalfBlocksShort();
+            return column(statementLine("Price per kW a month, shops, offices and light industry", cash(uh.getPricePerWatt())),
+                    statementLine("...Heavy Industry and Mining, at high voltage", cash(uh.getIndustryPricePerWatt())),
+                    statementLine("...paid the works for their surplus", cash(uh.getWorksPricePerWatt())),
+                    statementLine("Energy, a MWh, at the month's clearing prices", cash(uh.getEnergyPricePerMwh())),
+                    uh.isFoundingBook() ? Kept.scope("founding", () -> statementNote("Still at founding: no month has cleared.")) : null,
+                    coalBurned > 0 ? Kept.scope("coal burned", () -> statementLine("Coal burned", String.format("%,.0f t", coalBurned))) : null,
+                    windTurnedAwayMwh > 0 ? Kept.scope("wind turned away", () -> statementLine("Wind and the works' surplus turned away", String.format("%,.0f MWh", windTurnedAwayMwh))) : null,
+                    unservedMwh > 0 ? Kept.scope("load not served", () -> statementLine("Load not served",
+                            String.format("%,.0f MWh in %d of the month's six half-blocks", unservedMwh, halfBlocksShort))) : null,
                     statementLine("Billed draw, the businesses", power(uh.getBilledElectricityDraw())),
                     statementLine("Unbilled draw, the homes and the city's own buildings", power(uh.getUnbilledElectricityDraw())),
                     statementLine("...of which the homes", power(uh.getHomesElectricityDraw())),
                     statementLine("Staff turnout", pct(uh.getAverageUtilityFill())),
-                    statementNote("Households are not billed for power or water, so the homes' draw is real load "
-                            + "and no revenue. One workforce runs power and water both."));
+                    statementNote("The businesses pay the market's price: the energy at each half-block's clearing "
+                            + "price plus the wires — shops and offices both wires, heavy industry and mines the long "
+                            + "ones alone. Households are not billed for power or water, so the homes' draw is real "
+                            + "load and no revenue. One workforce runs power and water both."));
         }
         // The water's; the road's statement went with its row (0.7.29: Infrastructure › Roads has it).
         return column(statementLine("Price per unit", cash(uh.getPricePerWaterUnit())),
@@ -3302,11 +3316,15 @@ final class ServicesScreen {
 
         page.getChildren().add(Kept.scope("plants head", () -> sectionHead("DO THE PLANTS PAY FOR THEMSELVES", null,
                 hint("the city's own plants: what they sell less their wages is the city's"))));
+        // The power plants' costs: the wages, and what they bought (the works' power, the fuel and the upkeep) when they bought any.
+        List<Slice> powerCosts = new ArrayList<>(List.of(new Slice("power wages", elecPay, Palette.MONEY)));
+        if (uh.getPowerBought() != 0) powerCosts.add(new Slice("power bought", uh.getPowerBought(), Palette.MONEY_LIGHT));
+        if (uh.getFuelBill() != 0) powerCosts.add(new Slice("fuel and upkeep", uh.getFuelBill(), Palette.MONEY_DARK));
         page.getChildren().add(Kept.scope("power", () -> moneyBars("power: sales",
                 List.of(new Slice("power sales", elecSales, Palette.PEOPLE)),
-                "power: wages",
-                List.of(new Slice("power wages", elecPay, Palette.MONEY)),
-                bottomLine(tightMoney(toDollars(elecSales - elecPay)), "power's net income",
+                "power: costs",
+                powerCosts,
+                bottomLine(tightMoney(toDollars(uh.getElectricityIncome())), "power's net income",
                         power(uh.getBilledElectricityDraw()) + " billed, " + pct(billedShare(uh.getBilledElectricityDraw(), uh.getConsumption())) + " of the draw",
                         Palette.TEXT_HEAD))));
         page.getChildren().add(Kept.scope("water", () -> moneyBars("water: sales",
@@ -3362,13 +3380,22 @@ final class ServicesScreen {
          * net cost - which is why this page reads the other way up, and why
          * it is the only one of the four whose bottom line can be positive.
          */
+        // What the plants bought, a line each only when there is some (a scope each, Kept): the works' power, the fuel at home and abroad, the upkeep paid abroad.
+        double powerBought = uh.getPowerBought(), fuelHome = uh.getFuelLocal(), fuelAbroad = uh.getFuelImported(), upkeepAbroad = uh.getUpkeepPaid();
+        double fuelBill = uh.getFuelBill();
         return column(statementHead("Electric power"),
                 bookRow("Sales", elecSales, null),
                 bookRow("Wages", -elecPay, null),
-                statementTotal("Net income", tightMoney(toDollars(elecSales - elecPay), false), null),
-                statementNote(String.format("%s billed at %s a kW a month. The other %s is the homes and the "
+                powerBought != 0 ? Kept.scope("power bought", () -> bookRow("Power bought from the works", -powerBought, null)) : null,
+                fuelHome != 0 ? Kept.scope("fuel home", () -> bookRow("Fuel, bought in the city", -fuelHome, null)) : null,
+                fuelAbroad != 0 ? Kept.scope("fuel abroad", () -> bookRow("Fuel, imported", -fuelAbroad, null)) : null,
+                upkeepAbroad != 0 ? Kept.scope("upkeep abroad", () -> bookRow("Plant upkeep, paid abroad", -upkeepAbroad, null)) : null,
+                statementTotal("Net income", tightMoney(toDollars(uh.getElectricityIncome()), false), null),
+                statementNote(String.format("%s billed at the month's market price, %s a kW for shops and offices, "
+                        + "%s for heavy industry. The other %s is the homes and the "
                         + "city's own buildings, which is real load and no revenue.",
-                        power(uh.getBilledElectricityDraw()), cash(uh.getPricerPerWatt()), power(uh.getUnbilledElectricityDraw()))),
+                        power(uh.getBilledElectricityDraw()), cash(uh.getPricePerWatt()), cash(uh.getIndustryPricePerWatt()),
+                        power(uh.getUnbilledElectricityDraw()))),
                 statementHead("Water"),
                 bookRow("Sales", waterSales, null),
                 bookRow("Wages", -waterPay, null),
@@ -3380,6 +3407,9 @@ final class ServicesScreen {
                 statementHead("Both together"),
                 bookRow("Revenue", elecSales + waterSales, null),
                 bookRow("Payroll", -(elecPay + waterPay), null),
+                // ...so the lines still add up to the net when the power plants bought something.
+                powerBought != 0 ? Kept.scope("both power bought", () -> bookRow("Power bought from the works", -powerBought, null)) : null,
+                fuelBill != 0 ? Kept.scope("both fuel bill", () -> bookRow("Fuel and upkeep", -fuelBill, null)) : null,
                 statementTotal("Net income", tightMoney(toDollars(net), false), null),
                 statementLine("Staff turnout", pct(uh.getAverageUtilityFill())),
                 statementNote("One workforce runs both, so they cannot be short-staffed independently."),
