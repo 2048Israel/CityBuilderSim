@@ -1,6 +1,6 @@
 # LabourCheck.java - 1,700 lines · 15 methods · 4 constants · harnesses
 
-`ham/citybuildersim/LabourCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LabourCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > Verifies the labour market: who can hold a job, and what it costs. Not part
 > of the game.

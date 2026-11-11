@@ -1,30 +1,53 @@
-# gate of Merge batch/GV1: the government's wealth on its screens (Jerus, 2026-11-02, as recommended): treasury, fund and vault less the debt in years of revenue, its band (broke to hoarding), the Government overview's line, the three ways back (buy back the paper, cut a tax, raise a transfer) and a notice when the band changes; screens only. Folded in at the queue's triage (Jerus, 2026-11-09: "we really need to empty the queue"): **GV2**: The playtest's player reads the government's wealth (Jerus, 2026-11-02: "only for the auto city, aka the city the playtests do, not the actual player, and that would be all three... not the city dividend tho"): each January, by GV1's band, taxes, pensions and benefits and the fund's withdrawal one step, in place of LongPlaytest's and the ensemble's scripted tax steps (after GV1), 0.9.91
+# gate of Merge batch/WG2: senior care's excess and the out-of-work verdict (his cities at 21%; Jerus, 2026-11-02: "Cut the excess, honest label (Recommended)"): the pulls lift only the homes' draw, arrivals slow past 6% out of work and stop at 12%, the jobless past 6% leave; the young city measured first; the verdict green 3-7%, amber to 12%, red past; ensemble; beside WG1; after GW1, its brake and its pull rule apply to `drawFor()` too (GW0-C's C4), 0.9.92
 # date: 2026-11-11
 # earth-2.bin: named
 # nightly: 2026-11-10 01:25 0.9.80 d9f61df3 4,000 months: OK in 178 s
-# suite: 201 harnesses run in 1154s: 196 passed, 5 failed
-# timing: 18 harnesses run in 894s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
+# suite: 201 harnesses run in 1162s: 194 passed, 7 failed
+# timing: 18 harnesses run in 889s: 15 passed, 3 failed; its red lines were judged side by side with main's, below
 # timing red not the batch's (paired): SaveSlotCheck | exit 1   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): SaveSlotCheck | the median due month, 29.1 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 29.3 ms, batch 30.4 ms (+3.8%), budget 25 ms: within 15% of main's]
+# timing red not the batch's (paired): SaveSlotCheck | the median due month, 32.5 ms, holds the clock at most CLOCK_MS (25 ms) FAIL   [main 30.4 ms (gate.txt, today), batch 32.5 ms (+6.8%), budget 25 ms: main over the budget too, no round]
 # timing red not the batch's (paired): SaveSlotCheck | 1 FAILED   [the harness's own count of the timing reds above]
-# timing red not the batch's (paired): MapCheck | at 5 billion a month's change takes no more than 5 ms of the wall clock        FAIL   [main 2.07 ms, batch 2.11 ms (+2.0%), budget 5 ms: within 15% of main's]
-# timing red not the batch's (paired): MapCheck | 4 FAILED   [the harness's own count of the timing reds above]
-# figure	SaveSlotCheck	the median due month, 29.1 ms, holds the clock at most CLOCK_MS (25 ms)	30.4429	25	ms	FAIL	1	1
+# figure	SaveSlotCheck	the median due month, 32.5 ms, holds the clock at most CLOCK_MS (25 ms)	32.5072	25	ms	FAIL	1	1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): SlopeCheck | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): SlopeCheck | 1 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): HealthCheck | 1 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 66 of the plan before's 369 boxes lie under the yard and the railway, and 84 are not in the plan after (each of the rest stands where it stood) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...and the arrivals after it go on with the yard's ground left as it is: every box stands four months on (369 of them, 11 moved) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 66 boxes left a district in the yard's month because a run laid in it lies across them, 18 are counted as moved FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (510 of them, 45 moved) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | a yard laid again across the buildings that stand moves off it the boxes under it and no others: 72 of the plan before's 589 boxes lie under the yard and the railway, 129 are not in the plan after FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): MapCheck | 6 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | exit 2
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): KeptCheck | 2 FAILED
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | exit 1
+# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): LongPlaytest | (no FAIL line)
+SlopeCheck | exit 1
+SlopeCheck | the run played its months and found nothing: every month passed the playtest's audit and the layout watcher, [a building on the map moved] FAIL
+SlopeCheck | 1 FAILED
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED
 HealthCheck | exit 1
 HealthCheck | ...its old first, whom a fee on senior care turns away FAIL
-HealthCheck | ...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care FAIL
-HealthCheck | 2 FAILED
+HealthCheck | 1 FAILED
 MapCheck | exit 1
-MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 53 of the plan before's 590 boxes lie under the yard and the railway, and 60 are not in the plan after (each of the rest stands where it stood) FAIL
-MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 53 boxes left a district in the yard's month because a run laid in it lies across them, 7 are counted as moved FAIL
-MapCheck | the highways reaching a street: a reserve that appears in a district already built moves off it the boxes it lies across or beside the highways laid with it and no others: 86 of the plan before's 590 boxes lie across, 87 are not in the plan after FAIL
-MapCheck | 3 FAILED
-KeptCheck | exit 1
-KeptCheck | the BuybackLadder on Close it now: no month draws it again with nothing changed in it (2) FAIL
-KeptCheck | 1 FAILED
+MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
+MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others: 66 of the plan before's 369 boxes lie under the yard and the railway, and 84 are not in the plan after (each of the rest stands where it stood) FAIL
+MapCheck | ...and the arrivals after it go on with the yard's ground left as it is: every box stands four months on (369 of them, 11 moved) FAIL
+MapCheck | ...and the layout watch (LongPlaytest, as the map draws the district) counts them apart and flags none: 66 boxes left a district in the yard's month because a run laid in it lies across them, 18 are counted as moved FAIL
+MapCheck | a yard that goes moves none of the buildings: every box of the plan before stands in the plan after (510 of them, 45 moved) FAIL
+MapCheck | a yard laid again across the buildings that stand moves off it the boxes under it and no others: 72 of the plan before's 589 boxes lie under the yard and the railway, 129 are not in the plan after FAIL
+MapCheck | 6 FAILED
+KeptCheck | exit 2
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+KeptCheck | 2 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | 1 FAILED
+LongPlaytest | exit 1
+LongPlaytest | (no FAIL line)

@@ -197,6 +197,24 @@ public class FundCheck {
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.simulateMonths(72);
+            /*
+             * WG2, {next}, 2026-11-10: SEVENTY-THREE MONTHS, NOT SEVENTY-TWO. Section 1 holds that the city's rescue book is every share it
+             * took, counted at the resolution (TreasuryFund.Resolution.shares), and section 9b that the rule's month does not move it;
+             * both count shares across a month in which Exchange.splitWhatNeedsIt may split or consolidate the bank's, which counts
+             * them in another unit. On main the bank stands at its founding price (32,000 shares, ratio to the founding price 0.95
+             * at month 73; 49 people) and no split falls in those months. On WG2's path (32 people at month 73, 22 at month 61) the
+             * bank's fair value, its trailing income capitalised (the bank holds no spare, Exchange.takeMonth), is a hundredth of
+             * the founding price by month 67 (it flickers back to its last price once, in month 69), and under it in month 72, where the shares are
+             * consolidated a thousand to one (32 shares, price 0.0789 against the founding 0.0259), and the next month's valuation is
+             * back at its book and splits them a hundred to one (3,200, price 0.2588), where they stand with no split to month 127
+             * (a scan of this town played on). The save at month 73 was taken in the middle of that, and the resolution
+             * month's split made the rescue book 3,200 against the 32 shares it took (section 1: 3,200.000000 != 32.000000) and
+             * moved the book `rescue0` is read from before the month (9b). The town is played the one month more, and the scenarios
+             * start on the register as the split left it: month 74. A granule of the town, as ScaleCheck's month is: the months after
+             * it fail other claims, not these (saved at month 75 the placing claim of 8 fails; 76 to 80, the
+             * desk's bid meets none of the fund's ask in 9b). The claims are as they were; the premise is asserted where it is read.
+             */
+            city.simulateMonths(1);
             city.saveGame(1);
         });
         Bank b0 = city.getBank();
@@ -245,6 +263,8 @@ public class FundCheck {
         g.setCashForTest(.25 * (hole + bank.resolutionExitEquity()));
         check("fixture: the bank has lost more than it owns", bank.isInsolvent());
         boolean audited = play(g);
+        check("fixture: the bank's shares were neither split nor consolidated in the resolution month, so the register counts them in one unit",
+                g.getExchange().getSplit(Equity.BANK) == 0);
         TreasuryFund.Resolution r = g.getLastResolution();
         check("the month resolved it", r != null && r.month() == g.getMonth());
         if (r == null) return;
@@ -1097,6 +1117,7 @@ public class FundCheck {
         double a0 = over.getEquity().getCityMarketShares(two[0]), b0 = over.getEquity().getCityMarketShares(two[1]);
         double rescue0 = over.getEquity().getCityRescueShares(Equity.BANK);
         play(over);
+        boolean bankSplit = over.getExchange().getSplit(Equity.BANK) != 0;
         TreasuryFund o = over.getFund();
         double fa = soldOrAsked(over, two[0], a0) / a0, fb = soldOrAsked(over, two[1], b0) / b0;
         out.printf("   at %s a month: due $%,.1fk, paid $%,.1fk, to raise $%,.1fk; %.4f of each holding sold or asked (%.4f, %.4f)%n",
@@ -1134,12 +1155,14 @@ public class FundCheck {
                 && ox.bookOf(two[1]).resting(Exchange.FUND, OrderBook.Side.SELL) == 0 && o.getCash() > 0);
         double owed = o.getToRaise(), cashThen = o.getCash(), shortThen = o.getTransfersShort(), paidThen = o.getTransfersPaid();
         play(over);
+        bankSplit |= over.getExchange().getSplit(Equity.BANK) != 0;
         double late = Math.min(owed, cashThen);
         close("...and paid at the next month's top", o.getTransferPaidLate(), late, 1e-9);
         close("...to the treasury with the month's own", over.getEconomyManager().getNationalAccounts().getFundTransfer(),
                 late + o.getTransferPaid(), 1e-9);
         close("...off the short it was counted in", o.getTransfersShort(), shortThen - late + o.getTransferDue() - o.getTransferPaid(), 1e-6);
         close("...and into the paid", o.getTransfersPaid(), paidThen + late + o.getTransferPaid(), 1e-6);
+        check("fixture: the bank's shares were neither split nor consolidated in either month, so the rescue book is counted in one unit", !bankSplit);
         check("the rescue book is never sold to pay it", over.getEquity().getCityRescueShares(Equity.BANK) == rescue0
                 && ox.bookOf(Equity.BANK).resting(Exchange.FUND, OrderBook.Side.SELL) == 0);
 

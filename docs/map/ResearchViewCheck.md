@@ -1,6 +1,6 @@
-# ResearchViewCheck.java - 1,713 lines · 48 methods · 4 constants · harnesses
+# ResearchViewCheck.java - 1,721 lines · 48 methods · 4 constants · harnesses
 
-`ham/citybuildersim/ResearchViewCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchViewCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()).
 > 
@@ -82,19 +82,19 @@
 | 606 | 7. the recipes in use |
 | 671 | 8. where a building came from |
 | 744 | 9. the series |
-| 943 | 10. researchTown() |
-| 989 | R3b: Policy > Research's Overview and Funding pages (sections 11 to 15) |
-| 1034 | 11. the Overview |
-| 1123 | 12. the Funding card |
-| 1237 | 13. the preview through the game |
-| 1307 | 14. R5's gate review |
-| 1366 | 15. a city founded the default way |
-| 1398 | R3b, slice B: the reads the Overview and Funding screens draw their figures, dials, rows and school lines from (secti... |
-| 1402 | 16. the Overview's figures and the dials' ranges |
-| 1505 | 17. the card's rows |
-| 1586 | 18. the schools' lines, and THE BUDGET |
-| 1648 | 20. a default city's faculty, through a save |
-| 1689 | 19. a lab standing |
+| 951 | 10. researchTown() |
+| 997 | R3b: Policy > Research's Overview and Funding pages (sections 11 to 15) |
+| 1042 | 11. the Overview |
+| 1131 | 12. the Funding card |
+| 1245 | 13. the preview through the game |
+| 1315 | 14. R5's gate review |
+| 1374 | 15. a city founded the default way |
+| 1406 | R3b, slice B: the reads the Overview and Funding screens draw their figures, dials, rows and school lines from (secti... |
+| 1410 | 16. the Overview's figures and the dials' ranges |
+| 1513 | 17. the card's rows |
+| 1594 | 18. the schools' lines, and THE BUDGET |
+| 1656 | 20. a default city's faculty, through a save |
+| 1697 | 19. a lab standing |
 
 ## Constants
 
@@ -117,7 +117,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 82 | 1632 | **type** `public class ResearchViewCheck` | What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()). |
+| 82 | 1640 | **type** `public class ResearchViewCheck` | What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()). |
 | 87 | 4 | `static void check(String label, boolean ok)` |  |
 | 93 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 | 98 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
@@ -193,7 +193,7 @@
 |---:|---:|---|---|
 | 673 | 70 | `static void sectionEight(Game town)` |  |
 
-### 9. the series (lines 744-942)
+### 9. the series (lines 744-950)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -201,86 +201,86 @@
 | 754 | 1 | `static double round2(double v)` |  |
 | 756 | 1 | `static double round4(double v)` |  |
 | 759 | 12 | `static double shareFromStacks(Game g)` | The share fitted as the harness works it out from the stacks (not from ResearchView's rows), rounded as the history rounds it; NaN with no piece known on a stack that stands. |
-| 772 | 94 | `static void sectionNine() throws Exception` |  |
-| 868 | 5 | `static boolean levelsOf(Game g)` | Whether the three researchers' kinds are levels, with notes. |
-| 875 | 12 | `static boolean sameSeries(HistorySave a, HistorySave b)` | Whether two histories hold the same figures in the research's series. |
-| 889 | 53 | `static void lateSeries() throws Exception` | A 1900 city of roads and houses only: no equipment stands until a bakery is built, then it does, then it is pulled down. |
+| 772 | 102 | `static void sectionNine() throws Exception` |  |
+| 876 | 5 | `static boolean levelsOf(Game g)` | Whether the three researchers' kinds are levels, with notes. |
+| 883 | 12 | `static boolean sameSeries(HistorySave a, HistorySave b)` | Whether two histories hold the same figures in the research's series. |
+| 897 | 53 | `static void lateSeries() throws Exception` | A 1900 city of roads and houses only: no equipment stands until a bakery is built, then it does, then it is pulled down. |
 
-### 10. researchTown() (lines 943-988)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 945 | 43 | `static void sectionTen(Game town, long builtMillis)` |  |
-
-### R3b: Policy > Research's Overview and Funding pages (sections 11 to 15) (lines 989-1033)
+### 10. researchTown() (lines 951-996)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 998 | 19 | `static Game fundedTown() throws Exception` | researchTown() with schools and grants: two Universities, an Institute of Technology and a Medical School stand, the hands are handed, and grants in engineering (30.5 posts' worth), medicine (12.5) and business (4.5) ... |
-| 1019 | 5 | `static List<String> touchedBy(List<Entry> open)` | The distinct things a list of open problems touch, in order, as the harness counts them (a set of the entries' own texts). |
-| 1026 | 7 | `static boolean sameResult(ResearchPreview.Result a, ResearchPreview.Result b)` | Whether two previews are exactly the same answer. |
+| 953 | 43 | `static void sectionTen(Game town, long builtMillis)` |  |
 
-### 11. the Overview (lines 1034-1122)
+### R3b: Policy > Research's Overview and Funding pages (sections 11 to 15) (lines 997-1041)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1036 | 86 | `static void sectionEleven(Game g)` |  |
+| 1006 | 19 | `static Game fundedTown() throws Exception` | researchTown() with schools and grants: two Universities, an Institute of Technology and a Medical School stand, the hands are handed, and grants in engineering (30.5 posts' worth), medicine (12.5) and business (4.5) ... |
+| 1027 | 5 | `static List<String> touchedBy(List<Entry> open)` | The distinct things a list of open problems touch, in order, as the harness counts them (a set of the entries' own texts). |
+| 1034 | 7 | `static boolean sameResult(ResearchPreview.Result a, ResearchPreview.Result b)` | Whether two previews are exactly the same answer. |
 
-### 12. the Funding card (lines 1123-1236)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1125 | 111 | `static void sectionTwelve(Game g)` |  |
-
-### 13. the preview through the game (lines 1237-1306)
+### 11. the Overview (lines 1042-1130)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1240 | 11 | `static ResearchPreview.Result modelsPreview(Game g, Map<Field, Double> researchers, Map<Field, Double> prize)` | The preview the way the model is asked it for the city as it stands, with some dials replaced: the maps the harness builds from the model's own reads. |
-| 1252 | 54 | `static void sectionThirteen(Game g)` |  |
+| 1044 | 86 | `static void sectionEleven(Game g)` |  |
 
-### 14. R5's gate review (lines 1307-1365)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1309 | 56 | `static void sectionFourteen(Game g)` |  |
-
-### 15. a city founded the default way (lines 1366-1397)
+### 12. the Funding card (lines 1131-1244)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1368 | 29 | `static void sectionFifteen() throws Exception` |  |
+| 1133 | 111 | `static void sectionTwelve(Game g)` |  |
 
-### R3b, slice B: the reads the Overview and Funding screens draw their figures, dials, rows and school lines from (secti... (lines 1398-1401)
-
-### 16. the Overview's figures and the dials' ranges (lines 1402-1504)
+### 13. the preview through the game (lines 1245-1314)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1404 | 100 | `static void sectionSixteen(Game g)` |  |
+| 1248 | 11 | `static ResearchPreview.Result modelsPreview(Game g, Map<Field, Double> researchers, Map<Field, Double> prize)` | The preview the way the model is asked it for the city as it stands, with some dials replaced: the maps the harness builds from the model's own reads. |
+| 1260 | 54 | `static void sectionThirteen(Game g)` |  |
 
-### 17. the card's rows (lines 1505-1585)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1507 | 78 | `static void sectionSeventeen(Game g)` |  |
-
-### 18. the schools' lines, and THE BUDGET (lines 1586-1647)
+### 14. R5's gate review (lines 1315-1373)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1588 | 59 | `static void sectionEighteen(Game g)` |  |
+| 1317 | 56 | `static void sectionFourteen(Game g)` |  |
 
-### 20. a default city's faculty, through a save (lines 1648-1688)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1651 | 8 | `static String monthCounts(Research r)` | The month's five counts of a research, field by field, in words a harness can compare. |
-| 1660 | 28 | `static void sectionTwenty() throws Exception` |  |
-
-### 19. a lab standing (lines 1689-1713)
+### 15. a city founded the default way (lines 1374-1405)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1691 | 22 | `static void sectionNineteen(Game g)` |  |
+| 1376 | 29 | `static void sectionFifteen() throws Exception` |  |
+
+### R3b, slice B: the reads the Overview and Funding screens draw their figures, dials, rows and school lines from (secti... (lines 1406-1409)
+
+### 16. the Overview's figures and the dials' ranges (lines 1410-1512)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1412 | 100 | `static void sectionSixteen(Game g)` |  |
+
+### 17. the card's rows (lines 1513-1593)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1515 | 78 | `static void sectionSeventeen(Game g)` |  |
+
+### 18. the schools' lines, and THE BUDGET (lines 1594-1655)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1596 | 59 | `static void sectionEighteen(Game g)` |  |
+
+### 20. a default city's faculty, through a save (lines 1656-1696)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1659 | 8 | `static String monthCounts(Research r)` | The month's five counts of a research, field by field, in words a harness can compare. |
+| 1668 | 28 | `static void sectionTwenty() throws Exception` |  |
+
+### 19. a lab standing (lines 1697-1721)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1699 | 22 | `static void sectionNineteen(Game g)` |  |
 

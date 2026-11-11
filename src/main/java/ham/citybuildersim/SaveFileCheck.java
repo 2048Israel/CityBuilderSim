@@ -1420,9 +1420,18 @@ public class SaveFileCheck {
          * out of resolution again from month 224 to 236 (48.8k of equity, 74.3k book); a dozen such months running is the
          * "profitable and paying" the note above asks of it, and the squeeze then took it eight more to fail (month 247).
          */
+        /*
+         * ...AND A FAILED BANK THE PLAYER HAS RESOLVED (WG2, {next}, 2026-11-10): senior care no longer lifts the jobs' draw, and this
+         * city's bank, standing at month 150 in the GW1 note above, now failed twice before month 51 (1,966 people at month 21) and was
+         * frozen at month 151 (equity -215), the treasury on its BUTTON setting that waits for the player: a frozen bank earns its way
+         * out only while its equity climbs, and this one's fell (-176 at month 162, -892 at month 382), so the 240 months below never
+         * saw it open. The city resolves it as the Bank tab's button does, when it stands failed (resolveBank(), the model's own
+         * call, the shares to the city), and the loop waits for the year of paying as before.
+         */
         final int MONTHS_PAYING_BEFORE_THE_SQUEEZE = 12;
         int payingFor = 0;
         for (int extra = 0; extra < 240 && payingFor < MONTHS_PAYING_BEFORE_THE_SQUEEZE; extra++) {
+            if (full.canResolveBank()) full.resolveBank();
             full.simulateMonths(1);
             payingFor = full.getBank().depositRate() > 0 && !full.getBank().isInResolution() ? payingFor + 1 : 0;
         }

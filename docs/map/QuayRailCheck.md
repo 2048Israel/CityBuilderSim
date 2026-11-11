@@ -1,6 +1,6 @@
 # QuayRailCheck.java - 657 lines · 39 methods · 6 constants · harnesses
 
-`ham/citybuildersim/QuayRailCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/QuayRailCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The quay lines of the harbour, the spur the railway lays to each, and the railed terminals QuayRail reads from them (batch HB2, Jerus
 > 2026-11-09: "tracks on the quay, with the railway leaning toward a port so a line reaches those tracks").

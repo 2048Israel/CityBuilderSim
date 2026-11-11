@@ -2341,12 +2341,19 @@ public class UserInterface extends Application {
         out.add(new Headline("OUT OF WORK", Palette.PEOPLE,
                 String.format("%.1f%%", unsigned0(jobless * 100, 1)), workTone, workLine, workTone,
                 sparkSeries(h, "unemployment"),
-                String.format("%s people out of work%s.%nAmber under %.0f%% - nobody spare, so new jobs"
-                        + " go unfilled - and over %.0f%%; red over %.0f%%.%n%s",
+                String.format("%s people out of work%s.%nGreen from %.0f%% to %.0f%%; amber under %.0f%% - nobody"
+                        + " spare, so new jobs go unfilled - and over %.0f%%; red over %.0f%%.%nPast %.0f%% out of"
+                        + " work fewer people move here for work, past %.0f%% nobody does, and the jobless over"
+                        + " %.0f%% drift away, once the city is %d years old.%nBig cities in rich countries: Tokyo 2.4%%, New York 5.0%%,"
+                        + " London 5.5%%, Halifax 5.5%%, Toronto 8.0%%, Madrid 9.0%%. 20%% is a city in crisis:"
+                        + " Madrid 19.8%% and Spain 26.1%% in 2013.%n%s",
                         people(pm.getUnemployed()),
                         unfilled > 0 ? ", and " + formatter.format(unfilled) + " posts going unfilled" : "",
                         PeopleScreen.OUT_OF_WORK_SHORT * 100, PeopleScreen.OUT_OF_WORK_HIGH * 100,
-                        PeopleScreen.OUT_OF_WORK_FAR * 100, click),
+                        PeopleScreen.OUT_OF_WORK_SHORT * 100, PeopleScreen.OUT_OF_WORK_HIGH * 100,
+                        PeopleScreen.OUT_OF_WORK_FAR * 100,
+                        Migration.HEALTHY_OUT_OF_WORK * 100, Migration.ARRIVALS_STOP_OUT_OF_WORK * 100,
+                        Migration.HEALTHY_OUT_OF_WORK * 100, Migration.BRAKE_FROM_MONTH / 12, click),
                 null, new String[] {"unemployment"}));
 
         /* TREASURY is its own block by the clock since 0.7.24: see moneyBlock(). */

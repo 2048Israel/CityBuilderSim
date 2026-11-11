@@ -1,6 +1,6 @@
 # ZoningScreen.java - 1,135 lines · 71 methods · 24 constants · interface
 
-`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's
 > ground and its zones on one page, a sector's zone on its own page of dial

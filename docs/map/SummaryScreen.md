@@ -1,6 +1,6 @@
 # SummaryScreen.java - 1,547 lines · 33 methods · 8 constants · interface
 
-`ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The left panel's content: the summary and the dashboard - the vitals, the
 > alert block, the six lines that are always worth a glance or the thirteen
@@ -20,7 +20,7 @@
 > model, CityNeeds - the list, its lines and SEATS AGAINST WHO WOULD COME
 > moved there whole - so the Build tab and the chip read the same verdicts.
 
-**Uses:** [CityNeeds](CityNeeds.md) (50), [Kept](Kept.md) (42), [Palette](Palette.md) (30), [CareType](CareType.md) (14), [BuildScreen](BuildScreen.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [BuildAdvice](BuildAdvice.md) (6), [Health](Health.md) (5), [LandManager](LandManager.md) (5), [Crime](Crime.md) (5), [PolicyScreen](PolicyScreen.md) (4), [UserInterface](UserInterface.md) (3), [Money](Money.md) (3), [PopulationManager](PopulationManager.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [Healthcare](Healthcare.md) (3), [WageBand](WageBand.md) (3), [EducationType](EducationType.md) (3), [InfrastructureManager](InfrastructureManager.md) (2), [PeopleScreen](PeopleScreen.md) (2), [EconomyManager](EconomyManager.md) (2), [BuildingManager](BuildingManager.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [LabourMarket](LabourMarket.md) (2), [Currency](Currency.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Pieces](Pieces.md) (1), [FinancesScreen](FinancesScreen.md) (1), [TradeScreen](TradeScreen.md) (1), [Bank](Bank.md) (1)... and 7 more
+**Uses:** [CityNeeds](CityNeeds.md) (50), [Kept](Kept.md) (42), [Palette](Palette.md) (30), [CareType](CareType.md) (14), [BuildScreen](BuildScreen.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [BuildAdvice](BuildAdvice.md) (6), [Health](Health.md) (5), [LandManager](LandManager.md) (5), [Crime](Crime.md) (5), [PolicyScreen](PolicyScreen.md) (4), [UserInterface](UserInterface.md) (3), [Money](Money.md) (3), [PopulationManager](PopulationManager.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [PeopleScreen](PeopleScreen.md) (3), [Healthcare](Healthcare.md) (3), [WageBand](WageBand.md) (3), [EducationType](EducationType.md) (3), [InfrastructureManager](InfrastructureManager.md) (2), [EconomyManager](EconomyManager.md) (2), [BuildingManager](BuildingManager.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [LabourMarket](LabourMarket.md) (2), [Currency](Currency.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Pieces](Pieces.md) (1), [FinancesScreen](FinancesScreen.md) (1), [TradeScreen](TradeScreen.md) (1), [Bank](Bank.md) (1)... and 7 more
 
 **Used by (10):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [ServicesScreen](ServicesScreen.md), [UserInterface](UserInterface.md)
 

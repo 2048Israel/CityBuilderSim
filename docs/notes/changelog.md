@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.92 — WG2, senior care's excess and the out-of-work verdict — 2026-11-11, ready, see docs/queue/WG2-notes.md
+Migration aims at a healthy slack. The pulls (senior care, rent, crime) lift only the homes' draw, so senior care no
+longer brings workers for jobs the city lacks (`Migration.jobsPull()`, `homesPull()`). Once the city is twenty years
+old (`BRAKE_FROM_MONTH` 240, on the months migration has counted, saved), arrivals slow past 6% out of work and stop
+at 12%, and the jobless past 6% drift away. The staffing gate's draw reads the same pulls and brake. The People
+screen's verdict is green 3-7%, amber to 12% and red past it; its draw card shows each half with its own pulls and
+says when the brake bites. On 0.9.91 the auto city is out of work 6.7% in m240-600 and 11.6% after (GV1: 10.0%, 16.1%),
+at 84% of GV1's people. The ensemble scores 22 of 26 (`docs/ensemble/WG2.md`): A2 and A3 are main's; ZERO_HOT's T2
+(73.4% against 75%) and HIGH's R3 (5 seeds over their twins, the slack leaving) are accepted, notes §5. New:
+PopulationCheck's and StaffingDrawCheck's WG2 sections. Fifteen harnesses' fixtures cause their conditions again; no
+claim moved. Red by name: HealthCheck (HX1), MapCheck and SlopeCheck (DM2, DM3), KeptCheck (KS1), LongPlaytest (CL6).
+
 ### 0.9.91 — GV1, the government's wealth and the test player's January — 2026-11-10, ready, see docs/queue/GV1-notes.md
 Government > Overview shows net financial wealth in years of recorded revenue, its five bands,
 and the existing buyback, tax and transfer controls with monthly previews. Band changes are saved

@@ -1,6 +1,6 @@
 # DebtExchangeCheck.java - 703 lines · 23 methods · 6 constants · harnesses
 
-`ham/citybuildersim/DebtExchangeCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DebtExchangeCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The exchange gain (loss) on the city's foreign-currency debt (CD7, spec-city-debt.md section 5): each dollar
 > piece carried in US$ and read in D$ at the rate it was last valued at, so a month in which the D$ moves moves

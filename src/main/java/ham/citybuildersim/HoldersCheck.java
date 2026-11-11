@@ -947,6 +947,18 @@ public class HoldersCheck {
 
         /* ---- the coupon ---- */
         out.println("   -- the coupon reaches the tills, and the principal and a buyback do too");
+        /*
+         * WG2, {next}, 2026-11-10: NO HOLDER SELLS TO PAY ITS WAY IN THE COUPON MONTH. The coupon is paid on the paper each sector holds when it
+         * is paid, and "expected" below is struck on what they hold going in. A sector that is short of cash in the month recalls: it
+         * sells its paper to the bank's desk to pay its way (OutwardInvestment.recall), and its share is gone before the coupon. On
+         * main the allotment's slivers (Luxury Retail 0.067 and Restaurants 0.012 of 96.49 face, tills 39 and 4) were held through the
+         * month and the coupon came to 0.30153928 as expected. On WG2's path Manufacturing held a sliver of 0.00298560 of 29.53264951
+         * face on a till of 11.3 and sold all of it in the month: the businesses' paper 29.52966391 when the coupon was paid, 0.09228020
+         * against 0.09228953 expected. The holders that are not the three given idle money are given a till like theirs between
+         * the presses, as the three were before the settle, so none has to sell, and what they hold is asserted after the month.
+         */
+        for (String k : keys) if (!idle.contains(k) && outward.paperOf(k) > 0) econ.setSectorCash(k, Math.max(econ.getSectorCash(k), till));
+        final double heldGoingIn = outward.totalPaper();
         double expected = 0;
         for (Debt d : ledger.getDebt()) {
             double owed = d.getOustandingPrincipal();
@@ -954,6 +966,7 @@ public class HoldersCheck {
         }
         assertTrue("fixture: the businesses hold paper that pays a coupon", expected > 0);
         MoneyAudit.Result couponMonth = play(city);
+        near("fixture: the businesses held all of their paper through the month, none sold to pay its way", outward.totalPaper(), heldGoingIn);
         near("the businesses were paid their share of the month's coupon", city.getCouponsToFirms(), expected);
         assertTrue("...and the audit closes: the treasury paid the tills", Math.abs(couponMonth.residual)
                 <= MoneyAudit.tolerance(couponMonth.moved()));
@@ -1566,6 +1579,18 @@ public class HoldersCheck {
 
         /* ---- it leaves with its money ---- */
         out.println("   -- the money leaves and the paper goes with it, to the bank's desk");
+        /*
+         * WG2, {next}, 2026-11-10: THE PAPER THAT LEAVES STANDS AT OR UNDER FACE, THE RULE'S TARGET A POINT UP. The claim below is that the
+         * desk pays a market price for the paper that leaves, at or under face (the arithmetic allows two hundredths over), which presumes
+         * a market where the paper stands at or under its face, the curve at or over the coupon the line was struck at. On main at month 90
+         * (inflation +0.86%) the line's yield is 3.90% and its value 1.017 of face (the desk paid 1.019, inside the two hundredths); on
+         * WG2's path the city's prices have fallen 3.19% over the year and the market looks for the rule to ease, so the yield is 3.58%,
+         * the value 1.051 of face and the desk paid 1.067, over them. The dial itself prices only the next DRIFT_MONTHS (6) of a
+         * nineteen-year line, so what moves its yield is the rule: the inflation target a point up (3.00% for the 2.00% the city plays
+         * at; the player's dial on the monetary page) puts the rule's intercept up with it and the expected inflation to 2.56%, and the
+         * line at 0.956 of face. The claims are as they were; the fixture below asserts the value.
+         */
+        ledger.setInflationTarget(ledger.getInflationTarget() + .01);
         // Cause a departure: the stock well past what the spread would keep, so it leaves at DEPARTURE_SPEED of the excess.
         play(city);
         double[] arr = hot.toSaveArray();
@@ -1574,6 +1599,9 @@ public class HoldersCheck {
         double stockBefore = hot.getStock(), paperBeforeLeaving = hot.getPaper();
         assertTrue("fixture: the world holds paper going into the month", paperBeforeLeaving > 0);
         double soldBefore = hot.getLifetimePaperSold(), bookBefore = bank.getCityBook(), principalNow = city.getPrincipalToWorld();
+        java.util.List<Debt> departing = new java.util.ArrayList<>();
+        java.util.List<Double> departingWorld = new java.util.ArrayList<>();
+        for (Debt d : ledger.getDebt()) if (d.worldPrincipal() > 0) { departing.add(d); departingWorld.add(d.worldPrincipal()); }
         MoneyAudit.Result leavingMonth = play(city);
         double goneFace = paperBeforeLeaving - city.getPrincipalToWorld() - hot.getPaper();
         assertTrue("fixture: the stock was over its target, so money left, and nobody panicked", hot.getDeparted() > 0 && !hot.isStopped());
@@ -1583,6 +1611,16 @@ public class HoldersCheck {
                 paperBeforeLeaving);
         assertTrue("part of the paper left with the money", goneFace > 0);
         close("...the departure over the world's whole position, of the face", goneFace, wantFace, 1e-3 * Math.max(1, wantFace));
+        double leftWorth = 0, leftFace = 0;
+        for (int i = 0; i < departing.size(); i++) {
+            Debt d = departing.get(i);
+            leftWorth += ledger.marketValue(d) / d.getOustandingPrincipal() * departingWorld.get(i);
+            leftFace += departingWorld.get(i);
+        }
+        out.printf("   the paper that left is worth %.4f of its face on the curve; the desk paid %.4f%n", leftWorth / leftFace,
+                city.getPaperBoughtFromWorld() / goneFace);
+        assertTrue("fixture: the paper that left stands at or under its face on the city's curve, by the model's own valuation of it",
+                leftFace > 0 && leftWorth <= leftFace);
         assertTrue("...sold to the bank's desk at a market price, below or at face",
                 city.getPaperBoughtFromWorld() > 0 && city.getPaperBoughtFromWorld() <= goneFace * 1.02);
         near("...which is what the world was paid, remembered", hot.getLifetimePaperSold() - soldBefore, city.getPaperBoughtFromWorld());
@@ -1743,7 +1781,17 @@ public class HoldersCheck {
             ledger.setPolicyRate(ledger.getPolicyRate() + firstSaleRise);
             city.strikeTheCurve();
         }
-        final double ask1 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .2);
+        /*
+         * WG2, {next}, 2026-11-10: THE FIRST SALE A SMALLER PART OF WHAT THE HOUSEHOLDS CAN PAY, .15 OF IT AND NOT .2, so the second is more of the line.
+         * Section 12's second sale (the rates up four points) moves the line's discount per unit of face by its tranche's discount over
+         * the line's own, times its share of the line, and the fixture asks for over .01. The second tranche is sold at ~.0296 a unit of face
+         * on both paths and is as large as the first (ask2 .2 of the spare, ask1 the same); the line's own before it is the first sale's
+         * discount after a settle's accretion: main .0079 (face 367.5, the 20-year yield 4.021% over a 4% coupon), WG2 .0090 (face 214.8,
+         * the yield 3.9895% under it, so the coupon rounds down an eighth to 3.875%). So the move was .0108 on main and .0097 on WG2,
+         * .0003 short. At .15 the first sale is a smaller share of the line and the move is .0112 (.0091 to .0203); the claims of 12 to 15
+         * are as written, and at .1 the fixture of 13c ("the bank's book covers the face it sells back") fails.
+         */
+        final double ask1 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .15);
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
         quietly(() -> city.handleLongBondLogic(ask1, 20, 100 * PriceLevel.FACTOR));
         Debt line = newPiece(ledger, had);

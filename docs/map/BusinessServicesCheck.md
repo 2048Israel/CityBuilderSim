@@ -1,6 +1,6 @@
 # BusinessServicesCheck.java - 398 lines · 5 methods · 3 constants · harnesses
 
-`ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessServicesCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The sector whose customer is not in the city.
 > 

@@ -1,6 +1,6 @@
-# AuctionCheck.java - 1,675 lines · 42 methods · 4 constants · harnesses
+# AuctionCheck.java - 1,686 lines · 42 methods · 4 constants · harnesses
 
-`ham/citybuildersim/AuctionCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AuctionCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The city's paper sold at auction: one clearing yield, and what it costs.
 > 
@@ -114,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 100 | 1576 | **type** `public class AuctionCheck` | The city's paper sold at auction: one clearing yield, and what it costs. |
+| 100 | 1587 | **type** `public class AuctionCheck` | The city's paper sold at auction: one clearing yield, and what it costs. |
 | 106 | 5 | `static void assertTrue(String label, boolean ok)` |  |
 | 113 | 6 | `static void close(String label, double actual, double expected, double tol)` | Equal within tol, or within tol of the expected figure's size, whichever is larger. |
 | 121 | 6 | `static void near(String label, double actual, double expected, double abs)` | Equal within an absolute tolerance, for prices per 100. |
@@ -219,7 +219,7 @@
 | 1188 | 12 | `static Scene scene(Game g, double cash)` | The rollover's one issue as the city stands with `cash` in the treasury and the deposit rate at 3% (so the households' appetite has a slope), with the bank's room ample, and the room that leaves the default cap short ... |
 | 1201 | 139 | `static void section9(Path root) throws Exception` |  |
 
-### 10. automatic building: its own cap, and the ask a short sale keeps open (lines 1341-1675)
+### 10. automatic building: its own cap, and the ask a short sale keeps open (lines 1341-1686)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -228,5 +228,5 @@
 | 1377 | 4 | `static void useUpTheRoom(Game g)` | The room used up and the deposit rate tuneDeposit() found, so that at a cap of fair the buyers bid a real share of an issue and the bank bids D$100k of face: a bond for an order sells short, over the smallest deal wor... |
 | 1387 | 6 | `static String month(Game g, boolean ample)` | One month of the fixture's, run and printed: the room used up as above (unless `ample`), and the treasury's cash set to the reserve plus what the asks hold - the month's other bills are met from elsewhere, so what an ... |
 | 1395 | 5 | `static double placedIn(AutoBuilder ab, int month)` | What the builder's orders placed in a month cost, ground with them: the cash they took out of the treasury. |
-| 1401 | 274 | `static void section10(Path root) throws Exception` |  |
+| 1401 | 285 | `static void section10(Path root) throws Exception` |  |
 

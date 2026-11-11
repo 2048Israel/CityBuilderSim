@@ -1186,7 +1186,7 @@ final class ServicesScreen {
             }
             case SENIOR: {
                 buys = String.format("%+.1f%%", (Migration.seniorCarePull(cover) - 1) * 100);
-                buysWords = " more newcomers";
+                buysWords = " on the homes' draw";
                 range = String.format("%+.0f%% → %+.0f%% if everyone",
                         (Migration.seniorCarePull(0) - 1) * 100, (Migration.seniorCarePull(1) - 1) * 100);
                 icon = Icons.CANE;
@@ -1529,10 +1529,11 @@ final class ServicesScreen {
                         1 + Sickness.EXTRA_SICKNESS, 1, false,
                         "Seniors and elders get sick twice as often as everybody else with no senior care, and no more "
                         + "often with enough of it."));
-                HBox pull = effectScale("Draw on newcomers", Migration.seniorCarePull(c), Migration.seniorCarePull(0),
+                HBox pull = effectScale("Lift on the homes' draw", Migration.seniorCarePull(c), Migration.seniorCarePull(0),
                         Migration.seniorCarePull(1), false, v -> String.format("%+.1f%%", (v - 1) * 100), Palette.PEOPLE, 220,
                         infoLine(String.format("%+.1f%% now", (Migration.seniorCarePull(c) - 1) * 100),
-                                "Somewhere to grow old is a reason to move here. It is the only care type that pulls "
+                                "Somewhere to grow old is a reason to settle here. It lifts the homes' draw - a quarter "
+                                + "of what brings people - and not the jobs'; it is the only care type that pulls "
                                 + "people rather than just keeping them alive.", false, Palette.SIZE_BODY, Palette.TEXT_HEAD, 250), 250);
                 scales.getChildren().add(pull);
             }

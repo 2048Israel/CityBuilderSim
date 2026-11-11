@@ -1,6 +1,6 @@
 # BasketYearCheck.java - 775 lines · 36 methods · 6 constants · harnesses
 
-`ham/citybuildersim/BasketYearCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BasketYearCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The household's basket by year (R0e slice 1): the year's basket in a city founded the 1900 way, today's in every other. Not part of the game.
 > 

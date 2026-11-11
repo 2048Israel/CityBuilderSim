@@ -1,6 +1,6 @@
 # QuayCraneCheck.java - 408 lines · 17 methods · 1 constants · harnesses
 
-`ham/citybuildersim/QuayCraneCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/QuayCraneCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The quay crane (HB2, 2026-11-09; QuayCrane, BoatSchedule.atQuay()): a boat at its terminal's quay is worked by a light line from over
 > the ship to the apron and a box that slides along it, as Jerus picked look 3a from the renders. Pure geometry, so every fixture is a

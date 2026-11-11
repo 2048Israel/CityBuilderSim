@@ -1,6 +1,6 @@
-# FittingCheck.java - 1,131 lines · 34 methods · 3 constants · harnesses
+# FittingCheck.java - 1,142 lines · 34 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FittingCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FittingCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city
 > founded the 1900 way, what a building that finishes comes with, and the fitting itself - ordered, paid, bought and worked, ranked with the
@@ -64,13 +64,13 @@
 | 384 | 4. what a new building comes with |
 | 520 | the fixtures of 5 to 12 |
 | 590 | 5. the order ranked with the buildings |
-| 698 | 6. the money and the goods |
-| 782 | 7. the work |
-| 897 | 8. one at a time |
-| 932 | 9. the depot's trucks |
-| 965 | 10. the player's Fit |
-| 1041 | 11. the save |
-| 1109 | 12. a default city orders none |
+| 709 | 6. the money and the goods |
+| 793 | 7. the work |
+| 908 | 8. one at a time |
+| 943 | 9. the depot's trucks |
+| 976 | 10. the player's Fit |
+| 1052 | 11. the save |
+| 1120 | 12. a default city orders none |
 
 ## Constants
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1072 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
+| 60 | 1083 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
 | 68 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 73 | 1 | `static void check(String label, boolean ok)` |  |
 | 76 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
@@ -144,52 +144,52 @@
 | 571 | 5 | `static double expectedCost(Game g, Equipment piece)` | What the quote of a piece's goods at the city's market comes to, plus its work at the builders' price a point: what ordering it should cost. |
 | 578 | 11 | `static double[] buildersDrew(Game g, Good good, int from)` | What the market recorded of the builders' draws of a good since `from` trades ago: {units, cost}. |
 
-### 5. the order ranked with the buildings (lines 590-697)
+### 5. the order ranked with the buildings (lines 590-708)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 592 | 105 | `static void sectionFive()` |  |
+| 592 | 116 | `static void sectionFive()` |  |
 
-### 6. the money and the goods (lines 698-781)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 700 | 81 | `static void sectionSix()` |  |
-
-### 7. the work (lines 782-896)
+### 6. the money and the goods (lines 709-792)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 784 | 112 | `static void sectionSeven()` |  |
+| 711 | 81 | `static void sectionSix()` |  |
 
-### 8. one at a time (lines 897-931)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 899 | 32 | `static void sectionEight()` |  |
-
-### 9. the depot's trucks (lines 932-964)
+### 7. the work (lines 793-907)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 934 | 30 | `static void sectionNine()` |  |
+| 795 | 112 | `static void sectionSeven()` |  |
 
-### 10. the player's Fit (lines 965-1040)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 967 | 73 | `static void sectionTen()` |  |
-
-### 11. the save (lines 1041-1108)
+### 8. one at a time (lines 908-942)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1044 | 8 | `static String stateLine(Game g)` | Every sector's cash and the treasury, the counts and the jobs, as one line: two cities are alike when their lines are equal. |
-| 1053 | 55 | `static void sectionEleven() throws Exception` |  |
+| 910 | 32 | `static void sectionEight()` |  |
 
-### 12. a default city orders none (lines 1109-1131)
+### 9. the depot's trucks (lines 943-975)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1111 | 20 | `static void sectionTwelve()` |  |
+| 945 | 30 | `static void sectionNine()` |  |
+
+### 10. the player's Fit (lines 976-1051)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 978 | 73 | `static void sectionTen()` |  |
+
+### 11. the save (lines 1052-1119)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1055 | 8 | `static String stateLine(Game g)` | Every sector's cash and the treasury, the counts and the jobs, as one line: two cities are alike when their lines are equal. |
+| 1064 | 55 | `static void sectionEleven() throws Exception` |  |
+
+### 12. a default city orders none (lines 1120-1142)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1122 | 20 | `static void sectionTwelve()` |  |
 

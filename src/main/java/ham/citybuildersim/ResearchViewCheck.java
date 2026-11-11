@@ -803,6 +803,14 @@ public class ResearchViewCheck {
         double prizePaid = g.getPrizePaid();
         int findMonth = researchers.size() - 1;
         double billInFind = round2(e.getResearchBill());
+        /*
+         * WG2, {next}, 2026-11-10: A HARNESS ROUNDING SLIP THE NEW PATH EXPOSED. The claim below compares the series' find-month figure with the bill and the
+         * prize together. The series rounds that sum once (spend, in press); the expected value rounded the already rounded bill (billInFind) plus the prize,
+         * which is the same only when the prize is a whole number of cents. It was on main's path; on WG2's the find month's bill is 0.5533857961519341 and
+         * the prize 8.724307968408754, so round2(0.55 + prize) read 9.27 where the sum, 9.2777, rounds to 9.28, the series' figure. The expected value now
+         * rounds once, from the bill as it stood in the find's month (billExactInFind) and the prize.
+         */
+        double billExactInFind = e.getResearchBill();
         press.run();
         int months = researchers.size();
         HistorySave h = g.getHistorySave();
@@ -827,7 +835,7 @@ public class ResearchViewCheck {
         for (int i = 0; i < months; i++) spendRight &= Math.abs(gotSpend[i] - spend.get(i)) < 1e-9;
         check("researchSpend is every month's own figure, the month's research bill and prize paid, in each of the " + months + " months played", spendRight);
         check("...in the find's month it is the bill and the prize together, " + gotSpend[findMonth] + ", and the month after the bill alone, " + gotSpend[months - 1],
-                Math.abs(gotSpend[findMonth] - round2(billInFind + prizePaid)) < 1e-9 && gotSpend[findMonth] > billInFind && Math.abs(gotSpend[months - 1] - round2(e.getResearchBill())) < 1e-9);
+                Math.abs(gotSpend[findMonth] - round2(billExactInFind + prizePaid)) < 1e-9 && gotSpend[findMonth] > billInFind && Math.abs(gotSpend[months - 1] - round2(e.getResearchBill())) < 1e-9);
         double[] gotShare = tail(h, HistorySave.EQUIPMENT_FITTED, months);
         boolean shareRight = h.seriesByName().get(HistorySave.EQUIPMENT_FITTED).size() == h.months();
         for (int i = 0; i < months; i++) shareRight &= Math.abs(gotShare[i] - share.get(i)) < 1e-9 && gotShare[i] >= 0 && gotShare[i] <= 1;

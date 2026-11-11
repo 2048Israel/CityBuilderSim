@@ -1,6 +1,6 @@
 # RealDollar.java - 137 lines · 9 methods · 1 constants · model
 
-`ham/citybuildersim/RealDollar.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RealDollar.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and
 > the real effective rate (and, since WN6, the chain that carries a partner's rate across a change of its money). Pure functions of their inputs, and

@@ -1,6 +1,6 @@
 # GoldPriceCheck.java - 491 lines · 23 methods · 6 constants · harnesses
 
-`ham/citybuildersim/GoldPriceCheck.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoldPriceCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > Gold's price a month (batch GD1; spec-gold-money 4.1): GoldPrice's statutes, its table, its refusal of a table that is not whole, and the rule
 > after the table, each held to the figures the study publishes and to the constants the class publishes, never a formula copied from it (the one

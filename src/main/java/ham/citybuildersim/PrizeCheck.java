@@ -1346,6 +1346,35 @@ public class PrizeCheck {
         return g;
     }
 
+    /** The share of Business Services' market value the city's fund buys at its price, to give the village's shares a current quote (labCityWithAMarket()). */
+    static final double FUND_BUYS_SHARE_OF_CAP = .1;
+
+    /**
+     * A village played as labCity() does, with a market for its Business Services shares at the lab's month: the owners' order for a lab
+     * is an issue of shares, which the Exchange allows only while the quote is within BUYBACK_TOLERANCE of fair value
+     * (Exchange.quoteSupportsIssue()), and a village whose quote is a trade fifty months old does not allow it.
+     *
+     * WG2, {next}, 2026-11-10: senior care no longer lifts the jobs' draw, and a village's bank has failed once by month 81
+     * and stood at month 80 on 1,515 of equity against a minimum of 1,427, with no capital to spare for the desk
+     * (Bank.deskCanCarry() 0): no bid in the Business Services book, its last trade the one of month 31 at .00254 against a
+     * fair value of .00943, a quote at 27% of fair (the households' 46 asks stood at .00896), so the owners put up $0.00 of the
+     * lab's $1.0M and the order was held. The city's fund buys FUND_BUYS_SHARE_OF_CAP of the sector's market value at fair value
+     * three months before the lab's, the player's own order (fundPayIn(), fundBuyShares()) taking the asks: the last trade is
+     * at .00896 and the quote supports an issue. Every village of a section gets it alike, so the twins stay twins.
+     */
+    static Game labCityWithAMarket(String label, boolean the1900Way, Field f, int labs) {
+        Game g = DiscoveryCheck.cityWithSchools(label, the1900Way, false);
+        g.layTheLadder(WageLadder.TODAY, true);
+        int months = monthWantingALab(f, labs) - 1 - g.getMonth();
+        playHanded(g, months - 3);
+        int company = Equity.indexOf(BS);
+        double money = FUND_BUYS_SHARE_OF_CAP * g.getExchange().marketCap(g.getEquity(), company);
+        g.fundPayIn(money);
+        g.fundBuyShares(company, money);
+        playHanded(g, 3);
+        return g;
+    }
+
     /** What one more researcher-year of a problem costs the investors' reckoning in the city: the problem's remaining work times twelve times the post's cost at the city's wages now (Research's own statics). */
     static double coverNow(Game g, Entry e) {
         return Research.remaining(e, g.getResearch().pile(e.code())) * Research.MONTHS_A_YEAR * Research.postCost(e.field(), g.getPopulationManager().getWagesPerType());
@@ -1492,7 +1521,7 @@ public class PrizeCheck {
 
     static void sectionTwelve() {
         System.out.println("\n--- 12. investors build a lab while the purse pays for it: owners first, never a loan, one a field a month, only in a city founded the 1900 way ---");
-        Game a = labCity("prize-order-a", true, F, 1), b = labCity("prize-order-b", true, F, 1), c = labCity("prize-order-c", false, F, 1);
+        Game a = labCityWithAMarket("prize-order-a", true, F, 1), b = labCityWithAMarket("prize-order-b", true, F, 1), c = labCityWithAMarket("prize-order-c", false, F, 1);
         Research ra = a.getResearch(), rb = b.getResearch(), rc = c.getResearch();
         int m = a.getMonth() + 1;
         double[] w = a.getPopulationManager().getWagesPerType().clone();
@@ -1897,7 +1926,7 @@ public class PrizeCheck {
 
     static void sectionTwenty() {
         System.out.println("\n--- 20. the stake the investors put up for a lab: in a village whose prize draws a lab the Exchange's buyback spends none of it before the find ---");
-        Game g = labCity("prize-stake", true, F, 1);
+        Game g = labCityWithAMarket("prize-stake", true, F, 1);
         Research r = g.getResearch();
         EconomyManager e = g.getEconomyManager();
         int company = Equity.indexOf(BS);

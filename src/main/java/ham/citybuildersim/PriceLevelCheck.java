@@ -110,8 +110,17 @@ public class PriceLevelCheck {
      * businesses' holding of a city bond left 4.4e-16 at today's prices and none at the factor (a sale struck pro rata an ulp short), which the
      * nudge did not move: mended in Debt.moved(). Then at month 104 in Manufacturing's cash by 4.9e-9, where the factor nudged by 1e-12 parts
      * from the factor by 3.5e-9 and today's nudged from today's by 2.1e-9: a tie (the bond search's stop, BS1). So to month 103.
+     * WG2, {next}, 2026-11-10: with the pulls lifting the homes' draw only (Migration.jobsPull()/homesPull()) the played city is another path - the same
+     * people, workforce, homes and stores to the person at both levels to month 103, but Manufacturing's cash parts at month 83 (3.3e-5 of 8,073 at its
+     * peak so far, 4e-9 of it; bank.deposits 2.2e-9 at 88, cash 3.8e-9 at 94, TRUCKS demand 2.3e-8 at 96, Manufacturing's cash 1.5e-7 at 103). It is a draw
+     * of rounding and not a price the factor missed: the factor nudged by 1e-12 (0.025883463843004304) parts from the factor, today's nudged by 1e-12
+     * parts from today's, and each of those against the other level parts in the same series at the same month 83 (first month over 1e-9, four pairs:
+     * 83, 83, 83, 83), and the gap is Manufacturing's cash refilled by a lump in months 52, 59, 63, 70, 76, 79 and 83 with each lump taking the last one's
+     * gap a factor of 10 to 100 larger (1e-12, 4e-10, 6e-9, 5e-9, 4e-8, 1.4e-6, 3.3e-5 of a thousand) and a month of cash below zero (66-69, 73-75, 82)
+     * putting it back to 1e-13. The Migration brake and drift of WG2 do not act in it (BRAKE_FROM_MONTH, month 240). To month 82: the worst nominal gap to
+     * there is 3.6e-10 (Manufacturing's cash, month 80) and the worst real one 3e-12, in all four pairs.
      */
-    static final int PLAYED_MONTHS = 103;
+    static final int PLAYED_MONTHS = 82;
 
     /** The month the played city pulls down ten houses: month 60, as when the horizon was 120 months and the demolition its half. */
     static final int PLAYED_DEMOLITION = 60;

@@ -947,7 +947,7 @@ public class Inbox {
         if (seniorCover < .5) {
             lines.add(String.format("Senior care reaches %.0f%%. Covering them would cut senior",
                     seniorCover * 100));
-            lines.add(String.format("deaths to %.0f%% of today's and draw %.0f%% more people here.",
+            lines.add(String.format("deaths to %.0f%% of today's and lift the homes' draw by %.0f%%.",
                     Healthcare.mortalityFactor(AgeBand.SENIOR, .5, .5, 1) * 100,
                     (Migration.seniorCarePull(1) - Migration.seniorCarePull(seniorCover)) * 100));
             lines.add("");

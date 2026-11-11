@@ -1,6 +1,6 @@
 # WageBand.java - 170 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/WageBand.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WageBand.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > The four education bands the wage tax is set by.
 > 
@@ -17,7 +17,7 @@
 
 **Uses:** [JobType](JobType.md) (1)
 
-**Used by (40):** [ArrivalMix](ArrivalMix.md), [ArrivalMixCheck](ArrivalMixCheck.md), [BankCheck](BankCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EducationType](EducationType.md), [FloorView](FloorView.md), [Game](Game.md), [HistorySave](HistorySave.md), [HouseholdCheck](HouseholdCheck.md), [InvestCheck](InvestCheck.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyCheck](PolicyCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [PrizeCheck](PrizeCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [ServicesScreen](ServicesScreen.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SummaryScreen](SummaryScreen.md), [TaxPolicy](TaxPolicy.md), [WageLadderCheck](WageLadderCheck.md), [WantedPosts](WantedPosts.md), [WantedPostsCheck](WantedPostsCheck.md), [ZoningCheck](ZoningCheck.md)
+**Used by (41):** [ArrivalMix](ArrivalMix.md), [ArrivalMixCheck](ArrivalMixCheck.md), [BankCheck](BankCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [CityNeeds](CityNeeds.md), [EconomyManager](EconomyManager.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EducationType](EducationType.md), [FloorView](FloorView.md), [Game](Game.md), [HistorySave](HistorySave.md), [HouseholdCheck](HouseholdCheck.md), [InvestCheck](InvestCheck.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LabourMarket](LabourMarket.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyCheck](PolicyCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [PopulationManager](PopulationManager.md), [PrizeCheck](PrizeCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [ServicesScreen](ServicesScreen.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SummaryScreen](SummaryScreen.md), [TaxPolicy](TaxPolicy.md), [WageLadderCheck](WageLadderCheck.md), [WantedPosts](WantedPosts.md), [WantedPostsCheck](WantedPostsCheck.md), [ZoningCheck](ZoningCheck.md)
 
 ## Sections
 

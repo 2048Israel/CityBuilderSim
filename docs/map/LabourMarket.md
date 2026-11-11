@@ -1,6 +1,6 @@
 # LabourMarket.java - 1,115 lines · 65 methods · 19 constants · model
 
-`ham/citybuildersim/LabourMarket.java` - generated 2026-11-10 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LabourMarket.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
 
 > What labour costs, and why it costs that.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [JobType](JobType.md) (31), [WageBand](WageBand.md) (22), [DecisionLog](DecisionLog.md) (10), [WageLadder](WageLadder.md) (7), [PayTier](PayTier.md) (3), [EducationType](EducationType.md) (2)
 
-**Used by (24):** [ArrivalMixCheck](ArrivalMixCheck.md), [CityNeeds](CityNeeds.md), [DiscoveryCheck](DiscoveryCheck.md), [Education](Education.md), [ExpectationsCheck](ExpectationsCheck.md), [FloorView](FloorView.md), [Game](Game.md), [HistorySave](HistorySave.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationManager](PopulationManager.md), [PriceLevelCheck](PriceLevelCheck.md), [ServicesScreen](ServicesScreen.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SummaryScreen](SummaryScreen.md), [WageLadderCheck](WageLadderCheck.md), [WantedPosts](WantedPosts.md), [WantedPostsCheck](WantedPostsCheck.md)
+**Used by (25):** [ArrivalMixCheck](ArrivalMixCheck.md), [CityNeeds](CityNeeds.md), [DiscoveryCheck](DiscoveryCheck.md), [Education](Education.md), [ExpectationsCheck](ExpectationsCheck.md), [FloorView](FloorView.md), [Game](Game.md), [HistorySave](HistorySave.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [PeopleScreen](PeopleScreen.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [PopulationManager](PopulationManager.md), [PriceLevelCheck](PriceLevelCheck.md), [ServicesScreen](ServicesScreen.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SummaryScreen](SummaryScreen.md), [WageLadderCheck](WageLadderCheck.md), [WantedPosts](WantedPosts.md), [WantedPostsCheck](WantedPostsCheck.md)
 
 ## Sections
 
