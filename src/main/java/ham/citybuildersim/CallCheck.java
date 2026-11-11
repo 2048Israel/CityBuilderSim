@@ -426,7 +426,19 @@ public class CallCheck {
         });
         check("fixture: ...nor after sales by the signatures that do not ask for the option (a bond, a bond at a cap, a bond for the cash)",
                 callables(city).isEmpty() && bonds(city) >= 1);
+        /*
+         * THE BANK STANDS AT THE SALE (PW1, 2026-11-11): the section's sale is one the market takes at fair, and the bank's room is most
+         * of that market (1,041 of the 1,300 a sale of three spares sold on 0.9.94). On PW1's path the two years ran the town's
+         * Manufacturing, on 1.9 of cash, into a 5,750 loan for a second Wire & Cable Works at month 90; it defaulted two months on and the
+         * bank failed (equity -1,013, in resolution), so at the sale its room was 0 and both quotes stopped short at the cap's tail, the
+         * households alone taking 259 of 1,492. What this section asserts is the city's own paper, not the firms' credit, so the firms
+         * build nothing new over the two years (as ScaleCheck holds them) and the bank's standing is asserted before the sale.
+         */
+        List<String> heldHere = new ArrayList<>();
+        for (Sector s : city.getSectors().all())
+            if (!city.getBusinessInvestment().isHeld(s.key())) { city.getBusinessInvestment().holdSector(s.key()); heldHere.add(s.key()); }
         for (int i = 0; i < 24; i++) play(city);
+        for (String key : heldHere) city.getBusinessInvestment().releaseSector(key);
         check("a city played two years that never asked for one has no callable piece (" + bonds(city) + " bond lines on its books)",
                 callables(city).isEmpty());
 
@@ -434,6 +446,8 @@ public class CallCheck {
         city.setCashForTest(Founding.WEALTHY_CASH);
         check("fixture: the city has a year of prices before it sells, so the curve it sells on already reads an inflation",
                 city.getPriceIndex().hasRate());
+        check("fixture: the bank stands at the sale, with room to bid (" + String.format("%.0f", city.auctionBidders(120, 1000).bankRoomFace()) + ")",
+                !city.getBank().isInsolvent() && city.auctionBidders(120, 1000).bankRoomFace() > 0);
         double ask = askTheMarketTakes(city);
         double face = Math.ceil(ask / 100) * 100;
 
