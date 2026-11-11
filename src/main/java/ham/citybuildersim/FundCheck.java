@@ -67,6 +67,11 @@ import java.io.PrintStream;
  *      where at fair value nobody bid - and paid at the next month's top, it
  *      buys nothing, and the rescue book is never sold; at or under the
  *      default a short is not paid.
+ *  9c. The idle cash (RB1; Jerus, 2026-11-02, "Sell the excess"): the cash past
+ *      the room its caps leave is the budget's, a 24th of it a month
+ *      (IDLE_TRANSFER_SHARE), or the dial's share if that is more, and nothing
+ *      at a dial of nothing: the figure on numbers written by hand, the due on
+ *      the constants, a city paid in past its rooms, through a save.
  *  10. The hand: its orders at fair value, or at a price the player names,
  *      and one cancelled before the step (0.7.39); pay-in and draw-out off
  *      the surplus.
@@ -238,6 +243,7 @@ public class FundCheck {
         theStaleMark();
         theTransfer();
         theWithdrawal();
+        theIdleCash();
         theHand();
         theSave();
         insane();
@@ -1003,16 +1009,35 @@ public class FundCheck {
 
     /* ================= 9. the transfer ================= */
 
+    /**
+     * A pay-in the rule can place (RB1): `wanted` when the fund's cash with it is within the room its share bids and its bond bids have
+     * left (Exchange.fundShareRoom() and BondMarket.fundBondRoom(): none of the cash is idle, TreasuryFund.idleCash()), else half the room
+     * that is left - the hand's reserve aside.
+     */
+    static double placeablePayIn(Game g, double wanted) {
+        double left = Math.max(0, g.getExchange().fundShareRoom() + g.getBondMarket().fundBondRoom(g.getMonth())
+                - Math.max(0, g.getFund().getCash()));
+        return wanted <= left ? wanted : left / 2;
+    }
+
     static void theTransfer() {
         out.println("\n--- 9. the transfer at Norway's 3%, the default: a twelfth a month, from its cash only ---");
         Game g = copy();
-        g.setCashForTest(g.getCash() + 10_000 * PriceLevel.FACTOR);
-        g.fundPayIn(10_000 * PriceLevel.FACTOR);
+        // RB1: a pay-in the rule can place. Past the room its caps leave, the cash is idle and is withdrawn at IDLE_TRANSFER_SHARE
+        // (section 9c), not the dial: the transfer is struck on what the rule holds, as this section is about.
+        double payIn = placeablePayIn(g, 10_000 * PriceLevel.FACTOR);
+        g.setCashForTest(g.getCash() + payIn);
+        g.fundPayIn(payIn);
         double value = g.fundValue();
         double due = TreasuryFund.transferOn(value);
         double treasury = g.getCash();
+        out.printf("   paid in $%,.3fk of the $%,.3fk wanted: the rule's rooms are $%,.3fk in shares and $%,.3fk in bonds%n",
+                payIn / 1000, 10_000 * PriceLevel.FACTOR / 1000, g.getExchange().fundShareRoom() / 1000,
+                g.getBondMarket().fundBondRoom(g.getMonth()) / 1000);
+        check("fixture: a pay-in the rule can place, so none of the fund's cash is idle before the month", payIn > 0 && g.fundIdleCash() == 0);
         play(g);
         TreasuryFund f = g.getFund();
+        check("fixture: ...and none of the month's transfer was struck on idle cash", f.getTransferFromIdle() == 0);
         close("a twelfth of 3% of all it is worth", f.getTransferDue(), due, 1e-9);
         close("...paid from its cash", f.getTransferPaid(), due, 1e-9);
         close("...a revenue line in the budget", g.getEconomyManager().getNationalAccounts().getFundTransfer(), due, 1e-9);
@@ -1067,8 +1092,10 @@ public class FundCheck {
                 && dial.getWithdrawal() == TreasuryFund.TRANSFER_RATE / TreasuryFund.YEAR_MONTHS;
         for (double v : new double[] { 0, 1, 12_345.678, 9.87e9, 1e-7, -5 }) bit &= dial.withdrawalOn(v) == TreasuryFund.transferOn(v);
         Game live = copy();
-        live.setCashForTest(live.getCash() + 10_000 * PriceLevel.FACTOR);
-        live.fundPayIn(10_000 * PriceLevel.FACTOR);
+        double livePayIn = placeablePayIn(live, 10_000 * PriceLevel.FACTOR);
+        live.setCashForTest(live.getCash() + livePayIn);
+        live.fundPayIn(livePayIn);
+        check("fixture: a pay-in the rule can place, so none of the fund's cash is idle (RB1)", livePayIn > 0 && live.fundIdleCash() == 0);
         bit &= live.fundTransferDue() == TreasuryFund.transferOn(live.fundValue()) && !live.getFund().sellsToPay();
         check("at the default the withdrawal is today's transfer to the bit", bit);
         boolean whole = true;
@@ -1201,6 +1228,116 @@ public class FundCheck {
                 fr > 0 && fr <= 1 - TreasuryFund.EQUITY_WEIGHT + 1e-12 && fr < fa);
     }
 
+    /* ================= 9c. the idle cash (RB1) ================= */
+
+    /**
+     * THE CASH PAST THE ROOM ITS CAPS LEAVE (RB1). Past the 10% limit on every company and the bonds on the books, the fund's
+     * rule has nowhere to put what is paid in, and the cash used to pile up. It is the budget's now, a 24th a month
+     * (TreasuryFund.IDLE_TRANSFER_SHARE), or the dial's share if that is more. (a) the figure itself on numbers written by hand, (b) the
+     * due on the constants, (c) a city paid in past its rooms: the figure, the strike, the budget's line, the dial at nothing, a save.
+     */
+    static void theIdleCash() {
+        out.println("\n--- 9c. the idle cash: what is past the room its caps leave goes to the budget, a 24th a month (RB1) ---");
+        double inf = Double.POSITIVE_INFINITY;
+
+        // (a) idleCash on numbers written by hand: cash 100, the rooms its share bids and its bond bids have left.
+        double cash = 100, reserve = 10, shareRoom = 20, bondRoom = 30;
+        close("a share room that is not a number reads as unlimited: nothing is idle",
+                TreasuryFund.idleCash(cash, 0, Double.NaN, bondRoom), 0, 0);
+        close("...so does a bond room that is not a number",
+                TreasuryFund.idleCash(cash, 0, shareRoom, Double.NaN), 0, 0);
+        close("an unlimited share room takes the whole cash: nothing is idle", TreasuryFund.idleCash(cash, 0, inf, 0), 0, 0);
+        close("...so does an unlimited bond room", TreasuryFund.idleCash(cash, 0, 0, inf), 0, 0);
+        close("no room at all: the cash less the hand's reserve is idle",
+                TreasuryFund.idleCash(cash, reserve, 0, 0), cash - reserve, 1e-12);
+        close("rooms that sum to less than the free cash: what is past them is idle",
+                TreasuryFund.idleCash(cash, reserve, shareRoom, bondRoom), cash - reserve - shareRoom - bondRoom, 1e-12);
+        close("rooms that sum to the free cash leave none idle",
+                TreasuryFund.idleCash(cash, reserve, cash - reserve - bondRoom, bondRoom), 0, 1e-12);
+        close("a reserve larger than the cash leaves nothing free, so nothing idle",
+                TreasuryFund.idleCash(cash, 1.5 * cash, 0, 0), 0, 0);
+        // The mix is not read: a fund of cash alone, its cash far past 30% of its value, with rooms that cover it - a share room alone
+        // takes the whole of it though the 70/30 would keep a bond side - has none idle.
+        close("the mix is not read: a share room that covers the cash leaves none idle, though no bond has a room",
+                TreasuryFund.idleCash(cash, 0, cash, 0), 0, 0);
+
+        // (b) the due against the constants.
+        double step = TreasuryFund.WITHDRAWAL_STEP, share = TreasuryFund.IDLE_TRANSFER_SHARE;
+        int def = TreasuryFund.DEFAULT_WITHDRAWAL_STEPS, max = TreasuryFund.MAX_WITHDRAWAL_STEPS;
+        double value = 1_000_000, idle = 300_000;
+        double wd = def * step;
+        check("fixture: at the default the dial takes less of the idle cash than the 24th", wd > 0 && wd < share);
+        check("fixture: at the most of the dial it takes more than the 24th", max * step > share);
+        check("with none idle the due is transferOn() at the default, to the bit",
+                TreasuryFund.dueAt(def, value, 0) == TreasuryFund.transferOn(value)
+                        && TreasuryFund.dueAt(def, value, -5) == TreasuryFund.transferOn(value)
+                        && TreasuryFund.dueAt(def, value, Double.NaN) == TreasuryFund.transferOn(value)
+                        && TreasuryFund.idlePartAt(def, value, 0) == 0);
+        close("at the default with idle cash: the dial's share of the rest and the 24th of the idle",
+                TreasuryFund.dueAt(def, value, idle), wd * (value - idle) + share * idle, 1e-9);
+        check("...which is more than the dial's share of the whole value", TreasuryFund.dueAt(def, value, idle) > wd * value);
+        close("...the part of it on the idle cash is the 24th of it", TreasuryFund.idlePartAt(def, value, idle), share * idle, 1e-9);
+        check("at a dial of nothing nothing is withdrawn, idle or not",
+                TreasuryFund.dueAt(0, value, idle) == 0 && TreasuryFund.idlePartAt(0, value, idle) == 0);
+        close("at the most of the dial the idle cash is withdrawn at the dial, as the rest",
+                TreasuryFund.dueAt(max, value, idle), max * step * value, 1e-9);
+        close("...and its part is the dial's share of it", TreasuryFund.idlePartAt(max, value, idle), max * step * idle, 1e-9);
+        close("idle cash above the fund's value is held to it",
+                TreasuryFund.dueAt(def, value, 3 * value), TreasuryFund.dueAt(def, value, value), 0);
+        close("...and then the whole value is withdrawn at the 24th",
+                TreasuryFund.dueAt(def, value, 3 * value), share * value, 1e-9);
+        check("a fund worth nothing is due nothing", TreasuryFund.dueAt(def, 0, idle) == 0 && TreasuryFund.dueAt(def, -1, idle) == 0);
+
+        // (c) a city paid in past what the rule can place.
+        Game g = copy();
+        double rooms = g.getExchange().fundShareRoom() + g.getBondMarket().fundBondRoom(g.getMonth());
+        check("fixture: the rule's rooms are a number, finite", Double.isFinite(rooms) && rooms > 0);
+        double payIn = 4 * rooms;
+        g.setCashForTest(g.getCash() + payIn);
+        g.fundPayIn(payIn);
+        double idleBefore = g.fundIdleCash();
+        check("fixture: paid in past its rooms, the fund holds idle cash, and no more than its cash",
+                idleBefore > 0 && idleBefore <= g.getFund().getCash());
+        int steps = g.getFund().getWithdrawalSteps();
+        check("fixture: the dial is at the default", steps == def);
+        check("the due the city reads is the model's, on the fund as it stands",
+                g.fundTransferDue() == TreasuryFund.dueAt(steps, g.fundValue(), g.fundIdleCash()));
+        check("...its idle part likewise", g.fundTransferFromIdleDue() == TreasuryFund.idlePartAt(steps, g.fundValue(), g.fundIdleCash())
+                && g.fundTransferFromIdleDue() > 0);
+        check("...and more than the dial would have taken of the whole", g.fundTransferDue() > TreasuryFund.transferOn(g.fundValue()));
+        check("fixture: nothing has been paid from idle cash yet", g.getFund().getTransfersFromIdle() == 0);
+        boolean closed = play(g);
+        TreasuryFund f = g.getFund();
+        check("the month's audit closes with the idle cash paid out", closed);
+        check("the month's transfer has a part struck on the idle cash", f.getTransferFromIdle() > 0);
+        check("...which is part of the due, and the life total holds it",
+                f.getTransferFromIdle() <= f.getTransferDue() && f.getTransfersFromIdle() >= f.getTransferFromIdle());
+        close("...the budget's line is what the fund paid", g.getEconomyManager().getNationalAccounts().getFundTransfer(),
+                f.getTransferPaid(), 1e-9);
+        check("...and the fund paid it all, from its cash", f.getTransferPaid() > 0 && f.getTransferShort() == 0);
+
+        // ...through a save.
+        quietly(() -> g.saveGame(3));
+        Game back = new Game(files);
+        back.holdCausesOfDeathOff();   // R0b call 7: as the city (main()); the hold is not saved
+        quietly(() -> back.loadGameSave(3));
+        check("the idle cash's part of the transfer, this month's and the life total, comes back from a save",
+                back.getFund().getTransferFromIdle() == f.getTransferFromIdle()
+                        && back.getFund().getTransfersFromIdle() == f.getTransfersFromIdle());
+
+        // A dial at nothing withdraws nothing, though cash lies idle.
+        Game z = copy();
+        z.setCashForTest(z.getCash() + payIn);
+        z.fundPayIn(payIn);
+        z.setFundWithdrawal(0);
+        check("fixture: the dial is at nothing and cash lies idle", z.getFund().getWithdrawalSteps() == 0 && z.fundIdleCash() > 0);
+        check("at a dial of nothing the city is due nothing, and nothing of it from idle cash",
+                z.fundTransferDue() == 0 && z.fundTransferFromIdleDue() == 0);
+        play(z);
+        check("...and the month pays none", z.getFund().getTransferDue() == 0 && z.getFund().getTransferPaid() == 0
+                && z.getFund().getTransferFromIdle() == 0 && z.getFund().getTransfersFromIdle() == 0);
+    }
+
     /* ================= 10. the hand ================= */
 
     static void theHand() {
@@ -1289,6 +1426,8 @@ public class FundCheck {
                         && r.getMonthDividends() == f.getMonthDividends() && r.getMonthCoupons() == f.getMonthCoupons()
                         && r.getMonthPrincipal() == f.getMonthPrincipal() && r.getMonthBought() == f.getMonthBought()
                         && r.getMonthSold() == f.getMonthSold());
+        check("...and the part of it struck on the idle cash, this month's and the life total (RB1)",
+                r.getTransferFromIdle() == f.getTransferFromIdle() && r.getTransfersFromIdle() == f.getTransfersFromIdle());
         TreasuryFund old = new TreasuryFund();
         old.restore(null);
         check("a save from before the fund loads it empty, the dial at 0, the rescue on the button",

@@ -79,7 +79,9 @@ import java.util.List;
  *   value, never more than OWNERSHIP_LIMIT of a company (the GPFG mandate,
  *   14 May 2018). Each month it bids for the gap - a share at the desk's
  *   ask, fair value plus RULE_PREMIUM (0.7.48, C3), a bond at its value -
- *   and takes only what is offered; what does not fit waits as cash. Outside the band
+ *   and takes only what is offered; what does not fit waits as cash, and
+ *   what its caps leave no room for at all is idle, withdrawn at
+ *   IDLE_TRANSFER_SHARE (MONEY OUT, RB1). Outside the band
  *   (REBALANCE_OVER, REBALANCE_UNDER) it sells the overweight side at fair
  *   value, the desk's own rule for an excess. The limit is read on the
  *   holding too: the companies' buybacks retire shares under the fund and
@@ -90,7 +92,7 @@ import java.util.List;
  *   MONEY OUT: the withdrawal dial's share of its value a month, to the
  *   budget as a revenue line - by default TRANSFER_RATE a year, a twelfth a
  *   month, Norway's fiscal rule - taken on what is invested; the idle cash,
- *   what its rule cannot invest under its caps and its mix (idleCash()), is
+ *   what its caps leave no room for (idleCash()), is
  *   taken at the larger of the dial and IDLE_TRANSFER_SHARE, so a fund that
  *   cannot spend its cash does not pile it up (RB1); at a dial of nothing
  *   nothing is paid. At or under the default from
@@ -146,7 +148,7 @@ public final class TreasuryFund {
     /** The share of a market-book holding's excess over OWNERSHIP_LIMIT the rule offers a month, ahead of the companies' buybacks (RB1): a tenth (★est., spec-wealth 3.3), fast enough that a buyback cannot outrun it and slow enough to stay inside the book's band. */
     public static final double LIMIT_SALE_SHARE = .10;
 
-    /** The share of the fund's idle cash - what its rule cannot invest under its caps and its mix - transferred to the budget a month (RB1): a 24th, two years (★est., spec-wealth 3.3), so it is never a jolt. */
+    /** The share of the fund's idle cash - the cash its caps leave no room for - transferred to the budget a month (RB1): a 24th, two years (★est., spec-wealth 3.3), so it is never a jolt. */
     public static final double IDLE_TRANSFER_SHARE = 1.0 / 24;
 
     /** Norway's fiscal rule, a year of the fund's whole value: 3% - transfers follow the fund's expected real return, 3% since 2017 (regjeringen.no). What it pays the budget at the default withdrawal, and the withdrawal dial's step a twelfth of it, since 0.7.48 (C1). */
@@ -528,29 +530,25 @@ public final class TreasuryFund {
     }
 
     /**
-     * The fund's idle cash (RB1): the cash its rule cannot invest under its
-     * caps and its mix, which would otherwise pile up (the probe: past the
-     * 10% limit on every company the rule had nowhere to put it). `cash`
-     * less the hand's reserve is what is free; the mix is read as the rule
-     * reads it, shares and bonds at the market book and the whole cash
-     * (shareGap(), bondGap()); the room is the money the rule's bids could
-     * still take under OWNERSHIP_LIMIT (Exchange.fundShareRoom()) and the
-     * bonds on the books (BondMarket.fundBondRoom()). What the gaps could
-     * take, each held to its room, is investable; the rest of the free cash
-     * is idle. A room that is not a number reads as unlimited, so a fund
-     * that cannot tell is never found idle on it.
+     * The fund's idle cash (RB1): the cash its caps leave no room for, which
+     * would otherwise pile up (the probe: past the 10% limit on every company
+     * the rule had nowhere to put it). `cash` less the hand's reserve is what
+     * is free; the room is the money the rule's bids could still take under
+     * OWNERSHIP_LIMIT (Exchange.fundShareRoom()) and the bonds on the books
+     * it does not hold (BondMarket.fundBondRoom()); the free cash past both
+     * is idle. The mix is not read: the cash its 70/30 keeps for bonds a
+     * city has not issued waits, as before. Read on the mix, that cash was
+     * idle and went to the budget, and the rebalance (sharesOver()) then sold
+     * shares back to the weight for bonds that were not there, idle again the
+     * next month: in a city with no bonds the fund sold out at about a
+     * percent a month, without end. Read on the caps alone, a fund at its
+     * caps settles at what they hold. A room that is not a number reads as
+     * unlimited, so a fund that cannot tell is never found idle on it.
      */
-    public static double idleCash(double cash, double reserve, double shares, double bonds,
-                                  double shareRoom, double bondRoom) {
+    public static double idleCash(double cash, double reserve, double shareRoom, double bondRoom) {
         double free = cash - plus(reserve);
-        if (!(free > 0)) return 0;
-        double s = plus(shares), b = plus(bonds);
-        double v = s + b + plus(cash);
-        double shareGap = Math.max(0, EQUITY_WEIGHT * v - s);
-        double bondGap = Math.max(0, (1 - EQUITY_WEIGHT) * v - b);
-        double investable = Math.min(shareGap, Double.isNaN(shareRoom) ? Double.POSITIVE_INFINITY : plus(shareRoom))
-                + Math.min(bondGap, Double.isNaN(bondRoom) ? Double.POSITIVE_INFINITY : plus(bondRoom));
-        return Math.max(0, free - investable);
+        if (!(free > 0) || Double.isNaN(shareRoom) || Double.isNaN(bondRoom)) return 0;
+        return Math.max(0, free - plus(shareRoom) - plus(bondRoom));
     }
 
     /** The idle cash as the due reads it: held to 0 and the fund's value, a figure that is not a number nothing. */
