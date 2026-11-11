@@ -13552,7 +13552,8 @@ public class Game {
                 economyManager.bankOperatingCost(buildingManager.countByName("Commercial Bank")),
                 economyManager.bankOperatingCostPerLaterBranch());
         // ...and its running cost is bought of Business Services, as the city's upkeep is (HL1; buyUpkeep()): the bank paid it out of its own cash above.
-        getSectors().businessServices().sellUpkeep(bank.getOperatingCost());
+        // On the bank's own input line (sellBankUpkeep()), not the services': the national accounts keep it out of their imports, the bank's output is in no term of GDP.
+        getSectors().businessServices().sellBankUpkeep(bank.getOperatingCost());
         bankMaintenanceDue = 0;
 
         /*

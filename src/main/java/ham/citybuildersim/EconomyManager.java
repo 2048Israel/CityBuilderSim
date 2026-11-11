@@ -2284,6 +2284,13 @@ public class EconomyManager {
             exports += s.statement().exports;
             if (s != retail && s != construction) rawImports += s.statement().imports;
         }
+        // ...less the bank's upkeep Business Services bought abroad (HL1, 2026-11-11, the review's finding). The rule is the drivers'
+        // fuel's, above: what is in no final term is not taken off as an import either. The bank is not the government, so its
+        // operating cost is in no G, and nobody buys its output over a counter, so it is in no C; the world's part of it is in
+        // neither C nor the imports. The money audit and the balance of payments still see the import, because the cash did leave
+        // (the sector's own statement keeps it). The five services' upkeep stays in: it is in G.
+        rawImports -= sectors.businessServices().statement().otherInputs
+                .getOrDefault(ham.citybuildersim.sectors.BusinessServices.BANK_UPKEEP_SUPPLIES, 0.0);
         // ...and the reserve's crude across the edge, as the strike settled it (0.7.85).
         if (cityCrudeExports > 0) exports += cityCrudeExports;
         if (cityCrudeImports > 0) rawImports += cityCrudeImports;

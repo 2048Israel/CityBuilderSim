@@ -765,7 +765,10 @@ public class MoneyCheck {
         ham.citybuildersim.sectors.BusinessServices office = up.getSectors().businessServices();
         quietly(() -> up.simulateMonths(1));
         MoneyAudit.Result paidMonth = up.getLastMoneyAudit();
+        MoneyAudit.Households paidHouseholds = up.getLastHouseholdsAudit();
         double bills = upkeepBills(up);
+        // ...the bank's part of them, read in the month it is paid, for the next press to be read against (it has its own input line since the review's finding, HL1 2026-11-11).
+        double bankPaid = up.getBank().getOperatingCost();
         System.out.printf("   month paid: seats %.0f; care %.2f, schools %.2f, research %.2f, safety %.2f, transit %.2f of %.2f, bank %.2f; sold %.2f%n",
                 office.getSeats(), up.getHealthcare().getUpkeep(), up.getEducation().getUpkeep(), up.getEconomyManager().getResearchCosts(),
                 up.getCrime().getUpkeep(), up.getEconomyManager().getTransitUpkeep(), up.getEconomyManager().getTransitBill(),
@@ -784,6 +787,10 @@ public class MoneyCheck {
                         && Math.abs(paidMonth.figure("chk - transit Bill") - up.getEconomyManager().getTransitBill()) <= MoneyAudit.CENT
                         && Math.abs(paidMonth.figure("- transit Wages") - up.getEconomyManager().getTransitWages()) <= MoneyAudit.CENT
                         && up.getEconomyManager().getTransitWages() > 0);
+        // ...and the households' books close in the month the bank's operating cost is paid: a line no measured city had exercised.
+        System.out.printf("   month paid: households %s%n", paidHouseholds);
+        assertTrue("...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)",
+                householdsClose(paidHouseholds));
         // Saved between the two presses, reloaded below: the money in transit is in the file.
         quietly(() -> up.saveGame(10));
         quietly(() -> up.simulateMonths(1));
@@ -791,12 +798,23 @@ public class MoneyCheck {
         Sector.Statement officeBooks = office.statement();
         Double upkeepPart = officeBooks.otherParts.get(Sector.UPKEEP_SOLD);
         Double upkeepSupplies = officeBooks.otherInputs.get(ham.citybuildersim.sectors.BusinessServices.UPKEEP_SUPPLIES);
+        Double bankSupplies = officeBooks.otherInputs.get(ham.citybuildersim.sectors.BusinessServices.BANK_UPKEEP_SUPPLIES);
+        System.out.printf("   month struck: services' line %s of %.2f; bank's line %s of %.2f; Business Services Imports %.2f%n",
+                upkeepSupplies, bills - bankPaid, bankSupplies, bankPaid, struckMonth.figure("- Business Services Imports"));
         assertTrue("the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent",
                 upkeepPart != null && Math.abs(upkeepPart - bills) <= MoneyAudit.CENT);
-        assertTrue("...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of it, as an input line of its own",
-                upkeepSupplies != null && Math.abs(upkeepSupplies - bills * ham.citybuildersim.sectors.BusinessServices.UPKEEP_IMPORTED) <= MoneyAudit.CENT);
-        assertTrue("...and that month's audit closes too, the imported share in its \"- Business Services Imports\" line",
-                struckMonth.relative() < 1e-4 && upkeepSupplies != null && struckMonth.figure("- Business Services Imports") >= upkeepSupplies);
+        assertTrue("...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own",
+                upkeepSupplies != null
+                        && Math.abs(upkeepSupplies - (bills - bankPaid) * ham.citybuildersim.sectors.BusinessServices.UPKEEP_IMPORTED) <= MoneyAudit.CENT);
+        assertTrue("...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports",
+                bankSupplies != null && bankPaid > 0
+                        && Math.abs(bankSupplies - bankPaid * ham.citybuildersim.sectors.BusinessServices.UPKEEP_IMPORTED) <= MoneyAudit.CENT);
+        assertTrue("...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least",
+                struckMonth.relative() < 1e-4 && upkeepSupplies != null && bankSupplies != null
+                        && struckMonth.figure("- Business Services Imports") >= upkeepSupplies + bankSupplies - MoneyAudit.CENT);
+        MoneyAudit.Households struckHouseholds = up.getLastHouseholdsAudit();
+        System.out.printf("   month struck: households %s%n", struckHouseholds);
+        assertTrue("...and that month's households' books close too (a cent, or a part in ten million of what moved)", householdsClose(struckHouseholds));
         Game upBack = new Game(upkeepFiles);
         quietly(() -> { upBack.run(); upBack.loadGame(10); });
         assertTrue("saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold",
@@ -809,14 +827,24 @@ public class MoneyCheck {
                         && Math.abs(backBooks.otherParts.get(Sector.UPKEEP_SOLD) - bills) <= MoneyAudit.CENT);
         // A city whose Business Services has no seats: nobody there to do the work, so all of it is bought abroad.
         Game bare = upkeepCity(GameFiles.scratch("moneycheck-upkeep-bare"), false);
-        quietly(() -> bare.simulateMonths(2));
+        quietly(() -> bare.simulateMonths(1));
+        double bareBank = bare.getBank().getOperatingCost();
+        quietly(() -> bare.simulateMonths(1));
         Sector.Statement bareBooks = bare.getSectors().businessServices().statement();
         Double bareParts = bareBooks.otherParts.get(Sector.UPKEEP_SOLD);
-        Double bareSupplies = bareBooks.otherInputs.get(ham.citybuildersim.sectors.BusinessServices.UPKEEP_SUPPLIES);
-        assertTrue("a city whose Business Services has no seats imports all of the upkeep it sold: its input line is the whole sum",
+        double bareSupplies = bareBooks.otherInputs.getOrDefault(ham.citybuildersim.sectors.BusinessServices.UPKEEP_SUPPLIES, 0.0);
+        Double bareBankSupplies = bareBooks.otherInputs.get(ham.citybuildersim.sectors.BusinessServices.BANK_UPKEEP_SUPPLIES);
+        System.out.printf("   bare city: sold %s; services' line %.2f; bank's line %s of %.2f%n", bareParts, bareSupplies, bareBankSupplies, bareBank);
+        assertTrue("a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum",
                 bare.getSectors().businessServices().getSeats() <= 0 && bareParts != null && bareParts > 0
-                        && bareSupplies != null && Math.abs(bareSupplies - bareParts) <= MoneyAudit.CENT
+                        && bareBankSupplies != null && Math.abs(bareSupplies + bareBankSupplies - bareParts) <= MoneyAudit.CENT
                         && bare.getLastMoneyAudit().relative() < 1e-4);
+        assertTrue("...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest",
+                bareBank > 0 && bareBankSupplies != null && Math.abs(bareBankSupplies - bareBank) <= MoneyAudit.CENT
+                        && bareParts != null && Math.abs(bareSupplies - (bareParts - bareBank)) <= MoneyAudit.CENT);
+        MoneyAudit.Households bareHouseholds = bare.getLastHouseholdsAudit();
+        System.out.printf("   bare city: households %s%n", bareHouseholds);
+        assertTrue("...and that month's households' books close too (a cent, or a part in ten million of what moved)", householdsClose(bareHouseholds));
 
         /* ==================== 13. the households' books close ==================== */
         System.out.println("--- the households' books close (HL1) ---");

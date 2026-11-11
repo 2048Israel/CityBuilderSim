@@ -662,7 +662,9 @@ public class DebtExchangeCheck {
          * HL1 (2026-11-11): THE MARKET IS PUSHED UP, A POINT AT A TIME, UNTIL THE BOND'S PRICE IS UNDER ITS BOOK. The premise was a thing of the path: the bond
          * sold at 3.26% and the market stood at 3.33% when it was bought back, a price of $2,578.68k against the books' $2,586.49k, a gain of $7.81k by drift
          * alone. HL1's B takes the young city's GDP under nothing (the services' upkeep is now work bought abroad: this city's monthly GDP read
-         * $-12.0k at the sale, 167.6 on main), and DebtManager.spreadFor() charges a city with no GDP to measure against the whole five points of spread:
+         * $-12.0k at the sale, 167.6 on main: its G that month is the clinic's and the schools' upkeep alone, 179.6, before a payroll is struck, all
+         * of it imported with no office in the city; the bank's upkeep, kept out of the accounts' imports the same day, is not in it, one branch
+         * pays none), and DebtManager.spreadFor() charges a city with no GDP to measure against the whole five points of spread:
          * the sale cleared at 8.21%, a coupon of 8.13%, and a month later, GDP back at 198.1, the market stood at 3.35% - the bond was bought back at
          * $3,139.23k against books of $2,579.40k, a gain of $-559.83k. What the premise asks is a market that has risen since the sale, so the
          * fixture causes it as CallCheck does, by striking the curve's expectations up (EXPECTATION_STEP, at most MOST_STEPS), and on main, where the

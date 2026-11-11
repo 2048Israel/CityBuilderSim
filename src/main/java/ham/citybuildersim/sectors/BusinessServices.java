@@ -71,7 +71,8 @@ import java.util.List;
  * AND THE CITY'S OWN UPKEEP IS BOUGHT OF IT (HL1, 2026-11-11): the treasury's
  * care, school, research, safety and transit upkeep and the bank's operating
  * cost are work billed to this sector, which imports the share of it a sector
- * of its kind imports (sellUpkeep(), UPKEEP_IMPORTED).
+ * of its kind imports (sellUpkeep() for the services', sellBankUpkeep() for
+ * the bank's, on a line of its own; UPKEEP_IMPORTED).
  */
 public final class BusinessServices extends Sector {
 
@@ -267,6 +268,19 @@ public final class BusinessServices extends Sector {
        it with no line of their own. With no seats there is nobody here to do
        the work and all of it is bought abroad. No extra payroll, no good, no
        market: it is work billed.
+
+       That is true of the five services' upkeep, which is in G (the care,
+       safety and schools' gross cost, the research and transit bills), so
+       taking its imported share off GDP is right. The bank's share the money
+       audit and the balance of payments see, the national accounts do not
+       (HL1, 2026-11-11, the review's finding): the bank is not the government,
+       so its operating cost is in no G, and nobody buys its output over a
+       counter, so it is in no C; an import whose output is in no final term
+       must not be taken off GDP, as the drivers' fuel is not (the accounts
+       keep "the world's part of their fuel in neither C nor the imports").
+       The bank's part is therefore booked on an input line of its own,
+       BANK_UPKEEP_SUPPLIES, which EconomyManager.updateNationalAccounts()
+       leaves out of its imports.
        ------------------------------------------------------------------- */
 
     /**
@@ -278,11 +292,27 @@ public final class BusinessServices extends Sector {
     /** The upkeep's name on its input line. */
     public static final String UPKEEP_SUPPLIES = "Upkeep supplies";
 
-    /** Upkeep the city's services or the bank have paid, billed to this sector this month: other revenue now, the imported share its input. */
+    /**
+     * The bank's part of the upkeep on an input line of its own, because the national accounts keep it out of their imports: the bank's
+     * output is in no term of GDP (HL1, 2026-11-11, the review's finding).
+     */
+    public static final String BANK_UPKEEP_SUPPLIES = "Bank upkeep supplies";
+
+    /** Upkeep the city's five services have paid (care, schools, research, safety, transit), billed to this sector this month: other revenue now, the imported share its input. */
     public void sellUpkeep(double bill) {
+        sellUpkeepOn(UPKEEP_SUPPLIES, bill);
+    }
+
+    /** What the bank paid to run this month, billed to this sector: other revenue now, the imported share its input on BANK_UPKEEP_SUPPLIES. */
+    public void sellBankUpkeep(double bill) {
+        sellUpkeepOn(BANK_UPKEEP_SUPPLIES, bill);
+    }
+
+    /** The one body of both: the whole bill is other revenue, the imported share of it is booked as an imported service on the line called {@code line}. */
+    private void sellUpkeepOn(String line, double bill) {
         if (!(bill > 0) || !Double.isFinite(bill)) return;
         bookUpkeepSold(bill);
-        bookImportedService(UPKEEP_SUPPLIES, bill * (getSeats() > 0 ? UPKEEP_IMPORTED : 1));
+        bookImportedService(line, bill * (getSeats() > 0 ? UPKEEP_IMPORTED : 1));
     }
 
     /* ------------------------------------------------------------ the screen */

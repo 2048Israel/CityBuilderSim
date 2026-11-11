@@ -2712,7 +2712,8 @@ final class GovernmentScreen {
      * on one scale - exports in the business violet, imports in its darker
      * step in three parts - with the parts named for what they are (B5:
      * "Steel exported" was every sector's exports, "Scrap imported" every
-     * sector's imports but the shops' food and the builders' materials).
+     * sector's imports but the shops' food and the builders' materials). Since HL1 (2026-11-11) the rest also
+     * leaves out what Business Services buys abroad for the bank: the bank's output is in no term of GDP.
      */
     VBox tradeCard(NationalAccounts na) {
         double exports = na.getExports();

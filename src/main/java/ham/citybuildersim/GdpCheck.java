@@ -794,6 +794,7 @@ public class GdpCheck {
         } catch (java.io.IOException ignored) { }
 
         sheds(quiet, out);
+        bankUpkeep();
 
         try (var walk = java.nio.file.Files.walk(railFiles.getDirectory())) {
             walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
@@ -959,5 +960,74 @@ public class GdpCheck {
                 try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
             });
         } catch (java.io.IOException ignored) { }
+    }
+
+    /*
+     * ...AND A BANK'S UPKEEP BOUGHT ABROAD (HL1, 2026-11-11, the review's finding): GDP is C + I + G + exports less imports, and the city's
+     * upkeep is bought of Business Services, which imports the share of it a sector of its kind imports. The five services' upkeep is in G, so
+     * its imported share comes off right. The bank's operating cost (two or more branches; the charter is exempt) is in no term: the bank is not
+     * the government, and nobody buys its output over a counter. Taken off GDP as an import it was a fall in output for an input whose output
+     * the accounts never counted, so it is booked on a line of its own (BusinessServices.BANK_UPKEEP_SUPPLIES) and the accounts leave it out of
+     * their imports, as they leave the drivers' fuel; the sectors' statements, the money audit and the balance of payments keep it, the cash left.
+     * MoneyCheck's upkeep city (a clinic, a school, police, a bus network, three bank branches), with no Business Services seats and then with
+     * an office, played one press to pay and a second to strike.
+     */
+    static void bankUpkeep() {
+        System.out.println("\n--- a bank's upkeep bought abroad is not an import of the accounts (HL1) ---");
+        GameFiles bareFiles = GameFiles.scratch("gdpcheck-bank");
+        Game bare = MoneyCheck.upkeepCity(bareFiles, false);
+        MoneyCheck.quietly(() -> bare.simulateMonths(1));
+        double bareBill = bare.getBank().getOperatingCost();
+        MoneyCheck.quietly(() -> bare.simulateMonths(1));
+        bankBooks("no seats", true, bare, bareBill);
+
+        GameFiles officeFiles = GameFiles.scratch("gdpcheck-bank-office");
+        Game office = MoneyCheck.upkeepCity(officeFiles, true);
+        MoneyCheck.quietly(() -> office.simulateMonths(1));
+        double officeBill = office.getBank().getOperatingCost();
+        MoneyCheck.quietly(() -> office.simulateMonths(1));
+        bankBooks("an office", false, office, officeBill);
+
+        for (GameFiles f : new GameFiles[] { bareFiles, officeFiles }) {
+            try (var walk = java.nio.file.Files.walk(f.getDirectory())) {
+                walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                    try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
+                });
+            } catch (java.io.IOException ignored) { }
+        }
+    }
+
+    /** One upkeep city's books, the month after the bank's operating cost `bill` was paid: the sectors' statements against the accounts'. */
+    private static void bankBooks(String label, boolean bare, Game c, double bill) {
+        ham.citybuildersim.sectors.BusinessServices services = c.getSectors().businessServices();
+        double share = bare ? 1 : ham.citybuildersim.sectors.BusinessServices.UPKEEP_IMPORTED;
+        Sector.Statement books = services.statement();
+        double bankLine = books.otherInputs.getOrDefault(ham.citybuildersim.sectors.BusinessServices.BANK_UPKEEP_SUPPLIES, 0.0);
+        double servicesLine = books.otherInputs.getOrDefault(ham.citybuildersim.sectors.BusinessServices.UPKEEP_SUPPLIES, 0.0);
+        double sectorImports = 0;
+        for (Sector s : c.getSectors().all()) sectorImports += s.statement().imports;
+        NationalAccounts na = c.getEconomyManager().getNationalAccounts();
+        double withoutLine = na.getConsumption() + na.getInvestment() + na.getGovernment() + na.getExports() - sectorImports;
+        System.out.printf("   %s: seats %.0f; bank paid %,.2f; bank's line %,.2f, services' line %,.2f; sectors' imports %,.2f, accounts' imports %,.2f;"
+                        + " GDP %,.2f, C + I + G + exports less the sectors' whole imports %,.2f%n",
+                label, services.getSeats(), bill, bankLine, servicesLine, sectorImports, na.getTotalImports(), na.getGdp(), withoutLine);
+        if (bare) {
+            assertTrue("fixture: Business Services has no seats, two or more banks stand and the bank paid an operating cost",
+                    services.getSeats() <= 0 && bill > 0 && c.getBuildingManager().countByName("Commercial Bank") >= 2);
+            assertTrue("...Business Services' statement holds the whole of it on BANK_UPKEEP_SUPPLIES, to the cent, and the five services' upkeep on UPKEEP_SUPPLIES",
+                    Math.abs(bankLine - bill) <= MoneyAudit.CENT && servicesLine > 0);
+        } else {
+            assertTrue("fixture: with an office (seats), two or more banks stand and the bank paid an operating cost",
+                    services.getSeats() > 0 && bill > 0 && c.getBuildingManager().countByName("Commercial Bank") >= 2);
+            assertTrue("...the bank's line is the operating cost times UPKEEP_IMPORTED, to the cent, and the five services' upkeep is on UPKEEP_SUPPLIES",
+                    Math.abs(bankLine - bill * share) <= MoneyAudit.CENT && servicesLine > 0);
+        }
+        assertTrue("the accounts' imports are every sector's imports summed, less the bank's line (the bank's upkeep is in the sectors' imports and not"
+                        + " in the accounts', the five services' upkeep in both; no reserve's crude in this city)",
+                Math.abs(na.getTotalImports() - (sectorImports - bankLine)) <= MoneyAudit.CENT && bankLine > 0 && sectorImports > servicesLine);
+        assertTrue("...so GDP is higher by exactly the bank's line (the whole operating cost with no seats) than C + I + G + exports less the sectors' whole imports",
+                Math.abs(na.getGdp() - withoutLine - bankLine) <= MoneyAudit.CENT);
+        check("...and the identity holds in it", na.getGdp(),
+                na.getConsumption() + na.getInvestment() + na.getGovernment() + na.getNetExports());
     }
 }
