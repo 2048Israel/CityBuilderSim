@@ -22,7 +22,15 @@ import java.util.function.ToDoubleFunction;
 public class UtilitiesHandler {
 
     public double production;
-    public double baseProduction;
+    /**
+     * The kilowatts on site, plants and the founding grid. A new city starts
+     * with the grid (PW1, 2026-11-11): the founding month's build step runs
+     * before the first services update, and at 0 the advice read power as
+     * short with no draw at all and ordered a plant - on PW1's ranking a
+     * Coal Power Plant, 27.7k of an island's 64k, 125.7 months to build, so
+     * the island's link waited (IslandLinkCheck 9, LandmassCheck 12).
+     */
+    public double baseProduction = BASE_GRID_KW;
     public double consumption;
     public double energyRatio;
 
@@ -501,6 +509,9 @@ public class UtilitiesHandler {
     /** The fuel the plants burned and the upkeep they paid, in city money: at home, abroad, and the upkeep (set by setFuelPaid()). */
     private double fuelLocal, fuelImported, upkeepPaid;
 
+    /** ...and the imported part good by good, for the Trade tab (Sectors.tradeByGood(); its sum is fuelImported). */
+    private Map<String, Double> fuelImportedByGood = new LinkedHashMap<>();
+
     /** The power plants standing and how many of each. */
     public void setPlants(Map<BuildingsTemplate, Integer> standing) {
         this.plants = standing == null ? null : new LinkedHashMap<>(standing);
@@ -651,10 +662,25 @@ public class UtilitiesHandler {
      * slice draws them from the market at the top of the month). The utility's income is taken by their sum.
      */
     public void setFuelPaid(double local, double imported, double upkeep) {
+        setFuelPaid(local, imported, upkeep, Map.of());
+    }
+
+    /** ...with the imported part good by good (Game.buyPowerFuel()). */
+    public void setFuelPaid(double local, double imported, double upkeep, Map<String, Double> importedByGood) {
         this.fuelLocal = Double.isFinite(local) ? local : 0;
         this.fuelImported = Double.isFinite(imported) ? imported : 0;
         this.upkeepPaid = Double.isFinite(upkeep) ? upkeep : 0;
+        this.fuelImportedByGood = new LinkedHashMap<>();
+        if (importedByGood != null) {
+            for (Map.Entry<String, Double> e : importedByGood.entrySet()) {
+                Double v = e.getValue();
+                if (v != null && Double.isFinite(v) && v > 0) fuelImportedByGood.put(e.getKey(), v);
+            }
+        }
     }
+
+    /** The fuel bought from the world this month, good by good (the Good's name), in city money. */
+    public Map<String, Double> getFuelImportedByGood() { return java.util.Collections.unmodifiableMap(fuelImportedByGood); }
 
     public double getFuelLocal() { return fuelLocal; }
     public double getFuelImported() { return fuelImported; }
@@ -665,12 +691,14 @@ public class UtilitiesHandler {
     public static final class PowerState {
         public Book struck;
         public double fuelLocal, fuelImported, upkeepPaid;
+        public Map<String, Double> fuelImportedByGood;
     }
 
     public PowerState toPowerState() {
         PowerState s = new PowerState();
         s.struck = struck.copy();
         s.fuelLocal = fuelLocal; s.fuelImported = fuelImported; s.upkeepPaid = upkeepPaid;
+        s.fuelImportedByGood = new LinkedHashMap<>(fuelImportedByGood);
         return s;
     }
 
@@ -678,7 +706,7 @@ public class UtilitiesHandler {
     public void restorePowerState(PowerState s) {
         struck = s == null || s.struck == null ? Book.founding() : s.struck.copy();
         if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; return; }
-        setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid);
+        setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid, s.fuelImportedByGood);
     }
 
     //setters

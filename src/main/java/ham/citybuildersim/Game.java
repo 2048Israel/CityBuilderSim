@@ -6215,14 +6215,16 @@ public class Game {
         UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
         UtilitiesHandler.Book book = utility.getStruckBook();
         double local = 0, imported = 0;
+        java.util.Map<String, Double> byGood = new java.util.LinkedHashMap<>();
         for (java.util.Map.Entry<String, Double> e : book.fuel.entrySet()) {
             double units = e.getValue();
             if (!(units > 0)) continue;
             Markets.Draw d = getMarkets().draw(Good.valueOf(e.getKey()), null, Trade.CITY, units, getSectors());
             local += d.localCost();
             imported += d.importCost();
+            byGood.merge(e.getKey(), d.importCost(), Double::sum);
         }
-        utility.setFuelPaid(local, imported, book.upkeepWorld * getMarkets().getExchangeRate());
+        utility.setFuelPaid(local, imported, book.upkeepWorld * getMarkets().getExchangeRate(), byGood);
     }
 
     /**
@@ -16373,8 +16375,11 @@ public class Game {
      */
     public Sectors.TradeByGood getTradeByGood() {
         // ...and the strategic reserve's crude, bought from the world and shipped to it (0.7.85).
-        return economyManager.getSectors().tradeByGood(getHouseholdCarImports(), getHouseholdFuelImports(),
-                reserve.getSettledImports(), reserve.getSettledExports());
+        UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
+        java.util.Map<Good, Double> powerFuel = new java.util.EnumMap<>(Good.class);
+        for (java.util.Map.Entry<String, Double> e : utility.getFuelImportedByGood().entrySet()) powerFuel.merge(Good.valueOf(e.getKey()), e.getValue(), Double::sum);
+        return economyManager.getSectors().tradeByGood(getHouseholdCarImports(), getHouseholdFuelImports(), reserve.getSettledImports(), reserve.getSettledExports(),
+                powerFuel, utility.getUpkeepPaid());
     }
 
     /**

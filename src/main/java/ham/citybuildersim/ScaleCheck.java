@@ -182,9 +182,18 @@ public class ScaleCheck {
      * 1.88e-2, 2.04e-2, 4.00e-2, 3.37e-2), and at 190 the deposits too; it holds every line at 160 to 162, 165 to 168, 170 to 175, 177,
      * 179 to 184, 186, 187 and 189. 172 is the middle of 170 to 175, and its worst line is the GDP's, at .49 of its dial.
      *
+     * 177, PW1 (2026-11-11): THE TOWN RUNS ANOTHER PATH AGAIN. Its power is billed at the merit order's price, the wires alone
+     * once the founding grid and its Wind Farms cover the load, and at 172 its shops stood on a knife edge: 9.9 thousand baskets a K
+     * handed over against 9.5 thousand wanted, the road ratio (0.58) the limit. The copy's road ratio ran 3% lower (its cars, the
+     * granule above), it fell short, and its clearing price went to the band's top (0.0153 against 0.00024): section 9's prices
+     * missed by 7.78e-2, while the power tracked to five digits. The scan was this check's every line at each month from 160 to
+     * 200: every line holds at 160, 161, 163 to 167 and 174 to 180; 162 and 168 to 173 miss on the prices (1.90e-2 to 9.01e-2), 181
+     * to 200 on the affordability pull, and most from 187 on build no homes. 177 is the middle of 174 to 180; its worst line is the
+     * savings', at .84 of its dial.
+     *
      * The picks' history is in git and in docs/queue/ST2-notes.md and docs/queue/RE2-notes.md.
      */
-    static final int FREE_FIXTURE_MONTHS = 172;
+    static final int FREE_FIXTURE_MONTHS = 177;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
@@ -1408,7 +1417,10 @@ public class ScaleCheck {
             // three the drivers' - until 0.7.62 the load derived it from the drivers, which the cells scale.
             "householdFuel",
             // ...and the graduates waiting for the next census and the last census's (0.7.63): people.
-            "householdGraduates" };
+            "householdGraduates",
+            // ...and the power plants' struck book and the fuel they paid (PW1, 2026-11-11): its load, its kWh, its fuel and its
+            // upkeep are the city's size, its prices and its ratio the pattern leaves; unscaled, the copy bought one city's coal.
+            "powerBooks" };
 
     /** The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. */
     static final java.util.Set<String> NAMED = java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks",
