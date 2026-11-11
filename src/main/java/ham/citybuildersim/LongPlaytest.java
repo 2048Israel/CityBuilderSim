@@ -6007,6 +6007,9 @@ public class LongPlaytest {
     static double warrantSharesSeen, warrantValueTaken;
     static int warrantExercises;
     static final double[] mostHeld = new double[Equity.COMPANIES.length];
+    /** The fund against its cap (RB1): company-months its market book held over OWNERSHIP_LIMIT, of company-months with shares; the months it paid anything of its transfer from idle cash, and that money. */
+    static int overCapCompanyMonths, companyMonthsWithShares, idleTransferMonths;
+    static double idleTransferPaid;
 
     static void watchTheStake(Game g) {
         List<TreasuryFund.Resolution> all = g.getFund().getResolutions();
@@ -6036,6 +6039,16 @@ public class LongPlaytest {
             if (stake < .5 && s.under50 < 0) s.under50 = g.getMonth();
             if (stake < .1 && s.under10 < 0) s.under10 = g.getMonth();
             s.lowest = Math.min(s.lowest, stake);
+        }
+        for (int c = 0; c < Equity.COMPANIES.length; c++) {
+            double shares = g.getEquity().getShares(c);
+            if (!(shares > 0)) continue;
+            companyMonthsWithShares++;
+            if (g.getEquity().getCityMarketShares(c) > TreasuryFund.OWNERSHIP_LIMIT * shares * (1 + 1e-9)) overCapCompanyMonths++;
+        }
+        if (g.getFund().getTransferFromIdle() > 0) {
+            idleTransferMonths++;
+            idleTransferPaid += g.getFund().getTransferFromIdle();
         }
         double value = g.fundValue();
         if (value > 0) {
@@ -7129,6 +7142,18 @@ public class LongPlaytest {
                     fundEnd.getSharesSold(), fundEnd.getBondsSold(),
                     fundMonths > 0 ? fundCashShareSum / fundMonths * 100 : 0,
                     book.length() > 0 ? book.toString() : " nothing");
+            // ...and against its cap (RB1): the company-months over the limit, the most of any company against the fixed point
+            // L x s / (s - b) at the fastest buyback a month can be (Exchange.BUYBACK_PACE a year, filled at the desk's ask), and the idle cash it paid the budget.
+            double mostOfAny = 0;
+            for (double most : mostHeld) mostOfAny = Math.max(mostOfAny, most);
+            double fastestBuyback = Exchange.BUYBACK_PACE / 12 / (1 - Exchange.SPREAD / 2);
+            double fixedPoint = TreasuryFund.OWNERSHIP_LIMIT * TreasuryFund.LIMIT_SALE_SHARE / (TreasuryFund.LIMIT_SALE_SHARE - fastestBuyback);
+            out.printf("  the fund against its cap (RB1): %,d of %,d company-months over the %.0f%%, the most of any company %.1f%%"
+                            + " against the fixed point %.1f%% at the fastest buyback; its idle cash to the budget in %,d months, $%,.0fk,"
+                            + " %.1f%% of its withdrawal paid%n",
+                    overCapCompanyMonths, companyMonthsWithShares, TreasuryFund.OWNERSHIP_LIMIT * 100, mostOfAny * 100,
+                    fixedPoint * 100, idleTransferMonths, idleTransferPaid,
+                    fundEnd.getTransfersPaid() > 0 ? idleTransferPaid / fundEnd.getTransfersPaid() * 100 : 0);
             // ...and what its holdings cost (0.7.39, FundLedger): counted over the run, and the identity's worst month.
             FundLedger ledger = fundEnd.getLedger();
             double unrealized = 0, cost = 0;
