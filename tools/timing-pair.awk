@@ -58,7 +58,10 @@ mode == "night" {
     occ = ++nightseen[stage SUBSEP k]; key = k SUBSEP occ
     if (stage == 1) { previous[key] = $3; previousbudget[key] = $4; next }
     if (!isnum($3) || !isnum($4)) { print "INVALID\t" $0; next }
-    state = $3 <= $4 ? "OK" : !(key in previous) ? "FIRST" : previous[key] <= previousbudget[key] || $3 * 100 > previous[key] * (100 + margin) ? "SLOWER" : "STANDING"
+    state = "STANDING"
+    if ($3 <= $4) state = "OK"
+    else if (!(key in previous)) state = "FIRST"
+    else if (previous[key] <= previousbudget[key] || $3 * 100 > previous[key] * (100 + margin)) state = "SLOWER"
     printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", state, $1, $2, (key in previous ? previous[key] : "none"), $3, $4, $5, $7, nightseen[stage SUBSEP k]
     next
 }
