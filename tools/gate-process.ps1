@@ -1,5 +1,5 @@
 # Own-process-tree cancellation on Windows. WHY (GF1, LM1): closing the caller left sh.exe ./ship.sh publishing.
-param([ValidateSet('Watch', 'Stop')][string]$Mode, [string]$Run, [int]$OwnerId, [int]$ShipId)
+param([ValidateSet('Watch', 'Stop')][string]$Mode, [string]$Run)
 $ErrorActionPreference = 'Stop'
 $identityFile = Join-Path $Run 'process'
 function Stop-Gate {
@@ -22,17 +22,14 @@ if ($Mode -eq 'Stop') {
 }
 try {
     for ($attempt = 0; $attempt -lt 100 -and !(Test-Path -LiteralPath (Join-Path $Run 'ship.native')); $attempt++) { Start-Sleep -Milliseconds 100 }
-    $ShipId = [int](Get-Content -LiteralPath (Join-Path $Run 'ship.native'))
-    $shipProcess = Get-Process -Id $ShipId
-    "$ShipId|$($shipProcess.StartTime.ToUniversalTime().Ticks)" | Set-Content -LiteralPath $identityFile
+    $shipId = [int](Get-Content -LiteralPath (Join-Path $Run 'ship.native'))
+    $shipProcess = Get-Process -Id $shipId
+    "$shipId|$($shipProcess.StartTime.ToUniversalTime().Ticks)" | Set-Content -LiteralPath $identityFile
     $ancestors = @()
-    $ancestorId = $OwnerId
-    while ($ancestorId -gt 0) {
-        $ancestor = Get-Process -Id $ancestorId -ErrorAction SilentlyContinue
+    foreach ($ownerText in Get-Content -LiteralPath (Join-Path $Run 'owners')) {
+        $ancestor = Get-Process -Id ([int]$ownerText) -ErrorAction SilentlyContinue
         if (!$ancestor) { throw 'Gate caller ended during startup' }
         $ancestors += $ancestor
-        $info = Get-CimInstance Win32_Process -Filter "ProcessId = $ancestorId"
-        $ancestorId = $info.ParentProcessId
     }
     while (Test-Path -LiteralPath (Join-Path $Run 'active')) {
         if ($shipProcess.HasExited) { break }

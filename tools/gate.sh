@@ -33,6 +33,15 @@ RUN=$(cd "$RUN" && pwd)
 CLONE="$RUN/clone"; LOG="$RUN/ship.log"
 echo "gate: run $RUN"
 echo "gate: stop with sh tools/gate.sh --stop '$RUN'"
+# MSYS tracks parents across exec, whereas Win32's parent PID can name an already-exited exec helper.
+if [ "$WINDOWS" = 1 ]; then
+    ANCESTOR=$$
+    while [ "$ANCESTOR" -gt 1 ]; do
+        ROW=$(ps -p "$ANCESTOR" | awk 'NR == 2 {print $2 " " $4}')
+        [ -n "$ROW" ] || break
+        ANCESTOR=${ROW% *}; echo "${ROW##* }" >> "$RUN/owners"
+    done
+fi
 # Options are kept as arguments throughout, including spaces in approval text and filenames.
 REDFILE=""; N=$#
 while [ "$N" -gt 0 ]; do
@@ -63,8 +72,7 @@ touch "$RUN/active"
 ( cd "$CLONE" && exec sh "$RUN/ship.sh" "batch/$ID" "$@" ) >> "$LOG" 2>&1 &
 SHIP=$!
 if [ "$WINDOWS" = 1 ]; then
-    OWNER=$(ps -p $$ | awk 'NR == 2 {print $4}')
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$HERE/gate-process.ps1")" -Mode Watch -Run "$(cygpath -w "$RUN")" -OwnerId "$OWNER" >> "$LOG" 2>&1 &
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$HERE/gate-process.ps1")" -Mode Watch -Run "$(cygpath -w "$RUN")" >> "$LOG" 2>&1 &
 else
     echo "$SHIP" > "$RUN/process"
     ( while kill -0 "$SHIP" 2>/dev/null; do
