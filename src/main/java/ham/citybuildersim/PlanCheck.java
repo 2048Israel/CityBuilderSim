@@ -4906,8 +4906,15 @@ public class PlanCheck {
         in.counts[excluded]--;
         in.month = 3;
         map.recordPlanExclusion(district, excluded, 1);
+        int[] excludedCounts = new int[types.length];
+        excludedCounts[excluded] = 1;
+        check("the source records the excluded unit at month 3, with its type, signed departure and excluded total",
+                Arrays.equals(district.excludeMonth, new int[] { 3 }) && Arrays.equals(district.excludeType, new int[] { excluded })
+                        && Arrays.equals(district.excludeChange, new int[] { -1 }) && Arrays.equals(district.excluded, excludedCounts));
+        Object[] sourceAt3 = exclusionState(district);
         map.planExclusionsInto(district, in);
         DistrictPlan after = DistrictPlan.make(in);
+        boolean sourceUnchanged = deepSame(sourceAt3, exclusionState(district));
         var standing = MapCheck.boxesOf(before);
         standing.removeIf(b -> b.type() == excluded);
         int moved = MapCheck.movedOf(standing, MapCheck.boxesOf(after));
@@ -4921,17 +4928,53 @@ public class PlanCheck {
         check("the first exclusion leaves every earlier raw record and the original first-batch boundary intact", raw && in.firstBatch == batch);
         check("the exclusion is one departure at its actual month", in.logMonth[last] == 3 && in.logType[last] == excluded && in.logChange[last] == -1);
         check("the first exclusion moves no other standing building (" + moved + " of " + standing.size() + ")", moved == 0 && after.buildings == standing.size());
-        check("a repeated input merges the same exclusion once, with the same layout", samePlan(after, exclusionReplay(map, district, types, log, excluded))
-                && district.excludeMonth.length == 1);
+        DistrictPlan.Input replayInput = exclusionInput(map, district, types, log, excluded);
+        check("merging and replaying the exclusion preserve every source record, total, stamp and raw-log boundary",
+                sourceUnchanged && deepSame(sourceAt3, exclusionState(district)));
+        check("a repeated input has the same merged history and layout", samePlan(after, DistrictPlan.make(replayInput))
+                && Arrays.equals(in.logMonth, replayInput.logMonth) && Arrays.equals(in.logType, replayInput.logType)
+                && Arrays.equals(in.logChange, replayInput.logChange) && in.firstBatch == replayInput.firstBatch);
+
+        map.reconcile(new long[types.length], 4);
+        map.recordPlanExclusion(district, excluded, 0);
+        check("the source records the unit's return at month 4, preserving its departure and clearing the excluded total",
+                Arrays.equals(district.excludeMonth, new int[] { 3, 4 }) && Arrays.equals(district.excludeType, new int[] { excluded, excluded })
+                        && Arrays.equals(district.excludeChange, new int[] { -1, 1 }) && Arrays.equals(district.excluded, new int[types.length]));
+        Object[] sourceAt4 = exclusionState(district);
+        DistrictPlan.Input returnedInput = exclusionInput(map, district, types, log, excluded);
+        DistrictPlan returned = DistrictPlan.make(returnedInput);
+        sourceUnchanged = deepSame(sourceAt4, exclusionState(district));
+        int n = rawMonths.length;
+        int[] wantedMonths = Arrays.copyOf(rawMonths, n + 2), wantedTypes = Arrays.copyOf(rawTypes, n + 2), wantedChanges = Arrays.copyOf(rawChanges, n + 2);
+        wantedMonths[n] = 3; wantedMonths[n + 1] = 4;
+        wantedTypes[n] = wantedTypes[n + 1] = excluded;
+        wantedChanges[n] = -1; wantedChanges[n + 1] = 1;
+        check("the returned unit arrives at its own month, with the exact earlier raw history and first batch preserved",
+                Arrays.equals(returnedInput.logMonth, wantedMonths) && Arrays.equals(returnedInput.logType, wantedTypes)
+                        && Arrays.equals(returnedInput.logChange, wantedChanges) && returnedInput.firstBatch == batch);
+        check("the returned unit adds one box and moves no building that stood through its exclusion", returned.buildings == after.buildings + 1
+                && MapCheck.movedOf(MapCheck.boxesOf(after), MapCheck.boxesOf(returned)) == 0);
+        replayInput = exclusionInput(map, district, types, log, excluded);
+        check("replaying the returned unit preserves every source byte array and state, the merged flow and the layout",
+                sourceUnchanged && deepSame(sourceAt4, exclusionState(district)) && samePlan(returned, DistrictPlan.make(replayInput))
+                        && Arrays.equals(replayInput.logMonth, wantedMonths) && Arrays.equals(replayInput.logType, wantedTypes)
+                        && Arrays.equals(replayInput.logChange, wantedChanges) && replayInput.firstBatch == batch);
     }
 
-    /** Rebuilds the same raw input after the exclusion journal already exists. */
-    static DistrictPlan exclusionReplay(CityMap map, CityMap.District district, BuildingVisual.Type[] types, Log log, int excluded) {
+    /** A copy of every source exclusion record, its totals and stamps, and the district's unchanged raw log and boundary. */
+    static Object[] exclusionState(CityMap.District district) {
+        return new Object[] { district.excludeMonth.clone(), district.excludeType.clone(), district.excludeChange.clone(), district.excluded.clone(),
+                district.excludeHash, district.excludeBatch, district.logMonth.clone(), district.logType.clone(), district.logChange.clone(),
+                district.logN, district.firstBatch, district.counts.clone() };
+    }
+
+    /** Rebuilds the raw input after the source records have already established how many units are excluded now. */
+    static DistrictPlan.Input exclusionInput(CityMap map, CityMap.District district, BuildingVisual.Type[] types, Log log, int excluded) {
         DistrictPlan.Input in = log.into(flat(types));
         in.month = map.month();
-        in.counts[excluded]--;
+        in.counts[excluded] -= district.excluded[excluded];
         map.planExclusionsInto(district, in);
-        return DistrictPlan.make(in);
+        return in;
     }
 
     /** A purchase in the picture's month can release an unused way without dating a record in the future (DM2). */
