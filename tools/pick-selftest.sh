@@ -1,21 +1,8 @@
 #!/bin/sh
-# ---------------------------------------------------------------------------
-#  tools/pick.sh run against a throwaway git repository: a few harness files, a
-#  class they name and a harness table, changed in each way a batch changes
-#  them. No JVM, about two seconds. For whoever changes pick.sh next. POSIX sh,
-#  git and awk.
-#
-#      sh tools/pick-selftest.sh               test the pick.sh of the current checkout
-#      sh tools/pick-selftest.sh <checkout>    test the pick.sh of another checkout (a worktree)
-#
-#  Exit status: the number of failed cases, so 0 is green.
-#
-#  WHY (TM3 item 8, 2026-10-27): ET6's new BridgeCheck compared times against its
-#  budgets directly, in 3 places; TimingCheck's rule that no harness does so but
-#  through Timing caught it only in the gate's full suite, because ET6's own
-#  --pick ran BridgeCheck and nothing else. A *Check.java changed or added now
-#  picks TimingCheck too, and this holds it, with the rules around it.
-# ---------------------------------------------------------------------------
+# tools/pick.sh against a throwaway git repository, with an optional source checkout.
+# Exit status counts failed cases. No JVM.
+# WHY (TM3, GR2) ET6 missed TimingCheck, and shared classes and fixture borrowers
+# escaped the builder's selected checks. These fixtures hold all three picks.
 
 SRC=$(cd "${1:-.}" && pwd) || exit 2
 [ -f "$SRC/tools/pick.sh" ] || { echo "pick-selftest: no tools/pick.sh in $SRC"; exit 2; }
@@ -87,6 +74,8 @@ LABEL="a class over the fanout picks ALL"; ok test "$PICKED" = ALL
 reset; echo "// BarCheck borrows FooCheck" >> "$J/BarCheck.java"; git add -A; git commit -q -m borrowers; git update-ref refs/remotes/origin/main HEAD
 reset; echo "// changed" >> "$J/FooCheck.java"; pick
 LABEL="a changed harness picks its fixture borrowers"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
+reset; echo "// changed" >> "$J/KnownReds.java"; pick
+LABEL="the common verdict runner changed picks ALL"; ok test "$PICKED" = ALL
 reset; echo "// changed" >> "$J/Timing.java"; pick
 LABEL="Timing runner changed picks ALL"; ok test "$PICKED" = ALL
 reset; git reset -q --hard HEAD~1; git update-ref refs/remotes/origin/main HEAD

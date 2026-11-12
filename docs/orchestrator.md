@@ -104,18 +104,16 @@ batch it is built on):
    names.
 3. Take the batch's recommended â˜… calls and say which and why in the notes,
    sending Jerus only his.
-4. `sh tools/gate.sh ID [ship.sh options]` makes a fresh clone, names the
-   main checkout's data files and retains logs and commit identities.
-   `--stop RUN_DIRECTORY` ends its owned tree and reports refs. Publication
-   requires a live guardian.
+4. `sh tools/gate.sh ID [options]` makes a fresh clone, names the data files
+   and retains logs and commit identities. `--stop RUN_DIRECTORY` ends its
+   owned tree and reports refs. Publication requires a live guardian.
+   Main's publisher runs by default; `--branch-gate --dry-run` tests a branch's.
    WHY (GF1, LM1) stopped callers and stale statuses once reached publication.
-   Main's publisher runs by default; `--branch-gate --dry-run` tests a changed
-   publisher. `--reuse RUN_DIRECTORY`, or the ship file's `gate-run` comment,
-   supplies completed launcher evidence with matching branch commit, selection,
-   origin and hashes. Main may gain Markdown outside `docs/ensemble/` and
-   known-red entries. The current registry rejudges its log, including a run
-   stopped on unnamed reds. Invalid evidence gets fresh checks. WHY (GR2)
-   naming a red cost a whole rerun.
+   `--reuse RUN_DIRECTORY`, or a ship file's `gate-run` comment, takes completed
+   launcher evidence with matching branch commit, selection, origin and hashes.
+   Main may gain Markdown outside `docs/ensemble/` and known-red entries.
+   Today's registry rejudges completed logs, including stops on unnamed reds.
+   Invalid evidence gets fresh checks. WHY (GR2) adding a name reran a full gate.
 5. The publisher requires clean, current main at its last version tag, merges
    uncommitted, resolves generated-doc conflicts and files records. Other
    conflicts stop. The pick selects harnesses. Game classes, resources, POM and

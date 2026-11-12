@@ -37,8 +37,9 @@ public class KnownReds {
     static boolean matches(String line, String entry) {
         if (entry.startsWith("! ")) return false;
         if (entry.startsWith("@once ")) return line.contains(entry.substring(6));
+        if (line.equals(entry)) return true;
         String[] cells = entry.split(" \\| ", -1);
-        if (cells.length != 5) return line.equals(entry);
+        if (cells.length != 5 || !cells[3].matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) return false;
         return harness(line).equals(cells[0]) && line.substring(line.indexOf(" | ") + 3).contains(cells[1]);
     }
 

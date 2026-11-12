@@ -1,6 +1,7 @@
 #!/bin/sh
 # Fresh-clone gate with retained logs. WHY (GF1, LM1): temp launchers hid ship's exit and lost stopped runs.
 # tools/gate.sh ID [ship.sh options], or tools/gate.sh --stop RUN_DIRECTORY
+# CBS_GATE_DIRECTORY names a new retained run directory; --reuse RUN is passed to the publisher.
 # --branch-gate tests the branch publisher with --dry-run only. --red-lines FILE adds one --red-line per nonempty line. CBS_GATE_MAIN names the main checkout.
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)

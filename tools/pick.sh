@@ -109,7 +109,8 @@ FILENAME == ARGV[1] { idx[$1] = $2; nidx++; next }
     cls = f; sub(/^.*\//, "", cls); sub(/\.[^.]*$/, "", cls)
     if (s != "X") nfiles++
     if (f == "pom.xml") { print "ALL\tpom.xml changed"; next }
-    if (f == src "/AllChecks.java" || f == src "/Timing.java" || f == "batch-check.sh") { print "ALL\t" f " runs the suite"; next }
+    if (f == src "/AllChecks.java" || f == src "/Timing.java" ||
+        f == src "/KnownReds.java" || f == "batch-check.sh") { print "ALL\t" f " runs the suite"; next }
     if (index(f, src "/") == 1 && f ~ /\.java$/) {
         rel = substr(f, length(src) + 2)
         if (rel !~ /\// && (cls ~ /Check$/ || cls == "LongPlaytest")) {

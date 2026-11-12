@@ -1,6 +1,6 @@
 #!/bin/sh
 # Gate, merge, records, tag and atomic push. Run through tools/gate.sh (logs and stop).
-# ./ship.sh [--dry-run] [--no-tag] [--version X.Y.Z] [--red-ok WORDS --red-line PART ...]
+# ./ship.sh [--dry-run] [--reuse RUN_DIRECTORY] [--no-tag] [--version X.Y.Z] [--red-ok WORDS --red-line PART ...]
 #           batch/ID [-m TITLE] [-F BODY] [-- harness names (dry runs only)]
 # Exit 0 passed/shipped, 1 stopped, 2 usage. docs/orchestrator.md describes the policy.
 # WHY (GF1, LM1): a stopped timing check reused the suite's status and published.
@@ -25,7 +25,7 @@ if [ -z "$CBS_SHIP_COPY" ]; then
 fi
 cd "${CBS_SHIP_HOME:-$(dirname "$0")}" || exit 1
 
-USAGE='usage: ship.sh [--dry-run] [--no-tag] [--version X.Y.Z] [--red-ok "his words" --red-line "<part of a red line>" ...] <branch> [-m title] [-F body] [-- harness names]'
+USAGE='usage: ship.sh [--dry-run] [--reuse RUN_DIRECTORY] [--no-tag] [--version X.Y.Z] [--red-ok "his words" --red-line "<part of a red line>" ...] <branch> [-m title] [-F body] [-- harness names]'
 DRY=0; NOTAG=0; BRANCH=""; TITLE=""; BODY=""; OVERRIDE=""; REDOK=""; REDLINES=""; REUSE=""
 NL='
 '
@@ -169,7 +169,7 @@ else
 fi
 
 # 5. stops, before any merge
-[ "$#" -eq 0 ] || [ "$DRY" = 1 ] || die "a partial suite never ships: '-- harness names' only with --dry-run"
+[ "$#" -eq 0 ] || [ "$DRY" = 1 ] || die "an explicitly filtered partial suite never ships: '-- harness names' only with --dry-run"
 printf '%s\n' "$CHANGED" | grep -q -x 'docs/notes/gate.txt' && die "$BRANCH changes docs/notes/gate.txt: only ship.sh writes the gate's record"
 CARRIED=$(sh tools/carries.sh "$REF" "$BRANCH" | tr '\n' ' ')   # RL1: a successor cut from its predecessor's tip, which main lacks; its ship file is the predecessor's too
 [ -z "$CARRIED" ] || die "$BRANCH is built on ${CARRIED% }, which is not on main yet: gate that first, then $BRANCH merges main (docs/batch.md, A batch session)"

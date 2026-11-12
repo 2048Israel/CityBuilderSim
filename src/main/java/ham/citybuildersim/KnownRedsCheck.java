@@ -2,6 +2,8 @@ package ham.citybuildersim;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -88,6 +90,8 @@ public class KnownRedsCheck {
         check("the fixture exits with one failing assertion", first.exit() == 1 && red.size() == 3);
         check("passing FAILS labels and section titles stay out of reds", red.stream().noneMatch(r -> r.contains("FAILS") || r.contains("---")));
         check("exact main lines cover the fixture", AllChecks.newCount(red, exact) == 0);
+        String pipes = NAME + " | a literal | pipe | inside | an assertion FAIL";
+        check("exact red lines preserve literal pipe characters", KnownReds.fresh(List.of(pipes), Set.of(pipes)).isEmpty());
         check("a harness-scoped part covers its assertion and both counts", AllChecks.newCount(red, parts) == 0);
         check("another harness's part covers nothing", AllChecks.newCount(red, Set.of("OtherCheck | " + KNOWN_LABEL + " | FIX | 2026-11-12 | fixture")) == 3);
         check("counts alone never cover a red", AllChecks.newCount(red, Set.of(NAME + " | exit 1", NAME + " | 1 FAILED")) == 3);
@@ -120,7 +124,14 @@ public class KnownRedsCheck {
             int expected = fixture.exit() == 1 ? 3 : 4;
             // The publisher uses this same saved-log entry point after merging its records.
             Judged shell = judge(folder.resolve("shell"), log, record);
-            int common = KnownReds.judge(suite, parts, folder.resolve("direct"), false);
+            int common;
+            PrintStream console = System.out;
+            try (PrintStream discarded = new PrintStream(OutputStream.nullOutputStream())) {
+                System.setOut(discarded);
+                common = KnownReds.judge(suite, parts, folder.resolve("direct"), false);
+            } finally {
+                System.setOut(console);
+            }
             check("runner and both shell callers agree for fixture " + fixture.exit(), shell.exit() == expected && common == expected);
             if (fixture.exit() == 2) check("the shell names the extra assertion", shell.output().contains(SECOND_LABEL));
         }
