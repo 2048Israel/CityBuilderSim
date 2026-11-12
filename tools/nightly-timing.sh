@@ -11,6 +11,7 @@ timing_quiet() {
 timing_run() {  # commit, output directory, optional harness
     git -C "$CLONE" checkout -q --detach --force "$1" || return 1
     mkdir -p "$2" || return 1
+    printf '%s\n' "$1" > "$2/commit" || return 1
     ( cd "$CLONE" && mvn -q -B clean ) > "$2/clean.log" 2>&1 || return 1
     ( cd "$CLONE" && ./batch-check.sh --timing ${3:+"$3"} ) > "$2/check.log" 2>&1
     code=$?
