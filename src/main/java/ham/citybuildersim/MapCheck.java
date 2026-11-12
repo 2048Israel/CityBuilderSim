@@ -539,6 +539,7 @@ public class MapCheck {
         reservesDated(city);
         wallJournal(city);
         fieldWallYardEvents(city);
+        actualRunsAcrossWalls(city);
         shoreUnitsDated(city);
         idleYards(city);
         idleYardsOnRuns();
@@ -1981,26 +1982,218 @@ public class MapCheck {
         }
     }
 
-    /** Actual mines and yards record their source flows during reconcile, before the first plan or view (DM2, MF2-S). */
-    static void shoreUnitsDated(Game g) {
-        out.println("\n--- 2h-c. actual site and yard transitions keep their dates and layouts while the map is unseen (DM2, MF2-S) ---");
+    /** An owned neck and its one-plot notch on the real generated ground: its first wall crosses the railway's quarter line (DM2). */
+    static CityLand wallRunLand() {
+        CityLand dry = yardLand();
+        long x = Math.floorDiv(dry.siteX(), CityMap.DISTRICT) * CityMap.DISTRICT;
+        long y = Math.floorDiv(dry.siteY(), CityMap.DISTRICT) * CityMap.DISTRICT;
+        double[] centre = new double[CityLand.CENTRE_FIELDS];
+        centre[CityLand.CENTRE_FIELDS - 5] = centre[CityLand.CENTRE_FIELDS - 4] = -1;
+        centre[CityLand.CENTRE_FIELDS - 2] = x + 105;
+        centre[CityLand.CENTRE_FIELDS - 1] = y + 100;
+        double[][] owned = { { x + 96, y + 96, x + 104, y + 128 }, { x + 120, y + 96, x + 128, y + 128 },
+                { x + 104, y + 98, x + 120, y + 105 }, { x + 104, y + 105, x + 113, y + 106 }, { x + 114, y + 105, x + 120, y + 106 } };
+        return CityLand.restore(World.Key.generated(Founding.DEFAULT_WORLD_SEED), centre, owned, null, null, null);
+    }
+
+    /** Actual CityRuns work crosses a discovered wall, cures it, leaves, and crosses the wall again after its return (DM2). */
+    static void actualRunsAcrossWalls(Game g) {
+        out.println("\n--- 2h-f. actual CityRuns rail and yard cure a discovered wall, leave and return without moving any other box (DM2) ---");
         BuildingVisual.Type[] types = g.getMapTypes();
-        int house = idOf(g, "House");
-        for (int unit : new int[] { Mining.IRON_MINE, idOf(g, "Rail Depot") }) {
+        int house = idOf(g, "House"), store = idOf(g, "Convenience Store"), depot = idOf(g, "Rail Depot"), track = idOf(g, "Rail Spur");
+        CityLand land = wallRunLand();
+        long[] model = new long[types.length];
+        CityMap map = CityMap.canonical(land, land::amountsInOrder, types, model, 0);
+        // Like MainLineCheck's open-ground fixture, choose the eastward gateway: its first main-line arm then follows the owned neck.
+        map.runs().setGateway(0);
+        Months h = new Months(map, model, house, 1);
+        CityMap.District d = map.districts().get(0);
+        int firstWall = 0, movesAfterWall = 0;
+        Snap previous = new Snap(map, d);
+        for (int i = 0; i < 8; i++) {
+            model[store] += 3;
+            h.run(15);
+            Snap now = new Snap(map, d);
+            if (firstWall > 0) movesAfterWall += movedOf(previous.boxes, now.boxes);
+            if (firstWall == 0 && now.plan.wallClear > 0) firstWall = h.last();
+            previous = now;
+        }
+        check("fixture: an actual map discovers a wall before the railway arrives, with later houses and stores keeping every box", h.reconciled
+                && firstWall > 0 && firstWall < h.last() && previous.plan.wallMonth.length > 0 && previous.plan.wallMonth[0] == firstWall
+                && previous.plan.wallClear > 0 && previous.boxes.size() > 0 && movesAfterWall == 0);
+        check("fixture: the chosen eastward gateway leads along the owned neck, with no rail or yard laid before the wall", map.runs().gateway() == 0
+                && map.runs().rail().plots() == 0 && map.runs().yards().isEmpty());
+        if (previous.plan.wallClear == 0) return;
+
+        model[depot] = model[track] = 1;
+        h.run(0);
+        Snap laid = new Snap(map, d);
+        int[] birth = wallRunChange(previous, laid);
+        out.printf("      actual wall born %d; rail and yard laid %d: %d old way plots covered, %d released, %d boxes intersected and %d moved%n",
+                firstWall, h.last(), birth[5], birth[4], birth[1], birth[0]);
+        check("actual reconcile lays a railway and depot yard across the existing wall's kept plots and cures it", map.runs().rail().plots() > 0
+                && map.runs().yards().size() == 1 && birth[5] > 0 && birth[4] > 0 && laid.plan.wallClear == 0);
+        check("the actual rail and yard move exactly their intersected boxes, with every other standing box kept", birth[1] > 0 && birth[0] == birth[1] && birth[2] == 0);
+        check("the actual cure is dated at the reconcile month, preserving the wall's earlier journal", birth[6] == 0 && birth[7] == 0);
+        wallRunRoundTrip(map, land, types, "after the actual wall cure");
+        wallRunArrivals(h, d, store, "after the actual cure");
+
+        model[depot] = model[track] = 0;
+        h.run(0);
+        int idleFrom = h.last();
+        h.month = idleFrom + CityRuns.YARD_IDLE_MONTHS - 1;
+        h.run(0);
+        check("the actual depot's idle yard and its railway remain until the last month before expiry", map.runs().yards().size() == 1
+                && map.runs().yardsActive() == 0 && map.runs().yardIdleSince(0) == idleFrom && map.runs().rail().plots() > 0);
+        Snap beforeGone = new Snap(map, d);
+        h.run(0);
+        Snap gone = new Snap(map, d);
+        int[] removal = wallRunChange(beforeGone, gone);
+        check("at actual idle expiry the yard and rail are taken up, with no other standing box moved", map.runs().yards().isEmpty()
+                && map.runs().rail().plots() == 0 && removal[0] == 0 && removal[0] == removal[1] && removal[2] == 0 && removal[6] == 0 && removal[7] == 0
+                && h.last() == idleFrom + CityRuns.YARD_IDLE_MONTHS);
+
+        // The released railway's ground is room for arrivals. They eventually wall the street piece in again, causing a new real wall event.
+        int restored = 0, outside = 0, wrong = 0, guard = MONTHS_BETWEEN * 8;
+        Snap afterGone = gone;
+        while (afterGone.plan.wallClear == 0 && guard-- > 0) {
+            model[store]++;
+            h.run(3);
+            Snap now = new Snap(map, d);
+            int[] change = wallRunChange(afterGone, now);
+            restored += change[3];
+            outside += change[2] + Math.abs(change[0] - change[1]);
+            wrong += change[6] + change[7];
+            afterGone = now;
+        }
+        out.printf("      rail and yard taken up %d; later arrivals restore %d way plots at %d; no box outside a new way moved (%d)%n",
+                gone.month, restored, h.last(), outside);
+        check("after the actual run is removed, arrivals on its freed ground cause a newly dated wall again", restored > 0 && afterGone.plan.wallClear > 0
+                && afterGone.plan.buildings > gone.plan.buildings && map.runs().rail().plots() == 0);
+        check("the restored wall moves exactly its intersected boxes, with no cascade and no earlier date changed", outside == 0 && wrong == 0);
+
+        model[depot] = model[track] = 1;
+        h.run(0);
+        Snap returned = new Snap(map, d);
+        int[] back = wallRunChange(afterGone, returned);
+        check("the actual rail and yard return across the restored wall and cure it again", map.runs().yards().size() == 1 && map.runs().rail().plots() > 0
+                && back[5] > 0 && back[4] > 0 && returned.plan.wallClear == 0);
+        check("their actual return displaces exactly its intersected boxes and preserves all other boxes and earlier dates", back[1] > 0
+                && back[0] == back[1] && back[2] == 0 && back[6] == 0 && back[7] == 0);
+        wallRunArrivals(h, d, store, "after the actual rail and yard return");
+        wallRunRoundTrip(map, land, types, "after actual removal, new wall and return");
+    }
+
+    /** Standing moves, legal intersections, outside moves, newly kept/released ways, old way plots covered by new work, bad dates and a changed prefix. */
+    static int[] wallRunChange(Snap before, Snap after) {
+        boolean[] changed = new boolean[DistrictPlan.AREA], highway = new boolean[DistrictPlan.AREA], kept = new boolean[DistrictPlan.AREA];
+        int[] result = new int[8];
+        for (int r : before.plan.wallChange) kept[r >>> 1] = (r & 1) != 0;
+        for (int p = 0; p < changed.length; p++) {
+            changed[p] = after.fixed[p] != 0 && before.fixed[p] != after.fixed[p];
+            highway[p] = after.fixed[p] == DistrictPlan.FIXED_HIGHWAY && before.fixed[p] != DistrictPlan.FIXED_HIGHWAY;
+            if (changed[p] && kept[p]) result[5]++;
+        }
+        int old = before.plan.wallChange.length;
+        if (after.plan.wallChange.length < old || !Arrays.equals(before.plan.wallChange, Arrays.copyOf(after.plan.wallChange, old))
+                || !Arrays.equals(before.plan.wallMonth, Arrays.copyOf(after.plan.wallMonth, old))) result[7]++;
+        for (int k = old; k < after.plan.wallChange.length; k++) {
+            int r = after.plan.wallChange[k];
+            if ((r & 1) != 0) { changed[r >>> 1] = true; result[3]++; }
+            else result[4]++;
+            if (after.plan.wallMonth[k] != after.month) result[6]++;
+        }
+        for (PlanBox b : before.boxes) {
+            boolean intersects = anyPlot(b, 0, p -> changed[p]) || anyPlot(b, HIGHWAY_CLEAR, p -> highway[p]);
+            if (intersects) result[1]++;
+            if (!after.boxes.contains(b)) {
+                result[0]++;
+                if (!intersects) result[2]++;
+            }
+        }
+        return result;
+    }
+
+    /** Real arrivals after a run keep the boxes standing, and place additional boxes as well. */
+    static void wallRunArrivals(Months h, CityMap.District d, int store, String phase) {
+        int moved = 0, added = 0;
+        for (int i = 0; i < MONTHS_BETWEEN; i++) {
+            Snap before = new Snap(h.map, d);
+            h.model[store]++;
+            h.run(3);
+            Snap after = new Snap(h.map, d);
+            moved += movedOf(before.boxes, after.boxes);
+            added += after.plan.buildings - before.plan.buildings;
+        }
+        check("real arrivals " + phase + " place additional houses and stores without moving any standing box", h.reconciled && added > 0 && moved == 0);
+    }
+
+    /** A saved actual source/wall history must replay without a view adding or changing an event. */
+    static void wallRunRoundTrip(CityMap map, CityLand land, BuildingVisual.Type[] types, String phase) {
+        int month = map.month();
+        byte[] side = map.writeSidecar(month);
+        CityMap back = CityMap.readSidecar(side, land, land::amountsInOrder, types, month, CityMap.stampIn(side));
+        check("the current sidecar " + phase + " round trips all actual dates and boxes byte for byte", back != null && map.same(back)
+                && sameSourcePlans(map, back) && Arrays.equals(side, back.writeSidecar(month)));
+    }
+
+    /** Actual mines, yards and shore works record their source flows during reconcile, before the first plan or view (DM2, MF2-S). */
+    static void shoreUnitsDated(Game g) {
+        out.println("\n--- 2h-c. actual site, yard and shore transitions displace only intersected boxes and keep their source dates while unseen (DM2, MF2-S) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), depot = idOf(g, "Rail Depot"), terminal = idOf(g, "General Cargo Terminal");
+        for (int unit : new int[] { Mining.IRON_MINE, depot, terminal }) {
             boolean mine = unit == Mining.IRON_MINE;
-            String name = mine ? "mine" : "yard";
-            CityLand land = mine ? g.getCityLand().copy() : yardLand();
+            String name = mine ? "mine" : unit == depot ? "yard" : "shore";
+            World coast = World.of(Founding.DEFAULT_WORLD_SEED);
+            CityLand land = mine ? g.getCityLand().copy() : unit == depot ? yardLand()
+                    : coastBeforeMF1(Founding.DEFAULT_WORLD_SEED, coast.foundingX() - CityMap.DISTRICT, coast.foundingY(), types, SHORE_SIDE, new long[types.length]).land();
             java.util.function.Function<Resource, double[]> remaining = mine ? g.getLandManager()::remainingByHolding : land::amountsInOrder;
             long[] model = new long[types.length];
+            model[house] = mine ? 2000 : unit == depot ? 500 : 5000;
             CityMap watched = CityMap.canonical(land, remaining, types, model, 99);
             CityMap unseen = CityMap.canonical(land, remaining, types, model, 99);
-            model[house] = 50;
+            List<Snap> standing = new ArrayList<>();
+            List<byte[]> siteBefore = new ArrayList<>();
+            List<CityMap.District> beforeDistricts = new ArrayList<>(watched.districts());
+            for (CityMap.District d : beforeDistricts) {
+                standing.add(new Snap(watched, d));
+                siteBefore.add(watched.planInput(d).site.clone());
+            }
             model[unit] = 1;
             boolean reconciled = true, physicalAtBirth = false;
             for (int month = 100; month <= 150; month++) {
                 if (month > 100) model[house]++;
                 reconciled &= watched.reconcile(model, month) && unseen.reconcile(model, month);
-                if (month == 100) physicalAtBirth = mine ? unseen.minedSites().size() > 0 : unseen.runs().yards().size() == 1;
+                if (month == 100) {
+                    physicalAtBirth = mine ? unseen.minedSites().size() > 0 : unit == depot ? unseen.runs().yards().size() == 1 : unseen.shore().count(unit) == 1;
+                    int prior = 0, physicalHit = 0, fieldHit = 0, hit = 0, moved = 0, outside = 0;
+                    for (int k = 0; k < beforeDistricts.size(); k++) {
+                        CityMap.District d = beforeDistricts.get(k);
+                        Snap before = standing.get(k), after = new Snap(watched, d);
+                        byte[] oldSite = siteBefore.get(k), newSite = watched.planInput(d).site;
+                        boolean[] changed = new boolean[DistrictPlan.AREA];
+                        for (int p = 0; p < changed.length; p++) changed[p] = (newSite[p] == DistrictPlan.SITE_MINED && oldSite[p] != DistrictPlan.SITE_MINED)
+                                || (after.fixed[p] != 0 && before.fixed[p] == 0);
+                        boolean[] physical = changed.clone();
+                        for (int r = 0; r < d.wallMonth.length; r++) if (d.wallMonth[r] == month && (d.wallChange[r] & 1) != 0) changed[d.wallChange[r] >>> 1] = true;
+                        for (PlanBox b : before.boxes) {
+                            prior++;
+                            if (anyPlot(b, 0, p -> physical[p])) physicalHit++;
+                            if (anyPlot(b, 0, p -> oldSite[p] == DistrictPlan.SITE_FIELD && newSite[p] == DistrictPlan.SITE_MINED)) fieldHit++;
+                            boolean intersects = anyPlot(b, 0, p -> changed[p]);
+                            if (intersects) hit++;
+                            if (!after.boxes.contains(b)) {
+                                moved++;
+                                if (!intersects) outside++;
+                            }
+                        }
+                    }
+                    out.printf("      %s born at 100: %d boxes stood before it, %d intersect its new physical plots (%d on an unmined field), %d intersect its plots or new ways, %d move, %d outside them%n",
+                            name, prior, physicalHit, fieldHit, hit, moved, outside);
+                    check("fixture: boxes stand on the " + name + " source's actual future ground before month 100", prior > 0 && physicalHit > 0 && (!mine || fieldHit > 0));
+                    check("the actual " + name + " source born at 100 displaces exactly its intersected boxes and leaves every other box standing", moved == hit && outside == 0);
+                }
                 for (CityMap.District d : watched.districts()) watched.plan(d);
             }
             // No input or plan has been requested from unseen. The source journal has to exist in this sidecar already.
@@ -2039,8 +2232,9 @@ public class MapCheck {
                 for (CityMap.District d : watched.districts()) watched.plan(d);
             }
             byte[] after = back.writeSidecar(156);
-            check("actual " + name + " growth records its changed source share, leaving ordinary units in the plan", excludedAtGrowth == (mine ? 2 : 1)
-                    && exclusionChangeAt(back, unit, 151) == (mine ? -1 : 0));
+            int expectedGrowth = unit == depot ? 1 : 2;
+            check("actual " + name + " growth records its changed source share, leaving ordinary units in the plan", excludedAtGrowth == expectedGrowth
+                    && exclusionChangeAt(back, unit, 151) == (unit == depot ? 0 : -1));
             check("the actual " + name + " departure and return record their own months, before another view", excludedBeforeDeparture > 0
                     && exclusionChangeAt(back, unit, 153) == excludedBeforeDeparture && exclusionChangeAt(back, unit, 154) == -1
                     && exclusionChangeAt(back, unit, 156) == 0);
@@ -6767,17 +6961,22 @@ public class MapCheck {
                 wantUnits, overUnits, cells.size(), cells);
         check("...its plan places the deal's units first of its industry (the unit a month on as it came, CL3), every one, in cells that touch one another: one campus",
                 firstOfIndustry && placedUnits == wantUnits && connected(cells));
-        // The old campus migration is no longer readable; a current sidecar must also refuse counts moved without their logs (DM2).
+        // The old campus migration is no longer readable; the current writer catches its logs up to these counts before writing them (CL3).
         CityMap.District away = null;
         for (CityMap.District d : m.districts()) if (d != campus && (away == null || d.index < away.index)) away = d;
         campus.counts[cracker]--;
         away.counts[cracker]++;
         for (CityMap.District d : new CityMap.District[] { campus, away }) { d.usedHalf = m.usedOf(d); d.usedCells = m.cellsOf(d); d.usedRoad = m.roadOf(d); }
-        byte[] five = m.writeSidecar(1, 5), current = m.writeSidecar(1);
-        CityMap fromFive = CityMap.readSidecar(five, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(five));
-        CityMap fromCurrent = CityMap.readSidecar(current, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(current));
+        boolean countsAheadOfLogs = !logsAddUp(m);
+        int campusMonth = m.month();
+        byte[] five = m.writeSidecar(campusMonth, 5), current = m.writeSidecar(campusMonth);
+        CityMap fromFive = CityMap.readSidecar(five, m.land(), r -> m.land().amountsInOrder(r), types, campusMonth, CityMap.stampIn(five));
+        CityMap fromCurrent = CityMap.readSidecar(current, m.land(), r -> m.land().amountsInOrder(r), types, campusMonth, CityMap.stampIn(current));
         check("...a FORMAT 5 sidecar is refused rather than migrating its campus units", fromFive == null);
-        check("...a current sidecar with campus counts moved without their logs is refused", fromCurrent == null);
+        int currentCampuses = 0;
+        if (fromCurrent != null) for (CityMap.District d : fromCurrent.districts()) if (fromCurrent.campusCells(d) > 0) currentCampuses++;
+        check("...the current writer catches up the moved campus counts' logs, and both districts round trip unchanged", countsAheadOfLogs && logsAddUp(m)
+                && fromCurrent != null && fromCurrent.same(m) && currentCampuses == 2 && Arrays.equals(current, fromCurrent.writeSidecar(campusMonth)));
         campus.counts[cracker]++;
         away.counts[cracker]--;
         for (CityMap.District d : new CityMap.District[] { campus, away }) { d.usedHalf = m.usedOf(d); d.usedCells = m.cellsOf(d); d.usedRoad = m.roadOf(d); }
@@ -6839,11 +7038,12 @@ public class MapCheck {
                 grown.size() == before.size() + 1 && grown.subList(0, before.size()).equals(before) && gone == 2 && newestGone
                         && !shrunk.contains(lastGct) && !shrunk.contains(nextLast));
         m.reconcile(more);
-        byte[] fmtCurrent = m.writeSidecar(1), fmt5 = m.writeSidecar(1, 5);
-        CityMap rCurrent = CityMap.readSidecar(fmtCurrent, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(fmtCurrent));
-        CityMap r5 = CityMap.readSidecar(fmt5, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(fmt5));
+        int shoreMonth = m.month();
+        byte[] fmtCurrent = m.writeSidecar(shoreMonth), fmt5 = m.writeSidecar(shoreMonth, 5);
+        CityMap rCurrent = CityMap.readSidecar(fmtCurrent, m.land(), r -> m.land().amountsInOrder(r), types, shoreMonth, CityMap.stampIn(fmtCurrent));
+        CityMap r5 = CityMap.readSidecar(fmt5, m.land(), r -> m.land().amountsInOrder(r), types, shoreMonth, CityMap.stampIn(fmt5));
         check("...kept in the current sidecar: the same works and bytes round trip, while FORMAT 5 is refused",
-                rCurrent != null && rCurrent.same(m) && Arrays.equals(rCurrent.writeSidecar(1), fmtCurrent) && r5 == null);
+                rCurrent != null && rCurrent.same(m) && Arrays.equals(rCurrent.writeSidecar(shoreMonth), fmtCurrent) && r5 == null);
         // Each drawn once: its type's plots and its quay's over every tile about the works.
         MapTiles tiles = new MapTiles(m);
         TilePainter.Input in = new TilePainter.Input();

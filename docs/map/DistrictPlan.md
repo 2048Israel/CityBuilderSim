@@ -293,7 +293,7 @@
 | 988 | `public int joins, shoreJoins, strays, mergesRefused, onFields` | Pieces the join joined; dead ends joined along a cut; street plots taken up as strays; merges refused for splitting the network; buildings placed on a field. |
 | 991 | `public int boughtStreets` | Street plots laid on ground the city bought inside a cell already open, after the stray pieces were taken up (Builder.cellsOnGrown(), FX9): a harness's figure. |
 | 994 | `public int boughtCells` | Cell layings of an open cell's own ring and streets on ground bought inside it (Builder.cellsOnGrown(), FX9): a harness's figure. |
-| 997 | `public int wallTries, wallClear` | How many times the plan was made again with the way to a piece the buildings wall in kept clear of them (FW11, A PIECE BUILDINGS WALL IN; 0 for nearly every district), and the plots so kept clear in the plan returned. |
+| 997 | `public int wallTries, wallClear` | The most wall retries at one source month (for an unlogged plan, its rebuilds), and the plots kept clear in the returned picture. |
 | 999 | `public int[] wallMonth, wallChange` | The wall-way journal returned for the map to keep, including this plan's discoveries (DM2). |
 | 1001 | `public int[] wallWay` | The plots kept clear in this picture, in plot order. |
 | 1004 | `public int wallField` | ...and the plots of buildings on a resource field's plots (SITE_FIELD) the ways found over all those plans crossed (LC3): what wallJoinable() refused until then, so a district with some was left with its piece apart; ... |

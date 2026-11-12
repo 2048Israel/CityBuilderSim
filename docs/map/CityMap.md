@@ -130,7 +130,7 @@
 | 214 | `CityMap.COARSE_ABOVE` | `1024` | Above this many districts under the land's box, a canonical build looks at the ground coarsely first and measures only districts with land in or beside them: 1,024 (a box 246 km across). |
 | 217 | `CityMap.COARSE_STRIDE` | `32` | The coarse look's stride, in plots: 32, a sample a tile. |
 | 220 | `CityMap.MAGIC` | `0x434D4150` | The sidecar's magic: "CMAP". |
-| 223 | `CityMap.FORMAT` | `16` | The sidecar's format: 16 since DM2, each district's dated wall ways and site/yard/shore unit adjustments after the runs' journals (months, plots or types and transitions, as varints); an older sidecar starts with no r... |
+| 223 | `CityMap.FORMAT` | `16` | The sidecar's format: 16 since DM2, each district's dated wall ways, first-batch site/yard/shore unit adjustments and compact site-mask histories after the runs' journals; older sidecars are refused and the map is reb... |
 | 226 | `CityMap.OLDEST_READ` | `16` | The oldest sidecar read: FORMAT 16 (DM2); earlier maps lack the source history needed to replay dated walls faithfully. |
 | 229 | `CityMap.STAMP_AT` | `4 + 4 + 8 + 4` | Where the stamp sits in the sidecar's raw bytes: after the magic, the format, the seed and the month. |
 | 1009 | `CityMap.NONE` | `0, SOME = 1, ALL = 2` |  |
