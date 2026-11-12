@@ -28,6 +28,7 @@ public class GdpCheck {
     public static void main(String[] args) {
 
         delayedExports();
+        forecastPrices();
 
         NationalAccounts na = new NationalAccounts();
 
@@ -817,6 +818,61 @@ public class GdpCheck {
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** GDP1: a new input band must reach every works' next run decision. */
+    static void forecastPrices() {
+        System.out.println("\n--- a works forecasts its inputs on the current band (GDP1) ---");
+        for (int id : new int[] { ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS,
+                ham.citybuildersim.sectors.CopperRefining.ROD_MILL }) {
+            BuildingManager b = new BuildingManager();
+            b.initializeTemplates();
+            EconomyManager e = new EconomyManager(b);
+            BuildingsTemplate works = b.getTemplate(id);
+            b.addStack(works, 1, true);
+            Sector sector = e.sector(works.getSector());
+            Good output = id == ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS ? Good.WIRE_CABLE : Good.COPPER_ROD;
+            Good input = id == ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS ? Good.COPPER_ROD : Good.COPPER;
+            GoodsMarket feed = e.getMarket(input), product = e.getMarket(output);
+            double oldImport = input.worldImportPrice(), feedPerUnit = works.uses(input) / works.makes(output);
+            feed.setWorldPrices(oldImport, oldImport * .6);
+            feed.strike(1, 0, 1);
+            double oldCost = sector.flowCostPerUnit(output), oldLocal = feed.getLocalPrice();
+            // The export pays at the old quote; then the input band doubles
+            // before the next order decision, without another local clearing.
+            double exportPrice = oldCost * 1.5;
+            product.setWorldPrices(exportPrice * 2, exportPrice);
+            product.strike(0, 0, 0);
+            sector.planOrders();
+            assertTrue(works.getName() + ": fixture the old input quote permits exports", sector.orderShare(output) == 1);
+            sector.endOrders();
+            feed.setWorldPrices(oldImport * 2, oldImport * 1.2);
+            GoodsMarket clearing = new GoodsMarket(input);
+            clearing.setWorldPrices(oldImport * 2, oldImport * 1.2);
+            clearing.strike(feed.getSupplyFlow(), feed.getSupplyStock(), feed.getDemand());
+            double currentCost = clearing.landedPrice() * feedPerUnit;
+            assertTrue(works.getName() + ": fixture the export is between the stale and current input cost",
+                    oldCost < product.netExportPrice() && product.netExportPrice() < currentCost
+                            && feed.importPrice() > oldImport && feed.getLocalPrice() == oldLocal);
+            sector.planOrders();
+            sector.produceFlow(output);
+            check(works.getName() + ": the forecast costs the current input band", sector.flowCostPerUnit(output), currentCost);
+            check(works.getName() + ": no inputs ordered for a loss-making export", sector.bid(input), 0);
+            check(works.getName() + ": no goods made for a loss-making export", sector.outputRow(output).produced, 0);
+            sector.endOrders();
+
+            // A real margin over even the all-imported bill still runs.
+            double pays = feed.importPrice() * feedPerUnit * (1 + 2 * Sector.FLOW_EXPORT_HEADROOM);
+            product.setWorldPrices(pays * 2, pays);
+            sector.planOrders();
+            sector.produceFlow(output);
+            double made = sector.outputRow(output).produced;
+            sector.shipUnsoldFlow(output, product);
+            assertTrue(works.getName() + ": a real margin still makes and exports the goods",
+                    made > 0 && sector.orderShare(output) == 1 && sector.outputRow(output).exported == made
+                            && sector.pending().exports >= sector.bid(input) * feed.importPrice());
+            sector.endOrders();
+        }
     }
 
     /**

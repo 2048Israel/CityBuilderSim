@@ -1,4 +1,4 @@
-# GoodsMarket.java - 641 lines · 65 methods · 3 constants · model
+# GoodsMarket.java - 658 lines · 67 methods · 3 constants · model
 
 `ham/citybuildersim/GoodsMarket.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
@@ -55,7 +55,7 @@
 | 213 | · THE WORLD'S BAND (WN3, 2026-10-28; docs/studies/spec-nations.md 4) |
 | 332 | ...AND WHAT THE SHIPPER IS ACTUALLY LEFT WITH |
 | 361 | · the wedge, taken apart (0.7.29) |
-| 537 | · readers |
+| 554 | · readers |
 
 ## Constants
 
@@ -96,7 +96,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 46 | 596 | **type** `public final class GoodsMarket` | Where one good clears between whoever makes it and whoever wants it. |
+| 46 | 613 | **type** `public final class GoodsMarket` | Where one good clears between whoever makes it and whoever wants it. |
 
 ### the last strike (lines 65-91)
 
@@ -144,7 +144,7 @@
 | 356 | 1 | `public double netExportPrice()` | What an exporter nets on one, after the haulage it will be billed for. |
 | 359 | 1 | `public double netImportPrice()` | ...and what an importer pays for one, landed AND hauled. |
 
-### the wedge, taken apart (0.7.29) (lines 361-536)
+### the wedge, taken apart (0.7.29) (lines 361-553)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -153,45 +153,47 @@
 | 381 | 3 | `public double worldMargin()` | The world's own margin in the band: the band with no freight in it at all, which no railway narrows (0.7.29). |
 | 386 | 1 | `public double railInWedge()` | The railway's charge on the wedge, both ways: what an importer pays on top and an exporter gives up (0.7.29). |
 | 401 | 4 | `public double landedPrice()` | What one unit costs a buyer to bring in this month (0.7.12 round 6): the local price when somebody in the city has the good on offer, and the import price when nobody does and it can be imported. |
-| 407 | 3 | `public double floor()` | The floor: the export price, or nothing. |
-| 412 | 4 | `public double ceiling()` | The ceiling: the import price, or twice the floor. |
-| 418 | 3 | `private double openingPrice()` | The middle of the band: where a market nobody has told about anything opens. |
-| 429 | 21 | `public void strike(double productionFlow, double stock, double demand)` | Prices the month. |
-| 452 | 10 | `public void startMonth()` | Wipes the month's tally, not the draws. |
-| 464 | 3 | `void logDraw(Trade t)` | A draw's fill, kept with the month's (Markets.draw(); FW5, 2026-10-25). |
-| 469 | 1 | `List<Trade> monthsDraws()` | The month's draws since it last closed (FW5, 2026-10-25): read-only. |
-| 472 | 1 | `void closeDraws()` | The month is over: its draws were shown with its fills, and the next draw is the next month's (FW5, 2026-10-25). |
-| 475 | 1 | `void noteDrawn(double units)` | A draw since the last clearing, counted toward the next strike's demand. |
-| 482 | 4 | `void closeMonth()` | Closes the month's clearing: folds what the city took - the larger of what it asked for and what it got, at home or from the world - into the trend. |
-| 488 | 8 | `public double getDemandTrend()` | The average take of this good a month, over the months the good plans on. |
-| 498 | 5 | `public double[] getTakenHistory()` | The year, as the save carries it: oldest first. |
-| 505 | 8 | `public void restoreTakenHistory(double[] saved)` | The year, put back on load. |
-| 515 | 5 | `double takeDrawn()` | ...and the strike takes them. |
-| 521 | 1 | `public double getDrawn()` |  |
-| 524 | 9 | `public Trade record(String seller, String buyer, double units, double price)` | A fill, recorded. |
-| 534 | 1 | `void noteOffered(double units)` |  |
-| 535 | 1 | `void noteBid(double units)` |  |
+| 413 | 4 | `public double currentLandedPrice()` | The next order's input quote on today's band (GDP1): the last clearing's supply and demand, priced at the current world, exchange and freight prices. |
+| 419 | 3 | `public double floor()` | The floor: the export price, or nothing. |
+| 424 | 4 | `public double ceiling()` | The ceiling: the import price, or twice the floor. |
+| 430 | 3 | `private double openingPrice()` | The middle of the band: where a market nobody has told about anything opens. |
+| 441 | 9 | `public void strike(double productionFlow, double stock, double demand)` | Prices the month. |
+| 452 | 15 | `private double priceAt(double supply, double demand)` | The clearing's price on the current band, also used by the input quote before the next clearing (GDP1). |
+| 469 | 10 | `public void startMonth()` | Wipes the month's tally, not the draws. |
+| 481 | 3 | `void logDraw(Trade t)` | A draw's fill, kept with the month's (Markets.draw(); FW5, 2026-10-25). |
+| 486 | 1 | `List<Trade> monthsDraws()` | The month's draws since it last closed (FW5, 2026-10-25): read-only. |
+| 489 | 1 | `void closeDraws()` | The month is over: its draws were shown with its fills, and the next draw is the next month's (FW5, 2026-10-25). |
+| 492 | 1 | `void noteDrawn(double units)` | A draw since the last clearing, counted toward the next strike's demand. |
+| 499 | 4 | `void closeMonth()` | Closes the month's clearing: folds what the city took - the larger of what it asked for and what it got, at home or from the world - into the trend. |
+| 505 | 8 | `public double getDemandTrend()` | The average take of this good a month, over the months the good plans on. |
+| 515 | 5 | `public double[] getTakenHistory()` | The year, as the save carries it: oldest first. |
+| 522 | 8 | `public void restoreTakenHistory(double[] saved)` | The year, put back on load. |
+| 532 | 5 | `double takeDrawn()` | ...and the strike takes them. |
+| 538 | 1 | `public double getDrawn()` |  |
+| 541 | 9 | `public Trade record(String seller, String buyer, double units, double price)` | A fill, recorded. |
+| 551 | 1 | `void noteOffered(double units)` |  |
+| 552 | 1 | `void noteBid(double units)` |  |
 
-### readers (lines 537-641)
+### readers (lines 554-658)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 539 | 1 | `public double getLocalPrice()` |  |
-| 540 | 1 | `public double getSupplyFlow()` |  |
-| 541 | 1 | `public double getSupplyStock()` |  |
-| 543 | 1 | `public double getSupply()` | Flow plus the slice of stock the month was priced on. |
-| 544 | 1 | `public double getDemand()` |  |
-| 546 | 1 | `public double getOffered()` |  |
-| 547 | 1 | `public double getBid()` |  |
-| 548 | 1 | `public double getLocalFilled()` |  |
-| 549 | 1 | `public double getImported()` |  |
-| 550 | 1 | `public double getExported()` |  |
-| 552 | 1 | `public List<Trade> getTrades()` | The month's fills: the clearing's and, since FW5 (2026-10-25), the month's draws too, which the clearing no longer wipes. |
-| 555 | 4 | `public double getPriceIndex()` | Where in the band the price sits: 0 the floor, 1 the ceiling. |
-| 561 | 3 | `public boolean isShortage()` | True when the buyers wanted more than the makers brought. |
-| 591 | 3 | `public void setLocalPrice(double price)` | The price a month traded at, put back on load - restored, never recomputed. |
-| 596 | 5 | `public void restoreStrike(double flow, double stock, double demand)` | The last strike's inputs, put back so the screens read the saved month. |
-| 609 | 8 | `public void restoreTally(double imported, double exported, double localFilled, double offered, double bid, double drawn)` | The month's tally and the draws not yet struck, put back so a city just loaded reads what the one that kept running does: the goods imported, exported and filled at home in the month last closed (SpreadPlanner.values(... |
-| 618 | 13 | `public void reset()` |  |
-| 637 | 4 | `public void redenominate(double scale)` | The price in the new unit. |
+| 556 | 1 | `public double getLocalPrice()` |  |
+| 557 | 1 | `public double getSupplyFlow()` |  |
+| 558 | 1 | `public double getSupplyStock()` |  |
+| 560 | 1 | `public double getSupply()` | Flow plus the slice of stock the month was priced on. |
+| 561 | 1 | `public double getDemand()` |  |
+| 563 | 1 | `public double getOffered()` |  |
+| 564 | 1 | `public double getBid()` |  |
+| 565 | 1 | `public double getLocalFilled()` |  |
+| 566 | 1 | `public double getImported()` |  |
+| 567 | 1 | `public double getExported()` |  |
+| 569 | 1 | `public List<Trade> getTrades()` | The month's fills: the clearing's and, since FW5 (2026-10-25), the month's draws too, which the clearing no longer wipes. |
+| 572 | 4 | `public double getPriceIndex()` | Where in the band the price sits: 0 the floor, 1 the ceiling. |
+| 578 | 3 | `public boolean isShortage()` | True when the buyers wanted more than the makers brought. |
+| 608 | 3 | `public void setLocalPrice(double price)` | The price a month traded at, put back on load - restored, never recomputed. |
+| 613 | 5 | `public void restoreStrike(double flow, double stock, double demand)` | The last strike's inputs, put back so the screens read the saved month. |
+| 626 | 8 | `public void restoreTally(double imported, double exported, double localFilled, double offered, double bid, double drawn)` | The month's tally and the draws not yet struck, put back so a city just loaded reads what the one that kept running does: the goods imported, exported and filled at home in the month last closed (SpreadPlanner.values(... |
+| 635 | 13 | `public void reset()` |  |
+| 654 | 4 | `public void redenominate(double scale)` | The price in the new unit. |
 

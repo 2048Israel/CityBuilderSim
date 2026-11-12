@@ -23,3 +23,20 @@ LongPlaytest finding "negative monthly GDP"; a passing money audit; and a note
 identifying GDP's model consumers (policy, central bank, test player included)
 and whether the default trace moves. Build from main. This is a versioned
 batch, with a provisional ship file pushed before the required gate dry run.
+
+## Author's decision after attribution, 2026-11-12 about 17:00
+
+Asked "Should GDP1 make Manufacturing's forecast read the current rod price?",
+Jerus answered:
+
+> Yes, fix the forecast
+
+The unsold-stock behavior already passes; RT3's wire works instead decided
+its run using a stale rod price, then bought rod at the new band. Fix the
+shared forecast input-cost path for every works, with a fixture that raises
+an input's import price while output's net export price lies between the old
+and current costs. It must refuse loss-making exports and retain profitable
+ones. Keep LongPlaytest's finding unchanged. Replay RT3 seed 11 to m903 and
+report wire output, rod costs, export proceeds and m902 GDP. If the default
+trace moves, run the final-model ensemble; every criterion passed by the
+newest baseline must still pass before readiness.

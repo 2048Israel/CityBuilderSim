@@ -129,7 +129,7 @@ no accounting-induced trace movement is claimed.
 - `git diff --check` passes; edited files keep LF. No save slot, model,
   LongPlaytest finding or publisher-owned record is changed.
 
-## Disposition: blocked on the author's decision
+## Initial disposition: blocked on the author's decision
 
 Lanekeeper's instruction of 2026-11-12 16:54
 (`20261112-165434-548-lanekeeper-17b5`) confirms this attribution is the right
@@ -139,3 +139,51 @@ pick, push notes and code, **not push a ship file**, and report blocked.
 Accordingly there is no GDP1-ship.md, no readiness marker and no gate dry run.
 No ensemble is run: no model or default-player code changed. A resumed
 production/pricing change must judge its own trace and ensemble requirement.
+
+## Resumed: the author's decision and the forecast correction
+
+Jerus, 2026-11-12 about 17:00, asked "Should GDP1 make Manufacturing's
+forecast read the current rod price?": **"Yes, fix the forecast"**.
+Lanekeeper relayed this as instruction `20261112-171726-733-lanekeeper-fdf9`.
+The resumed batch fixes the common run forecast, retains the inventory proof,
+and must keep every ensemble criterion that the newest baseline passed.
+
+Before editing, the stale-input reader survey found:
+
+- `Sector.inputCost()` (including captive-input recursion) reads
+  `inputPrice()`, then `unitCost()` and `flowCostPerUnit()` feed
+  `exportsAtNoLoss()` and `forecastFlow()` for every flow-making sector.
+- `Sector.inputCostAtRate()` reads that same input price, feeding marginal
+  costs, `getExportBoundOutput()` and `forecastOrder()` for stockable outputs.
+  CopperRefining's override also uses it to replace purchased scrap cost with
+  the old-copper pool's actual price. There is no wire-specific price reader
+  to repair; all these works inherit the corrected input quote.
+- Direct `landedPrice()` consumers outside the works' run decision are
+  Markets' order/supplier-credit budgets, EconomyManager's inventory pricing,
+  BuildCard and Motoring fuel figures, Freight's diesel figure, Haulage's
+  crop/diesel/truck estimates, LuxuryRetail's shelf cost, and Retail's basket
+  and fuel costs. They retain the existing recorded-clearing quote.
+- SpreadPlanner's building appraisals use current net import/export prices
+  (local price only for a missing side of a band). Refining's separate run
+  rule explicitly reads after clearing; its run/outlook local crude and
+  product quotes are the just-cleared prices. Neither is the pre-clearing
+  FL1 stale-input path. Ordinary price getters and statements remain reads
+  of the recorded month, rather than being rewritten by this correction.
+
+**★ Design:** `GoodsMarket.currentLandedPrice()` prices the last observed
+supply and demand on the current world/exchange/freight band. It shares the
+clearing's price calculation, uses the current import price with no local
+supply, and does not mutate the recorded clearing price. `Sector.inputPrice()`
+uses it for every works. Quantities for the next order are still forecasts
+of demand, as FL1 specifies; this corrects their price, without adding a
+second clearing or changing the prior statement. No new saved state is needed:
+the last supply and demand and the world band are already saved.
+
+The new GdpCheck section causes the error twice, with a Wire & Cable Works
+and a Rod Mill. Local supply is present at the old clearing, so the old
+landed getter really is stale. The import band then doubles without clearing;
+the output export price lies between the old and new input costs. On the
+old model, both works order their inputs and make the full run at a loss:
+**six assertions fail** in `target/checks/gdp1-forecast-before.txt`. Each
+fixture also raises the output price enough to cover an all-imported bill
+and checks that a real margin still produces and exports the goods.

@@ -1463,14 +1463,15 @@ public abstract class Sector {
 
     /**
      * What a unit of an input costs it to bring in when the month's inputs are costed (inputCostAtRate()): the local price where somebody here
-     * offers it, the import price where nobody does (GoodsMarket.landedPrice()) - not the price struck on a month nobody bid (WN3, THE ORDER: a
+     * offers it, the import price where nobody does (GoodsMarket.currentLandedPrice()) - not the price struck on a month nobody bid (WN3, THE ORDER: a
      * works that stopped ordering an input would find it cheap, ordering again would make it dear, and the works would run every other month on a
-     * price its own order set). The same figure whenever somebody offers the input or the works bids for it, as it always did.
+     * price its own order set). GDP1: price that last clearing's supply and demand on the current band, so FL1 and the stockable forecast do not
+     * make their run decision on last month's world, exchange or freight prices. The recorded clearing price is left alone.
      */
     protected double inputPrice(Good g) {
         if (markets == null) return 0;
         GoodsMarket m = markets.get(g);
-        return m == null ? 0 : m.landedPrice();
+        return m == null ? 0 : m.currentLandedPrice();
     }
 
     /**
