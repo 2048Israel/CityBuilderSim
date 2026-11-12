@@ -1,4 +1,4 @@
-# BuybackCheck.java - 1,240 lines · 39 methods · 5 constants · harnesses
+# BuybackCheck.java - 1,291 lines · 40 methods · 5 constants · harnesses
 
 `ham/citybuildersim/BuybackCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
@@ -64,24 +64,24 @@
 >    the same sums.
 > ... (2 more lines in the source)
 
-**Uses:** [Buyback](Buyback.md) (192), [Game](Game.md) (21), [Debt](Debt.md) (20), [PriceLevel](PriceLevel.md) (16), [HouseholdBalance](HouseholdBalance.md) (13), [Founding](Founding.md) (13), [Auction](Auction.md) (11), [DebtManager](DebtManager.md) (11), [MoneyAudit](MoneyAudit.md) (8), [CapitalFlows](CapitalFlows.md) (4), [Sectors](Sectors.md) (4), [LongTermBond](LongTermBond.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [GameFiles](GameFiles.md) (2), [Bank](Bank.md) (2), [CallTree](CallTree.md) (2), [CentralBank](CentralBank.md) (1), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [Rollover](Rollover.md) (1), [HistorySave](HistorySave.md) (1)
+**Uses:** [Buyback](Buyback.md) (197), [Game](Game.md) (23), [Debt](Debt.md) (23), [PriceLevel](PriceLevel.md) (16), [MoneyAudit](MoneyAudit.md) (14), [HouseholdBalance](HouseholdBalance.md) (13), [Founding](Founding.md) (13), [Auction](Auction.md) (11), [DebtManager](DebtManager.md) (11), [CapitalFlows](CapitalFlows.md) (4), [Sectors](Sectors.md) (4), [GameFiles](GameFiles.md) (3), [LongTermBond](LongTermBond.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [OutwardInvestment](OutwardInvestment.md) (2), [Bank](Bank.md) (2), [CallTree](CallTree.md) (2), [CentralBank](CentralBank.md) (1), [TempDirs](TempDirs.md) (1), [ForeignDebtCheck](ForeignDebtCheck.md) (1), [RestructureCheck](RestructureCheck.md) (1), [Rollover](Rollover.md) (1), [HistorySave](HistorySave.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 118 | THE PURE FIXTURE: a ten-year bullet at 4%, D$1,000, the market at 5% |
-| 192 | 1. the pure auction |
-| 362 | 2. a hiking city |
-| 395 | the played city |
-| 465 | 3. a played city, half of a line |
-| 585 | 4. the central bank holds part |
-| 628 | 5. no money pump |
-| 747 | 6. dollar paper |
-| 796 | 7. refused |
-| 869 | 8. the year adds up |
-| 943 | 9. a line callable now |
-| 1131 | 10. what the auction books and what fair would |
+| 193 | 1. the pure auction |
+| 363 | 2. a hiking city |
+| 396 | the played city |
+| 466 | 3. a played city, half of a line |
+| 586 | 4. the central bank holds part |
+| 629 | 5. no money pump |
+| 798 | 6. dollar paper |
+| 847 | 7. refused |
+| 920 | 8. the year adds up |
+| 994 | 9. a line callable now |
+| 1182 | 10. what the auction books and what fair would |
 
 ## Constants
 
@@ -90,8 +90,8 @@
 | 122 | `BuybackCheck.PRINCIPAL` | `1_000` |  |
 | 123 | `BuybackCheck.COUPON` | `.04` |  |
 | 124 | `BuybackCheck.MARKET_YIELD` | `.05` |  |
-| 946 | `BuybackCheck.COUPON_OVER_ASKS` | `.045` | A coupon over what the households ask, and under the market's yield: the line is worth less than par and the households still ask over par. |
-| 948 | `BuybackCheck.COUPON_OVER_FAIR` | `.08` | A coupon so far over the market's yield that the line's fair is itself over the call price. |
+| 997 | `BuybackCheck.COUPON_OVER_ASKS` | `.045` | A coupon over what the households ask, and under the market's yield: the line is worth less than par and the households still ask over par. |
+| 999 | `BuybackCheck.COUPON_OVER_FAIR` | `.08` | A coupon so far over the market's yield that the line's fair is itself over the call price. |
 
 ## Fields (state)
 
@@ -105,7 +105,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 1166 | **type** `public class BuybackCheck` | The city's paper bought back in a reverse auction (CD4, spec-city-debt.md section 6.2-6.3; D12, D17-D19, D26, D34): every holder but the central bank offers its holding in slices, each at the price where its own buyin... |
+| 75 | 1217 | **type** `public class BuybackCheck` | The city's paper bought back in a reverse auction (CD4, spec-city-debt.md section 6.2-6.3; D12, D17-D19, D26, D34): every holder but the central bank offers its holding in slices, each at the price where its own buyin... |
 | 81 | 4 | `static void check(String label, boolean ok)` |  |
 | 86 | 9 | `static void near(String label, double actual, double expected, double tol)` |  |
 | 96 | 4 | `static void quietly(Runnable r)` |  |
@@ -113,7 +113,7 @@
 | 109 | 4 | `static MoneyAudit.Result play(Game g)` | A month, held to the audit: the audit is returned. |
 | 114 | 3 | `static boolean closes(MoneyAudit.Result r)` |  |
 
-### THE PURE FIXTURE: a ten-year bullet at 4%, D$1,000, the market at 5% (lines 118-191)
+### THE PURE FIXTURE: a ten-year bullet at 4%, D$1,000, the market at 5% (lines 118-192)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -125,84 +125,85 @@
 | 153 | 3 | `static Auction.Bidders bidders(double deposit, double firmsIdle, double worldStock, double monthlyGdp)` |  |
 | 158 | 5 | `static List<Buyback.Offer> of(List<Buyback.Offer> ladder, Buyback.Holder holder)` | One holder's offers, in the order they come on the ladder. |
 | 164 | 5 | `static double faceOf(List<Buyback.Offer> offers)` |  |
-| 170 | 21 | `public static void main(String[] args) throws Exception` |  |
+| 170 | 22 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. the pure auction (lines 192-361)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 194 | 167 | `static void purely()` |  |
-
-### 2. a hiking city (lines 362-394)
+### 1. the pure auction (lines 193-362)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 364 | 30 | `static void hiking()` |  |
+| 195 | 167 | `static void purely()` |  |
 
-### the played city (lines 395-464)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 397 | 5 | `static Debt unsettledPiece(DebtManager ledger)` |  |
-| 404 | 4 | `static Debt sell(Game g, double ask, int years)` | A line sold through the auction: the piece the sale went into, unsettled until the next month. |
-| 410 | 38 | `static Game playedCity(String label)` | The city HoldersCheck's section 11 was written against, with the world given an appetite (a tenth of the deposits, as in an early boom). |
-| 450 | 5 | `static double tills(Game g)` | Every sector's till, added up. |
-| 457 | 7 | `static void worldWantsPaper(Game city)` | The world with an appetite for the city's paper: a tenth of the hot money it had, as early in a boom. |
-
-### 3. a played city, half of a line (lines 465-584)
+### 2. a hiking city (lines 363-395)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 467 | 46 | `static void halfOfALine(Game city)` |  |
-| 519 | 65 | `static Buyback.Result part(Game city, Debt bond, double face, String what)` | A part of a settled piece bought back, and everything a part has to hold: the piece scaled, its rate where it was, each holder's principal down by what it sold, each paid its own price, the books of the holders and th... |
+| 365 | 30 | `static void hiking()` |  |
 
-### 4. the central bank holds part (lines 585-627)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 587 | 40 | `static void centralBankHolds()` |  |
-
-### 5. no money pump (lines 628-746)
+### the played city (lines 396-465)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 630 | 79 | `static void noPump(Game city)` |  |
-| 711 | 35 | `static void cancelReopening(Game city)` | BY1: paid holders keep their own sale proceeds while a reopening's unpaid allotment is cancelled. |
+| 398 | 5 | `static Debt unsettledPiece(DebtManager ledger)` |  |
+| 405 | 4 | `static Debt sell(Game g, double ask, int years)` | A line sold through the auction: the piece the sale went into, unsettled until the next month. |
+| 411 | 38 | `static Game playedCity(String label)` | The city HoldersCheck's section 11 was written against, with the world given an appetite (a tenth of the deposits, as in an early boom). |
+| 451 | 5 | `static double tills(Game g)` | Every sector's till, added up. |
+| 458 | 7 | `static void worldWantsPaper(Game city)` | The world with an appetite for the city's paper: a tenth of the hot money it had, as early in a boom. |
 
-### 6. dollar paper (lines 747-795)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 749 | 46 | `static void dollars() throws Exception` |  |
-
-### 7. refused (lines 796-868)
+### 3. a played city, half of a line (lines 466-585)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 798 | 55 | `static void refused(Game city)` |  |
-| 855 | 6 | `static double[] snapshot(Game g, Debt d)` | Cash, the piece's principal and holders, the bank's cash and book, the households' savings and paper, the world's paper, the carried buyback, the count of pieces. |
-| 862 | 6 | `static boolean same(double[] a, double[] b)` |  |
+| 468 | 46 | `static void halfOfALine(Game city)` |  |
+| 520 | 65 | `static Buyback.Result part(Game city, Debt bond, double face, String what)` | A part of a settled piece bought back, and everything a part has to hold: the piece scaled, its rate where it was, each holder's principal down by what it sold, each paid its own price, the books of the holders and th... |
 
-### 8. the year adds up (lines 869-942)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 871 | 71 | `static void theYearAddsUp(Game city)` |  |
-
-### 9. a line callable now (lines 943-1130)
+### 4. the central bank holds part (lines 586-628)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 951 | 7 | `static Buyback.Line lineAt(double coupon, double callPer100)` | The pure fixture's line at another coupon: ten years of months, fair at the market's yield, the call price as given (NaN: not callable now). |
-| 959 | 5 | `static void callableNow(Game city)` |  |
-| 965 | 85 | `static void callableByHand()` |  |
-| 1051 | 79 | `static void callableInPlay(Game city)` |  |
+| 588 | 40 | `static void centralBankHolds()` |  |
 
-### 10. what the auction books and what fair would (lines 1131-1240)
+### 5. no money pump (lines 629-797)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1134 | 18 | `static void figuresAdd(String what, Buyback.Result r)` | What the three figures say of one quote: the identities that hold of every result, whoever the holders. |
-| 1154 | 9 | `static Buyback.Result householdsHold(double between)` | The households hold the whole line, carried at a fraction of the way from its worth at fair to what the auction pays. |
-| 1164 | 76 | `static void fairAndTheAuction(Game city)` |  |
+| 631 | 79 | `static void noPump(Game city)` |  |
+| 712 | 46 | `static void typedCancellation()` | The first review's typed face: a whole-piece tolerance closes the entire unpaid sale. |
+| 760 | 37 | `static void cancelReopening(Game city)` | BY1: paid holders keep their own sale proceeds while a reopening's unpaid allotment is cancelled. |
+
+### 6. dollar paper (lines 798-846)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 800 | 46 | `static void dollars() throws Exception` |  |
+
+### 7. refused (lines 847-919)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 849 | 55 | `static void refused(Game city)` |  |
+| 906 | 6 | `static double[] snapshot(Game g, Debt d)` | Cash, the piece's principal and holders, the bank's cash and book, the households' savings and paper, the world's paper, the carried buyback, the count of pieces. |
+| 913 | 6 | `static boolean same(double[] a, double[] b)` |  |
+
+### 8. the year adds up (lines 920-993)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 922 | 71 | `static void theYearAddsUp(Game city)` |  |
+
+### 9. a line callable now (lines 994-1181)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1002 | 7 | `static Buyback.Line lineAt(double coupon, double callPer100)` | The pure fixture's line at another coupon: ten years of months, fair at the market's yield, the call price as given (NaN: not callable now). |
+| 1010 | 5 | `static void callableNow(Game city)` |  |
+| 1016 | 85 | `static void callableByHand()` |  |
+| 1102 | 79 | `static void callableInPlay(Game city)` |  |
+
+### 10. what the auction books and what fair would (lines 1182-1291)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1185 | 18 | `static void figuresAdd(String what, Buyback.Result r)` | What the three figures say of one quote: the identities that hold of every result, whoever the holders. |
+| 1205 | 9 | `static Buyback.Result householdsHold(double between)` | The households hold the whole line, carried at a fraction of the way from its worth at fair to what the auction pays. |
+| 1215 | 76 | `static void fairAndTheAuction(Game city)` |  |
 

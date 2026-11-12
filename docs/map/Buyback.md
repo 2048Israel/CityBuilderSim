@@ -1,4 +1,4 @@
-# Buyback.java - 431 lines · 28 methods · 1 constants · model
+# Buyback.java - 432 lines · 28 methods · 1 constants · model
 
 `ham/citybuildersim/Buyback.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
@@ -35,7 +35,7 @@
 
 **Uses:** [Auction](Auction.md) (7), [OutwardInvestment](OutwardInvestment.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Debt](Debt.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)
 
-**Used by (11):** [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [GovernmentView](GovernmentView.md), [GovernmentViewCheck](GovernmentViewCheck.md), [HoldersCheck](HoldersCheck.md), [ReadPathCheck](ReadPathCheck.md)
+**Used by (12):** [BuybackCheck](BuybackCheck.md), [CentralBankCheck](CentralBankCheck.md), [CreditCheck](CreditCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DeskCheck](DeskCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [GovernmentView](GovernmentView.md), [GovernmentViewCheck](GovernmentViewCheck.md), [HoldersCheck](HoldersCheck.md), [ReadPathCheck](ReadPathCheck.md)
 
 ## Sections
 
@@ -66,7 +66,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 394 | **type** `public final class Buyback` | The city's paper bought back in a reverse auction: every holder offers what it holds in slices, each at the price where its own buying rule would stop wanting it and never under fair, and the city takes the cheapest o... |
+| 38 | 395 | **type** `public final class Buyback` | The city's paper bought back in a reverse auction: every holder offers what it holds in slices, each at the price where its own buying rule would stop wanting it and never under fair, and the city takes the cheapest o... |
 | 40 | 1 | `private Buyback()` |  |
 
 ### THE DIAL (lines 42-48)
@@ -114,9 +114,9 @@
 | 366 | 1 | `double of(double remaining)` _(in Buyback.SlicePrice)_ |  |
 | 374 | 11 | `private static void slices(List<Offer> ladder, Holder holder, double holding, SlicePrice price, double cap)` | Cuts one holder's holding into SLICES equal slices, each priced at the holding that remains once it is sold, never under the slice before it and never over cap (the call price of a piece the city can call now, infinit... |
 
-### THE REVERSE AUCTION (lines 386-431)
+### THE REVERSE AUCTION (lines 386-432)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 396 | 35 | `public static Result run(Line line, Auction.Bidders bidders, Ask ask)` | Run the buyback: take the cheapest offers first up to the face asked, the last one in part, skipping any over the most per 100, and pay each its own price (D19). |
+| 396 | 36 | `public static Result run(Line line, Auction.Bidders bidders, Ask ask)` | Run the buyback: take the cheapest offers first up to the face asked, the last one in part, skipping any over the most per 100, and pay each its own price (D19). |
 

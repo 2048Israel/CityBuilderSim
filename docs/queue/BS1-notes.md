@@ -213,3 +213,32 @@ FoodProcessingCheck acceptances continue to apply.
 5. **Mended.** BondMarket validates the rounded price as positive and finite
    before submitting it. BondCheck 9a verifies that a positive quarter-tick
    bid produces no fill and leaves the book intact.
+
+The first verification pass selected the six requested financial harnesses,
+LongPlaytest and CentralBankCheck, running nine harnesses including the
+credit selection. Eight passed. CentralBankCheck retained its already scoped
+CB2 line, 7 of 12 reversals holding against 9 required. Exit **3**, compile
+50 seconds, suite 536 seconds, zero firm Stale findings. Evidence is
+`target/checks/BS1-review-check.txt`, `BS1-review-first-suite.txt` and
+`BS1-review-first-reds.txt`.
+
+After the small central-bank-holding guard, the final selection on model
+`a19a3ced` ran BuybackCheck, HoldersCheck, CreditCheck, BondCheck,
+PriceLevelCheck, DenominationCheck and LongPlaytest. **Eight harnesses passed,
+zero failed, exit 0**, compile 49 seconds, suite 116 seconds, zero firm Stale
+findings. Evidence is `target/checks/BS1-review-final.txt` and its harness
+logs. The exact-proceeds, audit-pools, premium-cancellation, rejecting-cap,
+small-central-bank-holding, independent-curve and quarter-tick assertions
+all pass.
+
+The default LongPlaytest report matches the pre-review report byte for byte
+after removing the elapsed-time figures in its banner and layout-watch
+line. Its model figures and findings match. The approved BS1 ensemble
+baseline continues to apply under EN1. The comparison starts from
+`target/checks/BS1-before-review-LongPlaytest.log`.
+
+The real Close it now page was rendered again through KeptBench. The amber
+cancellation bar and its legend entry are distinct from the grey offered
+outline, and the legend fits. Fresh and reopened snapshots are
+`target/checks/BS1-fresh-legend.png` and `BS1-reopened-legend.png`.
+Lanekeeper's fresh gate after DM2 remains the shipping gate for these repairs.

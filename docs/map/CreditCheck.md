@@ -1,10 +1,10 @@
-# CreditCheck.java - 2,106 lines · 19 methods · 1 constants · harnesses
+# CreditCheck.java - 2,111 lines · 19 methods · 1 constants · harnesses
 
 `ham/citybuildersim/CreditCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > Verifies private-sector credit: pricing, origination, rollover, cash conservation.
 
-**Uses:** [BusinessDebtManager](BusinessDebtManager.md) (133), [PriceLevel](PriceLevel.md) (27), [Game](Game.md) (20), [Sectors](Sectors.md) (16), [DebtManager](DebtManager.md) (16), [Bank](Bank.md) (13), [GameFiles](GameFiles.md) (7), [DebtQuote](DebtQuote.md) (7), [LongPlaytest](LongPlaytest.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (5), [MoneyAudit](MoneyAudit.md) (5), [BusinessLoan](BusinessLoan.md) (4), [InterimLoan](InterimLoan.md) (3), [Debt](Debt.md) (3), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Mortgage](Mortgage.md) (2), [LongTermBond](LongTermBond.md) (2), [Sector](Sector.md) (1), [FoodIndustry](FoodIndustry.md) (1), [Trade](Trade.md) (1), [Good](Good.md) (1), [BalanceSheet](BalanceSheet.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [EconomyManager](EconomyManager.md) (1), [Equity](Equity.md) (1), [BusinessDebt](BusinessDebt.md) (1), [SectorBooks](SectorBooks.md) (1), [Investor](Investor.md) (1)
+**Uses:** [BusinessDebtManager](BusinessDebtManager.md) (133), [PriceLevel](PriceLevel.md) (27), [Game](Game.md) (20), [Sectors](Sectors.md) (16), [DebtManager](DebtManager.md) (16), [Bank](Bank.md) (13), [GameFiles](GameFiles.md) (7), [DebtQuote](DebtQuote.md) (7), [LongPlaytest](LongPlaytest.md) (7), [MoneyAudit](MoneyAudit.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (5), [BusinessLoan](BusinessLoan.md) (4), [InterimLoan](InterimLoan.md) (3), [Debt](Debt.md) (3), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Mortgage](Mortgage.md) (2), [LongTermBond](LongTermBond.md) (2), [Sector](Sector.md) (1), [FoodIndustry](FoodIndustry.md) (1), [Trade](Trade.md) (1), [Good](Good.md) (1), [BalanceSheet](BalanceSheet.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [EconomyManager](EconomyManager.md) (1), [Equity](Equity.md) (1), [BusinessDebt](BusinessDebt.md) (1), [SectorBooks](SectorBooks.md) (1), [Investor](Investor.md) (1)... and 1 more
 
 ## Sections
 
@@ -52,7 +52,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4 | 2103 | **type** `public class CreditCheck` | Verifies private-sector credit: pricing, origination, rollover, cash conservation. |
+| 4 | 2108 | **type** `public class CreditCheck` | Verifies private-sector credit: pricing, origination, rollover, cash conservation. |
 | 8 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 15 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 23 | 9 | `static double priced(DebtManager m, double cash)` | The standing rate at a given cash position, leaving the market as it found it. |
@@ -86,15 +86,15 @@
 |---:|---:|---|---|
 | 1653 | 268 | `static void nothingPastTheDefaultPoint() throws Exception` |  |
 
-### 11. THE CURVE (0.7.1) (lines 1922-2106)
+### 11. THE CURVE (0.7.1) (lines 1922-2111)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1935 | 78 | `static void theCurve(Game city)` |  |
-| 2022 | 3 | `static boolean onCurve(DebtQuote q)` | True if this quote came off the sloped part of the curve. |
-| 2026 | 6 | `static boolean onCurve(double rate)` |  |
-| 2034 | 3 | `static double retailShopsOnSite(Game game, String sector)` | The shops on site, as Retail.plan() counts them for its "already building" (a Filling Station is the forecourts' order). |
-| 2039 | 5 | `static void quietly(Runnable work)` | Runs a stretch of the game without its per-month console output. |
-| 2045 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 2061 | 45 | `static void bookAndCompare(Game g, String type, double amount, int duration, double rounding, boolean mustBeOnCurve)` | Takes a quote, books it, and checks the books say what the quote said. |
+| 1936 | 82 | `static void theCurve(Game city)` |  |
+| 2027 | 3 | `static boolean onCurve(DebtQuote q)` | True if this quote came off the sloped part of the curve. |
+| 2031 | 6 | `static boolean onCurve(double rate)` |  |
+| 2039 | 3 | `static double retailShopsOnSite(Game game, String sector)` | The shops on site, as Retail.plan() counts them for its "already building" (a Filling Station is the forecourts' order). |
+| 2044 | 5 | `static void quietly(Runnable work)` | Runs a stretch of the game without its per-month console output. |
+| 2050 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 2066 | 45 | `static void bookAndCompare(Game g, String type, double amount, int duration, double rounding, boolean mustBeOnCurve)` | Takes a quote, books it, and checks the books say what the quote said. |
 

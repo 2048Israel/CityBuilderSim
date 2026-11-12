@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**201 harness files, 23,710 labelled assertions.** AllChecks runs 201 of them.
+**201 harness files, 23,727 labelled assertions.** AllChecks runs 201 of them.
 
 ## Which harnesses read which class
 
@@ -46,7 +46,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConservationCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, LongPlaytest, PrizeCheck |
-| [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
+| [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, CreditCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
 | [CallPartners](map/CallPartners.md) | PartnerCallsCheck |
 | [CallTree](map/CallTree.md) | BuybackCheck, CallCheck |
 | [CameraPath](map/CameraPath.md) | ReplayCheck |
@@ -1650,7 +1650,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L771 ...and the shops stock today's basket, to the bit
   - L773 fixture: the same city's first month had a year, and its shelf then was not today's
 
-## BondCheck.java - 222 labelled assertions
+## BondCheck.java - 223 labelled assertions
 
 > Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it
 > over the bank, who loses what in a default, what the bank charges for
@@ -1880,29 +1880,30 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1617 both bids rest at one tick, in their arrival order
   - L1620 the first arrival bought the face
   - L1621 the second bid still waits
-- **L1625 9. each household type trades: a rich cell bids, a cell over its money asks, and they meet**
-  - L1627 fixture: the bond's households' face is the cells' own, summed
-  - L1636 the rich cell bid and the cell over its money asked, and they traded with each other
-  - L1638 ...the face the one gave up is the face the other took
-  - L1639 ...the cash the one paid is the cash the other was paid, the transfer counted
-  - L1641 ...and the same the other way up
-  - L1642 ...so the bond's households' face did not move
-  - L1643 ...and is still the cells' own, summed
-  - L1644 no pool line saw it: nothing bought from or sold to the pools
-  - L1654 fixture: the rich cell's bid rests after the step, and nothing traded
-  - L1659 a cell short of money sells into it, raising what it was short
-  - L1660 ...cell to cell, the rich cell taking the face
-  - L1662 ...the face the one gave up the other took
-  - L1663 ...and no pool line
-- **L1675 1c. at maturity the issuer pays every holder its face, and the bond and its book go**
-  - L1689 fixture: short of $5M,
-  - L1692 fixture: a bond outstanding
-  - L1699 it falls due and is gone
-  - L1700 the issuer repaid its face
-  - L1701 ...to its holders, every class together
-  - L1703 the world's principal leaves on the audit, in the financial account
-  - L1704 ...the households' arrives in their savings
-  - L1705 ...and the month closes
+  - L1623 a positive bid below half a tick is refused before settlement
+- **L1629 9. each household type trades: a rich cell bids, a cell over its money asks, and they meet**
+  - L1631 fixture: the bond's households' face is the cells' own, summed
+  - L1640 the rich cell bid and the cell over its money asked, and they traded with each other
+  - L1642 ...the face the one gave up is the face the other took
+  - L1643 ...the cash the one paid is the cash the other was paid, the transfer counted
+  - L1645 ...and the same the other way up
+  - L1646 ...so the bond's households' face did not move
+  - L1647 ...and is still the cells' own, summed
+  - L1648 no pool line saw it: nothing bought from or sold to the pools
+  - L1658 fixture: the rich cell's bid rests after the step, and nothing traded
+  - L1663 a cell short of money sells into it, raising what it was short
+  - L1664 ...cell to cell, the rich cell taking the face
+  - L1666 ...the face the one gave up the other took
+  - L1667 ...and no pool line
+- **L1679 1c. at maturity the issuer pays every holder its face, and the bond and its book go**
+  - L1693 fixture: short of $5M,
+  - L1696 fixture: a bond outstanding
+  - L1703 it falls due and is gone
+  - L1704 the issuer repaid its face
+  - L1705 ...to its holders, every class together
+  - L1707 the world's principal leaves on the audit, in the financial account
+  - L1708 ...the households' arrives in their savings
+  - L1709 ...and the month closes
 
 ## BooksCheck.java - 57 labelled assertions
 
@@ -2917,7 +2918,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L370 ...while its first holding is still its first holding
   - L380 ...and a city from before cars existed owns none
 
-## BuybackCheck.java - 262 labelled assertions
+## BuybackCheck.java - 277 labelled assertions
 
 > The city's paper bought back in a reverse auction (CD4, spec-city-debt.md
 > section 6.2-6.3; D12, D17-D19, D26, D34): every holder but the central bank
@@ -2933,279 +2934,295 @@ _(this harness does not label its checks through a helper - it prints its findin
 >    sells; the central bank's face is never offered (D18); a highest price
 > ...
 
-- **L195 1. the reverse auction, by hand: every holder's rule, solved for its price**
-  - L202 fixture: the line is worth less than par on a market over its coupon
-  - L203 each of the four holders but the central bank cut its holding into SLICES slices
-  - L205 the central bank's face is never offered: the ladder is the principal less its face
-  - L212 every offer is at or over fair
-  - L213 ...and the ladder is the cheapest first
-  - L218 the bank offers everything it holds at exactly fair (D34)
-  - L219 ...all of it
-  - L224 the households' first slice is the line's payments at the deposit rate plus the spread the rest of their holding asks
-  - L226 ...which is over fair: they hold it for more than a deposit pays
-  - L234 each household slice is priced at the holding that remains once it is sold
-  - L235 ...so the more they sell the dearer the next slice
-  - L236 ...and their last slice, with nothing left to hold, is the line at the deposit rate
-  - L248 each business slice is priced at the holding that remains, as a share of their idle money
-  - L249 ...and dearer as they sell
-  - L261 each world slice is priced at the stock that remains: its rate, its premium and the excess that holds it
-  - L262 ...and dearer as it sells
-  - L274 the city takes the face it asked for
-  - L275 ...and pays the sum of face times each slice's own price (multiple price, D19)
-  - L276 the stop is the dearest offer taken, the average is lower, and the average is not under fair
-  - L278 ...strictly lower than the stop: the cheaper offers were not paid the stop
-  - L279 the average is the price paid over the face taken
-  - L280 what the auction cost is what was paid over fair, and it is not negative
-  - L281 ...computed on the face taken
-  - L282 the gain on the books is the face's carrying value less the price
-  - L283 ...and against face, the face less the price
-  - L284 what was offered over what was asked
-  - L294 the offers taken are the cheapest, and no offer left behind is under the stop
-  - L304 the offers taken, by holder, are the faces the result says each sold
-  - L310 a small ask is filled from the bank alone, at fair
-  - L311 ...so the stop is the average is fair
-  - L312 ...and the auction cost nothing over fair
-  - L316 asked for more than is offered, the city takes all that is offered
-  - L317 ...and the cover says it fell short
-  - L318 the faces by holder add to the face taken
-  - L320 ...and the prices by holder to the price paid
-  - L330 with a highest price between two offers only the cheaper are taken
-  - L331 ...and the stop is the dearest of them, under the highest price
-  - L332 ...the next offer being over it
-  - L334 a highest price under the cheapest offer takes nothing
-  - L335 ...and pays nothing
-  - L341 businesses with no idle money want none of it, and offer at fair
-  - L343 a holding past OutwardInvestment.MAX_SHARE of their idle money is offered at fair: the first slice
-  - L345 ...and the last, with the share under MAX_SHARE, over it
-  - L349 the world in a run wants none of it and offers at fair
-  - L351 the same line and the same bidders give the same ladder
-  - L358 dollar paper is the world's alone, every slice at fair (D26)
-  - L359 ...all of it
-- **L365 2. a deposit rate over the line's yield: the households' rule prices under fair, so they offer at fair**
-  - L371 fixture: the deposit rate is over the line's yield
-  - L372 fixture: the households' rule, solved for its first slice, is under fair
-  - L377 so every household slice is offered at exactly fair, never under
-  - L378 ...and the businesses', whose better alternative is the deposit now
-  - L379 the world, whose rule is its own rate, still asks over fair for its last slices
-  - L388 slices at the same price go to the bank first, then the households, then the businesses (D19)
-  - L390 the city can buy the bank's, the households' and the businesses' for fair and no more
-  - L391 ...paying fair for every one of them
-  - L392 the households sold their whole holding
-- **L468 3. a played city: half of a ten-year line bought back, then most of the rest, then the last**
-  - L476 fixture: the treasury sold a ten-year line
-  - L477 fixture: ...which is unsettled until the month turns, and a part of it quotes nothing
-  - L480 fixture: it is settled, and the households, the bank and the world each hold part of it
-  - L482 fixture: ...and the central bank none, so the whole principal can be offered
-  - L489 half: the piece is still on the books, at half its principal
-  - L495 fixture: ...and this time the households, the businesses or the world sold too, at prices over the bank's
-  - L497 most of the rest: the piece is still on the books, at a fifth of what was left
-  - L504 the last: asked for all that is left, the city takes it
-  - L505 ...and the piece leaves the books
-  - L506 ...the cash fell by what was paid
-  - L507 ...and the holders' books agree with the paper: none of its principal is left in the cells
-  - L510 the last: the audit closes that month and the next
-  - L511 (the three together took the whole line)
-  - L548 ...the face
-  - L549 ...the carrying value
-  - L550 ...the issue discount
-  - L551 ...and what is left of it
-  - L552 ...the coupon
-  - L553 ...but the effective rate is the same
-  - L557 ...and every payment of its schedule, the months it has left unchanged
-  - L558 the bank's principal fell by exactly what it sold
-  - L559 ...the households'
-  - L560 ...the businesses'
-  - L561 ...the world's
-  - L562 ...and the face sold is the face asked
-  - L563 the treasury's cash fell by what was paid
-  - L564 the bank was paid its own slices' prices
-  - L565 ...its book of the city's paper fell by the face it sold
-  - L566 the households' savings rose by their own slices' prices
-  - L567 the world's book of the paper fell by the face it sold
-  - L568 the businesses' tills rose by their own slices' prices, at once
-  - L569 ...and their paper fell by the face they sold
-  - L570 what the households and the world were paid is carried to the next month's window
-  - L572 the central bank was paid nothing
-  - L573 the two books of the households' paper agree, and of the world's
-  - L577 the gain on debt retired the month booked is the carrying value of the face taken less the price
-  - L579 the audit closes the month the payments are declared in
-  - L580 ...and the month after
-  - L581 the piece pays the smaller coupon, month on month
-- **L588 4. the central bank holds part of a line: it does not offer, it is not paid**
-  - L598 fixture: the treasury sold another line
-  - L603 fixture: the central bank, on its dial, holds part of the line
-  - L604 fixture: ...and the bank, the households or the world hold the rest
-  - L611 asked for the whole principal, the quote takes the whole principal less the central bank's face
-  - L613 ...and asked is held to what can be offered
-  - L616 the buyback took the same
-  - L617 the piece stays on the books
-  - L618 the central bank's principal is unchanged
-  - L619 ...and what is left of the piece is exactly that
-  - L620 ...the bank holds nothing of it any more
-  - L621 the central bank's book of paper is unchanged
-  - L622 ...and it was paid nothing: no price is due to it
-  - L623 the cash fell by what was paid
-  - L624 the audit closes that month and the next
-  - L625 the central bank still holds what the paper says it does
-- **L631 5. can the city print money with this? A line sold and bought back**
-  - L651 fixture (the same month): a
-  - L658 the
-  - L663 a
-  - L664 the unpaid
-  - L665 ...and its whole face is cancelled
-  - L666 ...the bank offers only paid face, so it sold none
-  - L667 ...and received no buyback cash
-  - L668 ...the cancelled proceeds leave the next settle
-  - L669 the audit closes that month and the next
-  - L670 the bank's equity split holds over the month after the
-  - L689 fixture: a
-  - L696 fixture: the
-  - L704 a
-  - L705 ...and two of them do not either
-  - L707 the audit still closes after the round trips
-- **L712 5a. a reopened line closed before the settle**
-  - L717 fixture: the first sale made a line
-  - L719 the first sale's audit closes
-  - L722 fixture: the settled line has paid bank and household holdings
-  - L726 fixture: the second sale reopened the same line
-  - L730 a part of the reopened line is refused without moving its settlement
-  - L734 the quote offers the bank's paid face
-  - L735 ...and cancels exactly the reopened sale's face
-  - L736 ...at the original proceeds
-  - L739 the reopened piece is closed whole
-  - L740 the treasury pays the quoted total
-  - L741 the bank receives its paid holdings' price
-  - L742 the reopening's proceeds leave the settle
-  - L743 the cancellation's audit closes over two months
-  - L744 the bank's equity split holds after cancelling the reopening
-- **L750 6. dollar paper is the world's alone, bought back at fair**
-  - L761 fixture: the city owes a dollar bond
-  - L767 the quote takes the whole piece
-  - L768 ...all of it from the world
-  - L769 ...none from anyone else
-  - L772 every slice is at fair: the dollar curve's value
-  - L773 the stop is the average is fair
-  - L774 ...and what is paid is the dollar curve's value of the piece
-  - L775 ...the auction cost nothing over fair
-  - L780 a part of it is taken
-  - L781 the piece stays on the books
-  - L782 ...in dollars, down by the part taken
-  - L783 ...its carrying value, in dollars and in local money
-  - L784 ...and its effective rate unchanged
-  - L785 what the world is owed fell with it
-  - L786 the cash fell by what was paid
-  - L787 ...and it leaves the country, carried to the next month's window
-  - L788 the audit closes: the dollar holder's payment is a financial outflow
-  - L791 the rest is taken
-  - L792 the dollar bond is off the books
-  - L793 ...and the audit closes the month after
-- **L799 7. a buyback the city cannot pay for, or no offer will meet, or a sale not yet settled, changes nothing**
-  - L808 fixture: the treasury sold a five-year line
-  - L809 fixture: ...unsettled
-  - L813 a part of a sale not yet settled is refused: nothing is taken, nothing moves
-  - L815 ...and so is the whole of it under a highest price that leaves some behind
-  - L817 ...but the whole of it, at any price, is quoted: it costs what the thin quote says
-  - L820 ...and it is worth something
-  - L822 fixture: it is settled now
-  - L827 the whole-piece quote is the same as the thin one
-  - L828 ...and the gain the same
-  - L829 ...which is never under what the piece is worth to somebody who does not care to hold it
-  - L836 a city that cannot afford it is refused: nothing is taken
-  - L837 ...and was not charged anyway
-  - L838 ...and nothing else moved: the piece, its holders, the bank, the savings and the world's book
-  - L840 the old button refuses the same
-  - L845 a highest price under every offer buys nothing
-  - L846 ...and moves nothing
-  - L848 nothing is bought of a piece that is not there
-  - L850 the audit closes after the refusals
-  - L851 fixture: the books still hold the piece
-- **L872 8. CD3's star 5: a gain on debt retired is not less spending, month by month and in the year**
-  - L880 fixture: the treasury sold a line
-  - L900 fixture: the line is worth less than the books carry it at
-  - L901 fixture: ...and the city buys back at a gain on the carrying value
-  - L906 fixture: it was bought, in part, no dearer than the highest price named
-  - L921 fixture: History has the year of months
-  - L931 History's revenue less surplus plus the gain on debt retired is the month's expenses, to the cent, every month of the year
-  - L933 History records the gain in the month of the buyback
-  - L936 ...and in no other month
-  - L937 the treasury's month of spending is their average
-  - L938 ...and so is the sum of what the history says it was
-  - L939 without the gain the year is off by it: this is the bug
-  - L940 ...by exactly the gain (revenue less surplus is expenses less the gain)
-- **L960 9. a line callable now: no holder asks more than the call price (BB1, CD4-C ★6)**
-  - L972 fixture: the coupon is over the yield the households ask for their first slice
-  - L973 fixture: ...and the line's fair is under the call price, the market's yield being over the coupon
-  - L974 fixture: a line with no call price, a NaN or a call price of nothing, is not callable now
-  - L977 ...and one with the call price is
-  - L983 premise: without the call price the dearest offer is over it
-  - L984 premise: ...and the cheapest is under it, the bank's at fair
-  - L985 a line with no call price offers what it did before the cap existed (the ten-figure line, NaN)
-  - L993 with the call price every offer is at most it
-  - L994 ...and the ladder is still the cheapest first
-  - L995 ...with as many offers, the central bank's face still not among them
-  - L1014 premise: some offers were under the call price and some over it
-  - L1015 the offers that were under the call price are unchanged, holder by holder, slice by slice
-  - L1016 the ones that were over it are exactly the call price
-  - L1017 each holder's own slices still ascend
-  - L1023 a full buyback takes all that is offered
-  - L1024 its stop is at most the call price
-  - L1025 ...and what it paid is at most the face taken at the call price
-  - L1026 premise: without the call price the stop was over it and the city paid more than the face at the call price
-  - L1028 so the call price saves the city something
-  - L1029 ...and moves nothing else: the face taken and the piece's fair are the same
-  - L1034 fixture: a coupon so far over the market's yield that the line's fair is over the call price
-  - L1036 premise: without the call price every offer is at least fair, so over the call price
-  - L1039 with it every offer is exactly the call price: the cap wins over the floor at fair
-  - L1041 a full buyback of it pays the call price on average
-  - L1048 dollar paper with a call price is offered at it, never at the fair that is over it
-  - L1064 fixture: the treasury sold a callable ten-year line
-  - L1067 fixture: ...unsettled until the month turns, so it cannot be called
-  - L1072 fixture: it is settled, and the households, the bank and the world each hold part of it, the central bank none
-  - L1075 fixture: its first call month is still ahead, so it cannot be called
-  - L1084 a line not yet callable is quoted as the holders ask: the ladder is Buyback.offers() with no call price
-  - L1090 premise: the dearest offer is over the call price (
-  - L1091 the quote takes it all
-  - L1097 at its first call month it can be called
-  - L1106 premise: the same line with no call price, at this month's fair, still has its dearest offer over the call price (
-  - L1112 callable now, every offer on the ladder is at most the call price
-  - L1113 ...each the least of what it would have been with no call price and the call price
-  - L1114 ...and the same face on offer
-  - L1115 its stop is at most the call price (
-  - L1116 the quote still takes it all
-  - L1117 what it asks is at most what calling the line costs, and less than the quote before the call month
-  - L1124 the buyback booked pays what the quote said
-  - L1125 ...its stop is the quote's
-  - L1126 ...it is within what calling the line would have cost, and the line leaves the books
-  - L1128 ...the cash fell by what was paid
-  - L1138 ...the gain at fair is the carrying value of the face taken less its worth at fair
-  - L1146 ...the holders' overFair add up to the auction's
-  - L1147 ...and no holder is paid under fair (every offer is at or over it)
-  - L1148 ...the bank is paid fair (D34): its overFair is nothing
-  - L1149 ...the share is the gain at fair over the carrying value of the face taken
-- **L1165 10. what the auction books and what fair would: they differ by what the holders ask over fair (BB1, CD6-C ★1)**
-  - L1186 premise: the quote takes offers from more than one holder
-  - L1187 premise: some holder is paid over fair (
-  - L1188 a quote of several holders
-  - L1189 ...the gain at fair, by hand: the face's carrying value less its worth at fair
-  - L1190 ...so the book's desk reads more than the auction books: the gain at fair is over the gain on the carrying value
-  - L1194 a quote of the bank's offers alone
-  - L1195 premise: it took the bank's face alone
-  - L1196 ...at fair the two agree: nothing is asked over fair
-  - L1197 ...and the gain at fair is the gain the auction books
-  - L1201 a quote that takes nothing has no gain at fair and no share of one
-  - L1208 premise: the households hold all of what was taken
-  - L1209 premise: they ask over fair (
-  - L1210 premise: the line is carried between its worth at fair and what the auction pays
-  - L1212 the households' line
-  - L1213 at fair the line reads a gain
-  - L1214 ...and the auction books a loss: the figures have opposite signs
-  - L1215 ...the households' overFair is the whole of what the auction asks over fair
-  - L1224 fixture: the treasury sold a ten-year line
-  - L1227 fixture: it is settled, and held by more than the bank
-  - L1231 fixture: the quote takes the line
-  - L1234 a played line, all of it
-  - L1236 ...and half of it
-  - L1237 a smaller face takes the cheaper offers first: each 100 of half costs no more over fair than each 100 of all
+- **L196 1. the reverse auction, by hand: every holder's rule, solved for its price**
+  - L203 fixture: the line is worth less than par on a market over its coupon
+  - L204 each of the four holders but the central bank cut its holding into SLICES slices
+  - L206 the central bank's face is never offered: the ladder is the principal less its face
+  - L213 every offer is at or over fair
+  - L214 ...and the ladder is the cheapest first
+  - L219 the bank offers everything it holds at exactly fair (D34)
+  - L220 ...all of it
+  - L225 the households' first slice is the line's payments at the deposit rate plus the spread the rest of their holding asks
+  - L227 ...which is over fair: they hold it for more than a deposit pays
+  - L235 each household slice is priced at the holding that remains once it is sold
+  - L236 ...so the more they sell the dearer the next slice
+  - L237 ...and their last slice, with nothing left to hold, is the line at the deposit rate
+  - L249 each business slice is priced at the holding that remains, as a share of their idle money
+  - L250 ...and dearer as they sell
+  - L262 each world slice is priced at the stock that remains: its rate, its premium and the excess that holds it
+  - L263 ...and dearer as it sells
+  - L275 the city takes the face it asked for
+  - L276 ...and pays the sum of face times each slice's own price (multiple price, D19)
+  - L277 the stop is the dearest offer taken, the average is lower, and the average is not under fair
+  - L279 ...strictly lower than the stop: the cheaper offers were not paid the stop
+  - L280 the average is the price paid over the face taken
+  - L281 what the auction cost is what was paid over fair, and it is not negative
+  - L282 ...computed on the face taken
+  - L283 the gain on the books is the face's carrying value less the price
+  - L284 ...and against face, the face less the price
+  - L285 what was offered over what was asked
+  - L295 the offers taken are the cheapest, and no offer left behind is under the stop
+  - L305 the offers taken, by holder, are the faces the result says each sold
+  - L311 a small ask is filled from the bank alone, at fair
+  - L312 ...so the stop is the average is fair
+  - L313 ...and the auction cost nothing over fair
+  - L317 asked for more than is offered, the city takes all that is offered
+  - L318 ...and the cover says it fell short
+  - L319 the faces by holder add to the face taken
+  - L321 ...and the prices by holder to the price paid
+  - L331 with a highest price between two offers only the cheaper are taken
+  - L332 ...and the stop is the dearest of them, under the highest price
+  - L333 ...the next offer being over it
+  - L335 a highest price under the cheapest offer takes nothing
+  - L336 ...and pays nothing
+  - L342 businesses with no idle money want none of it, and offer at fair
+  - L344 a holding past OutwardInvestment.MAX_SHARE of their idle money is offered at fair: the first slice
+  - L346 ...and the last, with the share under MAX_SHARE, over it
+  - L350 the world in a run wants none of it and offers at fair
+  - L352 the same line and the same bidders give the same ladder
+  - L359 dollar paper is the world's alone, every slice at fair (D26)
+  - L360 ...all of it
+- **L366 2. a deposit rate over the line's yield: the households' rule prices under fair, so they offer at fair**
+  - L372 fixture: the deposit rate is over the line's yield
+  - L373 fixture: the households' rule, solved for its first slice, is under fair
+  - L378 so every household slice is offered at exactly fair, never under
+  - L379 ...and the businesses', whose better alternative is the deposit now
+  - L380 the world, whose rule is its own rate, still asks over fair for its last slices
+  - L389 slices at the same price go to the bank first, then the households, then the businesses (D19)
+  - L391 the city can buy the bank's, the households' and the businesses' for fair and no more
+  - L392 ...paying fair for every one of them
+  - L393 the households sold their whole holding
+- **L469 3. a played city: half of a ten-year line bought back, then most of the rest, then the last**
+  - L477 fixture: the treasury sold a ten-year line
+  - L478 fixture: ...which is unsettled until the month turns, and a part of it quotes nothing
+  - L481 fixture: it is settled, and the households, the bank and the world each hold part of it
+  - L483 fixture: ...and the central bank none, so the whole principal can be offered
+  - L490 half: the piece is still on the books, at half its principal
+  - L496 fixture: ...and this time the households, the businesses or the world sold too, at prices over the bank's
+  - L498 most of the rest: the piece is still on the books, at a fifth of what was left
+  - L505 the last: asked for all that is left, the city takes it
+  - L506 ...and the piece leaves the books
+  - L507 ...the cash fell by what was paid
+  - L508 ...and the holders' books agree with the paper: none of its principal is left in the cells
+  - L511 the last: the audit closes that month and the next
+  - L512 (the three together took the whole line)
+  - L549 ...the face
+  - L550 ...the carrying value
+  - L551 ...the issue discount
+  - L552 ...and what is left of it
+  - L553 ...the coupon
+  - L554 ...but the effective rate is the same
+  - L558 ...and every payment of its schedule, the months it has left unchanged
+  - L559 the bank's principal fell by exactly what it sold
+  - L560 ...the households'
+  - L561 ...the businesses'
+  - L562 ...the world's
+  - L563 ...and the face sold is the face asked
+  - L564 the treasury's cash fell by what was paid
+  - L565 the bank was paid its own slices' prices
+  - L566 ...its book of the city's paper fell by the face it sold
+  - L567 the households' savings rose by their own slices' prices
+  - L568 the world's book of the paper fell by the face it sold
+  - L569 the businesses' tills rose by their own slices' prices, at once
+  - L570 ...and their paper fell by the face they sold
+  - L571 what the households and the world were paid is carried to the next month's window
+  - L573 the central bank was paid nothing
+  - L574 the two books of the households' paper agree, and of the world's
+  - L578 the gain on debt retired the month booked is the carrying value of the face taken less the price
+  - L580 the audit closes the month the payments are declared in
+  - L581 ...and the month after
+  - L582 the piece pays the smaller coupon, month on month
+- **L589 4. the central bank holds part of a line: it does not offer, it is not paid**
+  - L599 fixture: the treasury sold another line
+  - L604 fixture: the central bank, on its dial, holds part of the line
+  - L605 fixture: ...and the bank, the households or the world hold the rest
+  - L612 asked for the whole principal, the quote takes the whole principal less the central bank's face
+  - L614 ...and asked is held to what can be offered
+  - L617 the buyback took the same
+  - L618 the piece stays on the books
+  - L619 the central bank's principal is unchanged
+  - L620 ...and what is left of the piece is exactly that
+  - L621 ...the bank holds nothing of it any more
+  - L622 the central bank's book of paper is unchanged
+  - L623 ...and it was paid nothing: no price is due to it
+  - L624 the cash fell by what was paid
+  - L625 the audit closes that month and the next
+  - L626 the central bank still holds what the paper says it does
+- **L632 5. can the city print money with this? A line sold and bought back**
+  - L652 fixture (the same month): a
+  - L659 the
+  - L664 a
+  - L665 the unpaid
+  - L666 ...and its whole face is cancelled
+  - L667 ...the bank offers only paid face, so it sold none
+  - L668 ...and received no buyback cash
+  - L669 ...the cancelled proceeds leave the next settle
+  - L670 the audit closes that month and the next
+  - L671 the bank's equity split holds over the month after the
+  - L690 fixture: a
+  - L697 fixture: the
+  - L705 a
+  - L706 ...and two of them do not either
+  - L708 the audit still closes after the round trips
+- **L713 5b. a typed face just short of a whole unpaid piece**
+  - L719 fixture: a fresh sale is wholly unpaid
+  - L725 fixture: the typed face is short and its pro-rata miss exceeds the audit's allowance
+  - L728 fixture: cancellation is the only offer
+  - L730 the unpaid face carries no paid bank discount
+  - L732 the typed face closes the piece
+  - L733 the whole cancellation pays its exact proceeds
+  - L734 the whole cancellation retires its exact face
+  - L735 the round trip conserves the money audit's pools
+  - L738 the following month's audit holds within its relative tolerance
+  - L745 fixture: the premium cancellation is the dearest offer
+  - L748 the typed reopening quote cancels the exact unpaid face
+  - L749 ...and pays the exact premium proceeds
+  - L751 a cap leaving the small cancellation behind refuses the whole buyback
+  - L754 a small central-bank holding refuses an unsettled whole-piece quote
+- **L761 5a. a reopened line closed before the settle**
+  - L766 fixture: the first sale made a line
+  - L768 the first sale's audit closes
+  - L771 fixture: the settled line has paid bank and household holdings
+  - L775 fixture: the second sale reopened the same line
+  - L779 a part of the reopened line is refused without moving its settlement
+  - L784 the quote offers the bank's paid face
+  - L785 ...and cancels exactly the reopened sale's face
+  - L786 ...at the original proceeds
+  - L787 ...and takes every paid household's face
+  - L790 the reopened piece is closed whole
+  - L791 the treasury pays the quoted total
+  - L792 the bank receives its paid holdings' price
+  - L793 the reopening's proceeds leave the settle
+  - L794 the cancellation's audit closes over two months
+  - L795 the bank's equity split holds after cancelling the reopening
+- **L801 6. dollar paper is the world's alone, bought back at fair**
+  - L812 fixture: the city owes a dollar bond
+  - L818 the quote takes the whole piece
+  - L819 ...all of it from the world
+  - L820 ...none from anyone else
+  - L823 every slice is at fair: the dollar curve's value
+  - L824 the stop is the average is fair
+  - L825 ...and what is paid is the dollar curve's value of the piece
+  - L826 ...the auction cost nothing over fair
+  - L831 a part of it is taken
+  - L832 the piece stays on the books
+  - L833 ...in dollars, down by the part taken
+  - L834 ...its carrying value, in dollars and in local money
+  - L835 ...and its effective rate unchanged
+  - L836 what the world is owed fell with it
+  - L837 the cash fell by what was paid
+  - L838 ...and it leaves the country, carried to the next month's window
+  - L839 the audit closes: the dollar holder's payment is a financial outflow
+  - L842 the rest is taken
+  - L843 the dollar bond is off the books
+  - L844 ...and the audit closes the month after
+- **L850 7. a buyback the city cannot pay for, or no offer will meet, or a sale not yet settled, changes nothing**
+  - L859 fixture: the treasury sold a five-year line
+  - L860 fixture: ...unsettled
+  - L864 a part of a sale not yet settled is refused: nothing is taken, nothing moves
+  - L866 ...and so is the whole of it under a highest price that leaves some behind
+  - L868 ...but the whole of it, at any price, is quoted: it costs what the thin quote says
+  - L871 ...and it is worth something
+  - L873 fixture: it is settled now
+  - L878 the whole-piece quote is the same as the thin one
+  - L879 ...and the gain the same
+  - L880 ...which is never under what the piece is worth to somebody who does not care to hold it
+  - L887 a city that cannot afford it is refused: nothing is taken
+  - L888 ...and was not charged anyway
+  - L889 ...and nothing else moved: the piece, its holders, the bank, the savings and the world's book
+  - L891 the old button refuses the same
+  - L896 a highest price under every offer buys nothing
+  - L897 ...and moves nothing
+  - L899 nothing is bought of a piece that is not there
+  - L901 the audit closes after the refusals
+  - L902 fixture: the books still hold the piece
+- **L923 8. CD3's star 5: a gain on debt retired is not less spending, month by month and in the year**
+  - L931 fixture: the treasury sold a line
+  - L951 fixture: the line is worth less than the books carry it at
+  - L952 fixture: ...and the city buys back at a gain on the carrying value
+  - L957 fixture: it was bought, in part, no dearer than the highest price named
+  - L972 fixture: History has the year of months
+  - L982 History's revenue less surplus plus the gain on debt retired is the month's expenses, to the cent, every month of the year
+  - L984 History records the gain in the month of the buyback
+  - L987 ...and in no other month
+  - L988 the treasury's month of spending is their average
+  - L989 ...and so is the sum of what the history says it was
+  - L990 without the gain the year is off by it: this is the bug
+  - L991 ...by exactly the gain (revenue less surplus is expenses less the gain)
+- **L1011 9. a line callable now: no holder asks more than the call price (BB1, CD4-C ★6)**
+  - L1023 fixture: the coupon is over the yield the households ask for their first slice
+  - L1024 fixture: ...and the line's fair is under the call price, the market's yield being over the coupon
+  - L1025 fixture: a line with no call price, a NaN or a call price of nothing, is not callable now
+  - L1028 ...and one with the call price is
+  - L1034 premise: without the call price the dearest offer is over it
+  - L1035 premise: ...and the cheapest is under it, the bank's at fair
+  - L1036 a line with no call price offers what it did before the cap existed (the ten-figure line, NaN)
+  - L1044 with the call price every offer is at most it
+  - L1045 ...and the ladder is still the cheapest first
+  - L1046 ...with as many offers, the central bank's face still not among them
+  - L1065 premise: some offers were under the call price and some over it
+  - L1066 the offers that were under the call price are unchanged, holder by holder, slice by slice
+  - L1067 the ones that were over it are exactly the call price
+  - L1068 each holder's own slices still ascend
+  - L1074 a full buyback takes all that is offered
+  - L1075 its stop is at most the call price
+  - L1076 ...and what it paid is at most the face taken at the call price
+  - L1077 premise: without the call price the stop was over it and the city paid more than the face at the call price
+  - L1079 so the call price saves the city something
+  - L1080 ...and moves nothing else: the face taken and the piece's fair are the same
+  - L1085 fixture: a coupon so far over the market's yield that the line's fair is over the call price
+  - L1087 premise: without the call price every offer is at least fair, so over the call price
+  - L1090 with it every offer is exactly the call price: the cap wins over the floor at fair
+  - L1092 a full buyback of it pays the call price on average
+  - L1099 dollar paper with a call price is offered at it, never at the fair that is over it
+  - L1115 fixture: the treasury sold a callable ten-year line
+  - L1118 fixture: ...unsettled until the month turns, so it cannot be called
+  - L1123 fixture: it is settled, and the households, the bank and the world each hold part of it, the central bank none
+  - L1126 fixture: its first call month is still ahead, so it cannot be called
+  - L1135 a line not yet callable is quoted as the holders ask: the ladder is Buyback.offers() with no call price
+  - L1141 premise: the dearest offer is over the call price (
+  - L1142 the quote takes it all
+  - L1148 at its first call month it can be called
+  - L1157 premise: the same line with no call price, at this month's fair, still has its dearest offer over the call price (
+  - L1163 callable now, every offer on the ladder is at most the call price
+  - L1164 ...each the least of what it would have been with no call price and the call price
+  - L1165 ...and the same face on offer
+  - L1166 its stop is at most the call price (
+  - L1167 the quote still takes it all
+  - L1168 what it asks is at most what calling the line costs, and less than the quote before the call month
+  - L1175 the buyback booked pays what the quote said
+  - L1176 ...its stop is the quote's
+  - L1177 ...it is within what calling the line would have cost, and the line leaves the books
+  - L1179 ...the cash fell by what was paid
+  - L1189 ...the gain at fair is the carrying value of the face taken less its worth at fair
+  - L1197 ...the holders' overFair add up to the auction's
+  - L1198 ...and no holder is paid under fair (every offer is at or over it)
+  - L1199 ...the bank is paid fair (D34): its overFair is nothing
+  - L1200 ...the share is the gain at fair over the carrying value of the face taken
+- **L1216 10. what the auction books and what fair would: they differ by what the holders ask over fair (BB1, CD6-C ★1)**
+  - L1237 premise: the quote takes offers from more than one holder
+  - L1238 premise: some holder is paid over fair (
+  - L1239 a quote of several holders
+  - L1240 ...the gain at fair, by hand: the face's carrying value less its worth at fair
+  - L1241 ...so the book's desk reads more than the auction books: the gain at fair is over the gain on the carrying value
+  - L1245 a quote of the bank's offers alone
+  - L1246 premise: it took the bank's face alone
+  - L1247 ...at fair the two agree: nothing is asked over fair
+  - L1248 ...and the gain at fair is the gain the auction books
+  - L1252 a quote that takes nothing has no gain at fair and no share of one
+  - L1259 premise: the households hold all of what was taken
+  - L1260 premise: they ask over fair (
+  - L1261 premise: the line is carried between its worth at fair and what the auction pays
+  - L1263 the households' line
+  - L1264 at fair the line reads a gain
+  - L1265 ...and the auction books a loss: the figures have opposite signs
+  - L1266 ...the households' overFair is the whole of what the auction asks over fair
+  - L1275 fixture: the treasury sold a ten-year line
+  - L1278 fixture: it is settled, and held by more than the bank
+  - L1282 fixture: the quote takes the line
+  - L1285 a played line, all of it
+  - L1287 ...and half of it
+  - L1288 a smaller face takes the cheaper offers first: each 100 of half costs no more over fair than each 100 of all
 
 ## CalendarCheck.java - 67 labelled assertions
 
@@ -5424,7 +5441,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1112 ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under
   - L1129 ...and every curve the world gave a market reproduces the band it was set at: the net export price at the exports it was struck at is
 
-## CreditCheck.java - 264 labelled assertions
+## CreditCheck.java - 265 labelled assertions
 
 > Verifies private-sector credit: pricing, origination, rollover, cash conservation.
 
@@ -5706,25 +5723,26 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1915 a project loan hands its full purpose to the till
   - L1916 ...its fee carried in the principal: the loan is the purpose grossed up for LOAN_FEE
   - L1918 ...and the fee the bank keeps is LOAN_FEE of that principal
-- **L1936 11. the curve: the dial at the short end, a premium by maturity**
-  - L1949 debt-free, the note quotes exactly the dial
-  - L1950 ...and getRate() is the note's rate, the short end
-  - L1951 the 10-year term loan: the dial plus TERM_PREMIUM_10Y
-  - L1953 the 20-year: the dial plus TERM_PREMIUM_20Y
-  - L1955 the 50-year: the dial plus TERM_PREMIUM_50Y
-  - L1957 ...and past fifty years the curve holds
-  - L1958 a 5-year serial: the dial plus the 10-year entry, 48 of the 108 months from a year to ten
-  - L1960 ...a 35-year point halfway between 30 and 40
-  - L1962 ...and a year-long note carries none
-  - L1970 a hike of two points moves every row by two: the whole curve in parallel
-  - L1976 fixture: the debt adds a real credit spread
-  - L1981 debt moves every row by the same credit spread
-  - L1987 a 25-year request is refused, in words
-  - L1988 ...quoted nothing
-  - L1989 ...and books nothing
-  - L1995 ...while each of the five maturities is quoted
-  - L2007 a bond issued at
-  - L2010 ...and the buyback takes it off the books at that price
+- **L1937 11. the curve: the dial at the short end, a premium by maturity**
+  - L1950 debt-free, the note quotes exactly the dial
+  - L1951 ...and getRate() is the note's rate, the short end
+  - L1952 the 10-year term loan: the dial plus TERM_PREMIUM_10Y
+  - L1954 the 20-year: the dial plus TERM_PREMIUM_20Y
+  - L1956 the 50-year: the dial plus TERM_PREMIUM_50Y
+  - L1958 ...and past fifty years the curve holds
+  - L1959 a 5-year serial: the dial plus the 10-year entry, 48 of the 108 months from a year to ten
+  - L1961 ...a 35-year point halfway between 30 and 40
+  - L1963 ...and a year-long note carries none
+  - L1971 a hike of two points moves every row by two: the whole curve in parallel
+  - L1977 fixture: the debt adds a real credit spread
+  - L1982 debt moves every row by the same credit spread
+  - L1988 a 25-year request is refused, in words
+  - L1989 ...quoted nothing
+  - L1990 ...and books nothing
+  - L1996 ...while each of the five maturities is quoted
+  - L2009 a bond issued at
+  - L2011 the issue and the fair buyback value read the same curve
+  - L2015 ...and the buyback takes it off the books at that price
 
 ## CreditsCheck.java - 16 labelled assertions
 
@@ -13127,64 +13145,64 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2239 ...the twin, which books none, closes too: its split is nothing
   - L2241 ...and its movement's residual is nothing
   - L2244 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-  - L2304 fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance
-  - L2306 fixture: ...the bank's book covers the face it sells back, and its unearned discount the piece's
-  - L2308 fixture: ...cancelled straight back whole, with no paid bank face, and off the books
-  - L2310 fixture: ...and the twin's the same, bit for bit
-  - L2312 the buyback re-struck nothing
-  - L2317 two months on, the bank's equity's parts are its equity again, as before the sale: the settle's payment cancelled what it sold back
-  - L2319 ...and the twin's (main before BK1) too
-  - L2324 ...the audit closed on both months, in the city and in the twin
-  - L2327 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-- **L2337 14. a holder left within HOLDING_ROUNDING of the face moved holds none, and one left more holds it (RT1)**
-  - L2346 fixture: the businesses hold exactly the face the desk takes all but an ulp or two of
-  - L2347 fixture: the old rule would have left them a hair above nothing, and the hair is under the floor on the face moved
-  - L2350 a sale meant to take all a holder holds, struck an ulp short, leaves it none
-  - L2353 ...and the face it held is the bank's: the holders' faces and the bank's still add up to the piece, to a part in HOLDING_ROUNDING
-  - L2360 a sale of part of a holding leaves the rest, exactly: not snapped
-  - L2369 a remainder of ten times the floor stays: above nothing, and within an ulp of the
-  - L2371 ...and one of half the floor, built the same way, is snapped to none
-  - L2379 the same holds for the households
-  - L2380 ...and the central bank
-  - L2381 ...and the world
-  - L2382 ...and for a buyback that takes the businesses' paper by the same ulp-short face (retirePart)
-  - L2388 fixture: scaled by the founding's FACTOR the old rule still leaves a hair above nothing
-  - L2390 at the founding's price level as at today's, the ulp-short sale leaves the businesses none: the floor is a share of the face moved
-  - L2392 fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped
-  - L2394 ...yet it stays, because the floor is a share of the face moved
-- **L2429 15. each holder's discount is its own, at the price it paid (BK2)**
-  - L2439 fixture: the treasury sold a twenty-year bond between the presses, and the fixture's settle of it was watched at both edges
-  - L2443 fixture: ...a new line, all of it unsettled going in, and no holder's discount on it yet
-  - L2445 fixture: ...the sale's discount is the unsettled sale's: its face less what it raised
-  - L2447 fixture: ...the households and the bank each took part of it, and the central bank none
-  - L2456 BANK: its own discount is the face it took less what it paid, the residual buyer's
-  - L2458 CENTRAL_BANK: it took none, so it has none of the discount
-  - L2459 ...and the line's discount left is the five owners' sum
-  - L2460 ...with nothing of the sale left unsettled
-  - L2461 ...and the five together are the sale's whole discount: its face less what it raised
-  - L2471 fixture: the second sale reopened the same line at a discount and is unsettled: the market owes for it
-  - L2475 a reopening at another price moves no owner's discount at the sale: the five are what they were, bit for bit
-  - L2476 ...the unsettled sales' discount is the reopening's face less what it raised
-  - L2480 after its settle the owners' sum, with nothing unsettled, is the line's discount left
-  - L2482 ...nothing of the sale is left unsettled
-  - L2483 ...and at the settle the owners' sum rose by the sale's discount, whole
-  - L2489 fixture: the households hold part of the line, and own discount on it
-  - L2493 the bank is handed the households' own discount times the face over their holding
-  - L2494 ...the bank's own discount rose by exactly that
-  - L2495 ...the households' fell by exactly that
-  - L2496 ...and the households' discount per face of what they keep did not move
-  - L2500 the bank handing face to the households hands them its own discount per face on it, whatever they paid
-  - L2502 ...the households' own rose by exactly that
-  - L2503 ...and the bank's discount per face of what it keeps did not move
-  - L2510 fixture: months are left past the last, and nothing is unsettled: the old pool's step is its discount over the months left
-  - L2519 the step the line returns is the bank's: the one income books
-  - L2520 ...and the five steps add up to the old pool's step: its discount left over the months left, the city's accretion unchanged
-  - L2534 fixture: the five holders' discounts per face are five different figures
-  - L2535 fixture: ...and together they are the discount of what was sold: 1,110 of face less the 1,001 it raised
-  - L2543 principal repaid moves no owner's discount: the five are what they were, bit for bit
-  - L2564 CENTRAL_BANK: the central bank does not sell, so its own discount stays, bit for bit
-  - L2573 fixture: a sale unsettled, and every owner has discount
-  - L2578 the unsettled sales' discount scales by it too
+  - L2303 fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance
+  - L2305 fixture: ...the bank has existing paid paper and discount exceeding the cancelled sale's
+  - L2307 fixture: ...cancelled straight back whole, with no paid bank face, and off the books
+  - L2309 fixture: ...and the twin's the same, bit for bit
+  - L2311 the buyback re-struck nothing
+  - L2316 two months on, the cancellation has preserved the bank's equity split
+  - L2318 ...and the twin's (main before BK1) too
+  - L2323 ...the audit closed on both months, in the city and in the twin
+  - L2326 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+- **L2336 14. a holder left within HOLDING_ROUNDING of the face moved holds none, and one left more holds it (RT1)**
+  - L2345 fixture: the businesses hold exactly the face the desk takes all but an ulp or two of
+  - L2346 fixture: the old rule would have left them a hair above nothing, and the hair is under the floor on the face moved
+  - L2349 a sale meant to take all a holder holds, struck an ulp short, leaves it none
+  - L2352 ...and the face it held is the bank's: the holders' faces and the bank's still add up to the piece, to a part in HOLDING_ROUNDING
+  - L2359 a sale of part of a holding leaves the rest, exactly: not snapped
+  - L2368 a remainder of ten times the floor stays: above nothing, and within an ulp of the
+  - L2370 ...and one of half the floor, built the same way, is snapped to none
+  - L2378 the same holds for the households
+  - L2379 ...and the central bank
+  - L2380 ...and the world
+  - L2381 ...and for a buyback that takes the businesses' paper by the same ulp-short face (retirePart)
+  - L2387 fixture: scaled by the founding's FACTOR the old rule still leaves a hair above nothing
+  - L2389 at the founding's price level as at today's, the ulp-short sale leaves the businesses none: the floor is a share of the face moved
+  - L2391 fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped
+  - L2393 ...yet it stays, because the floor is a share of the face moved
+- **L2428 15. each holder's discount is its own, at the price it paid (BK2)**
+  - L2438 fixture: the treasury sold a twenty-year bond between the presses, and the fixture's settle of it was watched at both edges
+  - L2442 fixture: ...a new line, all of it unsettled going in, and no holder's discount on it yet
+  - L2444 fixture: ...the sale's discount is the unsettled sale's: its face less what it raised
+  - L2446 fixture: ...the households and the bank each took part of it, and the central bank none
+  - L2455 BANK: its own discount is the face it took less what it paid, the residual buyer's
+  - L2457 CENTRAL_BANK: it took none, so it has none of the discount
+  - L2458 ...and the line's discount left is the five owners' sum
+  - L2459 ...with nothing of the sale left unsettled
+  - L2460 ...and the five together are the sale's whole discount: its face less what it raised
+  - L2470 fixture: the second sale reopened the same line at a discount and is unsettled: the market owes for it
+  - L2474 a reopening at another price moves no owner's discount at the sale: the five are what they were, bit for bit
+  - L2475 ...the unsettled sales' discount is the reopening's face less what it raised
+  - L2479 after its settle the owners' sum, with nothing unsettled, is the line's discount left
+  - L2481 ...nothing of the sale is left unsettled
+  - L2482 ...and at the settle the owners' sum rose by the sale's discount, whole
+  - L2488 fixture: the households hold part of the line, and own discount on it
+  - L2492 the bank is handed the households' own discount times the face over their holding
+  - L2493 ...the bank's own discount rose by exactly that
+  - L2494 ...the households' fell by exactly that
+  - L2495 ...and the households' discount per face of what they keep did not move
+  - L2499 the bank handing face to the households hands them its own discount per face on it, whatever they paid
+  - L2501 ...the households' own rose by exactly that
+  - L2502 ...and the bank's discount per face of what it keeps did not move
+  - L2509 fixture: months are left past the last, and nothing is unsettled: the old pool's step is its discount over the months left
+  - L2518 the step the line returns is the bank's: the one income books
+  - L2519 ...and the five steps add up to the old pool's step: its discount left over the months left, the city's accretion unchanged
+  - L2533 fixture: the five holders' discounts per face are five different figures
+  - L2534 fixture: ...and together they are the discount of what was sold: 1,110 of face less the 1,001 it raised
+  - L2542 principal repaid moves no owner's discount: the five are what they were, bit for bit
+  - L2563 CENTRAL_BANK: the central bank does not sell, so its own discount stays, bit for bit
+  - L2572 fixture: a sale unsettled, and every owner has discount
+  - L2577 the unsettled sales' discount scales by it too
 
 ## HomeRailCheck.java - 45 labelled assertions
 
