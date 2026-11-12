@@ -178,6 +178,7 @@ public class BuybackCheck {
         halfOfALine(city);
         centralBankHolds();
         noPump(city);
+        typedCancellation();
         cancelReopening(playedCity("buybackcheck-cancel-reopening"));
         dollars();
         refused(city);
@@ -707,6 +708,51 @@ public class BuybackCheck {
         check("the audit still closes after the round trips", closes(play(city)));
     }
 
+    /** The first review's typed face: a whole-piece tolerance closes the entire unpaid sale. */
+    static void typedCancellation() {
+        out.println("\n--- 5b. a typed face just short of a whole unpaid piece ---");
+        Game city = new Game(GameFiles.scratch("buybackcheck-typed-cancellation"));
+        quietly(city::run);
+        double poolsBefore = MoneyAudit.pooled(city);
+        quietly(() -> city.handleLongBondLogic(2_500_000_001.7, 10, .1));
+        Debt fresh = unsettledPiece(city.getDebtManager());
+        check("fixture: a fresh sale is wholly unpaid", fresh != null
+                && fresh.bankPrincipalPaid() == 0 && fresh.unsettledFace() == fresh.getOustandingPrincipal());
+        if (fresh == null) return;
+        double principal = fresh.getOustandingPrincipal(), proceeds = fresh.getSettleDue();
+        double typed = 2_500_000_000.0;
+        double proRataMiss = proceeds * (principal - typed) / principal;
+        check("fixture: the typed face is short and its pro-rata miss exceeds the audit's allowance",
+                typed < principal && proRataMiss > MoneyAudit.tolerance(proceeds));
+        Buyback.Result quoted = city.quoteBuyback(fresh, typed, Double.NaN);
+        check("fixture: cancellation is the only offer", quoted.ladder().size() == 1
+                && quoted.ladder().get(0).holder() == Buyback.Holder.UNSETTLED);
+        near("the unpaid face carries no paid bank discount", fresh.unaccretedOn(Debt.Holder.BANK, principal), 0, 0);
+        Buyback.Result back = city.buyBack(fresh, typed, Double.NaN);
+        check("the typed face closes the piece", back.takenFace() > 0 && !city.getDebtManager().getDebt().contains(fresh));
+        near("the whole cancellation pays its exact proceeds", back.cancelledCash(), proceeds, 0);
+        near("the whole cancellation retires its exact face", back.cancelledFace(), principal, 0);
+        near("the round trip conserves the money audit's pools", MoneyAudit.pooled(city), poolsBefore,
+                MoneyAudit.tolerance(proceeds));
+        MoneyAudit.Result month = play(city);
+        check("the following month's audit holds within its relative tolerance",
+                month.relative() <= MoneyAudit.RELATIVE_TOLERANCE);
+
+        // A paid line with a small, dear reopening: the typed face stops exactly before the cancellation.
+        Debt premium = city.getDebtManager().addLongTermBond(typed, 120, city.getMonth(), .02);
+        premium.reopen(1.7, 6.8, .01);
+        Buyback.Result full = city.quoteBuybackAtRest(premium, typed, Double.NaN);
+        check("fixture: the premium cancellation is the dearest offer", !full.ladder().isEmpty()
+                && full.ladder().get(full.ladder().size() - 1).holder() == Buyback.Holder.UNSETTLED
+                && premium.getSettleDue() > premium.unsettledFace());
+        near("the typed reopening quote cancels the exact unpaid face", full.cancelledFace(), premium.unsettledFace(), 0);
+        near("...and pays the exact premium proceeds", full.cancelledCash(), premium.getSettleDue(), 0);
+        double cap = (full.fairPer100() + 400) / 2;
+        check("a cap leaving the small cancellation behind refuses the whole buyback",
+                city.quoteBuybackAtRest(premium, typed, cap).takenFace() == 0);
+        city.getDebtManager().retire(premium);
+    }
+
     /** BY1: paid holders keep their own sale proceeds while a reopening's unpaid allotment is cancelled. */
     static void cancelReopening(Game city) {
         out.println("\n--- 5a. a reopened line closed before the settle ---");
@@ -730,12 +776,14 @@ public class BuybackCheck {
         check("a part of the reopened line is refused without moving its settlement",
                 city.buyBack(line, line.getOustandingPrincipal() / 2, Double.NaN).takenFace() == 0
                         && same(before, snapshot(city, line)));
-        Buyback.Result quoted = city.quoteBuyback(line, 1e12, Double.NaN);
+        double typed = line.getOustandingPrincipal() * (1 - 5e-10);
+        Buyback.Result quoted = city.quoteBuyback(line, typed, Double.NaN);
         near("the quote offers the bank's paid face", quoted.bankFace(), bankPaidFace, 1e-9);
         near("...and cancels exactly the reopened sale's face", quoted.cancelledFace(), unpaidFace, 1e-9);
         near("...at the original proceeds", quoted.cancelledCash(), unpaidCash, 1e-9);
+        near("...and takes every paid household's face", quoted.householdFace(), householdsFace, 1e-9);
         double cash = city.getCash(), bankCash = city.getBank().getCash();
-        Buyback.Result back = city.buyBack(line, 1e12, Double.NaN);
+        Buyback.Result back = city.buyBack(line, typed, Double.NaN);
         check("the reopened piece is closed whole", back.takenFace() > 0 && !city.getDebtManager().getDebt().contains(line));
         near("the treasury pays the quoted total", cash - city.getCash(), quoted.paid(), 1e-9);
         near("the bank receives its paid holdings' price", city.getBank().getCash() - bankCash, back.bankPaid(), 1e-9);

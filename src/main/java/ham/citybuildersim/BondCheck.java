@@ -1619,6 +1619,10 @@ public class BondCheck {
         f.bm.tradeForCheck(f.bond, BondMarket.WORLD, OrderBook.Side.SELL, 1, 10);
         close("the first arrival bought the face", f.rich.bondFace(1) * f.rich.households(), 10, 1e-12);
         close("the second bid still waits", f.bm.bookOf(f.bond).resting(second, OrderBook.Side.BUY), 10, 1e-12);
+        int waiting = f.bm.bookOf(f.bond).bids().size();
+        assertTrue("a positive bid below half a tick is refused before settlement",
+                f.bm.tradeForCheck(f.bond, first, OrderBook.Side.BUY, BondMarket.PRICE_TICK / 4, 10).isEmpty()
+                        && f.bm.bookOf(f.bond).bids().size() == waiting);
     }
 
     static void eachTypeTrades() {

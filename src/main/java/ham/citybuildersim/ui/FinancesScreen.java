@@ -4464,7 +4464,7 @@ final class FinancesScreen {
             case BANK       -> Palette.MONEY;
             case FIRMS      -> Palette.BUSINESS_DARK;
             case WORLD      -> Palette.BUILDING_DARK;
-            case UNSETTLED  -> Palette.TEXT_MUTED;
+            case UNSETTLED  -> Palette.WARN;
         };
     }
 
@@ -4803,6 +4803,7 @@ final class FinancesScreen {
                         swatch(holderColour(Buyback.Holder.HOUSEHOLDS), "households", false),
                         swatch(holderColour(Buyback.Holder.FIRMS), "the businesses", false),
                         swatch(holderColour(Buyback.Holder.WORLD), "the world", false),
+                        swatch(holderColour(Buyback.Holder.UNSETTLED), "the cancelled sale", false),
                         swatch(Palette.TEXT_MUTED, "offered and not taken, outlined", true)));
             }
             return offers;

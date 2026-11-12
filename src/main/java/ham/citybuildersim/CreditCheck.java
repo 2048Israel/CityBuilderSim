@@ -1929,8 +1929,9 @@ public class CreditCheck {
        table's points. A hike moves every maturity by the hike; debt moves
        every maturity by the same credit spread. A term loan is issued at
        10, 20, 30, 40 or 50 years and a 25-year ask is refused; and a bond
-       issued at twenty years cancels its unpaid sale the same month at the
-       original proceeds (BY1, BS1). Asserted against the model's constants.
+       issued at twenty years has a fair buyback value on that same curve,
+       equal to the proceeds plus issuance cost. Its unpaid sale cancels at
+       the original proceeds (BY1, BS1). Asserted against the model's constants.
        ================================================ */
     static void theCurve(Game city) {
         System.out.println("\n--- 11. the curve: the dial at the short end, a premium by maturity ---");
@@ -2001,11 +2002,15 @@ public class CreditCheck {
         DebtQuote quote = city.quoteLongBond(5_000, term, 1000);
         quietly(() -> city.handleLongBondLogic(5_000, term, 1000));
         Debt twenty = city.getDebtManager().getDebt().get(city.getDebtManager().getDebt().size() - 1);
-        double price = city.quoteRepurchase(twenty);
+        Buyback.Result buyback = city.quoteBuyback(twenty, twenty.getOustandingPrincipal(), Double.NaN);
+        double price = buyback.paid();
         System.out.printf("   %d-year: raised $%,.2fk on $%,.0fk of face at %.3f%%; bought back for $%,.2fk%n",
                 term, quote.cashReceived(), quote.faceValue(), quote.marketRate() * 100, price);
         assertTrue("a bond issued at " + term + " years cancels its unpaid sale at the original proceeds",
                 Math.abs(price - quote.cashReceived()) <= MoneyAudit.CENT);
+        assertTrue("the issue and the fair buyback value read the same curve",
+                Math.abs(buyback.fairPer100() * twenty.getOustandingPrincipal() / 100
+                        - quote.cashReceived() - city.costOfIssuance(quote.faceValue())) <= MoneyAudit.CENT);
         double paid = city.repurchaseDebt(twenty);
         assertTrue("...and the buyback takes it off the books at that price",
                 Math.abs(paid - price) < 1e-9 && !city.getDebtManager().getDebt().contains(twenty));

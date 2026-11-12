@@ -1588,6 +1588,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     private List<OrderBook.Fill> submit(CorporateBond b, String who, OrderBook.Side side, double price, double quantity, int month) {
         if (!(quantity > dust) || !(price > 0) || !Double.isFinite(price)) return List.of();
         double ticked = Math.rint(price / PRICE_TICK) * PRICE_TICK;
+        if (!(ticked > 0) || !Double.isFinite(ticked)) return List.of();
         return openBook(b).submit(who, side, ticked, quantity, month, new Settle(b));
     }
 

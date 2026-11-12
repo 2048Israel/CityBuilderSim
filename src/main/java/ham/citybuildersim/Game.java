@@ -18160,11 +18160,10 @@ public class Game {
     /**
      * BD1: books the bank's gain or loss from a line's discount moving the book's figure outside the settle
      * (Bank.restrikeCarriedDiscount()): a reopening at a premium, or the desk handing the bank the whole line's
-     * discount while the book counts the settled part's. Not at the treasury's buyback or the call: a settled piece's
-     * two figures move together there (Debt.retirePart() scales the discount with the face; canCall() takes no piece
-     * with a sale unsettled), and a piece bought back whole before its settle must not be re-struck - the settle still
-     * pays for the sale, which cancels what the bank sold back of it, as it always did (the gate's finding on BD1:
-     * a re-strike there left the piece's whole discount unexplained for good). The gain is what the bank's carried
+     * discount while the book counts the settled part's. A treasury buyback removes each paid holder's own face and
+     * discount together. A whole piece closed before its settle cancels the unpaid sale at its original proceeds
+     * (BS1), leaving the bank's trade confined to its paid holdings. A call likewise moves paid holdings together.
+     * The gain is what the bank's carried
      * unearned discount moved by, less what the book's figure for it moved by, struck from the two figures taken
      * just before any face or discount moved. The 1e-9 is BK1's numerical guard: sums of thousands of pieces.
      * Since BK2 each holder's own discount moves with its face, so this books nothing at a reopening at a discount; what is left is a
@@ -19584,10 +19583,13 @@ public class Game {
                         canCall(debt) ? CallTree.CALL_PRICE : Double.NaN,
                         debt.unsettledFace(), debt.getSettleDue());
         double asked = Math.min(Math.max(0, face), buybackOfferable(debt));
+        boolean unsettled = debt.unsettledFace() > 0 || debt.getSettleDue() > 0;
+        // A typed face within the whole-piece tolerance closes every offer at its full price.
+        if (unsettled && takesTheWholePiece(asked, principal)) asked = Math.max(principal, line.offerable());
         Buyback.Result quote = Buyback.run(line, auctionBidders(), new Buyback.Ask(asked, maxPer100));
         // A sale not yet settled: the whole piece or nothing (see above).
-        boolean unsettled = debt.unsettledFace() > 0 || debt.getSettleDue() > 0;
-        if (unsettled && !takesTheWholePiece(quote.takenFace(), principal)) return Buyback.Result.none(face);
+        if (unsettled && (!takesTheWholePiece(quote.takenFace(), principal)
+                || quote.takenFace() != quote.offeredFace())) return Buyback.Result.none(face);
         return quote;
     }
 

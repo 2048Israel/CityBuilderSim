@@ -403,12 +403,13 @@ public final class Buyback {
                     line == null ? 0 : line.fairPer100(), 0, 0, 0);
         }
 
+        boolean all = asked >= line.offerable();
         double left = asked, taken = 0, paid = 0, stop = 0;
         double[] face = new double[Holder.values().length], cost = new double[face.length];
         for (Offer o : ladder) {
-            if (!(left > 0)) break;
+            if (!all && !(left > 0)) break;
             if (ask.capped() && o.per100() > ask.maxPer100()) break;     // sorted: nothing later is cheaper
-            double f = Math.min(o.face(), left);
+            double f = all ? o.face() : Math.min(o.face(), left);
             double c = o.holder() == Holder.UNSETTLED && f == line.unsettledFace()
                     ? line.unsettledCash() : f * o.per100() / 100;
             face[o.holder().ordinal()] += f;

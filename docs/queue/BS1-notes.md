@@ -175,3 +175,39 @@ so it tests the Meat Works' profit sum independently of the city's path.
 The current case reads the city's own meat prices and moves with the path,
 1.8x on BS1 and 2.6x on main. This is the queued fixture repair authorized
 with the shipping approval above.
+
+## First review, 2026-11-12
+
+Readiness at `9e46f472` was withdrawn and pushed in `a3c9370e` before repairs,
+under instruction `20261112-160816-402-lanekeeper-ff52`. Jerus's A1 and
+FoodProcessingCheck acceptances continue to apply.
+
+1. **Mended.** ★ A typed face within the existing whole-piece tolerance is
+   normalized to the full offerable face. Buyback takes each complete offer
+   at its full price, including the exact cancellation proceeds, and an
+   unsettled quote is accepted only when every offer was taken. Thus a cap
+   leaving even a small cancellation behind refuses the buyback. The new
+   BuybackCheck 5b issues 2,500,000,001.7 through the normal sale entry point
+   and types 2,500,000,000. It checks exact cancelled face and proceeds,
+   conservation of MoneyAudit's pools, and the following month's relative
+   audit. A paid line reopened for 1.7 face at 6.8 proceeds causes a dearest
+   cancellation offer and exercises both the typed face and a rejecting cap.
+   The existing played reopening also uses a typed face just short of whole
+   and verifies every household's paid face is taken. On the previous model
+   the new fixture adds 1.699540366 to the audit pools and fails its premium
+   cancellation checks. Evidence is `target/checks/BS1-typed-before-fix.txt`.
+2. **Mended.** CreditCheck 11 independently compares the fair value of the
+   issued face, `fairPer100 * face / 100`, with cash received plus the issue
+   cost. The cancellation-proceeds assertion remains alongside that curve
+   check.
+3. **Mended.** HoldersCheck 13c's description and labels now describe the
+   cancellation and preservation of paid bank holdings. Game's carried-
+   discount description follows those flows. Debt.unaccretedOn's obsolete
+   addition of unpaid discount to the bank's paid discount was removed.
+   BuybackCheck 5b asserts that wholly unpaid face carries zero bank discount.
+4. **Mended.** The cancelled sale has its own amber legend entry through
+   `Palette.WARN`, distinct from the muted outline for offered face left
+   untaken.
+5. **Mended.** BondMarket validates the rounded price as positive and finite
+   before submitting it. BondCheck 9a verifies that a positive quarter-tick
+   bid produces no fill and leaves the book intact.
