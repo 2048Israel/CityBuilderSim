@@ -611,6 +611,10 @@ public final class DistrictPlan {
          * the map reads 0 in its records as the reserve, a reserve being laid wherever the runs leave a plot at 0: the plan draws it from its first batch, as before.
          */
         public int[] fixedLogMonth, fixedLog;
+        /** The month this picture is of, set by CityMap beside the dated runs. */
+        public int month;
+        /** Wall-way changes in month order, plot << 1 | kept (DM2). Null means no recorded ways. */
+        public int[] wallMonth, wallChange;
         /** The city's highway and railway plots: FIXED_HIGHWAY, FIXED_RAIL or a yard's FIXED_YARD, and (batch FR7) an interchange's reserve FIXED_RESERVE, laid before the plan (the city's runs since 0.7.89, CityRuns; CityMap's network's plan's until 0.7.88). */
         public final byte[] fixed = new byte[AREA];
         /** The resource sites: SITE_FIELD, or SITE_MINED where a mine or well stands. */
@@ -989,6 +993,10 @@ public final class DistrictPlan {
 
     /** How many times the plan was made again with the way to a piece the buildings wall in kept clear of them (FW11, A PIECE BUILDINGS WALL IN; 0 for nearly every district), and the plots so kept clear in the plan returned. */
     public int wallTries, wallClear;
+    /** The wall-way journal returned for the map to keep, including this plan's discoveries (DM2). */
+    public int[] wallMonth, wallChange;
+    /** The plots kept clear in this picture, in plot order. */
+    public int[] wallWay = new int[0];
 
     /** ...and the plots of buildings on a resource field's plots (SITE_FIELD) the ways found over all those plans crossed (LC3): what wallJoinable() refused until then, so a district with some was left with its piece apart; PlanCheck 18 counts the districts. */
     public int wallField;
@@ -1061,13 +1069,17 @@ public final class DistrictPlan {
             if (b == null || !b.busy) BUILDERS.set(new java.lang.ref.SoftReference<>(fresh));
             b = fresh;
         }
-        b.releaseClear();
+        b.releaseClear(in);
         b.start(in);
         try {
             DistrictPlan p = ladder(b);
             // (FW11) A piece the buildings wall in has no way over free ground: the way over them is kept clear and the plan made again,
             // the buildings on it finding other lots - a pure function still, of the input alone.
             int again = 0;
+            if (b.releaseUnused(p)) {
+                b.start(in);
+                p = ladder(b);
+            }
             while (b.nWallPend > 0 && again < WALL_TRIES) {
                 b.keepWallClear();
                 b.start(in);
@@ -1075,7 +1087,10 @@ public final class DistrictPlan {
                 again++;
             }
             p.wallTries = again;
-            p.wallClear = b.nClear;
+            p.wallWay = b.clearPlots();
+            p.wallClear = p.wallWay.length;
+            p.wallMonth = Arrays.copyOf(b.wMonth, b.wN);
+            p.wallChange = Arrays.copyOf(b.wRec, b.wN);
             p.wallField = b.wallField;
             return p;
         } finally {
@@ -1428,6 +1443,7 @@ public final class DistrictPlan {
                 Arrays.fill(freeF[c], 0);
             }
             fixedAtStart();
+            waysAtStart();
             avSetup();
             groundAtStart();
             ground();
@@ -2105,7 +2121,7 @@ public final class DistrictPlan {
             batchP = bp;
             batchH = bh;
             // A run laid after the first batch's month goes on too (THE RUNS DATED): the plan is joined and its roads laid on today's runs.
-            goesOn = active > 0 || Math.abs(bg - in.gravel) > 1e-9 || Math.abs(bp - in.paved) > 1e-9 || Math.abs(bh - in.highway) > 1e-9 || fxNext < fxN;
+            goesOn = active > 0 || Math.abs(bg - in.gravel) > 1e-9 || Math.abs(bp - in.paved) > 1e-9 || Math.abs(bh - in.highway) > 1e-9 || fxNext < fxN || wNext < wN;
             if (goesOn) {
                 rG = bg;
                 rP = bp;
@@ -2494,7 +2510,8 @@ public final class DistrictPlan {
         /** growGround(), the land bought left out when `withLand` is false: the runs' records alone (growRuns()). */
         void growGround(int month, boolean withLand) {
             boolean land = withLand && month > dueMonth, runs = fxNext < fxN && in.fixedLogMonth[fxNext] <= month;
-            if (!land && !runs) return;
+            boolean ways = wNext < wN && wMonth[wNext] <= month;
+            if (!land && !runs && !ways) return;
             if (grown == null) grown = new int[AREA];
             int n = 0;
             if (land) {
@@ -2514,7 +2531,7 @@ public final class DistrictPlan {
             // The records due laid on the runs' ground, the room as it was kept to find what they changed by.
             int laid = 0;
             boolean keeping = keepGround;
-            if (runs) {
+            if (runs || ways) {
                 if (!keeping) {
                     System.arraycopy(occStart, 0, occWas, 0, AREA);
                     System.arraycopy(fieldOk, 0, fieldWas, 0, AREA);
@@ -2524,6 +2541,12 @@ public final class DistrictPlan {
                     if (keeping && !touched[r >>> 8]) noteTouch(r >>> 8);
                     fx[r >>> 8] = (byte) (r & 15);
                     if ((r & 15) == FIXED_RESERVE) rsvNote(r >>> 8);
+                    laid++;
+                }
+                while (wNext < wN && wMonth[wNext] <= month) {
+                    int r = wRec[wNext++], p = r >>> 1;
+                    if (keeping && !touched[p]) noteTouch(p);
+                    keepClear[p] = (r & 1) != 0;
                     laid++;
                 }
             }
@@ -2894,10 +2917,16 @@ public final class DistrictPlan {
          * with the land as ever; with none the plan is as it was.
          */
         void growRuns(int month) {
-            while (fxNext < fxN && in.fixedLogMonth[fxNext] <= month) {
+            while ((fxNext < fxN && in.fixedLogMonth[fxNext] <= month) || (wNext < wN && wMonth[wNext] <= month)) {
                 int m = firstHitMonth(month);
+                if (wNext < wN && wMonth[wNext] <= month) {
+                    m = m == Integer.MIN_VALUE ? wMonth[wNext] : Math.min(m, wMonth[wNext]);
+                }
                 if (m == Integer.MIN_VALUE) return;
                 markRunHits(m);
+                for (int q = wNext; q < wN && wMonth[q] <= m; q++) {
+                    if (wMonth[q] == m && (wRec[q] & 1) != 0) markRun(wRec[q] >>> 1);
+                }
                 growGround(m, false);
                 moveOff(m);
             }
@@ -6759,22 +6788,73 @@ public final class DistrictPlan {
         /** The plots of buildings on a field's plots the ways of this make() crossed (wallRoute()), over all its plans. */
         int wallField;
 
-        /** A make() begins with nothing kept clear. */
-        void releaseClear() {
-            for (int i = 0; i < nClear; i++) keepClear[clearAt[i]] = false;
-            nClear = 0;
-            nWallPend = 0;
-            wallField = 0;
+        /** The input's journal copied once for this make. Repeated ladder passes replay the same records. */
+        int[] wMonth, wRec;
+        int wN, wNext;
+
+        void releaseClear(Input in) {
+            Arrays.fill(keepClear, false);
+            nClear = nWallPend = wallField = 0;
+            wN = in.wallMonth == null || in.wallChange == null ? 0 : Math.min(in.wallMonth.length, in.wallChange.length);
+            wMonth = wN == 0 ? new int[64] : Arrays.copyOf(in.wallMonth, Math.max(64, wN));
+            wRec = wN == 0 ? new int[64] : Arrays.copyOf(in.wallChange, Math.max(64, wN));
         }
 
-        /** The ways the last plan found, kept clear for the next. */
+        /** A build starts with the ways kept at the first batch's month. Later changes are replayed beside the runs. */
+        void waysAtStart() {
+            Arrays.fill(keepClear, false);
+            wNext = 0;
+            int m = startMonth();
+            if (m == Integer.MIN_VALUE) m = Integer.MAX_VALUE;
+            while (wNext < wN && wMonth[wNext] <= m) {
+                int r = wRec[wNext++];
+                keepClear[r >>> 1] = (r & 1) != 0;
+            }
+        }
+
+        /** The final kept plots, independent of the order their ways were discovered. */
+        int[] clearPlots() {
+            int n = 0;
+            for (boolean kept : keepClear) if (kept) n++;
+            int[] plots = new int[n];
+            n = 0;
+            for (int p = 0; p < AREA; p++) if (keepClear[p]) plots[n++] = p;
+            return plots;
+        }
+
+        /** One wall event, dated at the map's month. A newly kept plot moves only the boxes standing across it. */
+        void wallRecord(int p, boolean kept) {
+            if (wN == wRec.length) {
+                wMonth = Arrays.copyOf(wMonth, 2 * wN);
+                wRec = Arrays.copyOf(wRec, 2 * wN);
+            }
+            int month = in.month;
+            if (in.logMonth != null && in.logMonth.length > 0) month = Math.max(month, in.logMonth[in.logMonth.length - 1]);
+            if (in.fixedLogMonth != null && in.fixedLogMonth.length > 0) month = Math.max(month, in.fixedLogMonth[in.fixedLogMonth.length - 1]);
+            if (in.carry != null && in.carry.length > 0) month = Math.max(month, in.carry[in.carry.length - 2]);
+            if (wN > 0) month = Math.max(month, wMonth[wN - 1]);
+            wMonth[wN] = month;
+            wRec[wN++] = p << 1 | (kept ? 1 : 0);
+            keepClear[p] = kept;
+        }
+
+        /** A cured way is released for arrivals from this month onward. Its earlier displacements remain in the replay. */
+        boolean releaseUnused(DistrictPlan p) {
+            if (in.wallMonth == null || in.wallMonth.length == 0) return false;
+            boolean changed = false;
+            for (int q = 0; q < AREA; q++) {
+                if (!keepClear[q] || p.isStreet(q)) continue;
+                wallRecord(q, false);
+                changed = true;
+            }
+            return changed;
+        }
+
+        /** The ways the last plan found, kept from this month's event onward. */
         void keepWallClear() {
             for (int i = 0; i < nWallPend; i++) {
                 int p = wallPend[i];
-                if (keepClear[p]) continue;
-                keepClear[p] = true;
-                if (nClear == clearAt.length) clearAt = Arrays.copyOf(clearAt, nClear * 2);
-                clearAt[nClear++] = p;
+                if (!keepClear[p]) wallRecord(p, true);
             }
             nWallPend = 0;
         }

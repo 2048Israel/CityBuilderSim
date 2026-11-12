@@ -518,15 +518,6 @@ public class MapCheck {
     static final int DRAWN_EVERY = 30;
 
     public static void main(String[] args) throws Exception {
-        // FC1: on FC1's model these cities build otherwise, and boxes that stand move in the plan when a street piece the
-        // buildings wall in changes its way kept clear (DistrictPlan, A PIECE BUILDINGS WALL IN), which first-fit follows
-        // with a cascade (the figures are of a city built without the Earth file): in section 2d the arrivals four months on
-        // (9 boxes: a second piece born walled in at month 133) and the yard that goes (73: the wall its ground cured is
-        // back), in 2h the reserve month (76 moved for 71 lying: the reserve re-routes a way) and four months on (12 and 23
-        // boxes, as the way is worked out again from each month's arrivals). The way needs dating in a journal (DM2,
-        // docs/queue/DM2.md; DM1 found that dating it from the replay alone moves boxes after a land purchase, SlopeCheck 9);
-        // until then sections 1 to 2h are checked on the city they were written on, FC1 off (BuildingManager.buildersShortOn).
-        BuildingManager.buildersShortOn = false;
         boolean quietRun = Arrays.asList(args).contains("-q");
         if (quietRun) out = new PrintStream(new OutputStream() { @Override public void write(int b) { } }) {
             @Override public PrintStream printf(String f, Object... a) {
@@ -545,9 +536,6 @@ public class MapCheck {
         bandsHoldOnPurchase();
         runsLaidAcross(city);
         reservesDated(city);
-        // ...and FC1 on again from here (the switch above covers section 1's played city, which 2h's scenarios are cut
-        // from, through 2h): every later section reads its cities with the builders' price and contractor, as the game does.
-        BuildingManager.buildersShortOn = true;
         idleYards(city);
         idleYardsOnRuns();
         Squares sq = new Squares();
@@ -2036,7 +2024,7 @@ public class MapCheck {
             ramp = in.ramp == null ? null : in.ramp.clone();
             runs = new byte[DistrictPlan.AREA];
             m.runsInto(d, runs);
-            plan = DistrictPlan.make(in);
+            plan = m.plan(d);
             boxes = boxesOf(plan);
         }
 

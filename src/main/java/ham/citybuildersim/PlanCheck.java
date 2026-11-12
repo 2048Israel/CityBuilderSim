@@ -386,6 +386,7 @@ public class PlanCheck {
         farBank(types);
         walledIn(types);
         fieldWall(types);
+        fieldWallArrivals(types);
         interchangeAvenue(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -4749,6 +4750,38 @@ public class PlanCheck {
                 (p.wallTries > 0 ? 1 : 0) + left, p.wallTries > 0 ? 1 : 0, p.wallField > 0 ? 1 : 0, left, (p.wallField > 0 ? 1 : 0) + left);
         check("...none left apart: no district of MapCheck's played city, its river fixture, sections 5 and 6, or this section's has a piece the ground does not part",
                 playedCase[3] == 0 && riverCase[3] == 0 && citiesLeft == 0 && left == 0);
+    }
+
+    /** A dated field belt keeps its first way while later houses arrive (DM2). */
+    static void fieldWallArrivals(BuildingVisual.Type[] types) {
+        out.println("\n--- 18b. a walled field belt keeps its way as later houses arrive (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        int shop = pick(types, 4, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        Log log = new Log();
+        DistrictPlan before = null;
+        int walls = 0, moved = 0, changedInput = 0;
+        int[] months = null, changes = null;
+        for (int month = 1; month <= 30; month++) {
+            log.add(month, house, 15).add(month, shop, 3);
+            DistrictPlan.Input in = log.into(fieldBelt(types, house, 0));
+            in.seed = 1;
+            in.month = month;
+            in.wallMonth = months;
+            in.wallChange = changes;
+            int[] oldMonths = months == null ? null : months.clone(), oldChanges = changes == null ? null : changes.clone();
+            DistrictPlan after = DistrictPlan.make(in);
+            if (before != null && before.wallClear > 0) moved += MapCheck.movedOf(MapCheck.boxesOf(before), MapCheck.boxesOf(after));
+            if (!Arrays.equals(months, oldMonths) || !Arrays.equals(changes, oldChanges)) changedInput++;
+            walls = Math.max(walls, after.wallClear);
+            months = after.wallMonth;
+            changes = after.wallChange;
+            before = after;
+        }
+        out.printf("      field belt: %d plots kept clear, %d standing boxes moved over later arrivals%n", walls, moved);
+        check("fixture: the dated field belt has a wall way before its arrivals end", walls > 0);
+        check("the field belt's later arrivals move no standing box", moved == 0);
+        check("the planner leaves its input wall journal unchanged", changedInput == 0);
+
     }
 
     /* =====================================================================
