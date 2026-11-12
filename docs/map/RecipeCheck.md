@@ -1,6 +1,6 @@
 # RecipeCheck.java - 1,168 lines · 41 methods · 3 constants · harnesses
 
-`ham/citybuildersim/RecipeCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RecipeCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > Recipes (R1c): the ways a building runs, as data on its template, chosen at the city's prices in a city founded the 1900 way, set on the template's
 > figures weighted by the buildings of each part of a stack, and saved.

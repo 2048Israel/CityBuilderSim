@@ -1,6 +1,6 @@
 # ReplayCheck.java - 1,713 lines · 36 methods · 2 constants · harnesses
 
-`ham/citybuildersim/ReplayCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReplayCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs;
 > and Follow (batch TR2, 2026-11-09): the timeline of the input logs and the player that plays it, with TR1's four review fixes.

@@ -1,6 +1,6 @@
 # FittingCheck.java - 1,142 lines · 34 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FittingCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FittingCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city
 > founded the 1900 way, what a building that finishes comes with, and the fitting itself - ordered, paid, bought and worked, ranked with the

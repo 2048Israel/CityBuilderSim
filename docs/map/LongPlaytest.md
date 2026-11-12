@@ -1,6 +1,6 @@
 # LongPlaytest.java - 8,207 lines · 156 methods · 115 constants · harnesses
 
-`ham/citybuildersim/LongPlaytest.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LongPlaytest.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > A city played for 2,400 months at the gate and 4,000 once a night on main
 > (tools/nightly.sh), the way a person plays.

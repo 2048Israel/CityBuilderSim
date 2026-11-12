@@ -1,6 +1,6 @@
 # ReplayGraphs.java - 92 lines · 6 methods · 1 constants · model
 
-`ham/citybuildersim/ReplayGraphs.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ReplayGraphs.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > The faint lines behind the city in a replay (TR1, 2026-10-31), without the toolkit: a recorded series read once from the
 > recording's own history, each point a recorded month, and what a line is at the month on screen - how many of its points are

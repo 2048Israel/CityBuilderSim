@@ -1,6 +1,6 @@
 # CurveCheck.java - 785 lines · 39 methods · 12 constants · harnesses
 
-`ham/citybuildersim/CurveCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CurveCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > Proves the curve from the dial the market expects (CD1, spec-city-debt.md
 > section 3): the expected dial's path, the zero rates it compounds to, the

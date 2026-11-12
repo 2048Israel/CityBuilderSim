@@ -1,6 +1,6 @@
 # ExchangeCheck.java - 1,172 lines · 27 methods · 5 constants · harnesses
 
-`ham/citybuildersim/ExchangeCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ExchangeCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > Verifies the exchange on the order book (0.7.12 round 2): what the desk
 > posts and what it is not obliged to take, who trades with whom and at what

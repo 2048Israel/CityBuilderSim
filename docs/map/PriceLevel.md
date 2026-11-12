@@ -1,6 +1,6 @@
 # PriceLevel.java - 81 lines · 5 methods · 5 constants · model
 
-`ham/citybuildersim/PriceLevel.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PriceLevel.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > The price level a city is founded at, 1900's: the US consumer price index of the calendar's first year over its 2025, and the series it is
 > read from, the US CPI-U a year from 1900 to 2025 (EP1; docs/studies/spec-1900-start.md 1 and its calls 1 and 3).

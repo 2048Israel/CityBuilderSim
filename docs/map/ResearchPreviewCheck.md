@@ -1,6 +1,6 @@
 # ResearchPreviewCheck.java - 726 lines · 34 methods · 3 constants · harnesses
 
-`ham/citybuildersim/ResearchPreviewCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchPreviewCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > The preview each dial card on Policy > Research shows: what a set of dials would find here over ten years (R3b, slice A: ResearchPreview, and the
 > words and the cache in ResearchView; docs/studies/research-design.md 5.4, 6.2, 9).

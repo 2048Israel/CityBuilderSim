@@ -1,56 +1,8 @@
 #!/bin/sh
-# ---------------------------------------------------------------------------
-#  ship.sh run against a throwaway origin, with a stub in place of
-#  batch-check.sh, so that every stop and every record of the script is tried
-#  with no JVM. For whoever changes ship.sh next: run it before you hand the
-#  change back. POSIX sh, git and awk.
-#
-#      sh tools/ship-selftest.sh               test the ship.sh of the current checkout
-#      sh tools/ship-selftest.sh <checkout>    test the ship.sh of another checkout (a worktree)
-#
-#  CBS_SHIPTEST_DIR names the area it builds (default ${TEMP:-/tmp}/cbs-ship-selftest);
-#  CBS_SHIPTEST_SH=dash runs ship.sh under that shell (the cloud's /bin/sh);
-#  CBS_SHIPTEST_KEEP=1 leaves the area behind to look at. It refuses an area
-#  that exists and is not one of its own. Exit status: the number of failed
-#  cases, so 0 is green.
-#
-#  Steps:
-#    1. the area is built: origin.git, a bare clone of the checkout's own
-#       repository at its HEAD (its branches and GitHub remote dropped, so a
-#       push can go nowhere else), main, where ship.sh runs, and work, where
-#       the throwaway branches are written; main gets the ship.sh under test,
-#       the stub, and a fake Queued row for every throwaway id;
-#    2. the branches are written in work and pushed to origin.git: batches
-#       with ship files that are right and ones that break each rule, one
-#       built on another, chatgpt/ and docs/ branches;
-#    3. the cases run, one line each, PASS or FAIL, then "selftest: N of M
-#       passed"; the area is deleted unless it is kept.
-#  The stub (batch-check.sh in main) answers by environment variables:
-#  STUB_EXIT and STUB_REDS the suite run, STUB_TEXIT and STUB_TREDS --timing
-#  in the batch's tree (reds are ";"-separated), STUB_TTSV the figures that run
-#  writes to target/checks/timing.tsv (rows ";"-separated, columns "|"-separated:
-#  harness|label|measured|budget|unit|status|part), STUB_FAST_EXIT --fast,
-#  STUB_TOUCHMAPS makes the generated docs change, STUB_NOEARTH says the Earth
-#  file is missing, STUB_RACE=<clone> lets someone push to origin meanwhile,
-#  STUB_REWRITE_SHIP rewrites ship.sh in place (inserting a line at its third)
-#  while the checks run: what a merge of a batch that changes it can do to a
-#  shell that reads its script as it goes. Git unlinks and writes a new file,
-#  so the shell keeps the old one, and only an in-place write shows it.
-#  The paired rounds of a timing red (TM3) are the --timing runs that name a
-#  harness: STUB_PAIR="harness|label|budget|unit|part" is the figure's row,
-#  STUB_FIGS_MAIN and STUB_FIGS_BATCH the figures of the rounds in turn, in
-#  main's timing worktree and in the merge's tree (space-separated), and
-#  STUB_PEXIT those runs' exit status.
-#
-#  It never pushes anywhere but that origin.git, and never touches the
-#  checkout under test or any save. About two minutes, most of it the clone.
-#
-#  WHY (BP1, 2026-10-25): the first review of the new ship.sh found its
-#  defects one throwaway repository at a time, by hand, each person building
-#  the same fixture again; a script that merges, tags and pushes main is the
-#  last place to find a bug by shipping. This keeps the fixture, and one case
-#  for each defect the review found.
-# ---------------------------------------------------------------------------
+# Throwaway origin, stub checks, no JVM. Run after changes to ship.sh or tools/gate.sh.
+# Optional checkout argument. CBS_SHIPTEST_DIR names the area, CBS_SHIPTEST_KEEP=1 keeps it,
+# CBS_SHIPTEST_SH chooses the shell. Exit status counts failed cases.
+# WHY (BP1, GF1): publication defects must be reproduced without publishing the repository.
 
 SRC=$(cd "${1:-.}" && pwd) || exit 2
 [ -f "$SRC/ship.sh" ] || { echo "selftest: no ship.sh in $SRC"; exit 2; }
@@ -63,7 +15,7 @@ FAILS=0; N=0
 ok() { N=$((N + 1)); if "$@" >/dev/null 2>&1; then echo "PASS  $LABEL"; else echo "FAIL  $LABEL"; FAILS=$((FAILS + 1)); fi; }
 clean() { [ -z "$(git -C "$TA/main" status --porcelain)" ] && [ ! -e "$TA/main/.git/MERGE_HEAD" ]; }
 S() { ( cd "$TA/main" && "$@" ) ; }
-run() { ( cd "$TA/main" && CBS_SHIP_SHELL=${CBS_SHIPTEST_SH:-sh} $CBS_SHIPTEST_SH ./ship.sh "$@" > "$TA/out.txt" 2>&1 ); RC=$?; }   # ship.sh in main, output in out.txt, status in RC
+run() { rm -f "$TA/direct/cancelled"; rm -rf "$TA/direct/stages"; ( cd "$TA/main" && CBS_GATE_RUN="$TA/direct" CBS_SHIP_SHELL=${CBS_SHIPTEST_SH:-sh} $CBS_SHIPTEST_SH ./ship.sh "$@" > "$TA/out.txt" 2>&1 ); RC=$?; }   # ship.sh in main, output in out.txt, status in RC
 rc_is() { [ "$RC" = "$1" ]; }
 said() { grep -q -F -- "$1" "$TA/out.txt"; }   # the output holds this text
 stopped() { [ "$RC" = 1 ] && said STOPPED && said "$1"; }   # a stop, with this text in its line
@@ -94,6 +46,22 @@ for a in "$@"; do case "$a" in --fast) MODE=fast ;; --timing) MODE=timing ;; -*)
 [ -z "$STUB_LOG" ] || echo "run: mode=$MODE args='$*' cwd=$(basename "$(pwd)") JDK='$JDK_JAVA_OPTIONS' shipcopy='$CBS_SHIP_COPY'" >> "$STUB_LOG"
 [ -z "$STUB_REWRITE_SHIP" ] || { awk 'NR == 3 { print "echo \"ZZ-the-branchs-ship.sh-ran\"" } { print }' ship.sh > "$OUT/ship.new" && cat "$OUT/ship.new" > ship.sh; }   # ship.sh rewritten in place under the shell reading it
 [ -z "$STUB_RACE" ] || { git -C "$STUB_RACE" pull -q --ff-only origin main && git -C "$STUB_RACE" commit -q --allow-empty -m "shipped meanwhile" && git -C "$STUB_RACE" push -q origin HEAD:main; STUB_RACE=; }
+# GF1: faults after a successful suite, with exactly the stale state LM1 reused.
+if [ "$MODE" = timing ]; then
+    if [ -n "$STUB_MOVE" ]; then
+        git -C "$STUB_WORK" fetch -q origin "$STUB_MOVE"
+        git -C "$STUB_WORK" checkout -q -B "$STUB_MOVE" FETCH_HEAD
+        [ -z "$STUB_WITHDRAW" ] || git -C "$STUB_WORK" rm -q "docs/queue/${STUB_MOVE#batch/}-ship.md"
+        git -C "$STUB_WORK" commit -q --allow-empty -am 'moved during gate'
+        git -C "$STUB_WORK" push -q origin "$STUB_MOVE"
+    fi
+    case "$STUB_FAULT" in
+        killed) kill -KILL "$PPID"; exit 0 ;;
+        stale) echo 'suite 0' > target/ship-tmp/code; kill -KILL "$PPID"; exit 0 ;;
+        missing) exit 0 ;;
+        hold) echo ready > "$STUB_READY"; for attempt in $(seq 1 120); do sleep 1; done; exit 1 ;;
+    esac
+fi
 case "$MODE" in
   fast) EXIT=${STUB_FAST_EXIT:-0}; REDS="" ;;
   suite) EXIT=${STUB_EXIT:-0}; REDS=${STUB_REDS-} ;;
@@ -128,13 +96,18 @@ if [ "$MODE" != timing ] && [ -n "$STUB_TOUCHMAPS" ]; then echo "// regenerated"
 exit "$EXIT"
 EOF
 cp "$SRC/ship.sh" "$TA/main/ship.sh"; chmod +x "$TA/main/ship.sh" "$TA/main/batch-check.sh"
-mkdir -p "$TA/main/tools"; cp "$SRC/tools/timing-pair.awk" "$SRC/tools/carries.sh" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
+mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/timing-pair.awk" "$SRC/tools/carries.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
 IDS="TST TS2 NS GV GG GN GX GH GQ GC GE GB DOC TM ER NC NC2 OS SH PP PS PR PT"; FAKE=""
 for i in $IDS; do FAKE="$FAKE| $i | A fake queued batch $i | [x](y) |
 "; done
 printf '%s' "$FAKE" > "$TA/fake-rows.txt"
 ( cd "$TA/main" && awk -v f="$TA/fake-rows.txt" '{ print } /^\|---\|---\|---\|$/ && !d { while ((getline l < f) > 0) print l; d = 1 }' QUEUE.md > "$TA/q.new" && cat "$TA/q.new" > QUEUE.md \
     && git add -A && git commit -q -m "selftest: ship.sh, stub, fake rows" && git push -q origin main )
+
+# Direct publisher cases use a live fixture guardian. Launcher cases exercise the real guardian.
+mkdir -p "$TA/direct"; touch "$TA/direct/guardian.ready"
+( while :; do sleep 1; done ) &
+FIXTURE_GUARD=$!; echo "$FIXTURE_GUARD" > "$TA/direct/guardian"
 
 # the branches, written in work
 W() { git -C "$TA/work" "$@"; }
@@ -169,7 +142,7 @@ mk batch/GC; shipf GC; echo "<!-- GC -->" >> "$TA/work/docs/notes/changelog.md";
 mk batch/GE; shipf GE; echo "# x" > "$TA/work/docs/ensemble/9.9.9.md"; fin GE batch/GE
 mk batch/GB; printf '## changelog\n### 9.9.9 - GB\n\np.\n' > "$TA/work/docs/queue/GB-ship.md"; echo "# x" > "$TA/work/docs/ensemble/GB.md"; jv GB Markets; fin GB batch/GB
 mk batch/DOC; shipf DOC; notes DOC; fin DOC batch/DOC
-for pair in RED:Zoning RC:Rollover; do b=${pair%%:*}; mk batch/$b; shipf $b; notes $b; jv $b ${pair##*:}; fin $b batch/$b; done
+for pair in RED:Zoning RC:Rollover FM:Zoning FW:Zoning; do b=${pair%%:*}; mk batch/$b; shipf $b; notes $b; jv $b ${pair##*:}; fin $b batch/$b; done
 mk batch/CQ; shipf CQ; jv CQ SimulationEngine; fin CQ batch/CQ
 # TM: a ship file as a person copies a table, header and separator rows included
 mk batch/TM; notes TM; jv TM Bank
@@ -379,6 +352,99 @@ STUB_FIGS_MAIN="44 45 46" STUB_FIGS_BATCH="46 45 44" tm run --dry-run batch/RED;
 LABEL="timing: main's recorded red, repeated by the timing run, is not judged again"; : > "$STUB_LOG"
 STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' STUB_TEXIT=3 STUB_TREDS='MapCheck | exit 1' run --dry-run batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
+# GF1: each fault is attempted as a real ship against the throwaway origin, and must leave its refs alone.
+refs() { git -C "$TA/origin.git" for-each-ref refs/heads/main refs/tags --format='%(refname) %(objectname)'; }
+refs > "$TA/refs.before"
+local_refs() { git -C "$TA/main" for-each-ref refs/heads/main refs/tags --format='%(refname) %(objectname)'; }
+local_refs > "$TA/local.before"
+unmoved() {
+    refs > "$TA/refs.after"; local_refs > "$TA/local.after"
+    cmp -s "$TA/refs.before" "$TA/refs.after" && cmp -s "$TA/local.before" "$TA/local.after" && clean
+}
+for fault in killed stale missing; do
+    LABEL="interrupted $fault timing cannot reuse the successful suite's results"
+    STUB_FAULT=$fault run batch/RED
+    ok sh -c "[ $RC = 1 ] && grep -q 'the check did not finish' $TA/out.txt"
+    LABEL="...main, tags and the worktree stayed where they were"; ok unmoved
+done
+LABEL="a branch moved during its checks is refused"
+STUB_WORK="$TA/work" STUB_MOVE=batch/FM run batch/FM
+ok sh -c "[ $RC = 1 ] && grep -q 'batch/FM changed during the gate' $TA/out.txt"
+LABEL="...main and tags did not move"; ok unmoved
+LABEL="a readiness marker withdrawn during the gate is named"
+STUB_WORK="$TA/work" STUB_MOVE=batch/FW STUB_WITHDRAW=1 run batch/FW
+ok sh -c "[ $RC = 1 ] && grep -q 'withdrew docs/queue/FW-ship.md' $TA/out.txt"
+LABEL="...main and tags did not move"; ok unmoved
+LABEL="all unnamed reds survive beyond the twelve shown"
+MANY=$(awk 'BEGIN {for (i=1; i<=25; i++) printf "ZzCheck | extra red %d FAIL;", i}')
+STUB_EXIT=4 STUB_REDS="$MANY" run --dry-run --red-ok words --red-line unrelated batch/RED
+ok sh -c "[ $RC = 1 ] && [ \"\$(wc -l < $TA/direct/unnamed.txt)\" = 25 ] && grep -q '25 unnamed red' $TA/out.txt"
+# GF1 review: real publication requires its launcher, and cancellation after commit rolls it back.
+LABEL="a direct real ship without a guardian is refused"
+( cd "$TA/main" && unset CBS_GATE_RUN; sh ./ship.sh batch/RED > "$TA/out.txt" 2>&1 ); RC=$?
+ok sh -c "[ $RC = 1 ] && grep -q 'requires tools/gate.sh with a running guardian' $TA/out.txt"
+LABEL="...origin and local HEAD stayed put"; ok unmoved
+cat > "$TA/main/.git/hooks/post-commit" <<'HOOK'
+#!/bin/sh
+echo --stop > "$CBS_GATE_RUN/cancelled"
+HOOK
+chmod +x "$TA/main/.git/hooks/post-commit"
+LABEL="a stop after the commit rolls it back before the tag or push"
+run batch/RED
+ok sh -c "[ $RC = 1 ] && grep -q 'publication cancelled' $TA/out.txt"
+LABEL="...main, tags and the tree stayed put"; ok unmoved
+rm -f "$TA/main/.git/hooks/post-commit"
+# Intercept a failed push attempt, then cancel during retry's sleep.
+mkdir -p "$TA/bin"; REAL_GIT=$(command -v git); export REAL_GIT
+cat > "$TA/bin/git" <<'GIT'
+#!/bin/sh
+if [ "$1" = push ]; then echo --stop > "$CBS_GATE_RUN/cancelled"; exit 1; fi
+exec "$REAL_GIT" "$@"
+GIT
+chmod +x "$TA/bin/git"
+LABEL="a stop between push attempts rolls back the commit and tag"
+PATH="$TA/bin:$PATH" run batch/RED
+ok sh -c "[ $RC = 1 ] && grep -q 'tagged' $TA/out.txt && grep -q 'publication cancelled' $TA/out.txt"
+LABEL="...origin and local tags stayed put"; ok unmoved
+LABEL="the branch publisher option requires a dry run"
+CBS_GATE_MAIN="$TA/main" sh "$SRC/tools/gate.sh" SH --branch-gate > "$TA/authority.out" 2>&1; RC=$?
+ok sh -c "[ $RC = 2 ] && grep -q -- '--branch-gate requires --dry-run' $TA/authority.out"
+LABEL="a harness argument cannot grant the branch publisher option"
+CBS_GATE_MAIN="$TA/main" sh "$SRC/tools/gate.sh" SH --branch-gate -- --dry-run > "$TA/authority.out" 2>&1; RC=$?
+ok sh -c "[ $RC = 2 ] && grep -q -- '--branch-gate requires --dry-run' $TA/authority.out"
+LABEL="a changed branch publisher is judged by main's publisher"
+CBS_GATE_MAIN="$TA/main" sh "$SRC/tools/gate.sh" SH --dry-run > "$TA/authority.out" 2>&1; RC=$?
+ok sh -c "[ $RC = 0 ] && ! grep -q -F 'ZZ-the-branchs-ship.sh-ran' $TA/authority.out"
+LABEL="the explicit dry-run option exercises that branch publisher"
+CBS_GATE_MAIN="$TA/main" sh "$SRC/tools/gate.sh" SH --branch-gate --dry-run > "$TA/candidate.out" 2>&1; RC=$?
+ok sh -c "[ $RC = 0 ] && grep -q -F 'ZZ-the-branchs-ship.sh-ran' $TA/candidate.out"
+LABEL="...authority tests left origin's main and tags put"; ok unmoved
+# The real launcher, fresh clone, and its public stop command (Windows uses only the recorded native PID tree).
+mkdir -p "$TA/runs"
+STUB_FAULT=hold STUB_READY="$TA/ready" CBS_GATE_MAIN="$TA/main" TMP="$TA/runs" sh "$SRC/tools/gate.sh" RED --dry-run > "$TA/launcher.out" 2>&1 &
+LAUNCH=$!
+for attempt in $(seq 1 300); do [ ! -f "$TA/ready" ] || break; kill -0 "$LAUNCH" 2>/dev/null || break; sleep 0.2; done
+RUNDIR=$(sed -n 's/^gate: run //p' "$TA/launcher.out" | head -1)
+LABEL="launcher reached the held timing stage"; ok test -f "$TA/ready"
+if [ -f "$TA/ready" ]; then
+    RED_TIP=$(git -C "$TA/origin.git" rev-parse refs/heads/batch/RED)
+    git -C "$TA/origin.git" update-ref refs/heads/batch/RED "$(git -C "$TA/origin.git" rev-parse refs/heads/batch/FM)"
+    sh "$SRC/tools/gate.sh" --stop "$RUNDIR" > "$TA/stop.out" 2>&1
+    STOP_RC=$?
+    LABEL="the launcher's stop command succeeds"; ok test "$STOP_RC" = 0
+    LABEL="stop reports its --stop cause and the branch ref that moved"
+    ok sh -c "grep -q 'stopped by --stop; moved refs' $TA/stop.out && grep -q 'refs/heads/batch/RED' $TA/stop.out"
+    git -C "$TA/origin.git" update-ref refs/heads/batch/RED "$RED_TIP"
+else kill "$LAUNCH" 2>/dev/null || :; fi
+wait "$LAUNCH"; RC=$?
+LABEL="launcher returns nonzero for a stopped gate, retaining its log"
+ok sh -c "[ $RC != 0 ] && [ -f '$RUNDIR/ship.log' ] && [ \"\$(cat '$RUNDIR/exit')\" != 0 ]"
+LABEL="...main and tags stayed where they were"; ok unmoved
+LABEL="...the stopped clone's HEAD is the main it started from"
+ok sh -c "[ \"\$(git -C '$RUNDIR/clone' rev-parse HEAD)\" = \"\$(git -C '$RUNDIR/clone' rev-parse origin/main)\" ]"
+LABEL="the stop report says unmoved after comparing unchanged origin refs"
+sh "$SRC/tools/gate-report.sh" "$RUNDIR" > "$TA/unmoved.out"
+ok grep -q 'stopped by --stop; origin refs unmoved' "$TA/unmoved.out"
 # TM3 item 7: a batch that changes ship.sh itself - the merge rewrites the file the shell is reading; the run goes on from its copy
 LABEL="ship.sh: a branch that changes it merges and gates from the copy, though ship.sh is rewritten in place meanwhile"; : > "$STUB_LOG"; STUB_REWRITE_SHIP=1 run --dry-run batch/SH
 ok sh -c "[ $RC = 0 ] && grep -q -F 'batch/SH changes ship.sh: this run goes on from its copy' $TA/out.txt && grep -q -F 'dry run, nothing kept' $TA/out.txt && ! grep -q -F 'ZZ-the-branchs-ship.sh-ran' $TA/out.txt && ! grep -q -i 'syntax error\|not found' $TA/out.txt && grep -q \"shipcopy='[^']*ship-run\.[^']*'\" $STUB_LOG"
@@ -393,6 +459,7 @@ LABEL="...and the tree is clean";                                               
 LABEL="ship PP, the predecessor";                                                            run --no-tag batch/PP;            ok sh -c "[ $RC = 0 ] && git -C $TA/origin.git log -1 --format=%s main | grep -q -F 'Merge batch/PP'"
 LABEL="PP on main: PS ships, with no merge of main in it first, its own ship file the only one"; run --dry-run --no-tag batch/PS;  ok sh -c "[ $RC = 0 ] && grep -q -F \"PS's block on top\" $TA/out.txt"
 LABEL="PR is still not on main: PT is still stopped";                                        run --dry-run --no-tag batch/PT;  ok stopped "batch/PT is built on PR, which is not on main yet"
+kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"
 [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ] || { cd /; rm -rf "$TA"; }
 exit "$FAILS"

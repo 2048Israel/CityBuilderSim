@@ -1,6 +1,6 @@
 # GovernmentPlayer.java - 73 lines · 2 methods · 8 constants · model
 
-`ham/citybuildersim/GovernmentPlayer.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GovernmentPlayer.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > The test player's annual response to the government's wealth, shared by the playtest and its measuring drivers.
 > 

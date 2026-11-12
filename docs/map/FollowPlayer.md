@@ -1,6 +1,6 @@
 # FollowPlayer.java - 174 lines · 15 methods · 3 constants · model
 
-`ham/citybuildersim/FollowPlayer.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FollowPlayer.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > Plays an InputTimeline in real time (TR2, 2026-11-09): the cursor of Follow. It moves along the log by the time it is given,
 > at a chosen speed, with idle stretches shortened when asked, and hands every event that falls due to a {@link Target} in the

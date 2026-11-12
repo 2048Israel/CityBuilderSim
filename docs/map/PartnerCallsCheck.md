@@ -1,6 +1,6 @@
 # PartnerCallsCheck.java - 1,320 lines · 40 methods · 9 constants · harnesses
 
-`ham/citybuildersim/PartnerCallsCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PartnerCallsCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by
 > kind of cargo, CallPartners' draw of a nation for a call, the boats' exits (an offing per bearing) and the trains' land partners, and (slice U)

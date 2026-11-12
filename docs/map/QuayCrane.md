@@ -1,6 +1,6 @@
 # QuayCrane.java - 173 lines · 11 methods · 14 constants · model
 
-`ham/citybuildersim/QuayCrane.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/QuayCrane.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > The cranes that work a boat at its terminal's quay (HB2, 2026-11-09), as lines and a hook in world plots: where each lies, where its
 > hook is and what hangs from it at a share of the boat's time at the quay - pure, with no toolkit, which the map draws over a berth from

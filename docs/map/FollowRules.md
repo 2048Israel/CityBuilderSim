@@ -1,6 +1,6 @@
 # FollowRules.java - 106 lines · 3 methods · 7 constants · interface
 
-`ham/citybuildersim/ui/FollowRules.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FollowRules.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > What Follow re-enacts of a logged sitting and what it drops (TR2, 2026-11-09): the verdict on one logged input event, from
 > the screen the player had open, the screen the copy shows now and what the copy's window is doing. No JavaFX in this class,

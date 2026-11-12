@@ -1,6 +1,6 @@
 # GovernmentPlayerCheck.java - 249 lines · 15 methods · 1 constants · harnesses
 
-`ham/citybuildersim/GovernmentPlayerCheck.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GovernmentPlayerCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > The test player's annual wealth policy: both directions, boundaries, caps, historical dates and the actual skip/reload path.
 > 

@@ -1,6 +1,6 @@
 # DepositMarks.java - 163 lines · 12 methods · 6 constants · model
 
-`ham/citybuildersim/DepositMarks.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DepositMarks.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > The deposits the land office's map marks when it is zoomed far out: which to find for a view, which of them to draw, and the mark each is
 > drawn with - what ui/MapView draws its icons by and MapCheck holds, without the toolkit.

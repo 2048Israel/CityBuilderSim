@@ -1,6 +1,6 @@
 # IslandChip.java - 48 lines · 2 methods · 2 constants · interface
 
-`ham/citybuildersim/ui/IslandChip.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/IslandChip.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > The chip the map draws on a landmass no port links: its lines of amber mono caption on a dark rounded plate the width of
 > the longer line (MT1, BK1-L).

@@ -1,6 +1,6 @@
 # Recording.java - 402 lines · 23 methods · 12 constants · model
 
-`ham/citybuildersim/Recording.java` - generated 2026-11-11 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Recording.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
 > One recorded city on disk (TR1, 2026-10-31): the folder {@code recordings/<id>/} that "Record this city" keeps, and the one
 > place that knows its files. A month is one file ({@code month-0000123.bin}: a head, the map's sidecar as the game made it,
