@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### KS1 — KeptCheck's fixtures cause their conditions — 2026-11-12, ready, no tag (fixtures), see docs/queue/KS1-notes.md
+KeptCheck supplies counted held works, chooses an expandable income note
+when it opens it, settles an explicit holding payment for its clock
+checks, and supplies durable paper for Spending's debt fold. Sector
+reuse measurements hold plant investment while monthly figures move.
+Borrow has a finite-bid city that proves clearing and short-sale asks.
+The original node-share, fresh-page and animation assertions are kept.
+
 ### GR2 — known reds in the repository, and what runs where — 2026-11-12, ready, no tag (process), see docs/queue/GR2-notes.md
 
 The repository holds 77 harness-scoped approval parts seeded from the LM1 and
