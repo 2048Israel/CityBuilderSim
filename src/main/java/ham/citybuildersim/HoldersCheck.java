@@ -2281,13 +2281,12 @@ public class HoldersCheck {
     }
 
     /**
-     * 13c, the gate's finding on BD1: a piece bought back whole before its settle is re-struck by nothing. The bank
-     * sells back face it has not paid for, with the piece's whole discount, and the settle still pays for the sale;
-     * with a book that covers both, those cancel two months on, as they always did. A re-strike of the discount at
-     * the buyback would leave it unexplained for good.
+     * 13c: a fresh piece closed before its settle cancels its unpaid sale at the original proceeds (BS1).
+     * The bank's paid holdings and carried discount stay in place. The bank's equity split holds through the
+     * cancellation and both following months, in the city and in its twin with re-strikes switched off.
      */
     static void theBuybackBeforeTheSettle() throws Exception {
-        out.println("   -- 13c. a piece sold and bought back whole before its settle, by a bank whose book covers it, in the city and in its twin");
+        out.println("   -- 13c. a fresh unpaid sale cancelled before its settle, in the city and in its twin");
         Reopening fix = reopeningFixture("holderscheck-unsettled-buyback", false);
         Reopening twinFix = reopeningFixture("holderscheck-unsettled-buyback-twin", true);
         Game city = fix.city(), twin = twinFix.city();
@@ -2299,14 +2298,14 @@ public class HoldersCheck {
         double splitAfterBuyback = bank.equitySplitResidual() - splitAtStart, tolerance = splitTolerance(bank);
         double faceTol = 1e-6 * Math.max(1, u.face());
         out.printf("   a year's bill of $%,.4fk face sold with $%,.6fk of discount; the bank's book $%,.4fk, its unearned discount"
-                + " $%,.6fk; bought back whole, the bank's $%,.4fk of it, re-struck $%,.6fk%n",
+                + " $%,.6fk; cancelled whole, paid bank face $%,.4fk, re-struck $%,.6fk%n",
                 u.face(), u.discount(), u.book(), u.carried(), u.bankFace(), restruckAtOnce);
         assertTrue("fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance",
                 u.fresh() && u.face() > 0 && u.discount() > 100 * tolerance);
-        assertTrue("fixture: ...the bank's book covers the face it sells back, and its unearned discount the piece's",
+        assertTrue("fixture: ...the bank has existing paid paper and discount exceeding the cancelled sale's",
                 u.book() >= u.face() && u.carried() >= u.discount());
-        assertTrue("fixture: ...bought straight back whole, all of it the bank's face, and off the books",
-                u.gone() && Math.abs(u.taken() - u.face()) <= faceTol && Math.abs(u.bankFace() - u.face()) <= faceTol);
+        assertTrue("fixture: ...cancelled straight back whole, with no paid bank face, and off the books",
+                u.gone() && Math.abs(u.taken() - u.face()) <= faceTol && u.bankFace() == 0);
         assertTrue("fixture: ...and the twin's the same, bit for bit", u.equals(uTwin));
 
         close("the buyback re-struck nothing", restruckAtOnce, 0, 0);
@@ -2314,7 +2313,7 @@ public class HoldersCheck {
         double splitAfter = bank.equitySplitResidual() - splitAtStart, twinSplitAfter = twinBank.equitySplitResidual() - twinSplitAtStart;
         out.printf("   the bank's split moved $%,.6fk by the buyback and $%,.6fk two months on; the twin's $%,.6fk%n",
                 splitAfterBuyback, splitAfter, twinSplitAfter);
-        close("two months on, the bank's equity's parts are its equity again, as before the sale: the settle's payment cancelled what it sold back",
+        close("two months on, the cancellation has preserved the bank's equity split",
                 splitAfter, 0, tolerance);
         close("...and the twin's (main before BK1) too", twinSplitAfter, 0, tolerance);
         boolean closed = true;

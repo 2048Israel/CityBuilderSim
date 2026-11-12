@@ -178,6 +178,8 @@ public class BuybackCheck {
         halfOfALine(city);
         centralBankHolds();
         noPump(city);
+        typedCancellation();
+        cancelReopening(playedCity("buybackcheck-cancel-reopening"));
         dollars();
         refused(city);
         theYearAddsUp(city);
@@ -636,6 +638,8 @@ public class BuybackCheck {
         for (String kind : new String[]{"long", "medium", "bill"}) {
             double ask = Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 2);
             double before = city.getCash();
+            double splitBefore = city.getBank().equitySplitResidual();
+            double unsettledBefore = city.getCityPaperUnsettled();
             quietly(() -> {
                 switch (kind) {
                     case "long" -> city.handleLongBondLogic(ask, 10, 100 * PriceLevel.FACTOR);
@@ -649,6 +653,8 @@ public class BuybackCheck {
                     fresh != null && raised > 0 && Math.abs(fresh.unsettledFace() - fresh.getOustandingPrincipal()) <= 1e-6);
             if (fresh == null) continue;
             double face = fresh.getOustandingPrincipal();
+            double proceeds = fresh.getSettleDue();
+            double bankCash = city.getBank().getCash();
             Buyback.Result back = city.buyBack(fresh, 1e12, Double.NaN);
             check("the " + kind + " line, bought straight back whole in the month it was sold, is off the books",
                     back.takenFace() > 0 && Math.abs(back.takenFace() - face) <= 1e-6 * Math.max(1, face)
@@ -656,7 +662,14 @@ public class BuybackCheck {
             out.printf("   %-6s the same month: D$%,.0fk of face raised D$%,.2fk, bought back for D$%,.2fk (%.2f per 100, fair %.2f)%n",
                     kind, face, raised, back.paid(), back.averagePer100(), back.fairPer100());
             check("a " + kind + " round trip in the same month never nets the city money", raised - back.paid() <= .01);
+            near("the unpaid " + kind + " sale is cancelled at its proceeds", back.cancelledCash(), proceeds, 1e-9);
+            near("...and its whole face is cancelled", back.cancelledFace(), face, 1e-9);
+            near("...the bank offers only paid face, so it sold none", back.bankFace(), 0, 0);
+            near("...and received no buyback cash", city.getBank().getCash(), bankCash, 0);
+            near("...the cancelled proceeds leave the next settle", city.getCityPaperUnsettled(), unsettledBefore, 1e-9);
             check("the audit closes that month and the next", closes(play(city)) && closes(play(city)));
+            near("the bank's equity split holds over the month after the " + kind + " cancellation",
+                    city.getBank().equitySplitResidual(), splitBefore, MoneyAudit.CENT);
         }
 
         // The month between: sold, settled, bought back.
@@ -693,6 +706,93 @@ public class BuybackCheck {
             check("...and two of them do not either", total <= .01);
         }
         check("the audit still closes after the round trips", closes(play(city)));
+    }
+
+    /** The first review's typed face: a whole-piece tolerance closes the entire unpaid sale. */
+    static void typedCancellation() {
+        out.println("\n--- 5b. a typed face just short of a whole unpaid piece ---");
+        Game city = new Game(GameFiles.scratch("buybackcheck-typed-cancellation"));
+        quietly(city::run);
+        double poolsBefore = MoneyAudit.pooled(city);
+        quietly(() -> city.handleLongBondLogic(2_500_000_001.7, 10, .1));
+        Debt fresh = unsettledPiece(city.getDebtManager());
+        check("fixture: a fresh sale is wholly unpaid", fresh != null
+                && fresh.bankPrincipalPaid() == 0 && fresh.unsettledFace() == fresh.getOustandingPrincipal());
+        if (fresh == null) return;
+        double principal = fresh.getOustandingPrincipal(), proceeds = fresh.getSettleDue();
+        double typed = 2_500_000_000.0;
+        double proRataMiss = proceeds * (principal - typed) / principal;
+        check("fixture: the typed face is short and its pro-rata miss exceeds the audit's allowance",
+                typed < principal && proRataMiss > MoneyAudit.tolerance(proceeds));
+        Buyback.Result quoted = city.quoteBuyback(fresh, typed, Double.NaN);
+        check("fixture: cancellation is the only offer", quoted.ladder().size() == 1
+                && quoted.ladder().get(0).holder() == Buyback.Holder.UNSETTLED);
+        near("the unpaid face carries no paid bank discount", fresh.unaccretedOn(Debt.Holder.BANK, principal), 0, 0);
+        Buyback.Result back = city.buyBack(fresh, typed, Double.NaN);
+        check("the typed face closes the piece", back.takenFace() > 0 && !city.getDebtManager().getDebt().contains(fresh));
+        near("the whole cancellation pays its exact proceeds", back.cancelledCash(), proceeds, 0);
+        near("the whole cancellation retires its exact face", back.cancelledFace(), principal, 0);
+        near("the round trip conserves the money audit's pools", MoneyAudit.pooled(city), poolsBefore,
+                MoneyAudit.tolerance(proceeds));
+        MoneyAudit.Result month = play(city);
+        check("the following month's audit holds within its relative tolerance",
+                month.relative() <= MoneyAudit.RELATIVE_TOLERANCE);
+
+        // A paid line with a small, dear reopening: the typed face stops exactly before the cancellation.
+        Debt premium = city.getDebtManager().addLongTermBond(typed, 120, city.getMonth(), .02);
+        premium.reopen(1.7, 6.8, .01);
+        Buyback.Result full = city.quoteBuybackAtRest(premium, typed, Double.NaN);
+        check("fixture: the premium cancellation is the dearest offer", !full.ladder().isEmpty()
+                && full.ladder().get(full.ladder().size() - 1).holder() == Buyback.Holder.UNSETTLED
+                && premium.getSettleDue() > premium.unsettledFace());
+        near("the typed reopening quote cancels the exact unpaid face", full.cancelledFace(), premium.unsettledFace(), 0);
+        near("...and pays the exact premium proceeds", full.cancelledCash(), premium.getSettleDue(), 0);
+        double cap = (full.fairPer100() + 400) / 2;
+        check("a cap leaving the small cancellation behind refuses the whole buyback",
+                city.quoteBuybackAtRest(premium, typed, cap).takenFace() == 0);
+        premium.moveToCentralBank(1.7);
+        check("a small central-bank holding refuses an unsettled whole-piece quote",
+                city.quoteBuybackAtRest(premium, typed, Double.NaN).takenFace() == 0);
+        city.getDebtManager().retire(premium);
+    }
+
+    /** BY1: paid holders keep their own sale proceeds while a reopening's unpaid allotment is cancelled. */
+    static void cancelReopening(Game city) {
+        out.println("\n--- 5a. a reopened line closed before the settle ---");
+        HouseholdBalance hb = city.getHouseholdBalance();
+        city.setCashForTest(Founding.WEALTHY_CASH);
+        worldWantsPaper(city);
+        Debt line = sell(city, Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * 2), 20);
+        check("fixture: the first sale made a line", line != null);
+        if (line == null) return;
+        check("the first sale's audit closes", closes(play(city)));
+        double bankPaidFace = line.bankPrincipalPaid();
+        double householdsFace = line.householdPrincipal();
+        check("fixture: the settled line has paid bank and household holdings", bankPaidFace > 0 && householdsFace > 0);
+        double split = city.getBank().equitySplitResidual();
+        double dueBefore = city.getCityPaperUnsettled();
+        Debt reopened = sell(city, Math.max(100 * PriceLevel.FACTOR, hb.spareForPaper() * .2), 20);
+        check("fixture: the second sale reopened the same line", reopened == line && line.unsettledFace() > 0);
+        if (reopened != line) return;
+        double unpaidFace = line.unsettledFace(), unpaidCash = line.getSettleDue();
+        double[] before = snapshot(city, line);
+        check("a part of the reopened line is refused without moving its settlement",
+                city.buyBack(line, line.getOustandingPrincipal() / 2, Double.NaN).takenFace() == 0
+                        && same(before, snapshot(city, line)));
+        double typed = line.getOustandingPrincipal() * (1 - 5e-10);
+        Buyback.Result quoted = city.quoteBuyback(line, typed, Double.NaN);
+        near("the quote offers the bank's paid face", quoted.bankFace(), bankPaidFace, 1e-9);
+        near("...and cancels exactly the reopened sale's face", quoted.cancelledFace(), unpaidFace, 1e-9);
+        near("...at the original proceeds", quoted.cancelledCash(), unpaidCash, 1e-9);
+        near("...and takes every paid household's face", quoted.householdFace(), householdsFace, 1e-9);
+        double cash = city.getCash(), bankCash = city.getBank().getCash();
+        Buyback.Result back = city.buyBack(line, typed, Double.NaN);
+        check("the reopened piece is closed whole", back.takenFace() > 0 && !city.getDebtManager().getDebt().contains(line));
+        near("the treasury pays the quoted total", cash - city.getCash(), quoted.paid(), 1e-9);
+        near("the bank receives its paid holdings' price", city.getBank().getCash() - bankCash, back.bankPaid(), 1e-9);
+        near("the reopening's proceeds leave the settle", city.getCityPaperUnsettled(), dueBefore, 1e-9);
+        check("the cancellation's audit closes over two months", closes(play(city)) && closes(play(city)));
+        near("the bank's equity split holds after cancelling the reopening", city.getBank().equitySplitResidual(), split, MoneyAudit.CENT);
     }
 
     /* ================= 6. dollar paper ================= */
@@ -807,7 +907,7 @@ public class BuybackCheck {
         return new double[]{g.getCash(), d.getOustandingPrincipal(), d.bankPrincipal(), d.householdPrincipal(), d.firmPrincipal(),
                 d.worldPrincipal(), d.centralBankPrincipal(), d.getCarryingValue(), g.getBank().getCash(), g.getBank().getCityBook(),
                 g.getHouseholdBalance().totalSavings(), g.getHouseholdBalance().totalPaper(), g.getCapitalFlows().getPaper(),
-                g.getBuybackUnsettled(), g.getDebtManager().getDebt().size()};
+                g.getBuybackUnsettled(), g.getCityPaperUnsettled(), g.getDebtManager().getDebt().size()};
     }
 
     static boolean same(double[] a, double[] b) {
@@ -1127,6 +1227,7 @@ public class BuybackCheck {
                 case HOUSEHOLDS -> r.householdFace();
                 case FIRMS -> r.firmFace();
                 case WORLD -> r.worldFace();
+                case UNSETTLED -> r.cancelledFace();
             };
             if (face > 0) holders++;
             if (r.overFair(h) > dearest) { dearest = r.overFair(h); asking = h; }

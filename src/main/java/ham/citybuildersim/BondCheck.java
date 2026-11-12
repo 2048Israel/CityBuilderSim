@@ -213,6 +213,7 @@ public class BondCheck {
         coupons(g);
         concentration(g);
         eachTypeTrades();
+        priceTick();
         saveAndLoad(g, root);
         maturity(g);
 
@@ -303,6 +304,9 @@ public class BondCheck {
         assertTrue("fixture: the bank would take it only at its loan-equivalent yield, over the loan's price",
                 dm.bankYield > p.loanAllIn());
         assertTrue("fixture: so the book does not take all of it at a price no dearer than the loan", p.bondFace() < amount);
+        double threshold = p.loanAllIn() - bm.issueCost(p.bondFace()) / p.bondFace() / BondMarket.TERM_YEARS;
+        close("the partial issue reaches its size fixed point within ISSUE_ROUNDING",
+                dm.total(threshold) / p.bondFace(), 1, BondMarket.ISSUE_ROUNDING * 2);
         close("...and the rest is a bank loan", p.loan(), amount - p.bondFace(), 1e-9);
         assertTrue("...the two raising it all", p.covers());
         close("...at the leverage the whole deal leaves, which every bid read", p.dealDebt(), amount, 0);
@@ -1597,6 +1601,28 @@ public class BondCheck {
             bond = bm.getBonds().get(0);
             poor.setBondFace(1, poorHolds / 100);
         }
+    }
+
+    static void priceTick() {
+        out.println("\n--- 9a. equal bond bids keep arrival priority at the price tick ---");
+        TwoCells f = new TwoCells(10_000, 0);
+        f.bond.world = f.bond.bank;
+        f.bond.bank = 0;
+        f.poor.savings = 100;
+        String first = BondMarket.CELL + f.rich.key(), second = BondMarket.CELL + f.poor.key();
+        double price = 1 + BondMarket.PRICE_TICK * .1;
+        f.bm.tradeForCheck(f.bond, first, OrderBook.Side.BUY, price, 10);
+        f.bm.tradeForCheck(f.bond, second, OrderBook.Side.BUY, Math.nextUp(price), 10);
+        List<OrderBook.Order> bids = f.bm.bookOf(f.bond).bids();
+        assertTrue("both bids rest at one tick, in their arrival order", bids.size() == 2
+                && bids.get(0).price() == bids.get(1).price() && bids.get(0).who().equals(first));
+        f.bm.tradeForCheck(f.bond, BondMarket.WORLD, OrderBook.Side.SELL, 1, 10);
+        close("the first arrival bought the face", f.rich.bondFace(1) * f.rich.households(), 10, 1e-12);
+        close("the second bid still waits", f.bm.bookOf(f.bond).resting(second, OrderBook.Side.BUY), 10, 1e-12);
+        int waiting = f.bm.bookOf(f.bond).bids().size();
+        assertTrue("a positive bid below half a tick is refused before settlement",
+                f.bm.tradeForCheck(f.bond, first, OrderBook.Side.BUY, BondMarket.PRICE_TICK / 4, 10).isEmpty()
+                        && f.bm.bookOf(f.bond).bids().size() == waiting);
     }
 
     static void eachTypeTrades() {
