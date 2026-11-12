@@ -4,7 +4,7 @@
 
 - Built on origin/main at fc3b6be5, on batch/DM2.
 - The field-belt regression uses seed 1 and monthly arrivals of 15 houses and 3 shops. A probe compiled against the original DistrictPlan found 130 standing boxes moved at month 25, with 9 wall-way plots before and after. The real Earth and world assets were supplied.
-- ★ Store wall-way transitions separately from the runs journal because their plots span the plan frame, including its east and south seams. FORMAT 16 appends month deltas and plot/state records after the existing journals. Older sidecars begin with an empty wall journal.
+- ★ Store wall-way transitions separately from the runs journal because their plots span the plan frame, including its east and south seams. FORMAT 16 appends month deltas and plot/state records after the existing journals. The first implementation accepted older sidecars with empty history. The review repair below refuses them and rebuilds canonically.
 - ★ A plan returns its journal as immutable snapshot arrays. CityMap keeps appended discoveries on its own thread. Worker results can extend only their input journal, preserving records from newer work.
 - ★ Apply wall events beside dated runs during arrival replay. An opening uses the existing moveOff operation, preserving the instances and all boxes outside its plots. A released way keeps its historical moves and frees room for later arrivals.
 - No model month statement was added. Wall dating is map-owned, beside the existing run dates.
@@ -33,15 +33,41 @@
 
 - The unit journal removed the 660-box cascade. Its 4,000-month replay left two moves at m3002. Captured actual worker inputs showed a Rail Depot's count return from 7 to 8 and an older log entry change from 0 to 1, beside a genuinely expanding yard. The same return-flow defect affected MF2's static yard-unit removal. The dated adjustments now cover yards too, replacing that static removal, with both cargo-terminal and rail-depot return/departure fixtures.
 
-- The cargo-terminal and rail-depot unit-flow fixtures pass all six assertions apiece, including the sidecar byte round trip. The first 89-harness pick completed with only the already-repaired incremental-ground network failures as NEW reds. Its other checks, including ReadPathCheck and SaveFileCheck, completed. A final pick is now being run on the dated-unit repair.
+- The cargo-terminal and rail-depot unit-flow fixtures pass all six assertions apiece, including the sidecar byte round trip. The first pick, selecting 89 names and running 94 harnesses, completed with only the already-repaired incremental-ground network failures as NEW reds. Its other checks, including ReadPathCheck and SaveFileCheck, completed. A final pick is now being run on the dated-unit repair.
 
-## Final model verification
+## Before-review model verification, superseded by the repair
 
 - `target/checks/dm2-latest4000.txt` is the final model's 4,000-month run. Exit 0, no findings, every monthly audit and reload matched, and the layout watch found no moved box.
 - `target/checks/dm2-default-final-comparison.txt` reports all eight default-playtest CSVs byte-identical to the original main run at fc3b6be5. The default report retains only its recorded CL6 industry-ring finding. The ensemble is skipped because the model trace is unchanged.
 - `target/checks/dm2-baseline-map.txt` reproduces both DM3 assertions on the original planner with FC1 enabled, including `...and every building drawn, one for one`. Both original and repaired planners draw 1,355 of 1,356 buildings at m121, with one packed building finding no ground. The ship file records that second assertion under the already-queued DM3 fix.
 
-## Launcher preparation
+## First launcher preparation
 
 - The final selected run has completed its model harnesses. Its only active JVM is KeptCheck. Its MapCheck findings are DM3's two drawn-count labels and the two recorded BQ1 funding labels. PlanCheck has its two recorded PX1 labels. The full fresh-clone gate is started in parallel with the final kept-UI checks, from a provisional ship record, before readiness is reported.
 - Regenerated all indexes from the final source with tools.Maps. Main remains fc3b6be5. The protected publisher records and GameVersion fields are untouched.
+
+## First selected-suite verdict
+
+- The selector named 89 harnesses. Substring selection ran 94, with 88 passing and six known-red harnesses, in 2,207 seconds. The six are HealthCheck, KeptCheck, LongPlaytest, MapCheck, MonetaryCheck and PlanCheck.
+- The raw selected run exited 4 only for the additional DM3 raster-count assertion and its harness wrapper lines. After the independently reproduced assertion was entered in the ship record, the saved suite was judged again with that record and the DM2 approvals omitted. `target/checks/dm2-pick-judged.txt` exits 3, known reds only. No suite was repeated for that naming change.
+- The selected run regenerated the indexes, reported zero firm Stale findings and left zero changed files. The initial full dry run was of branch f3b39a4fe808ba8659c135a1bdde1d21bb63135a and main fc3b6be5a1aa20c3e464506d0eadbbd518865cc0, in `/tmp/cbs-gate-DM2-tIO3HNg1`. It was stopped after main advanced and supplies no reusable verdict.
+
+## Restart after KS1
+
+- Lanekeeper reported main's KS1 merge at 11:58 and directed a restart because KeptCheck.java changed. Stopped the first launcher with `sh tools/gate.sh --stop /tmp/cbs-gate-DM2-tIO3HNg1`, then started a fresh full run. This was a main-update restart. The provisional ship record stayed on origin.
+- The replacement run is `/tmp/cbs-gate-DM2-tbFOq1SB`, branch f3b39a4fe808ba8659c135a1bdde1d21bb63135a and main 6ffd835b5cacd636b58f272b984af06e34a67419. The launcher resolved two generated-document conflicts and regenerates those indexes from the merged source. No source conflict required a branch merge.
+
+## Save-code review, send-back 1
+
+- Lanekeeper returned the provisional batch on five save/history findings. Stopped `/tmp/cbs-gate-DM2-tbFOq1SB`, deleted the ship file and pushed `deb3bb36` before further repair. Neither earlier dry run supplies a reusable verdict.
+- ★ Mended finding 1 by capturing resource plot transitions and site/yard/shore unit exclusions in reconciliation, beside the existing run journal. Claims are captured before mutation, compared after the month's source changes and saved sparsely. Planning merges these saved flows without recording them. Source-only months enter replay even when they have no building arrival.
+- ★ Wall discovery replays every source boundary and dates a new way at that boundary. Saved and newly discovered ways take effect after that month's arrivals. Internal join probes undo their temporary streets through setStr and restore under-street and role state. The existing moveOff operation then moves only intersected instances. First viewing can reconstruct the same dates from the saved source journals.
+- ★ The logged first batch chooses its ladder step from its own streets and road. Later neighbour anchors, seam-surface ownership and freight access cannot change that initial step. The final plan uses its current neighbours and access inputs. This keeps a first drawing after later purchases or works identical to monthly drawings.
+- Mended finding 2 by raising CityMap.OLDEST_READ to FORMAT 16. Formats 4, 5, 8, 13 and 15 are refused and the existing canonical map fallback handles them. The model save format is unchanged because this is a reconstructible map sidecar.
+- Mended finding 3 with an actual discovered field-belt wall and a depot-sized yard over its way. The wall is born at month 7, the yard at month 31 releases nine plots and moves six intersected boxes, and its removal at month 33 restores nine plots and moves exactly one intersected box. Twenty-seven later-arrival boundaries move no standing box. The paired source regression additionally uses actual mine and yard reconciliation, with a sidecar saved before the unseen map's first plan.
+- Mended finding 4 with bounds that verify incoming journal prefix preservation, exact equality between active journal plots and the kept way, WALL_TRIES, and both implications between new keeps and retries.
+- Mended finding 5 by preserving the original first-batch prefix and recording its exclusion prefix separately. Later merges leave unaffected raw records intact and cancel only opposing adjustments of the affected type in the same month. The first adjustment fixture retains later records in the first batch's month and mixed departures/arrivals in the next month. It moved 50 of 235 earlier boxes under the returned merger and moves zero after repair.
+- The new delayed-view field fixture has identical boxes, streets and wall journals at months 30 and 36. A first-batch-only wall also replays in the same phase and preserves its plan and journal.
+- The first repair `--fast` compiled in 47 seconds, regenerated indexes and exited 0 with zero firm Stale findings. The earlier default trace and 4,000-month results above are being repeated after the source-history repair.
+
+- `target/checks/dm2-focused.txt` passes with zero planner and map failures. `target/checks/map-slice.txt` independently passes the final stronger assertions. Actual mine and yard source changes are dated 100 before any view, save/read at 150 preserves them, growth at 151 and departure/return at 153/154 keep watched and delayed layouts identical. Every tested planning read leaves saved source state unchanged. The played city's drawn-count assertion is now green at 1,356 of 1,356, so its previously reproduced DM3 alias needs no new ship-file approval.

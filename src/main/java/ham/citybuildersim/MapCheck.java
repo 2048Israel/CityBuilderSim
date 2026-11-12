@@ -78,7 +78,11 @@ import java.util.Map;
  *      and never a +) - and stays where it stood while the buildings that come
  *      after it are added after; and (2g, MF1) a district bought into the map's
  *      order ahead of others keeps what is carried in place: the districts
- *      after it keep every box and the carry they read its pairs;
+ *      after it keep every box and the carry they read its pairs; and (DM2)
+ *      mines and yards record their source transitions before first view,
+ *      giving the same dates and layouts viewed monthly or unseen, while a
+ *      field-belt wall cured by yard ground and restored when it goes moves
+ *      only boxes its new plots intersect;
  *   3. the painter draws the plan (0.7.88; the mockup's rules on the deal's
  *      tiles before): on the dense screen every plot a district's plan
  *      surfaces is painted as that street - kind and width - its seams once;
@@ -88,15 +92,12 @@ import java.util.Map;
  *      and the far view's blocks, from a twin map drawn the same way;
  *   4. the sidecar round-trips byte for byte through a save and a load, the
  *      next month plays to the same map, a stale or missing sidecar draws the
- *      map again canonically, a city with no map saves none, and (0.7.88) a
- *      FORMAT 4 sidecar still loads into the same map - and (0.7.89) it and
- *      0.7.88's FORMAT 5, which wrote no runs, with their runs laid as a map
- *      drawn afresh lays them; and (CL3) the district logs ride along: a map
+ *      map again canonically, a city with no map saves none, and (DM2) a
+ *      sidecar without the dated wall and unit journals is refused, even
+ *      with a correct stamp and month; and (CL3) the district logs ride along: a map
  *      read back plans every district box for box as the map saved did and
  *      its logs are the same record by record, a log that does not add up to
- *      its district's counts is not read (the map is drawn again), and a
- *      FORMAT 8 sidecar, which has no logs, starts each as one batch at the
- *      save's month and plans as today; and at five and ten billion it is
+ *      its district's counts is not read (the map is drawn again); and at five and ten billion it is
  *      written and read back the same, the log's records counted and the
  *      sidecar within SIDECAR_BYTES, written and read in SIDECAR_MS;
  *   5. the cost follows the screen: a 1,389 x 868 L0 screen (SCREEN_TILES)
@@ -193,8 +194,8 @@ import java.util.Map;
  *      once; each terminal and tank farm at the water - its box on owned dry
  *      ground in one cell's interior, no run or highway beside it, a
  *      terminal's quay over owned salt water that opens to the sea - laid one
- *      a month without one moving, the newest taken first, through a FORMAT 6
- *      sidecar and laid alike from a FORMAT 5; each drawn once on the tiles,
+ *      a month without one moving, the newest taken first, through a current
+ *      sidecar while the older formats are refused; each drawn once on the tiles,
  *      its quay's plots once; a platform's jacket, wells, ring and pipe drawn
  *      once from the game's own platform (WellCheck's sea town); each route
  *      on the sea's cells to its offing past the city and on into the abyss,
@@ -537,6 +538,7 @@ public class MapCheck {
         runsLaidAcross(city);
         reservesDated(city);
         wallJournal(city);
+        fieldWallYardEvents(city);
         shoreUnitsDated(city);
         idleYards(city);
         idleYardsOnRuns();
@@ -1869,49 +1871,206 @@ public class MapCheck {
                 new int[] { 3, 2, 3, 2 }) && Arrays.equals(changes, d.wallChange));
         byte[] old = m.writeSidecar(30, 15);
         CityMap older = CityMap.readSidecar(old, land, r -> land.amountsInOrder(r), types, 30, CityMap.stampIn(old));
-        check("a FORMAT 15 sidecar starts with no wall journal", older != null && older.district(d.dx, d.dy).wallMonth.length == 0);
+        check("a FORMAT 15 sidecar is refused: it cannot preserve the wall history", older == null);
     }
 
-    /** A site's or shore's share can change while the model log stays fixed. Its returning unit arrives now (MF2-S, DM2). */
+    /** A real discovered wall is cured by a depot-sized yard, then returns after that yard is taken up (DM2). */
+    static void fieldWallYardEvents(Game g) {
+        out.println("\n--- 2h-e. a discovered wall, a yard curing it and its removal move only boxes their new plots cross (DM2) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House"), shop = idOf(g, "Convenience Store");
+        int[] footprint = BuildingVisual.footprint(types[idOf(g, "Rail Depot")]);
+        PlanCheck.Log log = new PlanCheck.Log();
+        DistrictPlan previous = null;
+        int[] months = null, changes = null, yard = null;
+        int birth = 0, laterWallMonths = 0, laterMoves = 0, wrongDates = 0, outside = 0;
+        int cured = 0, returned = 0, yardMoves = 0, returnMoves = 0;
+        boolean allPlacedBeforeYard = true, prefixes = true;
+        for (int month = 1; month <= 36; month++) {
+            if (month <= 30 || month == 32 || month >= 34) log.add(month, house, 15).add(month, shop, 3);
+            if (month == 31) {
+                int minX = DistrictPlan.FRAME, minY = DistrictPlan.FRAME;
+                boolean[] kept = new boolean[DistrictPlan.AREA];
+                for (int r : changes == null ? new int[0] : changes) kept[r >>> 1] = (r & 1) != 0;
+                for (int p = 0; p < kept.length; p++) if (kept[p]) {
+                    minX = Math.min(minX, p % DistrictPlan.FRAME);
+                    minY = Math.min(minY, p / DistrictPlan.FRAME);
+                }
+                check("fixture: monthly field-belt arrivals discovered a wall before the yard is laid", birth > 0 && minX < DistrictPlan.FRAME);
+                if (minX == DistrictPlan.FRAME) return;
+                yard = new int[] { minX, minY - footprint[1] + 1, footprint[0], footprint[1] };
+            }
+            DistrictPlan.Input in = log.into(PlanCheck.fieldBelt(types, house, 0));
+            in.seed = 1;
+            in.month = month;
+            in.wallMonth = months;
+            in.wallChange = changes;
+            if (yard != null) fieldYardInto(in, yard, 31, month >= 33 ? 33 : 0);
+            DistrictPlan now = DistrictPlan.make(in);
+            int old = changes == null ? 0 : changes.length, added = 0, released = 0;
+            boolean[] newWay = new boolean[DistrictPlan.AREA];
+            prefixes &= now.wallChange.length >= old && Arrays.equals(changes == null ? new int[0] : changes, Arrays.copyOf(now.wallChange, old))
+                    && Arrays.equals(months == null ? new int[0] : months, Arrays.copyOf(now.wallMonth, old));
+            for (int k = old; k < now.wallChange.length; k++) {
+                if (now.wallMonth[k] != month) wrongDates++;
+                int r = now.wallChange[k];
+                if ((r & 1) == 0) released++;
+                else {
+                    newWay[r >>> 1] = true;
+                    added++;
+                    if (birth == 0) birth = month;
+                }
+            }
+            if (previous != null) {
+                java.util.Set<PlanBox> was = boxesOf(previous), boxes = boxesOf(now);
+                int moved = movedOf(was, boxes);
+                for (PlanBox b : was) if (!boxes.contains(b) && !anyPlot(b, 0, p -> newWay[p] || (in.month == 31 && in.fixed[p] == DistrictPlan.FIXED_YARD))) outside++;
+                if (month == 31) {
+                    cured = released;
+                    yardMoves = moved;
+                    check("the yard actually cures the discovered wall and displaces boxes on its own ground", cured > 0 && now.wallClear == 0 && moved > 0);
+                } else if (month == 33) {
+                    returned = added;
+                    returnMoves = moved;
+                    int intersected = 0;
+                    for (PlanBox b : was) if (anyPlot(b, 0, p -> newWay[p])) intersected++;
+                    check("taking up the yard restores an actual wall way through standing boxes, moving exactly those intersected", added > 0 && now.wallClear > 0
+                            && intersected > 0 && moved == intersected);
+                } else if (previous.wallClear > 0 || month == 32) {
+                    laterWallMonths++;
+                    laterMoves += moved;
+                }
+            }
+            if (month <= 30) allPlacedBeforeYard &= now.overflowCount() == 0;
+            if (month == 30 || month == 36) {
+                DistrictPlan.Input delayed = log.into(PlanCheck.fieldBelt(types, house, 0));
+                delayed.seed = 1;
+                delayed.month = month;
+                if (yard != null) fieldYardInto(delayed, yard, 31, 33);
+                DistrictPlan firstView = DistrictPlan.make(delayed);
+                check("first viewed in month " + month + ", the field belt discovers the same dated events and places the same boxes as monthly views",
+                        Arrays.equals(now.wallMonth, firstView.wallMonth) && Arrays.equals(now.wallChange, firstView.wallChange) && sameBoxes(now, firstView)
+                                && PlanCheck.streetDigest(now) == PlanCheck.streetDigest(firstView));
+            }
+            previous = now;
+            months = now.wallMonth;
+            changes = now.wallChange;
+        }
+        out.printf("      field belt: wall born %d, yard releases %d plots and moves %d boxes; taken up, %d new way plots move %d boxes; %d later-arrival months move %d%n",
+                birth, cured, yardMoves, returned, returnMoves, laterWallMonths, laterMoves);
+        check("fixture: the wall predates many later arrivals and the yard, with every early arrival placed", birth > 0 && birth < 30 && allPlacedBeforeYard && laterWallMonths > MONTHS_BETWEEN);
+        check("every discovered wall birth and release is dated at its event month, keeping the earlier journal intact", wrongDates == 0 && prefixes);
+        check("a newly kept way or yard moves no standing box beyond its intersected plots", outside == 0);
+        check("arrivals after the wall, after its cure and after its return move no standing box", laterMoves == 0 && cured > 0 && returned > 0);
+    }
+
+    /** Dated fixed-ground transitions for a depot footprint in the field-belt fixture; the planner discovers the wall events itself. */
+    static void fieldYardInto(DistrictPlan.Input in, int[] yard, int laid, int takenUp) {
+        int area = yard[2] * yard[3], at = 0;
+        in.fixedLogMonth = new int[area * (takenUp > 0 ? 2 : 1)];
+        in.fixedLog = new int[in.fixedLogMonth.length];
+        for (int y = yard[1]; y < yard[1] + yard[3]; y++) for (int x = yard[0]; x < yard[0] + yard[2]; x++) {
+            int p = y * DistrictPlan.FRAME + x;
+            if (takenUp == 0) in.fixed[p] = DistrictPlan.FIXED_YARD;
+            in.fixedLogMonth[at] = laid;
+            in.fixedLog[at++] = p << 8 | DistrictPlan.FIXED_YARD;
+        }
+        if (takenUp > 0) for (int y = yard[1]; y < yard[1] + yard[3]; y++) for (int x = yard[0]; x < yard[0] + yard[2]; x++) {
+            in.fixedLogMonth[at] = takenUp;
+            in.fixedLog[at++] = (y * DistrictPlan.FRAME + x) << 8 | DistrictPlan.FIXED_YARD << 4;
+        }
+    }
+
+    /** Actual mines and yards record their source flows during reconcile, before the first plan or view (DM2, MF2-S). */
     static void shoreUnitsDated(Game g) {
-        out.println("\n--- 2h-c. site, yard and shore units return at their return month, keeping every standing box (DM2, MF2-S) ---");
+        out.println("\n--- 2h-c. actual site and yard transitions keep their dates and layouts while the map is unseen (DM2, MF2-S) ---");
         BuildingVisual.Type[] types = g.getMapTypes();
         int house = idOf(g, "House");
-        for (int unit : new int[] { idOf(g, "General Cargo Terminal"), idOf(g, "Rail Depot") }) {
-            CityLand land = yardLand();
+        for (int unit : new int[] { Mining.IRON_MINE, idOf(g, "Rail Depot") }) {
+            boolean mine = unit == Mining.IRON_MINE;
+            String name = mine ? "mine" : "yard";
+            CityLand land = mine ? g.getCityLand().copy() : yardLand();
+            java.util.function.Function<Resource, double[]> remaining = mine ? g.getLandManager()::remainingByHolding : land::amountsInOrder;
             long[] model = new long[types.length];
-            CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, model, 0);
+            CityMap watched = CityMap.canonical(land, remaining, types, model, 99);
+            CityMap unseen = CityMap.canonical(land, remaining, types, model, 99);
             model[house] = 50;
-            model[unit] = 3;
-            m.reconcile(model, 1);
-            CityMap.District d = m.districts().get(0);
-            PlanCheck.Log log = new PlanCheck.Log().add(1, house, 50).add(1, unit, 3);
-            DistrictPlan previous = null;
-            int moved = 0;
-            for (int month = 3; month <= 5; month++) {
-                m.reconcile(model, month);
-                DistrictPlan.Input in = log.into(PlanCheck.flat(types));
-                in.month = month;
-                in.counts[unit] = month == 4 ? 3 : 2;
-                m.planExclusionsInto(d, in);
-                DistrictPlan p = DistrictPlan.make(in);
-                if (previous != null) {
-                    int missing = movedOf(boxesOf(previous), boxesOf(p));
-                    if (month == 5) missing--; // The one unit leaving the plan is the one that returned in month 4.
-                    moved += missing;
-                }
-                check("month " + month + ": the merged visual log places exactly the requested units", p.buildings == 50 + in.counts[unit]);
-                previous = p;
+            model[unit] = 1;
+            boolean reconciled = true, physicalAtBirth = false;
+            for (int month = 100; month <= 150; month++) {
+                if (month > 100) model[house]++;
+                reconciled &= watched.reconcile(model, month) && unseen.reconcile(model, month);
+                if (month == 100) physicalAtBirth = mine ? unseen.minedSites().size() > 0 : unseen.runs().yards().size() == 1;
+                for (CityMap.District d : watched.districts()) watched.plan(d);
             }
-            check("a returning fixed unit and its later departure move no other standing box", moved == 0);
-            check("the model log stays at its original arrival, and the visual journal dates the exclusion and return",
-                    d.logN == 2 && Arrays.equals(d.excludeMonth, new int[] { 3, 4, 5 })
-                            && Arrays.equals(d.excludeChange, new int[] { -1, 1, -1 }));
-            byte[] side = m.writeSidecar(5);
-            CityMap back = CityMap.readSidecar(side, land, r -> land.amountsInOrder(r), types, 5, CityMap.stampIn(side));
-            check("the sidecar round trips the dated unit adjustments and their state", back != null && m.same(back)
-                    && Arrays.equals(side, back.writeSidecar(5)));
+            // No input or plan has been requested from unseen. The source journal has to exist in this sidecar already.
+            byte[] side = unseen.writeSidecar(150);
+            CityMap back = CityMap.readSidecar(side, land, remaining, types, 150, CityMap.stampIn(side));
+            check("fixture: reconcile at month 100 creates an actual " + name + " while the map remains unseen", physicalAtBirth && reconciled);
+            check("the unseen " + name + " unit is excluded at source month 100, before any plan or view", exclusionChangeAt(unseen, unit, 100) == -1
+                    && exclusionChangeAt(unseen, unit, 150) == 0);
+            check("the unseen " + name + " source history round trips before first view", back != null && unseen.same(back)
+                    && Arrays.equals(side, back.writeSidecar(150)));
+            if (back == null) continue;
+            if (mine) {
+                int minedPlots = 0, wrongDate = 0;
+                for (CityMap.District d : back.districts()) {
+                    DistrictPlan.Input in = back.planInput(d);
+                    for (int k = 0; in.siteLog != null && k < in.siteLog.length; k++) if ((in.siteLog[k] & 3) == DistrictPlan.SITE_MINED) {
+                        minedPlots++;
+                        if (in.siteLogMonth[k] != 100) wrongDate++;
+                    }
+                }
+                check("the mine's actual claimed plots are dated 100 when first viewed at 150", minedPlots > 0 && wrongDate == 0);
+            }
+            check("first viewed at 150, the " + name + " city has the monthly watched city's layout and source dates", sameSourcePlans(watched, back)
+                    && Arrays.equals(side, back.writeSidecar(150)) && watched.same(back));
+
+            // Growth, departure and return all go through the model's actual source path, with houses arriving between them.
+            int excludedBeforeDeparture = 0, excludedAtGrowth = 0;
+            for (int month = 151; month <= 156; month++) {
+                if (month == 151) model[unit] = 2;
+                if (month == 153) model[unit] = 0;
+                if (month == 154) model[unit] = 1;
+                model[house]++;
+                reconciled &= watched.reconcile(model, month) && back.reconcile(model, month);
+                if (month == 151) for (CityMap.District d : back.districts()) excludedAtGrowth += d.excluded == null ? 0 : d.excluded[unit];
+                if (month == 152) for (CityMap.District d : back.districts()) excludedBeforeDeparture += d.excluded == null ? 0 : d.excluded[unit];
+                for (CityMap.District d : watched.districts()) watched.plan(d);
+            }
+            byte[] after = back.writeSidecar(156);
+            check("actual " + name + " growth records its changed source share, leaving ordinary units in the plan", excludedAtGrowth == (mine ? 2 : 1)
+                    && exclusionChangeAt(back, unit, 151) == (mine ? -1 : 0));
+            check("the actual " + name + " departure and return record their own months, before another view", excludedBeforeDeparture > 0
+                    && exclusionChangeAt(back, unit, 153) == excludedBeforeDeparture && exclusionChangeAt(back, unit, 154) == -1
+                    && exclusionChangeAt(back, unit, 156) == 0);
+            check("the " + name + " city's actual growth, departure and return give the same watched and delayed layouts", reconciled
+                    && sameSourcePlans(watched, back) && watched.same(back) && Arrays.equals(after, back.writeSidecar(156)));
+            CityMap end = CityMap.readSidecar(after, land, remaining, types, 156, CityMap.stampIn(after));
+            check("the " + name + " source growth, departure and return round trip with their dates and layout", end != null && back.same(end)
+                    && sameSourcePlans(back, end) && Arrays.equals(after, end.writeSidecar(156)));
         }
+    }
+
+    /** The visual-unit adjustment recorded by actual sources for a type and month, over the whole map. */
+    static int exclusionChangeAt(CityMap m, int type, int month) {
+        int change = 0;
+        for (CityMap.District d : m.districts()) for (int k = 0; k < d.excludeMonth.length; k++) {
+            if (d.excludeType[k] == type && d.excludeMonth[k] == month) change += d.excludeChange[k];
+        }
+        return change;
+    }
+
+    /** The same district plans, boxes and streets, without relying on a painter's caches. */
+    static boolean sameSourcePlans(CityMap a, CityMap b) {
+        if (a.districts().size() != b.districts().size()) return false;
+        for (CityMap.District d : a.districts()) {
+            CityMap.District other = b.district(d.dx, d.dy);
+            if (other == null) return false;
+            DistrictPlan left = a.plan(d), right = b.plan(other);
+            if (!sameBoxes(left, right) || PlanCheck.streetDigest(left) != PlanCheck.streetDigest(right)) return false;
+        }
+        return true;
     }
 
     /* =====================================================================
@@ -2910,15 +3069,7 @@ public class MapCheck {
                 back != null && back.runs().same(runs) && back.runs().yardsActive() == 0 && back.runs().yardIdleSince(0) == idleMonth);
         byte[] old = m.writeSidecar(idleMonth, 13);
         CityMap older = CityMap.readSidecar(old, land, r -> land.amountsInOrder(r), types, idleMonth, CityMap.stampIn(old));
-        check("a sidecar of FORMAT 13 has no idle yard: it reads the yard as the model's (" + (older == null ? -1 : older.runs().yardsActive()) + " active)",
-                older != null && older.runs().yards().size() == 1 && older.runs().yardsActive() == 1);
-        if (older != null) {
-            long[] atRead = older.runs().yards().get(0);
-            Months o = new Months(older, model.clone(), house, idleMonth + 1);
-            o.run(0);
-            check("...and the first month after it, the model asking for none, the yard idles from that month: not taken up (idle from " + older.runs().yardIdleSince(0) + ")",
-                    older.runs().yards().size() == 1 && older.runs().yards().get(0) == atRead && older.runs().yardsActive() == 0 && older.runs().yardIdleSince(0) == o.last());
-        }
+        check("a FORMAT 13 sidecar is refused: it has neither the idle date nor the wall history", older == null);
 
         // ----- gone for good: taken up when its idle time is up -----
         h.month = idleMonth + CityRuns.YARD_IDLE_MONTHS - 1;
@@ -4575,52 +4726,34 @@ public class MapCheck {
                 && !next.hasCityMap());
         check("...and a sidecar that is not one is read as none", CityMap.readSidecar(new byte[] { 1, 2, 3 },
                 back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(), back.getMonth(), stampInSave) == null);
-        // An older sidecar (FORMAT 4, 0.7.72 to 0.7.87: the districts, no runs; or 0.7.88's FORMAT 5, its runs' count none) still read
-        // into the same districts (0.7.88), its runs laid from its counts on its ground (0.7.89) - as a map drawn afresh lays them.
+        // The dated wall and unit history is required: old districts without it cannot replay their standing boxes faithfully (DM2).
         CityMap live = back.getCityMap();
-        byte[] old = live.writeSidecar(back.getMonth(), CityMap.OLDEST_READ);
-        CityMap fromOld = CityMap.readSidecar(old, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
-                back.getMonth(), CityMap.stampIn(old));
-        byte[] none = live.writeSidecar(back.getMonth(), 5, false);
-        CityMap fromNone = CityMap.readSidecar(none, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
-                back.getMonth(), CityMap.stampIn(none));
-        CityMap afresh = CityMap.canonical(back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(), back.getMapCounts());
-        out.printf("      the same map as a FORMAT %d sidecar: %,d bytes; as FORMAT %d %,d (its runs: %d arms, %,d highway and %,d track plots)%n",
-                CityMap.OLDEST_READ, old.length, CityMap.FORMAT, live.writeSidecar(back.getMonth()).length, live.runs().runs(),
-                live.runs().highways().plots(), live.runs().rail().plots());
-        check("a FORMAT " + CityMap.OLDEST_READ + " sidecar (0.7.72 to 0.7.87) still loads, into the same districts, its runs laid from its counts",
-                fromOld != null && fromOld.sameDistricts(live, false) && fromOld.runs().same(afresh.runs()));
-        check("...and 0.7.88's FORMAT 5, which wrote no runs, likewise", fromNone != null && fromNone.sameDistricts(live, false)
-                && fromNone.runs().same(afresh.runs()));
-        // THE OLD SAVE (CL3): a sidecar of FORMAT 8 has no logs. Each district's log starts as its counts, one batch at the save's month, and its plan is
-        // today's: the plan drawn from the log is the plan drawn from the counts alone (logMonth, logType and logChange set to null), box for box.
-        byte[] eight = live.writeSidecar(back.getMonth(), 8);
-        CityMap fromEight = CityMap.readSidecar(eight, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
-                back.getMonth(), CityMap.stampIn(eight));
-        int eightDistricts = 0, eightOneBatch = 0, eightAtSave = 0, eightToday = 0, eightPlaced = 0;
-        if (fromEight != null) {
-            for (CityMap.District d : fromEight.districts()) {
-                eightDistricts++;
-                if (d.firstBatch == d.logSize()) eightOneBatch++;
-                boolean atSave = true;
-                for (int k = 0; k < d.logSize(); k++) atSave &= d.logMonth[k] == back.getMonth();
-                if (atSave) eightAtSave++;
-                DistrictPlan.Input withLog = fromEight.planInput(d), fromCounts = fromEight.planInput(d);
-                fromCounts.logMonth = null;
-                fromCounts.logType = null;
-                fromCounts.logChange = null;
-                DistrictPlan logPlan = DistrictPlan.make(withLog), countsPlan = DistrictPlan.make(fromCounts);
-                eightPlaced += logPlan.buildings;
-                if (sameBoxes(logPlan, countsPlan)) eightToday++;
-            }
+        check("the oldest readable sidecar carries the dated wall and unit journals", CityMap.OLDEST_READ >= 16 && CityMap.OLDEST_READ <= CityMap.FORMAT);
+        for (int format : new int[] { 4, 5, 8, 13, 15 }) {
+            byte[] old = live.writeSidecar(back.getMonth(), format);
+            CityMap fromOld = CityMap.readSidecar(old, back.getCityLand(), back.getLandManager()::remainingByHolding, back.getMapTypes(),
+                    back.getMonth(), CityMap.stampIn(old));
+            check("a FORMAT " + format + " sidecar is refused even with its own correct stamp and month", fromOld == null);
         }
-        out.printf("      as FORMAT 8 (no logs): %,d bytes, read back to %d districts - %d each one batch at the save's month, %d planned as today's, %,d buildings placed%n",
-                eight.length, eightDistricts, eightOneBatch, eightToday, eightPlaced);
-        check("a FORMAT 8 sidecar still loads, into the same districts (their logs begun at the save, so not compared)", fromEight != null
-                && fromEight.sameDistricts(live, false));
-        check("...each district's log one batch (its first batch is all its records) at the save's month, adding up to its counts", eightDistricts > 0
-                && eightOneBatch == eightDistricts && eightAtSave == eightDistricts && logsAddUp(fromEight));
-        check("...and its plan is today's, box for box: made from its log it is the plan made from its counts", eightToday == eightDistricts && eightPlaced > 0);
+        // A matching save stamp lets the loader reach the format check rather than merely rejecting a stale file. All slots are in cityFiles' scratch root.
+        Game fromOlder;
+        System.setOut(QUIET);
+        try {
+            back.saveGame(7, "mapcheck an unreadable old map");
+            byte[] old = live.writeSidecar(back.getMonth(), CityMap.OLDEST_READ - 1);
+            Files.write(files.mapFile(7), old);
+            com.google.gson.JsonObject save = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(7))).getAsJsonObject();
+            save.addProperty("mapStamp", CityMap.stampIn(old));
+            Files.writeString(files.saveFile(7), save.toString());
+            fromOlder = new Game(files);
+            fromOlder.loadGameSave(7);
+        } finally {
+            System.setOut(real);
+        }
+        CityMap redrawn = CityMap.canonical(fromOlder.getCityLand(), fromOlder.getLandManager()::remainingByHolding,
+                fromOlder.getMapTypes(), fromOlder.getMapCounts(), fromOlder.getMonth());
+        check("a save with an unreadable old sidecar redraws its map canonically at the save's month", fromOlder.hasCityMap()
+                && fromOlder.getCityMap().same(redrawn));
         for (int i = 1; i < TIMES.length; i++) {
             if (TIMES[i] != 9_814 && TIMES[i] != 19_629) continue;
             CityMap m = sq.maps[i];
@@ -6634,20 +6767,17 @@ public class MapCheck {
                 wantUnits, overUnits, cells.size(), cells);
         check("...its plan places the deal's units first of its industry (the unit a month on as it came, CL3), every one, in cells that touch one another: one campus",
                 firstOfIndustry && placedUnits == wantUnits && connected(cells));
-        // An older sidecar's units, spread by hand into another district, gathered once as it is read; a FORMAT 6 one read as it is.
+        // The old campus migration is no longer readable; a current sidecar must also refuse counts moved without their logs (DM2).
         CityMap.District away = null;
         for (CityMap.District d : m.districts()) if (d != campus && (away == null || d.index < away.index)) away = d;
         campus.counts[cracker]--;
         away.counts[cracker]++;
         for (CityMap.District d : new CityMap.District[] { campus, away }) { d.usedHalf = m.usedOf(d); d.usedCells = m.cellsOf(d); d.usedRoad = m.roadOf(d); }
-        byte[] five = m.writeSidecar(1, 5), six = m.writeSidecar(1);
+        byte[] five = m.writeSidecar(1, 5), current = m.writeSidecar(1);
         CityMap fromFive = CityMap.readSidecar(five, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(five));
-        CityMap fromSix = CityMap.readSidecar(six, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(six));
-        int[] spread = new int[2];
-        if (fromFive != null) for (CityMap.District d : fromFive.districts()) if (fromFive.campusCells(d) > 0) spread[0]++;
-        if (fromSix != null) for (CityMap.District d : fromSix.districts()) if (fromSix.campusCells(d) > 0) spread[1]++;
-        check("...a FORMAT 5 sidecar's units in two districts are gathered into the campus once as it is read; a FORMAT 6 one's stay",
-                fromFive != null && spread[0] == 1 && fromSix != null && spread[1] == 2);
+        CityMap fromCurrent = CityMap.readSidecar(current, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(current));
+        check("...a FORMAT 5 sidecar is refused rather than migrating its campus units", fromFive == null);
+        check("...a current sidecar with campus counts moved without their logs is refused", fromCurrent == null);
         campus.counts[cracker]++;
         away.counts[cracker]--;
         for (CityMap.District d : new CityMap.District[] { campus, away }) { d.usedHalf = m.usedOf(d); d.usedCells = m.cellsOf(d); d.usedRoad = m.roadOf(d); }
@@ -6709,11 +6839,11 @@ public class MapCheck {
                 grown.size() == before.size() + 1 && grown.subList(0, before.size()).equals(before) && gone == 2 && newestGone
                         && !shrunk.contains(lastGct) && !shrunk.contains(nextLast));
         m.reconcile(more);
-        byte[] fmt6 = m.writeSidecar(1), fmt5 = m.writeSidecar(1, 5);
-        CityMap r6 = CityMap.readSidecar(fmt6, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(fmt6));
+        byte[] fmtCurrent = m.writeSidecar(1), fmt5 = m.writeSidecar(1, 5);
+        CityMap rCurrent = CityMap.readSidecar(fmtCurrent, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(fmtCurrent));
         CityMap r5 = CityMap.readSidecar(fmt5, m.land(), r -> m.land().amountsInOrder(r), types, 1, CityMap.stampIn(fmt5));
-        check("...kept in the sidecar: FORMAT 6 reads back the same works and writes the same bytes; a FORMAT 5 one has them laid alike from its counts",
-                r6 != null && r6.same(m) && Arrays.equals(r6.writeSidecar(1), fmt6) && r5 != null && r5.shore().works().size() == shore.works().size());
+        check("...kept in the current sidecar: the same works and bytes round trip, while FORMAT 5 is refused",
+                rCurrent != null && rCurrent.same(m) && Arrays.equals(rCurrent.writeSidecar(1), fmtCurrent) && r5 == null);
         // Each drawn once: its type's plots and its quay's over every tile about the works.
         MapTiles tiles = new MapTiles(m);
         TilePainter.Input in = new TilePainter.Input();

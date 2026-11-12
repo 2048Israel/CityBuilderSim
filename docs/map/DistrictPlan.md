@@ -1,4 +1,4 @@
-# DistrictPlan.java - 7,211 lines · 264 methods · 107 constants · model
+# DistrictPlan.java - 7,304 lines · 267 methods · 107 constants · model
 
 `ham/citybuildersim/DistrictPlan.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 > The spec's rules the prototype did not draw are added where its sections
 > ... (232 more lines in the source)
 
-**Uses:** [World](World.md) (35), [BuildingVisual](BuildingVisual.md) (29), [TilePainter](TilePainter.md) (28), [StreetCurves](StreetCurves.md) (6), [CityRuns](CityRuns.md) (5), [CityMap](CityMap.md) (2), [BuildingType](BuildingType.md) (1)
+**Uses:** [World](World.md) (35), [BuildingVisual](BuildingVisual.md) (34), [TilePainter](TilePainter.md) (28), [StreetCurves](StreetCurves.md) (6), [CityRuns](CityRuns.md) (5), [CityMap](CityMap.md) (2), [BuildingType](BuildingType.md) (1)
 
-**Used by (20):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md)
+**Used by (21):** [BridgeMapCheck](BridgeMapCheck.md), [BuildingVisual](BuildingVisual.md), [CityMap](CityMap.md), [CityRuns](CityRuns.md), [CrossingCheck](CrossingCheck.md), [DistrictPicture](DistrictPicture.md), [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [MainLineCheck](MainLineCheck.md), [MapCheck](MapCheck.md), [MapSiteHistory](MapSiteHistory.md), [PlanCheck](PlanCheck.md), [RailDrawCheck](RailDrawCheck.md), [RunWorksCheck](RunWorksCheck.md), [SlopeCheck](SlopeCheck.md), [TilePainter](TilePainter.md), [TileRaster](TileRaster.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckSchedule](TruckSchedule.md)
 
 ## Sections
 
@@ -78,28 +78,28 @@
 | 494 | · a street plot's code |
 | 560 | · the avenues (CL4) |
 | 571 | THE INPUTS |
-| 813 | THE PLAN |
-| 1271 | · THE GROUND KEPT: its switches (batch UP5; Builder.groundNear()) |
-| 1291 | THE BUILDER: ONE PLAN AT A LADDER'S STEP |
-| 1533 | · THE GROUND KEPT (batch UP5, FX7's star 3) |
-| 1823 | · the order of arrival (batch CL3) |
-| 2459 | · the ground bought (batch FX6) |
-| 2813 | · the runs dated (batch FX7) |
-| 2893 | · buildings move off a run (batch MF1) |
-| 3028 | · the growth order (spec 2.4) |
-| 3083 | · the bands (spec 2.4, R5, R6) |
-| 3205 | · one build |
-| 3748 | · opening a cell (spec 2.3) |
-| 3880 | · the avenues (CL4) |
-| 4325 | · the curves (CL4, slice C) |
-| 4485 | · a homes cell's layout (CL2, 2026-10-20) |
-| 4728 | · an estate cell's streets (0.7.90, ESTATE LINES) |
-| 5174 | · a cell's room and reach, in bit rows |
-| 6040 | · the join: one network |
-| 6071 | · access roads (batch FR7, slice 4; spec-freight 4.5, D17) |
-| 6241 | · sidings (batch FR7, slice 5; spec-freight 4.3, D14) |
-| 6855 | · THE WALL WAYS DATED (DM2) |
-| 7069 | · the surface (spec 2.5) |
+| 815 | THE PLAN |
+| 1276 | · THE GROUND KEPT: its switches (batch UP5; Builder.groundNear()) |
+| 1296 | THE BUILDER: ONE PLAN AT A LADDER'S STEP |
+| 1539 | · THE GROUND KEPT (batch UP5, FX7's star 3) |
+| 1829 | · the order of arrival (batch CL3) |
+| 2491 | · the ground bought (batch FX6) |
+| 2851 | · the runs dated (batch FX7) |
+| 2951 | · buildings move off a run (batch MF1) |
+| 3051 | · the growth order (spec 2.4) |
+| 3106 | · the bands (spec 2.4, R5, R6) |
+| 3228 | · one build |
+| 3771 | · opening a cell (spec 2.3) |
+| 3903 | · the avenues (CL4) |
+| 4348 | · the curves (CL4, slice C) |
+| 4508 | · a homes cell's layout (CL2, 2026-10-20) |
+| 4751 | · an estate cell's streets (0.7.90, ESTATE LINES) |
+| 5197 | · a cell's room and reach, in bit rows |
+| 6063 | · the join: one network |
+| 6098 | · access roads (batch FR7, slice 4; spec-freight 4.5, D17) |
+| 6268 | · sidings (batch FR7, slice 5; spec-freight 4.3, D14) |
+| 6891 | · THE WALL WAYS DATED (DM2) |
+| 7162 | · the surface (spec 2.5) |
 
 ## Constants
 
@@ -192,26 +192,26 @@
 | 563 | `DistrictPlan.AVENUE_DX` | `{ 1, - 1, - 1, 1 }, AVENUE_DY = { 1, 1, - 1, - 1 }` | The four avenues' headings, (dx, dy) in plots by arm: south-east, south-west, north-west, north-east - CityRuns.diagCode()'s numbering, 0 to 3, the arm in a plot's mark. |
 | 566 | `DistrictPlan.AVENUE_BRIDGE_STEPS` | `(int)(ARTERIAL_BRIDGE / Math.sqrt(2))` | The longest run over bridgeable water a bridge on an avenue carries, in steps along it: ARTERIAL_BRIDGE / sqrt 2 rounded down, 9 - a step is sqrt 2 plots, so 9 steps are 12.7 plots and 10 are over 14. |
 | 569 | `DistrictPlan.AVENUE_APART` | `LATTICE` | The least steps between two junctions kept on one arm (the + floor along an avenue): LATTICE. |
-| 786 | `DistrictPlan.ARCS` | `{ new ArcShape(- 1), new ArcShape(1) }` | The two crescent shapes, bulge -1 and +1 (arc()). |
-| 868 | `DistrictPlan.ACCESS_RAMP` | `1, ACCESS_ARTERIAL = 2, ACCESS_HAD = 3` |  |
-| 917 | `DistrictPlan.Curve.CRESCENT` | `1, SHORE = 2` | A crescent's arc (geom: its circle {centre x, centre y, radius, the angle from the centre to the arc's start, the signed sweep}, as TrackCurves.Bend has them; radius = the circle's) and a street along a cut (geom: the... |
-| 965 | `DistrictPlan.NO_CURVES` | `List.of()` | No curves: a plan that lays none (the prototype's, Input.latticeOnly) has this list. |
-| 1116 | `DistrictPlan.BUILDERS` | `new ThreadLocal<>()` | KEPT (0.7.94, batch RD7): each thread's builder, its arrays - about 4 MB - and the ladder's turns - about 0.4 MB each, one a step of the longest chain it has climbed - made once and used plan after plan, rather than m... |
-| 1283 | `DistrictPlan.groundDiffers` | `new java.util.concurrent.atomic.AtomicLong()` | How many entries of the arrays ground() writes differed between a limited pass and the whole ground worked out after it (verifyGround): 0, or the kept ground is wrong. |
-| 1286 | `DistrictPlan.groundLimited` | `new java.util.concurrent.atomic.AtomicLong(), groundWhole = new java.util.con...` | How many passes of the ground were limited to the plots a record or a purchase touches, and how many were worked whole because they touched too many (GROUND_NEAR_MOST): a harness's figures. |
-| 1289 | `DistrictPlan.GROUND_NEAR_MOST` | `AREA / 10` | The most plots a pass may work again before it works the whole ground out instead: 6,400 (a tenth of the frame) - past it the whole is the cheaper, a plot worked alone costing a few times what one plot of a whole pass... |
-| 1356 | `DistrictPlan.Builder.WORDS` | `(FRAME + 63) / 64` | The streets row by row as bits, WORDS longs a row: what a cell's reach is read from. |
-| 1430 | `DistrictPlan.Builder.WORN` | `1<<30` | The stamps' ceiling: a builder is replaced past it, half the int's range, far beyond what a plan stamps (a dense plan some tens of thousands). |
-| 3920 | `DistrictPlan.Builder.AV_PLOTS` | `0, AV_UNDER = 1, AV_RAIL = 2, AV_BRIDGED = 3, AV_BROKEN = 4, AV_WATER = 5, AV...` | The slots of avN, the counts the plan's avenue* fields are made from: plots laid, beneath a highway, across the railway, bridging, not laid at a yard, reserve or mine, at water too wide, cell streets stopped, open cel... |
-| 3922 | `DistrictPlan.Builder.AVK_OFF` | `0, AVK_BROKEN = 1, AVK_WATER = 2, AVK_UNDER = 3, AVK_STREET = 4` | What avKind() makes of a staircase plot: not laid (unowned, salt water), not laid at a yard, reserve or mine's site, not laid at water too wide, beneath a highway, a street. |
-| 4731 | `DistrictPlan.Builder.FLIP` | `1<<31` | estateLines()'s flag: the cell's streets run the other way from its own direction (a cell the ground cuts). |
-| 4747 | `DistrictPlan.Builder.FULL_LINES` | `new java.util.concurrent.ConcurrentHashMap<>()` | Each layout a full cell takes for a building's shape, its ring whole: {across, down, boulevard, the cell's direction} to estateLines()'s answer - the same whatever lies about it (no street beyond its ring is nearer it... |
-| 4856 | `DistrictPlan.Builder.H_STREET` | `1, H_ARTERIAL = 2, V_STREET = 4, V_ARTERIAL = 8, LAY_REFUSED = 15, LAY_UNDER ...` | LAY CODES (0.7.94, batch RD7): what layPlot() makes of each plot, read from the input once a plan - the plot refused to a street running east-west (H_STREET), to an arterial so (H_ARTERIAL), and north-south (V_STREET,... |
-| 5350 | `DistrictPlan.Builder.LAST_WORD` | `(1L<<(FRAME - 64 *(WORDS - 1))) - 1` | A row's last word's plots in the frame: bit 0 to FRAME - 1 - 64 x (WORDS - 1). |
-| 5412 | `DistrictPlan.Builder.WINDOW` | `(1L<<(INTERIOR + 2 * REACH)) - 1` | A window's row as bits, one a plot: a cell's interior and the REACH plots either side of it. |
-| 5971 | `DistrictPlan.Builder.SPLIT_NEAR` | `CELL` | splits()'s first walk keeps within this many plots of the box: a cell (NEAR FIRST). |
-| 6248 | `DistrictPlan.Builder.SD_BUCKETS` | `16` |  |
-| 7155 | `DistrictPlan.Builder.PARTED_BUCKETS` | `2 *(CELLS + 1) + 1` | surface()'s buckets a side of the river: the access roads', the arterials' by cell rank and the rest's (FW3). |
+| 788 | `DistrictPlan.ARCS` | `{ new ArcShape(- 1), new ArcShape(1) }` | The two crescent shapes, bulge -1 and +1 (arc()). |
+| 870 | `DistrictPlan.ACCESS_RAMP` | `1, ACCESS_ARTERIAL = 2, ACCESS_HAD = 3` |  |
+| 919 | `DistrictPlan.Curve.CRESCENT` | `1, SHORE = 2` | A crescent's arc (geom: its circle {centre x, centre y, radius, the angle from the centre to the arc's start, the signed sweep}, as TrackCurves.Bend has them; radius = the circle's) and a street along a cut (geom: the... |
+| 967 | `DistrictPlan.NO_CURVES` | `List.of()` | No curves: a plan that lays none (the prototype's, Input.latticeOnly) has this list. |
+| 1118 | `DistrictPlan.BUILDERS` | `new ThreadLocal<>()` | KEPT (0.7.94, batch RD7): each thread's builder, its arrays - about 4 MB - and the ladder's turns - about 0.4 MB each, one a step of the longest chain it has climbed - made once and used plan after plan, rather than m... |
+| 1288 | `DistrictPlan.groundDiffers` | `new java.util.concurrent.atomic.AtomicLong()` | How many entries of the arrays ground() writes differed between a limited pass and the whole ground worked out after it (verifyGround): 0, or the kept ground is wrong. |
+| 1291 | `DistrictPlan.groundLimited` | `new java.util.concurrent.atomic.AtomicLong(), groundWhole = new java.util.con...` | How many passes of the ground were limited to the plots a record or a purchase touches, and how many were worked whole because they touched too many (GROUND_NEAR_MOST): a harness's figures. |
+| 1294 | `DistrictPlan.GROUND_NEAR_MOST` | `AREA / 10` | The most plots a pass may work again before it works the whole ground out instead: 6,400 (a tenth of the frame) - past it the whole is the cheaper, a plot worked alone costing a few times what one plot of a whole pass... |
+| 1361 | `DistrictPlan.Builder.WORDS` | `(FRAME + 63) / 64` | The streets row by row as bits, WORDS longs a row: what a cell's reach is read from. |
+| 1435 | `DistrictPlan.Builder.WORN` | `1<<30` | The stamps' ceiling: a builder is replaced past it, half the int's range, far beyond what a plan stamps (a dense plan some tens of thousands). |
+| 3943 | `DistrictPlan.Builder.AV_PLOTS` | `0, AV_UNDER = 1, AV_RAIL = 2, AV_BRIDGED = 3, AV_BROKEN = 4, AV_WATER = 5, AV...` | The slots of avN, the counts the plan's avenue* fields are made from: plots laid, beneath a highway, across the railway, bridging, not laid at a yard, reserve or mine, at water too wide, cell streets stopped, open cel... |
+| 3945 | `DistrictPlan.Builder.AVK_OFF` | `0, AVK_BROKEN = 1, AVK_WATER = 2, AVK_UNDER = 3, AVK_STREET = 4` | What avKind() makes of a staircase plot: not laid (unowned, salt water), not laid at a yard, reserve or mine's site, not laid at water too wide, beneath a highway, a street. |
+| 4754 | `DistrictPlan.Builder.FLIP` | `1<<31` | estateLines()'s flag: the cell's streets run the other way from its own direction (a cell the ground cuts). |
+| 4770 | `DistrictPlan.Builder.FULL_LINES` | `new java.util.concurrent.ConcurrentHashMap<>()` | Each layout a full cell takes for a building's shape, its ring whole: {across, down, boulevard, the cell's direction} to estateLines()'s answer - the same whatever lies about it (no street beyond its ring is nearer it... |
+| 4879 | `DistrictPlan.Builder.H_STREET` | `1, H_ARTERIAL = 2, V_STREET = 4, V_ARTERIAL = 8, LAY_REFUSED = 15, LAY_UNDER ...` | LAY CODES (0.7.94, batch RD7): what layPlot() makes of each plot, read from the input once a plan - the plot refused to a street running east-west (H_STREET), to an arterial so (H_ARTERIAL), and north-south (V_STREET,... |
+| 5373 | `DistrictPlan.Builder.LAST_WORD` | `(1L<<(FRAME - 64 *(WORDS - 1))) - 1` | A row's last word's plots in the frame: bit 0 to FRAME - 1 - 64 x (WORDS - 1). |
+| 5435 | `DistrictPlan.Builder.WINDOW` | `(1L<<(INTERIOR + 2 * REACH)) - 1` | A window's row as bits, one a plot: a cell's interior and the REACH plots either side of it. |
+| 5994 | `DistrictPlan.Builder.SPLIT_NEAR` | `CELL` | splits()'s first walk keeps within this many plots of the box: a cell (NEAR FIRST). |
+| 6275 | `DistrictPlan.Builder.SD_BUCKETS` | `16` |  |
+| 7248 | `DistrictPlan.Builder.PARTED_BUCKETS` | `2 *(CELLS + 1) + 1` | surface()'s buckets a side of the river: the access roads', the arterials' by cell rank and the rest's (FW3). |
 
 ## Fields (state)
 
@@ -227,326 +227,334 @@
 | 613 | `public int[] fixedLogMonth, fixedLog` | THE RUNS DATED (batch FX7): what the city's runs laid on the frame's plots, month by month - a record for each change of a plot's kind of fixed ground, `fixedLog[i] = plot << 8 \| before << 4 \| after` (the plot's index... |
 | 615 | `public int month` | The month this picture is of, set by CityMap beside the dated runs. |
 | 617 | `public int[] wallMonth, wallChange` | Wall-way changes in month order, plot << 1 \| kept (DM2). |
-| 619 | `public final byte[] fixed` | The city's highway and railway plots: FIXED_HIGHWAY, FIXED_RAIL or a yard's FIXED_YARD, and (batch FR7) an interchange's reserve FIXED_RESERVE, laid before the plan (the city's runs since 0.7.89, CityRuns; CityMap's n... |
-| 621 | `public final byte[] site` | The resource sites: SITE_FIELD, or SITE_MINED where a mine or well stands. |
-| 623 | `public final List<int[]> mines` | The mines and wells of the district standing on their sites, each {x0, y0, x1, y1} inclusive in the frame's plots: counted apart from the reach (PlanCheck), as MapCheck 8 counted them. |
-| 625 | `public final List<int[]> works` | The works that need an access road (batch FR7, D17), each box {x, y, w, h} in the frame's plots: the railway's yards and the shore's sea terminals (the map's; they stand on FIXED_YARD ground). |
-| 627 | `public boolean[] ramp` | A highway's plot of the frame that carries a ramp (CityRuns.M_RAMP), by plot; null for none: where a street beneath it makes a ramp an access road can end at. |
-| 629 | `public int sidings` | How many sidings this district's share of the city's Rail Spurs lays (batch FR7 slice 5, D14; CityMap.sidingsOf()): the plan lays one to each of this many of the largest bulk works it placed, to the runs' railway in i... |
-| 631 | `public int sidingPlots` | ...and the plots one may have: a Rail Spur's own track (CityMap: the model's spur track over its spurs, 72), as the runs' sidings are paid for out of the spurs' plots - a works whose siding would be longer is passed o... |
-| 633 | `public BuildingVisual.Type[] types` | The types, by id (BuildingVisual.table()). |
-| 635 | `public int[] counts` | The buildings to place, by type id: every drawn type the district holds but its mines and wells on sites (and, with a log, the plan's own: the log is squared with them, THE ORDER OF ARRIVAL). |
-| 637 | `public double gravel, paved, highway` | The road plots its streets are made of, by kind: the model's Gravel and Paved Roads, and Elevated Highway plots to lay as a street's surface (none from the map since 0.7.89: the city's runs lay them, and count what th... |
-| 639 | `public final boolean[] surfaces` | Whether this district surfaces its seams: north, east, south and west, then its corners north-west, north-east, south-east and south-west (SEAMS). |
-| 641 | `public final boolean[] seamOpen` | A seam's plot this district does not surface, which the district that does leaves without a street (0.7.88, ONE-SIDED SEAMS): set by the map from the plans before this one in its order; false for all, every seam is la... |
-| 643 | `public final boolean[] anchor` | A plot of the frame's edge a district before this one in the map's order lays a street on (0.7.88, ACROSS DISTRICTS), a street on the city's network: what this district's streets join to; none for the first district, ... |
-| 645 | `public final boolean[] partedAnchor` | ...and one whose street is not on the network yet - the ground parted its piece from it in that district's frame, and no district before this one laying the plot has it on (0.7.88, PARTED): joined here, where this dis... |
-| 647 | `public boolean root` | Whether this is the first district in the map's order: its largest piece is the network's (0.7.88). |
-| 649 | `public boolean asPrototype` | The prototype's own rules only - no water rule, no streets along a cut, every seam surfaced: PlanCheck's replay of proto2.py. |
-| 651 | `public boolean bandsApart` | The estate bands kept apart, as 0.7.87 to 0.7.91 drew them - no outer kind in industry's cells (SHARED ESTATES): PlanCheck's comparison. |
-| 653 | `public boolean combOnly` | Every homes cell laid as 0.8.11 laid them all, the comb or the whole square (CL2, a homes cell's layout): PlanCheck's comparison. |
-| 655 | `public boolean moveFirstFit` | A building moved off a run placed as any arrival, at the first place in its band's cells, and not tried first in the cell it stood in (MF1, BUILDINGS MOVE OFF A RUN): PlanCheck's comparison. |
-| 657 | `public boolean latticeOnly` | No avenue, no crescent and no curve along a cut (no building kept off the plots their bands reach): every street on the lattice as 0.8.18 laid it (CL4); asPrototype implies it. |
-| 659 | `public Hashes hashes` | The hashes, or null for the world's. |
-| 665 | `public int[] logMonth, logType, logChange` | THE LOG (batch CL3): the district's count changes in the order they came, a record each - its month, the type id and the change (+ come, - gone) - months never falling, every type the district counts (its roads among ... |
-| 667 | `public int firstBatch` | ...how many of its first records are one batch, placed in today's order (the bands, largest first, the ladder): a canonical map's deal, or a sidecar's from before FORMAT 9 - so its first plan is today's, box for box. |
-| 676 | `public int[] carry` | What the district before it in the map's order could not place (R7), as {month, code} pairs in the order they came - the month each came in, so the spill keeps its time; null for none. |
-| 726 | `final int bulge, a` |  |
-| 727 | `final double cu, cv` |  |
-| 728 | `final int[] stairU, stairV, keepU, keepV` |  |
-| 818 | `public final byte[] cellKind` | Each cell's layout (CLOSED, HOMES or ESTATE), by ci + cj x 8. |
-| 820 | `public final boolean[] cellAcross` | ...whether its long blocks run east-west (else north-south). |
-| 822 | `public final int[] cellRank` | ...its rank in the order opened, or -1. |
-| 824 | `public final boolean[] cellSquare` | ...whether the ladder squared it (a homes cell's + grid at 8). |
-| 826 | `public final byte[] cellLayout` | ...a homes cell's street layout (CL2: LAYOUT_TODAY, LAYOUT_DROPPED or LAYOUT_BRICK); LAYOUT_TODAY for every other cell. |
-| 828 | `public final boolean[] cellBoulevard` | ...whether its arterials are a boulevard. |
-| 830 | `public final boolean[] cellMerged` | ...whether blocks were merged in it for a building wider than one (homes), or its spine closed for one wider than a strip (an estate). |
-| 832 | `public final int[] cellStreets` | ...an estate cell's streets (0.7.90, ESTATE LINES): bit o for a street o plots into its interior, running north-south where cellAcross, else east-west; 0 for a homes cell, or an estate cell whose spine was closed. |
-| 835 | `public short[] street` | Each plot's street: its kind, width, role and flags (KIND_MASK, WIDTH_SHIFT, ROLE_SHIFT, BRIDGE, CROSSING); 0 for none. |
-| 838 | `public int buildings` | The buildings placed: each one's box {x, y, w, h} in the frame's plots and its type id. |
-| 839 | `public int[] bx` |  |
-| 842 | `public int[] overflow` | What the plan could not place, by type id (R7: the map carries it to the next district with room since 0.7.88, and packs what none holds at the city's edge). |
-| 845 | `public int movedOff, movedOver` | Buildings a run laid after them lay across or beside moved off it and were placed again in the district, and those of them that found no place and went on to the next district (MF1, BUILDINGS MOVE OFF A RUN). |
-| 859 | `public int[] overflowLog` | ...and what leaves this district for the next as {month, code} pairs (batch CL3): what the map carries on (Input.carry); null for none. |
-| 867 | `public final List<int[]> accessRoads` | The access roads laid (batch FR7, D17), one for each work that had none: its box {x, y, w, h}, the gate (the road's first plot, beside the box), the road's end plot, and what it ends on - ACCESS_RAMP (a ramp's plot, a... |
-| 871 | `public boolean[] accessAt` | The plots the access roads run over, by plot (a boulevard's among them, which keeps its own role); null when none was laid. |
-| 880 | `public final List<int[]> sidings` | The sidings laid (batch FR7 slice 5, D14), one for each works that was given one: its box {x, y, w, h}, the siding's first plot (beside the box, where its shed stands), its last (beside the railway), the railway plot ... |
-| 889 | `public final List<int[]> sidingWays` | Each siding's way as its corners (MF1, 2026-10-28), in the order of `sidings`: {the railway plot it meets, then the frame plots (y x FRAME + x) of the siding's first plot beside the railway, of each plot where its hea... |
-| 892 | `public byte[] siding` | The plots the sidings run over, by plot: SIDING_PLOT, SIDING_END at each shed's; null when none was laid. |
-| 895 | `public int sidingsAsked, sidingsNoWorks, sidingsNoRail, sidingsAtDoor, sidingsNoGate, sidingsNoWay` | The sidings the plan was asked for and the bulk works that got none, by why (batch FR7 slice 5): the plan placed no bulk works to serve, there is no railway plot in its frame, the works has the railway at its door, no... |
-| 903 | `public byte[] avenue` | The avenues the plan laid (batch CL4), by plot over the frame (AREA): each avenue plot's mark in CityRuns' bits - M_DIAG, its arm's CityRuns.diagCode() at M_DIAG_SHIFT, M_CORNER on a corner - 0 elsewhere; null when it... |
-| 906 | `public int avenuePlots, avenueUnder, avenueRail, avenueBridged, avenueBroken, avenueWater, avenueStops, ave...` | The avenues' counts (CL4): plots laid; of them beneath a highway, crossing the railway, bridging fresh water; plots not laid at a yard, an interchange's reserve or a mine's site; plots not laid at fresh water too wide... |
-| 918 | `public final byte kind` |  |
-| 919 | `public final double[] geom` |  |
-| 920 | `public final double radius` |  |
-| 922 | `private final int[] path, band` | A shore curve's plots in order, the dead end's last plot first and the plot it meets last, and the plots its band reaches that are not its own; null for a crescent's. |
-| 924 | `private final int x0, y0` | A crescent's cell: its interior's north-west plot in the frame, whether its long streets run east-west, and its bulge. |
-| 925 | `private final boolean across` |  |
-| 926 | `private final byte bulge` |  |
-| 968 | `public List<Curve> curves` | The plan's curves (CL4, slice C): a crescent's arc for each homes cell laid as one whose arc is still whole, and a street along a cut for each dead end the cut's join (shore()) still joins - in the order the cells ope... |
-| 971 | `public int crescents, crescentsOff, shoreCurves` | The curves' counts (CL4): homes cells laid as a crescent (LAYOUT_CRESCENT); cells the hash and the distance made a crescent whose arc the ground could not lay whole, which keep the comb; streets along a cut drawn as a... |
-| 974 | `public double surplus` | The surface left over when every step of the ladder is taken: road the plan has no street for (0 where the ladder holds it). |
-| 977 | `public final double[] leftover` | ...by kind, [0, gravel, paved, highway] (BuildingVisual's): each kind's road less its surface, so surface and leftover make the input's road kind by kind (0.7.88; MapCheck sums it). |
-| 980 | `public double budget` | The road its streets are made of: the input's, by kind, and in all. |
-| 983 | `public int squares, boulevards, cellsOpen, homesCells` | How many cells the ladder squared and made boulevards of, as it asked (the prototype's figures; in a plan that goes on past its first batch, the first batch's as it asked and every cell opened after it by the road of ... |
-| 986 | `public int joins, shoreJoins, strays, mergesRefused, onFields` | Pieces the join joined; dead ends joined along a cut; street plots taken up as strays; merges refused for splitting the network; buildings placed on a field. |
-| 989 | `public int boughtStreets` | Street plots laid on ground the city bought inside a cell already open, after the stray pieces were taken up (Builder.cellsOnGrown(), FX9): a harness's figure. |
-| 992 | `public int boughtCells` | Cell layings of an open cell's own ring and streets on ground bought inside it (Builder.cellsOnGrown(), FX9): a harness's figure. |
-| 995 | `public int wallTries, wallClear` | How many times the plan was made again with the way to a piece the buildings wall in kept clear of them (FW11, A PIECE BUILDINGS WALL IN; 0 for nearly every district), and the plots so kept clear in the plan returned. |
-| 997 | `public int[] wallMonth, wallChange` | The wall-way journal returned for the map to keep, including this plan's discoveries (DM2). |
-| 999 | `public int[] wallWay` | The plots kept clear in this picture, in plot order. |
-| 1002 | `public int wallField` | ...and the plots of buildings on a resource field's plots (SITE_FIELD) the ways found over all those plans crossed (LC3): what wallJoinable() refused until then, so a district with some was left with its piece apart; ... |
-| 1005 | `public int mergesUndone` | Merges in a homes cell of a varied layout made and then undone (CL2): the stubs they left could not all be taken up, or a building near them would have lost its street within REACH. |
-| 1008 | `public int seamsSurfaced` | One-sided seams this district surfaced from its road left over (0.7.88, ONE-SIDED SEAMS). |
-| 1011 | `public int joinsOut, partedOut` | Its pieces joined to the streets of the districts before it (0.7.88, ACROSS DISTRICTS), and those no way over its ground joins. |
-| 1014 | `public boolean[] parted` | Each street plot of the frame that is not on the city's network (0.7.88, PARTED): its piece - with the parted streets of the districts before it that it touches - touches no anchor, nor is the first district's largest. |
-| 1017 | `public int builds` | The plans drawn to climb the ladder (1 to a few). |
-| 1020 | `public int mixedSlots` | The slots the first band's types are dealt round (MIXED_SLOT): one more building moves only those placed after it while they are as many (MapCheck 2). |
-| 1209 | `int g, i, kNext, opened, homes, placed, nMine, nShared` |  |
-| 1210 | `boolean exhausted` |  |
-| 1211 | `int[] mine, px, py, pw, ph, pt, fails, failsF, mergeFails, cellRank` |  |
-| 1212 | `byte[] occ` |  |
-| 1213 | `boolean[] str, art, under, blvd, reachStale, cellCut, holdsNone, cellAcross, cellSquare, cellBoulevard, cel...` |  |
-| 1214 | `byte[] role, cellKind, cellLayout` |  |
-| 1215 | `int[] cellStreets` |  |
-| 1216 | `long[] rowBits` |  |
-| 1217 | `int[][] free, freeF, near, touch, failW, failH, failFW, failFH, mergeFailW, mergeFailH` |  |
-| 1219 | `byte[] avDone` | The avenues' state (CL4): the plots decided, the counts, the cell-street junctions kept. |
-| 1221 | `boolean[] avOwn` | The plots the avenue made a street of (MF2's avOwn), kept with the rest so a plan resumed here takes up only those. |
-| 1222 | `int[] avN, avKept` |  |
-| 1223 | `int avKeptN` |  |
-| 1225 | `int[] cvKeepList` | The curves' state (CL4, slice C): the plots kept free of buildings, the curves laid, the crescents the ground refused. |
-| 1226 | `int cvKeepN, cvCurveN, cvOff` |  |
-| 1227 | `Curve[] cvCurves` |  |
-| 1228 | `final List<int[]> unplacedAt` |  |
-| 1229 | `int shoreJoins, strays, mergesRefused, mergesUndone, onFields, boughtStreets, boughtCells` |  |
-| 1274 | `static volatile boolean keepGround` | Whether a plan works its ground out again only where the records it lays and the land it adds touch (Builder.groundNear(), THE GROUND KEPT): true in play; a harness sets it false to make the plan with the whole ground... |
-| 1277 | `static volatile boolean streetsOnBought` | Whether an open cell's own ring and streets are laid on the ground the city buys inside it (Builder.cellsOnGrown(), FX9): true in play; a harness sets it false for FX6's way, the bought ground with no streets of its own. |
-| 1280 | `static volatile boolean verifyGround` | Whether each limited pass of the ground is followed by the whole ground worked out, every array it writes compared with what the pass left, the plots that differ counted in groundDiffers: false in play (a harness's ch... |
-| 1297 | `Input in` | The plan's input, its rules and hashes: set by start() for each plan (KEPT). |
-| 1298 | `boolean proto` |  |
-| 1299 | `Hashes hash` |  |
-| 1301 | `boolean busy` | Whether a plan is being made on it: a make() within a make() is given a builder of its own. |
-| 1303 | `final boolean[] owns` | The plots the plan has as ground so far: Input.owned, less what the city bought after the month the plan stands on (THE GROUND BOUGHT, FX6), which growGround() adds as the events reach its month; every read of the cit... |
-| 1305 | `final boolean[] dry` | Buildable owned ground (ET2: World.buildable() - dry, and flat or foothill): grass, forest, sand or desert off the steep slopes. |
-| 1307 | `final boolean[] unfit` | Land no street lays on and no building stands on that is not water (ET2, spec-earth2-terrain 3.2): steep and very steep ground, and ice - owned or not. |
-| 1309 | `final boolean[] blocked` | Plots no building may take: not dry, a highway, its verge (H5), track, a mine's site; and a field, until the last pass. |
-| 1311 | `final boolean[] fieldOk` | A field's plots a building may take once nothing else holds it: dry, off the highways, their verges and the track. |
-| 1313 | `final boolean[] cellField` | ...and the cells with any in their interior. |
-| 1315 | `final short[] hRun` | Bridgeable water's run (fresh or shallow, ET6) along its row and its column, at each plot of it. |
-| 1317 | `final int[][] openRows` | Each cell's interior plots no building is barred from (not `blocked`), a bit a plot by row as free[] holds them: a cell's free ground until it opens (0.7.90, ESTATE LINES). |
-| 1319 | `final int[][] fieldRows` | ...and its field plots a building may take once nothing else holds it (fieldOk), likewise (0.7.94, BITS). |
-| 1321 | `int[] order` | The cells in the order they open (spec 2.4), each ci + cj x 8. |
-| 1323 | `final int[][] bandType` | Each band's buildings in the order placed: type id, across, down. |
-| 1325 | `int mixedSlots` | The first band's slots (MIXED_SLOT). |
-| 1329 | `final byte[] occ` | Each plot: -1 no building may stand there (blocked, or a street), 0 free, 1 a building's (since 0.7.94 a byte: no reader asks which building). |
-| 1330 | `final boolean[] str` |  |
-| 1331 | `final byte[] role` |  |
-| 1332 | `final int[][] free` |  |
-| 1334 | `final int[][] freeF` | Each cell's free rows with its fields' plots free too: where a building with no other place may stand (spec 2.6). |
-| 1335 | `final boolean[] reachStale` |  |
-| 1337 | `final int[][] failW` | Shapes a cell is known to hold no box of, {across, down} pairs (a larger one holds none either), until its streets change. |
-| 1338 | `final int[] fails` |  |
-| 1340 | `final int[][] failFW` | ...and those it holds none of on its fields too. |
-| 1341 | `final int[] failsF` |  |
-| 1343 | `final int[][] mergeFailW` | ...and shapes no group of its blocks merges for: for good (a building in a group stays, the ground does not dry). |
-| 1344 | `final int[] mergeFails` |  |
-| 1345 | `final int[] changed` |  |
-| 1346 | `int nChanged` |  |
-| 1348 | `final boolean[] stub` | A dead end's stub, while the cut's join looks for its neighbour. |
-| 1350 | `final boolean[] cellCut` | Whether each cell's layout was laid whole, or the ground cut it (a plot refused): only a cut cell's merge can part the network. |
-| 1351 | `boolean refused` |  |
-| 1353 | `final int[] markA` | Marks for walks, by stamp, so none needs clearing; and a queue. |
-| 1354 | `int stamp` |  |
-| 1357 | `final long[] rowBits` |  |
-| 1359 | `final int[] runF` | tryPlace()'s free runs, worked out a row at a time as asked. |
-| 1360 | `int tryStamp` |  |
-| 1372 | `int[] shapeSlot, scanFrom, scanNFrom, scanEpochAt` | SCAN (0.7.89): for each cell, with its fields or not, and each shape the bands place (shapeSlot, nShapes), the first row tryPlace() need look from for a box touching a street - the row it found one at, past the last r... |
-| 1373 | `int nShapes` |  |
-| 1374 | `final int[] scanEpoch` |  |
-| 1375 | `int scanClock` |  |
-| 1383 | `int[] shapeW, shapeH` | Each shape's across and down, by shapeSlot. |
-| 1391 | `boolean[] holdsNone` | The fails memo (failW, failFW) as a table (0.7.89): whether cell c, with its fields or not, is known to hold no box of each shape - a shape no smaller than one it held none of, either way round, as the lists say - rea... |
-| 1409 | `int[] skipFrom` | SKIP (0.7.94): for each shape (shapeSlot), how far into its band's cells the table (holdsNone, without fields) says no cell holds a box of it - every cell before is known to hold none - so a building looks from there. |
-| 1411 | `final int[][][] anyT` | Each cell's touch and reach rows over a box's width, by width, kept until its reach moves: worked out again when its epoch (anyAt) is not the cell's (anyEpoch; 0.7.89, the arrays kept from build to build). |
-| 1412 | `final int[][] anyAt` |  |
-| 1413 | `final int[] anyEpoch` |  |
-| 1415 | `final long[][] reachRows` | reachCell()'s rows: the streets, two to step between and those one plot from one (0.7.89: kept, not made at each call). |
-| 1417 | `int[] shoreFrom, shoreQueue` | shore()'s walk over a cell's ring box: where each plot was reached from, and the queue (kept, as reachRows). |
-| 1505 | `final int[] cellRoom` | Each cell's room - its interior plots that are dry, off the highways and the works' ground and not a mine's site - and the foothill among them, and which plots count: what growthOrder() ranks the cells by (worked out ... |
-| 1506 | `final boolean[] roomy` |  |
-| 1555 | `int[] touchAt` | The plots the records of this pass named, their kind of fixed ground before the pass (touchWas) and the marks to find them by (touched); cleared by groundKept(). |
-| 1556 | `byte[] touchWas` |  |
-| 1557 | `int nTouch` |  |
-| 1558 | `final boolean[] touched` |  |
-| 1561 | `int[] dirty` | The plots of the pass to be worked again (dirty, isDirty), and the occStart and fieldOk each had before it, in the same order: what runsLaid() compares the ground with. |
-| 1562 | `byte[] dirtyOcc` |  |
-| 1563 | `boolean[] dirtyField` |  |
-| 1564 | `int nDirty` |  |
-| 1565 | `final boolean[] isDirty` |  |
-| 1568 | `boolean wholePass` | Whether the last pass was worked whole (so occWas and fieldWas hold what runsLaid() compares the ground with) rather than limited (dirty does). |
-| 1571 | `int[] hwMoved` | The rows of the highways' bits the pass moved on, and the rows of vergeRows that follow; the cells with a dirty plot in the interior. |
-| 1572 | `int nHwMoved` |  |
-| 1573 | `final boolean[] verged` |  |
-| 1847 | `boolean logged, goesOn` | Whether the plan reads a log, and whether it goes on past its first batch: events to place, or road come after it. |
-| 1849 | `boolean ev` | Whether the events are being placed (the far side, the homes' rule and the ladder decided once apply). |
-| 1851 | `int batchBuildings` | The buildings of the first batch. |
-| 1853 | `int[] bcount` | The first batch's counts by type, the carry that joins it included: what bands() sorts - the input's own counts for a plan with neither a log nor a carry. |
-| 1855 | `boolean[] evType` | The types the events place (for SCAN's shapes, which bands() makes). |
-| 1857 | `double rG, rP, rH` | The road the surface spends, by kind: the input's, or the first batch's while the ladder climbs on it. |
-| 1859 | `int[] fpW, fpH` | Each type's footprint, bands()'. |
-| 1861 | `int nInst` | The instances, by id in the order made: type, month, band and index in it, and where the placed box is in the placed arrays (-1 unplaced, -2 gone). |
-| 1862 | `int[] iType, iMonth, iG, iI, iAt` |  |
-| 1864 | `boolean[] iCarried, iBatch, iGone, iExcl` | ...whether carried here, in the first batch, gone within it, or the plan's newest beyond its counts (never placed). |
-| 1866 | `int nEv` | The events: the instance, whether it leaves (else it comes), the road at its month and the month, in all. |
-| 1867 | `int[] evInst, evMonth` |  |
-| 1868 | `boolean[] evGone` |  |
-| 1869 | `double[] evRoad` |  |
-| 1874 | `int[] ofl, iOver` | The overflow log being built (OVERFLOW LOG below): its {month, code} pairs, nOfl of them, or null when it is made from the first batch alone; and each instance's pair in it (-1 for none), while the events are placed. |
-| 1875 | `int nOfl` |  |
-| 1877 | `int[][] live` | Each type's live instances of its own, the newest last; and readLog()'s tally of a month's arrivals by type and the types it has. |
-| 1878 | `int[] nLive, want, dealTypes` |  |
-| 1880 | `int[][] bandInst` | Each band's index to its instance. |
-| 1882 | `int[][] batchAt` | Where each first-batch building went in the placed arrays, while place() makes it for the events (-1 for none). |
-| 1884 | `final int[][] keepMine` | Each band's cells as place() left them (bMine, bNMine, bNShared after its last building). |
-| 1885 | `final int[] keepN` |  |
-| 1887 | `int bFar` | The order's last cell the far pointer has not taken: the near pointer (bNext) stops where they meet. |
-| 1889 | `double evRoadNow` | The road at the event being placed, all kinds. |
-| 1891 | `final boolean[] mineAt` | Each cell that holds a mine or a site, or a site-bound building the plan placed (homesCell()). |
-| 1893 | `boolean[] placedGone` | Which placed boxes have left (the events); null when none can. |
-| 2136 | `double batchG, batchP, batchH` | The first batch's road, when the plan goes on past it. |
-| 2300 | `int[][] mineB` | The band's cells the events place in, apart from the first batch's as it left them (buildArrivals()): each band's, the outer kinds' with industry's before them (SHARED ESTATES). |
-| 2301 | `int[] nB, combined` |  |
-| 2472 | `int dueMonth` | The smallest Input.boughtAt among the owned plots the plan does not have as ground yet (Integer.MAX_VALUE for none): growGround() has nothing to add for a month no later than it. |
-| 2474 | `int[] grown` | growGround()'s plots added, kept between calls. |
-| 2644 | `int[] rsvAt` | The plots the records just laid made a reserve's (rsvNote()), and how many: what streetsOffReserve() looks at. |
-| 2645 | `int nRsv` |  |
-| 2673 | `int[] grownMark` | The plots of the call (grown[0..n)) stamped grownStamp, and cellsOnGrown()'s laying under way: while onBought, lay() lays only the plots just bought. |
-| 2674 | `int grownStamp` |  |
-| 2675 | `boolean onBought` |  |
-| 2677 | `int[] laidMark` | The plots cellsOnGrown() laid, stamped laidStamp, and whether shore() joins only those dead ends. |
-| 2678 | `int laidStamp` |  |
-| 2679 | `boolean shoreLaid` |  |
-| 2841 | `final byte[] fx` | The runs' ground the plan has so far (THE RUNS DATED): every read of a highway, a railway, a yard or a reserve in a build is of this, never of Input.fixed; with no records it is Input.fixed from the start. |
-| 2843 | `int fxNext, fxN` | The next record of Input.fixedLog not yet laid on fx, and how many the plan reads (0 for none: no log, no records, or a prototype's). |
-| 2845 | `final byte[] occWas` | occStart and fieldOk as they stood before the records growGround() laid: the plots whose room they changed are found by comparing the ground worked out again with them. |
-| 2846 | `final boolean[] fieldWas` |  |
-| 2916 | `boolean[] runHit` | The plots a month's records put a run on (a highway's, a track's, a yard's) or, for a highway, beside it - its verge (H5): marked while that month's boxes are found; runHitAt lists them to clear. |
-| 2917 | `int[] runHitAt` |  |
-| 2918 | `int nRunHit` |  |
-| 2920 | `int movePrefer` | The cell the building being moved off a run stood in, tried first for its new place; -1 for none (placeOne()). |
-| 2922 | `int movedOff, movedOver` | The boxes the plan moved off a run and placed again, and those among them with no place, gone on to the next district (DistrictPlan.movedOff, movedOver). |
-| 3386 | `DistrictPlan bOut` | A BUILD'S RUNNING STATE (0.7.94, batch RD7): what build() kept in its locals until 0.7.93 - the plan so far, the ladder's step, the buildings placed, the next cell in the order, the cells opened and homes cells, wheth... |
-| 3387 | `int bSquares, bBoulevards, bLimit, bPlaced, bNext, bOpened, bHomes, bNMine, bNShared` |  |
-| 3388 | `boolean bExhausted, bShare, bByHomes` |  |
-| 3389 | `int[] bMine, bTurnAt` |  |
-| 3390 | `Turn[] bTurns` |  |
-| 3391 | `List<int[]> bUnplaced` |  |
-| 3548 | `int campusGroup` | campusStands()' reading: the group read, how far, whether one stood, and the undoing it was read at. |
-| 3549 | `boolean campusAny` |  |
-| 3564 | `final boolean[] campusCells` | The cells the refinery's units stand in (campusStands()), kept from call to call. |
-| 3702 | `Turn[] turnPool` | The builder's turns (KEPT): the next one free, made the first time. |
-| 3703 | `int turnsUsed` |  |
-| 3892 | `boolean avOn` | Whether this plan lays avenues: the game's rules (not asPrototype) and not Input.latticeOnly. |
-| 3894 | `int avOx, avOy` | The origin, in the frame's plots (it may lie outside the frame). |
-| 3896 | `final byte[] avMark` | A staircase plot's mark in CityRuns' bits (M_DIAG, its arm at M_DIAG_SHIFT, M_CORNER on a corner), the first arm's where two share a plot; 0 for none - a pure function of the origin. |
-| 3898 | `final boolean[] avOuter` | The outer plots of the arms in the frame (no building stands on one): by plot, and listed. |
-| 3899 | `int[] avOuterList` |  |
-| 3900 | `int nOuter` |  |
-| 3902 | `int[] avList` | The staircase plots in the frame, listed (the plan's `avenue` is filled from them). |
-| 3903 | `int nAvList` |  |
-| 3905 | `final boolean[] avWet` | The plots where an avenue would run over fresh water too wide for a bridge (AVENUE_BRIDGE_STEPS): a run of more than twice that many staircase plots. |
-| 3907 | `final byte[] avDone` | One build's state: each staircase plot decided (0 not yet, 1 laid, 2 not laid), the counts (AV_PLOTS...), and the cell-street junctions kept so far as arm << 28 \| step. |
-| 3909 | `final byte[] avFx` | ...and the kind of fixed ground each laid plot was laid on (THE RUNS DATED: the ground may be another by the time it is taken up, and the counts of what lies beneath and across are given back as they were taken). |
-| 3911 | `final boolean[] avOwn` | The plots an avenue made a street of, where none was (MF2): a plot it ran along a street of a cell's is that street's still when the avenue is taken up there. |
-| 3912 | `final int[] avN` |  |
-| 3913 | `int[] avKept` |  |
-| 3914 | `int avKeptN` |  |
-| 3916 | `final int[] avBuf` | avPlots()'s results (the plot, its step, whether a corner) and avFloor()'s steps, kept from call to call. |
-| 3917 | `final boolean[] avBufC` |  |
-| 3918 | `final int[] avRun` |  |
-| 4118 | `int[] avTakenAt` | The cell-street plots avFloor() took up last, and how many: what avOnGrown() gives back to the ground. |
-| 4119 | `int nAvTaken` |  |
-| 4182 | `final int[] avNow` | The avenue plots made streets since avBegin() (avNow[p] == avNowStamp, listed), and avAlone()'s walks: what avAlone() looks at. |
-| 4183 | `int[] avNowList` |  |
-| 4184 | `int nAvNow, avNowStamp, avWalkStamp` |  |
-| 4340 | `boolean cvOn` | Whether this plan lays curves: the avenues' switch - the game's rules and not Input.latticeOnly. |
-| 4342 | `final boolean[] cvKeep` | The plots kept free of buildings by a curve's band, by plot, and listed in the order kept (a new build clears only those). |
-| 4343 | `int[] cvKeepList` |  |
-| 4344 | `int cvKeepN` |  |
-| 4346 | `Curve[] cvCurves` | The curves laid so far, in the order their cells opened, and the crescents the ground would not lay whole. |
-| 4347 | `int cvCurveN, cvOff` |  |
-| 4349 | `final List<int[]> cvPending` | shore()'s joins of the cell being opened, each its plots in order (the dead end's first, the street it meets last), until the cell's pruning is done. |
-| 4351 | `int[] shoreTmp` | shore()'s walk back along a join (kept, as stubAt). |
-| 4750 | `final java.util.HashMap<LinesKey, Integer> cutLines` | ...and each answer for a cell that is not full, by everything it is worked out from - the cell, the building's shape, its direction and boulevard, its free ground and the streets in its window (LinesKey) - for the lad... |
-| 4754 | `final long[] v` |  |
-| 4755 | `final int hash` |  |
-| 4762 | `final int[] linesFree` | estateLines()'s working rows: the cell's free ground, the window's streets, its touch and reach. |
-| 4763 | `final long[] simS` |  |
-| 4859 | `final byte[] layCode` | Each plot's lay code (LAY CODES). |
-| 5171 | `int[] stubAt` | shore()'s stub, its plots (stubAt, nStub), and its walk's stamp a plot (shoreSeen against shoreStamp). |
-| 5172 | `int nStub, shoreStamp` |  |
-| 5346 | `final long[] openBits` | start()'s rows of the plots no building is barred from and of the fields, and each column's fresh run's first row. |
-| 5347 | `final int[] runFrom` |  |
-| 5353 | `final long[] vergeRows` | The verges' bits a row (VERGES), and the highways' rows spread along (vergeWideRow()). |
-| 5356 | `int[] fixedList` | The plots of the city's runs (Input.fixed not 0), in plot order: their lay codes made apart (fixedCodes()). |
-| 5357 | `int nFixed` |  |
-| 5378 | `final byte[] occStart` | occ as a build begins: -1 where blocked, else 0 (start()). |
-| 5380 | `final long[] hwRows` | The highways' plots, a bit each by row as rowBits (start()), and in plot order (hwList, nHighway); the parted streets of the districts before it likewise (paRows); whether a plot of the edge is an anchor. |
-| 5381 | `int[] hwList` |  |
-| 5382 | `int nHighway` |  |
-| 5383 | `boolean anyAnchor` |  |
-| 5386 | `final int[] laidRows` | freshCell()'s rows of the plots laid. |
-| 5714 | `int[] undoAt` | The plots a tentative merge has taken up, in the order taken (the group's streets, row by row, then its stubs'), and each as it was (stateOf()), to be put back. |
-| 5715 | `int nUndo` |  |
-| 5754 | `int[] cellBuilding` | Each cell's placed buildings as a list - cellBuilding[c] the newest, nextBuilding[b] the one placed before b in its cell, -1 for the end - built on as buildings are placed and read like campusStands()' cells: from the... |
-| 5755 | `int buildingsSeen, buildingsGen` |  |
-| 5780 | `int[] mergeStub` | The dead ends a merge would leave (stubsFree()) and take up, by plot, in the order taken: the first nMergeStub. |
-| 5781 | `int nMergeStub` |  |
-| 5974 | `int[] splitEdge` | splits()'s streets about the box. |
-| 6030 | `int[] placedX, placedY, placedW, placedH, placedT` | A build's buildings placed so far, each one's box and type: kept from build to build (0.7.89), the plan's own copies made of them. |
-| 6033 | `final int[] targetMark` | reachFrom()'s targets: each plot's mark (its call's stamp) and how many times it is a target. |
-| 6034 | `int targetStamp` |  |
-| 6037 | `final int[] scratchLab` | The join's, the parting's and the surface's working arrays, a plot each, kept from build to build (0.7.90): each written before it is read (pieces() and markParted() set a label of -1 on each plot they label - the onl... |
-| 6038 | `final boolean[] scratchParted` |  |
-| 6074 | `int[] accDist, accPrev, accSeen` | access()'s search: each plot's distance from the work and the plot it was reached from, stamped (accSeen) so none is cleared; the queue by distance modulo 4 (an edge costs 1 to ACCESS_NEW, so four buckets are a Dial's... |
-| 6075 | `int accStamp` |  |
-| 6076 | `int[][] accQ` |  |
-| 6077 | `int[] accN` |  |
-| 6244 | `int[] sdDist, sdPrev, sdSeen` | sidings()'s search: the cost to each state (a plot and the heading it was entered going, plot x 4 + heading) and the state it was reached from, stamped (sdSeen) so none is cleared; the queue by cost modulo SD_BUCKETS ... |
-| 6245 | `int sdStamp` |  |
-| 6246 | `int[][] sdQ` |  |
-| 6247 | `int[] sdN` |  |
-| 6250 | `byte[] sdLaid` | The siding being laid, a byte a plot as DistrictPlan.siding. |
-| 6252 | `int[] sdWay` | The way being laid, plot by plot from the railway's end to the shed (sidings()'s scratch). |
-| 6254 | `int sdLast, sdState, sdRail` | A search's end: the last plot of the way before the railway, the state it was entered in, and the railway plot it meets. |
-| 6518 | `final int[] ordered` | streetsInOrder()'s plots and their count; and each piece's first plot (pieces()) and its place among them. |
-| 6519 | `int nOrdered` |  |
-| 6520 | `int[] pieceRep` |  |
-| 6523 | `final int[] joinSeen` | The join's walks' marks, by stamp (0.7.94: no clearing of the way back before each): a plot reached when joinSeen holds the walk's. |
-| 6524 | `int joinStamp` |  |
-| 6573 | `int joinTail` | The join's walk's queue (queue[]) end: its steps add to it. |
-| 6755 | `int[] wallRank` | The arrival rank of the building on each plot (rankArrivals(): 0 for the first batch's, the box's place in the order placed, from 1, after it), Integer.MAX_VALUE for a plot with none. |
-| 6758 | `int wallBatchBoxes` | The first batch's boxes still standing, the first of the placed arrays: what ranks 0; every box when the plan has no events (set by the events' pass, start() resets it). |
-| 6761 | `final int[] cellOpenBox` | Each cell's boxes placed before it was opened in the events (-1: opened in the first batch's build, or never), and the same as arrival ranks once the boxes are placed in a row (cellBorn: 0 for a cell of the first batch). |
-| 6848 | `int[] wallPend` | The ways found by the plan being made (complete() begins them afresh), and those kept clear of buildings in this make() (keepClear): ground() bars them. |
-| 6849 | `int nWallPend` |  |
-| 6850 | `final boolean[] keepClear` |  |
-| 6853 | `int wallField` | The plots of buildings on a field's plots the ways of this make() crossed (wallRoute()), over all its plans. |
-| 6858 | `int[] wMonth, wRec` | The input's journal copied once for this make. |
-| 6859 | `int wN, wNext` |  |
-| 6988 | `int partedOutCount` |  |
-| 6991 | `int[] partedAt` | The join's parted pieces' first plots (scratchParted), listed so they are cleared one by one rather than the frame (0.7.94). |
-| 6992 | `int nPartedAt` |  |
-| 7036 | `int[] partSize` | markParted()'s pieces: each one's plots with a street code, and whether it touches an anchor. |
-| 7037 | `boolean[] partOn` |  |
-| 7169 | `int sN, sOpen, sAll` | surface()'s counts: the streets it surfaces, its one-sided seams, every street. |
+| 619 | `public int[] siteLogMonth, siteLog` | The resource plots' source transitions, packed as plot, before-class and after-class. |
+| 621 | `public final byte[] fixed` | The city's highway and railway plots: FIXED_HIGHWAY, FIXED_RAIL or a yard's FIXED_YARD, and (batch FR7) an interchange's reserve FIXED_RESERVE, laid before the plan (the city's runs since 0.7.89, CityRuns; CityMap's n... |
+| 623 | `public final byte[] site` | The resource sites: SITE_FIELD, or SITE_MINED where a mine or well stands. |
+| 625 | `public final List<int[]> mines` | The mines and wells of the district standing on their sites, each {x0, y0, x1, y1} inclusive in the frame's plots: counted apart from the reach (PlanCheck), as MapCheck 8 counted them. |
+| 627 | `public final List<int[]> works` | The works that need an access road (batch FR7, D17), each box {x, y, w, h} in the frame's plots: the railway's yards and the shore's sea terminals (the map's; they stand on FIXED_YARD ground). |
+| 629 | `public boolean[] ramp` | A highway's plot of the frame that carries a ramp (CityRuns.M_RAMP), by plot; null for none: where a street beneath it makes a ramp an access road can end at. |
+| 631 | `public int sidings` | How many sidings this district's share of the city's Rail Spurs lays (batch FR7 slice 5, D14; CityMap.sidingsOf()): the plan lays one to each of this many of the largest bulk works it placed, to the runs' railway in i... |
+| 633 | `public int sidingPlots` | ...and the plots one may have: a Rail Spur's own track (CityMap: the model's spur track over its spurs, 72), as the runs' sidings are paid for out of the spurs' plots - a works whose siding would be longer is passed o... |
+| 635 | `public BuildingVisual.Type[] types` | The types, by id (BuildingVisual.table()). |
+| 637 | `public int[] counts` | The buildings to place, by type id: every drawn type the district holds but its mines and wells on sites (and, with a log, the plan's own: the log is squared with them, THE ORDER OF ARRIVAL). |
+| 639 | `public double gravel, paved, highway` | The road plots its streets are made of, by kind: the model's Gravel and Paved Roads, and Elevated Highway plots to lay as a street's surface (none from the map since 0.7.89: the city's runs lay them, and count what th... |
+| 641 | `public final boolean[] surfaces` | Whether this district surfaces its seams: north, east, south and west, then its corners north-west, north-east, south-east and south-west (SEAMS). |
+| 643 | `public final boolean[] seamOpen` | A seam's plot this district does not surface, which the district that does leaves without a street (0.7.88, ONE-SIDED SEAMS): set by the map from the plans before this one in its order; false for all, every seam is la... |
+| 645 | `public final boolean[] anchor` | A plot of the frame's edge a district before this one in the map's order lays a street on (0.7.88, ACROSS DISTRICTS), a street on the city's network: what this district's streets join to; none for the first district, ... |
+| 647 | `public final boolean[] partedAnchor` | ...and one whose street is not on the network yet - the ground parted its piece from it in that district's frame, and no district before this one laying the plot has it on (0.7.88, PARTED): joined here, where this dis... |
+| 649 | `public boolean root` | Whether this is the first district in the map's order: its largest piece is the network's (0.7.88). |
+| 651 | `public boolean asPrototype` | The prototype's own rules only - no water rule, no streets along a cut, every seam surfaced: PlanCheck's replay of proto2.py. |
+| 653 | `public boolean bandsApart` | The estate bands kept apart, as 0.7.87 to 0.7.91 drew them - no outer kind in industry's cells (SHARED ESTATES): PlanCheck's comparison. |
+| 655 | `public boolean combOnly` | Every homes cell laid as 0.8.11 laid them all, the comb or the whole square (CL2, a homes cell's layout): PlanCheck's comparison. |
+| 657 | `public boolean moveFirstFit` | A building moved off a run placed as any arrival, at the first place in its band's cells, and not tried first in the cell it stood in (MF1, BUILDINGS MOVE OFF A RUN): PlanCheck's comparison. |
+| 659 | `public boolean latticeOnly` | No avenue, no crescent and no curve along a cut (no building kept off the plots their bands reach): every street on the lattice as 0.8.18 laid it (CL4); asPrototype implies it. |
+| 661 | `public Hashes hashes` | The hashes, or null for the world's. |
+| 667 | `public int[] logMonth, logType, logChange` | THE LOG (batch CL3): the district's count changes in the order they came, a record each - its month, the type id and the change (+ come, - gone) - months never falling, every type the district counts (its roads among ... |
+| 669 | `public int firstBatch` | ...how many of its first records are one batch, placed in today's order (the bands, largest first, the ladder): a canonical map's deal, or a sidecar's from before FORMAT 9 - so its first plan is today's, box for box. |
+| 678 | `public int[] carry` | What the district before it in the map's order could not place (R7), as {month, code} pairs in the order they came - the month each came in, so the spill keeps its time; null for none. |
+| 728 | `final int bulge, a` |  |
+| 729 | `final double cu, cv` |  |
+| 730 | `final int[] stairU, stairV, keepU, keepV` |  |
+| 820 | `public final byte[] cellKind` | Each cell's layout (CLOSED, HOMES or ESTATE), by ci + cj x 8. |
+| 822 | `public final boolean[] cellAcross` | ...whether its long blocks run east-west (else north-south). |
+| 824 | `public final int[] cellRank` | ...its rank in the order opened, or -1. |
+| 826 | `public final boolean[] cellSquare` | ...whether the ladder squared it (a homes cell's + grid at 8). |
+| 828 | `public final byte[] cellLayout` | ...a homes cell's street layout (CL2: LAYOUT_TODAY, LAYOUT_DROPPED or LAYOUT_BRICK); LAYOUT_TODAY for every other cell. |
+| 830 | `public final boolean[] cellBoulevard` | ...whether its arterials are a boulevard. |
+| 832 | `public final boolean[] cellMerged` | ...whether blocks were merged in it for a building wider than one (homes), or its spine closed for one wider than a strip (an estate). |
+| 834 | `public final int[] cellStreets` | ...an estate cell's streets (0.7.90, ESTATE LINES): bit o for a street o plots into its interior, running north-south where cellAcross, else east-west; 0 for a homes cell, or an estate cell whose spine was closed. |
+| 837 | `public short[] street` | Each plot's street: its kind, width, role and flags (KIND_MASK, WIDTH_SHIFT, ROLE_SHIFT, BRIDGE, CROSSING); 0 for none. |
+| 840 | `public int buildings` | The buildings placed: each one's box {x, y, w, h} in the frame's plots and its type id. |
+| 841 | `public int[] bx` |  |
+| 844 | `public int[] overflow` | What the plan could not place, by type id (R7: the map carries it to the next district with room since 0.7.88, and packs what none holds at the city's edge). |
+| 847 | `public int movedOff, movedOver` | Buildings a run laid after them lay across or beside moved off it and were placed again in the district, and those of them that found no place and went on to the next district (MF1, BUILDINGS MOVE OFF A RUN). |
+| 861 | `public int[] overflowLog` | ...and what leaves this district for the next as {month, code} pairs (batch CL3): what the map carries on (Input.carry); null for none. |
+| 869 | `public final List<int[]> accessRoads` | The access roads laid (batch FR7, D17), one for each work that had none: its box {x, y, w, h}, the gate (the road's first plot, beside the box), the road's end plot, and what it ends on - ACCESS_RAMP (a ramp's plot, a... |
+| 873 | `public boolean[] accessAt` | The plots the access roads run over, by plot (a boulevard's among them, which keeps its own role); null when none was laid. |
+| 882 | `public final List<int[]> sidings` | The sidings laid (batch FR7 slice 5, D14), one for each works that was given one: its box {x, y, w, h}, the siding's first plot (beside the box, where its shed stands), its last (beside the railway), the railway plot ... |
+| 891 | `public final List<int[]> sidingWays` | Each siding's way as its corners (MF1, 2026-10-28), in the order of `sidings`: {the railway plot it meets, then the frame plots (y x FRAME + x) of the siding's first plot beside the railway, of each plot where its hea... |
+| 894 | `public byte[] siding` | The plots the sidings run over, by plot: SIDING_PLOT, SIDING_END at each shed's; null when none was laid. |
+| 897 | `public int sidingsAsked, sidingsNoWorks, sidingsNoRail, sidingsAtDoor, sidingsNoGate, sidingsNoWay` | The sidings the plan was asked for and the bulk works that got none, by why (batch FR7 slice 5): the plan placed no bulk works to serve, there is no railway plot in its frame, the works has the railway at its door, no... |
+| 905 | `public byte[] avenue` | The avenues the plan laid (batch CL4), by plot over the frame (AREA): each avenue plot's mark in CityRuns' bits - M_DIAG, its arm's CityRuns.diagCode() at M_DIAG_SHIFT, M_CORNER on a corner - 0 elsewhere; null when it... |
+| 908 | `public int avenuePlots, avenueUnder, avenueRail, avenueBridged, avenueBroken, avenueWater, avenueStops, ave...` | The avenues' counts (CL4): plots laid; of them beneath a highway, crossing the railway, bridging fresh water; plots not laid at a yard, an interchange's reserve or a mine's site; plots not laid at fresh water too wide... |
+| 920 | `public final byte kind` |  |
+| 921 | `public final double[] geom` |  |
+| 922 | `public final double radius` |  |
+| 924 | `private final int[] path, band` | A shore curve's plots in order, the dead end's last plot first and the plot it meets last, and the plots its band reaches that are not its own; null for a crescent's. |
+| 926 | `private final int x0, y0` | A crescent's cell: its interior's north-west plot in the frame, whether its long streets run east-west, and its bulge. |
+| 927 | `private final boolean across` |  |
+| 928 | `private final byte bulge` |  |
+| 970 | `public List<Curve> curves` | The plan's curves (CL4, slice C): a crescent's arc for each homes cell laid as one whose arc is still whole, and a street along a cut for each dead end the cut's join (shore()) still joins - in the order the cells ope... |
+| 973 | `public int crescents, crescentsOff, shoreCurves` | The curves' counts (CL4): homes cells laid as a crescent (LAYOUT_CRESCENT); cells the hash and the distance made a crescent whose arc the ground could not lay whole, which keep the comb; streets along a cut drawn as a... |
+| 976 | `public double surplus` | The surface left over when every step of the ladder is taken: road the plan has no street for (0 where the ladder holds it). |
+| 979 | `public final double[] leftover` | ...by kind, [0, gravel, paved, highway] (BuildingVisual's): each kind's road less its surface, so surface and leftover make the input's road kind by kind (0.7.88; MapCheck sums it). |
+| 982 | `public double budget` | The road its streets are made of: the input's, by kind, and in all. |
+| 985 | `public int squares, boulevards, cellsOpen, homesCells` | How many cells the ladder squared and made boulevards of, as it asked (the prototype's figures; in a plan that goes on past its first batch, the first batch's as it asked and every cell opened after it by the road of ... |
+| 988 | `public int joins, shoreJoins, strays, mergesRefused, onFields` | Pieces the join joined; dead ends joined along a cut; street plots taken up as strays; merges refused for splitting the network; buildings placed on a field. |
+| 991 | `public int boughtStreets` | Street plots laid on ground the city bought inside a cell already open, after the stray pieces were taken up (Builder.cellsOnGrown(), FX9): a harness's figure. |
+| 994 | `public int boughtCells` | Cell layings of an open cell's own ring and streets on ground bought inside it (Builder.cellsOnGrown(), FX9): a harness's figure. |
+| 997 | `public int wallTries, wallClear` | How many times the plan was made again with the way to a piece the buildings wall in kept clear of them (FW11, A PIECE BUILDINGS WALL IN; 0 for nearly every district), and the plots so kept clear in the plan returned. |
+| 999 | `public int[] wallMonth, wallChange` | The wall-way journal returned for the map to keep, including this plan's discoveries (DM2). |
+| 1001 | `public int[] wallWay` | The plots kept clear in this picture, in plot order. |
+| 1004 | `public int wallField` | ...and the plots of buildings on a resource field's plots (SITE_FIELD) the ways found over all those plans crossed (LC3): what wallJoinable() refused until then, so a district with some was left with its piece apart; ... |
+| 1007 | `public int mergesUndone` | Merges in a homes cell of a varied layout made and then undone (CL2): the stubs they left could not all be taken up, or a building near them would have lost its street within REACH. |
+| 1010 | `public int seamsSurfaced` | One-sided seams this district surfaced from its road left over (0.7.88, ONE-SIDED SEAMS). |
+| 1013 | `public int joinsOut, partedOut` | Its pieces joined to the streets of the districts before it (0.7.88, ACROSS DISTRICTS), and those no way over its ground joins. |
+| 1016 | `public boolean[] parted` | Each street plot of the frame that is not on the city's network (0.7.88, PARTED): its piece - with the parted streets of the districts before it that it touches - touches no anchor, nor is the first district's largest. |
+| 1019 | `public int builds` | The plans drawn to climb the ladder (1 to a few). |
+| 1022 | `public int mixedSlots` | The slots the first band's types are dealt round (MIXED_SLOT): one more building moves only those placed after it while they are as many (MapCheck 2). |
+| 1214 | `int g, i, kNext, opened, homes, placed, nMine, nShared` |  |
+| 1215 | `boolean exhausted` |  |
+| 1216 | `int[] mine, px, py, pw, ph, pt, fails, failsF, mergeFails, cellRank` |  |
+| 1217 | `byte[] occ` |  |
+| 1218 | `boolean[] str, art, under, blvd, reachStale, cellCut, holdsNone, cellAcross, cellSquare, cellBoulevard, cel...` |  |
+| 1219 | `byte[] role, cellKind, cellLayout` |  |
+| 1220 | `int[] cellStreets` |  |
+| 1221 | `long[] rowBits` |  |
+| 1222 | `int[][] free, freeF, near, touch, failW, failH, failFW, failFH, mergeFailW, mergeFailH` |  |
+| 1224 | `byte[] avDone` | The avenues' state (CL4): the plots decided, the counts, the cell-street junctions kept. |
+| 1226 | `boolean[] avOwn` | The plots the avenue made a street of (MF2's avOwn), kept with the rest so a plan resumed here takes up only those. |
+| 1227 | `int[] avN, avKept` |  |
+| 1228 | `int avKeptN` |  |
+| 1230 | `int[] cvKeepList` | The curves' state (CL4, slice C): the plots kept free of buildings, the curves laid, the crescents the ground refused. |
+| 1231 | `int cvKeepN, cvCurveN, cvOff` |  |
+| 1232 | `Curve[] cvCurves` |  |
+| 1233 | `final List<int[]> unplacedAt` |  |
+| 1234 | `int shoreJoins, strays, mergesRefused, mergesUndone, onFields, boughtStreets, boughtCells` |  |
+| 1279 | `static volatile boolean keepGround` | Whether a plan works its ground out again only where the records it lays and the land it adds touch (Builder.groundNear(), THE GROUND KEPT): true in play; a harness sets it false to make the plan with the whole ground... |
+| 1282 | `static volatile boolean streetsOnBought` | Whether an open cell's own ring and streets are laid on the ground the city buys inside it (Builder.cellsOnGrown(), FX9): true in play; a harness sets it false for FX6's way, the bought ground with no streets of its own. |
+| 1285 | `static volatile boolean verifyGround` | Whether each limited pass of the ground is followed by the whole ground worked out, every array it writes compared with what the pass left, the plots that differ counted in groundDiffers: false in play (a harness's ch... |
+| 1302 | `Input in` | The plan's input, its rules and hashes: set by start() for each plan (KEPT). |
+| 1303 | `boolean proto` |  |
+| 1304 | `Hashes hash` |  |
+| 1306 | `boolean busy` | Whether a plan is being made on it: a make() within a make() is given a builder of its own. |
+| 1308 | `final boolean[] owns` | The plots the plan has as ground so far: Input.owned, less what the city bought after the month the plan stands on (THE GROUND BOUGHT, FX6), which growGround() adds as the events reach its month; every read of the cit... |
+| 1310 | `final boolean[] dry` | Buildable owned ground (ET2: World.buildable() - dry, and flat or foothill): grass, forest, sand or desert off the steep slopes. |
+| 1312 | `final boolean[] unfit` | Land no street lays on and no building stands on that is not water (ET2, spec-earth2-terrain 3.2): steep and very steep ground, and ice - owned or not. |
+| 1314 | `final boolean[] blocked` | Plots no building may take: not dry, a highway, its verge (H5), track, a mine's site; and a field, until the last pass. |
+| 1316 | `final boolean[] fieldOk` | A field's plots a building may take once nothing else holds it: dry, off the highways, their verges and the track. |
+| 1318 | `final boolean[] cellField` | ...and the cells with any in their interior. |
+| 1320 | `final short[] hRun` | Bridgeable water's run (fresh or shallow, ET6) along its row and its column, at each plot of it. |
+| 1322 | `final int[][] openRows` | Each cell's interior plots no building is barred from (not `blocked`), a bit a plot by row as free[] holds them: a cell's free ground until it opens (0.7.90, ESTATE LINES). |
+| 1324 | `final int[][] fieldRows` | ...and its field plots a building may take once nothing else holds it (fieldOk), likewise (0.7.94, BITS). |
+| 1326 | `int[] order` | The cells in the order they open (spec 2.4), each ci + cj x 8. |
+| 1328 | `final int[][] bandType` | Each band's buildings in the order placed: type id, across, down. |
+| 1330 | `int mixedSlots` | The first band's slots (MIXED_SLOT). |
+| 1334 | `final byte[] occ` | Each plot: -1 no building may stand there (blocked, or a street), 0 free, 1 a building's (since 0.7.94 a byte: no reader asks which building). |
+| 1335 | `final boolean[] str` |  |
+| 1336 | `final byte[] role` |  |
+| 1337 | `final int[][] free` |  |
+| 1339 | `final int[][] freeF` | Each cell's free rows with its fields' plots free too: where a building with no other place may stand (spec 2.6). |
+| 1340 | `final boolean[] reachStale` |  |
+| 1342 | `final int[][] failW` | Shapes a cell is known to hold no box of, {across, down} pairs (a larger one holds none either), until its streets change. |
+| 1343 | `final int[] fails` |  |
+| 1345 | `final int[][] failFW` | ...and those it holds none of on its fields too. |
+| 1346 | `final int[] failsF` |  |
+| 1348 | `final int[][] mergeFailW` | ...and shapes no group of its blocks merges for: for good (a building in a group stays, the ground does not dry). |
+| 1349 | `final int[] mergeFails` |  |
+| 1350 | `final int[] changed` |  |
+| 1351 | `int nChanged` |  |
+| 1353 | `final boolean[] stub` | A dead end's stub, while the cut's join looks for its neighbour. |
+| 1355 | `final boolean[] cellCut` | Whether each cell's layout was laid whole, or the ground cut it (a plot refused): only a cut cell's merge can part the network. |
+| 1356 | `boolean refused` |  |
+| 1358 | `final int[] markA` | Marks for walks, by stamp, so none needs clearing; and a queue. |
+| 1359 | `int stamp` |  |
+| 1362 | `final long[] rowBits` |  |
+| 1364 | `final int[] runF` | tryPlace()'s free runs, worked out a row at a time as asked. |
+| 1365 | `int tryStamp` |  |
+| 1377 | `int[] shapeSlot, scanFrom, scanNFrom, scanEpochAt` | SCAN (0.7.89): for each cell, with its fields or not, and each shape the bands place (shapeSlot, nShapes), the first row tryPlace() need look from for a box touching a street - the row it found one at, past the last r... |
+| 1378 | `int nShapes` |  |
+| 1379 | `final int[] scanEpoch` |  |
+| 1380 | `int scanClock` |  |
+| 1388 | `int[] shapeW, shapeH` | Each shape's across and down, by shapeSlot. |
+| 1396 | `boolean[] holdsNone` | The fails memo (failW, failFW) as a table (0.7.89): whether cell c, with its fields or not, is known to hold no box of each shape - a shape no smaller than one it held none of, either way round, as the lists say - rea... |
+| 1414 | `int[] skipFrom` | SKIP (0.7.94): for each shape (shapeSlot), how far into its band's cells the table (holdsNone, without fields) says no cell holds a box of it - every cell before is known to hold none - so a building looks from there. |
+| 1416 | `final int[][][] anyT` | Each cell's touch and reach rows over a box's width, by width, kept until its reach moves: worked out again when its epoch (anyAt) is not the cell's (anyEpoch; 0.7.89, the arrays kept from build to build). |
+| 1417 | `final int[][] anyAt` |  |
+| 1418 | `final int[] anyEpoch` |  |
+| 1420 | `final long[][] reachRows` | reachCell()'s rows: the streets, two to step between and those one plot from one (0.7.89: kept, not made at each call). |
+| 1422 | `int[] shoreFrom, shoreQueue` | shore()'s walk over a cell's ring box: where each plot was reached from, and the queue (kept, as reachRows). |
+| 1511 | `final int[] cellRoom` | Each cell's room - its interior plots that are dry, off the highways and the works' ground and not a mine's site - and the foothill among them, and which plots count: what growthOrder() ranks the cells by (worked out ... |
+| 1512 | `final boolean[] roomy` |  |
+| 1561 | `int[] touchAt` | The plots the records of this pass named, their kind of fixed ground before the pass (touchWas) and the marks to find them by (touched); cleared by groundKept(). |
+| 1562 | `byte[] touchWas` |  |
+| 1563 | `int nTouch` |  |
+| 1564 | `final boolean[] touched` |  |
+| 1567 | `int[] dirty` | The plots of the pass to be worked again (dirty, isDirty), and the occStart and fieldOk each had before it, in the same order: what runsLaid() compares the ground with. |
+| 1568 | `byte[] dirtyOcc` |  |
+| 1569 | `boolean[] dirtyField` |  |
+| 1570 | `int nDirty` |  |
+| 1571 | `final boolean[] isDirty` |  |
+| 1574 | `boolean wholePass` | Whether the last pass was worked whole (so occWas and fieldWas hold what runsLaid() compares the ground with) rather than limited (dirty does). |
+| 1577 | `int[] hwMoved` | The rows of the highways' bits the pass moved on, and the rows of vergeRows that follow; the cells with a dirty plot in the interior. |
+| 1578 | `int nHwMoved` |  |
+| 1579 | `final boolean[] verged` |  |
+| 1853 | `boolean logged, goesOn` | Whether the plan reads a log, and whether it goes on past its first batch: events to place, or road come after it. |
+| 1855 | `boolean ev` | Whether the events are being placed (the far side, the homes' rule and the ladder decided once apply). |
+| 1857 | `int batchBuildings` | The buildings of the first batch. |
+| 1859 | `int[] bcount` | The first batch's counts by type, the carry that joins it included: what bands() sorts - the input's own counts for a plan with neither a log nor a carry. |
+| 1861 | `boolean[] evType` | The types the events place (for SCAN's shapes, which bands() makes). |
+| 1863 | `double rG, rP, rH` | The road the surface spends, by kind: the input's, or the first batch's while the ladder climbs on it. |
+| 1865 | `int[] fpW, fpH` | Each type's footprint, bands()'. |
+| 1867 | `int nInst` | The instances, by id in the order made: type, month, band and index in it, and where the placed box is in the placed arrays (-1 unplaced, -2 gone). |
+| 1868 | `int[] iType, iMonth, iG, iI, iAt` |  |
+| 1870 | `boolean[] iCarried, iBatch, iGone, iExcl` | ...whether carried here, in the first batch, gone within it, or the plan's newest beyond its counts (never placed). |
+| 1872 | `int nEv` | The events: the instance, whether it leaves (else it comes), the road at its month and the month, in all. |
+| 1873 | `int[] evInst, evMonth` |  |
+| 1874 | `boolean[] evGone` |  |
+| 1875 | `double[] evRoad` |  |
+| 1880 | `int[] ofl, iOver` | The overflow log being built (OVERFLOW LOG below): its {month, code} pairs, nOfl of them, or null when it is made from the first batch alone; and each instance's pair in it (-1 for none), while the events are placed. |
+| 1881 | `int nOfl` |  |
+| 1883 | `int[][] live` | Each type's live instances of its own, the newest last; and readLog()'s tally of a month's arrivals by type and the types it has. |
+| 1884 | `int[] nLive, want, dealTypes` |  |
+| 1886 | `int[][] bandInst` | Each band's index to its instance. |
+| 1888 | `int[][] batchAt` | Where each first-batch building went in the placed arrays, while place() makes it for the events (-1 for none). |
+| 1890 | `final int[][] keepMine` | Each band's cells as place() left them (bMine, bNMine, bNShared after its last building). |
+| 1891 | `final int[] keepN` |  |
+| 1893 | `int bFar` | The order's last cell the far pointer has not taken: the near pointer (bNext) stops where they meet. |
+| 1895 | `double evRoadNow` | The road at the event being placed, all kinds. |
+| 1897 | `final boolean[] mineAt` | Each cell that holds a mine or a site, or a site-bound building the plan placed (homesCell()). |
+| 1899 | `boolean[] placedGone` | Which placed boxes have left (the events); null when none can. |
+| 2140 | `double batchG, batchP, batchH` | The first batch's road, when the plan goes on past it. |
+| 2304 | `int[][] mineB` | The band's cells the events place in, apart from the first batch's as it left them (buildArrivals()): each band's, the outer kinds' with industry's before them (SHARED ESTATES). |
+| 2305 | `int[] nB, combined` |  |
+| 2504 | `int dueMonth` | The smallest Input.boughtAt among the owned plots the plan does not have as ground yet (Integer.MAX_VALUE for none): growGround() has nothing to add for a month no later than it. |
+| 2506 | `int[] grown` | growGround()'s plots added, kept between calls. |
+| 2682 | `int[] rsvAt` | The plots the records just laid made a reserve's (rsvNote()), and how many: what streetsOffReserve() looks at. |
+| 2683 | `int nRsv` |  |
+| 2711 | `int[] grownMark` | The plots of the call (grown[0..n)) stamped grownStamp, and cellsOnGrown()'s laying under way: while onBought, lay() lays only the plots just bought. |
+| 2712 | `int grownStamp` |  |
+| 2713 | `boolean onBought` |  |
+| 2715 | `int[] laidMark` | The plots cellsOnGrown() laid, stamped laidStamp, and whether shore() joins only those dead ends. |
+| 2716 | `int laidStamp` |  |
+| 2717 | `boolean shoreLaid` |  |
+| 2879 | `final byte[] fx` | The runs' ground the plan has so far (THE RUNS DATED): every read of a highway, a railway, a yard or a reserve in a build is of this, never of Input.fixed; with no records it is Input.fixed from the start. |
+| 2881 | `final byte[] site` | Resource ground replayed from its actual source months, independently of the caller's viewing schedule. |
+| 2882 | `int siteNext, siteN` |  |
+| 2883 | `boolean initialLadder, endWays` |  |
+| 2884 | `int temporalTries` |  |
+| 2901 | `int fxNext, fxN` | The next record of Input.fixedLog not yet laid on fx, and how many the plan reads (0 for none: no log, no records, or a prototype's). |
+| 2903 | `final byte[] occWas` | occStart and fieldOk as they stood before the records growGround() laid: the plots whose room they changed are found by comparing the ground worked out again with them. |
+| 2904 | `final boolean[] fieldWas` |  |
+| 2974 | `boolean[] runHit` | The plots a month's records put a run on (a highway's, a track's, a yard's) or, for a highway, beside it - its verge (H5): marked while that month's boxes are found; runHitAt lists them to clear. |
+| 2975 | `int[] runHitAt` |  |
+| 2976 | `int nRunHit` |  |
+| 2978 | `int movePrefer` | The cell the building being moved off a run stood in, tried first for its new place; -1 for none (placeOne()). |
+| 2980 | `int movedOff, movedOver` | The boxes the plan moved off a run and placed again, and those among them with no place, gone on to the next district (DistrictPlan.movedOff, movedOver). |
+| 3409 | `DistrictPlan bOut` | A BUILD'S RUNNING STATE (0.7.94, batch RD7): what build() kept in its locals until 0.7.93 - the plan so far, the ladder's step, the buildings placed, the next cell in the order, the cells opened and homes cells, wheth... |
+| 3410 | `int bSquares, bBoulevards, bLimit, bPlaced, bNext, bOpened, bHomes, bNMine, bNShared` |  |
+| 3411 | `boolean bExhausted, bShare, bByHomes` |  |
+| 3412 | `int[] bMine, bTurnAt` |  |
+| 3413 | `Turn[] bTurns` |  |
+| 3414 | `List<int[]> bUnplaced` |  |
+| 3571 | `int campusGroup` | campusStands()' reading: the group read, how far, whether one stood, and the undoing it was read at. |
+| 3572 | `boolean campusAny` |  |
+| 3587 | `final boolean[] campusCells` | The cells the refinery's units stand in (campusStands()), kept from call to call. |
+| 3725 | `Turn[] turnPool` | The builder's turns (KEPT): the next one free, made the first time. |
+| 3726 | `int turnsUsed` |  |
+| 3915 | `boolean avOn` | Whether this plan lays avenues: the game's rules (not asPrototype) and not Input.latticeOnly. |
+| 3917 | `int avOx, avOy` | The origin, in the frame's plots (it may lie outside the frame). |
+| 3919 | `final byte[] avMark` | A staircase plot's mark in CityRuns' bits (M_DIAG, its arm at M_DIAG_SHIFT, M_CORNER on a corner), the first arm's where two share a plot; 0 for none - a pure function of the origin. |
+| 3921 | `final boolean[] avOuter` | The outer plots of the arms in the frame (no building stands on one): by plot, and listed. |
+| 3922 | `int[] avOuterList` |  |
+| 3923 | `int nOuter` |  |
+| 3925 | `int[] avList` | The staircase plots in the frame, listed (the plan's `avenue` is filled from them). |
+| 3926 | `int nAvList` |  |
+| 3928 | `final boolean[] avWet` | The plots where an avenue would run over fresh water too wide for a bridge (AVENUE_BRIDGE_STEPS): a run of more than twice that many staircase plots. |
+| 3930 | `final byte[] avDone` | One build's state: each staircase plot decided (0 not yet, 1 laid, 2 not laid), the counts (AV_PLOTS...), and the cell-street junctions kept so far as arm << 28 \| step. |
+| 3932 | `final byte[] avFx` | ...and the kind of fixed ground each laid plot was laid on (THE RUNS DATED: the ground may be another by the time it is taken up, and the counts of what lies beneath and across are given back as they were taken). |
+| 3934 | `final boolean[] avOwn` | The plots an avenue made a street of, where none was (MF2): a plot it ran along a street of a cell's is that street's still when the avenue is taken up there. |
+| 3935 | `final int[] avN` |  |
+| 3936 | `int[] avKept` |  |
+| 3937 | `int avKeptN` |  |
+| 3939 | `final int[] avBuf` | avPlots()'s results (the plot, its step, whether a corner) and avFloor()'s steps, kept from call to call. |
+| 3940 | `final boolean[] avBufC` |  |
+| 3941 | `final int[] avRun` |  |
+| 4141 | `int[] avTakenAt` | The cell-street plots avFloor() took up last, and how many: what avOnGrown() gives back to the ground. |
+| 4142 | `int nAvTaken` |  |
+| 4205 | `final int[] avNow` | The avenue plots made streets since avBegin() (avNow[p] == avNowStamp, listed), and avAlone()'s walks: what avAlone() looks at. |
+| 4206 | `int[] avNowList` |  |
+| 4207 | `int nAvNow, avNowStamp, avWalkStamp` |  |
+| 4363 | `boolean cvOn` | Whether this plan lays curves: the avenues' switch - the game's rules and not Input.latticeOnly. |
+| 4365 | `final boolean[] cvKeep` | The plots kept free of buildings by a curve's band, by plot, and listed in the order kept (a new build clears only those). |
+| 4366 | `int[] cvKeepList` |  |
+| 4367 | `int cvKeepN` |  |
+| 4369 | `Curve[] cvCurves` | The curves laid so far, in the order their cells opened, and the crescents the ground would not lay whole. |
+| 4370 | `int cvCurveN, cvOff` |  |
+| 4372 | `final List<int[]> cvPending` | shore()'s joins of the cell being opened, each its plots in order (the dead end's first, the street it meets last), until the cell's pruning is done. |
+| 4374 | `int[] shoreTmp` | shore()'s walk back along a join (kept, as stubAt). |
+| 4773 | `final java.util.HashMap<LinesKey, Integer> cutLines` | ...and each answer for a cell that is not full, by everything it is worked out from - the cell, the building's shape, its direction and boulevard, its free ground and the streets in its window (LinesKey) - for the lad... |
+| 4777 | `final long[] v` |  |
+| 4778 | `final int hash` |  |
+| 4785 | `final int[] linesFree` | estateLines()'s working rows: the cell's free ground, the window's streets, its touch and reach. |
+| 4786 | `final long[] simS` |  |
+| 4882 | `final byte[] layCode` | Each plot's lay code (LAY CODES). |
+| 5194 | `int[] stubAt` | shore()'s stub, its plots (stubAt, nStub), and its walk's stamp a plot (shoreSeen against shoreStamp). |
+| 5195 | `int nStub, shoreStamp` |  |
+| 5369 | `final long[] openBits` | start()'s rows of the plots no building is barred from and of the fields, and each column's fresh run's first row. |
+| 5370 | `final int[] runFrom` |  |
+| 5376 | `final long[] vergeRows` | The verges' bits a row (VERGES), and the highways' rows spread along (vergeWideRow()). |
+| 5379 | `int[] fixedList` | The plots of the city's runs (Input.fixed not 0), in plot order: their lay codes made apart (fixedCodes()). |
+| 5380 | `int nFixed` |  |
+| 5401 | `final byte[] occStart` | occ as a build begins: -1 where blocked, else 0 (start()). |
+| 5403 | `final long[] hwRows` | The highways' plots, a bit each by row as rowBits (start()), and in plot order (hwList, nHighway); the parted streets of the districts before it likewise (paRows); whether a plot of the edge is an anchor. |
+| 5404 | `int[] hwList` |  |
+| 5405 | `int nHighway` |  |
+| 5406 | `boolean anyAnchor` |  |
+| 5409 | `final int[] laidRows` | freshCell()'s rows of the plots laid. |
+| 5737 | `int[] undoAt` | The plots a tentative merge has taken up, in the order taken (the group's streets, row by row, then its stubs'), and each as it was (stateOf()), to be put back. |
+| 5738 | `int nUndo` |  |
+| 5777 | `int[] cellBuilding` | Each cell's placed buildings as a list - cellBuilding[c] the newest, nextBuilding[b] the one placed before b in its cell, -1 for the end - built on as buildings are placed and read like campusStands()' cells: from the... |
+| 5778 | `int buildingsSeen, buildingsGen` |  |
+| 5803 | `int[] mergeStub` | The dead ends a merge would leave (stubsFree()) and take up, by plot, in the order taken: the first nMergeStub. |
+| 5804 | `int nMergeStub` |  |
+| 5997 | `int[] splitEdge` | splits()'s streets about the box. |
+| 6053 | `int[] placedX, placedY, placedW, placedH, placedT` | A build's buildings placed so far, each one's box and type: kept from build to build (0.7.89), the plan's own copies made of them. |
+| 6056 | `final int[] targetMark` | reachFrom()'s targets: each plot's mark (its call's stamp) and how many times it is a target. |
+| 6057 | `int targetStamp` |  |
+| 6060 | `final int[] scratchLab` | The join's, the parting's and the surface's working arrays, a plot each, kept from build to build (0.7.90): each written before it is read (pieces() and markParted() set a label of -1 on each plot they label - the onl... |
+| 6061 | `final boolean[] scratchParted` |  |
+| 6101 | `int[] accDist, accPrev, accSeen` | access()'s search: each plot's distance from the work and the plot it was reached from, stamped (accSeen) so none is cleared; the queue by distance modulo 4 (an edge costs 1 to ACCESS_NEW, so four buckets are a Dial's... |
+| 6102 | `int accStamp` |  |
+| 6103 | `int[][] accQ` |  |
+| 6104 | `int[] accN` |  |
+| 6271 | `int[] sdDist, sdPrev, sdSeen` | sidings()'s search: the cost to each state (a plot and the heading it was entered going, plot x 4 + heading) and the state it was reached from, stamped (sdSeen) so none is cleared; the queue by cost modulo SD_BUCKETS ... |
+| 6272 | `int sdStamp` |  |
+| 6273 | `int[][] sdQ` |  |
+| 6274 | `int[] sdN` |  |
+| 6277 | `byte[] sdLaid` | The siding being laid, a byte a plot as DistrictPlan.siding. |
+| 6279 | `int[] sdWay` | The way being laid, plot by plot from the railway's end to the shed (sidings()'s scratch). |
+| 6281 | `int sdLast, sdState, sdRail` | A search's end: the last plot of the way before the railway, the state it was entered in, and the railway plot it meets. |
+| 6545 | `final int[] ordered` | streetsInOrder()'s plots and their count; and each piece's first plot (pieces()) and its place among them. |
+| 6546 | `int nOrdered` |  |
+| 6547 | `int[] pieceRep` |  |
+| 6550 | `final int[] joinSeen` | The join's walks' marks, by stamp (0.7.94: no clearing of the way back before each): a plot reached when joinSeen holds the walk's. |
+| 6551 | `int joinStamp` |  |
+| 6600 | `int joinTail` | The join's walk's queue (queue[]) end: its steps add to it. |
+| 6782 | `int[] wallRank` | The arrival rank of the building on each plot (rankArrivals(): 0 for the first batch's, the box's place in the order placed, from 1, after it), Integer.MAX_VALUE for a plot with none. |
+| 6785 | `int wallBatchBoxes` | The first batch's boxes still standing, the first of the placed arrays: what ranks 0; every box when the plan has no events (set by the events' pass, start() resets it). |
+| 6788 | `final int[] cellOpenBox` | Each cell's boxes placed before it was opened in the events (-1: opened in the first batch's build, or never), and the same as arrival ranks once the boxes are placed in a row (cellBorn: 0 for a cell of the first batch). |
+| 6884 | `int[] wallPend` | The ways found by the plan being made (complete() begins them afresh), and those kept clear of buildings in this make() (keepClear): ground() bars them. |
+| 6885 | `int nWallPend` |  |
+| 6886 | `final boolean[] keepClear` |  |
+| 6889 | `int wallField` | The plots of buildings on a field's plots the ways of this make() crossed (wallRoute()), over all its plans. |
+| 6894 | `int[] wMonth, wRec` | The input's journal copied once for this make. |
+| 6895 | `int wN, wNext` |  |
+| 6896 | `boolean probingWall` |  |
+| 6897 | `int[] probeUndo` |  |
+| 6898 | `int nProbe` |  |
+| 7081 | `int partedOutCount` |  |
+| 7084 | `int[] partedAt` | The join's parted pieces' first plots (scratchParted), listed so they are cleared one by one rather than the frame (0.7.94). |
+| 7085 | `int nPartedAt` |  |
+| 7129 | `int[] partSize` | markParted()'s pieces: each one's plots with a street code, and whether it touches an anchor. |
+| 7130 | `boolean[] partOn` |  |
+| 7262 | `int sN, sOpen, sAll` | surface()'s counts: the streets it surfaces, its one-sided seams, every street. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 301 | 6911 | **type** `public final class DistrictPlan` | One district's street plan: from its ground, the buildings and road plots the city map gives it and the city's highway and railway plots through it, the cells it opens and the layout of each, every street with its kin... |
+| 301 | 7004 | **type** `public final class DistrictPlan` | One district's street plan: from its ground, the buildings and road plots the city map gives it and the city's highway and railway plots through it, the cells it opens and the layout of each, every street with its kin... |
 
 ### THE GEOMETRY (lines 303-339)
 
@@ -562,7 +570,7 @@
 
 ### the avenues (CL4) (lines 560-570)
 
-### THE INPUTS (lines 571-812)
+### THE INPUTS (lines 571-814)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -570,282 +578,285 @@
 | 578 | 1 | `double cell(int ci, int cj)` _(in DistrictPlan.Hashes)_ | A cell's nudge on its distance from the hub. |
 | 580 | 1 | `double dir(int ci, int cj)` _(in DistrictPlan.Hashes)_ | A cell's direction: under a half its long blocks run east-west. |
 | 582 | 1 | `double deal(int type)` _(in DistrictPlan.Hashes)_ | A type's start in the first band's deal. |
-| 586 | 92 | **type** `public static final class Input` | Everything a plan is drawn from: filled by CityMap.planInput(), or by hand in a harness. |
-| 680 | 8 | `static Hashes worldHashes(long seed, long x0, long y0)` | The world's hashes for a district: its cells' by their place in the world, its types' by the district. |
-| 690 | 3 | `static double unit(long h)` | A hash as a number in [0, 1). |
-| 695 | 3 | `static double layoutHash(long seed, long cellX, long cellY, int salt)` | A hash in [0, 1) of the world's seed, a homes cell's place in the world (its north-west plot, cellX and cellY) and a salt: a pure function of the plan's inputs (CL2, a homes cell's layout). |
-| 700 | 4 | `static byte layoutOf(long seed, long cellX, long cellY, boolean square)` | A homes cell's street layout (LAYOUT_TODAY, LAYOUT_DROPPED or LAYOUT_BRICK) from the world's seed and the cell's north-west plot in the world, by the shares TODAY_SHARE and DROPPED_SHARE: the same layout for the same ... |
-| 706 | 3 | `static boolean crescentOf(long seed, long cellX, long cellY)` | Whether a long-block homes cell is, by its place, a crescent (CL4): its CL2 layout is not the comb and the crescent's hash is under CRESCENT_SHARE; how far the cell lies from the founding site (CRESCENT_FROM) and whet... |
-| 711 | 3 | `static int crescentBulge(long seed, long cellX, long cellY)` | Which way a crescent bulges (+1 toward the cell's +u, -1 toward -u, u along its long streets), by the hash of its place. |
-| 725 | 59 | **type** `static final class ArcShape` | A crescent's arc worked out in the cell's own axes (CL4) for one bulge, once: u along the long streets, v across them, plot (u, v) the square [u, u + 1] by [v, v + 1] in plots into the interior (the rings at v = -1 an... |
-| 730 | 44 | `ArcShape(int s)` _(in DistrictPlan.ArcShape)_ |  |
-| 776 | 7 | `double circleDistance(int u, int v)` _(in DistrictPlan.ArcShape)_ | The distance from the arc's circle to the closed square of plot (u, v): 0 where the circle crosses it. |
-| 789 | 3 | `static ArcShape arc(int bulge)` | The crescent shape of a bulge (+1 or -1). |
-| 802 | 10 | `static boolean along(byte[] fixed, int p, boolean horizontal)` | Whether a highway or railway plot p runs along a street through it going east-west (horizontal) or north-south, rather than across it. |
+| 586 | 94 | **type** `public static final class Input` | Everything a plan is drawn from: filled by CityMap.planInput(), or by hand in a harness. |
+| 682 | 8 | `static Hashes worldHashes(long seed, long x0, long y0)` | The world's hashes for a district: its cells' by their place in the world, its types' by the district. |
+| 692 | 3 | `static double unit(long h)` | A hash as a number in [0, 1). |
+| 697 | 3 | `static double layoutHash(long seed, long cellX, long cellY, int salt)` | A hash in [0, 1) of the world's seed, a homes cell's place in the world (its north-west plot, cellX and cellY) and a salt: a pure function of the plan's inputs (CL2, a homes cell's layout). |
+| 702 | 4 | `static byte layoutOf(long seed, long cellX, long cellY, boolean square)` | A homes cell's street layout (LAYOUT_TODAY, LAYOUT_DROPPED or LAYOUT_BRICK) from the world's seed and the cell's north-west plot in the world, by the shares TODAY_SHARE and DROPPED_SHARE: the same layout for the same ... |
+| 708 | 3 | `static boolean crescentOf(long seed, long cellX, long cellY)` | Whether a long-block homes cell is, by its place, a crescent (CL4): its CL2 layout is not the comb and the crescent's hash is under CRESCENT_SHARE; how far the cell lies from the founding site (CRESCENT_FROM) and whet... |
+| 713 | 3 | `static int crescentBulge(long seed, long cellX, long cellY)` | Which way a crescent bulges (+1 toward the cell's +u, -1 toward -u, u along its long streets), by the hash of its place. |
+| 727 | 59 | **type** `static final class ArcShape` | A crescent's arc worked out in the cell's own axes (CL4) for one bulge, once: u along the long streets, v across them, plot (u, v) the square [u, u + 1] by [v, v + 1] in plots into the interior (the rings at v = -1 an... |
+| 732 | 44 | `ArcShape(int s)` _(in DistrictPlan.ArcShape)_ |  |
+| 778 | 7 | `double circleDistance(int u, int v)` _(in DistrictPlan.ArcShape)_ | The distance from the arc's circle to the closed square of plot (u, v): 0 where the circle crosses it. |
+| 791 | 3 | `static ArcShape arc(int bulge)` | The crescent shape of a bulge (+1 or -1). |
+| 804 | 10 | `static boolean along(byte[] fixed, int p, boolean horizontal)` | Whether a highway or railway plot p runs along a street through it going east-west (horizontal) or north-south, rather than across it. |
 
-### THE PLAN (lines 813-1270)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 915 | 48 | **type** `public static final class Curve` | A curve the painter draws smooth (batch CL4, slice C; CURVES in the class javadoc): a crescent's arc or a street along a cut, with the plots it is laid on and the ground its band reaches. |
-| 928 | 11 | `Curve(byte kind, double[] geom, double radius, int[] path, int[] band, int x0, int y0, boolean across, byte bulge)` _(in DistrictPlan.Curve)_ |  |
-| 941 | 3 | `private int crescentPlot(int u, int v)` _(in DistrictPlan.Curve)_ | The frame plot of a crescent's cell-axes plot (u, v). |
-| 946 | 7 | `public int[] plots()` _(in DistrictPlan.Curve)_ | The plots the curve is drawn over, as frame indices: a shore curve's path in order (its first plot the dead end's, its last the street it meets); a crescent's staircase by row from its ring at v = -1 to its ring at v ... |
-| 955 | 7 | `public int[] band()` _(in DistrictPlan.Curve)_ | The plots its band reaches that are not its own, as frame indices, sorted for a shore curve and by row for a crescent: open ground no building stands on - a street of the cell's own may be among them, and a plot of wa... |
-| 1022 | 1 | `private DistrictPlan()` |  |
-| 1025 | 3 | `public boolean isStreet(int p)` | Whether frame plot p is a street of any kind (beneath a highway included). |
-| 1030 | 3 | `public int kindAt(int p)` | A plot's street kind (NONE to UNDER). |
-| 1035 | 4 | `public double widthAt(int p)` | A plot's surface in plots of its right of way: 0, HALF or FULL. |
-| 1041 | 3 | `public int roleAt(int p)` | A plot's role (ROLE_STREET to ROLE_JOIN), 0 for none. |
-| 1046 | 5 | `public int overflowCount()` | The buildings it could not place. |
-| 1064 | 38 | `public static DistrictPlan make(Input in)` | The plan of a district (spec 2.9): the first plan with long blocks; the surface it leaves over squares the homes cells nearest the hub and then makes boulevards of the arterials nearest it - the prototype's plan_ladde... |
-| 1124 | 14 | `private static DistrictPlan ladder(Builder b)` | The ladder (make()) on builder b, started on its input. |
-| 1140 | 41 | `private static DistrictPlan ladderOn(Builder b)` | The ladder proper: the plan at the first step, then the steps its surplus pays for. |
-| 1183 | 3 | `static void forgetFullLines()` | The layouts full estate cells were found to take, forgotten (ESTATE LINES' FULL_LINES): for PlanCheck, which shows a plan is the same worked out afresh. |
-| 1188 | 6 | `static int[] chain(int k, boolean squares)` | The steps after step k of a chain of the ladder, by what each halves: the boulevards (3 to 1, as make() halves them) or, with none, the squares. |
-| 1208 | 23 | **type** `static final class Turn` | A build's state where a later step of the ladder turns from it (THE LADDER'S TURNS, 0.7.89): every array and count a build changes, as they stood just before it opened a cell - the cell a boulevard's step after it wou... |
-| 1233 | 5 | `static int[] copyInto(int[] src, int n, int[] dst)` | src's first n into dst, a new array where dst is null or shorter (KEPT): dst, or the array made. |
-| 1239 | 5 | `static byte[] copyInto(byte[] src, byte[] dst)` |  |
-| 1245 | 5 | `static boolean[] copyInto(boolean[] src, boolean[] dst)` |  |
-| 1251 | 5 | `static long[] copyInto(long[] src, long[] dst)` |  |
-| 1258 | 5 | `static int[][] copyRows(int[][] rows, int[][] dst)` | Each row of rows into dst's (rows all made: a cell's free, reach or touch rows). |
-| 1265 | 5 | `static int[][] copyLists(int[][] lists, int[] counts, int[][] dst)` | Each cell's list of shapes, its first counts[c] of them, into dst's (a list with none left as it is: a build makes it afresh before it adds one). |
-
-### THE GROUND KEPT: its switches (batch UP5; Builder.groundNear()) (lines 1271-1290)
-
-### THE BUILDER: ONE PLAN AT A LADDER'S STEP (lines 1291-7211)
+### THE PLAN (lines 815-1275)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1295 | 5916 | **type** `private static final class Builder` |  |
-| 1378 | 3 | `void rescan(int c)` _(in DistrictPlan.Builder)_ | Cell c's rows to be scanned from the top again (SCAN): its room grew, or its reach moved. |
-| 1394 | 7 | `void forgetFails(int c)` _(in DistrictPlan.Builder)_ | What cell c was known not to hold, forgotten: its reach grew or its streets were taken up. |
-| 1420 | 1 | `Builder()` _(in DistrictPlan.Builder)_ | A builder, its arrays made: start() sets it on a plan's input. |
-| 1423 | 5 | `boolean worn()` _(in DistrictPlan.Builder)_ | Whether a count it stamps with has grown so far it could come round (KEPT): replaced by a new builder before the next plan. |
-| 1433 | 28 | `void start(Input in)` _(in DistrictPlan.Builder)_ | The plan of input `in` begun on this builder (KEPT): every array its plan reads of the ground filled afresh - what the constructor did until 0.7.93. |
-| 1471 | 32 | `void ground()` _(in DistrictPlan.Builder)_ | THE GROUND, A ROW AT A TIME (0.7.94, batch RD7): dry, barred, the highways' and the parted streets' plots as bits a row, and the plots of the city's runs; then H5's verges from the highways' bits (VERGES), the fresh w... |
-| 1509 | 4 | `boolean roomAt(int p)` _(in DistrictPlan.Builder)_ | Whether plot p counts as its cell's room (growthOrder()'s rule). |
-| 1515 | 17 | `void roomCounts()` _(in DistrictPlan.Builder)_ | Every cell's room and foothill counted afresh, and the plots that count noted (roomy). |
-| 1576 | 9 | `void noteTouch(int p)` _(in DistrictPlan.Builder)_ | Plot p, whose kind of fixed ground the records of this pass are about to change, noted with the kind it has now. |
-| 1587 | 10 | `void addDirty(int p)` _(in DistrictPlan.Builder)_ | Plot p added to the pass's plots to be worked again, once. |
-| 1599 | 4 | `void addAround(int p)` _(in DistrictPlan.Builder)_ | The plot p and every plot of the three by three about it that lies in the frame, to be worked again. |
-| 1605 | 5 | `int freshBits(int p)` _(in DistrictPlan.Builder)_ | The lay-code bits fresh water's runs give plot p (freshRow(), columnRun()): from the run lengths hRun and vRun ground() left, which stand for the plan; none for a prototype's. |
-| 1616 | 132 | `void groundKept(int nGrown)` _(in DistrictPlan.Builder)_ | The ground after the plots noted by noteTouch() had their kind of fixed ground changed (fx now holds the new) and the `nGrown` plots of grown[] were added to owns: ground() for the plots they move, as THE GROUND KEPT ... |
-| 1750 | 12 | `int mergeInto(int[] list, int n, int[] adds, int nAdd, boolean hw)` _(in DistrictPlan.Builder)_ | list[0 .. |
-| 1767 | 26 | `void verifyWhole()` _(in DistrictPlan.Builder)_ | verifyGround's check: every array ground() writes, copied, the whole ground worked out, and the entries that differ counted in groundDiffers - the limited pass left what the whole would have, or not. |
-| 1794 | 1 | `static long differ(boolean[] a, boolean[] b)` _(in DistrictPlan.Builder)_ |  |
-| 1795 | 1 | `static long differ(byte[] a, byte[] b)` _(in DistrictPlan.Builder)_ |  |
-| 1796 | 1 | `static long differ(short[] a, short[] b)` _(in DistrictPlan.Builder)_ |  |
-| 1797 | 1 | `static long differ(int[] a, int[] b)` _(in DistrictPlan.Builder)_ |  |
-| 1798 | 1 | `static long differ(long[] a, long[] b)` _(in DistrictPlan.Builder)_ |  |
-| 1801 | 21 | `void finish()` _(in DistrictPlan.Builder)_ | The plan made: what it held of its input let go (KEPT). |
-| 1896 | 5 | `void spendInput()` _(in DistrictPlan.Builder)_ | The road spent is the input's. |
-| 1903 | 3 | `static double dealHash(long seed, long x0, long y0, int month)` _(in DistrictPlan.Builder)_ | A hash in [0, 1) of the world's seed, the district's place and the month, for the start of a month's deal (the same for the same inputs on any machine). |
-| 1908 | 18 | `int newInst(int t, int month, boolean carried, boolean batch)` _(in DistrictPlan.Builder)_ | A new instance (the first batch's when `batch`); its id. |
-| 1928 | 5 | `void push(int t, int id)` _(in DistrictPlan.Builder)_ | Instance id of an own building of type t standing now, on the type's stack. |
-| 1935 | 3 | `int pop(int t)` _(in DistrictPlan.Builder)_ | The newest live instance of type t, taken off its stack; -1 for none. |
-| 1940 | 14 | `void addEvent(int id, boolean gone, double road, int month)` _(in DistrictPlan.Builder)_ | An event: instance id coming or (gone) leaving, at `month`, whose road is `road`. |
-| 1956 | 4 | `double roadTotal(long[] road)` _(in DistrictPlan.Builder)_ | The road of a month, all kinds: the log's gravel and paved, and its highway to the input's own. |
-| 1962 | 3 | `boolean placeable(int t)` _(in DistrictPlan.Builder)_ | Whether type t is one the plan places: a drawn type of the table (not a road, a railway line or a building at sea). |
-| 1971 | 17 | `void deal(int month, int k, double road)` _(in DistrictPlan.Builder)_ | The month's arrivals dealt (the tally in want[] of the types in dealTypes[0 .. |
-| 1994 | 140 | `void readLog()` _(in DistrictPlan.Builder)_ | The log read (batch CL3; see the section's note): the instances and events, the first batch's counts (bcount) and road, whether the plan goes on past the first batch (goesOn). |
-| 2139 | 17 | `void mapBatch()` _(in DistrictPlan.Builder)_ | Each band's index to the instance it is, for the first batch: the type's first-batch instances in the order made, taken in turn by the band's buildings of the type (bands() makes them in an order of its own). |
-| 2170 | 18 | `int[] firstBatchLog(boolean mark)` _(in DistrictPlan.Builder)_ | The buildings left out of the first batch as {month, type} pairs, by month and then in the order they were left out: each its instance's month (the first batch's record's, a carried one's pair's), 0 for a plan with no... |
-| 2190 | 7 | `void beginOverflow()` _(in DistrictPlan.Builder)_ | The overflow log begun from the first batch's, for the events to add to (buildArrivals()). |
-| 2199 | 6 | `int appendOverflow(int month, int code)` _(in DistrictPlan.Builder)_ | A pair appended to the overflow log; its place in the list. |
-| 2207 | 4 | `int[] overflowLog()` _(in DistrictPlan.Builder)_ | What the district sends on as {month, code} pairs (DistrictPlan.overflowLog); null for none. |
-| 2213 | 15 | `int streetPlotsLaid()` _(in DistrictPlan.Builder)_ | The street plots laid so far that this district surfaces (the seams it does not are the other district's). |
-| 2230 | 7 | `boolean nearMine(int c)` _(in DistrictPlan.Builder)_ | Whether cell c, or any of the eight about it, holds a mine, a site or a site-bound building the plan placed. |
-| 2239 | 9 | `int homesCell(DistrictPlan out)` _(in DistrictPlan.Builder)_ | The cell a homes cell opens in (HOMES KEEP OFF MINES): the first closed cell from bNext in the order that is not near a mine, and with none, the first closed one - taken off the order; -1 when no closed cell is left. |
-| 2250 | 3 | `static int cellOfPlot(int x, int y)` _(in DistrictPlan.Builder)_ | Cell of plot (x, y) of the frame, or -1 off the cells' interiors and rings (the column and row 0). |
-| 2255 | 14 | `void markMines()` _(in DistrictPlan.Builder)_ | The cells that hold a mine or a site, from the input and the first batch's site-bound buildings (mineAt). |
-| 2271 | 10 | `void vacate(int k)` _(in DistrictPlan.Builder)_ | Placed box k taken away: its plots free again, its cell's free rows given back and what it was known not to hold forgotten. |
-| 2283 | 15 | `void leave(int id, int month)` _(in DistrictPlan.Builder)_ | Instance id leaving at `month`: its box freed, or it taken off the list of those without a place - and, if the overflow log has a pair for it, the departure appended there (the next district's carry), the pair itself ... |
-| 2308 | 33 | `void placeInst(int id, int overMonth)` _(in DistrictPlan.Builder)_ | Instance id, its band slot (iG, iI) set, placed as an arrival at the first place it fits in its band's cells (a cell opened in the growth order when none holds it); with no place it goes on to the next district, its p... |
-| 2343 | 6 | `void growPlaced()` _(in DistrictPlan.Builder)_ | The placed arrays (and the gone flags, while the events are placed) given room for more boxes. |
-| 2356 | 102 | `DistrictPlan buildArrivals(int nSquare, int nBlvd)` _(in DistrictPlan.Builder)_ | The plan with its events placed (batch CL3): the first batch at the ladder's step (nSquare, nBlvd), built again but not finished, then each event in its order - a building at the first place it fits in its band's cell... |
-| 2481 | 10 | `int startMonth()` _(in DistrictPlan.Builder)_ | The month the first batch stands on, the one the plan's ground is dated from (THE GROUND BOUGHT, THE RUNS DATED): its last record's; with no first batch, the month before the first event (never before month 0, whose g... |
-| 2493 | 15 | `void groundAtStart()` _(in DistrictPlan.Builder)_ | owns filled for a new plan (start()): the input's owned ground, less the plots bought after the month the first batch stands on, which the events add; dueMonth set. |
-| 2516 | 3 | `void growGround(int month)` _(in DistrictPlan.Builder)_ | The plan's ground grown to the month an arrival comes in (Integer.MAX_VALUE: to all of Input.owned and every record of Input.fixedLog): the plots bought before it added and the records of its month and the months befo... |
-| 2521 | 103 | `void growGround(int month, boolean withLand)` _(in DistrictPlan.Builder)_ | growGround(), the land bought left out when `withLand` is false: the runs' records alone (growRuns()). |
-| 2648 | 4 | `void rsvNote(int p)` _(in DistrictPlan.Builder)_ | Plot p just made a reserve's: listed. |
-| 2654 | 17 | `void streetsOffReserve()` _(in DistrictPlan.Builder)_ | The avenue plots on the reserve plots just laid taken up: each given back to the avenue's counts, decided not laid and counted not laid at a reserve; the street the avenue made of it (avOwn) no street, no room. |
-| 2696 | 79 | `boolean[] cellsOnGrown(int n)` _(in DistrictPlan.Builder)_ | THE STREETS ON GROUND BOUGHT (FX9, on FX6's THE GROUND BOUGHT): each open cell whose box - interior and ring lines - holds one of the `n` plots just bought (grown[]) has its own ring and streets laid on them, the layo... |
-| 2784 | 28 | `int pruneApart()` _(in DistrictPlan.Builder)_ | NO STREET APART ON GROUND BOUGHT (FX9): of the plots cellsOnGrown() laid (the ring and streets and the joins along the cut), those not in the district's main network - the piece that holds the most streets standing be... |
-| 2849 | 14 | `void fixedAtStart()` _(in DistrictPlan.Builder)_ | fx set for a new plan (start()): Input.fixed less the records dated later than the month the first batch stands on, undone latest first; fxNext the first record growGround() lays. |
-| 2870 | 8 | `void runsLaid(boolean[] roomed, boolean[] refree)` _(in DistrictPlan.Builder)_ | The room the records just laid (growGround()) made and took, once ground() has worked the runs' ground out again: where a plot's room changed (occStart: barred or free again, a verge counted) a plot nothing stands on ... |
-| 2880 | 12 | `void runsLaidAt(int p, byte occBefore, boolean fieldBefore, boolean[] roomed, boolean[] refree)` _(in DistrictPlan.Builder)_ | runsLaid() for plot p, whose occStart and fieldOk were `occBefore` and `fieldBefore` before the records were laid. |
-| 2930 | 15 | `void growRuns(int month)` _(in DistrictPlan.Builder)_ | The runs' records due by `month`, laid up to the first month whose records lie across or beside a box, in one pass, and the boxes that month's records lie across moved off (then the next such month the same way: each ... |
-| 2947 | 11 | `int firstHitMonth(int month)` _(in DistrictPlan.Builder)_ | The month of the first record due by `month` that makes a run of a plot a box stands on, or a highway beside one; Integer.MIN_VALUE for none. |
-| 2960 | 12 | `void markRunHits(int m)` _(in DistrictPlan.Builder)_ | Marks the plots the records of month m put a run on, and the ring of plots about a highway's (runHit). |
-| 2973 | 6 | `void markRun(int p)` _(in DistrictPlan.Builder)_ |  |
-| 2981 | 4 | `boolean boxHit(int k)` _(in DistrictPlan.Builder)_ | Whether placed box k has a plot marked by markRunHits(). |
-| 2992 | 35 | `void moveOff(int month)` _(in DistrictPlan.Builder)_ | The boxes the records just laid (month `month`) lie across or beside, taken away and placed again as arrivals of the same instances, in the order they were placed: the cell each stood in first (movePrefer), then as an... |
-| 3030 | 45 | `int[] growthOrder()` _(in DistrictPlan.Builder)_ |  |
-| 3077 | 5 | `static boolean nearer(double[] dist, int a, int b)` _(in DistrictPlan.Builder)_ | Whether cell a comes before cell b in the growth order: nearer the hub (with its nudge), then the west column, then the north row. |
-| 3085 | 4 | `static int bandOf(BuildingVisual.Type t)` _(in DistrictPlan.Builder)_ |  |
-| 3112 | 7 | `static int campusFirst(BuildingVisual.Type[] types, int a, int b)` _(in DistrictPlan.Builder)_ | The order of two types in a band: a refinery unit before anything else, then (0.8.0) each works group in turn, else none (0). |
-| 3120 | 84 | `void bands()` _(in DistrictPlan.Builder)_ |  |
-| 3214 | 4 | `DistrictPlan build(int nSquare, int nBlvd, int limit, Turn from, int[] turnAt, boolean byHomes, Turn[] turns)` _(in DistrictPlan.Builder)_ | A plan at a ladder's step: nSquare homes cells squared, nBlvd boulevards; null as soon as more than `limit` buildings have no place. |
-| 3224 | 101 | `DistrictPlan place(int nSquare, int nBlvd, int limit, Turn from, int[] turnAt, boolean byHomes, Turn[] turns)` _(in DistrictPlan.Builder)_ | build()'s placing (CL3: split from its finish, complete(), so the order of arrival can place its events on the state it leaves): the plan so far with every building of the first batch placed, or null as soon as more t... |
-| 3331 | 34 | `DistrictPlan complete(DistrictPlan out, int nSquare, int nBlvd)` _(in DistrictPlan.Builder)_ | build()'s finish (CL3: split from its placing, place()): the plan returned with the buildings placed (the first bPlaced of the placed arrays), those left out counted by type and as {month, type} pairs, the streets joi... |
-| 3367 | 8 | `DistrictPlan let(DistrictPlan p)` _(in DistrictPlan.Builder)_ | A build's plan returned, what the build held let go (its turns, its plan so far). |
-| 3394 | 118 | `boolean placeOne(int g, int i, boolean looked)` _(in DistrictPlan.Builder)_ | Building i of band g placed (`looked`: gone on with from a turn, its look over its band's cells made before it): whether the build is to stop, more than bLimit left out. |
-| 3521 | 5 | `int campusNext(DistrictPlan out, int group)` _(in DistrictPlan.Builder)_ | The campus's next cell (THE CAMPUS): the index in the order, from the next to open on, of the first closed cell touching (eight ways: a side or a corner) a cell a refinery unit already stands in - since 0.8.0 a unit o... |
-| 3528 | 18 | `boolean campusStands(int group)` _(in DistrictPlan.Builder)_ | Whether a unit of a group stands yet (the refinery's, or since 0.8.0 a works group's), the cells they stand in marked in campusCells - read on from the last look while the same group's and nothing placed was undone (c... |
-| 3552 | 10 | `boolean nearCampus(int c)` _(in DistrictPlan.Builder)_ | Whether cell c is one of campusCells or touches one, eight ways (a side or a corner). |
-| 3567 | 69 | `Turn turn(DistrictPlan out, int g, int i, int kNext, int opened, int homes, int placed, boolean exhausted, int[] mine, int nMin...` _(in DistrictPlan.Builder)_ | This build's state as it stands, at building i of band g with the cell order[kNext] about to open (THE LADDER'S TURNS). |
-| 3638 | 62 | `void resume(Turn t, DistrictPlan out)` _(in DistrictPlan.Builder)_ | This build put back as turn t stood, out its plan so far; what is stamped (walks, SCAN, the touch rows by width) worked out afresh. |
-| 3705 | 7 | `Turn nextTurn()` _(in DistrictPlan.Builder)_ |  |
-| 3714 | 3 | `void freeTurns()` _(in DistrictPlan.Builder)_ | Every turn free again: a new chain of the ladder begins (the last chain's are done with). |
-| 3719 | 5 | `void setStr(int p, boolean on)` _(in DistrictPlan.Builder)_ | A street laid on plot p, or taken up: the plot and its bit. |
-| 3726 | 10 | `long window(int y, int wx, int n)` _(in DistrictPlan.Builder)_ | The street bits of row y from plot wx, n of them (n < 64), bit b for plot wx + b; none past the frame. |
-| 3738 | 9 | `void put(int c, int x, int y, int w, int h)` _(in DistrictPlan.Builder)_ | A building on box (x, y, w, h) of cell c: its plots taken, the cell's free rows with them. |
-| 3751 | 76 | `void openCell(DistrictPlan out, int c, byte kind, int rank, boolean square, boolean bl, int w, int h)` _(in DistrictPlan.Builder)_ | Cell c opened as `kind` at its rank, squared or a boulevard as the ladder's step asks: its ring and its streets laid - a homes cell's by the layout its place hashes to (a homes cell's layout, CL2), an estate cell's si... |
-| 3829 | 13 | `void layRing(int x0, int y0, int x1, int y1, boolean bl)` _(in DistrictPlan.Builder)_ | A cell's arterials laid: the ring of plots round its interior (box x0 - 1 to x1, y0 - 1 to y1), two deep on a boulevard (openCell(); cellsOnGrown() lays it again on ground bought). |
-| 3849 | 30 | `void layLayout(int c, int x0, int y0, byte kind, boolean square, boolean across, byte layout, ArcShape crescent, int lines, byt...` _(in DistrictPlan.Builder)_ | Cell c's streets laid by what its opening chose (interior from (x0, y0)): a crescent by its arc, a homes cell or a square by its layout (CL2), the comb or the whole square for LAYOUT_TODAY, an estate cell by its `line... |
-| 3925 | 45 | `void avSetup()` _(in DistrictPlan.Builder)_ | The arms' staircase plots and outer plots in the frame, worked out from the founding site (start()): a pure function of the input. |
-| 3972 | 4 | `int wetRun(int run)` _(in DistrictPlan.Builder)_ | A run of `run` bridgeable (fresh or shallow) staircase plots (avRun) ended: all of them barred to the avenue when it is longer than the bridge (AVENUE_BRIDGE_STEPS, two plots a step). |
-| 3978 | 13 | `int avPlots(int a, int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | Arm a's staircase plots, corner before step, inside the box (inclusive, within the frame), in the order of the path: into avBuf, avBufK (the step) and avBufC (a corner). |
-| 3993 | 13 | `boolean avAny(int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | Whether any arm has a staircase plot inside the box (inclusive): the cell's interior, for a homes cell to keep the comb and an estate cell to keep its streets. |
-| 4008 | 8 | `int avKind(int p)` _(in DistrictPlan.Builder)_ | What an avenue makes of staircase plot p, by the ground the plan has now (owns): AVK_OFF to AVK_STREET. |
-| 4026 | 46 | `boolean layAvenues(int x0, int y0, int x1, int y1, boolean opening)` _(in DistrictPlan.Builder)_ | Cell c's avenues laid as it opens: every staircase plot of every arm inside its box - the interior and the four ring lines - that has not been decided, as a street of the role ROLE_ARTERIAL (art, so the surface takes ... |
-| 4074 | 7 | `void avUnlay(int p)` _(in DistrictPlan.Builder)_ | Staircase plot p taken up again (a stray piece of avenue, prune()): its counts given back, and it is decided not laid. |
-| 4083 | 3 | `boolean avRing(int a, int m)` _(in DistrictPlan.Builder)_ | Whether step m of arm a is a junction of the ring, by geometry alone: its column or its row is a cell's arterial line (a multiple of CELL in the frame, as every district's are). |
-| 4088 | 5 | `boolean avKeptHas(int a, int m)` _(in DistrictPlan.Builder)_ | Whether a cell-street junction at step m of arm a was kept. |
-| 4101 | 15 | `int avFoot(int a, int j, int f, int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | The FOOT f (0 to 3) of arm a's junction at step j, inside the box, when it is a street plot of the avenue's neighbourhood that belongs to a street whose line runs through S_j: 0 beyond the corner C_j in its column, 1 ... |
-| 4130 | 50 | `void avOnGrown(int n, boolean[] laidIn)` _(in DistrictPlan.Builder)_ | THE AVENUES ON GROUND BOUGHT (CL4 with FX6's THE GROUND BOUGHT): the open cells whose box the ground just grew into (growGround(), the `n` plots in grown[]) lay the staircase plots of it they could not lay when they o... |
-| 4187 | 4 | `void avBegin()` _(in DistrictPlan.Builder)_ | A laying of avenues begun: what it makes streets of is marked anew (avNow). |
-| 4201 | 40 | `boolean avAlone()` _(in DistrictPlan.Builder)_ | NO AVENUE ALONE (CL4): each piece of the plots made avenue since avBegin() that touches no other street - no plot of a ring, a cell's street or an avenue laid before, and not the frame's edge, where the next district'... |
-| 4248 | 60 | `void avFloor(int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | THE + FLOOR ALONG AN AVENUE, for the staircase plots just laid in the box: of each arm's junctions with a cell's street (ROLE_STREET) there, in order outward from the origin, those that keep every other junction kept ... |
-| 4310 | 14 | `void avOutput(DistrictPlan out)` _(in DistrictPlan.Builder)_ | The plan's avenue marks and counts, from this build's state (complete()). |
-| 4354 | 7 | `void cvReset()` _(in DistrictPlan.Builder)_ | This build's curves forgotten (a new build, or a ladder's turn put back). |
-| 4363 | 7 | `boolean cvKeepPlot(int p)` _(in DistrictPlan.Builder)_ | Plot p kept free of buildings. |
-| 4372 | 4 | `boolean crescentFar(int ci, int cj)` _(in DistrictPlan.Builder)_ | Whether the middle of cell (ci, cj) lies CRESCENT_FROM cells or more from the founding site, in a straight line (Euclidean; the cell's tile is CELL plots a side). |
-| 4378 | 11 | `boolean arcWhole(int x0, int y0, boolean across, ArcShape arc)` _(in DistrictPlan.Builder)_ | Whether the ground lays the arc whole: every plot of its staircase a street (lineKind) or, at either end, the ring's own arterial plot the ground lays. |
-| 4391 | 8 | `void crescentLayout(int x0, int y0, boolean across, ArcShape arc, byte st)` _(in DistrictPlan.Builder)_ | A crescent cell's streets: the comb's three long streets whole, and in place of its cross street the arc's staircase (the ring plots at its ends are the ring's own). |
-| 4405 | 5 | `void cvRecord(int x0, int y0, ArcShape arc, boolean across)` _(in DistrictPlan.Builder)_ | The curves of the cell just opened recorded (interior from (x0, y0)): its crescent's, if it is one (`arc`), and each join shore() laid that is still laid - and the ground their bands reach in its interior, not a stree... |
-| 4412 | 4 | `boolean cvKeepable(int p, int x0, int y0)` _(in DistrictPlan.Builder)_ | Whether plot p of the cell whose interior starts at (x0, y0) is open dry ground a curve's band may keep free: in the interior, no street, dry land (owned or not yet). |
-| 4418 | 20 | `void recordCrescent(int x0, int y0, boolean across, ArcShape arc)` _(in DistrictPlan.Builder)_ | The crescent's arc recorded, if all its plots are streets still, and its band's ground kept free. |
-| 4440 | 19 | `void recordShore(int[] path, int x0, int y0)` _(in DistrictPlan.Builder)_ | A street along a cut recorded (the join's plots in order, the dead end's first, the street it meets last), if all its plots are streets still: its line, the plots its band reaches that are not its own, and those kept ... |
-| 4460 | 4 | `void cvAdd(Curve cv)` _(in DistrictPlan.Builder)_ |  |
-| 4466 | 18 | `void cvOutput(DistrictPlan out)` _(in DistrictPlan.Builder)_ | The plan's curves and counts from this build's state (complete()): the curves whose plots are all still streets (a merge may have taken a street along a cut up), and the crescents the cells hold. |
-| 4507 | 7 | `boolean crossed(int x0, int y0)` _(in DistrictPlan.Builder)_ | Whether a highway, railway, yard or reserve (the runs' ground the plan has now, fx) has a plot in the cell whose interior starts at (x0, y0), its ring included: such a cell keeps the comb, which crosses them as it alw... |
-| 4516 | 3 | `double cellHash(long cellX, long cellY, int salt)` _(in DistrictPlan.Builder)_ | A hash for the homes cell whose north-west plot in the world is (cellX, cellY): layoutHash on this plan's seed. |
-| 4521 | 7 | `void layStretch(int x0, int y0, boolean across, boolean alongLong, int line, int from, int to, byte st)` _(in DistrictPlan.Builder)_ | Street plots from..to of the cell's line `line`, along its long streets (alongLong) or across them, in the cell's own axes, laid in the map's. |
-| 4530 | 6 | `static void mark(long[] g, boolean alongLong, int line, int from, int to)` _(in DistrictPlan.Builder)_ | The same plots marked in g, a bit row a line of the cell and its ring (bit u + 1 of row v + 1). |
-| 4538 | 9 | `static long[] ringMarks()` _(in DistrictPlan.Builder)_ | A cell's marks with its ring on every side. |
-| 4549 | 17 | `static int uncovered(long[] g)` _(in DistrictPlan.Builder)_ | How many plots of the cell's interior lie more than REACH from every marked plot, across corners. |
-| 4575 | 55 | `void homesLayout(int x0, int y0, boolean across, byte layout, long cellX, long cellY, byte st)` _(in DistrictPlan.Builder)_ | The streets of a long-block homes cell of the layout LAYOUT_DROPPED or LAYOUT_BRICK, in place of the comb. |
-| 4636 | 45 | `static long settle(long e)` _(in DistrictPlan.Builder)_ | The 24 pieces of a squared cell's three long streets and three cross streets (bit 4j + k the kth of the jth long street, bit 12 + 4i + k of the ith cross street) left once every junction with one street is taken out, ... |
-| 4683 | 3 | `static int node(long e, int i, int j)` _(in DistrictPlan.Builder)_ | The streets that meet junction (i, j) of a squared cell, of the pieces e. |
-| 4695 | 32 | `void squareLayout(int x0, int y0, boolean across, byte layout, long cellX, long cellY, byte st)` _(in DistrictPlan.Builder)_ | The streets of a squared cell (a boulevard's interior too) of the layout LAYOUT_DROPPED or LAYOUT_BRICK, in place of the whole square. |
-| 4740 | 5 | `static int sizedLines(int depth)` _(in DistrictPlan.Builder)_ | The lines strips sized to two rows of a building `depth` plots deep back to back would put streets on (ESTATE LINES): a strip of max(2 x depth, STRIP_LEAST) plots from the arterial, a street, the next, while a street'... |
-| 4753 | 7 | **type** `static final class LinesKey` _(in DistrictPlan.Builder)_ | What estateLines() reads of a cell that is not full, as a key. |
-| 4756 | 1 | `LinesKey(long[] v)` _(in DistrictPlan.Builder.LinesKey)_ |  |
-| 4757 | 1 | `public int hashCode()` _(in DistrictPlan.Builder.LinesKey)_ |  |
-| 4758 | 1 | `public boolean equals(Object o)` _(in DistrictPlan.Builder.LinesKey)_ |  |
-| 4777 | 54 | `int estateLines(int c, boolean across, boolean bl, int w, int h)` _(in DistrictPlan.Builder)_ | ESTATE LINES: which lines of cell c's interior its streets take - and FLIP when they run the other way from `across` - for the w x h building it opens for, its ring laid: of the prototype's spine (MIDDLE) and the stri... |
-| 4833 | 3 | `boolean streetAt(int x, int y)` _(in DistrictPlan.Builder)_ | Whether plot (x, y) is a street now (not beneath a highway): what estateLines() reads a ring whole by. |
-| 4838 | 6 | `int lineKind(int x, int y, boolean horizontal)` _(in DistrictPlan.Builder)_ | What lay() would make of plot (x, y) on a cell's street running east-west (horizontal) or north-south, laying nothing: 0 refused, 1 a street, 2 a street beneath a highway (layPlot()'s rules, the game's). |
-| 4870 | 70 | `int holds(int x0, int y0, boolean across, int lines, int w, int h)` _(in DistrictPlan.Builder)_ | How many w x h boxes cell c (its interior from x0, y0) holds with its streets on `lines`, running north-south when `across`: its free ground (linesFree) less the streets, its touch and reach from the streets about it ... |
-| 4948 | 14 | `boolean lay(int x, int y, boolean horizontal, boolean arterial, byte r)` _(in DistrictPlan.Builder)_ | A street plot at (x, y) of a line running east-west (horizontal) or north-south: owned, not the sea - the prototype's _street - and, with the spec's rules, not a mine's site, fresh water only as a bridge no wider than... |
-| 4963 | 17 | `boolean layPlot(int x, int y, boolean horizontal, boolean arterial, byte r)` _(in DistrictPlan.Builder)_ |  |
-| 4988 | 48 | `int prune()` _(in DistrictPlan.Builder)_ | NO STRAY ROADS (Jerus: "all roads connected, no stray roads"): of the plots a cell's opening laid, each piece of the whole network smaller than LATTICE plots - a street the ground cut down to less than a block, touchi... |
-| 5038 | 8 | `int streetNeighbours(int p)` _(in DistrictPlan.Builder)_ | A plot's street neighbours, beneath a highway included. |
-| 5048 | 7 | `boolean cutAt(int x, int y)` _(in DistrictPlan.Builder)_ | Whether a plot is ground the cut runs along: not the city's, the deep sea, bridgeable water (fresh or shallow) no street crosses, or past the frame. |
-| 5065 | 104 | `int shore(int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | WHERE THE GROUND CUTS A CELL (spec 2.4, H2: streets favour the grid but need not keep it). |
-| 5184 | 15 | `void freshCell(int c)` _(in DistrictPlan.Builder)_ | A cell's free rows as it opens (BITS, 0.7.94): its ground no building is barred from (openRows) less the streets its opening laid (the changed plots) - what refreeCell() reads of occ, since a cell not open holds no bu... |
-| 5201 | 14 | `void groundRow(int y)` _(in DistrictPlan.Builder)_ | Row y of the ground (THE GROUND, A ROW AT A TIME): dry, barred, its lay code from the ground, the runs' plots, the highways' and the parted streets' bits, an anchor. |
-| 5217 | 13 | `void groundPlot(int p)` _(in DistrictPlan.Builder)_ | Plot p's own ground (THE GROUND, A ROW AT A TIME; one plot, so THE GROUND KEPT works it again alone): dry, unfit, barred by the ground and the runs and a site, and its lay code from the ground (LAY CODES; bridgeable w... |
-| 5232 | 8 | `void fixedPlot(int p, int x, int base, byte f)` _(in DistrictPlan.Builder)_ | A plot of the city's runs: listed, and a highway's in its row's bits and listed too. |
-| 5242 | 12 | `void freshRow(int y)` _(in DistrictPlan.Builder)_ | Row y's runs of bridgeable water, fresh and shallow in any mix (THE GROUND, A ROW AT A TIME; ET6): each plot of a run its length along the row, a street refused along one wider than its bridge. |
-| 5256 | 12 | `void freshColumns(int y)` _(in DistrictPlan.Builder)_ | ...and down each column, read at row y: a column's run goes on where its plot is bridgeable water, and ends where it is not (runFrom, its first row). |
-| 5270 | 3 | `void freshColumnsEnd()` _(in DistrictPlan.Builder)_ | ...the runs still open at the frame's last row ended there. |
-| 5275 | 5 | `void columnRun(int x, int end)` _(in DistrictPlan.Builder)_ | Column x's run from runFrom[x] to the row before `end`: its length on each plot, a street refused down one wider than its bridge. |
-| 5282 | 5 | `void fieldRow(int y)` _(in DistrictPlan.Builder)_ | Row y's fields (spec 2.6) and the rest (THE GROUND, A ROW AT A TIME): barred with the verges, occ as a build begins, the field plots, both as bits. |
-| 5289 | 10 | `void fieldPlot(int p, int x, int base, boolean rowIn)` _(in DistrictPlan.Builder)_ | Plot p's (column x, row of word `base`, `rowIn` its row inside a cell's interior or not) share of fieldRow(): barred with the verge, occ as a build begins, a field plot, both as bits - set where it holds, and cleared ... |
-| 5301 | 9 | `void cellRows(int c)` _(in DistrictPlan.Builder)_ | Cell c's interior rows of free ground and of fields, from the rows' bits, and whether it has a field. |
-| 5318 | 12 | `void vergeWideRow(int y)` _(in DistrictPlan.Builder)_ | VERGES (H5, 0.7.94): the plots on or beside a highway plot, corners included - no building's - as bits a row: the highways' bits (hwRows) spread a plot either way along the row (vergeWideRow()), then a row either way ... |
-| 5331 | 5 | `void vergeRow(int y)` _(in DistrictPlan.Builder)_ |  |
-| 5338 | 6 | `static long bitsOf(long[] rows, int y, int x0)` _(in DistrictPlan.Builder)_ | The INTERIOR bits of row y of `rows` (WORDS longs a row) from plot x0: a cell's interior row (x0 from 1 to SIDE - INTERIOR). |
-| 5360 | 4 | `void fixedCodes()` _(in DistrictPlan.Builder)_ | Each plot of a run's lay code (LAY CODES): a run along a line refuses it that way, a highway crossed is laid beneath - worked out for those plots alone, after start() gave them the ground's. |
-| 5366 | 10 | `void fixedCode(int p)` _(in DistrictPlan.Builder)_ | fixedCodes() for plot p of the runs (fx not 0): its lay code from the ground's, the run along it and what it is. |
-| 5389 | 14 | `void refreeCell(int c)` _(in DistrictPlan.Builder)_ | A cell's free rows from occ: bit i of row j for interior plot (x0 + i, y0 + j). |
-| 5405 | 5 | `void staleAround(int c)` _(in DistrictPlan.Builder)_ | The cells whose reach a change of c's streets may move: it and the eight about it, their reach worked out again when next asked (reachCell() forgets what a cell was known not to hold if its reach grew). |
-| 5415 | 3 | `static long spread(long a)` _(in DistrictPlan.Builder)_ | A window's row of bits spread a plot either way along it, kept to the window. |
-| 5420 | 34 | `void reachCell(int c)` _(in DistrictPlan.Builder)_ | A cell's reach rows: plots within REACH of a street, across corners, and those one plot from one - the prototype's reach_map, over the cell's interior and the REACH plots about it. |
-| 5456 | 5 | `static int runs(int r, int w)` _(in DistrictPlan.Builder)_ | Rows where a run of w set bits starts: bit i set where bits i .. |
-| 5463 | 7 | `static int anyIn(int r, int w)` _(in DistrictPlan.Builder)_ | ...and where a box w wide starting there holds any set bit. |
-| 5478 | 99 | `long tryPlace(int c, int w, int h, boolean fields)` _(in DistrictPlan.Builder)_ | The first spot in cell c where a w x h building fits on free ground within reach of a street - touching one first (a plot of it one from a street, across corners), then within REACH - in rows from the cell's north-wes... |
-| 5585 | 33 | `boolean closeSpine(DistrictPlan out, int c)` _(in DistrictPlan.Builder)_ | An estate cell taken whole (spec 2.3: "a building over 15 plots ... |
-| 5620 | 15 | `static int remember(int[][] ws, int[][] hs, int n, int c, int w, int h)` _(in DistrictPlan.Builder)_ | A shape a cell holds no box of, kept with the others it is no larger than: those larger than it go (they hold none either). |
-| 5647 | 56 | `boolean mergeFor(DistrictPlan out, int c, int w, int h)` _(in DistrictPlan.Builder)_ | In a homes cell: the street segments inside the first group of long blocks (MERGE_GROUPS, in order) that holds the building, has no building in it and is more than MERGE_DRY dry ground or street, returned to ground - ... |
-| 5705 | 7 | `void takeUp(int p)` _(in DistrictPlan.Builder)_ | Plot p taken up as a merge takes up a street: no street, no arterial, no role, free ground unless blocked. |
-| 5718 | 3 | `int stateOf(int p)` _(in DistrictPlan.Builder)_ | Plot p's state as takeUp() changes it: its role (bits 0 to 2), art (8), blvd (16), under (32), str (64) and occ + 1 (bits 7 and 8). |
-| 5723 | 9 | `void takeUpKept(int p)` _(in DistrictPlan.Builder)_ | Plot p taken up, its state kept for putBack(). |
-| 5734 | 12 | `void putBack()` _(in DistrictPlan.Builder)_ | Every plot takeUpKept() took up put back as it was, the last first. |
-| 5748 | 4 | `boolean reaches(int x, int y, int w, int h)` _(in DistrictPlan.Builder)_ | Whether some street lies within REACH of the box (x, y, w, h), across corners - the reach PlanCheck holds every building to (a street beneath a highway is not one) - read from the street bits a row at a time. |
-| 5758 | 15 | `void indexBuildings()` _(in DistrictPlan.Builder)_ | cellBuilding and nextBuilding brought up to the buildings placed so far. |
-| 5775 | 3 | `static boolean nearBox(int bx, int by, int bw, int bh, int x0, int y0, int x1, int y1)` _(in DistrictPlan.Builder)_ | Whether the box (bx, by, bw, bh) lies within REACH + 1 of the plots x0..x1 by y0..y1: a street taken up there may have been the box's. |
-| 5791 | 37 | `boolean stubsFree(int c, int gx, int gy, int gw, int gh)` _(in DistrictPlan.Builder)_ | The dead ends a merge of the blocks in box (gx, gy, gw, gh) of cell c, a homes cell of a varied layout (CL2), would leave, found before anything is taken up: each street plot beside the box that would lose a street to... |
-| 5836 | 33 | `boolean mergeVaried(int c, int gx, int gy, int gw, int gh)` _(in DistrictPlan.Builder)_ | A merge of the blocks in box (gx, gy, gw, gh) of cell c, a homes cell of a varied layout (CL2), whose stubs stubsFree() has found: the box's streets taken up as mergeFor() takes them up, then the stubs, tentatively - ... |
-| 5876 | 59 | `boolean splits(int gx, int gy, int gw, int gh)` _(in DistrictPlan.Builder)_ | Whether taking up the streets inside box (gx, gy, gw, gh) would part streets outside it that reach each other now: the streets beside the box, each that the first reaches through the network, must still reach it witho... |
-| 5943 | 26 | `boolean meets(int p, int gx, int gy, int gw, int gh, int near, int apart)` _(in DistrictPlan.Builder)_ | Whether a walk from street plot p, round box (gx, gy, gw, gh), meets a plot joined to the near walk's first (markB holding `near`). |
-| 5977 | 12 | `boolean ringWhole(int gx, int gy, int gw, int gh)` _(in DistrictPlan.Builder)_ | Whether every plot of the ring just outside the box (its corners among them) is in the frame and a street or beneath a highway: a closed loop of street round the box, joining every street that meets it. |
-| 5991 | 3 | `boolean reachFrom(int p0, int gx, int gy, int gw, int gh, int[] mark, int st, int[] targets)` _(in DistrictPlan.Builder)_ | Marks the streets reached from plot p0 with stamp st in mark, four-connected, none inside box (gx, gy, gw, gh) when gx >= 0; whether every plot of targets (when given) was reached, the walk stopping when they are. |
-| 5996 | 32 | `boolean reachFrom(int p0, int gx, int gy, int gw, int gh, int[] mark, int st, int[] targets, int rx0, int ry0, int rx1, int ry1)` _(in DistrictPlan.Builder)_ | ...keeping within plots (rx0, ry0) to (rx1, ry1), inclusive. |
-| 6043 | 11 | `boolean joinable(int a, boolean horizontal)` _(in DistrictPlan.Builder)_ | Whether a lattice step onto plot a going horizontally (or not) may be laid: the join's ground. |
-| 6056 | 7 | `boolean groundJoinable(int a, boolean horizontal)` _(in DistrictPlan.Builder)_ | Whether a step onto plot a going horizontally (or not) may be laid off the lattice, where the join's lattice finds no way: as joinable(), on any plot (H2: a street follows the ground where it must). |
-| 6065 | 5 | `void layJoin(int a)` _(in DistrictPlan.Builder)_ | Lays a plot the join or the mines' reach took: a street, or beneath a highway. |
-| 6106 | 55 | `void access(DistrictPlan out, int placed)` _(in DistrictPlan.Builder)_ | ACCESS ROADS. |
-| 6163 | 7 | `int gate(int[] gates, int n, int x, int y)` _(in DistrictPlan.Builder)_ | Adds plot (x, y) to the gates if it is one the road may use (inside the frame's own plots, ground a street may take either way); the count. |
-| 6172 | 6 | `boolean accessible(int a, boolean horizontal)` _(in DistrictPlan.Builder)_ | Whether the access road may enter plot a going horizontally (or not): a plot of the frame's own, the ground a street may take, and a highway's only where a street passes beneath it already. |
-| 6180 | 5 | `boolean accessEnd(int a, boolean ramps, int cx, int cy)` _(in DistrictPlan.Builder)_ | Whether plot a is where a road ends: a ramp's (a highway plot carrying a ramp with a street beneath, within reach of the work at (cx, cy)), or an arterial street. |
-| 6191 | 39 | `int accessSearch(int[] gates, int n, boolean ramps, int cx, int cy)` _(in DistrictPlan.Builder)_ | The nearest end from the gates, by plot cost (Dial's algorithm: costs 1 and ACCESS_NEW), as the plot it ends on with accPrev leading back to a gate (its own accPrev -1); -1 for none. |
-| 6232 | 1 | `int accCost(int a)` _(in DistrictPlan.Builder)_ | What entering plot a costs the access road: 1 where a street (or one beneath a highway) already is, ACCESS_NEW where it would be laid. |
-| 6234 | 6 | `void accPush(int d, int a)` _(in DistrictPlan.Builder)_ |  |
-| 6293 | 75 | `void sidings(DistrictPlan out, int placed)` _(in DistrictPlan.Builder)_ | SIDINGS (D14). |
-| 6370 | 6 | `boolean sidingBefore(int a, int b)` _(in DistrictPlan.Builder)_ | Whether the work at plot index `a` comes before the one at `b` in the sidings' order: more plots, then further north, then further west. |
-| 6378 | 3 | `boolean railAt(int x, int y)` _(in DistrictPlan.Builder)_ | Whether plot (x, y) of the frame is a plot of the runs' railway (FIXED_RAIL). |
-| 6383 | 8 | `int sidingGate(int[] gates, int[] heads, int n, int x, int y, int heading)` _(in DistrictPlan.Builder)_ | Adds plot (x, y) to the gates, entered going `heading` (0 north, 1 east, 2 south, 3 west: away from the box), if the siding may start there: open ground, not a street. |
-| 6399 | 12 | `boolean sidingOpen(int a)` _(in DistrictPlan.Builder)_ | Whether a siding may take plot a: SIDING_EDGE inside the frame's edge, dry owned ground, no building's, no runs' plot (track, yard, reserve, highway), no mine's site, no other siding's nor one beside another's (MF1), ... |
-| 6413 | 3 | `boolean crossesStreet(int b, int heading)` _(in DistrictPlan.Builder)_ | Whether the street at plot b goes across a siding moving `heading` (a street at right angles to it beside b), so that the siding crosses it and does not run along it. |
-| 6425 | 46 | `boolean sidingSearch(int[] gates, int[] heads, int n)` _(in DistrictPlan.Builder)_ | The cheapest way from the gates to the railway, by Dial's algorithm over states (plot, heading): true with sdState the state of the way's last plot (the railway beside it at sdRail), sdLast its plot, and sdPrev leadin... |
-| 6473 | 6 | `boolean sidingEnd(int b, int heading)` _(in DistrictPlan.Builder)_ | Whether plot b, entered going `heading`, is a plot of the railway the siding may meet: one the frame's own (not its edge row or column), met from the side. |
-| 6480 | 6 | `void sdPush(int d, int s)` _(in DistrictPlan.Builder)_ |  |
-| 6495 | 5 | `int streetsInOrder(long[] alsoRows)` _(in DistrictPlan.Builder)_ | THE STREETS IN ORDER (0.7.94, batch RD7): every street plot - and beneath a highway, and with `alsoRows` its plots too - into ordered[], in plot order, read from the street bits a row of 64 at a time (rowBits; a highw... |
-| 6502 | 14 | `int streetsInRow(int y, long[] alsoRows, int n)` _(in DistrictPlan.Builder)_ | ...row y's, into ordered[] from n: the count after them (a row a call, THE GROUND, A ROW AT A TIME's reason). |
-| 6527 | 3 | `int[] pieces(int[] lab)` _(in DistrictPlan.Builder)_ | The street pieces, four-connected (beneath a highway included): each plot's label into lab, the sizes returned. |
-| 6532 | 26 | `int[] pieces(int[] lab, boolean parted)` _(in DistrictPlan.Builder)_ | ...with the parted streets of the districts before it (Input.partedAnchor) as streets of the pieces too (joinOut()) when `parted`; each piece's first plot in plot order into pieceRep, its place in ordered[] into pieceAt. |
-| 6560 | 11 | `int pieceStep(int[] lab, int u, int n, int sp, boolean[] also)` _(in DistrictPlan.Builder)_ | pieces()'s step (a plot a call): plot u's neighbours of piece n - streets, beneath a highway, or of `also` - not yet labelled, labelled and stacked above sp. |
-| 6576 | 15 | `int joinStep(int u, int way, int pc, int st, int[] lab, int[] prev)` _(in DistrictPlan.Builder)_ | joinFromSmall()'s walk's step (a plot a call): plot u's neighbours along the lattice (way 0) or over the ground, from piece pc, by walk st - the first street of another piece reached, or -1, the rest queued. |
-| 6593 | 18 | `int joinOutStep(int u, int way, int pc, int st, int[] lab, int[] prev, boolean[] touches)` _(in DistrictPlan.Builder)_ | joinOut()'s walk's step: as joinStep(), the walk ending at a street of a piece that touches an anchor, or beside an anchor. |
-| 6613 | 8 | `int seedPiece(int pc, int[] lab, int[] prev, int[] q, int st)` _(in DistrictPlan.Builder)_ | A walk's start: piece pc's plots, in plot order, into queue q from its first (pieces()), each reached by walk st with no way back. |
-| 6632 | 31 | `int join()` _(in DistrictPlan.Builder)_ | ONE NETWORK (the prototype's _join): while the streets are in more than one piece, breadth first from the largest along the lattice's lines to the nearest other piece, and the way laid - over a long block's middle lin... |
-| 6675 | 39 | `int joinFromSmall()` _(in DistrictPlan.Builder)_ | The join with the game's rules: each piece but the largest, the smallest first, looks for the nearest other piece - along the lattice, then over the ground (H2) - from its own plots, which is the same way back as the ... |
-| 6747 | 6 | `boolean wallJoinable(int a, boolean horizontal)` _(in DistrictPlan.Builder)_ | The join's ground over a building (FW11): as groundJoinable(), on a plot a building stands on too - a house on a resource field's plots (SITE_FIELD, built on last) among them, a plan's box like any other that finds an... |
-| 6764 | 10 | `void rankArrivals()` _(in DistrictPlan.Builder)_ | wallRank filled from the placed boxes: for the walk of wallJoin(), when the plots a way crosses are told apart by when their buildings came. |
-| 6776 | 10 | `int pieceBorn(int pc, int[] lab)` _(in DistrictPlan.Builder)_ | The rank of the last boxes placed before piece pc's latest cell was opened: boxes of that rank or before stood when the piece was born (0 where all its streets are the first batch's). |
-| 6787 | 28 | `int wallWalk(int pc, int[] lab, int[] prev, int least, boolean levels)` _(in DistrictPlan.Builder)_ |  |
-| 6816 | 19 | `int wallJoin(int pc, int[] lab, int[] prev)` _(in DistrictPlan.Builder)_ |  |
-| 6837 | 9 | `void wallRoute(int pc, int[] lab, int[] prev)` _(in DistrictPlan.Builder)_ | The way over the buildings from piece pc (wallJoin()), plot by plot, added to those make() keeps clear when it plans the district again (wallPend); none when the ground parts the piece. |
-| 6861 | 7 | `void releaseClear(Input in)` _(in DistrictPlan.Builder)_ |  |
-| 6870 | 10 | `void waysAtStart()` _(in DistrictPlan.Builder)_ | A build starts with the ways kept at the first batch's month. |
-| 6882 | 8 | `int[] clearPlots()` _(in DistrictPlan.Builder)_ | The final kept plots, independent of the order their ways were discovered. |
-| 6892 | 14 | `void wallRecord(int p, boolean kept)` _(in DistrictPlan.Builder)_ | One wall event, dated at the map's month. |
-| 6908 | 15 | `boolean releaseUnused(DistrictPlan p)` _(in DistrictPlan.Builder)_ | A cured way is released for arrivals from this month onward. |
-| 6925 | 7 | `void keepWallClear()` _(in DistrictPlan.Builder)_ | The ways the last plan found, kept from this month's event onward. |
-| 6950 | 37 | `int joinOut()` _(in DistrictPlan.Builder)_ | ACROSS DISTRICTS (spec 2.4: "a district whose first cell does not touch an open cell of its inner neighbour opens an arterial run to it along the lattice"; 0.7.88, batch RD2 - RD1 had no neighbour's plan to join to). |
-| 6994 | 5 | `void markPartedPiece(int p)` _(in DistrictPlan.Builder)_ |  |
-| 7000 | 4 | `void clearParted()` _(in DistrictPlan.Builder)_ |  |
-| 7006 | 28 | `void markParted(DistrictPlan out)` _(in DistrictPlan.Builder)_ | PARTED (0.7.88): out.parted - each street plot whose piece, over the plan's final streets and the parted streets of the districts before it, touches no anchor, nor is the first district's largest piece. |
-| 7040 | 13 | `int partedStep(DistrictPlan out, int u, int n, int sp)` _(in DistrictPlan.Builder)_ | markParted()'s step (a plot a call): plot u of piece n counted, whether it touches an anchor, its neighbours of the piece not yet labelled labelled and stacked above sp. |
-| 7055 | 5 | `boolean onStreet(int p)` _(in DistrictPlan.Builder)_ | Whether plot p will have a street code once surfaced: a street, or beneath a highway (streetsInRow's plots). |
-| 7062 | 6 | `boolean nearAnchor(int p)` _(in DistrictPlan.Builder)_ | Whether plot p is, or is beside (four ways), a plot of the frame's edge a district before this one lays a street on. |
-| 7072 | 13 | `boolean surfaces(int x, int y)` _(in DistrictPlan.Builder)_ | Whether this district surfaces a plot: off its seams, or on a seam it comes first on (Input.surfaces). |
-| 7094 | 59 | `void surface(DistrictPlan out)` _(in DistrictPlan.Builder)_ | The model's road as the streets' surface (the prototype's, over its street plots): arterials first, then by their cell's rank from the hub, then row by row - every street HALF while the road lasts, a TRACK where it do... |
-| 7158 | 9 | `static double widths(byte[] w, int from, int to, double left)` _(in DistrictPlan.Builder)_ | surface()'s widths over w[from, to): each HALF while the road lasts, then each FULL; the road left after. |
-| 7172 | 23 | `void surfaceRow(DistrictPlan out, int y, int[] start)` _(in DistrictPlan.Builder)_ | surface()'s row y (a row a call): each street every street's (scratchLab); one it surfaces with its bucket (scratchPrev, pieceStack), counted in start[]; a one-sided seam (ordered). |
-| 7197 | 13 | `void code(DistrictPlan out, int p)` _(in DistrictPlan.Builder)_ | Plot p's street code made whole: its kind (a seam with none, beneath a highway), role, bridge and crossing. |
+| 917 | 48 | **type** `public static final class Curve` | A curve the painter draws smooth (batch CL4, slice C; CURVES in the class javadoc): a crescent's arc or a street along a cut, with the plots it is laid on and the ground its band reaches. |
+| 930 | 11 | `Curve(byte kind, double[] geom, double radius, int[] path, int[] band, int x0, int y0, boolean across, byte bulge)` _(in DistrictPlan.Curve)_ |  |
+| 943 | 3 | `private int crescentPlot(int u, int v)` _(in DistrictPlan.Curve)_ | The frame plot of a crescent's cell-axes plot (u, v). |
+| 948 | 7 | `public int[] plots()` _(in DistrictPlan.Curve)_ | The plots the curve is drawn over, as frame indices: a shore curve's path in order (its first plot the dead end's, its last the street it meets); a crescent's staircase by row from its ring at v = -1 to its ring at v ... |
+| 957 | 7 | `public int[] band()` _(in DistrictPlan.Curve)_ | The plots its band reaches that are not its own, as frame indices, sorted for a shore curve and by row for a crescent: open ground no building stands on - a street of the cell's own may be among them, and a plot of wa... |
+| 1024 | 1 | `private DistrictPlan()` |  |
+| 1027 | 3 | `public boolean isStreet(int p)` | Whether frame plot p is a street of any kind (beneath a highway included). |
+| 1032 | 3 | `public int kindAt(int p)` | A plot's street kind (NONE to UNDER). |
+| 1037 | 4 | `public double widthAt(int p)` | A plot's surface in plots of its right of way: 0, HALF or FULL. |
+| 1043 | 3 | `public int roleAt(int p)` | A plot's role (ROLE_STREET to ROLE_JOIN), 0 for none. |
+| 1048 | 5 | `public int overflowCount()` | The buildings it could not place. |
+| 1066 | 38 | `public static DistrictPlan make(Input in)` | The plan of a district (spec 2.9): the first plan with long blocks; the surface it leaves over squares the homes cells nearest the hub and then makes boulevards of the arterials nearest it - the prototype's plan_ladde... |
+| 1126 | 17 | `private static DistrictPlan ladder(Builder b)` | The ladder (make()) on builder b, started on its input. |
+| 1145 | 41 | `private static DistrictPlan ladderOn(Builder b)` | The ladder proper: the plan at the first step, then the steps its surplus pays for. |
+| 1188 | 3 | `static void forgetFullLines()` | The layouts full estate cells were found to take, forgotten (ESTATE LINES' FULL_LINES): for PlanCheck, which shows a plan is the same worked out afresh. |
+| 1193 | 6 | `static int[] chain(int k, boolean squares)` | The steps after step k of a chain of the ladder, by what each halves: the boulevards (3 to 1, as make() halves them) or, with none, the squares. |
+| 1213 | 23 | **type** `static final class Turn` | A build's state where a later step of the ladder turns from it (THE LADDER'S TURNS, 0.7.89): every array and count a build changes, as they stood just before it opened a cell - the cell a boulevard's step after it wou... |
+| 1238 | 5 | `static int[] copyInto(int[] src, int n, int[] dst)` | src's first n into dst, a new array where dst is null or shorter (KEPT): dst, or the array made. |
+| 1244 | 5 | `static byte[] copyInto(byte[] src, byte[] dst)` |  |
+| 1250 | 5 | `static boolean[] copyInto(boolean[] src, boolean[] dst)` |  |
+| 1256 | 5 | `static long[] copyInto(long[] src, long[] dst)` |  |
+| 1263 | 5 | `static int[][] copyRows(int[][] rows, int[][] dst)` | Each row of rows into dst's (rows all made: a cell's free, reach or touch rows). |
+| 1270 | 5 | `static int[][] copyLists(int[][] lists, int[] counts, int[][] dst)` | Each cell's list of shapes, its first counts[c] of them, into dst's (a list with none left as it is: a build makes it afresh before it adds one). |
+
+### THE GROUND KEPT: its switches (batch UP5; Builder.groundNear()) (lines 1276-1295)
+
+### THE BUILDER: ONE PLAN AT A LADDER'S STEP (lines 1296-7304)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1300 | 6004 | **type** `private static final class Builder` |  |
+| 1383 | 3 | `void rescan(int c)` _(in DistrictPlan.Builder)_ | Cell c's rows to be scanned from the top again (SCAN): its room grew, or its reach moved. |
+| 1399 | 7 | `void forgetFails(int c)` _(in DistrictPlan.Builder)_ | What cell c was known not to hold, forgotten: its reach grew or its streets were taken up. |
+| 1425 | 1 | `Builder()` _(in DistrictPlan.Builder)_ | A builder, its arrays made: start() sets it on a plan's input. |
+| 1428 | 5 | `boolean worn()` _(in DistrictPlan.Builder)_ | Whether a count it stamps with has grown so far it could come round (KEPT): replaced by a new builder before the next plan. |
+| 1438 | 29 | `void start(Input in)` _(in DistrictPlan.Builder)_ | The plan of input `in` begun on this builder (KEPT): every array its plan reads of the ground filled afresh - what the constructor did until 0.7.93. |
+| 1477 | 32 | `void ground()` _(in DistrictPlan.Builder)_ | THE GROUND, A ROW AT A TIME (0.7.94, batch RD7): dry, barred, the highways' and the parted streets' plots as bits a row, and the plots of the city's runs; then H5's verges from the highways' bits (VERGES), the fresh w... |
+| 1515 | 4 | `boolean roomAt(int p)` _(in DistrictPlan.Builder)_ | Whether plot p counts as its cell's room (growthOrder()'s rule). |
+| 1521 | 17 | `void roomCounts()` _(in DistrictPlan.Builder)_ | Every cell's room and foothill counted afresh, and the plots that count noted (roomy). |
+| 1582 | 9 | `void noteTouch(int p)` _(in DistrictPlan.Builder)_ | Plot p, whose kind of fixed ground the records of this pass are about to change, noted with the kind it has now. |
+| 1593 | 10 | `void addDirty(int p)` _(in DistrictPlan.Builder)_ | Plot p added to the pass's plots to be worked again, once. |
+| 1605 | 4 | `void addAround(int p)` _(in DistrictPlan.Builder)_ | The plot p and every plot of the three by three about it that lies in the frame, to be worked again. |
+| 1611 | 5 | `int freshBits(int p)` _(in DistrictPlan.Builder)_ | The lay-code bits fresh water's runs give plot p (freshRow(), columnRun()): from the run lengths hRun and vRun ground() left, which stand for the plan; none for a prototype's. |
+| 1622 | 132 | `void groundKept(int nGrown)` _(in DistrictPlan.Builder)_ | The ground after the plots noted by noteTouch() had their kind of fixed ground changed (fx now holds the new) and the `nGrown` plots of grown[] were added to owns: ground() for the plots they move, as THE GROUND KEPT ... |
+| 1756 | 12 | `int mergeInto(int[] list, int n, int[] adds, int nAdd, boolean hw)` _(in DistrictPlan.Builder)_ | list[0 .. |
+| 1773 | 26 | `void verifyWhole()` _(in DistrictPlan.Builder)_ | verifyGround's check: every array ground() writes, copied, the whole ground worked out, and the entries that differ counted in groundDiffers - the limited pass left what the whole would have, or not. |
+| 1800 | 1 | `static long differ(boolean[] a, boolean[] b)` _(in DistrictPlan.Builder)_ |  |
+| 1801 | 1 | `static long differ(byte[] a, byte[] b)` _(in DistrictPlan.Builder)_ |  |
+| 1802 | 1 | `static long differ(short[] a, short[] b)` _(in DistrictPlan.Builder)_ |  |
+| 1803 | 1 | `static long differ(int[] a, int[] b)` _(in DistrictPlan.Builder)_ |  |
+| 1804 | 1 | `static long differ(long[] a, long[] b)` _(in DistrictPlan.Builder)_ |  |
+| 1807 | 21 | `void finish()` _(in DistrictPlan.Builder)_ | The plan made: what it held of its input let go (KEPT). |
+| 1902 | 5 | `void spendInput()` _(in DistrictPlan.Builder)_ | The road spent is the input's. |
+| 1909 | 3 | `static double dealHash(long seed, long x0, long y0, int month)` _(in DistrictPlan.Builder)_ | A hash in [0, 1) of the world's seed, the district's place and the month, for the start of a month's deal (the same for the same inputs on any machine). |
+| 1914 | 18 | `int newInst(int t, int month, boolean carried, boolean batch)` _(in DistrictPlan.Builder)_ | A new instance (the first batch's when `batch`); its id. |
+| 1934 | 5 | `void push(int t, int id)` _(in DistrictPlan.Builder)_ | Instance id of an own building of type t standing now, on the type's stack. |
+| 1941 | 3 | `int pop(int t)` _(in DistrictPlan.Builder)_ | The newest live instance of type t, taken off its stack; -1 for none. |
+| 1946 | 14 | `void addEvent(int id, boolean gone, double road, int month)` _(in DistrictPlan.Builder)_ | An event: instance id coming or (gone) leaving, at `month`, whose road is `road`. |
+| 1962 | 4 | `double roadTotal(long[] road)` _(in DistrictPlan.Builder)_ | The road of a month, all kinds: the log's gravel and paved, and its highway to the input's own. |
+| 1968 | 3 | `boolean placeable(int t)` _(in DistrictPlan.Builder)_ | Whether type t is one the plan places: a drawn type of the table (not a road, a railway line or a building at sea). |
+| 1977 | 17 | `void deal(int month, int k, double road)` _(in DistrictPlan.Builder)_ | The month's arrivals dealt (the tally in want[] of the types in dealTypes[0 .. |
+| 2000 | 138 | `void readLog()` _(in DistrictPlan.Builder)_ | The log read (batch CL3; see the section's note): the instances and events, the first batch's counts (bcount) and road, whether the plan goes on past the first batch (goesOn). |
+| 2143 | 17 | `void mapBatch()` _(in DistrictPlan.Builder)_ | Each band's index to the instance it is, for the first batch: the type's first-batch instances in the order made, taken in turn by the band's buildings of the type (bands() makes them in an order of its own). |
+| 2174 | 18 | `int[] firstBatchLog(boolean mark)` _(in DistrictPlan.Builder)_ | The buildings left out of the first batch as {month, type} pairs, by month and then in the order they were left out: each its instance's month (the first batch's record's, a carried one's pair's), 0 for a plan with no... |
+| 2194 | 7 | `void beginOverflow()` _(in DistrictPlan.Builder)_ | The overflow log begun from the first batch's, for the events to add to (buildArrivals()). |
+| 2203 | 6 | `int appendOverflow(int month, int code)` _(in DistrictPlan.Builder)_ | A pair appended to the overflow log; its place in the list. |
+| 2211 | 4 | `int[] overflowLog()` _(in DistrictPlan.Builder)_ | What the district sends on as {month, code} pairs (DistrictPlan.overflowLog); null for none. |
+| 2217 | 15 | `int streetPlotsLaid()` _(in DistrictPlan.Builder)_ | The street plots laid so far that this district surfaces (the seams it does not are the other district's). |
+| 2234 | 7 | `boolean nearMine(int c)` _(in DistrictPlan.Builder)_ | Whether cell c, or any of the eight about it, holds a mine, a site or a site-bound building the plan placed. |
+| 2243 | 9 | `int homesCell(DistrictPlan out)` _(in DistrictPlan.Builder)_ | The cell a homes cell opens in (HOMES KEEP OFF MINES): the first closed cell from bNext in the order that is not near a mine, and with none, the first closed one - taken off the order; -1 when no closed cell is left. |
+| 2254 | 3 | `static int cellOfPlot(int x, int y)` _(in DistrictPlan.Builder)_ | Cell of plot (x, y) of the frame, or -1 off the cells' interiors and rings (the column and row 0). |
+| 2259 | 14 | `void markMines()` _(in DistrictPlan.Builder)_ | The cells that hold a mine or a site, from the input and the first batch's site-bound buildings (mineAt). |
+| 2275 | 10 | `void vacate(int k)` _(in DistrictPlan.Builder)_ | Placed box k taken away: its plots free again, its cell's free rows given back and what it was known not to hold forgotten. |
+| 2287 | 15 | `void leave(int id, int month)` _(in DistrictPlan.Builder)_ | Instance id leaving at `month`: its box freed, or it taken off the list of those without a place - and, if the overflow log has a pair for it, the departure appended there (the next district's carry), the pair itself ... |
+| 2312 | 33 | `void placeInst(int id, int overMonth)` _(in DistrictPlan.Builder)_ | Instance id, its band slot (iG, iI) set, placed as an arrival at the first place it fits in its band's cells (a cell opened in the growth order when none holds it); with no place it goes on to the next district, its p... |
+| 2347 | 6 | `void growPlaced()` _(in DistrictPlan.Builder)_ | The placed arrays (and the gone flags, while the events are placed) given room for more boxes. |
+| 2360 | 130 | `DistrictPlan buildArrivals(int nSquare, int nBlvd)` _(in DistrictPlan.Builder)_ | The plan with its events placed (batch CL3): the first batch at the ladder's step (nSquare, nBlvd), built again but not finished, then each event in its order - a building at the first place it fits in its band's cell... |
+| 2513 | 10 | `int startMonth()` _(in DistrictPlan.Builder)_ | The month the first batch stands on, the one the plan's ground is dated from (THE GROUND BOUGHT, THE RUNS DATED): its last record's; with no first batch, the month before the first event (never before month 0, whose g... |
+| 2525 | 15 | `void groundAtStart()` _(in DistrictPlan.Builder)_ | owns filled for a new plan (start()): the input's owned ground, less the plots bought after the month the first batch stands on, which the events add; dueMonth set. |
+| 2548 | 3 | `void growGround(int month)` _(in DistrictPlan.Builder)_ | The plan's ground grown to the month an arrival comes in (Integer.MAX_VALUE: to all of Input.owned and every record of Input.fixedLog): the plots bought before it added and the records of its month and the months befo... |
+| 2553 | 109 | `void growGround(int month, boolean withLand)` _(in DistrictPlan.Builder)_ | growGround(), the land bought left out when `withLand` is false: the runs and sites alone, with wall records enabled only by the end-of-month phase. |
+| 2686 | 4 | `void rsvNote(int p)` _(in DistrictPlan.Builder)_ | Plot p just made a reserve's: listed. |
+| 2692 | 17 | `void streetsOffReserve()` _(in DistrictPlan.Builder)_ | The avenue plots on the reserve plots just laid taken up: each given back to the avenue's counts, decided not laid and counted not laid at a reserve; the street the avenue made of it (avOwn) no street, no room. |
+| 2734 | 79 | `boolean[] cellsOnGrown(int n)` _(in DistrictPlan.Builder)_ | THE STREETS ON GROUND BOUGHT (FX9, on FX6's THE GROUND BOUGHT): each open cell whose box - interior and ring lines - holds one of the `n` plots just bought (grown[]) has its own ring and streets laid on them, the layo... |
+| 2822 | 28 | `int pruneApart()` _(in DistrictPlan.Builder)_ | NO STREET APART ON GROUND BOUGHT (FX9): of the plots cellsOnGrown() laid (the ring and streets and the joins along the cut), those not in the district's main network - the piece that holds the most streets standing be... |
+| 2886 | 13 | `void sitesAtStart()` _(in DistrictPlan.Builder)_ |  |
+| 2907 | 14 | `void fixedAtStart()` _(in DistrictPlan.Builder)_ | fx set for a new plan (start()): Input.fixed less the records dated later than the month the first batch stands on, undone latest first; fxNext the first record growGround() lays. |
+| 2928 | 8 | `void runsLaid(boolean[] roomed, boolean[] refree)` _(in DistrictPlan.Builder)_ | The room the records just laid (growGround()) made and took, once ground() has worked the runs' ground out again: where a plot's room changed (occStart: barred or free again, a verge counted) a plot nothing stands on ... |
+| 2938 | 12 | `void runsLaidAt(int p, byte occBefore, boolean fieldBefore, boolean[] roomed, boolean[] refree)` _(in DistrictPlan.Builder)_ | runsLaid() for plot p, whose occStart and fieldOk were `occBefore` and `fieldBefore` before the records were laid. |
+| 2983 | 12 | `void markRunHits(int m)` _(in DistrictPlan.Builder)_ | Marks the plots the records of month m put a run on, and the ring of plots about a highway's (runHit). |
+| 2996 | 6 | `void markRun(int p)` _(in DistrictPlan.Builder)_ |  |
+| 3004 | 4 | `boolean boxHit(int k)` _(in DistrictPlan.Builder)_ | Whether placed box k has a plot marked by markRunHits(). |
+| 3015 | 35 | `void moveOff(int month)` _(in DistrictPlan.Builder)_ | The boxes the records just laid (month `month`) lie across or beside, taken away and placed again as arrivals of the same instances, in the order they were placed: the cell each stood in first (movePrefer), then as an... |
+| 3053 | 45 | `int[] growthOrder()` _(in DistrictPlan.Builder)_ |  |
+| 3100 | 5 | `static boolean nearer(double[] dist, int a, int b)` _(in DistrictPlan.Builder)_ | Whether cell a comes before cell b in the growth order: nearer the hub (with its nudge), then the west column, then the north row. |
+| 3108 | 4 | `static int bandOf(BuildingVisual.Type t)` _(in DistrictPlan.Builder)_ |  |
+| 3135 | 7 | `static int campusFirst(BuildingVisual.Type[] types, int a, int b)` _(in DistrictPlan.Builder)_ | The order of two types in a band: a refinery unit before anything else, then (0.8.0) each works group in turn, else none (0). |
+| 3143 | 84 | `void bands()` _(in DistrictPlan.Builder)_ |  |
+| 3237 | 4 | `DistrictPlan build(int nSquare, int nBlvd, int limit, Turn from, int[] turnAt, boolean byHomes, Turn[] turns)` _(in DistrictPlan.Builder)_ | A plan at a ladder's step: nSquare homes cells squared, nBlvd boulevards; null as soon as more than `limit` buildings have no place. |
+| 3247 | 101 | `DistrictPlan place(int nSquare, int nBlvd, int limit, Turn from, int[] turnAt, boolean byHomes, Turn[] turns)` _(in DistrictPlan.Builder)_ | build()'s placing (CL3: split from its finish, complete(), so the order of arrival can place its events on the state it leaves): the plan so far with every building of the first batch placed, or null as soon as more t... |
+| 3354 | 34 | `DistrictPlan complete(DistrictPlan out, int nSquare, int nBlvd)` _(in DistrictPlan.Builder)_ | build()'s finish (CL3: split from its placing, place()): the plan returned with the buildings placed (the first bPlaced of the placed arrays), those left out counted by type and as {month, type} pairs, the streets joi... |
+| 3390 | 8 | `DistrictPlan let(DistrictPlan p)` _(in DistrictPlan.Builder)_ | A build's plan returned, what the build held let go (its turns, its plan so far). |
+| 3417 | 118 | `boolean placeOne(int g, int i, boolean looked)` _(in DistrictPlan.Builder)_ | Building i of band g placed (`looked`: gone on with from a turn, its look over its band's cells made before it): whether the build is to stop, more than bLimit left out. |
+| 3544 | 5 | `int campusNext(DistrictPlan out, int group)` _(in DistrictPlan.Builder)_ | The campus's next cell (THE CAMPUS): the index in the order, from the next to open on, of the first closed cell touching (eight ways: a side or a corner) a cell a refinery unit already stands in - since 0.8.0 a unit o... |
+| 3551 | 18 | `boolean campusStands(int group)` _(in DistrictPlan.Builder)_ | Whether a unit of a group stands yet (the refinery's, or since 0.8.0 a works group's), the cells they stand in marked in campusCells - read on from the last look while the same group's and nothing placed was undone (c... |
+| 3575 | 10 | `boolean nearCampus(int c)` _(in DistrictPlan.Builder)_ | Whether cell c is one of campusCells or touches one, eight ways (a side or a corner). |
+| 3590 | 69 | `Turn turn(DistrictPlan out, int g, int i, int kNext, int opened, int homes, int placed, boolean exhausted, int[] mine, int nMin...` _(in DistrictPlan.Builder)_ | This build's state as it stands, at building i of band g with the cell order[kNext] about to open (THE LADDER'S TURNS). |
+| 3661 | 62 | `void resume(Turn t, DistrictPlan out)` _(in DistrictPlan.Builder)_ | This build put back as turn t stood, out its plan so far; what is stamped (walks, SCAN, the touch rows by width) worked out afresh. |
+| 3728 | 7 | `Turn nextTurn()` _(in DistrictPlan.Builder)_ |  |
+| 3737 | 3 | `void freeTurns()` _(in DistrictPlan.Builder)_ | Every turn free again: a new chain of the ladder begins (the last chain's are done with). |
+| 3742 | 5 | `void setStr(int p, boolean on)` _(in DistrictPlan.Builder)_ | A street laid on plot p, or taken up: the plot and its bit. |
+| 3749 | 10 | `long window(int y, int wx, int n)` _(in DistrictPlan.Builder)_ | The street bits of row y from plot wx, n of them (n < 64), bit b for plot wx + b; none past the frame. |
+| 3761 | 9 | `void put(int c, int x, int y, int w, int h)` _(in DistrictPlan.Builder)_ | A building on box (x, y, w, h) of cell c: its plots taken, the cell's free rows with them. |
+| 3774 | 76 | `void openCell(DistrictPlan out, int c, byte kind, int rank, boolean square, boolean bl, int w, int h)` _(in DistrictPlan.Builder)_ | Cell c opened as `kind` at its rank, squared or a boulevard as the ladder's step asks: its ring and its streets laid - a homes cell's by the layout its place hashes to (a homes cell's layout, CL2), an estate cell's si... |
+| 3852 | 13 | `void layRing(int x0, int y0, int x1, int y1, boolean bl)` _(in DistrictPlan.Builder)_ | A cell's arterials laid: the ring of plots round its interior (box x0 - 1 to x1, y0 - 1 to y1), two deep on a boulevard (openCell(); cellsOnGrown() lays it again on ground bought). |
+| 3872 | 30 | `void layLayout(int c, int x0, int y0, byte kind, boolean square, boolean across, byte layout, ArcShape crescent, int lines, byt...` _(in DistrictPlan.Builder)_ | Cell c's streets laid by what its opening chose (interior from (x0, y0)): a crescent by its arc, a homes cell or a square by its layout (CL2), the comb or the whole square for LAYOUT_TODAY, an estate cell by its `line... |
+| 3948 | 45 | `void avSetup()` _(in DistrictPlan.Builder)_ | The arms' staircase plots and outer plots in the frame, worked out from the founding site (start()): a pure function of the input. |
+| 3995 | 4 | `int wetRun(int run)` _(in DistrictPlan.Builder)_ | A run of `run` bridgeable (fresh or shallow) staircase plots (avRun) ended: all of them barred to the avenue when it is longer than the bridge (AVENUE_BRIDGE_STEPS, two plots a step). |
+| 4001 | 13 | `int avPlots(int a, int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | Arm a's staircase plots, corner before step, inside the box (inclusive, within the frame), in the order of the path: into avBuf, avBufK (the step) and avBufC (a corner). |
+| 4016 | 13 | `boolean avAny(int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | Whether any arm has a staircase plot inside the box (inclusive): the cell's interior, for a homes cell to keep the comb and an estate cell to keep its streets. |
+| 4031 | 8 | `int avKind(int p)` _(in DistrictPlan.Builder)_ | What an avenue makes of staircase plot p, by the ground the plan has now (owns): AVK_OFF to AVK_STREET. |
+| 4049 | 46 | `boolean layAvenues(int x0, int y0, int x1, int y1, boolean opening)` _(in DistrictPlan.Builder)_ | Cell c's avenues laid as it opens: every staircase plot of every arm inside its box - the interior and the four ring lines - that has not been decided, as a street of the role ROLE_ARTERIAL (art, so the surface takes ... |
+| 4097 | 7 | `void avUnlay(int p)` _(in DistrictPlan.Builder)_ | Staircase plot p taken up again (a stray piece of avenue, prune()): its counts given back, and it is decided not laid. |
+| 4106 | 3 | `boolean avRing(int a, int m)` _(in DistrictPlan.Builder)_ | Whether step m of arm a is a junction of the ring, by geometry alone: its column or its row is a cell's arterial line (a multiple of CELL in the frame, as every district's are). |
+| 4111 | 5 | `boolean avKeptHas(int a, int m)` _(in DistrictPlan.Builder)_ | Whether a cell-street junction at step m of arm a was kept. |
+| 4124 | 15 | `int avFoot(int a, int j, int f, int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | The FOOT f (0 to 3) of arm a's junction at step j, inside the box, when it is a street plot of the avenue's neighbourhood that belongs to a street whose line runs through S_j: 0 beyond the corner C_j in its column, 1 ... |
+| 4153 | 50 | `void avOnGrown(int n, boolean[] laidIn)` _(in DistrictPlan.Builder)_ | THE AVENUES ON GROUND BOUGHT (CL4 with FX6's THE GROUND BOUGHT): the open cells whose box the ground just grew into (growGround(), the `n` plots in grown[]) lay the staircase plots of it they could not lay when they o... |
+| 4210 | 4 | `void avBegin()` _(in DistrictPlan.Builder)_ | A laying of avenues begun: what it makes streets of is marked anew (avNow). |
+| 4224 | 40 | `boolean avAlone()` _(in DistrictPlan.Builder)_ | NO AVENUE ALONE (CL4): each piece of the plots made avenue since avBegin() that touches no other street - no plot of a ring, a cell's street or an avenue laid before, and not the frame's edge, where the next district'... |
+| 4271 | 60 | `void avFloor(int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | THE + FLOOR ALONG AN AVENUE, for the staircase plots just laid in the box: of each arm's junctions with a cell's street (ROLE_STREET) there, in order outward from the origin, those that keep every other junction kept ... |
+| 4333 | 14 | `void avOutput(DistrictPlan out)` _(in DistrictPlan.Builder)_ | The plan's avenue marks and counts, from this build's state (complete()). |
+| 4377 | 7 | `void cvReset()` _(in DistrictPlan.Builder)_ | This build's curves forgotten (a new build, or a ladder's turn put back). |
+| 4386 | 7 | `boolean cvKeepPlot(int p)` _(in DistrictPlan.Builder)_ | Plot p kept free of buildings. |
+| 4395 | 4 | `boolean crescentFar(int ci, int cj)` _(in DistrictPlan.Builder)_ | Whether the middle of cell (ci, cj) lies CRESCENT_FROM cells or more from the founding site, in a straight line (Euclidean; the cell's tile is CELL plots a side). |
+| 4401 | 11 | `boolean arcWhole(int x0, int y0, boolean across, ArcShape arc)` _(in DistrictPlan.Builder)_ | Whether the ground lays the arc whole: every plot of its staircase a street (lineKind) or, at either end, the ring's own arterial plot the ground lays. |
+| 4414 | 8 | `void crescentLayout(int x0, int y0, boolean across, ArcShape arc, byte st)` _(in DistrictPlan.Builder)_ | A crescent cell's streets: the comb's three long streets whole, and in place of its cross street the arc's staircase (the ring plots at its ends are the ring's own). |
+| 4428 | 5 | `void cvRecord(int x0, int y0, ArcShape arc, boolean across)` _(in DistrictPlan.Builder)_ | The curves of the cell just opened recorded (interior from (x0, y0)): its crescent's, if it is one (`arc`), and each join shore() laid that is still laid - and the ground their bands reach in its interior, not a stree... |
+| 4435 | 4 | `boolean cvKeepable(int p, int x0, int y0)` _(in DistrictPlan.Builder)_ | Whether plot p of the cell whose interior starts at (x0, y0) is open dry ground a curve's band may keep free: in the interior, no street, dry land (owned or not yet). |
+| 4441 | 20 | `void recordCrescent(int x0, int y0, boolean across, ArcShape arc)` _(in DistrictPlan.Builder)_ | The crescent's arc recorded, if all its plots are streets still, and its band's ground kept free. |
+| 4463 | 19 | `void recordShore(int[] path, int x0, int y0)` _(in DistrictPlan.Builder)_ | A street along a cut recorded (the join's plots in order, the dead end's first, the street it meets last), if all its plots are streets still: its line, the plots its band reaches that are not its own, and those kept ... |
+| 4483 | 4 | `void cvAdd(Curve cv)` _(in DistrictPlan.Builder)_ |  |
+| 4489 | 18 | `void cvOutput(DistrictPlan out)` _(in DistrictPlan.Builder)_ | The plan's curves and counts from this build's state (complete()): the curves whose plots are all still streets (a merge may have taken a street along a cut up), and the crescents the cells hold. |
+| 4530 | 7 | `boolean crossed(int x0, int y0)` _(in DistrictPlan.Builder)_ | Whether a highway, railway, yard or reserve (the runs' ground the plan has now, fx) has a plot in the cell whose interior starts at (x0, y0), its ring included: such a cell keeps the comb, which crosses them as it alw... |
+| 4539 | 3 | `double cellHash(long cellX, long cellY, int salt)` _(in DistrictPlan.Builder)_ | A hash for the homes cell whose north-west plot in the world is (cellX, cellY): layoutHash on this plan's seed. |
+| 4544 | 7 | `void layStretch(int x0, int y0, boolean across, boolean alongLong, int line, int from, int to, byte st)` _(in DistrictPlan.Builder)_ | Street plots from..to of the cell's line `line`, along its long streets (alongLong) or across them, in the cell's own axes, laid in the map's. |
+| 4553 | 6 | `static void mark(long[] g, boolean alongLong, int line, int from, int to)` _(in DistrictPlan.Builder)_ | The same plots marked in g, a bit row a line of the cell and its ring (bit u + 1 of row v + 1). |
+| 4561 | 9 | `static long[] ringMarks()` _(in DistrictPlan.Builder)_ | A cell's marks with its ring on every side. |
+| 4572 | 17 | `static int uncovered(long[] g)` _(in DistrictPlan.Builder)_ | How many plots of the cell's interior lie more than REACH from every marked plot, across corners. |
+| 4598 | 55 | `void homesLayout(int x0, int y0, boolean across, byte layout, long cellX, long cellY, byte st)` _(in DistrictPlan.Builder)_ | The streets of a long-block homes cell of the layout LAYOUT_DROPPED or LAYOUT_BRICK, in place of the comb. |
+| 4659 | 45 | `static long settle(long e)` _(in DistrictPlan.Builder)_ | The 24 pieces of a squared cell's three long streets and three cross streets (bit 4j + k the kth of the jth long street, bit 12 + 4i + k of the ith cross street) left once every junction with one street is taken out, ... |
+| 4706 | 3 | `static int node(long e, int i, int j)` _(in DistrictPlan.Builder)_ | The streets that meet junction (i, j) of a squared cell, of the pieces e. |
+| 4718 | 32 | `void squareLayout(int x0, int y0, boolean across, byte layout, long cellX, long cellY, byte st)` _(in DistrictPlan.Builder)_ | The streets of a squared cell (a boulevard's interior too) of the layout LAYOUT_DROPPED or LAYOUT_BRICK, in place of the whole square. |
+| 4763 | 5 | `static int sizedLines(int depth)` _(in DistrictPlan.Builder)_ | The lines strips sized to two rows of a building `depth` plots deep back to back would put streets on (ESTATE LINES): a strip of max(2 x depth, STRIP_LEAST) plots from the arterial, a street, the next, while a street'... |
+| 4776 | 7 | **type** `static final class LinesKey` _(in DistrictPlan.Builder)_ | What estateLines() reads of a cell that is not full, as a key. |
+| 4779 | 1 | `LinesKey(long[] v)` _(in DistrictPlan.Builder.LinesKey)_ |  |
+| 4780 | 1 | `public int hashCode()` _(in DistrictPlan.Builder.LinesKey)_ |  |
+| 4781 | 1 | `public boolean equals(Object o)` _(in DistrictPlan.Builder.LinesKey)_ |  |
+| 4800 | 54 | `int estateLines(int c, boolean across, boolean bl, int w, int h)` _(in DistrictPlan.Builder)_ | ESTATE LINES: which lines of cell c's interior its streets take - and FLIP when they run the other way from `across` - for the w x h building it opens for, its ring laid: of the prototype's spine (MIDDLE) and the stri... |
+| 4856 | 3 | `boolean streetAt(int x, int y)` _(in DistrictPlan.Builder)_ | Whether plot (x, y) is a street now (not beneath a highway): what estateLines() reads a ring whole by. |
+| 4861 | 6 | `int lineKind(int x, int y, boolean horizontal)` _(in DistrictPlan.Builder)_ | What lay() would make of plot (x, y) on a cell's street running east-west (horizontal) or north-south, laying nothing: 0 refused, 1 a street, 2 a street beneath a highway (layPlot()'s rules, the game's). |
+| 4893 | 70 | `int holds(int x0, int y0, boolean across, int lines, int w, int h)` _(in DistrictPlan.Builder)_ | How many w x h boxes cell c (its interior from x0, y0) holds with its streets on `lines`, running north-south when `across`: its free ground (linesFree) less the streets, its touch and reach from the streets about it ... |
+| 4971 | 14 | `boolean lay(int x, int y, boolean horizontal, boolean arterial, byte r)` _(in DistrictPlan.Builder)_ | A street plot at (x, y) of a line running east-west (horizontal) or north-south: owned, not the sea - the prototype's _street - and, with the spec's rules, not a mine's site, fresh water only as a bridge no wider than... |
+| 4986 | 17 | `boolean layPlot(int x, int y, boolean horizontal, boolean arterial, byte r)` _(in DistrictPlan.Builder)_ |  |
+| 5011 | 48 | `int prune()` _(in DistrictPlan.Builder)_ | NO STRAY ROADS (Jerus: "all roads connected, no stray roads"): of the plots a cell's opening laid, each piece of the whole network smaller than LATTICE plots - a street the ground cut down to less than a block, touchi... |
+| 5061 | 8 | `int streetNeighbours(int p)` _(in DistrictPlan.Builder)_ | A plot's street neighbours, beneath a highway included. |
+| 5071 | 7 | `boolean cutAt(int x, int y)` _(in DistrictPlan.Builder)_ | Whether a plot is ground the cut runs along: not the city's, the deep sea, bridgeable water (fresh or shallow) no street crosses, or past the frame. |
+| 5088 | 104 | `int shore(int bx0, int by0, int bx1, int by1)` _(in DistrictPlan.Builder)_ | WHERE THE GROUND CUTS A CELL (spec 2.4, H2: streets favour the grid but need not keep it). |
+| 5207 | 15 | `void freshCell(int c)` _(in DistrictPlan.Builder)_ | A cell's free rows as it opens (BITS, 0.7.94): its ground no building is barred from (openRows) less the streets its opening laid (the changed plots) - what refreeCell() reads of occ, since a cell not open holds no bu... |
+| 5224 | 14 | `void groundRow(int y)` _(in DistrictPlan.Builder)_ | Row y of the ground (THE GROUND, A ROW AT A TIME): dry, barred, its lay code from the ground, the runs' plots, the highways' and the parted streets' bits, an anchor. |
+| 5240 | 13 | `void groundPlot(int p)` _(in DistrictPlan.Builder)_ | Plot p's own ground (THE GROUND, A ROW AT A TIME; one plot, so THE GROUND KEPT works it again alone): dry, unfit, barred by the ground and the runs and a site, and its lay code from the ground (LAY CODES; bridgeable w... |
+| 5255 | 8 | `void fixedPlot(int p, int x, int base, byte f)` _(in DistrictPlan.Builder)_ | A plot of the city's runs: listed, and a highway's in its row's bits and listed too. |
+| 5265 | 12 | `void freshRow(int y)` _(in DistrictPlan.Builder)_ | Row y's runs of bridgeable water, fresh and shallow in any mix (THE GROUND, A ROW AT A TIME; ET6): each plot of a run its length along the row, a street refused along one wider than its bridge. |
+| 5279 | 12 | `void freshColumns(int y)` _(in DistrictPlan.Builder)_ | ...and down each column, read at row y: a column's run goes on where its plot is bridgeable water, and ends where it is not (runFrom, its first row). |
+| 5293 | 3 | `void freshColumnsEnd()` _(in DistrictPlan.Builder)_ | ...the runs still open at the frame's last row ended there. |
+| 5298 | 5 | `void columnRun(int x, int end)` _(in DistrictPlan.Builder)_ | Column x's run from runFrom[x] to the row before `end`: its length on each plot, a street refused down one wider than its bridge. |
+| 5305 | 5 | `void fieldRow(int y)` _(in DistrictPlan.Builder)_ | Row y's fields (spec 2.6) and the rest (THE GROUND, A ROW AT A TIME): barred with the verges, occ as a build begins, the field plots, both as bits. |
+| 5312 | 10 | `void fieldPlot(int p, int x, int base, boolean rowIn)` _(in DistrictPlan.Builder)_ | Plot p's (column x, row of word `base`, `rowIn` its row inside a cell's interior or not) share of fieldRow(): barred with the verge, occ as a build begins, a field plot, both as bits - set where it holds, and cleared ... |
+| 5324 | 9 | `void cellRows(int c)` _(in DistrictPlan.Builder)_ | Cell c's interior rows of free ground and of fields, from the rows' bits, and whether it has a field. |
+| 5341 | 12 | `void vergeWideRow(int y)` _(in DistrictPlan.Builder)_ | VERGES (H5, 0.7.94): the plots on or beside a highway plot, corners included - no building's - as bits a row: the highways' bits (hwRows) spread a plot either way along the row (vergeWideRow()), then a row either way ... |
+| 5354 | 5 | `void vergeRow(int y)` _(in DistrictPlan.Builder)_ |  |
+| 5361 | 6 | `static long bitsOf(long[] rows, int y, int x0)` _(in DistrictPlan.Builder)_ | The INTERIOR bits of row y of `rows` (WORDS longs a row) from plot x0: a cell's interior row (x0 from 1 to SIDE - INTERIOR). |
+| 5383 | 4 | `void fixedCodes()` _(in DistrictPlan.Builder)_ | Each plot of a run's lay code (LAY CODES): a run along a line refuses it that way, a highway crossed is laid beneath - worked out for those plots alone, after start() gave them the ground's. |
+| 5389 | 10 | `void fixedCode(int p)` _(in DistrictPlan.Builder)_ | fixedCodes() for plot p of the runs (fx not 0): its lay code from the ground's, the run along it and what it is. |
+| 5412 | 14 | `void refreeCell(int c)` _(in DistrictPlan.Builder)_ | A cell's free rows from occ: bit i of row j for interior plot (x0 + i, y0 + j). |
+| 5428 | 5 | `void staleAround(int c)` _(in DistrictPlan.Builder)_ | The cells whose reach a change of c's streets may move: it and the eight about it, their reach worked out again when next asked (reachCell() forgets what a cell was known not to hold if its reach grew). |
+| 5438 | 3 | `static long spread(long a)` _(in DistrictPlan.Builder)_ | A window's row of bits spread a plot either way along it, kept to the window. |
+| 5443 | 34 | `void reachCell(int c)` _(in DistrictPlan.Builder)_ | A cell's reach rows: plots within REACH of a street, across corners, and those one plot from one - the prototype's reach_map, over the cell's interior and the REACH plots about it. |
+| 5479 | 5 | `static int runs(int r, int w)` _(in DistrictPlan.Builder)_ | Rows where a run of w set bits starts: bit i set where bits i .. |
+| 5486 | 7 | `static int anyIn(int r, int w)` _(in DistrictPlan.Builder)_ | ...and where a box w wide starting there holds any set bit. |
+| 5501 | 99 | `long tryPlace(int c, int w, int h, boolean fields)` _(in DistrictPlan.Builder)_ | The first spot in cell c where a w x h building fits on free ground within reach of a street - touching one first (a plot of it one from a street, across corners), then within REACH - in rows from the cell's north-wes... |
+| 5608 | 33 | `boolean closeSpine(DistrictPlan out, int c)` _(in DistrictPlan.Builder)_ | An estate cell taken whole (spec 2.3: "a building over 15 plots ... |
+| 5643 | 15 | `static int remember(int[][] ws, int[][] hs, int n, int c, int w, int h)` _(in DistrictPlan.Builder)_ | A shape a cell holds no box of, kept with the others it is no larger than: those larger than it go (they hold none either). |
+| 5670 | 56 | `boolean mergeFor(DistrictPlan out, int c, int w, int h)` _(in DistrictPlan.Builder)_ | In a homes cell: the street segments inside the first group of long blocks (MERGE_GROUPS, in order) that holds the building, has no building in it and is more than MERGE_DRY dry ground or street, returned to ground - ... |
+| 5728 | 7 | `void takeUp(int p)` _(in DistrictPlan.Builder)_ | Plot p taken up as a merge takes up a street: no street, no arterial, no role, free ground unless blocked. |
+| 5741 | 3 | `int stateOf(int p)` _(in DistrictPlan.Builder)_ | Plot p's state as takeUp() changes it: its role (bits 0 to 2), art (8), blvd (16), under (32), str (64) and occ + 1 (bits 7 and 8). |
+| 5746 | 9 | `void takeUpKept(int p)` _(in DistrictPlan.Builder)_ | Plot p taken up, its state kept for putBack(). |
+| 5757 | 12 | `void putBack()` _(in DistrictPlan.Builder)_ | Every plot takeUpKept() took up put back as it was, the last first. |
+| 5771 | 4 | `boolean reaches(int x, int y, int w, int h)` _(in DistrictPlan.Builder)_ | Whether some street lies within REACH of the box (x, y, w, h), across corners - the reach PlanCheck holds every building to (a street beneath a highway is not one) - read from the street bits a row at a time. |
+| 5781 | 15 | `void indexBuildings()` _(in DistrictPlan.Builder)_ | cellBuilding and nextBuilding brought up to the buildings placed so far. |
+| 5798 | 3 | `static boolean nearBox(int bx, int by, int bw, int bh, int x0, int y0, int x1, int y1)` _(in DistrictPlan.Builder)_ | Whether the box (bx, by, bw, bh) lies within REACH + 1 of the plots x0..x1 by y0..y1: a street taken up there may have been the box's. |
+| 5814 | 37 | `boolean stubsFree(int c, int gx, int gy, int gw, int gh)` _(in DistrictPlan.Builder)_ | The dead ends a merge of the blocks in box (gx, gy, gw, gh) of cell c, a homes cell of a varied layout (CL2), would leave, found before anything is taken up: each street plot beside the box that would lose a street to... |
+| 5859 | 33 | `boolean mergeVaried(int c, int gx, int gy, int gw, int gh)` _(in DistrictPlan.Builder)_ | A merge of the blocks in box (gx, gy, gw, gh) of cell c, a homes cell of a varied layout (CL2), whose stubs stubsFree() has found: the box's streets taken up as mergeFor() takes them up, then the stubs, tentatively - ... |
+| 5899 | 59 | `boolean splits(int gx, int gy, int gw, int gh)` _(in DistrictPlan.Builder)_ | Whether taking up the streets inside box (gx, gy, gw, gh) would part streets outside it that reach each other now: the streets beside the box, each that the first reaches through the network, must still reach it witho... |
+| 5966 | 26 | `boolean meets(int p, int gx, int gy, int gw, int gh, int near, int apart)` _(in DistrictPlan.Builder)_ | Whether a walk from street plot p, round box (gx, gy, gw, gh), meets a plot joined to the near walk's first (markB holding `near`). |
+| 6000 | 12 | `boolean ringWhole(int gx, int gy, int gw, int gh)` _(in DistrictPlan.Builder)_ | Whether every plot of the ring just outside the box (its corners among them) is in the frame and a street or beneath a highway: a closed loop of street round the box, joining every street that meets it. |
+| 6014 | 3 | `boolean reachFrom(int p0, int gx, int gy, int gw, int gh, int[] mark, int st, int[] targets)` _(in DistrictPlan.Builder)_ | Marks the streets reached from plot p0 with stamp st in mark, four-connected, none inside box (gx, gy, gw, gh) when gx >= 0; whether every plot of targets (when given) was reached, the walk stopping when they are. |
+| 6019 | 32 | `boolean reachFrom(int p0, int gx, int gy, int gw, int gh, int[] mark, int st, int[] targets, int rx0, int ry0, int rx1, int ry1)` _(in DistrictPlan.Builder)_ | ...keeping within plots (rx0, ry0) to (rx1, ry1), inclusive. |
+| 6066 | 11 | `boolean joinable(int a, boolean horizontal)` _(in DistrictPlan.Builder)_ | Whether a lattice step onto plot a going horizontally (or not) may be laid: the join's ground. |
+| 6079 | 7 | `boolean groundJoinable(int a, boolean horizontal)` _(in DistrictPlan.Builder)_ | Whether a step onto plot a going horizontally (or not) may be laid off the lattice, where the join's lattice finds no way: as joinable(), on any plot (H2: a street follows the ground where it must). |
+| 6088 | 9 | `void layJoin(int a)` _(in DistrictPlan.Builder)_ | Lays a plot the join or the mines' reach took: a street, or beneath a highway. |
+| 6133 | 55 | `void access(DistrictPlan out, int placed)` _(in DistrictPlan.Builder)_ | ACCESS ROADS. |
+| 6190 | 7 | `int gate(int[] gates, int n, int x, int y)` _(in DistrictPlan.Builder)_ | Adds plot (x, y) to the gates if it is one the road may use (inside the frame's own plots, ground a street may take either way); the count. |
+| 6199 | 6 | `boolean accessible(int a, boolean horizontal)` _(in DistrictPlan.Builder)_ | Whether the access road may enter plot a going horizontally (or not): a plot of the frame's own, the ground a street may take, and a highway's only where a street passes beneath it already. |
+| 6207 | 5 | `boolean accessEnd(int a, boolean ramps, int cx, int cy)` _(in DistrictPlan.Builder)_ | Whether plot a is where a road ends: a ramp's (a highway plot carrying a ramp with a street beneath, within reach of the work at (cx, cy)), or an arterial street. |
+| 6218 | 39 | `int accessSearch(int[] gates, int n, boolean ramps, int cx, int cy)` _(in DistrictPlan.Builder)_ | The nearest end from the gates, by plot cost (Dial's algorithm: costs 1 and ACCESS_NEW), as the plot it ends on with accPrev leading back to a gate (its own accPrev -1); -1 for none. |
+| 6259 | 1 | `int accCost(int a)` _(in DistrictPlan.Builder)_ | What entering plot a costs the access road: 1 where a street (or one beneath a highway) already is, ACCESS_NEW where it would be laid. |
+| 6261 | 6 | `void accPush(int d, int a)` _(in DistrictPlan.Builder)_ |  |
+| 6320 | 75 | `void sidings(DistrictPlan out, int placed)` _(in DistrictPlan.Builder)_ | SIDINGS (D14). |
+| 6397 | 6 | `boolean sidingBefore(int a, int b)` _(in DistrictPlan.Builder)_ | Whether the work at plot index `a` comes before the one at `b` in the sidings' order: more plots, then further north, then further west. |
+| 6405 | 3 | `boolean railAt(int x, int y)` _(in DistrictPlan.Builder)_ | Whether plot (x, y) of the frame is a plot of the runs' railway (FIXED_RAIL). |
+| 6410 | 8 | `int sidingGate(int[] gates, int[] heads, int n, int x, int y, int heading)` _(in DistrictPlan.Builder)_ | Adds plot (x, y) to the gates, entered going `heading` (0 north, 1 east, 2 south, 3 west: away from the box), if the siding may start there: open ground, not a street. |
+| 6426 | 12 | `boolean sidingOpen(int a)` _(in DistrictPlan.Builder)_ | Whether a siding may take plot a: SIDING_EDGE inside the frame's edge, dry owned ground, no building's, no runs' plot (track, yard, reserve, highway), no mine's site, no other siding's nor one beside another's (MF1), ... |
+| 6440 | 3 | `boolean crossesStreet(int b, int heading)` _(in DistrictPlan.Builder)_ | Whether the street at plot b goes across a siding moving `heading` (a street at right angles to it beside b), so that the siding crosses it and does not run along it. |
+| 6452 | 46 | `boolean sidingSearch(int[] gates, int[] heads, int n)` _(in DistrictPlan.Builder)_ | The cheapest way from the gates to the railway, by Dial's algorithm over states (plot, heading): true with sdState the state of the way's last plot (the railway beside it at sdRail), sdLast its plot, and sdPrev leadin... |
+| 6500 | 6 | `boolean sidingEnd(int b, int heading)` _(in DistrictPlan.Builder)_ | Whether plot b, entered going `heading`, is a plot of the railway the siding may meet: one the frame's own (not its edge row or column), met from the side. |
+| 6507 | 6 | `void sdPush(int d, int s)` _(in DistrictPlan.Builder)_ |  |
+| 6522 | 5 | `int streetsInOrder(long[] alsoRows)` _(in DistrictPlan.Builder)_ | THE STREETS IN ORDER (0.7.94, batch RD7): every street plot - and beneath a highway, and with `alsoRows` its plots too - into ordered[], in plot order, read from the street bits a row of 64 at a time (rowBits; a highw... |
+| 6529 | 14 | `int streetsInRow(int y, long[] alsoRows, int n)` _(in DistrictPlan.Builder)_ | ...row y's, into ordered[] from n: the count after them (a row a call, THE GROUND, A ROW AT A TIME's reason). |
+| 6554 | 3 | `int[] pieces(int[] lab)` _(in DistrictPlan.Builder)_ | The street pieces, four-connected (beneath a highway included): each plot's label into lab, the sizes returned. |
+| 6559 | 26 | `int[] pieces(int[] lab, boolean parted)` _(in DistrictPlan.Builder)_ | ...with the parted streets of the districts before it (Input.partedAnchor) as streets of the pieces too (joinOut()) when `parted`; each piece's first plot in plot order into pieceRep, its place in ordered[] into pieceAt. |
+| 6587 | 11 | `int pieceStep(int[] lab, int u, int n, int sp, boolean[] also)` _(in DistrictPlan.Builder)_ | pieces()'s step (a plot a call): plot u's neighbours of piece n - streets, beneath a highway, or of `also` - not yet labelled, labelled and stacked above sp. |
+| 6603 | 15 | `int joinStep(int u, int way, int pc, int st, int[] lab, int[] prev)` _(in DistrictPlan.Builder)_ | joinFromSmall()'s walk's step (a plot a call): plot u's neighbours along the lattice (way 0) or over the ground, from piece pc, by walk st - the first street of another piece reached, or -1, the rest queued. |
+| 6620 | 18 | `int joinOutStep(int u, int way, int pc, int st, int[] lab, int[] prev, boolean[] touches)` _(in DistrictPlan.Builder)_ | joinOut()'s walk's step: as joinStep(), the walk ending at a street of a piece that touches an anchor, or beside an anchor. |
+| 6640 | 8 | `int seedPiece(int pc, int[] lab, int[] prev, int[] q, int st)` _(in DistrictPlan.Builder)_ | A walk's start: piece pc's plots, in plot order, into queue q from its first (pieces()), each reached by walk st with no way back. |
+| 6659 | 31 | `int join()` _(in DistrictPlan.Builder)_ | ONE NETWORK (the prototype's _join): while the streets are in more than one piece, breadth first from the largest along the lattice's lines to the nearest other piece, and the way laid - over a long block's middle lin... |
+| 6702 | 39 | `int joinFromSmall()` _(in DistrictPlan.Builder)_ | The join with the game's rules: each piece but the largest, the smallest first, looks for the nearest other piece - along the lattice, then over the ground (H2) - from its own plots, which is the same way back as the ... |
+| 6774 | 6 | `boolean wallJoinable(int a, boolean horizontal)` _(in DistrictPlan.Builder)_ | The join's ground over a building (FW11): as groundJoinable(), on a plot a building stands on too - a house on a resource field's plots (SITE_FIELD, built on last) among them, a plan's box like any other that finds an... |
+| 6791 | 19 | `void rankArrivals()` _(in DistrictPlan.Builder)_ | wallRank filled from the placed boxes: for the walk of wallJoin(), when the plots a way crosses are told apart by when their buildings came. |
+| 6812 | 10 | `int pieceBorn(int pc, int[] lab)` _(in DistrictPlan.Builder)_ | The rank of the last boxes placed before piece pc's latest cell was opened: boxes of that rank or before stood when the piece was born (0 where all its streets are the first batch's). |
+| 6823 | 28 | `int wallWalk(int pc, int[] lab, int[] prev, int least, boolean levels)` _(in DistrictPlan.Builder)_ |  |
+| 6852 | 19 | `int wallJoin(int pc, int[] lab, int[] prev)` _(in DistrictPlan.Builder)_ |  |
+| 6873 | 9 | `void wallRoute(int pc, int[] lab, int[] prev)` _(in DistrictPlan.Builder)_ | The way over the buildings from piece pc (wallJoin()), plot by plot, added to those make() keeps clear when it plans the district again (wallPend); none when the ground parts the piece. |
+| 6901 | 23 | `void probeWall(int month, boolean release, boolean keep)` _(in DistrictPlan.Builder)_ | The internal join is examined at a source boundary. |
+| 6926 | 12 | `void wallMonthEnd(int month, boolean groundChanged)` _(in DistrictPlan.Builder)_ | Saved and newly discovered ways take effect after this month's arrivals, at the same replay boundary. |
+| 6939 | 10 | `void applyWalls(int month)` _(in DistrictPlan.Builder)_ |  |
+| 6950 | 7 | `void releaseClear(Input in)` _(in DistrictPlan.Builder)_ |  |
+| 6959 | 10 | `void waysAtStart()` _(in DistrictPlan.Builder)_ | A build starts with the ways kept at the first batch's month. |
+| 6971 | 8 | `int[] clearPlots()` _(in DistrictPlan.Builder)_ | The final kept plots, independent of the order their ways were discovered. |
+| 6981 | 3 | `void wallRecord(int p, boolean kept)` _(in DistrictPlan.Builder)_ | One wall event, dated at the map's month. |
+| 6985 | 14 | `void wallRecord(int p, boolean kept, int month)` _(in DistrictPlan.Builder)_ |  |
+| 7001 | 15 | `boolean releaseUnused(DistrictPlan p)` _(in DistrictPlan.Builder)_ | A cured way is released for arrivals from this month onward. |
+| 7018 | 7 | `void keepWallClear()` _(in DistrictPlan.Builder)_ | The ways the last plan found, kept from this month's event onward. |
+| 7043 | 37 | `int joinOut()` _(in DistrictPlan.Builder)_ | ACROSS DISTRICTS (spec 2.4: "a district whose first cell does not touch an open cell of its inner neighbour opens an arterial run to it along the lattice"; 0.7.88, batch RD2 - RD1 had no neighbour's plan to join to). |
+| 7087 | 5 | `void markPartedPiece(int p)` _(in DistrictPlan.Builder)_ |  |
+| 7093 | 4 | `void clearParted()` _(in DistrictPlan.Builder)_ |  |
+| 7099 | 28 | `void markParted(DistrictPlan out)` _(in DistrictPlan.Builder)_ | PARTED (0.7.88): out.parted - each street plot whose piece, over the plan's final streets and the parted streets of the districts before it, touches no anchor, nor is the first district's largest piece. |
+| 7133 | 13 | `int partedStep(DistrictPlan out, int u, int n, int sp)` _(in DistrictPlan.Builder)_ | markParted()'s step (a plot a call): plot u of piece n counted, whether it touches an anchor, its neighbours of the piece not yet labelled labelled and stacked above sp. |
+| 7148 | 5 | `boolean onStreet(int p)` _(in DistrictPlan.Builder)_ | Whether plot p will have a street code once surfaced: a street, or beneath a highway (streetsInRow's plots). |
+| 7155 | 6 | `boolean nearAnchor(int p)` _(in DistrictPlan.Builder)_ | Whether plot p is, or is beside (four ways), a plot of the frame's edge a district before this one lays a street on. |
+| 7165 | 13 | `boolean surfaces(int x, int y)` _(in DistrictPlan.Builder)_ | Whether this district surfaces a plot: off its seams, or on a seam it comes first on (Input.surfaces). |
+| 7187 | 59 | `void surface(DistrictPlan out)` _(in DistrictPlan.Builder)_ | The model's road as the streets' surface (the prototype's, over its street plots): arterials first, then by their cell's rank from the hub, then row by row - every street HALF while the road lasts, a TRACK where it do... |
+| 7251 | 9 | `static double widths(byte[] w, int from, int to, double left)` _(in DistrictPlan.Builder)_ | surface()'s widths over w[from, to): each HALF while the road lasts, then each FULL; the road left after. |
+| 7265 | 23 | `void surfaceRow(DistrictPlan out, int y, int[] start)` _(in DistrictPlan.Builder)_ | surface()'s row y (a row a call): each street every street's (scratchLab); one it surfaces with its bucket (scratchPrev, pieceStack), counted in start[]; a one-sided seam (ordered). |
+| 7290 | 13 | `void code(DistrictPlan out, int p)` _(in DistrictPlan.Builder)_ | Plot p's street code made whole: its kind (a seam with none, beneath a highway), role, bridge and crossing. |
 
