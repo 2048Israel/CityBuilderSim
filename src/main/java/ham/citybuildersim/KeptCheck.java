@@ -3153,9 +3153,6 @@ public class KeptCheck {
         folds.add(choice("...and both on", b -> { b.sectorsColumns(true, true); return null; }));
         pageReshaped(g, bench, tab, 49, folds);
 
-        for (String key : heldHere) g.getBusinessInvestment().releaseSector(key);
-        boolean worksHeld = g.getBusinessInvestment().isHeld(works);
-        g.getBusinessInvestment().holdSector(works);
         sectorsPictures(g, bench, works, worksName);
         sectorsCountUp(g, bench, plain);
 
@@ -3169,7 +3166,7 @@ public class KeptCheck {
             pageCost(g, bench, p, 52, KEPT_SECTOR_MS, "KEPT_SECTOR_MS");
         }
 
-        if (!worksHeld) g.getBusinessInvestment().releaseSector(works);
+        for (String key : heldHere) g.getBusinessInvestment().releaseSector(key);
         sectorsControls();
         sectorsHover(g, bench, plain);
     }
@@ -3954,7 +3951,13 @@ public class KeptCheck {
         // Borrow: every kind of paper, its term, the ask, callable, the highest yield, what is typed; and abroad, every money.
         Game borrowing = fx(KeptCheck::borrowCity);
         KeptBench borrowingBench = fx(() -> new KeptBench(borrowing));
+        int borrowingMonth = borrowing.getMonth();
         pageReshaped(borrowing, borrowingBench, fx(borrowingBench::finances), 60, borrowChoices(borrowing, borrowingBench));
+        // The later shared-city fixtures keep their played stretch while Borrow uses its own controlled bidders.
+        fx(() -> {
+            for (int m = borrowingMonth; m < borrowing.getMonth(); m++) month(g);
+            return null;
+        });
 
         // The book: the pieces of paper sold through the model (a line's page and Close it now, each from each).
         System.out.println("\n--- 60: the book, a line's page and Close it now ---");

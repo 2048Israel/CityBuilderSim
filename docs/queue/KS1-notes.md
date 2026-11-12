@@ -129,3 +129,40 @@ record and the ship file. It removes every KS1 fixture exemption and its
 exact-line cover, then retains the explicitly deferred timing rows,
 KS1-UI's reproduced header finding and KS1-Saved's independent baseline
 finding. A remaining generic fixture failure therefore stays NEW.
+
+The narrowed-hold month-625 sectors probe completed with zero failures in
+`KS1-repair-sectors-stable.txt`. The prior attempt reached its controls
+after a concurrent fast rebuild briefly removed a lazily loaded class,
+CityLand.Held. That interrupted probe's own processes, 33748 and 32708,
+were ended and the complete section rerun against a copied, stable class
+directory. The normal batch-check entry point builds before starting its
+harnesses. The repaired fast check passed, with compile 42 s and 0 firm
+Stale findings. The second final pick tests source commit 02273d48.
+
+## Second pick and the rendered picture finding
+
+The second pick ran seven harnesses. Six passed, and KeptCheck completed
+in 1,170.1 s. Borrow's reuse assertion passed. Five picture-movement/reuse
+assertions in section 64 became red after the shared city lost Borrow's
+played months. The three KS2 assertions and the header finding were red,
+and the same Wood Products bounds difference remained. Compile, maps and
+Stale passed. Thirty-one timing assertions were soft. The retained files
+are `KS1-pick2.txt`, `KS1-pick2-suite.txt` and `KS1-pick2-KeptCheck.log`.
+
+- ★ Preserve the shared city's elapsed Borrow months while the independent
+  city tests the quotes. These choices previously advanced the city that
+  the later picture fixtures read. Their model actions remain real months.
+- ★ Keep the first pick's all-sector hold through the complete Sectors
+  section. The narrower hold candidate left the Text difference in place
+  and changed the downstream simulation path. The complete hold gives the
+  group one controlled plant fixture and preserves existing holds on exit.
+- ★ Queue Wood Products' Text geometry with KS1-UI and keep its assertion.
+  A temporary copy of the normal harness through section 50 reproduced the
+  month-1,868 difference, then rendered both pages and settled them again.
+  The resulting `PAINTED COMPARISON` still showed the same kept/fresh
+  `Residues` bounds. The screen draws this Text in SectorScreen's
+  IndustryPane, through its text/run helpers. The log is
+  `target/checks/KS1-prefix-painted.txt`. A standalone text-run probe over
+  250 word/font/size transitions had zero differences, so the full picture
+  and its preceding draws are part of the reproduction. Both screen
+  implementations stay for the queued repair under this run's scope.
