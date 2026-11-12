@@ -76,7 +76,9 @@ is skipped under EN1. The harnesses use their scratch cities.
 ## One in, one out
 
 `git diff --numstat origin/main` over process files, excluding these notes
-and the ship file, counts 311 added and 344 removed, net 33 removed.
+and the ship file, now counts 384 added and 348 removed, net 36 added.
+The accepted pre-review diff was 311 added and 344 removed, net 33 removed.
+The ownership guard and its regression cases account for the review increase.
 
 ## Kept runs
 
@@ -107,3 +109,42 @@ The builder's other kept logs are `target/checks/GR1-fast.txt`,
 `GR1-timing-check.txt`, `GR1-pick-final.txt`, `GR1-ship-selftest.txt` and
 `GR1-nightly-selftest.txt` in that directory. Script self-tests passed against
 the final implementations. The original TimingCheck remains unchanged.
+
+## Gatekeeper review corrections (2026-11-12)
+
+Readiness was withdrawn in `b2bb0cea`, pushed before source changes. The
+review accepted the retained full dry run and its two commits above. The
+publisher, launcher, batch-check, AllChecks and timing arithmetic are the
+versions already covered by that run and the gatekeeper's final TimingCheck.
+
+The nightly lock now publishes a prepared nonempty directory containing its
+owner identity. Windows records the native PID and UTC process-start ticks.
+Linux records PID, boot ID and kernel process-start ticks. A new contender
+checks the full recorded identity before recovering a stale entry. The prepared
+publication keeps an ownership record present throughout live contention.
+Empty legacy locks, dead owners and reused PIDs are recovered. Recovery writes
+one line to the nightly log, retained through playtest and failure logging.
+A live owner still refuses with exit 3 and preserves its existing log.
+
+Automatic data discovery adds each property only while its file exists.
+Windows paths use drive-letter form and quoted values support spaces. A
+nonempty caller JDK_JAVA_OPTIONS takes precedence. The no-JVM fixtures cover
+missing files, Earth alone, both files and explicit caller options.
+
+`sh tools/nightly-selftest.sh` exited 0 after these changes. Its new ownership
+cases exercise fresh ownership, live refusal, preservation of the owner and
+log, missing owners, reused PIDs and empty legacy directories. Existing figure,
+paired-round, five-merge search and loaded-baseline fixtures also pass. The
+kept output is `target/checks/GR1-review-nightly-selftest.txt`.
+
+The requested `sh tools/ship-selftest.sh` exited 0, 116 of 116 passed, in
+its own unique temporary area. Its kept output is
+`target/checks/GR1-review-ship-selftest.txt`.
+The additional pick check exited 0, regenerated maps with no generated diff,
+and reported 0 firm Stale findings. Its output is
+`target/checks/GR1-review-pick-final.txt`. A separate installed-JDK launcher
+check preserved a quoted value containing spaces, recorded in
+`target/checks/GR1-review-java-options.txt`. The ownership tests ran in Git Bash on
+Windows. The Linux branch was inspected but could not be executed here because
+Windows Subsystem for Linux is unavailable. The same self-test exercises the
+native ownership branch when run on Linux.
