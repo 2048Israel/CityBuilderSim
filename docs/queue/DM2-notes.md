@@ -34,3 +34,14 @@
 - The unit journal removed the 660-box cascade. Its 4,000-month replay left two moves at m3002. Captured actual worker inputs showed a Rail Depot's count return from 7 to 8 and an older log entry change from 0 to 1, beside a genuinely expanding yard. The same return-flow defect affected MF2's static yard-unit removal. The dated adjustments now cover yards too, replacing that static removal, with both cargo-terminal and rail-depot return/departure fixtures.
 
 - The cargo-terminal and rail-depot unit-flow fixtures pass all six assertions apiece, including the sidecar byte round trip. The first 89-harness pick completed with only the already-repaired incremental-ground network failures as NEW reds. Its other checks, including ReadPathCheck and SaveFileCheck, completed. A final pick is now being run on the dated-unit repair.
+
+## Final model verification
+
+- `target/checks/dm2-latest4000.txt` is the final model's 4,000-month run. Exit 0, no findings, every monthly audit and reload matched, and the layout watch found no moved box.
+- `target/checks/dm2-default-final-comparison.txt` reports all eight default-playtest CSVs byte-identical to the original main run at fc3b6be5. The default report retains only its recorded CL6 industry-ring finding. The ensemble is skipped because the model trace is unchanged.
+- `target/checks/dm2-baseline-map.txt` reproduces both DM3 assertions on the original planner with FC1 enabled, including `...and every building drawn, one for one`. Both original and repaired planners draw 1,355 of 1,356 buildings at m121, with one packed building finding no ground. The ship file records that second assertion under the already-queued DM3 fix.
+
+## Launcher preparation
+
+- The final selected run has completed its model harnesses. Its only active JVM is KeptCheck. Its MapCheck findings are DM3's two drawn-count labels and the two recorded BQ1 funding labels. PlanCheck has its two recorded PX1 labels. The full fresh-clone gate is started in parallel with the final kept-UI checks, from a provisional ship record, before readiness is reported.
+- Regenerated all indexes from the final source with tools.Maps. Main remains fc3b6be5. The protected publisher records and GameVersion fields are untouched.
