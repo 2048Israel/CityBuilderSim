@@ -8,7 +8,7 @@
 #      ./batch-check.sh               compile, the whole suite, maps, Stale, git status
 #      ./batch-check.sh money bank    the same, the suite only the harnesses named so
 #      ./batch-check.sh --fast        compile, maps, Stale, git status: no suite
-#      ./batch-check.sh --timing      compile and the timing harnesses alone, hard: the ship gate's
+#      ./batch-check.sh --timing      compile and the timing harnesses alone, hard: the nightly's
 #      ./batch-check.sh --pick        the plain run, the suite only the harnesses tools/pick.sh picks
 #                                     from the diff against main, plus any names typed after it
 #      ./batch-check.sh --judge LOG   judge a saved AllChecks -f log: nothing built, nothing run, no lock
@@ -49,20 +49,13 @@
 #  times soft (-Dcbs.timing=soft): a timing figure over its budget says SOFT on
 #  its line and is not counted. The suite runs AllChecks.PARALLEL harnesses at
 #  once, each JVM under AllChecks.HEAP_MB of heap (SP1); --timing, one at a time.
-#  Timing is judged once, hard, by --timing, the ship gate's, and it starts at
-#  once. WHY (GP1): TM2 made it wait for a quiet minute (four empty looks in a
-#  row, 30 minutes at most), so that a hard run did not share the machine with
-#  another batch's JVM; with two lanes that was often the whole of a gate's
-#  wait, and since TM3 a timing red is judged against main's own run in the same
-#  minutes (ship.sh), which is what the wait only approximated.
+#  Timing is judged nightly on main (GR1). tools/nightly.sh waits for a quiet
+#  machine and confirms slower figures with paired rounds, away from the gate.
 #  In Git Bash the classpath is joined with ';', as Java on Windows wants.
 #
 #  The figures (TM3, 2026-10-27): every suite run writes each timing assertion's
 #  measured figure and budget to target/checks/timing.tsv (Timing.TSV_PROPERTY; the
-#  columns are in Timing), the old file removed first. ship.sh reads it, never a
-#  label's prose, to judge a timing red side by side with main (tools/timing-pair.awk):
-#  it runs `./batch-check.sh --timing HARNESS...` in main's worktree and in the
-#  merge's tree in turn, back to back, to share one load.
+#  columns are in Timing). tools/nightly.sh retains and compares them per machine.
 # ---------------------------------------------------------------------------
 
 ASKED_FROM=$(pwd)   # where the caller stood: a relative LOG of --judge is theirs, not the repository's
@@ -289,7 +282,7 @@ if [ "$TIMING" = 1 ]; then
     set -- --timing "$@"
     echo "timing    hard - the timing harnesses alone"
 elif [ "$FAST" = 0 ]; then
-    TIMED="-Dcbs.timing=soft"   # always: only --timing, the gate's, judges timing (BP1, 2026-10-25)
+    TIMED="-Dcbs.timing=soft"   # GR1: only --timing judges speed, nightly on main
 fi
 
 # --- the suite -------------------------------------------------------------

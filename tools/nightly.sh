@@ -1,19 +1,9 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
-#  The full 4,000-month playtest once a night on origin/main's tip (the gate
-#  plays 2,400), so a fault past month 2,400 meets the next morning with only
-#  that day's ships as suspects. No commit, no branch. POSIX sh.
-#
-#      sh tools/nightly.sh     clone main to $TEMP/cbs-nightly, build, play (about
-#                              5 minutes), say the verdict, delete the clone; run in
-#                              the background when tools/day.sh --due says so
-#
-#  The verdict, one line, printed and written over $HOME/.cbs-nightly.txt (the
-#  home folder, so ship.sh's temp clone on the PC reads it for gate.txt); the
-#  whole output is $HOME/.cbs-nightly.log. "<date> <version> <commit> 4,000
-#  months: " then "OK in N s", "RED, exit N in N s: <first finding, else the last
-#  line>" or "FAILED to <step>: <first error line>". It names the main tree's
-#  data/earth-2.bin and data/world-1.bin unless JDK_JAVA_OPTIONS is set, as the gate.
+#  Nightly on origin/main's tip: 4,000 months, then hard timing and attribution.
+#  One verdict in $HOME/.cbs-nightly.txt, detail in .cbs-nightly.log; figures
+#  and commit per machine/night in $HOME/.cbs-timing (GR1). No commits or saves.
+#  WHY (GR1): gate timing rounds cost 33.7 hours and named no faulty batch.
 #  Exit: 0 OK, 1 RED, 2 not a checkout or an option, 3 a step before the run failed.
 #  WHY (GT1, 2026-11-01, Jerus: "do we need 4k months?"): the gate plays 2,400.
 # ---------------------------------------------------------------------------
@@ -27,17 +17,18 @@ ORIG=$(git rev-parse --show-toplevel); cd "$ORIG" || exit 2
 COMMON=$(cd "$(git rev-parse --git-common-dir)" && pwd); TXT=$HOME/.cbs-nightly.txt; LOG=$HOME/.cbs-nightly.log
 MAIN=$(git worktree list --porcelain | sed -n '1s/^worktree //p')
 BASE=${TEMP:-${TMPDIR:-/tmp}}; command -v cygpath >/dev/null 2>&1 && BASE=$(cygpath -u "$BASE")
-CLONE=$BASE/cbs-nightly; STEP=$BASE/cbs-nightly.step
+mkdir "$HOME/.cbs-nightly.lock" 2>/dev/null || { echo 'nightly already running (.cbs-nightly.lock)'; exit 3; }
+CLONE=$(mktemp -d "$BASE/cbs-nightly-XXXXXXXX") || { rmdir "$HOME/.cbs-nightly.lock"; exit 3; }
+STEP=$CLONE.step
 NUM=$(printf '%s' "$MONTHS" | sed -e :a -e 's/\(.*[0-9]\)\([0-9]\{3\}\)/\1,\2/;ta')
 case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) SEP=';' ;; *) SEP=':' ;; esac
 VER=; SHA=
-rm -rf "$CLONE" "$STEP"
-trap 'cd "$ORIG" 2>/dev/null; rm -rf "$CLONE" "$STEP"' EXIT   # from outside the clone (TD1: leftover temp folders held 37 GB)
+trap 'cd "$ORIG" 2>/dev/null; rm -rf "$CLONE" "$STEP"; rmdir "$HOME/.cbs-nightly.lock"' EXIT   # from outside the clone (TD1: leftover temp folders held 37 GB)
 trap 'exit 3' INT TERM HUP
 
 clean() { sed 's/^ *//; s/  */ /g'; }
 verdict() {   # $1 the verdict after "N months: ": printed, and written over the last
-    printf '%s %s %s %s months: %s\n' "$(date '+%Y-%m-%d %H:%M')" "${VER:-?}" "${SHA:-?}" "$NUM" "$1" > "$TXT"
+    printf '%s %s %s %s months: %s%s\n' "$(date '+%Y-%m-%d %H:%M')" "${VER:-?}" "${SHA:-?}" "$NUM" "$1" "${TIMING:+; $TIMING}" > "$TXT"
     cat "$TXT"
 }
 failed() {   # $1 the step, its output in $STEP: the first error line (else the last) in the verdict
@@ -55,19 +46,25 @@ cd "$CLONE" || failed clone
 mvn -q -B compile > "$STEP" 2>&1 || failed compile
 mvn -q -B dependency:build-classpath -Dmdep.outputFile=target/classpath.txt > "$STEP" 2>&1 || failed classpath
 
-set --
 if [ -z "$JDK_JAVA_OPTIONS" ]; then
-    for f in earth-2:cbs.earth world-1:cbs.world; do
-        [ ! -f "$MAIN/data/${f%%:*}.bin" ] || set -- "$@" "-D${f#*:}=$MAIN/data/${f%%:*}.bin"
-    done
+    case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) MAIN=$(cygpath -m "$MAIN") ;; esac
+    JDK_JAVA_OPTIONS="-Dcbs.earth=$MAIN/data/earth-2.bin -Dcbs.world=$MAIN/data/world-1.bin"
+    export JDK_JAVA_OPTIONS
 fi
 T0=$(date +%s)
-java -Xmx2048m -Xms64m -Dcbs.timing=soft -Dstdout.encoding=UTF-8 -Dplaytest.months=$MONTHS "$@" \
+java -Xmx2048m -Xms64m -Dcbs.timing=soft -Dstdout.encoding=UTF-8 -Dplaytest.months=$MONTHS \
     -cp "target/classes$SEP$(cat target/classpath.txt)" ham.citybuildersim.LongPlaytest > "$STEP" 2>&1
 RC=$?; SECS=$(( $(date +%s) - T0 ))
 tr -d '\r' < "$STEP" > "$LOG"
-[ "$RC" != 0 ] || { verdict "OK in $SECS s"; exit 0; }
-F=$(awk '/^--- findings ---/ { f = 1; next } f && NF { print; exit }' "$LOG" | clean)
-case "$F" in ""|Nothing.*) F=$(grep . "$LOG" | tail -n 1 | clean) ;; esac
-verdict "RED, exit $RC in $SECS s: $(printf '%s' "$F" | cut -c1-200)"
-exit 1
+PLAY="OK in $SECS s"
+if [ "$RC" != 0 ]; then
+    F=$(awk '/^--- findings ---/ { f = 1; next } f && NF { print; exit }' "$LOG" | clean)
+    case "$F" in ""|Nothing.*) F=$(grep . "$LOG" | tail -n 1 | clean) ;; esac
+    PLAY="RED, exit $RC in $SECS s: $(printf '%s' "$F" | cut -c1-200)"
+fi
+. "$ORIG/tools/nightly-timing.sh"
+TIMING='timing FAILED: incomplete run'
+nightly_timing >> "$LOG" 2>&1; TRC=$?
+[ -z "$NIGHT" ] || cp "$LOG" "$NIGHT/nightly.log"
+verdict "$PLAY"
+[ "$RC" = 0 ] && [ "$TRC" = 0 ]

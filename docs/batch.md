@@ -10,11 +10,11 @@ are `docs/notes/batch-history.md`. Split by reader in BM1 (2026-10-28).
 
 Each batch runs in a worktree of the orchestrator's clone, on a branch of its
 own (`batch/<id>`) from `main`, or, as a lane's next batch, from its
-predecessor's tip (7). Batches check side by side (TM1), so every
-`batch-check.sh` run but `--timing` times soft (a figure over budget says SOFT,
-uncounted); timing is judged hard only at the gate (BP1's review: a run that
-began alone timed hard, and main's own misses on a slow day came out as the
-batch's reds). The suite runs three harnesses at once (SP1, `AllChecks.PARALLEL`,
+predecessor's tip (7). Batches check side by side (TM1). Every run but
+`batch-check.sh --timing` times soft. Speed is judged nightly on main by
+`tools/nightly.sh`, with machine-local figures and paired confirmation (GR1,
+the gate's rounds took 33.7 hours without identifying a faulty batch).
+The suite runs three harnesses at once (SP1, `AllChecks.PARALLEL`,
 each JVM under `-Xmx` `AllChecks.HEAP_MB`, none started while the commit charge
 is over `AllChecks.COMMIT_PCT`); a hard run, `-Dcbs.parallel=1` in
 `JDK_JAVA_OPTIONS` (memory short) and the cloud workbench (two cores, one JVM

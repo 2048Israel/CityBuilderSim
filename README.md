@@ -103,7 +103,7 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   main; BP1, 2026-10-24); `Batch check.bat` is the same on Windows without
   `--pick`, the maps only with `--maps`.
 - `--timing` runs only the harnesses that time something (`Timing.HARNESSES`):
-  what the ship gate runs, alone and hard, before it commits.
+  run nightly on main, alone and hard, by `tools/nightly.sh`.
 - `-Dcbs.timing=soft` makes timing soft: a timing figure over its budget says
   `SOFT`, with the figure and the budget, and is not counted; every other
   assertion is as it was. `AllChecks` hands it to each harness, and `-f` says
@@ -112,10 +112,8 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   (TM1, 2026-10-18); `TimingCheck` holds the mechanism.
 - `-Dcbs.timing.tsv=FILE` makes every timing assertion append its figure,
   budget and unit to FILE (`batch-check.sh` names `target/checks/timing.tsv`),
-  and the ship gate times a timing red again with main's classes and the
-  merge's in turn and judges those figures, not the label's prose
-  (`tools/timing-pair.awk`; TM3, 2026-10-27). A comparison of two measured
-  times is a `Timing` assertion like any budget.
+  and the nightly confirms a slower figure against the preceding quiet night's
+  commit with paired medians (`tools/timing-pair.awk`, GR1).
 - Any other argument filters by substring: `AllChecks money bank` runs
   `MoneyCheck` and `BankCheck` and nothing else.
 - The exit status is the number of harnesses that failed, so a build script can
