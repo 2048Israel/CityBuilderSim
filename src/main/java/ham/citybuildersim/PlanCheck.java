@@ -174,7 +174,8 @@ import java.util.List;
  *      network, every check, a pure function; and the case counted across
  *      section 17's cities and this harness's, before and after. DM2: the dated field belt stays connected, keeps buildings off
  *      its way and moves none through later arrivals; recorded ways displace only intersecting boxes and release plots for
- *      later arrivals; the first site or shore exclusion preserves the raw history, its first-batch boundary and standing boxes.
+ *      later arrivals; the first site or shore exclusion preserves the raw history, its first-batch boundary and standing boxes;
+ *      a purchase in the current picture's month releases an unused way without dating a wall record in the future.
  *  19. no avenue through an interchange (batch MF2, 2026-11-08; DistrictPlan's NO AVENUE THROUGH AN INTERCHANGE'S RESERVE
  *      LAID AFTER IT; Jerus's Bergen city drew a diagonal avenue through a cloverleaf's loops): a 19 x 19 reserve laid across
  *      the south-east arm in a month after the avenue was laid (the arm's step 8, inside the cell beside the hub, and step 20,
@@ -391,6 +392,7 @@ public class PlanCheck {
         fieldWallArrivals(types);
         datedWallEvents(types);
         firstExclusion(types);
+        wallPurchaseMonth(types);
         interchangeAvenue(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -4930,6 +4932,45 @@ public class PlanCheck {
         in.counts[excluded]--;
         map.planExclusionsInto(district, in);
         return DistrictPlan.make(in);
+    }
+
+    /** A purchase in the picture's month can release an unused way without dating a record in the future (DM2). */
+    static void wallPurchaseMonth(BuildingVisual.Type[] types) {
+        out.println("\n--- 18e. a purchase releases an unused wall way in the current picture's month (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        DistrictPlan.Input in = new Log().add(1, house, 50).into(flat(types));
+        int purchase = 4 * DistrictPlan.FRAME + 4, bought = 150;
+        in.owned[purchase] = false;
+        in.month = 1;
+        DistrictPlan before = DistrictPlan.make(in);
+        int plot = before.by[0] * DistrictPlan.FRAME + before.bx[0];
+        in.month = 2;
+        in.wallMonth = new int[] { 2 };
+        in.wallChange = new int[] { plot << 1 | 1 };
+        DistrictPlan kept = DistrictPlan.make(in);
+        // The release needs a physical source event. No arrival at this month can conceal a purchase processed one month late.
+        in.wallMonth = kept.wallMonth;
+        in.wallChange = kept.wallChange;
+        in.owned[purchase] = true;
+        in.boughtAt = new int[DistrictPlan.AREA];
+        in.boughtAt[purchase] = bought;
+        in.month = bought;
+        DistrictPlan after = DistrictPlan.make(in);
+        boolean released = false, future = false;
+        for (int k = 0; k < after.wallMonth.length; k++) {
+            future |= after.wallMonth[k] > in.month;
+            if (after.wallChange[k] == plot << 1 && after.wallMonth[k] == bought) released = true;
+        }
+        check("fixture: an earlier recorded way displaced one box and remains kept until the purchase", kept.wallClear == 1
+                && kept.wallWay[0] == plot && MapCheck.movedOf(MapCheck.boxesOf(before), MapCheck.boxesOf(kept)) == 1);
+        check("the current-month purchase releases the unused way at its actual month, with no future wall record", released && !future && after.wallClear == 0);
+        check("the purchase and release move no standing box", after.buildings == kept.buildings
+                && MapCheck.movedOf(MapCheck.boxesOf(kept), MapCheck.boxesOf(after)) == 0);
+        in.wallMonth = after.wallMonth;
+        in.wallChange = after.wallChange;
+        DistrictPlan replay = DistrictPlan.make(in);
+        check("the current-month purchase replays the same boxes, streets and wall journal", samePlan(after, replay)
+                && Arrays.equals(after.wallMonth, replay.wallMonth) && Arrays.equals(after.wallChange, replay.wallChange));
     }
 
     /* =====================================================================

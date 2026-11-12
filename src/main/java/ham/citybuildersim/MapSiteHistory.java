@@ -202,6 +202,25 @@ final class MapSiteHistory {
                 && Arrays.equals(left.rec, 0, n, right.rec, 0, n);
     }
 
+    /** A loaded journal must end on the actual claims; only districts with transitions need a mask read. */
+    boolean matchesCurrent(MaskReader reader) {
+        if (journals.isEmpty()) return true;
+        boolean[] checked = new boolean[CityMap.DISTRICT * CityMap.DISTRICT];
+        for (Map.Entry<CityMap.District, Journal> entry : journals.entrySet()) {
+            byte[] now = reader.mask(entry.getKey(), Map.of());
+            checkMask(now);
+            Arrays.fill(checked, false);
+            Journal j = entry.getValue();
+            for (int k = j.n - 1; k >= 0; k--) {
+                int plot = j.rec[k] >>> 4;
+                if (checked[plot]) continue;
+                if (now[plot] != (j.rec[k] & 3)) return false;
+                checked[plot] = true;
+            }
+        }
+        return true;
+    }
+
     /** The only source classes a transition may name. */
     private static boolean kind(int kind) {
         return kind == 0 || kind == DistrictPlan.SITE_FIELD || kind == DistrictPlan.SITE_MINED;

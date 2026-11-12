@@ -11344,6 +11344,7 @@ public final class CityMap {
                 m.batchLogs();
             }
             m.sitedNow();
+            if (!m.siteHistory.matchesCurrent(m::siteMask)) return null;
             return m;
         } catch (IOException | RuntimeException e) {
             return null;

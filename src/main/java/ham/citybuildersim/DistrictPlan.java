@@ -2449,6 +2449,13 @@ public final class DistrictPlan {
                     evRoadNow = evRoad[e++];
                     placeInst(id, iMonth[id]);
                 }
+                // Land bought this month becomes available after its arrivals, before its final join and wall decision.
+                if (dueMonth <= m) {
+                    endLand = true;
+                    growGround(m);
+                    endLand = false;
+                    changed = true;
+                }
                 wallMonthEnd(m, changed);
                 int next = Integer.MAX_VALUE;
                 if (e < nEv) next = evMonth[e];
@@ -2456,7 +2463,7 @@ public final class DistrictPlan {
                 if (fxNext < fxN) next = Math.min(next, in.fixedLogMonth[fxNext]);
                 if (siteNext < siteN) next = Math.min(next, in.siteLogMonth[siteNext]);
                 if (wNext < wN) next = Math.min(next, wMonth[wNext]);
-                if (dueMonth < Integer.MAX_VALUE) next = Math.min(next, dueMonth + 1);
+                if (dueMonth < Integer.MAX_VALUE) next = Math.min(next, dueMonth);
                 if (next == Integer.MAX_VALUE) break;
                 m = next;
             }
@@ -2551,7 +2558,8 @@ public final class DistrictPlan {
 
         /** growGround(), the land bought left out when `withLand` is false: the runs and sites alone, with wall records enabled only by the end-of-month phase. */
         void growGround(int month, boolean withLand) {
-            boolean land = withLand && month > dueMonth, runs = fxNext < fxN && in.fixedLogMonth[fxNext] <= month;
+            boolean land = withLand && (month > dueMonth || endLand && month == dueMonth);
+            boolean runs = fxNext < fxN && in.fixedLogMonth[fxNext] <= month;
             boolean ways = endWays && wNext < wN && wMonth[wNext] <= month;
             boolean sites = siteNext < siteN && in.siteLogMonth[siteNext] <= month;
             if (!land && !runs && !ways && !sites) return;
@@ -2562,7 +2570,7 @@ public final class DistrictPlan {
                 int due = Integer.MAX_VALUE;
                 for (int p = 0; p < AREA; p++) {
                     if (!in.owned[p] || owns[p]) continue;
-                    if (month == Integer.MAX_VALUE || at[p] < month) {
+                    if (month == Integer.MAX_VALUE || at[p] < month || endLand && at[p] == month) {
                         owns[p] = true;
                         grown[n++] = p;
                     } else {
@@ -2880,7 +2888,7 @@ public final class DistrictPlan {
         /** Resource ground replayed from its actual source months, independently of the caller's viewing schedule. */
         final byte[] site = new byte[AREA];
         int siteNext, siteN;
-        boolean initialLadder, endWays;
+        boolean initialLadder, endWays, endLand;
         int temporalTries;
 
         void sitesAtStart() {
