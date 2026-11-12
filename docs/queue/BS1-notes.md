@@ -42,4 +42,33 @@ BA1 and BD1 findings are the brief. WC1 assigns whole batches to Codex.
 
 ## Verification
 
-Checks and final gate identities will be recorded here as they complete.
+- Rendered Close it now through the real FinancesScreen and KeptBench on
+  scratch cities. Fresh cancellation and a reopened line both display the
+  cancelled sale, its proceeds, the paid holders and the total without
+  overlap. Images are `target/checks/BS1-fresh.png` and
+  `target/checks/BS1-reopened.png`. The helper and images remain under target.
+- The default playtest path moves. The prior main evidence is the retained
+  GR2 launcher run `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GR2-20261112-01`,
+  main `420c65dcebd0a0371d4d785145ef904af87a7883`. Its model equals BS1's
+  base `fc3b6be5`. The intervening Java changes are AllChecks, KnownReds and
+  KnownRedsCheck. Its first stock write-off is month 192, BS1's month 260.
+  The required ensemble runs once on final model `41551904`, label `BS1`,
+  against stored `docs/ensemble/0.9.93.md`.
+- Ensemble completed all 80 runs in 20.7 minutes, exit 0. The committed
+  baseline is `docs/ensemble/BS1.md`, scored **23/26**, alongside stored
+  0.9.93's **23/26**. Every policy reports zero money-audit failures.
+  A1 misses the breadth requirement, 10/16 seeds in band with median 2.71%
+  (stored baseline 13/16 and 2.75%). R3 passes, having failed in the stored
+  baseline. A2 and A3 fail in both. The stored baseline predates main's LM1
+  changes to Founding, CityLand and AutoBuilder, so the comparison covers
+  those changes as well as BS1. The baseline is used as recorded under EN1.
+
+## Ship-file order
+
+Lanekeeper clarified the versioned launcher's dependency in bus instruction
+`20261112-085949-898-lanekeeper-9dec`. The launcher requires the ship file
+on origin before its dry run, while batch.md says to push it afterwards.
+Lanekeeper authorizes a provisional ship file and will hold it through the
+dry run. Afterward only BS1's notes and ship file advance, retaining reuse
+eligibility. The final readiness message and gate-run marker identify the
+finished batch. Process files are unchanged.
