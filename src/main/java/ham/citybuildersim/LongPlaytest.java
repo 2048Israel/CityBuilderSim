@@ -456,6 +456,8 @@ public class LongPlaytest {
             for (Game.Salvage sale : g.getSalvageThisMonth()) {
                 if (!opening.containsKey(sale.seller())) continue;
                 BuildingsTemplate building = g.getBuildingManager().getTemplateByName(sale.building());
+                // A closed bank branch is sold by Retail but its posts belong to the bank.
+                if (!sale.seller().equals(building.getOperator())) continue;
                 shed.merge(sale.seller(), (long) building.getTotalJobs() * sale.buildings(), Long::sum);
             }
             for (Map.Entry<String, Long> entry : opening.entrySet()) {
