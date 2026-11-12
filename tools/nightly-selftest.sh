@@ -68,16 +68,16 @@ CASE='halving five merges names the third batch and version'
 ok test "$(timing_search)" = "ST3 0.0.3 $EXPECT"
 
 # Exercise retention through the production entry point with stubbed measurements.
-HOME=$TEST/home; mkdir "$HOME"; ORIG=$ROOT
+TEST_STORE=$TEST/history; ORIG=$ROOT
 timing_run() { mkdir -p "$2"; row 125 > "$2/timing.tsv"; }
 timing_quiet() { return 0; }
 sleep() { :; }
 CBS_TIMING_WAIT_SECONDS=60
-CASE='quiet first night becomes this machine baseline'; nightly_timing > "$TEST/quiet.log"
+CASE='quiet first night becomes this machine baseline'; nightly_timing "$TEST_STORE" > "$TEST/quiet.log"
 BASELINE=$(cat "$STORE/baseline"); ok test "$(cat "$BASELINE/loaded")" = 0
 CBS_TIMING_WAIT_SECONDS=0
-CASE='loaded night retains figures and leaves quiet baseline'; nightly_timing > "$TEST/loaded.log"
+CASE='loaded night retains figures and leaves quiet baseline'; nightly_timing "$TEST_STORE" > "$TEST/loaded.log"
 ok test "$(cat "$STORE/baseline")" = "$BASELINE"
 CASE='loaded metadata and verdict are retained'; ok test "$(cat "$NIGHT/loaded")" = 1
-CASE='machine data is isolated'; ok test "$STORE" = "$HOME/.cbs-timing/$(hostname | tr -d '\r\n' | tr -c 'A-Za-z0-9_.-' '_')"
+CASE='machine data is isolated'; ok test "$STORE" = "$TEST_STORE/$(hostname | tr -d '\r\n' | tr -c 'A-Za-z0-9_.-' '_')"
 echo 'nightly selftest OK'

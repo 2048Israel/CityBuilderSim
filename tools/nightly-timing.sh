@@ -54,9 +54,9 @@ timing_search() {  # first-parent merges, binary search against the preceding qu
     version=$(git -C "$CLONE" show "$culprit:src/main/java/ham/citybuildersim/GameVersion.java" | sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p')
     echo "${batch:-unknown batch} $version $culprit"
 }
-nightly_timing() {
+nightly_timing() {  # optional record root for the no-JVM fixture
     MACHINE=$(hostname | tr -d '\r\n' | tr -c 'A-Za-z0-9_.-' '_')
-    STORE=$HOME/.cbs-timing/$MACHINE
+    STORE=${1:-$HOME/.cbs-timing}/$MACHINE
     mkdir -p "$STORE" || return 1
     NIGHT=$(mktemp -d "$STORE/$(date +%Y-%m-%d)-$SHA-XXXXXXXX") || return 1
     PAIRAWK=$ORIG/tools/timing-pair.awk
