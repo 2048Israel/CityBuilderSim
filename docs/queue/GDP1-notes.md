@@ -237,3 +237,21 @@ with `{next}`; detailed score, run CSVs and snapshot remain under
 
 The paired RT3 replay's recorded CSV columns agree through m900 and first
 differ at m901. `target/checks/gdp1-replay-comparison.txt` records that check.
+
+## Full pick and provisional shipping record
+
+The final forecast `./batch-check.sh --pick` selects **ALL 201** (Sector has
+86 readers) and completes **exit 3**: **196 pass, five known red**, no NEW red.
+The known harnesses are MonetaryCheck, HealthCheck, PlanCheck, KeptCheck and
+DeathRecordCheck, covered by the existing exact/scoped records. The suite
+takes 2,915 seconds on the shared PC; KeptCheck accounts for 1,218 seconds.
+Thirty timing assertions are soft, as prescribed. Compile succeeds, maps
+regenerate, Stale has zero firm findings and the tree check passes. Logs:
+`target/checks/gdp1-pick.txt`, `target/checks/suite.txt`, and the five harness
+logs beside them. No known-red entry naming GDP1 exists in this branch's
+record, and no new waiver is introduced.
+
+The full pick is of the final model `aea7eb1d`, with only notes, the design
+write-up and its ensemble baseline committed afterwards. A provisional
+GDP1-ship.md is now required on origin for the versioned gate dry run.
+After that run, only these notes and GDP1-ship.md may change.
