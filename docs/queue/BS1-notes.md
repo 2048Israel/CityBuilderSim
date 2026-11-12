@@ -1,7 +1,8 @@
 # BS1 — Bond settles to a fixed point, the bid tick and the buyback
 
-**Held for Jerus's A1 review**, under lanekeeper instruction
-`20261112-092258-011-lanekeeper-e492`.
+**Approved for shipping by Jerus on 2026-11-12, about 15:50**, relayed in
+lanekeeper instruction `20261112-155225-270-lanekeeper-8410`. Lanekeeper
+will gate BS1 fresh after DM2.
 
 Built from main `fc3b6be5` on `batch/BS1`. The queue's BS1 row and its linked
 BA1 and BD1 findings are the brief. WC1 assigns whole batches to Codex.
@@ -94,8 +95,8 @@ month 120, 7,942 people and unskilled wage 124.58. BS1 reaches month 152,
 The fixture waits for the planner's first build and then tests its meat-price
 claim in that lived-in city. Both profit cases cause their meat price. The
 new path exposes the assertion that homegrown profit exceeds twice imported
-profit. **This new red remains unresolved.** Its assertion and fixture are
-preserved. The main comparison is `target/checks/BS1-food-on-main.txt`.
+profit. Jerus accepted this line by name as path noise, with fixture repair
+queued as FPK1. The main comparison is `target/checks/BS1-food-on-main.txt`.
 
 ## Verification
 
@@ -140,12 +141,37 @@ Evidence is `target/BS1-isolation/{old,issue,tick}/`, including each CSV and
 report, and `comparison.txt`. The reference and two isolated runs were already
 started when lanekeeper's two-run cap arrived, and all three completed.
 
-## Ship-file order and hold
+## Jerus's approval and fresh gate
 
-Lanekeeper clarified the versioned launcher's dependency in bus instruction
-`20261112-085949-898-lanekeeper-9dec`. The launcher requires the ship file
-on origin before its dry run, while batch.md says to push it afterwards.
-Lanekeeper initially authorized a provisional ship file for the dry run.
-His later A1 hold supersedes that instruction. The ensemble baseline, notes
-and completed pick evidence are to be pushed. The launcher gate and readiness
-marker await Jerus's A1 decision.
+Asked "Ship BS1, passing A1 and FoodProcessingCheck as noise?", Jerus replied
+"yes ship bs1" on 2026-11-12, about 15:50. On floating point he said
+"just do your best, but mostly its an issue that cant be solved". On
+FoodProcessingCheck he said "its just noise, no?". Lanekeeper relayed these
+words in `20261112-155225-270-lanekeeper-8410`, lifting the earlier A1 hold.
+
+A1's 10/16 seeds in band against the baseline's 13/16 is accepted as path
+noise from the bank's stance flipping at month 142. FoodProcessingCheck's
+"...and the difference is most of what a Meat Works is worth" is passed by
+name, with FPK1 queued. The ship file records that approval. It also names
+OX1 for DeathRecordCheck's already recorded orphan line. The other covered
+reds already have scoped entries and queued fixes in the repository,
+MonetaryCheck MQ1, CentralBankCheck CB2, HealthCheck HX1, PlanCheck PX1 and
+KeptCheck KS1.
+
+Lanekeeper directs the fresh gate after DM2 because main will move, and
+explicitly waives the builder's dry run for this readiness handoff. The
+branch stays based on `fc3b6be5`. The final push adds the ship file last.
+
+The saved post-CreditCheck-correction suite was rejudged with the ship file's
+known-red entries on 2026-11-12. Exit **3**, the FoodProcessingCheck line
+accepted as known. Evidence is `target/checks/BS1-approval-judge.txt`, with
+the combined approval record in `BS1-approved-known-reds.txt`. This rejudges
+the completed checks, and the fresh merged-tree gate belongs to lanekeeper.
+
+## FPK1
+
+FoodProcessingCheck 5's meat bet sets its own farm-floor and ship prices,
+so it tests the Meat Works' profit sum independently of the city's path.
+The current case reads the city's own meat prices and moves with the path,
+1.8x on BS1 and 2.6x on main. This is the queued fixture repair authorized
+with the shipping approval above.
