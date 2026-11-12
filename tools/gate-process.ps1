@@ -7,9 +7,26 @@ function Stop-Gate {
     $identity = (Get-Content -LiteralPath $identityFile) -split '\|', 2
     $gateProcess = Get-Process -Id ([int]$identity[0]) -ErrorAction SilentlyContinue
     if ($gateProcess -and $gateProcess.StartTime.ToUniversalTime().Ticks -eq [long]$identity[1]) {
-        $command = (Get-CimInstance Win32_Process -Filter "ProcessId = $($gateProcess.Id)").CommandLine
-        if ($command -notmatch 'sh(\.exe)?[" ]+.*ship\.sh') { throw "Gate process identity changed: $command" }
-        & taskkill.exe /PID $gateProcess.Id /T /F | Out-Null
+        $nativeRoot = Get-CimInstance Win32_Process -Filter "ProcessId = $($gateProcess.Id)"
+        if ($nativeRoot.CommandLine -notmatch 'sh(\.exe)?[" ]+.*ship\.sh') { throw "Gate process identity changed: $($nativeRoot.CommandLine)" }
+        # MSYS exec helpers also break native descendant links. Walk logical parents, then each native subtree.
+        $rows = @(& (Join-Path (Split-Path $nativeRoot.ExecutablePath) 'ps.exe') | Select-Object -Skip 1 | ForEach-Object {
+            $fields = $_.Trim() -split '\s+', 8
+            [pscustomobject]@{ Shell = [int]$fields[0]; Parent = [int]$fields[1]; Native = [int]$fields[3] }
+        })
+        $owned = @($rows | Where-Object Native -eq $gateProcess.Id)
+        if ($owned.Count -eq 0) { throw 'Gate shell is missing from the MSYS process table' }
+        for ($at = 0; $at -lt $owned.Count; $at++) {
+            $shellId = $owned[$at].Shell
+            $owned += @($rows | Where-Object Parent -eq $shellId)
+        }
+        [array]::Reverse($owned)
+        foreach ($row in $owned) {
+            $child = Get-Process -Id $row.Native -ErrorAction SilentlyContinue
+            if ($child -and $child.StartTime -ge $gateProcess.StartTime) {
+                & taskkill.exe /PID $child.Id /T /F 2>$null | Out-Null
+            }
+        }
     }
 }
 if ($Mode -eq 'Stop') {
@@ -30,6 +47,15 @@ try {
         $ancestor = Get-Process -Id ([int]$ownerText) -ErrorAction SilentlyContinue
         if (!$ancestor) { throw 'Gate caller ended during startup' }
         $ancestors += $ancestor
+    }
+    # Include the host above MSYS (PowerShell or the app's task shell), while skipping vanished exec helpers.
+    $parentId = (Get-CimInstance Win32_Process -Filter "ProcessId = $($ancestor.Id)").ParentProcessId
+    while ($parentId -gt 0) {
+        $parent = Get-Process -Id $parentId -ErrorAction SilentlyContinue
+        if (!$parent -or $parent.StartTime -gt $ancestor.StartTime) { break }
+        $ancestors += $parent
+        $ancestor = $parent
+        $parentId = (Get-CimInstance Win32_Process -Filter "ProcessId = $parentId").ParentProcessId
     }
     while (Test-Path -LiteralPath (Join-Path $Run 'active')) {
         if ($shipProcess.HasExited) { break }

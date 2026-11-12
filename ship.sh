@@ -98,6 +98,8 @@ trap 'exit 130' INT TERM HUP
 rm -rf "$T"; mkdir -p "$T"
 T=$(cd "$T" && pwd)
 : > "$T/needed"; : > "$T/finished"
+mkdir -p "${CBS_GATE_RUN:-target/checks}" || die "cannot create the gate output directory"
+: > "${CBS_GATE_RUN:-target/checks}/unnamed.txt" || die "cannot clear the previous unnamed reds"
 printf '%s\n' "$REDLINES" | grep . > "$T/redlines" || : > "$T/redlines"   # the parts of red lines his words pass, one a line
 
 # 1. main up to date, the tags fetched
@@ -328,7 +330,8 @@ run_check() {   # stage, directory, command: no status or output survives from a
     STAGE=$1; DIR=$2; shift 2
     alive
     echo "$STAGE" >> "$T/needed"
-    rm -f "$T/code" "$DIR/target/checks/reds.txt" "$DIR/target/checks/suite.txt" "$DIR/target/checks/timing.tsv"
+    rm -f "$T/code" "$DIR/target/checks/reds.txt" "$DIR/target/checks/suite.txt" "$DIR/target/checks/timing.tsv" \
+        || die "cannot clear the previous check results for $STAGE"
     { ( cd "$DIR" && "$@" ); echo "$STAGE $?" > "$T/code"; } 2>&1 | tee "$T/check.out"
     alive
     [ -f "$T/code" ] || die "the check did not finish: $STAGE (no fresh status)"
