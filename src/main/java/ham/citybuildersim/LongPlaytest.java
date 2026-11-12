@@ -479,7 +479,7 @@ public class LongPlaytest {
         }
 
         void report(PrintStream out) {
-            out.printf("  retirement over a trailing year (RT3): %d of %d sector-years lost over a fifth of their opening posts;"
+            out.printf("  retirement over a trailing year (RT3): %d of %d trailing sector-year windows lost over a fifth of their opening posts;"
                     + " episodes %s; largest %.2f%% in %s at m%d%n", overFifth, windows, episodes, worst * 100, worstSector, worstMonth);
         }
     }
