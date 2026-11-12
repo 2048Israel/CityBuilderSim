@@ -1,4 +1,4 @@
-# HoldersCheck.java - 2,580 lines · 51 methods · 4 constants · harnesses
+# HoldersCheck.java - 2,579 lines · 51 methods · 4 constants · harnesses
 
 `ham/citybuildersim/HoldersCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
@@ -83,8 +83,8 @@
 | 1271 | 11. the world (CD2, slice 5, D7; star 2) |
 | 1709 | 12. the pooled discount re-struck (BK1) |
 | 2013 | 13. the discount released at an issue or a trade (BD1) |
-| 2331 | 14. the rounding floor on a holder's face (RT1) |
-| 2397 | 15. each holder's discount is its own (BK2) |
+| 2330 | 14. the rounding floor on a holder's face (RT1) |
+| 2396 | 15. each holder's discount is its own (BK2) |
 
 ## Constants
 
@@ -108,7 +108,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 118 | 2463 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
+| 118 | 2462 | **type** `public class HoldersCheck` | Proves who holds the city's own paper (0.7.1): that the households buy it at the settle, are paid on it, sell it back, and are paid when it is bought back - every crossing declared, and every holding exactly where the... |
 | 124 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 129 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 139 | 4 | `static void quietly(Runnable r)` |  |
@@ -167,7 +167,7 @@
 | 1885 | 6 | `static String firstDifference(double[] city, double[] twin)` | The first figure of the two that is not the same, bit for bit, as a sentence; empty when every one is. |
 | 1892 | 120 | `static void theReopening() throws Exception` |  |
 
-### 13. the discount released at an issue or a trade (BD1) (lines 2013-2330)
+### 13. the discount released at an issue or a trade (BD1) (lines 2013-2329)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -184,21 +184,21 @@
 | 2249 | 2 | **type** `record UnsettledBuyback(boolean fresh, double face, double discount, double book, double carried, double ta...` | What 13c's round trip did: whether the piece was new and all unsettled, its face and discount, the bank's book and carried discount going into the buyback, what the buyback took and the bank's share of it, and whether... |
 | 2253 | 4 | `static double billDiscount(Game city, double cash)` | BA1: the discount a year's bill raising this cash would carry, as the quote has it: its face less the cash it brings, the fixed fee of the issue in it. |
 | 2259 | 23 | `static UnsettledBuyback sellAndBuyBackBeforeTheSettle(Game city)` | 13c's round trip, done the same way to the city and to its twin: a year's bill of a fifth of the bank's book sold between the presses and bought straight back whole, before its settle. |
-| 2289 | 41 | `static void theBuybackBeforeTheSettle() throws Exception` | 13c, the gate's finding on BD1: a piece bought back whole before its settle is re-struck by nothing. |
+| 2288 | 41 | `static void theBuybackBeforeTheSettle() throws Exception` | 13c: a fresh piece closed before its settle cancels its unpaid sale at the original proceeds (BS1). |
 
-### 14. the rounding floor on a holder's face (RT1) (lines 2331-2396)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2334 | 1 | `static LongTermBond loosePiece()` | A piece of term paper by itself, sold to nobody: 1,000 of face, all of it the bank's, for the moves below to take from and give back to. |
-| 2336 | 60 | `static void theHoldingFloor()` |  |
-
-### 15. each holder's discount is its own (BK2) (lines 2397-2580)
+### 14. the rounding floor on a holder's face (RT1) (lines 2330-2395)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2400 | 5 | `static double[] owned(Debt line)` | The five owners' unaccreted discount on a line, in Debt.Holder's order. |
-| 2406 | 5 | `static double sum(double[] a)` |  |
-| 2417 | 10 | `static LongTermBond ownedPiece()` | A loose piece of 1,000 sold for 900 and settled by hand, every holder at a price of its own: the households took 300 for 285 (their own discount 15), the businesses 100 for 96 (4), the world 50 for 47 (3), the bank is... |
-| 2428 | 152 | `static void theEachHoldersOwn() throws Exception` |  |
+| 2333 | 1 | `static LongTermBond loosePiece()` | A piece of term paper by itself, sold to nobody: 1,000 of face, all of it the bank's, for the moves below to take from and give back to. |
+| 2335 | 60 | `static void theHoldingFloor()` |  |
+
+### 15. each holder's discount is its own (BK2) (lines 2396-2579)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2399 | 5 | `static double[] owned(Debt line)` | The five owners' unaccreted discount on a line, in Debt.Holder's order. |
+| 2405 | 5 | `static double sum(double[] a)` |  |
+| 2416 | 10 | `static LongTermBond ownedPiece()` | A loose piece of 1,000 sold for 900 and settled by hand, every holder at a price of its own: the households took 300 for 285 (their own discount 15), the businesses 100 for 96 (4), the world 50 for 47 (3), the bank is... |
+| 2427 | 152 | `static void theEachHoldersOwn() throws Exception` |  |
 

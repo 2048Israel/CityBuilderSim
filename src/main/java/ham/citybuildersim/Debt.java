@@ -559,18 +559,12 @@ public abstract class Debt {
 
     /**
      * The unaccreted discount that rides on this much of a holder's face - the part it gives up, or takes on, when that face changes
-     * hands (pass()): its own discount pro rata to the face it holds. The bank's, for a whole buyback before the settle (the bank's
-     * principal then includes the unsettled sale), adds the unsettled sale's discount, if it is one, pro rata to the face beyond what
-     * the bank has paid for.
+     * hands (pass()): its own discount pro rata to the face it holds. The bank's holding is its paid face (bankPrincipalPaid()).
      */
     public double unaccretedOn(Holder h, double face) {
         if (foreign || h == null || !(face > 0)) return 0;
         double held = heldBy(h);
-        double own = held > 0 ? discountOf(h) * Math.min(1, face / held) : 0;
-        if (h == Holder.BANK && face > held && unsettledFace > 0) {
-            own += Math.max(0, unsettledDiscount) * Math.min(1, (face - held) / unsettledFace);
-        }
-        return own;
+        return held > 0 ? discountOf(h) * Math.min(1, face / held) : 0;
     }
 
     /**

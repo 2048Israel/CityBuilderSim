@@ -1690,11 +1690,20 @@ public class KeptCheck {
                 bench.drawKept(page);
                 String a = againstNew(bench, page, pixels);
                 int grown = bench.signature().size();
+                java.util.Set<javafx.scene.Node> nodesBefore = bench.nodesOnPage();
                 month(g);
                 bench.drawKept(page);
                 int[] counts = bench.counts(page);
+                double handedBack = counts[1] / (double) Math.max(1, counts[0] + counts[1]);
+                if (handedBack < share) {
+                    List<String> addedLabels = bench.nodesOnPage().stream()
+                            .filter(node -> !nodesBefore.contains(node) && node instanceof javafx.scene.control.Labeled)
+                            .map(node -> String.valueOf(((javafx.scene.control.Labeled) node).getText()).replace('\n', ' '))
+                            .sorted().limit(12).toList();
+                    System.out.println("  " + page.name() + " added labels after the month: " + addedLabels);
+                }
                 String b = againstNew(bench, page, pixels);
-                return new Object[]{a != null ? a : b, grown, counts[1] / (double) Math.max(1, counts[0] + counts[1]), counts[0], counts[1]};
+                return new Object[]{a != null ? a : b, grown, handedBack, counts[0], counts[1]};
             });
             String d = (String) r[0];
             if (d != null) System.out.println("  " + c.name() + ": " + d);
@@ -7643,7 +7652,14 @@ public class KeptCheck {
                 javafx.scene.control.Tooltip now = after.get(e.getKey());
                 if (now == null) {
                     // (A node kept on the page that has no tooltip now lost the one it had: Kept takes the tooltip off a kept node its draw does not tip.)
-                    if (still.contains(e.getKey())) lost++;
+                    if (still.contains(e.getKey())) {
+                        lost++;
+                        javafx.scene.Node node = e.getKey();
+                        String words = node instanceof javafx.scene.control.Labeled label ? label.getText() : node.getClass().getSimpleName();
+                        System.out.printf("  tooltip removed from kept %s, width %.4f, text %s, former tip %s%n",
+                                node.getClass().getSimpleName(), node.getLayoutBounds().getWidth(), words,
+                                String.valueOf(e.getValue().getText()).replace('\n', ' '));
+                    }
                     continue;
                 }
                 both++;

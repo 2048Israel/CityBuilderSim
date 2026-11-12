@@ -50,8 +50,8 @@ public final class Buyback {
        WHAT IS ON OFFER, WHAT IS ASKED, WHAT COMES OUT
        ===================================================================== */
 
-    /** The holders who offer, in the order a tie in price goes to them (D19): the bank first, the world last. The central bank is not among them (D18). */
-    public enum Holder { BANK, HOUSEHOLDS, FIRMS, WORLD }
+    /** The ladder's counterparties in tie order (D19), followed by the unpaid sale's cancellation (BY1). */
+    public enum Holder { BANK, HOUSEHOLDS, FIRMS, WORLD, UNSETTLED }
 
     /**
      * One slice on the ladder.
@@ -98,10 +98,21 @@ public final class Buyback {
      * @param callPer100      the price per 100 the city may call the piece at this month (CallTree.CALL_PRICE), or NaN
      *                        when it may not be called now; a piece the city can call now is never bought back dearer
      *                        than that, whatever a holder asks (BB1, CD4-C ★6)
+     * @param unsettledFace   face of the unpaid sale to cancel when the whole piece is closed (BY1)
+     * @param unsettledCash   the original proceeds returned for that cancellation
      */
     public record Line(double principal, double[] flows, double fairPer100, double carryingValue,
                        double bankFace, double householdFace, double firmFace, double worldFace,
-                       double centralBankFace, boolean foreign, double callPer100) {
+                       double centralBankFace, boolean foreign, double callPer100,
+                       double unsettledFace, double unsettledCash) {
+
+        /** A piece whose sales have all settled. */
+        public Line(double principal, double[] flows, double fairPer100, double carryingValue,
+                    double bankFace, double householdFace, double firmFace, double worldFace,
+                    double centralBankFace, boolean foreign, double callPer100) {
+            this(principal, flows, fairPer100, carryingValue, bankFace, householdFace, firmFace, worldFace,
+                    centralBankFace, foreign, callPer100, 0, 0);
+        }
 
         /** A piece the city cannot call now: the ten figures that came before the call price (BB1), callPer100 NaN. */
         public Line(double principal, double[] flows, double fairPer100, double carryingValue,
@@ -119,7 +130,8 @@ public final class Buyback {
         /** The face that can be offered: everything but the central bank's. */
         public double offerable() {
             return foreign ? Math.max(0, worldFace)
-                    : Math.max(0, bankFace) + Math.max(0, householdFace) + Math.max(0, firmFace) + Math.max(0, worldFace);
+                    : Math.max(0, bankFace) + Math.max(0, householdFace) + Math.max(0, firmFace) + Math.max(0, worldFace)
+                            + Math.max(0, unsettledFace);
         }
     }
 
@@ -138,15 +150,18 @@ public final class Buyback {
      * @param averagePer100  paid over the face taken, per 100; 0 when nothing was taken
      * @param fairPer100     the piece's fair price per 100
      * @param carriedTaken   the books' carrying value of the face taken
+     * @param cancelledFace  unpaid face cancelled, included in takenFace
+     * @param cancelledCash  original proceeds returned, included in paid
      */
     public record Result(List<Offer> ladder, double asked, double offeredFace, double takenFace, double paid,
                          double bankFace, double bankPaid, double householdFace, double householdPaid,
                          double firmFace, double firmPaid, double worldFace, double worldPaid,
-                         double stopPer100, double averagePer100, double fairPer100, double carriedTaken) {
+                         double stopPer100, double averagePer100, double fairPer100, double carriedTaken,
+                         double cancelledFace, double cancelledCash) {
 
         /** A buyback that took nothing: no ladder, nothing asked of the books. */
         public static Result none(double asked) {
-            return new Result(List.of(), Math.max(0, asked), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+            return new Result(List.of(), Math.max(0, asked), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         }
 
         /** What was offered over what was asked: 1 or more when the ask can be filled, under 1 when it cannot. */
@@ -203,6 +218,7 @@ public final class Buyback {
                 case HOUSEHOLDS -> householdPaid - fairPer100 * householdFace / 100;
                 case FIRMS -> firmPaid - fairPer100 * firmFace / 100;
                 case WORLD -> worldPaid - fairPer100 * worldFace / 100;
+                case UNSETTLED -> cancelledCash - fairPer100 * cancelledFace / 100;
             };
         }
 
@@ -330,6 +346,11 @@ public final class Buyback {
             // The world's stock is the whole of what it has in the city, of which this piece's slices are part:
             // each slice sold takes that much off it, so the next asks for the stock that is left.
             slices(ladder, Holder.WORLD, world, left -> priceAt(line, worldYield(stock - (world - left), b)), cap);
+            // BY1: cancel the unpaid sale at its original proceeds. Only paid face is offered by the bank.
+            if (line.unsettledFace() > 0) {
+                ladder.add(new Offer(Holder.UNSETTLED, line.unsettledFace(),
+                        line.unsettledCash() / line.unsettledFace() * 100));
+            }
             // The central bank does not offer (D18): its face stays on the piece.
         }
         // A stable sort: price, then the holder's place in a tie; a holder's own slices already ascend.
@@ -379,16 +400,18 @@ public final class Buyback {
         for (Offer o : ladder) offered += o.face();
         if (line == null || !(asked > 0) || ladder.isEmpty()) {
             return new Result(ladder, asked, offered, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                    line == null ? 0 : line.fairPer100(), 0);
+                    line == null ? 0 : line.fairPer100(), 0, 0, 0);
         }
 
+        boolean all = asked >= line.offerable();
         double left = asked, taken = 0, paid = 0, stop = 0;
         double[] face = new double[Holder.values().length], cost = new double[face.length];
         for (Offer o : ladder) {
-            if (!(left > 0)) break;
+            if (!all && !(left > 0)) break;
             if (ask.capped() && o.per100() > ask.maxPer100()) break;     // sorted: nothing later is cheaper
-            double f = Math.min(o.face(), left);
-            double c = f * o.per100() / 100;
+            double f = all ? o.face() : Math.min(o.face(), left);
+            double c = o.holder() == Holder.UNSETTLED && f == line.unsettledFace()
+                    ? line.unsettledCash() : f * o.per100() / 100;
             face[o.holder().ordinal()] += f;
             cost[o.holder().ordinal()] += c;
             taken += f;
@@ -403,6 +426,7 @@ public final class Buyback {
                 face[Holder.HOUSEHOLDS.ordinal()], cost[Holder.HOUSEHOLDS.ordinal()],
                 face[Holder.FIRMS.ordinal()], cost[Holder.FIRMS.ordinal()],
                 face[Holder.WORLD.ordinal()], cost[Holder.WORLD.ordinal()],
-                taken > 0 ? stop : 0, average, line.fairPer100(), carried);
+                taken > 0 ? stop : 0, average, line.fairPer100(), carried,
+                face[Holder.UNSETTLED.ordinal()], cost[Holder.UNSETTLED.ordinal()]);
     }
 }

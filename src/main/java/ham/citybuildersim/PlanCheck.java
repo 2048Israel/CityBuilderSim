@@ -172,7 +172,10 @@ import java.util.List;
  *      until then, and the re-baked nations file's played city stood with two
  *      pieces behind such a belt on its iron field, MapCheck 8 red); one
  *      network, every check, a pure function; and the case counted across
- *      section 17's cities and this harness's, before and after.
+ *      section 17's cities and this harness's, before and after. DM2: the dated field belt stays connected, keeps buildings off
+ *      its way and moves none through later arrivals; recorded ways displace only intersecting boxes and release plots for
+ *      later arrivals; the first site or shore exclusion preserves the raw history, its first-batch boundary and standing boxes;
+ *      a purchase in the current picture's month releases an unused way without dating a wall record in the future.
  *  19. no avenue through an interchange (batch MF2, 2026-11-08; DistrictPlan's NO AVENUE THROUGH AN INTERCHANGE'S RESERVE
  *      LAID AFTER IT; Jerus's Bergen city drew a diagonal avenue through a cloverleaf's loops): a 19 x 19 reserve laid across
  *      the south-east arm in a month after the avenue was laid (the arm's step 8, inside the cell beside the hub, and step 20,
@@ -386,6 +389,10 @@ public class PlanCheck {
         farBank(types);
         walledIn(types);
         fieldWall(types);
+        fieldWallArrivals(types);
+        datedWallEvents(types);
+        firstExclusion(types);
+        wallPurchaseMonth(types);
         interchangeAvenue(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -4585,8 +4592,8 @@ public class PlanCheck {
     /**
      * Every district of a map planned as the map draws it, each from its job's input, and tallied: those planned again kept in
      * walledIns, ok[0] cleared where a plan is not the same plan made twice (boxes, streets, ways kept clear), ok[1] where one is
-     * planned more than WALL_TRIES times or has plots kept clear without being planned again (FR8: the played city's loop, for the
-     * river fixture's districts too).
+     * planned more than WALL_TRIES times or its new ways and retries disagree (FR8: the played city's loop, for the river
+     * fixture's districts too). Incoming ways can already keep plots clear without another retry.
      */
     static void planDrawn(CityMap map, Tally t, List<DistrictPlan.Input> walledIns, boolean[] ok) {
         map.forgetPainted();
@@ -4600,9 +4607,33 @@ public class PlanCheck {
                 if (p.wallTries > 0) walledIns.add(pj.in);
                 DistrictPlan again = DistrictPlan.make(pj.in);
                 ok[0] &= placedDigest(p) == placedDigest(again) && streetDigest(p) == streetDigest(again) && p.wallTries == again.wallTries && p.wallClear == again.wallClear;
-                ok[1] &= p.wallTries <= DistrictPlan.WALL_TRIES && (p.wallTries == 0) == (p.wallClear == 0);
+                ok[1] &= wallBounds(p, pj.in);
             }
         }
+    }
+
+    /** The incoming journal survives, its active plots are exactly the kept way, and a new keep requires and results from a retry. */
+    static boolean wallBounds(DistrictPlan p, DistrictPlan.Input in) {
+        int incoming = in.wallMonth == null || in.wallChange == null ? 0 : Math.min(in.wallMonth.length, in.wallChange.length);
+        if (p.wallTries < 0 || p.wallTries > DistrictPlan.WALL_TRIES || p.wallMonth == null || p.wallChange == null
+                || p.wallMonth.length != p.wallChange.length || p.wallMonth.length < incoming) return false;
+        boolean[] active = new boolean[DistrictPlan.AREA];
+        int newKeeps = 0;
+        for (int k = 0; k < p.wallMonth.length; k++) {
+            if (k < incoming && (p.wallMonth[k] != in.wallMonth[k] || p.wallChange[k] != in.wallChange[k])) return false;
+            int record = p.wallChange[k], plot = record >>> 1;
+            if (plot >= active.length || (k > 0 && p.wallMonth[k] < p.wallMonth[k - 1])) return false;
+            boolean kept = (record & 1) != 0;
+            if (k >= incoming && kept && !active[plot]) newKeeps++;
+            active[plot] = kept;
+        }
+        if ((p.wallTries > 0) != (newKeeps > 0) || p.wallWay.length != p.wallClear) return false;
+        int n = 0;
+        for (int plot = 0; plot < active.length; plot++) {
+            if (!active[plot]) continue;
+            if (n >= p.wallWay.length || p.wallWay[n++] != plot) return false;
+        }
+        return n == p.wallClear;
     }
 
     static void walledIn(BuildingVisual.Type[] catalog) throws Exception {
@@ -4649,7 +4680,7 @@ public class PlanCheck {
         check("fixture: a district of the played city stood with a street piece the buildings enclose (planned again with the way kept clear in " + t.walled + " of " + t.districts + ")", t.walled > 0);
         check("every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface", t.allHold());
         check("...none left with a piece the ground does not part, in MapCheck's city or this harness's", left == 0 && citiesLeft == 0);
-        check("...planned again at most " + DistrictPlan.WALL_TRIES + " times, and plots kept clear only in a district planned again", bounded);
+        check("...planned again at most " + DistrictPlan.WALL_TRIES + " times: every new keep has a retry, every retry keeps a new plot, and the active journal is exactly the kept way", bounded);
         check("...and a pure function: the same district, the same plan, boxes and streets, the same ways kept clear", pure);
         // The same districts with no log - their counts and their carry, the first batch alone, no events: the join's way kept clear and
         // every building placed or sent on, once (placed and left out = counts + carry).
@@ -4749,6 +4780,240 @@ public class PlanCheck {
                 (p.wallTries > 0 ? 1 : 0) + left, p.wallTries > 0 ? 1 : 0, p.wallField > 0 ? 1 : 0, left, (p.wallField > 0 ? 1 : 0) + left);
         check("...none left apart: no district of MapCheck's played city, its river fixture, sections 5 and 6, or this section's has a piece the ground does not part",
                 playedCase[3] == 0 && riverCase[3] == 0 && citiesLeft == 0 && left == 0);
+    }
+
+    /** A dated field belt keeps its first way while later houses arrive (DM2). */
+    static void fieldWallArrivals(BuildingVisual.Type[] types) {
+        out.println("\n--- 18b. a walled field belt keeps its way as later houses arrive (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        int shop = pick(types, 4, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        Log log = new Log();
+        DistrictPlan before = null;
+        int walls = 0, moved = 0, changedInput = 0, replayChanged = 0, disconnected = 0, onWay = 0, badBounds = 0, later = 0;
+        int[] months = null, changes = null;
+        for (int month = 1; month <= 30; month++) {
+            log.add(month, house, 15).add(month, shop, 3);
+            DistrictPlan.Input in = log.into(fieldBelt(types, house, 0));
+            in.seed = 1;
+            in.month = month;
+            in.wallMonth = months;
+            in.wallChange = changes;
+            int[] oldMonths = months == null ? null : months.clone(), oldChanges = changes == null ? null : changes.clone();
+            DistrictPlan after = DistrictPlan.make(in);
+            if (before != null && before.wallClear > 0) {
+                moved += MapCheck.movedOf(MapCheck.boxesOf(before), MapCheck.boxesOf(after));
+                later++;
+            }
+            if (figures(after, in).pieces != 1) disconnected++;
+            for (int b = 0; b < after.buildings; b++) {
+                for (int y = after.by[b]; y < after.by[b] + after.bh[b]; y++) {
+                    for (int x = after.bx[b]; x < after.bx[b] + after.bw[b]; x++) {
+                        if (Arrays.binarySearch(after.wallWay, y * DistrictPlan.FRAME + x) >= 0) onWay++;
+                    }
+                }
+            }
+            if (!wallBounds(after, in)) badBounds++;
+            if (!Arrays.equals(months, oldMonths) || !Arrays.equals(changes, oldChanges)) changedInput++;
+            walls = Math.max(walls, after.wallClear);
+            months = after.wallMonth;
+            changes = after.wallChange;
+            in.wallMonth = months;
+            in.wallChange = changes;
+            DistrictPlan replay = DistrictPlan.make(in);
+            if (placedDigest(after) != placedDigest(replay) || streetDigest(after) != streetDigest(replay)
+                    || !Arrays.equals(months, replay.wallMonth) || !Arrays.equals(changes, replay.wallChange)) replayChanged++;
+            before = after;
+        }
+        out.printf("      field belt: %d plots kept clear, %d standing boxes moved over later arrivals%n", walls, moved);
+        check("fixture: the dated field belt has a wall way before its arrivals end", walls > 0 && later > 0);
+        check("the field belt's later arrivals move no standing box", moved == 0);
+        check("the field belt remains one street network through every later month", disconnected == 0);
+        check("no building stands on a kept plot in any month", onWay == 0);
+        check("new ways have bounded retries, and incoming active ways need no new discovery", badBounds == 0);
+        check("the planner leaves its input wall journal unchanged", changedInput == 0);
+        check("the recorded plan replays identically without adding another wall event", replayChanged == 0);
+        DistrictPlan.Input unseenInput = log.into(fieldBelt(types, house, 0));
+        unseenInput.seed = 1;
+        unseenInput.month = 30;
+        DistrictPlan unseen = DistrictPlan.make(unseenInput);
+        check("a field belt first drawn after every arrival has the watched belt's boxes, streets and wall history", samePlan(before, unseen)
+                && Arrays.equals(months, unseen.wallMonth) && Arrays.equals(changes, unseen.wallChange));
+        DistrictPlan.Input batchInput = new Log().add(1, house, 3000).batch().into(fieldBelt(types, house, 0));
+        batchInput.seed = 1;
+        batchInput.month = 1;
+        DistrictPlan batch = DistrictPlan.make(batchInput);
+        batchInput.wallMonth = batch.wallMonth;
+        batchInput.wallChange = batch.wallChange;
+        DistrictPlan batchReplay = DistrictPlan.make(batchInput);
+        check("fixture: a first batch alone discovers a field-belt wall way", batch.wallClear > 0);
+        check("a way discovered after the first batch replays in the same phase, with the same boxes, streets and journal", samePlan(batch, batchReplay)
+                && Arrays.equals(batch.wallMonth, batchReplay.wallMonth) && Arrays.equals(batch.wallChange, batchReplay.wallChange));
+    }
+
+    /** A recorded way moves only its intersecting box. Its later release leaves that box in place and offers the plot to arrivals. */
+    static void datedWallEvents(BuildingVisual.Type[] types) {
+        out.println("\n--- 18c. wall events displace only their boxes and release room for later arrivals (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        Log log = new Log().add(1, house, 50);
+        DistrictPlan.Input in = log.into(flat(types));
+        DistrictPlan before = DistrictPlan.make(in);
+        int plot = before.by[0] * DistrictPlan.FRAME + before.bx[0];
+        in.month = 2;
+        in.wallMonth = new int[] { 2 };
+        in.wallChange = new int[] { plot << 1 | 1 };
+        DistrictPlan kept = DistrictPlan.make(in);
+        int moves = MapCheck.movedOf(MapCheck.boxesOf(before), MapCheck.boxesOf(kept));
+        boolean occupied = MapCheck.boxesOf(kept).stream().anyMatch(b -> MapCheck.anyPlot(b, 0, q -> q == plot));
+        check("a dated way displaces its one intersecting box, with every other box standing and no box on its plot",
+                moves == 1 && kept.movedOff == 1 && before.buildings == kept.buildings && !occupied);
+        in.month = 3;
+        in.wallMonth = new int[] { 2, 3 };
+        in.wallChange = new int[] { plot << 1 | 1, plot << 1 };
+        DistrictPlan released = DistrictPlan.make(in);
+        check("a way's release preserves every standing box and its earlier displacement", MapCheck.movedOf(MapCheck.boxesOf(kept), MapCheck.boxesOf(released)) == 0);
+        log.add(4, house, 1).into(in);
+        in.month = 4;
+        DistrictPlan arrived = DistrictPlan.make(in);
+        boolean used = MapCheck.boxesOf(arrived).stream().anyMatch(b -> MapCheck.anyPlot(b, 0, q -> q == plot));
+        check("a later arrival can use the released plot without moving another box", used && arrived.buildings == released.buildings + 1
+                && MapCheck.movedOf(MapCheck.boxesOf(released), MapCheck.boxesOf(arrived)) == 0);
+    }
+
+    /** A first site or shore adjustment changes today's units without reordering or netting the district's earlier raw history. */
+    static void firstExclusion(BuildingVisual.Type[] types) {
+        out.println("\n--- 18d. the first exclusion preserves the raw arrival history and its first-batch boundary (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        int shop = pick(types, 4, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
+        int excluded = pick(types, 1, t -> t.site() != null || t.shore() || t.terminal());
+        Log log = new Log().add(1, house, 150).add(1, shop, 20).add(1, excluded, 1).batch();
+        // These are later raw records, even though they share the first batch's month. Mixed signs retain which older units left.
+        log.add(1, house, -20).add(1, house, 60).add(1, shop, -3).add(1, shop, 10);
+        log.add(2, house, -30).add(2, house, 40).add(2, shop, -4).add(2, shop, 12);
+        DistrictPlan.Input in = log.into(flat(types));
+        in.month = 2;
+        DistrictPlan before = DistrictPlan.make(in);
+        int[] rawMonths = in.logMonth.clone(), rawTypes = in.logType.clone(), rawChanges = in.logChange.clone();
+        int batch = in.firstBatch;
+        CityMap map = CityMap.square(Founding.DEFAULT_WORLD_SEED, 0, 0, types, 1, DistrictPlan.SIDE * DistrictPlan.SIDE, new long[types.length]);
+        map.reconcile(new long[types.length], 3);
+        CityMap.District district = new CityMap.District(0, 0, types.length, 0);
+        System.arraycopy(in.counts, 0, district.counts, 0, types.length);
+        district.logMonth = rawMonths.clone();
+        district.logType = rawTypes.clone();
+        district.logChange = rawChanges.clone();
+        district.logN = rawMonths.length;
+        district.firstBatch = batch;
+        in.counts[excluded]--;
+        in.month = 3;
+        map.recordPlanExclusion(district, excluded, 1);
+        int[] excludedCounts = new int[types.length];
+        excludedCounts[excluded] = 1;
+        check("the source records the excluded unit at month 3, with its type, signed departure and excluded total",
+                Arrays.equals(district.excludeMonth, new int[] { 3 }) && Arrays.equals(district.excludeType, new int[] { excluded })
+                        && Arrays.equals(district.excludeChange, new int[] { -1 }) && Arrays.equals(district.excluded, excludedCounts));
+        Object[] sourceAt3 = exclusionState(district);
+        map.planExclusionsInto(district, in);
+        DistrictPlan after = DistrictPlan.make(in);
+        boolean sourceUnchanged = deepSame(sourceAt3, exclusionState(district));
+        var standing = MapCheck.boxesOf(before);
+        standing.removeIf(b -> b.type() == excluded);
+        int moved = MapCheck.movedOf(standing, MapCheck.boxesOf(after));
+        boolean raw = in.logMonth.length == rawMonths.length + 1;
+        for (int k = 0; raw && k < rawMonths.length; k++) {
+            raw = in.logMonth[k] == rawMonths[k] && in.logType[k] == rawTypes[k] && in.logChange[k] == rawChanges[k];
+        }
+        int last = in.logMonth.length - 1;
+        check("fixture: the excluded unit stood before the adjustment, with later first-month records and mixed departures and arrivals",
+                before.buildings == standing.size() + 1 && before.overflowCount() == 0 && rawMonths[batch] == rawMonths[batch - 1]);
+        check("the first exclusion leaves every earlier raw record and the original first-batch boundary intact", raw && in.firstBatch == batch);
+        check("the exclusion is one departure at its actual month", in.logMonth[last] == 3 && in.logType[last] == excluded && in.logChange[last] == -1);
+        check("the first exclusion moves no other standing building (" + moved + " of " + standing.size() + ")", moved == 0 && after.buildings == standing.size());
+        DistrictPlan.Input replayInput = exclusionInput(map, district, types, log, excluded);
+        check("merging and replaying the exclusion preserve every source record, total, stamp and raw-log boundary",
+                sourceUnchanged && deepSame(sourceAt3, exclusionState(district)));
+        check("a repeated input has the same merged history and layout", samePlan(after, DistrictPlan.make(replayInput))
+                && Arrays.equals(in.logMonth, replayInput.logMonth) && Arrays.equals(in.logType, replayInput.logType)
+                && Arrays.equals(in.logChange, replayInput.logChange) && in.firstBatch == replayInput.firstBatch);
+
+        map.reconcile(new long[types.length], 4);
+        map.recordPlanExclusion(district, excluded, 0);
+        check("the source records the unit's return at month 4, preserving its departure and clearing the excluded total",
+                Arrays.equals(district.excludeMonth, new int[] { 3, 4 }) && Arrays.equals(district.excludeType, new int[] { excluded, excluded })
+                        && Arrays.equals(district.excludeChange, new int[] { -1, 1 }) && Arrays.equals(district.excluded, new int[types.length]));
+        Object[] sourceAt4 = exclusionState(district);
+        DistrictPlan.Input returnedInput = exclusionInput(map, district, types, log, excluded);
+        DistrictPlan returned = DistrictPlan.make(returnedInput);
+        sourceUnchanged = deepSame(sourceAt4, exclusionState(district));
+        int n = rawMonths.length;
+        int[] wantedMonths = Arrays.copyOf(rawMonths, n + 2), wantedTypes = Arrays.copyOf(rawTypes, n + 2), wantedChanges = Arrays.copyOf(rawChanges, n + 2);
+        wantedMonths[n] = 3; wantedMonths[n + 1] = 4;
+        wantedTypes[n] = wantedTypes[n + 1] = excluded;
+        wantedChanges[n] = -1; wantedChanges[n + 1] = 1;
+        check("the returned unit arrives at its own month, with the exact earlier raw history and first batch preserved",
+                Arrays.equals(returnedInput.logMonth, wantedMonths) && Arrays.equals(returnedInput.logType, wantedTypes)
+                        && Arrays.equals(returnedInput.logChange, wantedChanges) && returnedInput.firstBatch == batch);
+        check("the returned unit adds one box and moves no building that stood through its exclusion", returned.buildings == after.buildings + 1
+                && MapCheck.movedOf(MapCheck.boxesOf(after), MapCheck.boxesOf(returned)) == 0);
+        replayInput = exclusionInput(map, district, types, log, excluded);
+        check("replaying the returned unit preserves every source byte array and state, the merged flow and the layout",
+                sourceUnchanged && deepSame(sourceAt4, exclusionState(district)) && samePlan(returned, DistrictPlan.make(replayInput))
+                        && Arrays.equals(replayInput.logMonth, wantedMonths) && Arrays.equals(replayInput.logType, wantedTypes)
+                        && Arrays.equals(replayInput.logChange, wantedChanges) && replayInput.firstBatch == batch);
+    }
+
+    /** A copy of every source exclusion record, its totals and stamps, and the district's unchanged raw log and boundary. */
+    static Object[] exclusionState(CityMap.District district) {
+        return new Object[] { district.excludeMonth.clone(), district.excludeType.clone(), district.excludeChange.clone(), district.excluded.clone(),
+                district.excludeHash, district.excludeBatch, district.logMonth.clone(), district.logType.clone(), district.logChange.clone(),
+                district.logN, district.firstBatch, district.counts.clone() };
+    }
+
+    /** Rebuilds the raw input after the source records have already established how many units are excluded now. */
+    static DistrictPlan.Input exclusionInput(CityMap map, CityMap.District district, BuildingVisual.Type[] types, Log log, int excluded) {
+        DistrictPlan.Input in = log.into(flat(types));
+        in.month = map.month();
+        in.counts[excluded] -= district.excluded[excluded];
+        map.planExclusionsInto(district, in);
+        return in;
+    }
+
+    /** A purchase in the picture's month can release an unused way without dating a record in the future (DM2). */
+    static void wallPurchaseMonth(BuildingVisual.Type[] types) {
+        out.println("\n--- 18e. a purchase releases an unused wall way in the current picture's month (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        DistrictPlan.Input in = new Log().add(1, house, 50).into(flat(types));
+        int purchase = 4 * DistrictPlan.FRAME + 4, bought = 150;
+        in.owned[purchase] = false;
+        in.month = 1;
+        DistrictPlan before = DistrictPlan.make(in);
+        int plot = before.by[0] * DistrictPlan.FRAME + before.bx[0];
+        in.month = 2;
+        in.wallMonth = new int[] { 2 };
+        in.wallChange = new int[] { plot << 1 | 1 };
+        DistrictPlan kept = DistrictPlan.make(in);
+        // The release needs a physical source event. No arrival at this month can conceal a purchase processed one month late.
+        in.wallMonth = kept.wallMonth;
+        in.wallChange = kept.wallChange;
+        in.owned[purchase] = true;
+        in.boughtAt = new int[DistrictPlan.AREA];
+        in.boughtAt[purchase] = bought;
+        in.month = bought;
+        DistrictPlan after = DistrictPlan.make(in);
+        boolean released = false, future = false;
+        for (int k = 0; k < after.wallMonth.length; k++) {
+            future |= after.wallMonth[k] > in.month;
+            if (after.wallChange[k] == plot << 1 && after.wallMonth[k] == bought) released = true;
+        }
+        check("fixture: an earlier recorded way displaced one box and remains kept until the purchase", kept.wallClear == 1
+                && kept.wallWay[0] == plot && MapCheck.movedOf(MapCheck.boxesOf(before), MapCheck.boxesOf(kept)) == 1);
+        check("the current-month purchase releases the unused way at its actual month, with no future wall record", released && !future && after.wallClear == 0);
+        check("the purchase and release move no standing box", after.buildings == kept.buildings
+                && MapCheck.movedOf(MapCheck.boxesOf(kept), MapCheck.boxesOf(after)) == 0);
+        in.wallMonth = after.wallMonth;
+        in.wallChange = after.wallChange;
+        DistrictPlan replay = DistrictPlan.make(in);
+        check("the current-month purchase replays the same boxes, streets and wall journal", samePlan(after, replay)
+                && Arrays.equals(after.wallMonth, replay.wallMonth) && Arrays.equals(after.wallChange, replay.wallChange));
     }
 
     /* =====================================================================

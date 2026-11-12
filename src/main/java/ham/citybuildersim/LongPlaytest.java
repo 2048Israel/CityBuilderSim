@@ -4362,6 +4362,8 @@ public class LongPlaytest {
      * that read it back the same.
      */
     static int mapMonths, mapMismatches, mapReloads, mapReloadsSame;
+    /** Actual played-city months whose saved sidecars were accepted directly, including every source journal (DM2). */
+    static final List<Integer> mapSidecarMonths = new ArrayList<>();
 
     /*
      * ===== THE LAYOUT, WATCHED (batch CL3, 2026-10-21) =====
@@ -4653,15 +4655,22 @@ public class LongPlaytest {
      */
     static boolean[] layoutRunMarks(CityMap m, CityMap.District d, int low, int high) {
         DistrictPlan.Input in = m.planInputHere(d);
-        if (in.fixedLog == null || in.fixedLogMonth == null) return null;
         int f = DistrictPlan.FRAME;
         boolean[] marks = null;
-        for (int q = 0, n = Math.min(in.fixedLog.length, in.fixedLogMonth.length); q < n; q++) {
+        for (int q = 0, n = in.fixedLog == null || in.fixedLogMonth == null ? 0 : Math.min(in.fixedLog.length, in.fixedLogMonth.length); q < n; q++) {
             int month = in.fixedLogMonth[q], p = in.fixedLog[q] >>> 8, after = in.fixedLog[q] & 15;
             if (month < low || month > high || after == 0) continue;
             if (marks == null) marks = new boolean[f * f];
             int ring = after == DistrictPlan.FIXED_HIGHWAY ? 1 : 0, x = p % f, y = p / f;
             for (int yy = Math.max(0, y - ring); yy <= Math.min(f - 1, y + ring); yy++) for (int xx = Math.max(0, x - ring); xx <= Math.min(f - 1, x + ring); xx++) marks[yy * f + xx] = true;
+        }
+        // A newly kept wall way is a dated displacement too (DM2). Only boxes crossing its recorded plots qualify.
+        if (in.wallMonth != null && in.wallChange != null) {
+            for (int q = 0; q < in.wallMonth.length; q++) {
+                if (in.wallMonth[q] < low || in.wallMonth[q] > high || (in.wallChange[q] & 1) == 0) continue;
+                if (marks == null) marks = new boolean[f * f];
+                marks[in.wallChange[q] >>> 1] = true;
+            }
         }
         return marks;
     }
@@ -5720,6 +5729,15 @@ public class LongPlaytest {
             mapReloads++;
             if (back.hasCityMap() && back.getCityMap().same(g.getCityMap())) mapReloadsSame++;
             else flag(month, "the city map across a save", "slot " + slot);
+            try {
+                byte[] bytes = Files.readAllBytes(files.mapFile(slot));
+                CityMap direct = CityMap.readSidecar(bytes, back.getCityLand(), back.getLandManager()::remainingByHolding,
+                        back.getMapTypes(), month, CityMap.stampIn(bytes), back.getLandmassPicture(), back.getBridgePicture());
+                if (direct != null && direct.same(g.getCityMap())) mapSidecarMonths.add(month);
+                else flag(month, "the played city sidecar was refused or lost history", "slot " + slot);
+            } catch (java.io.IOException e) {
+                flag(month, "the played city sidecar could not be read", e.toString());
+            }
         }
 
         same(month, "cash across a save", back.getCash(), cash);
@@ -7713,6 +7731,7 @@ public class LongPlaytest {
                     + " under mines; dropped %d time(s)%n", mapMonths, mapMismatches, mapReloadsSame, mapReloads,
                     map.districts().size(), qtyOf(g, Mining.IRON_MINE), map.ownedSites(Resource.IRON),
                     g.getMapFailures());
+            out.println("  direct sidecar reads kept every journal at months " + mapSidecarMonths);
             for (String line : layoutLines(seconds)) out.println(line);
         }
         // A map dropped mid-run is gone from the city, so this is asked whether or not one stands now.
