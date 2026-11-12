@@ -65,7 +65,7 @@ reset; echo "// changed" >> "$J/FooCheck.java"; echo "// changed" >> "$J/BarChec
 LABEL="two changed harnesses pick both and TimingCheck once"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
 
 reset; git rm -q "$J/FooCheck.java"; printf 'class AllChecks { String[] H = { "BarCheck", "TimingCheck", "NewCheck" }; }\n' > "$J/AllChecks.java"; pick
-LABEL="a deleted harness picks nothing, TimingCheck included"; ok test "$PICKED" = "NONE"
+LABEL="a deleted harness plus runner edit picks ALL"; ok test "$PICKED" = "ALL"
 
 reset; echo "// changed" >> "$J/Widget.java"; pick
 LABEL="a class a harness reads picks its readers, not TimingCheck"; ok test "$PICKED" = "FooCheck"
@@ -77,10 +77,19 @@ reset; echo "# note" >> docs/harnesses.md; pick
 LABEL="a document picks nothing"; ok test "$PICKED" = "NONE"
 
 reset; echo "// changed" >> "$J/AllChecks.java"; pick
-LABEL="AllChecks changed alone picks nothing (the guard reads it)"; ok test "$PICKED" = "NONE"
+LABEL="AllChecks changed alone picks ALL"; ok test "$PICKED" = "ALL"
 
 reset; echo "// changed" >> "$J/FooCheck.java"; git add -A; git commit -q -m "a harness"; PICKED=$(sh tools/pick.sh origin/main HEAD 2>"$TA/err"); PERR=$(head -2 "$TA/err" | tr '\n' '/')
 LABEL="the same through a committed range (A B) picks itself and TimingCheck"; ok test "$PICKED" = "FooCheck TimingCheck"
+
+reset; echo "// changed" >> "$J/Widget.java"; PICKED=$(CBS_PICK_FANOUT=0 sh tools/pick.sh origin/main 2>"$TA/err")
+LABEL="a class over the fanout picks ALL"; ok test "$PICKED" = ALL
+reset; echo "// BarCheck borrows FooCheck" >> "$J/BarCheck.java"; git add -A; git commit -q -m borrowers; git update-ref refs/remotes/origin/main HEAD
+reset; echo "// changed" >> "$J/FooCheck.java"; pick
+LABEL="a changed harness picks its fixture borrowers"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
+reset; echo "// changed" >> "$J/Timing.java"; pick
+LABEL="Timing runner changed picks ALL"; ok test "$PICKED" = ALL
+reset; git reset -q --hard HEAD~1; git update-ref refs/remotes/origin/main HEAD
 
 # RL1: a branch built on its predecessor's tip (origin/batch/P, not in origin/main) is picked from its own diff, not P's
 reset; git checkout -q -B batch/S; echo "// P's" >> "$J/BarCheck.java"; git add -A; git commit -q -m "P's work"; git update-ref refs/remotes/origin/batch/P HEAD

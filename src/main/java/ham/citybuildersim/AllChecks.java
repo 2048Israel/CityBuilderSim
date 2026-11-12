@@ -309,11 +309,13 @@ public class AllChecks {
      * never thrown.
      */
     static Set<String> knownReds(Path file) throws IOException {
-        if (!Files.isRegularFile(file)) return null;
-        Set<String> known = new LinkedHashSet<>();
-        for (String line : new String(Files.readAllBytes(file), StandardCharsets.UTF_8).split("\\R")) {
-            if (line.startsWith("#") || line.isBlank()) continue;
-            known.add(line);
+        Set<String> known = KnownReds.read(file);
+        if (file.equals(GATE)) {
+            Set<String> parts = KnownReds.read(KnownReds.PARTS);
+            if (parts != null) {
+                if (known == null) known = new LinkedHashSet<>();
+                known.addAll(parts);
+            }
         }
         return known;
     }
@@ -363,9 +365,7 @@ public class AllChecks {
 
     /** How many of the red lines are not in the record. */
     static int newCount(List<String> red, Set<String> known) {
-        int n = 0;
-        for (String r : red) if (!known.contains(r)) n++;
-        return n;
+        return KnownReds.fresh(red, known).size();
     }
 
     /**
@@ -377,6 +377,7 @@ public class AllChecks {
      */
     static List<String> report(String name, int code, double seconds, List<String> printed, boolean lines, Set<String> known) {
         String[] redOf = redOf(name, printed);
+        Set<String> freshLines = known == null ? Set.of() : new LinkedHashSet<>(KnownReds.fresh(redLines(name, code, printed), known));
         String verdict = "";
         if (known != null) {
             List<String> red = redLines(name, code, printed);
@@ -387,7 +388,7 @@ public class AllChecks {
         out.add(header(name, code, seconds) + verdict);
         if (lines) {
             for (int i = 0; i < printed.size(); i++) {
-                String tag = redOf[i] == null || known == null ? "" : known.contains(redOf[i]) ? KNOWN_TAG : NEW_TAG;
+                String tag = redOf[i] == null || known == null ? "" : freshLines.contains(redOf[i]) ? NEW_TAG : KNOWN_TAG;
                 out.add("    " + tag + printed.get(i));
             }
         }
