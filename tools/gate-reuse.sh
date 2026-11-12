@@ -9,7 +9,8 @@ RUN=$1; BRANCH_COMMIT=$2; MAIN_COMMIT=$3; SELECTION=$4
 [ "$(cat "$RUN/origin")" = "$(git remote get-url origin)" ] || exit 1
 OLD=$(cat "$RUN/main.commit")
 git merge-base --is-ancestor "$OLD" "$MAIN_COMMIT" || exit 1
-git diff --name-only "$OLD" "$MAIN_COMMIT" | awk '
+ADVANCED=$(git diff --name-only "$OLD" "$MAIN_COMMIT") || exit 1
+printf '%s\n' "$ADVANCED" | awk '
     $0 == "docs/notes/known-reds.txt" { next }
     /\.md$/ && !/^docs\/ensemble\// { next }
     NF { bad = 1 } END { exit bad }' || exit 1

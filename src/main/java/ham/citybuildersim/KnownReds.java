@@ -36,9 +36,9 @@ public class KnownReds {
     /** Exact gate lines and five-column, harness-scoped parts share this representation. */
     static boolean matches(String line, String entry) {
         if (entry.startsWith("! ")) return false;
+        if (entry.startsWith("@once ")) return line.contains(entry.substring(6));
         String[] cells = entry.split(" \\| ", -1);
         if (cells.length != 5) return line.equals(entry);
-        if (cells[0].equals("*")) return line.contains(cells[1]); // one-time --red-ok only
         return harness(line).equals(cells[0]) && line.substring(line.indexOf(" | ") + 3).contains(cells[1]);
     }
 
@@ -54,7 +54,7 @@ public class KnownReds {
         }
         for (String line : reds) {
             if (count(line) && (!good.contains(harness(line)) || bad.contains(harness(line)))
-                    && entries.stream().filter(e -> e.startsWith("* | ")).noneMatch(e -> matches(line, e))) fresh.add(line);
+                    && entries.stream().filter(e -> e.startsWith("@once ")).noneMatch(e -> matches(line, e))) fresh.add(line);
         }
         return reds.stream().filter(fresh::contains).toList();
     }

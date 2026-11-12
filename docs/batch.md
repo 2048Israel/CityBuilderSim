@@ -55,7 +55,7 @@ under `batch-check.sh`'s lock) go one at a time.
 
    ```
    ## changelog
-   ### {next} ? ID, title ? date, ready, see docs/queue/ID-notes.md
+   ### {next} — ID, title — date, ready, see docs/queue/ID-notes.md
    <one paragraph, at most 12 lines including its heading>
    ## pending
    | ID-X | what remains ({next}) | why | link |
@@ -74,8 +74,8 @@ under `batch-check.sh`'s lock) go one at a time.
    main and selection qualify (`docs/orchestrator.md`, The gate).
    Push the ship file last, once ready. A returned batch removes and pushes it
    first, then restores it last after repair. WHY (BM1) `day.sh` reads it as
-   ready every hour. A process batch's heading uses its ID and ?no tag
-   (process)? with the date; a versioned batch uses `{next}`. The publisher
+   ready every hour. A process batch's heading uses its ID and `no tag
+   (process)` with the date; a versioned batch uses `{next}`. The publisher
    fills that token in its three record files and names its ensemble baseline.
 6. **The ensemble only when the trace moves** (EN1, Jerus 2026-10-20): a batch
    whose default playtest's trace is byte-identical to main's but for its
@@ -111,7 +111,7 @@ under `batch-check.sh`'s lock) go one at a time.
    and `ship.sh` stops it (it would ship PRED ungated). A NEW red under
    `--pick` while PRED is unmerged may be one Jerus approves at PRED's gate:
    merge main and run again before mending it.
-8. The report is ?ready, see the ship file?, then any calls with recommendations
+8. The report is "ready, see the ship file", then any calls with recommendations
    and the exit and red lines if needed. Ready means the pick passed, or for
    `ALL` the launcher's full dry run of the merge passed, and the ship file
    was pushed last. WHY (GR2, WG2) a builder needs the whole shared-code verdict

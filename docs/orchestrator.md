@@ -105,44 +105,41 @@ batch it is built on):
 3. Take the batch's recommended â˜… calls and say which and why in the notes,
    sending Jerus only his.
 4. `sh tools/gate.sh ID [ship.sh options]` makes a fresh clone, names the
-   main checkout's two data files and keeps logs and commit identities in its
-   printed run directory. `--stop RUN_DIRECTORY` ends its owned tree and
-   reports origin refs. A live guardian is required for publication.
+   main checkout's data files and retains logs and commit identities.
+   `--stop RUN_DIRECTORY` ends its owned tree and reports refs. Publication
+   requires a live guardian.
    WHY (GF1, LM1) stopped callers and stale statuses once reached publication.
    Main's publisher runs by default; `--branch-gate --dry-run` tests a changed
    publisher. `--reuse RUN_DIRECTORY`, or the ship file's `gate-run` comment,
-   supplies a previous launcher run. Its completed checks must have the same
-   branch commit and selection, the same origin, and main must be unchanged
-   or have gained only Markdown outside `docs/ensemble/` and known-red entries.
-   Its checks' hashes and launcher marker must hold. The current registry
-   judges its log again, including a completed run stopped on unnamed reds.
-   A refused run gets fresh checks. WHY (GR2) naming a red cost a whole rerun.
+   supplies completed launcher evidence with matching branch commit, selection,
+   origin and hashes. Main may gain Markdown outside `docs/ensemble/` and
+   known-red entries. The current registry rejudges its log, including a run
+   stopped on unnamed reds. Invalid evidence gets fresh checks. WHY (GR2)
+   naming a red cost a whole rerun.
 5. The publisher requires clean, current main at its last version tag, merges
-   uncommitted, resolves generated-doc conflicts and files the ship records.
-   Other conflicts stop. `tools/pick.sh` selects the merge's harnesses.
-   Game classes, resources, `pom.xml` and suite-runner changes run the whole
-   suite, timed soft. Other changes run the compile, selected harnesses, maps,
-   Stale and changed scripts' self-tests. The Gate line records ?no game code?
-   and the harness count. Docs alone run `--fast`. Partial gates preserve
-   `gate.txt`. WHY (GR2) unrelated harnesses added hours to process gates.
+   uncommitted, resolves generated-doc conflicts and files records. Other
+   conflicts stop. The pick selects harnesses. Game classes, resources, POM and
+   suite-runner changes run the full soft-timed suite. Other changes run the
+   compile, selected harnesses, maps, Stale and changed scripts' self-tests.
+   The Gate line records `no game code` and the harness count. Docs run `--fast`.
+   Partial gates preserve `gate.txt`. WHY (GR2) process gates paid hours for
+   unrelated harnesses.
 6. `gate.txt`'s exact reds and `known-reds.txt`'s harness-scoped parts share one
    judge with AllChecks and batch-check. A batch files unrelated NEW reds in
    `## known-reds`, traces their cause in its notes and queues each fix. Its own
    mending entries are removed before judgment, including exact-record cover.
    Counts pass only alongside covered assertions with every assertion covered.
    `--red-ok "his words" --red-line "part"` retains one-time approvals.
-   Every unnamed line is retained beside the log. A failed batch returns with
-   those lines and removes its readiness file first. WHY (GR2, WG2) temp
-   approvals were invisible to builders and repeatedly copied by hand.
+   Unnamed lines are retained. Failed batches withdraw their readiness file.
+   WHY (GR2, WG2) builders could not read the hand-copied temp approvals.
 7. Complete checks, a still-current branch and its readiness marker precede
-   commit, tag and atomic push. A push race rolls local publication back.
-   `--dry-run` restores the clone's tree and keeps evidence. Explicit harness
-   filters require dry-run and are retained as a different selection.
+   commit, tag and atomic push. Push races roll local publication back.
+   `--dry-run` restores the tree and keeps evidence. Its optional harness
+   filters are retained as a different selection.
    `--version X.Y.Z` is Jerus's call; `--no-tag` keeps main's version.
    After publisher or launcher edits run `sh tools/ship-selftest.sh`, after
    picker edits `sh tools/pick-selftest.sh`, after wait edits its self-test.
-   WHY (GF1, TM3) publishing must retain fresh completion evidence through a
-   merge that rewrites the running scripts.
+   WHY (GF1, TM3) a merge rewrites scripts while their shell reads them.
 
 **Before saying a change works:** the gate's suite is green but for main's
 recorded reds (say which: `docs/notes/gate.txt` and the merge's body), the maps

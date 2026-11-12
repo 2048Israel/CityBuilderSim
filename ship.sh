@@ -5,7 +5,7 @@
 # Exit 0 passed/shipped, 1 stopped, 2 usage. docs/orchestrator.md describes the policy.
 # WHY (GF1, LM1): a stopped timing check reused the suite's status and published.
 # Every check has fresh output and a completion entry, checked before records and commit.
-# tools/ship-selftest.sh exercises this against a throwaway origin without a JVM.
+# tools/ship-selftest.sh exercises this against a throwaway origin with a stub suite.
 
 # TM3: run from a copy of this script, made before anything is merged. A shell reads its script as it goes, at the
 # offsets of the file it opened, and a batch that changes ship.sh rewrites that file in the merge. CBS_SHIP_SHELL is the
@@ -108,7 +108,7 @@ alive
 [ -z "$(git status --porcelain)" ] || die "the tree has uncommitted changes"
 rm -rf "$T"; mkdir -p "$T"
 T=$(cd "$T" && pwd)
-: > "$T/needed"; : > "$T/finished"
+: > "$T/needed"; : > "$T/finished"; : > "$T/used-parts"
 mkdir -p "${CBS_GATE_RUN:-target/checks}" || die "cannot create the gate output directory"
 : > "${CBS_GATE_RUN:-target/checks}/unnamed.txt" || die "cannot clear the previous unnamed reds"
 printf '%s\n' "$REDLINES" | grep . > "$T/redlines" || : > "$T/redlines"   # the parts of red lines his words pass, one a line
@@ -226,6 +226,11 @@ if printf '%s
 fi
 HEAD0=$(git rev-parse HEAD)
 [ -z "$CBS_GATE_RUN" ] || echo "$HEAD0" > "$CBS_GATE_RUN/head.before"
+if [ -n "$CBS_GATE_RUN" ] && [ -f "$CBS_GATE_RUN/launcher" ]; then
+    printf '%s\n' "$HEAD0" > "$CBS_GATE_RUN/main.commit"
+    printf '%s\n' "$GATED" > "$CBS_GATE_RUN/branch.commit"
+fi
+say "commits: branch $GATED, main $HEAD0"
 MERGING=1
 if ! git merge --no-ff --no-commit -q "$REF" >/dev/null 2>&1; then
     CONFLICTS=$(git diff --name-only --diff-filter=U)
@@ -242,6 +247,10 @@ if ! git merge --no-ff --no-commit -q "$REF" >/dev/null 2>&1; then
     fi
 fi
 say "merged $AHEAD commit(s) of $BRANCH, uncommitted"
+
+# Select the actual merge before publisher-generated VERSION and records can widen it.
+PICKED=$(sh tools/pick.sh "$HEAD0" 2> "$T/pick.txt") || die "the pick failed: $(cat "$T/pick.txt")"
+cat "$T/pick.txt"
 
 # 8. the records (new way): staged, so one abort undoes them
 NFILL=0; NPEND=0; NQUEUED=0; GONE=0; BLOCK=0
@@ -388,8 +397,6 @@ show_unnamed() {   # WG2: keep every line even when the screen shows twelve
 }
 heads() { sed 's/ |.*//' "$1" | sort -u | tr '\n' ' ' | sed 's/ *$//'; }   # the harness of each red line of a file
 shortlines() { awk '{ printf "%s%s", sep, substr($0, 1, 150); sep = "; " }' "$1"; }   # the lines of a file in one, each cut at 150
-PICKED=$(sh tools/pick.sh "$HEAD0" 2> "$T/pick.txt") || die "the pick failed: $(cat "$T/pick.txt")"
-cat "$T/pick.txt"
 GAME=$(printf '%s\n' "$CHANGED" | grep '^src/main/java/.*\.java$' | grep -v -E '/tools/|/(LongPlaytest|[^/]*Check)\.java$' | grep .)
 FULL=0; [ -z "$GAME" ] && ! printf '%s\n' "$CHANGED" | grep -q -E '^pom\.xml$|^src/main/resources/|^batch-check\.sh$' || FULL=1
 [ "$PICKED" != ALL ] || FULL=1
@@ -433,7 +440,7 @@ else
         if [ "$FULL" = 1 ]; then CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh "$@"
         elif [ "$PICKED" = NONE ]; then run_check fast . ./batch-check.sh --fast
         else CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh $PICKED; fi
-        selftests
+        [ "$FULL" = 1 ] || selftests
     fi
     if [ "$PICKED" = NONE ] && [ "$FULL" = 0 ]; then
         GATE="${SCOPE}--fast"
@@ -468,7 +475,7 @@ else
             0) GATE="green" ;;
             3) GATE="known red only: $(heads "$T/suite-reds.txt")" ;;
             4) if [ -n "$REDOK" ]; then
-                   while IFS= read -r part; do printf '* | %s | once | %s | %s\n' "$part" "$(date +%Y-%m-%d)" "$REDOK"; done < "$T/redlines" >> "$T/known"
+                   while IFS= read -r part; do printf '@once %s\n' "$part"; done < "$T/redlines" >> "$T/known"
                    CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge ./batch-check.sh --judge target/checks/suite.txt > "$T/judged" 2>&1
                    [ "$?" = 3 ] || {
                        show_unnamed target/checks/new-reds.txt
@@ -481,7 +488,7 @@ else
                fi ;;
             *) cat "$T/judged"; die "the checks failed on the merge (judge exit $VERDICT)" ;;
         esac
-        [ ! -s target/checks/used-reds.txt ] || GATE="$GATE; parts: $(shortlines target/checks/used-reds.txt)"
+        cp target/checks/used-reds.txt "$T/used-parts" || die "cannot retain used approval parts"
         GATE="$SCOPE$GATE${TAKEN:+; reused $TAKEN}"
         say "gate: $GATE"
         grep -q 'no earth-2.bin here' "$T/suite.out" && EARTH="not named: the Earth harnesses' full-file sections did not run"
@@ -544,6 +551,7 @@ git add $GENERATED
         tail -n 1 "$T/body" | grep -q -E '^[A-Za-z][A-Za-z0-9-]*: ' || echo
     fi
     echo "Gate: $GATE"
+    sed 's/^/Known-red: /' "$T/used-parts"
 } > "$T/msg"
 [ -z "$CBS_GATE_RUN" ] || printf '%s\n' "$TAG" > "$CBS_GATE_RUN/tag"
 git commit -q -F "$T/msg" || die "the commit failed"

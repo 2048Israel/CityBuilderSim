@@ -35,6 +35,7 @@ else
     RUN=$(mktemp -d "${TMP:-${TMPDIR:-/tmp}}/cbs-gate-$ID-XXXXXXXX") || exit 1
 fi
 RUN=$(cd "$RUN" && pwd)
+unset CBS_GATE_DIRECTORY
 CLONE="$RUN/clone"; LOG="$RUN/ship.log"
 echo "gate: run $RUN"
 echo "gate: stop with sh tools/gate.sh --stop '$RUN'"

@@ -401,6 +401,7 @@ public class AllChecks {
     static String againstLine(Path record, Set<String> known, List<String> knownOnly, List<String> newRed) {
         String file = record.toString().replace('\\', '/');
         if (known == null) return "No known reds read (" + file + " not found): every red is untagged";
+        if (record.equals(GATE)) file += " + " + KnownReds.PARTS;
         List<String> parts = new ArrayList<>();
         if (!knownOnly.isEmpty()) parts.add("known red only - " + String.join(", ", knownOnly));
         if (!newRed.isEmpty()) parts.add("NEW red - " + String.join(", ", newRed));

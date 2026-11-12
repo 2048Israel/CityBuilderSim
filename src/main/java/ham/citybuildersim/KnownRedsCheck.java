@@ -94,6 +94,8 @@ public class KnownRedsCheck {
         List<String> added = AllChecks.redLines(NAME, second.exit(), second.printed());
         check("a second assertion keeps its counts NEW too", AllChecks.newCount(added, parts) == 3);
         check("an exit with no assertion remains NEW", AllChecks.newCount(List.of(NAME + " | exit 1"), parts) == 1);
+        check("one-time qualified crash parts retain their explicit approval", KnownReds.fresh(
+                List.of("OtherCheck | exit -1073741819"), Set.of("@once OtherCheck | exit -10")).isEmpty());
         List<String> report = AllChecks.report(NAME, first.exit(), .5, first.printed(), true, parts);
         check("the runner tags covered assertion and count known", report.stream().filter(l -> l.contains("[known]")).count() == 2 && report.get(0).endsWith("known red"));
         check("the quiet report keeps the same verdict", AllChecks.report(NAME, first.exit(), .5, first.printed(), false, parts).equals(List.of(report.get(0))));
