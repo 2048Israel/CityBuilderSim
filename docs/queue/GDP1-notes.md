@@ -223,3 +223,17 @@ first differ at row 853. Kept report:
 `target/checks/gdp1-trace-comparison.txt`. Therefore the final-model ensemble
 is required and is running as `GDP1`, against **0.9.93** (23/26), with three
 JVMs to leave room for the shared PC's full pick and other sessions.
+
+The ensemble completes **80/80**, **exit 0**, in **32.7 minutes**, on model
+snapshot `aea7eb1d`. Its score is **23/26 beside 0.9.93's 23/26**. Every
+criterion passed by that baseline still passes, with no PASS/FAIL verdict
+changes. AUTO2 A2, AUTO2 A3 and HIGH R3 remain the same three failures.
+All runs finish, all recorded money audits are green, and all five F1 rows
+report zero runs with findings. The kept baseline is `docs/ensemble/GDP1.md`
+with `{next}`; detailed score, run CSVs and snapshot remain under
+`target/ensemble/GDP1/`. The exact comparison is
+`target/checks/gdp1-criterion-comparison.txt`; launcher summary
+`target/checks/gdp1-ensemble.txt`.
+
+The paired RT3 replay's recorded CSV columns agree through m900 and first
+differ at m901. `target/checks/gdp1-replay-comparison.txt` records that check.
