@@ -198,6 +198,10 @@ The picker self-test passed 17/17. `./batch-check.sh KnownRedsCheck` exited 0,
 with regenerated maps and zero firm Stale findings. Logs are
 `target/gr2-review-ship-selftest.log`, `target/gr2-review-pick-selftest.log`,
 `target/gr2-review-knownreds.log` and `target/gr2-review-rejudge.log`.
+Four saved-log probes also returned exit 4 as expected for an unapproved
+Denomination people assertion, a different output failure, a new PriceLevel
+metric and a different Kept node count. Their evidence is
+`target/gr2-review-canaries/result.log`.
 
 ### Permanent-part source audit
 
