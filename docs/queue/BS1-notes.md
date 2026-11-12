@@ -187,6 +187,8 @@ FoodProcessingCheck acceptances continue to apply.
    at its full price, including the exact cancellation proceeds, and an
    unsettled quote is accepted only when every offer was taken. Thus a cap
    leaving even a small cancellation behind refuses the buyback. The new
+   whole-piece checks also refuse a small central-bank holding, which
+   stays outside the offers on the unsettled piece. The new
    BuybackCheck 5b issues 2,500,000,001.7 through the normal sale entry point
    and types 2,500,000,000. It checks exact cancelled face and proceeds,
    conservation of MoneyAudit's pools, and the following month's relative

@@ -750,6 +750,9 @@ public class BuybackCheck {
         double cap = (full.fairPer100() + 400) / 2;
         check("a cap leaving the small cancellation behind refuses the whole buyback",
                 city.quoteBuybackAtRest(premium, typed, cap).takenFace() == 0);
+        premium.moveToCentralBank(1.7);
+        check("a small central-bank holding refuses an unsettled whole-piece quote",
+                city.quoteBuybackAtRest(premium, typed, Double.NaN).takenFace() == 0);
         city.getDebtManager().retire(premium);
     }
 

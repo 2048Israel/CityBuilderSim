@@ -19588,7 +19588,7 @@ public class Game {
         if (unsettled && takesTheWholePiece(asked, principal)) asked = Math.max(principal, line.offerable());
         Buyback.Result quote = Buyback.run(line, auctionBidders(), new Buyback.Ask(asked, maxPer100));
         // A sale not yet settled: the whole piece or nothing (see above).
-        if (unsettled && (!takesTheWholePiece(quote.takenFace(), principal)
+        if (unsettled && (debt.centralBankPrincipal() > 0 || !takesTheWholePiece(quote.takenFace(), principal)
                 || quote.takenFace() != quote.offeredFace())) return Buyback.Result.none(face);
         return quote;
     }
