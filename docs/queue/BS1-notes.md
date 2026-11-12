@@ -242,3 +242,23 @@ cancellation bar and its legend entry are distinct from the grey offered
 outline, and the legend fits. Fresh and reopened snapshots are
 `target/checks/BS1-fresh-legend.png` and `BS1-reopened-legend.png`.
 Lanekeeper's fresh gate after DM2 remains the shipping gate for these repairs.
+
+## Second send-back, 2026-11-12
+
+The fresh gate of `30041749` on main `6e369844`, retained at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-BS1-VpJXCqJk`, stopped after a
+1,972-second suite on two newly uncovered KeptCheck assertions. Section 44's
+10,000 Studio Apartments funding page kept 74 nodes and made 19, 79.6%.
+Section 89's all-households view kept one node after removing its tooltip,
+79 of 80 tooltips retained. Their exit-5 and five-fail count lines follow
+those assertions.
+
+The ship file was withdrawn and pushed in `9424d1f6`, then main `6e369844`
+was merged in `df3bbee7`, as instructed in
+`20261112-180137-275-lanekeeper-a1da`. Only generated index conflicts needed
+resolution, using main's copies for regeneration. Main's standalone
+KeptCheck runs in the detached worktree
+`C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-BS1-kept-main-6e369844`.
+The merged harness adds failure diagnostics naming newly drawn labels and
+the node, width and text of a removed tooltip. Its reuse floor and tooltip
+assertions keep their original expressions.
