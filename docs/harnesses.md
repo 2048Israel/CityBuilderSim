@@ -76,7 +76,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildAdviceCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DeathCareFirstCheck, LandmassCheck, LongPlaytest, RoadCheck, SaveSlotCheck |
 | [ConstructionScreen](map/ConstructionScreen.md) | **none** |
 | [Consumption](map/Consumption.md) | BasketYearCheck, ConsumptionCheck, ForeignCheck, PriceLevelCheck |
-| [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, IndustryViewCheck |
+| [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck |
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, MoneyCheck, ReadPathCheck |
 | [CorporateBond](map/CorporateBond.md) | BondCheck, FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [Credits](map/Credits.md) | CreditsCheck |
@@ -212,7 +212,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [MapTiles](map/MapTiles.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReplayCheck |
 | [MapView](map/MapView.md) | **none** |
 | [Maps](map/Maps.md) | **none** |
-| [Markets](map/Markets.md) | BooksCheck, BuildMenuCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, RailDepotCheck, WoodProductsCheck |
+| [Markets](map/Markets.md) | BooksCheck, BuildMenuCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, FoodProcessingCheck, ForestryCheck, GdpCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, InvestCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, RailCheck, RailDepotCheck, WoodProductsCheck |
 | [Materials](map/Materials.md) | **none** |
 | [MediumTermBond](map/MediumTermBond.md) | AuctionCheck, BankCheck, CentralBankCheck, DeskCheck, MoneyCheck, RestructureCheck, TreasuryCheck |
 | [Migration](map/Migration.md) | ArrivalMixCheck, CrimeCheck, EducationCheck, HealthCheck, LabourCheck, LongPlaytest, PopulationCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, WantedPostsCheck |
@@ -336,7 +336,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Timing](map/Timing.md) | BridgeCheck, BridgeMapCheck, EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandLinkCheck, IslandNetCheck, KeptCheck, LandNationsCheck, MapCheck, PartnerCallsCheck, PlanCheck, PortCheck, QuayCraneCheck, ReplayCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck, WorldMarketCheck |
 | [ToastRoom](map/ToastRoom.md) | ToastCheck |
 | [TrackCurves](map/TrackCurves.md) | GatewayCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
-| [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, FittingCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
+| [Trade](map/Trade.md) | BooksCheck, CopperRefiningCheck, CreditCheck, FittingCheck, GdpCheck, IndustryViewCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, SupplierCreditCheck |
 | [TradeBand](map/TradeBand.md) | TradeBandCheck |
 | [TradeLanes](map/TradeLanes.md) | DenominationCheck, GlobeCheck, PartnerCallsCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck |
 | [TradeScreen](map/TradeScreen.md) | **none** |
@@ -11232,167 +11232,168 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 > Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them).
 
-- **L32 1. the identity**
-  - L39 consumption
-  - L40 investment (200 built + 1000 stock built up)
-  - L41 government
-  - L42 net exports
-  - L43 GDP
-  - L44 identity holds
-- **L49 2. stock is a CHANGE**
-  - L54 unchanged stock adds nothing
-  - L55 GDP without the one-off stock build
-  - L59 stock drawn down subtracts
-- **L61 3. THE BUG THIS REPLACES**
-  - L68 GDP is positive despite sector losses
-  - L74 a city living on imports does read negative
-- **L76 3c. the two ways it went negative anyway**
-- **L82 a bulk order is not negative output**
-  - L92 the quiet month is positive
-  - L105 ordering is not output, and not an import either
-  - L113 a month of building reads the value the builders added
-  - L115 ...which is positive
-- **L117 the materials plant's shed is stock; the city's yard is not**
-  - L137 a plant filling its shed is production
-  - L138 ...and GDP rises by exactly that
-  - L140 ...while a price move on the same stock is nothing
-  - L143 ...and selling it into a contract runs the term the other way
-  - L160 a shop stocking its first stockroom books it as production
-  - L162 ...so a month that is nothing but the import of it is not negative output
-  - L172 ...and a month of selling and restocking scores the margin alone
-  - L174 ...which is what a retailer adds
-  - L181 ...and running it down runs the term the other way
-- **L194 a fleet bought abroad is stock held, not negative output**
-  - L205 a railway taking delivery of its fleet books it as stock held
-  - L206 ...so a month of stocking up on imported inputs is not negative output
-  - L207 ...not negative at all
-  - L208 ...and the identity holds
-  - L229 a month of hauling: the fleet's wear is its use
-  - L230 ...and GDP by expenditure is what the mill and the railway added
-  - L237 an older save's first month books no change in the goods held
-  - L239 ...and the month after measures against it
-- **L251 a works sold back with its yard full is a loss of assets, not negative output**
-  - L261 fixture: the yard filled is output held
-  - L263 the month the works goes with its yard, the write-off is added back: no change in stock held
-  - L265 ...so the month is not negative output
-  - L266 ...and the accounts keep what was written off, in units
-  - L267 ...and measure next month from what was left, none
-  - L269 ...so the month after books no change either
-  - L274 a yard exported is still the fall in stock it is
-  - L275 ...matched by the export, so the month adds nothing
-- **L289 a mill's warehouse, a plant's shed and a stockroom written off are a loss of assets, not negative output (0.7.136)**
-  - L295 fixture: each of the three holds something
-  - L302 fixture: the warehouse filled is food held
-  - L303 fixture: ...the shed filled, materials held
-  - L304 fixture: ...and the stockroom filled, luxuries held
-  - L306 the month the mill goes with its warehouse, food's write-off is added back: no change in food held
-  - L308 ...the plant with its shed, materials' alike
-  - L309 ...and the shop with its stockroom, luxuries' alike
-  - L310 ...so the month is not negative output
-  - L311 ...and the accounts keep what each wrote off: the food
-  - L312 ...the materials
-  - L313 ...and the luxuries
-  - L315 ...and what each term added back, at its price
-  - L317 ...and the month after books no change in any of them
-  - L323 a shed exported is still the fall in stock it is
-  - L324 ...matched by the export, so the month adds nothing
-  - L329 an update with no write-offs handed in reads the shed's fall as before
-- **L331 a price move is not production**
-  - L345 an unchanged warehouse contributes nothing when the price moves
-  - L347 ...and output stays positive
-  - L351 100,000 more units at $0.75 is $75,000 of production
-- **L354 a legacy save sets the baseline, it does not spend it**
-  - L364 the first month after a legacy load books no inventory swing
-  - L369 ...and the next month measures against it
-  - L376 a new city's first stock IS production
-- **L379 3b. exports, the first the city has ever had**
-  - L387 exports
-  - L388 raw material imported
-  - L389 net exports is the difference
-  - L390 ...and that is the whole of GDP here
-  - L391 a city that exports more than it imports reads positive
-  - L398 selling below the cost of the input subtracts
-  - L404 every import counted
-  - L405 ...and none of them is output
-- **L407 4. annual and per capita**
-  - L414 twelve months of 100
-  - L415 trend equals the month when flat
-  - L416 per capita over 100 people
-  - L417 no population -> no divide by zero
-  - L423 annual uses the last twelve only
-- **L425 5. growth**
-  - L429 no history -> no growth
-  - L432 one month -> still nothing to compare
-  - L436 2%/mo annualised
-  - L437 ...which is more than 12x the monthly rate
-  - L442 a halved month is negative growth
-  - L446 year on year needs 13 months
-  - L448 13th month against the 1st
-- **L450 6. government books**
-  - L459 total revenue
-  - L460 land sales are revenue
-  - L461 property tax is its own line
-  - L462 total expenditure
-  - L463 land bought is an expense
-  - L464 deficit
-  - L465 a deficit is negative
-  - L470 a land boom leaves GDP alone
-  - L474 revenue to GDP
-  - L475 debt to GDP
-  - L476 no debt -> zero
-  - L479 no output -> no ratio blow-up
-  - L480 ...nor for revenue
-- **L482 4. THE INTEREST LINE IS REAL**
-- **L496 the city's interest reaches its own accounts**
-  - L534 fixture: the city really did issue a coupon bond
-  - L535 THE INTEREST REACHES THE ACCOUNTS AT ALL
-  - L540 ...and it is the coupon, not some other number
-  - L542 ...and the line is the coupon and the discount amortised
-  - L544 ...so it survives Pieces.topSlices(), which drops a zero slice
-  - L555 fixture: saved
-  - L556 and a reloaded city reports the same interest
-  - L592 fixture: the town's school and its buses both cost something
-  - L595 G counts the schools' and transit's cost
-- **L607 every good a sector holds is in the accounts**
-  - L623 every good a sector holds is in an inventory term, or named as left out
-  - L630 HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131),
-  - L643 ...and Iron & Steel, which keeps a yard of coke, is counted by it
-  - L645 ...and Cement & Concrete, which keeps a silo of cement, is counted by it (0.7.131)
-  - L648 ...and Copper Mining and Copper Refining, which keep yards of cathode, are counted by it (0.7.133)
-  - L653 ...and Wood Products, which keeps yards of lumber, panels, pulp, paper and pellets, is counted by it (0.7.140)
-- **L668 a city whose railway buys its fleet abroad**
-  - L706 fixture: the railway bought its fleet abroad
-  - L709 fixture: more than the town makes in a month, so with nothing against it the month reads negative
-  - L710 the fleet's import is matched by the stock it went into, to within its wear and the price's move
-  - L712 ...so the month it lands is not negative output
-  - L713 ...and the identity holds in it
-- **L729 a city whose copper refinery goes with its yard full**
-  - L776 fixture: the refinery went with cathode in its yard, and the yard was written off
-  - L778 the strike kept the units its rows wrote off
-  - L779 the accounts were handed the units written off
-  - L780 fixture: the yard is worth more than the town makes in a month, so booked as a fall in stock the month reads negative
-  - L782 ...so the month the works goes is not negative output
-  - L783 ...and the identity holds in it
-  - L787 fixture: saved in the month the yard was written off
-  - L788 a city loaded from that save hands its accounts the same units
-  - L789 ...and strikes the same GDP
-- **L843 a city whose bakeries and materials plants go with their sheds full (0.7.136)**
-  - L933 fixture: the bakeries went with food in their warehouses, and it was written off
-  - L935 fixture: ...and the plants with materials in their sheds, written off alike
-  - L939 the strike kept the food its rows wrote off, good by good
-  - L940 ...and the materials
-  - L941 ...and the pieces written off by hand
-  - L942 the accounts were handed the food written off, at its fixed weights
-  - L943 ...and the materials, in units
-  - L944 ...and the luxuries, in pieces
-  - L945 fixture: the sheds are worth more than the town makes in a month, so booked as a fall in stock the month reads negative
-  - L947 ...so the month the works go is not negative output
-  - L948 ...and the identity holds in it
-  - L952 fixture: saved in the month the sheds were written off
-  - L953 a city loaded from that save hands its accounts the same food
-  - L954 ...the same materials
-  - L955 ...the same luxuries
-  - L956 ...and strikes the same GDP
+- **L34 1. the identity**
+  - L41 consumption
+  - L42 investment (200 built + 1000 stock built up)
+  - L43 government
+  - L44 net exports
+  - L45 GDP
+  - L46 identity holds
+- **L51 2. stock is a CHANGE**
+  - L56 unchanged stock adds nothing
+  - L57 GDP without the one-off stock build
+  - L61 stock drawn down subtracts
+- **L63 3. THE BUG THIS REPLACES**
+  - L70 GDP is positive despite sector losses
+  - L76 a city living on imports does read negative
+- **L78 3c. the two ways it went negative anyway**
+- **L84 a bulk order is not negative output**
+  - L94 the quiet month is positive
+  - L107 ordering is not output, and not an import either
+  - L115 a month of building reads the value the builders added
+  - L117 ...which is positive
+- **L119 the materials plant's shed is stock; the city's yard is not**
+  - L139 a plant filling its shed is production
+  - L140 ...and GDP rises by exactly that
+  - L142 ...while a price move on the same stock is nothing
+  - L145 ...and selling it into a contract runs the term the other way
+  - L162 a shop stocking its first stockroom books it as production
+  - L164 ...so a month that is nothing but the import of it is not negative output
+  - L174 ...and a month of selling and restocking scores the margin alone
+  - L176 ...which is what a retailer adds
+  - L183 ...and running it down runs the term the other way
+- **L196 a fleet bought abroad is stock held, not negative output**
+  - L207 a railway taking delivery of its fleet books it as stock held
+  - L208 ...so a month of stocking up on imported inputs is not negative output
+  - L209 ...not negative at all
+  - L210 ...and the identity holds
+  - L231 a month of hauling: the fleet's wear is its use
+  - L232 ...and GDP by expenditure is what the mill and the railway added
+  - L239 an older save's first month books no change in the goods held
+  - L241 ...and the month after measures against it
+- **L253 a works sold back with its yard full is a loss of assets, not negative output**
+  - L263 fixture: the yard filled is output held
+  - L265 the month the works goes with its yard, the write-off is added back: no change in stock held
+  - L267 ...so the month is not negative output
+  - L268 ...and the accounts keep what was written off, in units
+  - L269 ...and measure next month from what was left, none
+  - L271 ...so the month after books no change either
+  - L276 a yard exported is still the fall in stock it is
+  - L277 ...matched by the export, so the month adds nothing
+- **L291 a mill's warehouse, a plant's shed and a stockroom written off are a loss of assets, not negative output (0.7.136)**
+  - L297 fixture: each of the three holds something
+  - L304 fixture: the warehouse filled is food held
+  - L305 fixture: ...the shed filled, materials held
+  - L306 fixture: ...and the stockroom filled, luxuries held
+  - L308 the month the mill goes with its warehouse, food's write-off is added back: no change in food held
+  - L310 ...the plant with its shed, materials' alike
+  - L311 ...and the shop with its stockroom, luxuries' alike
+  - L312 ...so the month is not negative output
+  - L313 ...and the accounts keep what each wrote off: the food
+  - L314 ...the materials
+  - L315 ...and the luxuries
+  - L317 ...and what each term added back, at its price
+  - L319 ...and the month after books no change in any of them
+  - L325 a shed exported is still the fall in stock it is
+  - L326 ...matched by the export, so the month adds nothing
+  - L331 an update with no write-offs handed in reads the shed's fall as before
+- **L333 a price move is not production**
+  - L347 an unchanged warehouse contributes nothing when the price moves
+  - L349 ...and output stays positive
+  - L353 100,000 more units at $0.75 is $75,000 of production
+- **L356 a legacy save sets the baseline, it does not spend it**
+  - L366 the first month after a legacy load books no inventory swing
+  - L371 ...and the next month measures against it
+  - L378 a new city's first stock IS production
+- **L381 3b. exports, the first the city has ever had**
+  - L389 exports
+  - L390 raw material imported
+  - L391 net exports is the difference
+  - L392 ...and that is the whole of GDP here
+  - L393 a city that exports more than it imports reads positive
+  - L400 selling below the cost of the input subtracts
+  - L406 every import counted
+  - L407 ...and none of them is output
+- **L409 4. annual and per capita**
+  - L416 twelve months of 100
+  - L417 trend equals the month when flat
+  - L418 per capita over 100 people
+  - L419 no population -> no divide by zero
+  - L425 annual uses the last twelve only
+- **L427 5. growth**
+  - L431 no history -> no growth
+  - L434 one month -> still nothing to compare
+  - L438 2%/mo annualised
+  - L439 ...which is more than 12x the monthly rate
+  - L444 a halved month is negative growth
+  - L448 year on year needs 13 months
+  - L450 13th month against the 1st
+- **L452 6. government books**
+  - L461 total revenue
+  - L462 land sales are revenue
+  - L463 property tax is its own line
+  - L464 total expenditure
+  - L465 land bought is an expense
+  - L466 deficit
+  - L467 a deficit is negative
+  - L472 a land boom leaves GDP alone
+  - L476 revenue to GDP
+  - L477 debt to GDP
+  - L478 no debt -> zero
+  - L481 no output -> no ratio blow-up
+  - L482 ...nor for revenue
+- **L484 4. THE INTEREST LINE IS REAL**
+- **L498 the city's interest reaches its own accounts**
+  - L536 fixture: the city really did issue a coupon bond
+  - L537 THE INTEREST REACHES THE ACCOUNTS AT ALL
+  - L542 ...and it is the coupon, not some other number
+  - L544 ...and the line is the coupon and the discount amortised
+  - L546 ...so it survives Pieces.topSlices(), which drops a zero slice
+  - L557 fixture: saved
+  - L558 and a reloaded city reports the same interest
+  - L594 fixture: the town's school and its buses both cost something
+  - L597 G counts the schools' and transit's cost
+- **L609 every good a sector holds is in the accounts**
+  - L625 every good a sector holds is in an inventory term, or named as left out
+  - L632 HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131),
+  - L645 ...and Iron & Steel, which keeps a yard of coke, is counted by it
+  - L647 ...and Cement & Concrete, which keeps a silo of cement, is counted by it (0.7.131)
+  - L650 ...and Copper Mining and Copper Refining, which keep yards of cathode, are counted by it (0.7.133)
+  - L655 ...and Wood Products, which keeps yards of lumber, panels, pulp, paper and pellets, is counted by it (0.7.140)
+- **L670 a city whose railway buys its fleet abroad**
+  - L708 fixture: the railway bought its fleet abroad
+  - L711 fixture: more than the town makes in a month, so with nothing against it the month reads negative
+  - L712 the fleet's import is matched by the stock it went into, to within its wear and the price's move
+  - L714 ...so the month it lands is not negative output
+  - L715 ...and the identity holds in it
+- **L731 a city whose copper refinery goes with its yard full**
+  - L778 fixture: the refinery went with cathode in its yard, and the yard was written off
+  - L780 the strike kept the units its rows wrote off
+  - L781 the accounts were handed the units written off
+  - L782 fixture: the yard is worth more than the town makes in a month, so booked as a fall in stock the month reads negative
+  - L784 ...so the month the works goes is not negative output
+  - L785 ...and the identity holds in it
+  - L789 fixture: saved in the month the yard was written off
+  - L790 a city loaded from that save hands its accounts the same units
+  - L791 ...and strikes the same GDP
+- **L830 imported feed held as output before a later export (GDP1)**
+- **L915 a city whose bakeries and materials plants go with their sheds full (0.7.136)**
+  - L1005 fixture: the bakeries went with food in their warehouses, and it was written off
+  - L1007 fixture: ...and the plants with materials in their sheds, written off alike
+  - L1011 the strike kept the food its rows wrote off, good by good
+  - L1012 ...and the materials
+  - L1013 ...and the pieces written off by hand
+  - L1014 the accounts were handed the food written off, at its fixed weights
+  - L1015 ...and the materials, in units
+  - L1016 ...and the luxuries, in pieces
+  - L1017 fixture: the sheds are worth more than the town makes in a month, so booked as a fall in stock the month reads negative
+  - L1019 ...so the month the works go is not negative output
+  - L1020 ...and the identity holds in it
+  - L1024 fixture: saved in the month the sheds were written off
+  - L1025 a city loaded from that save hands its accounts the same food
+  - L1026 ...the same materials
+  - L1027 ...the same luxuries
+  - L1028 ...and strikes the same GDP
 
 ## GlobeCheck.java - 137 labelled assertions
 

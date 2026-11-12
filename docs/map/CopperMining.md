@@ -53,7 +53,7 @@
 
 **Uses:** [Good](Good.md) (14), [LandManager](LandManager.md) (5), [Resource](Resource.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (2), [BuildCard](BuildCard.md) (2), [ExtractionSector](ExtractionSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Deposit](Deposit.md) (1)
 
-**Used by (6):** [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md)
+**Used by (7):** [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 

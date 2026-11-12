@@ -26,6 +26,15 @@ own statement imports are 23,852.334 and total exports 37,672.432, including
 fabricated steel; its local rod purchase must be included when following the
 chain, even though intermediate local trades cancel from the city's GDP.
 
+A temporary print in `Sector.forecastFlow()` pinpoints the price used by
+FL1's order decision. In m901 it allows all **7,611.705911 t** of wire to be
+made for export: its computed input cost is **4.470670 per tonne**, exactly
+rod's still-stale landed price, against wire's net export price **4.512185**.
+Rod's import price is already **6.064825**. The later rod clearing charges
+the new price. The forecast and the eventual purchase are priced in different
+phases; the goods themselves have already been sold. This is the concrete
+production/pricing issue to consider if Jerus authorizes a wire fix.
+
 The m902 pending Copper Refining exports **26,756.764** belong to a different
 complete clearing, with a new **26,715.604** import bill and **4,621.895 t**
 of rod made and exported. Adding that export to the earlier statement or
@@ -39,6 +48,12 @@ preparation scripts are `target/gdp1-probe/Ensemble.java`,
 model, seed 11, AUTO2, through m903, with the required Earth/world paths.
 They print pending ledgers before the strike as well as statements after it.
 The temporary probe uses TempDirs and no real save slot.
+RT3's worktree HEAD at the replay is
+`77e41367239ec424b5c2232ff67a5f35289cc3c9`; its relevant model is the held RT3
+model. The last replay adds only the diagnostic print to a temporary copy of
+Sector (identical to RT3's source otherwise) and still reproduces -431.689.
+The replay CSV, `target/gdp1-probe/rt3.csv`, has all 903 monthly audit verdicts
+green; its only finding is "negative monthly GDP" in m902.
 
 ## Common path and the requested inventory rule
 
@@ -105,4 +120,21 @@ no accounting-induced trace movement is claimed.
   `target/checks/gdp1-main-*.csv`. This is a diagnostic playtest, not a baseline
   suite. The RT3 replay above remains the negative-month counterexample.
 
-Final pick and disposition are to be recorded after the fixture's final check.
+- Final `./batch-check.sh --pick`: **exit 0**, GdpCheck and TimingCheck both
+  pass; compile succeeds, maps regenerated, zero firm Stale findings.
+  This includes the final fixture with imports preceding production and an
+  explicit identity check in the import month. Model/harness commit:
+  `373de3df`; kept log `target/checks/gdp1-pick.txt`, full logs beside it.
+- `git diff --check` passes; edited files keep LF. No save slot, model,
+  LongPlaytest finding or publisher-owned record is changed.
+
+## Disposition: blocked on the author's decision
+
+Lanekeeper's instruction of 2026-11-12 16:54
+(`20261112-165434-548-lanekeeper-17b5`) confirms this attribution is the right
+call and says the question is with Jerus: a proof-only batch, or a fix to
+Manufacturing's wire. It explicitly instructs this session to finish the
+pick, push notes and code, **not push a ship file**, and report blocked.
+Accordingly there is no GDP1-ship.md, no readiness marker and no gate dry run.
+No ensemble is run: no model or default-player code changed. A resumed
+production/pricing change must judge its own trace and ensemble requirement.
