@@ -14,7 +14,8 @@ session `5ed95594-d6fa-4a1f-98e2-b975e0c6b6cc`.
   duration and status. Graceful exits retain stage evidence beside the log.
   `tools/gate.sh ID` creates a fresh clone, names both main-checkout data files,
   returns the publisher's status and retains its logs outside the clone.
-  The branch's publisher is extracted before merging, exercising GF1 itself.
+  Main's publisher runs from its pre-merge copy. The explicit development
+  option `--branch-gate --dry-run` tests the branch's publisher.
   `--red-lines FILE` reads one approval substring per line.
 - The public stop marks cancellation and ends its owned process tree. Windows
   validates the native PID, creation time and publisher command line, walks
@@ -33,7 +34,7 @@ session `5ed95594-d6fa-4a1f-98e2-b975e0c6b6cc`.
   headers and gate/PC prose were shortened. Existing timing and red approval
   semantics include completed paired rounds with no comparison.
 
-## Checks
+## Original checks
 
 - Initial `./batch-check.sh --fast` exited 0, compile 51 seconds, zero firm
   Stale findings. Named KnownRedsCheck exited 0 in seven seconds through the
@@ -53,6 +54,10 @@ session `5ed95594-d6fa-4a1f-98e2-b975e0c6b6cc`.
   corruption. Each was corrected before the final clean self-test run.
 - The ensemble was skipped for this batch, whose changes are confined to
   process instructions, scripts, the runner and its harness.
+
+The two accepted runs below selected the branch publisher implicitly under
+f4d1584c's launcher. They are the development case now selected explicitly by
+`--branch-gate --dry-run`. The gatekeeper accepted both on 2026-11-11.
 
 ## Full dry run, exit 0
 
@@ -101,14 +106,60 @@ The throwaway origin's complete main/branch/tag refs were identical. The log is
 verified the corrected serialized logging through an identical temporary
 launcher copy while the long full run held the original source file open.
 
-## Line count and handoff
+## Gatekeeper fixes, 2026-11-12
 
-One in, one out, `git diff --numstat origin/main` over the 13 process files
-and generated indexes, excluding this note and the ship file, gives
-**710 lines added and 612 removed**. Reductions cover publisher and
-self-test headers, runner descriptions and the replaced gate/PC prose.
+- Main's publisher is the default. `--branch-gate` is accepted only with a
+  real `--dry-run` option before the harness delimiter. The stable launcher
+  wrapper also supports older publishers that exec their copy and derive
+  their checkout from their own filename.
+- Real publication requires `CBS_GATE_RUN` and a live, initialized guardian.
+  This is the selected resolution of finding 2a. Direct dry runs remain useful
+  for script tests. Liveness is checked before tagging and every push attempt.
+  A stop rolls back the local commit and tag, including a forced process-tree
+  stop after commit. Ref reports compare main, branch and all tags with the
+  saved snapshot and name moved refs and the stop cause.
+- New self-tests cover main's authority over an altered branch publisher,
+  refusal of the development option without dry-run, the harness delimiter,
+  unguarded real publication, a post-commit stop, a stop between push attempts,
+  local commit/tag rollback and both moved/unmoved ref reports.
+  The first run passed 139/140. Its failing assertion still read unnamed reds
+  from the pre-guardian fixture path. The fixture's 25 lines are now checked
+  in its actual run directory, with the same count and condition asserted.
+- `./batch-check.sh --fast` exited 0, compile three seconds and zero firm
+  Stale findings. `--pick` exited 0, two harnesses in seven seconds, and picker
+  self-tests passed 13/13. After midnight the generator changed 567 date
+  headers. Each was verified date-only and restored to the committed index.
+  AllChecks.java and KnownRedsCheck.java match the accepted review.
 
-A fresh Claude session reviews GF1 against its brief, runs script self-tests
-and `./batch-check.sh --fast` on the merge, then merges untagged. At that merge,
+The final `sh tools/ship-selftest.sh` run on code commit `1804a07d` exited 0,
+**141/141**. Its log is `GF1-review-selftest.log`, also retained under
+`C:/Users/Jerus/AppData/Local/Temp/cbs-GF1-review-evidence/`. The fixture verifies
+both origin and local main/tag refs after the post-commit and retry stops.
+
+### Final stopped development dry run
+
+Branch `1804a07daf87bf6a4840a2eb294a442ad6a16268`, main
+`203251720cb342b7e6cf141b025c30c12402bc47`, with
+`--branch-gate --dry-run --no-tag -- BrandingCheck CalendarCheck`.
+Both suite harnesses passed. Hard timing started at 00:00:25 on 2026-11-12.
+The public stop returned 0, the launcher returned 130, and its report said
+`stopped by --stop; origin refs unmoved`. HEAD stayed at `20325172`, the gate
+record matched HEAD, and the complete before/after origin refs were identical.
+MemWatch PID 34864 and the existing Claude wait PID 30560 kept the same process
+identities across the stop. The log, clone, snapshots and guardian report are
+kept at `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GF1-eHudseAy/`.
+The accepted full run is retained under the gatekeeper's explicit waiver.
+
+## Process file count and handoff
+
+The earlier 710/612 count included generated indexes. The process-only count
+at f4d1584c was 498 added and 354 removed. After these fixes,
+`git diff --numstat origin/main` over AGENTS.md, docs/orchestrator.md, ship.sh,
+tools/ and the two Java files gives **658 added, 360 removed, net
++298, across 9 files**. Generated indexes, these notes and the ship
+file are excluded.
+
+A fresh Claude session reviews GF1 against its brief and the numbered findings,
+runs the script self-tests and quick check, and merges untagged. At that merge,
 remove KD1's completed child-JVM cleanup clause from its queue row. Its MG1
 memory-guard and EN2 ensemble items are the work still queued there.
