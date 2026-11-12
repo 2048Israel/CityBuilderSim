@@ -249,9 +249,76 @@ Thirty timing assertions are soft, as prescribed. Compile succeeds, maps
 regenerate, Stale has zero firm findings and the tree check passes. Logs:
 `target/checks/gdp1-pick.txt`, `target/checks/suite.txt`, and the five harness
 logs beside them. No known-red entry naming GDP1 exists in this branch's
-record, and no new waiver is introduced.
+record. That pick required no new waiver.
 
 The full pick is of the final model `aea7eb1d`, with only notes, the design
 write-up and its ensemble baseline committed afterwards. A provisional
 GDP1-ship.md is now required on origin for the versioned gate dry run.
 After that run, only these notes and GDP1-ship.md may change.
+
+## Retained gate dry run
+
+`sh tools/gate.sh GDP1 --dry-run` is launched after provisional ship commit
+`6535c3a12b28aba42e043bf5b448bef58c9983e0` is pushed. Its main is
+`6e3698445cb0dbceba70c2aa51c749f65b91e879` (DM2). The retained fresh-clone run
+is `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GDP1-TYIaTCZM`, also available
+in Git Bash as `/tmp/cbs-gate-GDP1-TYIaTCZM`; its launcher log in this worktree
+is `target/checks/gdp1-gate.txt`. The run's `branch.commit` and `main.commit`
+hold those two identities.
+
+The first dry run completes its checks but exits **1** (suite exit 4), solely
+for one NEW MapCheck fixture assertion in section 14: "fixture: the boxes
+take offers, several at once, and every offer is taken by some and missed
+by others". All 201 harnesses complete in 2,388 seconds: 195 pass, the five
+existing known-red harnesses remain red, and MapCheck adds that single
+assertion. Compile, generated maps, tree and Stale pass. Its full MapCheck
+log is in the retained clone's `target/checks/MapCheck.log`.
+
+The provisional ship file was removed and that withdrawal pushed first at
+`45a10101`, before attribution or any repair. No model source changed.
+
+## MapCheck offer-fixture follow-up M6-F
+
+The failing fixture scatters 200 deterministic random boxes over the map and
+expects every one of 24 offers to have been taken by at least one of them.
+In the GDP1 merge it takes 22, misses all 24 at least once, and includes 37
+multi-offer boxes. **All 200 selection results equal the independent
+plot-by-plot oracle.** The separate deliberately placed one-free-plot box
+also takes each of **all 24 offers** alone. Thus actual selection and offer
+geometry assertions hold; the scattered sample does not cause the fixture's
+extra all-offers coverage condition.
+
+A named main-model control removes every GDP1 model change by compiling
+Sector, GoodsMarket and GameVersion from main `6e369844` over the gate's
+otherwise-main DM2 classes. The exact control sources and runner are under
+`target/gdp1-map-control/` and `target/gdp1-map-control.{py,sh}`. This is an
+attribution control, not a rerun to locate the already known assertion. Its
+first compile used an MSYS classpath, then was corrected to native C:/ paths.
+The completed control is `target/checks/gdp1-map-main-control.log`.
+
+The control takes **24/24** offers with its scatter: 108 taking an offer and
+50 taking several, with all 200 oracle comparisons and all 24 targeted boxes
+passing. Its only two failures are the existing BQ1 card-bond fixture lines.
+Consequently main alone does **not** reproduce this coverage failure. The
+forecast correction changes the legal fixture city's offer geometry, and
+the newer DM2 harness also removes the former FC1-off history switch. The
+sample's coverage assumption is state dependent; no map-selection code is
+changed by GDP1.
+
+**★ Call:** classify the coverage setup as a separate harness repair, M6-F,
+under the standing rule for unrelated fixture reds. The oracle and targeted
+tests demonstrate the selector is correct on the actual GDP1 geometry;
+restoring the old economic path would undermine the forecast fix. Keep the
+failed assertion exactly as it is and queue a fixture that causes its premise.
+No existing known-red entry naming GDP1 exists to reassign. The ship file
+records this single unrelated assertion and its queued fix, with this evidence;
+no model, map code, finding or harness premise is changed in GDP1.
+
+M6-F's brief: in MapCheck section 14, retain all 200 scattered box/oracle
+comparisons and the full all-offers take-and-miss assertion. Add deliberate
+hit and miss boxes for each offer, evaluated against the same independent
+plot oracle and included in the fixture's coverage sets. Cause a multi-offer
+box explicitly as well. The premise must hold for the main and GDP1 offer
+geometries, rather than depending on a particular city or increasing a random
+sample until it happens to pass. This is harness-only work; no model change
+or ensemble is needed. The author may review the queued repair in its own batch.
