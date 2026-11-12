@@ -418,9 +418,9 @@ LABEL="Markdown-only main advancement keeps evidence reusable"; ok sh -c "[ $RC 
 cp -R "$TA/kept" "$TA/unlaunched"; rm "$TA/unlaunched/launcher"
 : > "$STUB_LOG"; run --dry-run --reuse "$TA/unlaunched" batch/RF
 LABEL="working-folder evidence is refused and checks run"; ok sh -c "[ $RC = 0 ] && test -s $STUB_LOG && grep -q 'kept run refused' $TA/out.txt"
-W fetch -q origin; W checkout -q -B batch/RF origin/batch/RF; W commit -q --allow-empty -m moved; W push -q origin batch/RF
+W fetch -q origin; W checkout -q -B batch/RF origin/batch/RF; printf 'another file\n' > "$TA/work/docs/queue/RF-other.md"; W add docs/queue/RF-other.md; W commit -q -m moved; W push -q origin batch/RF
 : > "$STUB_LOG"; run --dry-run --reuse "$TA/kept" batch/RF
-LABEL="a moved branch refuses the kept run"; ok sh -c "[ $RC = 0 ] && test -s $STUB_LOG && grep -q 'kept run refused' $TA/out.txt"
+LABEL="another branch file changed after the run refuses reuse"; ok sh -c "[ $RC = 0 ] && test -s $STUB_LOG && grep -q 'kept run refused' $TA/out.txt"
 # A new launch captures the moved branch, then a Java main change invalidates it.
 CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/kept2" sh "$SRC/tools/gate.sh" RF --dry-run > "$TA/kept2.out" 2>&1
 printf '\n// main advanced\n' >> "$TA/main/src/main/java/ham/citybuildersim/Timing.java"; S git add -A; S git commit -q -m fixture-java; S git push -q origin main
@@ -444,6 +444,14 @@ for b in FDOC FSC; do
     : > "$STUB_LOG"; run --no-tag --reuse "$TA/kept-$b" batch/$b
     LABEL="$b zero-harness gate reuses its completed fast run"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && git -C $TA/main log -1 --format=%B | grep -q 'reused $TA/kept-$b'"
 done
+
+# The builder runs before its own notes and readiness marker are committed.
+mk batch/RQ; jv RQ SimulationEngine; fin RQ-source batch/RQ
+CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/ready-kept" sh "$SRC/tools/gate.sh" RQ --dry-run --no-tag > "$TA/ready-kept.out" 2>&1
+printf '# RQ notes\n' > "$TA/work/docs/queue/RQ-notes.md"; fin RQ-notes batch/RQ
+printf '<!-- gate-run: %s -->\n## changelog\n### RQ - ready, no tag (process)\n\nReady fixture.\n' "$TA/ready-kept" > "$TA/work/docs/queue/RQ-ship.md"; fin RQ-ready batch/RQ
+: > "$STUB_LOG"; run --no-tag batch/RQ
+LABEL="Ready flow reuses the dry run after notes and ship commits are pushed"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && git -C $TA/main log -1 --format=%B | grep -q 'reused $TA/ready-kept'"
 
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"

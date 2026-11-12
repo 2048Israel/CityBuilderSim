@@ -16,7 +16,12 @@ fi
 BRANCH_COMMIT=$3; MAIN_COMMIT=$4; SELECTION=$5
 [ -f "$RUN/launcher" ] && [ "$(cat "$RUN/launcher")" = cbs-gate-v1 ] || exit 1
 [ -f "$RUN/checks.complete" ] && [ ! -f "$RUN/cancelled" ] || exit 1
-[ "$(cat "$RUN/branch.commit")" = "$BRANCH_COMMIT" ] || exit 1
+OLD_BRANCH=$(cat "$RUN/branch.commit")
+git merge-base --is-ancestor "$OLD_BRANCH" "$BRANCH_COMMIT" || exit 1
+ID=$(sed 's#^refs/heads/batch/##' "$RUN/branch")
+ADVANCED=$(git log --format= --name-only --no-renames --diff-merges=first-parent "$OLD_BRANCH..$BRANCH_COMMIT") || exit 1
+printf '%s\n' "$ADVANCED" | awk -v n="docs/queue/$ID-notes.md" -v s="docs/queue/$ID-ship.md" '
+    NF && $0 != n && $0 != s { bad = 1 } END { exit bad }' || exit 1
 [ "$(cat "$RUN/selection")" = "$SELECTION" ] || exit 1
 [ "$(cat "$RUN/origin")" = "$(git remote get-url origin)" ] || exit 1
 OLD=$(cat "$RUN/main.commit")
