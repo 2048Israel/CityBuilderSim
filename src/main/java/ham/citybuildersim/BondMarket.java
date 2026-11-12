@@ -150,6 +150,12 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     /** The arithmetic a bond's all-in cost may sit over the loan's and still be "no dearer": a billionth of a point a year - the bisection's own resolution, not a margin (plan()). */
     static final double CHEAPER_BY = 1e-11;
 
+    /** The relative shortfall at the issue-size fixed point, below the nominal twins' 1e-9 tolerance even after repeated refinancing (BS1). */
+    static final double ISSUE_ROUNDING = 1e-14;
+
+    /** The price step per unit of bond face, so mathematically equal bids retain arrival priority across currency units (OB1, BS1). */
+    static final double PRICE_TICK = 1e-12;
+
     /* ============================ what it reads ============================ */
 
     /** The city's readings the market prices on, which Game supplies. */
@@ -823,11 +829,11 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         double s = bondRoom;
         double bond = 0, threshold = Double.NaN;
         Demand at = null;
-        for (int i = 0; i < 40 && s > 0; i++) {
+        for (int i = 0; i < 100 && s > 0; i++) {
             Demand dm = i == 0 ? whole : new Demand(who, s, bondRoom, deal, extraAssets);
             double t = loanAllIn - issueCost(s) / s / TERM_YEARS;
             double filled = Math.min(bondRoom, dm.total(t));
-            if (filled >= s * (1 - 1e-9)) { bond = s; threshold = t; at = dm; break; }
+            if (filled >= s * (1 - ISSUE_ROUNDING)) { bond = s; threshold = t; at = dm; break; }
             if (!(filled > 0)) break;
             s = filled;
         }
@@ -1576,12 +1582,13 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
 
     /** One order on a bond's book, settled, between two steps: for FundLedgerCheck (0.7.39), as Exchange.tradeForCheck(). The month never calls it. */
     List<OrderBook.Fill> tradeForCheck(CorporateBond b, String who, OrderBook.Side side, double price, double quantity) {
-        return openBook(b).submit(who, side, price, quantity, ledgerMonth(), new Settle(b));
+        return submit(b, who, side, price, quantity, ledgerMonth());
     }
 
-    private void submit(CorporateBond b, String who, OrderBook.Side side, double price, double quantity, int month) {
-        if (!(quantity > dust) || !(price > 0) || !Double.isFinite(price)) return;
-        openBook(b).submit(who, side, price, quantity, month, new Settle(b));
+    private List<OrderBook.Fill> submit(CorporateBond b, String who, OrderBook.Side side, double price, double quantity, int month) {
+        if (!(quantity > dust) || !(price > 0) || !Double.isFinite(price)) return List.of();
+        double ticked = Math.rint(price / PRICE_TICK) * PRICE_TICK;
+        return openBook(b).submit(who, side, ticked, quantity, month, new Settle(b));
     }
 
     /** Where each participant's money and holding is, for one bond's book. */

@@ -303,6 +303,9 @@ public class BondCheck {
         assertTrue("fixture: the bank would take it only at its loan-equivalent yield, over the loan's price",
                 dm.bankYield > p.loanAllIn());
         assertTrue("fixture: so the book does not take all of it at a price no dearer than the loan", p.bondFace() < amount);
+        double threshold = p.loanAllIn() - bm.issueCost(p.bondFace()) / p.bondFace() / BondMarket.TERM_YEARS;
+        close("the partial issue reaches its size fixed point within ISSUE_ROUNDING",
+                dm.total(threshold) / p.bondFace(), 1, BondMarket.ISSUE_ROUNDING * 2);
         close("...and the rest is a bank loan", p.loan(), amount - p.bondFace(), 1e-9);
         assertTrue("...the two raising it all", p.covers());
         close("...at the leverage the whole deal leaves, which every bid read", p.dealDebt(), amount, 0);
