@@ -72,13 +72,13 @@ touch "$RUN/active"
 ( cd "$CLONE" && exec sh "$RUN/ship.sh" "batch/$ID" "$@" ) >> "$LOG" 2>&1 &
 SHIP=$!
 if [ "$WINDOWS" = 1 ]; then
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$HERE/gate-process.ps1")" -Mode Watch -Run "$(cygpath -w "$RUN")" >> "$LOG" 2>&1 &
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$HERE/gate-process.ps1")" -Mode Watch -Run "$(cygpath -w "$RUN")" > "$RUN/watch.log" 2>&1 &
 else
     echo "$SHIP" > "$RUN/process"
     ( while kill -0 "$SHIP" 2>/dev/null; do
         if ! kill -0 $$ 2>/dev/null || [ -f "$RUN/cancelled" ]; then tree_stop "$SHIP"; break; fi
         sleep 1
-      done ) >> "$LOG" 2>&1 &
+      done ) > "$RUN/watch.log" 2>&1 &
 fi
 GUARD=$!
 trap 'touch "$RUN/cancelled"' INT TERM HUP
@@ -91,9 +91,11 @@ else
     wait "$GUARD" || :
 fi
 rm -f "$RUN/active"
+[ ! -f "$RUN/watch.log" ] || cat "$RUN/watch.log" >> "$LOG"
 git -C "$CLONE" rev-parse HEAD > "$RUN/head.after"
 git -C "$CLONE" ls-remote origin refs/heads/main "refs/heads/batch/$ID" 'refs/tags/*' > "$RUN/refs.after"
 echo "$CODE" > "$RUN/exit"
+printf '[%s] gate      exit %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$CODE" >> "$LOG"
 tail -16 "$LOG"
 echo "gate: exit $CODE; log $LOG; unnamed lines $RUN/unnamed.txt"
 # Keep stopped clones too, for inspecting HEAD and the unfinished merge. Logs always survive.

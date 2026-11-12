@@ -82,6 +82,7 @@ undo() {   # the merge taken back: the maps the checks rewrote first, or the abo
 }
 cleanup() {   # on every way out: an unfinished merge taken back, main's timing worktree and the scratch folder removed
     [ "$MERGING" = 0 ] || undo
+    if [ -n "$CBS_GATE_RUN" ] && [ -d "$T" ]; then cp -R "$T" "$CBS_GATE_RUN/stages"; fi
     if [ -d "$MT" ]; then
         git worktree remove --force "$MT" >/dev/null 2>&1
         rm -rf "$MT"
@@ -211,7 +212,7 @@ fi
 # 7. the merge, not yet committed
 if printf '%s
 ' "$CHANGED" | grep -q -x 'ship.sh'; then
-    say "$BRANCH changes ship.sh: this run goes on from its copy ($0), so the merge cannot rewrite it under the shell; the new one runs from the next ship"
+    say "$BRANCH changes ship.sh: this run goes on from its copy ($0), so the merge cannot rewrite it under the shell"
 fi
 HEAD0=$(git rev-parse HEAD)
 MERGING=1
@@ -329,6 +330,8 @@ complete() {
 run_check() {   # stage, directory, command: no status or output survives from an earlier stage
     STAGE=$1; DIR=$2; shift 2
     alive
+    STAGE_STARTED=$(date +%s)
+    say "check $STAGE started"
     echo "$STAGE" >> "$T/needed"
     rm -f "$T/code" "$DIR/target/checks/reds.txt" "$DIR/target/checks/suite.txt" "$DIR/target/checks/timing.tsv" \
         || die "cannot clear the previous check results for $STAGE"
@@ -337,12 +340,9 @@ run_check() {   # stage, directory, command: no status or output survives from a
     [ -f "$T/code" ] || die "the check did not finish: $STAGE (no fresh status)"
     read -r FINISHED CHECKED < "$T/code"
     [ "$FINISHED" = "$STAGE" ] || die "the check did not finish: $STAGE (wrong status)"
-    case "$STAGE" in
-        pair-*) [ "$CHECKED" -lt 128 ] || die "the check did not finish: $STAGE (exit $CHECKED)"
-                echo "$STAGE" >> "$T/finished"; return ;; # TM3 still judges a completed round with no figures as no pair
-    esac
-    case "$CHECKED" in
-        0|3|4) if [ "$STAGE" != fast ]; then
+    case "$STAGE:$CHECKED" in
+        pair-*:*) [ "$CHECKED" -lt 128 ] || die "the check did not finish: $STAGE (exit $CHECKED)" ;; # TM3 judges completed rounds with no figures
+        *:0|*:3|*:4) if [ "$STAGE" != fast ]; then
                    for f in reds.txt suite.txt; do
                        [ -f "$DIR/target/checks/$f" ] || die "the check did not finish: $STAGE ($f missing)"
                    done
@@ -353,6 +353,7 @@ run_check() {   # stage, directory, command: no status or output survives from a
         *) die "the check did not finish successfully: $STAGE (exit $CHECKED)" ;;
     esac
     echo "$STAGE" >> "$T/finished"
+    say "check $STAGE finished in $(( $(date +%s) - STAGE_STARTED )) s (exit $CHECKED)"
 }
 show_unnamed() {   # WG2: keep every line even when the screen shows twelve
     cat "$1" >> "${CBS_GATE_RUN:-target/checks}/unnamed.txt"

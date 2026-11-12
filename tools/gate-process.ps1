@@ -69,6 +69,8 @@ try {
         if ((Test-Path -LiteralPath (Join-Path $Run 'cancelled')) -or @($ancestors | Where-Object HasExited).Count -gt 0) {
             New-Item -ItemType File -Path (Join-Path $Run 'cancelled') -Force | Out-Null
             Stop-Gate
+            '130' | Set-Content -LiteralPath (Join-Path $Run 'exit')
+            "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] gate      stopped with its caller; main and the tags are where they were"
             break
         }
         Start-Sleep -Milliseconds 250
