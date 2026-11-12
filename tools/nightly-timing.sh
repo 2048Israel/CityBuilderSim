@@ -1,6 +1,49 @@
 #!/bin/sh
-# GR1: timing away from the gate, retained per machine, confirmed before attribution.
+# GR1: nightly ownership, data paths and timing away from the gate.
 # Sourced by nightly.sh and its no-JVM self-test. All temporary builds stay in its clone.
+nightly_owner() {
+    case "$1" in ''|*[!0-9]*) return ;; esac
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*)
+            CBS_NIGHTLY_PID=$1 powershell.exe -NoProfile -Command '$p = Get-Process -Id $env:CBS_NIGHTLY_PID -ErrorAction SilentlyContinue; if ($p) { "{0}-{1}" -f $p.Id, $p.StartTime.ToUniversalTime().Ticks }' 2>/dev/null | tr -d '\r' ;;
+        *) [ ! -r "/proc/$1/stat" ] || printf '%s-%s-%s\n' "$1" "$(cat /proc/sys/kernel/random/boot_id)" "$(awk '{sub(/^.*\) /, ""); print $20}' "/proc/$1/stat")" ;;
+    esac
+}
+nightly_unlock() { rmdir "$LOCK_ENTRY" "$LOCK_PATH" 2>/dev/null || :; }
+nightly_lock() {  # Publish a prepared, nonempty directory atomically (GR1 review: hard kills left the old lock forever).
+    LOCK_PATH=$1; LOCK_PID=$$
+    case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) LOCK_PID=$(ps -p $$ | awk 'NR == 2 {print $4}') ;; esac
+    LOCK_TOKEN=$(nightly_owner "$LOCK_PID"); [ -n "$LOCK_TOKEN" ] || return 3
+    LOCK_STAGE=$(mktemp -d "$LOCK_PATH.XXXXXXXX") || return 3
+    mkdir "$LOCK_STAGE/owner-$LOCK_TOKEN" || { rmdir "$LOCK_STAGE"; return 3; }
+    LOCK_NOTE=; [ ! -d "$LOCK_PATH" ] || LOCK_NOTE="nightly recovered stale lock $LOCK_PATH"
+    for attempt in 1 2 3; do
+        if mv -T "$LOCK_STAGE" "$LOCK_PATH" 2>/dev/null; then
+            LOCK_ENTRY=$LOCK_PATH/owner-$LOCK_TOKEN
+            : > "$LOG" || { nightly_unlock; return 3; }
+            [ -z "$LOCK_NOTE" ] || printf '%s\n' "$LOCK_NOTE" >> "$LOG" || { nightly_unlock; return 3; }
+            return 0
+        fi
+        for owner in "$LOCK_PATH"/owner-*; do
+            [ -d "$owner" ] || continue
+            token=${owner##*/owner-}; pid=${token%%-*}
+            if [ "$(nightly_owner "$pid")" = "$token" ]; then
+                rmdir "$LOCK_STAGE/owner-$LOCK_TOKEN" "$LOCK_STAGE"; return 3
+            fi
+            rmdir "$owner" 2>/dev/null || :
+        done
+        rmdir "$LOCK_PATH" 2>/dev/null || :
+    done
+    rmdir "$LOCK_STAGE/owner-$LOCK_TOKEN" "$LOCK_STAGE"; return 3
+}
+nightly_data() {
+    [ -z "${JDK_JAVA_OPTIONS:-}" ] || return 0
+    case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) MAIN=$(cygpath -m "$MAIN") ;; esac
+    for f in earth-2:cbs.earth world-1:cbs.world; do
+        [ ! -f "$MAIN/data/${f%%:*}.bin" ] || JDK_JAVA_OPTIONS="${JDK_JAVA_OPTIONS:+$JDK_JAVA_OPTIONS }-D${f#*:}=\"$MAIN/data/${f%%:*}.bin\""
+    done
+    export JDK_JAVA_OPTIONS
+}
 timing_quiet() {
     case "$(uname -s)" in
         MINGW*|MSYS*|CYGWIN*)

@@ -7,6 +7,31 @@ PAIRAWK=$ROOT/tools/timing-pair.awk
 TEST=$(mktemp -d "${TMPDIR:-/tmp}/cbs-night-test-XXXXXXXX")
 trap 'rm -rf "$TEST"' EXIT
 ok() { if "$@"; then echo "PASS $CASE"; else echo "FAIL $CASE"; exit 1; fi; }
+LOG=$TEST/lock.log
+CASE='fresh lock records the running process and its start time'; nightly_lock "$TEST/lock"; ok test -d "$LOCK_ENTRY"
+printf 'live log\n' >> "$LOG"
+CASE='live lock refuses with exit 3'
+if (nightly_lock "$TEST/lock"); then exit 1; else ok test "$?" = 3; fi
+CASE='refusal preserves the owner and log'; ok grep -q 'live log' "$LOG"; ok test -d "$LOCK_ENTRY"
+nightly_unlock
+for stale in owner-999999999-gone "owner-$LOCK_PID-wrong-start"; do
+    mkdir -p "$TEST/lock/$stale"
+    CASE='stale or recycled PID lock is taken over'; nightly_lock "$TEST/lock"
+    ok test "$(grep -c '^nightly recovered stale lock ' "$LOG")" = 1
+    nightly_unlock
+done
+mkdir "$TEST/lock"
+CASE='legacy empty lock is taken over'; nightly_lock "$TEST/lock"; ok grep -q 'recovered stale lock' "$LOG"; nightly_unlock
+(
+    MAIN="$TEST/assets with spaces"; mkdir -p "$MAIN/data"; unset JDK_JAVA_OPTIONS
+    CASE='absent data files add no properties'; nightly_data; ok test -z "${JDK_JAVA_OPTIONS:-}"
+    touch "$MAIN/data/earth-2.bin"; nightly_data
+    CASE='only the existing Earth file is named'; ok test "$JDK_JAVA_OPTIONS" = "-Dcbs.earth=\"$MAIN/data/earth-2.bin\""
+    touch "$MAIN/data/world-1.bin"; unset JDK_JAVA_OPTIONS; nightly_data
+    CASE='both existing files are named'; ok test "$JDK_JAVA_OPTIONS" = "-Dcbs.earth=\"$MAIN/data/earth-2.bin\" -Dcbs.world=\"$MAIN/data/world-1.bin\""
+    JDK_JAVA_OPTIONS='-Dfixture=kept'; nightly_data
+    CASE='caller Java options take precedence'; ok test "$JDK_JAVA_OPTIONS" = '-Dfixture=kept'
+)
 row() { printf 'PlanCheck\tplan 42 ms\t%s\t100\tms\tFAIL\t1\n' "$1"; }
 judge() { awk -v mode=night -f "$PAIRAWK" "$TEST/old" "$TEST/new"; }
 row 120 > "$TEST/old"; row 125 > "$TEST/new"
