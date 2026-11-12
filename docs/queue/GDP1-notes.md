@@ -52,8 +52,9 @@ RT3's worktree HEAD at the replay is
 `77e41367239ec424b5c2232ff67a5f35289cc3c9`; its relevant model is the held RT3
 model. The last replay adds only the diagnostic print to a temporary copy of
 Sector (identical to RT3's source otherwise) and still reproduces -431.689.
-The replay CSV, `target/gdp1-probe/rt3.csv`, has all 903 monthly audit verdicts
-green; its only finding is "negative monthly GDP" in m902.
+The replay CSV, `target/gdp1-probe/rt3.csv`, has all 902 recorded monthly audit
+verdicts (m2 through m903) green; its only finding is "negative monthly GDP"
+in m902.
 
 ## Common path and the requested inventory rule
 
