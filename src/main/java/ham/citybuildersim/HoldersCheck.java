@@ -2305,8 +2305,8 @@ public class HoldersCheck {
                 u.fresh() && u.face() > 0 && u.discount() > 100 * tolerance);
         assertTrue("fixture: ...the bank's book covers the face it sells back, and its unearned discount the piece's",
                 u.book() >= u.face() && u.carried() >= u.discount());
-        assertTrue("fixture: ...bought straight back whole, all of it the bank's face, and off the books",
-                u.gone() && Math.abs(u.taken() - u.face()) <= faceTol && Math.abs(u.bankFace() - u.face()) <= faceTol);
+        assertTrue("fixture: ...cancelled straight back whole, with no paid bank face, and off the books",
+                u.gone() && Math.abs(u.taken() - u.face()) <= faceTol && u.bankFace() == 0);
         assertTrue("fixture: ...and the twin's the same, bit for bit", u.equals(uTwin));
 
         close("the buyback re-struck nothing", restruckAtOnce, 0, 0);

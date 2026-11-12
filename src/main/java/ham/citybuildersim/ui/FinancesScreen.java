@@ -4464,6 +4464,7 @@ final class FinancesScreen {
             case BANK       -> Palette.MONEY;
             case FIRMS      -> Palette.BUSINESS_DARK;
             case WORLD      -> Palette.BUILDING_DARK;
+            case UNSETTLED  -> Palette.TEXT_MUTED;
         };
     }
 
@@ -4474,6 +4475,7 @@ final class FinancesScreen {
             case BANK       -> "the bank";
             case FIRMS      -> "the businesses";
             case WORLD      -> "the world";
+            case UNSETTLED  -> "the cancelled sale";
         };
     }
 
@@ -4582,6 +4584,8 @@ final class FinancesScreen {
      * holders ask this much over fair, the one that asks the most named with its amount.
      */
     String whyTheyDiffer(Buyback.Result q) {
+        if (q.cancelledFace() > 0) return "The quote returns " + d(q.cancelledCash())
+                + " of original proceeds to cancel the unpaid sale and buys the paid holdings at their holders' offers.";
         if (q.overFair() < BRIDGE_NOTHING) return "The offers taken are at fair, so the two agree.";
         Buyback.Holder most = null;
         for (Buyback.Holder h : Buyback.Holder.values()) if (most == null || q.overFair(h) > q.overFair(most)) most = h;
@@ -4734,7 +4738,7 @@ final class FinancesScreen {
 
         VBox result = Kept.column(6);
         result.getChildren().add(caption("WHAT IT BUYS", null));
-        result.getChildren().add(cardLine("Offered by the holders", d(q.offeredFace())
+        result.getChildren().add(cardLine("Face available to close", d(q.offeredFace())
                 + (asked > 0 && q.offeredFace() > 0 ? String.format(" · %.2f× the face asked", q.cover()) : ""),
                 q.offeredFace() > 0 ? null : Palette.TEXT_MUTED));
         for (Buyback.Holder h : Buyback.Holder.values()) {
@@ -4743,12 +4747,14 @@ final class FinancesScreen {
                 case HOUSEHOLDS -> q.householdFace();
                 case FIRMS -> q.firmFace();
                 case WORLD -> q.worldFace();
+                case UNSETTLED -> q.cancelledFace();
             };
             double hp = switch (h) {
                 case BANK -> q.bankPaid();
                 case HOUSEHOLDS -> q.householdPaid();
                 case FIRMS -> q.firmPaid();
                 case WORLD -> q.worldPaid();
+                case UNSETTLED -> q.cancelledCash();
             };
             if (hf > 0) result.getChildren().add(Kept.scope(h, () -> takenLine(holderName(h), holderColour(h), hf, hp)));
         }

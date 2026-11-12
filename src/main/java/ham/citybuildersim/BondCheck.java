@@ -213,6 +213,7 @@ public class BondCheck {
         coupons(g);
         concentration(g);
         eachTypeTrades();
+        priceTick();
         saveAndLoad(g, root);
         maturity(g);
 
@@ -1600,6 +1601,24 @@ public class BondCheck {
             bond = bm.getBonds().get(0);
             poor.setBondFace(1, poorHolds / 100);
         }
+    }
+
+    static void priceTick() {
+        out.println("\n--- 9a. equal bond bids keep arrival priority at the price tick ---");
+        TwoCells f = new TwoCells(10_000, 0);
+        f.bond.world = f.bond.bank;
+        f.bond.bank = 0;
+        f.poor.savings = 100;
+        String first = BondMarket.CELL + f.rich.key(), second = BondMarket.CELL + f.poor.key();
+        double price = 1 + BondMarket.PRICE_TICK * .1;
+        f.bm.tradeForCheck(f.bond, first, OrderBook.Side.BUY, price, 10);
+        f.bm.tradeForCheck(f.bond, second, OrderBook.Side.BUY, Math.nextUp(price), 10);
+        List<OrderBook.Order> bids = f.bm.bookOf(f.bond).bids();
+        assertTrue("both bids rest at one tick, in their arrival order", bids.size() == 2
+                && bids.get(0).price() == bids.get(1).price() && bids.get(0).who().equals(first));
+        f.bm.tradeForCheck(f.bond, BondMarket.WORLD, OrderBook.Side.SELL, 1, 10);
+        close("the first arrival bought the face", f.rich.bondFace(1) * f.rich.households(), 10, 1e-12);
+        close("the second bid still waits", f.bm.bookOf(f.bond).resting(second, OrderBook.Side.BUY), 10, 1e-12);
     }
 
     static void eachTypeTrades() {

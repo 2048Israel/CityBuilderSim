@@ -19543,13 +19543,13 @@ public class Game {
      * The face asked is held to what can be offered (buybackOfferable()). A
      * piece with a sale not yet settled can be bought back WHOLE and not in
      * part: its buyers have not paid for it, and the settle cannot be split
-     * between what stays and what goes, so a whole piece goes off the books as
-     * it always did (the settle does not see a piece that is not on the list,
-     * and the bank, which was to pay for it, keeps what the treasury paid it)
-     * and a part of it quotes nothing. Whole means every offer taken and none
+     * between what stays and what goes. Its unpaid sale is cancelled at the
+     * proceeds the treasury received, and that amount leaves the bank's next
+     * settle. The bank offers its paid face. A part quotes nothing.
+     * Whole means every offer taken and none
      * of the piece the central bank's; a highest price that leaves some
      * behind makes it a part. Its holders are the ones it has now: a new
-     * piece is the bank's, a reopening has its older part with the others.
+     * piece is entirely unpaid, a reopening has its older part with the others.
      *
      * @param face      the face wanted, local money
      * @param maxPer100 the most to pay per 100 of face, or NaN for any price
@@ -19579,9 +19579,10 @@ public class Game {
                 // and a linker's on the dial and the index it expects; every other piece's own, as before.
                 // A piece the city can call now is never bought back over the call price (BB1, CD4-C ★6).
                 : new Buyback.Line(principal, debtManager.pricingFlows(debt), fair, debt.getCarryingValue(),
-                        debt.bankPrincipal(), debt.householdPrincipal(), debt.firmPrincipal(),
+                        debt.bankPrincipalPaid(), debt.householdPrincipal(), debt.firmPrincipal(),
                         debt.worldPrincipal(), debt.centralBankPrincipal(), false,
-                        canCall(debt) ? CallTree.CALL_PRICE : Double.NaN);
+                        canCall(debt) ? CallTree.CALL_PRICE : Double.NaN,
+                        debt.unsettledFace(), debt.getSettleDue());
         double asked = Math.min(Math.max(0, face), buybackOfferable(debt));
         Buyback.Result quote = Buyback.run(line, auctionBidders(), new Buyback.Ask(asked, maxPer100));
         // A sale not yet settled: the whole piece or nothing (see above).
@@ -19655,6 +19656,9 @@ public class Game {
             if (!debtManager.retire(debt)) {
                 return Buyback.Result.none(face);   // not on the books; do not charge for it
             }
+            // BY1: the treasury returns the unpaid sale's proceeds. The bank never buys or sells that face.
+            cityDebtRaisedThisMonth -= debt.getSettleDue();
+            cityDiscountThisMonth -= debt.unsettledFace() - debt.getSettleDue();
         } else {
             debt.retirePart(deal.bankFace(), deal.householdFace(), deal.firmFace(), deal.worldFace());
         }
