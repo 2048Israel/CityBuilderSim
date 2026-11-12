@@ -54,9 +54,9 @@ import java.util.TreeSet;
  *
  *  11. NO GATEWAY LAYS AS BEFORE: the row's two arms alternate first.
  *
- *  12. THE SIDECAR KEEPS IT: FORMAT 8 writes and reads the gateway back; a
- *      FORMAT 7 sidecar reads it unknown, and the next layRuns finds it
- *      again.
+ *  12. THE SIDECAR KEEPS IT: the current format writes and reads the gateway
+ *      back, and the next layRuns keeps it and the same runs; a FORMAT 7
+ *      sidecar is refused because it lacks the required dated history.
  *
  *  13. WHAT FINDING ONE COSTS: one real generated world, timed and printed.
  *
@@ -115,10 +115,8 @@ import java.util.TreeSet;
  *      beside the live map with the same counts and months - the month after
  *      with the counts held, on to MapCheck.MONTHS as they rose, and
  *      COAST_HELD months past it - the two maps and the sidecars they write
- *      are the same every month. A sidecar of FORMAT 12, which has no
- *      stoppedBy, read back and reconciled the month after has a shorter
- *      railway (the fixture causes it: the main line taken back past the sea
- *      and laid again).
+ *      are the same every month. A sidecar of FORMAT 12, which has neither
+ *      stoppedBy nor the required dated history, is refused.
  *
  * WHY THIS EXISTS: batch FR0 finds the land's mirror of SeaRoutes' offing,
  * so the highway and railway know which way the world is. A fixture CAUSES
@@ -188,8 +186,9 @@ public class GatewayCheck {
      * Terminal, a Container Terminal and a General Cargo Terminal. Section 21 (the coast across a save) is the one fixture whose geometry
      * does not survive SL1's terminals even with their boxes capped (BuildingVisual.BERTH_PLOTS_MOST, a Tanker Terminal's 44 plots now 244):
      * what it is about is the railway's main line running on past a gate arm that waits at the sea, round the shore's two terminals of each
-     * kind, and a FORMAT 12 reload taking it back shorter. With the boxes capped and the terminals' real ground the railway at the month
-     * saved is the same length either way (297 plots), so nothing is taken back and the fixture does not cause its condition.
+     * kind. This retains the coast on which the old FORMAT 12 reload took the line back shorter; with capped boxes and the terminals' real
+     * ground it was 297 plots either way, so that finding was absent. Today's current-format check keeps this geometry and every arm's stop
+     * across the load; the obsolete FORMAT 12 itself is refused.
      */
     static final double[] GROUND_BEFORE_SL1 = { 430_556, 2_368_060, 2_152_782, 107_639 };
 
@@ -486,14 +485,15 @@ public class GatewayCheck {
         CityMap m = CityMap.square(Founding.DEFAULT_WORLD_SEED, sx, sy, types, 2, CityMap.DISTRICT * CityMap.DISTRICT, counts);
         System.out.printf("  the square city's gateway: %d%n", m.gateway());
         check("a square city's runs have found a gateway (or found none)", m.gateway() != CityRuns.GATEWAY_UNKNOWN);
-        byte[] eight = m.writeSidecar(1);
-        CityMap read8 = CityMap.readSidecar(eight, m.land(), res -> m.land().amountsInOrder(res), m.types(), 1, CityMap.stampIn(eight));
-        check("FORMAT 8 writes the gateway and reads it back the same", read8 != null && read8.gateway() == m.gateway());
+        byte[] saved = m.writeSidecar(1);
+        CityMap read = CityMap.readSidecar(saved, m.land(), res -> m.land().amountsInOrder(res), m.types(), 1, CityMap.stampIn(saved));
+        check("the current sidecar writes the gateway and reads it back the same", read != null && read.gateway() == m.gateway());
         byte[] seven = m.writeSidecar(1, 7, true);
         CityMap read7 = CityMap.readSidecar(seven, m.land(), res -> m.land().amountsInOrder(res), m.types(), 1, CityMap.stampIn(seven));
-        check("a FORMAT 7 sidecar reads it back unknown", read7 != null && read7.gateway() == CityRuns.GATEWAY_UNKNOWN);
-        if (read7 != null) read7.layRuns(counts);
-        check("...and the next layRuns finds the same gateway again", read7 != null && read7.gateway() == m.gateway());
+        check("a FORMAT 7 sidecar is refused: it lacks the required dated history", read7 == null);
+        if (read != null) read.layRuns(counts);
+        check("...and the current sidecar's next layRuns keeps the same gateway and runs", read != null && read.gateway() == m.gateway()
+                && read.runs().same(m.runs()));
 
         /* ============ 13. what finding one costs ============ */
         System.out.println("\n--- what finding one costs ---");
@@ -1136,7 +1136,7 @@ public class GatewayCheck {
      * Section 21 (CC1-M): section 16's coast city built month by month to COAST_SAVED_AT, its sidecar written and read back, and the live map
      * and the one read back reconciled together on to MapCheck.MONTHS and COAST_HELD months past it. Before CC1-M the sidecar did not keep
      * what had stopped each arm (CityRuns.Arm.stoppedBy), so the first month after a load took the railway's main line back past its first sea
-     * turn and laid it again shorter. The FORMAT 12 copy of the same save shows the fixture causes that.
+     * turn and laid it again shorter. The fixture retains that coast geometry, checks every current-format arm's stop, and refuses FORMAT 12.
      */
     static void coastAcrossASave() {
         System.out.println("\n--- the coast across a save: the map after a load is the map before it ---");
@@ -1161,12 +1161,12 @@ public class GatewayCheck {
         check("fixture: at the month saved the railway's gate arm waits at the sea", waits);
         check("...and the main line runs on past it: an arm after the gate arm in the spine's order is laid", onPast > 0);
 
-        // Both readings of the live map, FORMAT 13 and FORMAT 12, before anything is reconciled past the month saved.
+        // The current format carries the stops and dated histories; the old FORMAT 12 is refused before any next-month replay.
         byte[] saved = m.writeSidecar(COAST_SAVED_AT), saved12 = m.writeSidecar(COAST_SAVED_AT, 12, true);
         CityMap read = readBack(m, saved, COAST_SAVED_AT), old = readBack(m, saved12, COAST_SAVED_AT);
         check("the sidecar written then reads back", read != null);
-        check("...a FORMAT 12 sidecar of the same map reads back too", old != null);
-        if (read == null || old == null) return;
+        check("...a FORMAT 12 sidecar is refused: its stops and required dated history are absent", old == null);
+        if (read == null) return;
         check("...the map read back is the live map: same()", read.same(m));
         check("...every arm of both nets holds what last stopped it, as the live arm does", sameStops(m.runs(), read.runs()));
         check("...written again at once, it is the same file as the live map's, byte for byte",
@@ -1175,16 +1175,10 @@ public class GatewayCheck {
         // The month after with the counts held, then the counts rising as before to MapCheck.MONTHS, then held for COAST_HELD months.
         int expected = MapCheck.MONTHS - COAST_SAVED_AT + COAST_HELD;
         int compared = 0, differ = 0, firstDiffer = -1;
-        long oldPlots = -1, livePlots = -1;
         for (int month = COAST_SAVED_AT + 1; month <= MapCheck.MONTHS + COAST_HELD; month++) {
             if (month > COAST_SAVED_AT + 1 && month <= MapCheck.MONTHS) for (int t = 0; t < last.length; t++) now[t] = last[t] * month / MapCheck.MONTHS;
             m.reconcile(now, month);
             read.reconcile(now, month);
-            if (month == COAST_SAVED_AT + 1) {
-                old.reconcile(now, month);
-                oldPlots = old.runs().rail().plots();
-                livePlots = m.runs().rail().plots();
-            }
             compared++;
             if (!m.same(read) || !Arrays.equals(m.writeSidecar(month), read.writeSidecar(month))) {
                 differ++;
@@ -1196,9 +1190,5 @@ public class GatewayCheck {
                 m.runs().rail().plots(), read.runs().rail().plots());
         check("every month after the load is compared: " + expected, compared == expected && compared > 0);
         check("...and in none the map read back, or the sidecar it writes, differs from the live map's", differ == 0);
-        System.out.printf("  the same save at FORMAT 12, reconciled the month after with the counts held: the railway has %,d plots, the live map's %,d%n",
-                oldPlots, livePlots);
-        check("fixture: read back from FORMAT 12 the railway is shorter the month after (the main line taken back past the sea and laid again)",
-                oldPlots >= 0 && oldPlots < livePlots);
     }
 }

@@ -1136,7 +1136,8 @@ public final class DistrictPlan {
             b.initialLadder = false;
             b.spendInput();
             p = b.buildArrivals(p == null ? 0 : p.squares, p == null ? 0 : p.boulevards);
-            p.builds = builds + 1;
+            // A replay of the batch alone replaces its accepted ladder pass; it is not another ladder step.
+            p.builds = builds + (b.replayExtendsBatch || builds == 0 ? 1 : 0);
         }
         return p;
     }
@@ -1849,8 +1850,10 @@ public final class DistrictPlan {
          * buildArrivals() then places the events on the state the first batch leaves.
          */
 
-        /** Whether the plan reads a log, and whether it goes on past its first batch: events to place, or road come after it. */
+        /** Whether the plan reads a log and runs its temporal pass, even for the first batch alone. */
         boolean logged, goesOn;
+        /** Whether that pass extends the batch with later events or source ground, rather than replacing its accepted ladder pass. */
+        boolean replayExtendsBatch;
         /** Whether the events are being placed (the far side, the homes' rule and the ladder decided once apply). */
         boolean ev;
         /** The buildings of the first batch. */
@@ -2002,6 +2005,7 @@ public final class DistrictPlan {
             int T = types.length;
             logged = in.logMonth != null && in.logType != null && in.logChange != null;
             goesOn = false;
+            replayExtendsBatch = false;
             evType = null;
             nInst = 0;
             nEv = 0;
@@ -2120,14 +2124,19 @@ public final class DistrictPlan {
             bcount = new int[T];
             for (int id = 0; id < nInst; id++) if (iBatch[id] && !iGone[id] && !iExcl[id]) bcount[iType[id]]++;
             evType = new boolean[T];
+            int active = 0;
             for (int e = 0; e < nEv; e++) {
                 if (!evGone[e] && iExcl[evInst[e]]) continue;
+                active++;
                 evType[iType[evInst[e]]] = true;
             }
             batchG = bg;
             batchP = bp;
             batchH = bh;
-            // A run laid after the first batch's month goes on too (THE RUNS DATED): the plan is joined and its roads laid on today's runs.
+            replayExtendsBatch = active > 0 || Math.abs(bg - in.gravel) > 1e-9 || Math.abs(bp - in.paved) > 1e-9
+                    || Math.abs(bh - in.highway) > 1e-9 || fxNext < fxN || siteNext < siteN || dueMonth < Integer.MAX_VALUE
+                    || (wN > 0 && wMonth[wN - 1] > startMonth());
+            // Every logged plan replays its source boundaries, including the first batch's wall decisions.
             goesOn = true;
             if (goesOn) {
                 rG = bg;

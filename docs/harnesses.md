@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**201 harness files, 23,752 labelled assertions.** AllChecks runs 201 of them.
+**201 harness files, 23,751 labelled assertions.** AllChecks runs 201 of them.
 
 ## Which harnesses read which class
 
@@ -11056,7 +11056,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L978 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
   - L980 ...and the rule's bid makes way for as much of the order as it would otherwise take
 
-## GatewayCheck.java - 134 labelled assertions
+## GatewayCheck.java - 133 labelled assertions
 
 > A city's gateway is the way the world is.
 > 
@@ -11072,59 +11072,59 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   3. TWO EQUAL ARMS, east and south, tie; the gateway is one of the two,
 > ...
 
-  - L265 with gateway
-  - L266 ...and only the
-  - L281 ...laid past the edge, the
-  - L284 ...and no highway plot lies outside the box
-  - L296 ...and taking back fewer plots takes from the
-- **L306 1. a strip of land east**
-  - L311 a strip east gives a gateway
-  - L312 ...whose bearing is east (0)
-  - L313 ...and whose bearing is a multiple of the step
-  - L316 ...and whose point lies on the city's edge on that bearing
-  - L319 ...and is the city's radius out
-- **L322 2. an island founding**
-  - L329 land only within a small disc round the site has no gateway
-- **L332 3. a tie**
-  - L339 equal arms east and south tie, and the gateway is one of the two lone tied bearings
-  - L341 ...and the tied bearing is a multiple of the step
-  - L344 ...and its point lies on the city's edge on that bearing
-  - L355 two founding sites in the same cell pick different tied bearings (the hash, not the smaller bearing)
-  - L356 ...one picks east
-  - L357 ...and the other picks south
-  - L359 no two offsets in the cell pick differently; the site's own pick is one of the two
-- **L362 4. a half-plane of land west**
-  - L366 every westward bearing runs to the cap, and the gateway is the middle of that arc (180)
-- **L369 5. the threshold**
-  - L373 a strip one cell short of the reach has no gateway
-  - L377 a strip that just reaches has one
-  - L378 ...on the east bearing
-- **L380 6. the default world**
-  - L386 the default world's gateway is deterministic
-  - L389 ...its point lies on the city's edge on that bearing
-  - L393 ...and the cell at its point is land
-  - L401 ...with none, its best land run is short of the reach
-- **L406 7. twelve real generated worlds**
-  - L415 at least one of the twelve worlds has a gateway
-- **L417 8. a full tie is not due east for everyone**
-  - L429 an all-land ground finds a gateway at each of 24 founding sites
-  - L430 ...and every full tie's bearing is a multiple of the step
-  - L431 ...with at least 6 distinct bearings among them
-- **L434 9. the Earth's rule**
-  - L438 one larger place due north wins the north bearing (270)
-  - L444 a nearer place whose way is sea is passed over for the farther clear one (east)
-  - L448 an empty Earth list falls back to the land rule's own answer
-  - L450 ...and a null list does too
-- **L452 10. the spine is laid toward the gateway**
-- **L457 11. no gateway lays as before**
-  - L472 with no gateway the row's two arms both grow first
-  - L473 ...and no column arm has grown yet
-- **L475 12. the sidecar keeps it**
-  - L484 the catalog has a highway type
-  - L488 a square city's runs have found a gateway (or found none)
-  - L491 FORMAT 8 writes the gateway and reads it back the same
-  - L494 a FORMAT 7 sidecar reads it back unknown
-  - L496 ...and the next layRuns finds the same gateway again
+  - L264 with gateway
+  - L265 ...and only the
+  - L280 ...laid past the edge, the
+  - L283 ...and no highway plot lies outside the box
+  - L295 ...and taking back fewer plots takes from the
+- **L305 1. a strip of land east**
+  - L310 a strip east gives a gateway
+  - L311 ...whose bearing is east (0)
+  - L312 ...and whose bearing is a multiple of the step
+  - L315 ...and whose point lies on the city's edge on that bearing
+  - L318 ...and is the city's radius out
+- **L321 2. an island founding**
+  - L328 land only within a small disc round the site has no gateway
+- **L331 3. a tie**
+  - L338 equal arms east and south tie, and the gateway is one of the two lone tied bearings
+  - L340 ...and the tied bearing is a multiple of the step
+  - L343 ...and its point lies on the city's edge on that bearing
+  - L354 two founding sites in the same cell pick different tied bearings (the hash, not the smaller bearing)
+  - L355 ...one picks east
+  - L356 ...and the other picks south
+  - L358 no two offsets in the cell pick differently; the site's own pick is one of the two
+- **L361 4. a half-plane of land west**
+  - L365 every westward bearing runs to the cap, and the gateway is the middle of that arc (180)
+- **L368 5. the threshold**
+  - L372 a strip one cell short of the reach has no gateway
+  - L376 a strip that just reaches has one
+  - L377 ...on the east bearing
+- **L379 6. the default world**
+  - L385 the default world's gateway is deterministic
+  - L388 ...its point lies on the city's edge on that bearing
+  - L392 ...and the cell at its point is land
+  - L400 ...with none, its best land run is short of the reach
+- **L405 7. twelve real generated worlds**
+  - L414 at least one of the twelve worlds has a gateway
+- **L416 8. a full tie is not due east for everyone**
+  - L428 an all-land ground finds a gateway at each of 24 founding sites
+  - L429 ...and every full tie's bearing is a multiple of the step
+  - L430 ...with at least 6 distinct bearings among them
+- **L433 9. the Earth's rule**
+  - L437 one larger place due north wins the north bearing (270)
+  - L443 a nearer place whose way is sea is passed over for the farther clear one (east)
+  - L447 an empty Earth list falls back to the land rule's own answer
+  - L449 ...and a null list does too
+- **L451 10. the spine is laid toward the gateway**
+- **L456 11. no gateway lays as before**
+  - L471 with no gateway the row's two arms both grow first
+  - L472 ...and no column arm has grown yet
+- **L474 12. the sidecar keeps it**
+  - L483 the catalog has a highway type
+  - L487 a square city's runs have found a gateway (or found none)
+  - L490 the current sidecar writes the gateway and reads it back the same
+  - L493 a FORMAT 7 sidecar is refused: it lacks the required dated history
+  - L495 ...and the current sidecar's next layRuns keeps the same gateway and runs
 - **L498 13. what finding one costs**
 - **L507 14. the world line**
   - L511 the catalog has a highway and a track type
@@ -11221,13 +11221,12 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1161 fixture: at the month saved the railway's gate arm waits at the sea
   - L1162 ...and the main line runs on past it: an arm after the gate arm in the spine's order is laid
   - L1167 the sidecar written then reads back
-  - L1168 ...a FORMAT 12 sidecar of the same map reads back too
+  - L1168 ...a FORMAT 12 sidecar is refused: its stops and required dated history are absent
   - L1170 ...the map read back is the live map: same()
   - L1171 ...every arm of both nets holds what last stopped it, as the live arm does
   - L1172 ...written again at once, it is the same file as the live map's, byte for byte
-  - L1197 every month after the load is compared:
-  - L1198 ...and in none the map read back, or the sidecar it writes, differs from the live map's
-  - L1201 fixture: read back from FORMAT 12 the railway is shorter the month after (the main line taken back past the sea and laid again)
+  - L1191 every month after the load is compared:
+  - L1192 ...and in none the map read back, or the sidecar it writes, differs from the live map's
 
 ## GdpCheck.java - 140 labelled assertions
 
