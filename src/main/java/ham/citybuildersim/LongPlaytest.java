@@ -4290,6 +4290,8 @@ public class LongPlaytest {
      * that read it back the same.
      */
     static int mapMonths, mapMismatches, mapReloads, mapReloadsSame;
+    /** Actual played-city months whose saved sidecars were accepted directly, including every source journal (DM2). */
+    static final List<Integer> mapSidecarMonths = new ArrayList<>();
 
     /*
      * ===== THE LAYOUT, WATCHED (batch CL3, 2026-10-21) =====
@@ -5653,6 +5655,15 @@ public class LongPlaytest {
             mapReloads++;
             if (back.hasCityMap() && back.getCityMap().same(g.getCityMap())) mapReloadsSame++;
             else flag(month, "the city map across a save", "slot " + slot);
+            try {
+                byte[] bytes = Files.readAllBytes(files.mapFile(slot));
+                CityMap direct = CityMap.readSidecar(bytes, back.getCityLand(), back.getLandManager()::remainingByHolding,
+                        back.getMapTypes(), month, CityMap.stampIn(bytes));
+                if (direct != null && direct.same(g.getCityMap())) mapSidecarMonths.add(month);
+                else flag(month, "the played city sidecar was refused or lost history", "slot " + slot);
+            } catch (java.io.IOException e) {
+                flag(month, "the played city sidecar could not be read", e.toString());
+            }
         }
 
         same(month, "cash across a save", back.getCash(), cash);
@@ -7644,6 +7655,7 @@ public class LongPlaytest {
                     + " under mines; dropped %d time(s)%n", mapMonths, mapMismatches, mapReloadsSame, mapReloads,
                     map.districts().size(), qtyOf(g, Mining.IRON_MINE), map.ownedSites(Resource.IRON),
                     g.getMapFailures());
+            out.println("  direct sidecar reads kept every journal at months " + mapSidecarMonths);
             for (String line : layoutLines(seconds)) out.println(line);
         }
         // A map dropped mid-run is gone from the city, so this is asked whether or not one stands now.

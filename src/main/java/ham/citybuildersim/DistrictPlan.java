@@ -993,7 +993,7 @@ public final class DistrictPlan {
     /** Cell layings of an open cell's own ring and streets on ground bought inside it (Builder.cellsOnGrown(), FX9): a harness's figure. */
     public int boughtCells;
 
-    /** How many times the plan was made again with the way to a piece the buildings wall in kept clear of them (FW11, A PIECE BUILDINGS WALL IN; 0 for nearly every district), and the plots so kept clear in the plan returned. */
+    /** The most wall retries at one source month (for an unlogged plan, its rebuilds), and the plots kept clear in the returned picture. */
     public int wallTries, wallClear;
     /** The wall-way journal returned for the map to keep, including this plan's discoveries (DM2). */
     public int[] wallMonth, wallChange;

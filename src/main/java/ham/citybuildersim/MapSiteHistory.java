@@ -4,9 +4,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -28,8 +31,12 @@ final class MapSiteHistory {
     }
 
     private final Map<CityMap.District, Journal> journals = new HashMap<>();
+    /** Implicit masks expand only after the reader has restored all of the map's claim state. */
+    private final Map<CityMap.District, MinedBirth> pendingBirths = new HashMap<>();
     private final Map<CityMap.District, int[][]> before = new LinkedHashMap<>();
     private boolean recording;
+
+    private record MinedBirth(int month, int count, long hash) { }
 
     /** Starts the month's source capture; canonical construction outside this interval has no history to record. */
     void begin() {
@@ -150,47 +157,142 @@ final class MapSiteHistory {
         return dx == (int) dx && dy == (int) dy ? lookup.apply((int) dx, (int) dy) : null;
     }
 
-    /** The sidecar's count, month deltas and packed plot/class transitions for one district. */
-    void writeDistrict(DataOutputStream out, CityMap.District d) throws IOException {
+    /** No history, explicit rectangles, or one exact FIELD-to-MINED birth reconstructed from the saved current claims. */
+    void writeDistrict(DataOutputStream out, CityMap.District d, MaskReader reader) throws IOException {
         Journal j = journals.get(d);
-        CityMap.writeVarint(out, j == null ? 0 : j.n);
-        if (j == null) return;
-        int previous = 0;
-        for (int k = 0; k < j.n; k++) {
-            CityMap.writeVarint(out, j.month[k] - previous);
-            CityMap.writeVarint(out, j.rec[k]);
-            previous = j.month[k];
+        if (j == null) { CityMap.writeVarint(out, 0); return; }
+        if (currentMinedBirth(j, d, reader)) {
+            CityMap.writeVarint(out, 2);
+            CityMap.writeVarint(out, j.month[0]);
+            CityMap.writeVarint(out, j.n);
+            out.writeLong(j.hash);
+            return;
         }
+        CityMap.writeVarint(out, 1);
+        List<SiteRectangle> rectangles = rectangles(j);
+        CityMap.writeVarint(out, rectangles.size());
+        int previous = 0, previousPlot = 0;
+        for (SiteRectangle r : rectangles) {
+            CityMap.writeVarint(out, r.month - previous);
+            if (r.month != previous) previousPlot = 0;
+            CityMap.writeVarint(out, (r.plot - previousPlot) << 4 | r.kinds);
+            CityMap.writeVarint(out, r.width - 1);
+            CityMap.writeVarint(out, r.height - 1);
+            previous = r.month;
+            previousPlot = r.plot;
+        }
+    }
+
+    /** A compact predictor is used only after an exact plot-for-plot comparison, never from a count or hash alone. */
+    private static boolean currentMinedBirth(Journal j, CityMap.District d, MaskReader reader) {
+        if (j.n == 0 || j.month[0] != j.month[j.n - 1]) return false;
+        int transition = DistrictPlan.SITE_FIELD << 2 | DistrictPlan.SITE_MINED;
+        for (int k = 0; k < j.n; k++) if ((j.rec[k] & 15) != transition) return false;
+        byte[] mask = reader.mask(d, Map.of());
+        checkMask(mask);
+        int k = 0;
+        for (int p = 0; p < mask.length; p++) if (mask[p] == DistrictPlan.SITE_MINED) {
+            if (k >= j.n || j.rec[k++] != (p << 4 | transition)) return false;
+        }
+        return k == j.n;
+    }
+
+    /** Equal row spans on consecutive rows become one rectangle, without changing any expanded plot transition. */
+    private static List<SiteRectangle> rectangles(Journal j) {
+        if (j == null) return List.of();
+        List<SiteRectangle> out = new ArrayList<>();
+        Map<Integer, SiteRectangle> active = new HashMap<>();
+        int month = -1;
+        for (int k = 0; k < j.n; ) {
+            if (j.month[k] != month) { active.clear(); month = j.month[k]; }
+            int end = spanEnd(j, k), plot = j.rec[k] >>> 4, width = end - k, kinds = j.rec[k] & 15;
+            int key = (plot % CityMap.DISTRICT << 12) | ((width - 1) << 4) | kinds;
+            SiteRectangle r = active.get(key);
+            if (r != null && r.plot / CityMap.DISTRICT + r.height == plot / CityMap.DISTRICT) r.height++;
+            else {
+                r = new SiteRectangle(month, plot, width, kinds);
+                active.put(key, r);
+                out.add(r);
+            }
+            k = end;
+        }
+        out.sort(Comparator.comparingInt((SiteRectangle r) -> r.month).thenComparingInt(r -> r.plot));
+        return out;
+    }
+
+    private static final class SiteRectangle {
+        final int month, plot, width, kinds;
+        int height = 1;
+
+        SiteRectangle(int month, int plot, int width, int kinds) {
+            this.month = month; this.plot = plot; this.width = width; this.kinds = kinds;
+        }
+    }
+
+    /** Consecutive plots of the same transition and month, stopped at the row's edge. */
+    private static int spanEnd(Journal j, int from) {
+        int end = from + 1, rowLeft = CityMap.DISTRICT - (j.rec[from] >>> 4) % CityMap.DISTRICT;
+        while (end < j.n && end - from < rowLeft && j.month[end] == j.month[from]
+                && j.rec[end] == j.rec[from] + ((end - from) << 4)) end++;
+        return end;
     }
 
     /** Reads bounded, ordered transitions; a plot's next before-class must agree with its preceding after-class. */
     void readDistrict(DataInputStream in, CityMap.District d, int savedMonth, int remainingBytes) throws IOException {
-        int count = CityMap.readVarint(in);
-        if (savedMonth < 0 || remainingBytes < 1 || count < 0 || count > (remainingBytes - 1) / 2) {
-            throw new IOException("site history record count");
-        }
-        if (count == 0) {
+        int mode = CityMap.readVarint(in);
+        if (mode == 0) { journals.remove(d); pendingBirths.remove(d); return; }
+        if (mode == 2) {
+            int at = CityMap.readVarint(in), expected = CityMap.readVarint(in);
+            long expectedHash = in.readLong();
+            if (at < 0 || at > savedMonth || expected < 1 || expected > CityMap.DISTRICT * CityMap.DISTRICT) {
+                throw new IOException("site history mined birth");
+            }
             journals.remove(d);
+            pendingBirths.put(d, new MinedBirth(at, expected, expectedHash));
             return;
         }
-        Journal j = new Journal(count);
+        if (mode != 1) throw new IOException("site history encoding");
+        int count = CityMap.readVarint(in);
+        if (savedMonth < 0 || remainingBytes < 2 || count < 1 || count > (remainingBytes - 2) / 4) {
+            throw new IOException("site history record count");
+        }
+        Journal j = new Journal(Math.min(count, CityMap.DISTRICT));
         byte[] last = new byte[CityMap.DISTRICT * CityMap.DISTRICT];
         Arrays.fill(last, (byte) -1);
-        int month = 0, previousPlot = -1;
+        int month = 0, monthFrom = 0, previousPlot = 0;
+        long prefixHash = 0;
         for (int k = 0; k < count; k++) {
-            int step = CityMap.readVarint(in), rec = CityMap.readVarint(in), plot = rec >>> 4;
-            int was = rec >>> 2 & 3, now = rec & 3;
-            if (step < 0 || step > savedMonth - month || rec < 0 || plot >= last.length
+            int step = CityMap.readVarint(in), code = CityMap.readVarint(in);
+            int widthMinusOne = CityMap.readVarint(in), heightMinusOne = CityMap.readVarint(in);
+            long plotLong = (long) (step == 0 ? previousPlot : 0) + (code >>> 4);
+            int plot = (int) plotLong, was = code >>> 2 & 3, now = code & 3;
+            if (step < 0 || step > savedMonth - month || code < 0 || plotLong >= last.length
                     || !kind(was) || !kind(now) || was == now
-                    || (step == 0 && plot <= previousPlot) || (last[plot] >= 0 && last[plot] != was)) {
+                    || widthMinusOne < 0 || widthMinusOne >= CityMap.DISTRICT - plot % CityMap.DISTRICT
+                    || heightMinusOne < 0 || heightMinusOne >= CityMap.DISTRICT - plot / CityMap.DISTRICT
+                    || (k > 0 && step == 0 && plot <= previousPlot)) {
                 throw new IOException("site history transition");
+            }
+            if (k > 0 && step > 0) {
+                j.finishMonth(monthFrom, last, prefixHash);
+                monthFrom = j.n;
+                prefixHash = j.hash;
             }
             month += step;
             previousPlot = plot;
-            last[plot] = (byte) now;
-            j.append(month, rec);
+            int width = widthMinusOne + 1, height = heightMinusOne + 1;
+            long plots = (long) width * height;
+            if ((long) j.n + plots > Integer.MAX_VALUE || j.n - (long) monthFrom + plots > last.length) {
+                throw new IOException("site history expanded count");
+            }
+            for (int y = 0; y < height; y++) for (int x = 0; x < width; x++) {
+                int p = plot + y * CityMap.DISTRICT + x;
+                j.append(month, p << 4 | was << 2 | now);
+            }
         }
+        j.finishMonth(monthFrom, last, prefixHash);
         journals.put(d, j);
+        pendingBirths.remove(d);
     }
 
     /** Whether two districts have exactly the same source history, independently of array capacity. */
@@ -204,9 +306,22 @@ final class MapSiteHistory {
 
     /** A loaded journal must end on the actual claims; only districts with transitions need a mask read. */
     boolean matchesCurrent(MaskReader reader) {
-        if (journals.isEmpty()) return true;
+        if (journals.isEmpty() && pendingBirths.isEmpty()) return true;
+        for (Map.Entry<CityMap.District, MinedBirth> entry : pendingBirths.entrySet()) {
+            byte[] mask = reader.mask(entry.getKey(), Map.of());
+            checkMask(mask);
+            MinedBirth birth = entry.getValue();
+            Journal j = new Journal(Math.min(birth.count, CityMap.DISTRICT));
+            for (int p = 0; p < mask.length; p++) if (mask[p] == DistrictPlan.SITE_MINED) {
+                if (j.n >= birth.count) return false;
+                j.append(birth.month, p << 4 | DistrictPlan.SITE_FIELD << 2 | DistrictPlan.SITE_MINED);
+            }
+            if (j.n != birth.count || j.hash != birth.hash) return false;
+            journals.put(entry.getKey(), j);
+        }
         boolean[] checked = new boolean[CityMap.DISTRICT * CityMap.DISTRICT];
         for (Map.Entry<CityMap.District, Journal> entry : journals.entrySet()) {
+            if (pendingBirths.containsKey(entry.getKey())) continue;
             byte[] now = reader.mask(entry.getKey(), Map.of());
             checkMask(now);
             Arrays.fill(checked, false);
@@ -218,6 +333,7 @@ final class MapSiteHistory {
                 checked[plot] = true;
             }
         }
+        pendingBirths.clear();
         return true;
     }
 
@@ -248,6 +364,20 @@ final class MapSiteHistory {
             month[n] = at;
             rec[n++] = record;
             hash = World.mix(hash ^ ((long) at << 32) ^ record);
+        }
+
+        /** Rectangle expansions interleave across rows; restore plot order and validate each transition exactly once. */
+        void finishMonth(int from, byte[] last, long prefixHash) throws IOException {
+            Arrays.sort(rec, from, n);
+            hash = prefixHash;
+            int previous = -1;
+            for (int k = from; k < n; k++) {
+                int plot = rec[k] >>> 4, was = rec[k] >>> 2 & 3, now = rec[k] & 3;
+                if (plot <= previous || last[plot] >= 0 && last[plot] != was) throw new IOException("site history before-class");
+                previous = plot;
+                last[plot] = (byte) now;
+                hash = World.mix(hash ^ ((long) month[k] << 32) ^ rec[k]);
+            }
         }
 
         /** A repeated reconciliation in the same month merges into that month's original before-classes. */
