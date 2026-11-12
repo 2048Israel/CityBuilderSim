@@ -2888,6 +2888,7 @@ public final class DistrictPlan {
             siteNext = siteN = 0;
             if (in.siteLog == null || in.siteLogMonth == null) return;
             int m = startMonth();
+            if (m == Integer.MIN_VALUE) return;
             int n = Math.min(in.siteLog.length, in.siteLogMonth.length), k = n;
             while (k > 0 && in.siteLogMonth[k - 1] > m) {
                 int r = in.siteLog[--k];
