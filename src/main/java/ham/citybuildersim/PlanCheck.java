@@ -4601,7 +4601,7 @@ public class PlanCheck {
                 if (p.wallTries > 0) walledIns.add(pj.in);
                 DistrictPlan again = DistrictPlan.make(pj.in);
                 ok[0] &= placedDigest(p) == placedDigest(again) && streetDigest(p) == streetDigest(again) && p.wallTries == again.wallTries && p.wallClear == again.wallClear;
-                ok[1] &= p.wallTries <= DistrictPlan.WALL_TRIES && (p.wallTries == 0) == (p.wallClear == 0);
+                ok[1] &= p.wallTries <= DistrictPlan.WALL_TRIES && (p.wallClear == 0 || p.wallTries > 0 || (in.wallChange != null && in.wallChange.length >= p.wallClear));
             }
         }
     }
@@ -4650,7 +4650,7 @@ public class PlanCheck {
         check("fixture: a district of the played city stood with a street piece the buildings enclose (planned again with the way kept clear in " + t.walled + " of " + t.districts + ")", t.walled > 0);
         check("every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface", t.allHold());
         check("...none left with a piece the ground does not part, in MapCheck's city or this harness's", left == 0 && citiesLeft == 0);
-        check("...planned again at most " + DistrictPlan.WALL_TRIES + " times, and plots kept clear only in a district planned again", bounded);
+        check("...planned again at most " + DistrictPlan.WALL_TRIES + " times, and kept plots have a recorded way or a new discovery", bounded);
         check("...and a pure function: the same district, the same plan, boxes and streets, the same ways kept clear", pure);
         // The same districts with no log - their counts and their carry, the first batch alone, no events: the join's way kept clear and
         // every building placed or sent on, once (placed and left out = counts + carry).
@@ -4759,7 +4759,7 @@ public class PlanCheck {
         int shop = pick(types, 4, t -> t.category() == BuildingType.COMMERCIAL && !t.outer() && t.site() == null);
         Log log = new Log();
         DistrictPlan before = null;
-        int walls = 0, moved = 0, changedInput = 0;
+        int walls = 0, moved = 0, changedInput = 0, replayChanged = 0;
         int[] months = null, changes = null;
         for (int month = 1; month <= 30; month++) {
             log.add(month, house, 15).add(month, shop, 3);
@@ -4775,12 +4775,18 @@ public class PlanCheck {
             walls = Math.max(walls, after.wallClear);
             months = after.wallMonth;
             changes = after.wallChange;
+            in.wallMonth = months;
+            in.wallChange = changes;
+            DistrictPlan replay = DistrictPlan.make(in);
+            if (placedDigest(after) != placedDigest(replay) || streetDigest(after) != streetDigest(replay)
+                    || !Arrays.equals(months, replay.wallMonth) || !Arrays.equals(changes, replay.wallChange)) replayChanged++;
             before = after;
         }
         out.printf("      field belt: %d plots kept clear, %d standing boxes moved over later arrivals%n", walls, moved);
         check("fixture: the dated field belt has a wall way before its arrivals end", walls > 0);
         check("the field belt's later arrivals move no standing box", moved == 0);
         check("the planner leaves its input wall journal unchanged", changedInput == 0);
+        check("the recorded plan replays identically without adding another wall event", replayChanged == 0);
 
     }
 

@@ -10369,7 +10369,7 @@ public final class CityMap {
     }
 
     /** Keeps a plan's appended wall events. An older worker cannot overwrite a newer journal. */
-    private boolean keepWays(District d, int[] months, int[] changes) {
+    boolean keepWays(District d, int[] months, int[] changes) {
         if (months == null || changes == null || months.length <= d.wallMonth.length) return false;
         for (int k = 0; k < d.wallMonth.length; k++) {
             if (months[k] != d.wallMonth[k] || changes[k] != d.wallChange[k]) return false;

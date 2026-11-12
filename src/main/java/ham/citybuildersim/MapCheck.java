@@ -536,6 +536,7 @@ public class MapCheck {
         bandsHoldOnPurchase();
         runsLaidAcross(city);
         reservesDated(city);
+        wallJournal(city);
         idleYards(city);
         idleYardsOnRuns();
         Squares sq = new Squares();
@@ -1845,6 +1846,31 @@ public class MapCheck {
                 joined != null && joined.index == 1 && java.util.Arrays.equals(before.carry().get(keys[1]), joinedCarry));
     }
 
+    /** The sidecar keeps the wall's births and releases, and an older worker cannot replace its newer history (DM2). */
+    static void wallJournal(Game g) {
+        out.println("\n--- 2h-b. the wall-way journal round trips and keeps newer events (DM2) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        CityLand land = foundedLand.copy();
+        CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], 30);
+        CityMap.District d = m.districts().get(0);
+        int edge = DistrictPlan.AREA - 1;
+        int[] months = { 10, 20, 25 }, changes = { edge << 1 | 1, edge << 1, edge << 1 | 1 };
+        check("fixture: a way on the plan's south-east seam is kept, released and kept again", m.keepWays(d, months, changes));
+        byte[] side = m.writeSidecar(30);
+        CityMap back = CityMap.readSidecar(side, land, r -> land.amountsInOrder(r), types, 30, CityMap.stampIn(side));
+        CityMap.District read = back == null ? null : back.district(d.dx, d.dy);
+        check("the wall-way journal round trips its dates, plots and both kinds of event, byte for byte",
+                read != null && Arrays.equals(months, read.wallMonth) && Arrays.equals(changes, read.wallChange)
+                        && Arrays.equals(side, back.writeSidecar(30)) && m.same(back));
+        check("an older worker cannot replace a newer wall journal", !m.keepWays(d, new int[] { 10 }, new int[] { edge << 1 | 1 })
+                && Arrays.equals(months, d.wallMonth));
+        check("a worker from another wall history cannot append over the recorded one", !m.keepWays(d, new int[] { 10, 20, 25, 30 },
+                new int[] { 3, 2, 3, 2 }) && Arrays.equals(changes, d.wallChange));
+        byte[] old = m.writeSidecar(30, 15);
+        CityMap older = CityMap.readSidecar(old, land, r -> land.amountsInOrder(r), types, 30, CityMap.stampIn(old));
+        check("a FORMAT 15 sidecar starts with no wall journal", older != null && older.district(d.dx, d.dy).wallMonth.length == 0);
+    }
+
     /* =====================================================================
        2i. A DISTRICT BOUGHT AHEAD MOVES NO BOX IN ANY OTHER BAND (batch MB1; MF1-B)
        ===================================================================== */
@@ -2206,6 +2232,33 @@ public class MapCheck {
         return handed;
     }
 
+    /** Dry ground for a yard fixture, independent of the played city's purchases and the water beside its rail hub. */
+    static CityLand yardLand() {
+        long seed = Founding.DEFAULT_WORLD_SEED;
+        World w = World.of(seed);
+        long[] dry = dryPlace(w);
+        long bx = Math.floorDiv(dry[0], CityMap.DISTRICT), by = Math.floorDiv(dry[1], CityMap.DISTRICT);
+        int radius = CityRuns.YARD_LONG;
+        for (int ring = 0; ring < World.CELLS; ring++) {
+            for (int dy = -ring; dy <= ring; dy++) for (int dx = -ring; dx <= ring; dx++) {
+                if (Math.max(Math.abs(dx), Math.abs(dy)) != ring) continue;
+                long x = (bx + dx) * CityMap.DISTRICT + CityMap.DISTRICT / 2;
+                long y = (by + dy) * CityMap.DISTRICT + CityMap.DISTRICT / 2;
+                boolean fits = true;
+                for (long yy = y - radius; yy < y + radius && fits; yy++) for (long xx = x - radius; xx < x + radius; xx++) {
+                    if (!World.buildable(w.terrainAt(xx, yy), w.reliefAt(xx, yy))) { fits = false; break; }
+                }
+                if (!fits) continue;
+                double[] centre = new double[CityLand.CENTRE_FIELDS];
+                centre[CityLand.CENTRE_FIELDS - 5] = centre[CityLand.CENTRE_FIELDS - 4] = -1;
+                centre[CityLand.CENTRE_FIELDS - 2] = x;
+                centre[CityLand.CENTRE_FIELDS - 1] = y;
+                return CityLand.restore(World.Key.generated(seed), centre, new double[][] { { x - radius, y - radius, x + radius, y + radius } }, null, null, null);
+            }
+        }
+        throw new IllegalStateException("no dry ground for the yard fixture");
+    }
+
     /**
      * Whether a run laid across a district's buildings moves off it the buildings it lies across or beside and no others (batch FX7: moved none; MF1, 2026-10-28:
      * "Buildings move off", the boxes under a new run, or beside a highway in its verge, are built again in the district or go on to the next): on the played city's ground the district holding the founding
@@ -2226,7 +2279,7 @@ public class MapCheck {
         int house = idOf(g, "House"), depot = idOf(g, "Rail Depot"), highway = idOf(g, "Elevated Highway");
         int[] mix = new int[MIX.length];
         for (int i = 0; i < mix.length; i++) mix[i] = idOf(g, MIX[i]);
-        CityLand land = g.getCityLand().copy();
+        CityLand land = yardLand();
         long[] model = new long[types.length];
         CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
         Months h = new Months(m, model, house, g.getMonth() + 1);
@@ -2755,7 +2808,7 @@ public class MapCheck {
         out.println("\n--- 2e. a yard whose building left stays laid, idle, and the depot ordered again takes it back (MF1) ---");
         BuildingVisual.Type[] types = g.getMapTypes();
         int house = idOf(g, "House"), depot = idOf(g, "Rail Depot");
-        CityLand land = g.getCityLand().copy();
+        CityLand land = yardLand();
         long[] model = new long[types.length];
         CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, new long[types.length], g.getMonth());
         Months h = new Months(m, model, house, g.getMonth() + 1);

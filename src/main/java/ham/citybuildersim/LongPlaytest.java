@@ -4581,15 +4581,22 @@ public class LongPlaytest {
      */
     static boolean[] layoutRunMarks(CityMap m, CityMap.District d, int low, int high) {
         DistrictPlan.Input in = m.planInputHere(d);
-        if (in.fixedLog == null || in.fixedLogMonth == null) return null;
         int f = DistrictPlan.FRAME;
         boolean[] marks = null;
-        for (int q = 0, n = Math.min(in.fixedLog.length, in.fixedLogMonth.length); q < n; q++) {
+        for (int q = 0, n = in.fixedLog == null || in.fixedLogMonth == null ? 0 : Math.min(in.fixedLog.length, in.fixedLogMonth.length); q < n; q++) {
             int month = in.fixedLogMonth[q], p = in.fixedLog[q] >>> 8, after = in.fixedLog[q] & 15;
             if (month < low || month > high || after == 0) continue;
             if (marks == null) marks = new boolean[f * f];
             int ring = after == DistrictPlan.FIXED_HIGHWAY ? 1 : 0, x = p % f, y = p / f;
             for (int yy = Math.max(0, y - ring); yy <= Math.min(f - 1, y + ring); yy++) for (int xx = Math.max(0, x - ring); xx <= Math.min(f - 1, x + ring); xx++) marks[yy * f + xx] = true;
+        }
+        // A newly kept wall way is a dated displacement too (DM2). Only boxes crossing its recorded plots qualify.
+        if (in.wallMonth != null && in.wallChange != null) {
+            for (int q = 0; q < in.wallMonth.length; q++) {
+                if (in.wallMonth[q] < low || in.wallMonth[q] > high || (in.wallChange[q] & 1) == 0) continue;
+                if (marks == null) marks = new boolean[f * f];
+                marks[in.wallChange[q] >>> 1] = true;
+            }
         }
         return marks;
     }
