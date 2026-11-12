@@ -58,3 +58,43 @@ and receives a queued screen repair in the ship file.
 The implementation changes harness source only. The default model and playtest
 trace are unchanged, so the ensemble is skipped under docs/batch.md 6.
 The final source line count and final check results will be recorded here.
+
+## Main's full named run
+
+The unchanged classes from fc3b6be5 completed KeptCheck in 1,727 s. Its six
+failing assertions are retained in `target/checks/KS1-before-KeptCheck.log`,
+with the suite summary in `KS1-before-suite.txt` and launcher output in
+`KS1-before.txt`. Three belong to KS2, one is Borrow's node ratio, one is the
+header finding below, and one is the saved-city finding below. Twenty-two
+timing assertions were soft. The judge found the saved-city assertion NEW.
+The changed fast check subsequently passed with 0 firm findings.
+
+The final fund helper, including its bounded payment amount, passed all ten
+clock cases again at both months 575 and 625. An optional month-2000 Borrow
+diagnostic was ended before it reached the page, to release its resources
+for the final suite. Only its verified Java process IDs 35916 and 41028 were
+ended. The controlled month-575 sectors probe completed with no failures.
+
+## Screen finding
+
+★ Keep the header assertion and queue KS1-UI. Main's original run reproduced
+all 18 mismatches on the hidden RATE label reading
+`D$1,000,000,000.00 per US$`. The kept label retained bounds
+`11.0,44.0 145.0x14.0`, while the fresh label had `0.0,0.0 0.0x0.0`.
+UserInterface.HeadlineTile.layoutChildren() calls resizeRelocate only for
+the selected change wording. A previously selected wording that becomes
+hidden therefore retains its former geometry. This is the screen's state,
+and this run's harness-only scope leaves its implementation for KS1-UI.
+The m625 and month-zero transition probes did not reach that preceding
+layout history, while the full main run did. Its signature premise is kept.
+
+## Saved-city baseline finding
+
+★ Queue KS1-Saved for the unrelated section-87 saved-city assertion. Main's
+unchanged KeptCheck reported that the scratch save succeeded, then found
+zero saved cities on the board. The assertion combines worker completion
+and board presence, so that output alone does not distinguish those causes.
+KeptBench.rankingsReadLanded() reads the worker and snapshot state, and
+rankingsSavedOnBoard() reads SavedCities.now(). No KS1 source had been loaded
+in that run. Keep the original assertion and record this baseline red under
+the new queued investigation.
