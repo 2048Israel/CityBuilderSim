@@ -127,7 +127,7 @@ The final pick uses `-Dcbs.parallel=1` while physical memory is short. Its
 known-reds input is `target/checks/KS1-final-known.txt`, combining main's
 record and the ship file. It removes every KS1 fixture exemption and its
 exact-line cover, then retains the explicitly deferred timing rows,
-KS1-UI's reproduced header finding and KS1-Saved's independent baseline
+KS1-UI's reproduced screen findings and KS1-Saved's independent baseline
 finding. A remaining generic fixture failure therefore stays NEW.
 
 The narrowed-hold month-625 sectors probe completed with zero failures in
@@ -166,3 +166,35 @@ are `KS1-pick2.txt`, `KS1-pick2-suite.txt` and `KS1-pick2-KeptCheck.log`.
   250 word/font/size transitions had zero differences, so the full picture
   and its preceding draws are part of the reproduction. Both screen
   implementations stay for the queued repair under this run's scope.
+
+## Final verification and readiness
+
+- `./batch-check.sh --fast` passed after the final repair, compile 46 s,
+  maps regenerated and 0 firm Stale findings.
+- `./batch-check.sh --pick` finished **exit 3** on source
+  `3f19e1d76855d362bef6fdb5d4609b3dbfee3599`, based on main
+  `fc3b6be5a1aa20c3e464506d0eadbbd518865cc0`. Six selected names ran seven
+  harnesses. ChartFitCheck, MapCheck, BridgeMapCheck, ResearchViewCheck,
+  TimingCheck and ToastCheck passed. KeptCheck completed in 1,146.9 s.
+  The whole suite took 1,718 s. Its four assertions left red are exactly
+  the two KS1-UI geometry findings and KS2's two paper assertions.
+- Every functional known-reds part assigned to KS1 cleared, apart from the
+  explicitly queued header screen finding. Borrow's original 90% floor,
+  every fund clock case, Spending's opened debt fold, the live income note,
+  node reuse, tooltips and drawable late works were green. The restored
+  played months cleared every section-64 assertion that the second pick
+  exposed. The saved-city assertion passed on the final path.
+- The final judge's `target/checks/new-reds.txt` is empty. Its used parts
+  name only KS1-UI and KS2. Twenty-six timings were soft, 9 in MapCheck
+  and 17 in KeptCheck. The ship file carries all four deferred timing
+  entries under KS1-rest and the remaining queue text under Pending.
+- The retained final evidence is `target/checks/KS1-pick.txt`,
+  `suite.txt`, `KeptCheck.log`, `timing.tsv`, `times.tsv`, `used-reds.txt`
+  and `KS1-final-known.txt`. Readiness follows the selected-harness path
+  in docs/batch.md 4, with the ship file's explicit deferred findings.
+- `git diff --numstat origin/main`, excluding these notes and the ship
+  file, is **720 added, 677 removed** across source and generated indexes.
+  KeptCheck itself is **107 added, 66 removed**. The generated index changes
+  follow those source changes. `git diff --check` passed, the publisher's
+  record files compare cleanly with the base, and the ship file's sections,
+  seven known-reds rows and no-tag changelog heading were validated.
