@@ -537,6 +537,7 @@ public class MapCheck {
         runsLaidAcross(city);
         reservesDated(city);
         wallJournal(city);
+        shoreUnitsDated(city);
         idleYards(city);
         idleYardsOnRuns();
         Squares sq = new Squares();
@@ -1869,6 +1870,48 @@ public class MapCheck {
         byte[] old = m.writeSidecar(30, 15);
         CityMap older = CityMap.readSidecar(old, land, r -> land.amountsInOrder(r), types, 30, CityMap.stampIn(old));
         check("a FORMAT 15 sidecar starts with no wall journal", older != null && older.district(d.dx, d.dy).wallMonth.length == 0);
+    }
+
+    /** A site's or shore's share can change while the model log stays fixed. Its returning unit arrives now (MF2-S, DM2). */
+    static void shoreUnitsDated(Game g) {
+        out.println("\n--- 2h-c. site, yard and shore units return at their return month, keeping every standing box (DM2, MF2-S) ---");
+        BuildingVisual.Type[] types = g.getMapTypes();
+        int house = idOf(g, "House");
+        for (int unit : new int[] { idOf(g, "General Cargo Terminal"), idOf(g, "Rail Depot") }) {
+            CityLand land = yardLand();
+            long[] model = new long[types.length];
+            CityMap m = CityMap.canonical(land, r -> land.amountsInOrder(r), types, model, 0);
+            model[house] = 50;
+            model[unit] = 3;
+            m.reconcile(model, 1);
+            CityMap.District d = m.districts().get(0);
+            PlanCheck.Log log = new PlanCheck.Log().add(1, house, 50).add(1, unit, 3);
+            DistrictPlan previous = null;
+            int moved = 0;
+            for (int month = 3; month <= 5; month++) {
+                m.reconcile(model, month);
+                DistrictPlan.Input in = log.into(PlanCheck.flat(types));
+                in.month = month;
+                in.counts[unit] = month == 4 ? 3 : 2;
+                m.planExclusionsInto(d, in);
+                DistrictPlan p = DistrictPlan.make(in);
+                if (previous != null) {
+                    int missing = movedOf(boxesOf(previous), boxesOf(p));
+                    if (month == 5) missing--; // The one unit leaving the plan is the one that returned in month 4.
+                    moved += missing;
+                }
+                check("month " + month + ": the merged visual log places exactly the requested units", p.buildings == 50 + in.counts[unit]);
+                previous = p;
+            }
+            check("a returning fixed unit and its later departure move no other standing box", moved == 0);
+            check("the model log stays at its original arrival, and the visual journal dates the exclusion and return",
+                    d.logN == 2 && Arrays.equals(d.excludeMonth, new int[] { 3, 4, 5 })
+                            && Arrays.equals(d.excludeChange, new int[] { -1, 1, -1 }));
+            byte[] side = m.writeSidecar(5);
+            CityMap back = CityMap.readSidecar(side, land, r -> land.amountsInOrder(r), types, 5, CityMap.stampIn(side));
+            check("the sidecar round trips the dated unit adjustments and their state", back != null && m.same(back)
+                    && Arrays.equals(side, back.writeSidecar(5)));
+        }
     }
 
     /* =====================================================================
@@ -14837,7 +14880,7 @@ public class MapCheck {
      * stood the city's one yard and counted two Rail Depots, one from m2243 and one from m2300; the plan was handed one depot less than its log stood
      * and squared the log by leaving out the newest standing one. At m2396 one depot left - the newest, as a departure is - so the plan's count fell to
      * none and the older depot was left out instead, from m2243 on: every box placed after it was placed again with its ground free. MF2 takes the
-     * yard's own unit out of the log the plan is given as the oldest standing (CityMap.yardUnitsOut()), so the departure takes its own box.
+     * yard's own oldest unit out of the log. DM2 dates both its exclusion and its return, so changing that share also keeps the boxes after it in place.
      * The fixture causes it on 20's city: the first depot lays the yard in the second district, works arrive, a second depot arrives there, works
      * arrive after it, and one depot leaves.
      */
