@@ -37,7 +37,7 @@ function Stop-Gate {
     }
 }
 if ($Mode -eq 'Stop') {
-    New-Item -ItemType File -Path (Join-Path $Run 'cancelled') -Force | Out-Null
+    '--stop' | Set-Content -LiteralPath (Join-Path $Run 'cancelled')
     # A stop just after launch waits for the watcher to record the native identity.
     for ($attempt = 0; $attempt -lt 100 -and !(Test-Path -LiteralPath $identityFile); $attempt++) { Start-Sleep -Milliseconds 100 }
     if (!(Test-Path -LiteralPath $identityFile)) { throw 'Gate identity was never recorded' }
@@ -48,6 +48,7 @@ try {
     for ($attempt = 0; $attempt -lt 100 -and !(Test-Path -LiteralPath (Join-Path $Run 'ship.native')); $attempt++) { Start-Sleep -Milliseconds 100 }
     $shipId = [int](Get-Content -LiteralPath (Join-Path $Run 'ship.native'))
     $shipProcess = Get-Process -Id $shipId
+    $shellPath = (Get-CimInstance Win32_Process -Filter "ProcessId = $shipId").ExecutablePath
     "$shipId|$($shipProcess.StartTime.ToUniversalTime().Ticks)" | Set-Content -LiteralPath $identityFile
     $ancestors = @()
     foreach ($ownerText in Get-Content -LiteralPath (Join-Path $Run 'owners')) {
@@ -64,13 +65,14 @@ try {
         $ancestor = $parent
         $parentId = (Get-CimInstance Win32_Process -Filter "ProcessId = $parentId").ParentProcessId
     }
+    New-Item -ItemType File -Path (Join-Path $Run 'guardian.ready') -Force | Out-Null
     while (Test-Path -LiteralPath (Join-Path $Run 'active')) {
         if ($shipProcess.HasExited) { break }
         if ((Test-Path -LiteralPath (Join-Path $Run 'cancelled')) -or @($ancestors | Where-Object HasExited).Count -gt 0) {
-            New-Item -ItemType File -Path (Join-Path $Run 'cancelled') -Force | Out-Null
+            if (!(Test-Path -LiteralPath (Join-Path $Run 'cancelled'))) { 'caller' | Set-Content -LiteralPath (Join-Path $Run 'cancelled') }
             Stop-Gate
             '130' | Set-Content -LiteralPath (Join-Path $Run 'exit')
-            "[$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')] gate      stopped with its caller; main and the tags are where they were"
+            & $shellPath (Join-Path $PSScriptRoot 'gate-report.sh') $Run
             break
         }
         Start-Sleep -Milliseconds 250

@@ -11,9 +11,6 @@
 # offsets of the file it opened, and a batch that changes ship.sh rewrites that file in the merge. CBS_SHIP_SHELL is the
 # shell that runs the copy (the self-test runs it under dash); CBS_SHIP_COPY, once set, says this is the copy.
 if [ -z "$CBS_SHIP_COPY" ]; then
-    if [ -n "$CBS_GATE_RUN" ]; then
-        case "$(uname -s)" in MINGW*|MSYS*) ps -p $$ | awk 'NR == 2 {print $4}' > "$CBS_GATE_RUN/ship.native" ;; esac
-    fi
     CBS_SHIP_HOME=${CBS_SHIP_HOME:-$(cd "$(dirname "$0")" && pwd)}
     CBS_SHIP_COPY=$(mktemp "${TMPDIR:-/tmp}/ship-run.XXXXXX") || { echo "ship      cannot make a copy of itself in ${TMPDIR:-/tmp}"; exit 1; }
     cp "$0" "$CBS_SHIP_COPY" || { rm -f "$CBS_SHIP_COPY"; echo "ship      cannot copy $0 to $CBS_SHIP_COPY"; exit 1; }
@@ -57,12 +54,29 @@ GENERATED="docs/map docs/dials.md docs/month-order.md docs/harnesses.md"
 GENRE='^docs/(map/|dials\.md$|month-order\.md$|harnesses\.md$)'
 T=target/ship-tmp          # this script's scratch folder, gone when it ends
 MT=target/main-timing      # the worktree of main whose classes the paired timing rounds run (TM3)
-MERGING=0
+MERGING=0; COMMITTED=0
 
 say() { echo "ship      $*"; }
 die() { [ "$MERGING" = 0 ] || undo; echo "ship      STOPPED - $*"; exit 1; }
+rollback() {
+    [ "$COMMITTED" = 1 ] || return 0
+    [ -z "$TAG" ] || git tag -d "$TAG" >/dev/null 2>&1
+    git reset -q --hard "$HEAD0"
+    COMMITTED=0
+}
+alive() {
+    if ! kill -0 "$CBS_SHIP_OWNER" 2>/dev/null || { [ -n "$CBS_GATE_RUN" ] && [ -e "$CBS_GATE_RUN/cancelled" ]; }; then
+        rollback; die "the gate was stopped; publication cancelled"
+    fi
+    if [ "$DRY" = 0 ] || [ -n "$CBS_GATE_RUN" ]; then
+        [ -n "$CBS_GATE_RUN" ] && [ -f "$CBS_GATE_RUN/guardian.ready" ] &&
+            [ -f "$CBS_GATE_RUN/guardian" ] && kill -0 "$(cat "$CBS_GATE_RUN/guardian")" 2>/dev/null && return 0
+        rollback; die "publishing requires tools/gate.sh with a running guardian"
+    fi
+}
 retry() {   # a network call, tried again after 2, 4, 8 and 16 seconds
     for wait in 2 4 8 16 0; do
+        if [ "$1" = git ] && [ "$2" = push ]; then alive; fi
         "$@" >/dev/null 2>&1 && return 0
         [ "$wait" = 0 ] && return 1
         sleep "$wait"
@@ -92,8 +106,9 @@ cleanup() {   # on every way out: an unfinished merge taken back, main's timing 
     [ -z "$CBS_SHIP_HOME" ] || rm -f "$CBS_SHIP_COPY" 2>/dev/null   # the copy this run is (TM3); a shell on Windows may still hold it open: left, it is a few kilobytes in the temp folder
 }
 trap cleanup EXIT
-trap 'exit 130' INT TERM HUP
+trap 'rollback; exit 130' INT TERM HUP
 
+alive
 [ "$(git rev-parse --abbrev-ref HEAD)" = main ] || die "main is not checked out here"
 [ -z "$(git status --porcelain)" ] || die "the tree has uncommitted changes"
 rm -rf "$T"; mkdir -p "$T"
@@ -215,6 +230,7 @@ if printf '%s
     say "$BRANCH changes ship.sh: this run goes on from its copy ($0), so the merge cannot rewrite it under the shell"
 fi
 HEAD0=$(git rev-parse HEAD)
+[ -z "$CBS_GATE_RUN" ] || echo "$HEAD0" > "$CBS_GATE_RUN/head.before"
 MERGING=1
 if ! git merge --no-ff --no-commit -q "$REF" >/dev/null 2>&1; then
     CONFLICTS=$(git diff --name-only --diff-filter=U)
@@ -318,10 +334,6 @@ recorded() {   # main's recorded reds: the non-# lines of origin/main's docs/not
         | tr -d '\r' | tee "$T/gate-main.txt" | grep -v '^#' | grep -v '^$'   # the whole of it kept: its "# figure" lines are main's of the day (GT2)
 }
 recorded > "$T/recorded"
-alive() {
-    kill -0 "$CBS_SHIP_OWNER" 2>/dev/null && { [ -z "$CBS_GATE_RUN" ] || [ ! -e "$CBS_GATE_RUN/cancelled" ]; } \
-        || die "the gate was stopped; main and the tags are where they were"
-}
 complete() {
     alive
     MISSING=$(grep -v -x -F -f "$T/finished" "$T/needed" | tr '\n' ' ')
@@ -583,11 +595,13 @@ git add $GENERATED
     echo "Gate: $GATE"
     [ -z "$TIMINGLINE" ] || echo "Gate-timing: ${TIMINGLINE#timing    }"
 } > "$T/msg"
+[ -z "$CBS_GATE_RUN" ] || printf '%s\n' "$TAG" > "$CBS_GATE_RUN/tag"
 git commit -q -F "$T/msg" || die "the commit failed"
-MERGING=0
+COMMITTED=1; MERGING=0
 say "committed $(git rev-parse --short HEAD) \"$MSG\""
 
 # 13. tag
+alive
 if [ -n "$TAG" ]; then
     git tag "$TAG" || die "cannot tag $TAG"
     say "tagged $TAG"
@@ -608,4 +622,5 @@ if ! retry git push --atomic origin main ${TAG:+"refs/tags/$TAG"}; then
     fi
     die "the push of main failed five times; it is committed here, push it by hand"
 fi
+COMMITTED=0
 say "pushed main${TAG:+ and $TAG}"

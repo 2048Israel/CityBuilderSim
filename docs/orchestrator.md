@@ -79,7 +79,7 @@ his review moves a Pending row, save one the next paragraph settles.
 **The orchestrator answers what it safely can** (BP1 item 9, Jerus 2026-10-23:
 "dont most end up being rec? its only a few that arent"). A session's question
 about the process, the code or its brief it answers itself. It takes the
-recommended option on a batch's ★ calls, writes in the notes which and why, and
+recommended option on a batch's â˜… calls, writes in the notes which and why, and
 the batch ships without waiting; he can overturn one later. A Pending row that
 waits only on calls with a recommendation it settles the same way. It sends
 Jerus only what is his: a call with no clear recommendation, one that moves a
@@ -102,16 +102,20 @@ batch it is built on):
    the UI-wide. Otherwise the stat and the notes are the review. The review
    line names these from the diff and is a floor: add one, never skip one it
    names.
-3. Take the batch's recommended ★ calls and say which and why in the notes,
+3. Take the batch's recommended â˜… calls and say which and why in the notes,
    sending Jerus only his.
 4. `sh tools/gate.sh <id> [ship.sh options]` clones under `$TMP`, names both
    data files from the main checkout and keeps a timestamped log outside the
    clone. It prints the run directory and returns `ship.sh`'s exit status.
-   `--red-lines FILE` reads one fixed-string `--red-line` per nonempty line.
-   WHY (GF1, LM1): the copied launcher hid a stopped publisher's status.
+   Main's publisher judges the merge. `--branch-gate --dry-run` explicitly
+   tests a branch's changed publisher. WHY (GF1 review): a branch cannot choose
+   the rules that publish it. `--red-lines FILE` reads approval substrings.
    `sh tools/gate.sh --stop RUN_DIRECTORY` cancels that run's process tree,
    including on Windows, and retains its log and clone. Closing its caller
-   cancels it too. It records main's and the branch's commits in `refs.before`.
+   cancels it too. Stop reports its cause and compares main, branch and tag
+   refs with `refs.before`, naming every moved ref. Real publication requires
+   the launcher's live guardian; cancellation before tag or a push attempt
+   rolls back local publication work (GF1 review, stopped caller and retries).
 5. `ship.sh` requires clean main, current with origin, its VERSION equal to the
    last version tag. It merges uncommitted, resolving generated-doc conflicts
    with the branch's side, and stages the ship file's records before checking.
