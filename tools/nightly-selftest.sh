@@ -13,6 +13,8 @@ row 120 > "$TEST/old"; row 125 > "$TEST/new"
 CASE='standing miss is named'; ok test "$(judge | cut -f1)" = STANDING
 row 90 > "$TEST/old"
 CASE='new miss is a candidate'; ok test "$(judge | cut -f1)" = SLOWER
+row 120 | sed 's/100/130/' > "$TEST/old"
+CASE='previous night uses its own budget'; ok test "$(judge | cut -f1)" = SLOWER
 row 50 > "$TEST/old"; row 90 > "$TEST/new"
 CASE='rise inside budget stays OK'; ok test "$(judge | cut -f1)" = OK
 : > "$TEST/old"; row 125 > "$TEST/new"

@@ -56,9 +56,9 @@ function resstage() { return mode == "judge" ? 3 : 2 }
 mode == "night" {
     k = $1 SUBSEP mask($2) SUBSEP $7
     occ = ++nightseen[stage SUBSEP k]; key = k SUBSEP occ
-    if (stage == 1) { previous[key] = $3; next }
+    if (stage == 1) { previous[key] = $3; previousbudget[key] = $4; next }
     if (!isnum($3) || !isnum($4)) { print "INVALID\t" $0; next }
-    state = $3 <= $4 ? "OK" : !(key in previous) ? "FIRST" : previous[key] <= $4 || $3 * 100 > previous[key] * (100 + margin) ? "SLOWER" : "STANDING"
+    state = $3 <= $4 ? "OK" : !(key in previous) ? "FIRST" : previous[key] <= previousbudget[key] || $3 * 100 > previous[key] * (100 + margin) ? "SLOWER" : "STANDING"
     printf "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", state, $1, $2, (key in previous ? previous[key] : "none"), $3, $4, $5, $7, nightseen[stage SUBSEP k]
     next
 }
