@@ -187,3 +187,39 @@ old model, both works order their inputs and make the full run at a loss:
 **six assertions fail** in `target/checks/gdp1-forecast-before.txt`. Each
 fixture also raises the output price enough to cover an all-imported bill
 and checks that a real margin still produces and exports the goods.
+
+## Forecast checks and the RT3 replay
+
+The model commit is `aea7eb1d`. The forecast fast check exits 0; the named
+GdpCheck, CopperRefiningCheck and ManufacturingCheck run exits 0, including
+all six formerly red assertions and the profitable controls. Logs:
+`target/checks/gdp1-forecast-fast.txt` and `gdp1-forecast-named.txt`.
+
+The RT3 replay overlays RT3's BusinessInvestment (the retirement guard) on
+this batch's compiled model, without changing either worktree's source. It
+uses the same AUTO2 seed-11 driver through m903. At the clearing whose books
+are struck in m902, the wire works now makes and exports **0 t**, orders
+**0 t** of rod, pays **0** for rod and earns **0** from wire. Its former
+7,611.705911 t loss-making run is idled. GDP m902 is **10,223.556**, versus
+the reproduced **-431.689**. All 902 recorded audit verdicts pass and there
+are no findings in this replay. Manufacturing still exports fabricated steel
+(3,327.006595), so this is a refusal of the unprofitable wire run, not the
+entire sector stopping.
+
+The pure shipping model (main's retirement rule plus GDP1) is also replayed
+with seed 11 through m903. Its history differs from RT3's, so it is reported
+separately: wire made/exported and rod bought are also **0**, rod cost and
+wire proceeds **0**, and m902 GDP **45,291.114**. Its 902 audit verdicts pass,
+with no findings. Logs `target/checks/gdp1-rt3-fixed-seed11.txt` and
+`gdp1-candidate-seed11.txt`; CSVs and exact driver/retirement overlay under
+`target/gdp1-fixed-probe/`, prepared by `target/gdp1-fixed-probe.{py,sh}`.
+
+The final model's default LongPlaytest completes with **no findings**, every
+money audit passing and all six reloads matching. LongPlaytest's source,
+including its exact "negative monthly GDP" finding, is unchanged. Its eight
+CSV traces move against the initial main run; the month, bank and bond traces
+first differ at row 853. Kept report:
+`target/checks/gdp1-forecast-LongPlaytest.log`; comparison and SHA-256 hashes:
+`target/checks/gdp1-trace-comparison.txt`. Therefore the final-model ensemble
+is required and is running as `GDP1`, against **0.9.93** (23/26), with three
+JVMs to leave room for the shared PC's full pick and other sessions.
