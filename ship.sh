@@ -26,12 +26,13 @@ fi
 cd "${CBS_SHIP_HOME:-$(dirname "$0")}" || exit 1
 
 USAGE='usage: ship.sh [--dry-run] [--no-tag] [--version X.Y.Z] [--red-ok "his words" --red-line "<part of a red line>" ...] <branch> [-m title] [-F body] [-- harness names]'
-DRY=0; NOTAG=0; BRANCH=""; TITLE=""; BODY=""; OVERRIDE=""; REDOK=""; REDLINES=""
+DRY=0; NOTAG=0; BRANCH=""; TITLE=""; BODY=""; OVERRIDE=""; REDOK=""; REDLINES=""; REUSE=""
 NL='
 '
 while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run) DRY=1 ;;
+        --reuse) [ $# -ge 2 ] || { echo "$USAGE"; exit 2; }; shift; REUSE=$1 ;;
         --no-tag) NOTAG=1 ;;
         --version) [ $# -ge 2 ] || { echo "$USAGE"; exit 2; }; shift; OVERRIDE="$1" ;;
         --red-ok) [ $# -ge 2 ] && [ -n "$2" ] || { echo "$USAGE"; exit 2; }; shift; REDOK="$1" ;;
@@ -182,8 +183,8 @@ if [ "$NEW" = 1 ]; then
     [ -z "$ADDED" ] || die "$BRANCH adds $ADDED: a batch commits its baseline as docs/ensemble/$ID.md, and ship.sh names it by the version"
     RECORDS=$(printf '%s\n' "$CHANGED" | grep -x -e QUEUE.md -e docs/notes/changelog.md | tr '\n' ' ' | sed 's/ *$//')
     [ -z "$RECORDS" ] || die "$BRANCH edits $RECORDS: records go in the ship file $SHIPF (docs/batch.md)"
-    BADH=$(grep '^## ' "$T/ship-on-branch" | grep -v -x -E '## (changelog|pending|queued)' | head -3 | tr '\n' ' ')
-    [ -z "$BADH" ] || die "$SHIPF has a heading ship.sh does not know: $BADH- only '## changelog', '## pending' and '## queued'"
+    BADH=$(grep '^## ' "$T/ship-on-branch" | grep -v -x -E '## (changelog|pending|queued|known-reds)' | head -3 | tr '\n' ' ')
+    [ -z "$BADH" ] || die "$SHIPF has a heading ship.sh does not know: $BADH- use changelog, pending, queued or known-reds"
     if [ "$WANT" = 0 ] && git cat-file -e "$REF:docs/ensemble/$ID.md" 2>/dev/null; then
         die "docs/ensemble/$ID.md is a baseline and $SHIPF has no {next} to name it by"
     fi
@@ -313,6 +314,25 @@ if [ "$NEW" = 1 ]; then
     say "records: $RECS"
 fi
 
+# GR2: file new unrelated reds, then remove this batch's own exemptions before judgment.
+REDPARTS=docs/notes/known-reds.txt
+: > "$T/removed"
+if [ "$NEW" = 1 ]; then
+    sect known-reds "$T/ship-on-branch" | sed '/^#/d; /^[[:space:]]*$/d' > "$T/new-parts"
+    if [ -s "$T/new-parts" ]; then
+        awk -F ' [|] ' 'NF != 5 || $1 !~ /^[A-Za-z0-9_]+$/ || $2 == "" || $3 !~ /^[A-Za-z0-9_-]+$/ || $4 !~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/ || $5 == "" { exit 1 }' "$T/new-parts" \
+            || die "$SHIPF has a malformed known-reds row"
+        cat "$T/new-parts" >> "$REDPARTS"
+    fi
+    [ -n "$REUSE" ] || REUSE=$(sed -n 's/^<!-- gate-run: \(.*\) -->$/\1/p' "$T/ship-on-branch" | head -1)
+fi
+if [ -f "$REDPARTS" ]; then
+    awk -F ' [|] ' -v id="$ID" '$3 == id { print "! " $0 }' "$REDPARTS" > "$T/removed"
+    awk -F ' [|] ' -v id="$ID" '/^#/ || $3 != id' "$REDPARTS" > "$T/parts"
+    cat "$T/parts" > "$REDPARTS"
+    git add -- "$REDPARTS"
+fi
+
 # the version this merge carries: NEXT, or what the tree reads
 if [ "$WANT" = 1 ]; then V=$NEXT; else V=$(sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p' "$GV" | head -1); fi
 [ "$NOTAG" = 0 ] || [ "$V" = "$LAST" ] \
@@ -328,6 +348,7 @@ recorded() {   # main's recorded reds: the non-# lines of origin/main's docs/not
         | tr -d '\r' | grep -v '^#' | grep -v '^$'
 }
 recorded > "$T/recorded"
+{ cat "$T/recorded" "$T/removed"; [ ! -f "$REDPARTS" ] || cat "$REDPARTS"; } > "$T/known"
 complete() {
     alive
     MISSING=$(grep -v -x -F -f "$T/finished" "$T/needed" | tr '\n' ' ')
@@ -339,8 +360,11 @@ run_check() {   # stage, directory, command: no status or output survives from a
     STAGE_STARTED=$(date +%s)
     say "check $STAGE started"
     echo "$STAGE" >> "$T/needed"
-    rm -f "$T/code" "$DIR/target/checks/reds.txt" "$DIR/target/checks/suite.txt" "$DIR/target/checks/timing.tsv" \
-        || die "cannot clear the previous check results for $STAGE"
+    rm -f "$T/code" || die "cannot clear the previous status"
+    if [ -z "$TAKEN" ]; then
+        rm -f "$DIR/target/checks/reds.txt" "$DIR/target/checks/suite.txt" "$DIR/target/checks/timing.tsv" \
+            || die "cannot clear the previous check results for $STAGE"
+    fi
     { ( cd "$DIR" && "$@" ); echo "$STAGE $?" > "$T/code"; } 2>&1 | tee "$T/check.out"
     alive
     [ -f "$T/code" ] || die "the check did not finish: $STAGE (no fresh status)"
@@ -363,36 +387,37 @@ show_unnamed() {   # WG2: keep every line even when the screen shows twelve
     sed 's/^/    NOT NAMED: /' "$1" | cut -c1-260 | head -12
 }
 heads() { sed 's/ |.*//' "$1" | sort -u | tr '\n' ' ' | sed 's/ *$//'; }   # the harness of each red line of a file
-# unnamed LINES CONTEXT: the red lines ("Harness | text") of file LINES that no --red-line passes, in order (TM3 review). A line
-# passes when it contains one of the --red-line parts, as written. A harness's own count ("H | exit N", "H | N FAILED") passes
-# too when H has a line that passes - in LINES, or among the lines of file CONTEXT, which are passed already - and no other
-# line of H that does not: his words pass the lines he named and what only follows from them, never another red.
-unnamed() {
-    awk -v pf="$T/redlines" '
-    BEGIN { while ((getline l < pf) > 0) if (l != "") p[++np] = l }
-    function agg(s) { return s ~ /^[^ ]+ \| (exit -?[0-9]+|[0-9]+ FAILED)$/ }
-    function head(s) { return substr(s, 1, index(s, " | ") - 1) }
-    function named(s,   i) { for (i = 1; i <= np; i++) if (index(s, p[i])) return 1; return 0 }
-    FILENAME == ARGV[1] { if (!agg($0)) okc[head($0)]++; next }
-    { n++; line[n] = $0
-      if (named($0)) { pass[n] = 1; if (!agg($0)) okc[head($0)]++ }
-      else if (!agg($0)) bad[head($0)] = 1 }
-    END { for (i = 1; i <= n; i++) {
-              if (pass[i]) continue
-              if (agg(line[i]) && okc[head(line[i])] > 0 && !(head(line[i]) in bad)) continue
-              print line[i] } }' "$2" "$1"
-}
 shortlines() { awk '{ printf "%s%s", sep, substr($0, 1, 150); sep = "; " }' "$1"; }   # the lines of a file in one, each cut at 150
-without() {   # the lines of file $1 that are in none of the files after it, whole lines as written; an empty file takes nothing out
-    cp "$1" "$T/without.cur"; shift
-    for f in "$@"; do
-        [ -s "$f" ] || continue   # grep -f with an empty pattern file: some greps take every line out, some none
-        { grep -v -x -F -f "$f" "$T/without.cur" || :; } > "$T/without.next"
-        cat "$T/without.next" > "$T/without.cur"
-    done
-    cat "$T/without.cur"
+PICKED=$(sh tools/pick.sh "$HEAD0" 2> "$T/pick.txt") || die "the pick failed: $(cat "$T/pick.txt")"
+cat "$T/pick.txt"
+GAME=$(printf '%s\n' "$CHANGED" | grep '^src/main/java/.*\.java$' | grep -v -E '/tools/|/(LongPlaytest|[^/]*Check)\.java$' | grep .)
+FULL=0; [ -z "$GAME" ] && ! printf '%s\n' "$CHANGED" | grep -q -E '^pom\.xml$|^src/main/resources/|^batch-check\.sh$' || FULL=1
+[ "$PICKED" != ALL ] || FULL=1
+SELECTION="full"; SCOPE=""; TAKEN=""
+[ "$#" = 0 ] || SELECTION="manual $*"
+if [ "$DOCSONLY" = 1 ]; then SELECTION=docs
+elif [ "$FULL" = 0 ]; then
+    SELECTION="pick $PICKED"
+    SCOPE="no game code: $(printf '%s\n' "$PICKED" | awk '$0 != "NONE" {print NF} $0 == "NONE" {print 0}') harnesses; "
+fi
+# Changed scripts with a companion self-test run once, as part of the retained evidence.
+selftests() {
+    [ "${CBS_SELFTEST:-}" != 1 ] || return 0
+    printf '%s\n' "$CHANGED" | while IFS= read -r file; do
+        case "$file" in
+            ship.sh|tools/gate*.sh|tools/gate-process.ps1) echo tools/ship-selftest.sh ;;
+            *-selftest.sh) echo "$file" ;;
+            *.sh) testfile="${file%.sh}-selftest.sh"; [ ! -f "$testfile" ] || echo "$testfile" ;;
+        esac
+    done | sort -u > "$T/selftests"
+    while IFS= read -r testfile; do
+        testlog="target/checks/$(basename "$testfile" .sh).log"
+        sh "$testfile" > "$testlog" 2>&1 || { tail -16 "$testlog"; die "$testfile failed"; }
+        tail -1 "$testlog"
+    done < "$T/selftests"
 }
 GATE=""; SUMMARY=""; EARTH="named"
+
 if [ "$DOCSONLY" = 1 ]; then
     say "docs only (every path the branch changed is a .md outside docs/ensemble/): batch-check.sh --fast alone, no suite, gate.txt untouched"
     echo fast > "$T/needed"
@@ -400,61 +425,85 @@ if [ "$DOCSONLY" = 1 ]; then
     [ "$CHECKED" = 0 ] || die "the checks failed on the merge (above); main is where it was"
     GATE="docs only, --fast"
 else
-    printf '%s\n' suite > "$T/needed"
-    run_check suite . ./batch-check.sh "$@"   # GR1: timing soft here, judged nightly
-    cp target/checks/reds.txt "$T/suite-reds.txt" 2>/dev/null || : > "$T/suite-reds.txt"
-    cp target/checks/suite.txt "$T/suite.txt" 2>/dev/null || : > "$T/suite.txt"
-    cp "$T/check.out" "$T/suite.out"
-    case "$BRANCH" in
-        chatgpt/*|gemini/*)   # RV1: what a review used to ask by hand, a name at a time
-            if [ -f target/classes/ham/citybuildersim/tools/Names.class ]; then
-                java -cp target/classes ham.citybuildersim.tools.Names "$REF" HEAD 2>&1 \
-                    | grep -v '^Picked up JAVA_TOOL_OPTIONS' > target/checks/names.txt
-                say "names: $(tail -1 target/checks/names.txt)"
-                sed '$d' target/checks/names.txt | head -20 | sed 's/^/    /'
-                MORE=$(( $(wc -l < target/checks/names.txt) - 21 ))
-                [ "$MORE" -le 0 ] || echo "    ... and $MORE more: target/checks/names.txt"
-            else
-                say "names: not run - no tools.Names in the build"
-            fi ;;
-    esac
-    case "$CHECKED" in
-        0) GATE="green" ;;
-        3) GATE="known red only: $(heads "$T/suite-reds.txt")" ;;
-        4) if [ -n "$REDOK" ]; then
-               without "$T/suite-reds.txt" "$T/recorded" > "$T/suite-new"   # the lines batch-check.sh judged NEW, as ship.sh reads the record
-               [ -s "$T/suite-new" ] || die "the suite exited 4 (a NEW red line), but main's record has every red line it printed: the two records disagree; main is where it was"
-               unnamed "$T/suite-new" /dev/null > "$T/suite-unnamed"
-               if [ -s "$T/suite-unnamed" ]; then
-                   show_unnamed "$T/suite-unnamed"
-                   die "NEW red line(s) that no --red-line names (above); main is where it was. His words pass the lines named, never more: --red-line \"<part of the line>\""
-               fi
-               GATE="NEW red on Jerus's word: $REDOK (lines: $(shortlines "$T/suite-new"))"
-           else
-               without "$T/suite-reds.txt" "$T/recorded" > "$T/suite-unnamed"
-               show_unnamed "$T/suite-unnamed"
-               die "NEW red line(s) on the merge, the known reds aside (above); main is where it was. On his word only: --red-ok \"his words\" --red-line \"<part of each line he passes>\""; fi ;;
-        *) die "the checks failed on the merge (above, exit $CHECKED); main is where it was" ;;
-    esac
-    say "gate: $GATE"
-    grep -q 'no earth-2.bin here' "$T/suite.out" && EARTH="not named: the Earth harnesses' full-file sections did not run"
-    SUMMARY=$(grep 'harness.* run in ' "$T/suite.txt" | tail -1)
+    if [ -n "$REUSE" ] && sh tools/gate-reuse.sh "$REUSE" "$GATED" "$HEAD0" "$SELECTION"; then
+        TAKEN=$REUSE
+        CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge run_check suite . ./batch-check.sh --judge target/checks/suite.txt
+    else
+        [ -z "$REUSE" ] || say "kept run refused: $REUSE; running checks"
+        if [ "$FULL" = 1 ]; then CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh "$@"
+        elif [ "$PICKED" = NONE ]; then run_check fast . ./batch-check.sh --fast
+        else CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh $PICKED; fi
+        selftests
+    fi
+    if [ "$PICKED" = NONE ] && [ "$FULL" = 0 ]; then
+        GATE="${SCOPE}--fast"
+    else
+        if [ -n "$CBS_GATE_RUN" ] && [ -f "$CBS_GATE_RUN/launcher" ] && { [ "$FULL" = 1 ] || [ "$PICKED" != NONE ]; }; then
+            cp -R target/checks "$CBS_GATE_RUN/checks"
+            printf '%s\n' "$SELECTION" > "$CBS_GATE_RUN/selection"
+            (cd "$CBS_GATE_RUN" && sha256sum checks/* > checks.sha256) || die "cannot seal kept checks"
+            touch "$CBS_GATE_RUN/checks.complete"
+        fi
+        cp target/checks/reds.txt "$T/suite-reds.txt" 2>/dev/null || : > "$T/suite-reds.txt"
+        cp target/checks/suite.txt "$T/suite.txt" 2>/dev/null || : > "$T/suite.txt"
+        cp "$T/check.out" "$T/suite.out"
+        case "$BRANCH" in
+            chatgpt/*|gemini/*)   # RV1: what a review used to ask by hand, a name at a time
+                if [ -f target/classes/ham/citybuildersim/tools/Names.class ]; then
+                    java -cp target/classes ham.citybuildersim.tools.Names "$REF" HEAD 2>&1 \
+                        | grep -v '^Picked up JAVA_TOOL_OPTIONS' > target/checks/names.txt
+                    say "names: $(tail -1 target/checks/names.txt)"
+                    sed '$d' target/checks/names.txt | head -20 | sed 's/^/    /'
+                    MORE=$(( $(wc -l < target/checks/names.txt) - 21 ))
+                    [ "$MORE" -le 0 ] || echo "    ... and $MORE more: target/checks/names.txt"
+                else
+                    say "names: not run - no tools.Names in the build"
+                fi ;;
+        esac
+        # Rejudge every kept or fresh log against the merged registry; old tags are evidence of its old verdict.
+        CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge ./batch-check.sh --judge target/checks/suite.txt > "$T/judged" 2>&1
+        VERDICT=$?
+        cp target/checks/new-reds.txt "$T/suite-new"
+        case "$VERDICT" in
+            0) GATE="green" ;;
+            3) GATE="known red only: $(heads "$T/suite-reds.txt")" ;;
+            4) if [ -n "$REDOK" ]; then
+                   while IFS= read -r part; do printf '* | %s | once | %s | %s\n' "$part" "$(date +%Y-%m-%d)" "$REDOK"; done < "$T/redlines" >> "$T/known"
+                   CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge ./batch-check.sh --judge target/checks/suite.txt > "$T/judged" 2>&1
+                   [ "$?" = 3 ] || {
+                       show_unnamed target/checks/new-reds.txt
+                       die "NEW red line(s) that no --red-line names; main is where it was"
+                   }
+                   GATE="NEW red on Jerus's word: $REDOK (lines: $(shortlines "$T/suite-new"))"
+               else
+                   show_unnamed target/checks/new-reds.txt
+                   die "NEW red line(s) on the merge; enter unrelated reds with causes and queued fixes, or --red-ok with --red-line on his word"
+               fi ;;
+            *) cat "$T/judged"; die "the checks failed on the merge (judge exit $VERDICT)" ;;
+        esac
+        [ ! -s target/checks/used-reds.txt ] || GATE="$GATE; parts: $(shortlines target/checks/used-reds.txt)"
+        GATE="$SCOPE$GATE${TAKEN:+; reused $TAKEN}"
+        say "gate: $GATE"
+        grep -q 'no earth-2.bin here' "$T/suite.out" && EARTH="not named: the Earth harnesses' full-file sections did not run"
+        SUMMARY=$(grep 'harness.* run in ' "$T/suite.txt" | tail -1)
 
-    # 10. the gate records the suite's red lines (GR1: speed is judged nightly).
+    fi
+    # 10. Only a full gate replaces main's whole-suite record.
     complete
-    PART=""; [ "$#" -eq 0 ] || PART=" (partial: $*)"
-    {
-        echo "# gate of $MSG"
-        echo "# date: $(date +%Y-%m-%d)"
-        echo "# earth-2.bin: $EARTH"
-        NIGHTLY=$HOME/.cbs-nightly.txt   # tools/nightly.sh's last verdict (GT1)
-        [ ! -f "$NIGHTLY" ] || echo "# nightly: $(head -n 1 "$NIGHTLY" | tr -d '\r')"
-        echo "# suite: ${SUMMARY:-none}$PART"
-        if [ -s "$T/suite-new" ]; then sed "s/^/# suite red passed on Jerus's word ($REDOK): /" "$T/suite-new"; fi
-        cat "$T/suite-reds.txt"
-        [ "$EARTH" = named ] || grep -E '^(Earth|Globe)[A-Za-z0-9]* \|' "$T/recorded"   # lines this gate could not see are kept
-    } | awk '/^#/ || (NF && !seen[$0]++)' > docs/notes/gate.txt
-    git add -- docs/notes/gate.txt
+    if [ "$FULL" = 1 ] && [ "$#" = 0 ]; then
+        {
+            echo "# gate of $MSG"
+            echo "# date: $(date +%Y-%m-%d)"
+            echo "# earth-2.bin: $EARTH"
+            NIGHTLY=$HOME/.cbs-nightly.txt   # tools/nightly.sh's last verdict (GT1)
+            [ ! -f "$NIGHTLY" ] || echo "# nightly: $(head -n 1 "$NIGHTLY" | tr -d '\r')"
+            echo "# suite: ${SUMMARY:-none}"
+            if [ -s "$T/suite-new" ]; then sed "s/^/# suite red passed on Jerus's word ($REDOK): /" "$T/suite-new"; fi
+            cat "$T/suite-reds.txt"
+            [ "$EARTH" = named ] || grep -E '^(Earth|Globe)[A-Za-z0-9]* \|' "$T/recorded"   # lines this gate could not see are kept
+        } | awk '/^#/ || (NF && !seen[$0]++)' > docs/notes/gate.txt
+        git add -- docs/notes/gate.txt
+    fi
 fi
 
 # GF1, LM1: publish only the tip checked, while its readiness marker still exists.

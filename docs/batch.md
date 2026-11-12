@@ -35,56 +35,48 @@ under `batch-check.sh`'s lock) go one at a time.
    batch** - no money, saves or threading, a few hundred lines - runs on
    Sonnet as the whole session, Opus at the gate only (BP1 item 7). Commit
    small and often.
-4. At the end, `./batch-check.sh --pick`: the compile, the harnesses that read
-   what the diff changed (`tools/pick.sh`), the maps regenerated, Stale and
-   the tree. **Exit 0** is green; **3**, nothing failed but main's recorded
-   reds, word for word: green, for a batch; **4** prints the red lines that
-   are not main's, the batch's to mend; 1 is anything else (the compile, the
-   maps, Stale, line endings, a harness `AllChecks` does not register), 2 a
-   mistake in the options. `AllChecks -q` and `-f` say `known red` or `NEW red`
-   and tag each red line `[known]` or `[NEW]` (FW7: a known-red harness with a
-   second failing line says NEW); `--judge <log>` judges a saved log again. A
-   class most harnesses read (`Game.java`) is left to the gate's suite,
-   `LongPlaytest` picked in its place (more than `CBS_PICK_FANOUT` readers); a
-   `*Check.java` in the diff also picks `TimingCheck` (TM3: ET6's new harness
-   compared times against its budgets directly, and only the gate's suite ran
-   the rule that catches it). After a change to `tools/pick.sh`, `sh
-   tools/pick-selftest.sh`. Commit the sources, `buildings.json` and `docs/`
-   together.
-5. **The records go in the ship file** (BP1 item 4, lesson f: batches side by
-   side each took main + 1 and re-merged, and each wrote the same top of the
-   changelog and `QUEUE.md`). A batch branch never edits `GameVersion.VERSION`,
-   `QUEUE.md`, `docs/notes/changelog.md` or `docs/notes/gate.txt`, nor writes a
-   paragraph above `VERSION` in `GameVersion`'s javadoc. Where its version
-   would go it writes `{next}`, and its notes' title says `({next}, date)`.
-   The notes (`docs/queue/<id>-notes.md`) and the records stay two files:
-   `ship.sh`'s heading check reads the ship file alone (BM1). The ship file,
-   `docs/queue/<id>-ship.md`:
+4. At the end, `./batch-check.sh --pick` compiles, runs the selected harnesses,
+   regenerates maps, checks Stale and the tree. Exit 0 is green, 3 only known
+   reds, 4 NEW reds, 1 a build or incomplete-check failure, 2 usage.
+   `docs/notes/gate.txt` supplies exact lines, `docs/notes/known-reds.txt`
+   harness-scoped parts. `AllChecks -f`, `--judge LOG` and the gate share one
+   judge. A shared class over `CBS_PICK_FANOUT` selects `ALL`; changed harnesses
+   select their users and TimingCheck. WHY (GR2, WG2) the builder missed reds
+   in shared fixtures and 16 harnesses until the gate.
+   When the pick is `ALL`, push the branch and run
+   `sh tools/gate.sh ID --dry-run` in its fresh clone before readiness.
+   Keep its run directory and both commit identities in the notes. Other picks
+   are ready on exit 0 or 3. Run changed scripts' self-tests as well.
+5. **The records go in `docs/queue/ID-ship.md`**, separate from `ID-notes.md`.
+   A branch keeps `GameVersion.VERSION`, `QUEUE.md`, `docs/notes/changelog.md`
+   and `docs/notes/gate.txt` for the publisher. WHY (BP1) concurrent batches
+   each wrote the same version and queue. The ship file has these sections,
+   each optional except its changelog.
 
    ```
    ## changelog
-   ### {next} — ID, title — date, state, see docs/queue/ID-notes.md
-   <one paragraph, at most 12 lines in all>
+   ### {next} ? ID, title ? date, ready, see docs/queue/ID-notes.md
+   <one paragraph, at most 12 lines including its heading>
    ## pending
-   | ID-X | what is left undone ({next}) | why | link |
+   | ID-X | what remains ({next}) | why | link |
    ## queued
-   | NEW | ... | ... |
+   | NEW | what was decided | brief |
+   ## known-reds
+   Harness | part of the red line | queued fix | date | cause
    ```
 
-   `## pending` and `## queued` only when it has rows for them; no other `## `
-   heading. What the batch left undone goes in `## pending` (never an eye check:
-   its notes say what to look at; Jerus, 2026-11-04), a batch it decides
-   in `## queued`; `ship.sh` sets the version and files them at the merge
-   (`docs/orchestrator.md`, The gate 4). **The ship file is pushed last**: on
-   the branch it means "ready to ship". A branch the gate sends back first
-   takes it off (`git rm docs/queue/<id>-ship.md`, pushed) and pushes it again
-   last when mended; left on, `day.sh --due` calls it ready every hour. A
-   branch with no ship file ships `--no-tag`, its records as it wrote them, as
-   an assistant's does (RL1: the old way, with its own version and row, is
-   gone); a batch whose change no player sees may write no `{next}` either.
-   `ship.sh` stops a branch with no ship file and no `--no-tag`, `--no-tag`
-   with a `VERSION` change, a branch carrying another id's ship file, and one
-   built on a batch main lacks (7).
+   Pending and queued sections contain rows only when needed. Trace each NEW
+   red unrelated to the batch in its notes and name its queued fix. The gate
+   files these entries and removes entries whose fix is the batch being judged,
+   including their cover in the exact record. WHY (GR2) a fix must face its red.
+   A kept launcher run is named by `<!-- gate-run: RUN_DIRECTORY -->` above
+   the sections. The gate rejudges it against current known reds when branch,
+   main and selection qualify (`docs/orchestrator.md`, The gate).
+   Push the ship file last, once ready. A returned batch removes and pushes it
+   first, then restores it last after repair. WHY (BM1) `day.sh` reads it as
+   ready every hour. A process batch's heading uses its ID and ?no tag
+   (process)? with the date; a versioned batch uses `{next}`. The publisher
+   fills that token in its three record files and names its ensemble baseline.
 6. **The ensemble only when the trace moves** (EN1, Jerus 2026-10-20): a batch
    whose default playtest's trace is byte-identical to main's but for its
    run-time line skips the 80-run ensemble and its notes say so; one whose
@@ -119,12 +111,11 @@ under `batch-check.sh`'s lock) go one at a time.
    and `ship.sh` stops it (it would ship PRED ungated). A NEW red under
    `--pick` while PRED is unmerged may be one Jerus approves at PRED's gate:
    merge main and run again before mending it.
-8. **The report is "ready, see the ship file"** (BM1), then its ★ calls each
-   with a recommendation (the orchestrator takes the recommended ones), and
-   the checks' exit and red lines only if not green: not a second summary of
-   what the ship file and the notes say. A session is ready when `--pick` exits
-   0 or 3 and its ship file is pushed, last (a successor: once PRED is on main
-   and merged in).
+8. The report is ?ready, see the ship file?, then any calls with recommendations
+   and the exit and red lines if needed. Ready means the pick passed, or for
+   `ALL` the launcher's full dry run of the merge passed, and the ship file
+   was pushed last. WHY (GR2, WG2) a builder needs the whole shared-code verdict
+   before its readiness marker. Its notes and ship file name the retained run.
 9. The write-up, in the project, if the batch changes how the game plays or
    leaves calls for Jerus; otherwise the changelog's paragraph is the record.
 10. **One in, one out** (BM1; `CLAUDE.md`'s standing rules): a batch that

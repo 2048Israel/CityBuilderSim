@@ -22,7 +22,8 @@ every call after it.
   Stale, tree, in about ten lines (`--fast` skips the suite, `--timing`
   runs the timing harnesses alone and hard, judged nightly by `tools/nightly.sh`, `--pick` runs the harnesses that
   read what the diff changed, `tools/pick.sh`). Exit 3 means the only reds
-  are main's recorded ones (`docs/notes/gate.txt`). Logs go to
+  are exact lines in `docs/notes/gate.txt` or harness-scoped parts in
+  `docs/notes/known-reds.txt` (GR2, the approvals left in temp scripts). Logs go to
   `target/checks/`; grep them, never cat them. On the PC: the same script in
   Git Bash; `Batch check.bat`, Jerus's double-click, has no `--pick` and no
   exit 3.

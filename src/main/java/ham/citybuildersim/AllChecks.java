@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * Other arguments select by substring, --timing selects Timing.HARNESSES.
  * The exit counts failed harnesses. JavaFX checks skip without its classpath.
  * -f tags each red against the same record as batch-check.sh (FW7), prints at
- * most FAIL_LINES and keeps the rest. Timing properties are forwarded (TM1).
+ * every failing assertion so the judge sees every red. Timing properties are forwarded (TM1).
  * Logged soft runs share PARALLEL slots, memory-gated and heap-bounded (SP1),
  * hard timing and plain output run serially. TIMES keeps each run's duration.
  */
@@ -57,9 +57,6 @@ public class AllChecks {
         "ReplayCheck", "StaffingDrawCheck", "OwnerCheck",
         "GovernmentViewCheck", "GovernmentPlayerCheck"
     };
-
-    /** The most lines -f prints for one failed harness; the rest stays in its log. */
-    static final int FAIL_LINES = 40;
 
     /** How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. */
     static final int PARALLEL = 3;
@@ -442,8 +439,7 @@ public class AllChecks {
 
     /**
      * What -f prints of a failed harness's log: each failing line, after the
-     * title of the section it is in (once per section), at most FAIL_LINES in
-     * all; a log with no failing line in it - a harness that died some other
+     * title of the section it is in (once per section); a log with no failing line in it - a harness that died some other
      * way - gives its last ten lines instead. A byte that is not UTF-8 is read
      * as a replacement character, never thrown.
      */
@@ -456,15 +452,12 @@ public class AllChecks {
             if (SECTION.matcher(line).matches()) { section = line.strip(); continue; }
             if (!FAILING.matcher(line).find()) continue;
             matched++;
-            if (out.size() >= FAIL_LINES) continue;
             if (section != null && !section.equals(printed) && !SUMMARY.matcher(line).matches()) { out.add(section); printed = section; }
             out.add(line.strip());
         }
         if (matched == 0) {
             out.add("(no FAIL line; its last lines:)");
             for (String line : lines.subList(Math.max(0, lines.size() - 10), lines.size())) out.add(line);
-        } else if (out.size() >= FAIL_LINES) {
-            out.add("... " + matched + " failing lines in all: " + log);
         }
         return out;
     }

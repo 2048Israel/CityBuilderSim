@@ -99,6 +99,12 @@ public class KnownRedsCheck {
         check("the quiet report keeps the same verdict", AllChecks.report(NAME, first.exit(), .5, first.printed(), false, parts).equals(List.of(report.get(0))));
         check("without a record the report has no tags", AllChecks.report(NAME, first.exit(), .5, first.printed(), true, null).stream().noneMatch(l -> l.contains("[known]") || l.contains("[NEW]")));
         check("a missing record reads as null", AllChecks.knownReds(tmp.resolve("missing")) == null);
+        Set<String> removed = new java.util.LinkedHashSet<>(exact);
+        removed.add("! " + parts.iterator().next());
+        check("a mending batch loses its exact-record cover too", AllChecks.newCount(red, removed) == 3);
+        Path longLog = tmp.resolve("many.log");
+        Files.write(longLog, java.util.stream.IntStream.range(0, 60).mapToObj(i -> "assertion " + i + " FAIL").toList());
+        check("late failing assertions reach the judge", AllChecks.failingLines(longLog).contains("assertion 59 FAIL"));
         Path record = tmp.resolve("parts.txt");
         Files.write(record, parts);
         check("metadata and comment lines read back intact", AllChecks.knownReds(record).equals(parts));
@@ -176,11 +182,6 @@ public class KnownRedsCheck {
                 }
             } finally { if (process.isAlive()) AllChecks.endTree(process); }
         }
-    }
-
-    /** The red lines the fixture's run makes. */
-    private static List<String> redLines(Run run) {
-        return AllChecks.redLines(NAME, run.exit(), run.printed());
     }
 
     /** Starts the fixture as AllChecks starts a harness and returns its exit status and failing lines. */
