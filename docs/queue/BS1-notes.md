@@ -42,6 +42,60 @@ BA1 and BD1 findings are the brief. WC1 assigns whole batches to Codex.
 - BuybackCheck proves zero bank cash received for unpaid face, cancellation
   of the original proceeds, closing money audits, and the bank's equity split
   after two months for fresh issues and a reopening.
+- CreditCheck's same-month curve fixture expected the sale's proceeds plus
+  issuance cost. BY1 cancels that sale at the original proceeds. Its fresh
+  30-year sale fixture now asserts that price against `MoneyAudit.CENT`.
+
+## Final checks and remaining red lines
+
+`./batch-check.sh --pick` selected **ALL 201**, compiled in 49 seconds and
+completed the suite in 2,772 seconds. Exit **4**, 193 passed and 8 failed.
+All BS1-owned PriceLevelCheck and DenominationCheck entries are green.
+BondCheck, BuybackCheck and HoldersCheck pass, and the default LongPlaytest
+reports no findings. Stale reports zero firm findings. There were 37 soft
+timing assertions. The retained local evidence is
+`target/checks/BS1-pick.txt`, `BS1-full-suite.txt` and `BS1-full-reds.txt`.
+
+The six covered red harnesses are MonetaryCheck, CentralBankCheck,
+HealthCheck, PlanCheck, KeptCheck and DeathRecordCheck. Their assertion lines,
+with KeptCheck's repeated redraw label shown once, are
+
+```text
+MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
+CentralBankCheck | ...and in at least STRICT_SHARE of them, 9 of 12 (7 hold) FAIL
+HealthCheck | ...its old first, whom a fee on senior care turns away FAIL
+PlanCheck | at every 30th month every district's plan keeps every check FAIL
+PlanCheck | ...the avenues were laid in the played city (328 plots in 11 open cells over the samples), every check holding with them FAIL
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | most months make no node at all (12 of 25) FAIL
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 39 of 377; 16 of 25 months made none) FAIL
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years FAIL
+```
+
+The full run's two new assertion lines were
+
+```text
+CreditCheck | a bond issued at 30 years is bought back the same month for what it raised, bar the issuance cost FAIL
+FoodProcessingCheck | ...and the difference is most of what a Meat Works is worth FAIL 1.8x
+```
+
+CreditCheck's old expected price was 4,916.26 plus the issuance cost. The
+actual cancellation returned 4,916.26, as BY1 requires. After correcting the
+assertion, `./batch-check.sh CreditCheck FoodProcessingCheck` compiled in
+44 seconds, CreditCheck passed, and FoodProcessingCheck retained its 1.8x
+red, exit **4**. Evidence is `target/checks/BS1-credit-food.txt`. The full
+suite above precedes this assertion-only correction.
+
+FoodProcessingCheck passes on retained main classes, exit 0, with 969.49
+homegrown profit against 379.79 imported, 2.6x. Its first-plant fixture reaches
+month 120, 7,942 people and unskilled wage 124.58. BS1 reaches month 152,
+13,252 people and wage 124.09, and reports 1,255.01 against 679.17, 1.8x.
+The fixture waits for the planner's first build and then tests its meat-price
+claim in that lived-in city. Both profit cases cause their meat price. The
+new path exposes the assertion that homegrown profit exceeds twice imported
+profit. **This new red remains unresolved.** Its assertion and fixture are
+preserved. The main comparison is `target/checks/BS1-food-on-main.txt`.
 
 ## Verification
 

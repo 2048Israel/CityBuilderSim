@@ -1929,9 +1929,8 @@ public class CreditCheck {
        table's points. A hike moves every maturity by the hike; debt moves
        every maturity by the same credit spread. A term loan is issued at
        10, 20, 30, 40 or 50 years and a 25-year ask is refused; and a bond
-       issued at twenty years is bought back the same month for what it
-       raised, bar the issuance cost - the issue and the buyback price off one
-       curve. Asserted against the constants, not the numbers.
+       issued at twenty years cancels its unpaid sale the same month at the
+       original proceeds (BY1, BS1). Asserted against the model's constants.
        ================================================ */
     static void theCurve(Game city) {
         System.out.println("\n--- 11. the curve: the dial at the short end, a premium by maturity ---");
@@ -1995,7 +1994,7 @@ public class CreditCheck {
         }
         assertTrue("...while each of the five maturities is quoted", five);
 
-        // Issued at twenty and bought straight back: the same curve both ways. (A bond sold while a line of
+        // Issued at twenty and cancelled before the settle. (A bond sold while a line of
         // its term is the benchmark goes into that line, CD2, and the buyback would take the whole line: so
         // the thirty-year, a line of its own, when the twenty-year one stands.)
         final int term = city.getDebtManager().benchmarkLine(20) == null ? 20 : 30;
@@ -2005,9 +2004,8 @@ public class CreditCheck {
         double price = city.quoteRepurchase(twenty);
         System.out.printf("   %d-year: raised $%,.2fk on $%,.0fk of face at %.3f%%; bought back for $%,.2fk%n",
                 term, quote.cashReceived(), quote.faceValue(), quote.marketRate() * 100, price);
-        assertTrue("a bond issued at " + term + " years is bought back the same month for what it raised,"
-                + " bar the issuance cost",
-                Math.abs(price - (quote.cashReceived() + city.costOfIssuance(quote.faceValue()))) <= .01);
+        assertTrue("a bond issued at " + term + " years cancels its unpaid sale at the original proceeds",
+                Math.abs(price - quote.cashReceived()) <= MoneyAudit.CENT);
         double paid = city.repurchaseDebt(twenty);
         assertTrue("...and the buyback takes it off the books at that price",
                 Math.abs(paid - price) < 1e-9 && !city.getDebtManager().getDebt().contains(twenty));

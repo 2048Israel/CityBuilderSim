@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**201 harness files, 23,686 labelled assertions.** AllChecks runs 201 of them.
+**201 harness files, 23,710 labelled assertions.** AllChecks runs 201 of them.
 
 ## Which harnesses read which class
 
@@ -1650,7 +1650,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L771 ...and the shops stock today's basket, to the bit
   - L773 fixture: the same city's first month had a year, and its shelf then was not today's
 
-## BondCheck.java - 218 labelled assertions
+## BondCheck.java - 222 labelled assertions
 
 > Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it
 > over the bank, who loses what in a default, what the bank charges for
@@ -1666,238 +1666,243 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 >      holder is paid its face.
 > ...
 
-  - L219 every month this harness played closed the audit (
-- **L227 1. the bond's arithmetic: par at its own coupon, and a price that falls as the yield rises**
-  - L234 priced at its own coupon a bond is worth exactly its face, whatever is left of it
-  - L237 a point more on the yield and it is worth less
-  - L238 ...a point less and it is worth more
-  - L246 ...and it falls all the way, the yield from 0% to 30%
-  - L248 the coupons and the face, each discounted a month at a time
-  - L250 the yield a price implies is the one that gives it
-  - L252 with nothing left it is worth its face
-  - L254 a month's coupon is a twelfth of the coupon on the face
-  - L258 written down to a quarter, three quarters of it is gone
-  - L259 ...off every holder by the same share, the bank's cost with its face
-  - L261 ...so the holders still add up to the face
-- **L267 2. bookbuilding: the coupon is the lowest yield that fills the issue, and the rest is a bank loan**
-  - L296 fixture: at the bank's own price the book takes a bond of it
-  - L298 the bids at its coupon fill it
-  - L299 ...and a hundredth of a point under it they do not: its coupon is the lowest yield that does
-  - L301 ...no dearer than the loan, its costs spread over its ten years
-  - L303 fixture: the bank would take it only at its loan-equivalent yield, over the loan's price
-  - L305 fixture: so the book does not take all of it at a price no dearer than the loan
-  - L306 ...and the rest is a bank loan
-  - L307 ...the two raising it all
-  - L308 ...at the leverage the whole deal leaves, which every bid read
-  - L311 at a loan rate under every bid the book fills nothing: all of it is a bank loan
-  - L313 ...and the plan says what the book would have cleared the whole at
-  - L317 where the bank would lend nothing, no bond either: \"within the bank's limit\"
-  - L319 ...and where it would lend a quarter, the bond and the loan raise no more than that quarter
-- **L326 3. the choice: a small amount goes to the bank, a large one to a bond, and where they cross**
-  - L344 borrowing $10k it takes the bank: the fixed cost of an issue would be more than a tenth of it
-  - L346 borrowing $20M it takes a bond
-  - L355 ...and nothing smaller than that took a bond
-  - L359 the crossover is the face at which the coupon and its costs cost what the loan does
-  - L362 ...fixed / (TERM_YEARS x (loan all-in - coupon - spread / TERM_YEARS)), from nothing else
-  - L365 ...half that size and the bond would be dearer than the bank
-  - L366 ...twice it, cheaper
-  - L367 a bank loan's all-in is its rate and its fee over its term
-- **L374 7a. a sector short of cash borrows in the month: the shortfall desk asks the book, and the world's purchase crosses the border**
-  - L389 fixture: short of $5M,
-  - L396 its holders add up to its face
-  - L397 the issuer was handed its face less its costs
-  - L398 ...which the bank, its underwriter, was paid
-  - L400 fixture: the world bought part of it
-  - L401 the world's purchase is on the month's audit as money arriving from abroad
-  - L402 ...in the financial account
-  - L403 ...which is what the currency read for the month
-  - L404 ...and the month closes
-- **L433 1b. the coupons: a twelfth of each coupon on what each holder had at the month's top, every class**
-  - L445 the issuer's month's interest is its loans' and its bonds' coupons
-  - L448 the households were paid theirs
-  - L449 ...the bank its
-  - L450 ...which it took as interest
-  - L451 ...the companies theirs
-  - L452 ...and the world its, abroad
-  - L453 fixture: every class held some of the city's bonds at the month's top
-  - L454 the world's coupons leave on the audit, as income paid abroad
-  - L455 ...in the income account the currency reads
-  - L456 the households' coupons are on it too
-- **L462 4. the order book in play: no book crossed after the step, the sellers who waited counted, the audit closed**
-  - L485 fixture: participants posted orders on the books
-  - L486 after every step every book is uncrossed: what could meet already traded
-  - L487 ...and no sector bids for its own bonds
-  - L488 the sellers who waited are counted, and are no more than the sellers
-  - L489 the market's life volume is the sum of its books'
-- **L495 7. each participant by its own rule**
-  - L511 households bid nothing where a bond's expected return is no more than the deposit rate
-  - L513 ...a point over it, the paper's rule: HOUSEHOLD_PAPER_APPETITE a unit of spread of the issue
-  - L516 ...and never more than MAX_HOUSEHOLD_PAPER_SHARE of it
-  - L520 fixture: the bank is over its capital target, so it buys
-  - L525 its yield is an equal loan's four parts at the bond's term, the concentration charge, the loss at (1 - BOND_RECOVERY) and the record
-  - L530 under it the bank bids nothing
-  - L531 ...at it, the issue up to what its spare capital carries
-  - L537 its bonds are in its weighted book at a loan's weight, for the months they have left
-  - L543 the world bids a month of closing the gap to hot money's target: ARRIVAL_SPEED of it
-- **L555 7c. a company with idle cash bids for other sectors' bonds, never its own, and only while it owes nothing**
-  - L559 fixture:
-  - L571 ...a point over the world's rate, a positive bid
-  - L572 ...and for its own bond nothing, at any yield
-  - L577 ...and no company that owes anything bids at all
-  - L594 fixture: a bank between its minimum and its target
-  - L597 under its target the bank bids for no bond at any yield
-  - L604 ...and asks to sell what takes it back there, at a loan's weight on its target - or all it holds
-  - L613 while hot money is running the world bids for nothing, at any yield
-  - L637 fixture: a household cell holds a claim on the bonds
-  - L654 fixture: bids rest on the books of the bonds it has a claim on, after the market's step
-  - L660 a household whose credit is cheaper than every bid's yield sells nothing
-  - L666 ...its asks wait on the books, over the bids
-  - L673 a household whose credit costs more than the bids' yield sells into them
-  - L674 ...raising what it was short, and banking what the higher bids paid past it
-  - L675 ...the rest in its savings
-  - L694 ...each at a price a bid was resting at, not its own ask
-  - L805 fixture: the month the bank books the claims closes
-  - L841 fixture:
-  - L843 fixture:
-  - L846 fixture:
-  - L849 fixture: the bank is between its minimum and its target, and rations growth
-  - L851 fixture:
-  - L860 fixture: the month ran on the bank's capital rule, rationing
-  - L862 a rationing bank covers a healthy sector's short month: a working-capital line
-  - L864 ...past what the capital rule would have let its debt grow
-  - L865 ...and refuses it a building its room does not cover: growth
-  - L867 a short sector sells what it holds first: its bonds, into the bids resting
-  - L869 ...then asks the lender, who will not lend past the line
-  - L871 ...and what it still could not pay defaults that month
-  - L872 ...its loans losing (1 - LOAN_RECOVERY) of what of them defaulted
-  - L874 ...its bonds (1 - BOND_RECOVERY) of theirs
-  - L876 fixture: after the write-down the lender reads it under the line, and lends
-  - L877 ...the unpaid rest lent as an interim loan, ranked first, its fee on top
-  - L879 ...its till ends the month at or above nothing
-  - L880 a sector over the ceiling is refused all but its interest reserve, and defaults on its own credit
-  - L882 ...lent the unpaid rest in the interim: the ceiling is not the interim lender's
-  - L884 nothing is forgiven on either: the audit's OverdraftForgiven is the backstop's alone
-  - L886 ...and it is the month's forgiven overdraft, as the backstop's always was
-  - L888 ...and the month closes
-  - L932 fixture: the city's second branch has opened and closed, and one stands
-  - L941 fixture: the shops owe under the shortfall desk's ceiling
-  - L943 the month closes
-  - L947 fixture: it ordered stock, and could pay for all of it
-  - L949 a sector under its ceiling buys as before: every order placed whole
-  - L951 ...and filled whole
-  - L957 fixture: the month the bank books the claim closes
-  - L981 fixture: the shops owe past the shortfall desk's ceiling and under the line on their quarter
-  - L984 the month closes
-  - L989 fixture: it could pay for some of its order and not all of it
-  - L990 a sector over its ceiling and short buys only what its cash and the credit it can get cover
-  - L992 ...and does not order the rest
-  - L1009 ...so it does not default on the stock it did not buy
-  - L1010 the month closes
-  - L1022 fixture: under the line on its quarter, still
-  - L1023 the month closes
-  - L1037 a sector whose unavoidable bills outrun its cash and its lender's credit can pay for no stock
-  - L1040 ...and buys only that, all of it on their credit
-  - L1051 the same sector still defaults on a bill it cannot avoid: principal that fell due
-  - L1082 ...on no more than the principal and what it owed its suppliers for stock it has sold:
-  - L1087 the month closes
-- **L1114 5. recoveries by instrument: a slice takes a loan's loss off the loans and a bond's off the bonds**
-  - L1131 fixture: $900k of loans and $600k of bonds, 1.5 times its assets
-  - L1138 the loans lose h x (1 - LOAN_RECOVERY) of theirs
-  - L1140 ...the bonds h x (1 - BOND_RECOVERY) of theirs
-  - L1142 ...so the loans recover LOAN_RECOVERY of what defaulted
-  - L1144 ...and the bonds BOND_RECOVERY
-  - L1145 what defaulted is on the lender's record by class
-  - L1164 at
-  - L1166 ...and the bonds h x (1 - BOND_RECOVERY)
-  - L1172 both inside the sources' ranges
-  - L1192 the backstop on a sector with nothing left writes its loans off whole
-  - L1193 ...and its bonds
-  - L1194 ...leaving it owing nothing on either
-- **L1198 5b. a slice in play: the bondholders' loss reaches every class, and the world's crosses the border**
-  - L1208 fixture:
-  - L1211 the loans lost (1 - LOAN_RECOVERY) of what of them defaulted
-  - L1213 ...and the bonds (1 - BOND_RECOVERY) of theirs
-  - L1217 ...the loans recovering more than the bonds
-  - L1223 the bondholders lost it between them: households, the bank, the companies and the world
-  - L1225 fixture: every class held some of what defaulted
-  - L1227 the world's loss is declared across the border, a valuation with no cash in it
-  - L1228 ...on the valuation line the foreign position reads
-  - L1229 ...and the month closes
-  - L1232 a bondholder's expected loss is the default rate times (1 - BOND_RECOVERY)
-  - L1244 fixture: the bank read the sector at its provision
-  - L1245 ...what it owes the bank as it stands at the month's end
-  - L1246 ...the bank's allowance on the sector its loans at (1 - LOAN_RECOVERY) and its bonds at (1 - BOND_RECOVERY)
-  - L1250 ...and a loan's own risk in its price the curve at (1 - LOAN_RECOVERY)
-  - L1262 written down by a tenth, every holder of the bond loses a tenth: households, the bank at its cost, the world, the companies
-  - L1267 ...the households' claims falling by exactly their loss
-  - L1268 ...the world's on the border's line
-  - L1269 ...and it was a tenth of the sector's bonds
-- **L1276 6. concentration: Basel's capital, a charge that rises with a sector's share and falls as the book spreads**
-  - L1285 the IRB capital gives Basel's own table of corporate risk weights, to its two decimals
-  - L1286 the correlation at the soundest firms is 24%
-  - L1287 ...and a book in one industry R x SECTOR_CORRELATION_MULTIPLIER
-  - L1306 a dollar lent to an industry carries more capital the more of the book it already is
-  - L1307 ...and a small one's carries less than none: it diversifies the book
-  - L1321 ...and falls as the book spreads over more industries, its Herfindahl index with it
-  - L1329 by the Euler rule the sectors' shares add back up to the book's add-on
-  - L1330 ...which is weight on the book at the minimum ratio
-  - L1343 fixture: the played bank's book has a largest industry
-  - L1345 a loan's capital per dollar is the target on its weight plus the sector's add-on, carried at the target
-  - L1348 ...and its charge is that capital at the owners' return over the money - the one formula
-  - L1356 pushed to the lender, it is the part of the sector's rate over prime, its own risk and its record
-  - L1364 the add-on is in the bank's requirement: its own row of the weight table
-  - L1365 ...and the table still foots to the weighted book the requirement reads (BankCheck 13)
-  - L1366 ...its minimum the ratio on all of it
-- **L1383 8. save and load: the bonds, who holds them and the resting orders; and a save from before them**
-  - L1395 it loads
-  - L1397 fixture: the city has bonds outstanding and orders resting
-  - L1398 the same bonds come back
-  - L1402 fixture: an interim loan is outstanding (5c)
-  - L1403 the interim loans come back, by their own type: what a sector owes on them
-  - L1405 ...as many of them, ranked first, over every sector
-  - L1407 ...with the same orders resting on their books, in the same order
-  - L1408 ...the households' bonds on them
-  - L1417 fixture:
-  - L1418 ...and each comes back by the cell's name, bond by bond, to the bit
-  - L1423 ...kept in the save under the cells' names
-  - L1424 ...their value a unit of face
-  - L1425 ...the bank's bonds on its book
-  - L1426 ...and its concentration add-on
-  - L1427 ...the lender's bond write-offs on the record
-  - L1430 ...and last month's book for the screens
-  - L1440 a month on, both the city and its reload play and close
-  - L1454 a round-1 save, its households' bonds one pool, loads
-  - L1473 ...each cell holding the share of every bond its claim was of the pool, its total its claim
-  - L1474 ...every bond's households' face the pool it was, and the cells' sum
-  - L1477 ...and it plays, the audit closing
-  - L1488 fixture: the save's cells are today's width
-  - L1499 a save from before the bonds loads
-  - L1500 ...with no bonds, no books and nobody holding any
-  - L1502 ...the households' paper where it was
-  - L1505 ...and it plays, the audit closing every month
-- **L1603 9. each household type trades: a rich cell bids, a cell over its money asks, and they meet**
-  - L1605 fixture: the bond's households' face is the cells' own, summed
-  - L1614 the rich cell bid and the cell over its money asked, and they traded with each other
-  - L1616 ...the face the one gave up is the face the other took
-  - L1617 ...the cash the one paid is the cash the other was paid, the transfer counted
-  - L1619 ...and the same the other way up
-  - L1620 ...so the bond's households' face did not move
-  - L1621 ...and is still the cells' own, summed
-  - L1622 no pool line saw it: nothing bought from or sold to the pools
-  - L1632 fixture: the rich cell's bid rests after the step, and nothing traded
-  - L1637 a cell short of money sells into it, raising what it was short
-  - L1638 ...cell to cell, the rich cell taking the face
-  - L1640 ...the face the one gave up the other took
-  - L1641 ...and no pool line
-- **L1653 1c. at maturity the issuer pays every holder its face, and the bond and its book go**
-  - L1667 fixture: short of $5M,
-  - L1670 fixture: a bond outstanding
-  - L1677 it falls due and is gone
-  - L1678 the issuer repaid its face
-  - L1679 ...to its holders, every class together
-  - L1681 the world's principal leaves on the audit, in the financial account
-  - L1682 ...the households' arrives in their savings
-  - L1683 ...and the month closes
+  - L220 every month this harness played closed the audit (
+- **L228 1. the bond's arithmetic: par at its own coupon, and a price that falls as the yield rises**
+  - L235 priced at its own coupon a bond is worth exactly its face, whatever is left of it
+  - L238 a point more on the yield and it is worth less
+  - L239 ...a point less and it is worth more
+  - L247 ...and it falls all the way, the yield from 0% to 30%
+  - L249 the coupons and the face, each discounted a month at a time
+  - L251 the yield a price implies is the one that gives it
+  - L253 with nothing left it is worth its face
+  - L255 a month's coupon is a twelfth of the coupon on the face
+  - L259 written down to a quarter, three quarters of it is gone
+  - L260 ...off every holder by the same share, the bank's cost with its face
+  - L262 ...so the holders still add up to the face
+- **L268 2. bookbuilding: the coupon is the lowest yield that fills the issue, and the rest is a bank loan**
+  - L297 fixture: at the bank's own price the book takes a bond of it
+  - L299 the bids at its coupon fill it
+  - L300 ...and a hundredth of a point under it they do not: its coupon is the lowest yield that does
+  - L302 ...no dearer than the loan, its costs spread over its ten years
+  - L304 fixture: the bank would take it only at its loan-equivalent yield, over the loan's price
+  - L306 fixture: so the book does not take all of it at a price no dearer than the loan
+  - L308 the partial issue reaches its size fixed point within ISSUE_ROUNDING
+  - L310 ...and the rest is a bank loan
+  - L311 ...the two raising it all
+  - L312 ...at the leverage the whole deal leaves, which every bid read
+  - L315 at a loan rate under every bid the book fills nothing: all of it is a bank loan
+  - L317 ...and the plan says what the book would have cleared the whole at
+  - L321 where the bank would lend nothing, no bond either: \"within the bank's limit\"
+  - L323 ...and where it would lend a quarter, the bond and the loan raise no more than that quarter
+- **L330 3. the choice: a small amount goes to the bank, a large one to a bond, and where they cross**
+  - L348 borrowing $10k it takes the bank: the fixed cost of an issue would be more than a tenth of it
+  - L350 borrowing $20M it takes a bond
+  - L359 ...and nothing smaller than that took a bond
+  - L363 the crossover is the face at which the coupon and its costs cost what the loan does
+  - L366 ...fixed / (TERM_YEARS x (loan all-in - coupon - spread / TERM_YEARS)), from nothing else
+  - L369 ...half that size and the bond would be dearer than the bank
+  - L370 ...twice it, cheaper
+  - L371 a bank loan's all-in is its rate and its fee over its term
+- **L378 7a. a sector short of cash borrows in the month: the shortfall desk asks the book, and the world's purchase crosses the border**
+  - L393 fixture: short of $5M,
+  - L400 its holders add up to its face
+  - L401 the issuer was handed its face less its costs
+  - L402 ...which the bank, its underwriter, was paid
+  - L404 fixture: the world bought part of it
+  - L405 the world's purchase is on the month's audit as money arriving from abroad
+  - L406 ...in the financial account
+  - L407 ...which is what the currency read for the month
+  - L408 ...and the month closes
+- **L437 1b. the coupons: a twelfth of each coupon on what each holder had at the month's top, every class**
+  - L449 the issuer's month's interest is its loans' and its bonds' coupons
+  - L452 the households were paid theirs
+  - L453 ...the bank its
+  - L454 ...which it took as interest
+  - L455 ...the companies theirs
+  - L456 ...and the world its, abroad
+  - L457 fixture: every class held some of the city's bonds at the month's top
+  - L458 the world's coupons leave on the audit, as income paid abroad
+  - L459 ...in the income account the currency reads
+  - L460 the households' coupons are on it too
+- **L466 4. the order book in play: no book crossed after the step, the sellers who waited counted, the audit closed**
+  - L489 fixture: participants posted orders on the books
+  - L490 after every step every book is uncrossed: what could meet already traded
+  - L491 ...and no sector bids for its own bonds
+  - L492 the sellers who waited are counted, and are no more than the sellers
+  - L493 the market's life volume is the sum of its books'
+- **L499 7. each participant by its own rule**
+  - L515 households bid nothing where a bond's expected return is no more than the deposit rate
+  - L517 ...a point over it, the paper's rule: HOUSEHOLD_PAPER_APPETITE a unit of spread of the issue
+  - L520 ...and never more than MAX_HOUSEHOLD_PAPER_SHARE of it
+  - L524 fixture: the bank is over its capital target, so it buys
+  - L529 its yield is an equal loan's four parts at the bond's term, the concentration charge, the loss at (1 - BOND_RECOVERY) and the record
+  - L534 under it the bank bids nothing
+  - L535 ...at it, the issue up to what its spare capital carries
+  - L541 its bonds are in its weighted book at a loan's weight, for the months they have left
+  - L547 the world bids a month of closing the gap to hot money's target: ARRIVAL_SPEED of it
+- **L559 7c. a company with idle cash bids for other sectors' bonds, never its own, and only while it owes nothing**
+  - L563 fixture:
+  - L575 ...a point over the world's rate, a positive bid
+  - L576 ...and for its own bond nothing, at any yield
+  - L581 ...and no company that owes anything bids at all
+  - L598 fixture: a bank between its minimum and its target
+  - L601 under its target the bank bids for no bond at any yield
+  - L608 ...and asks to sell what takes it back there, at a loan's weight on its target - or all it holds
+  - L617 while hot money is running the world bids for nothing, at any yield
+  - L641 fixture: a household cell holds a claim on the bonds
+  - L658 fixture: bids rest on the books of the bonds it has a claim on, after the market's step
+  - L664 a household whose credit is cheaper than every bid's yield sells nothing
+  - L670 ...its asks wait on the books, over the bids
+  - L677 a household whose credit costs more than the bids' yield sells into them
+  - L678 ...raising what it was short, and banking what the higher bids paid past it
+  - L679 ...the rest in its savings
+  - L698 ...each at a price a bid was resting at, not its own ask
+  - L809 fixture: the month the bank books the claims closes
+  - L845 fixture:
+  - L847 fixture:
+  - L850 fixture:
+  - L853 fixture: the bank is between its minimum and its target, and rations growth
+  - L855 fixture:
+  - L864 fixture: the month ran on the bank's capital rule, rationing
+  - L866 a rationing bank covers a healthy sector's short month: a working-capital line
+  - L868 ...past what the capital rule would have let its debt grow
+  - L869 ...and refuses it a building its room does not cover: growth
+  - L871 a short sector sells what it holds first: its bonds, into the bids resting
+  - L873 ...then asks the lender, who will not lend past the line
+  - L875 ...and what it still could not pay defaults that month
+  - L876 ...its loans losing (1 - LOAN_RECOVERY) of what of them defaulted
+  - L878 ...its bonds (1 - BOND_RECOVERY) of theirs
+  - L880 fixture: after the write-down the lender reads it under the line, and lends
+  - L881 ...the unpaid rest lent as an interim loan, ranked first, its fee on top
+  - L883 ...its till ends the month at or above nothing
+  - L884 a sector over the ceiling is refused all but its interest reserve, and defaults on its own credit
+  - L886 ...lent the unpaid rest in the interim: the ceiling is not the interim lender's
+  - L888 nothing is forgiven on either: the audit's OverdraftForgiven is the backstop's alone
+  - L890 ...and it is the month's forgiven overdraft, as the backstop's always was
+  - L892 ...and the month closes
+  - L936 fixture: the city's second branch has opened and closed, and one stands
+  - L945 fixture: the shops owe under the shortfall desk's ceiling
+  - L947 the month closes
+  - L951 fixture: it ordered stock, and could pay for all of it
+  - L953 a sector under its ceiling buys as before: every order placed whole
+  - L955 ...and filled whole
+  - L961 fixture: the month the bank books the claim closes
+  - L985 fixture: the shops owe past the shortfall desk's ceiling and under the line on their quarter
+  - L988 the month closes
+  - L993 fixture: it could pay for some of its order and not all of it
+  - L994 a sector over its ceiling and short buys only what its cash and the credit it can get cover
+  - L996 ...and does not order the rest
+  - L1013 ...so it does not default on the stock it did not buy
+  - L1014 the month closes
+  - L1026 fixture: under the line on its quarter, still
+  - L1027 the month closes
+  - L1041 a sector whose unavoidable bills outrun its cash and its lender's credit can pay for no stock
+  - L1044 ...and buys only that, all of it on their credit
+  - L1055 the same sector still defaults on a bill it cannot avoid: principal that fell due
+  - L1086 ...on no more than the principal and what it owed its suppliers for stock it has sold:
+  - L1091 the month closes
+- **L1118 5. recoveries by instrument: a slice takes a loan's loss off the loans and a bond's off the bonds**
+  - L1135 fixture: $900k of loans and $600k of bonds, 1.5 times its assets
+  - L1142 the loans lose h x (1 - LOAN_RECOVERY) of theirs
+  - L1144 ...the bonds h x (1 - BOND_RECOVERY) of theirs
+  - L1146 ...so the loans recover LOAN_RECOVERY of what defaulted
+  - L1148 ...and the bonds BOND_RECOVERY
+  - L1149 what defaulted is on the lender's record by class
+  - L1168 at
+  - L1170 ...and the bonds h x (1 - BOND_RECOVERY)
+  - L1176 both inside the sources' ranges
+  - L1196 the backstop on a sector with nothing left writes its loans off whole
+  - L1197 ...and its bonds
+  - L1198 ...leaving it owing nothing on either
+- **L1202 5b. a slice in play: the bondholders' loss reaches every class, and the world's crosses the border**
+  - L1212 fixture:
+  - L1215 the loans lost (1 - LOAN_RECOVERY) of what of them defaulted
+  - L1217 ...and the bonds (1 - BOND_RECOVERY) of theirs
+  - L1221 ...the loans recovering more than the bonds
+  - L1227 the bondholders lost it between them: households, the bank, the companies and the world
+  - L1229 fixture: every class held some of what defaulted
+  - L1231 the world's loss is declared across the border, a valuation with no cash in it
+  - L1232 ...on the valuation line the foreign position reads
+  - L1233 ...and the month closes
+  - L1236 a bondholder's expected loss is the default rate times (1 - BOND_RECOVERY)
+  - L1248 fixture: the bank read the sector at its provision
+  - L1249 ...what it owes the bank as it stands at the month's end
+  - L1250 ...the bank's allowance on the sector its loans at (1 - LOAN_RECOVERY) and its bonds at (1 - BOND_RECOVERY)
+  - L1254 ...and a loan's own risk in its price the curve at (1 - LOAN_RECOVERY)
+  - L1266 written down by a tenth, every holder of the bond loses a tenth: households, the bank at its cost, the world, the companies
+  - L1271 ...the households' claims falling by exactly their loss
+  - L1272 ...the world's on the border's line
+  - L1273 ...and it was a tenth of the sector's bonds
+- **L1280 6. concentration: Basel's capital, a charge that rises with a sector's share and falls as the book spreads**
+  - L1289 the IRB capital gives Basel's own table of corporate risk weights, to its two decimals
+  - L1290 the correlation at the soundest firms is 24%
+  - L1291 ...and a book in one industry R x SECTOR_CORRELATION_MULTIPLIER
+  - L1310 a dollar lent to an industry carries more capital the more of the book it already is
+  - L1311 ...and a small one's carries less than none: it diversifies the book
+  - L1325 ...and falls as the book spreads over more industries, its Herfindahl index with it
+  - L1333 by the Euler rule the sectors' shares add back up to the book's add-on
+  - L1334 ...which is weight on the book at the minimum ratio
+  - L1347 fixture: the played bank's book has a largest industry
+  - L1349 a loan's capital per dollar is the target on its weight plus the sector's add-on, carried at the target
+  - L1352 ...and its charge is that capital at the owners' return over the money - the one formula
+  - L1360 pushed to the lender, it is the part of the sector's rate over prime, its own risk and its record
+  - L1368 the add-on is in the bank's requirement: its own row of the weight table
+  - L1369 ...and the table still foots to the weighted book the requirement reads (BankCheck 13)
+  - L1370 ...its minimum the ratio on all of it
+- **L1387 8. save and load: the bonds, who holds them and the resting orders; and a save from before them**
+  - L1399 it loads
+  - L1401 fixture: the city has bonds outstanding and orders resting
+  - L1402 the same bonds come back
+  - L1406 fixture: an interim loan is outstanding (5c)
+  - L1407 the interim loans come back, by their own type: what a sector owes on them
+  - L1409 ...as many of them, ranked first, over every sector
+  - L1411 ...with the same orders resting on their books, in the same order
+  - L1412 ...the households' bonds on them
+  - L1421 fixture:
+  - L1422 ...and each comes back by the cell's name, bond by bond, to the bit
+  - L1427 ...kept in the save under the cells' names
+  - L1428 ...their value a unit of face
+  - L1429 ...the bank's bonds on its book
+  - L1430 ...and its concentration add-on
+  - L1431 ...the lender's bond write-offs on the record
+  - L1434 ...and last month's book for the screens
+  - L1444 a month on, both the city and its reload play and close
+  - L1458 a round-1 save, its households' bonds one pool, loads
+  - L1477 ...each cell holding the share of every bond its claim was of the pool, its total its claim
+  - L1478 ...every bond's households' face the pool it was, and the cells' sum
+  - L1481 ...and it plays, the audit closing
+  - L1492 fixture: the save's cells are today's width
+  - L1503 a save from before the bonds loads
+  - L1504 ...with no bonds, no books and nobody holding any
+  - L1506 ...the households' paper where it was
+  - L1509 ...and it plays, the audit closing every month
+- **L1607 9a. equal bond bids keep arrival priority at the price tick**
+  - L1617 both bids rest at one tick, in their arrival order
+  - L1620 the first arrival bought the face
+  - L1621 the second bid still waits
+- **L1625 9. each household type trades: a rich cell bids, a cell over its money asks, and they meet**
+  - L1627 fixture: the bond's households' face is the cells' own, summed
+  - L1636 the rich cell bid and the cell over its money asked, and they traded with each other
+  - L1638 ...the face the one gave up is the face the other took
+  - L1639 ...the cash the one paid is the cash the other was paid, the transfer counted
+  - L1641 ...and the same the other way up
+  - L1642 ...so the bond's households' face did not move
+  - L1643 ...and is still the cells' own, summed
+  - L1644 no pool line saw it: nothing bought from or sold to the pools
+  - L1654 fixture: the rich cell's bid rests after the step, and nothing traded
+  - L1659 a cell short of money sells into it, raising what it was short
+  - L1660 ...cell to cell, the rich cell taking the face
+  - L1662 ...the face the one gave up the other took
+  - L1663 ...and no pool line
+- **L1675 1c. at maturity the issuer pays every holder its face, and the bond and its book go**
+  - L1689 fixture: short of $5M,
+  - L1692 fixture: a bond outstanding
+  - L1699 it falls due and is gone
+  - L1700 the issuer repaid its face
+  - L1701 ...to its holders, every class together
+  - L1703 the world's principal leaves on the audit, in the financial account
+  - L1704 ...the households' arrives in their savings
+  - L1705 ...and the month closes
 
 ## BooksCheck.java - 57 labelled assertions
 
@@ -2912,7 +2917,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L370 ...while its first holding is still its first holding
   - L380 ...and a city from before cars existed owns none
 
-## BuybackCheck.java - 242 labelled assertions
+## BuybackCheck.java - 262 labelled assertions
 
 > The city's paper bought back in a reverse auction (CD4, spec-city-debt.md
 > section 6.2-6.3; D12, D17-D19, D26, D34): every holder but the central bank
@@ -2928,258 +2933,279 @@ _(this harness does not label its checks through a helper - it prints its findin
 >    sells; the central bank's face is never offered (D18); a highest price
 > ...
 
-- **L194 1. the reverse auction, by hand: every holder's rule, solved for its price**
-  - L201 fixture: the line is worth less than par on a market over its coupon
-  - L202 each of the four holders but the central bank cut its holding into SLICES slices
-  - L204 the central bank's face is never offered: the ladder is the principal less its face
-  - L211 every offer is at or over fair
-  - L212 ...and the ladder is the cheapest first
-  - L217 the bank offers everything it holds at exactly fair (D34)
-  - L218 ...all of it
-  - L223 the households' first slice is the line's payments at the deposit rate plus the spread the rest of their holding asks
-  - L225 ...which is over fair: they hold it for more than a deposit pays
-  - L233 each household slice is priced at the holding that remains once it is sold
-  - L234 ...so the more they sell the dearer the next slice
-  - L235 ...and their last slice, with nothing left to hold, is the line at the deposit rate
-  - L247 each business slice is priced at the holding that remains, as a share of their idle money
-  - L248 ...and dearer as they sell
-  - L260 each world slice is priced at the stock that remains: its rate, its premium and the excess that holds it
-  - L261 ...and dearer as it sells
-  - L273 the city takes the face it asked for
-  - L274 ...and pays the sum of face times each slice's own price (multiple price, D19)
-  - L275 the stop is the dearest offer taken, the average is lower, and the average is not under fair
-  - L277 ...strictly lower than the stop: the cheaper offers were not paid the stop
-  - L278 the average is the price paid over the face taken
-  - L279 what the auction cost is what was paid over fair, and it is not negative
-  - L280 ...computed on the face taken
-  - L281 the gain on the books is the face's carrying value less the price
-  - L282 ...and against face, the face less the price
-  - L283 what was offered over what was asked
-  - L293 the offers taken are the cheapest, and no offer left behind is under the stop
-  - L303 the offers taken, by holder, are the faces the result says each sold
-  - L309 a small ask is filled from the bank alone, at fair
-  - L310 ...so the stop is the average is fair
-  - L311 ...and the auction cost nothing over fair
-  - L315 asked for more than is offered, the city takes all that is offered
-  - L316 ...and the cover says it fell short
-  - L317 the faces by holder add to the face taken
-  - L319 ...and the prices by holder to the price paid
-  - L329 with a highest price between two offers only the cheaper are taken
-  - L330 ...and the stop is the dearest of them, under the highest price
-  - L331 ...the next offer being over it
-  - L333 a highest price under the cheapest offer takes nothing
-  - L334 ...and pays nothing
-  - L340 businesses with no idle money want none of it, and offer at fair
-  - L342 a holding past OutwardInvestment.MAX_SHARE of their idle money is offered at fair: the first slice
-  - L344 ...and the last, with the share under MAX_SHARE, over it
-  - L348 the world in a run wants none of it and offers at fair
-  - L350 the same line and the same bidders give the same ladder
-  - L357 dollar paper is the world's alone, every slice at fair (D26)
-  - L358 ...all of it
-- **L364 2. a deposit rate over the line's yield: the households' rule prices under fair, so they offer at fair**
-  - L370 fixture: the deposit rate is over the line's yield
-  - L371 fixture: the households' rule, solved for its first slice, is under fair
-  - L376 so every household slice is offered at exactly fair, never under
-  - L377 ...and the businesses', whose better alternative is the deposit now
-  - L378 the world, whose rule is its own rate, still asks over fair for its last slices
-  - L387 slices at the same price go to the bank first, then the households, then the businesses (D19)
-  - L389 the city can buy the bank's, the households' and the businesses' for fair and no more
-  - L390 ...paying fair for every one of them
-  - L391 the households sold their whole holding
-- **L467 3. a played city: half of a ten-year line bought back, then most of the rest, then the last**
-  - L475 fixture: the treasury sold a ten-year line
-  - L476 fixture: ...which is unsettled until the month turns, and a part of it quotes nothing
-  - L479 fixture: it is settled, and the households, the bank and the world each hold part of it
-  - L481 fixture: ...and the central bank none, so the whole principal can be offered
-  - L488 half: the piece is still on the books, at half its principal
-  - L494 fixture: ...and this time the households, the businesses or the world sold too, at prices over the bank's
-  - L496 most of the rest: the piece is still on the books, at a fifth of what was left
-  - L503 the last: asked for all that is left, the city takes it
-  - L504 ...and the piece leaves the books
-  - L505 ...the cash fell by what was paid
-  - L506 ...and the holders' books agree with the paper: none of its principal is left in the cells
-  - L509 the last: the audit closes that month and the next
-  - L510 (the three together took the whole line)
-  - L547 ...the face
-  - L548 ...the carrying value
-  - L549 ...the issue discount
-  - L550 ...and what is left of it
-  - L551 ...the coupon
-  - L552 ...but the effective rate is the same
-  - L556 ...and every payment of its schedule, the months it has left unchanged
-  - L557 the bank's principal fell by exactly what it sold
-  - L558 ...the households'
-  - L559 ...the businesses'
-  - L560 ...the world's
-  - L561 ...and the face sold is the face asked
-  - L562 the treasury's cash fell by what was paid
-  - L563 the bank was paid its own slices' prices
-  - L564 ...its book of the city's paper fell by the face it sold
-  - L565 the households' savings rose by their own slices' prices
-  - L566 the world's book of the paper fell by the face it sold
-  - L567 the businesses' tills rose by their own slices' prices, at once
-  - L568 ...and their paper fell by the face they sold
-  - L569 what the households and the world were paid is carried to the next month's window
-  - L571 the central bank was paid nothing
-  - L572 the two books of the households' paper agree, and of the world's
-  - L576 the gain on debt retired the month booked is the carrying value of the face taken less the price
-  - L578 the audit closes the month the payments are declared in
-  - L579 ...and the month after
-  - L580 the piece pays the smaller coupon, month on month
-- **L587 4. the central bank holds part of a line: it does not offer, it is not paid**
-  - L597 fixture: the treasury sold another line
-  - L602 fixture: the central bank, on its dial, holds part of the line
-  - L603 fixture: ...and the bank, the households or the world hold the rest
-  - L610 asked for the whole principal, the quote takes the whole principal less the central bank's face
-  - L612 ...and asked is held to what can be offered
-  - L615 the buyback took the same
-  - L616 the piece stays on the books
-  - L617 the central bank's principal is unchanged
-  - L618 ...and what is left of the piece is exactly that
-  - L619 ...the bank holds nothing of it any more
-  - L620 the central bank's book of paper is unchanged
-  - L621 ...and it was paid nothing: no price is due to it
-  - L622 the cash fell by what was paid
-  - L623 the audit closes that month and the next
-  - L624 the central bank still holds what the paper says it does
-- **L630 5. can the city print money with this? A line sold and bought back**
-  - L648 fixture (the same month): a
-  - L653 the
-  - L658 a
-  - L659 the audit closes that month and the next
-  - L677 fixture: a
-  - L684 fixture: the
-  - L692 a
-  - L693 ...and two of them do not either
-  - L695 the audit still closes after the round trips
-- **L701 6. dollar paper is the world's alone, bought back at fair**
-  - L712 fixture: the city owes a dollar bond
-  - L718 the quote takes the whole piece
-  - L719 ...all of it from the world
-  - L720 ...none from anyone else
-  - L723 every slice is at fair: the dollar curve's value
-  - L724 the stop is the average is fair
-  - L725 ...and what is paid is the dollar curve's value of the piece
-  - L726 ...the auction cost nothing over fair
-  - L731 a part of it is taken
-  - L732 the piece stays on the books
-  - L733 ...in dollars, down by the part taken
-  - L734 ...its carrying value, in dollars and in local money
-  - L735 ...and its effective rate unchanged
-  - L736 what the world is owed fell with it
-  - L737 the cash fell by what was paid
-  - L738 ...and it leaves the country, carried to the next month's window
-  - L739 the audit closes: the dollar holder's payment is a financial outflow
-  - L742 the rest is taken
-  - L743 the dollar bond is off the books
-  - L744 ...and the audit closes the month after
-- **L750 7. a buyback the city cannot pay for, or no offer will meet, or a sale not yet settled, changes nothing**
-  - L759 fixture: the treasury sold a five-year line
-  - L760 fixture: ...unsettled
-  - L764 a part of a sale not yet settled is refused: nothing is taken, nothing moves
-  - L766 ...and so is the whole of it under a highest price that leaves some behind
-  - L768 ...but the whole of it, at any price, is quoted: it costs what the thin quote says
-  - L771 ...and it is worth something
-  - L773 fixture: it is settled now
-  - L778 the whole-piece quote is the same as the thin one
-  - L779 ...and the gain the same
-  - L780 ...which is never under what the piece is worth to somebody who does not care to hold it
-  - L787 a city that cannot afford it is refused: nothing is taken
-  - L788 ...and was not charged anyway
-  - L789 ...and nothing else moved: the piece, its holders, the bank, the savings and the world's book
-  - L791 the old button refuses the same
-  - L796 a highest price under every offer buys nothing
-  - L797 ...and moves nothing
-  - L799 nothing is bought of a piece that is not there
-  - L801 the audit closes after the refusals
-  - L802 fixture: the books still hold the piece
-- **L823 8. CD3's star 5: a gain on debt retired is not less spending, month by month and in the year**
-  - L831 fixture: the treasury sold a line
-  - L851 fixture: the line is worth less than the books carry it at
-  - L852 fixture: ...and the city buys back at a gain on the carrying value
-  - L857 fixture: it was bought, in part, no dearer than the highest price named
-  - L872 fixture: History has the year of months
-  - L882 History's revenue less surplus plus the gain on debt retired is the month's expenses, to the cent, every month of the year
-  - L884 History records the gain in the month of the buyback
-  - L887 ...and in no other month
-  - L888 the treasury's month of spending is their average
-  - L889 ...and so is the sum of what the history says it was
-  - L890 without the gain the year is off by it: this is the bug
-  - L891 ...by exactly the gain (revenue less surplus is expenses less the gain)
-- **L911 9. a line callable now: no holder asks more than the call price (BB1, CD4-C ★6)**
-  - L923 fixture: the coupon is over the yield the households ask for their first slice
-  - L924 fixture: ...and the line's fair is under the call price, the market's yield being over the coupon
-  - L925 fixture: a line with no call price, a NaN or a call price of nothing, is not callable now
-  - L928 ...and one with the call price is
-  - L934 premise: without the call price the dearest offer is over it
-  - L935 premise: ...and the cheapest is under it, the bank's at fair
-  - L936 a line with no call price offers what it did before the cap existed (the ten-figure line, NaN)
-  - L944 with the call price every offer is at most it
-  - L945 ...and the ladder is still the cheapest first
-  - L946 ...with as many offers, the central bank's face still not among them
-  - L965 premise: some offers were under the call price and some over it
-  - L966 the offers that were under the call price are unchanged, holder by holder, slice by slice
-  - L967 the ones that were over it are exactly the call price
-  - L968 each holder's own slices still ascend
-  - L974 a full buyback takes all that is offered
-  - L975 its stop is at most the call price
-  - L976 ...and what it paid is at most the face taken at the call price
-  - L977 premise: without the call price the stop was over it and the city paid more than the face at the call price
-  - L979 so the call price saves the city something
-  - L980 ...and moves nothing else: the face taken and the piece's fair are the same
-  - L985 fixture: a coupon so far over the market's yield that the line's fair is over the call price
-  - L987 premise: without the call price every offer is at least fair, so over the call price
-  - L990 with it every offer is exactly the call price: the cap wins over the floor at fair
-  - L992 a full buyback of it pays the call price on average
-  - L999 dollar paper with a call price is offered at it, never at the fair that is over it
-  - L1015 fixture: the treasury sold a callable ten-year line
-  - L1018 fixture: ...unsettled until the month turns, so it cannot be called
-  - L1023 fixture: it is settled, and the households, the bank and the world each hold part of it, the central bank none
-  - L1026 fixture: its first call month is still ahead, so it cannot be called
-  - L1035 a line not yet callable is quoted as the holders ask: the ladder is Buyback.offers() with no call price
-  - L1041 premise: the dearest offer is over the call price (
-  - L1042 the quote takes it all
-  - L1048 at its first call month it can be called
-  - L1057 premise: the same line with no call price, at this month's fair, still has its dearest offer over the call price (
-  - L1063 callable now, every offer on the ladder is at most the call price
-  - L1064 ...each the least of what it would have been with no call price and the call price
-  - L1065 ...and the same face on offer
-  - L1066 its stop is at most the call price (
-  - L1067 the quote still takes it all
-  - L1068 what it asks is at most what calling the line costs, and less than the quote before the call month
-  - L1075 the buyback booked pays what the quote said
-  - L1076 ...its stop is the quote's
-  - L1077 ...it is within what calling the line would have cost, and the line leaves the books
-  - L1079 ...the cash fell by what was paid
-  - L1089 ...the gain at fair is the carrying value of the face taken less its worth at fair
-  - L1097 ...the holders' overFair add up to the auction's
-  - L1098 ...and no holder is paid under fair (every offer is at or over it)
-  - L1099 ...the bank is paid fair (D34): its overFair is nothing
-  - L1100 ...the share is the gain at fair over the carrying value of the face taken
-- **L1116 10. what the auction books and what fair would: they differ by what the holders ask over fair (BB1, CD6-C ★1)**
-  - L1136 premise: the quote takes offers from more than one holder
-  - L1137 premise: some holder is paid over fair (
-  - L1138 a quote of several holders
-  - L1139 ...the gain at fair, by hand: the face's carrying value less its worth at fair
-  - L1140 ...so the book's desk reads more than the auction books: the gain at fair is over the gain on the carrying value
-  - L1144 a quote of the bank's offers alone
-  - L1145 premise: it took the bank's face alone
-  - L1146 ...at fair the two agree: nothing is asked over fair
-  - L1147 ...and the gain at fair is the gain the auction books
-  - L1151 a quote that takes nothing has no gain at fair and no share of one
-  - L1158 premise: the households hold all of what was taken
-  - L1159 premise: they ask over fair (
-  - L1160 premise: the line is carried between its worth at fair and what the auction pays
-  - L1162 the households' line
-  - L1163 at fair the line reads a gain
-  - L1164 ...and the auction books a loss: the figures have opposite signs
-  - L1165 ...the households' overFair is the whole of what the auction asks over fair
-  - L1174 fixture: the treasury sold a ten-year line
-  - L1177 fixture: it is settled, and held by more than the bank
-  - L1181 fixture: the quote takes the line
-  - L1184 a played line, all of it
-  - L1186 ...and half of it
-  - L1187 a smaller face takes the cheaper offers first: each 100 of half costs no more over fair than each 100 of all
+- **L195 1. the reverse auction, by hand: every holder's rule, solved for its price**
+  - L202 fixture: the line is worth less than par on a market over its coupon
+  - L203 each of the four holders but the central bank cut its holding into SLICES slices
+  - L205 the central bank's face is never offered: the ladder is the principal less its face
+  - L212 every offer is at or over fair
+  - L213 ...and the ladder is the cheapest first
+  - L218 the bank offers everything it holds at exactly fair (D34)
+  - L219 ...all of it
+  - L224 the households' first slice is the line's payments at the deposit rate plus the spread the rest of their holding asks
+  - L226 ...which is over fair: they hold it for more than a deposit pays
+  - L234 each household slice is priced at the holding that remains once it is sold
+  - L235 ...so the more they sell the dearer the next slice
+  - L236 ...and their last slice, with nothing left to hold, is the line at the deposit rate
+  - L248 each business slice is priced at the holding that remains, as a share of their idle money
+  - L249 ...and dearer as they sell
+  - L261 each world slice is priced at the stock that remains: its rate, its premium and the excess that holds it
+  - L262 ...and dearer as it sells
+  - L274 the city takes the face it asked for
+  - L275 ...and pays the sum of face times each slice's own price (multiple price, D19)
+  - L276 the stop is the dearest offer taken, the average is lower, and the average is not under fair
+  - L278 ...strictly lower than the stop: the cheaper offers were not paid the stop
+  - L279 the average is the price paid over the face taken
+  - L280 what the auction cost is what was paid over fair, and it is not negative
+  - L281 ...computed on the face taken
+  - L282 the gain on the books is the face's carrying value less the price
+  - L283 ...and against face, the face less the price
+  - L284 what was offered over what was asked
+  - L294 the offers taken are the cheapest, and no offer left behind is under the stop
+  - L304 the offers taken, by holder, are the faces the result says each sold
+  - L310 a small ask is filled from the bank alone, at fair
+  - L311 ...so the stop is the average is fair
+  - L312 ...and the auction cost nothing over fair
+  - L316 asked for more than is offered, the city takes all that is offered
+  - L317 ...and the cover says it fell short
+  - L318 the faces by holder add to the face taken
+  - L320 ...and the prices by holder to the price paid
+  - L330 with a highest price between two offers only the cheaper are taken
+  - L331 ...and the stop is the dearest of them, under the highest price
+  - L332 ...the next offer being over it
+  - L334 a highest price under the cheapest offer takes nothing
+  - L335 ...and pays nothing
+  - L341 businesses with no idle money want none of it, and offer at fair
+  - L343 a holding past OutwardInvestment.MAX_SHARE of their idle money is offered at fair: the first slice
+  - L345 ...and the last, with the share under MAX_SHARE, over it
+  - L349 the world in a run wants none of it and offers at fair
+  - L351 the same line and the same bidders give the same ladder
+  - L358 dollar paper is the world's alone, every slice at fair (D26)
+  - L359 ...all of it
+- **L365 2. a deposit rate over the line's yield: the households' rule prices under fair, so they offer at fair**
+  - L371 fixture: the deposit rate is over the line's yield
+  - L372 fixture: the households' rule, solved for its first slice, is under fair
+  - L377 so every household slice is offered at exactly fair, never under
+  - L378 ...and the businesses', whose better alternative is the deposit now
+  - L379 the world, whose rule is its own rate, still asks over fair for its last slices
+  - L388 slices at the same price go to the bank first, then the households, then the businesses (D19)
+  - L390 the city can buy the bank's, the households' and the businesses' for fair and no more
+  - L391 ...paying fair for every one of them
+  - L392 the households sold their whole holding
+- **L468 3. a played city: half of a ten-year line bought back, then most of the rest, then the last**
+  - L476 fixture: the treasury sold a ten-year line
+  - L477 fixture: ...which is unsettled until the month turns, and a part of it quotes nothing
+  - L480 fixture: it is settled, and the households, the bank and the world each hold part of it
+  - L482 fixture: ...and the central bank none, so the whole principal can be offered
+  - L489 half: the piece is still on the books, at half its principal
+  - L495 fixture: ...and this time the households, the businesses or the world sold too, at prices over the bank's
+  - L497 most of the rest: the piece is still on the books, at a fifth of what was left
+  - L504 the last: asked for all that is left, the city takes it
+  - L505 ...and the piece leaves the books
+  - L506 ...the cash fell by what was paid
+  - L507 ...and the holders' books agree with the paper: none of its principal is left in the cells
+  - L510 the last: the audit closes that month and the next
+  - L511 (the three together took the whole line)
+  - L548 ...the face
+  - L549 ...the carrying value
+  - L550 ...the issue discount
+  - L551 ...and what is left of it
+  - L552 ...the coupon
+  - L553 ...but the effective rate is the same
+  - L557 ...and every payment of its schedule, the months it has left unchanged
+  - L558 the bank's principal fell by exactly what it sold
+  - L559 ...the households'
+  - L560 ...the businesses'
+  - L561 ...the world's
+  - L562 ...and the face sold is the face asked
+  - L563 the treasury's cash fell by what was paid
+  - L564 the bank was paid its own slices' prices
+  - L565 ...its book of the city's paper fell by the face it sold
+  - L566 the households' savings rose by their own slices' prices
+  - L567 the world's book of the paper fell by the face it sold
+  - L568 the businesses' tills rose by their own slices' prices, at once
+  - L569 ...and their paper fell by the face they sold
+  - L570 what the households and the world were paid is carried to the next month's window
+  - L572 the central bank was paid nothing
+  - L573 the two books of the households' paper agree, and of the world's
+  - L577 the gain on debt retired the month booked is the carrying value of the face taken less the price
+  - L579 the audit closes the month the payments are declared in
+  - L580 ...and the month after
+  - L581 the piece pays the smaller coupon, month on month
+- **L588 4. the central bank holds part of a line: it does not offer, it is not paid**
+  - L598 fixture: the treasury sold another line
+  - L603 fixture: the central bank, on its dial, holds part of the line
+  - L604 fixture: ...and the bank, the households or the world hold the rest
+  - L611 asked for the whole principal, the quote takes the whole principal less the central bank's face
+  - L613 ...and asked is held to what can be offered
+  - L616 the buyback took the same
+  - L617 the piece stays on the books
+  - L618 the central bank's principal is unchanged
+  - L619 ...and what is left of the piece is exactly that
+  - L620 ...the bank holds nothing of it any more
+  - L621 the central bank's book of paper is unchanged
+  - L622 ...and it was paid nothing: no price is due to it
+  - L623 the cash fell by what was paid
+  - L624 the audit closes that month and the next
+  - L625 the central bank still holds what the paper says it does
+- **L631 5. can the city print money with this? A line sold and bought back**
+  - L651 fixture (the same month): a
+  - L658 the
+  - L663 a
+  - L664 the unpaid
+  - L665 ...and its whole face is cancelled
+  - L666 ...the bank offers only paid face, so it sold none
+  - L667 ...and received no buyback cash
+  - L668 ...the cancelled proceeds leave the next settle
+  - L669 the audit closes that month and the next
+  - L670 the bank's equity split holds over the month after the
+  - L689 fixture: a
+  - L696 fixture: the
+  - L704 a
+  - L705 ...and two of them do not either
+  - L707 the audit still closes after the round trips
+- **L712 5a. a reopened line closed before the settle**
+  - L717 fixture: the first sale made a line
+  - L719 the first sale's audit closes
+  - L722 fixture: the settled line has paid bank and household holdings
+  - L726 fixture: the second sale reopened the same line
+  - L730 a part of the reopened line is refused without moving its settlement
+  - L734 the quote offers the bank's paid face
+  - L735 ...and cancels exactly the reopened sale's face
+  - L736 ...at the original proceeds
+  - L739 the reopened piece is closed whole
+  - L740 the treasury pays the quoted total
+  - L741 the bank receives its paid holdings' price
+  - L742 the reopening's proceeds leave the settle
+  - L743 the cancellation's audit closes over two months
+  - L744 the bank's equity split holds after cancelling the reopening
+- **L750 6. dollar paper is the world's alone, bought back at fair**
+  - L761 fixture: the city owes a dollar bond
+  - L767 the quote takes the whole piece
+  - L768 ...all of it from the world
+  - L769 ...none from anyone else
+  - L772 every slice is at fair: the dollar curve's value
+  - L773 the stop is the average is fair
+  - L774 ...and what is paid is the dollar curve's value of the piece
+  - L775 ...the auction cost nothing over fair
+  - L780 a part of it is taken
+  - L781 the piece stays on the books
+  - L782 ...in dollars, down by the part taken
+  - L783 ...its carrying value, in dollars and in local money
+  - L784 ...and its effective rate unchanged
+  - L785 what the world is owed fell with it
+  - L786 the cash fell by what was paid
+  - L787 ...and it leaves the country, carried to the next month's window
+  - L788 the audit closes: the dollar holder's payment is a financial outflow
+  - L791 the rest is taken
+  - L792 the dollar bond is off the books
+  - L793 ...and the audit closes the month after
+- **L799 7. a buyback the city cannot pay for, or no offer will meet, or a sale not yet settled, changes nothing**
+  - L808 fixture: the treasury sold a five-year line
+  - L809 fixture: ...unsettled
+  - L813 a part of a sale not yet settled is refused: nothing is taken, nothing moves
+  - L815 ...and so is the whole of it under a highest price that leaves some behind
+  - L817 ...but the whole of it, at any price, is quoted: it costs what the thin quote says
+  - L820 ...and it is worth something
+  - L822 fixture: it is settled now
+  - L827 the whole-piece quote is the same as the thin one
+  - L828 ...and the gain the same
+  - L829 ...which is never under what the piece is worth to somebody who does not care to hold it
+  - L836 a city that cannot afford it is refused: nothing is taken
+  - L837 ...and was not charged anyway
+  - L838 ...and nothing else moved: the piece, its holders, the bank, the savings and the world's book
+  - L840 the old button refuses the same
+  - L845 a highest price under every offer buys nothing
+  - L846 ...and moves nothing
+  - L848 nothing is bought of a piece that is not there
+  - L850 the audit closes after the refusals
+  - L851 fixture: the books still hold the piece
+- **L872 8. CD3's star 5: a gain on debt retired is not less spending, month by month and in the year**
+  - L880 fixture: the treasury sold a line
+  - L900 fixture: the line is worth less than the books carry it at
+  - L901 fixture: ...and the city buys back at a gain on the carrying value
+  - L906 fixture: it was bought, in part, no dearer than the highest price named
+  - L921 fixture: History has the year of months
+  - L931 History's revenue less surplus plus the gain on debt retired is the month's expenses, to the cent, every month of the year
+  - L933 History records the gain in the month of the buyback
+  - L936 ...and in no other month
+  - L937 the treasury's month of spending is their average
+  - L938 ...and so is the sum of what the history says it was
+  - L939 without the gain the year is off by it: this is the bug
+  - L940 ...by exactly the gain (revenue less surplus is expenses less the gain)
+- **L960 9. a line callable now: no holder asks more than the call price (BB1, CD4-C ★6)**
+  - L972 fixture: the coupon is over the yield the households ask for their first slice
+  - L973 fixture: ...and the line's fair is under the call price, the market's yield being over the coupon
+  - L974 fixture: a line with no call price, a NaN or a call price of nothing, is not callable now
+  - L977 ...and one with the call price is
+  - L983 premise: without the call price the dearest offer is over it
+  - L984 premise: ...and the cheapest is under it, the bank's at fair
+  - L985 a line with no call price offers what it did before the cap existed (the ten-figure line, NaN)
+  - L993 with the call price every offer is at most it
+  - L994 ...and the ladder is still the cheapest first
+  - L995 ...with as many offers, the central bank's face still not among them
+  - L1014 premise: some offers were under the call price and some over it
+  - L1015 the offers that were under the call price are unchanged, holder by holder, slice by slice
+  - L1016 the ones that were over it are exactly the call price
+  - L1017 each holder's own slices still ascend
+  - L1023 a full buyback takes all that is offered
+  - L1024 its stop is at most the call price
+  - L1025 ...and what it paid is at most the face taken at the call price
+  - L1026 premise: without the call price the stop was over it and the city paid more than the face at the call price
+  - L1028 so the call price saves the city something
+  - L1029 ...and moves nothing else: the face taken and the piece's fair are the same
+  - L1034 fixture: a coupon so far over the market's yield that the line's fair is over the call price
+  - L1036 premise: without the call price every offer is at least fair, so over the call price
+  - L1039 with it every offer is exactly the call price: the cap wins over the floor at fair
+  - L1041 a full buyback of it pays the call price on average
+  - L1048 dollar paper with a call price is offered at it, never at the fair that is over it
+  - L1064 fixture: the treasury sold a callable ten-year line
+  - L1067 fixture: ...unsettled until the month turns, so it cannot be called
+  - L1072 fixture: it is settled, and the households, the bank and the world each hold part of it, the central bank none
+  - L1075 fixture: its first call month is still ahead, so it cannot be called
+  - L1084 a line not yet callable is quoted as the holders ask: the ladder is Buyback.offers() with no call price
+  - L1090 premise: the dearest offer is over the call price (
+  - L1091 the quote takes it all
+  - L1097 at its first call month it can be called
+  - L1106 premise: the same line with no call price, at this month's fair, still has its dearest offer over the call price (
+  - L1112 callable now, every offer on the ladder is at most the call price
+  - L1113 ...each the least of what it would have been with no call price and the call price
+  - L1114 ...and the same face on offer
+  - L1115 its stop is at most the call price (
+  - L1116 the quote still takes it all
+  - L1117 what it asks is at most what calling the line costs, and less than the quote before the call month
+  - L1124 the buyback booked pays what the quote said
+  - L1125 ...its stop is the quote's
+  - L1126 ...it is within what calling the line would have cost, and the line leaves the books
+  - L1128 ...the cash fell by what was paid
+  - L1138 ...the gain at fair is the carrying value of the face taken less its worth at fair
+  - L1146 ...the holders' overFair add up to the auction's
+  - L1147 ...and no holder is paid under fair (every offer is at or over it)
+  - L1148 ...the bank is paid fair (D34): its overFair is nothing
+  - L1149 ...the share is the gain at fair over the carrying value of the face taken
+- **L1165 10. what the auction books and what fair would: they differ by what the holders ask over fair (BB1, CD6-C ★1)**
+  - L1186 premise: the quote takes offers from more than one holder
+  - L1187 premise: some holder is paid over fair (
+  - L1188 a quote of several holders
+  - L1189 ...the gain at fair, by hand: the face's carrying value less its worth at fair
+  - L1190 ...so the book's desk reads more than the auction books: the gain at fair is over the gain on the carrying value
+  - L1194 a quote of the bank's offers alone
+  - L1195 premise: it took the bank's face alone
+  - L1196 ...at fair the two agree: nothing is asked over fair
+  - L1197 ...and the gain at fair is the gain the auction books
+  - L1201 a quote that takes nothing has no gain at fair and no share of one
+  - L1208 premise: the households hold all of what was taken
+  - L1209 premise: they ask over fair (
+  - L1210 premise: the line is carried between its worth at fair and what the auction pays
+  - L1212 the households' line
+  - L1213 at fair the line reads a gain
+  - L1214 ...and the auction books a loss: the figures have opposite signs
+  - L1215 ...the households' overFair is the whole of what the auction asks over fair
+  - L1224 fixture: the treasury sold a ten-year line
+  - L1227 fixture: it is settled, and held by more than the bank
+  - L1231 fixture: the quote takes the line
+  - L1234 a played line, all of it
+  - L1236 ...and half of it
+  - L1237 a smaller face takes the cheaper offers first: each 100 of half costs no more over fair than each 100 of all
 
 ## CalendarCheck.java - 67 labelled assertions
 
@@ -5680,25 +5706,25 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1915 a project loan hands its full purpose to the till
   - L1916 ...its fee carried in the principal: the loan is the purpose grossed up for LOAN_FEE
   - L1918 ...and the fee the bank keeps is LOAN_FEE of that principal
-- **L1937 11. the curve: the dial at the short end, a premium by maturity**
-  - L1950 debt-free, the note quotes exactly the dial
-  - L1951 ...and getRate() is the note's rate, the short end
-  - L1952 the 10-year term loan: the dial plus TERM_PREMIUM_10Y
-  - L1954 the 20-year: the dial plus TERM_PREMIUM_20Y
-  - L1956 the 50-year: the dial plus TERM_PREMIUM_50Y
-  - L1958 ...and past fifty years the curve holds
-  - L1959 a 5-year serial: the dial plus the 10-year entry, 48 of the 108 months from a year to ten
-  - L1961 ...a 35-year point halfway between 30 and 40
-  - L1963 ...and a year-long note carries none
-  - L1971 a hike of two points moves every row by two: the whole curve in parallel
-  - L1977 fixture: the debt adds a real credit spread
-  - L1982 debt moves every row by the same credit spread
-  - L1988 a 25-year request is refused, in words
-  - L1989 ...quoted nothing
-  - L1990 ...and books nothing
-  - L1996 ...while each of the five maturities is quoted
-  - L2008 a bond issued at
-  - L2012 ...and the buyback takes it off the books at that price
+- **L1936 11. the curve: the dial at the short end, a premium by maturity**
+  - L1949 debt-free, the note quotes exactly the dial
+  - L1950 ...and getRate() is the note's rate, the short end
+  - L1951 the 10-year term loan: the dial plus TERM_PREMIUM_10Y
+  - L1953 the 20-year: the dial plus TERM_PREMIUM_20Y
+  - L1955 the 50-year: the dial plus TERM_PREMIUM_50Y
+  - L1957 ...and past fifty years the curve holds
+  - L1958 a 5-year serial: the dial plus the 10-year entry, 48 of the 108 months from a year to ten
+  - L1960 ...a 35-year point halfway between 30 and 40
+  - L1962 ...and a year-long note carries none
+  - L1970 a hike of two points moves every row by two: the whole curve in parallel
+  - L1976 fixture: the debt adds a real credit spread
+  - L1981 debt moves every row by the same credit spread
+  - L1987 a 25-year request is refused, in words
+  - L1988 ...quoted nothing
+  - L1989 ...and books nothing
+  - L1995 ...while each of the five maturities is quoted
+  - L2007 a bond issued at
+  - L2010 ...and the buyback takes it off the books at that price
 
 ## CreditsCheck.java - 16 labelled assertions
 
@@ -13103,7 +13129,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2244 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
   - L2304 fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance
   - L2306 fixture: ...the bank's book covers the face it sells back, and its unearned discount the piece's
-  - L2308 fixture: ...bought straight back whole, all of it the bank's face, and off the books
+  - L2308 fixture: ...cancelled straight back whole, with no paid bank face, and off the books
   - L2310 fixture: ...and the twin's the same, bit for bit
   - L2312 the buyback re-struck nothing
   - L2317 two months on, the bank's equity's parts are its equity again, as before the sale: the settle's payment cancelled what it sold back
