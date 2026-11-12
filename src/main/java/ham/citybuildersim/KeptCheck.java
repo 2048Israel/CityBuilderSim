@@ -2730,6 +2730,7 @@ public class KeptCheck {
     static String ensureWorks(Game g) throws Exception {
         Sector wood = g.getSectors().byKey(Sectors.WOOD_PRODUCTS);
         if (IndustryView.of(g, wood).drawn()) return "the city has a counted wood products month with works to draw";
+        boolean held = g.getBusinessInvestment().isHeld(wood.key());
         g.getBusinessInvestment().holdSector(wood.key());
         try {
             if (IndustryView.of(g, wood).standing() == 0) {
@@ -2741,7 +2742,7 @@ public class KeptCheck {
             check("fixture: the supplied sawmill has a counted month and works to draw", drawn);
             return "a sawmill supplied and held through its counted month: drawable " + drawn;
         } finally {
-            g.getBusinessInvestment().releaseSector(wood.key());
+            if (!held) g.getBusinessInvestment().releaseSector(wood.key());
         }
     }
 
@@ -3063,9 +3064,15 @@ public class KeptCheck {
         check("the city has a plain business with a plant standing (" + plain + ")", plain != null);
         check("...and a materials industry with works standing (" + works + ")", works != null);
         if (plain == null || works == null) return;
-        // The works are held while the pages are watched: a sawmill with no logs idles, and the city sheds idle works (O5's rule), which would
-        // put the page through a shape of works that come and go; held, what stands is the fixture's (as RefineryViewCheck's refiners are).
-        g.getBusinessInvestment().holdSector(works);
+        // KS1: node reuse measures the same plant's next month. A new industry's first works instead adds its whole picture
+        // (111 new nodes for Copper Refining in the m575 probe). Hold the plants while their figures keep moving.
+        List<String> heldHere = new ArrayList<>();
+        for (Sector sector : g.getSectors().all()) {
+            if (!g.getBusinessInvestment().isHeld(sector.key())) {
+                g.getBusinessInvestment().holdSector(sector.key());
+                heldHere.add(sector.key());
+            }
+        }
         final String plainName = called(g, plain), worksName = called(g, works), shopsName = called(g, Sectors.RETAIL);
         final String ops = KeptBench.sectorPages().get(0);
         // The clock paused: a month stepped by hand counts up at any speed, so the pages are drawn with their animations running
@@ -3159,7 +3166,7 @@ public class KeptCheck {
             pageCost(g, bench, p, 52, KEPT_SECTOR_MS, "KEPT_SECTOR_MS");
         }
 
-        g.getBusinessInvestment().releaseSector(works);
+        for (String key : heldHere) g.getBusinessInvestment().releaseSector(key);
         sectorsControls();
         sectorsHover(g, bench, plain);
     }
@@ -4539,10 +4546,12 @@ public class KeptCheck {
      * WHY (KS1): waiting for an ordinary dividend can leave all 48 months without a payment or a change in the hero's rounded words.
      */
     static void fundPaymentMonth(Game g) {
+        double before = Math.abs(g.fundValue());
         month(g);
         Equity equity = g.getEquity();
         if (!(equity.getCityRescueShares(Equity.BANK) > 0)) equity.issueToCityRescue(Equity.BANK, Math.max(1, equity.getShares(Equity.BANK)));
-        double payment = Math.max(1_000_000 * PriceLevel.FACTOR, Math.abs(g.fundValue()));
+        double worth = Math.abs(g.fundValue());
+        double payment = Math.max(1_000_000 * PriceLevel.FACTOR, Math.max(worth / 10, before * 1.1 - worth));
         g.getFund().receiveDividend(payment, 1);
         g.getFund().getLedger().dividend(Equity.COMPANIES[Equity.BANK], payment, 1, g.getMonth());
     }
