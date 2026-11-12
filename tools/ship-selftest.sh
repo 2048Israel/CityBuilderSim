@@ -37,7 +37,7 @@ P=${V0%.*}; Q=${V0##*.}
 V1=$P.$((Q + 1)); V2=$P.$((Q + 2)); V3=$P.$((Q + 3)); V4=$P.$((Q + 4)); V5=$P.$((Q + 5))
 VOLD=$P.$((Q + 50))   # a version nobody has tagged, above the last tag: a branch that moves VERSION
 
-# the stub: STUB_EXIT/STUB_REDS drive the suite run, STUB_TEXIT/STUB_TREDS/STUB_TTSV --timing; a --timing that names a harness is a paired round (TM3)
+# The stub drives suite outcomes and interruptions without a JVM (GF1, GR1).
 cat > "$TA/main/batch-check.sh" <<'EOF'
 #!/bin/sh
 cd "$(dirname "$0")" || exit 1
@@ -47,7 +47,7 @@ for a in "$@"; do case "$a" in --fast) MODE=fast ;; --timing) MODE=timing ;; -*)
 [ -z "$STUB_REWRITE_SHIP" ] || { awk 'NR == 3 { print "echo \"ZZ-the-branchs-ship.sh-ran\"" } { print }' ship.sh > "$OUT/ship.new" && cat "$OUT/ship.new" > ship.sh; }   # ship.sh rewritten in place under the shell reading it
 [ -z "$STUB_RACE" ] || { git -C "$STUB_RACE" pull -q --ff-only origin main && git -C "$STUB_RACE" commit -q --allow-empty -m "shipped meanwhile" && git -C "$STUB_RACE" push -q origin HEAD:main; STUB_RACE=; }
 # GF1: faults after a successful suite, with exactly the stale state LM1 reused.
-if [ "$MODE" = timing ]; then
+if [ "$MODE" = suite ]; then
     if [ -n "$STUB_MOVE" ]; then
         git -C "$STUB_WORK" fetch -q origin "$STUB_MOVE"
         git -C "$STUB_WORK" checkout -q -B "$STUB_MOVE" FETCH_HEAD
@@ -57,7 +57,7 @@ if [ "$MODE" = timing ]; then
     fi
     case "$STUB_FAULT" in
         killed) kill -KILL "$PPID"; exit 0 ;;
-        stale) echo 'suite 0' > target/ship-tmp/code; kill -KILL "$PPID"; exit 0 ;;
+        stale) echo 'fast 0' > target/ship-tmp/code; kill -KILL "$PPID"; exit 0 ;;
         missing) exit 0 ;;
         hold) echo ready > "$STUB_READY"; for attempt in $(seq 1 120); do sleep 1; done; exit 1 ;;
     esac
@@ -65,26 +65,7 @@ fi
 case "$MODE" in
   fast) EXIT=${STUB_FAST_EXIT:-0}; REDS="" ;;
   suite) EXIT=${STUB_EXIT:-0}; REDS=${STUB_REDS-} ;;
-  timing) EXIT=${STUB_TEXIT:-0}; REDS=${STUB_TREDS-}
-          rm -f "$OUT/timing.tsv"
-          if [ -n "$NAMED" ]; then   # a paired round: the figure of this side's turn, none when the run "did not run"
-              EXIT=${STUB_PEXIT:-0}; REDS=""
-              case "$(pwd)" in *main-timing) FIGS=$STUB_FIGS_MAIN ;; *) FIGS=$STUB_FIGS_BATCH ;; esac
-              n=$(( $(cat "$OUT/.pairn" 2>/dev/null || echo 0) + 1 )); echo "$n" > "$OUT/.pairn"
-              FIG=$(echo $FIGS | cut -d' ' -f"$n")
-              if [ -n "$FIG" ] && [ "$EXIT" != 1 ]; then
-                  IFS='|' read -r H L B U P <<PEOF
-$STUB_PAIR
-PEOF
-                  printf '%s	%s	%s	%s	%s	OK	%s
-' "$H" "$L" "$FIG" "$B" "$U" "$P" > "$OUT/timing.tsv"
-              fi
-          else   # the hard run
-              rm -f "$OUT/.pairn"
-              printf '%s
-' "$STUB_TTSV" | tr ';|' '
-	' | grep . > "$OUT/timing.tsv" || : > "$OUT/timing.tsv"
-          fi ;;
+  timing) echo "unexpected hard timing at the gate"; exit 99 ;;
 esac
 if [ "$MODE" != fast ]; then
     printf '%s\n' "$REDS" | tr ';' '\n' | grep . > "$OUT/reds.txt" || : > "$OUT/reds.txt"
@@ -96,7 +77,7 @@ if [ "$MODE" != timing ] && [ -n "$STUB_TOUCHMAPS" ]; then echo "// regenerated"
 exit "$EXIT"
 EOF
 cp "$SRC/ship.sh" "$TA/main/ship.sh"; chmod +x "$TA/main/ship.sh" "$TA/main/batch-check.sh"
-mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/timing-pair.awk" "$SRC/tools/carries.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
+mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/carries.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
 IDS="TST TS2 NS GV GG GN GX GH GQ GC GE GB DOC TM ER NC NC2 OS SH PP PS PR PT"; FAKE=""
 for i in $IDS; do FAKE="$FAKE| $i | A fake queued batch $i | [x](y) |
 "; done
@@ -255,71 +236,9 @@ ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: NEW red on Jerus' $TA/out.txt"
 LABEL="red: exit 3 passes";                     STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' run --dry-run batch/RED;  ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt"
 LABEL="red: exit 1 stops";                      STUB_EXIT=1 run --dry-run batch/RED; ok rc_is 1
 
-# timing (TM3): judged once, hard, and only what the suite step did not judge; a timing red is then timed again with main's classes and the
-# merge's in turn, and counts against the batch only if the merge is slower by more than the margin (15%)
-PL='the plan is within PLAN_MS (42 ms)'
-PR="PlanCheck | exit 1;PlanCheck | $PL    FAIL;PlanCheck | 1 FAILED"   # the hard run's red lines: one timing miss and the harness's own two
-PT="PlanCheck|$PL|45|42|ms|FAIL|1"                                      # the figure that missed, in the hard run's timing.tsv
-PP="PlanCheck|$PL|42|ms|1"                                              # the row each paired round writes
-turns() { grep "args='--timing PlanCheck'" "$STUB_LOG" | sed 's/.*cwd=\([^ ]*\) .*/\1/' | tr '\n' ' '; }   # whose tree each paired round ran in
-turns_are() { [ "$(turns)" = "$1 " ]; }
-tm() { STUB_TEXIT=4 STUB_TREDS="$PR" STUB_TTSV="$PT" STUB_PAIR="$PP" "$@"; }   # a timing red where a paired round's figures are the case's
-LABEL="timing: a red where the batch is as fast as main passes, named with the paired medians"; : > "$STUB_LOG"
-STUB_FIGS_MAIN="44 45 46" STUB_FIGS_BATCH="46 45 44" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'judged side by side with main' $TA/out.txt && grep -q -F 'PlanCheck [main 45 ms, batch 45 ms' $TA/out.txt"
-LABEL="timing: ...main's classes and the merge's in turn, three rounds, in the same minutes, the first side alternating (SP1 item 7)"
-ok turns_are "main-timing main main main-timing main-timing main"
-LABEL="timing: a batch 10% slower than main is inside the margin and passes"
-STUB_FIGS_MAIN="40 40 40" STUB_FIGS_BATCH="44 44 44" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'PlanCheck [main 40 ms, batch 44 ms (+10.0%)' $TA/out.txt"
-LABEL="timing: a red where the batch is 30% slower than main stops, with the medians"
-STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 1 ] && grep -q -F 'over main' $TA/out.txt && grep -q -F 'main 41 ms, batch 53 ms (+29.3%)' $TA/out.txt && grep -q -F 'red-ok' $TA/out.txt"
-LABEL="timing: ...and the tree is clean";       ok clean
-LABEL="timing: a red where main misses the budget too passes, named (SP1 item 7)"
-STUB_FIGS_MAIN="60 61 62" STUB_FIGS_BATCH="80 81 82" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'main 61 ms, batch 81 ms (+32.8%), budget 42 ms: main over the budget too' $TA/out.txt"
-LABEL="timing: a red where the batch is within the budget passes, named, at the budget itself too"
-STUB_FIGS_MAIN="20 21 22" STUB_FIGS_BATCH="42 42 42" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'the batch within the budget' $TA/out.txt"
-LABEL="timing: main within the budget and the batch a hair over it, 43 against 42, over the margin stops"
-STUB_FIGS_MAIN="30 31 32" STUB_FIGS_BATCH="43 43 43" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 1 ] && grep -q -F \"over main's by more than 15%: main 31 ms, batch 43 ms\" $TA/out.txt"
-LABEL="timing: one slow round in three is not the median"
-STUB_FIGS_MAIN="40 41 90" STUB_FIGS_BATCH="40 41 90" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'PlanCheck [main 41 ms, batch 41 ms' $TA/out.txt"
-LABEL="timing: CBS_TIMING_MARGIN moves the margin, the same 30% passes at 40%"
-CBS_TIMING_MARGIN=40 STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'margin 40%' $TA/out.txt"
-LABEL="timing: --red-ok reaches the timing step: the 30% red ships on his word, the lines and medians named"
-STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" --red-line "the plan is within PLAN_MS" batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F \"passed on Jerus's word: his words: PlanCheck [over main's by more than 15%: main 41 ms, batch 53 ms (+29.3%)\" $TA/out.txt"
-LABEL="timing: his words naming another line leave the 30% timing red stopped, named"
-STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" --red-line "something else entirely" batch/RED
-ok sh -c "[ $RC = 1 ] && grep -q -F 'NOT NAMED: PlanCheck | the plan is within PLAN_MS' $TA/out.txt && grep -q -F 'no --red-line names' $TA/out.txt"
-LABEL="timing: ...and the tree is clean";       ok clean
-LABEL="timing: his words naming a suite line do not pass a timing red of another harness"
-STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | a new thing     FAIL;ZzCheck | 1 FAILED' STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" --red-line "a new thing" batch/RED
-ok sh -c "[ $RC = 1 ] && grep -q -F 'NOT NAMED: PlanCheck | the plan is within PLAN_MS' $TA/out.txt"
-LABEL="timing: a paired round that did not run leaves nothing to compare, and the red stops"
-STUB_PEXIT=1 STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="40 41 42" tm run --dry-run batch/RED
-ok sh -c "[ $RC = 1 ] && grep -q -F 'no pair to compare' $TA/out.txt"
-LABEL="timing: a red that is no clock's (no figure behind it) stops at once, with no paired round"; : > "$STUB_LOG"
-STUB_TEXIT=4 STUB_TREDS='TimingCheck | exit 1;TimingCheck | took 123 ms' run --dry-run batch/RED
-ok sh -c "[ $RC = 1 ] && grep -q -F 'not a timing red' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
-LABEL="timing: --red-ok passes that too when a --red-line names it";  STUB_TEXIT=4 STUB_TREDS='TimingCheck | exit 1;TimingCheck | took 123 ms' run --dry-run --red-ok "his words" --red-line "took 123 ms" batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F \"passed on Jerus's word: his words: TimingCheck [not a timing red\" $TA/out.txt"
-LABEL="timing: main's worktree removed on every path"; ok sh -c "[ ! -d $TA/main/target/main-timing ] && [ \$(git -C $TA/main worktree list | wc -l) = 1 ]"
-R2='PlanCheck | exit 1;PlanCheck | FAIL: a new thing'
-LABEL="timing: --red-ok for a red in a timing harness ships, no paired round (the suite step judged it)"; : > "$STUB_LOG"
-STUB_EXIT=4 STUB_REDS="$R2" STUB_TEXIT=4 STUB_TREDS="$R2" run --dry-run --red-ok "his words" --red-line "a new thing" batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F \"gate: NEW red on Jerus's word: his words\" $TA/out.txt && ! grep -q 'side by side' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
-LABEL="timing: that red and a timing miss of its own: the miss is judged on its own, and his words reach it"
-STUB_EXIT=4 STUB_REDS="$R2" STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run --red-ok "his words" --red-line "a new thing" --red-line "the plan is within PLAN_MS" batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'timing    red on the merge, judged side by side' $TA/out.txt"
-LABEL="timing: exit 3 is no shortcut, an unjudged line is judged (no clock behind it: stops)"
-STUB_TEXIT=3 STUB_TREDS='TimingCheck | took 123 ms' run --dry-run batch/RED
-ok sh -c "[ $RC = 1 ] && grep -q -F 'not a timing red' $TA/out.txt"
+LABEL="gate: a passing suite runs once, timing soft"; : > "$STUB_LOG"
+run --dry-run batch/RED
+ok sh -c "[ $RC = 0 ] && [ \$(wc -l < $STUB_LOG) = 1 ] && grep -q 'mode=suite' $STUB_LOG"
 LABEL="docs only: --fast alone, gate.txt untouched"; cp "$TA/main/docs/notes/gate.txt" "$TA/gate.before"; : > "$STUB_LOG"; run batch/DOC
 ok sh -c "[ $RC = 0 ] && git -C $TA/main log -1 --format=%B | grep -q -F 'Gate: docs only, --fast'"
 LABEL="docs only: tagged $V3"; ok git -C "$TA/origin.git" rev-parse -q --verify "refs/tags/$V3"
@@ -329,29 +248,19 @@ LABEL="push race: the merge and the tag taken back"; STUB_RACE="$TA/work" run ba
 ok sh -c "[ $RC = 1 ] && grep -q -F 'main moved on origin' $TA/out.txt && [ -z \"\$(git -C $TA/main tag -l $V4)\" ]"
 LABEL="push race: the rerun ships";             run batch/RC; ok sh -c "[ $RC = 0 ] && git -C $TA/origin.git rev-parse -q --verify refs/tags/$V4"
 
-# TM ships: a recorded suite red, a timing red that is within the margin of main's, a ship file with a copied table's header and separator rows
-LABEL="ship TM ($V5): a timing red as fast as main's passes, named, the suite's red passes as recorded"
-STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' STUB_FIGS_MAIN="44 45 46" STUB_FIGS_BATCH="46 45 44" tm run batch/TM
-ok sh -c "[ $RC = 0 ] && grep -q -F \"pushed main and $V5\" $TA/out.txt && grep -q -F 'timing    red on the merge, judged side by side' $TA/out.txt"
+# A suite-only gate still records, tags and publishes in the throwaway origin.
+LABEL="ship TM ($V5): suite passes and tags without a timing step"; : > "$STUB_LOG"
+STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' run batch/TM
+ok sh -c "[ $RC = 0 ] && grep -q -F \"pushed main and $V5\" $TA/out.txt && [ \$(wc -l < $STUB_LOG) = 1 ]"
 G="$TA/main/docs/notes/gate.txt"
-LABEL="TM: gate.txt holds the suite's red as a line and each timing red only as a # line"
-ok sh -c "grep -q -x -F 'MapCheck | exit 1' $G && grep -q '^# timing red not the batch.s (paired): PlanCheck | the plan is within PLAN_MS' $G && grep -q '^# timing red not the batch.s (paired): PlanCheck | exit 1' $G && ! grep -q '^PlanCheck' $G && grep -q '^# date: [0-9-]*\$' $G"
-LABEL="TM: the merge body names the timing line, with the medians"; ok sh -c "git -C $TA/main log -1 --format=%B | grep -q -F 'Gate-timing: red on the merge, judged side by side with main' && git -C $TA/main log -1 --format=%B | grep -q -F 'PlanCheck [main 45 ms, batch 45 ms'"
+LABEL="TM: gate.txt keeps suite reds and omits timing records"
+ok sh -c "grep -q -x -F 'MapCheck | exit 1' $G && ! grep -q -E '^# (timing|figure)' $G"
+LABEL="TM: the merge body omits Gate-timing"
+ok sh -c "! git -C $TA/main log -1 --format=%B | grep -q '^Gate-timing:'"
 LABEL="TM: its header and separator rows did not reach QUEUE.md, its two rows did"
 Q="$TA/main/QUEUE.md"
 ok sh -c "b() { git -C $TA/main show HEAD^:QUEUE.md | grep -c \"\$1\"; }; [ \$(grep -c '^| item |' $Q) = \$(b '^| item |') ] && [ \$(grep -c '^| batch |' $Q) = \$(b '^| batch |') ] && [ \$(grep -c '^|---|---|---|---|\$' $Q) = \$(b '^|---|---|---|---|\$') ] && [ \$(grep -c '^|---|---|---|\$' $Q) = \$(b '^|---|---|---|\$') ] && [ \$(grep -c '^| TM-C |' $Q) = 1 ] && [ \$(grep -c '^| TM-N |' $Q) = 1 ]"   # as many header and separator rows as main had before TM (QUEUE.md has two | batch | tables since 2026-11-02)
 LABEL="TM: the records line counts rows, not headers"; ok sh -c "grep -q -F '1 Pending row(s), 1 Queued row(s) added' $TA/out.txt"
-# GT2: TM's gate wrote the merged main's figure of its miss; a red the same day is judged against it first
-LABEL="TM: gate.txt keeps main's figure of the miss, the merge's median over the rounds (GT2)"; ok grep -q -x -F "$(printf '# figure\tPlanCheck\t%s\t45\t42\tms\tFAIL\t1\t1' "$PL")" $G
-LABEL="timing: the same miss today, within the margin of main's figure that misses the budget too, passes with no round"; : > "$STUB_LOG"; tm run --dry-run batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'PlanCheck [main 45 ms (gate.txt, today), batch 45 ms (+0.0%), budget 42 ms: main over the budget too, no round]' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
-LABEL="timing: the passed red is no recorded red, a 30% slower one the next time (over main's figure of the day by the margin too) still stops"
-PT0=$PT; PT="PlanCheck|$PL|53|42|ms|FAIL|1"; STUB_FIGS_MAIN="40 41 42" STUB_FIGS_BATCH="52 53 54" tm run --dry-run batch/RED; PT=$PT0; ok sh -c "[ $RC = 1 ] && grep -q -F 'over main' $TA/out.txt"
-LABEL="timing: main's figure of another day is not read: the rounds run"; : > "$STUB_LOG"; ( cd "$TA/main" && sed -i 's/^# date: .*/# date: 2000-01-01/' docs/notes/gate.txt && git commit -q -am "selftest: gate.txt of another day" && git push -q origin main )
-STUB_FIGS_MAIN="44 45 46" STUB_FIGS_BATCH="46 45 44" tm run --dry-run batch/RED; ok sh -c "[ $RC = 0 ] && grep -q 'cwd=main-timing' $STUB_LOG"
-LABEL="timing: main's recorded red, repeated by the timing run, is not judged again"; : > "$STUB_LOG"
-STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' STUB_TEXIT=3 STUB_TREDS='MapCheck | exit 1' run --dry-run batch/RED
-ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt && ! grep -q 'cwd=main-timing' $STUB_LOG"
 # GF1: each fault is attempted as a real ship against the throwaway origin, and must leave its refs alone.
 refs() { git -C "$TA/origin.git" for-each-ref refs/heads/main refs/tags --format='%(refname) %(objectname)'; }
 refs > "$TA/refs.before"
@@ -362,7 +271,7 @@ unmoved() {
     cmp -s "$TA/refs.before" "$TA/refs.after" && cmp -s "$TA/local.before" "$TA/local.after" && clean
 }
 for fault in killed stale missing; do
-    LABEL="interrupted $fault timing cannot reuse the successful suite's results"
+    LABEL="interrupted $fault suite cannot publish with stale results"
     STUB_FAULT=$fault run batch/RED
     ok sh -c "[ $RC = 1 ] && grep -q 'the check did not finish' $TA/out.txt"
     LABEL="...main, tags and the worktree stayed where they were"; ok unmoved
@@ -425,7 +334,7 @@ STUB_FAULT=hold STUB_READY="$TA/ready" CBS_GATE_MAIN="$TA/main" TMP="$TA/runs" s
 LAUNCH=$!
 for attempt in $(seq 1 300); do [ ! -f "$TA/ready" ] || break; kill -0 "$LAUNCH" 2>/dev/null || break; sleep 0.2; done
 RUNDIR=$(sed -n 's/^gate: run //p' "$TA/launcher.out" | head -1)
-LABEL="launcher reached the held timing stage"; ok test -f "$TA/ready"
+LABEL="launcher reached the held suite stage"; ok test -f "$TA/ready"
 if [ -f "$TA/ready" ]; then
     RED_TIP=$(git -C "$TA/origin.git" rev-parse refs/heads/batch/RED)
     git -C "$TA/origin.git" update-ref refs/heads/batch/RED "$(git -C "$TA/origin.git" rev-parse refs/heads/batch/FM)"

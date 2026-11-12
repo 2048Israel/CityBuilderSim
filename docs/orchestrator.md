@@ -119,8 +119,8 @@ batch it is built on):
 5. `ship.sh` requires clean main, current with origin, its VERSION equal to the
    last version tag. It merges uncommitted, resolving generated-doc conflicts
    with the branch's side, and stages the ship file's records before checking.
-   Other conflicts stop. The suite runs once, timed soft, then timing alone
-   runs hard. Fresh statuses and outputs and every required stage's completion
+   Other conflicts stop. The suite runs once, timed soft (GR1). Fresh statuses
+   and outputs and every required stage's completion
    are proved before `gate.txt` is written and again before commit. Origin's
    branch must still be the gated commit and carry its ship file (GF1, LM1).
 6. Main's recorded reds pass word for word. A NEW red passes only with
@@ -131,21 +131,13 @@ batch it is built on):
    (GF1, WG2). A red the batch's code did not cause passes on Jerus's standing
    word (2026-11-04), its cause in the notes and its fix queued. Other reds go
    back as their failing lines, the ship file removed first (`docs/batch.md`, 5).
-   Timing policy stays TM3/GT2. Figures in `timing.tsv` are compared first with
-   today's main figures in `gate.txt`. An uncovered miss gets three alternating
-   rounds against main's classes (`CBS_TIMING_ROUNDS`, at least two). It counts
-   against the batch when main's median is within budget, the batch's over it,
-   and over main's by more than 15% (`CBS_TIMING_MARGIN`, `tools/timing-pair.awk`).
-   No clock or no comparison stops too, unless his words name that line. Passed
-   timing reds are comments in `gate.txt`, with medians, never recorded reds.
-   The hard run starts at once (GP1). Comparisons use `Timing` too (TimingCheck).
 7. A passed gate writes `gate.txt`, commits, tags and pushes atomically. A push
    race with main takes the commit and tag back. `--version X.Y.Z` is Jerus's
    call. `--dry-run` runs the gates and restores the tree and HEAD, retaining
    logs. Harness names after `--` require it. A docs-only merge (`.md` outside
    `docs/ensemble/`) runs `--fast`, leaving `gate.txt` alone. `--no-tag` keeps
    main's version. The publisher runs from a copy (TM3, scripts rewritten by
-   their own merge). After publisher, launcher or timing arithmetic changes,
+   their own merge). After publisher or launcher changes,
    run `sh tools/ship-selftest.sh`; after wait changes, `sh tools/wait-selftest.sh`.
 
 **Before saying a change works:** the gate's suite is green but for main's
@@ -172,8 +164,11 @@ which alone has `--pick` and the exits 3 and 4; `Batch check.bat` is Jerus's
 double-click (`--maps` regenerates the maps too; without it it writes nothing
 git tracks, because the PC's copy pulls `main` and must stay clean). Batches
 check side by side here, alongside Jerus's game, which nobody waits on him to
-close: `batch-check.sh` times every run soft but the gate's `--timing`, and
-`ship.sh` judges a timing red side by side with main's classes (TM3).
+close: `batch-check.sh` times every run soft except `--timing`. Nightly timing on
+main keeps figures per machine, confirms slower lines with paired medians and
+names the introducing merge (GR1). `CBS_TIMING_WAIT_SECONDS` bounds its quiet
+wait. Loaded figures are retained without becoming a baseline. The morning's
+`nightly` line includes the timing verdict, detailed in `$HOME/.cbs-nightly.log`.
 `Batch check.bat` times soft only while another batch's JVM or the game runs,
 and decides **once, at its start** (lesson d).
 

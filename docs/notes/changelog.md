@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### GR1 — timing judged nightly, not at the gate — 2026-11-12, ready, no tag (process), see docs/queue/GR1-notes.md
+The gate runs its suite with timing soft. Hard timing and paired rounds move to
+nightly on main, with machine-local figures, loaded-run tracking, paired median
+confirmation and first-parent merge attribution. The morning summary names a
+confirmed slowdown's batch and version. First quiet figures establish a baseline.
+The self-tests pass, including 116 ship cases and five-merge attribution. A full
+fresh-clone dry run passed and the laptop nightly retained 151 timing figures.
+
 ### GF1 — the gate fails safe — 2026-11-12, ready, no tag (process), see docs/queue/GF1-notes.md
 Fresh stage results and completion proofs prevent interrupted checks from publishing.
 Main's publisher judges each merge. `--branch-gate` exercises the branch publisher

@@ -137,7 +137,6 @@ echo "gate: exit $CODE; log $LOG; unnamed lines $RUN/unnamed.txt"
 # Keep stopped clones too, for inspecting HEAD and the unfinished merge. Logs always survive.
 if [ "$CODE" = 0 ]; then
     [ ! -d "$CLONE/target/checks" ] || cp -R "$CLONE/target/checks" "$RUN/checks"
-    git -C "$CLONE" worktree remove --force target/main-timing >/dev/null 2>&1 || :
     rm -rf "$CLONE"
 fi
 exit "$CODE"

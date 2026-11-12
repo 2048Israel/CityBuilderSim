@@ -20,7 +20,7 @@ every call after it.
 
 - **Checks:** `./batch-check.sh [harness names]` - compile, suite, maps,
   Stale, tree, in about ten lines (`--fast` skips the suite, `--timing`
-  runs the timing harnesses alone and hard, `--pick` runs the harnesses that
+  runs the timing harnesses alone and hard, judged nightly by `tools/nightly.sh`, `--pick` runs the harnesses that
   read what the diff changed, `tools/pick.sh`). Exit 3 means the only reds
   are main's recorded ones (`docs/notes/gate.txt`). Logs go to
   `target/checks/`; grep them, never cat them. On the PC: the same script in
@@ -32,7 +32,7 @@ every call after it.
   for a red harness (FW7). Run it in the background and wait for it; never
   poll it, and never rerun a red harness in full to find its assertion.
 - **Ship:** `./ship.sh batch/<id>` is the orchestrator's merge, checks,
-  timing harnesses hard, tag and push (`--dry-run` gates alone). Since BP1
+  tag and push (`--dry-run` gates alone). Since BP1
   it also writes the batch's records and sets the version, both from the
   branch's ship file, `docs/queue/<id>-ship.md`.
 - **Source:** `Where Name -print` prints one method. Never open `Game.java`
