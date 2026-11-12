@@ -21,3 +21,8 @@
 - The first named run finished with SlopeCheck green. It exposed a full-ground pass that still used FW11's old sparse clear list, while the new journal used its kept-state array. Applying the kept-state flag in the shared field/occupancy pass fixed the disconnected field-belt plans. Two adjacent documentation blocks were also moved to their methods after Stale caught them.
 - The focused probe now passes the field belt, dated arrivals, 2d yard arrival/removal/return, the idle-yard lifecycle and FORMAT 16/15 journal checks with zero failures. Its yard displaced exactly 37 boxes on arrival and 66 on return, with zero later moves and zero moves when removed.
 - A subsequent --fast exited 0, with zero firm Stale findings.
+
+- The incremental ground pass compared only run kinds and skipped a wall event with the same run kind before and after. Wall events now use the full ground pass, preserving its before/after occupancy arrays for moveOff. The explicit 18c fixture verifies exactly one displacement, no movement on release and a later arrival using the freed plot. All three assertions pass.
+- The repaired played city's founding district has one street piece and replays its seven recorded way plots identically without further events. The focused probe's only remaining red is MapCheck 1's recorded DM3 missing-drawn-buildings line.
+- Initial default traces on main and the branch matched across all eight CSVs. After the incremental-ground correction the final model's default and 4,000-month playtests are being run again against that stored main trace.
+- The first --pick compile caught a harness variable named `in` where the input was `pj.in`. It was corrected before the replacement --pick run.

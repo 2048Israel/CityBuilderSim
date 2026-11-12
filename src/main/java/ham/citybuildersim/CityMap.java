@@ -3369,7 +3369,7 @@ public final class CityMap {
      * A key of everything district d's own stamp is worked out from (ownStampFresh(), line by line), itself worked out from the version
      * counters those inputs move and the few values that have none: equal keys, equal stamps (MapCheck 18 checks it after every month
      * on x 1, x 80 and 5B). Its inputs and how each is keyed:
-     *  - the district's own counts and sited counts (read, the arrays), its log (logN, logHash, firstBatch) and journal (jN, jHash);
+     *  - the district's own counts and sited counts (read, the arrays), its log (logN, logHash, firstBatch), runs journal (jN, jHash) and wall journal (wallHash);
      *  - the nine districts about it and itself, whether each is on the map and its version (which every write to its counts or its sites'
      *    runs moves: the site lists are kept against it), and the east, south and south-east neighbours' journal hashes the stamp folds;
      *  - siteGen, the holdings' states: moved when the site lists are all let go;
@@ -10368,7 +10368,9 @@ public final class CityMap {
         return p;
     }
 
-    /** Keeps a plan's appended wall events. An older worker cannot overwrite a newer journal. */
+    /* ----- THE WALL WAYS DATED (DM2) ----- */
+
+    /** Keeps a plan's appended wall events on the map's thread. An older worker cannot overwrite a newer journal. */
     boolean keepWays(District d, int[] months, int[] changes) {
         if (months == null || changes == null || months.length <= d.wallMonth.length) return false;
         for (int k = 0; k < d.wallMonth.length; k++) {
@@ -10761,6 +10763,8 @@ public final class CityMap {
      * before, the plot in the district's own box, the kinds before and after
      * as before << 4 | after.
      * Since FORMAT 13 (batch CC1-M) each arm's record in the runs ends with what last stopped it (CityRuns.Arm.stoppedBy, a byte).
+     * Since FORMAT 16 (DM2) each district's wall-way journal follows the runs journals: a varint count, then each event's month delta
+     * and frame plot/state (plot << 1 | kept) as varints. A release keeps the earlier reservation in the history.
      * The stamp is a hash of every other byte, so the same map always writes
      * the same file.
      */

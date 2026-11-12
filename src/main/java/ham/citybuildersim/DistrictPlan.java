@@ -2540,7 +2540,8 @@ public final class DistrictPlan {
             }
             // The records due laid on the runs' ground, the room as it was kept to find what they changed by.
             int laid = 0;
-            boolean keeping = keepGround;
+            // The incremental pass compares run kinds. A wall event changes room while leaving those kinds unchanged.
+            boolean keeping = keepGround && !ways;
             if (runs || ways) {
                 if (!keeping) {
                     System.arraycopy(occStart, 0, occWas, 0, AREA);
@@ -6732,6 +6733,8 @@ public final class DistrictPlan {
          * well's site is not the way's to cross (SITE_MINED), but a house on a
          * resource field's plots is: the field is built on last, and the houses
          * on its plots near the streets are a belt like any other (LC3, below).
+         * DM2 records each newly kept plot at the map's month. Replay moves only the boxes crossing that event, and preserves the
+         * earlier arrivals and routes. A later ground event can release an unused way while retaining its earlier displacement.
          */
 
         /**
@@ -6848,6 +6851,8 @@ public final class DistrictPlan {
 
         /** The plots of buildings on a field's plots the ways of this make() crossed (wallRoute()), over all its plans. */
         int wallField;
+
+        /* ----- THE WALL WAYS DATED (DM2) ----- */
 
         /** The input's journal copied once for this make. Repeated ladder passes replay the same records. */
         int[] wMonth, wRec;

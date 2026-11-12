@@ -387,6 +387,7 @@ public class PlanCheck {
         walledIn(types);
         fieldWall(types);
         fieldWallArrivals(types);
+        datedWallEvents(types);
         interchangeAvenue(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -4601,7 +4602,7 @@ public class PlanCheck {
                 if (p.wallTries > 0) walledIns.add(pj.in);
                 DistrictPlan again = DistrictPlan.make(pj.in);
                 ok[0] &= placedDigest(p) == placedDigest(again) && streetDigest(p) == streetDigest(again) && p.wallTries == again.wallTries && p.wallClear == again.wallClear;
-                ok[1] &= p.wallTries <= DistrictPlan.WALL_TRIES && (p.wallClear == 0 || p.wallTries > 0 || (in.wallChange != null && in.wallChange.length >= p.wallClear));
+                ok[1] &= p.wallTries <= DistrictPlan.WALL_TRIES && (p.wallClear == 0 || p.wallTries > 0 || (pj.in.wallChange != null && pj.in.wallChange.length >= p.wallClear));
             }
         }
     }
@@ -4788,6 +4789,35 @@ public class PlanCheck {
         check("the planner leaves its input wall journal unchanged", changedInput == 0);
         check("the recorded plan replays identically without adding another wall event", replayChanged == 0);
 
+    }
+
+    /** A recorded way moves only its intersecting box. Its later release leaves that box in place and offers the plot to arrivals. */
+    static void datedWallEvents(BuildingVisual.Type[] types) {
+        out.println("\n--- 18c. wall events displace only their boxes and release room for later arrivals (DM2) ---");
+        int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        Log log = new Log().add(1, house, 50);
+        DistrictPlan.Input in = log.into(flat(types));
+        DistrictPlan before = DistrictPlan.make(in);
+        int plot = before.by[0] * DistrictPlan.FRAME + before.bx[0];
+        in.month = 2;
+        in.wallMonth = new int[] { 2 };
+        in.wallChange = new int[] { plot << 1 | 1 };
+        DistrictPlan kept = DistrictPlan.make(in);
+        int moves = MapCheck.movedOf(MapCheck.boxesOf(before), MapCheck.boxesOf(kept));
+        boolean occupied = MapCheck.boxesOf(kept).stream().anyMatch(b -> MapCheck.anyPlot(b, 0, q -> q == plot));
+        check("a dated way displaces its one intersecting box, with every other box standing and no box on its plot",
+                moves == 1 && kept.movedOff == 1 && before.buildings == kept.buildings && !occupied);
+        in.month = 3;
+        in.wallMonth = new int[] { 2, 3 };
+        in.wallChange = new int[] { plot << 1 | 1, plot << 1 };
+        DistrictPlan released = DistrictPlan.make(in);
+        check("a way's release preserves every standing box and its earlier displacement", MapCheck.movedOf(MapCheck.boxesOf(kept), MapCheck.boxesOf(released)) == 0);
+        log.add(4, house, 1).into(in);
+        in.month = 4;
+        DistrictPlan arrived = DistrictPlan.make(in);
+        boolean used = MapCheck.boxesOf(arrived).stream().anyMatch(b -> MapCheck.anyPlot(b, 0, q -> q == plot));
+        check("a later arrival can use the released plot without moving another box", used && arrived.buildings == released.buildings + 1
+                && MapCheck.movedOf(MapCheck.boxesOf(released), MapCheck.boxesOf(arrived)) == 0);
     }
 
     /* =====================================================================
