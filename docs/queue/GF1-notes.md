@@ -1,4 +1,4 @@
-# GF1 ? the gate fails safe (2026-11-11)
+# GF1 — the gate fails safe (2026-11-11)
 
 Codex builder session `01a1cd1b-9c4a-7432-b30c-84e0000369d5`, thread `codex-GF1`,
 branch `batch/GF1`. Jerus authorized this headless run through Claude host
