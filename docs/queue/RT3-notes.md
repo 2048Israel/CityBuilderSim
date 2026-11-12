@@ -35,7 +35,7 @@ explicit because section 61 starts at m2377 on current main's path.
 
 LongPlaytest counts retired building posts over trailing twelve-month windows
 against each sector's standing posts before the window began. Both retirement
-rules contribute. New hires do not conceal the retirement flow. It reports
+rules contribute. The flow includes retirements of replacement capacity. It reports
 overlapping windows above one fifth, separate episodes per sector and the
 largest annual share. The counter lives beside the plant counts. Closed bank
 branches sold through Retail are excluded from Retail's posts because their
@@ -84,8 +84,17 @@ posts when introduced at the onset of this decline. Its log is
   KeptCheck assertions discussed below. Its section 61 grows from 20,385
   posts to 21,635 over m2377?2402. Twenty timing assertions are soft. Maps
   regenerate and Stale reports zero firm findings.
-- Final `./batch-check.sh --pick` is running, selecting 99 of 201 harnesses.
-  Its log is `target/checks/rt3-pick.txt`.
+- Final `./batch-check.sh --pick` compiles and selects 99 of 201 harnesses.
+  Its KeptCheck executes the explicit guard and passes. Throughout
+  m2391?2416 posts run from **21,085 to 22,335**, minimum **21,085**.
+  The exact log line is
+  `the city keeps four fifths of its posts throughout m2391-2416 (RT3, 21085 to 22335, least 21085) OK`.
+  The pick is **incomplete**. Following lanekeeper's short held-batch
+  wrap-up, its own process tree was stopped after this guard passed. The
+  outer wrapper emitted `exit-0` after the forced stop. That wrapper status
+  is not a completed-check verdict. `target/checks/rt3-pick.txt` is explicitly
+  marked STOPPED/incomplete, and the partial logs remain in `target/checks`.
+  The initial complete named run above supplies the recorded KeptCheck reds.
 
 ## Ensemble and GDP finding
 
@@ -170,7 +179,9 @@ from -2.15 to -2.50 points. Over the whole m600?720 intervention, HIGH R1
 reads -3.53 points against -2.91 in the baseline, and R2's unemployment cost
 rises from 0.83 to 1.20 points. The changed capacity/employment histories
 produce a stronger measured disinflation response relative to AUTO2 twins.
-The reduction in late inflation outliers is the direct reason R3 turns green.
+The reduction in late inflation outliers is the direct reason R3 turns green. The remaining outlier is seed 12,
+whose m660?720 annualised inflation is -0.904% under HIGH and -2.226%
+under AUTO2, a difference of +1.322 points.
 
 ### AUTO2 F1
 
