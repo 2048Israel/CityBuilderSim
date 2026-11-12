@@ -1,6 +1,7 @@
 #!/bin/sh
 # Fresh-clone gate with retained logs. WHY (GF1, LM1): temp launchers hid ship's exit and lost stopped runs.
 # tools/gate.sh ID [ship.sh options], or tools/gate.sh --stop RUN_DIRECTORY
+# CBS_GATE_DIRECTORY names a new retained run directory; --reuse RUN is passed to the publisher.
 # --branch-gate tests the branch publisher with --dry-run only. --red-lines FILE adds one --red-line per nonempty line. CBS_GATE_MAIN names the main checkout.
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
@@ -28,8 +29,14 @@ case "$ID" in ''|*[!A-Za-z0-9_-]*) echo 'gate: invalid batch id'; exit 2 ;; esac
 SOURCE=$(cd "$HERE/.." && git rev-parse --path-format=absolute --git-common-dir) || exit 1
 MAIN=${CBS_GATE_MAIN:-$(dirname "$SOURCE")}
 URL=$(git -C "$MAIN" remote get-url origin) || exit 1
-RUN=$(mktemp -d "${TMP:-${TMPDIR:-/tmp}}/cbs-gate-$ID-XXXXXXXX") || exit 1
+if [ -n "${CBS_GATE_DIRECTORY:-}" ]; then
+    RUN=$CBS_GATE_DIRECTORY
+    mkdir "$RUN" || exit 1
+else
+    RUN=$(mktemp -d "${TMP:-${TMPDIR:-/tmp}}/cbs-gate-$ID-XXXXXXXX") || exit 1
+fi
 RUN=$(cd "$RUN" && pwd)
+unset CBS_GATE_DIRECTORY
 CLONE="$RUN/clone"; LOG="$RUN/ship.log"
 echo "gate: run $RUN"
 echo "gate: stop with sh tools/gate.sh --stop '$RUN'"
@@ -55,7 +62,7 @@ while [ "$N" -gt 0 ]; do
         --red-lines)
             [ "$N" -gt 0 ] && [ -f "$1" ] || { echo 'gate: --red-lines needs a file'; exit 2; }
             REDFILE=$1; shift; N=$((N - 1)) ;;
-        --red-ok|--red-line|--version|-m|-F)
+        --reuse|--red-ok|--red-line|--version|-m|-F)
             [ "$N" -gt 0 ] || { echo "gate: $ARG needs a value"; exit 2; }
             set -- "$@" "$ARG" "$1"; shift; N=$((N - 1)) ;;
         *) set -- "$@" "$ARG" ;;
@@ -72,6 +79,10 @@ git -C "$CLONE" remote set-url origin "$URL" &&
 git -C "$CLONE" fetch -q origin &&
 git -C "$CLONE" checkout -q -B main origin/main || { tail -16 "$LOG"; exit 1; }
 git -C "$CLONE" ls-remote origin refs/heads/main "refs/heads/batch/$ID" 'refs/tags/*' > "$RUN/refs.before" || exit 1
+echo cbs-gate-v1 > "$RUN/launcher"
+git -C "$CLONE" remote get-url origin > "$RUN/origin"
+git -C "$CLONE" rev-parse "origin/batch/$ID" > "$RUN/branch.commit" || exit 1
+git -C "$CLONE" rev-parse origin/main > "$RUN/main.commit"
 echo "refs/heads/batch/$ID" > "$RUN/branch"
 git -C "$CLONE" rev-parse HEAD > "$RUN/head.before"
 CBS_GATE_SCRIPT=./ship.sh
@@ -136,7 +147,7 @@ tail -16 "$LOG"
 echo "gate: exit $CODE; log $LOG; unnamed lines $RUN/unnamed.txt"
 # Keep stopped clones too, for inspecting HEAD and the unfinished merge. Logs always survive.
 if [ "$CODE" = 0 ]; then
-    [ ! -d "$CLONE/target/checks" ] || cp -R "$CLONE/target/checks" "$RUN/checks"
+    [ -f "$RUN/checks.complete" ] || [ ! -d "$CLONE/target/checks" ] || { mkdir -p "$RUN/checks"; cp -R "$CLONE/target/checks/." "$RUN/checks/"; }
     rm -rf "$CLONE"
 fi
 exit "$CODE"

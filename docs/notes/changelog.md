@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### GR2 — known reds in the repository, and what runs where — 2026-11-12, ready, no tag (process), see docs/queue/GR2-notes.md
+
+The repository holds 77 harness-scoped approval parts seeded from the LM1 and
+PW1 gates. AllChecks, batch-check and ship share their judge, and ship files
+new unrelated reds and retires the entries a batch mends. Shared-code picks
+select ALL and changed harnesses select their borrowers. Gates select the
+merge's coverage and retain full, partial and fast launcher evidence with its
+generated indexes for reuse against current known reds. The repaired Ready flow and stable assertion labels pass the focused checks.
+The accepted fresh-clone full run remains known-red only under the stricter list.
+
 ### GR1 — timing judged nightly, not at the gate — 2026-11-12, ready, no tag (process), see docs/queue/GR1-notes.md
 The gate runs its suite with timing soft. Hard timing and paired rounds move to
 nightly on main, with machine-local figures, loaded-run tracking, paired median

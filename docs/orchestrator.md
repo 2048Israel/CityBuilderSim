@@ -104,41 +104,40 @@ batch it is built on):
    names.
 3. Take the batch's recommended â˜… calls and say which and why in the notes,
    sending Jerus only his.
-4. `sh tools/gate.sh <id> [ship.sh options]` clones under `$TMP`, names both
-   data files from the main checkout and keeps a timestamped log outside the
-   clone. It prints the run directory and returns `ship.sh`'s exit status.
-   Main's publisher judges the merge. `--branch-gate --dry-run` explicitly
-   tests a branch's changed publisher. WHY (GF1 review): a branch cannot choose
-   the rules that publish it. `--red-lines FILE` reads approval substrings.
-   `sh tools/gate.sh --stop RUN_DIRECTORY` cancels that run's process tree,
-   including on Windows, and retains its log and clone. Closing its caller
-   cancels it too. Stop reports its cause and compares main, branch and tag
-   refs with `refs.before`, naming every moved ref. Real publication requires
-   the launcher's live guardian; cancellation before tag or a push attempt
-   rolls back local publication work (GF1 review, stopped caller and retries).
-5. `ship.sh` requires clean main, current with origin, its VERSION equal to the
-   last version tag. It merges uncommitted, resolving generated-doc conflicts
-   with the branch's side, and stages the ship file's records before checking.
-   Other conflicts stop. The suite runs once, timed soft (GR1). Fresh statuses
-   and outputs and every required stage's completion
-   are proved before `gate.txt` is written and again before commit. Origin's
-   branch must still be the gated commit and carry its ship file (GF1, LM1).
-6. Main's recorded reds pass word for word. A NEW red passes only with
-   `--red-ok "his words" --red-line "<part of each approved line>"`. A harness's
-   own exit and failure counts follow its named assertions only when no other
-   assertion is unnamed (TM3, CC1-S). Every unnamed line goes in `unnamed.txt`
-   beside the retained log, with its count and the first twelve on screen
-   (GF1, WG2). A red the batch's code did not cause passes on Jerus's standing
-   word (2026-11-04), its cause in the notes and its fix queued. Other reds go
-   back as their failing lines, the ship file removed first (`docs/batch.md`, 5).
-7. A passed gate writes `gate.txt`, commits, tags and pushes atomically. A push
-   race with main takes the commit and tag back. `--version X.Y.Z` is Jerus's
-   call. `--dry-run` runs the gates and restores the tree and HEAD, retaining
-   logs. Harness names after `--` require it. A docs-only merge (`.md` outside
-   `docs/ensemble/`) runs `--fast`, leaving `gate.txt` alone. `--no-tag` keeps
-   main's version. The publisher runs from a copy (TM3, scripts rewritten by
-   their own merge). After publisher or launcher changes,
-   run `sh tools/ship-selftest.sh`; after wait changes, `sh tools/wait-selftest.sh`.
+4. `sh tools/gate.sh ID [options]` makes a fresh clone, names the data files
+   and retains logs and commit identities. `--stop RUN_DIRECTORY` ends its
+   owned tree and reports refs. Publication requires a live guardian.
+   Main's publisher runs by default; `--branch-gate --dry-run` tests a branch's.
+   WHY (GF1, LM1) stopped callers and stale statuses once reached publication.
+   `--reuse RUN_DIRECTORY`, or a ship file's `gate-run` comment, takes completed
+   launcher evidence with matching branch commit, selection, origin and hashes.
+   Main may gain Markdown outside `docs/ensemble/` and known-red entries.
+   Today's registry rejudges completed logs, including stops on unnamed reds.
+   Invalid evidence gets fresh checks. WHY (GR2) adding a name reran a full gate.
+5. The publisher requires clean, current main at its last version tag, merges
+   uncommitted, resolves generated-doc conflicts and files records. Other
+   conflicts stop. The pick selects harnesses. Game classes, resources, POM and
+   suite-runner changes run the full soft-timed suite. Other changes run the
+   compile, selected harnesses, maps, Stale and changed scripts' self-tests.
+   The Gate line records `no game code` and the harness count. Docs run `--fast`.
+   Partial gates preserve `gate.txt`. WHY (GR2) process gates paid hours for
+   unrelated harnesses.
+6. `gate.txt`'s exact reds and `known-reds.txt`'s harness-scoped parts share one
+   judge with AllChecks and batch-check. A batch files unrelated NEW reds in
+   `## known-reds`, traces their cause in its notes and queues each fix. Its own
+   mending entries are removed before judgment, including exact-record cover.
+   Counts pass only alongside covered assertions with every assertion covered.
+   `--red-ok "his words" --red-line "part"` retains one-time approvals.
+   Unnamed lines are retained. Failed batches withdraw their readiness file.
+   WHY (GR2, WG2) builders could not read the hand-copied temp approvals.
+7. Complete checks, a still-current branch and its readiness marker precede
+   commit, tag and atomic push. Push races roll local publication back.
+   `--dry-run` restores the tree and keeps evidence. Its optional harness
+   filters are retained as a different selection.
+   `--version X.Y.Z` is Jerus's call; `--no-tag` keeps main's version.
+   After publisher or launcher edits run `sh tools/ship-selftest.sh`, after
+   picker edits `sh tools/pick-selftest.sh`, after wait edits its self-test.
+   WHY (GF1, TM3) a merge rewrites scripts while their shell reads them.
 
 **Before saying a change works:** the gate's suite is green but for main's
 recorded reds (say which: `docs/notes/gate.txt` and the merge's body), the maps

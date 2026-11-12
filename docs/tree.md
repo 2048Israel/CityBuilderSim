@@ -1049,3 +1049,5 @@ adds its line here, not in `CLAUDE.md`.
                                          pushed, not on other pushes, a merged or deleted branch, --skip or a branch
                                          built on an unmerged one; --row on a predecessor mended; about 30 seconds;
                                          run it after any change to wait.sh (GP1, 2026-10-27; RL1)
+
+`KnownReds` judges exact gate records and harness-scoped repository approvals for AllChecks, batch-check and ship (GR2).

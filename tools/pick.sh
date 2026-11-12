@@ -1,62 +1,7 @@
 #!/bin/sh
-# ---------------------------------------------------------------------------
-#  The harnesses a change needs (BP1, 2026-10-25): no JVM, about a second.
-#
-#      sh tools/pick.sh            the working tree (staged, unstaged, untracked) against origin/main,
-#                                  or against the tip of the unmerged batch this branch is built on
-#                                  (tools/carries.sh, RL1: that one's diff is not this batch's)
-#      sh tools/pick.sh A          the working tree against A
-#      sh tools/pick.sh A B        what B has that A has not (a merge: sh tools/pick.sh M^1 M);
-#                                  B's files are read, not the working tree's
-#
-#  stdout is one line: the harness names, space-separated and sorted, or ALL
-#  (the whole suite), or NONE (no harness reads what changed). stderr says why,
-#  in batch-check's column style, and ends in the review line:
-#
-#      pick      14 of 138 harnesses for 6 files changed since 031b49a9
-#      pick      left to the gate: Game.java (120 readers); LongPlaytest in its place
-#      pick      not a harness's: 9 files
-#      review    needed - money: Bond.java; saves: DataSave.java, +SAVE_FORMAT; threading: +Platform.runLater in ui/X.java
-#
-#  Exit status 0 ok, 1 a guard (a *Check.java that AllChecks.HARNESSES does not
-#  register: no suite would ever run it), 2 usage or not in a git tree.
-#
-#  The rules, the first that matches a changed file wins:
-#    pom.xml                          -> ALL
-#    AllChecks.java                   -> nothing (the guard reads it)
-#    a *Check.java or LongPlaytest    -> itself (a deleted one: nothing); and a
-#      *Check.java changed or added -> TimingCheck as well, which holds that no
-#      harness compares a figure against a *_MS or *_NS dial, or compares two
-#      measured times, but through Timing (ET6's BridgeCheck did, in 3 places;
-#      its own --pick never ran TimingCheck and only the gate's full suite
-#      caught it - TM3, 2026-10-27)
-#    a .java class in docs/harnesses.md's "Which harnesses read which class"
-#      table, as the fork point had it -> its readers; but a class more than
-#      CBS_PICK_FANOUT (default 50) harnesses read - Game, GameFiles,
-#      BuildingsTemplate, Founding, TempDirs, Sectors, Sector - is left to the
-#      gate's full suite and LongPlaytest is picked in its place
-#    a .java class not in the table   -> the harnesses that name it (grep -w),
-#      when it existed at the fork point; one new since then -> nothing, since
-#      only a harness that is itself changed can name it
-#    src/main/resources/X             -> the harnesses whose text holds X's file
-#      name, the readers (by the same fan-out rule) of the classes whose text
-#      holds it, and LongPlaytest when X is a .json
-#    docs/ensemble/*, tools/ensemble/* -> EnsembleCheck
-#    anything else                    -> nothing ("not a harness's", counted)
-#  Only a name that is a harness file at the diff's end is ever picked.
-#
-#  The review line is a floor (BP1 item 5): money (Bank*, CentralBank*, Bond*,
-#  OrderBook*, Rollover*, Treasury*, Fund*, Debt*, Expectations*), saves
-#  (DataSave*, HistorySave*, GameFiles*, an added line naming SAVE_FORMAT or
-#  OLDEST_LOADABLE_FORMAT), threading (an added line with synchronized,
-#  volatile, new Thread, Executor, runLater, Atomic*, Concurrent* or
-#  CompletableFuture; ui/UserInterface.java changed, the UI-wide). Harness
-#  files and comment lines are not read for it. The orchestrator may add a
-#  stranger's review, never skip one this names.
-#
-#  WHY (BP1, 2026-10-25): a batch ran the whole suite three times; the rest is
-#  docs/notes/batch-history.md, "The scripts' headers" (moved in GT1).
-# ---------------------------------------------------------------------------
+# Picks harnesses against main, a named base or a committed A B range.
+# stdout ALL, NONE or sorted names. Exit 1 means an unregistered harness.
+# WHY (GR2): shared classes and borrowed harness fixtures escaped the builder.
 
 LC_ALL=C; export LC_ALL
 
@@ -164,18 +109,20 @@ FILENAME == ARGV[1] { idx[$1] = $2; nidx++; next }
     cls = f; sub(/^.*\//, "", cls); sub(/\.[^.]*$/, "", cls)
     if (s != "X") nfiles++
     if (f == "pom.xml") { print "ALL\tpom.xml changed"; next }
-    if (f == src "/AllChecks.java") next
+    if (f == src "/AllChecks.java" || f == src "/Timing.java" ||
+        f == src "/KnownReds.java" || f == "batch-check.sh") { print "ALL\t" f " runs the suite"; next }
     if (index(f, src "/") == 1 && f ~ /\.java$/) {
         rel = substr(f, length(src) + 2)
         if (rel !~ /\// && (cls ~ /Check$/ || cls == "LongPlaytest")) {
             if (s != "D") print "H\t" cls
             if (s != "D" && cls ~ /Check$/) print "H\tTimingCheck"   # TM3 item 8: a harness written or changed is read by the source rules of TimingCheck
+            print "G\t" cls
             next
         }
         if (cls in idx) {
             if (idx[cls] == "") { print "Z\t" cls ".java"; next }
             n = split(idx[cls], a, ",")
-            if (n > fan) { print "GATE\t" cls ".java\t" n; print "H\tLongPlaytest"; next }
+            if (n > fan) { print "ALL\t" cls ".java (" n " readers)"; next }
             for (i = 1; i <= n; i++) print "H\t" a[i]
             next
         }
@@ -282,11 +229,6 @@ if [ "$N" = 0 ]; then
 else
     paste -sd' ' "$TMP/pick"
     say pick "$N of $HN harnesses for $(files "$K") changed since $SHORT"
-fi
-GATE=$(awk -F'\t' '$1 == "GATE" { print $2 " (" $3 " readers)" }' "$TMP/ev" | sort -u | paste -sd, - | sed 's/,/, /g')
-if [ -n "$GATE" ]; then
-    case "$GATE" in *,*) PLACE=their ;; *) PLACE=its ;; esac
-    say pick "left to the gate: $GATE; LongPlaytest in $PLACE place"
 fi
 ZERO=$(awk -F'\t' '$1 == "Z" { print $2 }' "$TMP/ev" | sort -u | paste -sd, - | sed 's/,/, /g')
 [ -z "$ZERO" ] || say pick "read by no harness: $ZERO"

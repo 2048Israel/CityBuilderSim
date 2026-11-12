@@ -1,0 +1,82 @@
+# Known reds, GR2. Jerus, 2026-11-04:
+# "always, if checks were not caused by its own code, then it should always pass"
+# Harness | part of the red line | queued mending batch | date | cause
+# Count lines follow covered assertions automatically. WHY (GR2): temp launchers hid the list.
+
+CentralBankCheck | ...and in at least STRICT_SHARE of them | CB2 | 2026-11-11 | RT1 reversal sample sits on STRICT_SHARE. policy paths change the reading
+CentralBankCheck | very loose costs trust, through the lean measured against holding the target | CB2 | 2026-11-11 | RT1 reversal sample sits on STRICT_SHARE. policy paths change the reading
+DenominationCheck | the same output | BS1 | 2026-11-11 | BA1 bond bids differ by rounding in otherwise equal twins
+DenominationCheck | ...and the same year of it | BS1 | 2026-11-11 | BA1 bond bids differ by rounding in otherwise equal twins
+DenominationCheck | the same rent | BS1 | 2026-11-11 | BA1 bond bids differ by rounding in otherwise equal twins
+DenominationCheck | the same price level | BS1 | 2026-11-11 | BA1 bond bids differ by rounding in otherwise equal twins
+DenominationCheck | the same currency | BS1 | 2026-11-11 | BA1 bond bids differ by rounding in otherwise equal twins
+DenominationCheck | the same treasury | BS1 | 2026-11-11 | BA1 bond bids differ by rounding in otherwise equal twins
+DenominationCheck | the same shops' till | BS1 | 2026-11-11 | BA1 bond bids differ by rounding in otherwise equal twins
+DenominationCheck | the same bank | BS1 | 2026-11-11 | BA1 bond bids differ by rounding in otherwise equal twins
+HealthCheck | ...and it buries more of its people over the run | HX1 | 2026-11-11 | GW1 fee twins compare path noise. the fixture does not cause partial bill coverage
+HealthCheck | ...its old first, whom a fee on senior care turns away | HX1 | 2026-11-11 | GW1 fee twins compare path noise. the fixture does not cause partial bill coverage
+HealthCheck | fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away | HX1 | 2026-11-11 | GW1 fee twins compare path noise. the fixture does not cause partial bill coverage
+KeptCheck | Spending: fold debt opened adds to the page | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | a bookRow was found on a money page of this city | KS2 | 2026-11-11 | RB1 sections 51/66/67 look for moving figures or paper instead of causing them
+KeptCheck | a month landing starts a business's KEPT and the Income page's waterfall counting exactly at the rungs countsUp() allows | KS2 | 2026-11-11 | RB1 sections 51/66/67 look for moving figures or paper instead of causing them
+KeptCheck | a month landing starts the fund's worth and a payment exactly at the rungs countsUp() allows | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | an animation running when a month lands past COUNT_UP_TOP is stopped on the fund's worth | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | each month hands back nine in ten of the nodes the first draw made, or more | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | every tooltip a node had and still has is the same Tooltip after a month's kept redraw | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | most months make no node at all | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | no month makes more than a tenth of the nodes the first draw made | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | note 1 opened on it adds to the page | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | the BuybackLadder on Close it now: no month draws it again with nothing changed in it | KL1 | 2026-11-11 | GW1 bitwise face comparison redraws a picture unchanged at four decimals
+KeptCheck | the city has a piece of paper to close | KS2 | 2026-11-11 | RB1 sections 51/66/67 look for moving figures or paper instead of causing them
+KeptCheck | the city has a plain business and a materials industry with works to draw | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+LongPlaytest | (no FAIL line) | DM2 | 2026-11-11 | nightly moved boxes. the watch exits without a FAIL assertion
+LongPlaytest | a building on the map moved | DM2 | 2026-11-11 | nightly moved boxes. the watch exits without a FAIL assertion
+LongPlaytest | industry stands farther out than the homes | CL6 | 2026-11-11 | WG2 late industry ring extends beyond the homes
+MapCheck | ...and issued, the card's bond buys them all | BQ1 | 2026-11-11 | LM1 term auction sells nothing. the fixture does not cause clearing
+MapCheck | ...and the arrivals after it go on | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | ...and the layout watch | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | a block of the box bought in a month the runs do not change | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | a building on the map moved | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | a month's FX-side map work at 5B | KS1 | 2026-11-11 | GT1-T timing work folded into KS1, now measured by the nightly
+MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | a yard laid again across the buildings that stand moves off it the boxes under it and no others | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | a yard that goes moves none of the buildings | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock | KS1 | 2026-11-11 | GT1-T timing work folded into KS1, now measured by the nightly
+MapCheck | at 5 billion a month's change takes no more than 5 ms of the wall clock | KS1 | 2026-11-11 | GT1-T timing work folded into KS1, now measured by the nightly
+MapCheck | at every 30th month the map draws exactly what the city has | DM3 | 2026-11-11 | WG2 edge packing leaves 27 model buildings undrawn at month 91
+MapCheck | counts them apart and flags none | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | every box stands four months on | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | none of the boxes of the month the reserve came | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | short, the card's bond is the funding page's first: the 20-year term for the gap | BQ1 | 2026-11-11 | LM1 term auction sells nothing. the fixture does not cause clearing
+MapCheck | the journal worked back from today's reserve | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MapCheck | where the reserve is undated | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
+MonetaryCheck | a month's delay in the hand moves them less than the allowance | MQ1 | 2026-11-11 | GW1 shelf settles before its price index. the delay compares an inflating city
+PlanCheck | ...the avenues were laid in the played city | PX1 | 2026-11-11 | LM1 exposes CL4 comb junctions four plots apart
+PlanCheck | at every 30th month every district's plan keeps every check | PX1 | 2026-11-11 | LM1 exposes CL4 comb junctions four plots apart
+PriceLevelCheck | sector.Retail.cash (nominal) month  | BS1 | 2026-11-11 | bond issue fixed-point and price-priority rounding separate nominal twins
+PriceLevelCheck | sector.Manufacturing.cash (nominal) month  | BS1 | 2026-11-11 | bond issue fixed-point and price-priority rounding separate nominal twins
+PriceLevelCheck | every live nominal series equal over the factor | BS1 | 2026-11-11 | bond issue fixed-point and price-priority rounding separate nominal twins
+PriceLevelCheck | every real series equal within | BS1 | 2026-11-11 | bond issue fixed-point and price-priority rounding separate nominal twins
+PriceLevelCheck | ...the pop is the same to the person in every month                                    FAIL | BS1 | 2026-11-11 | bond issue fixed-point and price-priority rounding separate nominal twins
+PriceLevelCheck | ...the workforce is the same to the person in every month                              FAIL | BS1 | 2026-11-11 | bond issue fixed-point and price-priority rounding separate nominal twins
+PriceLevelCheck | ...the homes is the same to the person in every month                                  FAIL | BS1 | 2026-11-11 | bond issue fixed-point and price-priority rounding separate nominal twins
+PriceLevelCheck | ...the stores is the same to the person in every month                                 FAIL | BS1 | 2026-11-11 | bond issue fixed-point and price-priority rounding separate nominal twins
+PriceLevelCheck | money series equal over the factor | BS1 | 2026-11-11 | bond issue fixed-point and price-priority rounding separate nominal twins
+SaveSlotCheck | ...after waiting for it: its swap was refused and landed on a later try | SS1 | 2026-11-11 | LB3 held-open fixture observes the process-wide WAITED counter after its refused swap
+SaveSlotCheck | ...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed | SS1 | 2026-11-11 | LB3 held-open fixture observes the process-wide WAITED counter after its refused swap
+ScaleCheck | ...and it builds: more homes at the end than at the start | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ScaleCheck | ...cash: the copy is K times the city's within | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ScaleCheck | ...deposits: the copy is K times the city's within | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ScaleCheck | ...people: the copy is K times the city's within 0.0150 | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ScaleCheck | ...prices: the copy is equal to the city's within 0.00400 | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ScaleCheck | ...savings: the copy is K times the city's within | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ScaleCheck | fixture: ...and its own rents price no migrant out | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ScaleCheck | fixture: the city is growing - more people than a year before | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ScaleCheck | fixture: the free copy ordered - an order of more than a million buildings decided | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ScaleCheck | its rents pull migrants as the city's do, every month | RT3 | 2026-11-11 | WG2 retirement collapse changes the late scale fixture city
+ShortSellingCheck | holdings were the shares in issue plus what the world was short | HS1 | 2026-11-11 | orphan shares leave the register. R0b-S and OH1 folded into HS1
+ShortSellingCheck | that city passed the audit and kept its register whole too | HS1 | 2026-11-11 | orphan shares leave the register. R0b-S and OH1 folded into HS1
+ReplayCheck | (asks -1, unpainted frames 0 | GR2-R | 2026-11-11 | CM1 replay worker-ask counter delta is negative on the historical gate path

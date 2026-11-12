@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**201 harness files, 23,705 labelled assertions.** AllChecks runs 201 of them.
+**201 harness files, 23,686 labelled assertions.** AllChecks runs 201 of them.
 
 ## Which harnesses read which class
 
@@ -183,6 +183,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EducationCheck, EquipmentCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
 | [Kept](map/Kept.md) | **none** |
 | [KeptBench](map/KeptBench.md) | KeptCheck, MoneyWordsCheck |
+| [KnownReds](map/KnownReds.md) | KnownRedsCheck |
 | [LabourMarket](map/LabourMarket.md) | ArrivalMixCheck, DiscoveryCheck, ExpectationsCheck, LabourCheck, LongPlaytest, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck |
 | [Ladder](map/Ladder.md) | BankCheck, ForeignDebtCheck, MortgageCheck |
 | [LandClassRenders](map/LandClassRenders.md) | **none** |
@@ -15822,7 +15823,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L8772 4: what reshapes the page**
 - **L8807 5: what the kept month costs**
 
-## KnownRedsCheck.java - 49 labelled assertions
+## KnownRedsCheck.java - 30 labelled assertions
 
 > The harness for AllChecks' known reds and harness time limit.
 > 
@@ -15830,69 +15831,45 @@ _(this harness does not label its checks through a helper - it prints its findin
 > verdict. Fixtures exercise the real runner's line tagging and the shell's
 > judge. GF1 adds a child whose descendant never ends, reproducing CD9's hang.
 > 
-> Proves that sections and passing lines stay out of reds, the same red is
-> known, a second is NEW, no record tags nothing, and batch-check.sh judges
-> the same saved logs. The time limit fails and ends a hung process tree,
+> Proves harness-scoped parts, exact records, count guards and agreement
+> through the common judge and both shell callers. The time limit fails and ends a hung process tree,
 > preserving an in-time child's exit and output. Fixture output stays out of
 > this harness's own log so its intentional failures cannot be misread.
 
-- **L65 1. the fixture's known red**
-- **L71 3. the second**
-- **L126 6. a harness and its descendants have a limit**
-  - L127 the fixture exercises the wait with a shorter limit than production
-  - L142 the fixture really started its never-ending descendant
-  - L147 a harness over its limit is counted failed
-  - L148 its failing line names the time limit
-  - L150 the never-ending descendant was ended with its parent
-  - L152 a harness that finishes in time keeps its own exit and output
-- **L199 1. the gate's record of a red harness: its exit, its failing line and its count**
-  - L200 the fixture's first run exits 1
-  - L201 it has exactly three red lines
-  - L203 the first red line is its exit
-  - L204 the second is the failing assertion's line
-  - L206 the third is its count of failures, its last line
-  - L207 the passing line that says FAILS in its words is not a red line
-  - L208 no section title is a red line
-  - L209 the failing lines AllChecks prints do hold a section title, so the walk skipped one
-- **L218 2. the same red again is a known red, under -q and -f**
-  - L219 the record reads back as a set
-  - L221 it holds three lines: the comment and the blank one are not in it
-  - L222 every red line of the fixture's run is in it
-  - L224 under -q the report is one line
-  - L225 and it ends in the words known red
-  - L227 under -f the header ends in the words known red
-  - L230 under -f there are lines under the header besides section titles
-  - L231 every one of them is tagged [known]
-  - L232 none is tagged [NEW]
-  - L233 a section title is printed as it was, with no tag
-- **L242 3. a second failing assertion is a NEW red, and -f names it**
-  - L243 the record was read
-  - L246 the fixture's second run exits 2
-  - L247 some of its red lines are not in the record
-  - L248 the line of the second assertion is one of them
-  - L252 the header says NEW red
-  - L253 it states how many red lines are new and how many there are
-  - L255 the second assertion's line is tagged [NEW]
-  - L257 the first assertion's line is still tagged [known]
-  - L261 the header's count is the [NEW] tags plus one for a new exit line
-  - L263 under -q the report is the header alone, with the same verdict
-- **L271 4. with no record nothing is tagged: -f prints as before FW7**
-  - L272 a record that does not exist reads as null
-  - L274 the header has no verdict, it ends with the time
-  - L275 there are as many lines as the header and the failing lines
-  - L278 each is the failing line, indented four spaces and nothing else
-  - L279 none has a tag
-  - L280 the line under the summary says no record was read
-- **L322 5. batch-check.sh judges the same logs: exit 3 for the known red, exit 4 and the NEW line for the second**
-  - L323 the record was read
-  - L337 the known red, tagged by AllChecks, is judged exit 3
-  - L338 and its verdict line says known red
-  - L339 the second run, tagged, is judged exit 4
-  - L340 and its verdict line says NEW red
-  - L341 and it prints the second assertion's line
-  - L342 a log from before FW7, with no tags, is judged exit 3 as well
-  - L343 a header whose count is not the one batch-check.sh finds is refused, exit 1
-  - L344 and the line says the two judges disagree
+- **L66 1. the fixture's known red**
+- **L72 3. the second**
+  - L90 the fixture exits with one failing assertion
+  - L91 passing FAILS labels and section titles stay out of reds
+  - L92 exact main lines cover the fixture
+  - L94 exact red lines preserve literal pipe characters
+  - L95 a harness-scoped part covers its assertion and both counts
+  - L96 another harness's part covers nothing
+  - L97 counts alone never cover a red
+  - L99 a second assertion keeps its counts NEW too
+  - L100 an exit with no assertion remains NEW
+  - L101 one-time qualified crash parts retain their explicit approval
+  - L104 the runner tags covered assertion and count known
+  - L105 the quiet report keeps the same verdict
+  - L106 without a record the report has no tags
+  - L107 a missing record reads as null
+  - L110 a mending batch loses its exact-record cover too
+  - L112 explicit one-time words can pass a retired line
+  - L115 late failing assertions reach the judge
+  - L118 metadata and comment lines read back intact
+- **L119 one judge through the runner, batch check and publisher entry point**
+  - L137 runner and both shell callers agree for fixture
+  - L138 the shell names the extra assertion
+  - L141 an older untagged log gets the same verdict
+  - L143 inconsistent runner tags fail closed
+  - L144 a missing summary fails closed
+  - L145 a zero-harness summary fails closed
+- **L170 6. a harness and its descendants have a limit**
+  - L171 the fixture exercises the wait with a shorter limit than production
+  - L186 the fixture really started its never-ending descendant
+  - L191 a harness over its limit is counted failed
+  - L192 its failing line names the time limit
+  - L194 the never-ending descendant was ended with its parent
+  - L196 a harness that finishes in time keeps its own exit and output
 
 ## LabourCheck.java - 186 labelled assertions
 

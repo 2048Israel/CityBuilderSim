@@ -1,18 +1,20 @@
 #!/bin/sh
-# Throwaway origin, stub checks, no JVM. Run after changes to ship.sh or tools/gate.sh.
+# Throwaway origin and stub suite; the production red judge uses Java. Run after changes to ship.sh or tools/gate.sh.
 # Optional checkout argument. CBS_SHIPTEST_DIR names the area, CBS_SHIPTEST_KEEP=1 keeps it,
 # CBS_SHIPTEST_SH chooses the shell. Exit status counts failed cases.
 # WHY (BP1, GF1): publication defects must be reproduced without publishing the repository.
 
+unset CBS_SHIP_COPY CBS_SHIP_HOME CBS_SHIP_OWNER CBS_GATE_RUN CBS_GATE_SCRIPT CBS_GATE_DIRECTORY CBS_KNOWN_REDS CBS_REJUDGE
 SRC=$(cd "${1:-.}" && pwd) || exit 2
 [ -f "$SRC/ship.sh" ] || { echo "selftest: no ship.sh in $SRC"; exit 2; }
-TA=${CBS_SHIPTEST_DIR:-${TEMP:-/tmp}/cbs-ship-selftest}
+TA=${CBS_SHIPTEST_DIR:-$(mktemp -d "${TEMP:-/tmp}/cbs-ship-selftest-XXXXXXXX")}
 mkdir -p "$(dirname "$TA")" && TA=$(cd "$(dirname "$TA")" && pwd)/$(basename "$TA")
 if [ -e "$TA" ] && [ ! -d "$TA/origin.git" ] && [ -n "$(ls -A "$TA" 2>/dev/null)" ]; then
     echo "selftest: $TA exists and is not a selftest area: name another with CBS_SHIPTEST_DIR"; exit 2
 fi
+export CBS_SELFTEST=1
 FAILS=0; N=0
-ok() { N=$((N + 1)); if "$@" >/dev/null 2>&1; then echo "PASS  $LABEL"; else echo "FAIL  $LABEL"; FAILS=$((FAILS + 1)); fi; }
+ok() { N=$((N + 1)); if "$@" >/dev/null 2>&1; then echo "PASS  $LABEL"; else echo "FAIL  $LABEL"; FAILS=$((FAILS + 1)); [ ! -f "$TA/out.txt" ] || cp "$TA/out.txt" "$TA/fail-$N.txt"; fi; }
 clean() { [ -z "$(git -C "$TA/main" status --porcelain)" ] && [ ! -e "$TA/main/.git/MERGE_HEAD" ]; }
 S() { ( cd "$TA/main" && "$@" ) ; }
 run() { rm -f "$TA/direct/cancelled"; rm -rf "$TA/direct/stages"; ( cd "$TA/main" && CBS_GATE_RUN="$TA/direct" CBS_SHIP_SHELL=${CBS_SHIPTEST_SH:-sh} $CBS_SHIPTEST_SH ./ship.sh "$@" > "$TA/out.txt" 2>&1 ); RC=$?; }   # ship.sh in main, output in out.txt, status in RC
@@ -41,6 +43,9 @@ VOLD=$P.$((Q + 50))   # a version nobody has tagged, above the last tag: a branc
 cat > "$TA/main/batch-check.sh" <<'EOF'
 #!/bin/sh
 cd "$(dirname "$0")" || exit 1
+if [ "$1" = --judge ]; then
+    exec java src/main/java/ham/citybuildersim/KnownReds.java "$2" "$CBS_KNOWN_REDS" target/checks rejudge
+fi
 OUT=target/checks; mkdir -p "$OUT"; MODE=suite; NAMED=""
 for a in "$@"; do case "$a" in --fast) MODE=fast ;; --timing) MODE=timing ;; -*) ;; *) NAMED="$NAMED $a" ;; esac; done
 [ -z "$STUB_LOG" ] || echo "run: mode=$MODE args='$*' cwd=$(basename "$(pwd)") JDK='$JDK_JAVA_OPTIONS' shipcopy='$CBS_SHIP_COPY'" >> "$STUB_LOG"
@@ -67,9 +72,14 @@ case "$MODE" in
   suite) EXIT=${STUB_EXIT:-0}; REDS=${STUB_REDS-} ;;
   timing) echo "unexpected hard timing at the gate"; exit 99 ;;
 esac
+echo "$MODE" > "$OUT/stage.txt"
 if [ "$MODE" != fast ]; then
     printf '%s\n' "$REDS" | tr ';' '\n' | grep . > "$OUT/reds.txt" || : > "$OUT/reds.txt"
-    echo "9 harnesses run in 1s: 9 passed, 0 failed" > "$OUT/suite.txt"
+    awk -F ' [|] ' '
+        { h=$1; text=substr($0,index($0," | ")+3); if (!(h in seen)) order[++n]=h; seen[h]=1
+          if (text ~ /^exit /) code[h]=substr(text,6); else lines[h]=lines[h] "    " text "\n" }
+        END { for(i=1;i<=n;i++) {h=order[i]; print h "  FAILED - exit " (code[h] ? code[h] : 1) " (0.1s)"; printf "%s",lines[h]}
+              print "9 harnesses run in 1s: " 9-n " passed, " n+0 " failed" }' "$OUT/reds.txt" > "$OUT/suite.txt"
     echo "suite     stub (exit $EXIT)"
     [ -z "$STUB_NOEARTH" ] || echo "    note: no earth-2.bin here, so the Earth harnesses' full-file sections did not run"
 fi
@@ -77,7 +87,9 @@ if [ "$MODE" != timing ] && [ -n "$STUB_TOUCHMAPS" ]; then echo "// regenerated"
 exit "$EXIT"
 EOF
 cp "$SRC/ship.sh" "$TA/main/ship.sh"; chmod +x "$TA/main/ship.sh" "$TA/main/batch-check.sh"
-mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/carries.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
+mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/carries.sh" "$SRC/tools/pick.sh" "$SRC/tools/gate-reuse.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
+cp "$SRC/src/main/java/ham/citybuildersim/KnownReds.java" "$TA/main/src/main/java/ham/citybuildersim/"
+printf '\nMapCheck | stub known | FIX | 2026-11-12 | fixture\n' >> "$TA/main/docs/notes/known-reds.txt"
 IDS="TST TS2 NS GV GG GN GX GH GQ GC GE GB DOC TM ER NC NC2 OS SH PP PS PR PT"; FAKE=""
 for i in $IDS; do FAKE="$FAKE| $i | A fake queued batch $i | [x](y) |
 "; done
@@ -228,12 +240,12 @@ STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | a new thing     FAIL;ZzCheck |
 ok sh -c "[ $RC = 1 ] && grep -q -F 'NOT NAMED: ZzCheck | another flaky one' $TA/out.txt && grep -q -F 'no --red-line names' $TA/out.txt"
 LABEL="red: ...and the tree is clean";          ok clean
 LABEL="red: a crash in another harness is not passed by words naming a line of this one"
-STUB_EXIT=4 STUB_REDS='ZzCheck | a new thing     FAIL;YyCheck | exit -1073741819' run --dry-run --red-ok "his words" --red-line "a new thing" batch/RED
+STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | a new thing     FAIL;YyCheck | exit -1073741819' run --dry-run --red-ok "his words" --red-line "a new thing" batch/RED
 ok sh -c "[ $RC = 1 ] && grep -q -F 'NOT NAMED: YyCheck | exit -1073741819' $TA/out.txt"
 LABEL="red: ...unless a --red-line names it (repeatable, whole or in part)"
-STUB_EXIT=4 STUB_REDS='ZzCheck | a new thing     FAIL;YyCheck | exit -1073741819' run --dry-run --red-ok "his words" --red-line "a new thing" --red-line "YyCheck | exit -10" batch/RED
+STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | a new thing     FAIL;YyCheck | exit -1073741819' run --dry-run --red-ok "his words" --red-line "a new thing" --red-line "YyCheck | exit -10" batch/RED
 ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: NEW red on Jerus' $TA/out.txt"
-LABEL="red: exit 3 passes";                     STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' run --dry-run batch/RED;  ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt"
+LABEL="red: exit 3 passes";                     STUB_EXIT=3 STUB_REDS='MapCheck | exit 1;MapCheck | stub known FAIL' run --dry-run batch/RED;  ok sh -c "[ $RC = 0 ] && grep -q -F 'gate: known red only' $TA/out.txt"
 LABEL="red: exit 1 stops";                      STUB_EXIT=1 run --dry-run batch/RED; ok rc_is 1
 
 LABEL="gate: a passing suite runs once, timing soft"; : > "$STUB_LOG"
@@ -250,7 +262,7 @@ LABEL="push race: the rerun ships";             run batch/RC; ok sh -c "[ $RC = 
 
 # A suite-only gate still records, tags and publishes in the throwaway origin.
 LABEL="ship TM ($V5): suite passes and tags without a timing step"; : > "$STUB_LOG"
-STUB_EXIT=3 STUB_REDS='MapCheck | exit 1' run batch/TM
+STUB_EXIT=3 STUB_REDS='MapCheck | exit 1;MapCheck | stub known FAIL' run batch/TM
 ok sh -c "[ $RC = 0 ] && grep -q -F \"pushed main and $V5\" $TA/out.txt && [ \$(wc -l < $STUB_LOG) = 1 ]"
 G="$TA/main/docs/notes/gate.txt"
 LABEL="TM: gate.txt keeps suite reds and omits timing records"
@@ -287,7 +299,7 @@ LABEL="...main and tags did not move"; ok unmoved
 LABEL="all unnamed reds survive beyond the twelve shown"
 MANY=$(awk 'BEGIN {for (i=1; i<=25; i++) printf "ZzCheck | extra red %d FAIL;", i}')
 STUB_EXIT=4 STUB_REDS="$MANY" run --dry-run --red-ok words --red-line unrelated batch/RED
-ok sh -c "[ $RC = 1 ] && [ \"\$(wc -l < $TA/direct/unnamed.txt)\" = 25 ] && grep -q '25 unnamed red' $TA/out.txt"
+ok sh -c "[ $RC = 1 ] && [ \"\$(wc -l < $TA/direct/unnamed.txt)\" = 26 ] && grep -q '26 unnamed red' $TA/out.txt"
 # GF1 review: real publication requires its launcher, and cancellation after commit rolls it back.
 LABEL="a direct real ship without a guardian is refused"
 ( cd "$TA/main" && unset CBS_GATE_RUN; sh ./ship.sh batch/RED > "$TA/out.txt" 2>&1 ); RC=$?
@@ -368,6 +380,79 @@ LABEL="...and the tree is clean";                                               
 LABEL="ship PP, the predecessor";                                                            run --no-tag batch/PP;            ok sh -c "[ $RC = 0 ] && git -C $TA/origin.git log -1 --format=%s main | grep -q -F 'Merge batch/PP'"
 LABEL="PP on main: PS ships, with no merge of main in it first, its own ship file the only one"; run --dry-run --no-tag batch/PS;  ok sh -c "[ $RC = 0 ] && grep -q -F \"PS's block on top\" $TA/out.txt"
 LABEL="PR is still not on main: PT is still stopped";                                        run --dry-run --no-tag batch/PT;  ok stopped "batch/PT is built on PR, which is not on main yet"
+# GR2 fixtures exercise filing, removal, partial selection and the launcher's evidence.
+mk batch/KR; shipf KR; jv KR KnownRedsCheck
+cat >> "$TA/work/docs/queue/KR-ship.md" <<'EOF'
+| ZFIX | Mend the unrelated fixture | fixture |
+## known-reds
+ZzCheck | unrelated fixture | ZFIX | 2026-11-12 | caused by the fixture
+EOF
+fin KR batch/KR
+cp "$TA/main/docs/notes/gate.txt" "$TA/gr2-gate.before"; : > "$STUB_LOG"
+STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | unrelated fixture FAIL;ZzCheck | 1 FAILED' run batch/KR
+LABEL="known-reds section files its entry and queue row"; ok sh -c "[ $RC = 0 ] && grep -q 'ZzCheck | unrelated fixture | ZFIX' $TA/main/docs/notes/known-reds.txt && grep -q '^| ZFIX ' $TA/main/QUEUE.md"
+LABEL="used approval parts are recorded completely in the merge body"; ok sh -c "git -C $TA/main log -1 --format=%B | grep -q '^Known-red: ZzCheck | unrelated fixture | ZFIX | 2026-11-12 | caused by the fixture$'"
+LABEL="a harness-only merge preserves gate.txt"; ok cmp -s "$TA/gr2-gate.before" "$TA/main/docs/notes/gate.txt"
+LABEL="a harness-only gate reports and runs its pick"; ok sh -c "grep -q 'KnownRedsCheck.*TimingCheck' $STUB_LOG && git -C $TA/main log -1 --format=%B | grep -q 'no game code: 2 harnesses'"
+# Exact-record cover must disappear along with the registry exemption.
+echo 'ZzCheck | unrelated fixture FAIL' >> "$TA/main/docs/notes/gate.txt"
+S git add docs/notes/gate.txt; S git commit -q -m fixture-exact; S git push -q origin main
+mk batch/ZFIX; shipf ZFIX; jv ZFIX KnownRedsCheck; fin ZFIX batch/ZFIX
+STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | unrelated fixture FAIL;ZzCheck | 1 FAILED' run --dry-run batch/ZFIX
+LABEL="a mending batch faces its red despite an exact gate record"; ok stopped 'NEW red'
+run batch/ZFIX
+LABEL="the merge removes its mending entries"; ok sh -c "[ $RC = 0 ] && ! grep -q ' | ZFIX | ' $TA/main/docs/notes/known-reds.txt"
+for pair in HF:SimulationEngine AR:AllChecks; do
+    b=${pair%%:*}; mk batch/$b; shipf $b; jv "$b" "${pair##*:}"; jv "$b" KnownRedsCheck; fin "$b" batch/$b
+    : > "$STUB_LOG"; run --dry-run batch/$b
+    LABEL="$b game or runner changes select the full suite"; ok sh -c "[ $RC = 0 ] && grep -q \"args=''\" $STUB_LOG"
+done
+mk batch/RF; shipf RF; jv RF SimulationEngine; fin RF batch/RF
+CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/kept" sh "$SRC/tools/gate.sh" RF --dry-run > "$TA/kept.out" 2>&1; LRC=$?
+LABEL="a launcher dry run seals checks and both commits"; ok sh -c "[ $LRC = 0 ] && test -f $TA/kept/checks.complete && test -s $TA/kept/branch.commit && test -s $TA/kept/main.commit"
+: > "$STUB_LOG"; run --dry-run --reuse "$TA/kept" batch/RF
+LABEL="the same two commits reuse the kept run with no checks rerun"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && grep -q 'reused $TA/kept' $TA/out.txt"
+echo 'Markdown-only advancement' > "$TA/main/docs/queue/reuse-fixture.md"; S git add docs/queue/reuse-fixture.md; S git commit -q -m fixture-docs; S git push -q origin main
+: > "$STUB_LOG"; run --dry-run --reuse "$TA/kept" batch/RF
+LABEL="Markdown-only main advancement keeps evidence reusable"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG"
+cp -R "$TA/kept" "$TA/unlaunched"; rm "$TA/unlaunched/launcher"
+: > "$STUB_LOG"; run --dry-run --reuse "$TA/unlaunched" batch/RF
+LABEL="working-folder evidence is refused and checks run"; ok sh -c "[ $RC = 0 ] && test -s $STUB_LOG && grep -q 'kept run refused' $TA/out.txt"
+W fetch -q origin; W checkout -q -B batch/RF origin/batch/RF; printf 'another file\n' > "$TA/work/docs/queue/RF-other.md"; W add docs/queue/RF-other.md; W commit -q -m moved; W push -q origin batch/RF
+: > "$STUB_LOG"; run --dry-run --reuse "$TA/kept" batch/RF
+LABEL="another branch file changed after the run refuses reuse"; ok sh -c "[ $RC = 0 ] && test -s $STUB_LOG && grep -q 'kept run refused' $TA/out.txt"
+# A new launch captures the moved branch, then a Java main change invalidates it.
+CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/kept2" sh "$SRC/tools/gate.sh" RF --dry-run > "$TA/kept2.out" 2>&1
+printf '\n// main advanced\n' >> "$TA/main/src/main/java/ham/citybuildersim/Timing.java"; S git add -A; S git commit -q -m fixture-java; S git push -q origin main
+: > "$STUB_LOG"; run --dry-run --reuse "$TA/kept2" batch/RF
+LABEL="main gaining Java refuses the kept run"; ok sh -c "[ $RC = 0 ] && test -s $STUB_LOG && grep -q 'kept run refused' $TA/out.txt"
+GEN_BEFORE=$(grep -c '^// regenerated' "$TA/main/docs/dials.md")
+STUB_TOUCHMAPS=1 STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | late unnamed FAIL;ZzCheck | 1 FAILED' CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/red-kept" sh "$SRC/tools/gate.sh" RF --dry-run > "$TA/red-kept.out" 2>&1
+: > "$STUB_LOG"; run --dry-run --reuse "$TA/red-kept" batch/RF
+LABEL="a completed run with still-unnamed reds cannot ship"; ok stopped 'NEW red'
+printf '\nZzCheck | late unnamed | FIX | 2026-11-12 | fixture\n' >> "$TA/main/docs/notes/known-reds.txt"; S git add docs/notes/known-reds.txt; S git commit -q -m fixture-name; S git push -q origin main
+: > "$STUB_LOG"; run --reuse "$TA/red-kept" batch/RF
+LABEL="naming a stopped run's red permits reuse and publication"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && git -C $TA/origin.git log -1 --format=%B main | grep -q 'reused $TA/red-kept'"
+
+LABEL="reuse restores the generated indexes produced by the kept checks"; ok test "$(grep -c '^// regenerated' "$TA/main/docs/dials.md")" = "$((GEN_BEFORE + 1))"
+for b in FDOC FSC; do
+    mk batch/$b
+    printf '## changelog\n### %s - fixture, no tag (process)\n\nFixture.\n' "$b" > "$TA/work/docs/queue/$b-ship.md"
+    [ "$b" != FSC ] || printf '#!/bin/sh\n# fixture\n' > "$TA/work/tools/zz-reuse.sh"
+    fin "$b" batch/$b
+    CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/kept-$b" sh "$SRC/tools/gate.sh" "$b" --dry-run --no-tag > "$TA/kept-$b.out" 2>&1
+    : > "$STUB_LOG"; run --no-tag --reuse "$TA/kept-$b" batch/$b
+    LABEL="$b zero-harness gate reuses its completed fast run"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && git -C $TA/main log -1 --format=%B | grep -q 'reused $TA/kept-$b'"
+done
+
+# The builder runs before its own notes and readiness marker are committed.
+mk batch/RQ; jv RQ SimulationEngine; fin RQ-source batch/RQ
+CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/ready-kept" sh "$SRC/tools/gate.sh" RQ --dry-run --no-tag > "$TA/ready-kept.out" 2>&1
+printf '# RQ notes\n' > "$TA/work/docs/queue/RQ-notes.md"; fin RQ-notes batch/RQ
+printf '<!-- gate-run: %s -->\n## changelog\n### RQ - ready, no tag (process)\n\nReady fixture.\n' "$TA/ready-kept" > "$TA/work/docs/queue/RQ-ship.md"; fin RQ-ready batch/RQ
+: > "$STUB_LOG"; run --no-tag batch/RQ
+LABEL="Ready flow reuses the dry run after notes and ship commits are pushed"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && git -C $TA/main log -1 --format=%B | grep -q 'reused $TA/ready-kept'"
+
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"
 [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ] || { cd /; rm -rf "$TA"; }
