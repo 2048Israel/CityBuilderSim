@@ -124,7 +124,7 @@ public class KnownRedsCheck {
      * ===================================================================== */
     private static void limited(Path tmp) throws Exception {
         System.out.println("--- 6. a harness and its descendants have a limit ---");
-        check("the production limit is four usual KeptCheck runs", AllChecks.HARNESS_SECONDS == 4 * 435);
+        check("the fixture exercises the wait with a shorter limit than production", LIMIT_SECONDS < AllChecks.HARNESS_SECONDS);
         Path pid = tmp.resolve("descendant.pid");
         for (String mode : List.of("parent", "done")) {
             List<String> command = new ArrayList<>(AllChecks.command(

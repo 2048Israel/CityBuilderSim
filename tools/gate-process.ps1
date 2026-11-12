@@ -17,16 +17,23 @@ function Stop-Gate {
         $owned = @($rows | Where-Object Native -eq $gateProcess.Id)
         if ($owned.Count -eq 0) { throw 'Gate shell is missing from the MSYS process table' }
         for ($at = 0; $at -lt $owned.Count; $at++) {
-            $shellId = $owned[$at].Shell
-            $owned += @($rows | Where-Object Parent -eq $shellId)
+            $gateShellId = $owned[$at].Shell
+            $owned += @($rows | Where-Object Parent -eq $gateShellId)
         }
         [array]::Reverse($owned)
+        $stopping = @()
         foreach ($row in $owned) {
             $child = Get-Process -Id $row.Native -ErrorAction SilentlyContinue
             if ($child -and $child.StartTime -ge $gateProcess.StartTime) {
+                $stopping += $child
+                $ErrorActionPreference = 'Continue' # a child can exit between the identity check and taskkill
                 & taskkill.exe /PID $child.Id /T /F 2>$null | Out-Null
+                $ErrorActionPreference = 'Stop'
             }
         }
+        for ($attempt = 0; $attempt -lt 20 -and @($stopping | Where-Object { !$_.HasExited }).Count -gt 0; $attempt++) { Start-Sleep -Milliseconds 250 }
+        $remaining = @($stopping | Where-Object { !$_.HasExited })
+        if ($remaining.Count -gt 0) { throw "Gate processes survived cancellation: $($remaining.Id -join ', ')" }
     }
 }
 if ($Mode -eq 'Stop') {

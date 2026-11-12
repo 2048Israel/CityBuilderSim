@@ -15839,7 +15839,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L65 1. the fixture's known red**
 - **L71 3. the second**
 - **L126 6. a harness and its descendants have a limit**
-  - L127 the production limit is four usual KeptCheck runs
+  - L127 the fixture exercises the wait with a shorter limit than production
   - L142 the fixture really started its never-ending descendant
   - L147 a harness over its limit is counted failed
   - L148 its failing line names the time limit

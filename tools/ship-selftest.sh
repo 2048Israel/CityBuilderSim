@@ -59,7 +59,7 @@ if [ "$MODE" = timing ]; then
         killed) kill -KILL "$PPID"; exit 0 ;;
         stale) echo 'suite 0' > target/ship-tmp/code; kill -KILL "$PPID"; exit 0 ;;
         missing) exit 0 ;;
-        hold) echo ready > "$STUB_READY"; while :; do sleep 1; done ;;
+        hold) echo ready > "$STUB_READY"; for attempt in $(seq 1 120); do sleep 1; done; exit 1 ;;
     esac
 fi
 case "$MODE" in
@@ -378,6 +378,8 @@ RUNDIR=$(sed -n 's/^gate: run //p' "$TA/launcher.out" | head -1)
 LABEL="launcher reached the held timing stage"; ok test -f "$TA/ready"
 if [ -f "$TA/ready" ]; then
     sh "$SRC/tools/gate.sh" --stop "$RUNDIR" > "$TA/stop.out" 2>&1
+    STOP_RC=$?
+    LABEL="the launcher's stop command succeeds"; ok test "$STOP_RC" = 0
 else kill "$LAUNCH" 2>/dev/null || :; fi
 wait "$LAUNCH"; RC=$?
 LABEL="launcher returns nonzero for a stopped gate, retaining its log"
