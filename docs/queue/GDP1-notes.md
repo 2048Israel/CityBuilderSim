@@ -104,10 +104,10 @@ prices and labour-market slack. GovernmentPlayer's annual tax/benefit rule
 reads GovernmentView.wealthYears(), based on wealth and revenue, not GDP.
 LongPlaytest's broader test player does read GDP for intervention sizes and
 throttles, and through the automatic builder. GDP is not merely a screen
-statistic. This candidate changes no model, policy, save or LongPlaytest code;
-no accounting-induced trace movement is claimed.
+statistic. At the initial proof-only stage no model, policy, save or
+LongPlaytest code changed; the resumed forecast correction is described below.
 
-## Checks so far
+## Initial proof-only checks
 
 - `./batch-check.sh --fast`: exit 0; compile, regenerated maps, zero firm
   Stale findings. Kept log: `target/checks/gdp1-fast.txt`.
@@ -121,7 +121,7 @@ no accounting-induced trace movement is claimed.
   `target/checks/gdp1-main-*.csv`. This is a diagnostic playtest, not a baseline
   suite. The RT3 replay above remains the negative-month counterexample.
 
-- Final `./batch-check.sh --pick`: **exit 0**, GdpCheck and TimingCheck both
+- Initial `./batch-check.sh --pick`: **exit 0**, GdpCheck and TimingCheck both
   pass; compile succeeds, maps regenerated, zero firm Stale findings.
   This includes the final fixture with imports preceding production and an
   explicit identity check in the import month. Model/harness commit:
@@ -142,8 +142,8 @@ production/pricing change must judge its own trace and ensemble requirement.
 
 ## Resumed: the author's decision and the forecast correction
 
-Jerus, 2026-11-12 about 17:00, asked "Should GDP1 make Manufacturing's
-forecast read the current rod price?": **"Yes, fix the forecast"**.
+Asked "Should GDP1 make Manufacturing's forecast read the current rod price?",
+Jerus answered, 2026-11-12 about 17:00: **"Yes, fix the forecast"**.
 Lanekeeper relayed this as instruction `20261112-171726-733-lanekeeper-fdf9`.
 The resumed batch fixes the common run forecast, retains the inventory proof,
 and must keep every ensemble criterion that the newest baseline passed.
@@ -221,7 +221,7 @@ CSV traces move against the initial main run; the month, bank and bond traces
 first differ at row 853. Kept report:
 `target/checks/gdp1-forecast-LongPlaytest.log`; comparison and SHA-256 hashes:
 `target/checks/gdp1-trace-comparison.txt`. Therefore the final-model ensemble
-is required and is running as `GDP1`, against **0.9.93** (23/26), with three
+was run as `GDP1`, against **0.9.93** (23/26), with three
 JVMs to leave room for the shared PC's full pick and other sessions.
 
 The ensemble completes **80/80**, **exit 0**, in **32.7 minutes**, on model

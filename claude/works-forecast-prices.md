@@ -11,8 +11,8 @@ decision while the quote still said it was cheap. RT3's seed-11 wire works
 then bought rod at the new price and exported wire below that rod bill.
 
 GDP1 prices the last observed supply and demand on the current band for the
-works' input quote. Every sector uses the same quote through Sector's input
-costing, including stockable output and captive-input chains. The production
+works' input quote. Sector's shared input costing uses that quote for flow
+forecasts, stockable output and captive-input chains. The production
 decision still forecasts quantities from observed demand, and the export
 rule still measures traded feed cost; standing payroll and other overhead
 remain costs the works pays while idle.
