@@ -1,4 +1,4 @@
-# AllChecks.java - 465 lines · 18 methods · 19 constants · harnesses
+# AllChecks.java - 439 lines · 18 methods · 19 constants · harnesses
 
 `ham/citybuildersim/AllChecks.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
 
@@ -48,7 +48,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 425 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
+| 41 | 399 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
 | 115 | 118 | `public static void main(String[] args) throws Exception` |  |
 | 235 | 8 | `static int waitForHarness(Process process, int seconds, Path log) throws InterruptedException, IOException` | Waits at most the harness's limit, recording a timeout as a failing assertion (GF1). |
 | 245 | 7 | `static void endTree(Process process)` | Ends the descendants while their parent still owns them, then the harness itself (GF1, KD1 item 1). |
@@ -56,15 +56,15 @@
 | 275 | 5 | `static double commitPct()` | The machine's commit charge in percent (SP1): on Windows the commit limit and what is left of it, as Task Manager shows it; elsewhere swap, which only a starved machine fills. |
 | 282 | 3 | `static String header(String name, int code, double seconds)` | The first line of a harness's entry: its name, its verdict as a number or OK, and how long it took. |
 | 287 | 4 | `static String summaryLine(int ran, int failed, double seconds)` | The line under the last harness: how many ran and how they ended. |
-| 296 | 4 | `static Path recordFile()` | The record this run reads: the file named by -Dcbs.knownReds when that is set, else GATE. |
-| 308 | 11 | `static Set<String> knownReds(Path file) throws IOException` | Main's recorded reds, as batch-check.sh reads them: the lines of the file, each exactly as written, but for the lines that start with # and the blank ones. |
-| 321 | 6 | `private static String trimBlanks(String s)` | How a red line is cut of its blanks: batch-check.sh's reds_of strips spaces and tabs from the front and spaces, tabs and returns from the back. |
-| 335 | 14 | `private static String[] redOf(String name, List<String> printed)` | For each printed line of a failed harness (failingLines, untagged), the red line it makes, or null when it makes none: a section title, a blank, and every line after the "(no FAIL line...)" one, which are the harness'... |
-| 356 | 6 | `static List<String> redLines(String name, int code, List<String> printed)` | The red lines of one failed harness, the same lines batch-check.sh's reds_of makes of the log: "Name \| exit N", then "Name \| <line>" for each failing line printed, a section title and the last lines of a harness with ... |
-| 364 | 3 | `static int newCount(List<String> red, Set<String> known)` | How many of the red lines are not in the record. |
-| 375 | 19 | `static List<String> report(String name, int code, double seconds, List<String> printed, boolean lines, Set<String> known)` | What -q and -f print of one failed harness. |
-| 401 | 9 | `static String againstLine(Path record, Set<String> known, List<String> knownOnly, List<String> newRed)` | The one line under the summary that says which harnesses were known reds only and which had a NEW red; with no record, that none was read. |
-| 420 | 8 | `static List<String> command(String java, String classpath, String name, boolean logged)` | How a harness is started: the JVM and classpath this one was, under -Xmx HEAP_MB and -Xms HEAP_START_MB (SP1), the timing properties (the mode, and the file the figures go to, TM3) if they are set here (a child JVM in... |
-| 430 | 10 | `static int softLines(Path log)` | How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. |
-| 447 | 18 | `static List<String> failingLines(Path log) throws IOException` | What -f prints of a failed harness's log: each failing line, after the title of the section it is in (once per section); a log with no failing line in it - a harness that died some other way - gives its last ten lines... |
+| 293 | 4 | `static Path recordFile()` | The named combined record, or the default gate and repository parts. |
+| 299 | 11 | `static Set<String> knownReds(Path file) throws IOException` | Reads the record and adds repository parts when the default gate was requested. |
+| 312 | 6 | `private static String trimBlanks(String s)` | How a red line is cut of its blanks: batch-check.sh's reds_of strips spaces and tabs from the front and spaces, tabs and returns from the back. |
+| 320 | 14 | `private static String[] redOf(String name, List<String> printed)` | Maps printed lines to reds, preserving section and diagnostic-tail boundaries. |
+| 336 | 6 | `static List<String> redLines(String name, int code, List<String> printed)` | The exit and failing lines of one harness, in public-log order. |
+| 344 | 3 | `static int newCount(List<String> red, Set<String> known)` | How many of the red lines are not in the record. |
+| 349 | 19 | `static List<String> report(String name, int code, double seconds, List<String> printed, boolean lines, Set<String> known)` | The quiet verdict and optional tagged lines, judged by KnownReds. |
+| 375 | 9 | `static String againstLine(Path record, Set<String> known, List<String> knownOnly, List<String> newRed)` | The one line under the summary that says which harnesses were known reds only and which had a NEW red; with no record, that none was read. |
+| 394 | 8 | `static List<String> command(String java, String classpath, String name, boolean logged)` | How a harness is started: the JVM and classpath this one was, under -Xmx HEAP_MB and -Xms HEAP_START_MB (SP1), the timing properties (the mode, and the file the figures go to, TM3) if they are set here (a child JVM in... |
+| 404 | 10 | `static int softLines(Path log)` | How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. |
+| 421 | 18 | `static List<String> failingLines(Path log) throws IOException` | What -f prints of a failed harness's log: each failing line, after the title of the section it is in (once per section); a log with no failing line in it - a harness that died some other way - gives its last ten lines... |
 

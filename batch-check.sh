@@ -61,13 +61,8 @@ quiet() { grep -v '^Picked up JAVA_TOOL_OPTIONS'; }   # the cloud's proxy settin
 SUITE_EXIT=0   # 0 green or no suite, 3 only main's recorded reds, 4 reds not recorded (the exit status, if nothing else failed)
 RUNSUITE=1
 
-# main's recorded reds: docs/notes/gate.txt as it was at the merge-base with origin/main, else with main, else this
-# tree's, else none. At the gate HEAD is main (or main plus the batch), so the merge-base is origin/main's tip and this
-# is ship.sh's own recorded(); in a batch it is the record of the main the batch forked from. WHY (BP1, 2026-10-25):
-# the tip of origin/main was read first, so a batch that forked while MapCheck 8 was recorded saw it as a new red the
-# day main's fix rewrote gate.txt without it - a red its own tree still has, and one it was told to mend twice.
-# RL1: a batch built on its predecessor's tip (tools/carries.sh) reads the record of the main that predecessor forked from,
-# which lacks the reds Jerus approves at its gate; the verdict says so under a NEW red, and merging main once it lands mends it.
+# Read the fork's gate record. WHY (BP1) a later main fix otherwise made an older
+# batch's existing red NEW. Repository parts are added by record_reds below.
 recorded_reds() {
     for r in origin/main main; do
         mb=$(git merge-base HEAD "$r" 2>/dev/null) || continue

@@ -108,6 +108,8 @@ public class KnownRedsCheck {
         Set<String> removed = new java.util.LinkedHashSet<>(exact);
         removed.add("! " + parts.iterator().next());
         check("a mending batch loses its exact-record cover too", AllChecks.newCount(red, removed) == 3);
+        removed.add("@once " + NAME + " | " + KNOWN_LABEL);
+        check("explicit one-time words can pass a retired line", AllChecks.newCount(red, removed) == 0);
         Path longLog = tmp.resolve("many.log");
         Files.write(longLog, java.util.stream.IntStream.range(0, 60).mapToObj(i -> "assertion " + i + " FAIL").toList());
         check("late failing assertions reach the judge", AllChecks.failingLines(longLog).contains("assertion 59 FAIL"));

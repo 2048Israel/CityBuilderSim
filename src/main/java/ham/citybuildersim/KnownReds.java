@@ -50,7 +50,8 @@ public class KnownReds {
         for (String line : reds) {
             if (count(line)) continue;
             boolean removed = entries.stream().filter(e -> e.startsWith("! ")).anyMatch(e -> matches(line, e.substring(2)));
-            if (!removed && entries.stream().anyMatch(e -> matches(line, e))) good.add(harness(line));
+            boolean approvedOnce = entries.stream().filter(e -> e.startsWith("@once ")).anyMatch(e -> matches(line, e));
+            if (approvedOnce || (!removed && entries.stream().anyMatch(e -> matches(line, e)))) good.add(harness(line));
             else { fresh.add(line); bad.add(harness(line)); }
         }
         for (String line : reds) {

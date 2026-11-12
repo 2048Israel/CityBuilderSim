@@ -22,9 +22,11 @@ changes run the selected harnesses and changed scripts' self-tests with the
 compile, maps and Stale. Those partial gates preserve the whole-suite gate record.
 
 The launcher retains commit identities, the origin, the selection, completed
-checks and hashes. Reuse requires the same branch commit and check selection.
+checks, generated indexes and hashes. Reuse requires the same branch commit and check selection.
 Main may advance through Markdown outside the ensemble and through the approval
-file. A changed source tree, unlaunched evidence or an incomplete/cancelled run
+file. The requested version is part of the check selection. Fast gates with zero
+harnesses also reuse their completed evidence. Restored indexes carry the checked
+source line numbers and version into the merge. A changed source tree, unlaunched evidence or an incomplete/cancelled run
 gets fresh checks. Completed exit-4 evidence can pass once its unrelated reds
 are entered. The retained-run directory can be named in advance through
 `CBS_GATE_DIRECTORY`, and the ship file names it in a `gate-run` comment.
@@ -67,11 +69,12 @@ Two seeded findings needed queued rows, supplied by the ship file.
   owned-child timeout checks. The final source recheck exited 0.
 - `tools/pick-selftest.sh` passed 17/17 cases, including the common judge's
   ALL selection, high fan-out classes and borrowed harness fixtures.
-- `tools/ship-selftest.sh` passed 132/132 cases. Its new cases file and retire
+- `tools/ship-selftest.sh` passed 135/135 cases. Its new cases file and retire
   entries, preserve gate.txt for a harness-only merge, record complete used
   parts, run a full suite for game/runner edits, reuse the same commits, allow
   Markdown-only advancement, reject changed commits and working-folder
-  evidence, and rejudge a stopped run after its unrelated red is named.
+  evidence, rejudge a stopped run after its unrelated red is named, restore
+  generated indexes and reuse both zero-harness fast paths.
 - A separate script-only fixture passed both paths. Its companion ran once,
   and a failing companion stopped publication and restored the fixture tree.
   Evidence is `target/gr2-script-gate.log` and its ignored fixture driver.
@@ -91,26 +94,43 @@ The simulation and resources match main. The full suite includes LongPlaytest.
 The ensemble is skipped under EN1 because this process batch leaves that model
 and its trace unchanged.
 
+## Retained launcher runs
+
+The first launcher run was stopped by the builder to complete generated-index
+restoration and zero-harness replay. Its origin refs were unchanged. Its log is
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GR2-20261112-01/ship.log`.
+It was branch `b1dfaa9d4f24562f569e898e1e0e088c08465cbf` merged with main
+`420c65dcebd0a0371d4d785145ef904af87a7883`, exit 130. Its stopped clone is retained.
+
+Targeted fresh-clone fixtures then passed replay for full, docs-only and
+script-only gates, including their generated indexes. Changing the requested
+version refused the cached indexes and ran fresh checks. Evidence is
+`target/gr2-reuse-paths.log`. The additional permanent self-test cases cover
+restoring regenerated indexes and both zero-harness replay paths.
+
 ## Process line count
 
-The final count covers the scripts, check machinery, approval file and session
-rules changed here. Generated indexes and this batch's notes and ship file are
-excluded. The result is 647 lines added and 590 removed (+57 net).
+The count covers all changed scripts, check machinery, the approval file and
+hand-authored session/tree guidance. Generated indexes and this batch's notes
+and ship file are excluded. It is `git diff --numstat origin/main` over the
+files below.
+
+690 lines added, 630 removed, +60 net.
 
 ```text
 2	1	CLAUDE.md
-13	145	batch-check.sh
+15	152	batch-check.sh
 40	49	docs/batch.md
 73	0	docs/notes/known-reds.txt
 34	35	docs/orchestrator.md
 2	0	docs/tree.md
-147	90	ship.sh
-13	18	src/main/java/ham/citybuildersim/AllChecks.java
-128	0	src/main/java/ham/citybuildersim/KnownReds.java
-61	155	src/main/java/ham/citybuildersim/KnownRedsCheck.java
-22	0	tools/gate-reuse.sh
+151	92	ship.sh
+18	49	src/main/java/ham/citybuildersim/AllChecks.java
+129	0	src/main/java/ham/citybuildersim/KnownReds.java
+63	155	src/main/java/ham/citybuildersim/KnownRedsCheck.java
+38	0	tools/gate-reuse.sh
 14	3	tools/gate.sh
 17	19	tools/pick-selftest.sh
 7	65	tools/pick.sh
-74	10	tools/ship-selftest.sh
+87	10	tools/ship-selftest.sh
 ```

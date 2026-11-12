@@ -72,6 +72,7 @@ case "$MODE" in
   suite) EXIT=${STUB_EXIT:-0}; REDS=${STUB_REDS-} ;;
   timing) echo "unexpected hard timing at the gate"; exit 99 ;;
 esac
+echo "$MODE" > "$OUT/stage.txt"
 if [ "$MODE" != fast ]; then
     printf '%s\n' "$REDS" | tr ';' '\n' | grep . > "$OUT/reds.txt" || : > "$OUT/reds.txt"
     awk -F ' [|] ' '
@@ -425,12 +426,24 @@ CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/kept2" sh "$SRC/tools/gate.sh" 
 printf '\n// main advanced\n' >> "$TA/main/src/main/java/ham/citybuildersim/Timing.java"; S git add -A; S git commit -q -m fixture-java; S git push -q origin main
 : > "$STUB_LOG"; run --dry-run --reuse "$TA/kept2" batch/RF
 LABEL="main gaining Java refuses the kept run"; ok sh -c "[ $RC = 0 ] && test -s $STUB_LOG && grep -q 'kept run refused' $TA/out.txt"
-STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | late unnamed FAIL;ZzCheck | 1 FAILED' CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/red-kept" sh "$SRC/tools/gate.sh" RF --dry-run > "$TA/red-kept.out" 2>&1
+GEN_BEFORE=$(grep -c '^// regenerated' "$TA/main/docs/dials.md")
+STUB_TOUCHMAPS=1 STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | late unnamed FAIL;ZzCheck | 1 FAILED' CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/red-kept" sh "$SRC/tools/gate.sh" RF --dry-run > "$TA/red-kept.out" 2>&1
 : > "$STUB_LOG"; run --dry-run --reuse "$TA/red-kept" batch/RF
 LABEL="a completed run with still-unnamed reds cannot ship"; ok stopped 'NEW red'
 printf '\nZzCheck | late unnamed | FIX | 2026-11-12 | fixture\n' >> "$TA/main/docs/notes/known-reds.txt"; S git add docs/notes/known-reds.txt; S git commit -q -m fixture-name; S git push -q origin main
 : > "$STUB_LOG"; run --reuse "$TA/red-kept" batch/RF
 LABEL="naming a stopped run's red permits reuse and publication"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && git -C $TA/origin.git log -1 --format=%B main | grep -q 'reused $TA/red-kept'"
+
+LABEL="reuse restores the generated indexes produced by the kept checks"; ok test "$(grep -c '^// regenerated' "$TA/main/docs/dials.md")" = "$((GEN_BEFORE + 1))"
+for b in FDOC FSC; do
+    mk batch/$b
+    printf '## changelog\n### %s - fixture, no tag (process)\n\nFixture.\n' "$b" > "$TA/work/docs/queue/$b-ship.md"
+    [ "$b" != FSC ] || printf '#!/bin/sh\n# fixture\n' > "$TA/work/tools/zz-reuse.sh"
+    fin "$b" batch/$b
+    CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/kept-$b" sh "$SRC/tools/gate.sh" "$b" --dry-run --no-tag > "$TA/kept-$b.out" 2>&1
+    : > "$STUB_LOG"; run --no-tag --reuse "$TA/kept-$b" batch/$b
+    LABEL="$b zero-harness gate reuses its completed fast run"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && git -C $TA/main log -1 --format=%B | grep -q 'reused $TA/kept-$b'"
+done
 
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"

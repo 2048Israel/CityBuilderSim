@@ -289,22 +289,13 @@ public class AllChecks {
                 ran, ran == 1 ? "" : "es", seconds, ran - failed, failed);
     }
 
-    /**
-     * The record this run reads: the file named by -Dcbs.knownReds when that
-     * is set, else GATE.
-     */
+    /** The named combined record, or the default gate and repository parts. */
     static Path recordFile() {
         String named = System.getProperty(KNOWN_PROPERTY);
         return named == null || named.isBlank() ? GATE : Paths.get(named);
     }
 
-    /**
-     * Main's recorded reds, as batch-check.sh reads them: the lines of the
-     * file, each exactly as written, but for the lines that start with # and
-     * the blank ones. Null when there is no such file, so that nothing is
-     * tagged. A byte that is not UTF-8 is read as a replacement character,
-     * never thrown.
-     */
+    /** Reads the record and adds repository parts when the default gate was requested. */
     static Set<String> knownReds(Path file) throws IOException {
         Set<String> known = KnownReds.read(file);
         if (file.equals(GATE)) {
@@ -325,13 +316,7 @@ public class AllChecks {
         return s.substring(from, to);
     }
 
-    /**
-     * For each printed line of a failed harness (failingLines, untagged), the
-     * red line it makes, or null when it makes none: a section title, a
-     * blank, and every line after the "(no FAIL line...)" one, which are the
-     * harness's last lines and no failures. The one walk that redLines counts
-     * and report tags from, so the two cannot disagree.
-     */
+    /** Maps printed lines to reds, preserving section and diagnostic-tail boundaries. */
     private static String[] redOf(String name, List<String> printed) {
         String[] red = new String[printed.size()];
         boolean noFailLine = false;
@@ -347,12 +332,7 @@ public class AllChecks {
         return red;
     }
 
-    /**
-     * The red lines of one failed harness, the same lines batch-check.sh's
-     * reds_of makes of the log: "Name | exit N", then "Name | <line>" for each
-     * failing line printed, a section title and the last lines of a harness
-     * with no failing line of its own left out.
-     */
+    /** The exit and failing lines of one harness, in public-log order. */
     static List<String> redLines(String name, int code, List<String> printed) {
         List<String> red = new ArrayList<>();
         red.add(name + " | exit " + code);
@@ -365,13 +345,7 @@ public class AllChecks {
         return KnownReds.fresh(red, known).size();
     }
 
-    /**
-     * What -q and -f print of one failed harness. The header, then its verdict
-     * when there is a record (known is not null): "known red" when every red
-     * line is in it, else "NEW red: N of M red lines". When lines is true (-f)
-     * the failing lines under it, indented four spaces, each red one tagged
-     * [known] or [NEW]; with no record, untagged as -f always printed them.
-     */
+    /** The quiet verdict and optional tagged lines, judged by KnownReds. */
     static List<String> report(String name, int code, double seconds, List<String> printed, boolean lines, Set<String> known) {
         String[] redOf = redOf(name, printed);
         Set<String> freshLines = known == null ? Set.of() : new LinkedHashSet<>(KnownReds.fresh(redLines(name, code, printed), known));

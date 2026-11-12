@@ -2,7 +2,7 @@
 
 Generated 2026-11-12 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**201 harness files, 23,685 labelled assertions.** AllChecks runs 201 of them.
+**201 harness files, 23,686 labelled assertions.** AllChecks runs 201 of them.
 
 ## Which harnesses read which class
 
@@ -15823,7 +15823,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L8772 4: what reshapes the page**
 - **L8807 5: what the kept month costs**
 
-## KnownRedsCheck.java - 29 labelled assertions
+## KnownRedsCheck.java - 30 labelled assertions
 
 > The harness for AllChecks' known reds and harness time limit.
 > 
@@ -15853,22 +15853,23 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L106 without a record the report has no tags
   - L107 a missing record reads as null
   - L110 a mending batch loses its exact-record cover too
-  - L113 late failing assertions reach the judge
-  - L116 metadata and comment lines read back intact
-- **L117 one judge through the runner, batch check and publisher entry point**
-  - L135 runner and both shell callers agree for fixture
-  - L136 the shell names the extra assertion
-  - L139 an older untagged log gets the same verdict
-  - L141 inconsistent runner tags fail closed
-  - L142 a missing summary fails closed
-  - L143 a zero-harness summary fails closed
-- **L168 6. a harness and its descendants have a limit**
-  - L169 the fixture exercises the wait with a shorter limit than production
-  - L184 the fixture really started its never-ending descendant
-  - L189 a harness over its limit is counted failed
-  - L190 its failing line names the time limit
-  - L192 the never-ending descendant was ended with its parent
-  - L194 a harness that finishes in time keeps its own exit and output
+  - L112 explicit one-time words can pass a retired line
+  - L115 late failing assertions reach the judge
+  - L118 metadata and comment lines read back intact
+- **L119 one judge through the runner, batch check and publisher entry point**
+  - L137 runner and both shell callers agree for fixture
+  - L138 the shell names the extra assertion
+  - L141 an older untagged log gets the same verdict
+  - L143 inconsistent runner tags fail closed
+  - L144 a missing summary fails closed
+  - L145 a zero-harness summary fails closed
+- **L170 6. a harness and its descendants have a limit**
+  - L171 the fixture exercises the wait with a shorter limit than production
+  - L186 the fixture really started its never-ending descendant
+  - L191 a harness over its limit is counted failed
+  - L192 its failing line names the time limit
+  - L194 the never-ending descendant was ended with its parent
+  - L196 a harness that finishes in time keeps its own exit and output
 
 ## LabourCheck.java - 186 labelled assertions
 

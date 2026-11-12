@@ -379,6 +379,7 @@ run_check() {   # stage, directory, command: no status or output survives from a
     [ -f "$T/code" ] || die "the check did not finish: $STAGE (no fresh status)"
     read -r FINISHED CHECKED < "$T/code"
     [ "$FINISHED" = "$STAGE" ] || die "the check did not finish: $STAGE (wrong status)"
+    [ "$STAGE" != fast ] || [ "$CHECKED" = 0 ] || die "the fast check failed (exit $CHECKED)"
     case "$STAGE:$CHECKED" in
         *:0|*:3|*:4) if [ "$STAGE" != fast ]; then
                    for f in reds.txt suite.txt; do
@@ -407,6 +408,7 @@ elif [ "$FULL" = 0 ]; then
     SELECTION="pick $PICKED"
     SCOPE="no game code: $(printf '%s\n' "$PICKED" | awk '$0 != "NONE" {print NF} $0 == "NONE" {print 0}') harnesses; "
 fi
+SELECTION="$SELECTION version=$V"
 # Changed scripts with a companion self-test run once, as part of the retained evidence.
 selftests() {
     [ "${CBS_SELFTEST:-}" != 1 ] || return 0
@@ -423,34 +425,34 @@ selftests() {
         tail -1 "$testlog"
     done < "$T/selftests"
 }
+if [ -n "$REUSE" ]; then
+    if sh tools/gate-reuse.sh load "$REUSE" "$GATED" "$HEAD0" "$SELECTION"; then TAKEN=$REUSE
+    else say "kept run refused: $REUSE; running checks"; fi
+fi
 GATE=""; SUMMARY=""; EARTH="named"
 
 if [ "$DOCSONLY" = 1 ]; then
     say "docs only (every path the branch changed is a .md outside docs/ensemble/): batch-check.sh --fast alone, no suite, gate.txt untouched"
     echo fast > "$T/needed"
-    run_check fast . ./batch-check.sh --fast
+    if [ -n "$TAKEN" ]; then run_check fast . true
+    else run_check fast . ./batch-check.sh --fast; fi
     [ "$CHECKED" = 0 ] || die "the checks failed on the merge (above); main is where it was"
-    GATE="docs only, --fast"
+    [ -z "$CBS_GATE_RUN" ] || sh tools/gate-reuse.sh save "$CBS_GATE_RUN" "$SELECTION" || die "cannot seal kept checks"
+    GATE="docs only, --fast${TAKEN:+; reused $TAKEN}"
 else
-    if [ -n "$REUSE" ] && sh tools/gate-reuse.sh "$REUSE" "$GATED" "$HEAD0" "$SELECTION"; then
-        TAKEN=$REUSE
-        CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge run_check suite . ./batch-check.sh --judge target/checks/suite.txt
+    if [ -n "$TAKEN" ]; then
+        if [ "$FULL" = 0 ] && [ "$PICKED" = NONE ]; then run_check fast . true
+        else CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge run_check suite . ./batch-check.sh --judge target/checks/suite.txt; fi
     else
-        [ -z "$REUSE" ] || say "kept run refused: $REUSE; running checks"
         if [ "$FULL" = 1 ]; then CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh "$@"
         elif [ "$PICKED" = NONE ]; then run_check fast . ./batch-check.sh --fast
         else CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh $PICKED; fi
         [ "$FULL" = 1 ] || selftests
     fi
+    [ -z "$CBS_GATE_RUN" ] || sh tools/gate-reuse.sh save "$CBS_GATE_RUN" "$SELECTION" || die "cannot seal kept checks"
     if [ "$PICKED" = NONE ] && [ "$FULL" = 0 ]; then
-        GATE="${SCOPE}--fast"
+        GATE="${SCOPE}--fast${TAKEN:+; reused $TAKEN}"
     else
-        if [ -n "$CBS_GATE_RUN" ] && [ -f "$CBS_GATE_RUN/launcher" ] && { [ "$FULL" = 1 ] || [ "$PICKED" != NONE ]; }; then
-            cp -R target/checks "$CBS_GATE_RUN/checks"
-            printf '%s\n' "$SELECTION" > "$CBS_GATE_RUN/selection"
-            (cd "$CBS_GATE_RUN" && sha256sum checks/* > checks.sha256) || die "cannot seal kept checks"
-            touch "$CBS_GATE_RUN/checks.complete"
-        fi
         cp target/checks/reds.txt "$T/suite-reds.txt" 2>/dev/null || : > "$T/suite-reds.txt"
         cp target/checks/suite.txt "$T/suite.txt" 2>/dev/null || : > "$T/suite.txt"
         cp "$T/check.out" "$T/suite.out"
