@@ -19,69 +19,24 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
  * Runs every harness, one JVM each, and says which failed.
  *
- * Twenty-nine harnesses and no runner meant "all checks pass" was a claim
- * made by whoever had the patience to run twenty-nine main() methods by hand
- * that day - and a harness nobody ran is a harness that does not exist. Each
- * one calls System.exit() with its verdict, so they cannot share a JVM; this
- * spawns them with the JVM and classpath it was itself started with.
+ * WHY: each harness calls System.exit(), so it needs its own JVM. Hand-running
+ * the growing list left checks unrun. GF1 bounds each child's life after CD9's
+ * JavaFX thread survived an OutOfMemoryError for 62 minutes.
  *
- *     java -cp <classes> ham.citybuildersim.AllChecks            everything
- *     java -cp <classes> ham.citybuildersim.AllChecks -q         verdicts only
- *     java -cp <classes> ham.citybuildersim.AllChecks -f         failures only
- *     java -cp <classes> ham.citybuildersim.AllChecks Labour Money   a subset, by name
- *     java -cp <classes> ham.citybuildersim.AllChecks --timing   the timing harnesses alone (Timing.HARNESSES)
- *     java -Dcbs.parallel=1 -cp <classes> ham.citybuildersim.AllChecks -f   one at a time
- *
- * Exit status is the number of harnesses that failed, so a build script can
- * stop on it. BuildMenuCheck, KeptCheck, ChartFitCheck, ToastCheck and MoneyWordsCheck need JavaFX on the classpath and are skipped,
- * with a note, when it is not there.
- *
- * -f is for an AI session, where every line printed is read and paid for
- * (2026-10-13). -q printed a line for each of a hundred-odd harnesses and,
- * for a red one, only "FAILED", so the session ran it again in full to find
- * the assertion and carried its thousands of lines from then on. -f keeps
- * each harness's whole output in target/checks/NAME.log, says nothing of a
- * harness that passed, and for one that failed prints its failing lines
- * under the section they are in - at most FAIL_LINES of them - and where
- * the rest is.
- *
- * Timing (TM1, 2026-10-18): -Dcbs.timing=soft given to this JVM is given to
- * every harness it starts, where a timing figure over its budget is SOFT and
- * not counted (Timing). -f counts the SOFT lines in every log, a passing
- * harness's too, and says how many under the summary. --timing runs only the
- * harnesses that time something: what the ship gate runs, hard.
- *
- * Known reds (FW7, 2026-10-25): HealthCheck was once a recorded red of main's
- * and a second assertion in it went red; -q threw each harness's output away
- * and printed "HealthCheck FAILED", the same as the day before, so nobody saw
- * it. -q now keeps each output in target/checks/NAME.log as -f does, and both
- * read main's record of its reds (docs/notes/gate.txt as ship.sh writes it,
- * or the file named by -Dcbs.knownReds, which is what batch-check.sh gives
- * it) and say of every failed harness "known red" when each of its red lines
- * is in the record, "NEW red: N of M red lines" when not. -f also tags each
- * failing line [known] or [NEW], and a last line names the harnesses of each
- * kind. A red line is what batch-check.sh's reds_of reads from this output,
- * word for word (redLines), so the two judges count the same. With no record
- * nothing is tagged and -f prints as it did before. KnownRedsCheck causes both
- * cases with a fixture of its own.
- *
- * N at a time (SP1, 2026-10-27): a suite took 18 minutes on a quiet PC and 31-32
- * when shared, one JVM at a time with 14 cores idle; and the harness JVMs had no
- * -Xmx, so each could take a quarter of the 32 GB (on 2026-10-21 the commit charge
- * reached 43 of 54 GB and a suite died with CreateProcess error 1450). Now each
- * JVM runs under HEAP_MB, and a soft, logged run starts PARALLEL at once, the
- * LONGEST_FIRST ones first; the output is still printed in HARNESSES order. A
- * hard run, --timing and plain mode (inherited output) go one at a time;
- * -Dcbs.parallel=N sets one run's number; never more than half the cores. Each
- * starts at HEAP_START_MB (the default 508 MB was committed at once: 616 MB for
- * BooksCheck, 167 with 64), and none starts beside another while the commit
- * charge is over COMMIT_PCT (three at once took it from 79.8% to 85.9%).
+ * -q prints verdicts, -f only failures, keeping whole logs in target/checks.
+ * Other arguments select by substring, --timing selects Timing.HARNESSES.
+ * The exit counts failed harnesses. JavaFX checks skip without its classpath.
+ * -f tags each red against the same record as batch-check.sh (FW7), prints at
+ * most FAIL_LINES and keeps the rest. Timing properties are forwarded (TM1).
+ * Logged soft runs share PARALLEL slots, memory-gated and heap-bounded (SP1),
+ * hard timing and plain output run serially. TIMES keeps each run's duration.
  */
 public class AllChecks {
 
@@ -117,6 +72,9 @@ public class AllChecks {
 
     /** The heap a harness JVM starts with, its -Xms (SP1): the JVM's default is a 64th of the RAM, 508 MB committed at once whether used or not (measured 2026-10-27: BooksCheck 616 MB of commit by default, 167 MB with 64). */
     static final int HEAP_START_MB = 64;
+
+    /** A harness gets four times KeptCheck's usual 435 seconds before its process tree is ended (GF1, CD9's hung FX thread). */
+    static final int HARNESS_SECONDS = 4 * 435;
 
     /** No harness is started beside another of this run while the machine's commit charge is over this percent (SP1): the first three, started at 79.8%, took the PC to 85.9% within a minute as they grew (2026-10-27), and the batches stop a run at 85; a suite died with CreateProcess error 1450 at 43 of 54 GB on 2026-10-21. */
     static final int COMMIT_PCT = 75;
@@ -195,7 +153,7 @@ public class AllChecks {
         if (atOnce > 1) order.sort(Comparator.comparingInt(x -> LONGEST_FIRST.contains(x) ? LONGEST_FIRST.indexOf(x) : LONGEST_FIRST.size()));   // stable: the rest keep their order
         Set<Process> live = ConcurrentHashMap.newKeySet();   // what runs, and the lock a start waits on for the commit charge to fall
         AtomicInteger held = new AtomicInteger();   // starts that waited at least once
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> live.forEach(Process::destroyForcibly)));   // Ctrl+C takes the harnesses with it
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> live.forEach(AllChecks::endTree)));
         ExecutorService pool = Executors.newFixedThreadPool(atOnce, r -> { Thread th = new Thread(r); th.setDaemon(true); return th; });
         Map<String, Future<double[]>> runs = new HashMap<>();   // each: its exit code and its own seconds, from its start
         for (String name : order) {
@@ -215,8 +173,10 @@ public class AllChecks {
                     live.add(p);
                 }
                 try {
-                    return new double[] {p.waitFor(), (System.currentTimeMillis() - t) / 1000.0};
+                    return new double[] {waitForHarness(p, HARNESS_SECONDS, logged ? LOGS.resolve(name + ".log") : null),
+                            (System.currentTimeMillis() - t) / 1000.0};
                 } finally {
+                    if (p.isAlive()) endTree(p);
                     synchronized (live) { live.remove(p); live.notifyAll(); }
                 }
             }));
@@ -272,6 +232,25 @@ public class AllChecks {
             System.out.println("Whole output of each: " + LOGS + File.separator + "NAME.log");
         }
         System.exit(failed);
+    }
+
+    /** Waits at most the harness's limit, recording a timeout as a failing assertion (GF1). */
+    static int waitForHarness(Process process, int seconds, Path log) throws InterruptedException, IOException {
+        if (process.waitFor(seconds, TimeUnit.SECONDS)) return process.exitValue();
+        endTree(process);
+        String line = "FAIL: timed out after " + seconds + " s" + System.lineSeparator();
+        if (log == null) System.out.print(line);
+        else Files.writeString(log, line, StandardCharsets.UTF_8, java.nio.file.StandardOpenOption.APPEND);
+        return 1;
+    }
+
+    /** Ends the descendants while their parent still owns them, then the harness itself (GF1, KD1 item 1). */
+    static void endTree(Process process) {
+        List<ProcessHandle> descendants = process.descendants().toList();
+        for (ProcessHandle child : descendants.reversed()) child.destroyForcibly();
+        process.destroyForcibly();
+        for (ProcessHandle child : descendants) child.onExit().completeOnTimeout(null, 5, TimeUnit.SECONDS).join();
+        process.onExit().completeOnTimeout(null, 5, TimeUnit.SECONDS).join();
     }
 
     /**

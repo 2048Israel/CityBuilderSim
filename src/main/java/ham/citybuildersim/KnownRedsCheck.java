@@ -11,37 +11,17 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The harness for AllChecks' known reds (batch FW7): a failed harness is said
- * to be a known red or a NEW one against main's record, line by line, and
- * batch-check.sh judges the same logs the same way.
+ * The harness for AllChecks' known reds and harness time limit.
  *
- * WHY (FW7, 2026-10-25): HealthCheck was a recorded red of main's, and a second
- * assertion in it went red. AllChecks -q printed "HealthCheck FAILED" as it had
- * the day before and nobody saw it. batch-check.sh already compared the red
- * lines against gate.txt word for word, but AllChecks itself knew nothing of
- * the record, so what a session read of -q and -f could not tell its own reds
- * from main's. A fixture harness (Fixture, below) fails one assertion and then,
- * on request, a second, and this runs it as AllChecks runs a harness, so both
- * cases are caused and not assumed: the same red again is a known red, a second
- * one is a NEW red and is named.
+ * WHY (FW7): a second failing HealthCheck assertion hid behind its known-red
+ * verdict. Fixtures exercise the real runner's line tagging and the shell's
+ * judge. GF1 adds a child whose descendant never ends, reproducing CD9's hang.
  *
- * What it has to prove:
- *   1. the red lines of a failed harness are its exit, each failing line and its
- *      count, and never a section title or a passing line;
- *   2. the record those lines make reads back from a file as three lines, and the
- *      same failure against it is a known red, in one line under -q and every
- *      failing line tagged [known] under -f;
- *   3. a second failing assertion is a NEW red: the header says how many red
- *      lines are new, -f tags that line [NEW] and the first one still [known],
- *      and the count in the header is the count of tags;
- *   4. with no record nothing is tagged, and -f prints as it did before FW7;
- *   5. batch-check.sh --judge reads the same logs: exit 3 for the known red,
- *      exit 4 and the new line for the second, exit 3 again for a log from before
- *      FW7 with no tags, and exit 1 when the header's count and its own disagree
- *      (not run where sh cannot be started).
- *
- * This harness's own output never echoes the fixture's, so that AllChecks -f,
- * reading this log for failing lines, finds only this harness's own.
+ * Proves that sections and passing lines stay out of reds, the same red is
+ * known, a second is NEW, no record tags nothing, and batch-check.sh judges
+ * the same saved logs. The time limit fails and ends a hung process tree,
+ * preserving an in-time child's exit and output. Fixture output stays out of
+ * this harness's own log so its intentional failures cannot be misread.
  */
 public class KnownRedsCheck {
 
@@ -70,6 +50,9 @@ public class KnownRedsCheck {
 
     /** The longest a child JVM or the shell may take. */
     static final int WAIT_SECONDS = 120;
+
+    /** The short limit used to exercise the production wait without holding the suite for HARNESS_SECONDS. */
+    static final int LIMIT_SECONDS = 2;
 
     /**
      * A miniature harness for a child JVM: one assertion that fails, a passing
@@ -115,9 +98,61 @@ public class KnownRedsCheck {
         noRecord(tmp, first);
 
         judged(tmp, first, second, known, recordFile);
+        limited(tmp);
 
         if (fails > 0) System.out.println("\n" + fails + " FAILED");
         System.exit(fails);
+    }
+
+    /** A fixture with a never-ending descendant, or an immediate successful exit. */
+    public static class LimitFixture {
+        public static void main(String[] args) throws Exception {
+            if (args[0].equals("done")) { System.out.println("finished in time"); return; }
+            if (args[0].equals("parent")) {
+                List<String> command = new ArrayList<>(AllChecks.command(
+                        System.getProperty("java.home") + File.separator + "bin" + File.separator + "java",
+                        System.getProperty("java.class.path"), "KnownRedsCheck$LimitFixture", true));
+                command.add("leaf"); command.add(args[1]);
+                new ProcessBuilder(command).inheritIO().start();
+            } else Files.writeString(Path.of(args[1]), Long.toString(ProcessHandle.current().pid()));
+            Thread.sleep(Long.MAX_VALUE);
+        }
+    }
+
+    /* =====================================================================
+     * 6. A HARNESS AND ITS DESCENDANTS HAVE A LIMIT (GF1)
+     * ===================================================================== */
+    private static void limited(Path tmp) throws Exception {
+        System.out.println("--- 6. a harness and its descendants have a limit ---");
+        check("the production limit is four usual KeptCheck runs", AllChecks.HARNESS_SECONDS == 4 * 435);
+        Path pid = tmp.resolve("descendant.pid");
+        for (String mode : List.of("parent", "done")) {
+            List<String> command = new ArrayList<>(AllChecks.command(
+                    System.getProperty("java.home") + File.separator + "bin" + File.separator + "java",
+                    System.getProperty("java.class.path"), "KnownRedsCheck$LimitFixture", true));
+            command.add(mode); command.add(pid.toString());
+            Path log = tmp.resolve("limit-" + mode + ".log");
+            ProcessBuilder builder = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(log.toFile());
+            builder.environment().remove("JDK_JAVA_OPTIONS");
+            Process process = builder.start();
+            try {
+                if (mode.equals("parent")) {
+                    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(WAIT_SECONDS);
+                    while (!Files.exists(pid) && process.isAlive() && System.nanoTime() < deadline) Thread.sleep(20);
+                    check("the fixture really started its never-ending descendant", Files.exists(pid));
+                }
+                int code = AllChecks.waitForHarness(process, LIMIT_SECONDS, log);
+                String output = Files.readString(log);
+                if (mode.equals("parent")) {
+                    check("a harness over its limit is counted failed", code == 1 && !process.isAlive());
+                    check("its failing line names the time limit", AllChecks.failingLines(log).contains("FAIL: timed out after " + LIMIT_SECONDS + " s"));
+                    long child = Long.parseLong(Files.readString(pid));
+                    check("the never-ending descendant was ended with its parent", !ProcessHandle.of(child).map(ProcessHandle::isAlive).orElse(false));
+                } else {
+                    check("a harness that finishes in time keeps its own exit and output", code == 0 && output.strip().equals("finished in time"));
+                }
+            } finally { if (process.isAlive()) AllChecks.endTree(process); }
+        }
     }
 
     /** The red lines the fixture's run makes. */

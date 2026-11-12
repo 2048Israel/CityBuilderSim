@@ -2,7 +2,7 @@
 
 Generated 2026-11-11 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**201 harness files, 23,699 labelled assertions.** AllChecks runs 201 of them.
+**201 harness files, 23,705 labelled assertions.** AllChecks runs 201 of them.
 
 ## Which harnesses read which class
 
@@ -15822,72 +15822,77 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L8772 4: what reshapes the page**
 - **L8807 5: what the kept month costs**
 
-## KnownRedsCheck.java - 43 labelled assertions
+## KnownRedsCheck.java - 49 labelled assertions
 
-> The harness for AllChecks' known reds (batch FW7): a failed harness is said
-> to be a known red or a NEW one against main's record, line by line, and
-> batch-check.sh judges the same logs the same way.
+> The harness for AllChecks' known reds and harness time limit.
 > 
-> WHY (FW7, 2026-10-25): HealthCheck was a recorded red of main's, and a second
-> assertion in it went red. AllChecks -q printed "HealthCheck FAILED" as it had
-> the day before and nobody saw it. batch-check.sh already compared the red
-> lines against gate.txt word for word, but AllChecks itself knew nothing of
-> the record, so what a session read of -q and -f could not tell its own reds
-> from main's. A fixture harness (Fixture, below) fails one assertion and then,
-> on request, a second, and this runs it as AllChecks runs a harness, so both
-> cases are caused and not assumed: the same red again is a known red, a second
-> ...
+> WHY (FW7): a second failing HealthCheck assertion hid behind its known-red
+> verdict. Fixtures exercise the real runner's line tagging and the shell's
+> judge. GF1 adds a child whose descendant never ends, reproducing CD9's hang.
+> 
+> Proves that sections and passing lines stay out of reds, the same red is
+> known, a second is NEW, no record tags nothing, and batch-check.sh judges
+> the same saved logs. The time limit fails and ends a hung process tree,
+> preserving an in-time child's exit and output. Fixture output stays out of
+> this harness's own log so its intentional failures cannot be misread.
 
-- **L82 1. the fixture's known red**
-- **L88 3. the second**
-- **L164 1. the gate's record of a red harness: its exit, its failing line and its count**
-  - L165 the fixture's first run exits 1
-  - L166 it has exactly three red lines
-  - L168 the first red line is its exit
-  - L169 the second is the failing assertion's line
-  - L171 the third is its count of failures, its last line
-  - L172 the passing line that says FAILS in its words is not a red line
-  - L173 no section title is a red line
-  - L174 the failing lines AllChecks prints do hold a section title, so the walk skipped one
-- **L183 2. the same red again is a known red, under -q and -f**
-  - L184 the record reads back as a set
-  - L186 it holds three lines: the comment and the blank one are not in it
-  - L187 every red line of the fixture's run is in it
-  - L189 under -q the report is one line
-  - L190 and it ends in the words known red
-  - L192 under -f the header ends in the words known red
-  - L195 under -f there are lines under the header besides section titles
-  - L196 every one of them is tagged [known]
-  - L197 none is tagged [NEW]
-  - L198 a section title is printed as it was, with no tag
-- **L207 3. a second failing assertion is a NEW red, and -f names it**
-  - L208 the record was read
-  - L211 the fixture's second run exits 2
-  - L212 some of its red lines are not in the record
-  - L213 the line of the second assertion is one of them
-  - L217 the header says NEW red
-  - L218 it states how many red lines are new and how many there are
-  - L220 the second assertion's line is tagged [NEW]
-  - L222 the first assertion's line is still tagged [known]
-  - L226 the header's count is the [NEW] tags plus one for a new exit line
-  - L228 under -q the report is the header alone, with the same verdict
-- **L236 4. with no record nothing is tagged: -f prints as before FW7**
-  - L237 a record that does not exist reads as null
-  - L239 the header has no verdict, it ends with the time
-  - L240 there are as many lines as the header and the failing lines
-  - L243 each is the failing line, indented four spaces and nothing else
-  - L244 none has a tag
-  - L245 the line under the summary says no record was read
-- **L287 5. batch-check.sh judges the same logs: exit 3 for the known red, exit 4 and the NEW line for the second**
-  - L288 the record was read
-  - L302 the known red, tagged by AllChecks, is judged exit 3
-  - L303 and its verdict line says known red
-  - L304 the second run, tagged, is judged exit 4
-  - L305 and its verdict line says NEW red
-  - L306 and it prints the second assertion's line
-  - L307 a log from before FW7, with no tags, is judged exit 3 as well
-  - L308 a header whose count is not the one batch-check.sh finds is refused, exit 1
-  - L309 and the line says the two judges disagree
+- **L65 1. the fixture's known red**
+- **L71 3. the second**
+- **L126 6. a harness and its descendants have a limit**
+  - L127 the production limit is four usual KeptCheck runs
+  - L142 the fixture really started its never-ending descendant
+  - L147 a harness over its limit is counted failed
+  - L148 its failing line names the time limit
+  - L150 the never-ending descendant was ended with its parent
+  - L152 a harness that finishes in time keeps its own exit and output
+- **L199 1. the gate's record of a red harness: its exit, its failing line and its count**
+  - L200 the fixture's first run exits 1
+  - L201 it has exactly three red lines
+  - L203 the first red line is its exit
+  - L204 the second is the failing assertion's line
+  - L206 the third is its count of failures, its last line
+  - L207 the passing line that says FAILS in its words is not a red line
+  - L208 no section title is a red line
+  - L209 the failing lines AllChecks prints do hold a section title, so the walk skipped one
+- **L218 2. the same red again is a known red, under -q and -f**
+  - L219 the record reads back as a set
+  - L221 it holds three lines: the comment and the blank one are not in it
+  - L222 every red line of the fixture's run is in it
+  - L224 under -q the report is one line
+  - L225 and it ends in the words known red
+  - L227 under -f the header ends in the words known red
+  - L230 under -f there are lines under the header besides section titles
+  - L231 every one of them is tagged [known]
+  - L232 none is tagged [NEW]
+  - L233 a section title is printed as it was, with no tag
+- **L242 3. a second failing assertion is a NEW red, and -f names it**
+  - L243 the record was read
+  - L246 the fixture's second run exits 2
+  - L247 some of its red lines are not in the record
+  - L248 the line of the second assertion is one of them
+  - L252 the header says NEW red
+  - L253 it states how many red lines are new and how many there are
+  - L255 the second assertion's line is tagged [NEW]
+  - L257 the first assertion's line is still tagged [known]
+  - L261 the header's count is the [NEW] tags plus one for a new exit line
+  - L263 under -q the report is the header alone, with the same verdict
+- **L271 4. with no record nothing is tagged: -f prints as before FW7**
+  - L272 a record that does not exist reads as null
+  - L274 the header has no verdict, it ends with the time
+  - L275 there are as many lines as the header and the failing lines
+  - L278 each is the failing line, indented four spaces and nothing else
+  - L279 none has a tag
+  - L280 the line under the summary says no record was read
+- **L322 5. batch-check.sh judges the same logs: exit 3 for the known red, exit 4 and the NEW line for the second**
+  - L323 the record was read
+  - L337 the known red, tagged by AllChecks, is judged exit 3
+  - L338 and its verdict line says known red
+  - L339 the second run, tagged, is judged exit 4
+  - L340 and its verdict line says NEW red
+  - L341 and it prints the second assertion's line
+  - L342 a log from before FW7, with no tags, is judged exit 3 as well
+  - L343 a header whose count is not the one batch-check.sh finds is refused, exit 1
+  - L344 and the line says the two judges disagree
 
 ## LabourCheck.java - 186 labelled assertions
 

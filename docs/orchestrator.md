@@ -104,72 +104,45 @@ batch it is built on):
    names.
 3. Take the batch's recommended ★ calls and say which and why in the notes,
    sending Jerus only his.
-4. Then `./ship.sh batch/<id>` does the rest; its header lists the steps:
-
-   ```
-   ./ship.sh [--dry-run] [--no-tag] [--version X.Y.Z] [--red-ok "his words" --red-line "<part of a line>" ...] <branch> [-m title] [-F body] [-- harness names]
-   ```
-
-   `main` clean and current, its `VERSION` equal to the last tag (or it
-   stops); the merge (a conflict only in the generated docs takes the branch's
-   side and regenerates them; any other stops it); the records from the ship
-   file, before the checks, so that they see the new version (`{next}` is the
-   last tag's patch + 1, lesson f); the one full suite (BP1 item 3), timing
-   soft, then the timing harnesses alone and hard (step 6); `docs/notes/gate.txt`
-   rewritten, by `ship.sh` alone; the commit `Merge batch/<id>: <title>,
-   <version>` with a `Gate:` line, the tag, one atomic push. A push refused
-   because `main` moved takes the merge and the tag back: run it again.
-5. **Reds**. Main's recorded reds pass, word for word (`Gate: known red only:
-   <harnesses>`). A NEW red line ships only with `--red-ok "his words"` and a
-   `--red-line` for each line he approved, his words and the lines in the
-   body. **His words pass the lines they name and no others** (TM3 review,
-   2026-10-27: a broad `--red-ok` let another flaky line pass under words given
-   for one, CC1-S's gate). So `--red-ok` without `--red-line` is refused (exit
-   2); a red line passes only if it contains a `--red-line` part, as written
-   (a fixed string); a harness's own `exit N` and `N FAILED` lines pass with a
-   named line of it, when no other line of it is left unnamed; any other red
-   stops, its lines marked `NOT NAMED`. Both the suite's and the timing step
-   read it. After a stop, show Jerus its red lines, and copy a distinctive
-   part of each he approves into `--red-line`. **A red the batch's own code
-   did not cause** (main's latent fault its path first reaches, or a known
-   class) passes so without asking, on his standing word (2026-11-04: "always,
-   if checks were not caused by its own code, then it should always pass"),
-   its cause in the notes and its fix queued. Any other
-   red goes back to the batch as its failing lines (`target/checks/reds.txt`
-   in the gate's clone), its ship file off first (`docs/batch.md`, 5).
-6. **Timing** (lesson d; TM3, 2026-10-27: a wall-clock budget measured on a PC
-   that also runs Jerus's game measures the load as much as the code). A timing
-   red is judged side by side with main, by the figure every timing assertion
-   writes to `target/checks/timing.tsv` (`Timing.verdict(ok, label)`), never the
-   label's prose. **First against main's figure of the day** (GT2, 2026-11-07:
-   SaveSlotCheck missed its budget on main at every gate since 11-05, and the
-   rounds that said so took 20-80 minutes a gate): each gate keeps the merged
-   main's figure of every miss in `gate.txt` (`# figure` lines); a miss whose
-   figure there, dated today, misses the budget too, with the merge's no more
-   than the margin over it, passes with no round. A harness with a miss left
-   uncovered is timed again with main's classes (a worktree of `main`) and the
-   merge's in turn, **three rounds** (`CBS_TIMING_ROUNDS`, at least two), main
-   first in odd rounds (SP1: a run straight after a switch of build was the
-   slower). It counts against the batch only if its median is **more than 15%**
-   over main's (`tools/timing-pair.awk`; `CBS_TIMING_MARGIN`), main's median
-   within the budget and the batch's over it (SP1 item 7: SC1 stopped twice on a
-   shifting load). Otherwise it passes, named in the merge's `Gate-timing:` line
-   with both figures and why, and in `gate.txt` only as `#` lines, never a
-   recorded red. A red that is the batch's, one with nothing to compare and one
-   that is no clock's stops, unless `--red-ok` and a `--red-line` name it (step
-   5). Wall-clock comparisons that are not a budget are `Timing` assertions too
-   (TimingCheck 6), soft in the suite. **The hard run starts at once** (GP1: the
-   comparison shares one load by design).
-7. `--version X.Y.Z` only on Jerus's word. `--dry-run` runs everything, the gate
-   included, prints what it would commit, tag and push, and keeps nothing;
-   harness names after `--` only with it (a partial suite never ships). A
-   docs-only merge (every path ends in `.md`, none under `docs/ensemble/`) gates
-   on `--fast`: no suite, no timing, `gate.txt` untouched. `ship.sh` runs from a
-   copy of itself (TM3: a shell reads its script as it goes, and the merge of a
-   batch that changes it rewrites the file). After a change to `ship.sh` or
-   `tools/timing-pair.awk`, `sh tools/ship-selftest.sh` (a throwaway origin and
-   a stub `batch-check.sh`; no JVM, about two minutes); after one to
-   `tools/wait.sh`, `sh tools/wait-selftest.sh` (about 20 seconds).
+4. `sh tools/gate.sh <id> [ship.sh options]` clones under `$TMP`, names both
+   data files from the main checkout and keeps a timestamped log outside the
+   clone. It prints the run directory and returns `ship.sh`'s exit status.
+   `--red-lines FILE` reads one fixed-string `--red-line` per nonempty line.
+   WHY (GF1, LM1): the copied launcher hid a stopped publisher's status.
+   `sh tools/gate.sh --stop RUN_DIRECTORY` cancels that run's process tree,
+   including on Windows, and retains its log and clone. Closing its caller
+   cancels it too. It records main's and the branch's commits in `refs.before`.
+5. `ship.sh` requires clean main, current with origin, its VERSION equal to the
+   last version tag. It merges uncommitted, resolving generated-doc conflicts
+   with the branch's side, and stages the ship file's records before checking.
+   Other conflicts stop. The suite runs once, timed soft, then timing alone
+   runs hard. Fresh statuses and outputs and every required stage's completion
+   are proved before `gate.txt` is written and again before commit. Origin's
+   branch must still be the gated commit and carry its ship file (GF1, LM1).
+6. Main's recorded reds pass word for word. A NEW red passes only with
+   `--red-ok "his words" --red-line "<part of each approved line>"`. A harness's
+   own exit and failure counts follow its named assertions only when no other
+   assertion is unnamed (TM3, CC1-S). Every unnamed line goes in `unnamed.txt`
+   beside the retained log, with its count and the first twelve on screen
+   (GF1, WG2). A red the batch's code did not cause passes on Jerus's standing
+   word (2026-11-04), its cause in the notes and its fix queued. Other reds go
+   back as their failing lines, the ship file removed first (`docs/batch.md`, 5).
+   Timing policy stays TM3/GT2. Figures in `timing.tsv` are compared first with
+   today's main figures in `gate.txt`. An uncovered miss gets three alternating
+   rounds against main's classes (`CBS_TIMING_ROUNDS`, at least two). It counts
+   against the batch when main's median is within budget, the batch's over it,
+   and over main's by more than 15% (`CBS_TIMING_MARGIN`, `tools/timing-pair.awk`).
+   No clock or no comparison stops too, unless his words name that line. Passed
+   timing reds are comments in `gate.txt`, with medians, never recorded reds.
+   The hard run starts at once (GP1). Comparisons use `Timing` too (TimingCheck).
+7. A passed gate writes `gate.txt`, commits, tags and pushes atomically. A push
+   race with main takes the commit and tag back. `--version X.Y.Z` is Jerus's
+   call. `--dry-run` runs the gates and restores the tree and HEAD, retaining
+   logs. Harness names after `--` require it. A docs-only merge (`.md` outside
+   `docs/ensemble/`) runs `--fast`, leaving `gate.txt` alone. `--no-tag` keeps
+   main's version. The publisher runs from a copy (TM3, scripts rewritten by
+   their own merge). After publisher, launcher or timing arithmetic changes,
+   run `sh tools/ship-selftest.sh`; after wait changes, `sh tools/wait-selftest.sh`.
 
 **Before saying a change works:** the gate's suite is green but for main's
 recorded reds (say which: `docs/notes/gate.txt` and the merge's body), the maps
@@ -200,26 +173,11 @@ close: `batch-check.sh` times every run soft but the gate's `--timing`, and
 `Batch check.bat` times soft only while another batch's JVM or the game runs,
 and decides **once, at its start** (lesson d).
 
-A batch shipped from the PC ships from a temp clone of `origin`, never the
-checkout: `%TEMP%\cbs-<id>` (the scratchpad's path is past Windows' 260
-characters), `JDK_JAVA_OPTIONS` naming the PC's `data\earth-2.bin` (lesson c) and
-`data\world-1.bin` (FL1-G, 2026-10-30: WN3's world market never ran at a gate),
-in Git Bash:
-
-```
-JDK_JAVA_OPTIONS="-Dcbs.earth=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/earth-2.bin -Dcbs.world=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/world-1.bin" ./ship.sh batch/<id>
-```
-
-Once shipped, delete the clone and every other `%TEMP%\cbs-<id>*` folder the
-session made (`rm -rf "$TEMP"/cbs-<id>*`, from outside them): 24 left behind
-held 5 GB by 2026-10-21 (TD1). The full suite is
-
-```
-java -cp "target/classes;%USERPROFILE%\.m2\repository\com\google\code\gson\gson\2.10.1\gson-2.10.1.jar" ham.citybuildersim.AllChecks -f
-```
-
-(one harness at a time while the commit charge is over `AllChecks.COMMIT_PCT`, 40-100 minutes on 2026-11-02; `AllChecks money bank` runs
-two).
+On the PC, `sh tools/gate.sh <id>` replaces the hand-copied temp script.
+`CBS_GATE_MAIN` can name a different main checkout. Java paths use `C:/...`.
+The launcher removes a successful clone, retaining each run's log, refs and
+unnamed reds. A stopped clone stays for inspection, and can be removed after
+review. WHY (GF1, LM1): deleting gate clones erased the evidence of stops.
 
 ## The Earth file
 
