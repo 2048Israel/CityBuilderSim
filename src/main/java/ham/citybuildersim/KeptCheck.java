@@ -2722,41 +2722,27 @@ public class KeptCheck {
         return new SectorKinds(plain, works ? Sectors.WOOD_PRODUCTS : null);
     }
 
-    /** What a materials industry's works are made of, in turn, for a city that has none standing: a sawmill first, the rest if it cannot. */
-    static final String[] WORKS_ORDER = {"Sawmill", "Scrap Yard", "Wood Pellet Mill", "Panel Mill"};
-
     /**
-     * Wood products' works standing in the city: the ones it has, else a sawmill put up through the model (finished at once; the
-     * city borrows what it lacks on Build's bond and buys ground where it finds none, as ensureSites() does), a month played so
-     * that the industries' month is counted; what it found or did, in a line. Which materials industries the long-played city
-     * has works for is its AutoBuilder's choice (a city of 150 months had wood works, one of 600 had none, one of 1,400 iron and
-     * steel's), so the fixture takes the one it can build whatever the city did: the sawmill's.
+     * A drawable materials month, with a sawmill supplied through BuildingManager when none stands. The works are held while
+     * the month is counted, as RefineryViewCheck holds its plants. WHY (KS1): standing works alone can have no counted month,
+     * and borrowing for the fixture failed on a city whose exchange rate had reached its clamp.
      */
     static String ensureWorks(Game g) throws Exception {
-        if (IndustryView.of(g, g.getSectors().byKey(Sectors.WOOD_PRODUCTS)).standing() > 0) return "the city has wood products works standing already";
-        String said = putUpWorks(g);
-        if (said.startsWith("a ")) month(g);
-        return said.startsWith("a ") ? "the city had no materials works standing: " + said + ", a month played" : said;
-    }
-
-    /** A sawmill (or the first of WORKS_ORDER the model lets be built) put up finished: "a Sawmill put up through the model", or why none could be. */
-    static String putUpWorks(Game g) throws Exception {
-        BuildingManager bm = g.getBuildingManager();
-        StringBuilder tried = new StringBuilder();
-        for (String name : WORKS_ORDER) {
-            BuildingsTemplate t = bm.getTemplateByName(name);
-            if (t == null) continue;
-            Game.BuildResult r = quietly(() -> g.buildStack(t, 1, true));
-            if (r == Game.BuildResult.NEEDS_FUNDING) {
-                final double gap = g.buildFundingGap(t, 1);
-                quietly(() -> g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
-                r = quietly(() -> g.buildStack(t, 1, true));
+        Sector wood = g.getSectors().byKey(Sectors.WOOD_PRODUCTS);
+        if (IndustryView.of(g, wood).drawn()) return "the city has a counted wood products month with works to draw";
+        g.getBusinessInvestment().holdSector(wood.key());
+        try {
+            if (IndustryView.of(g, wood).standing() == 0) {
+                BuildingManager bm = g.getBuildingManager();
+                bm.addStack(bm.getTemplateByName("Sawmill"), 1, true);
             }
-            if (r == Game.BuildResult.NO_LAND && buyGround(g, t, 1)) r = quietly(() -> g.buildStack(t, 1, true));
-            if (r == Game.BuildResult.SUCCESS) return "a " + name + " put up through the model";
-            tried.append(tried.length() > 0 ? ", " : "").append(name).append(" ").append(r);
+            month(g);
+            boolean drawn = IndustryView.of(g, wood).drawn();
+            check("fixture: the supplied sawmill has a counted month and works to draw", drawn);
+            return "a sawmill supplied and held through its counted month: drawable " + drawn;
+        } finally {
+            g.getBusinessInvestment().releaseSector(wood.key());
         }
-        return "no materials works could be put up (" + tried + ")";
     }
 
     /** A page arrived at: back on its home, drawn and laid out, as the bench's other pages are before their sections. */
@@ -3131,9 +3117,7 @@ public class KeptCheck {
         // A fold opened has to add to the page, and closed take it away; a note, every note, the toolbar's two columns.
         // The premise first: the note chosen is one the statement opens on lines this month (on 0.9.19 the builders' revenue,
         // note 1, came down to one named part, which draws no caret, and the fold chosen by "the first note" caused nothing).
-        int note = fx(() -> bench.sectorsNoteOf(plain));
-        System.out.println("  the first note on " + possessive(plainName) + " income statement that opens on lines: " + note);
-        check(possessive(plainName) + " income statement has a note that opens on lines this month (the fold's premise)", note > 0);
+        int[] note = {0};
         List<Choice> folds = new ArrayList<>();
         folds.add(choice(possessive(plainName) + " Operations page", on(plain, ops, false)));
         folds.add(new Choice("the fold of every line opened on it", b -> { b.sectorsOpen(plain, ops, false); b.sectorsFold("every", plain, true); return null; }, true));
@@ -3145,8 +3129,15 @@ public class KeptCheck {
         folds.add(new Choice("the order book opened on its owners' card (the Investors page)", b -> { b.sectorsOpen(Sectors.RETAIL, "Investors", false); b.sectorsFold("book", Sectors.RETAIL, true); return null; }, true));
         folds.add(choice("...and closed", b -> { b.sectorsFold("book", Sectors.RETAIL, false); return null; }));
         folds.add(choice(possessive(plainName) + " Income page as a statement", on(plain, "Income", true)));
-        folds.add(new Choice("note " + note + " opened on it", b -> { b.sectorsOpen(plain, "Income", true); b.sectorsNote(plain, "income", note, true); return null; }, true));
-        folds.add(choice("...and closed", b -> { b.sectorsNote(plain, "income", note, false); return null; }));
+        folds.add(new Choice("a note with lines this month opened on it", b -> {
+            b.sectorsOpen(plain, "Income", true);
+            note[0] = b.sectorsNoteOf(plain);
+            System.out.println("  the income note that opens on lines now: " + note[0]);
+            if (note[0] == 0) return "the income statement has no expandable note this month";
+            b.sectorsNote(plain, "income", note[0], true);
+            return null;
+        }, true));
+        folds.add(choice("...and closed", b -> { b.sectorsNote(plain, "income", note[0], false); return null; }));
         folds.add(new Choice("every note opened", b -> { b.sectorsOpen(plain, "Income", true); b.sectorsNotes(plain, true); return null; }, true));
         folds.add(choice("...and every note closed", b -> { b.sectorsNotes(plain, false); return null; }));
         folds.add(choice("the change column off", b -> { b.sectorsOpen(plain, "Income", true); b.sectorsColumns(false, true); return null; }));
@@ -4543,6 +4534,19 @@ public class KeptCheck {
         return bad.length() == 0 ? null : "at " + (paused ? "a paused clock" : KeptBench.speedLadder()[at] + "x") + " on " + (page == null ? "the Overview" : page) + ": " + bad;
     }
 
+    /**
+     * A holding and a payment settled into the model fields the Portfolio reads, after the real month has landed.
+     * WHY (KS1): waiting for an ordinary dividend can leave all 48 months without a payment or a change in the hero's rounded words.
+     */
+    static void fundPaymentMonth(Game g) {
+        month(g);
+        Equity equity = g.getEquity();
+        if (!(equity.getCityRescueShares(Equity.BANK) > 0)) equity.issueToCityRescue(Equity.BANK, Math.max(1, equity.getShares(Equity.BANK)));
+        double payment = Math.max(1_000_000 * PriceLevel.FACTOR, Math.abs(g.fundValue()));
+        g.getFund().receiveDividend(payment, 1);
+        g.getFund().getLedger().dividend(Equity.COMPANIES[Equity.BANK], payment, 1, g.getMonth());
+    }
+
     /** ...and the fund's Portfolio, through the tab's real show method: the worth counts on and a payment pops. */
     static String fundRung(Game g, KeptBench bench, int at, boolean paused, boolean expect) throws Exception {
         bench.clock(!paused, null);
@@ -4551,29 +4555,17 @@ public class KeptCheck {
         bench.showFinances();
         bench.finishPageAnimations();
         bench.passes();
-        boolean ok = false;
-        java.util.Set<Animation> before = null;
-        int[] s = null;
-        String still = "", saw = "";
-        // (The hero writes the worth to two or three digits - "D$1.6B" - so it reads other words only every few months in a fund this size.)
-        for (int i = 0; i < 48 && !ok; i++) {
-            bench.finishPageAnimations();
-            before = animationsNow(bench);
-            String wasWorth = bench.fundWorth();
-            month(g);
-            bench.showFinances();
-            bench.passes();
-            // What the month started and left running is read first; then the count is run out, to see whether the worth read other words (a count starts
-            // only on words that differ) and whether a holding paid: only a month that paid a holding and moved the worth is a month for this section.
-            s = started(bench, before);
-            still = stillOrNot(bench);
-            boolean paid = bench.paidLines() > 0;
-            bench.finishPageAnimations();
-            bench.passes();
-            ok = paid && !java.util.Objects.equals(wasWorth, bench.fundWorth());
-            saw = "the last month: " + bench.paidLines() + " payments, the worth read \"" + wasWorth + "\" and then \"" + bench.fundWorth() + "\"";
-        }
-        if (!ok) return "at " + (paused ? "a paused clock" : KeptBench.speedLadder()[at] + "x") + ": no month in forty-eight paid a holding and moved the fund's worth (" + saw + ")";
+        java.util.Set<Animation> before = animationsNow(bench);
+        String wasWorth = bench.fundWorth();
+        fundPaymentMonth(g);
+        bench.showFinances();
+        bench.passes();
+        int[] s = started(bench, before);
+        String still = stillOrNot(bench);
+        boolean paid = bench.paidLines() > 0;
+        bench.finishPageAnimations();
+        bench.passes();
+        if (!paid || java.util.Objects.equals(wasWorth, bench.fundWorth())) return "the supplied holding's payment did not move the Portfolio's worth and payment line";
         StringBuilder bad = new StringBuilder();
         if ((s[0] > 0) != expect) bad.append(expect ? "no payment popped; " : "a payment popped; ");
         if ((s[1] > 0) != expect) bad.append(expect ? "the worth did not count on; " : "the worth counted on; ");
@@ -4636,7 +4628,8 @@ public class KeptCheck {
                     bench.passes();
                     boolean ok = false;
                     for (int i = 0; i < 48 && !ok; i++) {
-                        month(g);
+                        if (bankView) month(g);
+                        else fundPaymentMonth(g);
                         if (steer) steerGauge(g);
                         show.run();
                         bench.passes();
@@ -4646,7 +4639,8 @@ public class KeptCheck {
                     if (!ok) return "no animation was running to stop";
                     List<Animation> running = new ArrayList<>(bench.pageAnimations());
                     bench.speed(ladder.length - 1);
-                    month(g);
+                    if (bankView) month(g);
+                    else fundPaymentMonth(g);
                     show.run();
                     bench.passes();
                     // (An animation on a node the month took off the page - a payment's label for a holding that paid nothing now - runs out its 440 ms by itself.)
@@ -5177,6 +5171,13 @@ public class KeptCheck {
             System.out.println("  the city owes " + owed + " pieces of paper; selling one of every kind");
             sellPaper(g, bench);
         }
+        // KS1: the fold needs a live line throughout its choices, even when the market refused all six sales.
+        fx(() -> {
+            LongTermBond paper = new LongTermBond(g.minimumIssueSize() * 3, 1_200, g.getMonth(), .04);
+            g.getDebtManager().getDebt().add(paper);
+            check("fixture: Spending's debt fold has a long-dated line to open", bench.financesPieces().contains(paper));
+            return null;
+        });
         System.out.println("  the city owes " + fx(() -> bench.financesPieces().size()) + " pieces of paper");
         pageReshaped(g, bench, tab, 71, governmentChoices(true), KP6_HANDED_BACK);
         List<Choice> years = new ArrayList<>();
