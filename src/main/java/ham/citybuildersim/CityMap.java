@@ -222,8 +222,8 @@ public final class CityMap {
     /** The sidecar's format: 16 since DM2, each district's dated wall ways and site/yard/shore unit adjustments after the runs' journals (months, plots or types and transitions, as varints); an older sidecar starts with no recorded way. 15 since UP5, each district's journal of the runs holding the interchanges' reserves too, as a kind of its own (THE RESERVES DATED: a record 0 to FIXED_RESERVE for a plot a reserve came to, the other way for one that went; no new field is written, a sidecar of FORMAT 14 or older is read as it was written, and its plans draw today's reserves throughout, as before - a plot of today's reserve whose records do not end on it is read so, fixedLogInto() rule (a)); 14 since MF1, the runs' yards that stand idle after the runs' last numbers (CityRuns.yardIdleSince(): a count and the month each went idle; a sidecar of FORMAT 13 or older has none, all its yards the model's); 13 since CC1-M, each arm of the runs followed by what last stopped it (CityRuns.Arm.stoppedBy: OPEN, EDGE or SEA), which the first re-lay after a load reads to know how far the main line runs on past the sea (a sidecar of FORMAT 12 or older reads OPEN, and the month after it is read takes the main line back past its first arm that waits at the sea and lays it again); 12 since CL5, each net of the runs' pieces of ground after the home piece's (CityRuns.Net.pieceHubs: a count and each hub) and each corridor's piece and role (a SPINE, a CROSSING or a LINK; a sidecar of FORMAT 11 or older reads one piece, the spine corridors 0 and 1, every other corridor a CROSSING); 11 since FX7 (0.8.24), each district's journal of its runs after the logs (THE RUNS DATED: a record for each plot of its own box whose kind of fixed ground a month changed, its month, plot and the kind before and after; a sidecar of FORMAT 10 or older has none, and its plans draw today's runs throughout, as before); 10 since FX5 (0.8.18, its slice Y1), each railway yard's box in the runs followed by the footprint it was laid for (CityRuns.yardAsked(): a yard is laid YARD_LONG along its line or shorter where the ground allows, so its box is no longer the size it was asked for; a sidecar of FORMAT 9 or older reads each yard's footprint as its box's own width and height, as it was laid then); 9 since CL3 (0.8.14), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
     static final int FORMAT = 16;
 
-    /** The oldest sidecar read: FORMAT 4 (0.7.72 to 0.7.87) - its districts are placed as 0.7.88 places them; it has no runs, which are laid from its counts as it is read. */
-    static final int OLDEST_READ = 4;
+    /** The oldest sidecar read: FORMAT 16 (DM2); earlier maps lack the source history needed to replay dated walls faithfully. */
+    static final int OLDEST_READ = 16;
 
     /** Where the stamp sits in the sidecar's raw bytes: after the magic, the format, the seed and the month. */
     static final int STAMP_AT = 4 + 4 + 8 + 4;
@@ -323,6 +323,8 @@ public final class CityMap {
         long wallHash;
         /** Dated changes in units drawn on sites or the shore instead of by the plan (DM2, MF2-S). */
         int[] excludeMonth = NO_LOG, excludeType = NO_LOG, excludeChange = NO_LOG;
+        /** The exclusion records belonging to the canonical first batch, independently of their month. */
+        int excludeBatch;
         int[] excluded;
         long excludeHash;
 
@@ -542,6 +544,8 @@ public final class CityMap {
     private boolean sitedPlaced;
     /** The month of its last change (CL3): what its districts' logs date their records by; 0 for a map drawn canonically with no month given, a harness's square city. */
     private int month;
+    /** Actual monthly site-mask changes; planning only reads this source history. */
+    private final MapSiteHistory siteHistory = new MapSiteHistory();
 
     private CityMap(World.Key worldKey, long siteX, long siteY, BuildingVisual.Type[] types) {
         this.seed = worldKey.seed();
@@ -660,6 +664,7 @@ public final class CityMap {
         m.allocate(counts);
         m.layRuns(counts);
         m.layShore(counts);
+        m.syncPlanExclusions();
         m.logChanges();
         m.batchLogs();
         return m;
@@ -709,6 +714,7 @@ public final class CityMap {
         m.allocate(counts);
         m.layRuns(counts);
         m.layShore(counts);
+        m.syncPlanExclusions();
         m.logChanges();
         m.batchLogs();
         return m;
@@ -718,6 +724,8 @@ public final class CityMap {
         long cx = (baseDX + dx) * DISTRICT + DISTRICT / 2, cy = (baseDY + dy) * DISTRICT + DISTRICT / 2;
         double ox = cx - siteX, oy = cy - siteY;
         District d = new District(dx, dy, types.length, ox * ox + oy * oy);
+        siteHistory.added(d);
+        siteExclusionDirty.add(d);
         freeOf = freeRoadOf = freeTree = roadTree = null;
         districts.add(d);
         d.index = districts.size() - 1;
@@ -1213,7 +1221,11 @@ public final class CityMap {
 
     /** ...in a given month, the game's: what the districts' logs date the month's changes by. */
     public boolean reconcile(long[] model, int month) {
-        if (syncLand()) return false;
+        siteHistory.begin();
+        if (syncLand()) {
+            siteHistory.end(this::district, this::siteMask, month);
+            return false;
+        }
         if (siteIndex == null && measured) siteIndex();   // ET5: a stamp change dropped it (landmassPicture()); built once now, over the land as it stands
         this.month = month;
         nPassed = 0;
@@ -1250,6 +1262,8 @@ public final class CityMap {
             runs.setWitness(null);
         }
         endJournal();
+        siteHistory.end(this::district, this::siteMask, month);
+        syncPlanExclusions();
         // The month's changes to every district's counts, into their logs (CL3), now that everything that moves them has.
         logChanges();
         lastTouched = touched;
@@ -1342,7 +1356,10 @@ public final class CityMap {
 
     /** Every district's whole log so far one batch, placed in today's order: after a canonical deal, a square city's or a sidecar of FORMAT 8 or older read. */
     private void batchLogs() {
-        for (District d : districts) d.firstBatch = d.logN;
+        for (District d : districts) {
+            d.firstBatch = d.logN;
+            d.excludeBatch = d.excludeMonth.length;
+        }
     }
 
     /** How many changes the map has taken since it was drawn - a district's count, a purchase measured, a site's state: what the view stamps its tiles again on (MapTiles). Only grows. */
@@ -2289,6 +2306,8 @@ public final class CityMap {
         if (old != null) {
             for (Walk w : old.walks) {
                 for (int e = 0; e < w.length; e++) {
+                    siteHistory.changed(w.at[e]);
+                    siteExclusionDirty.add(w.at[e]);
                     w.at[e].siteRuns[w.slot] = null;
                     minedTouched.add((baseDX + w.at[e].dx) << 32 ^ ((baseDY + w.at[e].dy) & 0xffffffffL));
                 }
@@ -2441,6 +2460,8 @@ public final class CityMap {
     /** m more (or fewer) sites of a district's slot, of one holding, under a works of type t: its painting's runs. */
     private void markRun(District d, int slot, int holding, int t, int m) {
         if (m == 0) return;
+        siteHistory.changed(d);
+        siteExclusionDirty.add(d);
         int[] runs = d.siteRuns[slot];
         int at = -1;
         if (runs != null) for (int a = runs.length - 3; a >= 0 && at < 0; a -= 3) if (runs[a] == holding) at = a;
@@ -3395,7 +3416,7 @@ public final class CityMap {
         }
         h = World.mix(h ^ cs);
         h = World.mix(h ^ d.logHash ^ ((long) d.firstBatch << 40) ^ d.logN ^ ((long) d.jN << 20));
-        h = World.mix(h ^ d.jHash ^ d.wallHash ^ d.excludeHash);
+        h = World.mix(h ^ d.jHash ^ d.wallHash ^ d.excludeHash ^ ((long) d.excludeBatch << 32) ^ siteHistoryFrameHash(d));
         for (int b = -1; b <= 1; b++) {
             for (int a = -1; a <= 1; a++) {
                 District o = districtAt(key(d.dx + a, d.dy + b));
@@ -3441,6 +3462,7 @@ public final class CityMap {
         if (d.logN > 0) h = World.mix(h ^ d.logHash ^ ((long) d.firstBatch << 40) ^ d.logN);
         // ...and the journal of the runs over its frame (batch FX7): its own and the first column, row and plot of its east, south and south-east neighbours'; nothing with none.
         h = journalStamp(d, h);
+        h = World.mix(h ^ siteHistoryFrameHash(d) ^ ((long) d.excludeBatch << 32));
         if (d.wallMonth.length > 0) h = World.mix(h ^ d.wallHash);
         if (d.excludeMonth.length > 0) h = World.mix(h ^ d.excludeHash);
         long fx1 = x0 + DistrictPlan.FRAME - 1, fy1 = y0 + DistrictPlan.FRAME - 1;
@@ -7234,8 +7256,8 @@ public final class CityMap {
      * yard's share jumped to it: the district that stood the yard on its ground drew its own depot as a box at its dated place in the log, the boxes after it moved (WN3-M(a),
      * Historical's city at m3995: district (-2,-3), 10 boxes), and the new depot vanished into a yard that stands in another district's frame (MapCheck 20).
      */
-    private int[][] yardShare;
-    private long yardShareAt = Long.MIN_VALUE;
+    private Map<District, int[]> yardShare;
+    private long yardShareAt = Long.MIN_VALUE, yardShareRuns = Long.MIN_VALUE;
 
     /** The terminal types' indices (BuildingVisual.Type.terminal()), in type order; worked out once (the types are the map's for life). */
     private int[] terminalTypes() {
@@ -7260,11 +7282,12 @@ public final class CityMap {
 
     /** How many of district d's buildings of terminal type t are the runs' yards. */
     int yardsOf(District d, int t) {
-        long at = World.mix(runs.version() ^ changes);
+        long at = changes;
         int[] tt = terminalTypes();
-        if (yardShare == null || yardShareAt != at || yardShare.length != districts.size()) {
-            yardShare = new int[districts.size()][tt.length];
+        if (yardShare == null || yardShareAt != at || yardShareRuns != runs.version()) {
+            yardShare = new HashMap<>();
             yardShareAt = at;
+            yardShareRuns = runs.version();
             // The runs' yards of each type, from the sequence: the first of them laid (those the ground had no place for are the last).
             int[] seq = haveSequence();
             List<long[]> laidYards = runs.yards();
@@ -7276,8 +7299,11 @@ public final class CityMap {
                     // (MF2) A yard is the district's whose frame holds its ground, where that district counts a building of its type with no yard yet.
                     District f = yardFrame(laidYards.get(i));
                     int n = f == null || tt[k] >= f.counts.length ? 0 : f.counts[tt[k]];
-                    if (f != null && f.index < yardShare.length && yardShare[f.index][k] < n) yardShare[f.index][k]++;
-                    else left[k]++;
+                    int[] share = f == null ? null : yardShare.get(f);
+                    if (f != null && (share == null ? 0 : share[k]) < n) {
+                        if (share == null) { share = new int[tt.length]; yardShare.put(f, share); }
+                        share[k]++;
+                    } else left[k]++;
                 }
             }
             // ...and those left over, in the map's order (as before MF2).
@@ -7285,15 +7311,18 @@ public final class CityMap {
                 for (int i = 0; i < districts.size() && left[k] > 0; i++) {
                     District o = districts.get(i);
                     int n = tt[k] < o.counts.length ? o.counts[tt[k]] : 0;
-                    int take = Math.min(n - yardShare[i][k], left[k]);
+                    int[] share = yardShare.get(o);
+                    int take = Math.min(n - (share == null ? 0 : share[k]), left[k]);
                     if (take <= 0) continue;
-                    yardShare[i][k] += take;
+                    if (share == null) { share = new int[tt.length]; yardShare.put(o, share); }
+                    share[k] += take;
                     left[k] -= take;
                 }
             }
         }
-        if (d.index >= yardShare.length) return 0;
-        for (int k = 0; k < tt.length; k++) if (tt[k] == t) return yardShare[d.index][k];
+        int[] share = yardShare.get(d);
+        if (share == null) return 0;
+        for (int k = 0; k < tt.length; k++) if (tt[k] == t) return share[k];
         return 0;
     }
 
@@ -8567,26 +8596,30 @@ public final class CityMap {
     }
 
     /** Each district's works the shore holds, by its index and the shore's type: the works dealt to the districts holding their type in the map's order, so the rest are their plans' (kept against the shore and the counts). */
-    private int[][] shoreShare;
-    private long shoreShareAt = Long.MIN_VALUE;
+    private Map<District, int[]> shoreShare;
+    private long shoreShareAt = Long.MIN_VALUE, shoreShareVersion = Long.MIN_VALUE;
 
     /** How many of district d's buildings of type t the shore holds. */
     int shoreOf(District d, int t) {
         int[] st = shoreTypes();
-        long at = World.mix(shore.version() ^ changes * 0x9E3779B97F4A7C15L);
-        if (shoreShare == null || shoreShareAt != at || shoreShare.length != districts.size()) {
-            shoreShare = new int[districts.size()][st.length];
+        long at = changes;
+        if (shoreShare == null || shoreShareAt != at || shoreShareVersion != shore.version()) {
+            shoreShare = new HashMap<>();
             shoreShareAt = at;
+            shoreShareVersion = shore.version();
             for (int s = 0; s < st.length; s++) {
                 int left = shore.count(st[s]);
                 for (int i = 0; i < districts.size() && left > 0; i++) {
-                    int take = Math.min(districts.get(i).counts[st[s]], left);
-                    shoreShare[i][s] = take;
+                    District owner = districts.get(i);
+                    int take = Math.min(owner.counts[st[s]], left);
+                    if (take > 0) shoreShare.computeIfAbsent(owner, key -> new int[st.length])[s] = take;
                     left -= take;
                 }
             }
         }
-        for (int s = 0; s < st.length; s++) if (st[s] == t) return d.index < shoreShare.length ? shoreShare[d.index][s] : 0;
+        int[] share = shoreShare.get(d);
+        if (share == null) return 0;
+        for (int s = 0; s < st.length; s++) if (st[s] == t) return share[s];
         return 0;
     }
 
@@ -9718,14 +9751,23 @@ public final class CityMap {
         Long seen = siteListVersion.get(k);
         if (got != null && seen != null && seen == version) return got;
         if (d != null && !sitedPlaced) placeSited(totals());
+        List<DrawnSite> out = siteListWithRuns(dx, dy, d == null ? null : d.siteRuns);
+        siteLists.put(k, out);
+        siteListVersion.put(k, version);
+        siteListVersion.keySet().retainAll(siteLists.keySet());
+        return out;
+    }
+
+    /** A site's geometry and claim from explicit runs, bypassing the current-state cache for the month's before-mask. */
+    private List<DrawnSite> siteListWithRuns(int dx, int dy, int[][] siteRuns) {
         long x0 = (baseDX + dx) * DISTRICT, y0 = (baseDY + dy) * DISTRICT;
         List<DrawnSite> out = new ArrayList<>();
         Map<Resource, int[]> states = new HashMap<>();
         // Each slot's works here, by holding, in the walk's order (0.8.0): {type, sites} pairs popped site by site.
         Map<Long, java.util.ArrayDeque<int[]>> runs = new HashMap<>();
-        if (d != null) {
+        if (siteRuns != null) {
             for (int q = 0; q < SLOTS; q++) {
-                int[] rs = d.siteRuns[q];
+                int[] rs = siteRuns[q];
                 if (rs == null) continue;
                 for (int a = 0; a + 2 < rs.length; a += 3) {
                     runs.computeIfAbsent(((long) q << 32) | rs[a], x -> new java.util.ArrayDeque<>()).add(new int[] { rs[a + 1], rs[a + 2] });
@@ -9762,9 +9804,30 @@ public final class CityMap {
                 }
             }
         }
-        siteLists.put(k, out);
-        siteListVersion.put(k, version);
-        siteListVersion.keySet().retainAll(siteLists.keySet());
+        return out;
+    }
+
+    /** A district's own site classes, including boxes centred in its neighbours and any claims captured before the month. */
+    private byte[] siteMask(District d, Map<District, int[][]> overrides) {
+        byte[] out = new byte[DISTRICT * DISTRICT];
+        long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                District source = district(d.dx + dx, d.dy + dy);
+                if (source == null || overrides.containsKey(source) && overrides.get(source) == null) continue;
+                List<DrawnSite> sites = overrides.containsKey(source)
+                        ? siteListWithRuns(source.dx, source.dy, overrides.get(source)) : siteList(source.dx, source.dy);
+                for (DrawnSite s : sites) {
+                    long sx0 = Math.max(s.x0(), x0), sy0 = Math.max(s.y0(), y0);
+                    long sx1 = Math.min(s.x1(), x0 + DISTRICT - 1), sy1 = Math.min(s.y1(), y0 + DISTRICT - 1);
+                    byte mark = s.mine() >= 0 ? DistrictPlan.SITE_MINED : DistrictPlan.SITE_FIELD;
+                    for (long y = sy0; y <= sy1; y++) for (long x = sx0; x <= sx1; x++) {
+                        int p = (int) ((y - y0) * DISTRICT + x - x0);
+                        if (out[p] != DistrictPlan.SITE_MINED) out[p] = mark;
+                    }
+                }
+            }
+        }
         return out;
     }
 
@@ -10367,6 +10430,17 @@ public final class CityMap {
         return h;
     }
 
+    /** The source histories feeding a plan's own plots and its east/south seams. */
+    private long siteHistoryFrameHash(District d) {
+        long h = siteHistory.hash(d);
+        for (int y = 0; y <= 1; y++) for (int x = 0; x <= 1; x++) {
+            if (x == 0 && y == 0) continue;
+            District neighbour = district(d.dx + x, d.dy + y);
+            if (neighbour != null) h = World.mix(h ^ siteHistory.hash(neighbour) ^ (x + 2L * y));
+        }
+        return h;
+    }
+
     /** The inputs of district d's plan (DistrictPlan.Input), its ground read from the world. */
     DistrictPlan.Input planInput(District d) {
         DistrictPlan.Input in = planInputHere(d);
@@ -10379,51 +10453,104 @@ public final class CityMap {
      * MF2-S, observed at m3004: reducing the shore's share returned an old Cargo Terminal at its original arrival and moved 660 boxes.
      * The adjustment journal keeps that flow, merged with the district log by month and type before the planner reads it.
      */
-    void planExclusionsInto(District d, DistrictPlan.Input in) {
-        for (int t = 0; t < types.length; t++) {
-            if (types[t] == null || !types[t].drawn() || (types[t].site() == null && !types[t].shore() && !types[t].terminal())) continue;
-            int now = Math.max(0, d.counts[t] - in.counts[t]);
-            int was = d.excluded == null ? 0 : d.excluded[t];
-            if (now == was) continue;
-            if (d.excluded == null) d.excluded = new int[types.length];
-            int n = d.excludeMonth.length, at = n == 0 ? month : Math.max(month, d.excludeMonth[n - 1]);
-            d.excludeMonth = Arrays.copyOf(d.excludeMonth, n + 1);
-            d.excludeType = Arrays.copyOf(d.excludeType, n + 1);
-            d.excludeChange = Arrays.copyOf(d.excludeChange, n + 1);
-            d.excludeMonth[n] = at;
-            d.excludeType[n] = t;
-            d.excludeChange[n] = was - now;
-            d.excludeHash = World.mix(d.excludeHash ^ ((long) at << 32) ^ ((long) t << 20) ^ (was - now));
-            d.excluded[t] = now;
-        }
-        if (d.excludeMonth.length == 0) return;
-        java.util.TreeMap<Integer, int[]> months = new java.util.TreeMap<>();
-        int batchMonth = in.firstBatch == 0 ? Integer.MIN_VALUE : in.logMonth[in.firstBatch - 1];
-        for (int k = 0; k < in.logMonth.length; k++) {
-            int[] changes = months.computeIfAbsent(in.logMonth[k], m -> new int[types.length]);
-            changes[in.logType[k]] += in.logChange[k];
-        }
-        for (int k = 0; k < d.excludeMonth.length; k++) {
-            int[] changes = months.computeIfAbsent(d.excludeMonth[k], m -> new int[types.length]);
-            changes[d.excludeType[k]] += d.excludeChange[k];
-        }
-        int size = 0;
-        for (int[] changes : months.values()) for (int change : changes) if (change != 0) size++;
-        in.logMonth = new int[size];
-        in.logType = new int[size];
-        in.logChange = new int[size];
-        in.firstBatch = 0;
-        int k = 0;
-        for (var entry : months.entrySet()) {
+    private final java.util.Set<District> planAllocationOwners = new HashSet<>();
+    private final java.util.Set<District> siteExclusionDirty = new HashSet<>();
+
+    /** Updates source flows once the month's sites, yards and shore stand; no plan or view is needed. */
+    private void syncPlanExclusions() {
+        if (districts.isEmpty()) return;
+        sitedNow();
+        java.util.Set<District> touched = new HashSet<>(planAllocationOwners);
+        touched.addAll(logAll ? districts : logQueue);
+        touched.addAll(siteExclusionDirty);
+        District first = districts.get(0);
+        int[] terminals = terminalTypes(), shores = shoreTypes();
+        if (terminals.length > 0) yardsOf(first, terminals[0]);
+        if (shores.length > 0) shoreOf(first, shores[0]);
+        planAllocationOwners.clear();
+        if (yardShare != null) planAllocationOwners.addAll(yardShare.keySet());
+        if (shoreShare != null) planAllocationOwners.addAll(shoreShare.keySet());
+        touched.addAll(planAllocationOwners);
+        for (District d : touched) {
             for (int t = 0; t < types.length; t++) {
-                int change = entry.getValue()[t];
-                if (change == 0) continue;
-                in.logMonth[k] = entry.getKey();
-                in.logType[k] = t;
-                in.logChange[k++] = change;
-                if (entry.getKey() <= batchMonth) in.firstBatch++;
+                BuildingVisual.Type type = types[t];
+                if (type == null || !type.drawn() || (type.site() == null && !type.shore() && !type.terminal())) continue;
+                int plan = Math.max(0, d.counts[t] - (d.sited == null ? 0 : d.sited[t]));
+                if (type.terminal()) plan -= Math.min(plan, yardsOf(d, t));
+                if (type.shore()) plan = Math.max(0, plan - shoreOf(d, t));
+                recordPlanExclusion(d, t, Math.max(0, d.counts[t] - plan));
             }
         }
+        siteExclusionDirty.clear();
+    }
+
+    /** Records an actual change in units drawn elsewhere, at the map's month; harnesses may supply the source count directly. */
+    void recordPlanExclusion(District d, int t, int now) {
+        if (now < 0) throw new IllegalArgumentException("negative plan exclusion");
+        int was = d.excluded == null ? 0 : d.excluded[t];
+        if (now == was) return;
+        int n = d.excludeMonth.length;
+        if (n > 0 && d.excludeMonth[n - 1] > month) throw new IllegalStateException("plan exclusion month fell");
+        if (d.excluded == null) d.excluded = new int[types.length];
+        d.excludeMonth = Arrays.copyOf(d.excludeMonth, n + 1);
+        d.excludeType = Arrays.copyOf(d.excludeType, n + 1);
+        d.excludeChange = Arrays.copyOf(d.excludeChange, n + 1);
+        d.excludeMonth[n] = month;
+        d.excludeType[n] = t;
+        d.excludeChange[n] = was - now;
+        d.excludeHash = World.mix(d.excludeHash ^ ((long) month << 32) ^ ((long) t << 20) ^ (was - now));
+        d.excluded[t] = now;
+    }
+
+    /** A pure merge: the initial prefix stays a prefix, and later departures and arrivals retain their separate records. */
+    void planExclusionsInto(District d, DistrictPlan.Input in) {
+        if (d.excludeMonth.length == 0) return;
+        int rawN = in.logMonth.length, extra = d.excludeMonth.length;
+        int[] months = new int[rawN + extra], tt = new int[rawN + extra], changes = new int[rawN + extra];
+        int batch = Math.min(in.firstBatch, rawN), eb = Math.min(d.excludeBatch, extra), n = 0;
+        for (int k = 0; k < batch; k++) {
+            months[n] = in.logMonth[k]; tt[n] = in.logType[k]; changes[n++] = in.logChange[k];
+        }
+        for (int k = 0; k < eb; k++) {
+            months[n] = d.excludeMonth[k]; tt[n] = d.excludeType[k]; changes[n++] = d.excludeChange[k];
+        }
+        in.firstBatch = n;
+        int r = batch, e = eb;
+        while (r < rawN || e < extra) {
+            int at = r == rawN ? d.excludeMonth[e] : e == extra ? in.logMonth[r]
+                    : Math.min(in.logMonth[r], d.excludeMonth[e]);
+            int r2 = r, e2 = e;
+            while (r2 < rawN && in.logMonth[r2] == at) r2++;
+            while (e2 < extra && d.excludeMonth[e2] == at) e2++;
+            int start = n;
+            for (int k = r; k < r2; k++) {
+                months[n] = at; tt[n] = in.logType[k]; changes[n++] = in.logChange[k];
+            }
+            for (int k = e; k < e2; k++) {
+                int type = d.excludeType[k], adjustment = d.excludeChange[k];
+                // A newly sited unit's +1 and -1 cancel; an old unit's departure and a new arrival never net each other.
+                for (int q = n - 1; q >= start && adjustment != 0; q--) {
+                    if (tt[q] != type || Integer.signum(changes[q]) != -Integer.signum(adjustment)) continue;
+                    int cancel = (int) Math.min(Math.abs((long) changes[q]), Math.abs((long) adjustment));
+                    int signed = Integer.signum(adjustment) * cancel;
+                    changes[q] += signed;
+                    adjustment -= signed;
+                }
+                if (adjustment != 0) {
+                    months[n] = at; tt[n] = type; changes[n++] = adjustment;
+                }
+            }
+            int kept = start;
+            for (int q = start; q < n; q++) if (changes[q] != 0) {
+                months[kept] = months[q]; tt[kept] = tt[q]; changes[kept++] = changes[q];
+            }
+            n = kept;
+            r = r2;
+            e = e2;
+        }
+        in.logMonth = Arrays.copyOf(months, n);
+        in.logType = Arrays.copyOf(tt, n);
+        in.logChange = Arrays.copyOf(changes, n);
     }
 
     /** The ground over a plan's frame, a World class a plot, read from the world the key names (0.7.115; the input's seed's until then), and its relief beside it (ET2: World.tileRelief(), a tile at a time as the cover is; FLAT on a generated world): any thread (World is safe), so a plan's job reads it away from the screen's (0.7.88). */
@@ -10447,7 +10574,6 @@ public final class CityMap {
 
     /** ...everything but the ground: what the map's own thread reads (the land, the counts, the sites, the runs). */
     DistrictPlan.Input planInputHere(District d) {
-        sitedNow();
         DistrictPlan.Input in = new DistrictPlan.Input();
         int f = DistrictPlan.FRAME;
         long x0 = (baseDX + d.dx) * DISTRICT, y0 = (baseDY + d.dy) * DISTRICT;
@@ -10544,6 +10670,7 @@ public final class CityMap {
                 }
             }
         }
+        siteHistory.frameInto(d, in, this::district);
         // The seams it surfaces: north, east, south, west, then the corners north-west, north-east, south-east, south-west.
         // The first in the chain's order surfaces a seam (MB1): within a band that is DISTRICT_ORDER, and a district bought
         // ahead, last in the chain, takes no seam from a neighbour in another band, so that band's boxes stay where they were.
@@ -10889,6 +11016,7 @@ public final class CityMap {
             if (format >= 16) {
                 for (District d : districts) {
                     writeVarint(out, d.excludeMonth.length);
+                    writeVarint(out, d.excludeBatch);
                     int before = 0;
                     for (int k = 0; k < d.excludeMonth.length; k++) {
                         writeVarint(out, d.excludeMonth[k] - before);
@@ -10898,6 +11026,7 @@ public final class CityMap {
                         writeVarint(out, (change << 1) ^ (change >> 31));
                     }
                 }
+                for (District d : districts) siteHistory.writeDistrict(out, d);
             }
             out.flush();
             byte[] bytes = raw.toByteArray();
@@ -11167,7 +11296,9 @@ public final class CityMap {
             if (format >= 16) {
                 for (District d : m.districts) {
                     int count = readVarint(in);
+                    d.excludeBatch = readVarint(in);
                     if (count < 0 || count > in.available() / 3) return null;
+                    if (d.excludeBatch < 0 || d.excludeBatch > count) return null;
                     d.excludeMonth = new int[count];
                     d.excludeType = new int[count];
                     d.excludeChange = new int[count];
@@ -11181,6 +11312,7 @@ public final class CityMap {
                         long excluded = (long) d.excluded[type] - change;
                         if (excluded < 0 || excluded > Integer.MAX_VALUE) return null;
                         d.excluded[type] = (int) excluded;
+                        if (types[type].terminal() || types[type].shore()) m.planAllocationOwners.add(d);
                         at += step;
                         d.excludeMonth[k] = at;
                         d.excludeType[k] = type;
@@ -11188,6 +11320,7 @@ public final class CityMap {
                         d.excludeHash = World.mix(d.excludeHash ^ ((long) at << 32) ^ ((long) type << 20) ^ change);
                     }
                 }
+                for (District d : m.districts) m.siteHistory.readDistrict(in, d, savedMonth, in.available());
             }
             m.runs.setDoubleMain(m.hasFreightLine(m.have));
             m.purchasesSeen = bought;
@@ -11210,6 +11343,7 @@ public final class CityMap {
                 m.logChanges();
                 m.batchLogs();
             }
+            m.sitedNow();
             return m;
         } catch (IOException | RuntimeException e) {
             return null;
@@ -11233,7 +11367,8 @@ public final class CityMap {
             District a = districts.get(i), b = o.districts.get(i);
             if (a.dx != b.dx || a.dy != b.dy || a.owned != b.owned || a.usedHalf != b.usedHalf || !Arrays.equals(a.counts, b.counts)) return false;
             if (withLogs && (!a.sameLog(b) || !a.sameJournal(b) || !Arrays.equals(a.wallMonth, b.wallMonth) || !Arrays.equals(a.wallChange, b.wallChange)
-                    || !Arrays.equals(a.excludeMonth, b.excludeMonth) || !Arrays.equals(a.excludeType, b.excludeType) || !Arrays.equals(a.excludeChange, b.excludeChange))) return false;
+                    || a.excludeBatch != b.excludeBatch || !Arrays.equals(a.excludeMonth, b.excludeMonth) || !Arrays.equals(a.excludeType, b.excludeType)
+                    || !Arrays.equals(a.excludeChange, b.excludeChange) || !siteHistory.same(a, o.siteHistory, b))) return false;
         }
         return true;
     }
