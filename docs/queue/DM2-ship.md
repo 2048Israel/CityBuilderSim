@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-DM2-4rkMaNK7 -->
 <!-- Provisional record for the required versioned dry run. -->
 
 ## changelog
@@ -16,3 +17,7 @@ delayed views and save/load round trips are checked. The default model trace is 
 | DM2-A | An actual-map watched/unseen twin that causes a wall and verifies dated discovery after first view | [DM2-A](docs/queue/DM2-notes.md#dm2-a) |
 | DM2-B | A causal site-mask mismatch recovery study and fixture before relaxing whole-sidecar refusal | [DM2-B](docs/queue/DM2-notes.md#dm2-b) |
 | DM2-C | Guard and document the rectangle codec's 256-plot district assumption beside DISTRICT | [DM2-C](docs/queue/DM2-notes.md#dm2-c) |
+
+## known-reds
+
+LongPlaytest | (no FAIL line) | CL6 | 2026-11-12 | The default report contains only the existing month-2400 industry-ring finding, reproduced on main and queued as CL6. DM2 layout and direct-reader findings are absent.
