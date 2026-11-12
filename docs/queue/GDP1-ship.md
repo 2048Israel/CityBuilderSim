@@ -1,4 +1,3 @@
-<!-- Provisional: readiness awaits rejudging the retained complete gate run. -->
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GDP1-TYIaTCZM -->
 ## changelog
 ### {next} — GDP1, Works forecast their inputs at current prices — 2026-11-12, ready, see docs/queue/GDP1-notes.md

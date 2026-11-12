@@ -322,3 +322,30 @@ box explicitly as well. The premise must hold for the main and GDP1 offer
 geometries, rather than depending on a particular city or increasing a random
 sample until it happens to pass. This is harness-only work; no model change
 or ensemble is needed. The author may review the queued repair in its own batch.
+
+## Accepted gate and readiness
+
+After the control and queued fixture record, `sh tools/gate.sh GDP1 --dry-run
+--reuse C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GDP1-TYIaTCZM` completes
+**exit 0**. The common suite judge returns **exit 3**, known reds only:
+DeathRecordCheck, HealthCheck, KeptCheck, MapCheck, MonetaryCheck and PlanCheck.
+There are no unnamed red lines. The accepted dry run is retained at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GDP1-BTV6i5yq`; its `ship.log` records
+the rejudgment and successful dry run. The launcher summary in this worktree
+is `target/checks/gdp1-gate-rejudge.txt`.
+
+That accepted run's two commits are branch
+`f6a651709fab0413b9cc08bc0c445490e242d2d9` and main
+`6e3698445cb0dbceba70c2aa51c749f65b91e879`. It explicitly reuses the complete
+201-harness checks from `cbs-gate-GDP1-TYIaTCZM`, whose checked branch was
+`6535c3a12b28aba42e043bf5b448bef58c9983e0` on the same main. The ship marker
+names that complete reusable run; both retained directories are kept. The
+publisher's trial records use 0.9.96, leave the missing GDP1 queue row alone,
+and add the M6-F queued row. No real merge, version edit, tag or main push
+was made by this session.
+
+Only GDP1-notes.md and GDP1-ship.md changed after the first gate's checked
+commit, as required. The final model remains `aea7eb1d`, with the 23/26
+ensemble retaining every 0.9.93 PASS. GDP1 is ready with the unrelated
+offer-coverage fixture repair explicitly queued and no GDP or money-audit
+finding waived.
