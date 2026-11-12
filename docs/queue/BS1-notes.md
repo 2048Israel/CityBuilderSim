@@ -1,8 +1,9 @@
 # BS1 — Bond settles to a fixed point, the bid tick and the buyback
 
-**Approved for shipping by Jerus on 2026-11-12, about 15:50**, relayed in
-lanekeeper instruction `20261112-155225-270-lanekeeper-8410`. Lanekeeper
-will gate BS1 fresh after DM2.
+**Ready after the second send-back, merged with main `6e369844`.** Jerus's
+shipping approval of 2026-11-12, about 15:50, and the A1 and FoodProcessingCheck
+acceptances continue to apply. The new KeptCheck fixture findings are queued
+as KBF1 and KHT1 under lanekeeper instruction `20261112-180137-275-lanekeeper-a1da`.
 
 Built from main `fc3b6be5` on `batch/BS1`. The queue's BS1 row and its linked
 BA1 and BD1 findings are the brief. WC1 assigns whole batches to Codex.
@@ -158,9 +159,10 @@ reds already have scoped entries and queued fixes in the repository,
 MonetaryCheck MQ1, CentralBankCheck CB2, HealthCheck HX1, PlanCheck PX1 and
 KeptCheck KS1.
 
-Lanekeeper directs the fresh gate after DM2 because main will move, and
-explicitly waives the builder's dry run for this readiness handoff. The
-branch stays based on `fc3b6be5`. The final push adds the ship file last.
+Lanekeeper directed the fresh gate after DM2 and explicitly waived the
+builder's dry run for the first readiness handoff, which was based on
+`fc3b6be5`. The second send-back below requires the merge with main
+`6e369844`. Each readiness push adds the ship file last.
 
 The saved post-CreditCheck-correction suite was rejudged with the ship file's
 known-red entries on 2026-11-12. Exit **3**, the FoodProcessingCheck line
@@ -262,3 +264,71 @@ KeptCheck runs in the detached worktree
 The merged harness adds failure diagnostics naming newly drawn labels and
 the node, width and text of a removed tooltip. Its reuse floor and tooltip
 assertions keep their original expressions.
+
+Main's `./batch-check.sh KeptCheck` compiled in 42 seconds and ran the full
+harness in 1,190 seconds, exit **3**, four already covered failures. The
+funding page retained 74 nodes and made zero, 100.0%. The all-households
+case retained all 94 tooltips with zero lost. Its logs are archived as
+`target/checks/BS1-main6e-KeptCheck.log`, `BS1-main6e-suite.txt` and
+`BS1-main6e-summary.txt`. Its existing failures are the Wood Products picture,
+the two KS2 paper fixtures and the KS1-UI header.
+
+The merged `./batch-check.sh KeptCheck`, on `0b5ac30d`, compiled in 52 seconds
+and ran in 1,043 seconds, exit **4**, reproducing both gate findings. Stale
+has zero firm findings in both runs. The merged run has 19 soft timing
+assertions, main has 18. Evidence is `target/checks/BS1-merge-kept.txt`,
+`BS1-merge6e-KeptCheck.log`, `BS1-merge6e-suite.txt` and
+`BS1-merge6e-reds.txt`. The original gate log is also archived locally as
+`BS1-gate2-KeptCheck.log`.
+
+1. **Not a BS1 rendering defect, queued KBF1.** The diagnostics identify the
+   19 new nodes as the first auction-shortfall notices and cap controls.
+   Both previews become short after the measured month, bringing 3.9T and
+   3.5T against a 5.0T gap. The added labels include both short-offer notices,
+   `THIS SALE WOULD NOT COVER THE RUN`, `THE HIGHEST YIELD YOU WILL TAKE`,
+   `fair + 1 pt` and `Fill it`. BuildScreen.shortAnswers returns no panel
+   while both previews cover and the chips are untouched, then correctly
+   draws these responses when they become short. The page retains 74 nodes
+   and adds the required 19, giving 74/93 = 79.6%. Its picture still equals
+   a page built new. The fixture causes a cash gap but does not cause stable
+   auction coverage across the measured month. BuildScreen and Pieces are
+   byte-identical to main. The 90% floor remains active.
+2. **Not a BS1 tooltip-retention defect, queued KHT1.** The diagnostic
+   identifies a kept Label of width 88 displaying a dash. Its former tip is
+   `Couple, no children, Senior professional`, `1 of them`, `click for the month`.
+   PeopleScreen.cashCell renders the dash when the cell has fewer than 0.5
+   households. Populated cells get that tooltip and the click action. The
+   shared fixture lets this formerly populated cell fall below the cutoff
+   during the month, so its tooltip correctly disappears with its occupied
+   state. All 79 surviving tooltips keep their identity. PeopleScreen is
+   byte-identical to main. The fixture assumes population persists while
+   allowing the composition to change. Both the identity and zero-loss
+   assertions remain active.
+3. The `exit 5` and `5 FAILED` lines are wrappers of those assertions and the
+   three existing KS2/KS1-UI failures. The two new scoped entries classify
+   their underlying findings, with no separate wrapper allowance.
+
+The merged comparison is the final `./batch-check.sh KeptCheck` run for
+the changed harness source. With the ship file's four scoped records added
+to main's existing records, its saved suite rejudges to **exit 3**, known
+reds only, including both count lines. Evidence is
+`target/checks/BS1-sendback2-judge.txt` and `BS1-sendback2-known-reds.txt`.
+KBF1 and KHT1 follow the send-back's instruction to queue path-dependent
+fixture failures. The ship file is restored only after these records and
+the regenerated indexes are pushed.
+
+## KBF1
+
+KeptCheck 44's funding-page fixture causes stable auction coverage across
+the measured month while preserving the 90% reuse floor. Cause the initial
+shortfall notices and cap controls explicitly so their first appearance is
+covered by the fixture. The current cash-gap premise alone lets both offers
+flip from covered to short and correctly adds 19 response nodes.
+
+## KHT1
+
+KeptCheck 89's all-households tooltip fixture causes populated cash-grid
+cells to remain populated through the measured month, preserving its
+tooltip identity and zero-loss assertions. The current shared city lets
+a cell fall below cashCell's cutoff and become an empty dash, which
+correctly removes its tooltip.
