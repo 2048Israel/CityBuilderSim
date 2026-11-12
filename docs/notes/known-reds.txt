@@ -22,27 +22,14 @@ KeptCheck | the BuybackLadder on Close it now: no month draws it again with noth
 KeptCheck | the city has a piece of paper to close | KS2 | 2026-11-11 | RB1 sections 51/66/67 look for moving figures or paper instead of causing them
 KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung | KS1-UI | 2026-11-11 | Unchanged main reproduces retained bounds on the hidden RATE label. The screen repair is queued as KS1-UI
 KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS | KS1-rest | 2026-11-11 | Loaded-PC kept chrome timing remains deferred to KS1-rest and is measured nightly. KS1 repairs fixtures
-LongPlaytest | (no FAIL line) | DM2 | 2026-11-11 | nightly moved boxes. the watch exits without a FAIL assertion
-LongPlaytest | a building on the map moved | DM2 | 2026-11-11 | nightly moved boxes. the watch exits without a FAIL assertion
+LongPlaytest | (no FAIL line) | CL6 | 2026-11-11 | CL6's industry ring at m2400 makes the watch exit without a FAIL assertion
 LongPlaytest | industry stands farther out than the homes | CL6 | 2026-11-11 | WG2 late industry ring extends beyond the homes
 MapCheck | ...and issued, the card's bond buys them all | BQ1 | 2026-11-11 | LM1 term auction sells nothing. the fixture does not cause clearing
-MapCheck | ...and the arrivals after it go on | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | ...and the layout watch | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | a block of the box bought in a month the runs do not change | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | a building on the map moved | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
 MapCheck | a month's FX-side map work at 5B | KS1-rest | 2026-11-11 | GT1-T FX-side map timing at 5B remains deferred to KS1-rest and is measured nightly
-MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | a yard laid again across the buildings that stand moves off it the boxes under it and no others | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | a yard that goes moves none of the buildings | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
 MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock | KS1-rest | 2026-11-11 | GT1-T map month timing at 10B remains deferred to KS1-rest and is measured nightly
 MapCheck | at 5 billion a month's change takes no more than 5 ms of the wall clock | KS1-rest | 2026-11-11 | GT1-T map month timing at 5B remains deferred to KS1-rest and is measured nightly
 MapCheck | at every 30th month the map draws exactly what the city has | DM3 | 2026-11-11 | WG2 edge packing leaves 27 model buildings undrawn at month 91
-MapCheck | counts them apart and flags none | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | every box stands four months on | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | none of the boxes of the month the reserve came | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
 MapCheck | short, the card's bond is the funding page's first: the 20-year term for the gap | BQ1 | 2026-11-11 | LM1 term auction sells nothing. the fixture does not cause clearing
-MapCheck | the journal worked back from today's reserve | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | where the reserve is undated | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
 MonetaryCheck | a month's delay in the hand moves them less than the allowance | MQ1 | 2026-11-11 | GW1 shelf settles before its price index. the delay compares an inflating city
 PlanCheck | ...the avenues were laid in the played city | PX1 | 2026-11-11 | LM1 exposes CL4 comb junctions four plots apart
 PlanCheck | at every 30th month every district's plan keeps every check | PX1 | 2026-11-11 | LM1 exposes CL4 comb junctions four plots apart

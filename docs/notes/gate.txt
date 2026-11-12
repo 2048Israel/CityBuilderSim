@@ -1,30 +1,28 @@
-# gate of Merge batch/LM1: the land office map (Jerus's Stockholm city at month 1): the city starts on one compact piece, not a river strip between two lakes; one number per offer across the map; past the zoom where deposits' shading switches off, one icon per deposit, with a Resources toggle, 0.9.94
-# date: 2026-11-11
+# gate of Merge batch/DM2: the wall ways dated in a journal in the map's sidecar (`CityMap.FORMAT` bump): the way kept clear for a street piece the buildings wall in stays put as the arrivals come and a wall event moves only the boxes it must. Turn FC1 back on in MapCheck (found by DM1: MapCheck 2h, 2d; SlopeCheck 9's m608-609 jump after a land purchase; LD2-D, the playtest's m3010-3013 moved boxes); and the nightly on 0.9.24 (f33540a0, 2026-11-06 01:09), red on it once past the gate's 2,400 months: month 3012, district (-2,-3), 10 of its 765 boxes moved, 10 Low-Rise Apartments drawn 37->105, counted 10->10, 0.9.95
+# date: 2026-11-12
 # earth-2.bin: named
-# nightly: 2026-11-11 10:23 0.9.92 e6bb1787 4,000 months: RED, exit 1 in 86 s: a building on the map moved 2 time(s), months 3002-3004
-# suite: 201 harnesses run in 1661s: 195 passed, 6 failed
-# timing: none
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PlanCheck | exit 1
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PlanCheck | ...the avenues were laid in the played city (335 plots in 11 open cells over the samples), every check holding with them FAIL
-# suite red passed on Jerus's word (always, if checks were not caused by its own code, then it should always pass): PlanCheck | 2 FAILED
+# nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
+# suite: 201 harnesses run in 2377s: 194 passed, 7 failed
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED
 HealthCheck | exit 1
 HealthCheck | ...its old first, whom a fee on senior care turns away FAIL
 HealthCheck | 1 FAILED
+MapCheck | exit 1
+MapCheck | short, the card's bond is the funding page's first: the 20-year term for the gap, its face on the granule, its cash covering it - and the note beside it FAIL
+MapCheck | ...and issued, the card's bond buys them all                                   FAIL
+MapCheck | 2 FAILED
 PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (335 plots in 11 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
-KeptCheck | exit 5
-KeptCheck | a month landing starts a business's KEPT and the Income page's waterfall counting exactly at the rungs countsUp() allows, and when paused (10 clocks) FAIL
-KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | exit 4
+KeptCheck | a materials industry's picture (Wood Products): the page equals a page built new at every month (1 differ) FAIL
 KeptCheck | the city has a piece of paper to close                                   FAIL
 KeptCheck | a bookRow was found on a money page of this city, to put the pointer on  FAIL
 KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 5 FAILED
+KeptCheck | 4 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | 1 FAILED

@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.95 — DM2, The wall ways dated in a journal in the map's sidecar — 2026-11-12, ready, see docs/queue/DM2-notes.md
+
+The map remembers when each wall way was kept clear or released and dates resource-site and visual-
+unit changes beside its runs. Replay moves only boxes intersected by new work or a new way,
+preserving every other standing box. FORMAT 16 saves these journals, with older sidecars redrawn
+canonically. Actual rail and yard cure, idle expiry and return, works arriving under existing boxes,
+delayed views and save/load round trips are checked. The default model trace is unchanged and the
+4,000-month layout watch passes.
+
 ### KS1 — KeptCheck's fixtures cause their conditions — 2026-11-12, ready, no tag (fixtures), see docs/queue/KS1-notes.md
 KeptCheck supplies counted held works, chooses an expandable income note
 when it opens it, settles an explicit holding payment for its clock
