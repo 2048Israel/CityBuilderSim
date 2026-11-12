@@ -3153,6 +3153,9 @@ public class KeptCheck {
         folds.add(choice("...and both on", b -> { b.sectorsColumns(true, true); return null; }));
         pageReshaped(g, bench, tab, 49, folds);
 
+        for (String key : heldHere) g.getBusinessInvestment().releaseSector(key);
+        boolean worksHeld = g.getBusinessInvestment().isHeld(works);
+        g.getBusinessInvestment().holdSector(works);
         sectorsPictures(g, bench, works, worksName);
         sectorsCountUp(g, bench, plain);
 
@@ -3166,7 +3169,7 @@ public class KeptCheck {
             pageCost(g, bench, p, 52, KEPT_SECTOR_MS, "KEPT_SECTOR_MS");
         }
 
-        for (String key : heldHere) g.getBusinessInvestment().releaseSector(key);
+        if (!worksHeld) g.getBusinessInvestment().releaseSector(works);
         sectorsControls();
         sectorsHover(g, bench, plain);
     }
@@ -3949,7 +3952,9 @@ public class KeptCheck {
         pageReshaped(g, bench, tab, 60, market);
 
         // Borrow: every kind of paper, its term, the ask, callable, the highest yield, what is typed; and abroad, every money.
-        pageReshaped(g, bench, tab, 60, borrowChoices(g, bench));
+        Game borrowing = fx(KeptCheck::borrowCity);
+        KeptBench borrowingBench = fx(() -> new KeptBench(borrowing));
+        pageReshaped(borrowing, borrowingBench, fx(borrowingBench::finances), 60, borrowChoices(borrowing, borrowingBench));
 
         // The book: the pieces of paper sold through the model (a line's page and Close it now, each from each).
         System.out.println("\n--- 60: the book, a line's page and Close it now ---");
@@ -3977,7 +3982,30 @@ public class KeptCheck {
         pageReshaped(g, bench, tab, 60, book);
     }
 
-    /** Borrow's choices: the kinds, their terms, the ask, callable, the highest yield, what is typed, and abroad every money. */
+    /**
+     * Borrow's own city, with a finite bank bid that clears the normal ask and leaves the fortyfold ask short.
+     * WHY (KS1): a shared city's bidders crossed full/short between draws, adding the shortfall card's nodes to a reuse measurement.
+     */
+    static Game borrowCity() throws Exception {
+        double cash = 1_000_000_000_000.0 * PriceLevel.FACTOR;
+        Game g = new Game(GameFiles.scratch("keptcheck-borrow")) {
+            @Override public Auction.Bidders auctionBidders(int months, double face) {
+                return new Auction.Bidders(0, 0, 0, 0, 0, 0, 0, false, 0, cash * 2, 0);
+            }
+        };
+        quietly(() -> { g.run(); return null; });
+        g.setCashForTest(cash);
+        g.getForeignAccounts().pinRate(1);
+        g.getDebtManager().setAutopilot(false);
+        g.getDebtManager().setPolicyRate(DebtManager.NEUTRAL_RATE);
+        DebtQuote normal = g.quoteLongBond(cash / 6, 10, Game.BUILD_BOND_GRANULE);
+        DebtQuote large = g.quoteLongBond(cash / 6 * 40, 10, Game.BUILD_BOND_GRANULE);
+        check("fixture: Borrow's normal ask clears and its fortyfold ask is a real short sale",
+                !normal.isEmpty() && !normal.auction().shortSale() && !large.isEmpty() && large.auction().shortSale());
+        return g;
+    }
+
+    /** Borrow's choices on the finite-bid fixture. */
     static List<Choice> borrowChoices(Game g, KeptBench bench) throws Exception {
         List<String> moneys = KeptBench.borrowMoneys();
         double ask = fx(() -> Math.max(g.minimumIssueSize() * 4, g.getCash() / 6));

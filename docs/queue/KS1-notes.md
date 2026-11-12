@@ -98,3 +98,34 @@ KeptBench.rankingsReadLanded() reads the worker and snapshot state, and
 rankingsSavedOnBoard() reads SavedCities.now(). No KS1 source had been loaded
 in that run. Keep the original assertion and record this baseline red under
 the new queued investigation.
+
+## First pick and follow-through
+
+The first pick on 1c3133c0 selected six names and ran seven harnesses because
+`MapCheck` also matches BridgeMapCheck. Six harnesses passed. KeptCheck
+completed in 1,158.2 s with five failing assertions, and the whole pick took
+1,689 s. Compile, maps and Stale passed. Twenty-five timing assertions were
+soft. Its log and summary are retained as `KS1-pick1-KeptCheck.log` and
+`KS1-pick1-suite.txt` under target/checks. The saved-city finding passed on
+this path. The two KS2 paper assertions and the header finding remained.
+
+- ★ Give Borrow a city and finite bidders of its own. Both main's floater
+  and the first pick's callable quote crossed an auction shape between
+  months, introducing the shortfall card's nodes. The dedicated fixture
+  keeps a fixed bank capacity, pins exchange, and runs the original choices
+  through real months. It explicitly asserts a clearing normal ask and a
+  nonempty short fortyfold ask. All Borrow choices passed with at least
+  98.4% reuse, including the original 90% assertion.
+- ★ Limit the all-sector investment hold to the reuse sections. Release
+  the holds before the picture tests, whose pre-existing materials hold
+  stays in force. The first pick exposed a single Wood Products picture
+  difference at month 1,868, a `Residues` Text bounding box of
+  `151.8,249.8 48.2x15.0` kept against `151.8,249.6 48.2x16.0` fresh.
+  The next pick verifies the picture on its own fixture conditions.
+
+The final pick uses `-Dcbs.parallel=1` while physical memory is short. Its
+known-reds input is `target/checks/KS1-final-known.txt`, combining main's
+record and the ship file. It removes every KS1 fixture exemption and its
+exact-line cover, then retains the explicitly deferred timing rows,
+KS1-UI's reproduced header finding and KS1-Saved's independent baseline
+finding. A remaining generic fixture failure therefore stays NEW.
