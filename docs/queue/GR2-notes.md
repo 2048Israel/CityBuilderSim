@@ -134,13 +134,13 @@ hand-authored session/tree guidance. Generated indexes and this batch's notes
 and ship file are excluded. It is `git diff --numstat origin/main` over the
 files below.
 
-716 lines added, 630 removed, +86 net after the review repairs.
+712 lines added, 630 removed, +82 net after the review repairs.
 
 ```text
 2	1	CLAUDE.md
 15	152	batch-check.sh
 40	49	docs/batch.md
-86	0	docs/notes/known-reds.txt
+82	0	docs/notes/known-reds.txt
 34	35	docs/orchestrator.md
 2	0	docs/tree.md
 151	92	ship.sh
@@ -158,9 +158,9 @@ files below.
 
 Readiness was withdrawn and pushed at `85c18175` before the repairs.
 
-The two generic Denomination phrases are replaced by eight complete recorded
+The first repair replaced the two generic Denomination phrases by eight complete recorded
 red lines from the canonical R1c gate record, `56f49e22:docs/notes/gate.txt`.
-The generic PriceLevel phrase is replaced by the specific Retail cash and
+The first repair replaced the generic PriceLevel phrase by the specific Retail cash and
 Manufacturing cash precision failures recorded at
 `30acee8d:docs/notes/gate.txt` and `97413aec:docs/notes/gate.txt`.
 Rows, approval dates and causes retain their seeded values.
@@ -178,7 +178,7 @@ PriceLevel person-series label. They now retain complete recorded red texts,
 including the observed values and page name where present. Their evidence is
 `4092b661`, `1751f426`, `5467eeda`, `1b80cc5c` and `b52be80a`, each commit's
 `docs/notes/gate.txt`. The shorter duplicate yard prefix was removed, leaving
-the complete assertion label. The file now has 81 scoped entries.
+the complete assertion label. The first repair had 81 scoped entries.
 
 Reuse now accepts an ancestor branch commit when every intervening commit
 changes only that batch's own notes and ship file. The history walk includes
@@ -203,32 +203,63 @@ Denomination people assertion, a different output failure, a new PriceLevel
 metric and a different Kept node count. Their evidence is
 `target/gr2-review-canaries/result.log`.
 
+## Second review correction
+
+Readiness was withdrawn and pushed at `7a0cacf8`. The gatekeeper clarified that
+permanent parts retain each assertion label while its figures move with the
+city's path. Seventeen entries were corrected. The eight Denomination entries
+now have their individual labels. The two PriceLevel entries name only Retail
+cash or Manufacturing cash, nominal, and month. Each ends with a space after
+month, so a different word beginning with month cannot match.
+
+Seven Kept entries were coalesced into their three shared labels. Those labels
+match only the KS1 assertions entered across the corresponding pages. The eight
+Denomination labels each match one source line and only their entered assertion.
+The two PriceLevel metric prefixes select only their entered cash series.
+The approved four person-series entries and the MapCheck duplicate removal are
+preserved. Rows, dates and causes are preserved. The permanent file has 77 entries.
+
+Saved-log probes returned exit 3 after changing the known output's values, the
+known cash series' month and values, and the known node-count figures. Different
+Denomination and PriceLevel assertion labels still returned exit 4. Evidence is
+`target/gr2-second-labels/result.log`. The accepted full-suite log was copied
+and rejudged against this file, remaining exit 3 on the same six known-red
+harnesses. Evidence is `target/gr2-second-rejudge.log`. The retained run and its
+manifest were preserved. No new full dry run was required.
+
+The second review checks passed. `./batch-check.sh KnownRedsCheck` exited 0,
+with regenerated maps and zero firm Stale findings. `tools/ship-selftest.sh`
+passed 136/136. The accepted 201-harness log rejudged as exit 3. Logs are
+`target/gr2-second-knownreds.log`, `target/gr2-second-ship-selftest.log` and
+`target/gr2-second-rejudge.log`. The accepted run supplies the full-suite
+verification under the review's instruction.
+
 ### Permanent-part source audit
 
-The table counts literal-containing physical source lines in each named
-harness, then the count after Java comments are excluded. The FX-side map part
-has one section title and one assertion, with its third occurrence in a comment.
-The moved-building phrase has one flag emission and one comment.
+The table counts physical harness source lines containing each final part,
+then the count with Java comments excluded. Each part matches only the entered
+assertion or entered shared assertion family. Shared Kept labels belong to the
+same KS1 fault across their pages, as clarified by the gatekeeper. The FX-side
+map phrase occurs in a comment, section title and its one assertion. The moved
+building phrase occurs in a comment and its one flag emission.
 
-Zero literal matches occur for assembled labels, runtime values or runner
-protocol text. The newly pinned nominal and repeated-label entries retain the
-complete recorded failure text, including values and padding, so they cover
-that observed text. Existing assembled labels name a particular metric or
-widget. LongPlaytest's no-FAIL marker is the existing runner diagnostic already
-present verbatim in main's gate record.
+Zero literal matches denote labels assembled from fragments or runtime metric
+names, or the runner's existing no-FAIL diagnostic. The PriceLevel cash prefixes
+are assembled by the comparison output for their named series. `[space]` marks
+the retained trailing space in each month prefix and is absent from the file.
 
 | harness | part | literal source lines | code lines excluding comments |
 |---|---|---:|---:|
 | CentralBankCheck | `...and in at least STRICT_SHARE of them` | 1 | 1 |
 | CentralBankCheck | `very loose costs trust, through the lean measured against holding the target` | 1 | 1 |
-| DenominationCheck | `the same output                                                FAIL  16.3560078665 != 16.3560078869  (1.24e-09 apart)` | 0 | 0 |
-| DenominationCheck | `...and the same year of it                                     FAIL  177.7918172170 != 177.7918177172  (2.81e-09 apart)` | 0 | 0 |
-| DenominationCheck | `the same rent                                                  FAIL  0.0003825397 != 0.0003825397  (1.33e-09 apart)` | 0 | 0 |
-| DenominationCheck | `the same price level                                           FAIL  6.3136808832 != 6.3136808652  (2.85e-09 apart)` | 0 | 0 |
-| DenominationCheck | `the same currency                                              FAIL  0.0386046483 != 0.0386046475  (2.16e-08 apart)` | 0 | 0 |
-| DenominationCheck | `the same treasury                                              FAIL  817.9392960580 != 817.9392936034  (3.00e-09 apart)` | 0 | 0 |
-| DenominationCheck | `the same shops' till                                           FAIL  1.3182336111 != 1.3182335334  (5.90e-08 apart)` | 0 | 0 |
-| DenominationCheck | `the same bank                                                  FAIL  289.1913668310 != 289.1913693393  (8.67e-09 apart)` | 0 | 0 |
+| DenominationCheck | `the same output` | 1 | 1 |
+| DenominationCheck | `...and the same year of it` | 1 | 1 |
+| DenominationCheck | `the same rent` | 1 | 1 |
+| DenominationCheck | `the same price level` | 1 | 1 |
+| DenominationCheck | `the same currency` | 1 | 1 |
+| DenominationCheck | `the same treasury` | 1 | 1 |
+| DenominationCheck | `the same shops' till` | 1 | 1 |
+| DenominationCheck | `the same bank` | 1 | 1 |
 | HealthCheck | `...and it buries more of its people over the run` | 1 | 1 |
 | HealthCheck | `...its old first, whom a fee on senior care turns away` | 1 | 1 |
 | HealthCheck | `fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away` | 1 | 1 |
@@ -238,13 +269,9 @@ present verbatim in main's gate record.
 | KeptCheck | `a month landing starts the fund's worth and a payment exactly at the rungs countsUp() allows` | 0 | 0 |
 | KeptCheck | `a month's redraw after each choice hands back nine in ten of the page's nodes` | 0 | 0 |
 | KeptCheck | `an animation running when a month lands past COUNT_UP_TOP is stopped on the fund's worth` | 0 | 0 |
-| KeptCheck | `each month hands back nine in ten of the nodes the first draw made, or more (207 of 233) FAIL` | 0 | 0 |
-| KeptCheck | `each month hands back nine in ten of the nodes the first draw made, or more (209 of 233) FAIL` | 0 | 0 |
-| KeptCheck | `each month hands back nine in ten of the nodes the first draw made, or more (238 of 302) FAIL` | 0 | 0 |
-| KeptCheck | `Household money: every tooltip a node had and still has is the same Tooltip after a month's kept redraw (79 of 79), and none is lost from a node the page keeps (1) FAIL` | 0 | 0 |
-| KeptCheck | `most months make no node at all (10 of 25)                               FAIL` | 0 | 0 |
-| KeptCheck | `most months make no node at all (12 of 25)                               FAIL` | 0 | 0 |
-| KeptCheck | `most months make no node at all (11 of 25)                               FAIL` | 0 | 0 |
+| KeptCheck | `each month hands back nine in ten of the nodes the first draw made, or more` | 5 | 5 |
+| KeptCheck | `every tooltip a node had and still has is the same Tooltip after a month's kept redraw` | 2 | 2 |
+| KeptCheck | `most months make no node at all` | 4 | 4 |
 | KeptCheck | `no month makes more than a tenth of the nodes the first draw made` | 1 | 1 |
 | KeptCheck | `note 1 opened on it adds to the page` | 0 | 0 |
 | KeptCheck | `the BuybackLadder on Close it now: no month draws it again with nothing changed in it` | 0 | 0 |
@@ -276,8 +303,8 @@ present verbatim in main's gate record.
 | MonetaryCheck | `a month's delay in the hand moves them less than the allowance` | 1 | 1 |
 | PlanCheck | `...the avenues were laid in the played city` | 1 | 1 |
 | PlanCheck | `at every 30th month every district's plan keeps every check` | 0 | 0 |
-| PriceLevelCheck | `FAIL sector.Retail.cash (nominal) month 29: 99.30704620 at the factor over the factor, 99.30704375 at today's prices (9.62e-09 apart)` | 0 | 0 |
-| PriceLevelCheck | `FAIL sector.Manufacturing.cash (nominal) month 86: 1409.319315 at the factor over the factor, 1409.319335 at today's prices (5.77e-09 apart)` | 0 | 0 |
+| PriceLevelCheck | `sector.Retail.cash (nominal) month [space]` | 0 | 0 |
+| PriceLevelCheck | `sector.Manufacturing.cash (nominal) month [space]` | 0 | 0 |
 | PriceLevelCheck | `every live nominal series equal over the factor` | 1 | 1 |
 | PriceLevelCheck | `every real series equal within` | 1 | 1 |
 | PriceLevelCheck | `...the pop is the same to the person in every month                                    FAIL` | 0 | 0 |
