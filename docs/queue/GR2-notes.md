@@ -87,8 +87,12 @@ Two seeded findings needed queued rows, supplied by the ship file.
   `target/gr2-pick-checks/`. Every red was covered by the seeded file or the
   exact gate record. This run needed no additional approval entries.
 
-The fresh-clone launcher run and its two commit identities are recorded here
-once it finishes, before the readiness file is pushed.
+The fresh-clone full dry run passed with exit 0. Its underlying suite exited 3,
+with 201 harnesses run in 2,129 seconds, 195 green and the same six known-red
+harnesses. Fourteen timing assertions were soft. The compile, regenerated maps,
+Stale and tree checks passed. The clone returned to its original HEAD and clean
+tree. No red-line overrides were supplied, and no additional entries were needed.
+The kept checks and generated indexes passed their SHA-256 manifest verification.
 
 The simulation and resources match main. The full suite includes LongPlaytest.
 The ensemble is skipped under EN1 because this process batch leaves that model
@@ -107,6 +111,19 @@ script-only gates, including their generated indexes. Changing the requested
 version refused the cached indexes and ran fresh checks. Evidence is
 `target/gr2-reuse-paths.log`. The additional permanent self-test cases cover
 restoring regenerated indexes and both zero-harness replay paths.
+
+The completed run is
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GR2-20261112-02/ship.log`, with
+branch `7170d8472dd17f4eafca8880de18f6451ae27cb7` merged with main
+`420c65dcebd0a0371d4d785145ef904af87a7883`. Its `checks/` directory retains every
+harness log, suite, timing figures and verdict. Its `generated/` directory retains
+the checked indexes, with both trees sealed by `checks.sha256`. The launcher exited
+0 and deleted its successful clone. `branch.commit`, `main.commit`, `selection`
+and `exit` retain the identities and result alongside the log.
+
+The final notes and readiness commits follow that tested source commit and
+contain only this batch's records. GR2 reaches main by the brief's fresh
+review and untagged merge.
 
 ## Process line count
 
