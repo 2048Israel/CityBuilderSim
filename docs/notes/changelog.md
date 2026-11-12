@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.97 — GDP1, Works forecast their inputs at current prices — 2026-11-12, ready, see docs/queue/GDP1-notes.md
+Works now cost their next run on the current world, exchange and freight band,
+using the shared clearing calculation instead of the preceding month's price.
+The common path covers flow goods, stockable output and captive inputs;
+recorded trades and the inventory rule retain their own accounting periods.
+Wire and rod fixtures cause a feed-price rise, refuse exports below input
+cost, and retain real margins; processing and extraction fixtures prove
+unsold inventory and its later export count once. The RT3 seed-11 replay's
+month 902 GDP is positive and its money audits hold. The original negative-GDP
+finding is unchanged. Full checks and ensemble evidence are in the notes.
+
 ### 0.9.96 — BS1, Bond settles to a fixed point, the bid tick and the buyback — 2026-11-12, ready, see docs/queue/BS1-notes.md
 
 Corporate bond issues converge within 1e-14, and bond orders quote on a 1e-12 price tick, keeping the price-level and denomination twins equal within their bounds. Whole-piece buybacks take every offer in full, including typed faces within the quantity rounding, and cancel unpaid sales at their exact original proceeds. The bank offers its paid face, and cancelled proceeds leave its next settlement. The cancellation has its own legend and colour. Regressions cover typed faces, premium reopenings, curve consistency, the money audit and the bank's equity split through the following months. The ensemble scores 23/26. Jerus accepts A1's 10/16 against 13/16 seeds in band and FoodProcessingCheck's meat-bet line as path noise, with the latter's fixture repair queued as FPK1. KeptCheck's funding and household tooltip fixture transitions are traced and queued as KBF1 and KHT1.

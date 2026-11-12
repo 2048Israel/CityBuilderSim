@@ -120,6 +120,7 @@ stuff".
 | FPK1 | FoodProcessingCheck 5's meat bet sets its own farm-floor and ship prices so the Meat Works' profit sum is tested independently of the city's path. | [BS1 notes](docs/queue/BS1-notes.md#fpk1) |
 | KBF1 | Cause stable auction coverage in KeptCheck 44's funding-page monthly reuse fixture and explicitly cause the first shortfall controls, preserving the 90% floor. | [BS1 notes](docs/queue/BS1-notes.md#kbf1) |
 | KHT1 | Cause populated cash-grid cells to persist across KeptCheck 89's all-households tooltip month, preserving the tooltip identity and zero-loss assertions. | [BS1 notes](docs/queue/BS1-notes.md#kht1) |
+| M6-F | MapCheck 14's scattered boxes do not guarantee every offer is hit and missed: cause those conditions explicitly, retaining all 200 scatter/oracle checks and the original premise | [brief](docs/queue/GDP1-notes.md#mapcheck-offer-fixture-follow-up-m6-f) |
 
 ## Pending
 

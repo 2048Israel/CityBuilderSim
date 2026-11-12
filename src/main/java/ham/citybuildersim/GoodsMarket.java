@@ -403,6 +403,18 @@ public final class GoodsMarket {
         return importPrice();
     }
 
+    /**
+     * The next order's input quote on today's band (GDP1): the last clearing's
+     * supply and demand, priced at the current world, exchange and freight
+     * prices. With no local supply an importable input costs the import price.
+     * The recorded localPrice stays the price actually traded: a band change
+     * must reach the forecast without rewriting the preceding month's sales.
+     */
+    public double currentLandedPrice() {
+        if (!(getSupply() > 0) && good.importable()) return importPrice();
+        return priceAt(getSupply(), rDemand);
+    }
+
     /** The floor: the export price, or nothing. */
     public double floor() {
         return good.exportable() ? exportPrice() : 0;
@@ -433,19 +445,24 @@ public final class GoodsMarket {
         rSupplyStock = Math.max(0, stock);
         rDemand = Math.max(0, demand);
 
+        localPrice = priceAt(supply, rDemand);
+    }
+
+    /** The clearing's price on the current band, also used by the input quote before the next clearing (GDP1). */
+    private double priceAt(double supply, double demand) {
         double position;
-        if (supply <= 0 && rDemand <= 0) {
+        if (supply <= 0 && demand <= 0) {
             position = .5;                      // nothing either side - the middle
         } else if (supply <= 0) {
             position = 1;                       // no makers - buyers pay the ceiling
-        } else if (rDemand <= 0) {
+        } else if (demand <= 0) {
             position = 0;                       // no takers - makers get the floor
         } else {
-            position = rDemand / (rDemand + supply);
+            position = demand / (demand + supply);
         }
 
         double lo = floor(), hi = ceiling();
-        localPrice = lo + (hi - lo) * position;
+        return lo + (hi - lo) * position;
     }
 
     /** Wipes the month's tally, not the draws. Called by Markets as this good's clearing starts. */

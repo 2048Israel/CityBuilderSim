@@ -1,8 +1,8 @@
-# gate of Merge batch/BS1: the corporate issue search (`BondMarket`, `s = filled` until `filled >= s * (1 - 1e-9)`) to a fixed point well inside the price-level twins' tolerance: it stops within 1e-9, so two runs settle bonds up to that apart (4.6e-9 of an issue at month 94 of PriceLevelCheck 8), which a sector's rolled bonds carry to 1.1e-8 of its cash. Folded in at the queue's triage (Jerus, 2026-11-09: "we really need to empty the queue"): **OB1**: A price tick on bond bids: firms that hold none of a bond bid one price mathematically (`BondMarket.postCompanies`, OUT_SPEED x share / APPETITE), a 1e-19 rounding orders them by price priority in one city and by arrival in its twin, and 28 trades go elsewhere (DenominationCheck on BA1's path, month 133); bids rounded to 1e-12 hold the twins to 1.4e-13; **BY1**: The treasury's buyback before the settle cancels the sale for the bank (BD1's ★1, taken as recommended by the orchestrator, 2026-11-03): offer only the face the bank has paid for (`Debt.bankPrincipalPaid()`) and take the unsettled face off what the settle charges it, rather than sell back face it never paid for; BuybackCheck 5's round trip leaves 4,532 of the bank's equity split unexplained, the same on main 0.9.4 as on BD1 (the money audit holds); assert the split over the month after, 0.9.96
+# gate of Merge batch/GDP1: docs: mark GDP1 ready with its accepted retained gate, 0.9.97
 # date: 2026-11-12
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 201 harnesses run in 1173s: 193 passed, 8 failed
+# suite: 201 harnesses run in 1156s: 194 passed, 7 failed
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED
@@ -13,9 +13,8 @@ HealthCheck | exit 1
 HealthCheck | ...its old first, whom a fee on senior care turns away FAIL
 HealthCheck | 1 FAILED
 MapCheck | exit 1
-MapCheck | short, the card's bond is the funding page's first: the 20-year term for the gap, its face on the granule, its cash covering it - and the note beside it FAIL
-MapCheck | ...and issued, the card's bond buys them all                                   FAIL
-MapCheck | 2 FAILED
+MapCheck | fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others FAIL
+MapCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (328 plots in 11 open cells over the samples), every check holding with them FAIL
@@ -30,5 +29,3 @@ KeptCheck | 5 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | 1 FAILED
-FoodProcessingCheck | exit 1
-FoodProcessingCheck | ...and the difference is most of what a Meat Works is worth              FAIL  1.8x
