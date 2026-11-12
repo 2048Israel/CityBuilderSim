@@ -412,6 +412,76 @@ public class LongPlaytest {
     static final Map<String, Integer> salvageSpareBySector = new java.util.TreeMap<>();
     static double salvageUnits, salvageUnitsBought, salvagePaid, salvagePaidDistress, salvageUsed;
 
+    /* ===== RETIREMENT'S POSTS OVER A YEAR (RT3) =====
+       Count posts from the buildings actually retired, including distress, against the sector's standing posts
+       before the first month of each trailing year. New hiring cannot hide a demolition in this flow. */
+    static RetirementWatch retirementWatch;
+
+    static final class RetirementYear {
+        final long[] opening = new long[12], retired = new long[12];
+        int months;
+        long total;
+        boolean overFifth;
+
+        double month(long posts, long shed) {
+            int slot = months % 12;
+            total += shed - retired[slot];
+            opening[slot] = posts;
+            retired[slot] = shed;
+            months++;
+            long start = opening[months % 12];
+            return months >= 12 && start > 0 ? total / (double) start : 0;
+        }
+    }
+
+    static final class RetirementWatch {
+        final Map<String, RetirementYear> years = new java.util.TreeMap<>();
+        final Map<String, Long> opening = new java.util.TreeMap<>();
+        final Map<String, Integer> episodes = new java.util.TreeMap<>();
+        int windows, overFifth;
+        double worst;
+        String worstSector = "none";
+        int worstMonth;
+
+        void before(Game g) {
+            for (Sector sector : g.getSectors().all()) {
+                long posts = 0;
+                for (long n : sector.postsPerTier()) posts += n;
+                opening.put(sector.key(), posts);
+            }
+        }
+
+        void after(Game g) {
+            Map<String, Long> shed = new java.util.HashMap<>();
+            for (Game.Salvage sale : g.getSalvageThisMonth()) {
+                if (!opening.containsKey(sale.seller())) continue;
+                BuildingsTemplate building = g.getBuildingManager().getTemplateByName(sale.building());
+                shed.merge(sale.seller(), (long) building.getTotalJobs() * sale.buildings(), Long::sum);
+            }
+            for (Map.Entry<String, Long> entry : opening.entrySet()) {
+                String sector = entry.getKey();
+                RetirementYear year = years.computeIfAbsent(sector, key -> new RetirementYear());
+                double share = year.month(entry.getValue(), shed.getOrDefault(sector, 0L));
+                if (year.months >= 12 && year.opening[year.months % 12] > 0) windows++;
+                if (share > .2) {
+                    overFifth++;
+                    if (!year.overFifth) episodes.merge(sector, 1, Integer::sum);
+                }
+                year.overFifth = share > .2;
+                if (share > worst) {
+                    worst = share;
+                    worstSector = sector;
+                    worstMonth = g.getMonth();
+                }
+            }
+        }
+
+        void report(PrintStream out) {
+            out.printf("  retirement over a trailing year (RT3): %d of %d sector-years lost over a fifth of their opening posts;"
+                    + " episodes %s; largest %.2f%% in %s at m%d%n", overFifth, windows, episodes, worst * 100, worstSector, worstMonth);
+        }
+    }
+
     /*
      * THE LEVERAGE RATIO AND THE BRANCHES (0.7.11, round 2): how often the
      * leverage requirement was the one that bound, the ratio at its lowest,
@@ -5507,6 +5577,7 @@ public class LongPlaytest {
             floatDealtBefore = g.getForeignAccounts().getDealtSinceReprice();
             // The food law's opening stock (GT1): taken here, after the player's move and before the month runs.
             breadOpening = g.getSectors().industry().getStock(Good.BREAD);
+            if (retirementWatch != null) retirementWatch.before(g);
             g.simulateMonths(1);
             // The player's annual move sees every completed January, including one crossed inside a long skip (GV1/GV2).
             if (playGovernmentPolicy && g.getMonth() > before) GovernmentPlayer.step(g);
@@ -5599,6 +5670,7 @@ public class LongPlaytest {
                 }
             }
             if (WAGES) walkLag(g, indexHanded);
+            if (retirementWatch != null) retirementWatch.after(g);
             countTheCitysPaper(g);
             countTheCentralBank(g);
             countTheHolders(g);
@@ -6159,6 +6231,7 @@ public class LongPlaytest {
         // On the flag's preset (0.7.10): Standard when unset. See THE FOUNDING, AS A CHOICE.
         // ...and on the real Earth under --earth (0.7.121): ON THE REAL EARTH.
         Game g = new Game(files, EARTH == null ? founding() : earthFounding(EARTH));
+        retirementWatch = new RetirementWatch();
         List<String> log = new ArrayList<>();
         long started = System.currentTimeMillis();
         traceOpen();
@@ -7223,6 +7296,7 @@ public class LongPlaytest {
                     refusedOnPrice.isEmpty() ? "never" : refusedOnPrice.toString(),
                     salvageBuildingsDistress, salvageBuildingsSpare, salvageSpareBySector, salvageUnits, salvageUnitsBought, salvagePaid,
                     salvagePaidDistress, salvageUsed, g.getSectors().construction().getSalvage());
+            retirementWatch.report(out);
             // The landlords' mortgages and the city's insurance (0.7.11) - see countMortgages().
             BusinessDebtManager lenderAtEnd = g.getEconomyManager().getBusinessDebtManager();
             String re = g.getSectors().realEstate().key();

@@ -904,6 +904,8 @@ public class InvestCheck {
         assertTrue("a distressed retailer sells shops", r.build && r.template == shop);
         assertTrue("...and never the city's bank", !(r.build && r.template == bankBranch));
 
+        retirementPace();
+
         /* ============ 15. every building gets the crew it can use ============ */
         System.out.println("\n--- every building gets the crew it can use, and no site takes more than it owes (0.7.17) ---");
 
@@ -1512,6 +1514,42 @@ public class InvestCheck {
 
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** A modest surplus paces the excess and the watch counts the full trailing year (RT3). */
+    static void retirementPace() {
+        System.out.println("\n--- retirement takes a share of the excess (RT3) ---");
+        BuildingManager buildings = new BuildingManager();
+        buildings.initializeTemplates();
+        EconomyManager economy = new EconomyManager(buildings);
+        BusinessInvestment plans = new BusinessInvestment(buildings, economy);
+        Sector shops = economy.getSectors().retail();
+        BuildingsTemplate shop = buildings.getTemplateByName("Convenience Store");
+        buildings.addStack(shop, 100, true);
+        double each = shops.unitsOf(shop);
+        double capacity = 100 * each;
+        double demand = capacity / (1 + BusinessInvestment.RETIREMENT_SLACK) - each;
+        for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) plans.recordSectorResult(shops.key(), -1);
+        int excess = (int) Math.floor((capacity - demand * (1 + BusinessInvestment.TARGET_HEADROOM)) / each);
+        BusinessInvestment.Decision decision = plans.planRetirement(shops, demand, capacity, 0);
+        assertTrue("fixture: the shops have a positive measure and a modest surplus", each > 0 && excess > 1 && excess < 100);
+        check("the month's retirement is the fraction of excess, rounded to a building", decision.quantity,
+                Math.ceil(excess * BusinessInvestment.MAX_RETIREMENT_FRACTION));
+        assertTrue("...and keeps the demand and its headroom", capacity - decision.quantity * each >= demand * (1 + BusinessInvestment.TARGET_HEADROOM));
+        assertTrue("...and waits for its orders to finish", !plans.planRetirement(shops, demand, capacity, 1).build);
+        assertTrue("...and leaves capacity within the slack alone",
+                !plans.planRetirement(shops, capacity / (1 + BusinessInvestment.RETIREMENT_SLACK), capacity, 0).build);
+        decision = plans.planRetirement(shops, 0, each, 0);
+        check("a whole building can still go when the excess is one building", decision.quantity, 1);
+        decision = plans.planRetirement(shops, 0, capacity, 0);
+        check("with no demand the entire holding is excess", decision.quantity,
+                Math.ceil(100 * BusinessInvestment.MAX_RETIREMENT_FRACTION));
+        LongPlaytest.RetirementYear year = new LongPlaytest.RetirementYear();
+        for (int m = 0; m < 11; m++) check("the retirement watch waits for a full year, month " + (m + 1), year.month(1_000, 10), 0);
+        check("the watch divides actual retirements by the year's opening posts", year.month(200, 100), .21);
+        check("the next window drops the oldest month's retirements", year.month(200, 0), .2);
+        for (int m = 0; m < 12; m++) year.month(200, 0);
+        check("retirements leave the count after twelve months", year.total, 0);
     }
 
     /*
