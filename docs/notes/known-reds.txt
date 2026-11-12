@@ -30,8 +30,8 @@ KeptCheck | note 1 opened on it adds to the page | KS1 | 2026-11-11 | BK2 and XR
 KeptCheck | the BuybackLadder on Close it now: no month draws it again with nothing changed in it | KL1 | 2026-11-11 | GW1 bitwise face comparison redraws a picture unchanged at four decimals
 KeptCheck | the city has a piece of paper to close | KS2 | 2026-11-11 | RB1 sections 51/66/67 look for moving figures or paper instead of causing them
 KeptCheck | the city has a plain business and a materials industry with works to draw | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
-KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS | KS1 | 2026-11-11 | BK2 and XR5 late kept fixtures depend on the city path
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung | KS1-UI | 2026-11-11 | Unchanged main reproduces retained bounds on the hidden RATE label. The screen repair is queued as KS1-UI
+KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS | KS1-rest | 2026-11-11 | Loaded-PC kept chrome timing remains deferred to KS1-rest and is measured nightly. KS1 repairs fixtures
 LongPlaytest | (no FAIL line) | DM2 | 2026-11-11 | nightly moved boxes. the watch exits without a FAIL assertion
 LongPlaytest | a building on the map moved | DM2 | 2026-11-11 | nightly moved boxes. the watch exits without a FAIL assertion
 LongPlaytest | industry stands farther out than the homes | CL6 | 2026-11-11 | WG2 late industry ring extends beyond the homes
@@ -40,12 +40,12 @@ MapCheck | ...and the arrivals after it go on | DM2 | 2026-11-11 | DM1 and night
 MapCheck | ...and the layout watch | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
 MapCheck | a block of the box bought in a month the runs do not change | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
 MapCheck | a building on the map moved | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | a month's FX-side map work at 5B | KS1 | 2026-11-11 | GT1-T timing work folded into KS1, now measured by the nightly
+MapCheck | a month's FX-side map work at 5B | KS1-rest | 2026-11-11 | GT1-T FX-side map timing at 5B remains deferred to KS1-rest and is measured nightly
 MapCheck | a yard laid across a district's buildings moves off it the boxes under it and no others | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
 MapCheck | a yard laid again across the buildings that stand moves off it the boxes under it and no others | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
 MapCheck | a yard that goes moves none of the buildings | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
-MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock | KS1 | 2026-11-11 | GT1-T timing work folded into KS1, now measured by the nightly
-MapCheck | at 5 billion a month's change takes no more than 5 ms of the wall clock | KS1 | 2026-11-11 | GT1-T timing work folded into KS1, now measured by the nightly
+MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock | KS1-rest | 2026-11-11 | GT1-T map month timing at 10B remains deferred to KS1-rest and is measured nightly
+MapCheck | at 5 billion a month's change takes no more than 5 ms of the wall clock | KS1-rest | 2026-11-11 | GT1-T map month timing at 5B remains deferred to KS1-rest and is measured nightly
 MapCheck | at every 30th month the map draws exactly what the city has | DM3 | 2026-11-11 | WG2 edge packing leaves 27 model buildings undrawn at month 91
 MapCheck | counts them apart and flags none | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths
 MapCheck | every box stands four months on | DM2 | 2026-11-11 | DM1 and nightly wall-way journal findings recur on changed city paths

@@ -123,7 +123,7 @@ this path. The two KS2 paper assertions and the header finding remained.
   `151.8,249.8 48.2x15.0` kept against `151.8,249.6 48.2x16.0` fresh.
   The next pick verifies the picture on its own fixture conditions.
 
-The final pick uses `-Dcbs.parallel=1` while physical memory is short. Its
+The builder pick used `-Dcbs.parallel=1` while physical memory was short. Its
 known-reds input is `target/checks/KS1-final-known.txt`, combining main's
 record and the ship file. It removes every KS1 fixture exemption and its
 exact-line cover, then retains the explicitly deferred timing rows,
@@ -186,15 +186,62 @@ are `KS1-pick2.txt`, `KS1-pick2-suite.txt` and `KS1-pick2-KeptCheck.log`.
   exposed. The saved-city assertion passed on the final path.
 - The final judge's `target/checks/new-reds.txt` is empty. Its used parts
   name only KS1-UI and KS2. Twenty-six timings were soft, 9 in MapCheck
-  and 17 in KeptCheck. The ship file carries all four deferred timing
-  entries under KS1-rest and the remaining queue text under Pending.
+  and 17 in KeptCheck. At the first readiness marker, the ship file carried
+  the four deferred timing entries and remaining queue text. The ownership
+  correction after the gate send-back is recorded below.
 - The retained final evidence is `target/checks/KS1-pick.txt`,
   `suite.txt`, `KeptCheck.log`, `timing.tsv`, `times.tsv`, `used-reds.txt`
   and `KS1-final-known.txt`. Readiness follows the selected-harness path
   in docs/batch.md 4, with the ship file's explicit deferred findings.
-- `git diff --numstat origin/main`, excluding these notes and the ship
-  file, is **720 added, 677 removed** across source and generated indexes.
+- At the first readiness marker, `git diff --numstat origin/main`,
+  excluding these notes and the ship file, was **720 added, 677 removed**
+  across source and generated indexes.
   KeptCheck itself is **107 added, 66 removed**. The generated index changes
   follow those source changes. `git diff --check` passed, the publisher's
-  record files compare cleanly with the base, and the ship file's sections,
-  seven known-reds rows and no-tag changelog heading were validated.
+  record files compared cleanly with the base at the first readiness marker.
+  That ship file's sections, seven known-reds rows and no-tag changelog
+  heading were validated before the gate send-back below.
+
+## Gate send-back and existing-entry ownership
+
+The 11:36 gate stopped with the header assertion and its two following
+count lines unnamed. Nothing was published. Its retained directory is
+`/tmp/cbs-gate-KS1-ECdymJIW`, also
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-KS1-ECdymJIW`.
+`ship.log` records the verdict. The run tested branch
+`072ebeea458399176705671828c552558ffb6511` against main
+`fc3b6be5a1aa20c3e464506d0eadbbd518865cc0`.
+
+I re-filed five existing entries in the ship file while their original
+known-reds rows still named KS1. In KnownReds.java, line 52 marks a line
+matching an entry prefixed with `! ` as removed. Line 54 applies the
+`!removed` guard to ordinary cover, so a new entry under another queued
+id cannot cover that removed part. The builder's assembled record omitted
+this veto and therefore missed the publisher failure. The four timing
+entries had the same ownership error, with their gate figures soft.
+
+- ★ Change the five existing rows in docs/notes/known-reds.txt at their
+  source. The header now names KS1-UI. KeptCheck's KEPT_ALL_CHROME_MS and
+  the three MapCheck timing parts now name KS1-rest. Each keeps its
+  original 2026-11-11 date and receives the cause of its deferral.
+- Remove those five duplicates from the ship file. Its known-reds section
+  retains only the two new parts, Wood Products under KS1-UI and saved
+  cities under KS1-Saved. Pending and queued rows keep their existing scope.
+- The readiness marker was removed and pushed first at cf3a0ccd. This
+  repair changes records only, as lanekeeper instructed in mail
+  `20261112-113744-767-lanekeeper-da91`.
+- `./batch-check.sh --fast` passed after the records repair, with compile
+  4 s, regenerated maps and 0 firm Stale findings. Its log is
+  `target/checks/KS1-return-fast.txt`.
+- The retained gate suite was copied to `target/checks/KS1-return/suite.txt`
+  and judged using main's exact record, the remaining KS1 entries prefixed
+  with `! `, the corrected existing owners and the two new ship-file parts.
+  `./batch-check.sh --judge` returned **exit 3**, with no new reds. This
+  reproduces the publisher's veto while covering the same header assertion
+  and its count lines. The inputs and result are
+  `target/checks/KS1-return-known.txt` and `KS1-return-judge.txt`.
+- Validation confirms exactly five existing entries changed, all five
+  dates were preserved, and the ship file contains exactly two new,
+  nonduplicated parts. Java source matches 072ebeea. The final batch count
+  across source, generated indexes and known-reds records is **725 added,
+  682 removed**, excluding these notes and the ship file.
