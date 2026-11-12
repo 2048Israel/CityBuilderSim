@@ -6,22 +6,26 @@ nightly_owner() {
     case "$(uname -s)" in
         MINGW*|MSYS*|CYGWIN*)
             CBS_NIGHTLY_PID=$1 powershell.exe -NoProfile -Command '$p = Get-Process -Id $env:CBS_NIGHTLY_PID -ErrorAction SilentlyContinue; if ($p) { "{0}-{1}" -f $p.Id, $p.StartTime.ToUniversalTime().Ticks }' 2>/dev/null | tr -d '\r' ;;
-        *) [ ! -r "/proc/$1/stat" ] || printf '%s-%s-%s\n' "$1" "$(cat /proc/sys/kernel/random/boot_id)" "$(awk '{sub(/^.*\) /, ""); print $20}' "/proc/$1/stat")" ;;
+        *) [ -r "/proc/$1/stat" ] || return
+            boot=$(cat /proc/sys/kernel/random/boot_id) || return
+            ticks=$(awk '{sub(/^.*\) /, ""); print $20}' "/proc/$1/stat") || return
+            [ -z "$boot" ] || [ -z "$ticks" ] || printf '%s-%s-%s\n' "$1" "$boot" "$ticks" ;;
     esac
 }
 nightly_unlock() { rmdir "$LOCK_ENTRY" "$LOCK_PATH" 2>/dev/null || :; }
 nightly_lock() {  # Publish a prepared, nonempty directory atomically (GR1 review: hard kills left the old lock forever).
     LOCK_PATH=$1; LOCK_PID=$$
     case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) LOCK_PID=$(ps -p $$ | awk 'NR == 2 {print $4}') ;; esac
-    LOCK_TOKEN=$(nightly_owner "$LOCK_PID"); [ -n "$LOCK_TOKEN" ] || return 3
+    LOCK_TOKEN=$(nightly_owner "$LOCK_PID") || return 3
+    [ -n "$LOCK_TOKEN" ] || return 3
     LOCK_STAGE=$(mktemp -d "$LOCK_PATH.XXXXXXXX") || return 3
     mkdir "$LOCK_STAGE/owner-$LOCK_TOKEN" || { rmdir "$LOCK_STAGE"; return 3; }
-    LOCK_NOTE=; [ ! -d "$LOCK_PATH" ] || LOCK_NOTE="nightly recovered stale lock $LOCK_PATH"
+    LOCK_RECOVERED=0; [ ! -d "$LOCK_PATH" ] || LOCK_RECOVERED=1
     for attempt in 1 2 3; do
         if mv -T "$LOCK_STAGE" "$LOCK_PATH" 2>/dev/null; then
             LOCK_ENTRY=$LOCK_PATH/owner-$LOCK_TOKEN
             : > "$LOG" || { nightly_unlock; return 3; }
-            [ -z "$LOCK_NOTE" ] || printf '%s\n' "$LOCK_NOTE" >> "$LOG" || { nightly_unlock; return 3; }
+            [ "$LOCK_RECOVERED" = 0 ] || printf 'nightly recovered stale lock %s\n' "$LOCK_PATH" >> "$LOG" || { nightly_unlock; return 3; }
             return 0
         fi
         for owner in "$LOCK_PATH"/owner-*; do
@@ -30,6 +34,7 @@ nightly_lock() {  # Publish a prepared, nonempty directory atomically (GR1 revie
             if [ "$(nightly_owner "$pid")" = "$token" ]; then
                 rmdir "$LOCK_STAGE/owner-$LOCK_TOKEN" "$LOCK_STAGE"; return 3
             fi
+            LOCK_RECOVERED=1
             rmdir "$owner" 2>/dev/null || :
         done
         rmdir "$LOCK_PATH" 2>/dev/null || :
