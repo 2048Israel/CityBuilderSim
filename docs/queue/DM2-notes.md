@@ -105,3 +105,27 @@
 - ★ The actual-run fixture configures an eastward gateway through CityRuns.setGateway, following MainLineCheck's existing open-ground fixture. This sends the actual railway along the owned neck. Its land, model counts, reconciliation, CityRuns geometry and journals are real map inputs. Early variants were rejected because their default first arm stopped at the nearby western ownership edge and never crossed the way. The field-belt Input fixture remains supplemental coverage for a new way displacing a previously standing box.
 - Finding 2 is mended with 2,000 houses standing before an actual mine, 500 before an actual yard and 5,000 before an actual General Cargo Terminal. Source birth at 100 intersects 25, 30 and 42 old boxes respectively, and exactly those move, with zero outside moves. The mine premise explicitly requires old boxes on an unmined field that becomes claimed. Physical intersections are counted before any new wall plots are added to legal displacement marks. Each unseen map is saved at 150 before its first input/plan, retains source dates 100, and matches the watched layout. All three actual source cases pass growth, departure, return and byte roundtrips. The full focused run passes in `target/checks/map-actual-wall-final.txt`.
 - Final 4,000-month direct-reader proof passes at months 384, 765, 1180, 1532, 2006, 2463, 2832, 3213, 3630 and 3993, with every source journal intact, all ten Game reloads identical and no findings. The final model CSV comparison remains unchanged.
+
+## Final review repair
+
+- Lanekeeper's last review found the actual wall/run proof, exact exclusion-flow assertions, current campus check and codec closed, with no player-map, save-reader or model-trace defect in the reviewed delta. It requires one watcher call fix and obsolete reader cleanup before another fresh pick and dry run.
+- Finding 1 is mended by passing the loaded game's landmass and long-bridge pictures to the direct sidecar reader, exactly as Game.readTheMap does. The six-argument audit could otherwise reject a correctly stamped map on linked ground or a standing long bridge. The simulation and its save reader use their existing paths.
+- Stopped only the identified process tree of the superseded pick at PID 15152. Its MapCheck had only the two existing BQ1 findings, its five/ten-billion size checks were green, and SlopeCheck passed. It supplies no final verdict after the watcher fix.
+
+## Follow-up calls from the final review
+
+### DM2-A
+
+- ★ Recommend adding an actual-map monthly-watched/unseen twin using the real wall/run lifecycle fixture. The plan-level field belt already proves delayed wall discovery, and the source-only map fixture proves mine, yard and shore dates. Its unchanged-sidecar assertion deliberately uses a case without wall discovery. The additional twin should remain unseen through an actual wall birth and cure, save before first view, then compare final boxes, streets and complete dated wall histories after first planning. Source journals must stay identical, while the first view may append the correctly dated wall discoveries. Scope is MapCheck and its generated indexes. The default model trace should remain unchanged. This is queued work and is not built in DM2.
+
+### DM2-B
+
+- ★ Recommend a focused mismatch recovery study and reproducer before relaxing the current reader. It currently refuses the whole optional sidecar when its rebuilt site mask disagrees with the saved source history, causing canonical redraw. The review found no normal-play route to that mismatch, and sixteen played-city direct reads agree. A proposed targeted recovery must preserve valid district logs, walls, runs and unit history and prove a safe baseline for the affected site history before discarding it. Dropping site history alone can change historical placement. Scope is CityMap, MapSiteHistory and a causal MapCheck fixture. Keep the strict behavior until that proof exists. This is queued work and is not built in DM2.
+
+### DM2-C
+
+- ★ Recommend documenting and guarding the codec's 256-plot district assumption beside CityMap.DISTRICT, with a boundary assertion for rectangle widths. The current rectangle key packs width minus one in eight bits and is correct for the current DISTRICT value. Scope is CityMap, MapSiteHistory and the codec's harness coverage. The default model trace should remain unchanged. This is queued work and is not built in DM2.
+
+- Final-review finding 2 is mended. FORMAT and reader documentation now describe the current contract, the class overview and comparison helpers no longer claim older maps are read, and unreachable legacy reader alternatives are removed. Current field order, zero-run fallback and end-of-read claim initialization are preserved. Historical writer helpers remain for size comparisons and refusal fixtures. Isolated explicit/implicit roundtrips, corruption checks and all eight malformed-codec cases pass.
+- The final-review watcher fix is causally checked on a city owning unlinked land and a city with a standing long bridge. The old six-argument audit returns no accepted month and reports refused/lost history in both. The corrected call accepts month 3 and records no finding in both. Logs are `target/checks/dm2-reader-context-old.txt` and `target/checks/dm2-reader-context.txt`.
+- The last cleanup `--fast` exits 0 after a 41-second compile and regenerated indexes, with zero firm Stale findings. Follow-ups DM2-A/B/C are recorded only. They have queued rows in the prepared ship file.

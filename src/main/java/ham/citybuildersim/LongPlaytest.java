@@ -5658,7 +5658,7 @@ public class LongPlaytest {
             try {
                 byte[] bytes = Files.readAllBytes(files.mapFile(slot));
                 CityMap direct = CityMap.readSidecar(bytes, back.getCityLand(), back.getLandManager()::remainingByHolding,
-                        back.getMapTypes(), month, CityMap.stampIn(bytes));
+                        back.getMapTypes(), month, CityMap.stampIn(bytes), back.getLandmassPicture(), back.getBridgePicture());
                 if (direct != null && direct.same(g.getCityMap())) mapSidecarMonths.add(month);
                 else flag(month, "the played city sidecar was refused or lost history", "slot " + slot);
             } catch (java.io.IOException e) {

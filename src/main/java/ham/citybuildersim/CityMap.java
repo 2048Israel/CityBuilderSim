@@ -111,9 +111,8 @@ import java.util.zip.InflaterInputStream;
  * can place its buildings in that order and leave them where they stood. A
  * flow cannot be got back from the counts a month ended in, so it is saved;
  * a log that does not add up to the district's counts makes the sidecar
- * unread (the map is drawn again canonically), and a sidecar of FORMAT 8 or
- * older, which has none, starts each log as its counts, one batch at the
- * save's month - drawn as before.
+ * unread (the map is drawn again canonically). Unsupported sidecar formats
+ * are refused and the map is rebuilt from the counts at the save's month.
  *
  * ON THE BLOCK GRID SINCE 0.7.67 (batch M3; the project's spec-grid.md 2.4).
  * The land's ownership reads are the grid's: whether a district or a tile is
@@ -122,18 +121,9 @@ import java.util.zip.InflaterInputStream;
  * bounding box, a field's or a site's holding is the one owning its plot
  * (CityLand.siteHolding()), and a purchase recounts exactly the districts
  * under its rectangle. The sidecar's land stamp is the holdings' count and a
- * hash of their rectangles (CityLand.stamp(), FORMAT 3; FORMAT 4 since 0.7.72,
- * the roads following their buildings; FORMAT 5 since 0.7.88, the city's
- * highway and railway runs after the districts - 0.7.88 wrote none, and a
- * sidecar with none has them laid from its counts as it is read - an older
- * one still read; FORMAT 6 since 0.7.97, its works on the shore after the
- * runs, laid from its counts when a FORMAT 5 sidecar is read; FORMAT 7
- * since 0.8.0, a district's sites by slot; FORMAT 8 since 0.8.1, the
- * gateway's bearing after the shore, a FORMAT 7 sidecar's found again at the
- * next month's runs; FORMAT 10 since FX5, each railway yard's footprint beside
- * its box in the runs - a yard is laid up to a unit train's length along its
- * line, so its box is not the size it was asked for - an older sidecar reading
- * each as its box's own width and height).
+ * hash of their rectangles (CityLand.stamp()). FORMAT 16 carries the counts,
+ * resource slots, runs, shore, gateway, arrival logs and dated ground histories.
+ * Older sidecars are rebuilt canonically.
  *
  * AT SEA AND ON THE SHORE (0.7.97, batch O13; docs/studies/spec-oil.md 2.12,
  * spec-roads-and-ports.md 2.8 and 4): THE CAMPUS deals the refinery's units
@@ -219,7 +209,11 @@ public final class CityMap {
     /** The sidecar's magic: "CMAP". */
     static final int MAGIC = 0x434D4150;
 
-    /** The sidecar's format: 16 since DM2, each district's dated wall ways, first-batch site/yard/shore unit adjustments and compact site-mask histories after the runs' journals; older sidecars are refused and the map is rebuilt canonically at the save's month. 15 since UP5, each district's journal of the runs holding the interchanges' reserves too, as a kind of its own (THE RESERVES DATED: a record 0 to FIXED_RESERVE for a plot a reserve came to, the other way for one that went; no new field is written, a sidecar of FORMAT 14 or older is read as it was written, and its plans draw today's reserves throughout, as before - a plot of today's reserve whose records do not end on it is read so, fixedLogInto() rule (a)); 14 since MF1, the runs' yards that stand idle after the runs' last numbers (CityRuns.yardIdleSince(): a count and the month each went idle; a sidecar of FORMAT 13 or older has none, all its yards the model's); 13 since CC1-M, each arm of the runs followed by what last stopped it (CityRuns.Arm.stoppedBy: OPEN, EDGE or SEA), which the first re-lay after a load reads to know how far the main line runs on past the sea (a sidecar of FORMAT 12 or older reads OPEN, and the month after it is read takes the main line back past its first arm that waits at the sea and lays it again); 12 since CL5, each net of the runs' pieces of ground after the home piece's (CityRuns.Net.pieceHubs: a count and each hub) and each corridor's piece and role (a SPINE, a CROSSING or a LINK; a sidecar of FORMAT 11 or older reads one piece, the spine corridors 0 and 1, every other corridor a CROSSING); 11 since FX7 (0.8.24), each district's journal of its runs after the logs (THE RUNS DATED: a record for each plot of its own box whose kind of fixed ground a month changed, its month, plot and the kind before and after; a sidecar of FORMAT 10 or older has none, and its plans draw today's runs throughout, as before); 10 since FX5 (0.8.18, its slice Y1), each railway yard's box in the runs followed by the footprint it was laid for (CityRuns.yardAsked(): a yard is laid YARD_LONG along its line or shorter where the ground allows, so its box is no longer the size it was asked for; a sidecar of FORMAT 9 or older reads each yard's footprint as its box's own width and height, as it was laid then); 9 since CL3 (0.8.14), each district's log after the gateway's bearing (the changes to its counts month by month, in the order they came: what its plan places its buildings by; a sidecar of FORMAT 8 or older has none, and each district's log then starts as its counts, one batch at the save's month); 8 since 0.8.1 (batch FR0), the gateway's bearing after the works on the shore (CityRuns.gateway(): a FORMAT 7 sidecar's is found again at the next month's runs); 7 since 0.8.0 (batch I14), a district's owned sites by slot (SLOTS: each SITED resource's types of field) where it wrote iron's and oil's - an older sidecar's put on their first slots until the index counts them again; 6 since 0.7.97, the city's works on its shore after the runs (CityShore: each terminal's and tank farm's box, never moved) - a FORMAT 5 sidecar has them laid from its counts as it is read, its districts and runs as they were; 5 from 0.7.88, the city's highway and railway runs after the districts (spec-roads-and-ports.md 2.9: "city-wide state in the sidecar (FORMAT 5)"; 0.7.88 wrote a count of none, 0.7.89 the runs it lays) - a FORMAT 4 sidecar, or a FORMAT 5 one with none, has its runs laid from its counts as it is read (OLDEST_READ), its districts as they were; 4 since 0.7.72, when a district's roads came to follow its buildings (ROADS FOLLOW THEIR BUILDINGS) - an older map, whose districts' roads were placed nearest first, some with none, is drawn again canonically, each district its share; 3 from 0.7.67, its land stamp the holdings' rectangles (CityLand.stamp()) where a centre's half-side was; 2 from 0.7.64, when a district's room became its free plots counted plot by plot. A sidecar older than OLDEST_READ is not read, and the map is drawn again once. */
+    /**
+     * The sidecar's current format: 16 (DM2), with district counts and arrival logs, runs, shore works and gateway,
+     * dated run and wall journals, first-batch site/yard/shore exclusions, and compact site-mask histories.
+     * Sidecars outside the supported format are refused; the caller rebuilds the map canonically at the save's month.
+     */
     static final int FORMAT = 16;
 
     /** The oldest sidecar read: FORMAT 16 (DM2); earlier maps lack the source history needed to replay dated walls faithfully. */
@@ -1354,7 +1348,7 @@ public final class CityMap {
         }
     }
 
-    /** Every district's whole log so far one batch, placed in today's order: after a canonical deal, a square city's or a sidecar of FORMAT 8 or older read. */
+    /** Every district's whole log becomes one batch in today's order after a canonical deal or a square city's construction. */
     private void batchLogs() {
         for (District d : districts) {
             d.firstBatch = d.logN;
@@ -10922,7 +10916,8 @@ public final class CityMap {
      * Since FORMAT 13 (batch CC1-M) each arm's record in the runs ends with what last stopped it (CityRuns.Arm.stoppedBy, a byte).
      * Since FORMAT 16 (DM2) each district's wall-way journal follows the runs journals: a varint count, then each event's month delta
      * and frame plot/state (plot << 1 | kept) as varints. A release keeps the earlier reservation in the history. The dated site/yard/shore
-     * unit adjustments follow, with a count, month delta, type and zig-zagged change for each record.
+     * unit adjustments follow, with a record count and first-batch prefix count, then month delta, type and zig-zagged change per record.
+     * MapSiteHistory writes the compact dated resource-plot transitions last.
      * The stamp is a hash of every other byte, so the same map always writes
      * the same file.
      */
@@ -11128,14 +11123,10 @@ public final class CityMap {
     }
 
     /**
-     * A map read back from its sidecar, or null when it is not one, is not
-     * this city's (another seed, month or stamp, or land drawn otherwise), or
-     * does not add up. Its mines are put back on their sites, which gives the
-     * counts the file holds when the ground's states are those it was saved
-     * with. Since FORMAT 9 (CL3) the districts' logs are read back, and a
-     * district's that does not add up to its counts, type by type, makes it
-     * null (the map is drawn again); an older sidecar's districts each start
-     * a log of their counts, one batch at the sidecar's month.
+     * Reads the current sidecar, or returns null for an unsupported format, a different city, month, stamp or land,
+     * or invalid counts and histories. District logs must sum to their counts. Mines are restored on their sites
+     * before pending site masks are expanded and validated against those claims. On refusal the caller rebuilds
+     * the map canonically at the save's month; this reader performs no legacy conversion.
      */
     public static CityMap readSidecar(byte[] deflated, CityLand land, Function<Resource, double[]> remaining,
                                       BuildingVisual.Type[] types, int month, long stamp) {
@@ -11188,12 +11179,7 @@ public final class CityMap {
                 d.inner = in.readInt();
                 double used = in.readDouble();
                 d.tileFree = null;
-                if (format >= 7) for (int k = 0; k < SLOTS; k++) d.sites[k] = in.readInt();
-                else {
-                    // ...an older sidecar's iron and oil (0.8.0): on their first slots until the index counts them by type.
-                    d.sites[slotOf(Resource.IRON, Resource.IRON.typesOf().get(0))] = in.readInt();
-                    d.sites[slotOf(Resource.OIL, Resource.OIL.typesOf().get(0))] = in.readInt();
-                }
+                for (int k = 0; k < SLOTS; k++) d.sites[k] = in.readInt();
                 for (int t = 0; t < nTypes; t++) {
                     d.counts[t] = in.readInt();
                     m.have[t] += d.counts[t];
@@ -11203,125 +11189,115 @@ public final class CityMap {
                 d.usedRoad = m.roadOf(d);
                 if (used != d.used()) return null;
             }
-            // The runs: read back; none written before 0.7.89 (batch RD3), nor by a FORMAT 4 map - laid now from its counts.
-            int nRuns = format >= 5 ? in.readInt() : 0;
+            // Read the saved runs; a zero count is rebuilt from the model totals below.
+            int nRuns = in.readInt();
             if (nRuns < 0) return null;
             if (nRuns > 0) {
                 CityRuns r = CityRuns.read(in, format);
                 if (r == null) return null;
                 m.runs = m.guarded(r);
             }
-            // The works on the shore: read back since FORMAT 6 (0.7.97); a FORMAT 5 map's laid now from its counts.
-            if (format >= 6) {
-                CityShore s = CityShore.read(in);
-                if (s == null) return null;
-                m.shore = s;
-            }
-            // The gateway's bearing (FORMAT 8, 0.8.1): into the runs, whether they were read or none; an older sidecar leaves it unknown.
-            if (format >= 8) m.runs.setGateway(in.readInt());
-            // Each district's log (FORMAT 9, CL3), in the order it was written - the districts are not sorted yet: it must add up, type by type, to the district's counts, or the map is drawn again.
-            if (format >= 9) {
-                int[] sums = new int[types.length];
-                for (District d : m.districts) {
-                    int logN = in.readInt(), firstBatch = in.readInt();
-                    if (logN < 0 || firstBatch < 0 || firstBatch > logN || logN > raw.length) return null;
-                    d.logMonth = logN == 0 ? NO_LOG : new int[logN];
-                    d.logType = logN == 0 ? NO_LOG : new int[logN];
-                    d.logChange = logN == 0 ? NO_LOG : new int[logN];
-                    Arrays.fill(sums, 0);
-                    int at = 0;
-                    for (int k = 0; k < logN; k++) {
-                        int step = readVarint(in), t = readVarint(in), z = readVarint(in);
-                        if (step < 0 || t < 0 || t >= types.length) return null;
-                        at += step;
-                        d.logMonth[k] = at;
-                        d.logType[k] = t;
-                        d.logChange[k] = (z >>> 1) ^ -(z & 1);
-                        sums[t] += d.logChange[k];
-                    }
-                    if (!Arrays.equals(sums, d.counts)) return null;
-                    d.logN = logN;
-                    d.firstBatch = firstBatch;
-                    d.rehash();
-                    boolean any = false;
-                    for (int c : d.counts) if (c != 0) { any = true; break; }
-                    d.logged = any ? d.counts.clone() : null;
-                    d.logDirty = false;
+            // The shore's works follow the runs.
+            CityShore s = CityShore.read(in);
+            if (s == null) return null;
+            m.shore = s;
+            // The gateway's bearing follows the shore, whether runs were saved or their count was zero.
+            m.runs.setGateway(in.readInt());
+            // Each district's log, in written order, must sum type by type to its counts before the districts are sorted.
+            int[] sums = new int[types.length];
+            for (District d : m.districts) {
+                int logN = in.readInt(), firstBatch = in.readInt();
+                if (logN < 0 || firstBatch < 0 || firstBatch > logN || logN > raw.length) return null;
+                d.logMonth = logN == 0 ? NO_LOG : new int[logN];
+                d.logType = logN == 0 ? NO_LOG : new int[logN];
+                d.logChange = logN == 0 ? NO_LOG : new int[logN];
+                Arrays.fill(sums, 0);
+                int at = 0;
+                for (int k = 0; k < logN; k++) {
+                    int step = readVarint(in), t = readVarint(in), z = readVarint(in);
+                    if (step < 0 || t < 0 || t >= types.length) return null;
+                    at += step;
+                    d.logMonth[k] = at;
+                    d.logType[k] = t;
+                    d.logChange[k] = (z >>> 1) ^ -(z & 1);
+                    sums[t] += d.logChange[k];
                 }
+                if (!Arrays.equals(sums, d.counts)) return null;
+                d.logN = logN;
+                d.firstBatch = firstBatch;
+                d.rehash();
+                boolean any = false;
+                for (int c : d.counts) if (c != 0) { any = true; break; }
+                d.logged = any ? d.counts.clone() : null;
+                d.logDirty = false;
             }
-            // Each district's journal of the runs (FORMAT 11, FX7): a record whose plot or kinds are out of range makes the sidecar unread; an older sidecar's journals are empty.
-            if (format >= 11) {
-                for (District d : m.districts) {
-                    int jN = readVarint(in);
-                    if (jN < 0 || jN > raw.length) return null;
-                    d.jMonth = jN == 0 ? NO_LOG : new int[jN];
-                    d.jRec = jN == 0 ? NO_LOG : new int[jN];
-                    int at = 0;
-                    for (int k = 0; k < jN; k++) {
-                        int step = readVarint(in), plot = readVarint(in), kinds = readVarint(in);
-                        if (step < 0 || plot < 0 || plot >= DISTRICT * DISTRICT || kinds < 0 || kinds > 255) return null;
-                        int before = kinds >> 4, after = kinds & 15;
-                        if (before == after || !journalKind(before) || !journalKind(after)) return null;
-                        at += step;
-                        if (at < 0) return null;
-                        d.jMonth[k] = at;
-                        d.jRec[k] = plot << 8 | kinds;
-                    }
-                    d.jN = jN;
-                    d.jRehash();
+            // Each district's dated run journal: invalid plots or kinds reject the sidecar.
+            for (District d : m.districts) {
+                int jN = readVarint(in);
+                if (jN < 0 || jN > raw.length) return null;
+                d.jMonth = jN == 0 ? NO_LOG : new int[jN];
+                d.jRec = jN == 0 ? NO_LOG : new int[jN];
+                int at = 0;
+                for (int k = 0; k < jN; k++) {
+                    int step = readVarint(in), plot = readVarint(in), kinds = readVarint(in);
+                    if (step < 0 || plot < 0 || plot >= DISTRICT * DISTRICT || kinds < 0 || kinds > 255) return null;
+                    int before = kinds >> 4, after = kinds & 15;
+                    if (before == after || !journalKind(before) || !journalKind(after)) return null;
+                    at += step;
+                    if (at < 0) return null;
+                    d.jMonth[k] = at;
+                    d.jRec[k] = plot << 8 | kinds;
                 }
+                d.jN = jN;
+                d.jRehash();
             }
             // Wall-way records are transitions. Invalid dates, plots or repeated states reject the sidecar.
-            if (format >= 16) {
-                for (District d : m.districts) {
-                    int count = readVarint(in);
-                    if (count < 0 || count > in.available() / 2) return null;
-                    d.wallMonth = new int[count];
-                    d.wallChange = new int[count];
-                    boolean[] kept = new boolean[DistrictPlan.AREA];
-                    int at = 0;
-                    for (int k = 0; k < count; k++) {
-                        int step = readVarint(in), change = readVarint(in), plot = change >>> 1;
-                        if (step < 0 || step > savedMonth - at || change < 0 || plot >= DistrictPlan.AREA) return null;
-                        boolean after = (change & 1) != 0;
-                        if (kept[plot] == after) return null;
-                        kept[plot] = after;
-                        at += step;
-                        d.wallMonth[k] = at;
-                        d.wallChange[k] = change;
-                    }
-                    d.wallHash = wallHash(d.wallMonth, d.wallChange);
+            for (District d : m.districts) {
+                int count = readVarint(in);
+                if (count < 0 || count > in.available() / 2) return null;
+                d.wallMonth = new int[count];
+                d.wallChange = new int[count];
+                boolean[] kept = new boolean[DistrictPlan.AREA];
+                int at = 0;
+                for (int k = 0; k < count; k++) {
+                    int step = readVarint(in), change = readVarint(in), plot = change >>> 1;
+                    if (step < 0 || step > savedMonth - at || change < 0 || plot >= DistrictPlan.AREA) return null;
+                    boolean after = (change & 1) != 0;
+                    if (kept[plot] == after) return null;
+                    kept[plot] = after;
+                    at += step;
+                    d.wallMonth[k] = at;
+                    d.wallChange[k] = change;
+                }
+                d.wallHash = wallHash(d.wallMonth, d.wallChange);
+            }
+            for (District d : m.districts) {
+                int count = readVarint(in);
+                d.excludeBatch = readVarint(in);
+                if (count < 0 || count > in.available() / 3) return null;
+                if (d.excludeBatch < 0 || d.excludeBatch > count) return null;
+                d.excludeMonth = new int[count];
+                d.excludeType = new int[count];
+                d.excludeChange = new int[count];
+                if (count > 0) d.excluded = new int[types.length];
+                int at = 0;
+                for (int k = 0; k < count; k++) {
+                    int step = readVarint(in), type = readVarint(in), code = readVarint(in);
+                    int change = (code >>> 1) ^ -(code & 1);
+                    if (step < 0 || step > savedMonth - at || type < 0 || type >= types.length || types[type] == null || change == 0) return null;
+                    if (!types[type].drawn() || (types[type].site() == null && !types[type].shore() && !types[type].terminal())) return null;
+                    long excluded = (long) d.excluded[type] - change;
+                    if (excluded < 0 || excluded > Integer.MAX_VALUE) return null;
+                    d.excluded[type] = (int) excluded;
+                    if (types[type].terminal() || types[type].shore()) m.planAllocationOwners.add(d);
+                    at += step;
+                    d.excludeMonth[k] = at;
+                    d.excludeType[k] = type;
+                    d.excludeChange[k] = change;
+                    d.excludeHash = World.mix(d.excludeHash ^ ((long) at << 32) ^ ((long) type << 20) ^ change);
                 }
             }
-            if (format >= 16) {
-                for (District d : m.districts) {
-                    int count = readVarint(in);
-                    d.excludeBatch = readVarint(in);
-                    if (count < 0 || count > in.available() / 3) return null;
-                    if (d.excludeBatch < 0 || d.excludeBatch > count) return null;
-                    d.excludeMonth = new int[count];
-                    d.excludeType = new int[count];
-                    d.excludeChange = new int[count];
-                    if (count > 0) d.excluded = new int[types.length];
-                    int at = 0;
-                    for (int k = 0; k < count; k++) {
-                        int step = readVarint(in), type = readVarint(in), code = readVarint(in);
-                        int change = (code >>> 1) ^ -(code & 1);
-                        if (step < 0 || step > savedMonth - at || type < 0 || type >= types.length || types[type] == null || change == 0) return null;
-                        if (!types[type].drawn() || (types[type].site() == null && !types[type].shore() && !types[type].terminal())) return null;
-                        long excluded = (long) d.excluded[type] - change;
-                        if (excluded < 0 || excluded > Integer.MAX_VALUE) return null;
-                        d.excluded[type] = (int) excluded;
-                        if (types[type].terminal() || types[type].shore()) m.planAllocationOwners.add(d);
-                        at += step;
-                        d.excludeMonth[k] = at;
-                        d.excludeType[k] = type;
-                        d.excludeChange[k] = change;
-                        d.excludeHash = World.mix(d.excludeHash ^ ((long) at << 32) ^ ((long) type << 20) ^ change);
-                    }
-                }
-                for (District d : m.districts) m.siteHistory.readDistrict(in, d, savedMonth, in.available());
-            }
+            for (District d : m.districts) m.siteHistory.readDistrict(in, d, savedMonth, in.available());
             m.runs.setDoubleMain(m.hasFreightLine(m.have));
             m.purchasesSeen = bought;
             m.centreSeen = land.centreStamp();
@@ -11332,17 +11308,6 @@ public final class CityMap {
             // The interchanges' reserves are the runs and the ground's, found when asked and not saved (batch FR7).
             m.runs.layReserves(m.runGround);
             if (nRuns == 0) m.layRuns(m.have);
-            if (format < 6) {
-                // 0.7.96's map and before (0.7.97): the refinery gathered into its campus once, the shore laid from the counts.
-                m.roadShare = m.roadShareOf(m.have);
-                m.gatherCampus();
-                m.layShore(m.have);
-            }
-            // A sidecar of FORMAT 8 or older has no logs (CL3): each district's starts as its counts, one batch at the save's month, once all the reader does is done.
-            if (format < 9) {
-                m.logChanges();
-                m.batchLogs();
-            }
             m.sitedNow();
             if (!m.siteHistory.matchesCurrent(m::siteMask)) return null;
             return m;
@@ -11361,7 +11326,7 @@ public final class CityMap {
         return sameDistricts(o, true);
     }
 
-    /** ...with or without their logs: the districts of a map read from a sidecar of FORMAT 8 or older, whose logs begin at its month, are the same as the map's own without them. */
+    /** Compares district figures, optionally including their arrival logs and dated histories. */
     public boolean sameDistricts(CityMap o, boolean withLogs) {
         if (o == null || o.seed != seed || o.districts.size() != districts.size() || o.types.length != types.length) return false;
         for (int i = 0; i < districts.size(); i++) {
