@@ -28,7 +28,7 @@ import java.util.Random;
  *      replay with one holding changed does not;
  *   3. the city's level is the largest at which FACE_BLOCKS blocks fit across
  *      its area, from MIN_LEVEL to MAX_LEVEL; a block's side is
- *      LegacyLand.sideLane()'s; every lane coordinate lies in one place;
+ *      the largest coordinate's; every lane coordinate lies in one place;
  *   4. a new default city, its centre in blocks of 120 m as the prototype
  *      drew it - and as the model founds it, block for block (CityLand.
  *      found(), 0.7.67) - lists its first offers one block across and
@@ -314,9 +314,9 @@ public class GridCheck {
         for (int i = 0; i < 100_000; i++) {
             double dx = rnd.nextInt(2001) - 1000 + (rnd.nextBoolean() ? 0.5 : 0), dy = rnd.nextInt(2001) - 1000 + (rnd.nextBoolean() ? 0.5 : 0);
             if (dx == 0 && dy == 0) continue;
-            sides &= GridOffers.sideOf(dx, dy) == LegacyLand.sideLane(dx, dy) / LegacyLand.LANES;
+            sides &= GridOffers.sideOf(dx, dy) == (Math.abs(dy) >= Math.abs(dx) ? (dy < 0 ? 0 : 2) : (dx > 0 ? 1 : 3));
         }
-        check("a point's side is the lanes' (LegacyLand.sideLane()), diagonals to North or South", sides
+        check("a point's side follows its largest coordinate, diagonals to North or South", sides
                 && GridOffers.sideOf(-3, -3) == 0 && GridOffers.sideOf(3, -3) == 0 && GridOffers.sideOf(3, 3) == 2 && GridOffers.sideOf(-3, 3) == 2);
         boolean one = true;
         for (int i = 0; i <= 12_000; i++) {
@@ -596,6 +596,7 @@ public class GridCheck {
        ===================================================================== */
 
     static void timing(City c) {
+        if (Timing.skip("GridCheck.timing")) return;
         System.out.println("--- 7. a plot's owner, in time ---");
         LandGrid g = c.grid;
         Random rnd = new Random(1);

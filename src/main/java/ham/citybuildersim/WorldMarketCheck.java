@@ -969,6 +969,7 @@ public class WorldMarketCheck {
        ===================================================================== */
 
     static void theTimings(Scope sc) {
+        if (Timing.skip("WorldMarketCheck.theTimings")) return;
         out.println("--- the timings (" + sc.name + ") ---");
         report("the Base on the " + sc.name + " file, read and calibrated, takes under BASE_MS", Timing.within(sc.baseMillis, WorldMarket.BASE_MS),
                 String.format(Locale.ROOT, "%.0f ms against %.0f ms", sc.baseMillis, WorldMarket.BASE_MS));

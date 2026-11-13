@@ -119,6 +119,8 @@ public class TimingCheck {
             soft();
             onlyAClock();
             propertyValues();
+            skippedSections();
+            suiteOrder();
             acrossTheJvm();
             suiteGoesThroughIt();
             restUntouched();
@@ -405,6 +407,51 @@ public class TimingCheck {
     /* =====================================================================
      * 6. THE SUITE GOES THROUGH IT
      * ===================================================================== */
+
+    static void skippedSections() {
+        System.out.println("--- clock-only sections skip their rounds when soft (HA1) ---");
+        for (String mode : new String[]{null, Timing.HARD, Timing.SOFT}) {
+            setMode(mode);
+            int rounds = 0;
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            PrintStream saved = System.out;
+            try {
+                System.setOut(new PrintStream(bytes));
+                if (!Timing.skip("fixture rounds")) rounds++;
+            } finally { System.setOut(saved); }
+            String printed = bytes.toString(StandardCharsets.UTF_8);
+            check(modeName(mode) + ": only soft skips the rounds and prints one skipped line",
+                    Timing.SOFT.equals(mode) ? rounds == 0 && printed.lines().toList().equals(List.of("SKIPPED soft timing: fixture rounds"))
+                            : rounds == 1 && printed.isEmpty());
+        }
+    }
+
+    static void suiteOrder() throws IOException {
+        System.out.println("--- longest first and the gate/nightly partition (HA1) ---");
+        Path dir = TempDirs.create("suite-order"), local = dir.resolve("local.tsv"), gate = dir.resolve("gate.tsv");
+        List<String> names = List.of("WorldCheck", "MapCheck", "KeptCheck");
+        List<String> order = new ArrayList<>(names);
+        order.sort(AllChecks.longestFirst(local, gate));
+        check("without readable times the refreshed medians decide", order.equals(List.of("KeptCheck", "MapCheck", "WorldCheck")));
+        Files.writeString(gate, "900\tWorldCheck\t0\n20\tMapCheck\t1\nNaN\tKeptCheck\t0\nbroken\n");
+        order = new ArrayList<>(names); order.sort(AllChecks.longestFirst(local, gate));
+        check("gate seconds include failed runs and ignore invalid rows", order.equals(names));
+        Files.writeString(local, "1\tWorldCheck\t0\n100\tMapCheck\t0\n");
+        order = new ArrayList<>(names); order.sort(AllChecks.longestFirst(local, gate));
+        check("local seconds take precedence over the gate", order.equals(List.of("MapCheck", "WorldCheck", "KeptCheck")));
+        List<String> direct = List.of("globecheck");
+        check("ALL excludes the nightly tier; an exact direct pick includes its harness",
+                !AllChecks.selected("GlobeCheck", false, true, false, List.of())
+                && AllChecks.selected("GlobeCheck", false, true, false, direct)
+                && !AllChecks.selected("GlobeCheck", false, true, false, List.of("globe")));
+        boolean covered = AllChecks.NIGHTLY.size() == 15 && Arrays.asList(AllChecks.HARNESSES).containsAll(AllChecks.NIGHTLY);
+        for (String name : AllChecks.HARNESSES) {
+            boolean atGate = AllChecks.selected(name, false, true, false, List.of());
+            boolean atNight = AllChecks.selected(name, false, false, true, List.of());
+            covered &= atGate != atNight;
+        }
+        check("every registered harness runs at the default gate or in the nightly tier", covered);
+    }
 
     static void suiteGoesThroughIt() throws IOException {
         System.out.println("--- 6. the suite goes through Timing ---");

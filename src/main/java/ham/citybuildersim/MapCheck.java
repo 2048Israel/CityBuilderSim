@@ -5079,61 +5079,63 @@ public class MapCheck {
     static void cost(Squares sq) {
         out.println("\n--- 5. the cost follows the screen, never the population ---");
         int k = TIMES.length;
-        double[] best = new double[k];
-        Arrays.fill(best, Double.MAX_VALUE);
-        long[] drawn = new long[k];
-        double[] cold = new double[k];
-        TilePainter.Input in = new TilePainter.Input();
-        TilePainter.Painted p = new TilePainter.Painted();
-        int[] img = new int[(World.TILE * PX) * (World.TILE * PX)];
-        long tx0 = Math.floorDiv(sq.x, World.TILE) - SCREEN_ACROSS / 2, ty0 = Math.floorDiv(sq.y, World.TILE) - SCREEN_DOWN / 2;
-        System.gc();
-        for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
-            for (int i = 0; i < k; i++) {
-                CityMap m = sq.maps[i];
-                long n = 0;
-                long t0 = System.nanoTime();
-                for (int j = 0; j < SCREEN_DOWN; j++) {
-                    for (int c = 0; c < SCREEN_ACROSS; c++) {
-                        m.tileInput(tx0 + c, ty0 + j, in);
-                        TilePainter.paint(in, p);
-                        TileRaster.raster(in, p, PX, img);
-                        n += p.buildings;
+        if (!Timing.skip("MapCheck screen rendering")) {
+            double[] best = new double[k];
+            Arrays.fill(best, Double.MAX_VALUE);
+            long[] drawn = new long[k];
+            double[] cold = new double[k];
+            TilePainter.Input in = new TilePainter.Input();
+            TilePainter.Painted p = new TilePainter.Painted();
+            int[] img = new int[(World.TILE * PX) * (World.TILE * PX)];
+            long tx0 = Math.floorDiv(sq.x, World.TILE) - SCREEN_ACROSS / 2, ty0 = Math.floorDiv(sq.y, World.TILE) - SCREEN_DOWN / 2;
+            System.gc();
+            for (int round = 0; round < WARM_ROUNDS + TIMED_ROUNDS; round++) {
+                for (int i = 0; i < k; i++) {
+                    CityMap m = sq.maps[i];
+                    long n = 0;
+                    long t0 = System.nanoTime();
+                    for (int j = 0; j < SCREEN_DOWN; j++) {
+                        for (int c = 0; c < SCREEN_ACROSS; c++) {
+                            m.tileInput(tx0 + c, ty0 + j, in);
+                            TilePainter.paint(in, p);
+                            TileRaster.raster(in, p, PX, img);
+                            n += p.buildings;
+                        }
                     }
+                    double ms = (System.nanoTime() - t0) / 1e6;
+                    drawn[i] = n;
+                    // The first round makes the screen's plans (away from the screen in the game: MapView's worker), the rounds after
+                    // paint from them, as a screen does once they are drawn.
+                    if (round == 0) cold[i] = ms;
+                    if (round >= WARM_ROUNDS) best[i] = Math.min(best[i], ms);
                 }
-                double ms = (System.nanoTime() - t0) / 1e6;
-                drawn[i] = n;
-                // The first round makes the screen's plans (away from the screen in the game: MapView's worker), the rounds after
-                // paint from them, as a screen does once they are drawn.
-                if (round == 0) cold[i] = ms;
-                if (round >= WARM_ROUNDS) best[i] = Math.min(best[i], ms);
             }
+            /*
+             * THE RATIO'S BASE (0.7.64). Until 0.7.64 each copy was held within
+             * SCREEN_RATIO of the city x 1's screen. J3b drew homes from people and
+             * workplaces from jobs, capped at a share of a tile, so every copy's
+             * screen drew about the same; since 0.7.64 every model building is
+             * drawn on its own land, and the city x 1 - 14,214 buildings, under
+             * half of what the screen holds at his density - fills part of its
+             * screen (8,186 drawn) where the others fill all of it (20,546). So
+             * the copies are held to the 5B copy's, the first whose screen is all
+             * city: past the screen's size the cost does not grow with the
+             * population (5B, x 10,000 and 10B within a few percent), and the
+             * city x 1 within it too. The bound, 1.5, stands.
+             */
+            int base = 1;
+            boolean under = true, near = true;
+            for (int i = 0; i < k; i++) {
+                double ratio = best[i] / best[base];
+                out.printf("      x %,.0f: the screen's %d tiles - terrain, the plans' tiles, paint and raster at %d px - in %.1f ms (%.3f ms a tile),"
+                        + " %,d buildings; %.2f x the 5B copy's; the first time, its plans made, %.0f ms%n", TIMES[i], SCREEN_TILES, PX, best[i],
+                        best[i] / SCREEN_TILES, drawn[i], ratio, cold[i]);
+                under &= Timing.within(best[i], SCREEN_MS);
+                if (i != base) near &= ratio <= SCREEN_RATIO;
+            }
+            check("a 1,389 x 868 L0 screen paints and rasters from its districts' plans in no more than 80 ms, at every size", under);
+            check("...and x 1, x 10,000 and 10B within 1.5 times the 5B copy's, the first all city: it follows the screen", near);
         }
-        /*
-         * THE RATIO'S BASE (0.7.64). Until 0.7.64 each copy was held within
-         * SCREEN_RATIO of the city x 1's screen. J3b drew homes from people and
-         * workplaces from jobs, capped at a share of a tile, so every copy's
-         * screen drew about the same; since 0.7.64 every model building is
-         * drawn on its own land, and the city x 1 - 14,214 buildings, under
-         * half of what the screen holds at his density - fills part of its
-         * screen (8,186 drawn) where the others fill all of it (20,546). So
-         * the copies are held to the 5B copy's, the first whose screen is all
-         * city: past the screen's size the cost does not grow with the
-         * population (5B, x 10,000 and 10B within a few percent), and the
-         * city x 1 within it too. The bound, 1.5, stands.
-         */
-        int base = 1;
-        boolean under = true, near = true;
-        for (int i = 0; i < k; i++) {
-            double ratio = best[i] / best[base];
-            out.printf("      x %,.0f: the screen's %d tiles - terrain, the plans' tiles, paint and raster at %d px - in %.1f ms (%.3f ms a tile),"
-                    + " %,d buildings; %.2f x the 5B copy's; the first time, its plans made, %.0f ms%n", TIMES[i], SCREEN_TILES, PX, best[i],
-                    best[i] / SCREEN_TILES, drawn[i], ratio, cold[i]);
-            under &= Timing.within(best[i], SCREEN_MS);
-            if (i != base) near &= ratio <= SCREEN_RATIO;
-        }
-        check("a 1,389 x 868 L0 screen paints and rasters from its districts' plans in no more than 80 ms, at every size", under);
-        check("...and x 1, x 10,000 and 10B within 1.5 times the 5B copy's, the first all city: it follows the screen", near);
         // A month's change at 5B and 10B: +0.05%, a year of +0.01%, then -0.05%.
         for (int i = 0; i < k; i++) {
             if (TIMES[i] != 9_814 && TIMES[i] != 19_629) continue;

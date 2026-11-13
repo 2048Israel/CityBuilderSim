@@ -100,6 +100,13 @@ public final class Timing {
         return SOFT.equals(System.getProperty(PROPERTY));
     }
 
+    /** A section with only a clock's verdict does no rounds in a soft suite (HA1). */
+    static boolean skip(String section) {
+        if (!soft()) return false;
+        System.out.println("SKIPPED soft timing: " + section);
+        return true;
+    }
+
     /** A figure in milliseconds within its budget (at most it): {@code figure <= budget}, or soft. Public, with verdict, for ui.UiProbe (UP2). */
     public static boolean within(double figure, double budget) {
         return within(figure, budget, "ms");

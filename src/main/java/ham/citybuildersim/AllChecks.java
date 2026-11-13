@@ -40,19 +40,19 @@ import java.util.regex.Pattern;
  */
 public class AllChecks {
 
-    /** In the order they are cheapest to fail. LongPlaytest last: it is the slow one. */
+    /** Every harness: the gate and nightly selections together cover this registry. */
     static final String[] HARNESSES = {
-        "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "ConversionCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck",
+        "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck",
         "EarthCheck", "WorldDataCheck", "NationsCheck", "WorldMeasuresCheck", "RankingsCheck", "WorldMarketCheck", "WorldMoneysCheck", "RealDollarCheck", "PartnersCheck", "VaultMoneysCheck", "PegAnchorCheck", "InterestAbroadCheck", "GoldPriceCheck", "GoldStandardCheck", "EarthTerrainCheck", "EarthFoundingCheck", "EarthDepositsCheck", "GlobeCheck",
         "PolicyCheck", "PolicyDatesCheck", "LandCheck", "SlopeCheck", "LandClassCheck", "LandmassCheck", "LandNationsCheck", "BridgeCheck", "RunWorksCheck", "ZoningCheck", "ZoningViewCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck",
         "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "ConstructionTrapCheck", "FoundingYardCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "IslandLinkCheck", "SectorFlowCheck", "PolicyPreviewCheck",
-        "RestructureCheck", "BuybackCheck", "CallCheck", "FloatLinkCheck", "DeskCheck", "ConservationCheck", "MoneyCheck", "GdpCheck", "HistoryCheck",
+        "RestructureCheck", "BuybackCheck", "CallCheck", "FloatLinkCheck", "DeskCheck", "GdpCheck", "HistoryCheck",
         "BankCheck", "ForeignCheck", "CurrencyCheck", "ExchangeRateCheck", "InterventionCheck", "CurrencyRegimeCheck", "PassThroughCheck", "ForeignDebtCheck", "DebtExchangeCheck", "DebtMoneysCheck", "CapitalFlowCheck", "CarryTradeCheck", "EquityCheck", "ExchangeCheck", "ShortSellingCheck", "MarketCheck", "MonetaryCheck", "ExpectationsCheck", "CurveCheck", "GroceryCheck", "SupplierCreditCheck", "CentralBankCheck", "FundCheck", "FundLedgerCheck", "HoldersCheck", "BondCheck", "OrderBookCheck",
         "DenominationCheck", "PriceLevelCheck", "DeterminismCheck",
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck", "ReloadCheck",
         "SaveSlotCheck", "ScaleCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ChartFitCheck", "ToastCheck", "MoneyWordsCheck", "ClockCheck",
-        "ConsumptionCheck", "SectorBooksCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "CausesOfDeathCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "QuayRailCheck", "QuayCraneCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
+        "ConsumptionCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "CausesOfDeathCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "QuayRailCheck", "QuayCraneCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
         "IslandNetCheck", "IslandRailCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "RecipeCheck", "ResearchCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck",
         "ReplayCheck", "StaffingDrawCheck", "OwnerCheck",
         "GovernmentViewCheck", "GovernmentPlayerCheck"
@@ -76,8 +76,14 @@ public class AllChecks {
     /** No harness is started beside another of this run while the machine's commit charge is over this percent (SP1): the first three, started at 79.8%, took the PC to 85.9% within a minute as they grew (2026-10-27), and the batches stop a run at 85; a suite died with CreateProcess error 1450 at 43 of 54 GB on 2026-10-21. */
     static final int COMMIT_PCT = 75;
 
-    /** The harnesses started first when more than one runs at once, the longest first (measured 2026-10-27, earth-2.bin named: MapCheck 192 s, GlobeCheck 72, LongPlaytest 55, EarthTerrainCheck 52, the rest 41 to 30), so the slowest is not the last to start. */
-    static final List<String> LONGEST_FIRST = List.of("MapCheck", "GlobeCheck", "LongPlaytest", "EarthTerrainCheck", "BridgeMapCheck", "GatewayCheck", "MainLineCheck", "EducationCheck");
+    /** Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). */
+    static final List<String> LONGEST_FIRST = List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "EarthTerrainCheck");
+
+    /** Runs nightly, and at the gate only when a direct pick names it (HA1). */
+    static final List<String> NIGHTLY = List.of(
+            "KeptCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "EducationCheck",
+            "OrderSearchCheck", "MainLineCheck", "BridgeMapCheck", "AuctionCheck", "GatewayCheck",
+            "HomeRailCheck", "TruckRouteCheck", "PrizeCheck", "IslandLinkCheck", "CopperRefiningCheck");
 
     /** Where -q and -f keep each harness's whole output. */
     static final Path LOGS = Paths.get("target", "checks");
@@ -113,12 +119,14 @@ public class AllChecks {
     static final String NEW_TAG = "[NEW]   ";
 
     public static void main(String[] args) throws Exception {
-        boolean quiet = false, failuresOnly = false, timingOnly = false;
+        boolean quiet = false, failuresOnly = false, timingOnly = false, gate = false, nightly = false;
         List<String> only = new ArrayList<>();
         for (String a : args) {
             if (a.equals("-q")) quiet = true;
             else if (a.equals("-f")) failuresOnly = true;
             else if (a.equals("--timing")) timingOnly = true;
+            else if (a.equals("--gate")) gate = true;
+            else if (a.equals("--nightly")) nightly = true;
             else only.add(a.toLowerCase());
         }
         boolean logged = quiet || failuresOnly;   // both keep each harness's output in LOGS, so a verdict can be read from it
@@ -137,17 +145,12 @@ public class AllChecks {
         long started = System.currentTimeMillis();
         List<String> picked = new ArrayList<>(), order = new ArrayList<>();   // asked for, in HARNESSES order; and what starts, in the order it starts
         for (String name : HARNESSES) {
-            if (timingOnly && !Timing.HARNESSES.contains(name)) continue;
-            if (!only.isEmpty()) {
-                boolean wanted = false;
-                for (String o : only) if (name.toLowerCase().contains(o)) wanted = true;
-                if (!wanted) continue;
-            }
+            if (!selected(name, timingOnly, gate, nightly, only)) continue;
             picked.add(name);
             if (haveFx || !(name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("ChartFitCheck") || name.equals("ToastCheck") || name.equals("MoneyWordsCheck"))) order.add(name);
         }
         int atOnce = parallel(logged, timingOnly);
-        if (atOnce > 1) order.sort(Comparator.comparingInt(x -> LONGEST_FIRST.contains(x) ? LONGEST_FIRST.indexOf(x) : LONGEST_FIRST.size()));   // stable: the rest keep their order
+        if (atOnce > 1) order.sort(longestFirst(TIMES, Path.of(System.getProperty("user.home"), ".cbs-gate-times.tsv")));
         Set<Process> live = ConcurrentHashMap.newKeySet();   // what runs, and the lock a start waits on for the commit charge to fall
         AtomicInteger held = new AtomicInteger();   // starts that waited at least once
         Runtime.getRuntime().addShutdownHook(new Thread(() -> live.forEach(AllChecks::endTree)));
@@ -229,6 +232,34 @@ public class AllChecks {
             System.out.println("Whole output of each: " + LOGS + File.separator + "NAME.log");
         }
         System.exit(failed);
+    }
+
+    /** Gate defaults exclude the nightly tier; only exact direct picks add its members. */
+    static boolean selected(String name, boolean timing, boolean gate, boolean nightly, List<String> only) {
+        if (timing && !Timing.HARNESSES.contains(name) || nightly && !NIGHTLY.contains(name)) return false;
+        String lower = name.toLowerCase(Locale.ROOT);
+        if (gate) return !NIGHTLY.contains(name) || only.contains(lower);
+        return only.isEmpty() || only.stream().anyMatch(lower::contains);
+    }
+
+    /** Previous local seconds, else the last gate's; malformed rows cannot stop a suite. */
+    static Comparator<String> longestFirst(Path local, Path gate) {
+        Map<String, Double> seconds = new HashMap<>();
+        for (Path file : List.of(local, gate)) {
+            try {
+                for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
+                    String[] row = line.split("\t");
+                    if (row.length != 3) continue;
+                    try {
+                        double value = Double.parseDouble(row[0]);
+                        if (Double.isFinite(value) && value >= 0) seconds.put(row[1], value);
+                    } catch (NumberFormatException ignored) { }
+                }
+            } catch (IOException ignored) { }
+            if (!seconds.isEmpty()) break;
+        }
+        return Comparator.<String>comparingDouble(n -> seconds.getOrDefault(n, -1.0)).reversed()
+                .thenComparingInt(n -> LONGEST_FIRST.contains(n) ? LONGEST_FIRST.indexOf(n) : LONGEST_FIRST.size());
     }
 
     /** Waits at most the harness's limit, recording a timeout as a failing assertion (GF1). */
