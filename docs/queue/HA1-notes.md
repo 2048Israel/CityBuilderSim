@@ -116,10 +116,8 @@ fixture groups pass under their new owners. Logs:
 
 Compared with the brief's historical 38-minute full gate, this working-tree
 pick is 32.1 minutes while retaining HA1's 13 directly picked nightly members.
-The fresh-clone gate measurement is still pending. Simulating three slots,
-longest first, from this run's measured seconds for the 181 ordinary harnesses
-gives 1172.5 seconds (19.5 minutes); that is a scheduling estimate, not a
-measured default-tier gate.
+This pre-review run is historical, not readiness evidence. Its old scheduling
+estimate is superseded by the final corrected fresh-clone measurement below.
 
 EN1 before the AW2 merge: the original default LongPlaytest passed, and the final one plus its
 moved money fixtures passes. The default-model report prefix is byte-identical
@@ -287,7 +285,8 @@ fixture had left a file named `kept`, colliding with the later launcher's
 `kept/` evidence directory. The four new record tests passed; the three
 failures were the first launch and its two reuse checks. Isolated unit files
 as `record-*.txt`, retained failed selftest areas for diagnosis, and reran the
-complete selftest. The nightly selftest also verifies that a wrong inherited
+complete selftest, which now passes **140/140**, including sealing, both
+reuse cases, and Ready-flow reuse. The nightly selftest also verifies that a wrong inherited
 record is cleared and the log is rejudged against main's current known reds.
 
 Corrected serial soft measurement: **18 harnesses in 1880 seconds**, 15 pass,
@@ -300,5 +299,39 @@ not a subset or a composite, supplies the final after column.
 Final post-review `--fast` exits **0** (41s compile), regenerates the indexes
 and reports Stale 0 firm/185 soft. The corrected full timing repeat is green
 (known only), the actual eight CSVs are identical, and the common-judge
-nightly selftest is green. The isolated 140-case publisher rerun is still
-running; final readiness requires it and a fresh post-review launcher gate.
+nightly selftest is green. The isolated publisher rerun passes **140/140**; final readiness now
+is confirmed by the fresh post-review launcher gate below.
+
+## Final readiness evidence
+
+`sh tools/gate.sh HA1 --no-tag --dry-run` finishes **exit 0**. The retained
+launcher directory is **`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HA1-zejvr1PT`**
+(Git Bash `/tmp/cbs-gate-HA1-zejvr1PT`). It records:
+
+- Branch: `6dd8669a59c26cf100d26eed50081f3c10dc75b5`.
+- Main: `b8d4750d5e7882f7590ecdc905a2a83ab8525334` (AW2, 0.9.99).
+- Selection: `full version=0.9.99`; checks complete and every retained
+  `checks.sha256` digest verified. `unnamed.txt` is empty/absent.
+- Suite: **194 harnesses in 1662 seconds (27.7 minutes)**; 187 pass, seven
+  known reds only: MonetaryCheck, CentralBankCheck, HealthCheck, MapCheck,
+  PlanCheck, KeptCheck, DeathRecordCheck. The whole suite check stage, including
+  compile/index/firm checks, takes 1733 seconds (28.9 minutes), exit 3.
+- Stale has zero firm findings. No NEW red is covered or deferred by HA1.
+
+This final gate, which still directly picks 13 nightly members for HA1's own
+shared-fixture diff, is measured against the brief's historical 38 minutes.
+Scheduling the final run's measured durations for the **181 ordinary-tier
+harnesses** on three slots gives **1008.0 seconds (16.8 minutes)**; this is an
+estimate for the ordinary tier, not an additional measured gate.
+
+Only HA1's notes and ship file change after this retained run. Its source is
+unchanged, main was fetched and remains b8d4750d, and its evidence is eligible
+for publisher reuse. Both superseded runs remain stopped and are not reused.
+The ship file points only to this final green run.
+
+All six review findings are answered above; publisher selftests **140/140**,
+nightly common-judge selftest and pick selftest **22/22** pass. The final
+corrected soft timing sample and actual eight byte-identical model CSVs are
+recorded above. No ensemble is required. SaveWriter.CLOCK_MS re-measurement
+and first operational nightly on main remain the two ship-file pending rows.
+CB1-L's obsolete protected queue row is left for Jerus as directed.
