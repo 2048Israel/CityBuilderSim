@@ -7989,9 +7989,9 @@ public class BuildingManager {
      * Every square foot the city has committed to buildings - standing and on
      * site both, since a half-built plant is occupying its plot.
      *
-     * A load uses this only when the save has no allocation key (AW2).
-     * New saves keep the live ledger: fixture stacks may have been injected
-     * without allocating ground, so this sum need not be that ledger's figure.
+     * A load uses this as the allocation for a save without that key, or as
+     * the footprint delta since a new save was written (AW2). New saves keep
+     * the ledger's gap: fixture stacks may have been injected without taking ground.
      */
     public double getTotalLandFootprint() {
         double total = 0;

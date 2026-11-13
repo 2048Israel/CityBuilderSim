@@ -3247,6 +3247,8 @@ public class SaveFileCheck {
         everyIdCrossesASave(root);
         worldMarketCrossesASave(root);
         allocatedLandCrossesASave();
+        landPlotsCrossASave();
+        constructionContinuesAfterALoad(root);
 
         cleanUp(root);
 
@@ -3320,6 +3322,118 @@ public class SaveFileCheck {
         Game zero = new Game(files);
         quietly(() -> zero.loadGameSave(1));
         same("an explicit zero allocation comes back as zero", zero.getLandManager().getAllocatedSqFt(), 0);
+    }
+
+    /** AW2: catalogue edits change the occupied ground, while the fixture's unallocated gap stays the same. */
+    static void landPlotsCrossASave() {
+        System.out.println("\n--- a saved land ledger follows changed catalogue plots (AW2) ---");
+        for (double oldSize : new double[] { .5, 2 }) {
+            GameFiles files = GameFiles.scratch("changed-land-plot");
+            Game live = new Game(files);
+            quietly(() -> {
+                live.newGame();
+                live.simulateMonths(1);
+                live.setCashForTest(Founding.WEALTHY_CASH);
+            });
+            BuildingsTemplate house = template(live, "House");
+            double currentPlot = house.getLandSqFt();
+            house.setLandSqFt(currentPlot * oldSize);
+            assertEquals("fixture: an old-catalogue house is placed with its ground allocated",
+                    quietlyGet(() -> live.buildStack(house, 1, true)), Game.BuildResult.SUCCESS);
+            // A small unallocated site proves we preserve the gap as well as handling the balance edit.
+            live.getBuildingManager().addStack(house, 1, false);
+            double allocated = live.getLandManager().getAllocatedSqFt();
+            double footprint = live.getBuildingManager().getTotalLandFootprint();
+            assertTrue("saved the old catalogue plot and its allocation", quietlyGet(() -> live.saveGame(1, "old plot")).ok);
+            house.setLandSqFt(currentPlot); // The catalogue changes between save and load; the loader constructs today's templates.
+            Game loaded = new Game(files);
+            quietly(() -> loaded.loadGameSave(1));
+            double now = loaded.getBuildingManager().getTotalLandFootprint();
+            assertTrue("fixture: the plot changed between save and ordinary load", now != footprint);
+            same("changed plots adjust the counter by their footprint delta", loaded.getLandManager().getAllocatedSqFt(),
+                    allocated + (now - footprint));
+            same("changed plots retain the source city's unallocated gap", now - loaded.getLandManager().getAllocatedSqFt(),
+                    footprint - allocated);
+        }
+    }
+
+    /** AW2: cause automatic land buying and private orders, then play live and ordinary-loaded twins together. */
+    static void constructionContinuesAfterALoad(Path root) {
+        System.out.println("\n--- private and automatic construction continue after a load (AW2) ---");
+        // AutoBuildCheck's no-ground town: its services need works, with construction output to place them.
+        java.io.PrintStream oldQuiet = ChildcareCheck.quiet;
+        Game live;
+        try {
+            live = quietlyGet(() -> {
+                ChildcareCheck.quiet = System.out;
+                return ChildcareCheck.town(root, "aw2-construction");
+            });
+        } finally { ChildcareCheck.quiet = oldQuiet; }
+        // Cause a private shortage: leave no shops, rather than hoping a planner expands.
+        BuildingsTemplate shop = template(live, "Convenience Store");
+        int removed = live.getBuildingManager().retire(shop, live.getBuildingManager().countByName(shop.getName()));
+        live.getLandManager().release(removed * shop.getLandSqFt(), shop.getSector(), Game.groundUse(shop));
+        // Free workers for the private order; this services fixture otherwise has nobody available to staff a shop.
+        BuildingsTemplate school = template(live, "Medical School");
+        int closed = live.getBuildingManager().retire(school, live.getBuildingManager().countByName(school.getName()));
+        live.getLandManager().release(closed * school.getLandSqFt(), school.getSector(), Game.groundUse(school));
+        quietly(() -> live.simulateMonths(1)); // Settle staffing and output after the fixture's closures, with its planners still held.
+        for (String sector : Sectors.KEYS) live.getBusinessInvestment().releaseSector(sector);
+        live.getSectors().retail().setCash(Founding.WEALTHY_CASH);
+        assertTrue("fixture: the short retailer can staff a new shop", live.getSectors().retail().staffing(shop).passes());
+        live.getBuildingManager().addStack(template(live, "House"), 1, false);
+        live.getLandManager().setOwnedSqFt(Math.ceil(live.getLandManager().getAllocatedSqFt()));
+        live.getAutoBuilder().setOn(true, null);
+        live.getAutoBuilder().setCashAnyway(true, null);
+        live.getAutoBuilder().setDebtLimit(AutoBuilder.DEBT_LIMIT_MOST, null);
+        double rate = live.getForeignAccounts().getRate();
+        live.getForeignAccounts().pinRate(rate); // A harness pin is not saved: reapply the same pin to the twin.
+        double owned = live.getLandManager().getOwnedSqFt();
+        assertTrue("fixture: no free ground, services need works and an unallocated site remains",
+                live.getLandManager().getAvailableSqFt() < 1
+                        && live.getBuildingManager().getTotalLandFootprint() > live.getLandManager().getAllocatedSqFt());
+        assertTrue("saved the town before construction resumes", quietlyGet(() -> live.saveGame(1, "construction twin")).ok);
+        Game loaded = new Game(live.getGameFiles());
+        quietly(() -> loaded.loadGameSave(1));
+        loaded.getForeignAccounts().pinRate(rate);
+        int autoBefore = live.getAutoBuilder().getOrders();
+        int boughtBefore = live.getAutoBuilder().getLandOffers();
+        int privateOrders = 0;
+        for (int month = 0; month < 12; month++) {
+            java.util.Map<Integer, Integer> before = new java.util.HashMap<>();
+            for (BuildingsTemplate t : live.getBuildingManager().getTemplates()) before.put(t.getId(), standingAndOnSite(live, t));
+            quietly(() -> live.simulateMonths(1));
+            quietly(() -> loaded.simulateMonths(1));
+            boolean ordersMatch = true;
+            for (BuildingsTemplate t : live.getBuildingManager().getTemplates()) {
+                int count = standingAndOnSite(live, t);
+                ordersMatch &= count == standingAndOnSite(loaded, loaded.getBuildingManager().getTemplate(t.getId()));
+                if (!AutoBuilder.inRemit(t) && java.util.Arrays.asList(Sectors.KEYS).contains(t.getSector())) {
+                    privateOrders += Math.max(0, count - before.get(t.getId()));
+                }
+            }
+            String when = " at m" + live.getMonth();
+            assertTrue("every template has the same standing and ordered count" + when, ordersMatch);
+            assertEquals("private planner decisions match after the month" + when, loaded.getLastInvestments(), live.getLastInvestments());
+            same("owned ground matches after the month" + when, loaded.getLandManager().getOwnedSqFt(), live.getLandManager().getOwnedSqFt());
+            same("allocated ground matches after the month" + when, loaded.getLandManager().getAllocatedSqFt(), live.getLandManager().getAllocatedSqFt());
+            same("free ground matches after the month" + when, loaded.getLandManager().getAvailableSqFt(), live.getLandManager().getAvailableSqFt());
+            assertEquals("automatic orders match after the month" + when, loaded.getAutoBuilder().getOrders(), live.getAutoBuilder().getOrders());
+            assertEquals("automatic land purchases match after the month" + when, loaded.getAutoBuilder().getLandOffers(), live.getAutoBuilder().getLandOffers());
+            assertEquals("the automatic order details match after the month" + when,
+                    new com.google.gson.Gson().toJson(loaded.getAutoBuilder().log()), new com.google.gson.Gson().toJson(live.getAutoBuilder().log()));
+            if (privateOrders > 0 && live.getAutoBuilder().getOrders() > autoBefore && live.getAutoBuilder().getLandOffers() > boughtBefore) break;
+        }
+        assertTrue("the continuation actually placed private orders outside the automatic builder's remit (Retail: "
+                + live.getLastInvestment(Sectors.RETAIL) + ")", privateOrders > 0);
+        assertTrue("the continuation actually placed automatic orders", live.getAutoBuilder().getOrders() > autoBefore);
+        assertTrue("the continuation actually bought ground for those orders",
+                live.getAutoBuilder().getLandOffers() > boughtBefore && live.getLandManager().getOwnedSqFt() > owned);
+    }
+
+    private static int standingAndOnSite(Game game, BuildingsTemplate template) {
+        BuildingsStacks stack = game.getBuildingManager().getStack(template);
+        return stack == null ? 0 : stack.getQuantity() + stack.getUnderConstruction();
     }
 
     /**

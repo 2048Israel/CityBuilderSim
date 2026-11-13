@@ -80,15 +80,15 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 55. **L13365** `if (fxRegime == ForeignAccounts.Regime.PEG) {` → [DebtManager.setPolicyRate](map/DebtManager.md) (L79), [DebtManager.tiedRate](map/DebtManager.md) (L225), [ForeignAccounts.currencyGap](map/ForeignAccounts.md) (L1729), [DebtManager.isAutopilot](map/DebtManager.md) (L116), [DebtManager.getAim](map/DebtManager.md) (L185), [DebtManager.goldRate](map/DebtManager.md) (L241), [Game.getGoldCover](map/Game.md) (L6023), [DebtManager.currencyRate](map/DebtManager.md) (L214), [PriceIndex.hasRate](map/PriceIndex.md) (L557), [DebtManager.mixRate](map/DebtManager.md) (L219), [PriceIndex.inflation](map/PriceIndex.md) (L549), [DebtManager.advisedPolicyRate](map/DebtManager.md) (L473)
 56. **L13381** `strikeTheCurve();` → [Game.strikeTheCurve](map/Game.md) (L14649)  
    _THE CURVE'S EXPECTATIONS, struck once a month after the dial is set (autopilot or not): see strikeTheCurve()._
-57. **L13388** `settleTreasury();` → [Game.settleTreasury](map/Game.md) (L19231)  
+57. **L13388** `settleTreasury();` → [Game.settleTreasury](map/Game.md) (L19232)  
    _The central bank settles with the treasury: last month's profit remitted, the advances' interest charged, repaid from cash above zero or advanced the shortfall._
-58. **L13396** `rollCentralBankAtIssue();` → [Game.rollCentralBankAtIssue](map/Game.md) (L18706)  
+58. **L13396** `rollCentralBankAtIssue();` → [Game.rollCentralBankAtIssue](map/Game.md) (L18707)  
    _The central bank's own maturing paper, replaced at issue by its add-on to what the city sold between the presses, par for par (0.7.15, round 2): after the settle, so its money waits for the maturit..._
-59. **L13401** `openMarketOperation();` → [Game.openMarketOperation](map/Game.md) (L18332)  
+59. **L13401** `openMarketOperation();` → [Game.openMarketOperation](map/Game.md) (L18333)  
    _The holdings dial (0.7.1): the central bank buys or sells the city's term paper toward its target, after the settle above and before the market is priced._
-60. **L13420** `payStudentGrants(studentGrantBill());` → [Game.payStudentGrants](map/Game.md) (L19362), [Game.studentGrantBill](map/Game.md) (L15937)  
+60. **L13420** `payStudentGrants(studentGrantBill());` → [Game.payStudentGrants](map/Game.md) (L19363), [Game.studentGrantBill](map/Game.md) (L15937)  
    _THE STUDENTS' GRANT, PAID IN THE MONTH IT IS CREDITED (0.7.1)._
-61. **L13434** `payEiBenefits();` → [Game.payEiBenefits](map/Game.md) (L19387)  
+61. **L13434** `payEiBenefits();` → [Game.payEiBenefits](map/Game.md) (L19388)  
    _...AND EI, THE SAME WAY (0.7.3)._
 62. **L13452** `economyManager.setBankTax(bank.chargeTax(bankProfitTaxRate()));` → [EconomyManager.setBankTax](map/EconomyManager.md) (L1723), [Bank.chargeTax](map/Bank.md) (L4063), [Game.bankProfitTaxRate](map/Game.md) (L4686)  
    _THE BANK PAYS ITS PROFIT TAX, on the month that has just finished._
@@ -99,7 +99,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 67. **L13458** `priceTheDebtMarket();` → [Game.priceTheDebtMarket](map/Game.md) (L14631)
 68. **L13462** `if (settleProbeForTest != null) settleProbeForTest.accept(false);`  
    _The paper sold between the presses settles to its holders: the households first, before the month's coupon (0.7.1)._
-69. **L13463** `householdsTakeTheirShare();` → [Game.householdsTakeTheirShare](map/Game.md) (L18099)
+69. **L13463** `householdsTakeTheirShare();` → [Game.householdsTakeTheirShare](map/Game.md) (L18100)
 70. **L13464** `if (settleProbeForTest != null) settleProbeForTest.accept(true);`
 71. **L13465** `debtManager.processAllDebts(this);` → [DebtManager.processAllDebts](map/DebtManager.md) (L1552)
 72. **L13469** `strikeGovernmentBooks();` → [Game.strikeGovernmentBooks](map/Game.md) (L14669)  
@@ -193,7 +193,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 129. **L13844** `if (hotMoved > 0)      bank.receiveHotMoney(hotMoved);` → [Bank.receiveHotMoney](map/Bank.md) (L1684)
 130. **L13845** `else if (hotMoved < 0) bank.returnHotMoney(-hotMoved);` → [Bank.returnHotMoney](map/Bank.md) (L1698)
 131. **L13846** `bank.setForeignDeposits(hotMoney.getStock());` → [Bank.setForeignDeposits](map/Bank.md) (L1672), [CapitalFlows.getStock](map/CapitalFlows.md) (L634)
-132. **L13848** `worldPaperLeavesWithTheMoney(hotBefore);` → [Game.worldPaperLeavesWithTheMoney](map/Game.md) (L18072)  
+132. **L13848** `worldPaperLeavesWithTheMoney(hotBefore);` → [Game.worldPaperLeavesWithTheMoney](map/Game.md) (L18073)  
    _...and the city's paper the world holds leaves with it (CD2, slice 5): sold to the bank's desk, inside the window._
 133. **L13850** `lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);` → [MoneyAudit.strike](map/MoneyAudit.md) (L519)
 134. **L13853** `ownersWipedAbroadThisMonth = 0;`  
@@ -234,12 +234,12 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 156. **L14010** `rateHistory[month % 12] = foreign.getRate();` → [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1241)  
    _A year of the rate, so next year can tell a drift from a run._
 157. **L14011** `if (rateHistoryFilled < 12) rateHistoryFilled++;`
-158. **L14013** `takeTreasuryMonth();` → [Game.takeTreasuryMonth](map/Game.md) (L18903)
-159. **L14015** `dataSave.setCash(cash);` → [DataSave.setCash](map/DataSave.md) (L959)
+158. **L14013** `takeTreasuryMonth();` → [Game.takeTreasuryMonth](map/Game.md) (L18904)
+159. **L14015** `dataSave.setCash(cash);` → [DataSave.setCash](map/DataSave.md) (L963)
 160. **L14049** `postAuditDrift = 0;`  
    _================================================================= NOTHING AFTER THE AUDIT MAY MOVE A POOL._
 161. **L14050** `if (lastMoneyAudit != null && lastMoneyAudit.poolsAtClose != null) {` → [MoneyAudit.pools](map/MoneyAudit.md) (L344)
-162. **L14069** `printEndOfTurn();` → [Game.printEndOfTurn](map/Game.md) (L19157)
+162. **L14069** `printEndOfTurn();` → [Game.printEndOfTurn](map/Game.md) (L19158)
 163. **L14071** `deferBorrowingCosts();` → [Game.deferBorrowingCosts](map/Game.md) (L3694)  
    _What each business's borrowing cost it up front this month, deferred to be expensed (0.7.102, A16)._
 164. **L14073** `tallyThePartners();` → [Game.tallyThePartners](map/Game.md) (L1891)  
@@ -253,7 +253,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _THE AUTOSAVE HOLDS A WHOLE MONTH (0.7.52)._
 169. **L14100** `SaveWriter.Job autosaved = null;`
 170. **L14101** `if (monthsSinceAutosave >= AUTOSAVE_MONTHS) {` → [Game.autosaveJob](map/Game.md) (L16721)
-171. **L14110** `recordForReplay(autosaved);` → [Game.recordForReplay](map/Game.md) (L17452)  
+171. **L14110** `recordForReplay(autosaved);` → [Game.recordForReplay](map/Game.md) (L17453)  
    _A recorded city keeps this whole month, beside the autosave (TR1; THE RECORDING), from the autosave's fill when it made one (TR2)._
 172. **L14112** `getMarkets().closeMonth();` → [Game.getMarkets](map/Game.md) (L3049)  
    _The month's draws were shown with its fills; a draw from here on is the next month's (FW5, 2026-10-25)._
@@ -550,7 +550,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _The two inputs to the rent price, which is a market now._
 6. **L187** `economyManager.setHousingSeekers(game.getFamilies().studioSeekers(),` → [EconomyManager.setHousingSeekers](map/EconomyManager.md) (L508), [Game.getFamilies](map/Game.md) (L14997)  
    _...and the same count split into the two segments the rent market now prices separately._
-7. **L191** `economyManager.setMarginalHousingCost(game.marginalHousingCost());` → [EconomyManager.setMarginalHousingCost](map/EconomyManager.md) (L505), [Game.marginalHousingCost](map/Game.md) (L19959)
+7. **L191** `economyManager.setMarginalHousingCost(game.marginalHousingCost());` → [EconomyManager.setMarginalHousingCost](map/EconomyManager.md) (L505), [Game.marginalHousingCost](map/Game.md) (L19960)
 8. **L193** `economyManager.setSeniors(game.getCohorts().get(AgeBand.SENIOR)` → [EconomyManager.setSeniors](map/EconomyManager.md) (L2087), [Game.getCohorts](map/Game.md) (L14996)
 9. **L199** `economyManager.updateJobFillRate(populationManager.getJobFillRate());` → [EconomyManager.updateJobFillRate](map/EconomyManager.md) (L108), [PopulationManager.getJobFillRate](map/PopulationManager.md) (L1133)  
    _The fill first: every sector's payroll is discounted by it, so it has to be current before the wages are set._

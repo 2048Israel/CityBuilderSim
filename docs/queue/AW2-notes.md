@@ -1,4 +1,4 @@
-# AW2 â€” Allocated land kept through a normal load
+# AW2 — Allocated land kept through a normal load
 
 ## Finding and scope
 
@@ -34,24 +34,27 @@ its building allocations.
 
 ## Implementation and calls
 
-â˜… Save the live counter as boxed DataSave.landAllocatedSqFt, writing it
-in Game's snapshot and restoring it on the ordinary load path before the
-works, runs, prepared ground and zoning. The counter is the source of truth
-for continuing this city; silently changing it during loading is not a
-repair to how the fixture was founded.
+★ Save the live counter as boxed DataSave.landAllocatedSqFt and the current
+footprint as landFootprintSqFt. Restore the counter plus the change in
+footprint since saving, floored at zero, before works, runs, prepared ground
+and zoning. This preserves the city's original unallocated gap while
+absorbing later catalogue plot-size changes or missing templates. The
+footprint companion follows the stranger's review: SL1 changed port plots
+without changing the format, and freezing only the counter would miss that
+extra ground. A saved counter without the companion keeps that counter.
 
-â˜… A missing key retains the previous footprint reconstruction; explicit
+★ A missing allocation key retains the previous footprint reconstruction; explicit
 zero remains zero. No format bump: the new field has the existing load
 behaviour as its absent-key default. No conversion or guessed subtraction
 is added. Existing saves without the key cannot recover the old live
 counter from their JSON alone. Slot 10 was inspected read-only: build
 0.9.91, format 51, m2391, owned 633,883,455.2669102 sq ft, no allocation
-key. This batch does not rewrite that save or any real slot 1â€“10.
+key. This batch does not rewrite that save or any real slot 1–10.
 Its SHA-256 is
 `39df46892aeabfd60cccfaf9bd852f5e74bd4dacbb7cbe62fcd91f4273b80c24`
 matching RT3's recorded prefix.
 
-â˜… Keep the regression in SaveFileCheck, using GameFiles.scratch(). It
+★ Keep the regression in SaveFileCheck, using GameFiles.scratch(). It
 injects the same three sets of sites, proves the footprint exceeds owned
 land while the live counter admits a house, and compares allocation, free
 land, footprint, price, next quote and actual successful construction on
@@ -78,11 +81,48 @@ changelog and gate records are left to the publisher.
   earlier fixture and is superseded by the final runs below.
 - The settled fixture passes all its assertions in the isolated runner:
   `target/checks/aw2-regression-settled.log`, exit 0.
+- The final, settled fixture was also run against exact main's loader:
+  seven allocation/construction/zero assertions fail on main (exit 1),
+  all pass with AW2 (exit 0). The quote comparison passes on both, removing
+  the unrelated founding-month effect from the regression evidence.
+  Logs: `target/checks/aw2-final-regression-{main,fixed}.log` and
+  `aw2-final-regression-result.txt`.
 - An overlapping local fast compile removed classes while the first named
   check was finishing, causing ReloadCheck class-loading errors and that
   run's maps/Stale launch failures. This was a local check invocation error,
   not a model red; subsequent batch checks run sequentially. Its log was
   `target/checks/aw2-run.txt` before the final picked run replaced it.
+
+The initial full pick was stopped after the stranger's review requested
+these additions; it is not a completed verdict. Only its own verified
+process tree was ended (the JVM's user.dir was this AW2 worktree).
+
+### Stranger's review additions
+
+★ Catalogue cases save houses at half and twice the current plot size,
+then load with today's catalogue. Both require the correct allocation
+delta and the same unallocated gap; both pass. Explicit zero and absent-key
+cases still pass. No format bump is needed; the review independently
+confirmed the saved-field/load placement and the absent-key default.
+
+★ The continuation uses AutoBuildCheck's no-ground services town, with a
+small unallocated house site. It closes shops to cause private demand,
+closes medical schools to free workers, settles one month with private
+planners held, then releases them and funds the retailer. The fixture
+asserts staffing availability. At m39 it actually orders 26 Convenience
+Stores privately, places automatic service orders and buys ground. The
+ordinary-loaded twin plays the same month: all template counts, private
+planner decisions, automatic order details, and owned/allocated/free ground
+match. Initial attempts exposed an unsettled closure month, unavailable
+workers, and a test using committedFor() (a resource-site counter) for
+ordinary buildings; the final finding uses actual standing/on-site stack
+counts. Final isolated log: `target/checks/aw2-regression-final.log`, exit 0.
+
+★ LongPlaytest now counts audited months when allocated ground differs
+from the footprint by more than 1e-6 sq ft, with its largest gap and month.
+This measures the production-path audit without changing any model rule.
+The review's stale prose in Game, HouseholdMemoryCheck and ReadPathCheck
+was corrected; their fixture actions and assertions' premises are unchanged.
 
 Final checks and retained dry run will be recorded here before readiness.
 

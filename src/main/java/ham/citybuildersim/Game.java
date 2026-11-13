@@ -17246,6 +17246,7 @@ public class Game {
         // reset to their true/true defaults on every load.
         dataSave.setLandOwned(landManager.getOwnedSqFt());
         dataSave.setLandAllocatedSqFt(landManager.getAllocatedSqFt());
+        dataSave.setLandFootprintSqFt(buildingManager.getTotalLandFootprint());
         dataSave.setLandBlocksPurchased(landManager.getBlocksPurchased());
         dataSave.setLandPricePerSqFt(landManager.getPricePerSqFt());
         // ...the works' ground and the foothill prepared (ET2).
@@ -21265,6 +21266,8 @@ public class Game {
              * the footprint as the fallback for a save without that key. Raw
              * fixture stacks (KeptCheck's 760M sq ft behind WG2/RT3) can stand
              * outside the ledger; replacing it on load stopped construction.
+             * The saved footprint lets later catalogue plot changes adjust the
+             * counter by their delta without losing that city's original gap.
              * A save from before land existed has
              * landOwned 0; that is not a city with no land, it is a save that
              * never knew about land, so it keeps the opening allocation - and
@@ -21290,9 +21293,13 @@ public class Game {
             restoreOilPools(loaded);
             // ...and E by type as saved; a save without it reads as the walk (0.7.110, LandManager's THE GROUND BY TYPE).
             landManager.restoreDepletionByType(loaded.getDepletionByType());
-            landManager.setAllocatedSqFt(loaded.getLandAllocatedSqFt() != null ? loaded.getLandAllocatedSqFt() : built);
+            double allocated = loaded.getLandAllocatedSqFt() != null ? loaded.getLandAllocatedSqFt() : built;
+            if (loaded.getLandAllocatedSqFt() != null && loaded.getLandFootprintSqFt() != null) {
+                allocated = Math.max(0, allocated + (built - loaded.getLandFootprintSqFt()));
+            }
+            landManager.setAllocatedSqFt(allocated);
             // ...and the part of it that works stand on, and the foothill prepared (ET2): a save from before them has
-            // neither, and reads the standing works' ground (as the allocation is read from the buildings) and the
+            // neither, and reads the standing works' ground and the
             // foothill the buildings stand on now.
             landManager.restoreWorks(loaded.getLandWorksSqFt() != null ? loaded.getLandWorksSqFt()
                     : buildingManager.getWorksLandFootprint(Game::standsAnywhere));
