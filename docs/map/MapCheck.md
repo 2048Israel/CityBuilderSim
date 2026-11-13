@@ -1,4 +1,4 @@
-# MapCheck.java - 15,616 lines · 412 methods · 152 constants · harnesses
+# MapCheck.java - 15,632 lines · 412 methods · 152 constants · harnesses
 
 `ham/citybuildersim/MapCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -112,9 +112,9 @@
 | 14539 | THE RELIEF ON THE MAP (ET1 slice D; docs/studies/spec-earth2-terrain.md |
 | 14838 | 19. THE BORDERS ON THE NEAR VIEW (batch WN2, slice A; docs/studies/spec-nations.md 6.1) |
 | 14926 | 20. THE ONE YARD STAYS WITH ITS DISTRICT (batch MF2, 2026-11-08) |
-| 15046 | 21 AND 22. TWO MOVED-BOX FINDINGS, CAUSED ON A BUILT DISTRICT (batch MF2, 2026-11-08) |
-| 15192 | 23. A RAIL DEPOT LEAVING THE DISTRICT THAT STANDS THE YARD (batch MF2, 2026-11-08) |
-| 15246 | LM1. THE DEPOSITS ZOOMED OUT (batch LM1, 2026-11-11) |
+| 15058 | 21 AND 22. TWO MOVED-BOX FINDINGS, CAUSED ON A BUILT DISTRICT (batch MF2, 2026-11-08) |
+| 15208 | 23. A RAIL DEPOT LEAVING THE DISTRICT THAT STANDS THE YARD (batch MF2, 2026-11-08) |
+| 15262 | LM1. THE DEPOSITS ZOOMED OUT (batch LM1, 2026-11-11) |
 
 ## Constants
 
@@ -254,24 +254,24 @@
 | 13860 | `MapCheck.DIGEST_TIMED` | `5` | How many times the guard's digest is worked out afresh for the figure section 18 prints: 5, for a mean. |
 | 14323 | `MapCheck.JOB_LAZY` | `0, JOB_EAGER = 1, JOB_PLANNED = 2` | How a plan job was handed out (batch UP9, slice A): lazy (no input gathered, a link to take), eager with a link to take, or to be planned (no link to take: the first that broke, a district whose own stamp moved). |
 | 14843 | `MapCheck.NEAR_BOX_KM` | `8` | The side of the box of the city's ground the borders are crossed against, km: 8 - a few kilometres, and wide enough for the fixture's Belgium-Netherlands line, which Natural Earth runs 2.7 km from Baarle-Nassau (a box... |
-| 14934 | `MapCheck.YARD_SITE_AT` | `{ 250, 144 }` | Where the founding site stands in 20's first district, plots from its north-west corner: 6 plots in from its east edge, so the nearest crossing it owns is across it. |
-| 14937 | `MapCheck.YARD_STRIP` | `32` | The strip along the first district's east edge the city does not own, in plots: wider than a crossing's reach from the site, so the hub is not in the first district. |
-| 14940 | `MapCheck.YARD_NEXT` | `{ 0, 80, 96, 208 }` | The block the city owns in the second district, { x0, y0, x1, y1 } in plots from its north-west corner: room for the yard and some works, none for a second depot once they stand. |
-| 14943 | `MapCheck.YARD_MONTHS` | `6, YARD_FLATS = 20, YARD_WORKS = 3` | The months the first district is given flats and the second works before the second is filled: the flats and the works, a month each. |
-| 15057 | `MapCheck.BUILT_SIDE` | `160` | The owned ground of 21 and 22's district, plots a side from its north-west corner; the founding site is in the middle of it. |
-| 15060 | `MapCheck.BUILT_BOUGHT` | `{ 100, 100, 28, 4 }` | The ground 21 buys inside the district's frame, { x, y, across, down } in plots from its north-west corner: 112 plots, WN3's purchase at m2078, as a notch in the owned ground. |
-| 15063 | `MapCheck.BUILT_SHARE` | `0.9` | How much of its room the district is filled to before the purchase or the departure: nine tenths of the cells its plan may fill (CityMap.PLAN_FILL of its owned plots). |
-| 15066 | `MapCheck.BUILT_HOUSES` | `600, BUILT_STORES = 12, BUILT_RODS = 2, BUILT_WORKS = 8` | What the district is given a month: houses, Convenience Stores, and (21) Rod Mills, Meat Works and Bottling Plants. |
-| 15069 | `MapCheck.BUILT_DEPARTURES` | `3` | The Convenience Stores 22 sends away, one at a time, a month of arrivals between. |
-| 15207 | `MapCheck.DEPOT_LEAVES_MONTHS` | `3` | The months of works 23 gives the yard's district before its second Rail Depot and after it, YARD_WORKS a month. |
-| 15259 | `MapCheck.ICON_PASS_MS` | `0.1` | The most the pass of finding and thinning the deposits of one frame may take, in ms (LM1): about 10 times the median measured when it was written, 0.011 ms on the PC, the cells' lists kept (CityLand.CELLS); the pass o... |
-| 15262 | `MapCheck.CUT_OFF_STEP` | `1.01` | The step the fixture walks the scale down by from L1's, to the first FAR: a hundredth. |
-| 15265 | `MapCheck.LM_SCAN_HALF_VIEWS` | `6` | How far from the city the fixture looks for a box of two kinds, in half-views each way: 6. |
-| 15268 | `MapCheck.LM_KINDS_MIN` | `2` | The kinds of resource the fixture's box holds at least: 2 (where the world has them). |
-| 15271 | `MapCheck.LM_WIDE_CELLS` | `4` | The wide frame the thinning is held on, in world cells across: 4 - the top of a city's scouting zoom (DepositMarks.ICON_CELLS_MOST's note: one to four). |
-| 15274 | `MapCheck.LM_PASS_RUNS` | `15` | Passes timed for a median: 15. |
-| 15277 | `MapCheck.LM_PAN_VIEWS` | `0.25` | The pan the second frame is moved by, in views: a quarter - inside the box a search covers (a half view each side of the view when DepositMarks.SEARCH_TIMES is 2). |
-| 15280 | `MapCheck.LM_DARK_INK` | `0x0b1118` | The mark's dark ink, as MapView writes it on a light colour: 0x0b1118. |
+| 14946 | `MapCheck.YARD_SITE_AT` | `{ 250, 144 }` | Where the founding site stands in 20's first district, plots from its north-west corner: 6 plots in from its east edge, so the nearest crossing it owns is across it. |
+| 14949 | `MapCheck.YARD_STRIP` | `32` | The strip along the first district's east edge the city does not own, in plots: wider than a crossing's reach from the site, so the hub is not in the first district. |
+| 14952 | `MapCheck.YARD_NEXT` | `{ 0, 80, 96, 208 }` | The block the city owns in the second district, { x0, y0, x1, y1 } in plots from its north-west corner: room for the yard and some works, none for a second depot once they stand. |
+| 14955 | `MapCheck.YARD_MONTHS` | `6, YARD_FLATS = 20, YARD_WORKS = 3` | The months the first district is given flats and the second works before the second is filled: the flats and the works, a month each. |
+| 15073 | `MapCheck.BUILT_SIDE` | `160` | The owned ground of 21 and 22's district, plots a side from its north-west corner; the founding site is in the middle of it. |
+| 15076 | `MapCheck.BUILT_BOUGHT` | `{ 100, 100, 28, 4 }` | The ground 21 buys inside the district's frame, { x, y, across, down } in plots from its north-west corner: 112 plots, WN3's purchase at m2078, as a notch in the owned ground. |
+| 15079 | `MapCheck.BUILT_SHARE` | `0.9` | How much of its room the district is filled to before the purchase or the departure: nine tenths of the cells its plan may fill (CityMap.PLAN_FILL of its owned plots). |
+| 15082 | `MapCheck.BUILT_HOUSES` | `600, BUILT_STORES = 12, BUILT_RODS = 2, BUILT_WORKS = 8` | What the district is given a month: houses, Convenience Stores, and (21) Rod Mills, Meat Works and Bottling Plants. |
+| 15085 | `MapCheck.BUILT_DEPARTURES` | `3` | The Convenience Stores 22 sends away, one at a time, a month of arrivals between. |
+| 15223 | `MapCheck.DEPOT_LEAVES_MONTHS` | `3` | The months of works 23 gives the yard's district before its second Rail Depot and after it, YARD_WORKS a month. |
+| 15275 | `MapCheck.ICON_PASS_MS` | `0.1` | The most the pass of finding and thinning the deposits of one frame may take, in ms (LM1): about 10 times the median measured when it was written, 0.011 ms on the PC, the cells' lists kept (CityLand.CELLS); the pass o... |
+| 15278 | `MapCheck.CUT_OFF_STEP` | `1.01` | The step the fixture walks the scale down by from L1's, to the first FAR: a hundredth. |
+| 15281 | `MapCheck.LM_SCAN_HALF_VIEWS` | `6` | How far from the city the fixture looks for a box of two kinds, in half-views each way: 6. |
+| 15284 | `MapCheck.LM_KINDS_MIN` | `2` | The kinds of resource the fixture's box holds at least: 2 (where the world has them). |
+| 15287 | `MapCheck.LM_WIDE_CELLS` | `4` | The wide frame the thinning is held on, in world cells across: 4 - the top of a city's scouting zoom (DepositMarks.ICON_CELLS_MOST's note: one to four). |
+| 15290 | `MapCheck.LM_PASS_RUNS` | `15` | Passes timed for a median: 15. |
+| 15293 | `MapCheck.LM_PAN_VIEWS` | `0.25` | The pan the second frame is moved by, in views: a quarter - inside the box a search covers (a half view each side of the view when DepositMarks.SEARCH_TIMES is 2). |
+| 15296 | `MapCheck.LM_DARK_INK` | `0x0b1118` | The mark's dark ink, as MapView writes it on a light colour: 0x0b1118. |
 
 ## Fields (state)
 
@@ -418,29 +418,29 @@
 | 13256 | `final int[] l0PartMoved` |  |
 | 13257 | `int l0Held, l0Moved, l0KeyOnly, l0Checked, l0Wrong` |  |
 | 13467 | `private long[] l0Tx, l0Ty, l0Key` | The ready tiles of the L0 screen with their column, row and key (l0Pass()): the arrays are kept between months, the screen being one. |
-| 14947 | `final List<BuildingsTemplate> catalog` |  |
-| 14948 | `final BuildingVisual.Type[] types` |  |
-| 14949 | `final CityMap map` |  |
-| 14950 | `final long[] model` |  |
-| 14951 | `final int depot` |  |
-| 14953 | `int month` | The month the next one is run in. |
-| 14954 | `boolean reconciled` |  |
-| 15073 | `final List<BuildingsTemplate> catalog` |  |
-| 15074 | `final BuildingVisual.Type[] types` |  |
-| 15075 | `final int house` |  |
-| 15077 | `final CityLand land` |  |
-| 15078 | `final CityMap map` |  |
-| 15079 | `final long[] model` |  |
-| 15080 | `final CityMap.District d` |  |
-| 15082 | `final long x0, y0` | The frame's first plot, and the month the next one is run in. |
-| 15083 | `int month` |  |
-| 15084 | `boolean reconciled` |  |
+| 14959 | `final List<BuildingsTemplate> catalog` |  |
+| 14960 | `final BuildingVisual.Type[] types` |  |
+| 14961 | `final CityMap map` |  |
+| 14962 | `final long[] model` |  |
+| 14963 | `final int depot` |  |
+| 14965 | `int month` | The month the next one is run in. |
+| 14966 | `boolean reconciled` |  |
+| 15089 | `final List<BuildingsTemplate> catalog` |  |
+| 15090 | `final BuildingVisual.Type[] types` |  |
+| 15091 | `final int house` |  |
+| 15093 | `final CityLand land` |  |
+| 15094 | `final CityMap map` |  |
+| 15095 | `final long[] model` |  |
+| 15096 | `final CityMap.District d` |  |
+| 15098 | `final long x0, y0` | The frame's first plot, and the month the next one is run in. |
+| 15099 | `int month` |  |
+| 15100 | `boolean reconciled` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 434 | 15183 | **type** `public class MapCheck` | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the draw... |
+| 434 | 15199 | **type** `public class MapCheck` | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's street plan and paints the same pixels from the same inputs, the draw... |
 | 439 | 4 | `static void check(String label, boolean ok)` |  |
 | 483 | 7 | `static double groundKm2(BuildingVisual.Type[] types)` | The dry ground the copies' x 1 stands on (0.7.71): his, scaled by his buildings' land on this catalogue over theirs then, so the copies keep his density (JERUS_FILL) whatever the catalogue: with his childcare restated... |
 | 521 | 61 | `public static void main(String[] args) throws Exception` |  |
@@ -1045,51 +1045,51 @@
 | 14852 | 11 | `static boolean sampledMeets(WorldData.Border b, EarthProj plane, double[] box)` | Whether a line has a segment meeting a box of the plane's plots, found the slow way: each segment sampled at a thousand points. |
 | 14864 | 61 | `static void nationsNearView() throws Exception` |  |
 
-### 20. THE ONE YARD STAYS WITH ITS DISTRICT (batch MF2, 2026-11-08) (lines 14926-15045)
+### 20. THE ONE YARD STAYS WITH ITS DISTRICT (batch MF2, 2026-11-08) (lines 14926-15057)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14946 | 30 | **type** `static final class YardCity` | 20's city: two districts, the founding site's and the one across its east edge, and the model's counts. |
-| 14956 | 14 | `YardCity()` _(in MapCheck.YardCity)_ |  |
-| 14972 | 3 | `void run()` _(in MapCheck.YardCity)_ | One month, the map reconciled to the model's counts as they stand. |
-| 14978 | 6 | `static CityMap.District yardDistrict(CityMap m, long[] yard)` | The district whose frame holds more of the yard than any other (the plan its ground is given to, CityMap.workIn()), or null. |
-| 14985 | 60 | `static void yardStaysWithItsDistrict()` |  |
+| 14958 | 30 | **type** `static final class YardCity` | 20's city: two districts, the founding site's and the one across its east edge, and the model's counts. |
+| 14968 | 14 | `YardCity()` _(in MapCheck.YardCity)_ |  |
+| 14984 | 3 | `void run()` _(in MapCheck.YardCity)_ | One month, the map reconciled to the model's counts as they stand. |
+| 14990 | 6 | `static CityMap.District yardDistrict(CityMap m, long[] yard)` | The district whose frame holds more of the yard than any other (the plan its ground is given to, CityMap.workIn()), or null. |
+| 14997 | 60 | `static void yardStaysWithItsDistrict()` |  |
 
-### 21 AND 22. TWO MOVED-BOX FINDINGS, CAUSED ON A BUILT DISTRICT (batch MF2, 2026-11-08) (lines 15046-15191)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 15072 | 63 | **type** `static final class BuiltDistrict` | 21 and 22's city: one district of houses, stores and large works on the default world's dry place, no Game. |
-| 15086 | 18 | `BuiltDistrict(boolean notch)` _(in MapCheck.BuiltDistrict)_ |  |
-| 15106 | 10 | `void arrive(boolean works)` _(in MapCheck.BuiltDistrict)_ | One month of arrivals: houses and stores, and with `works` the large works, the map reconciled to them. |
-| 15118 | 3 | `void run()` _(in MapCheck.BuiltDistrict)_ | One month with the model's counts as they stand. |
-| 15123 | 4 | `void fill(boolean works)` _(in MapCheck.BuiltDistrict)_ | Arrivals month by month until BUILT_SHARE of the room is used. |
-| 15129 | 5 | `int worksIn(java.util.Set<PlanBox> boxes)` _(in MapCheck.BuiltDistrict)_ | How many of a plan's boxes are large works of 21's three kinds. |
-| 15136 | 30 | `static void boughtInsideBuiltDistrict()` |  |
-| 15167 | 24 | `static void aStoreLeaves()` |  |
-
-### 23. A RAIL DEPOT LEAVING THE DISTRICT THAT STANDS THE YARD (batch MF2, 2026-11-08) (lines 15192-15245)
+### 21 AND 22. TWO MOVED-BOX FINDINGS, CAUSED ON A BUILT DISTRICT (batch MF2, 2026-11-08) (lines 15058-15207)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15209 | 36 | `static void aDepotLeavesTheYardsDistrict()` |  |
+| 15088 | 63 | **type** `static final class BuiltDistrict` | 21 and 22's city: one district of houses, stores and large works on the default world's dry place, no Game. |
+| 15102 | 18 | `BuiltDistrict(boolean notch)` _(in MapCheck.BuiltDistrict)_ |  |
+| 15122 | 10 | `void arrive(boolean works)` _(in MapCheck.BuiltDistrict)_ | One month of arrivals: houses and stores, and with `works` the large works, the map reconciled to them. |
+| 15134 | 3 | `void run()` _(in MapCheck.BuiltDistrict)_ | One month with the model's counts as they stand. |
+| 15139 | 4 | `void fill(boolean works)` _(in MapCheck.BuiltDistrict)_ | Arrivals month by month until BUILT_SHARE of the room is used. |
+| 15145 | 5 | `int worksIn(java.util.Set<PlanBox> boxes)` _(in MapCheck.BuiltDistrict)_ | How many of a plan's boxes are large works of 21's three kinds. |
+| 15152 | 30 | `static void boughtInsideBuiltDistrict()` |  |
+| 15183 | 24 | `static void aStoreLeaves()` |  |
 
-### LM1. THE DEPOSITS ZOOMED OUT (batch LM1, 2026-11-11) (lines 15246-15616)
+### 23. A RAIL DEPOT LEAVING THE DISTRICT THAT STANDS THE YARD (batch MF2, 2026-11-08) (lines 15208-15261)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15283 | 10 | `static MapFrame atCutOff(double x, double y)` | A frame of MapTiles.DESIGN_W x DESIGN_H looking at (x, y) at the first scale, walked down from L1_FROM by CUT_OFF_STEP, at which level() is FAR. |
-| 15295 | 3 | `static double[] viewBox(MapFrame f)` | What a frame shows of the plane, as {x0, y0, x1, y1} in plots. |
-| 15300 | 5 | `static List<Deposit> depositsIn(CityLand land, double[] box)` | Every deposit of every resource in fields in a box of plots, LandMap.fieldsIn() resource by resource - the model's own answer, for DepositMarks to be held against. |
-| 15307 | 8 | `static String countsOf(List<Deposit> ds)` | How many of each resource a list holds, in Resource's order: "Iron ore 27, Oil 1". |
-| 15317 | 3 | `static long kindsOf(List<Deposit> ds)` | How many kinds of resource a list holds. |
-| 15322 | 8 | `static double wcagLuminance(int rgb)` | The relative luminance of 0xRRGGBB (WCAG 2): the sRGB channels linear, weighted. |
-| 15332 | 4 | `static double wcagContrast(int a, int b)` | The contrast of two colours (WCAG 2): the lighter's luminance + 0.05 over the darker's. |
-| 15338 | 13 | `static boolean allDrawnOrCovered(List<Deposit> found, List<Deposit> drawn, MapFrame f)` | Whether every deposit of `found` is in `drawn`, or lies in the thinning's square (DepositMarks.squareOf()) of one drawn with at least its sites and no further than ICON_PX pixels from it on each axis. |
-| 15353 | 5 | `static boolean oneASquare(List<Deposit> drawn, MapFrame f)` | Whether no two of the deposits drawn share a thinning square. |
-| 15360 | 3 | `static Deposit field(long x, long y, int sites)` | A deposit of a made-up field at a plot, for the thinning's rules. |
-| 15364 | 214 | `static void depositsZoomedOut(Game g)` |  |
-| 15580 | 36 | **type** `static final class IconCanvas` | The icons drawn onto a Canvas as ui/MapView.depositIcons() draws them (the disc, its edge, the mark), for the time of it; JavaFX is touched only here, so a JVM without it never loads this. |
-| 15582 | 15 | `static double[] times(List<Deposit> shown, MapFrame f, int runs)` _(in MapCheck.IconCanvas)_ | The median, in ms, of `runs` draws of the icons onto a fresh Canvas: {recording the draw, the draw and a snapshot of the canvas}. |
-| 15598 | 17 | `static void draw(javafx.scene.canvas.GraphicsContext gc, javafx.scene.text.Font font, List<Deposit> shown, MapFrame f)` _(in MapCheck.IconCanvas)_ |  |
+| 15225 | 36 | `static void aDepotLeavesTheYardsDistrict()` |  |
+
+### LM1. THE DEPOSITS ZOOMED OUT (batch LM1, 2026-11-11) (lines 15262-15632)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 15299 | 10 | `static MapFrame atCutOff(double x, double y)` | A frame of MapTiles.DESIGN_W x DESIGN_H looking at (x, y) at the first scale, walked down from L1_FROM by CUT_OFF_STEP, at which level() is FAR. |
+| 15311 | 3 | `static double[] viewBox(MapFrame f)` | What a frame shows of the plane, as {x0, y0, x1, y1} in plots. |
+| 15316 | 5 | `static List<Deposit> depositsIn(CityLand land, double[] box)` | Every deposit of every resource in fields in a box of plots, LandMap.fieldsIn() resource by resource - the model's own answer, for DepositMarks to be held against. |
+| 15323 | 8 | `static String countsOf(List<Deposit> ds)` | How many of each resource a list holds, in Resource's order: "Iron ore 27, Oil 1". |
+| 15333 | 3 | `static long kindsOf(List<Deposit> ds)` | How many kinds of resource a list holds. |
+| 15338 | 8 | `static double wcagLuminance(int rgb)` | The relative luminance of 0xRRGGBB (WCAG 2): the sRGB channels linear, weighted. |
+| 15348 | 4 | `static double wcagContrast(int a, int b)` | The contrast of two colours (WCAG 2): the lighter's luminance + 0.05 over the darker's. |
+| 15354 | 13 | `static boolean allDrawnOrCovered(List<Deposit> found, List<Deposit> drawn, MapFrame f)` | Whether every deposit of `found` is in `drawn`, or lies in the thinning's square (DepositMarks.squareOf()) of one drawn with at least its sites and no further than ICON_PX pixels from it on each axis. |
+| 15369 | 5 | `static boolean oneASquare(List<Deposit> drawn, MapFrame f)` | Whether no two of the deposits drawn share a thinning square. |
+| 15376 | 3 | `static Deposit field(long x, long y, int sites)` | A deposit of a made-up field at a plot, for the thinning's rules. |
+| 15380 | 214 | `static void depositsZoomedOut(Game g)` |  |
+| 15596 | 36 | **type** `static final class IconCanvas` | The icons drawn onto a Canvas as ui/MapView.depositIcons() draws them (the disc, its edge, the mark), for the time of it; JavaFX is touched only here, so a JVM without it never loads this. |
+| 15598 | 15 | `static double[] times(List<Deposit> shown, MapFrame f, int runs)` _(in MapCheck.IconCanvas)_ | The median, in ms, of `runs` draws of the icons onto a fresh Canvas: {recording the draw, the draw and a snapshot of the canvas}. |
+| 15614 | 17 | `static void draw(javafx.scene.canvas.GraphicsContext gc, javafx.scene.text.Font font, List<Deposit> shown, MapFrame f)` _(in MapCheck.IconCanvas)_ |  |
 

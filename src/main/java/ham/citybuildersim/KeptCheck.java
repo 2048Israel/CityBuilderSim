@@ -7788,7 +7788,7 @@ public class KeptCheck {
             int[] c = tipsAcrossMonth(g, bench, w.page(), observeEmptyCell);
             int[] sum = perScreen.computeIfAbsent(w.screen(), k -> new int[4]);
             for (int i = 0; i < 4; i++) sum[i] += c[i];
-            System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3]);
+            System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3] + c[4]);
             check(w.name() + ": none is lost from a node the page keeps", c[3] == 0);
             if (observeEmptyCell) Observation.reached("kp7Tips Couple, no children, Senior professional tooltip availability",
                     "Household money, all of them: the listed household cell retains its tooltip", c[4] == 0, "");

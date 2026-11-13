@@ -1,4 +1,4 @@
-# HealthCheck.java - 1,758 lines · 6 methods · 0 constants · harnesses
+# HealthCheck.java - 1,761 lines · 6 methods · 0 constants · harnesses
 
 `ham/citybuildersim/HealthCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -36,7 +36,7 @@
 > the households' statement, and fees 0 with a premium serves the same people
 > as fees 1x without one; (16) both dials survive a save and a reform.
 
-**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (94), [Health](Health.md) (47), [AgeBand](AgeBand.md) (41), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (22), [PopulationCohorts](PopulationCohorts.md) (16), [Migration](Migration.md) (11), [PriceLevel](PriceLevel.md) (11), [Observation](Observation.md) (10), [BuildingManager](BuildingManager.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [Good](Good.md) (6), [JobType](JobType.md) (5), [Household](Household.md) (5), [TimeSkipReport](TimeSkipReport.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [EconomyManager](EconomyManager.md) (3), [Retail](Retail.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [LandManager](LandManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [Sectors](Sectors.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1)... and 2 more
+**Uses:** [Healthcare](Healthcare.md) (97), [CareType](CareType.md) (94), [Health](Health.md) (47), [AgeBand](AgeBand.md) (41), [TaxPolicy](TaxPolicy.md) (24), [Game](Game.md) (22), [PopulationCohorts](PopulationCohorts.md) (16), [Migration](Migration.md) (11), [PriceLevel](PriceLevel.md) (11), [BuildingManager](BuildingManager.md) (8), [Observation](Observation.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (7), [Good](Good.md) (6), [JobType](JobType.md) (5), [Household](Household.md) (5), [TimeSkipReport](TimeSkipReport.md) (4), [HouseholdBalance](HouseholdBalance.md) (4), [EconomyManager](EconomyManager.md) (3), [Retail](Retail.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [FamilyModel](FamilyModel.md) (2), [PayTier](PayTier.md) (2), [NationalAccounts](NationalAccounts.md) (2), [TempDirs](TempDirs.md) (1), [PopulationManager](PopulationManager.md) (1), [LandManager](LandManager.md) (1), [FamilyStructure](FamilyStructure.md) (1), [Sectors](Sectors.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1)... and 2 more
 
 ## Sections
 
@@ -55,9 +55,9 @@
 | 960 | · 11. a skip cannot hide an epidemic |
 | 997 | · 12. the fee has a dial, and the funerals do not |
 | 1107 | · 13. who can afford the clinic |
-| 1519 | · 14. the unchanged case, at zero tolerance |
-| 1558 | · 15. the premium |
-| 1647 | · 16. both dials survive a save, and a reform |
+| 1522 | · 14. the unchanged case, at zero tolerance |
+| 1561 | · 15. the premium |
+| 1650 | · 16. both dials survive a save, and a reform |
 
 ## Fields (state)
 
@@ -69,11 +69,11 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 1718 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
+| 41 | 1721 | **type** `public class HealthCheck` | Sickness: what it moves, and - much more importantly - what it does not. |
 | 45 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 52 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 57 | 1653 | `public static void main(String[] args) throws Exception` |  |
-| 1712 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
-| 1739 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
-| 1751 | 7 | `static void cleanUp(Path root)` |  |
+| 57 | 1656 | `public static void main(String[] args) throws Exception` |  |
+| 1715 | 9 | `static void stock(Game g)` | A city with enough in it that the sectors have something to lose. |
+| 1742 | 11 | `static void trucksKeepUp(Game town)` | THE TRUCKS KEPT AHEAD OF THE PLANT, SO THE FEE IS THE ONLY DIFFERENCE BETWEEN THE TWINS (FR2, 2026-10-18). |
+| 1754 | 7 | `static void cleanUp(Path root)` |  |
 

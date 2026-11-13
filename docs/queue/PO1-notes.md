@@ -187,9 +187,11 @@ mended below. These repairs supersede the initial ready result.
    newline. ObservationCheck verifies replacement decoding, both echoed lines
    and completion. The former strict readAllLines call is removed.
 2. **Mended. Hard halves restored.**
+
    - AutoBuild's pass-per-month guard is hard. Three-service order coverage has
      its own path reading, so zero-valued per-pass audits retain a hard vacuity
      guard.
+
    - Desk's taken-face and gain-on-carrying check is hard inside the under-carrying
      premise.
    - Health's coverage and baseline-sickness consequences are hard under the
@@ -242,25 +244,72 @@ mended below. These repairs supersede the initial ready result.
 - The nightly self-test passed, including the soft-timing/hard-observation
   command assertion. Its log is `target/checks/po1-review-nightly-selftest.txt`.
 - The initial repair compile found three assertion-helper name mismatches.
-  They were corrected before the green named run. Fast, pick and the fresh
-  no-tag dry-run results are recorded here before readiness.
+  They were corrected before the green named run.
+- The repair fast check passed, followed by the full pick with exit 3. It ran
+  196 harnesses in 1,895 seconds, with 193 passing. PlanCheck and DeathRecordCheck
+  retain their existing reds. The restored hard KeptCheck section 63 retention
+  law is the third known red, independently reproduced on main below.
+  The suite printed 8 observed misses across MonetaryCheck, CentralBankCheck,
+  PriceLevelCheck, HealthCheck, MapCheck and KeptCheck. Its logs are
+  `target/checks/po1-review-pick.txt` and
+  `target/checks/po1-review-pick-saved/suite.txt`.
+- The final Kept tooltip diagnostic prints the total of hard and narrowly
+  observed tooltip losses. This reporting-only correction followed the full
+  pick. The final fast check and fresh-clone gate verify that final tree.
+- The final fast check passed with compile, regenerated maps and zero firm
+  Stale findings. Its log is `target/checks/po1-review-final-fast.txt`.
+- The fresh no-tag dry-run result is recorded before readiness.
+
+## KF63
+
+### Main control
+
+The restored hard law in KeptCheck section 63 fails on main
+`df08523f62d796b61b8b08524451d69f89ab1557` as well as on PO1. Main's KeptCheck was
+compiled against the same unchanged game/KeptBench classes. Its sole diagnostic
+source alteration stops the JVM immediately after fund(g, bench), after all
+normal preceding sections. This replays the fixture's actual state through
+section 63. It exits 1 with just this prefix failure.
+
+Both runs show B:3713's buy-by-amount-at-fair review adding 36 nodes and retaining
+282, for 88.7% reuse against the unchanged 90% floor. The fresh-page comparisons
+remain green. The diagnostic names the added labels, including Adjusted cost
+base, Average cost and Coupons. The main source, compile log and run are kept
+under `target/po1-main-k63/`, including `main.commit` and `run.txt`.
+PO1's matching output is `target/checks/po1-review-pick-saved/KeptCheck.log`.
+
+### Queued fixture repair
+
+★ Queue KF63 to cause stable holding/review coverage before measuring section
+63's monthly retention. Keep the 90% floor, same top nodes, per-choice model
+actions, and kept/fresh equality hard. The control must cover both the ordinary
+security page and its buy/sell review. A newly settled holding exposing book
+fields must receive deliberate coverage in that fixture.
+
+This is independent of KBF1's section 44 auction/shortfall case, which PO1 now
+observes. The generic old exact gate record already covers section 63's identical
+label. The ship file gives this distinct hard failure its own cause and queued
+fix. The 15 retired repository entries stay retired, and every unlisted caller
+continues executing its hard law.
+
 
 ## One in, one out
 
-The authored process change adds 1,198 and removes 1,036 lines, net +162.
-The count is `git diff --numstat origin/main` over the files below, excluding
-this notes file and the ship file. It includes the helper, runner and contract
-check, migrated harnesses, nightly scripts, README, known-reds and tree entries.
-Retired entries and superseded fixture-repinning histories supply the removals.
-Generated maps and indexes add 8,693 and remove 8,731 lines separately.
+The authored process change adds 1,304 and removes 1,036 lines, net
++268. The count is `git diff --numstat origin/main` over the files
+below, excluding this notes file and the ship file. The caused-fixture WHY
+blocks in Map sections 20–22 are restored. Their former removal contributes
+zero to this count. Generated maps and indexes add 8,765 and remove 8,778
+lines separately.
 
 ```text
 5	0	README.md
+1	0	batch-check.sh
 0	15	docs/notes/known-reds.txt
 2	0	docs/tree.md
-9	3	src/main/java/ham/citybuildersim/AllChecks.java
+25	5	src/main/java/ham/citybuildersim/AllChecks.java
 35	26	src/main/java/ham/citybuildersim/AuctionCheck.java
-25	19	src/main/java/ham/citybuildersim/AutoBuildCheck.java
+26	20	src/main/java/ham/citybuildersim/AutoBuildCheck.java
 40	101	src/main/java/ham/citybuildersim/BankCheck.java
 39	36	src/main/java/ham/citybuildersim/BondCheck.java
 17	20	src/main/java/ham/citybuildersim/BuildAdviceCheck.java
@@ -268,31 +317,31 @@ Generated maps and indexes add 8,693 and remove 8,731 lines separately.
 24	30	src/main/java/ham/citybuildersim/CapitalFlowCheck.java
 23	19	src/main/java/ham/citybuildersim/CentralBankCheck.java
 6	9	src/main/java/ham/citybuildersim/ConstructionControlCheck.java
-35	25	src/main/java/ham/citybuildersim/CurrencyRegimeCheck.java
+33	24	src/main/java/ham/citybuildersim/CurrencyRegimeCheck.java
 11	20	src/main/java/ham/citybuildersim/CurveCheck.java
 32	38	src/main/java/ham/citybuildersim/DeskCheck.java
 12	25	src/main/java/ham/citybuildersim/FittingCheck.java
-37	16	src/main/java/ham/citybuildersim/FloatLinkCheck.java
+58	22	src/main/java/ham/citybuildersim/FloatLinkCheck.java
 7	13	src/main/java/ham/citybuildersim/ForeignCheck.java
 18	28	src/main/java/ham/citybuildersim/FundCheck.java
-17	54	src/main/java/ham/citybuildersim/HealthCheck.java
+22	56	src/main/java/ham/citybuildersim/HealthCheck.java
 75	105	src/main/java/ham/citybuildersim/HoldersCheck.java
 4	6	src/main/java/ham/citybuildersim/HomeRailCheck.java
-9	6	src/main/java/ham/citybuildersim/HousingCheck.java
-116	32	src/main/java/ham/citybuildersim/KeptCheck.java
+10	6	src/main/java/ham/citybuildersim/HousingCheck.java
+140	43	src/main/java/ham/citybuildersim/KeptCheck.java
 34	44	src/main/java/ham/citybuildersim/LabourCheck.java
-19	33	src/main/java/ham/citybuildersim/MapCheck.java
+12	10	src/main/java/ham/citybuildersim/MapCheck.java
 16	17	src/main/java/ham/citybuildersim/MonetaryCheck.java
-67	0	src/main/java/ham/citybuildersim/Observation.java
-97	0	src/main/java/ham/citybuildersim/ObservationCheck.java
+71	0	src/main/java/ham/citybuildersim/Observation.java
+126	0	src/main/java/ham/citybuildersim/ObservationCheck.java
 94	50	src/main/java/ham/citybuildersim/PolicyPreviewCheck.java
-55	47	src/main/java/ham/citybuildersim/PriceLevelCheck.java
+65	49	src/main/java/ham/citybuildersim/PriceLevelCheck.java
 40	33	src/main/java/ham/citybuildersim/PrizeCheck.java
 45	70	src/main/java/ham/citybuildersim/SaveFileCheck.java
 28	83	src/main/java/ham/citybuildersim/ScaleCheck.java
 12	3	src/main/java/ham/citybuildersim/Timing.java
-30	0	tools/nightly-selftest.sh
-30	2	tools/nightly-timing.sh
+32	0	tools/nightly-selftest.sh
+31	2	tools/nightly-timing.sh
 3	1	tools/nightly.sh
 16	0	tools/observations.awk
 ```
