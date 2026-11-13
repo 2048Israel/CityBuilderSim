@@ -172,7 +172,7 @@ public final class Timing {
         }
         try {
             append(Path.of(path), rows.toString());
-        } catch (IllegalStateException e) {
+        } catch (RuntimeException e) {
             // The timing judge treats absent figures as an incomplete run.
         }
     }

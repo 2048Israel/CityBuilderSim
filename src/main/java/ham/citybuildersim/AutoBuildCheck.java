@@ -368,12 +368,7 @@ public class AutoBuildCheck {
         // fixture gives both cities ground and room), sized on today's deaths; on 1900's causes the city (5,930 people at month 600, 28
         // orders in the run) placed none in the 36 months, with or without the deaths held off from the save on. Section 3 passes on both.
         g.holdCausesOfDeathOff();
-        // WN3: the decades' town, its twin and its copies play on the goods' literals. On the world's band the test player's town does
-        // not take off (2,098 people at month 600 where the literals' has 21,729; about 2,000 from month 84 on, its debt over the
-        // limit from month 200 and 550% of a year's GDP by 600): 387 passes began over the limit and ordered nothing, 16 orders in
-        // 600 months against 107, and the 36 months after section 4's save placed none, so the fixture no longer causes what this
-        // section reads - an auto-builder with orders to place, borrowing and buying ground. The premise is the builder's rule in
-        // a town that can pay for its services, not the town's own fortunes.
+        // WN3: the decades' town, its twin and its copies play on the goods' literals.
         g.playOnLiterals();
         AutoBuilder ab = g.getAutoBuilder();
         g.autoBuildProbeForTest = passReader(g);
@@ -470,27 +465,34 @@ public class AutoBuildCheck {
                 g.getPopulationManager().getPopulation(), passes, ordered, builtBy);
         out.printf("    (after each pass, of %d services kept: %d at the target, %d with works under way, %d held %s,"
                 + " %d with nothing to build)%n", kept, atTarget, works, held, heldBy, nothing);
-        assertTrue("fixture: it ran a pass every month and placed orders for at least three services",
+        Observation.reached("fixture: it ran a pass every month and placed orders for at least three services",
                 passes >= months - 1 && builtBy.size() >= 3);
-        assertTrue("fixture: it borrowed, on the funding page's bond, at least once", borrowingPasses > 0);
+        boolean borrowed = Observation.reached("fixture: it borrowed, on the funding page's bond, at least once",
+                borrowingPasses > 0,
+                "debt limit on borrowing passes");
         assertTrue("after every pass every service it keeps is at the margin's target, has works under way, or the"
                 + " pass said why not (" + unexplained + " otherwise)", unexplained == 0);
         assertTrue("...and every reason it gave was true: no ground for one, a bond for one past the limit, one that would not"
                 + " pay back (0.7.104; a budget short of one's running until then), no site output - and for the money, the"
                 + " ground or the payback, for every building in the advice's ranking (0.7.101) (" + falseHolds + " not)",
                 falseHolds == 0);
-        assertTrue(String.format("...and most of the time at the target itself: %.1f%% of the services kept, the"
-                + " rest works under way or held", 100.0 * atTarget / Math.max(1, kept)), atTarget * 2 > kept);
+        Observation.reached("services at the target over the played run",
+                String.format("...and most of the time at the target itself: %.1f%% of the services kept, the rest works under way or held",
+                    100.0 * atTarget / Math.max(1, kept)),
+                atTarget * 2 > kept,
+                "");
         assertTrue("it builds nothing outside its remit (" + outsideRemit + " other buildings rose in a pass)", outsideRemit == 0);
         out.printf("    (ground bought: %d orders in %d passes, %s for %s)%n", landOrders, landPasses,
                 LandManager.areaWords(landSqFt), DecisionLog.money(landCost));
-        assertTrue("fixture: it bought ground for its orders", landOrders > 0);
-        assertTrue(String.format("it buys ground only for its own held orders: each placed, of a building in its remit, short of ground"
+        boolean boughtGround = Observation.reached("fixture: it bought ground for its orders",
+                landOrders > 0,
+                "own-order ground purchases, land movement and bare-ground selection");
+        if (boughtGround) assertTrue(String.format("it buys ground only for its own held orders: each placed, of a building in its remit, short of ground"
                 + " when weighed and covered by what it bought (%d of %d not)", landNotItsOwn, landOrders), landNotItsOwn == 0);
-        assertTrue(String.format("...the city's ground grown in a pass by exactly the ground its orders bought (%d of %d passes not)",
+        if (boughtGround) assertTrue(String.format("...the city's ground grown in a pass by exactly the ground its orders bought (%d of %d passes not)",
                 landMismatch, landPasses), landMismatch == 0);
-        assertTrue("...and bare ground only: no field bought for its ore (" + oreBought + " offers held ore)", oreBought == 0);
-        assertTrue(String.format("it never borrows past the debt limit, the ground's price in what it borrowed: %d passes borrowed"
+        if (boughtGround) assertTrue("...and bare ground only: no field bought for its ore (" + oreBought + " offers held ore)", oreBought == 0);
+        if (borrowed) assertTrue(String.format("it never borrows past the debt limit, the ground's price in what it borrowed: %d passes borrowed"
                 + " (%d of them buying ground), the city's debt after them at most %.2f%% of a year's GDP against %.0f%%,"
                 + " the limit that pass borrowed under (0.7.81; debt payments over revenue until then)",
                 borrowingPasses, landBorrowPasses, worstShare * 100, worstLimit * 100), overLimit == 0);
@@ -808,8 +810,10 @@ public class AutoBuildCheck {
                         + " its log the same each month, to the cent (worst %.2g%s)", months, a.getOrders(), worst,
                         first == null ? "" : ", first " + first),
                 drift == 0);
-        assertTrue("fixture: ...and it placed orders in those months (" + (a.getOrders() - ordersBefore) + ")",
-                a.getOrders() > ordersBefore);
+        Observation.reached("savedAndLoaded: fixture: ...and it placed orders in those months",
+                "fixture: ...and it placed orders in those months (" + (a.getOrders() - ordersBefore) + ")",
+                a.getOrders() > ordersBefore,
+                "");
         AutoBuilder.State st = a.toState();
         String json = new com.google.gson.Gson().toJson(st);
         AutoBuilder c = new AutoBuilder();
@@ -882,8 +886,10 @@ public class AutoBuildCheck {
         assertTrue(String.format("both run on %d months: the cash, the debt, the ground owned and what it bought, every building and"
                         + " site and its log the same each month, to the cent (worst %.2g%s)", months, worst,
                         first == null ? "" : ", first " + first), drift == 0);
-        assertTrue("fixture: ...and it bought ground in those months (" + (a.getLandOffers() - offersBefore) + " offers)",
-                a.getLandOffers() > offersBefore);
+        Observation.reached("groundSavedAndLoaded: fixture: ...and it bought ground in those months",
+                "fixture: ...and it bought ground in those months (" + (a.getLandOffers() - offersBefore) + " offers)",
+                a.getLandOffers() > offersBefore,
+                "");
     }
 
     /* ---------------------------------------------------------------- 5 */

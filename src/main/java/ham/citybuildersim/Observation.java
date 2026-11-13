@@ -35,6 +35,11 @@ public final class Observation {
 
     /** Returns the actual premise, so callers run only laws whose premise held. */
     static boolean reached(String label, boolean reached, String laws) {
+        return reached(label, label, reached, laws);
+    }
+
+    /** A stable line identity when the printed label contains that run's measured figures. */
+    static boolean reached(String identity, String label, boolean reached, String laws) {
         String caller = StackWalker.getInstance().walk(frames -> frames
                 .filter(f -> !f.getClassName().equals(Observation.class.getName()))
                 .map(f -> f.getClassName().substring(f.getClassName().lastIndexOf('.') + 1))
@@ -42,7 +47,7 @@ public final class Observation {
         if ("hard".equals(System.getProperty(PROPERTY))) {
             String file = System.getProperty(TSV_PROPERTY);
             if (file != null && !file.isBlank())
-                Timing.append(Path.of(file), caller + "\t" + label.replaceAll("[\\t\\r\\n]+", " ")
+                Timing.append(Path.of(file), caller + "\t" + identity.replaceAll("[\\t\\r\\n]+", " ")
                         + "\t" + (reached ? "REACHED" : "MISSED") + "\n");
         }
         if (!reached) {
