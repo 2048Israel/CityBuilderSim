@@ -1,6 +1,6 @@
 # GoldPrice.java - 332 lines · 22 methods · 18 constants · model
 
-`ham/citybuildersim/GoldPrice.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoldPrice.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > Gold's price in US dollars a fine troy ounce, a month at a time (batch GD1; spec-gold-money 4.1): the statute's par to March 1933, a ten-month path
 > to the new par, that par to July 1971, then on Historical the USGS's annual price to December 2025, and an AR(1) in gold's real price where the

@@ -1,6 +1,6 @@
 # FamilyStructure.java - 119 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/FamilyStructure.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FamilyStructure.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > The shapes a household comes in.
 > 

@@ -1,6 +1,6 @@
 # Equipment.java - 152 lines · 16 methods · 0 constants · model
 
-`ham/citybuildersim/Equipment.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Equipment.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > A piece of equipment a building template carries: what it is called, when it is known, which 1900 form it ends (if any), what fitting it buys and
 > how long it lasts. Immutable; read from buildings.json's "equipment" (BuildingCatalog.readEquipment()) and held by the template

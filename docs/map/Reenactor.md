@@ -1,6 +1,6 @@
 # Reenactor.java - 463 lines · 33 methods · 5 constants · interface
 
-`ham/citybuildersim/ui/Reenactor.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Reenactor.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > Re-enacts one logged input event in the window (TR2, 2026-11-09): the mouse moved over the copy's real nodes, pressed,
 > dragged, released and clicked on them, the wheel turned over them, the keys pressed into the focused control - as events

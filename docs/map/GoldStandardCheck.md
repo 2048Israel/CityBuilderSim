@@ -1,6 +1,6 @@
 # GoldStandardCheck.java - 857 lines · 29 methods · 12 constants · harnesses
 
-`ham/citybuildersim/GoldStandardCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoldStandardCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the gold points of the
 > centre that moves with gold, the sale paid in gold first and the purchase made into gold, the cover that breaks it, doubt that grows as the cover thins, the central bank

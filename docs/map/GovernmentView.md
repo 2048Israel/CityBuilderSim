@@ -1,6 +1,6 @@
 # GovernmentView.java - 154 lines · 25 methods · 7 constants · model
 
-`ham/citybuildersim/GovernmentView.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GovernmentView.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > What the government owns net of its paper, in years of its revenue, and
 > the existing levers that can give an excess back (GV1, spec-wealth 3.2).

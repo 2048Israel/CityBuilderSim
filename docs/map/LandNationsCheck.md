@@ -1,6 +1,6 @@
 # LandNationsCheck.java - 1,253 lines · 47 methods · 8 constants · harnesses
 
-`ham/citybuildersim/LandNationsCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandNationsCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and
 > how it moves, the seller of every plot of a real-Earth world and the territorial sea, an offer's ground split by its sellers, the price each part

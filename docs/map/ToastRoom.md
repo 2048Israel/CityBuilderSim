@@ -1,6 +1,6 @@
 # ToastRoom.java - 113 lines · 5 methods · 0 constants · interface
 
-`ham/citybuildersim/ui/ToastRoom.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ToastRoom.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > The corner a toast stands in, given up by the page (TS1): while a toast shows, the page's foot takes a
 > bottom padding as tall as the toasts and the corner they are set in, its pixel offset kept, and gives it

@@ -1,6 +1,6 @@
 # PartnersView.java - 315 lines · 16 methods · 0 constants · model
 
-`ham/citybuildersim/PartnersView.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PartnersView.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > The Partners board's and a nation's page's figures (WN6; docs/studies/spec-nations.md 8, boards 2 and 3, D29): the table of who the city trades with, by
 > nation, for the month or the year so far, and one nation's full page. A pure model of what a screen draws, built from the game's public getters alone

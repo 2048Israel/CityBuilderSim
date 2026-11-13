@@ -1,6 +1,6 @@
 # HouseholdMemoryCheck.java - 292 lines · 6 methods · 1 constants · harnesses
 
-`ham/citybuildersim/HouseholdMemoryCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdMemoryCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > The households remember: the builder keeps what still fits.
 > 

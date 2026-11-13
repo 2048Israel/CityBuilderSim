@@ -1,6 +1,6 @@
 # Debt.java - 1,432 lines · 116 methods · 7 constants · model
 
-`ham/citybuildersim/Debt.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Debt.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > One piece of city paper.
 > 

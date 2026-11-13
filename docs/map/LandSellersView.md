@@ -1,6 +1,6 @@
 # LandSellersView.java - 117 lines · 5 methods · 2 constants · model
 
-`ham/citybuildersim/LandSellersView.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandSellersView.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > What the land office says of who sells an offer's ground: a pure function of the offer's sellers (LandParcel.getSellers()) and the nations' names
 > (LandSellers.file()), so that the words are written in one place and a harness can rebuild them from getters (WN5, 2026-11-01).

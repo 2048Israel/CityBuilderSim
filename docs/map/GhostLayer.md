@@ -1,6 +1,6 @@
 # GhostLayer.java - 141 lines · 11 methods · 8 constants · interface
 
-`ham/citybuildersim/ui/GhostLayer.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/GhostLayer.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > The ghost cursor (TR2, 2026-11-09): a see-through pointer arrow drawn at a scene point over the replay's window, in
 > {@link Palette#GHOST}, with a ripple at each click - a ring that grows and fades. One mouse-transparent pane of the window's

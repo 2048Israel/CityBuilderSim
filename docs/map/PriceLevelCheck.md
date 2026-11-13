@@ -1,6 +1,6 @@
 # PriceLevelCheck.java - 1,335 lines · 50 methods · 20 constants · harnesses
 
-`ham/citybuildersim/PriceLevelCheck.java` - generated 2026-11-12 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PriceLevelCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus
 > 2026-10-30: "1900 price level"; docs/studies/spec-1900-start.md 2).
