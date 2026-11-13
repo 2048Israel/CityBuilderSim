@@ -2150,11 +2150,67 @@ public class LongPlaytest {
      * healthcare, burial, police and cells moves are not offered, and the
      * schools and childcare flags are its - while it does the rest as it
      * always has: the ground, iron, homes, shops, the builders, food and jobs.
-     * A flag, as the schools are, and off: the default run is unchanged. Not
-     * final: AutoBuildCheck plays its decades by this player with it set, and
-     * puts it back.
+     * AW1 makes this the default for the standalone playtest and ensemble,
+     * with cash building beyond the debt limit. An explicit false selects
+     * the scored advisor. Borrowing harnesses set this flag for their own
+     * fixture, as AutoBuildCheck does, and put it back.
      */
     static boolean AUTOBUILD = Boolean.getBoolean("playtest.autobuild");
+
+    /** The standalone test city's works, selected once at founding by both normal entry points (AW1). */
+    static void startAutomaticWorks(Game g) {
+        AUTOBUILD = Boolean.parseBoolean(System.getProperty("playtest.autobuild", "true"));
+        if (AUTOBUILD) {
+            g.getAutoBuilder().setCashAnyway(true, g.getDecisions());
+            g.getAutoBuilder().setOn(true, g.getDecisions());
+        }
+    }
+
+    /* ===================================================================
+       THE CITY'S ESSENTIAL WORKS (AW1, 2026-11-12)
+       =================================================================== */
+
+    /** A service under a fifth served is counted each month, including the founding. */
+    static final double WORKS_LOW = .20;
+    static int worksMonths, worksOffMonths, worksDebtIdleMonths, worksLowMonths;
+    static final Map<String, Integer> worksLow = new LinkedHashMap<>();
+    static final Map<String, Double> worksMin = new LinkedHashMap<>();
+
+    /** Staffed supply over today's demand, capped at full service, with no demand fully served. */
+    static Map<String, Double> worksShares(Game g) {
+        Map<String, Double> shares = new LinkedHashMap<>();
+        for (String category : List.of(BuildAdvice.UTILITIES, BuildAdvice.ROADS, BuildAdvice.HEALTHCARE,
+                BuildAdvice.EDUCATION, BuildAdvice.SAFETY)) {
+            for (BuildAdvice.Measure m : BuildAdvice.measuresOf(category)) {
+                switch (m.kind()) {
+                    case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case SCHOOL: case POLICE:
+                        double[] sd = BuildAdvice.supplyDemand(g, m, Map.of());
+                        shares.put(m.label(), sd[1] > 0 ? Math.max(0, Math.min(1, sd[0] / sd[1])) : 1);
+                        break;
+                    default: break;
+                }
+            }
+        }
+        return shares;
+    }
+
+    /** Counts what the month's pass could do, then reads the service the completed month delivered. */
+    static void countWorks(Game g, boolean on, boolean over, int ordersBefore) {
+        worksMonths++;
+        if (!on) worksOffMonths++;
+        if (on && over && g.getAutoBuilder().getOrders() == ordersBefore) worksDebtIdleMonths++;
+        boolean low = false;
+        Map<String, Double> shares = worksShares(g);
+        for (Map.Entry<String, Double> e : shares.entrySet()) {
+            worksMin.merge(e.getKey(), e.getValue(), Math::min);
+            if (e.getValue() < WORKS_LOW) {
+                worksLow.merge(e.getKey(), 1, Integer::sum);
+                low = true;
+            }
+        }
+        if (low) worksLowMonths++;
+        if (out != null && g.getMonth() % 120 == 0) out.printf("  works m%d served %s%n", g.getMonth(), shares);
+    }
 
     /** Whether any education dial or the schools flag was set, so the summary says what they did. */
     static boolean educationSet = false;
@@ -5504,6 +5560,9 @@ public class LongPlaytest {
         for (int i = 0; i < months; i++) {
 
             int before = g.getMonth();
+            AutoBuilder works = g.getAutoBuilder();
+            boolean worksOn = works.isOn(), worksOver = !works.within(g);
+            int worksOrders = works.getOrders();
             // The two instruments, both off by default: the dial held for the
             // month about to run, and the index that month will hand the wages.
             if (holdsPolicyRate(g)) g.getDebtManager().takeTheDial(POLICY_RATE);
@@ -5614,6 +5673,7 @@ public class LongPlaytest {
             countTheGlut(g);
             countTheCurve(g);
             audit(g);
+            countWorks(g, worksOn, worksOver, worksOrders);
             traceMonth(g);
         }
     }
@@ -6280,7 +6340,7 @@ public class LongPlaytest {
             // An Insane city borrows first (0.7.14): see borrowForTheVillage().
             if (FOUNDING == Founding.Preset.INSANE) borrowForTheVillage(g);
             // ...and automatic building on from the founding (0.7.73, -Dplaytest.autobuild).
-            if (AUTOBUILD) g.getAutoBuilder().setOn(true, g.getDecisions());
+            startAutomaticWorks(g);
             villageBuild(g, "House", 40 + seed % 4);
             villageBuild(g, "Convenience Store", 3);
             /*
@@ -7625,6 +7685,9 @@ public class LongPlaytest {
                 + " standing at the end; %,d paving(s) of %,d gravel road(s) ordered, %,d being paved%n",
                 qty(g, "Gravel Road"), qty(g, "Paved Road"), qty(g, "Elevated Highway"), pavings, roadsPaved,
                 g.pavingNow());
+        out.printf("  essential works: %d months, automatic building off %d, no order while on and over debt limit %d,"
+                + " any service under a fifth served %d%n", worksMonths, worksOffMonths, worksDebtIdleMonths, worksLowMonths);
+        out.printf("  ...months under a fifth served %s; minimum served %s%n", worksLow, worksMin);
         if (AUTOBUILD) {
             AutoBuilder ab = g.getAutoBuilder();
             out.printf("  ...automatic building (0.7.73, N4, -Dplaytest.autobuild): %,d order(s), %,d building(s), $%,.0fk"
