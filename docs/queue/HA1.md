@@ -83,6 +83,20 @@ here.
    `OLDEST_LOADABLE_FORMAT` = `SAVE_FORMAT` = 51 refuses all of those, so the
    path is unreachable. Before cutting, check what `CityLand`, `LandSellers`,
    `EarthTerrainCheck` and `LandCheck` use from these classes.
+7. **Six assertions that only read a run go** (Jerus, 2026-11-12, second
+   round: "The 6, keep the fuzz (Recommended)"). Line numbers are of
+   2026-11-12.
+   - PassThroughCheck L626: the price index's mean gap, "the economy
+     amplifying a small difference"; red in 19 gate records.
+   - PassThroughCheck L702 (`over5 > 0`) and L703 ("moved in 90% of
+     months"): shares of one 240-month run. The rule stays asserted exactly
+     in its sections 2 and 3.
+   - BuildingDataCheck L448 (`data.size() == 152`): every new building
+     restates it. Unique ids and the card's and categories' checks stay.
+   - InterestAbroadCheck L852 (`saved.length == 156`): SaveFileCheck L3956
+     asserts the same.
+   OrderSearchCheck's sections 1-2 (its fuzz over a long run's orders, which
+   found EP1's and FR2's faults) stay, in the nightly tier.
 
 ## Done means
 
