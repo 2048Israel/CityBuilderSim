@@ -1,4 +1,4 @@
-# AW2 — Allocated land kept through a normal load
+# AW2 â€” Allocated land kept through a normal load
 
 ## Finding and scope
 
@@ -34,21 +34,24 @@ its building allocations.
 
 ## Implementation and calls
 
-★ Save the live counter as boxed DataSave.landAllocatedSqFt, writing it
+â˜… Save the live counter as boxed DataSave.landAllocatedSqFt, writing it
 in Game's snapshot and restoring it on the ordinary load path before the
 works, runs, prepared ground and zoning. The counter is the source of truth
 for continuing this city; silently changing it during loading is not a
 repair to how the fixture was founded.
 
-★ A missing key retains the previous footprint reconstruction; explicit
+â˜… A missing key retains the previous footprint reconstruction; explicit
 zero remains zero. No format bump: the new field has the existing load
 behaviour as its absent-key default. No conversion or guessed subtraction
 is added. Existing saves without the key cannot recover the old live
 counter from their JSON alone. Slot 10 was inspected read-only: build
 0.9.91, format 51, m2391, owned 633,883,455.2669102 sq ft, no allocation
-key. This batch does not rewrite that save or any real slot 1–10.
+key. This batch does not rewrite that save or any real slot 1â€“10.
+Its SHA-256 is
+`39df46892aeabfd60cccfaf9bd852f5e74bd4dacbb7cbe62fcd91f4273b80c24`
+matching RT3's recorded prefix.
 
-★ Keep the regression in SaveFileCheck, using GameFiles.scratch(). It
+â˜… Keep the regression in SaveFileCheck, using GameFiles.scratch(). It
 injects the same three sets of sites, proves the footprint exceeds owned
 land while the live counter admits a house, and compares allocation, free
 land, footprint, price, next quote and actual successful construction on
@@ -73,5 +76,25 @@ changelog and gate records are left to the publisher.
   unsettled money constants. The fixture now plays one month before the
   same injection, as described above. The first named check used that
   earlier fixture and is superseded by the final runs below.
+- The settled fixture passes all its assertions in the isolated runner:
+  `target/checks/aw2-regression-settled.log`, exit 0.
+- An overlapping local fast compile removed classes while the first named
+  check was finishing, causing ReloadCheck class-loading errors and that
+  run's maps/Stale launch failures. This was a local check invocation error,
+  not a model red; subsequent batch checks run sequentially. Its log was
+  `target/checks/aw2-run.txt` before the final picked run replaced it.
 
 Final checks and retained dry run will be recorded here before readiness.
+
+### Exact WG2 scratch-copy diagnostic
+
+Copied slot 10's save/history/map, where present, to GameFiles.scratch();
+the source paths were read only. Its old-key ordinary load reproduces
+873,813,544 sq ft allocated and zero free. In the scratch city only, seeded
+RT3's independently recorded 113,813,544 sq ft live counter (not derivable
+from that JSON), wrote a new save and loaded it normally. Allocation and
+free ground match exactly, including 520,069,911.267 sq ft free before the
+order. Both the source city and its ordinary reload successfully order one
+House and retain equal free ground afterwards. Exit 0, no failed
+assertions; `target/checks/aw2-wg2-copy.log`. This validates new saves of
+that live state; it does not claim to repair the old slot's missing field.
