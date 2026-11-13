@@ -367,6 +367,7 @@ public class Ensemble {
             LongPlaytest.seedMarket(g, seed);
 
             if (LongPlaytest.FOUNDING == Founding.Preset.INSANE) LongPlaytest.borrowForTheVillage(g);
+            LongPlaytest.startAutomaticWorks(g);
             LongPlaytest.villageBuild(g, "House", 40 + seed % 4);
             LongPlaytest.villageBuild(g, "Convenience Store", 3);
             LongPlaytest.villageBuild(g, "Mixed Farm", 2);

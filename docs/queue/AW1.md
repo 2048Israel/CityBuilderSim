@@ -34,3 +34,15 @@ Queue the ordinary load's allocated-land reconstruction separately, using
 RT3's "Policy test" evidence. This batch is versioned with {next}. Push a
 provisional ship file before the dry run, then edit only AW1-notes.md and
 AW1-ship.md. Never run the real ship command.
+
+## Allocated-land follow-up
+
+Queue a separate fix for the ordinary load's allocation reconstruction.
+RT3's "Policy test (Jerus, 19:40)" captured WG2's source allocation as
+113,813,544 sq ft with 520,069,911.267 sq ft free. The standing and site
+footprint was 873,813,544 sq ft. A normal load derived allocation from
+the buildings and removed the free ground. The earlier and rebuilt RT3
+fixtures showed the same discrepancy. Investigate the source counter and
+the reconstruction together, then cause the discrepancy in a save round
+trip and assert that the live city and its ordinary load have matching
+land and construction behavior. AW1 leaves this repair to that batch.

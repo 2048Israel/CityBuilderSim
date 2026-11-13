@@ -111,6 +111,9 @@ import java.util.Map;
  *      orders that kind with nothing weighed for its payback (section 5 has
  *      general care alone); the same town short of an elementary school holds
  *      it for the payback - care is essential, a school must pay back.
+ *   9. CASH WORKS OVER THE LIMIT (AW1): debt beyond the limit, cash,
+ *      no free ground and under-served power and streets cause both works
+ *      to be ordered with their required land bought from cash.
  *
  * Every fixture causes its condition.
  */
@@ -160,9 +163,49 @@ public class AutoBuildCheck {
         theCardsVerdict(root);
         youngRefused(root);
         careOfEveryKind(root);
+        cashWorksOverLimit(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /* ---------------------------------------------------------------- 9 */
+
+    /** AW1 causes both missing works and their ground, with the same switches as the standalone test city. */
+    static void cashWorksOverLimit(Path root) {
+        out.println("\n--- 9. essential works and their land from cash over the debt limit (AW1) ---");
+        Game g = overTheLimit(noGround(root, "aw1-cash-works"));
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        quietly(() -> {
+            retireServing(g, power);
+            retireServing(g, streets);
+            g.simulateMonths(1);
+        });
+        // Retiring frees ground. Limit the owned ground to the remaining allocation.
+        LandManager land = g.getLandManager();
+        land.setOwnedSqFt(land.getAllocatedSqFt());
+        g.setCashForTest(g.getCash() + 1_000_000_000 * g.getPriceIndex().getIndex());
+        UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
+        utilities.setWattsConsumption(10 * utilities.getBaseProduction());
+        AutoBuilder ab = g.getAutoBuilder();
+        ab.setDebtLimit(0, null);
+        ab.setCashAnyway(true, null);
+        ab.setOn(true, null);
+        double[] p = BuildAdvice.supplyDemand(g, power, Map.of());
+        double[] r = BuildAdvice.supplyDemand(g, streets, Map.of());
+        assertTrue(String.format("fixture has cash %.0f, debt %.2f over limit %.2f, free ground %.2f, power %.0f/%.0f and streets %.0f/%.0f",
+                        AutoBuilder.spendable(g), AutoBuilder.ratio(g), ab.getDebtLimit(), land.getAvailableSqFt(), p[0], p[1], r[0], r[1]),
+                AutoBuilder.spendable(g) > 0 && !ab.within(g) && land.getAvailableSqFt() <= 0
+                        && p[1] > p[0] && r[1] > r[0]);
+        double owned = land.getOwnedSqFt(), debt = AutoBuilder.debt(g), cash = g.getCash();
+        quietly(() -> ab.pass(g));
+        AutoBuilder.Step ps = stepFor(ab, power), rs = stepFor(ab, streets);
+        assertTrue("cash above the debt limit orders both power and streets through the normal builder",
+                ps != null && ps.ordered() > 0 && rs != null && rs.ordered() > 0);
+        assertTrue("the orders buy the ground they need from cash and issue no debt",
+                ab.getLandOffers() > 0 && land.getOwnedSqFt() > owned && ab.getLandSpent() > 0
+                        && g.getCash() < cash && ab.getBonds() == 0 && AutoBuilder.debt(g) == debt);
     }
 
     /* ---------------------------------------------------------------- 1 */

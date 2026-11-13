@@ -2150,11 +2150,21 @@ public class LongPlaytest {
      * healthcare, burial, police and cells moves are not offered, and the
      * schools and childcare flags are its - while it does the rest as it
      * always has: the ground, iron, homes, shops, the builders, food and jobs.
-     * A flag, as the schools are, and off: the default run is unchanged. Not
-     * final: AutoBuildCheck plays its decades by this player with it set, and
-     * puts it back.
+     * AW1 makes this the default for the standalone playtest and ensemble,
+     * with cash building beyond the debt limit. An explicit false selects
+     * the scored advisor. Borrowing harnesses set this flag for their own
+     * fixture, as AutoBuildCheck does, and put it back.
      */
     static boolean AUTOBUILD = Boolean.getBoolean("playtest.autobuild");
+
+    /** The standalone test city's works, selected once at founding by both normal entry points (AW1). */
+    static void startAutomaticWorks(Game g) {
+        AUTOBUILD = Boolean.parseBoolean(System.getProperty("playtest.autobuild", "true"));
+        if (AUTOBUILD) {
+            g.getAutoBuilder().setCashAnyway(true, g.getDecisions());
+            g.getAutoBuilder().setOn(true, g.getDecisions());
+        }
+    }
 
     /* ===================================================================
        THE CITY'S ESSENTIAL WORKS (AW1, 2026-11-12)
@@ -2199,7 +2209,7 @@ public class LongPlaytest {
             }
         }
         if (low) worksLowMonths++;
-        if (g.getMonth() % 120 == 0) out.printf("  works m%d served %s%n", g.getMonth(), shares);
+        if (out != null && g.getMonth() % 120 == 0) out.printf("  works m%d served %s%n", g.getMonth(), shares);
     }
 
     /** Whether any education dial or the schools flag was set, so the summary says what they did. */
@@ -6330,7 +6340,7 @@ public class LongPlaytest {
             // An Insane city borrows first (0.7.14): see borrowForTheVillage().
             if (FOUNDING == Founding.Preset.INSANE) borrowForTheVillage(g);
             // ...and automatic building on from the founding (0.7.73, -Dplaytest.autobuild).
-            if (AUTOBUILD) g.getAutoBuilder().setOn(true, g.getDecisions());
+            startAutomaticWorks(g);
             villageBuild(g, "House", 40 + seed % 4);
             villageBuild(g, "Convenience Store", 3);
             /*
