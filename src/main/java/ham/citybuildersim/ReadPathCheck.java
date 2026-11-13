@@ -1987,8 +1987,8 @@ public class ReadPathCheck {
      * saved and loaded into another game as on the city that played.
      */
     static void afterALoad(Game g, GameFiles files) {
-        // The fixture's buildings were stood up by fiat and took no ground; a load allocates the city's
-        // footprint (Game's load path), so the city is given it first, as a load would.
+        // The fixture's buildings were stood up by fiat and took no ground; give its ledger that footprint.
+        // AW2 saves this allocation explicitly; the fixture still accounts for all the ground it stands on.
         g.getLandManager().setAllocatedSqFt(g.getBuildingManager().getTotalLandFootprint());
         // ...and a dig by type (0.7.110), so the save carries E by type: the fixture's ore is by fiat, the first type's.
         double dug = g.getLandManager().extract(Resource.IRON, Deposit.FieldType.HEMATITE, 1_000.5);

@@ -1400,6 +1400,10 @@ public class LongPlaytest {
         if (uh.getUnbilledElectricityDraw() > 0) unbilledMonths++;
     }
 
+    /** AW2: actual played months whose land ledger differs from the catalogue footprint, counted without changing play. */
+    static int landLedgerMonths, landLedgerDiffMonths, landLedgerWorstMonth;
+    static double landLedgerWorstSqFt;
+
     static void audit(Game g) {
 
         int month = g.getMonth();
@@ -1409,6 +1413,13 @@ public class LongPlaytest {
         PopulationManager p = g.getPopulationManager();
         BuildingManager b = g.getBuildingManager();
         LandManager l = g.getLandManager();
+        landLedgerMonths++;
+        double landGap = Math.abs(l.getAllocatedSqFt() - b.getTotalLandFootprint());
+        if (landGap > 1e-6) landLedgerDiffMonths++;
+        if (landGap > landLedgerWorstSqFt) {
+            landLedgerWorstSqFt = landGap;
+            landLedgerWorstMonth = month;
+        }
         InfrastructureManager roads = g.getInfrastructureManager();
 
         finite(month, "cash", g.getCash());
@@ -6313,6 +6324,8 @@ public class LongPlaytest {
         // ...and on the real Earth under --earth (0.7.121): ON THE REAL EARTH.
         Game g = new Game(files, EARTH == null ? founding() : earthFounding(EARTH));
         retirementWatch = new RetirementWatch();
+        landLedgerMonths = landLedgerDiffMonths = landLedgerWorstMonth = 0;
+        landLedgerWorstSqFt = 0;
         List<String> log = new ArrayList<>();
         long started = System.currentTimeMillis();
         traceOpen();
@@ -7378,6 +7391,8 @@ public class LongPlaytest {
                     salvageBuildingsDistress, salvageBuildingsSpare, salvageSpareBySector, salvageUnits, salvageUnitsBought, salvagePaid,
                     salvagePaidDistress, salvageUsed, g.getSectors().construction().getSalvage());
             retirementWatch.report(out);
+            out.printf("  allocated land against the footprint (AW2): %d of %d audited months differ by more than 1e-6 sq ft;"
+                    + " maximum gap %.6f sq ft at m%d%n", landLedgerDiffMonths, landLedgerMonths, landLedgerWorstSqFt, landLedgerWorstMonth);
             // The landlords' mortgages and the city's insurance (0.7.11) - see countMortgages().
             BusinessDebtManager lenderAtEnd = g.getEconomyManager().getBusinessDebtManager();
             String re = g.getSectors().realEstate().key();

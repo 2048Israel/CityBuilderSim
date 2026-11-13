@@ -1,8 +1,8 @@
-# gate of Merge batch/GDP1: docs: mark GDP1 ready with its accepted retained gate, 0.9.97
-# date: 2026-11-12
+# gate of Merge batch/AW2: preserve allocated land and construction behavior through a normal load, 0.9.99
+# date: 2026-11-13
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 201 harnesses run in 1156s: 194 passed, 7 failed
+# suite: 201 harnesses run in 2354s: 194 passed, 7 failed
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED

@@ -132,7 +132,28 @@ leaves old per-class files behind, so the eight maps for the deleted converter
 and harness classes are explicitly removed. The branch is pushed without a
 ship file (the no-tag dry-run contract).
 
-In progress: fresh-clone no-tag gate.
+## Merge with AW2 and superseded dry run
+
+AW2 shipped first as `b8d4750d5e7882f7590ecdc905a2a83ab8525334`
+(version 0.9.99). The first HA1 launcher run,
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HA1-dI1YmXFZ`, had branch
+`fb2c1bf8605d16004ccc2f8508cda6342c440232` and main
+`5a87e102142ce5b3641b514f7ba1edf2ea775a4f`. It was stopped with the
+launcher's own `--stop` at the main advance (exit 130); it is **not reused**.
+Only that run's process tree was ended. No ship file had been published.
+
+Merged origin/main as instructed by lanekeeper message
+`20261113-131735-002-lanekeeper-926f`. The source merged cleanly, including
+AW2's saved allocated-land and footprint fields, load delta, normal-load
+SaveFileCheck fixtures and LongPlaytest's measurement. Eight generated index
+conflicts took main's version before regeneration. `./batch-check.sh --fast`
+then exits 0: compile 44s, Stale 0 firm and 185 soft.
+
+The earlier full pick and 18-harness before/after measurement are retained
+as measurements on 5a87e102. A new fresh-clone gate on AW2's main is required
+and will be the readiness evidence. The final eight CSV traces are also
+being checked against AW2's recorded final main-equivalent traces.
+
 
 ## Pending for the gate box
 

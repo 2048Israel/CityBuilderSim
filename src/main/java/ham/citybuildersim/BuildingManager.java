@@ -7989,10 +7989,9 @@ public class BuildingManager {
      * Every square foot the city has committed to buildings - standing and on
      * site both, since a half-built plant is occupying its plot.
      *
-     * This is what a load recomputes the land ledger from, rather than trusting
-     * a saved figure: the buildings ARE the allocation, so deriving it means a
-     * save written before land existed still loads a correct city, and any
-     * drift between the two heals itself the next time the game is loaded.
+     * A load uses this as the allocation for a save without that key, or as
+     * the footprint delta since a new save was written (AW2). New saves keep
+     * the ledger's gap: fixture stacks may have been injected without taking ground.
      */
     public double getTotalLandFootprint() {
         double total = 0;
