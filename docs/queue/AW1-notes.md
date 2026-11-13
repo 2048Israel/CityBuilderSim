@@ -155,3 +155,19 @@ The outer PowerShell invocation normalized Bash's nonzero exit to 1.
 Rejudging the saved suite through Git Bash with an explicit PowerShell
 exit of LASTEXITCODE returned 3, confirming the known-red-only verdict.
 The fresh-clone dry-run command propagates that exit explicitly.
+
+## Kept fresh-clone dry run
+
+sh tools/gate.sh AW1 --dry-run finished with exit 0 on 2026-11-12 at
+23:28 local time. Its check suite returned 3, with 75 harnesses run in
+1,975 seconds, 70 passing and the same five recorded known-red harnesses.
+There were 15 soft timing assertions, zero firm Stale findings and zero
+unnamed red lines. The complete check phase took 2,166 seconds.
+
+The retained run directory is
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-AW1-builder-f0f3e5f6.
+Its ship.log, checks/, checks.complete, branch.commit and main.commit are
+kept for the publisher to reuse. The tested branch commit is
+f0f3e5f6d33e8ba1a40ccddb20589eecdee889fe and the tested main commit is
+4f442ab9cf46c07b71784dea0479459710d52640. The final metadata update records
+this verdict and retained run in AW1-notes.md and AW1-ship.md.
