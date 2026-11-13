@@ -102,11 +102,37 @@ public final class EssentialWorksCheck {
         }
     }
 
+    static void lostOutput(Path root) {
+        out.println("--- prevented losses use the service the economy actually loses ---");
+        Game g = town(root, "prevented-loss");
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        u.setWattsConsumption(u.getProduction() * 2);
+        for (Sector sector : g.getSectors().all()) sector.setEnergyRatio(.5);
+        BuildAdvice.Ahead now = BuildAdvice.NOW;
+        double[] sd = BuildAdvice.supplyDemand(g, power, Map.of());
+        check("fixture: the grid is rationing and the city's books contain output to restore",
+                sd[0] > 0 && sd[1] > sd[0] && g.getSectors().all().stream()
+                        .anyMatch(s -> s.statement().revenue > s.statement().inputs));
+        WorksValue.Value value = WorksValue.of(g, power, Map.of(), coal, 1, g.getLandManager().getAvailableSqFt(), now);
+        check("a plant that relieves rationing prevents a positive output loss", value.avoided() > 0);
+        double already = WorksValue.avoided(g, power, Map.of(coal, 1000), Map.of(coal, 1), 0, 0);
+        check("a plant beyond all the horizon's demand claims no prevented rationing loss", already == 0);
+        BuildAdvice.Measure law = BuildAdvice.Measure.school(EducationType.LAW);
+        if (!BuildAdvice.warranted(g, law)) check("a small town's unwarranted professional school is not a shortage",
+                BuildAdvice.maintained(g, law, Map.of(), g.getAutoBuilder().target()));
+        check("the card exposes the same component sum, including land, prevented output and payroll",
+                BuildCard.worksValue(g, coal, power).words().contains("prevented output loss")
+                        && value.land() > 0 && value.payroll() > 0 && value.jobs() > 0);
+    }
+
     public static void main(String[] args) throws Exception {
         Path root = TempDirs.create("essential-works");
         highways(root, true);
         highways(root, false);
         schoolsAndPolice(root);
+        lostOutput(root);
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

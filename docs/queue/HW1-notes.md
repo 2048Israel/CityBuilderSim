@@ -19,7 +19,7 @@ kind on site can make the other wait indefinitely.
 
 ★ Automatic essential works use the full staffed supply/demand target with
 the player's slack. Manual advice retains its listing thresholds. Schools
-are eligible whenever they have demand, even below the first-school floor.
+are eligible at the thirty-percent useful-demand threshold, including the professional schools.
 Roads, all schools, police and cells join power, water and care as essential.
 
 ★ Essential orders are no longer capped to twelve months of builder output.
@@ -85,3 +85,58 @@ The Build suggestion tooltip exposes the same component sum. Essential
 service never faces the payback veto; non-essential payback adds prevented
 output to its net return. Saved payback holds retain and redenominate this
 new figure (a missing field from an older save is zero).
+
+## Measured baseline
+
+The original model at c5c7a460, instrumented only, completed the default
+playtest and money fixtures with exit 0. Its m2400 served shares reproduced
+AW1: streets 37.0023%, highways 1.85575%, police 56.1412%.
+Highways were under 20% for 2,037 months, streets for 140, police for zero.
+The pass counts are highways: AHEAD 820, WAITING/BUILDERS 1,483,
+ORDERED/BUILDERS 7, ORDERED/NONE 3, NOTHING 16, HELD/GROUND 75.
+Streets: AHEAD 589, ORDERED/BUILDERS 198, WAITING/BUILDERS 1,510,
+ORDERED/NONE 32, HELD/GROUND 75. Police: AHEAD 1,865,
+HELD/PAYBACK 366, HELD/CASH 34, ORDERED/NONE 2,
+ORDERED/BUILDERS 22, WAITING/BUILDERS 89, HELD/GROUND 26.
+Log: target/checks/hw1-before.log.
+
+A separate diagnostic snapshot of the same original four source files,
+compiled into target/hw1-before-classes, counts its plant orders without
+changing that model: 22 Wind Farms and 14 Coal Power Plants. It completed
+with exit 0. Its final one-plant comparisons at m2405, evaluated with the
+new component sum at that city's own prices, are:
+
+| plant | order | land | running PV | prevented output PV | payroll returned PV | net PV | posts | monthly payroll | lead |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Coal Power Plant | $199.4B | $29.2B | $49.5B | $0 | $2.5B | $275.6B | 68 | $92.0M | 28.3 mo |
+| Wind Farm | $4.2B | $25.4B | $2.5B | $0 | $271.3M | $31.9B | 7 | $9.7M | 9.0 mo |
+| Hydro Station | $4.1B | $6.3B | $2.0B | $0 | $196.8M | $12.2B | 5 | $7.1M | 9.9 mo |
+
+All those posts are filled. The city is fully powered, so another plant
+claims no prevented shortage loss. Coal's net cost per nameplate kW here is
+about $984k against wind's $3.94M. Hydro availability still depends on river
+slots. These are nominal figures within the baseline city, not a constant
+price comparison of two different playtest paths. Log:
+target/checks/hw1-before-plants.log. This was a diagnostic default playtest,
+not a rerun of the monetary ensemble baseline.
+
+## Verification before the final model snapshot
+
+The new EssentialWorksCheck passes cash-funded highways with and without
+free land, a street already on site, schools and police in a deficit, and
+positive prevented output under rationing. A saturated grid claims zero
+prevented rationing loss. The card exposes land, jobs, payroll and losses.
+BuildCardCheck and SaveFileCheck pass. Targeted old-law checks expose
+fourteen AutoBuildCheck assertions, three BuildAdviceCheck assertions and
+three RoadCheck assertions that HW1 must update. None is filed as unrelated
+or waived. The two PO1-owned files remain untouched until PO1 lands.
+Log: target/checks/hw1-targeted.log, exit 4. All fast checks so far compile,
+regenerate maps and report zero firm Stale findings.
+
+The initial service-target trial removed all old builder WAITING holds but
+retained long periods while works were on site. Adding the full valuation
+and twenty-year power plan kept power above 99% throughout its trial; all
+money checks passed. Water, highways and some schools still had long
+shortage spells. These are remaining faults against Jerus's strengthened
+bar, not approved blips. No readiness marker is justified by those trials.
+Final model diagnostics and the one monetary ensemble are recorded below.

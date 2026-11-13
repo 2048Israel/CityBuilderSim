@@ -1609,7 +1609,11 @@ final class BuildScreen {
         // ...and what its money is struck at (0.7.45; the UI spec's 2.10), behind an (i) after its words.
         if (!money.getChildren().isEmpty() && money.getChildren().get(0) instanceof HBox head) {
             boolean road = f.kind() == BuildCard.Kind.CITY && f.bar2Kind() == BuildCard.Bar2.LAND;
-            head.getChildren().add(1, Kept.scope("info", () -> infoButton(road ? roadBarInfo() : moneyBarInfo(), false)));
+            String info = road ? roadBarInfo() : moneyBarInfo();
+            WorksValue.Value value = f.kind() == BuildCard.Kind.CITY ? BuildCard.worksValue(ui.game, f.template(), m) : null;
+            if (value != null) info += "\n" + value.words();
+            String moneyInfo = info;
+            head.getChildren().add(1, Kept.scope("info", () -> infoButton(moneyInfo, false)));
         }
         out.add(money);
         // None for a city building with no posts: its needs line says so.

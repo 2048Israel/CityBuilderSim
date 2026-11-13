@@ -9,7 +9,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 1. **L13176** `autoSalesThisMonth.clear();`  
    _AUTOMATIC BUILDING FIRST (0.7.73; AutoBuilder), when the player has it on: between the presses, where the player's own Build lands, on the city the last press left and at the prices it was quoted -..._
 2. **L13177** `if (autoBuildProbeForTest != null) autoBuildProbeForTest.accept(false);`
-3. **L13178** `autoBuilder.pass(this);` → [AutoBuilder.pass](map/AutoBuilder.md) (L1122)
+3. **L13178** `autoBuilder.pass(this);` → [AutoBuilder.pass](map/AutoBuilder.md) (L1128)
 4. **L13179** `if (autoBuildProbeForTest != null) autoBuildProbeForTest.accept(true);`
 5. **L13188** `expectations.strikeLevel();` → [Expectations.strikeLevel](map/Expectations.md) (L141)  
    _THE MONTH'S MONEY CONSTANTS, struck before anything in it is priced (0.7.42, THE ANCHOR): at the expected price level the last month ended on, so the month lives at one level from here to the next ..._

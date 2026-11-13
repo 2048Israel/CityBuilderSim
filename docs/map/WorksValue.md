@@ -6,9 +6,9 @@
 > WHY. A plant's cheap used kW hid its land and a shortage's lost work. These
 > are comparisons at today's prices, never entries in the city's money books.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (26), [BuildingsTemplate](BuildingsTemplate.md) (9), [Health](Health.md) (9), [DecisionLog](DecisionLog.md) (7), [Game](Game.md) (5), [Sector](Sector.md) (5), [Crime](Crime.md) (4), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [Statement](Statement.md) (1), [CareType](CareType.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (28), [BuildingsTemplate](BuildingsTemplate.md) (9), [Health](Health.md) (9), [DecisionLog](DecisionLog.md) (7), [Game](Game.md) (5), [Sector](Sector.md) (5), [Crime](Crime.md) (4), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [Statement](Statement.md) (1), [CareType](CareType.md) (1)
 
-**Used by (4):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md)
+**Used by (5):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [EssentialWorksCheck](EssentialWorksCheck.md)
 
 ## Methods, in file order
 

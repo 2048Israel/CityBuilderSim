@@ -1,4 +1,4 @@
-# BuildScreen.java - 6,561 lines · 240 methods · 22 constants · interface
+# BuildScreen.java - 6,565 lines · 240 methods · 22 constants · interface
 
 `ham/citybuildersim/ui/BuildScreen.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -25,7 +25,7 @@
 > Since 0.7.5 the shell's key filter also calls buildPending() and
 > clearPending(): Enter, and Backspace or Delete, on the page showing.
 
-**Uses:** [Palette](Palette.md) (476), [Kept](Kept.md) (394), [BuildAdvice](BuildAdvice.md) (172), [BuildCard](BuildCard.md) (120), [BuildingsTemplate](BuildingsTemplate.md) (102), [Pieces](Pieces.md) (81), [CityNeeds](CityNeeds.md) (72), [BuildingType](BuildingType.md) (55), [Game](Game.md) (49), [Icons](Icons.md) (28), [LandManager](LandManager.md) (26), [Good](Good.md) (24), [AutoBuilder](AutoBuilder.md) (23), [LandmassView](LandmassView.md) (16), [Oil](Oil.md) (15), [Resource](Resource.md) (15), [ResearchView](ResearchView.md) (14), [LandParcel](LandParcel.md) (11), [JobType](JobType.md) (11), [Auction](Auction.md) (9), [Refining](Refining.md) (9), [Money](Money.md) (8), [Landmasses](Landmasses.md) (8), [BridgeView](BridgeView.md) (8), [CareType](CareType.md) (8), [ConstructionControl](ConstructionControl.md) (7), [Ports](Ports.md) (7), [RefineryFlow](RefineryFlow.md) (5), [BuildersShort](BuildersShort.md) (5), [Forestry](Forestry.md) (5)... and 42 more
+**Uses:** [Palette](Palette.md) (476), [Kept](Kept.md) (394), [BuildAdvice](BuildAdvice.md) (172), [BuildCard](BuildCard.md) (122), [BuildingsTemplate](BuildingsTemplate.md) (102), [Pieces](Pieces.md) (81), [CityNeeds](CityNeeds.md) (72), [BuildingType](BuildingType.md) (55), [Game](Game.md) (49), [Icons](Icons.md) (28), [LandManager](LandManager.md) (26), [Good](Good.md) (24), [AutoBuilder](AutoBuilder.md) (23), [LandmassView](LandmassView.md) (16), [Oil](Oil.md) (15), [Resource](Resource.md) (15), [ResearchView](ResearchView.md) (14), [LandParcel](LandParcel.md) (11), [JobType](JobType.md) (11), [Auction](Auction.md) (9), [Refining](Refining.md) (9), [Money](Money.md) (8), [Landmasses](Landmasses.md) (8), [BridgeView](BridgeView.md) (8), [CareType](CareType.md) (8), [ConstructionControl](ConstructionControl.md) (7), [Ports](Ports.md) (7), [RefineryFlow](RefineryFlow.md) (5), [BuildersShort](BuildersShort.md) (5), [Forestry](Forestry.md) (5)... and 42 more
 
 **Used by (16):** [BankScreen](BankScreen.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
@@ -40,18 +40,18 @@
 | 813 | ONE BUILDING, AS A CARD. |
 | 976 | · NEW, WHERE IT CAME FROM, AND WHAT A LAB IS FOR (R5, slice B2; research-design 5.5, mockup 5) |
 | 1113 | · PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70) |
-| 2009 | THE MATERIALS' LINES (0.7.142, batch I13; docs/studies/spec-materials.md |
-| 2671 | · the keyboard |
-| 2763 | THE OVERVIEW (0.7.24) |
-| 2869 | · the city's job |
-| 3096 | · what would help most |
-| 3466 | · AUTOMATIC BUILDING (0.7.73) |
-| 3816 | · the market builds these |
-| 3861 | A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24) |
-| 4500 | A MARKET CATEGORY, IN ITS GROUPS (0.7.25) |
-| 4724 | THE STAT CARD |
-| 5358 | · the last purchases (0.7.20) |
-| 6036 | ONE FUNDING PAGE FOR THE RUN (0.7.40) |
+| 2013 | THE MATERIALS' LINES (0.7.142, batch I13; docs/studies/spec-materials.md |
+| 2675 | · the keyboard |
+| 2767 | THE OVERVIEW (0.7.24) |
+| 2873 | · the city's job |
+| 3100 | · what would help most |
+| 3470 | · AUTOMATIC BUILDING (0.7.73) |
+| 3820 | · the market builds these |
+| 3865 | A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24) |
+| 4504 | A MARKET CATEGORY, IN ITS GROUPS (0.7.25) |
+| 4728 | THE STAT CARD |
+| 5362 | · the last purchases (0.7.20) |
+| 6040 | ONE FUNDING PAGE FOR THE RUN (0.7.40) |
 
 ## Constants
 
@@ -67,18 +67,18 @@
 | 1196 | `BuildScreen.PAVE_INFO` | `"Paving lays a Paved Road on a gravel road's ground: a Paved Road's price, le...` | ...and the (i) on its two figures: what it costs and why it may win. |
 | 1324 | `BuildScreen.ROAD_TAG` | `"cheapest per trip over its life"` | A road card's first tag (0.7.70): the cheapest a trip off the road over its life, its ground in it - BuildCard.ROAD_PER, shortened. |
 | 1327 | `BuildScreen.ROAD_OFF` | `"trip off the road"` | ...and what its land bar is per: a trip it takes off the road (BuildAdvice.unit()). |
-| 2796 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
-| 3495 | `BuildScreen.AUTO_CHIP` | `"Automatic building on ›"` | Build's heading chip on every page but the Overview while it is on: the way back to its cards. |
-| 3498 | `BuildScreen.AUTO_INFO` | `"Turned on, it orders every month what this page advises for the city's works...` | The section's (i). |
-| 3525 | `BuildScreen.AUTO_DIAL` | `(1389 - Palette.RAIL - 36 - 20) / 3.0 - 24` | A dial's width in its card at the 1,389 window: a third of the page less the card's padding. |
-| 3671 | `BuildScreen.AUTO_CAP_TITLE` | `"THE HIGHEST YIELD ITS BOND WILL TAKE"` | The cap block's caption and (i) on automatic building's debt card (CD2, D28 and D30). |
-| 3672 | `BuildScreen.AUTO_CAP_INFO` | `"The most automatic building will pay to sell the " + Game.BUILD_BOND_YEARS +...` |  |
-| 3682 | `BuildScreen.AUTO_CAP_LINE` | `"A sale that falls short at the cap keeps its ask open, offered again every m...` | The line under the chips: what a short sale does here (D30). |
-| 3686 | `BuildScreen.ASKS_INFO` | `"An order whose bond sold short at the cap waits here for its money, and the ...` | THE OPEN ASKS' heading (i). |
-| 3905 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
-| 5367 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
-| 5679 | `BuildScreen.PAYBACK_LINE` | `2 * NEED_CARD` | The pay-back line's width on the no-deposit page (0.7.101): two of Build's need cards, about as wide as the WHY section's hand-wrapped lines above it. |
-| 6295 | `BuildScreen.FUND_CAP_INFO` | `"The previews above are the auction for the cash this run is short of, at the...` | The cap block's (i) on the funding page (CD2, D30). |
+| 2800 | `BuildScreen.JOB_RING` | `58` | A ring's size on the Overview's tiles (its stroke is 6 px). |
+| 3499 | `BuildScreen.AUTO_CHIP` | `"Automatic building on ›"` | Build's heading chip on every page but the Overview while it is on: the way back to its cards. |
+| 3502 | `BuildScreen.AUTO_INFO` | `"Turned on, it orders every month what this page advises for the city's works...` | The section's (i). |
+| 3529 | `BuildScreen.AUTO_DIAL` | `(1389 - Palette.RAIL - 36 - 20) / 3.0 - 24` | A dial's width in its card at the 1,389 window: a third of the page less the card's padding. |
+| 3675 | `BuildScreen.AUTO_CAP_TITLE` | `"THE HIGHEST YIELD ITS BOND WILL TAKE"` | The cap block's caption and (i) on automatic building's debt card (CD2, D28 and D30). |
+| 3676 | `BuildScreen.AUTO_CAP_INFO` | `"The most automatic building will pay to sell the " + Game.BUILD_BOND_YEARS +...` |  |
+| 3686 | `BuildScreen.AUTO_CAP_LINE` | `"A sale that falls short at the cap keeps its ask open, offered again every m...` | The line under the chips: what a short sale does here (D30). |
+| 3690 | `BuildScreen.ASKS_INFO` | `"An order whose bond sold short at the cap waits here for its money, and the ...` | THE OPEN ASKS' heading (i). |
+| 3909 | `BuildScreen.NEED_CARD` | `300` | A card's width, on every Build page since 0.7.25 (a city category's only, in 0.7.24). |
+| 5371 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
+| 5683 | `BuildScreen.PAYBACK_LINE` | `2 * NEED_CARD` | The pay-back line's width on the no-deposit page (0.7.101): two of Build's need cards, about as wide as the WHY section's hand-wrapped lines above it. |
+| 6299 | `BuildScreen.FUND_CAP_INFO` | `"The previews above are the auction for the cash this run is short of, at the...` | The cap block's (i) on the funding page (CD2, D30). |
 
 ## Fields (state)
 
@@ -98,23 +98,23 @@
 | 869 | `final java.util.Set<String> pinnedStats` | Which cards are showing their stats, by building name. |
 | 872 | `final java.util.Map<String, Integer> orderQty` | How many of each the player has dialled up, by building name. |
 | 1116 | `int paveQty` | How many gravel roads the card's paving is set to: apart from orderQty, so Enter and the order bar never place it. |
-| 2694 | `final List<PageCard> pageCards` | The cards on the category page showing now, in the order they are laid out; each draw starts it again. |
-| 2697 | `private String pageTitle` | Which page those are on, so an order placed from the keyboard comes back to it. |
-| 2698 | `private EnumSet<BuildingType> pageCategories` |  |
-| 2701 | `private Label pendingHint` | The caption under the grid that says the two keys; shown only while something on the page is pending. |
-| 3902 | `final java.util.Map<String, BuildAdvice.Measure> measurePicked` | Which ring each city category has picked, by name; none picks its worst. |
-| 3908 | `private VBox orderBar` | The order bar, refilled in place as a stepper moves. |
-| 3911 | `private BuildAdvice.Measure orderMeasure` | The measure the order bar reads, the picked one; null on a market page (orderMarket). |
-| 4354 | `int barFills` | How many times the order bar has been filled (KeptCheck 36 and 45 count them: a kept draw fills it once, after the last card; a stepper's press, between draws, once). |
-| 4527 | `private boolean orderMarket` | Whether the order bar is a market page's, which has no measure to draw. |
-| 5377 | `final java.util.ArrayDeque<Receipt> receipts` | The last RECEIPTS purchases, newest first. |
-| 5380 | `private javafx.stage.Popup receiptPopup` | The receipt's popover while it is open, or null. |
+| 2698 | `final List<PageCard> pageCards` | The cards on the category page showing now, in the order they are laid out; each draw starts it again. |
+| 2701 | `private String pageTitle` | Which page those are on, so an order placed from the keyboard comes back to it. |
+| 2702 | `private EnumSet<BuildingType> pageCategories` |  |
+| 2705 | `private Label pendingHint` | The caption under the grid that says the two keys; shown only while something on the page is pending. |
+| 3906 | `final java.util.Map<String, BuildAdvice.Measure> measurePicked` | Which ring each city category has picked, by name; none picks its worst. |
+| 3912 | `private VBox orderBar` | The order bar, refilled in place as a stepper moves. |
+| 3915 | `private BuildAdvice.Measure orderMeasure` | The measure the order bar reads, the picked one; null on a market page (orderMarket). |
+| 4358 | `int barFills` | How many times the order bar has been filled (KeptCheck 36 and 45 count them: a kept draw fills it once, after the last card; a stepper's press, between draws, once). |
+| 4531 | `private boolean orderMarket` | Whether the order bar is a market page's, which has no measure to draw. |
+| 5381 | `final java.util.ArrayDeque<Receipt> receipts` | The last RECEIPTS purchases, newest first. |
+| 5384 | `private javafx.stage.Popup receiptPopup` | The receipt's popover while it is open, or null. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 6514 | **type** `final class BuildScreen` | The build tab: the Overview it opens on and the city's five categories opened on their needs (both 0.7.24), the market's nine in their groups (0.7.25), the strip of categories, the constraints bar that says what stops... |
+| 48 | 6518 | **type** `final class BuildScreen` | The build tab: the Overview it opens on and the city's five categories opened on their needs (both 0.7.24), the market's nine in their groups (0.7.25), the strip of categories, the constraints bar that says what stops... |
 | 53 | 7 | `BuildScreen(UserInterface ui)` |  |
 | 93 | 5 | `void forget()` | A new city or a load: nothing of the last city's page is kept. |
 | 105 | 4 | `private void keepBuild(String page, Runnable again, Runnable draw)` | A Build page of the shared screen name drawn through the window's keepMenu(): the page the pool last drew redrawn (a month landing, a stepper, a click on the same page) is kept over its nodes; another page (the Overvi... |
@@ -195,7 +195,7 @@
 | 1096 | 5 | `private static String newWords(List<BuildingsTemplate> fresh)` | The chip's tooltip after its own words, for a category with something new on it: a line "New here: the Wind Farm, the Electric Arc Furnace". |
 | 1103 | 9 | `private static Region newDot()` | A category chip's mark of something new in it: a violet dot a little larger than the who-builds dot, ringed so the two are told apart. |
 
-### PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70) (lines 1113-2008)
+### PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70) (lines 1113-2012)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -215,250 +215,250 @@
 | 1538 | 12 | `HBox priceRow(BuildCard.Figures f, boolean afford)` | The price all in, green when the cash covers it and red when it does not, with the sticker smaller. |
 | 1559 | 19 | `Label shortLine()` | The builders short (FC1), a small line under the price row: what an order's work is multiplied by when the queue has outgrown the builders' pace (the premium and the months queued, in Palette.WARN) or the city's crews... |
 | 1583 | 8 | `static String buildersShortInfo()` | What the builders' premium and the foreign contractor are, in two sentences, from the model's own constants (BuildersShort): the build card's line says it in its tooltip, the Construction page's gauge in its (i). |
-| 1602 | 20 | `List<javafx.scene.Node> cardBars(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Measure m)` | The two bars. |
-| 1624 | 25 | `static String[] barWords(BuildCard.Figures f, BuildAdvice.Measure m)` | The bars' labels and figures: {label 1, figure 1, label 2, figure 2}, label 2 null for no second bar. |
-| 1651 | 4 | `static String landWords(double sqFt)` | The land a bar reads, kept in square feet, as every area reads since 0.7.68 (LandManager.areaWords(): "23.2 m²", "0.0743 km²"); a dash for none. |
-| 1667 | 28 | `HBox investorsLine(BuildingsTemplate t)` | THE INVESTORS' LINE, on a market card: if investors have an order on its site, that, with the count and the wait; otherwise the sector's own word for the month (Game.getLastInvestment(), filed per sector, so it can na... |
-| 1701 | 11 | `String depotWords(BuildCard.Depot d, BuildCard.Investors inv)` | The Truck Depot's line after "Freight" (FR4, the study's board 4): while a depot of it is on site for investors it is building (investorsWords()' own count and wait); else whether Freight would build one now - the tru... |
-| 1714 | 6 | `static String tonnesAYear(double tonnes)` | Tonnes a year as the berth cards say them: "2.4 Mt a year", "310 kt a year", "850 t a year". |
-| 1732 | 52 | `HBox paybackLine(BuildAdvice.BerthPayback p)` | A SEA TERMINAL'S PAYBACK LINE (FR4; the study's board 4: "a line ports never had"). |
-| 1794 | 35 | `VBox portChooser(BuildingsTemplate template, Runnable after)` | WHERE A SEA TERMINAL STANDS, once the city owns shore on more than one landmass (ET5, 2026-10-25): a chip for each landmass with shore (Game.portLandmassChoices(), home first; an island no port links says so), the one... |
-| 1837 | 39 | `VBox bridgeBlock(BuildingsTemplate template, Runnable after)` | WHERE A LONG BRIDGE GOES (ET6, 2026-10-26): a chip for each landmass the city owns but home (Game.bridgeChoices(); home alone where it owns no other, and then no chips), the one the order is for lit (Game.bridgeLandma... |
-| 1878 | 4 | `String noBridgeWhy(BuildingsTemplate t, String old)` | NO_BRIDGE's reason for an order, in the survey's words (BridgeView.refusal()); `old` where the survey says none. |
-| 1888 | 9 | `void openPortCardFor(int landmass)` | "Build a port there" (ET5): the sea terminal's card on the Infrastructure page, with the landmass chosen for its next order (Game.choosePortLandmass(): one order's), so that a notice's button and the no-land page's do... |
-| 1899 | 5 | `String noCoastWhy(BuildingsTemplate t, String old)` | NO_COAST's reason for an order in the words of the old refusal (`old`), or - once the city owns ground on more than one landmass - on the landmass the card picked (LandmassView.noShoreQuote()). |
-| 1906 | 7 | `static String yearsWords(double years)` | Years as a payback says them: "11 years", "1.5 years", "over 100 years". |
-| 1918 | 19 | `String[] investorsWords(BuildCard.Investors inv)` | The line's words after "Investors": {what they are doing or last said, " · this one: " and the gate - or null}. |
-| 1939 | 29 | `String gateWords(BuildCard.Gate gate)` | A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss, consider()'s interest on its whole cost (0.7.122), and a landlord's home's mortga... |
-| 1977 | 8 | `static String interestWords(BuildCard.Gate gate)` | An INTEREST gate in words (0.7.122, batch C1): what one would earn a month against PROFIT_OVER_INTEREST times its interest on its whole cost - a month's interest and the rate it is struck at, the real one the test rea... |
-| 1993 | 15 | `static String lenderWords(BuildCard.Gate gate)` | A LENDER gate in words (I13-L): the mortgage lender's test of a landlord's home, in the lender's words and the figures of Game.lenderTest() - the call the landlords' order makes (Mortgage.Decision.refusal()'s sentence... |
+| 1602 | 24 | `List<javafx.scene.Node> cardBars(BuildCard.Figures f, BuildCard.Group group, BuildAdvice.Measure m)` | The two bars. |
+| 1628 | 25 | `static String[] barWords(BuildCard.Figures f, BuildAdvice.Measure m)` | The bars' labels and figures: {label 1, figure 1, label 2, figure 2}, label 2 null for no second bar. |
+| 1655 | 4 | `static String landWords(double sqFt)` | The land a bar reads, kept in square feet, as every area reads since 0.7.68 (LandManager.areaWords(): "23.2 m²", "0.0743 km²"); a dash for none. |
+| 1671 | 28 | `HBox investorsLine(BuildingsTemplate t)` | THE INVESTORS' LINE, on a market card: if investors have an order on its site, that, with the count and the wait; otherwise the sector's own word for the month (Game.getLastInvestment(), filed per sector, so it can na... |
+| 1705 | 11 | `String depotWords(BuildCard.Depot d, BuildCard.Investors inv)` | The Truck Depot's line after "Freight" (FR4, the study's board 4): while a depot of it is on site for investors it is building (investorsWords()' own count and wait); else whether Freight would build one now - the tru... |
+| 1718 | 6 | `static String tonnesAYear(double tonnes)` | Tonnes a year as the berth cards say them: "2.4 Mt a year", "310 kt a year", "850 t a year". |
+| 1736 | 52 | `HBox paybackLine(BuildAdvice.BerthPayback p)` | A SEA TERMINAL'S PAYBACK LINE (FR4; the study's board 4: "a line ports never had"). |
+| 1798 | 35 | `VBox portChooser(BuildingsTemplate template, Runnable after)` | WHERE A SEA TERMINAL STANDS, once the city owns shore on more than one landmass (ET5, 2026-10-25): a chip for each landmass with shore (Game.portLandmassChoices(), home first; an island no port links says so), the one... |
+| 1841 | 39 | `VBox bridgeBlock(BuildingsTemplate template, Runnable after)` | WHERE A LONG BRIDGE GOES (ET6, 2026-10-26): a chip for each landmass the city owns but home (Game.bridgeChoices(); home alone where it owns no other, and then no chips), the one the order is for lit (Game.bridgeLandma... |
+| 1882 | 4 | `String noBridgeWhy(BuildingsTemplate t, String old)` | NO_BRIDGE's reason for an order, in the survey's words (BridgeView.refusal()); `old` where the survey says none. |
+| 1892 | 9 | `void openPortCardFor(int landmass)` | "Build a port there" (ET5): the sea terminal's card on the Infrastructure page, with the landmass chosen for its next order (Game.choosePortLandmass(): one order's), so that a notice's button and the no-land page's do... |
+| 1903 | 5 | `String noCoastWhy(BuildingsTemplate t, String old)` | NO_COAST's reason for an order in the words of the old refusal (`old`), or - once the city owns ground on more than one landmass - on the landmass the card picked (LandmassView.noShoreQuote()). |
+| 1910 | 7 | `static String yearsWords(double years)` | Years as a payback says them: "11 years", "1.5 years", "over 100 years". |
+| 1922 | 19 | `String[] investorsWords(BuildCard.Investors inv)` | The line's words after "Investors": {what they are doing or last said, " · this one: " and the gate - or null}. |
+| 1943 | 29 | `String gateWords(BuildCard.Gate gate)` | A gate, in the words its own refusal uses: the deposit, the licence, the staffing test's why, landReason()'s land, the estimate's loss, consider()'s interest on its whole cost (0.7.122), and a landlord's home's mortga... |
+| 1981 | 8 | `static String interestWords(BuildCard.Gate gate)` | An INTEREST gate in words (0.7.122, batch C1): what one would earn a month against PROFIT_OVER_INTEREST times its interest on its whole cost - a month's interest and the rate it is struck at, the real one the test rea... |
+| 1997 | 15 | `static String lenderWords(BuildCard.Gate gate)` | A LENDER gate in words (I13-L): the mortgage lender's test of a landlord's home, in the lender's words and the figures of Game.lenderTest() - the call the landlords' order makes (Mortgage.Decision.refusal()'s sentence... |
 
-### THE MATERIALS' LINES (0.7.142, batch I13; docs/studies/spec-materials.md (lines 2009-2670)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2027 | 14 | `VBox materialsBlock(BuildingsTemplate t)` | The block: one label a line, each {words, colour} of materialsWords(). |
-| 2043 | 19 | `List<String[]> materialsWords(BuildingsTemplate t)` | A materials building's lines, worked out without drawing them (a probe reads them): each {words, colour, key}, in the block's order; the key says which line it is, for the scope that draws it. |
-| 2070 | 24 | `static String[] standsWords(BuildCard.Stands at)` | Where it stands: "stands on 20 sites of one hematite field · the city's: 4 hematite, 23 magnetite, 3 of its kind spoken for · 161.7M t of hematite ore left · fits" - "does not fit" in red, the field it lacks being the... |
-| 2100 | 8 | `String[] bridgeWords(BuildCard.Bridge b)` | A long bridge's crossing as its card says it (ET6; BuildCard.bridge(), BridgeView): with a crossing found, "To Island 2: 12.4 km over water up to 24 m deep (mean 11 m); the span $1.92B and 1.4M points, the landings $3... |
-| 2110 | 5 | `static String pointsWords(double points)` | A count of construction points as a card says it: "3,899", "1.4M" from a million. |
-| 2117 | 4 | `static String bridgeSpanWords(Game.BuildQuote q)` | The quote's line for a long bridge's span (ET6; Game.BuildQuote's bridgeLengthM, bridgePoints and bridgeCost): "Span of 12.4 km: 1.4M points of builders' work, $1.92B". |
-| 2123 | 4 | `static String deepWaterWords(Game.BuildQuote q)` | The quote's line for a floating platform's or its well's deep-water works (DW1; Game.BuildQuote's deepWaterDepthM, deepWaterPoints and deepWaterCost): "Deep water, 656 m down: 40K points of builders' work, $199M" (a p... |
-| 2129 | 14 | `static String[] hydroWords(BuildCard.Hydro h)` | A hydro station's river (HY1): "stands on a river with a drop: 2 of 3 free · the best site 60 m wide, 30 m of head", red when there is none. |
-| 2145 | 14 | `static String weighedWords(BuildCard.Weighed w)` | How its sector weighs one: "its whole cost $268.6M, its ground and 2,538 lorries ($173.0M) with it · it would earn $1.2M a month on it, 0.45% a month · the money gate asks $1.5M". |
-| 2161 | 9 | `static String powerWords(BuildCard.Power p)` | Its own power: "makes 60,000 kW of its own power: its 51,400 kW draw, and 8,600 kW sold to the grid, $X a month at the tariff". |
-| 2172 | 7 | `static String oldMetalWords(BuildCard.OldMetalBought o)` | The old metal it buys: "buys the city's old steel first: 10,500 t a month at $X a tonne · 12,300 t arose last month, 10,500 t of it the yards standing take". |
-| 2181 | 15 | `static String outletWords(List<BuildCard.Outlet> outlets)` | Where what it makes goes: "acid to Copper Mining, 3,500 t a month at nameplate · anode to its own works first" - or "nobody here buys lumber: it ships". |
-| 2198 | 6 | `static String crewWords(BuildCard.CrewRule rule, BuildingsTemplate t)` | A crew's E: "E: the forest it may cut, 3.5M m³, would last 150 months of the crews' cut with one more; it asks 120 · room for 3 more, 7 in all". |
-| 2213 | 6 | `Label needsLine(BuildCard.Figures f)` | What it needs: its posts by job - or "needs no staff" - then, on a market card, the share of them the owner's staffing test says the city could fill, below 99.5%; then its land, red with " - more than is free" when it... |
-| 2221 | 31 | `String needsWords(BuildCard.Figures f)` | ...its words. |
-| 2254 | 1 | **type** `record Order(HBox steps, Pieces.ActionButton build, Label quoted, Runnable reprice)` | A card's order line: the stepper, Build under it (0.7.34), the quote under that, and how they reprice in place. |
-| 2285 | 112 | `Order orderControls(BuildingsTemplate template, String key, String page, EnumSet<BuildingType> types, Runnable after)` | − N + +10 +100 and ↺, then Build, and the quote under them - as the 0.7.21 card had them, on every card now (the city's had lost +100). |
-| 2404 | 5 | `static String prepWords(Game.BuildQuote q)` | The quote's line for a foothill site (ET2; Game.BuildQuote's prepSqFt, prepPoints, prepCost): "Preparing 743 m² of foothill: 3.1 points of builders' work, $82.4k" - the ground the order has to cut pads in before its f... |
-| 2418 | 13 | `static String worksWords(Game.BuildQuote q)` | The quote's line for a highway or a railway over the city's slopes (ET4; Game.BuildQuote's worksSqFt, worksPoints, worksCost and worksMix): "Cuts, viaducts and tunnels for its 5,853 m² over the city's ground (foothill... |
-| 2443 | 3 | `Pieces.Press orderPress(BuildCard.Verdict v, int n)` | What a Build button says for n of a building (0.7.34), off the verdict the quote line reads (BuildCard.verdict(), Game.quoteBuild()): with none chosen, "Build" and "choose how many"; ready, "Build 3 · $37.5M", the cou... |
-| 2448 | 27 | `Pieces.Press orderPress(BuildCard.Verdict v, int n, BuildingsTemplate t)` | ...for the building ordered (ET5): once the city owns ground on more than one landmass a sea terminal's NO_COAST names the landmass it was asked for ("No shore on Island 2"), a plant's the linked ground; `t` null, or ... |
-| 2484 | 3 | `String[] quoteVerdict(BuildCard.Verdict v)` | The quote's verdict and its colour, in buildStack()'s order: no deposit, no coast (0.7.59) and nobody licensed in red - warned here since 0.7.25, where they were found only after the click - then short of land in red,... |
-| 2489 | 12 | `String[] quoteVerdict(BuildCard.Verdict v, BuildingsTemplate t)` | ...for the building ordered (ET5): NO_COAST on a city that owns ground on more than one landmass says which ("no shore on Island 2"); `t` null, or a city on one landmass, is the old words. |
-| 2505 | 22 | `Label infoDot(String key, VBox cover)` | The (i): hover shows the stat cover over the whole card, a click keeps it there (the dot turns blue), a second puts it away. |
-| 2542 | 93 | `VBox statCover(BuildingsTemplate t, BuildCard.Figures f)` | The stat cover, as tall as the card it covers: what the building does in sentences (whatItDoes(), which BuildMenuCheck holds for every one, 133 since 0.7.138), the figures the face does not say - materials, build poin... |
-| 2637 | 14 | `HBox statPair(String label, String value)` | A label and a figure, on one line, inside a stat cover. |
-| 2666 | 4 | `boolean placeOrder(BuildingsTemplate template, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Placing the order, and everything the city can say back. |
-
-### the keyboard (lines 2671-2762)
+### THE MATERIALS' LINES (0.7.142, batch I13; docs/studies/spec-materials.md (lines 2013-2674)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2691 | 1 | **type** `record PageCard(BuildingsTemplate template, Runnable reprice)` | One card on the page showing now: what it builds, and how it reprices itself in place. |
-| 2716 | 10 | `boolean buildPending()` | Every pending order on the page, placed as its own Build button would place it, in the page's order. |
-| 2733 | 10 | `boolean clearPending()` | Every quantity on the page back to none - the ↺ on every card at once, and like it, each card repriced in place rather than the page redrawn (see REPRICED IN PLACE, in orderControls()). |
-| 2749 | 12 | `void showPendingHint()` | The caption under the grid, shown while any card on the page has a quantity - and its line kept while it is not (0.7.20): it was taken out of the layout, so pressing "+" made the page a line taller and moved it. |
+| 2031 | 14 | `VBox materialsBlock(BuildingsTemplate t)` | The block: one label a line, each {words, colour} of materialsWords(). |
+| 2047 | 19 | `List<String[]> materialsWords(BuildingsTemplate t)` | A materials building's lines, worked out without drawing them (a probe reads them): each {words, colour, key}, in the block's order; the key says which line it is, for the scope that draws it. |
+| 2074 | 24 | `static String[] standsWords(BuildCard.Stands at)` | Where it stands: "stands on 20 sites of one hematite field · the city's: 4 hematite, 23 magnetite, 3 of its kind spoken for · 161.7M t of hematite ore left · fits" - "does not fit" in red, the field it lacks being the... |
+| 2104 | 8 | `String[] bridgeWords(BuildCard.Bridge b)` | A long bridge's crossing as its card says it (ET6; BuildCard.bridge(), BridgeView): with a crossing found, "To Island 2: 12.4 km over water up to 24 m deep (mean 11 m); the span $1.92B and 1.4M points, the landings $3... |
+| 2114 | 5 | `static String pointsWords(double points)` | A count of construction points as a card says it: "3,899", "1.4M" from a million. |
+| 2121 | 4 | `static String bridgeSpanWords(Game.BuildQuote q)` | The quote's line for a long bridge's span (ET6; Game.BuildQuote's bridgeLengthM, bridgePoints and bridgeCost): "Span of 12.4 km: 1.4M points of builders' work, $1.92B". |
+| 2127 | 4 | `static String deepWaterWords(Game.BuildQuote q)` | The quote's line for a floating platform's or its well's deep-water works (DW1; Game.BuildQuote's deepWaterDepthM, deepWaterPoints and deepWaterCost): "Deep water, 656 m down: 40K points of builders' work, $199M" (a p... |
+| 2133 | 14 | `static String[] hydroWords(BuildCard.Hydro h)` | A hydro station's river (HY1): "stands on a river with a drop: 2 of 3 free · the best site 60 m wide, 30 m of head", red when there is none. |
+| 2149 | 14 | `static String weighedWords(BuildCard.Weighed w)` | How its sector weighs one: "its whole cost $268.6M, its ground and 2,538 lorries ($173.0M) with it · it would earn $1.2M a month on it, 0.45% a month · the money gate asks $1.5M". |
+| 2165 | 9 | `static String powerWords(BuildCard.Power p)` | Its own power: "makes 60,000 kW of its own power: its 51,400 kW draw, and 8,600 kW sold to the grid, $X a month at the tariff". |
+| 2176 | 7 | `static String oldMetalWords(BuildCard.OldMetalBought o)` | The old metal it buys: "buys the city's old steel first: 10,500 t a month at $X a tonne · 12,300 t arose last month, 10,500 t of it the yards standing take". |
+| 2185 | 15 | `static String outletWords(List<BuildCard.Outlet> outlets)` | Where what it makes goes: "acid to Copper Mining, 3,500 t a month at nameplate · anode to its own works first" - or "nobody here buys lumber: it ships". |
+| 2202 | 6 | `static String crewWords(BuildCard.CrewRule rule, BuildingsTemplate t)` | A crew's E: "E: the forest it may cut, 3.5M m³, would last 150 months of the crews' cut with one more; it asks 120 · room for 3 more, 7 in all". |
+| 2217 | 6 | `Label needsLine(BuildCard.Figures f)` | What it needs: its posts by job - or "needs no staff" - then, on a market card, the share of them the owner's staffing test says the city could fill, below 99.5%; then its land, red with " - more than is free" when it... |
+| 2225 | 31 | `String needsWords(BuildCard.Figures f)` | ...its words. |
+| 2258 | 1 | **type** `record Order(HBox steps, Pieces.ActionButton build, Label quoted, Runnable reprice)` | A card's order line: the stepper, Build under it (0.7.34), the quote under that, and how they reprice in place. |
+| 2289 | 112 | `Order orderControls(BuildingsTemplate template, String key, String page, EnumSet<BuildingType> types, Runnable after)` | − N + +10 +100 and ↺, then Build, and the quote under them - as the 0.7.21 card had them, on every card now (the city's had lost +100). |
+| 2408 | 5 | `static String prepWords(Game.BuildQuote q)` | The quote's line for a foothill site (ET2; Game.BuildQuote's prepSqFt, prepPoints, prepCost): "Preparing 743 m² of foothill: 3.1 points of builders' work, $82.4k" - the ground the order has to cut pads in before its f... |
+| 2422 | 13 | `static String worksWords(Game.BuildQuote q)` | The quote's line for a highway or a railway over the city's slopes (ET4; Game.BuildQuote's worksSqFt, worksPoints, worksCost and worksMix): "Cuts, viaducts and tunnels for its 5,853 m² over the city's ground (foothill... |
+| 2447 | 3 | `Pieces.Press orderPress(BuildCard.Verdict v, int n)` | What a Build button says for n of a building (0.7.34), off the verdict the quote line reads (BuildCard.verdict(), Game.quoteBuild()): with none chosen, "Build" and "choose how many"; ready, "Build 3 · $37.5M", the cou... |
+| 2452 | 27 | `Pieces.Press orderPress(BuildCard.Verdict v, int n, BuildingsTemplate t)` | ...for the building ordered (ET5): once the city owns ground on more than one landmass a sea terminal's NO_COAST names the landmass it was asked for ("No shore on Island 2"), a plant's the linked ground; `t` null, or ... |
+| 2488 | 3 | `String[] quoteVerdict(BuildCard.Verdict v)` | The quote's verdict and its colour, in buildStack()'s order: no deposit, no coast (0.7.59) and nobody licensed in red - warned here since 0.7.25, where they were found only after the click - then short of land in red,... |
+| 2493 | 12 | `String[] quoteVerdict(BuildCard.Verdict v, BuildingsTemplate t)` | ...for the building ordered (ET5): NO_COAST on a city that owns ground on more than one landmass says which ("no shore on Island 2"); `t` null, or a city on one landmass, is the old words. |
+| 2509 | 22 | `Label infoDot(String key, VBox cover)` | The (i): hover shows the stat cover over the whole card, a click keeps it there (the dot turns blue), a second puts it away. |
+| 2546 | 93 | `VBox statCover(BuildingsTemplate t, BuildCard.Figures f)` | The stat cover, as tall as the card it covers: what the building does in sentences (whatItDoes(), which BuildMenuCheck holds for every one, 133 since 0.7.138), the figures the face does not say - materials, build poin... |
+| 2641 | 14 | `HBox statPair(String label, String value)` | A label and a figure, on one line, inside a stat cover. |
+| 2670 | 4 | `boolean placeOrder(BuildingsTemplate template, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Placing the order, and everything the city can say back. |
 
-### THE OVERVIEW (0.7.24) (lines 2763-2868)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2799 | 7 | `void showOverview()` | The Build tab's front page. |
-| 2813 | 31 | `void drawOverview()` | The Overview itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
-| 2846 | 16 | `HBox overviewLead()` | The one line: whose job the city's works are. |
-
-### the city's job (lines 2869-3095)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2872 | 11 | `javafx.scene.layout.GridPane cityJob(List<CityNeeds.Need> all)` | The five, a tile each. |
-| 2885 | 10 | `static CityNeeds.Go goOf(String category)` | Which of NEEDS YOU's doors a city category is. |
-| 2897 | 3 | `static String verdict(int level)` | A verdict's colour: green, amber or red, as NEEDS YOU colours its rows; -1, no verdict, is the city's blue. |
-| 2905 | 1 | **type** `record Shown(String figure, double arc, String caption, String detail)` | What a ring says: its figure, how much of it is drawn, a caption of a few words and a smaller line. |
-| 2913 | 58 | `Shown shown(CityNeeds.Need n)` | A need, as a ring shows it: the figure NEEDS YOU judged, worded for the ring. |
-| 2973 | 1 | `static String pct(double share)` | A share as a whole per cent; a dash for one that is not a number (a network with nothing supplying it). |
-| 2976 | 3 | `static String servedWords(CityNeeds.Served s)` | A served gauge's words after its figure (0.7.41), the same on every screen: "served, short", "served, tight", "served, enough" - or "served" alone where no line judges it (transit). |
-| 2981 | 3 | `static String servedTone(CityNeeds.Served s)` | ...its colour: the one verdict's, or the city's blue where no line judges it. |
-| 2986 | 4 | `static double arc(CityNeeds.Served s)` | ...and its ring's arc: the share held to a whole ring, so a ring is full when the need is met (0.7.41: a load's ring was full when it was over). |
-| 2992 | 17 | `Shown fine(String category, List<CityNeeds.Need> all)` | A category with nothing near its line: a few words, and the figure nearest one. |
-| 3011 | 7 | `int onSiteIn(BuildAdvice.Category c)` | Buildings on site in a category, for anybody's order (the Strategic Reserve in Infrastructure's, not Industry's: Category.holds()). |
-| 3020 | 6 | `int standingIn(BuildAdvice.Category c)` | ...and standing. |
-| 3028 | 10 | `HBox onSiteLine(int n, String none)` | A crane and "N on site", in the building colour, or a quiet word when there is nothing. |
-| 3047 | 48 | `VBox jobTile(BuildAdvice.Category c, List<CityNeeds.Need> all)` | One of the city's five: its worst need as a ring, a caption, a line, and what is on site. |
-
-### what would help most (lines 3096-3465)
+### the keyboard (lines 2675-2766)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3106 | 30 | `javafx.scene.Node adviceTotal(List<BuildAdvice.Suggestion> cards)` | "all three ≈ $X of your $Y", and the button that orders them ("Build all three", 0.7.34; a step chip, "Order all three", before). |
-| 3144 | 32 | `Pieces.Press allPress(List<BuildAdvice.Suggestion> cards)` | "Build all three" or "Build both" (0.7.34), read off the run the model will place (0.7.51; each card's own look, until then, said GO for runs the model stopped): held when Game.buildRunAhead() stops it short, with the... |
-| 3178 | 3 | `void orderAll(List<BuildAdvice.Suggestion> advice)` | The suggestions as one run (0.7.40, placeRun(); BuildAdvice.run() since 0.7.51): funded whole when it is more than the cash, each placed in turn by its own button's path; the first refusal stops the run, as Enter's does. |
-| 3183 | 16 | `javafx.scene.Node adviceRow(List<BuildAdvice.Suggestion> advice)` | Up to three cards, or a line saying there is nothing to suggest. |
-| 3201 | 4 | `String gaugeText(BuildAdvice.Measure m, java.util.Map<BuildingsTemplate, Integer> added)` | A measure's gauge with these buildings standing as well, as its ring writes it (0.7.41): what a served measure serves, else figureText() of its figure. |
-| 3207 | 15 | `String figureText(BuildAdvice.Measure m, double f)` | A measure's figure, worded as its ring words it: a share, a load, months, people, or a multiple of Canada's crime - for a served measure (0.7.41) gaugeText() reads what it serves instead. |
-| 3229 | 24 | `String doesWhat(BuildAdvice.Suggestion s)` | What a suggested order does, in a line. |
-| 3255 | 6 | `static BuildAdvice.Measure showOn(BuildAdvice.Suggestion s)` | The measure Show opens a category on, for a suggestion: transit's ring for a line, death care's for the plots. |
-| 3263 | 101 | `VBox suggestionCard(BuildAdvice.Suggestion s)` | One suggested order: the need, before and after, the count and the building, its three lines (cardWords(), 0.7.51), its price, Show, and its Build button. |
-| 3376 | 1 | **type** `record CardWords(String does, String sized, String land, String landTip, String heldBack)` | A suggestion card's three lines (0.7.51), worked out without drawing them (a probe reads them): what the order does - and, on credit, by how much the cash the cards before leave falls short; when it opens and what it ... |
-| 3378 | 57 | `CardWords cardWords(BuildAdvice.Suggestion s)` |  |
-| 3437 | 3 | `static String suggestionName(BuildAdvice.Suggestion s)` | A suggestion's building as its card names it (0.7.70): its own name, or the gravel roads a paving paves. |
-| 3442 | 1 | `static String pct1(double share)` | A share as a percentage to one place: .0135 reads "1.4%" (the card's growth line puts its own "+"). |
-| 3451 | 14 | `Pieces.Press suggestionPress(BuildAdvice.Suggestion s)` | A suggestion's button (0.7.34): a card's words for its count, off the same verdict (orderPress()) - on credit as well when its quote is more than the cash the suggestions before it leave (Suggestion.needsCredit(), the... |
+| 2695 | 1 | **type** `record PageCard(BuildingsTemplate template, Runnable reprice)` | One card on the page showing now: what it builds, and how it reprices itself in place. |
+| 2720 | 10 | `boolean buildPending()` | Every pending order on the page, placed as its own Build button would place it, in the page's order. |
+| 2737 | 10 | `boolean clearPending()` | Every quantity on the page back to none - the ↺ on every card at once, and like it, each card repriced in place rather than the page redrawn (see REPRICED IN PLACE, in orderControls()). |
+| 2753 | 12 | `void showPendingHint()` | The caption under the grid, shown while any card on the page has a quantity - and its line kept while it is not (0.7.20): it was taken out of the layout, so pressing "+" made the page a line taller and moved it. |
 
-### AUTOMATIC BUILDING (0.7.73) (lines 3466-3815)
+### THE OVERVIEW (0.7.24) (lines 2767-2872)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3509 | 3 | `static String autoHint(AutoBuilder ab)` | The heading's quiet words: on or off. |
-| 3514 | 9 | `javafx.scene.layout.GridPane autoRow()` | The two dials and what it has done, a card each. |
-| 3528 | 5 | `static String[] autoMarginWords(double slack)` | The spare margin's card's two lines: its title and what it means. |
-| 3535 | 13 | `static String[] autoLimitWords(AutoBuilder ab, Game g)` | The debt limit's card's two lines, and the mark under its slider: where the city stands now (0.7.81: its debt over a year of GDP; since 0.7.101 all it owes over the output of its last twelve months). |
-| 3550 | 5 | `static String[] autoCashWords()` | "Build from cash anyway" (0.7.81): the lead, the two chips, and each chip's tooltip. |
-| 3561 | 31 | `static List<String> autoStatusWords(AutoBuilder ab, int month)` | The third card's words: on or off, what it has done all told, its latest orders (each with why, for its tooltip), and what holds it back - {state, line, totals, held, held tooltip, then order and why in pairs}. |
-| 3594 | 4 | `static Pieces.Press autoPress(boolean on)` | The switch, as its button says it. |
-| 3600 | 12 | `VBox autoCard(String title, javafx.scene.Node dial, String words)` | A card in the row: its title, a dial and its words. |
-| 3615 | 8 | `VBox autoMarginCard(AutoBuilder ab)` | Kept (KP3): the two dials are Ladders (kept-safe since KP2): their callbacks read the automatic builder of the game as it stands when they fire, never the one the draw held, and a redraw does not set a slider the play... |
-| 3624 | 40 | `VBox autoLimitCard(AutoBuilder ab)` |  |
-| 3666 | 3 | `double autoFair()` | What the builder's "at …" chip starts from: the fair yield today of the bond it sells. |
-| 3699 | 10 | `static String[] askWords(AutoBuilder.OpenAsk a, int now)` | One open ask in words, apart from the nodes (a probe reads them): {the order, the measure it keeps ahead, what the order costs, raised so far, still to raise, the months open}. |
-| 3716 | 44 | `List<javafx.scene.Node> autoAsks()` | THE OPEN ASKS (CD2, D30): a row for each order automatic building is waiting on - the order and what it keeps ahead, what it costs, what is raised so far, what is still to raise, the months open - with Withdraw. |
-| 3762 | 9 | `private VBox askFigure(String label, String value, String tone)` | One figure of an open ask's row: its small label over its value. |
-| 3772 | 43 | `VBox autoStatusCard(AutoBuilder ab)` |  |
+| 2803 | 7 | `void showOverview()` | The Build tab's front page. |
+| 2817 | 31 | `void drawOverview()` | The Overview itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
+| 2850 | 16 | `HBox overviewLead()` | The one line: whose job the city's works are. |
 
-### the market builds these (lines 3816-3860)
+### the city's job (lines 2873-3099)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3819 | 11 | `javafx.scene.layout.GridPane marketRow()` | The nine, quieter. |
-| 3832 | 28 | `HBox marketTile(BuildAdvice.Category c)` | One of the market's: its icon, its name, what stands and what is on site. |
+| 2876 | 11 | `javafx.scene.layout.GridPane cityJob(List<CityNeeds.Need> all)` | The five, a tile each. |
+| 2889 | 10 | `static CityNeeds.Go goOf(String category)` | Which of NEEDS YOU's doors a city category is. |
+| 2901 | 3 | `static String verdict(int level)` | A verdict's colour: green, amber or red, as NEEDS YOU colours its rows; -1, no verdict, is the city's blue. |
+| 2909 | 1 | **type** `record Shown(String figure, double arc, String caption, String detail)` | What a ring says: its figure, how much of it is drawn, a caption of a few words and a smaller line. |
+| 2917 | 58 | `Shown shown(CityNeeds.Need n)` | A need, as a ring shows it: the figure NEEDS YOU judged, worded for the ring. |
+| 2977 | 1 | `static String pct(double share)` | A share as a whole per cent; a dash for one that is not a number (a network with nothing supplying it). |
+| 2980 | 3 | `static String servedWords(CityNeeds.Served s)` | A served gauge's words after its figure (0.7.41), the same on every screen: "served, short", "served, tight", "served, enough" - or "served" alone where no line judges it (transit). |
+| 2985 | 3 | `static String servedTone(CityNeeds.Served s)` | ...its colour: the one verdict's, or the city's blue where no line judges it. |
+| 2990 | 4 | `static double arc(CityNeeds.Served s)` | ...and its ring's arc: the share held to a whole ring, so a ring is full when the need is met (0.7.41: a load's ring was full when it was over). |
+| 2996 | 17 | `Shown fine(String category, List<CityNeeds.Need> all)` | A category with nothing near its line: a few words, and the figure nearest one. |
+| 3015 | 7 | `int onSiteIn(BuildAdvice.Category c)` | Buildings on site in a category, for anybody's order (the Strategic Reserve in Infrastructure's, not Industry's: Category.holds()). |
+| 3024 | 6 | `int standingIn(BuildAdvice.Category c)` | ...and standing. |
+| 3032 | 10 | `HBox onSiteLine(int n, String none)` | A crane and "N on site", in the building colour, or a quiet word when there is nothing. |
+| 3051 | 48 | `VBox jobTile(BuildAdvice.Category c, List<CityNeeds.Need> all)` | One of the city's five: its worst need as a ring, a caption, a line, and what is on site. |
 
-### A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24) (lines 3861-4499)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3914 | 6 | `BuildAdvice.Measure worstMeasure(BuildAdvice.Category c, List<BuildAdvice.Measure> measures, List<CityNeeds.Need> all)` | The worst of a category's measures: its NEEDS YOU row first in the panel's order, else the first ring. |
-| 3929 | 5 | `int levelOf(BuildAdvice.Measure m, List<CityNeeds.Need> all)` | A measure's verdict. |
-| 3936 | 6 | `void showCityCategory(BuildAdvice.Category c)` | A city category's page. |
-| 3950 | 92 | `void drawCityCategory(BuildAdvice.Category c)` | A city category's page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
-| 4044 | 19 | `String measureSubtitle(BuildAdvice.Measure m)` | A few words on what a measure is for, beside its heading. |
-| 4065 | 5 | `Label scarceNote(List<BuildingsTemplate> shown, double[] fill)` | At the heading's right: which of these buildings' staff the city fills worst. |
-| 4072 | 13 | `String scarceWords(List<BuildingsTemplate> shown, double[] fill)` | ...its words, worked out without the label (0.7.28: the Services care heading says them too). |
-| 4087 | 16 | `String jobPlural(JobType job)` | A job type in plain words, plural: "doctors", "nurses", "unskilled workers". |
-| 4105 | 14 | `static String unitWords(BuildAdvice.Measure m)` | What a measure is counted in, for a ring's "short by N ..." - only care reaches it since 0.7.25, when the cards' "serves N ..." moved to BuildCard.doesWords(). |
-| 4121 | 3 | `static String perTenThousand(double staff)` | The staff bar's figure: a tenth below a hundred, whole and grouped above. |
-| 4131 | 2 | **type** `record RingWords(String figure, double arc, String tone, String shortLine, String onSite, int units, CityNe...` | What a ring says, worked out without drawing it: its figure, how much of it is drawn, its verdict's colour, how far short in people or places, and what is on site with its wait. |
-| 4134 | 108 | `RingWords ringWords(BuildAdvice.Measure m, List<CityNeeds.Need> all)` |  |
-| 4244 | 49 | `HBox measureCard(BuildAdvice.Category c, BuildAdvice.Measure m, List<CityNeeds.Need> all, boolean picked, boolean small)` | One ring: its figure, how far short, and what is on site with its wait; a click picks it. |
-| 4295 | 3 | `static String wordsAt(double size, String colour)` | Words at a size between Palette's steps (0.7.24's cards and rings), in a colour. |
-| 4300 | 3 | `static String figureAt(double size, String colour)` | A figure at a size between Palette's steps: Palette.figure()'s face. |
-| 4305 | 3 | `static String shortOrWhole(double v)` | A figure that may be large: "2,500", "120k", "1.2M". |
-| 4312 | 5 | `String moneyBarInfo()` | The money bar's (i) (0.7.45): what a build's money is struck at this month. |
-| 4319 | 7 | `String roadBarInfo()` | A road card's money bar's (i) (0.7.70): what its cost over its life is made of - BuildAdvice.lifetime(), the advice's own figure. |
-| 4333 | 19 | `VBox barRow(String label, String value, double share, String colour, double wide, String svg, boolean track)` | One of the card's two bars: what it measures, its figure, and the bar scaled across its group - with no track when `track` is false (0.7.25): a group of one, where a full bar compares nothing, or a card with nothing t... |
-| 4364 | 129 | `void refreshOrderBar()` | The order bar: what the page's steppers add up to, its price against the cash, the picked measure now, when what is on site opens and with the order - as a stacked bar and in figures - what the order needs, and one Bu... |
-| 4495 | 4 | `Pieces.Press orderBarPress(int units, double total, double cash)` | The order bar's Build (0.7.34): "Build 5 · $X" with the order's total, or "Build 5 on credit · $X" past the cash. |
-
-### A MARKET CATEGORY, IN ITS GROUPS (0.7.25) (lines 4500-4723)
+### what would help most (lines 3100-3469)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4530 | 10 | `void showMarketCategory(BuildAdvice.Category c)` | A market category's page. |
-| 4547 | 39 | `void drawMarketCategory(BuildAdvice.Category c)` | A market category's page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
-| 4588 | 5 | `private HBox categoryHead(BuildAdvice.Category c)` | A category page's head: the title, the dots' key, the way to the construction page; the Overview's padding. |
-| 4595 | 5 | `private javafx.scene.layout.FlowPane categoryStrip(BuildAdvice.Category c)` | A category page's strip of categories, without the padding the Overview's has. |
-| 4602 | 6 | `private javafx.scene.layout.FlowPane cardsFlow()` | A row of cards, wrapping at the page's width: kept, so its wrap length is bound once for the scroller (wrapToScroller()). |
-| 4610 | 5 | `private Label pendingHintLabel()` | The caption under the grid that says the two keys, made for the page's scope. |
-| 4622 | 18 | `HBox groupHead(BuildCard.Group group)` | A market group's heading - "FOOD MILLS · bread and bakery goods from crops", or "STEEL · from iron ore" where the goods would repeat the name - and at its right the sector's figure the group answers to, both wrapping ... |
-| 4646 | 32 | `String groupSubtitle(BuildCard.Group group)` | What a market group is for, beside its name: the goods a maker group makes and what from, off the templates' own goods; a few words for the rest. |
-| 4680 | 4 | `static String andList(List<String> words)` | "a, b and c". |
-| 4686 | 30 | `String groupNote(BuildCard.Note n)` | A group's note, in words (BuildCard.NoteKind). |
-| 4718 | 5 | `static String doors(double shortfall)` | Households of a segment without a door, or the doors to spare (RealEstate.doorShortfall(), negative when there are). |
+| 3110 | 30 | `javafx.scene.Node adviceTotal(List<BuildAdvice.Suggestion> cards)` | "all three ≈ $X of your $Y", and the button that orders them ("Build all three", 0.7.34; a step chip, "Order all three", before). |
+| 3148 | 32 | `Pieces.Press allPress(List<BuildAdvice.Suggestion> cards)` | "Build all three" or "Build both" (0.7.34), read off the run the model will place (0.7.51; each card's own look, until then, said GO for runs the model stopped): held when Game.buildRunAhead() stops it short, with the... |
+| 3182 | 3 | `void orderAll(List<BuildAdvice.Suggestion> advice)` | The suggestions as one run (0.7.40, placeRun(); BuildAdvice.run() since 0.7.51): funded whole when it is more than the cash, each placed in turn by its own button's path; the first refusal stops the run, as Enter's does. |
+| 3187 | 16 | `javafx.scene.Node adviceRow(List<BuildAdvice.Suggestion> advice)` | Up to three cards, or a line saying there is nothing to suggest. |
+| 3205 | 4 | `String gaugeText(BuildAdvice.Measure m, java.util.Map<BuildingsTemplate, Integer> added)` | A measure's gauge with these buildings standing as well, as its ring writes it (0.7.41): what a served measure serves, else figureText() of its figure. |
+| 3211 | 15 | `String figureText(BuildAdvice.Measure m, double f)` | A measure's figure, worded as its ring words it: a share, a load, months, people, or a multiple of Canada's crime - for a served measure (0.7.41) gaugeText() reads what it serves instead. |
+| 3233 | 24 | `String doesWhat(BuildAdvice.Suggestion s)` | What a suggested order does, in a line. |
+| 3259 | 6 | `static BuildAdvice.Measure showOn(BuildAdvice.Suggestion s)` | The measure Show opens a category on, for a suggestion: transit's ring for a line, death care's for the plots. |
+| 3267 | 101 | `VBox suggestionCard(BuildAdvice.Suggestion s)` | One suggested order: the need, before and after, the count and the building, its three lines (cardWords(), 0.7.51), its price, Show, and its Build button. |
+| 3380 | 1 | **type** `record CardWords(String does, String sized, String land, String landTip, String heldBack)` | A suggestion card's three lines (0.7.51), worked out without drawing them (a probe reads them): what the order does - and, on credit, by how much the cash the cards before leave falls short; when it opens and what it ... |
+| 3382 | 57 | `CardWords cardWords(BuildAdvice.Suggestion s)` |  |
+| 3441 | 3 | `static String suggestionName(BuildAdvice.Suggestion s)` | A suggestion's building as its card names it (0.7.70): its own name, or the gravel roads a paving paves. |
+| 3446 | 1 | `static String pct1(double share)` | A share as a percentage to one place: .0135 reads "1.4%" (the card's growth line puts its own "+"). |
+| 3455 | 14 | `Pieces.Press suggestionPress(BuildAdvice.Suggestion s)` | A suggestion's button (0.7.34): a card's words for its count, off the same verdict (orderPress()) - on credit as well when its quote is more than the cash the suggestions before it leave (Suggestion.needsCredit(), the... |
 
-### THE STAT CARD (lines 4724-5357)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4739 | 5 | `Region cardGap()` | A hairline of space, used where a blank line would be too much. |
-| 4746 | 8 | `static String cargoWords(ham.citybuildersim.Ports.Cargo k)` | A kind of cargo's goods, in words (0.7.86; Good.cargo()). |
-| 4773 | 361 | `public List<String> whatItDoes(BuildingsTemplate t)` | Package-private, not private, so BuildMenuCheck can read the sentences back. |
-| 5141 | 29 | `List<String> whatSafetyItGives(BuildingsTemplate t)` | The police and the prisons (2026-09-11). |
-| 5179 | 75 | `public List<String> whatCareItGives(BuildingsTemplate t)` | The healthcare version, which needs the care type and not the category. |
-| 5256 | 16 | `public String jobLabel(JobType job)` | JobType, in words a player reads rather than the enum constant. |
-| 5283 | 74 | `HBox receiptCorner(String menuTitle, EnumSet<BuildingType> categories)` | The receipt dot, top-right of the menu, and the popover it opens with the last purchases (0.7.20; the card was in the page and showed one). |
-
-### the last purchases (0.7.20) (lines 5358-6035)
+### AUTOMATIC BUILDING (0.7.73) (lines 3470-3819)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5364 | 1 | **type** `record Receipt(int serial, String name, int quantity, double total, double salesTax, int month)` | One purchase, as the receipt shows it: what and how many, what it cost all in, the sales tax in that, and when. |
-| 5388 | 7 | `void noteReceipt(Game.BuildQuote quote)` | After an order went through: the receipt the model wrote for it, with the sales tax off the quote it was charged on - quoted just before the order, against the city the order was then placed in, as Game.processBuildOr... |
-| 5397 | 4 | `void forgetReceipts()` | Another city, founded or loaded (UserInterface.anotherCity()): its purchases are not this one's. |
-| 5402 | 18 | `private void openReceipt(Button dot)` |  |
-| 5422 | 6 | `void closeReceipt()` | Close the receipt, if it is open. |
-| 5430 | 23 | `private VBox receiptCard()` | The card in the popover: the last purchases, newest first, each with its total and the tax in it. |
-| 5454 | 6 | `Label receiptLine(String label, String value)` |  |
-| 5469 | 12 | `String schoolHeading(EducationType type)` | A school's heading, and what it is actually for. |
-| 5490 | 19 | `String schoolSubtitle(EducationType type)` | One line, like the care subtitles beside it. |
-| 5511 | 10 | `String careHeading(CareType care)` | The group's name, in the player's words rather than the enum's. |
-| 5529 | 22 | `String careSubtitle(CareType care)` | What building one of these actually gets you. |
-| 5581 | 5 | `void showNoDepositMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money, the land, and nothing to dig. |
-| 5588 | 45 | `void drawNoDeposit(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-deposit page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
-| 5639 | 14 | `static String[] noDepositPage(Resource site, String building, int quantity, int owned, int committed, double left)` | The no-deposit page's words, for iron or oil (0.7.62; pure, so a probe measures them): the title, the WHY section's five lines, the reserve line and the Buy's sub-line. |
-| 5661 | 16 | `static String[] noDepositAtSea(boolean platform, String building, int quantity, int owned, int committed, double left)` | ...and for the oil at sea (0.7.91; pure, as above): an Offshore Platform with no sea field to take it (Oil.FLOATING_MAX_DEPTH_M deep at most, DW1), or a Platform Well with no free slot - `owned` is Game.sitesFor()'s, ... |
-| 5690 | 9 | `static String ironPaybackWords(BuildAdvice.Payback p)` | Whether the cheapest iron field pays back here, as the no-deposit page says it under its Buy (0.7.101, Jerus's decision B: "the build advice says when an iron field won't pay back for a small town"): the test player's... |
-| 5701 | 7 | `static String noDepositWords(LandParcel p, Resource site)` | The no-deposit page's Buy: "Buy the cheapest: East 7 · 1 iron site, 12.8 Mt for US$6.16M" (or oil sites, 0.7.62) - its sites and, since 0.7.64, its tonnes: the whole of every field centred in it; "the cheapest" since ... |
-| 5719 | 5 | `void showNoCoastMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money and the land, and no sea to draw (0.7.59). |
-| 5726 | 54 | `void drawNoCoast(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-coast page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
-| 5788 | 5 | `void showNoRiverMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money and the land, and no river with a drop to dam (HY1). |
-| 5795 | 24 | `void drawNoRiver(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-river page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
-| 5828 | 5 | `void showNoBridgeMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money and the land, and the model finds no way across the water (ET6). |
-| 5835 | 21 | `void drawNoBridge(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-way-across page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
-| 5864 | 5 | `void showNoLicenceMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Nobody licensed to practise in it. |
-| 5871 | 37 | `void drawNoLicence(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-licence page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
-| 5910 | 5 | `private Label refusalTitle(String text)` | A refusal page's title, kept. |
-| 5927 | 6 | `void showNoLandMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The city has the money and nowhere to put the building. |
-| 5935 | 78 | `void drawNoLand(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The no-land page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
-| 6015 | 6 | `private Button pageButton(String text, Runnable go)` | A button on a refusal page, kept: the one the last draw made, its words set and its action set at every draw. |
-| 6023 | 3 | `static String noLandWords(LandParcel p)` | The no-land page's Buy: "Buy the best: 3.4 km² for US$12.1M" (spec-land 2.8). |
-| 6028 | 7 | `static String noLandSub(LandParcel p, double shortSqFt)` | ...and what it is: bare ground that covers the shortfall, the ore left to the deposit's own page (batch J1c) - or, with no bare offer big enough, the best value, and buy again. |
+| 3513 | 3 | `static String autoHint(AutoBuilder ab)` | The heading's quiet words: on or off. |
+| 3518 | 9 | `javafx.scene.layout.GridPane autoRow()` | The two dials and what it has done, a card each. |
+| 3532 | 5 | `static String[] autoMarginWords(double slack)` | The spare margin's card's two lines: its title and what it means. |
+| 3539 | 13 | `static String[] autoLimitWords(AutoBuilder ab, Game g)` | The debt limit's card's two lines, and the mark under its slider: where the city stands now (0.7.81: its debt over a year of GDP; since 0.7.101 all it owes over the output of its last twelve months). |
+| 3554 | 5 | `static String[] autoCashWords()` | "Build from cash anyway" (0.7.81): the lead, the two chips, and each chip's tooltip. |
+| 3565 | 31 | `static List<String> autoStatusWords(AutoBuilder ab, int month)` | The third card's words: on or off, what it has done all told, its latest orders (each with why, for its tooltip), and what holds it back - {state, line, totals, held, held tooltip, then order and why in pairs}. |
+| 3598 | 4 | `static Pieces.Press autoPress(boolean on)` | The switch, as its button says it. |
+| 3604 | 12 | `VBox autoCard(String title, javafx.scene.Node dial, String words)` | A card in the row: its title, a dial and its words. |
+| 3619 | 8 | `VBox autoMarginCard(AutoBuilder ab)` | Kept (KP3): the two dials are Ladders (kept-safe since KP2): their callbacks read the automatic builder of the game as it stands when they fire, never the one the draw held, and a redraw does not set a slider the play... |
+| 3628 | 40 | `VBox autoLimitCard(AutoBuilder ab)` |  |
+| 3670 | 3 | `double autoFair()` | What the builder's "at …" chip starts from: the fair yield today of the bond it sells. |
+| 3703 | 10 | `static String[] askWords(AutoBuilder.OpenAsk a, int now)` | One open ask in words, apart from the nodes (a probe reads them): {the order, the measure it keeps ahead, what the order costs, raised so far, still to raise, the months open}. |
+| 3720 | 44 | `List<javafx.scene.Node> autoAsks()` | THE OPEN ASKS (CD2, D30): a row for each order automatic building is waiting on - the order and what it keeps ahead, what it costs, what is raised so far, what is still to raise, the months open - with Withdraw. |
+| 3766 | 9 | `private VBox askFigure(String label, String value, String tone)` | One figure of an open ask's row: its small label over its value. |
+| 3776 | 43 | `VBox autoStatusCard(AutoBuilder ab)` |  |
 
-### ONE FUNDING PAGE FOR THE RUN (0.7.40) (lines 6036-6561)
+### the market builds these (lines 3820-3864)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6088 | 1 | **type** `record RunFrom(String title, EnumSet<BuildingType> categories, boolean cards)` | Where a run came from: the page to come back to, and whether its orders are that page's cards - each taken off its card once placed, the rest left on theirs. |
-| 6091 | 5 | `static java.util.LinkedHashMap<BuildingsTemplate, Integer> runOf(BuildingsTemplate t, int n)` | One order as a run of one. |
-| 6098 | 8 | `static java.util.LinkedHashMap<BuildingsTemplate, Integer> firstOf(java.util.Map<BuildingsTemplate, Integer> run, int n)` | The first `n` orders of a run. |
-| 6108 | 8 | `static String runNames(java.util.Map<BuildingsTemplate, Integer> run)` | A run's orders in words, the order bar's way: "5 × Walk-in Clinic + 3 × Paved Road". |
-| 6123 | 12 | `boolean placeRun(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | A run placed (0.7.40): funded first when the orders that can go ahead cost more than the cash (showBuildFunding()), otherwise placed in turn as they always were. |
-| 6153 | 22 | `private boolean goAhead(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from, String paper)` | Every order of the run in turn, through buildStack() - the path each card's Build always took - each placed one taken off its card. |
-| 6177 | 2 | **type** `record Placed(java.util.LinkedHashMap<BuildingsTemplate, Integer> built, java.util.LinkedHashMap<BuildingsT...` | What placing a run in turn did: the orders placed, the orders left - the one that stopped it first - and buildStack()'s answer there, SUCCESS when nothing stopped it. |
-| 6181 | 17 | `Placed placeInTurn(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | goAhead()'s placing, without the page it then draws (a probe runs it): each order through buildStack() until one is not placed, each placed one's receipt noted and, from the cards, its card emptied. |
-| 6206 | 2 | **type** `record RunWords(java.util.LinkedHashMap<BuildingsTemplate, Integer> funded, double invoice, double gap, Str...` | What the funding page says about a run, worked out without drawing it (a probe reads it): the orders that can go ahead, their invoice and the gap, the summary's line, what the treasury holds and the bar's part for it,... |
-| 6209 | 33 | `RunWords runWords(java.util.Map<BuildingsTemplate, Integer> run)` |  |
-| 6244 | 2 | **type** `record RunOffer(String name, DebtQuote quote, String rate, String tone, String ending, Pieces.Press action,...` | One loan the funding page offers, worded - what Pieces.offerCard() draws, as the land office's Offer is: its name, quote, rate's words and colour, ending, button; what booking it does to the model (a probe runs it); a... |
-| 6256 | 37 | `List<RunOffer> runOffers(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | The two offers, the old page's on the run's gap: the bond first - what the page recommends, since a building outlives either loan and the matching principle pays for a long-lived asset with long-lived debt - then the ... |
-| 6311 | 26 | `static List<String> shortWords(List<RunOffer> loans)` | What the funding page says under a preview that does not cover, apart from the nodes (a probe reads it): {the heading, one sentence for each offer that is short, then what can be done}. |
-| 6347 | 43 | `javafx.scene.Node shortAnswers(List<RunOffer> loans)` | The funding card's answers to a short preview (CD2, D30, §4.5): the red words (shortWords()) and the cap chips, which quote both offers again at the cap they name. |
-| 6392 | 20 | `HBox runHead(String sub, RunFrom from)` | The run's pages' head: "Build › Funding", the title a way back to the page the run came from, and "‹ <that page>" at the right - the land office's head() on Build. |
-| 6419 | 11 | `void showBuildFunding(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | The funding page for a run. |
-| 6437 | 70 | `void drawFunding(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | The funding page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
-| 6513 | 14 | `String[] fellShortWords(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left, RunFro...` | What the fell-short card says, worked out without drawing it: its heading, then what was built, what was not and what it is still short of - the model's gap for the orders left, as it stands now. |
-| 6537 | 6 | `void showBuildFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left, RunFro...` | The loan went through and an order still did not: one red card in Build's frame, as the land office's "Not bought" (0.7.40; it was THE MONEY IS IN, THE BUILDING IS NOT, a page of its own). |
-| 6548 | 13 | `void drawFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left, RunFrom fro...` | The fell-short card itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
+| 3823 | 11 | `javafx.scene.layout.GridPane marketRow()` | The nine, quieter. |
+| 3836 | 28 | `HBox marketTile(BuildAdvice.Category c)` | One of the market's: its icon, its name, what stands and what is on site. |
+
+### A CITY CATEGORY, OPENED ON ITS NEEDS (0.7.24) (lines 3865-4503)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3918 | 6 | `BuildAdvice.Measure worstMeasure(BuildAdvice.Category c, List<BuildAdvice.Measure> measures, List<CityNeeds.Need> all)` | The worst of a category's measures: its NEEDS YOU row first in the panel's order, else the first ring. |
+| 3933 | 5 | `int levelOf(BuildAdvice.Measure m, List<CityNeeds.Need> all)` | A measure's verdict. |
+| 3940 | 6 | `void showCityCategory(BuildAdvice.Category c)` | A city category's page. |
+| 3954 | 92 | `void drawCityCategory(BuildAdvice.Category c)` | A city category's page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
+| 4048 | 19 | `String measureSubtitle(BuildAdvice.Measure m)` | A few words on what a measure is for, beside its heading. |
+| 4069 | 5 | `Label scarceNote(List<BuildingsTemplate> shown, double[] fill)` | At the heading's right: which of these buildings' staff the city fills worst. |
+| 4076 | 13 | `String scarceWords(List<BuildingsTemplate> shown, double[] fill)` | ...its words, worked out without the label (0.7.28: the Services care heading says them too). |
+| 4091 | 16 | `String jobPlural(JobType job)` | A job type in plain words, plural: "doctors", "nurses", "unskilled workers". |
+| 4109 | 14 | `static String unitWords(BuildAdvice.Measure m)` | What a measure is counted in, for a ring's "short by N ..." - only care reaches it since 0.7.25, when the cards' "serves N ..." moved to BuildCard.doesWords(). |
+| 4125 | 3 | `static String perTenThousand(double staff)` | The staff bar's figure: a tenth below a hundred, whole and grouped above. |
+| 4135 | 2 | **type** `record RingWords(String figure, double arc, String tone, String shortLine, String onSite, int units, CityNe...` | What a ring says, worked out without drawing it: its figure, how much of it is drawn, its verdict's colour, how far short in people or places, and what is on site with its wait. |
+| 4138 | 108 | `RingWords ringWords(BuildAdvice.Measure m, List<CityNeeds.Need> all)` |  |
+| 4248 | 49 | `HBox measureCard(BuildAdvice.Category c, BuildAdvice.Measure m, List<CityNeeds.Need> all, boolean picked, boolean small)` | One ring: its figure, how far short, and what is on site with its wait; a click picks it. |
+| 4299 | 3 | `static String wordsAt(double size, String colour)` | Words at a size between Palette's steps (0.7.24's cards and rings), in a colour. |
+| 4304 | 3 | `static String figureAt(double size, String colour)` | A figure at a size between Palette's steps: Palette.figure()'s face. |
+| 4309 | 3 | `static String shortOrWhole(double v)` | A figure that may be large: "2,500", "120k", "1.2M". |
+| 4316 | 5 | `String moneyBarInfo()` | The money bar's (i) (0.7.45): what a build's money is struck at this month. |
+| 4323 | 7 | `String roadBarInfo()` | A road card's money bar's (i) (0.7.70): what its cost over its life is made of - BuildAdvice.lifetime(), the advice's own figure. |
+| 4337 | 19 | `VBox barRow(String label, String value, double share, String colour, double wide, String svg, boolean track)` | One of the card's two bars: what it measures, its figure, and the bar scaled across its group - with no track when `track` is false (0.7.25): a group of one, where a full bar compares nothing, or a card with nothing t... |
+| 4368 | 129 | `void refreshOrderBar()` | The order bar: what the page's steppers add up to, its price against the cash, the picked measure now, when what is on site opens and with the order - as a stacked bar and in figures - what the order needs, and one Bu... |
+| 4499 | 4 | `Pieces.Press orderBarPress(int units, double total, double cash)` | The order bar's Build (0.7.34): "Build 5 · $X" with the order's total, or "Build 5 on credit · $X" past the cash. |
+
+### A MARKET CATEGORY, IN ITS GROUPS (0.7.25) (lines 4504-4727)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4534 | 10 | `void showMarketCategory(BuildAdvice.Category c)` | A market category's page. |
+| 4551 | 39 | `void drawMarketCategory(BuildAdvice.Category c)` | A market category's page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
+| 4592 | 5 | `private HBox categoryHead(BuildAdvice.Category c)` | A category page's head: the title, the dots' key, the way to the construction page; the Overview's padding. |
+| 4599 | 5 | `private javafx.scene.layout.FlowPane categoryStrip(BuildAdvice.Category c)` | A category page's strip of categories, without the padding the Overview's has. |
+| 4606 | 6 | `private javafx.scene.layout.FlowPane cardsFlow()` | A row of cards, wrapping at the page's width: kept, so its wrap length is bound once for the scroller (wrapToScroller()). |
+| 4614 | 5 | `private Label pendingHintLabel()` | The caption under the grid that says the two keys, made for the page's scope. |
+| 4626 | 18 | `HBox groupHead(BuildCard.Group group)` | A market group's heading - "FOOD MILLS · bread and bakery goods from crops", or "STEEL · from iron ore" where the goods would repeat the name - and at its right the sector's figure the group answers to, both wrapping ... |
+| 4650 | 32 | `String groupSubtitle(BuildCard.Group group)` | What a market group is for, beside its name: the goods a maker group makes and what from, off the templates' own goods; a few words for the rest. |
+| 4684 | 4 | `static String andList(List<String> words)` | "a, b and c". |
+| 4690 | 30 | `String groupNote(BuildCard.Note n)` | A group's note, in words (BuildCard.NoteKind). |
+| 4722 | 5 | `static String doors(double shortfall)` | Households of a segment without a door, or the doors to spare (RealEstate.doorShortfall(), negative when there are). |
+
+### THE STAT CARD (lines 4728-5361)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4743 | 5 | `Region cardGap()` | A hairline of space, used where a blank line would be too much. |
+| 4750 | 8 | `static String cargoWords(ham.citybuildersim.Ports.Cargo k)` | A kind of cargo's goods, in words (0.7.86; Good.cargo()). |
+| 4777 | 361 | `public List<String> whatItDoes(BuildingsTemplate t)` | Package-private, not private, so BuildMenuCheck can read the sentences back. |
+| 5145 | 29 | `List<String> whatSafetyItGives(BuildingsTemplate t)` | The police and the prisons (2026-09-11). |
+| 5183 | 75 | `public List<String> whatCareItGives(BuildingsTemplate t)` | The healthcare version, which needs the care type and not the category. |
+| 5260 | 16 | `public String jobLabel(JobType job)` | JobType, in words a player reads rather than the enum constant. |
+| 5287 | 74 | `HBox receiptCorner(String menuTitle, EnumSet<BuildingType> categories)` | The receipt dot, top-right of the menu, and the popover it opens with the last purchases (0.7.20; the card was in the page and showed one). |
+
+### the last purchases (0.7.20) (lines 5362-6039)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5368 | 1 | **type** `record Receipt(int serial, String name, int quantity, double total, double salesTax, int month)` | One purchase, as the receipt shows it: what and how many, what it cost all in, the sales tax in that, and when. |
+| 5392 | 7 | `void noteReceipt(Game.BuildQuote quote)` | After an order went through: the receipt the model wrote for it, with the sales tax off the quote it was charged on - quoted just before the order, against the city the order was then placed in, as Game.processBuildOr... |
+| 5401 | 4 | `void forgetReceipts()` | Another city, founded or loaded (UserInterface.anotherCity()): its purchases are not this one's. |
+| 5406 | 18 | `private void openReceipt(Button dot)` |  |
+| 5426 | 6 | `void closeReceipt()` | Close the receipt, if it is open. |
+| 5434 | 23 | `private VBox receiptCard()` | The card in the popover: the last purchases, newest first, each with its total and the tax in it. |
+| 5458 | 6 | `Label receiptLine(String label, String value)` |  |
+| 5473 | 12 | `String schoolHeading(EducationType type)` | A school's heading, and what it is actually for. |
+| 5494 | 19 | `String schoolSubtitle(EducationType type)` | One line, like the care subtitles beside it. |
+| 5515 | 10 | `String careHeading(CareType care)` | The group's name, in the player's words rather than the enum's. |
+| 5533 | 22 | `String careSubtitle(CareType care)` | What building one of these actually gets you. |
+| 5585 | 5 | `void showNoDepositMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money, the land, and nothing to dig. |
+| 5592 | 45 | `void drawNoDeposit(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-deposit page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
+| 5643 | 14 | `static String[] noDepositPage(Resource site, String building, int quantity, int owned, int committed, double left)` | The no-deposit page's words, for iron or oil (0.7.62; pure, so a probe measures them): the title, the WHY section's five lines, the reserve line and the Buy's sub-line. |
+| 5665 | 16 | `static String[] noDepositAtSea(boolean platform, String building, int quantity, int owned, int committed, double left)` | ...and for the oil at sea (0.7.91; pure, as above): an Offshore Platform with no sea field to take it (Oil.FLOATING_MAX_DEPTH_M deep at most, DW1), or a Platform Well with no free slot - `owned` is Game.sitesFor()'s, ... |
+| 5694 | 9 | `static String ironPaybackWords(BuildAdvice.Payback p)` | Whether the cheapest iron field pays back here, as the no-deposit page says it under its Buy (0.7.101, Jerus's decision B: "the build advice says when an iron field won't pay back for a small town"): the test player's... |
+| 5705 | 7 | `static String noDepositWords(LandParcel p, Resource site)` | The no-deposit page's Buy: "Buy the cheapest: East 7 · 1 iron site, 12.8 Mt for US$6.16M" (or oil sites, 0.7.62) - its sites and, since 0.7.64, its tonnes: the whole of every field centred in it; "the cheapest" since ... |
+| 5723 | 5 | `void showNoCoastMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money and the land, and no sea to draw (0.7.59). |
+| 5730 | 54 | `void drawNoCoast(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-coast page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
+| 5792 | 5 | `void showNoRiverMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money and the land, and no river with a drop to dam (HY1). |
+| 5799 | 24 | `void drawNoRiver(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-river page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
+| 5832 | 5 | `void showNoBridgeMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The city has the money and the land, and the model finds no way across the water (ET6). |
+| 5839 | 21 | `void drawNoBridge(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-way-across page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
+| 5868 | 5 | `void showNoLicenceMenu(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | Nobody licensed to practise in it. |
+| 5875 | 37 | `void drawNoLicence(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories)` | The no-licence page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
+| 5914 | 5 | `private Label refusalTitle(String text)` | A refusal page's title, kept. |
+| 5931 | 6 | `void showNoLandMenu(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The city has the money and nowhere to put the building. |
+| 5939 | 78 | `void drawNoLand(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats)` | The no-land page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. |
+| 6019 | 6 | `private Button pageButton(String text, Runnable go)` | A button on a refusal page, kept: the one the last draw made, its words set and its action set at every draw. |
+| 6027 | 3 | `static String noLandWords(LandParcel p)` | The no-land page's Buy: "Buy the best: 3.4 km² for US$12.1M" (spec-land 2.8). |
+| 6032 | 7 | `static String noLandSub(LandParcel p, double shortSqFt)` | ...and what it is: bare ground that covers the shortfall, the ore left to the deposit's own page (batch J1c) - or, with no bare offer big enough, the best value, and buy again. |
+
+### ONE FUNDING PAGE FOR THE RUN (0.7.40) (lines 6040-6565)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6092 | 1 | **type** `record RunFrom(String title, EnumSet<BuildingType> categories, boolean cards)` | Where a run came from: the page to come back to, and whether its orders are that page's cards - each taken off its card once placed, the rest left on theirs. |
+| 6095 | 5 | `static java.util.LinkedHashMap<BuildingsTemplate, Integer> runOf(BuildingsTemplate t, int n)` | One order as a run of one. |
+| 6102 | 8 | `static java.util.LinkedHashMap<BuildingsTemplate, Integer> firstOf(java.util.Map<BuildingsTemplate, Integer> run, int n)` | The first `n` orders of a run. |
+| 6112 | 8 | `static String runNames(java.util.Map<BuildingsTemplate, Integer> run)` | A run's orders in words, the order bar's way: "5 × Walk-in Clinic + 3 × Paved Road". |
+| 6127 | 12 | `boolean placeRun(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | A run placed (0.7.40): funded first when the orders that can go ahead cost more than the cash (showBuildFunding()), otherwise placed in turn as they always were. |
+| 6157 | 22 | `private boolean goAhead(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from, String paper)` | Every order of the run in turn, through buildStack() - the path each card's Build always took - each placed one taken off its card. |
+| 6181 | 2 | **type** `record Placed(java.util.LinkedHashMap<BuildingsTemplate, Integer> built, java.util.LinkedHashMap<BuildingsT...` | What placing a run in turn did: the orders placed, the orders left - the one that stopped it first - and buildStack()'s answer there, SUCCESS when nothing stopped it. |
+| 6185 | 17 | `Placed placeInTurn(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | goAhead()'s placing, without the page it then draws (a probe runs it): each order through buildStack() until one is not placed, each placed one's receipt noted and, from the cards, its card emptied. |
+| 6210 | 2 | **type** `record RunWords(java.util.LinkedHashMap<BuildingsTemplate, Integer> funded, double invoice, double gap, Str...` | What the funding page says about a run, worked out without drawing it (a probe reads it): the orders that can go ahead, their invoice and the gap, the summary's line, what the treasury holds and the bar's part for it,... |
+| 6213 | 33 | `RunWords runWords(java.util.Map<BuildingsTemplate, Integer> run)` |  |
+| 6248 | 2 | **type** `record RunOffer(String name, DebtQuote quote, String rate, String tone, String ending, Pieces.Press action,...` | One loan the funding page offers, worded - what Pieces.offerCard() draws, as the land office's Offer is: its name, quote, rate's words and colour, ending, button; what booking it does to the model (a probe runs it); a... |
+| 6260 | 37 | `List<RunOffer> runOffers(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | The two offers, the old page's on the run's gap: the bond first - what the page recommends, since a building outlives either loan and the matching principle pays for a long-lived asset with long-lived debt - then the ... |
+| 6315 | 26 | `static List<String> shortWords(List<RunOffer> loans)` | What the funding page says under a preview that does not cover, apart from the nodes (a probe reads it): {the heading, one sentence for each offer that is short, then what can be done}. |
+| 6351 | 43 | `javafx.scene.Node shortAnswers(List<RunOffer> loans)` | The funding card's answers to a short preview (CD2, D30, §4.5): the red words (shortWords()) and the cap chips, which quote both offers again at the cap they name. |
+| 6396 | 20 | `HBox runHead(String sub, RunFrom from)` | The run's pages' head: "Build › Funding", the title a way back to the page the run came from, and "‹ <that page>" at the right - the land office's head() on Build. |
+| 6423 | 11 | `void showBuildFunding(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | The funding page for a run. |
+| 6441 | 70 | `void drawFunding(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from)` | The funding page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
+| 6517 | 14 | `String[] fellShortWords(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left, RunFro...` | What the fell-short card says, worked out without drawing it: its heading, then what was built, what was not and what it is still short of - the model's gap for the orders left, as it stands now. |
+| 6541 | 6 | `void showBuildFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left, RunFro...` | The loan went through and an order still did not: one red card in Build's frame, as the land office's "Not bought" (0.7.40; it was THE MONEY IS IN, THE BUILDING IS NOT, a page of its own). |
+| 6552 | 13 | `void drawFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left, RunFrom fro...` | The fell-short card itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and what KeptBench runs kept and built new for KeptCheck. |
 

@@ -1725,6 +1725,7 @@ public final class BuildAdvice {
         // life for each trip it will take off; pavingLifetime() over pavingUnit() until then.
         double served = servedOverLife(game, m, site, times(new LinkedHashMap<>(), step, found[0]), p);
         double life = pavingOrderLife(game, found[0], landLeft, site);
+        life -= WorksValue.avoided(game, m, site, times(new LinkedHashMap<>(), step, found[0]), lead, slack);
         double per = perServed(life, served, found[0], unit);
         BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
         return new Weighed(to, closes ? 0 : 2, per, unit, found[0], closes, true, p, lead, true);
@@ -1895,14 +1896,15 @@ public final class BuildAdvice {
     }
 
     /**
-     * A candidate's figure, the one the advice ranks by (0.7.101): an order
-     * of `count` of t over its life (orderLife()) for each unit it will serve
-     * over that life (servedOverLife() at `p`, the demand it is sized to;
+     * A candidate's figure, the one the advice ranks by (HW1): the full
+     * cost less prevented output loss and payroll returned, per unit served
+     * over the same life (servedOverLife() from the actual opening;
      * what its count adds where the measure is not weighed so).
      */
     public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t,
                                        int count, double unit, Ahead p, double landLeft) {
-        double served = servedOverLife(game, m, site, plus(new LinkedHashMap<>(), t, count), p);
+        Ahead fromOpening = opening(game, game.quoteBuild(t, count).months, p.slack());
+        double served = servedOverLife(game, m, site, plus(new LinkedHashMap<>(), t, count), fromOpening);
         return perServed(WorksValue.of(game, m, site, t, count, landLeft, p).net(), served, count, unit);
     }
 

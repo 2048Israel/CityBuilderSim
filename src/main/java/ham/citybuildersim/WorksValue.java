@@ -53,7 +53,7 @@ public final class WorksValue {
                                  Map<BuildingsTemplate, Integer> order, double lead, double slack) {
         Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(site, order);
         Map<Sector, double[]> traffic = new LinkedHashMap<>();
-        if (BuildAdvice.roadKind(m)) for (Sector sector : g.getSectors().all()) {
+        if (BuildAdvice.roadKind(m) || m.kind() == BuildAdvice.Kind.TRANSIT) for (Sector sector : g.getSectors().all()) {
             double[] mix = new double[Traffic.values().length];
             for (Traffic stream : Traffic.values()) mix[stream.ordinal()] = g.getBuildingManager()
                     .totalBySector(sector.key(), t -> t.loadOf(stream));
@@ -80,7 +80,7 @@ public final class WorksValue {
                                  Map<BuildingsTemplate, Integer> after, BuildAdvice.Ahead at, Map<Sector, double[]> traffic) {
         double pre = cover(g, m, before, at), post = cover(g, m, after, at);
         InfrastructureManager r0 = null, r1 = null;
-        if (BuildAdvice.roadKind(m)) {
+        if (BuildAdvice.roadKind(m) || m.kind() == BuildAdvice.Kind.TRANSIT) {
             r0 = BuildAdvice.roads(g, before, at.scale());
             r1 = BuildAdvice.roads(g, after, at.scale());
         }
@@ -92,7 +92,7 @@ public final class WorksValue {
             switch (m.kind()) {
                 case POWER: oldFactor = sector.getEnergyRatio(); a = pre; b = post; break;
                 case WATER: oldFactor = sector.getWaterRatio(); a = pre; b = post; break;
-                case ROADS: case HIGHWAYS: {
+                case ROADS: case HIGHWAYS: case TRANSIT: {
                     double[] mix = traffic.get(sector);
                     oldFactor = sector.getRoadRatio(); a = r0.throughputFor(mix); b = r1.throughputFor(mix); break;
                 }

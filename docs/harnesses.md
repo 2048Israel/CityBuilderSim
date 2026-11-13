@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**197 harness files, 23,790 labelled assertions.** AllChecks runs 197 of them.
+**197 harness files, 23,795 labelled assertions.** AllChecks runs 197 of them.
 
 ## Which harnesses read which class
 
@@ -30,7 +30,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BridgeWorks](map/BridgeWorks.md) | BridgeCheck, BuildCardCheck, PriceLevelCheck, SaveSlotCheck |
 | [Bridges](map/Bridges.md) | BridgeCheck, IslandLinkCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, EquipmentCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandmassCheck, LongPlaytest, ReadPathCheck, RoadCheck, SectorFlowCheck, WaterCheck |
-| [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, ChildcareCheck, HousingCheck, HydroCheck, LandmassCheck, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, WaterCheck, WellCheck, ZoningViewCheck |
+| [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, HousingCheck, HydroCheck, LandmassCheck, LongPlaytest, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, WaterCheck, WellCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildScreen](map/BuildScreen.md) | **none** |
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck |
@@ -298,7 +298,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SavedCities](map/SavedCities.md) | RankingsCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck, PartnerCallsCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquipmentCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyWordsCheck, NewGameCheck, OilCheck, OilViewCheck, PassThroughCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyWordsCheck, NewGameCheck, OilCheck, OilViewCheck, PassThroughCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CapitalFlowCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, PrizeCheck, ReloadCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, KeptCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorScreen](map/SectorScreen.md) | **none** |
@@ -351,7 +351,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, GovernmentViewCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
 | [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, LandCheck, MapCheck, ZoningViewCheck |
-| [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ForestryCheck, Forms1900Check, HydroCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
+| [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HydroCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, QuarryingCheck, ReadPathCheck, WaterCheck, WoodProductsCheck |
 | [VaultTable](map/VaultTable.md) | **none** |
 | [VaultView](map/VaultView.md) | PartnersCheck |
 | [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, EducationCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck, ZoningCheck |
@@ -360,7 +360,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Where](map/Where.md) | KeptCheck |
 | [WoodProducts](map/WoodProducts.md) | BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | DenominationCheck, HoldersCheck, HouseholdCheck |
-| [WorksValue](map/WorksValue.md) | **none** |
+| [WorksValue](map/WorksValue.md) | EssentialWorksCheck |
 | [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FittingCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, PriceLevelCheck, QuarryingCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldData](map/WorldData.md) | DenominationCheck, DeterminismCheck, GlobeCheck, GoldPriceCheck, InterestAbroadCheck, LandNationsCheck, MapCheck, NationsCheck, PartnerCallsCheck, PartnersCheck, PegAnchorCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
 | [WorldEconomy](map/WorldEconomy.md) | CentralBankCheck, FundCheck, LongPlaytest, MonetaryCheck, NewGameCheck, RealDollarCheck, SaveFileCheck, SkipReportCheck |
@@ -8597,7 +8597,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L372 ...and every month of it is conserved
   - L381 ...with the register and the households agreeing on every company
 
-## EssentialWorksCheck.java - 3 labelled assertions
+## EssentialWorksCheck.java - 8 labelled assertions
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools
@@ -8609,6 +8609,12 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L65 the short highway is ordered despite the street on site
   - L66 its own land is bought where needed, with no new debt
 - **L72 schools and police serve people without a payback veto**
+- **L106 prevented losses use the service the economy actually loses**
+  - L115 fixture: the grid is rationing and the city's books contain output to restore
+  - L119 a plant that relieves rationing prevents a positive output loss
+  - L121 a plant beyond all the horizon's demand claims no prevented rationing loss
+  - L123 a small town's unwarranted professional school is not a shortage
+  - L125 the card exposes the same component sum, including land, prevented output and payroll
 
 ## ExchangeCheck.java - 209 labelled assertions
 
@@ -17529,66 +17535,66 @@ _(this harness does not label its checks through a helper - it prints its findin
 > ...
 
 - **L1514 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L3417 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L3472 AND EVERYTHING THAT IS A PURCHASE.**
-- **L3818 AND THE BEST OF THEM WINS.**
-- **L6390 founding: a few months at a time, by hand**
-- **L6487 then the real rhythm**
-- **L6620 the report**
-- **L6643 ==**
-- **L6740 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L8012 what the advisor tried, and what happened**
-- **L8018 findings**
-- **L8036 HA1 money audit fixtures**
-- **L8483 1. a city that prospers**
-  - L8505 a founding city conserves money to within 0.01% of what moved
-- **L8524 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
-  - L8545 an industrial city conserves money to within 0.01% of what moved
-  - L8547 ...and it really did carry passengers, so the fare was really charged
-  - L8564 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
-- **L8573 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
-- **L8583 land bought out of the vault: nothing moves the audit cannot see**
-  - L8593 fixture: the vault paid for a parcel and the treasury's cash did not move
-  - L8597 a city that paid for land out of the vault conserves money
-  - L8599 ...and nothing moved a pool after any month's audit
-- **L8602 2. a city under stress**
-  - L8629 a stressed city conserves money to within 0.01% of what moved
-  - L8660 fixture: retail went under whole, and was restructured
-  - L8662 a restructure moves no cash the audit cannot see
-- **L8665 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
-- **L8683 a city paying over the world: the money that arrives is audited**
-  - L8704 fixture: the rate actually brought money in
-  - L8706 ...and the audit saw it cross the border
-  - L8709 a city conserves money with hot money flowing
-  - L8712 ...and nothing moved after the audit struck
-- **L8714 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
-- **L8728 a works making its own power and buying consumables abroad: still nothing leaks**
-  - L8754 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
-  - L8757 ...and bought consumables abroad, inside their imports
-  - L8759 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
-  - L8761 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
-- **L8765 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
-- **L8777 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
-  - L8813 fixture: the yard bought old steel from the households and from a sector
-  - L8815 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
-  - L8817 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L8821 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
-- **L8825 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
-- **L8836 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
-  - L8865 fixture: the refinery bought old copper from the households and from a sector
-  - L8867 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
-  - L8869 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
-- **L8874 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
-- **L8903 the city's paper on its books: the amortisation is no money, and the audit closes**
-  - L8929 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
-  - L8975 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
-  - L8976 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
-  - L8978 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
-  - L8980 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
-  - L8982 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
-  - L8984 ...and nothing moved a pool after any month's audit struck
-  - L8985 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
-  - L8987 ...and it is the cash coupons the budget calls its cash interest
+- **L3439 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L3494 AND EVERYTHING THAT IS A PURCHASE.**
+- **L3840 AND THE BEST OF THEM WINS.**
+- **L6412 founding: a few months at a time, by hand**
+- **L6509 then the real rhythm**
+- **L6642 the report**
+- **L6665 ==**
+- **L6762 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L8041 what the advisor tried, and what happened**
+- **L8047 findings**
+- **L8065 HA1 money audit fixtures**
+- **L8512 1. a city that prospers**
+  - L8534 a founding city conserves money to within 0.01% of what moved
+- **L8553 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
+  - L8574 an industrial city conserves money to within 0.01% of what moved
+  - L8576 ...and it really did carry passengers, so the fare was really charged
+  - L8593 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
+- **L8602 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
+- **L8612 land bought out of the vault: nothing moves the audit cannot see**
+  - L8622 fixture: the vault paid for a parcel and the treasury's cash did not move
+  - L8626 a city that paid for land out of the vault conserves money
+  - L8628 ...and nothing moved a pool after any month's audit
+- **L8631 2. a city under stress**
+  - L8658 a stressed city conserves money to within 0.01% of what moved
+  - L8689 fixture: retail went under whole, and was restructured
+  - L8691 a restructure moves no cash the audit cannot see
+- **L8694 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
+- **L8712 a city paying over the world: the money that arrives is audited**
+  - L8733 fixture: the rate actually brought money in
+  - L8735 ...and the audit saw it cross the border
+  - L8738 a city conserves money with hot money flowing
+  - L8741 ...and nothing moved after the audit struck
+- **L8743 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
+- **L8757 a works making its own power and buying consumables abroad: still nothing leaks**
+  - L8783 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
+  - L8786 ...and bought consumables abroad, inside their imports
+  - L8788 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
+  - L8790 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
+- **L8794 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
+- **L8806 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
+  - L8842 fixture: the yard bought old steel from the households and from a sector
+  - L8844 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
+  - L8846 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L8850 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
+- **L8854 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
+- **L8865 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
+  - L8894 fixture: the refinery bought old copper from the households and from a sector
+  - L8896 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
+  - L8898 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
+- **L8903 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
+- **L8932 the city's paper on its books: the amortisation is no money, and the audit closes**
+  - L8958 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
+  - L9004 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
+  - L9005 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
+  - L9007 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
+  - L9009 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
+  - L9011 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
+  - L9013 ...and nothing moved a pool after any month's audit struck
+  - L9014 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
+  - L9016 ...and it is the cash coupons the budget calls its cash interest
 
 ## MainLineCheck.java - 160 labelled assertions
 

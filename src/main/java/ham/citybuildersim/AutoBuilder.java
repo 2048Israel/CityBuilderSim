@@ -470,9 +470,9 @@ public final class AutoBuilder {
 
     /**
      * Whether a measure is one the pass keeps this month: transit never (the
-     * road's candidates carry it), and a school above the ladder only with a
-     * NEEDS YOU row (CityNeeds.listsSchool(), Jerus's 0.7.51 rule: "way too
-     * early sometimes"); every other measure always, its own figure deciding
+     * road's candidates carry it), and a school only when its demand warrants
+     * a work (HW1: thirty percent of the smallest, including professional
+     * schools); every other measure always, its own figure deciding
      * whether it is short (step()'s ahead()). A FIRST BUILDING WHERE THERE IS
      * NONE (0.7.101): from 0.7.73 to 0.7.100 a first school down the ladder,
      * police station or prison waited until the need filled half the
@@ -550,7 +550,7 @@ public final class AutoBuilder {
     /** The spare margin's demand: today's, padded by the slack, no projection. */
     public BuildAdvice.Ahead target() { return new BuildAdvice.Ahead(0, 1, slack); }
 
-    /** Whether what stands keeps a measure at its target: off NEEDS YOU's list, and a served gauge at 100%, of today's demand with the spare margin past it (BuildAdvice.ahead()). */
+    /** Whether what stands supplies the whole warranted demand with the spare margin past it (HW1). */
     public boolean atTarget(Game game, BuildAdvice.Measure m) {
         return BuildAdvice.maintained(game, m, new LinkedHashMap<>(), target());
     }
@@ -758,6 +758,15 @@ public final class AutoBuilder {
 
     /* =====================================================================
        THE PASS
+
+       HW1, 2026-11-13: Jerus: "just build highways when it is needed".
+       Roads, schools and police join the essential services: their own
+       payback never refuses them. A useful demand is thirty percent of the
+       smallest work; after that, every essential targets full service plus
+       the player's slack. The twelve-month order cap no longer makes one
+       unfinished road keep another essential work waiting. Orders still
+       need actual cash or permitted debt and buy their own ground first.
+       WorksValue ranks the full real cost less the output loss prevented.
        ===================================================================== */
 
     /** What the pass did for one measure. */
@@ -803,6 +812,9 @@ public final class AutoBuilder {
     }
 
     private final List<Step> steps = new ArrayList<>();
+    /** The last pass's actual power orders, with the comparison's components before any ground or cash changed (HW1). */
+    private final List<String> powerValues = new ArrayList<>();
+    public List<String> powerValues() { return Collections.unmodifiableList(powerValues); }
 
     /**
      * What the pass did to link an island (AL1): the month, the island's id, how it is linked (BuildAdvice.LinkKind),
@@ -902,16 +914,10 @@ public final class AutoBuilder {
     }
 
     /**
-     * An ESSENTIAL SERVICE (HW1): roads, schools and police join power, water, care of
-     * every kind and death care. Jerus: "Essential services (death care,
-     * health, water, power) skip the revenue budget. Only the debt limit
-     * applies to them, and running a deficit to have them is fine." Health is
-     * the Healthcare category's three kinds of care - general care (clinics
-     * and hospitals, the sick rate), senior care (the elders' mortality) and
-     * childcare, whose places are what keeps the city's babies and children
-     * alive in the model (Healthcare.CHILDCARE_SWING) - and death care is the
-     * crematoria and the cemeteries, with their plots. Ordered within the
-     * debt limit, the money and the ground; no payback holds them.
+     * An essential work (HW1): utilities, streets, highways, care of every
+     * kind, death care and plots, all schools, police and cells. Ordered for
+     * warranted demand within the money, ground and debt settings; never
+     * held by its own payback. This extends P2b's care-and-utilities floor.
      */
     public static boolean essential(BuildAdvice.Measure m) {
         switch (m.kind()) {
@@ -1083,7 +1089,7 @@ public final class AutoBuilder {
      * today's prices: what it costs to run (runs: running() for each), the
      * residents it covers (coveredOverLife()), what each pays the city
      * (paid()) and what each already costs it (costs()). It pays back where
-     * what they pay past what they cost covers its running.
+     * what they pay past what they cost, plus prevented output loss, covers its running.
      */
     public record Payback(double runs, double covered, double paid, double costs, double prevented) {
         public Payback(double runs, double covered, double paid, double costs) { this(runs, covered, paid, costs, 0); }
@@ -1126,6 +1132,7 @@ public final class AutoBuilder {
         bought.clear();
         asked.clear();
         steps.clear();
+        powerValues.clear();
         linkSteps.clear();
         groundShort = false;
         overSaid = false;
@@ -1327,6 +1334,9 @@ public final class AutoBuilder {
      */
     private boolean place(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, String name, int wanted, int n,
                           Cut cut, Ground ground, Refused first, Payback weighed, OpenAsk from) {
+        if (m.kind() == BuildAdvice.Kind.POWER) powerValues.add(n + " " + name + ": "
+                + WorksValue.of(game, m, BuildAdvice.onSite(game, m), s.template(), n,
+                game.getLandManager().getAvailableSqFt(), s.ahead()).words());
         String before = reading(game, m, new LinkedHashMap<>());
         double cost = total(game, s, n);
         double landShort = s.paving() ? 0 : Math.max(0, lacks(game, s.template(), n));
