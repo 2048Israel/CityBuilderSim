@@ -152,3 +152,30 @@ method's prose. The comparison plus SHA-256 hashes is
 `aw2-branch.log` in the same folder. Run wrapper: `target/aw2-traces.sh`.
 The byte-identical traces meet EN1: no ensemble run is required. The
 unchanged stored baseline is `docs/ensemble/0.9.98.md`.
+
+### Final model trace and measured land audit
+
+The reviewed final model also exits 0 and matches all eight of those exact
+main CSVs byte for byte. `target/checks/aw2-final-traces-result.txt` records
+the comparison and hashes; `aw2-final.log` contains the run and no findings.
+The final saved-footprint adjustment therefore still meets EN1; no
+ensemble is required against the unchanged 0.9.98 baseline.
+
+The new measurement reports **1,329 of 2,404 audited months** with a gap
+above 1e-6 sq ft, maximum **160,000 sq ft at m2160**. A temporary instrumented
+copy of the same LongPlaytest source traced every change in the signed gap:
+**+80,000 sq ft at m1077** and **+80,000 at m2160**, each accompanied by ten
+fewer Houses. LongPlaytest's own stop-every-19 fixture directly calls
+`g.getBuildingManager().retire(house, 10)` without releasing the plots
+(lines 6552–6556 on ae54682f). Ten catalogue House plots are exactly
+80,000 sq ft. This accounts for every gap change; the default run found no
+additional production-path mismatch. The final gap has the opposite sign
+from KeptCheck's unallocated sites: these are retired buildings whose land
+the harness still counts as occupied.
+
+★ Keep that existing retirement fixture unchanged. The count records its
+effect instead of hiding it or moving the playtest's premise. The new save
+pair preserves either sign of the live ledger/footprint gap. Diagnostic
+log: `target/checks/aw2-gap.log`, exit 0; temporary source generator and
+runner: `target/aw2-gap.py` and `target/aw2-gap.sh`. The production-caller
+audit above remains a source audit, with this measured qualification.
