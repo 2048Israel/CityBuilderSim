@@ -98,3 +98,17 @@ order. Both the source city and its ordinary reload successfully order one
 House and retain equal free ground afterwards. Exit 0, no failed
 assertions; `target/checks/aw2-wg2-copy.log`. This validates new saves of
 that live state; it does not claim to repair the old slot's missing field.
+
+### Default trace and ensemble decision
+
+Compared the final model with exact main `5a87e102`: compiled main's Game
+and DataSave into an override class directory and used the otherwise
+identical model/harness classes. Both default LongPlaytests exit 0. All
+eight CSV traces are byte-identical: month, borrowing, housing, population,
+bank, bonds, construction and labour. Main's source/harness are unchanged
+by AW2 apart from the two overridden model classes and the footprint
+method's prose. The comparison plus SHA-256 hashes is
+`target/checks/aw2-traces-result.txt`; runs are `aw2-main.log` and
+`aw2-branch.log` in the same folder. Run wrapper: `target/aw2-traces.sh`.
+The byte-identical traces meet EN1: no ensemble run is required. The
+unchanged stored baseline is `docs/ensemble/0.9.98.md`.
