@@ -118,7 +118,7 @@ longest first, from this run's measured seconds for the 181 ordinary harnesses
 gives 1172.5 seconds (19.5 minutes); that is a scheduling estimate, not a
 measured default-tier gate.
 
-EN1: the original default LongPlaytest passed, and the final one plus its
+EN1 before the AW2 merge: the original default LongPlaytest passed, and the final one plus its
 moved money fixtures passes. The default-model report prefix is byte-identical
 after replacing only runtime figures on two lines: the playtest headline and
 CL3's window-duration suffix. Every model count, financial figure and finding
@@ -151,8 +151,35 @@ then exits 0: compile 44s, Stale 0 firm and 185 soft.
 
 The earlier full pick and 18-harness before/after measurement are retained
 as measurements on 5a87e102. A new fresh-clone gate on AW2's main is required
-and will be the readiness evidence. The final eight CSV traces are also
-being checked against AW2's recorded final main-equivalent traces.
+and will be the readiness evidence. The final merged model's LongPlaytest exits 0. All eight CSV traces are
+**byte-identical** to AW2's recorded final main-equivalent traces (which AW2
+also matched to exact 5a87e102). The baseline was copied into HA1's target
+before comparison so it survives AW2 worktree cleanup. No ensemble is
+required against the unchanged `docs/ensemble/0.9.98.md` baseline.
+
+Run: `target/ha1-final-traces.sh`; output:
+`target/checks/ha1-final-trace.log`; comparisons and hashes:
+`target/checks/ha1-final-traces-result.txt`. Baselines are
+`target/checks/ha1-baseline-aw2-*.csv`, final traces `ha1-final-*.csv`.
+
+| Trace | SHA-256 (baseline and final identical) |
+|---|---|
+| bank | `b6270c8e852d7a36a69100f43a5c9fa8ec3a22be7318c69e727452cd48c59604` |
+| bonds | `086c974c92161a39c0740b5f3bd7d7dbd409df0f693d9f8b692af6e283424f2b` |
+| borrow | `70d395e9ae0960e323cc3387c087f28f536de21b8369427997f42dca73357da4` |
+| build | `fd5dd6fd814ea9512b3d5220ddd5ae73852f2a52af385c74ddf6c299997560a1` |
+| house | `8247d157386c9a1170908e86945756a8ddef9976bd6412425db967f9853bf77d` |
+| labour | `58253f59ab6b132da63e66a68b7d8b4e4060f9385a8710a75a6ddcb7803ca8b3` |
+| month | `ae2f1905f699d2805b535bf4c189568bc085e33a09874531e0888f93750c166b` |
+| pop | `0429d2c39085493bcdf7a436e969224ef90cbc1516e44c41aa4b057b686e1fc3` |
+
+The one-in/one-out count is unchanged after the merge: +2378/-2871, net
+-493 across 44 process source/script files, excluding generated indexes and
+HA1's own records. Protected publisher files have no HA1 diff from main.
+
+In progress: push this merged branch and run the fresh no-tag gate on
+`b8d4750d5e7882f7590ecdc905a2a83ab8525334`.
+
 
 
 ## Pending for the gate box
