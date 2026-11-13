@@ -29,7 +29,7 @@ trap 'exit 3' INT TERM HUP
 
 clean() { sed 's/^ *//; s/  */ /g'; }
 verdict() {   # $1 the verdict after "N months: ": printed, and written over the last
-    printf '%s %s %s %s months: %s%s\n' "$(date '+%Y-%m-%d %H:%M')" "${VER:-?}" "${SHA:-?}" "$NUM" "$1" "${TIMING:+; $TIMING}" > "$TXT"
+    printf '%s %s %s %s months: %s%s%s\n' "$(date '+%Y-%m-%d %H:%M')" "${VER:-?}" "${SHA:-?}" "$NUM" "$1" "${TIER:+; $TIER}" "${TIMING:+; $TIMING}" > "$TXT"
     cat "$TXT"
 }
 failed() {   # $1 the step, its output in $STEP: the first error line (else the last) in the verdict
@@ -60,7 +60,8 @@ if [ "$RC" != 0 ]; then
     PLAY="RED, exit $RC in $SECS s: $(printf '%s' "$F" | cut -c1-200)"
 fi
 TIMING='timing FAILED: incomplete run'
+nightly_tier; NRC=$?
 nightly_timing >> "$LOG" 2>&1; TRC=$?
 [ -z "$NIGHT" ] || cp "$LOG" "$NIGHT/nightly.log"
 verdict "$PLAY"
-[ "$RC" = 0 ] && [ "$TRC" = 0 ]
+[ "$RC" = 0 ] && [ "$NRC" = 0 ] && [ "$TRC" = 0 ]

@@ -69,8 +69,20 @@ The original default LongPlaytest passed (exit 0); its model trace is kept
 in `target/checks/ha1-playtest-before.txt`, from the original classes copied
 to `target/ha1-baseline-classes` before recompiling.
 
-In progress: targeted checks, post-change timing, final pick, fresh-clone gate
-and the final one-in/one-out line count.
+TimingCheck passes its new soft/hard skipped-round fixture, local/gate duration
+fallback, exact direct nightly inclusion, and full registry partition checks.
+`tools/pick-selftest.sh`: 22/22 passed, including a class named only by
+GlobeCheck and the ALL-plus-direct-pick case. `tools/nightly-selftest.sh`
+passes the production tier runner with five merges since its last green;
+a red preserves that green marker. `--fast` compiled the model/harness changes
+and Stale reported 0 firm findings (193 soft).
+
+A mechanical label audit finds every moved literal label in its new owner:
+MoneyCheck, ConservationCheck, SectorBooksCheck and TruckCheck have no missing
+labels. The serial/bill/yield section is moved intact.
+
+In progress: post-change timing, final pick, fresh-clone gate and the final
+one-in/one-out line count.
 
 ## Pending for the gate box
 

@@ -7986,6 +7986,7 @@ public class LongPlaytest {
         String keep = System.getProperty("playtest.keep");
         if (keep != null) keepCity(g, root, Path.of(keep));
         cleanUp(root);
+        System.out.println("--- HA1 money audit fixtures ---");
         MoneyFixtures.run(args);
         System.exit(findings.isEmpty() && MoneyFixtures.fails == 0 ? 0 : 1);
     }

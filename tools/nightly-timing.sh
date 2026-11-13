@@ -102,6 +102,29 @@ timing_search() {  # first-parent merges, binary search against the preceding qu
     version=$(git -C "$CLONE" show "$culprit:src/main/java/ham/citybuildersim/GameVersion.java" | sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p')
     echo "${batch:-unknown batch} $version $culprit"
 }
+nightly_tier() {
+    green=${1:-$HOME/.cbs-nightly-tier-green}
+    java -Xmx2048m -Xms64m -Dcbs.timing=hard -Dstdout.encoding=UTF-8 \
+        -cp "target/classes$SEP$(cat target/classpath.txt)" ham.citybuildersim.AllChecks -f --nightly > "$CLONE/tier.log" 2>&1
+    tiercode=$?; cat "$CLONE/tier.log" >> "$LOG"
+    if [ "$tiercode" = 0 ]; then
+        printf '%s\n' "$FULL" > "$green.new" && mv "$green.new" "$green" || return 1
+        TIER='nightly tier OK'
+    else
+        previous=$(cat "$green" 2>/dev/null || :)
+        if [ -n "$previous" ] && git merge-base --is-ancestor "$previous" "$FULL"; then
+            TIER="nightly tier RED, exit $tiercode; merges since $previous..$FULL"
+            merges=$(git log --first-parent --merges --format='%h %s' "$previous..$FULL")
+        else
+            TIER="nightly tier RED, exit $tiercode; no previous green tier run"
+            merges=$(git log -1 --format='%h %s' "$FULL")
+        fi
+        printf '%s\n%s\n' "$TIER" "$merges" >> "$LOG"
+        TIER="$TIER: $(printf '%s\n' "$merges" | paste -sd ';' -)"
+    fi
+    return "$tiercode"
+}
+
 nightly_timing() {  # optional record root for the no-JVM fixture
     MACHINE=$(hostname | tr -d '\r\n' | tr -c 'A-Za-z0-9_.-' '_')
     STORE=${1:-$HOME/.cbs-timing}/$MACHINE

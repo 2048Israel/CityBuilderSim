@@ -104,7 +104,8 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   `--pick`, the maps only with `--maps`.
 - `--timing` runs only the harnesses that time something (`Timing.HARNESSES`):
   run nightly on main, alone and hard, by `tools/nightly.sh`.
-- `-Dcbs.timing=soft` makes timing soft: a timing figure over its budget says
+- `-Dcbs.timing=soft` skips sections whose only verdict is a clock (HA1).
+  Mixed correctness sections keep their work and make timing soft: a timing figure over its budget says
   `SOFT`, with the figure and the budget, and is not counted; every other
   assertion is as it was. `AllChecks` hands it to each harness, and `-f` says
   how many went soft. The check scripts set it by themselves while another
@@ -114,8 +115,12 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   budget and unit to FILE (`batch-check.sh` names `target/checks/timing.tsv`),
   and the nightly confirms a slower figure against the preceding quiet night's
   commit with paired medians (`tools/timing-pair.awk`, GR1).
-- Any other argument filters by substring: `AllChecks money bank` runs
-  `MoneyCheck` and `BankCheck` and nothing else.
+- Any other argument filters by substring: `AllChecks money` runs
+  only harnesses whose names contain `money`.
+- `--gate` runs the default gate tier plus any exactly named nightly harnesses;
+  `--nightly` runs the 15 heavy harnesses listed once in `AllChecks.NIGHTLY`.
+  `tools/pick.sh --nightly` names only direct picks, even beside an `ALL` fallback.
+  The nightly runs the tier on main and reports merges since its last green run.
 - The exit status is the number of harnesses that failed, so a build script can
   read it.
 - `BuildMenuCheck` and `KeptCheck` need JavaFX on the classpath and are skipped
