@@ -14,6 +14,9 @@ Started from origin/main `5a87e102` on 2026-11-13. HA1 is **no tag
   load branches and GridConversion, LandConversion, LegacyLand and
   ConversionCheck. `GameVersion.java:8316`, `OLDEST_LOADABLE_FORMAT = 51` already refuses
   both formats those converters served (30 and 31); SAVE_FORMAT is also 51.
+  `Game.refusal`, line 20380 before the load, calls
+  `GameVersion.isNoLongerReadable(loaded.getSaveFormat())` and returns without
+  applying the save.
 - The dependency audit found live helpers: CityLand's plotted-area counts,
   PartField and redraw fixtures, LandSellers' class-to-area counts,
   EarthTerrainCheck's class checks, and LandCheck's drawing, site and distance
@@ -40,30 +43,40 @@ The requested pre-change measurement runs only the 18 timing harnesses,
 soft, on the original compiled classes: **1906 seconds**, 15 passed and
 3 with known reds (MapCheck, PlanCheck, KeptCheck); 14 soft timing misses.
 This is a timing-harness measurement, not a baseline full suite.
+The same 18 harnesses after the soft skips took **2058 seconds**, again only
+known reds in MapCheck, PlanCheck and KeptCheck. EarthTerrainCheck fell from
+108.4 to 57.0 seconds and PartnerCallsCheck from 5.7 to 3.9; MapCheck and
+KeptCheck were slower on this shared PC. These unpaired, soft suite figures
+do not establish a total speedup. No budget was changed.
 
 | Timing harness | Before seconds | After seconds |
 |---|---:|---:|
-| BridgeCheck | 25.4 | pending |
-| EarthCheck | 2.0 | pending |
-| EarthTerrainCheck | 108.4 | pending |
-| GlobeCheck | 219.0 | pending |
-| GridCheck | 1.6 | pending |
-| IslandNetCheck | 19.5 | pending |
-| KeptCheck | 847.4 | pending |
-| LandNationsCheck | 20.5 | pending |
-| MapCheck | 428.5 | pending |
-| PartnerCallsCheck | 5.7 | pending |
-| PlanCheck | 65.9 | pending |
-| PortCheck | 7.7 | pending |
-| QuayCraneCheck | 0.7 | pending |
-| ReplayCheck | 59.4 | pending |
-| SaveSlotCheck | 38.4 | pending |
-| ScaleCheck | 16.1 | pending |
-| WorldCheck | 18.8 | pending |
-| WorldMarketCheck | 20.1 | pending |
+| BridgeCheck | 25.4 | 22.1 |
+| EarthCheck | 2.0 | 1.9 |
+| EarthTerrainCheck | 108.4 | 57.0 |
+| GlobeCheck | 219.0 | 203.9 |
+| GridCheck | 1.6 | 1.3 |
+| IslandNetCheck | 19.5 | 22.9 |
+| KeptCheck | 847.4 | 1014.5 |
+| LandNationsCheck | 20.5 | 17.7 |
+| MapCheck | 428.5 | 487.8 |
+| PartnerCallsCheck | 5.7 | 3.9 |
+| PlanCheck | 65.9 | 64.4 |
+| PortCheck | 7.7 | 8.2 |
+| QuayCraneCheck | 0.7 | 0.6 |
+| ReplayCheck | 59.4 | 63.7 |
+| SaveSlotCheck | 38.4 | 34.5 |
+| ScaleCheck | 16.1 | 13.6 |
+| WorldCheck | 18.8 | 18.8 |
+| WorldMarketCheck | 20.1 | 20.1 |
 
 Before logs: `target/checks/ha1-timing-before.txt` and
-`target/checks/ha1-times-before.tsv`.
+`target/checks/ha1-times-before.tsv`. After logs:
+`target/checks/ha1-timing-after.txt`, `target/checks/ha1-times-after.tsv`;
+KeptCheck's after log is also preserved as `target/checks/ha1-kept-after.log`.
+WorldCheck, ScaleCheck, SaveSlotCheck, IslandNetCheck, BridgeCheck, ReplayCheck
+and LandNationsCheck retain their mixed correctness/timing work. Clock-only
+sections in the other eleven harnesses skip before their timing rounds.
 
 The original default LongPlaytest passed (exit 0); its model trace is kept
 in `target/checks/ha1-playtest-before.txt`, from the original classes copied
@@ -91,8 +104,7 @@ The registry has 196 harnesses: the default gate tier runs 181, the nightly
 15. HA1 itself directly picks 13 nightly members, so its own full gate runs
 194; its elapsed time includes those deliberately picked heavy checks.
 
-In progress: post-change timing, final pick, fresh-clone gate and the final
-one-in/one-out line count.
+In progress: final full pick, fresh-clone gate and the final one-in/one-out line count.
 
 ## Pending for the gate box
 
@@ -107,3 +119,24 @@ Remove the obsolete CB1-L Pending row from QUEUE.md: its longest-first order
 is implemented in HA1. QUEUE.md stays untouched under the batch contract;
 lanekeeper confirmed this disposition in cbs-bus message
 `20261113-113113-465-lanekeeper-f187`.
+
+## One in, one out
+
+Process source and scripts (the `*Check.java` files, LongPlaytest, AllChecks,
+Timing, and changed `*.sh`; generated maps, these notes and the ship file
+excluded): **2378 lines added, 2871 removed, net -493** across 44 files.
+The obsolete 702-line ConversionCheck leaves the machinery, while the four
+whole moved fixtures retain their token streams. The brief's narrower runner
+and routing files, from `git diff --numstat origin/main`, are:
+
+```text
+3	2	ship.sh
+45	14	src/main/java/ham/citybuildersim/AllChecks.java
+23	0	tools/nightly-timing.sh
+5	4	tools/nightly.sh
+8	2	tools/pick.sh
+```
+
+Their additions are offset by the deleted obsolete harness and the trimmed,
+obsolete gate-timing history in Timing. CB1-L's protected queue row is left
+for Jerus, as recorded above.
