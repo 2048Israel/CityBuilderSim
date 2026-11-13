@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**197 harness files, 23,795 labelled assertions.** AllChecks runs 197 of them.
+**197 harness files, 23,797 labelled assertions.** AllChecks runs 197 of them.
 
 ## Which harnesses read which class
 
@@ -8597,24 +8597,27 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L372 ...and every month of it is conserved
   - L381 ...with the register and the households agreeing on every company
 
-## EssentialWorksCheck.java - 8 labelled assertions
+## EssentialWorksCheck.java - 10 labelled assertions
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools
 > and police waited for a payback that the service itself must never face.
-> Fixtures cause short highways with and without ground, a long queue, an
-> unaffordable preferred street, and schools that cannot pay their upkeep.
+> Fixtures cause short highways with and without ground, a street on site,
+> a partial power order from scarce cash, and schools that cannot pay their upkeep.
 
-  - L55 fixture: highways are under-served, cash can buy one and its ground, debt limit forbids borrowing
-  - L65 the short highway is ordered despite the street on site
-  - L66 its own land is bought where needed, with no new debt
-- **L72 schools and police serve people without a payback veto**
-- **L106 prevented losses use the service the economy actually loses**
-  - L115 fixture: the grid is rationing and the city's books contain output to restore
-  - L119 a plant that relieves rationing prevents a positive output loss
-  - L121 a plant beyond all the horizon's demand claims no prevented rationing loss
-  - L123 a small town's unwarranted professional school is not a shortage
-  - L125 the card exposes the same component sum, including land, prevented output and payroll
+  - L57 fixture: highways are under-served, cash can buy one and its ground, debt limit forbids borrowing
+  - L67 the short highway is ordered despite the street on site
+  - L68 its own land is bought where needed, with no new debt
+- **L74 schools and police serve people without a payback veto**
+- **L108 prevented losses use the service the economy actually loses**
+  - L117 fixture: the grid is rationing and the city's books contain output to restore
+  - L121 a plant that relieves rationing prevents a positive output loss
+  - L123 a plant beyond all the horizon's demand claims no prevented rationing loss
+  - L125 a small town's unwarranted professional school is not a shortage
+  - L127 the card exposes the same component sum, including land, prevented output and payroll
+- **L133 an unaffordable full power order takes the cash-funded step that can raise service**
+  - L145 fixture has a plant that can raise power service
+  - L156 the affordable step orders one
 
 ## ExchangeCheck.java - 209 labelled assertions
 

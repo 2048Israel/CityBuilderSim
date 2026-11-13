@@ -10,8 +10,8 @@ import java.util.Set;
  * Essential works ordered for their unmet service, including their ground (HW1).
  * WHY. Highways waited behind street sites at the twelve-month cap; schools
  * and police waited for a payback that the service itself must never face.
- * Fixtures cause short highways with and without ground, a long queue, an
- * unaffordable preferred street, and schools that cannot pay their upkeep.
+ * Fixtures cause short highways with and without ground, a street on site,
+ * a partial power order from scarce cash, and schools that cannot pay their upkeep.
  */
 public final class EssentialWorksCheck {
     static int fails;
@@ -33,6 +33,8 @@ public final class EssentialWorksCheck {
     static Game town(Path root, String name) {
         ChildcareCheck.quiet = quiet;
         Game g = ChildcareCheck.town(root, name);
+        quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.annualGdp(g),
+                Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
         g.getAutoBuilder().setDebtLimit(0, null);
         g.getAutoBuilder().setCashAnyway(true, null);
         return g;
@@ -54,7 +56,7 @@ public final class EssentialWorksCheck {
         double[] sd = BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of());
         check("fixture: highways are under-served, cash can buy one and its ground, debt limit forbids borrowing",
                 sd[1] > sd[0] && AutoBuilder.groundFor(g, highway, 1) != null
-                        && AutoBuilder.spendable(g) > g.quoteBuild(highway, 1).total && ab.getDebtLimit() == 0);
+                        && AutoBuilder.spendable(g) > g.quoteBuild(highway, 1).total && !ab.within(g));
         // A street on site used to make the highway wait too (roads share their onSite map).
         quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("Paved Road"), 1, false));
         if (!ground) g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt());
@@ -127,12 +129,42 @@ public final class EssentialWorksCheck {
                         && value.land() > 0 && value.payroll() > 0 && value.jobs() > 0);
     }
 
+    static void scarceCash(Path root) {
+        out.println("--- an unaffordable full power order takes the cash-funded step that can raise service ---");
+        Game g = town(root, "scarce-cash");
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        u.setWattsConsumption(u.getProduction() * 4);
+        BuildingsTemplate cheapest = null;
+        double one = Double.POSITIVE_INFINITY, second = Double.POSITIVE_INFINITY;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (power.serves(t) && BuildAdvice.unit(g, power, t) > 0) {
+            double price = g.quoteBuild(t, 1).total;
+            if (price < one) { second = one; one = price; cheapest = t; }
+            else second = Math.min(second, price);
+        }
+        if (cheapest == null) { check("fixture has a plant that can raise power service", false); return; }
+        BuildingsTemplate plant = cheapest;
+        g.setCashForTest(AutoBuilder.reserve(g) + one + Math.min(one * .01, (second - one) / 2));
+        check(String.format("fixture: power is short; cash %.2f buys one %s at %.2f, below the next plant %.2f",
+                        AutoBuilder.spendable(g), plant.getName(), one, second),
+                BuildAdvice.warranted(g, power) && !g.getAutoBuilder().atTarget(g, power)
+                        && g.quoteBuild(plant, 2).total > AutoBuilder.spendable(g) && !g.getAutoBuilder().within(g));
+        double debt = AutoBuilder.debt(g);
+        g.getAutoBuilder().setOn(true, null);
+        quietly(() -> g.getAutoBuilder().pass(g));
+        AutoBuilder.Step s = step(g, power);
+        check("the affordable step orders one " + plant.getName() + " from cash without borrowing: " + s,
+                s != null && s.ordered() == 1 && s.building().equals(plant.getName())
+                        && s.cost() <= one * 1.01 && AutoBuilder.debt(g) == debt && s.borrowed() == 0);
+    }
+
     public static void main(String[] args) throws Exception {
         Path root = TempDirs.create("essential-works");
         highways(root, true);
         highways(root, false);
         schoolsAndPolice(root);
         lostOutput(root);
+        scarceCash(root);
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

@@ -1,14 +1,14 @@
-# EssentialWorksCheck.java - 139 lines · 8 methods · 3 constants · harnesses
+# EssentialWorksCheck.java - 171 lines · 9 methods · 3 constants · harnesses
 
 `ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools
 > and police waited for a payback that the service itself must never face.
-> Fixtures cause short highways with and without ground, a long queue, an
-> unaffordable preferred street, and schools that cannot pay their upkeep.
+> Fixtures cause short highways with and without ground, a street on site,
+> a partial power order from scarce cash, and schools that cannot pay their upkeep.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (25), [AutoBuilder](AutoBuilder.md) (14), [Game](Game.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (3), [WorksValue](WorksValue.md) (3), [ChildcareCheck](ChildcareCheck.md) (2), [EducationType](EducationType.md) (2), [CityNeeds](CityNeeds.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [LandManager](LandManager.md) (1), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [Sector](Sector.md) (1), [BuildCard](BuildCard.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (30), [AutoBuilder](AutoBuilder.md) (21), [Game](Game.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (6), [WorksValue](WorksValue.md) (3), [ChildcareCheck](ChildcareCheck.md) (2), [EducationType](EducationType.md) (2), [CityNeeds](CityNeeds.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [LandManager](LandManager.md) (1), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1), [Sector](Sector.md) (1), [BuildCard](BuildCard.md) (1), [TempDirs](TempDirs.md) (1)
 
 ## Constants
 
@@ -28,13 +28,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 16 | 124 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
+| 16 | 156 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
 | 22 | 4 | `static void check(String label, boolean ok)` |  |
 | 27 | 5 | `static void quietly(Runnable run)` |  |
-| 33 | 7 | `static Game town(Path root, String name)` |  |
-| 41 | 3 | `static AutoBuilder.Step step(Game g, BuildAdvice.Measure m)` |  |
-| 45 | 25 | `static void highways(Path root, boolean ground)` |  |
-| 71 | 33 | `static void schoolsAndPolice(Path root)` |  |
-| 105 | 24 | `static void lostOutput(Path root)` |  |
-| 130 | 9 | `public static void main(String[] args) throws Exception` |  |
+| 33 | 9 | `static Game town(Path root, String name)` |  |
+| 43 | 3 | `static AutoBuilder.Step step(Game g, BuildAdvice.Measure m)` |  |
+| 47 | 25 | `static void highways(Path root, boolean ground)` |  |
+| 73 | 33 | `static void schoolsAndPolice(Path root)` |  |
+| 107 | 24 | `static void lostOutput(Path root)` |  |
+| 132 | 28 | `static void scarceCash(Path root)` |  |
+| 161 | 10 | `public static void main(String[] args) throws Exception` |  |
 
