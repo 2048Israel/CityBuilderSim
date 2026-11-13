@@ -82,3 +82,56 @@ report also names payback holds on schools and police. The required debt
 permission is the cash setting, exercised separately by section 9.
 Full service snapshots and existing findings are retained in
 target/checks/aw1-final-playtest.log.
+
+
+## Final ensemble
+
+The final model snapshot is 4dc30c7f. The complete ensemble ran once against
+docs/ensemble/0.9.97.md, with all 80 cities finishing and none short, in
+28.5 minutes. An earlier snapshot attempt collided with recompilation and
+failed before any city ran. It was restarted after compilation finished.
+The score is 24/26 against 0.9.97's 23/26. Every one of the baseline's 23
+PASS criteria is still PASS, checked by policy and criterion identity.
+A2 and A3 are the two continuing failures. Every monetary audit passed
+and all 80 cities had zero LongPlaytest findings. AUTO2 median final
+population is 1,538,083 against the baseline's 229,288. Median inflation
+from m240 is 2.79% against 2.59%, with 15 of 16 seeds in band in both.
+
+The baseline is committed as docs/ensemble/AW1.md with the next-version
+token. Monthly service shares, settings and cumulative counters are retained
+in target/ensemble/AW1/*.csv. The monthly counter for no order over the debt
+limit includes an active pass that ordered nothing for any reason while
+over the limit. It measures co-occurrence. Each row below spans sixteen
+seeds. Service cells show median months under a fifth and median final
+staffed supply over current demand.
+
+| policy | cities | automatic off, months min–max | debt idle, months min–max | any service under a fifth, months min–max |
+|---|---:|---:|---:|---:|
+| AUTO2 | 16 | 0–0 | 0–195 | 2399–2399 |
+| ZERO_SLACK | 16 | 0–0 | 0–195 | 2039–2039 |
+| ZERO_HOT | 16 | 0–0 | 0–1 | 401–401 |
+| SHOCK | 16 | 0–0 | 0–195 | 839–839 |
+| HIGH | 16 | 0–0 | 0–195 | 719–719 |
+
+Each service cell gives median months below a fifth, followed by median final served share.
+
+| service | AUTO2 | ZERO_SLACK | ZERO_HOT | SHOCK | HIGH |
+|---|---:|---:|---:|---:|---:|
+| power | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% |
+| water | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% |
+| streets | 235 / 41.7% | 236 / 25.1% | 0 / 100.0% | 0 / 53.1% | 0 / 100.0% |
+| through traffic | 2108 / 6.6% | 1802.5 / 0.9% | 401 / 0.0% | 839 / 0.0% | 701 / 64.0% |
+| general care | 0 / 100.0% | 0 / 91.6% | 0 / 100.0% | 0 / 99.7% | 0 / 100.0% |
+| childcare | 0 / 89.1% | 0 / 68.8% | 0 / 100.0% | 0 / 97.7% | 0 / 100.0% |
+| senior care | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% |
+| death care | 21 / 100.0% | 8 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% |
+| elementary | 252.5 / 100.0% | 252.5 / 85.2% | 226 / 100.0% | 252.5 / 100.0% | 252.5 / 100.0% |
+| middle school | 256.5 / 100.0% | 256.5 / 82.8% | 244 / 100.0% | 256.5 / 97.8% | 256.5 / 100.0% |
+| high school | 314.5 / 77.2% | 314.5 / 65.6% | 300.5 / 100.0% | 314.5 / 97.5% | 314.5 / 100.0% |
+| college | 360.5 / 100.0% | 360.5 / 100.0% | 400 / 0.0% | 360.5 / 100.0% | 360.5 / 100.0% |
+| university | 1787 / 100.0% | 1789 / 100.0% | 400 / 0.0% | 838 / 0.0% | 718 / 0.0% |
+| medical school | 1544 / 100.0% | 1544 / 100.0% | 357 / 0.0% | 795 / 0.0% | 675 / 0.0% |
+| law school | 2398 / 0.0% | 2038 / 0.0% | 400 / 0.0% | 838 / 0.0% | 718 / 0.0% |
+| business school | 2393 / 0.0% | 2033 / 0.0% | 395 / 0.0% | 833 / 0.0% | 713 / 0.0% |
+| institute of technology | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% |
+| police | 0 / 54.0% | 0 / 53.0% | 0 / 100.0% | 0 / 65.3% | 0 / 69.3% |
