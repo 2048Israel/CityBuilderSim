@@ -28,6 +28,7 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
+| EI1 | The ensemble's outcome criteria as information (Jerus, 2026-11-13: "yes queue it and do it next"): only the money audit (M1) and the findings (F1) stay ship stops; every other criterion is still scored and printed against the baseline but never stops a batch; score.py classes each and judges the hard class alone | [EI1](docs/queue/EI1.md) |
 | HW1 | The auto city builds its works when they are needed (Jerus, 2026-11-13: "just build highways when it is needed"): highways 1.86% served at m2400 and under a fifth in 2,037 of 2,404 months, streets 37%, police 56%, payback holds on schools and police; the auto-builder orders an essential work when its share is under target, from cash and buying its land, never held on payback | [HW1](docs/queue/HW1.md) |
 | GG1 | The new gate's gaps (Jerus, 2026-11-13: "sure queue and do the gate gaps"): a versioned dry run needs its ship file first; a batch cannot move its own known-reds entry and batch-check does not apply the veto; reuse refuses a branch that changed known-reds.txt; a batch with no queue row takes its merge title from its last commit; {next} left in source; records with a lost encoding. After PO1 (same scripts) | [GG1](docs/queue/GG1.md) |
 | WD1 | The world file's makers: FAOSTAT, USGS and EIA downloaded, their output figures in `tools/world/` where the fallback estimate stands now, and a re-bake after LC3's (WN0-M; Jerus, 2026-10-31: "Take all (Recommended)") | [WD1](docs/queue/WD1.md) |
