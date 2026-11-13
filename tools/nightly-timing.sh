@@ -132,15 +132,17 @@ nightly_tier() {
 
 # PO1: retain every line's last hold, even across incomplete or red nights.
 nightly_observations() {
+    OBSERVATIONS='observations incomplete'
     history=${1:-$HOME/.cbs-observations}
     mkdir -p "$history" || return 1
     [ -s "$CLONE/observations.tsv" ] || { echo 'observations incomplete: no readings'; return 1; }
-    touch "$history/held.tsv"
+    touch "$history/held.tsv" || return 1
+    : > "$history/held.new" || return 1
     awk -v commit="$FULL" -v state="$history/held.new" -f "$ORIG/tools/observations.awk" \
         "$history/held.tsv" "$CLONE/observations.tsv" > "$history/misses.tsv" || return 1
     [ -f "$history/held.new" ] || : > "$history/held.new"
     mv "$history/held.new" "$history/held.tsv" || return 1
-    tab=$(printf '\\t')
+    tab=$(printf '\t')
     while IFS="$tab" read -r harness label last; do
         if [ "$last" != - ] && git merge-base --is-ancestor "$last" "$FULL"; then
             echo "OBSERVED $harness | $label | merges since last held $last..$FULL"
@@ -150,7 +152,8 @@ nightly_observations() {
             git log -1 --format='%h %s' "$FULL"
         fi
     done < "$history/misses.tsv"
-    echo "observations: $(wc -l < "$history/misses.tsv" | tr -d ' ') miss(es); $history/misses.tsv"
+    OBSERVATIONS="observations: $(wc -l < "$history/misses.tsv" | tr -d ' ') miss(es); $history/misses.tsv"
+    echo "$OBSERVATIONS"
 }
 
 nightly_timing() {  # optional record root for the no-JVM fixture

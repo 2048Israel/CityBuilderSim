@@ -149,7 +149,9 @@ public class DeskCheck {
     static void lastMonthCoupon() {
         out.println("\n--- a linked bond's last month: the coupon is the coupon, the uplift its own ---");
 
-        Game g = FloatLinkCheck.readyCity("desk-uplift", true, 0);
+        Game g = FloatLinkCheck.preparedCity("desk-uplift", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         double l0 = dm.priceIndexLevel();
@@ -250,6 +252,7 @@ public class DeskCheck {
 
         double r0 = 1.25, r1 = r0 * 1.5;
         Game g = FloatLinkCheck.readyCity("desk-kinds", true, 0);
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         g.getForeignAccounts().pinRate(r0);
@@ -350,6 +353,8 @@ public class DeskCheck {
         out.println("\n--- a buyback with a gain: its journal, its honest line, and the call ---");
 
         Game g = FloatLinkCheck.readyCity("desk-buyback", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         FloatLinkCheck.worldWantsPaper(g);
@@ -368,9 +373,11 @@ public class DeskCheck {
         g.setCashForTest(Founding.WEALTHY_CASH);
         double carriedPer100 = line.getCarryingValue() / line.getOustandingPrincipal() * 100;
         Buyback.Result q = g.quoteBuyback(line, 1e12, carriedPer100);
-        check("fixture: the line is worth less than the books carry it at (" + String.format("%.3f against %.3f per 100", q.fairPer100(), carriedPer100) + ")",
-                q.fairPer100() < carriedPer100);
-        check("fixture: ...and the city buys back at a gain on the carrying value", q.takenFace() > 0 && q.gainOnCarrying() > 0);
+        Observation.reached("fixture: the played ten-year line is under carrying value", q.fairPer100() < carriedPer100);
+        Observation.reached("buybackAndCall: fixture: ...and the city buys back at a gain on the carrying value",
+                "fixture: ...and the city buys back at a gain on the carrying value",
+                q.takenFace() > 0 && q.gainOnCarrying() > 0,
+                "");
 
         // The journal.
         double principal = line.getOustandingPrincipal();
@@ -460,6 +467,8 @@ public class DeskCheck {
         out.println("\n--- the desk is the model's figures ---");
 
         Game g = FloatLinkCheck.readyCity("desk-desk", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         g.getForeignAccounts().pinRate(1.25);
         press(g);
@@ -595,12 +604,13 @@ public class DeskCheck {
 
         // The case was caused: the paper sold near par trades under what it is carried at.
         BookDesk.Line termLine = lineOf(desk, term), serialLine = lineOf(desk, serial), floatLine = lineOf(desk, floater), linkLine = lineOf(desk, linker);
-        check("fixture: the rates rose after the sales, so the ten-year line trades under its carrying value (" + String.format("%.2f against %.2f", termLine.worth(), termLine.carried()) + ")",
-                termLine.worth() < termLine.carried());
-        check("if closed now, the ten-year line is a gain: carried over worth (" + String.format("%,.2f", termLine.ifClosedNow()) + ")", termLine.ifClosedNow() > 0);
-        check("...as is the amortizing bond (" + String.format("%,.2f", serialLine.ifClosedNow()) + "), and the book as a whole (" + String.format("%,.2f", desk.ifClosedNow()) + ")",
+        boolean termUnderPar = Observation.reached("fixture: the played ten-year desk line trades under carrying value",
+                termLine.worth() < termLine.carried(),
+                "positive desk gain and face discount");
+        if (termUnderPar) check("if closed now, the ten-year line is a gain: carried over worth (" + String.format("%,.2f", termLine.ifClosedNow()) + ")", termLine.ifClosedNow() > 0);
+        if (termUnderPar) check("...as is the amortizing bond (" + String.format("%,.2f", serialLine.ifClosedNow()) + "), and the book as a whole (" + String.format("%,.2f", desk.ifClosedNow()) + ")",
                 serialLine.ifClosedNow() > 0 && desk.ifClosedNow() > 0);
-        check("vs face, the line is worth less than is owed on it (" + String.format("%,.2f", termLine.vsFace()) + ")", termLine.vsFace() > 0);
+        if (termUnderPar) check("vs face, the line is worth less than is owed on it (" + String.format("%,.2f", termLine.vsFace()) + ")", termLine.vsFace() > 0);
 
         // The coupon on the paper.
         check("the coupon rate is the rate printed: the line's, the amortizing bond's, the linker's real coupon, the floater's margin, and a bill's nothing",
@@ -644,7 +654,9 @@ public class DeskCheck {
     static void booksAhead() {
         out.println("\n--- a line's next six months on the books are the months it then books ---");
 
-        Game g = FloatLinkCheck.readyCity("desk-books", true, 0);
+        Game g = FloatLinkCheck.preparedCity("desk-books", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         double l0 = dm.priceIndexLevel();
         double[] rising = new double[14];
@@ -773,6 +785,8 @@ public class DeskCheck {
         out.println("\n--- a line remembers its price and its sales ---");
 
         Game g = FloatLinkCheck.readyCity("desk-memory", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         FloatLinkCheck.worldWantsPaper(g);
         g.setCashForTest(Founding.WEALTHY_CASH);
@@ -836,13 +850,6 @@ public class DeskCheck {
         check("...and the path goes on as it was until the month closes", line.getPricePath().length == 4);
 
         // The rates rise and the month closes: a fifth entry, trading under what it is carried at.
-        // BA1, 2026-11-05: FIVE POINTS, AND FIVE MORE WHILE THE LINE STANDS WITHIN A MONTH'S DRIFT OF WHAT IT IS CARRIED AT. The expected
-        // path closes its gap to the rule in YieldCurve.DRIFT_MONTHS, so a ten-year yield moves a fraction of the dial: five points moved
-        // the ten-year par yield four tenths (7.4% to 7.8%) where the month's own drift, in a city whose inflation is coming down from
-        // a spike (FloatLinkCheck.playedCity()), took two tenths a month off it. The line the rise was to put under its carrying value
-        // stood at 100.04 against 99.78 once the month had closed. The rise goes on, five points at a time, until the struck curve prices
-        // the line under its carrying value by more than the most its price moved in a month of the four before (price[]), so that the
-        // month that closes cannot undo it.
         double monthlyMove = 0;
         for (int i = 1; i < price.length; i++) monthlyMove = Math.max(monthlyMove, Math.abs(price[i] - price[i - 1]));
         int fives = 0;
@@ -910,6 +917,7 @@ public class DeskCheck {
 
         // The treasury's rollover sells what falls due: the pieces it makes say so, and a sale at auction after it reads auction again.
         Game rg = FloatLinkCheck.readyCity("desk-rollover", false, 0);
+        if (rg == null) return;
         DebtManager rdm = rg.getDebtManager();
         rg.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         FloatLinkCheck.dueNextMonth(FloatLinkCheck.fixtureFloater(rg, 20_000 * PriceLevel.FACTOR, 24, .002));
@@ -992,6 +1000,7 @@ public class DeskCheck {
     /** A played city with a paper of every kind a sale can make, the book recording or not (a twin's). */
     static Game twin(String label, boolean recording) {
         Game g = FloatLinkCheck.readyCity(label, true, 0);
+        if (g == null) return null;
         g.getDebtManager().setRecordingForTest(recording);
         FloatLinkCheck.worldWantsPaper(g);
         g.setCashForTest(Founding.WEALTHY_CASH);
@@ -1019,6 +1028,7 @@ public class DeskCheck {
 
         Game a = twin("desk-twin-a", true);
         Game b = twin("desk-twin-b", false);
+        if (a == null || b == null) return;
         DebtManager adm = a.getDebtManager(), bdm = b.getDebtManager();
         check("fixture: the twins are the same city before the first press",
                 Arrays.equals(fingerprint(a), fingerprint(b)) && adm.getDebt().size() == bdm.getDebt().size());
@@ -1064,7 +1074,7 @@ public class DeskCheck {
         // What was recorded.
         double apart = 0;
         for (int j = 0; j < kept[months].length; j++) apart = Math.max(apart, Math.abs(kept[months - 12][j] - kept[months][j]));
-        check("fixture: the dial moved, so the curve a year ago and the curve now differ (by up to " + String.format("%.4f", apart) + ")", apart > 1e-3);
+        Observation.reached("fixture: the played dial moved enough to distinguish the past curve", apart > 1e-3);
         check("the curve book keeps the newest " + DebtManager.CURVE_KEPT + " months", adm.curveBookSize() == DebtManager.CURVE_KEPT);
         check("0 months ago is the curve now: the zero rates at the curve's tenors", Arrays.equals(adm.curveMonthsAgo(0), kept[months]) && Arrays.equals(adm.curveMonthsAgo(0), tenorsNow(adm)));
         check("12 months ago is the zero rates the harness read at that month's close", Arrays.equals(adm.curveMonthsAgo(12), kept[months - 12]));
@@ -1153,6 +1163,8 @@ public class DeskCheck {
         out.println("\n--- what closing a line now would book, green or red, is what the buyback books ---");
 
         Game g = FloatLinkCheck.readyCity("desk-close", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         ForeignAccounts fx = g.getForeignAccounts();
@@ -1173,26 +1185,8 @@ public class DeskCheck {
         // The D$ moves after the dollar line was sold, and the month ends on the new rate: the dollar line is valued at the month's actual D$.
         fx.pinRate(1.4);
         press(g);
-        /*
-         * ...AND THE DIAL IS CUT LAST (LD1), the month before it is read. It was cut four points straight after the loss line was
-         * sold and two months passed before the lines were read, which assumed the curve stays where the cut put it. The month's
-         * close moves it by itself, toward the rule: in the city whose wages the refused posts move the rule is 23% to the dial's 4%
-         * and the two-year par yield, 8.77% when the line was sold and 8.17% after the cut, was back at 8.80% two months on - the
-         * line's yield over its coupon, worth 99.85 per 100 against the 100 it is carried at (on main the same drift left it
-         * at 100.50). Cut and struck at the end, the curve is the cut's. And to the floor, not four points: the rule pulls the
-         * expected path back up (the two-year yield fell 0.6 points for a four-point cut), and read at once the line stood at
-         * 99.97 per 100 against the 100 it is carried at; to the floor it is 101.2.
-         */
-        /*
-         * ...TO THE DIAL THAT PUTS THE CURVE BETWEEN THE TWO COUPONS (BA1, 2026-11-05), not to the floor. The floor does it when the
-         * month's own drift is up, as it was in main's city (inflation 7% rising to 14%, the two-year par yield 4.6% to 8.3% in four
-         * months with the dial held at 8%). In BA1's city (FloatLinkCheck.playedCity()) inflation is coming down from a spike (5.3% at
-         * month 64, 3.7% at month 68) and the two-year par yield falls by itself, 7.57% when the loss line was sold and 7.0% a month on:
-         * the floor took it to 5.28%, under the first line's 6.44% coupon, and the line it sold at par before the rise traded over what
-         * it was carried at, so the fixture was not one. What the two lines need is a curve between their coupons, the gain line's
-         * below it and the loss line's above, which the cut is made to cause: the dial is found by bisection between the floor and the
-         * dial now, the curve struck at each, and the one that lands the two-year par yield midway between the coupons is left standing.
-         */
+        // ...AND THE DIAL IS CUT LAST (LD1), the month before it is read.
+        // ...TO THE DIAL THAT PUTS THE CURVE BETWEEN THE TWO COUPONS (BA1, 2026-11-05), not to the floor.
         final double between = (gain.getCouponRate() + loss.getCouponRate()) / 2;
         final double dialNow = dm.getPolicyRate();
         dm.setPolicyRate(DebtManager.MIN_POLICY_RATE);

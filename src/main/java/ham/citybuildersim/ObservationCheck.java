@@ -76,6 +76,16 @@ public final class ObservationCheck {
                 check(value + " independent correctness failure still counts", AllChecks.waitForHarness(child, 60, logFile) == 1);
             }
             check("every observation harness is registered", List.of(AllChecks.HARNESSES).containsAll(Observation.HARNESSES));
+            java.util.Set<String> users = new java.util.TreeSet<>();
+            try (var sources = Files.list(Path.of("src/main/java/ham/citybuildersim"))) {
+                for (Path source : sources.filter(p -> p.getFileName().toString().endsWith("Check.java")).toList()) {
+                    if (source.getFileName().toString().equals("ObservationCheck.java")) continue;
+                    if (Files.readString(source).contains("Observation.reached("))
+                        users.add(source.getFileName().toString().replace(".java", ""));
+                }
+            }
+            check("every source with a path reading is selected for nightly observations",
+                    users.equals(new java.util.TreeSet<>(Observation.HARNESSES)));
         } finally {
             System.setOut(out);
             if (mode == null) System.clearProperty(Observation.PROPERTY); else System.setProperty(Observation.PROPERTY, mode);

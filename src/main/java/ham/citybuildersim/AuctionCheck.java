@@ -802,7 +802,6 @@ public class AuctionCheck {
                         && city.getCash() == cash && ledger.auctionSales() == tallied);
     }
 
-    /* ============== 8. the quote is the deal, and the settle pays the allotment ============== */
     /** The played lineup's dependent laws; the independent term refusal stays in section 7. */
     static void lineupInCity(Game city, double ask, int need2) {
         DebtManager ledger = city.getDebtManager();
@@ -919,6 +918,7 @@ public class AuctionCheck {
 
     }
 
+    /* ============== 8. the quote is the deal, and the settle pays the allotment ============== */
     static void section8(Game city) {
         out.println("--- 8. the quote is the deal, the settle pays the allotment, and a tiny sale is no sale ---");
         DebtManager ledger = city.getDebtManager();

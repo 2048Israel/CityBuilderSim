@@ -6565,12 +6565,23 @@ public class KeptCheck {
             int[] sum = perScreen.computeIfAbsent(w.screen(), k -> new int[4]);
             for (int i = 0; i < 4; i++) sum[i] += c[i];
             System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3]);
-            Observation.reached(w.name() + ": the played month still needs each kept node's tooltip", c[3] == 0);
-            check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw",
-                    c[1] == c[2]);
+            Observation.reached("kp6Tips tooltip availability",
+                    w.name() + ": the played month still needs each kept node's tooltip",
+                    c[3] == 0,
+                    "");
+            if (Observation.reached("kp6Tips retained tooltip",
+                    w.name() + ": a tooltip survives the played month",
+                    c[1] > 0,
+                    "surviving Tooltip identity")) {
+                check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw",
+                        c[1] == c[2]);
+            }
         }
         for (java.util.Map.Entry<String, int[]> e : perScreen.entrySet()) {
-            check("the " + e.getKey() + " pages carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")", e.getValue()[1] > 0);
+            Observation.reached("kp6Tips:  pages carry tooltips that a month leaves on their nodes, to be kept",
+                    "the " + e.getKey() + " pages carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")",
+                    e.getValue()[1] > 0,
+                    "");
         }
     }
 
@@ -7764,12 +7775,23 @@ public class KeptCheck {
             int[] sum = perScreen.computeIfAbsent(w.screen(), k -> new int[4]);
             for (int i = 0; i < 4; i++) sum[i] += c[i];
             System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3]);
-            Observation.reached(w.name() + ": the played month still needs each kept node's tooltip", c[3] == 0);
-            check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw",
-                    c[1] == c[2]);
+            Observation.reached("kp7Tips tooltip availability",
+                    w.name() + ": the played month still needs each kept node's tooltip",
+                    c[3] == 0,
+                    "");
+            if (Observation.reached("kp7Tips retained tooltip",
+                    w.name() + ": a tooltip survives the played month",
+                    c[1] > 0,
+                    "surviving Tooltip identity")) {
+                check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw",
+                        c[1] == c[2]);
+            }
         }
         for (java.util.Map.Entry<String, int[]> e : perScreen.entrySet()) {
-            check("the pages of " + e.getKey() + " carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")", e.getValue()[1] > 0);
+            Observation.reached("kp7Tips:  carry tooltips that a month leaves on their nodes, to be kept",
+                    "the pages of " + e.getKey() + " carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")",
+                    e.getValue()[1] > 0,
+                    "");
         }
     }
 

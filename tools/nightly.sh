@@ -62,6 +62,7 @@ fi
 TIMING='timing FAILED: incomplete run'
 nightly_tier; NRC=$?
 nightly_observations >> "$LOG" 2>&1; ORC=$?
+TIER="$TIER; $OBSERVATIONS"
 nightly_timing >> "$LOG" 2>&1; TRC=$?
 [ -z "$NIGHT" ] || cp "$LOG" "$NIGHT/nightly.log"
 verdict "$PLAY"

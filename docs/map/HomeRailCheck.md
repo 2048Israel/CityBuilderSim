@@ -1,4 +1,4 @@
-# HomeRailCheck.java - 926 lines · 28 methods · 6 constants · harnesses
+# HomeRailCheck.java - 924 lines · 28 methods · 6 constants · harnesses
 
 `ham/citybuildersim/HomeRailCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -51,7 +51,7 @@
 > mechanic deals are the tonnes a city makes: each fixture says what it lays
 > and the section asserts the condition it needed actually came about.
 
-**Uses:** [Good](Good.md) (62), [Freight](Freight.md) (43), [Game](Game.md) (37), [Haulage](Haulage.md) (33), [LongPlaytest](LongPlaytest.md) (28), [HaulageCheck](HaulageCheck.md) (17), [Sector](Sector.md) (15), [GameFiles](GameFiles.md) (11), [Traffic](Traffic.md) (4), [RailDepotCheck](RailDepotCheck.md) (3), [BuildingManager](BuildingManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [SectorState](SectorState.md) (1), [Markets](Markets.md) (1), [Ports](Ports.md) (1), [Sectors](Sectors.md) (1), [Mining](Mining.md) (1), [TaxPolicy](TaxPolicy.md) (1)
+**Uses:** [Good](Good.md) (62), [Freight](Freight.md) (43), [Game](Game.md) (37), [Haulage](Haulage.md) (33), [LongPlaytest](LongPlaytest.md) (28), [HaulageCheck](HaulageCheck.md) (17), [Sector](Sector.md) (15), [GameFiles](GameFiles.md) (11), [Traffic](Traffic.md) (4), [RailDepotCheck](RailDepotCheck.md) (3), [BuildingManager](BuildingManager.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Observation](Observation.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [SectorState](SectorState.md) (1), [Markets](Markets.md) (1), [Ports](Ports.md) (1), [Sectors](Sectors.md) (1), [Mining](Mining.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
 **Used by (2):** [FreightViewCheck](FreightViewCheck.md), [TradeBandCheck](TradeBandCheck.md)
 
@@ -103,7 +103,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 864 | **type** `public class HomeRailCheck` | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's rate on the room the boundary's tonnes leave, a tonne that crossed a ... |
+| 63 | 862 | **type** `public class HomeRailCheck` | The railway's carriage of the city's own bulk, and the port yard, held to FR6's brief: a bulk tonne bought at home rides a siding at the city leg's rate on the room the boundary's tonnes leave, a tonne that crossed a ... |
 | 67 | 1 | `static void quietly(Runnable r)` |  |
 | 69 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 74 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -190,9 +190,9 @@
 |---:|---:|---|---|
 | 775 | 40 | `static void save(Game yard, GameFiles files)` |  |
 
-### 9. A REAL RUN (lines 816-926)
+### 9. A REAL RUN (lines 816-924)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 820 | 106 | `static void realRun(Game rail)` |  |
+| 820 | 104 | `static void realRun(Game rail)` |  |
 

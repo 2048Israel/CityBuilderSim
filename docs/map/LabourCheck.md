@@ -1,4 +1,4 @@
-# LabourCheck.java - 1,700 lines · 15 methods · 4 constants · harnesses
+# LabourCheck.java - 1,690 lines · 15 methods · 4 constants · harnesses
 
 `ham/citybuildersim/LabourCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -34,7 +34,7 @@
 > dial move after a load or in a reform month reads its share against the right average, and the tie's share stops short of the ratchet: the range
 > is the world file's ratios, never 1, and a floor tied at its top settles under the mean of the wages it does not hold.
 
-**Uses:** [LabourMarket](LabourMarket.md) (151), [JobType](JobType.md) (71), [WageBand](WageBand.md) (65), [Game](Game.md) (26), [GameFiles](GameFiles.md) (10), [PriceLevel](PriceLevel.md) (8), [Migration](Migration.md) (6), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PayTier](PayTier.md) (4), [WageLadder](WageLadder.md) (4), [PopulationManager](PopulationManager.md) (3), [BuildingManager](BuildingManager.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [DecisionLog](DecisionLog.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [RealEstate](RealEstate.md) (2), [WorldMeasures](WorldMeasures.md) (2), [Construction](Construction.md) (2), [TempDirs](TempDirs.md) (1), [AgeBand](AgeBand.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Sectors](Sectors.md) (1), [PriceIndex](PriceIndex.md) (1), [EconomyManager](EconomyManager.md) (1)
+**Uses:** [LabourMarket](LabourMarket.md) (151), [JobType](JobType.md) (71), [WageBand](WageBand.md) (65), [Game](Game.md) (26), [GameFiles](GameFiles.md) (10), [PriceLevel](PriceLevel.md) (8), [Observation](Observation.md) (8), [Migration](Migration.md) (6), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PayTier](PayTier.md) (4), [WageLadder](WageLadder.md) (4), [PopulationManager](PopulationManager.md) (3), [BuildingManager](BuildingManager.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [DecisionLog](DecisionLog.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [RealEstate](RealEstate.md) (2), [WorldMeasures](WorldMeasures.md) (2), [Construction](Construction.md) (2), [TempDirs](TempDirs.md) (1), [AgeBand](AgeBand.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Sectors](Sectors.md) (1), [PriceIndex](PriceIndex.md) (1), [EconomyManager](EconomyManager.md) (1)
 
 **Used by (1):** [LandlordPortCheck](LandlordPortCheck.md)
 
@@ -52,13 +52,13 @@
 | 633 | · · RENT NO LONGER FOLLOWS THE UNSKILLED WAGE (2026-09-07). |
 | 714 | · · ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06). |
 | 741 | · · HUNTED FOR, NOT ASSUMED. |
-| 816 | · · A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06). |
-| 896 | · · WHO MOVES IN, AND WHY (2026-09-07). |
+| 819 | · · A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06). |
+| 893 | · · WHO MOVES IN, AND WHY (2026-09-07). |
 | 939 | · · SOME ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (0.7.18). |
-| 1034 | · 7. THE TIE'S AVERAGE SURVIVES A LOAD AND A REFORM (WS1) |
-| 1120 | · 8. THE TIE'S SHARE STOPS SHORT OF THE RATCHET (WS1) |
-| 1219 | · WAGES AGAINST THE INDEX (2026-09-21). |
-| 1468 | 13. PAYROLL BY JOB TYPE (0.7.17) |
+| 1038 | · 7. THE TIE'S AVERAGE SURVIVES A LOAD AND A REFORM (WS1) |
+| 1124 | · 8. THE TIE'S SHARE STOPS SHORT OF THE RATCHET (WS1) |
+| 1223 | · WAGES AGAINST THE INDEX (2026-09-21). |
+| 1474 | 13. PAYROLL BY JOB TYPE (0.7.17) |
 
 ## Constants
 
@@ -66,47 +66,47 @@
 |---:|---|---|---|
 | 46 | `LabourCheck.OUT` | `System.out` |  |
 | 47 | `LabourCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
-| 1251 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
-| 1254 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
+| 1255 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
+| 1258 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 45 | `static int fails` |  |
-| 1258 | `final java.util.List<Double> index` |  |
-| 1259 | `double worstTarget, worstStep` |  |
-| 1260 | `int outsideWindow, windowMonths` |  |
+| 1262 | `final java.util.List<Double> index` |  |
+| 1263 | `double worstTarget, worstStep` |  |
+| 1264 | `int outsideWindow, windowMonths` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 1658 | **type** `public class LabourCheck` | Verifies the labour market: who can hold a job, and what it costs. |
+| 43 | 1648 | **type** `public class LabourCheck` | Verifies the labour market: who can hold a job, and what it costs. |
 | 51 | 4 | `static void quietly(Runnable work)` |  |
 | 56 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 61 | 6 | `static void close(String label, double a, double b, double tol)` |  |
 | 68 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
-| 75 | 1143 | `public static void main(String[] args) throws Exception` |  |
+| 75 | 1147 | `public static void main(String[] args) throws Exception` |  |
 
-### WAGES AGAINST THE INDEX (2026-09-21). (lines 1219-1467)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1257 | 40 | **type** `static final class LagWatch` | The recurrence, checked month by month on one city: what it was handed and what it did. |
-| 1263 | 33 | `void month(Game g, Runnable play)` _(in LabourCheck.LagWatch)_ | One month, played; the index and the expectation the month was handed are the ones it read at its top. |
-| 1299 | 4 | `static void crawl(Game g)` | The currency one CRAWL weaker, and held there for the month. |
-| 1304 | 163 | `static void wagesAgainstTheIndex()` |  |
-
-### 13. PAYROLL BY JOB TYPE (0.7.17) (lines 1468-1700)
+### WAGES AGAINST THE INDEX (2026-09-21). (lines 1223-1473)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1488 | 165 | `static void payrollByJobType()` |  |
-| 1655 | 12 | `static double everyOtherEmployer(Game g)` | Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. |
-| 1668 | 5 | `static double sum(double[] a)` |  |
-| 1674 | 3 | `static double pct(double[] mix, WageBand band, double total)` |  |
-| 1678 | 8 | `static double staffed(long[] jobs, long[] vacancy, WageBand band)` |  |
-| 1688 | 4 | `static double lastAverageOf(LabourMarket m)` | The average wage a market's tie last read: the last value of its state array (WS1; there is no getter for it). |
-| 1693 | 7 | `static void cleanUp(Path root)` |  |
+| 1261 | 40 | **type** `static final class LagWatch` | The recurrence, checked month by month on one city: what it was handed and what it did. |
+| 1267 | 33 | `void month(Game g, Runnable play)` _(in LabourCheck.LagWatch)_ | One month, played; the index and the expectation the month was handed are the ones it read at its top. |
+| 1303 | 4 | `static void crawl(Game g)` | The currency one CRAWL weaker, and held there for the month. |
+| 1308 | 165 | `static void wagesAgainstTheIndex()` |  |
+
+### 13. PAYROLL BY JOB TYPE (0.7.17) (lines 1474-1690)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1494 | 149 | `static void payrollByJobType()` |  |
+| 1645 | 12 | `static double everyOtherEmployer(Game g)` | Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. |
+| 1658 | 5 | `static double sum(double[] a)` |  |
+| 1664 | 3 | `static double pct(double[] mix, WageBand band, double total)` |  |
+| 1668 | 8 | `static double staffed(long[] jobs, long[] vacancy, WageBand band)` |  |
+| 1678 | 4 | `static double lastAverageOf(LabourMarket m)` | The average wage a market's tie last read: the last value of its state array (WS1; there is no getter for it). |
+| 1683 | 7 | `static void cleanUp(Path root)` |  |
 
