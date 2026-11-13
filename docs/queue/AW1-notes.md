@@ -140,3 +140,18 @@ Each service cell gives median months below a fifth, followed by median final se
 | business school | 2393 / 0.0% | 2033 / 0.0% | 395 / 0.0% | 833 / 0.0% | 713 / 0.0% |
 | institute of technology | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% | 0 / 100.0% |
 | police | 0 / 54.0% | 0 / 53.0% | 0 / 100.0% | 0 / 65.3% | 0 / 69.3% |
+
+## Final selected checks
+
+batch-check --pick selected 71 harnesses and ran 75 including the timing
+dependencies, in 2,075 seconds. Seventy passed. MonetaryCheck,
+CentralBankCheck, MapCheck, PlanCheck and KeptCheck had only their recorded
+known reds. There were zero NEW red lines and 29 soft timing assertions.
+AutoBuildCheck passed every existing section and AW1's three new assertions.
+LongPlaytest passed. Maps regenerated and Stale reported zero firm findings.
+The full log is target/aw1-pick.log and the suite log target/checks/suite.txt.
+
+The outer PowerShell invocation normalized Bash's nonzero exit to 1.
+Rejudging the saved suite through Git Bash with an explicit PowerShell
+exit of LASTEXITCODE returned 3, confirming the known-red-only verdict.
+The fresh-clone dry-run command propagates that exit explicitly.
