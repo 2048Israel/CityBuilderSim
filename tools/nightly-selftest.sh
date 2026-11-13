@@ -121,6 +121,8 @@ TIER_JUDGE_LOG=$TEST/tier-judge-command; export TIER_JUDGE_LOG TIER_JUDGE_EXIT
 CBS_KNOWN_REDS=wrong-caller-record; CBS_REJUDGE=; export CBS_KNOWN_REDS CBS_REJUDGE
 CASE='the nightly runs its tier on the fetched main tip'; nightly_tier "$TEST/tier-green"
 ok grep -q 'AllChecks -f --nightly' "$TEST/tier-command"
+CASE='observation tier leaves clocks to the serial timing run'
+ok grep -q -- '-Dcbs.timing=soft -Dcbs.observations=hard' "$TEST/tier-command"
 ok grep -q -- '--judge' "$TIER_JUDGE_LOG"
 ok test "$(cat "$TEST/tier-green")" = "$FULL"
 TIER_EXIT=5; TIER_JUDGE_EXIT=3

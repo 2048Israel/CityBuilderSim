@@ -139,9 +139,9 @@ public class AllChecks {
         String classpath = System.getProperty("java.class.path");
         boolean haveFx = classpath.toLowerCase().contains("javafx");
 
-        int failed = 0, ran = 0, soft = 0;
+        int failed = 0, ran = 0, soft = 0, observed = 0;
         List<String> times = new ArrayList<>();   // "seconds<TAB>name<TAB>exit", for TIMES
-        List<String> softIn = new ArrayList<>();
+        List<String> softIn = new ArrayList<>(), observedIn = new ArrayList<>();
         List<String> knownOnly = new ArrayList<>(), newRed = new ArrayList<>();
         long started = System.currentTimeMillis();
         List<String> picked = new ArrayList<>(), order = new ArrayList<>();   // asked for, in HARNESSES order; and what starts, in the order it starts
@@ -198,9 +198,10 @@ public class AllChecks {
             if (logged) {
                 int n = softLines(log);
                 if (n > 0) { soft += n; softIn.add(name + " " + n); }
-                for (String line : Files.readAllLines(log, StandardCharsets.UTF_8))
-                    if (line.startsWith("OBSERVED - ") || line.startsWith("SKIPPED - "))
-                        System.out.println(name + " " + line);
+                List<String> readings = observationLines(log);
+                int misses = (int) readings.stream().filter(line -> line.startsWith("OBSERVED - ")).count();
+                if (misses > 0) { observed += misses; observedIn.add(name + " " + misses); }
+                for (String line : readings) System.out.println(name + " " + line);
             }
             if (code == 0) {
                 if (!failuresOnly) System.out.println(header(name, code, seconds));
@@ -232,6 +233,8 @@ public class AllChecks {
         if (held.get() > 0) System.out.printf("memory: %d start(s) held until the commit charge fell under %d%% (AllChecks.COMMIT_PCT)%n", held.get(), COMMIT_PCT);
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
                 soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
+        if (observed > 0) System.out.printf("%d path assertion%s OBSERVED, not counted: %s%n",
+                observed, observed == 1 ? "" : "s", String.join(", ", observedIn));
         if (logged && failed > 0) {
             System.out.println(againstLine(record, known, knownOnly, newRed));
             System.out.println("Whole output of each: " + LOGS + File.separator + "NAME.log");
@@ -430,11 +433,22 @@ public class AllChecks {
     static List<String> command(String java, String classpath, String name, boolean logged) {
         List<String> c = new ArrayList<>(List.of(java, "-Xmx" + HEAP_MB + "m", "-Xms" + HEAP_START_MB + "m"));
         Observation.forwardTo(c);
+        c.add("-D" + Observation.HARNESS_PROPERTY + "=" + name);
         if (Timing.forwarded() != null) c.add(Timing.forwarded());
         if (Timing.forwardedTsv() != null) c.add(Timing.forwardedTsv());   // TM3: the file the figures go to
         if (logged) c.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"));
         c.addAll(List.of("-cp", classpath, "ham.citybuildersim." + name));
         return c;
+    }
+
+    /** PO1: legacy console bytes are replaced, as in softLines and failingLines. */
+    static List<String> observationLines(Path log) {
+        try {
+            return new String(Files.readAllBytes(log), StandardCharsets.UTF_8).lines()
+                    .filter(line -> line.startsWith("OBSERVED - ") || line.startsWith("SKIPPED - ")).toList();
+        } catch (IOException e) {
+            return List.of();
+        }
     }
 
     /** How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. */

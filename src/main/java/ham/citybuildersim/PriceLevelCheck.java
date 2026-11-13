@@ -533,6 +533,8 @@ public class PriceLevelCheck {
 
     /** Compare every law up to the first same-level nudge that changes the city's path. */
     static void observedTwin(Child plain, Child today, int months, String flag) throws Exception {
+        assertTrue("...and the city really lived (more people at the end than the start)",
+                today.series.get("pop") != null && today.series.get("pop").v[today.series.get("pop").v.length - 1] > today.series.get("pop").v[0]);
         Child nudgedFactor = Child.run(false, flag, true), nudgedToday = Child.run(true, flag, true);
         assertTrue(flag + ": both nudge children completed", nudgedFactor.ok && nudgedToday.ok);
         if (!nudgedFactor.ok || !nudgedToday.ok) return;
@@ -541,12 +543,7 @@ public class PriceLevelCheck {
                 horizon == months,
                 flag + " nominal, real and count equalities after month " + horizon);
         out.println("   " + flag + ": nudge-derived comparison horizon " + horizon + " of " + months + " months");
-        for (Child child : List.of(plain, today)) {
-            child.series.replaceAll((key, series) -> key.startsWith("reload.") ? series
-                    : new Series(series.kind, java.util.Arrays.copyOf(series.v, Math.min(series.v.length, horizon + 1))));
-            child.counts.replaceAll((key, values) -> java.util.Arrays.copyOf(values, Math.min(values.length, horizon + 1)));
-        }
-        theTwin(plain, today, horizon);
+        theTwin(plain.prefix(horizon), today.prefix(horizon), horizon);
     }
 
     /** The month before a nudge changes a live series beyond the existing comparison tolerance. */
@@ -657,8 +654,6 @@ public class PriceLevelCheck {
             boolean same = a != null && b != null && java.util.Arrays.equals(a.v, b.v);
             assertTrue("...the " + key + " is the same to the person in every month", same);
         }
-        assertTrue("...and the city really lived (more people at the end than the start)",
-                today.series.get("pop") != null && today.series.get("pop").v[today.series.get("pop").v.length - 1] > today.series.get("pop").v[0]);
     }
 
     /** The history series recorded to six significant figures (HistorySave.roundSig) rather than to a grid: the share prices and the household-scale prices. */
@@ -811,6 +806,19 @@ public class PriceLevelCheck {
         final Map<String, Series> series = new LinkedHashMap<>();
         /** What the screens' cut-offs did each month (EP2, the K lines: Counts); kept apart from the series so that theTwin never sees them. */
         final Map<String, double[]> counts = new LinkedHashMap<>();
+
+        /** A detached comparison prefix. Full-run series and cut-off counts stay on this child. */
+        Child prefix(int months) {
+            Child copy = new Child();
+            copy.factor = factor;
+            copy.ok = ok;
+            copy.consts.putAll(consts);
+            copy.ratios.putAll(ratios);
+            series.forEach((key, value) -> copy.series.put(key, key.startsWith("reload.") ? value
+                    : new Series(value.kind, java.util.Arrays.copyOf(value.v, Math.min(value.v.length, months + 1)))));
+            counts.forEach((key, value) -> copy.counts.put(key, java.util.Arrays.copyOf(value, Math.min(value.length, months + 1))));
+            return copy;
+        }
 
         /** A child JVM started as AllChecks starts a harness, with the one door open or not; one after the other, never at once. */
         static Child run(boolean todaysPrices, boolean built) throws Exception {

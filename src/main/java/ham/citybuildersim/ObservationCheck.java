@@ -24,9 +24,15 @@ public final class ObservationCheck {
 
     /** A miniature harness whose missed premise protects an unsafe dependent law. */
     public static final class Fixture {
+        static final class Delegate {
+            static boolean paper() {
+                return Observation.reached("played city has paper", false, "paper's coupon and waterfall");
+            }
+        }
+
         public static void main(String[] args) {
             int laws = 0;
-            if (Observation.reached("played city has paper", false, "paper's coupon and waterfall")) {
+            if (Delegate.paper()) {
                 laws++;
                 throw new AssertionError("unreached paper was read");
             }
@@ -63,18 +69,41 @@ public final class ObservationCheck {
                 List<String> command = AllChecks.command(Path.of(System.getProperty("java.home"), "bin", "java").toString(),
                         System.getProperty("java.class.path"), "ObservationCheck$Fixture", true);
                 check(value + " forwards the observation mode and record", command.contains("-Dcbs.observations=" + value)
-                        && command.contains("-Dcbs.observations.tsv=" + rows));
+                        && command.contains("-Dcbs.observations.tsv=" + rows)
+                        && command.contains("-D" + Observation.HARNESS_PROPERTY + "=ObservationCheck$Fixture"));
                 Path logFile = root.resolve(value + ".log");
                 Process child = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(logFile.toFile()).start();
                 int exit = AllChecks.waitForHarness(child, 60, logFile);
                 log = Files.readString(logFile);
                 check(value + " child exits zero, names the missed premise and runs its independent law", exit == 0
                         && log.contains("OBSERVED - not reached: played city has paper") && log.contains("laws run 1"));
+                if (value.equals("hard")) check("a delegated reading belongs to the running harness",
+                        Files.readString(rows).contains("ObservationCheck$Fixture\tplayed city has paper\tMISSED\n"));
                 command = new ArrayList<>(command);
                 command.add("break-independent-law");
                 child = new ProcessBuilder(command).redirectErrorStream(true).redirectOutput(logFile.toFile()).start();
                 check(value + " independent correctness failure still counts", AllChecks.waitForHarness(child, 60, logFile) == 1);
             }
+            Path legacy = root.resolve("legacy.log");
+            byte[] prefix = "OBSERVED - not reached: legacy ".getBytes(StandardCharsets.UTF_8);
+            ByteArrayOutputStream legacyBytes = new ByteArrayOutputStream();
+            legacyBytes.write(prefix);
+            legacyBytes.write(0x96);
+            legacyBytes.write("\nSKIPPED - dependent law\nfinished\n".getBytes(StandardCharsets.UTF_8));
+            Files.write(legacy, legacyBytes.toByteArray());
+            List<String> echoes = AllChecks.observationLines(legacy);
+            check("a legacy bad byte is replaced and observation echoing completes",
+                    echoes.size() == 2 && echoes.get(0).endsWith("\uFFFD") && echoes.get(1).startsWith("SKIPPED - "));
+            PriceLevelCheck.Child full = new PriceLevelCheck.Child();
+            full.series.put("pop", new PriceLevelCheck.Series('R', new double[]{1, 2, 3, 4}));
+            full.counts.put("lanes", new double[]{0, 0, 1, 1});
+            PriceLevelCheck.Child prefixOnly = full.prefix(1);
+            prefixOnly.series.get("pop").v[0] = 99;
+            prefixOnly.counts.get("lanes")[0] = 99;
+            check("nudge comparison copies preserve full-run series and cut-off counts",
+                    full.series.get("pop").v.length == 4 && full.series.get("pop").v[0] == 1
+                            && full.counts.get("lanes").length == 4 && full.counts.get("lanes")[0] == 0
+                            && prefixOnly.series.get("pop").v.length == 2 && prefixOnly.counts.get("lanes").length == 2);
             check("every observation harness is registered", List.of(AllChecks.HARNESSES).containsAll(Observation.HARNESSES));
             java.util.Set<String> users = new java.util.TreeSet<>();
             try (var sources = Files.list(Path.of("src/main/java/ham/citybuildersim"))) {

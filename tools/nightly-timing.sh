@@ -105,7 +105,8 @@ timing_search() {  # first-parent merges, binary search against the preceding qu
 nightly_tier() {
     green=${1:-$HOME/.cbs-nightly-tier-green}
     : > "$CLONE/observations.tsv"
-    java -Xmx2048m -Xms64m -Dcbs.timing=hard -Dcbs.observations=hard \
+    # PO1 review: observations run together, while --timing keeps clocks in its serial paired runs.
+    java -Xmx2048m -Xms64m -Dcbs.timing=soft -Dcbs.observations=hard \
         -Dcbs.observations.tsv="$CLONE/observations.tsv" -Dstdout.encoding=UTF-8 \
         -cp "target/classes$SEP$(cat target/classpath.txt)" ham.citybuildersim.AllChecks -f --nightly --observations > "$CLONE/tier.log" 2>&1 || :
     cat "$CLONE/tier.log" >> "$LOG"

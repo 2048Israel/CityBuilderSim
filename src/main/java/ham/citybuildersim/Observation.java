@@ -19,6 +19,9 @@ public final class Observation {
     /** The shared nightly record, harness, label and REACHED or MISSED, tab-separated. */
     static final String TSV_PROPERTY = "cbs.observations.tsv";
 
+    /** The running harness, set on its JVM even when another harness supplies a fixture. */
+    static final String HARNESS_PROPERTY = "cbs.observations.harness";
+
     /** Every harness with path observations, also run nightly alongside HA1's tier. */
     static final List<String> HARNESSES = List.of(
             "ScaleCheck", "HoldersCheck", "SaveFileCheck", "CurrencyRegimeCheck",
@@ -40,10 +43,11 @@ public final class Observation {
 
     /** A stable line identity when the printed label contains that run's measured figures. */
     static boolean reached(String identity, String label, boolean reached, String laws) {
-        String caller = StackWalker.getInstance().walk(frames -> frames
-                .filter(f -> !f.getClassName().equals(Observation.class.getName()))
+        String caller = System.getProperty(HARNESS_PROPERTY);
+        if (caller == null) caller = StackWalker.getInstance().walk(frames -> frames
                 .map(f -> f.getClassName().substring(f.getClassName().lastIndexOf('.') + 1))
-                .findFirst().orElse("?"));
+                .filter(name -> name.endsWith("Check") || name.contains("Check$"))
+                .reduce((inner, outer) -> outer).orElse("?"));
         if ("hard".equals(System.getProperty(PROPERTY))) {
             String file = System.getProperty(TSV_PROPERTY);
             if (file != null && !file.isBlank())
