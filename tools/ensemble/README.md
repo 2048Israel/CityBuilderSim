@@ -18,6 +18,11 @@ on its branch; `ship.sh` names it `docs/ensemble/<version>.md` in the merge, by
 the version it sets at the gate (BP1, 2026-10-24), and that file is the next
 batch's baseline.
 
+Only M1 (money audit) and F1 (findings, against the baseline) are hard ship stops.
+Every other criterion defaults to info and keeps its score. The table shows each
+class, baseline value and verdict, and calls out changed verdicts. The batch verdict
+uses hard criteria alone. WHY (EI1) HW1's later payoff failed T2 in short scenarios.
+
 ## Running it
 
 On the PC, in Git Bash at the root of the checkout or worktree:
@@ -53,20 +58,26 @@ Use a new label (or `RESUME=0`) for a fresh run.
 
 ## What it writes, under `$ENSEMBLE_OUT/<label>/`
 
-- `score.md`: the table and the line `criteria passed: n/m`. A criterion with
+- `score.md`: the table, `criteria passed: n/m`, and the hard-only `batch verdict`.
+  `changed verdict` lines name each change against the baseline. A criterion with
   nothing to judge says VACUOUS, and one Jerus retired says RETIRED with his
   words (`score.py`'s THE PREMISES RETIRED; H1 since CD1, 2026-10-21): both
   are printed with their numbers and left out of n and m.
 - `baseline.md`: that table in the form `docs/ensemble/<version>.md` keeps, with
   a paragraph naming the version, commit, date and label, and the `summary.json`.
-- `summary.json`: what `--baseline` reads (T1, T2 and F1 compare with it).
+- `summary.json`: T1, T2 and F1's inputs plus each criterion's class, value and verdict.
+  Old Markdown baselines supply readings from their table. Old JSON without readings
+  shows `unavailable` for the previous verdict.
 - `<POLICY>-<seed>.csv`, `times/`, `times.txt`, `progress.txt` (a `DONE` line
   a run, or `NO DONE <policy> <seed>`), `logs/` (a log a run, `javac.txt`,
   `score.txt`), `snapshot.txt`, `classes/`, `deps.txt`, `driver/`, `tmp/`.
 
-Exit status: 0 scored; 1 build or driver compile failure (`build first` means
+Runner exit status: 0 hard criteria pass; 1 build or driver compile failure (`build first` means
 `target/classes` is missing); 2 scoring failed or pandas is missing; 3 runs are
-missing (what is there is still scored). `score.py` needs the AUTO2 runs, the twins.
+missing (what is there is still scored); 4 a hard criterion failed, with the score,
+summary and baseline retained. `score.py` exits 0 or 4 for its hard verdict.
+It needs the AUTO2 runs, the twins. Run `sh tools/ensemble/ensemble-selftest.sh`
+after scorer or runner edits.
 
 ## Cost
 

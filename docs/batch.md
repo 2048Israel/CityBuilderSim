@@ -81,8 +81,10 @@ under `batch-check.sh`'s lock) go one at a time.
    whose default playtest's trace is byte-identical to main's but for its
    run-time line skips the 80-run ensemble and its notes say so; one whose
    trace moved runs `tools/ensemble/ensemble.sh <label>` once, on its final
-   model, against the newest `docs/ensemble/<version>.md` (main is never rerun
-   for a baseline), and commits the run's `baseline.md` as
+   model, against the newest `docs/ensemble/<version>.md`. Only M1 (money audit)
+   and F1 (findings) stop shipping. All other criteria stay scored as information,
+   beside the baseline with changed verdicts called out (EI1, HW1's T2 stop).
+   Main is never rerun for a baseline. Commit the run's `baseline.md` as
    `docs/ensemble/<id>.md`; `ship.sh` renames it by the version at the gate.
 7. **A session ends a turn only when it is done or blocked** (BP1 item 2: the
    orchestrator is woken only by a finished report or a question it must
