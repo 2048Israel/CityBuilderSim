@@ -1,6 +1,6 @@
 # The harnesses
 
-Generated 2026-11-12 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-13 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
 **201 harness files, 23,794 labelled assertions.** AllChecks runs 201 of them.
 
@@ -17593,17 +17593,17 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 _(this harness does not label its checks through a helper - it prints its findings; read its header and its sections)_
 
-- **L1430 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L3306 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L3361 AND EVERYTHING THAT IS A PURCHASE.**
-- **L3707 AND THE BEST OF THEM WINS.**
-- **L6274 founding: a few months at a time, by hand**
-- **L6371 then the real rhythm**
-- **L6504 the report**
-- **L6527 ==**
-- **L6624 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7888 what the advisor tried, and what happened**
-- **L7894 findings**
+- **L1502 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
+- **L3378 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L3433 AND EVERYTHING THAT IS A PURCHASE.**
+- **L3779 AND THE BEST OF THEM WINS.**
+- **L6349 founding: a few months at a time, by hand**
+- **L6446 then the real rhythm**
+- **L6579 the report**
+- **L6602 ==**
+- **L6699 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7964 what the advisor tried, and what happened**
+- **L7970 findings**
 
 ## MainLineCheck.java - 160 labelled assertions
 

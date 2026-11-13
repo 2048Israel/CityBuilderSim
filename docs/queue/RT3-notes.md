@@ -4,7 +4,7 @@
 2026-11-12 was "Yes, count only", in answer to "Should RT3 ship as the
 retirement count only?" Lanekeeper relayed it in
 `20261112-233628-081-lanekeeper-4bcf`. The completion section at the end
-records the main-rule checks and final gate. Earlier cap and policy work
+records the main-rule checks and final verdict. Earlier cap and policy work
 below records the investigation that preceded this decision.
 
 ## Model and calls
@@ -657,7 +657,7 @@ Its implementation and recovery investigation are in [AW1's notes](AW1-notes.md)
 
 Merged main `b5008d8693cb56d16ca18cad095f2670d3a582e9` (0.9.98). The merge
 is `107d0910` and the count-only cleanup is `98031178`. Generated-document
-conflicts took main and the final check regenerates their indexes.
+conflicts took main and the final check regenerated their indexes.
 The merge's conflict-comment tail had followed its required author footer.
 A lease-protected branch update corrected that commit message and rebuilt
 its child with identical trees. The correction record is
@@ -726,3 +726,27 @@ The byte-identical default traces meet EN1's ensemble-skip condition.
 The current baseline is [0.9.98](../ensemble/0.9.98.md). The withdrawn
 cap's `docs/ensemble/RT3.md` was removed because the unversioned publisher
 requires a batch ensemble file to have a versioned ship record.
+
+
+### Final picked check
+
+`./batch-check.sh --pick` completed with **exit 3** on 2026-11-13.
+It selected **69 of 201** harnesses. The runner included its mandatory
+checks and completed **73** in **1,541 seconds**, with 68 passing and five
+known-red harnesses. Every reported red is covered by the repository's
+existing records. The five are MonetaryCheck, CentralBankCheck, MapCheck,
+PlanCheck and KeptCheck. ScaleCheck and InvestCheck passed.
+
+Compilation passed in 34 seconds. Maps regenerated. Stale reported zero
+firm findings and 181 soft findings. Sixteen timing assertions were soft.
+The check log is `target/checks/rt3-count-pick.txt`; its preserved suite
+log is `target/checks/rt3-count-pick-suite.txt`. The Java source tested is
+the source in `bd05dc91`, whose Java diff from main is the printed count
+in LongPlaytest alone. Readiness uses the picked-check verdict under
+`docs/batch.md` step 4.
+
+Map regeneration crossed midnight and updated 565 generation dates in
+otherwise unchanged indexes. Those date-only differences were restored,
+with the comparison recorded in `target/checks/rt3-count-date-cleanup.txt`.
+The substantive generated index changes are retained. The ship record uses
+Jerus's requested no-tag harness heading and the 2026-11-12 decision date.
