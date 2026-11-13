@@ -431,7 +431,7 @@ public class AgricultureCheck {
         for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) plans.recordSectorResult(farms.key(), -1);
         BusinessInvestment.Decision shed = plans.planRetirement(farms, 0, measure[1], 0);
         int wanted = (int) Math.floor(measure[1] / farms.unitsOf(grain));
-        int allowed = Math.min(wanted, Math.min((int) Math.ceil(wanted * BusinessInvestment.MAX_RETIREMENT_FRACTION), heldGrain));
+        int allowed = Math.min(wanted, Math.min((int) Math.ceil(heldGrain * BusinessInvestment.MAX_RETIREMENT_FRACTION), heldGrain));
         assertTrue("...so, losing money RETIREMENT_LOSS_MONTHS months with nothing used, the rule sells the most-held kind of farm"
                 + " and the share its constants allow",
                 shed.build && shed.template == grain && allowed > 0 && shed.quantity == allowed);

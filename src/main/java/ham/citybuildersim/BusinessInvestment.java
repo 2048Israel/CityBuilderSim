@@ -576,7 +576,7 @@ public class BusinessInvestment {
     /** Capacity has to exceed demand by this much before any of it is spare. */
     public static final double RETIREMENT_SLACK = .25;
 
-    /** Most of its excess a sector will scrap in one month, rounded up to a whole building. Shrinking is gradual. */
+    /** Most of its excess a sector will scrap in one month. Shrinking is gradual. */
     public static final double MAX_RETIREMENT_FRACTION = .25;
 
     /**
@@ -700,9 +700,7 @@ public class BusinessInvestment {
         double sheddable = capacity - keepAtLeast;
 
         int wanted = (int) Math.floor(sheddable / unitsEach);
-        // RT3: pace the excess itself. Pacing the holding sold nearly all a modest surplus at once,
-        // then the lost wages made next month's demand and the next retirement feed each other.
-        int gradual = (int) Math.ceil(wanted * MAX_RETIREMENT_FRACTION);
+        int gradual = (int) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION);
         int quantity = Math.max(0, Math.min(wanted, Math.min(gradual, mostHeld)));
 
         if (quantity <= 0) {

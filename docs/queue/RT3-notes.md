@@ -1,11 +1,11 @@
 # RT3 — BusinessInvestment's retirement in a falling city
 
-**Held for Jerus's decision.** Lanekeeper's instruction
-`20261112-194215-755-lanekeeper-c313`, 2026-11-12, authorizes the current-main
-merge and policy investigation. The results are under "Policy test (Jerus,
-19:40)" below. The earlier 80-run ensemble recorded AUTO2 F1 and ZERO_SLACK
-F1 regressions on the pre-merge model. The merged seed-11 replay has positive
-m902 GDP. The full gate awaits the held batch's release.
+**Count-only completion authorized.** Jerus's decision at about 23:35 on
+2026-11-12 was "Yes, count only", in answer to "Should RT3 ship as the
+retirement count only?" Lanekeeper relayed it in
+`20261112-233628-081-lanekeeper-4bcf`. The completion section at the end
+records the main-rule checks and final gate. Earlier cap and policy work
+below records the investigation that preceded this decision.
 
 ## Model and calls
 

@@ -490,7 +490,7 @@ public class FoodProcessingCheck {
         for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) plans.recordSectorResult(fp.key(), -1);
         BusinessInvestment.Decision shed = plans.planRetirement(fp, 0, measure[1], 0);
         int fits = (int) Math.floor(measure[1] / fp.unitsOf(meat));
-        int allowed = Math.min(fits, Math.min((int) Math.ceil(fits * BusinessInvestment.MAX_RETIREMENT_FRACTION), heldMeat));
+        int allowed = Math.min(fits, Math.min((int) Math.ceil(heldMeat * BusinessInvestment.MAX_RETIREMENT_FRACTION), heldMeat));
         report("...so, losing money RETIREMENT_LOSS_MONTHS months with nothing used, the rule sells the most-held kind of plant"
                 + " and the share its constants allow",
                 shed.build && shed.template == meat && allowed > 0 && shed.quantity == allowed,
