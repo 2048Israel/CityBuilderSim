@@ -1,4 +1,4 @@
-# PlanCheck.java - 5,105 lines · 177 methods · 49 constants · harnesses
+# PlanCheck.java - 5,107 lines · 177 methods · 49 constants · harnesses
 
 `ham/citybuildersim/PlanCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >  11. the order of arrival (batch CL3; DistrictPlan's THE ORDER OF ARRIVAL):
 > ... (136 more lines in the source)
 
-**Uses:** [DistrictPlan](DistrictPlan.md) (1201), [BuildingVisual](BuildingVisual.md) (106), [MapCheck](MapCheck.md) (66), [CityMap](CityMap.md) (56), [BuildingType](BuildingType.md) (45), [World](World.md) (41), [LongPlaytest](LongPlaytest.md) (16), [Founding](Founding.md) (13), [CityRuns](CityRuns.md) (9), [TilePainter](TilePainter.md) (8), [Timing](Timing.md) (5), [GameFiles](GameFiles.md) (5), [Game](Game.md) (5), [StreetCurves](StreetCurves.md) (5), [BuildingCatalog](BuildingCatalog.md) (3), [Mining](Mining.md) (3), [TempDirs](TempDirs.md) (3), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [TrackCurves](TrackCurves.md) (2), [Resource](Resource.md) (1)
+**Uses:** [DistrictPlan](DistrictPlan.md) (1201), [BuildingVisual](BuildingVisual.md) (106), [MapCheck](MapCheck.md) (66), [CityMap](CityMap.md) (56), [BuildingType](BuildingType.md) (45), [World](World.md) (41), [LongPlaytest](LongPlaytest.md) (16), [Founding](Founding.md) (13), [CityRuns](CityRuns.md) (9), [TilePainter](TilePainter.md) (8), [Timing](Timing.md) (6), [GameFiles](GameFiles.md) (5), [Game](Game.md) (5), [StreetCurves](StreetCurves.md) (5), [BuildingCatalog](BuildingCatalog.md) (3), [Mining](Mining.md) (3), [TempDirs](TempDirs.md) (3), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [TrackCurves](TrackCurves.md) (2), [Resource](Resource.md) (1)
 
 **Used by (5):** [CrossingCheck](CrossingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md), [MapCheck](MapCheck.md), [SlopeCheck](SlopeCheck.md)
 
@@ -92,10 +92,10 @@
 | 3863 | 15. THE RUNS DATED (batch FX7) |
 | 4056 | 15b. BUILDINGS MOVE OFF A RUN (batch MF1, 2026-10-28) |
 | 4308 | 15c. THE GROUND KEPT (batch UP5; FX7's star 3) |
-| 4523 | · 16. the far bank (FW3) |
-| 4572 | · 17. a street piece buildings wall in (FW11) |
-| 4705 | · 18. a street piece the houses on a resource field wall in (LC3, EM1-M) |
-| 5019 | 19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08) |
+| 4525 | · 16. the far bank (FW3) |
+| 4574 | · 17. a street piece buildings wall in (FW11) |
+| 4707 | · 18. a street piece the houses on a resource field wall in (LC3, EM1-M) |
+| 5021 | 19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08) |
 
 ## Constants
 
@@ -149,7 +149,7 @@
 | 3721 | `PlanCheck.RIM_EVERY` | `37` | ...and of those, one in this many is planned: 37, a stride that takes districts all round it. |
 | 3906 | `PlanCheck.RUN_HOUSES` | `250` | The houses each month of the runs' fixtures brings: with the shops, works and farms beside them, a district that grows by some hundreds of boxes a month. |
 | 4062 | `PlanCheck.Across.YW` | `8, YH = 7, HW = 40` |  |
-| 5039 | `PlanCheck.RESERVE_SIDE` | `19` | The reserve of a cloverleaf, in plots a side: CityRuns.F_RESERVE's 19 x 19 (InterchangeGround). |
+| 5041 | `PlanCheck.RESERVE_SIDE` | `19` | The reserve of a cloverleaf, in plots a side: CityRuns.F_RESERVE's 19 x 19 (InterchangeGround). |
 
 ## Fields (state)
 
@@ -207,15 +207,15 @@
 | 4063 | `final Runs runs` |  |
 | 4064 | `int yx, yy, hx, hy, underYard, besideHw, hit` |  |
 | 4065 | `boolean decoyed` |  |
-| 4575 | `static int citiesDistricts, citiesWalled, citiesKept, citiesLeft` | The districts of this harness's cities (sections 5 and 6), those planned again to join a piece the buildings wall in, the plots so kept clear, and the districts still left with a piece the ground does not part (FW11). |
-| 4578 | `static int citiesField` | ...and, of those planned again, the districts whose way crossed houses on a resource field's plots (LC3). |
-| 4590 | `static int[] playedCase` | Section 17's cities, kept for section 18's count (LC3): {districts, planned again, of them over a field's houses, left apart} of MapCheck's played city, and of its river fixture alone. |
+| 4577 | `static int citiesDistricts, citiesWalled, citiesKept, citiesLeft` | The districts of this harness's cities (sections 5 and 6), those planned again to join a piece the buildings wall in, the plots so kept clear, and the districts still left with a piece the ground does not part (FW11). |
+| 4580 | `static int citiesField` | ...and, of those planned again, the districts whose way crossed houses on a resource field's plots (LC3). |
+| 4592 | `static int[] playedCase` | Section 17's cities, kept for section 18's count (LC3): {districts, planned again, of them over a field's houses, left apart} of MapCheck's played city, and of its river fixture alone. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 212 | 4894 | **type** `public class PlanCheck` | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway, and the model's road drawn exactly as the streets' surface - on the ... |
+| 212 | 4896 | **type** `public class PlanCheck` | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway, and the model's road drawn exactly as the streets' surface - on the ... |
 | 217 | 4 | `static void check(String label, boolean ok)` |  |
 | 359 | 42 | `public static void main(String[] args) throws Exception` |  |
 
@@ -470,7 +470,7 @@
 | 4185 | 112 | `static void movedOffRuns(BuildingVisual.Type[] types)` |  |
 | 4299 | 8 | `static int crossingsOn(DistrictPlan p, int x)` | How many plots of column x a plan's streets cross a railway on (the surface's CROSSING flag). |
 
-### 15c. THE GROUND KEPT (batch UP5; FX7's star 3) (lines 4308-4522)
+### 15c. THE GROUND KEPT (batch UP5; FX7's star 3) (lines 4308-4524)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -482,43 +482,43 @@
 | 4415 | 19 | `static Runs keptRuns(int months)` | `runs` given the arms of THE GROUND KEPT's districts: two highway arms and a staircase one growing a plot a month for `months` months, a railway a few plots a month, the last arm's end taken up again, yards laid and l... |
 | 4436 | 11 | `static Log keptLog(int house, int shop, int works, int farm, int paved, int months, int housesAMonth)` | A district's log for THE GROUND KEPT: a first batch in month 0, then a few dozen boxes a month to month `months`, some of them leaving. |
 | 4449 | 5 | `static int boxesOutsideCore(DistrictPlan p)` | How many of a plan's boxes have a plot outside keptInput()'s core (cells 2 to 5 each way): on the ground bought later. |
-| 4455 | 67 | `static void groundKept(BuildingVisual.Type[] types)` |  |
+| 4455 | 69 | `static void groundKept(BuildingVisual.Type[] types)` |  |
 
-### 16. the far bank (FW3) (lines 4523-4571)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4526 | 9 | `static DistrictPlan.Input farBankInput(BuildingVisual.Type[] types, double gravel)` | A river too wide for any bridge across a root district south of its hub: its streets' road counted from the hub's side. |
-| 4537 | 11 | `static double[] farBankWidths(DistrictPlan p)` | The surfaced width over a plan's surfaced streets (kind TRACK to HIGHWAY), [network, parted], and their plot counts. |
-| 4549 | 22 | `static void farBank(BuildingVisual.Type[] types)` |  |
-
-### 17. a street piece buildings wall in (FW11) (lines 4572-4704)
+### 16. the far bank (FW3) (lines 4525-4573)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4581 | 7 | `static void count(Tally t)` | A section's tally of one city added to the cities' (FW11). |
-| 4598 | 16 | `static void planDrawn(CityMap map, Tally t, List<DistrictPlan.Input> walledIns, boolean[] ok)` | Every district of a map planned as the map draws it, each from its job's input, and tallied: those planned again kept in walledIns, ok[0] cleared where a plan is not the same plan made twice (boxes, streets, ways kept... |
-| 4616 | 22 | `static boolean wallBounds(DistrictPlan p, DistrictPlan.Input in)` | The incoming journal survives, its active plots are exactly the kept way, and a new keep requires and results from a retry. |
-| 4639 | 65 | `static void walledIn(BuildingVisual.Type[] catalog) throws Exception` |  |
+| 4528 | 9 | `static DistrictPlan.Input farBankInput(BuildingVisual.Type[] types, double gravel)` | A river too wide for any bridge across a root district south of its hub: its streets' road counted from the hub's side. |
+| 4539 | 11 | `static double[] farBankWidths(DistrictPlan p)` | The surfaced width over a plan's surfaced streets (kind TRACK to HIGHWAY), [network, parted], and their plot counts. |
+| 4551 | 22 | `static void farBank(BuildingVisual.Type[] types)` |  |
 
-### 18. a street piece the houses on a resource field wall in (LC3, EM1-M) (lines 4705-5018)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4715 | 16 | `static DistrictPlan.Input fieldBelt(BuildingVisual.Type[] types, int house, int houses)` | LC3's district, built to cause the case: the hub's own cell, owned whole, with a band LATTICE - 1 plots wide across it between two of its lattice columns that is a mine's site (SITE_MINED: no street, no building, no w... |
-| 4733 | 9 | `static int[] housesOnField(DistrictPlan p, DistrictPlan.Input in)` | The boxes of a plan with a plot on a resource field's plots, and those plots. |
-| 4743 | 41 | `static void fieldWall(BuildingVisual.Type[] types)` |  |
-| 4786 | 66 | `static void fieldWallArrivals(BuildingVisual.Type[] types)` | A dated field belt keeps its first way while later houses arrive (DM2). |
-| 4854 | 27 | `static void datedWallEvents(BuildingVisual.Type[] types)` | A recorded way moves only its intersecting box. |
-| 4883 | 80 | `static void firstExclusion(BuildingVisual.Type[] types)` | A first site or shore adjustment changes today's units without reordering or netting the district's earlier raw history. |
-| 4965 | 5 | `static Object[] exclusionState(CityMap.District district)` | A copy of every source exclusion record, its totals and stamps, and the district's unchanged raw log and boundary. |
-| 4972 | 7 | `static DistrictPlan.Input exclusionInput(CityMap map, CityMap.District district, BuildingVisual.Type[] types, Log log, int excl...` | Rebuilds the raw input after the source records have already established how many units are excluded now. |
-| 4981 | 37 | `static void wallPurchaseMonth(BuildingVisual.Type[] types)` | A purchase in the picture's month can release an unused way without dating a record in the future (DM2). |
-
-### 19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08) (lines 5019-5105)
+### 17. a street piece buildings wall in (FW11) (lines 4574-4706)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5024 | 12 | `static int[] streetsIn(DistrictPlan p, int x, int y, int w, int h)` | The street plots (any kind), the avenue plots and the plots beneath a highway in the w x h box from (x, y) of plan p. |
-| 5041 | 63 | `static void interchangeAvenue(BuildingVisual.Type[] types)` |  |
+| 4583 | 7 | `static void count(Tally t)` | A section's tally of one city added to the cities' (FW11). |
+| 4600 | 16 | `static void planDrawn(CityMap map, Tally t, List<DistrictPlan.Input> walledIns, boolean[] ok)` | Every district of a map planned as the map draws it, each from its job's input, and tallied: those planned again kept in walledIns, ok[0] cleared where a plan is not the same plan made twice (boxes, streets, ways kept... |
+| 4618 | 22 | `static boolean wallBounds(DistrictPlan p, DistrictPlan.Input in)` | The incoming journal survives, its active plots are exactly the kept way, and a new keep requires and results from a retry. |
+| 4641 | 65 | `static void walledIn(BuildingVisual.Type[] catalog) throws Exception` |  |
+
+### 18. a street piece the houses on a resource field wall in (LC3, EM1-M) (lines 4707-5020)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4717 | 16 | `static DistrictPlan.Input fieldBelt(BuildingVisual.Type[] types, int house, int houses)` | LC3's district, built to cause the case: the hub's own cell, owned whole, with a band LATTICE - 1 plots wide across it between two of its lattice columns that is a mine's site (SITE_MINED: no street, no building, no w... |
+| 4735 | 9 | `static int[] housesOnField(DistrictPlan p, DistrictPlan.Input in)` | The boxes of a plan with a plot on a resource field's plots, and those plots. |
+| 4745 | 41 | `static void fieldWall(BuildingVisual.Type[] types)` |  |
+| 4788 | 66 | `static void fieldWallArrivals(BuildingVisual.Type[] types)` | A dated field belt keeps its first way while later houses arrive (DM2). |
+| 4856 | 27 | `static void datedWallEvents(BuildingVisual.Type[] types)` | A recorded way moves only its intersecting box. |
+| 4885 | 80 | `static void firstExclusion(BuildingVisual.Type[] types)` | A first site or shore adjustment changes today's units without reordering or netting the district's earlier raw history. |
+| 4967 | 5 | `static Object[] exclusionState(CityMap.District district)` | A copy of every source exclusion record, its totals and stamps, and the district's unchanged raw log and boundary. |
+| 4974 | 7 | `static DistrictPlan.Input exclusionInput(CityMap map, CityMap.District district, BuildingVisual.Type[] types, Log log, int excl...` | Rebuilds the raw input after the source records have already established how many units are excluded now. |
+| 4983 | 37 | `static void wallPurchaseMonth(BuildingVisual.Type[] types)` | A purchase in the picture's month can release an unused way without dating a record in the future (DM2). |
+
+### 19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08) (lines 5021-5107)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5026 | 12 | `static int[] streetsIn(DistrictPlan p, int x, int y, int w, int h)` | The street plots (any kind), the avenue plots and the plots beneath a highway in the w x h box from (x, y) of plan p. |
+| 5043 | 63 | `static void interchangeAvenue(BuildingVisual.Type[] types)` |  |
 

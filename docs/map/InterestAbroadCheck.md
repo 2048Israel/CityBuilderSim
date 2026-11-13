@@ -1,4 +1,4 @@
-# InterestAbroadCheck.java - 1,186 lines · 39 methods · 11 constants · harnesses
+# InterestAbroadCheck.java - 1,185 lines · 39 methods · 11 constants · harnesses
 
 `ham/citybuildersim/InterestAbroadCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -68,8 +68,8 @@
 | 666 | 5. NO WORLD, THE CONSTANT |
 | 702 | 6. THE SAVE (the city) |
 | 738 | 7. THE VAULT EARNS (ForeignAccounts, no world file needed) |
-| 886 | 8. A RISK-OFF UNWINDS THE HOT MONEY AND THE CARRY BY THEIR STOCKS (CapitalFlows) |
-| 1032 | 9. IN A CITY: THE VAULT EARNS, MONEY RUNS HOME, THE AUDIT CLOSES |
+| 885 | 8. A RISK-OFF UNWINDS THE HOT MONEY AND THE CARRY BY THEIR STOCKS (CapitalFlows) |
+| 1031 | 9. IN A CITY: THE VAULT EARNS, MONEY RUNS HOME, THE AUDIT CLOSES |
 
 ## Constants
 
@@ -85,7 +85,7 @@
 | 79 | `InterestAbroadCheck.EXACT` | `1e-12` | Two rates or two logs that should be one differ by less than this. |
 | 223 | `InterestAbroadCheck.SPOTS` | `{ { "USD", 2000, 1,.055 }, { "USD", 2000, 12,.065 }, { "USD", 2001, 1,.055 },...` | The spot values of the table, from the file's own history: bank, year, month, rate. |
 | 743 | `InterestAbroadCheck.CROSS` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the section hands: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
-| 1037 | `InterestAbroadCheck.HOT_DIAL` | `.15` | The dial the hot-money city is put at: well over the US's rate in any year, so the spread is there. |
+| 1036 | `InterestAbroadCheck.HOT_DIAL` | `.15` | The dial the hot-money city is put at: well over the US's rate in any year, so the spread is there. |
 
 ## Fields (state)
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1129 | **type** `public class InterestAbroadCheck` | The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8, Jerus's calls 9 and 11): PolicyRates' monthly rate of each bank - the r... |
+| 58 | 1128 | **type** `public class InterestAbroadCheck` | The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8, Jerus's calls 9 and 11): PolicyRates' monthly rate of each bank - the r... |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 87 | 4 | `static void close(String label, double got, double wanted, double tol)` | Two figures that should be one, to a tolerance. |
 | 93 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
@@ -173,29 +173,29 @@
 |---:|---:|---|---|
 | 706 | 31 | `static void theSaveOfTheCity()` |  |
 
-### 7. THE VAULT EARNS (ForeignAccounts, no world file needed) (lines 738-885)
+### 7. THE VAULT EARNS (ForeignAccounts, no world file needed) (lines 738-884)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 746 | 11 | `static ForeignAccounts threeMoneys()` | A vault holding US$50, 100 euros and 10,000 yen at CROSS (bought at a rate of 2), the month booked: the fixture the earning is asked of. |
 | 759 | 8 | `static double[] mixedRates()` | The eight rates a section hands: the dollar's 4.8%, the euro's nothing, the yen's -0.1%, and the rest at 1%. |
-| 768 | 117 | `static void theVaultEarns()` |  |
+| 768 | 116 | `static void theVaultEarns()` |  |
 
-### 8. A RISK-OFF UNWINDS THE HOT MONEY AND THE CARRY BY THEIR STOCKS (CapitalFlows) (lines 886-1031)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 891 | 5 | `static void hotMonth(CapitalFlows f, int m, double gdp, double level)` | One month of hot money at a city paying 9% against a 2% world with a point of risk, GDP as given, a risk-off at this level. |
-| 898 | 5 | `static CapitalFlows hotSettled(double gdp)` | Hot money settled to its target (a hundred and twenty months of calm). |
-| 905 | 8 | `static CapitalFlows carrySettled(double headroom)` | A carry book settled to its target (a city paying 0.5% against a 2% world, a billion of headroom). |
-| 915 | 5 | `static double riskOffAt(double level)` | What a risk-off of this level sends home from a settled hot money at 10,000 GDP. |
-| 921 | 110 | `static void theUnwind()` |  |
-
-### 9. IN A CITY: THE VAULT EARNS, MONEY RUNS HOME, THE AUDIT CLOSES (lines 1032-1186)
+### 8. A RISK-OFF UNWINDS THE HOT MONEY AND THE CARRY BY THEIR STOCKS (CapitalFlows) (lines 885-1030)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1040 | 9 | `static Game hotTown(String label, boolean quietForTheD)` | A town with banks to take hot money into, as CapitalFlowCheck's city has them. |
-| 1051 | 11 | `static String playCaptured(Game city)` | One month of a city with what it printed captured. |
-| 1063 | 123 | `static void inACity()` |  |
+| 890 | 5 | `static void hotMonth(CapitalFlows f, int m, double gdp, double level)` | One month of hot money at a city paying 9% against a 2% world with a point of risk, GDP as given, a risk-off at this level. |
+| 897 | 5 | `static CapitalFlows hotSettled(double gdp)` | Hot money settled to its target (a hundred and twenty months of calm). |
+| 904 | 8 | `static CapitalFlows carrySettled(double headroom)` | A carry book settled to its target (a city paying 0.5% against a 2% world, a billion of headroom). |
+| 914 | 5 | `static double riskOffAt(double level)` | What a risk-off of this level sends home from a settled hot money at 10,000 GDP. |
+| 920 | 110 | `static void theUnwind()` |  |
+
+### 9. IN A CITY: THE VAULT EARNS, MONEY RUNS HOME, THE AUDIT CLOSES (lines 1031-1185)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1039 | 9 | `static Game hotTown(String label, boolean quietForTheD)` | A town with banks to take hot money into, as CapitalFlowCheck's city has them. |
+| 1050 | 11 | `static String playCaptured(Game city)` | One month of a city with what it printed captured. |
+| 1062 | 123 | `static void inACity()` |  |
 

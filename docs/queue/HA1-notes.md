@@ -97,14 +97,37 @@ also confirms the four whole fixtures are identical after only their scope,
 entry-point and exit changes (comments/whitespace ignored).
 
 The publisher selftest passed 136/136 cases, including forced interruptions,
-rollback and Ready-flow reuse. A final rerun covers the last selection-metadata
+rollback and Ready-flow reuse. The final rerun also passes 136/136 after the selection-metadata
 and preceding-publisher fallback changes. Shell syntax checks pass.
 
 The registry has 196 harnesses: the default gate tier runs 181, the nightly
 15. HA1 itself directly picks 13 nightly members, so its own full gate runs
 194; its elapsed time includes those deliberately picked heavy checks.
 
-In progress: final full pick, fresh-clone gate and the final one-in/one-out line count.
+Final `./batch-check.sh --pick`: **exit 3**, ALL selected, **194 harnesses
+in 1927 seconds (32.1 minutes)**: 187 passed, seven only known reds
+(MonetaryCheck, CentralBankCheck, HealthCheck, MapCheck, PlanCheck, KeptCheck,
+DeathRecordCheck). Compile 49 seconds; Stale 0 firm, 193 soft. All five merged
+fixture groups pass under their new owners. Logs:
+`target/checks/ha1-pick-final.txt`, `target/checks/ha1-times-pick.tsv`.
+
+Compared with the brief's historical 38-minute full gate, this working-tree
+pick is 32.1 minutes while retaining HA1's 13 directly picked nightly members.
+The fresh-clone gate measurement is still pending. Simulating three slots,
+longest first, from this run's measured seconds for the 181 ordinary harnesses
+gives 1172.5 seconds (19.5 minutes); that is a scheduling estimate, not a
+measured default-tier gate.
+
+EN1: the original default LongPlaytest passed, and the final one plus its
+moved money fixtures passes. The default-model report prefix is byte-identical
+after replacing only runtime figures on two lines: the playtest headline and
+CL3's window-duration suffix. Every model count, financial figure and finding
+is unchanged. The extra moved-fixture report begins at
+`--- HA1 money audit fixtures ---`. No ensemble is needed: HA1 moves no default
+model trace. The exact prefix diff is
+`target/checks/ha1-playtest-prefix.diff`.
+
+In progress: push the generated maps and run the fresh-clone no-tag gate.
 
 ## Pending for the gate box
 

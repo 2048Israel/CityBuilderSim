@@ -66,7 +66,7 @@
 
 **Uses:** [CityMap](CityMap.md) (7), [World](World.md) (5), [Haulage](Haulage.md) (4), [BoatSchedule](BoatSchedule.md) (3), [TrainSchedule](TrainSchedule.md) (3), [Freight](Freight.md) (3), [MapFrame](MapFrame.md) (1), [BuildingVisual](BuildingVisual.md) (1), [DistrictPlan](DistrictPlan.md) (1)
 
-**Used by (6):** [CityMap](CityMap.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [TruckCheck](TruckCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckShapes](TruckShapes.md)
+**Used by (5):** [CityMap](CityMap.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [TruckRouteCheck](TruckRouteCheck.md), [TruckShapes](TruckShapes.md)
 
 ## Sections
 

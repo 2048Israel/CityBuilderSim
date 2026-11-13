@@ -1,4 +1,4 @@
-# PortCheck.java - 2,346 lines · 72 methods · 17 constants · harnesses
+# PortCheck.java - 2,347 lines · 72 methods · 17 constants · harnesses
 
 `ham/citybuildersim/PortCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >  10. THE HARBOUR'S QUAY (HB1, 2026-11-08; Jerus: "and that ships dock
 > ... (38 more lines in the source)
 
-**Uses:** [Ports](Ports.md) (371), [BoatSchedule](BoatSchedule.md) (196), [HarbourYard](HarbourYard.md) (142), [CityShore](CityShore.md) (109), [Good](Good.md) (100), [Game](Game.md) (35), [MapFrame](MapFrame.md) (34), [BuildingsTemplate](BuildingsTemplate.md) (33), [Traffic](Traffic.md) (32), [ShipShapes](ShipShapes.md) (19), [BuildingManager](BuildingManager.md) (18), [World](World.md) (13), [MapCheck](MapCheck.md) (11), [PriceLevel](PriceLevel.md) (10), [BuildingVisual](BuildingVisual.md) (9), [Founding](Founding.md) (8), [JobType](JobType.md) (8), [Refining](Refining.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [TileRaster](TileRaster.md) (7), [GameFiles](GameFiles.md) (5), [TaxPolicy](TaxPolicy.md) (5), [GoodsMarket](GoodsMarket.md) (5), [Freight](Freight.md) (4), [BuildingCatalog](BuildingCatalog.md) (4), [BuildingType](BuildingType.md) (4), [InfrastructureManager](InfrastructureManager.md) (4), [BuildCard](BuildCard.md) (4), [Timing](Timing.md) (3), [HeavyIndustry](HeavyIndustry.md) (3)... and 9 more
+**Uses:** [Ports](Ports.md) (371), [BoatSchedule](BoatSchedule.md) (196), [HarbourYard](HarbourYard.md) (142), [CityShore](CityShore.md) (109), [Good](Good.md) (100), [Game](Game.md) (35), [MapFrame](MapFrame.md) (34), [BuildingsTemplate](BuildingsTemplate.md) (33), [Traffic](Traffic.md) (32), [ShipShapes](ShipShapes.md) (19), [BuildingManager](BuildingManager.md) (18), [World](World.md) (13), [MapCheck](MapCheck.md) (11), [PriceLevel](PriceLevel.md) (10), [BuildingVisual](BuildingVisual.md) (9), [Founding](Founding.md) (8), [JobType](JobType.md) (8), [Refining](Refining.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [TileRaster](TileRaster.md) (7), [GameFiles](GameFiles.md) (5), [TaxPolicy](TaxPolicy.md) (5), [GoodsMarket](GoodsMarket.md) (5), [Timing](Timing.md) (4), [Freight](Freight.md) (4), [BuildingCatalog](BuildingCatalog.md) (4), [BuildingType](BuildingType.md) (4), [InfrastructureManager](InfrastructureManager.md) (4), [BuildCard](BuildCard.md) (4), [HeavyIndustry](HeavyIndustry.md) (3)... and 9 more
 
 **Used by (5):** [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [QuayCraneCheck](QuayCraneCheck.md), [QuayRailCheck](QuayRailCheck.md)
 
@@ -122,7 +122,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 113 | 2234 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
+| 113 | 2235 | **type** `public class PortCheck` | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). |
 | 119 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 124 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 130 | 4 | `static void timed(String label, boolean ok, String detail)` | A timing assertion's line (HB1 slice E, 10b's cost), as report() prints one, its verdict Timing's: soft under -Dcbs.timing=soft, hard at the gate. |
@@ -237,7 +237,7 @@
 | 1591 | 229 | `static void berthsShareTheQuay()` |  |
 | 1827 | 71 | `static void windowFixture()` | A boat's place does not depend on the window: BoatSchedule.drawn() weighs the boats of a frame against every boat docked at that moment (docked()), on a bay of berths in a row, liquid and dry bulk by turns (MR tankers... |
 
-### 11. THE YARD'S PICTURE (HB2, 2026-11-09) (lines 1899-2346)
+### 11. THE YARD'S PICTURE (HB2, 2026-11-09) (lines 1899-2347)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -270,5 +270,5 @@
 | 2271 | 26 | `static void yardKinds()` | kindOf() reads a type by its berth's cargo, a tank farm by its shore, and nothing else. |
 | 2299 | 4 | `static Good yardGood(Ports.Cargo c)` | The first good of a kind that is not crude, as MapCheck.tradeAtSea() takes it. |
 | 2305 | 25 | `static void yardBusy()` | Ports.busy() is the month's sea tonnes both ways over the berths', 1 when over, 0 with no berth. |
-| 2332 | 14 | `static void yardCost()` | Painting the large box's picture (a container yard, full, its track and train) costs no more than HarbourYard.PICTURE_MS. |
+| 2332 | 15 | `static void yardCost()` | Painting the large box's picture (a container yard, full, its track and train) costs no more than HarbourYard.PICTURE_MS. |
 

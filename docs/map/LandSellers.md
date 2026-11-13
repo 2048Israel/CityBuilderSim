@@ -23,7 +23,7 @@
 > (a tile uniform to one owner is one read); an offer wholly one seller's is counted as the land office counts it today (CityLand.unownedCounts()), and
 > only the tiles a border or a foreign coast crosses are read plot by plot (plotsRead()).
 
-**Uses:** [World](World.md) (18), [CityLand](CityLand.md) (17), [WorldData](WorldData.md) (8), [EarthProj](EarthProj.md) (6), [LandFactors](LandFactors.md) (4), [LandGrid](LandGrid.md) (3), [EarthData](EarthData.md) (2), [EarthTerrain](EarthTerrain.md) (1), [GridConversion](GridConversion.md) (1)
+**Uses:** [World](World.md) (18), [CityLand](CityLand.md) (17), [WorldData](WorldData.md) (8), [EarthProj](EarthProj.md) (6), [LandFactors](LandFactors.md) (4), [LandGrid](LandGrid.md) (3), [EarthData](EarthData.md) (2), [EarthTerrain](EarthTerrain.md) (1), [LandDrawing](LandDrawing.md) (1)
 
 **Used by (6):** [Game](Game.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandSellersView](LandSellersView.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md)
 
@@ -131,7 +131,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 395 | 21 | **type** `public record Part(int seller, long[] counts, int[] sites, double[] amounts)` | One seller's part of an offer: the plots no holding owns that it sells, counted by class and by relief as CityLand.unownedCounts() counts them (World.CLASSES of class, then RELIEF_AREAS more), and the sites and amount... |
-| 398 | 1 | `public double[] km2()` _(in LandSellers.Part)_ | The five areas, in square kilometres (GridConversion.km2Of()). |
+| 398 | 1 | `public double[] km2()` _(in LandSellers.Part)_ | The five areas, in square kilometres (LandDrawing.km2Of()). |
 | 401 | 1 | `public double[] relief()` _(in LandSellers.Part)_ | The dry ground by relief and the shallow sea, in square kilometres (CityLand.RELIEF_FLAT to RELIEF_SHALLOW). |
 | 404 | 5 | `long plots()` _(in LandSellers.Part)_ | The plots the part holds: the class counts summed. |
 | 410 | 5 | `boolean empty()` _(in LandSellers.Part)_ |  |

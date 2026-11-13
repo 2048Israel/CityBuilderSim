@@ -1,4 +1,4 @@
-# GridCheck.java - 619 lines · 22 methods · 7 constants · harnesses
+# GridCheck.java - 620 lines · 22 methods · 7 constants · harnesses
 
 `ham/citybuildersim/GridCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -22,7 +22,7 @@
 >      replay with one holding changed does not;
 >   3. the city's level is the largest at which FACE_BLOCKS blocks fit across
 >      its area, from MIN_LEVEL to MAX_LEVEL; a block's side is
->      LegacyLand.sideLane()'s; every lane coordinate lies in one place;
+>      the largest coordinate's; every lane coordinate lies in one place;
 >   4. a new default city, its centre in blocks of 120 m as the prototype
 >      drew it - and as the model founds it, block for block (CityLand.
 >      found(), 0.7.67) - lists its first offers one block across and
@@ -39,9 +39,9 @@
 >   7. owner() answers within OWNER_NS on the city of 5, a median of
 >      TIMING_RUNS runs.
 
-**Uses:** [LandGrid](LandGrid.md) (67), [GridOffers](GridOffers.md) (60), [World](World.md) (50), [LandManager](LandManager.md) (6), [Timing](Timing.md) (2), [LegacyLand](LegacyLand.md) (2), [CityLand](CityLand.md) (2), [Founding](Founding.md) (1)
+**Uses:** [LandGrid](LandGrid.md) (67), [GridOffers](GridOffers.md) (60), [World](World.md) (50), [LandManager](LandManager.md) (6), [Timing](Timing.md) (3), [CityLand](CityLand.md) (2), [Founding](Founding.md) (1)
 
-**Used by (2):** [ConversionCheck](ConversionCheck.md), [LandCheck](LandCheck.md)
+**Used by (1):** [LandCheck](LandCheck.md)
 
 ## Sections
 
@@ -83,7 +83,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 572 | **type** `public class GridCheck` | The block grid (0.7.65, batch M1): the city's owned ground as a quadtree, every plot's owner exact against a raster, and its offers six a side - apart, against its edge and whole blocks at 2:1 after every one of 600 p... |
+| 48 | 573 | **type** `public class GridCheck` | The block grid (0.7.65, batch M1): the city's owned ground as a quadtree, every plot's owner exact against a raster, and its offers six a side - apart, against its edge and whole blocks at 2:1 after every one of 600 p... |
 | 52 | 4 | `static void check(String label, boolean ok)` |  |
 | 78 | 11 | `public static void main(String[] args)` |  |
 
@@ -133,9 +133,9 @@
 |---:|---:|---|---|
 | 560 | 33 | `static void notch(World w)` |  |
 
-### 7. OWNER() IN TIME (lines 594-619)
+### 7. OWNER() IN TIME (lines 594-620)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 598 | 21 | `static void timing(City c)` |  |
+| 598 | 22 | `static void timing(City c)` |  |
 

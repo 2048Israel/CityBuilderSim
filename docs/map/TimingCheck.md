@@ -1,4 +1,4 @@
-# TimingCheck.java - 733 lines · 30 methods · 8 constants · harnesses
+# TimingCheck.java - 780 lines · 32 methods · 8 constants · harnesses
 
 `ham/citybuildersim/TimingCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -58,21 +58,21 @@
 > It sets the property itself in every section and restores it at the end, so
 > it passes whatever the run was given.
 
-**Uses:** [Timing](Timing.md) (81), [AllChecks](AllChecks.md) (6), [TempDirs](TempDirs.md) (2)
+**Uses:** [Timing](Timing.md) (85), [AllChecks](AllChecks.md) (18), [TempDirs](TempDirs.md) (3)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 232 | 1. HARD |
-| 252 | 2. SOFT |
-| 289 | 3. ONLY A CLOCK IS SOFT |
-| 333 | 4. THE PROPERTY'S VALUES |
-| 347 | 5. ACROSS THE JVM BOUNDARY |
-| 405 | 6. THE SUITE GOES THROUGH IT |
-| 509 | 7. THE REST OF THE SUITE IS UNTOUCHED |
-| 523 | 8. THE FIGURES' RECORD (TM3) |
-| 613 | 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk |
+| 234 | 1. HARD |
+| 254 | 2. SOFT |
+| 291 | 3. ONLY A CLOCK IS SOFT |
+| 335 | 4. THE PROPERTY'S VALUES |
+| 349 | 5. ACROSS THE JVM BOUNDARY |
+| 407 | 6. THE SUITE GOES THROUGH IT |
+| 556 | 7. THE REST OF THE SUITE IS UNTOUCHED |
+| 570 | 8. THE FIGURES' RECORD (TM3) |
+| 660 | 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk |
 
 ## Constants
 
@@ -85,7 +85,7 @@
 | 102 | `TimingCheck.ALLOWED_TEXT` | `"cpuStepMs()<= CPU_STEP_MS"` | The one line the dial rule allows outside Timing: MapCheck deciding whether the thread-CPU clock is fine enough to time with at all (a test of the clock's resolution, not an assertion). |
 | 105 | `TimingCheck.FIXTURE_HARNESS` | `"TimingCheck$Fixture"` | What a child JVM is started as: the fixture's own main, below. |
 | 108 | `TimingCheck.ALL_SOURCES` | `Paths.get("src", "main", "java")` | Where the walk of every source starts. |
-| 617 | `TimingCheck.PAIR_AWK` | `Paths.get("tools", "timing-pair.awk")` |  |
+| 664 | `TimingCheck.PAIR_AWK` | `Paths.get("tools", "timing-pair.awk")` |  |
 
 ## Fields (state)
 
@@ -93,90 +93,92 @@
 |---:|---|---|
 | 79 | `static int fails` |  |
 | 111 | `private static volatile long sunk` | Kept so the measured work cannot be optimised away. |
-| 145 | `int fails` |  |
-| 146 | `private final ByteArrayOutputStream bytes` |  |
-| 147 | `private final PrintStream out` |  |
+| 147 | `int fails` |  |
+| 148 | `private final ByteArrayOutputStream bytes` |  |
+| 149 | `private final PrintStream out` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 657 | **type** `public class TimingCheck` | The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the suite moves. |
+| 77 | 704 | **type** `public class TimingCheck` | The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the suite moves. |
 | 82 | 4 | `static void check(String label, boolean ok)` | This harness's own assertion line: never Timing.verdict, so its own lines are never soft. |
-| 113 | 23 | `public static void main(String[] args) throws Exception` |  |
-| 143 | 40 | **type** `public static final class Fixture` | The fixture: a miniature harness with its own failure count and its own output, whose line is the suite's, printed through Timing.verdict. |
-| 149 | 4 | `Fixture()` _(in TimingCheck.Fixture)_ |  |
-| 154 | 4 | `Fixture(PrintStream to)` _(in TimingCheck.Fixture)_ |  |
-| 159 | 4 | `void check(String label, boolean ok)` _(in TimingCheck.Fixture)_ |  |
-| 165 | 3 | `String text()` _(in TimingCheck.Fixture)_ | Everything printed so far (empty when it prints to a stream). |
-| 170 | 5 | `String last()` _(in TimingCheck.Fixture)_ | The last line printed, without its line end. |
-| 177 | 5 | `public static void main(String[] args)` _(in TimingCheck.Fixture)_ | What a child JVM runs: one timing assertion of a measured figure against FIXTURE_BUDGET_MS, to System.out; exits with its failure count. |
-| 185 | 12 | `static double measured()` | A small piece of work timed on the nanosecond clock, in milliseconds, repeated at double the size until the clock has moved: always above zero. |
-| 199 | 4 | `static void setMode(String value)` | Sets the property this run's mode is read from; null clears it. |
-| 204 | 3 | `static String modeName(String value)` |  |
-| 208 | 3 | `static boolean endsOk(Fixture fx)` |  |
-| 212 | 3 | `static boolean endsFail(Fixture fx)` |  |
-| 216 | 5 | `static int count(String text, String part)` |  |
-| 223 | 4 | `static void none(String label, List<String> offenders)` | One assertion for a rule that has offenders: it holds when there are none, and each offender is a failing line of its own, so -f names it. |
-| 228 | 3 | `static String readSource(Path p) throws IOException` |  |
+| 113 | 25 | `public static void main(String[] args) throws Exception` |  |
+| 145 | 40 | **type** `public static final class Fixture` | The fixture: a miniature harness with its own failure count and its own output, whose line is the suite's, printed through Timing.verdict. |
+| 151 | 4 | `Fixture()` _(in TimingCheck.Fixture)_ |  |
+| 156 | 4 | `Fixture(PrintStream to)` _(in TimingCheck.Fixture)_ |  |
+| 161 | 4 | `void check(String label, boolean ok)` _(in TimingCheck.Fixture)_ |  |
+| 167 | 3 | `String text()` _(in TimingCheck.Fixture)_ | Everything printed so far (empty when it prints to a stream). |
+| 172 | 5 | `String last()` _(in TimingCheck.Fixture)_ | The last line printed, without its line end. |
+| 179 | 5 | `public static void main(String[] args)` _(in TimingCheck.Fixture)_ | What a child JVM runs: one timing assertion of a measured figure against FIXTURE_BUDGET_MS, to System.out; exits with its failure count. |
+| 187 | 12 | `static double measured()` | A small piece of work timed on the nanosecond clock, in milliseconds, repeated at double the size until the clock has moved: always above zero. |
+| 201 | 4 | `static void setMode(String value)` | Sets the property this run's mode is read from; null clears it. |
+| 206 | 3 | `static String modeName(String value)` |  |
+| 210 | 3 | `static boolean endsOk(Fixture fx)` |  |
+| 214 | 3 | `static boolean endsFail(Fixture fx)` |  |
+| 218 | 5 | `static int count(String text, String part)` |  |
+| 225 | 4 | `static void none(String label, List<String> offenders)` | One assertion for a rule that has offenders: it holds when there are none, and each offender is a failing line of its own, so -f names it. |
+| 230 | 3 | `static String readSource(Path p) throws IOException` |  |
 
-### 1. HARD (lines 232-251)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 236 | 15 | `static void hard()` |  |
-
-### 2. SOFT (lines 252-288)
+### 1. HARD (lines 234-253)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 256 | 32 | `static void soft()` |  |
+| 238 | 15 | `static void hard()` |  |
 
-### 3. ONLY A CLOCK IS SOFT (lines 289-332)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 293 | 39 | `static void onlyAClock()` |  |
-
-### 4. THE PROPERTY'S VALUES (lines 333-346)
+### 2. SOFT (lines 254-290)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 337 | 9 | `static void propertyValues()` |  |
+| 258 | 32 | `static void soft()` |  |
 
-### 5. ACROSS THE JVM BOUNDARY (lines 347-404)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 351 | 1 | **type** `private record Run(int exit, String output)` |  |
-| 354 | 12 | `static Run runFixture(String javaExe, String classpath) throws Exception` | A child JVM started exactly as AllChecks starts a harness, with the parent's property the only source of its mode. |
-| 367 | 37 | `static void acrossTheJvm() throws Exception` |  |
-
-### 6. THE SUITE GOES THROUGH IT (lines 405-508)
+### 3. ONLY A CLOCK IS SOFT (lines 291-334)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 409 | 99 | `static void suiteGoesThroughIt() throws IOException` |  |
+| 295 | 39 | `static void onlyAClock()` |  |
 
-### 7. THE REST OF THE SUITE IS UNTOUCHED (lines 509-522)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 513 | 9 | `static void restUntouched()` |  |
-
-### 8. THE FIGURES' RECORD (TM3) (lines 523-612)
+### 4. THE PROPERTY'S VALUES (lines 335-348)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 528 | 6 | `static List<String[]> rows(Path file) throws IOException` | A figures file's rows, each split on tabs (a trailing empty column kept); none when the file is not there. |
-| 535 | 77 | `static void theFiguresRecord() throws Exception` |  |
+| 339 | 9 | `static void propertyValues()` |  |
 
-### 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk (lines 613-733)
+### 5. ACROSS THE JVM BOUNDARY (lines 349-406)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 620 | 17 | `static List<String> awk(List<String> args) throws Exception` | awk with these arguments, the repository root as its folder; its output lines, or null when awk cannot be started here. |
-| 639 | 8 | `static String pairRows(String harness, String label, double[] main, double[] batch)` | The pairs file's rows for one label: the figures of each side in turn, one per round. |
-| 649 | 9 | `static List<String> judge(Path dir, String pairs, String hard, String residual, String margin) throws Exception` | The judge's answer for these files: one "VERDICT\tline\twhy" per residual line. |
-| 659 | 74 | `static void theMarginsArithmetic() throws Exception` |  |
+| 353 | 1 | **type** `private record Run(int exit, String output)` |  |
+| 356 | 12 | `static Run runFixture(String javaExe, String classpath) throws Exception` | A child JVM started exactly as AllChecks starts a harness, with the parent's property the only source of its mode. |
+| 369 | 37 | `static void acrossTheJvm() throws Exception` |  |
+
+### 6. THE SUITE GOES THROUGH IT (lines 407-555)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 411 | 17 | `static void skippedSections()` |  |
+| 429 | 26 | `static void suiteOrder() throws IOException` |  |
+| 456 | 99 | `static void suiteGoesThroughIt() throws IOException` |  |
+
+### 7. THE REST OF THE SUITE IS UNTOUCHED (lines 556-569)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 560 | 9 | `static void restUntouched()` |  |
+
+### 8. THE FIGURES' RECORD (TM3) (lines 570-659)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 575 | 6 | `static List<String[]> rows(Path file) throws IOException` | A figures file's rows, each split on tabs (a trailing empty column kept); none when the file is not there. |
+| 582 | 77 | `static void theFiguresRecord() throws Exception` |  |
+
+### 9. THE MARGIN'S ARITHMETIC (TM3): tools/timing-pair.awk (lines 660-780)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 667 | 17 | `static List<String> awk(List<String> args) throws Exception` | awk with these arguments, the repository root as its folder; its output lines, or null when awk cannot be started here. |
+| 686 | 8 | `static String pairRows(String harness, String label, double[] main, double[] batch)` | The pairs file's rows for one label: the figures of each side in turn, one per round. |
+| 696 | 9 | `static List<String> judge(Path dir, String pairs, String hard, String residual, String margin) throws Exception` | The judge's answer for these files: one "VERDICT\tline\twhy" per residual line. |
+| 706 | 74 | `static void theMarginsArithmetic() throws Exception` |  |
 
