@@ -216,3 +216,58 @@ and routing files, from `git diff --numstat origin/main`, are:
 Their additions are offset by the deleted obsolete harness and the trimmed,
 obsolete gate-timing history in Timing. CB1-L's protected queue row is left
 for Jerus, as recorded above.
+
+## Stranger review repairs (2026-11-13)
+
+Lanekeeper's `20261113-134203-110-lanekeeper-a409` arrived before readiness.
+No ship file existed. Stopped only the active launcher run
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HA1-drVJGLrb` with its `--stop`
+(exit 130). It held branch `0f8152fc58aba840054f20dac1ba72a259f5f198`
+and main `b8d4750d5e7882f7590ecdc905a2a83ab8525334`; it will not be reused.
+
+1. **Correctness inside timing skips:** narrowed the shallow-sea skip to the
+   tile timing rounds; generated-world D19, the four shallow-share comparisons
+   and the earth-1 checks now run soft too. KeptCheck's section 9 forget and
+   nested-pool checks are outside the section 10 measurement guard. Audited
+   every other skip: whole skipped methods hold only a clock and its timing
+   fixture; mixed sections retain their laws. The earlier after-times for
+   EarthTerrainCheck/KeptCheck are superseded and will be replaced below.
+2. **Nightly known reds:** the tier now invokes `batch-check.sh --judge` on its
+   log, the same main gate judge, accepting 0/3 and failing on NEW or incomplete
+   runs. Selftests cause raw known-red exits with judged 3, NEW 4, and incomplete
+   1, checking green-marker advancement and preservation of attribution.
+3. **Current-format fallbacks:** restored the plot-mismatch redraw through
+   LandDrawing, unchanged in behavior. ? A missing/wrong-width current centre
+   is refused before rebuild rather than guessing a city from a damaged file.
+   CityLand and Game share the width predicate; SaveFileCheck causes both
+   missing and wrong-width centres through normal and direct load, checks the
+   played city and file unchanged, and causes a current-format figure mismatch
+   to prove its actual ground redraws. AW2's allocation/footprint delta remains.
+4. **Unrun harness records:** `gate-record.awk` retains old reds of every harness
+   absent from the completed `times.tsv`, plus the existing unseen-Earth rule.
+   The publisher selftest exercises an unrun KeptCheck red, a run-green record
+   cleared, unseen Globe coverage and an empty run list. The fake runner now
+   emits its actual run names as the production runner does.
+5. **Truck's tier:** ? Follow the brief's two explicit instructions together:
+   merge TruckCheck into TruckRouteCheck, and put TruckRouteCheck in the nightly
+   tier. Its 67 assertion lines remain there word for word, run at the gate
+   whenever directly picked and every night otherwise. Its merged source names
+   the original truck classes, so their under-fanout diffs directly pick the
+   owner; no separate default-tier TruckCheck or exception list is added.
+6. **Independent sides and dead resource:** GridCheck uses worked coordinate
+   cases at axes, diagonals and either side of a tie, rather than reproducing
+   the function under test. Removed unreferenced `conversion-saves.json`.
+
+Focused post-review `batch-check.sh TimingCheck SaveFileCheck GridCheck
+EarthTerrainCheck` exits **0**: four pass, compile 41s, Stale 0 firm/185 soft.
+The soft EarthTerrainCheck log explicitly contains passing D19, all four full
+shallow-share comparisons and the earth-1 no-SHALLOW assertion. SaveFileCheck
+prints passing current-format redraw plus missing/wrong-width refusal through
+both load entry points, with each file unchanged. The common-judge nightly
+selftest passes known=3, NEW=4 and incomplete=1 cases.
+
+Repeating the 18-harness serial soft measurement on the corrected code;
+publisher record selftest and final CSV verification are also running. Then
+regenerate indexes and make a new retained full dry run. The two interrupted
+runs are not readiness evidence.
+

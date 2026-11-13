@@ -1832,57 +1832,58 @@ public class EarthTerrainCheck {
             Arrays.sort(ms);
             report("Halifax: a tile's ground, its shallow sea drawn, in no more than TILE_MS", Timing.within(ms[TILE_ROUNDS / 2], TILE_MS),
                     String.format("%.3f ms a tile (rounds %.3f to %.3f)", ms[TILE_ROUNDS / 2], ms[0], ms[TILE_ROUNDS - 1]));
-            // A generated world has none (D19): its far view of the whole world holds sea and no SHALLOW, and so do the tiles about its founding site.
-            World g = World.of(SEED);
-            byte[] far = new byte[64 * 64];
-            g.regionTerrain(0, 0, (int) (World.SIDE / 64), 64, far);
-            int farSea = 0, farShallow = 0, siteSea = 0, siteShallow = 0;
-            for (byte b : far) { if (b == World.SALT) farSea++; if (b == World.SHALLOW) farShallow++; }
-            long cx = g.foundingX() / World.TILE, cy = g.foundingY() / World.TILE;
-            for (long ty = cy - 24; ty < cy + 24; ty++) {
-                for (long tx = cx - 24; tx < cx + 24; tx++) {
-                    g.tileTerrain(tx, ty, t);
-                    for (byte b : t) { if (b == World.SALT) siteSea++; if (b == World.SHALLOW) siteShallow++; }
-                }
-            }
-            report("a generated world draws no shallow sea (D19): its whole far view holds sea and no SHALLOW, nor do the tiles about its founding site",
-                    farSea > 0 && farShallow == 0 && siteShallow == 0, String.format("%,d sea pixels of 4,096; %,d sea plots about the site", farSea, siteSea));
-            if (file == null) {
-                out.println("earth-2.bin not named: the full file's shallow shares, and earth-1's refusal to draw any, were not tried");
-                return;
-            }
-            // The full file: the shallow share of a 61 km window of the Earth's sea at four coasts; and an earth-1 file, which has no layer, draws none.
-            for (double[] at : SHELVES) {
-                Window w = new Window(World.of(World.Key.earth(SEED, at[0], at[1], EarthData.EARTH_2)), file);
-                double drawn = w.drawnShallow(), want = w.dataShallow, points = 100 * Math.abs(drawn - want);
-                report(String.format("the full file at %.2f, %.2f: the shallow share of the window's sea drawn is the data's within SHALLOW_POINTS", at[0], at[1]),
-                        want >= 0 && points <= SHALLOW_POINTS && w.classes[World.SHALLOW] > 0, String.format("%.2f%% drawn against %.2f%% (%.2f points), of %,d plots of sea",
-                                100 * drawn, 100 * want, points, w.classes[World.SALT] + w.classes[World.SHALLOW]));
-            }
-            Path one = EarthData.locate().resolveSibling("earth-1.bin");
-            if (!Files.isRegularFile(one)) {
-                out.println("earth-1.bin is not beside the named file: that a file with no shallow layer draws none was not tried");
-                return;
-            }
-            EarthData old = EarthData.open(one);
-            String oldId = EarthTerrain.use(old);
-            World ow = World.of(World.Key.earth(SEED, 51.90625, 4.48125, oldId));
-            int oldSea = 0, oldShallow = 0;
-            long oc = EarthTerrain.spotPlot() / World.TILE;
-            for (long ty = oc - 16; ty < oc + 16; ty++) {
-                for (long tx = oc - 16; tx < oc + 16; tx++) {
-                    ow.tileTerrain(tx, ty, t);
-                    for (byte b : t) { if (b == World.SALT) oldSea++; if (b == World.SHALLOW) oldShallow++; }
-                }
-            }
-            boolean refused = false;
-            for (long x = EarthTerrain.spotPlot() - 3000; x < EarthTerrain.spotPlot() && !refused; x += 50) {
-                if (!World.salt(ow.terrainAt(x, EarthTerrain.spotPlot()))) continue;
-                try { ow.depthAt(x, EarthTerrain.spotPlot()); } catch (IllegalStateException e) { refused = true; }
-            }
-            check("an earth-1 file, which has no shallow layer, draws no SHALLOW where it draws the sea (" + oldSea + " plots), and gives no depth it does not have",
-                    !old.hasRelief() && oldSea > 0 && oldShallow == 0 && refused);
         }
+        // A generated world has none (D19): its far view of the whole world holds sea and no SHALLOW, and so do the tiles about its founding site.
+        World g = World.of(SEED);
+        byte[] far = new byte[64 * 64];
+        g.regionTerrain(0, 0, (int) (World.SIDE / 64), 64, far);
+        int farSea = 0, farShallow = 0, siteSea = 0, siteShallow = 0;
+        for (byte b : far) { if (b == World.SALT) farSea++; if (b == World.SHALLOW) farShallow++; }
+        long cx = g.foundingX() / World.TILE, cy = g.foundingY() / World.TILE;
+        for (long ty = cy - 24; ty < cy + 24; ty++) {
+            for (long tx = cx - 24; tx < cx + 24; tx++) {
+                g.tileTerrain(tx, ty, t);
+                for (byte b : t) { if (b == World.SALT) siteSea++; if (b == World.SHALLOW) siteShallow++; }
+            }
+        }
+        report("a generated world draws no shallow sea (D19): its whole far view holds sea and no SHALLOW, nor do the tiles about its founding site",
+                farSea > 0 && farShallow == 0 && siteShallow == 0, String.format("%,d sea pixels of 4,096; %,d sea plots about the site", farSea, siteSea));
+        if (file == null) {
+            out.println("earth-2.bin not named: the full file's shallow shares, and earth-1's refusal to draw any, were not tried");
+            return;
+        }
+        // The full file: the shallow share of a 61 km window of the Earth's sea at four coasts; and an earth-1 file, which has no layer, draws none.
+        for (double[] at : SHELVES) {
+            Window w = new Window(World.of(World.Key.earth(SEED, at[0], at[1], EarthData.EARTH_2)), file);
+            double drawn = w.drawnShallow(), want = w.dataShallow, points = 100 * Math.abs(drawn - want);
+            report(String.format("the full file at %.2f, %.2f: the shallow share of the window's sea drawn is the data's within SHALLOW_POINTS", at[0], at[1]),
+                    want >= 0 && points <= SHALLOW_POINTS && w.classes[World.SHALLOW] > 0, String.format("%.2f%% drawn against %.2f%% (%.2f points), of %,d plots of sea",
+                            100 * drawn, 100 * want, points, w.classes[World.SALT] + w.classes[World.SHALLOW]));
+        }
+        Path one = EarthData.locate().resolveSibling("earth-1.bin");
+        if (!Files.isRegularFile(one)) {
+            out.println("earth-1.bin is not beside the named file: that a file with no shallow layer draws none was not tried");
+            return;
+        }
+        EarthData old = EarthData.open(one);
+        String oldId = EarthTerrain.use(old);
+        World ow = World.of(World.Key.earth(SEED, 51.90625, 4.48125, oldId));
+        int oldSea = 0, oldShallow = 0;
+        long oc = EarthTerrain.spotPlot() / World.TILE;
+        for (long ty = oc - 16; ty < oc + 16; ty++) {
+            for (long tx = oc - 16; tx < oc + 16; tx++) {
+                ow.tileTerrain(tx, ty, t);
+                for (byte b : t) { if (b == World.SALT) oldSea++; if (b == World.SHALLOW) oldShallow++; }
+            }
+        }
+        boolean refused = false;
+        for (long x = EarthTerrain.spotPlot() - 3000; x < EarthTerrain.spotPlot() && !refused; x += 50) {
+            if (!World.salt(ow.terrainAt(x, EarthTerrain.spotPlot()))) continue;
+            try { ow.depthAt(x, EarthTerrain.spotPlot()); } catch (IllegalStateException e) { refused = true; }
+        }
+        check("an earth-1 file, which has no shallow layer, draws no SHALLOW where it draws the sea (" + oldSea + " plots), and gives no depth it does not have",
+                !old.hasRelief() && oldSea > 0 && oldShallow == 0 && refused);
+
     }
 
     /* =====================================================================

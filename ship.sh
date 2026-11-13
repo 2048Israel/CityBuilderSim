@@ -415,7 +415,7 @@ selftests() {
     [ "${CBS_SELFTEST:-}" != 1 ] || return 0
     printf '%s\n' "$CHANGED" | while IFS= read -r file; do
         case "$file" in
-            ship.sh|tools/gate*.sh|tools/gate-process.ps1) echo tools/ship-selftest.sh ;;
+            ship.sh|tools/gate*.sh|tools/gate-process.ps1|tools/gate-record.awk) echo tools/ship-selftest.sh ;;
             *-selftest.sh) echo "$file" ;;
             *.sh) testfile="${file%.sh}-selftest.sh"; [ ! -f "$testfile" ] || echo "$testfile" ;;
         esac
@@ -510,7 +510,7 @@ else
             echo "# suite: ${SUMMARY:-none}"
             if [ -s "$T/suite-new" ]; then sed "s/^/# suite red passed on Jerus's word ($REDOK): /" "$T/suite-new"; fi
             cat "$T/suite-reds.txt"
-            [ "$EARTH" = named ] || grep -E '^(Earth|Globe)[A-Za-z0-9]* \|' "$T/recorded"   # lines this gate could not see are kept
+            awk -v earth="$EARTH" -f tools/gate-record.awk target/checks/times.tsv "$T/recorded"
         } | awk '/^#/ || (NF && !seen[$0]++)' > docs/notes/gate.txt
         git add -- docs/notes/gate.txt
     fi

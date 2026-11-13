@@ -20400,6 +20400,11 @@ public class Game {
                     + "), its file left as it was. " + earth);
             return earth;
         }
+        if (!CityLand.hasSavedCentre(loaded.getLandCentre())) {
+            String why = "This save's land centre is missing or damaged.";
+            System.out.println(GameFiles.slotLabel(slot) + " not loaded, its file left as it was. " + why);
+            return why;
+        }
         return null;
     }
 
@@ -20523,7 +20528,14 @@ public class Game {
                             + " before, %d now.%n", format, land.oldWorldHoldings(), standing, seen[0], seen[1], seen[2], seen[3]);
         }
         landManager.restoreOwnedSqFt(owned);
-        landManager.getMarket().listMissing();
+        double ground = landManager.getLandDrySqFt();
+        if (!LandDrawing.sameGround(owned, ground)) {
+            System.out.printf("The save's ground (%s) is not its land's (%s): the land is drawn again to hold it.%n",
+                    LandManager.areaWords(owned), LandManager.areaWords(ground));
+            LandDrawing.restate(landManager, owned);
+        } else {
+            landManager.getMarket().listMissing();
+        }
     }
 
     /** The load itself; see loadGame(). */

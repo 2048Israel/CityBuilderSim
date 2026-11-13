@@ -3254,6 +3254,7 @@ public class SaveFileCheck {
 
         cleanUp(root);
 
+        landLoadFallbacks();
         LoadConservation.run(args);
         fails += LoadConservation.fails;
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -4342,6 +4343,54 @@ public class SaveFileCheck {
                 try { Files.deleteIfExists(p); } catch (IOException ignored) { }
             });
         } catch (IOException ignored) { }
+    }
+
+    /** HA1: current-format land is repaired, or refused before a live city is rebuilt. */
+    static void landLoadFallbacks() throws Exception {
+        System.out.println("--- current-format land repair and refusal ---");
+        GameFiles files = GameFiles.scratch("ha1-current-land");
+        Game live = new Game(files);
+        java.io.PrintStream console = System.out;
+        try (java.io.PrintStream silence = new java.io.PrintStream(java.io.OutputStream.nullOutputStream())) {
+            System.setOut(silence);
+            try { live.run(); live.saveGame(1, "current land"); }
+            finally { System.setOut(console); }
+            String valid = Files.readString(files.saveFile(1));
+            com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(valid).getAsJsonObject();
+            double wanted = live.getLandManager().getOwnedSqFt() + LandManager.sqFt(13 * World.KM2_PER_PLOT);
+            json.addProperty("landOwned", wanted);
+            Files.writeString(files.saveFile(1), json.toString());
+            Game repaired = new Game(files);
+            System.setOut(silence);
+            try { repaired.loadGameSave(1); } finally { System.setOut(console); }
+            assertTrue("a current-format save's changed land figure loads and redraws its actual ground",
+                    repaired.getLoadFailure() == null && repaired.getLandManager().getOwnedSqFt() == wanted
+                            && LandDrawing.sameGround(wanted, repaired.getLandManager().getLandDrySqFt()));
+
+            live.setCashForTest(live.getCash() + 12345);
+            for (boolean absent : new boolean[]{true, false}) {
+                json = com.google.gson.JsonParser.parseString(valid).getAsJsonObject();
+                if (absent) json.remove("landCentre");
+                else {
+                    com.google.gson.JsonArray bad = new com.google.gson.JsonArray(); bad.add(1);
+                    json.add("landCentre", bad);
+                }
+                Files.writeString(files.saveFile(1), json.toString());
+                byte[] fileBefore = Files.readAllBytes(files.saveFile(1));
+                for (boolean rebuild : new boolean[]{true, false}) {
+                    double[] before = LoadConservation.snapshot(live);
+                    int month = live.getMonth();
+                    System.setOut(silence);
+                    try { if (rebuild) live.loadGameSave(1); else live.loadGame(1); }
+                    finally { System.setOut(console); }
+                    assertTrue((absent ? "missing" : "wrong-width") + " current land centre is refused before "
+                                    + (rebuild ? "rebuild" : "direct load") + ", leaving the played city whole",
+                            live.getLoadFailure() != null && live.getLoadFailure().contains("land centre")
+                                    && live.getMonth() == month && java.util.Arrays.equals(before, LoadConservation.snapshot(live)));
+                    assertTrue("...and the refused save is untouched", java.util.Arrays.equals(fileBefore, Files.readAllBytes(files.saveFile(1))));
+                }
+            }
+        }
     }
 
     /**

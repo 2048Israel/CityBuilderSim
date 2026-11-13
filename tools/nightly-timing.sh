@@ -105,9 +105,11 @@ timing_search() {  # first-parent merges, binary search against the preceding qu
 nightly_tier() {
     green=${1:-$HOME/.cbs-nightly-tier-green}
     java -Xmx2048m -Xms64m -Dcbs.timing=hard -Dstdout.encoding=UTF-8 \
-        -cp "target/classes$SEP$(cat target/classpath.txt)" ham.citybuildersim.AllChecks -f --nightly > "$CLONE/tier.log" 2>&1
-    tiercode=$?; cat "$CLONE/tier.log" >> "$LOG"
-    if [ "$tiercode" = 0 ]; then
+        -cp "target/classes$SEP$(cat target/classpath.txt)" ham.citybuildersim.AllChecks -f --nightly > "$CLONE/tier.log" 2>&1 || :
+    cat "$CLONE/tier.log" >> "$LOG"
+    tiercode=0
+    CBS_KNOWN_REDS= CBS_REJUDGE=rejudge ./batch-check.sh --judge "$CLONE/tier.log" >> "$LOG" 2>&1 || tiercode=$?
+    if [ "$tiercode" = 0 ] || [ "$tiercode" = 3 ]; then
         printf '%s\n' "$FULL" > "$green.new" && mv "$green.new" "$green" || return 1
         TIER='nightly tier OK'
     else
@@ -122,6 +124,7 @@ nightly_tier() {
         printf '%s\n%s\n' "$TIER" "$merges" >> "$LOG"
         TIER="$TIER: $(printf '%s\n' "$merges" | paste -sd ';' -)"
     fi
+    [ "$tiercode" = 3 ] && tiercode=0
     return "$tiercode"
 }
 

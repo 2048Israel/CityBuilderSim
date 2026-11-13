@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Counts land's plotted ground and redraws a fixture's centre to an area.
+ * Counts plotted ground and redraws a city's centre to a requested area.
  *
- * WHY (HA1): the live ground helpers and setOwnedSqFt fixtures shared the
+ * WHY (HA1): the live ground helpers, current-save repairs and fixtures shared the
  * obsolete save converters; keep their drawing here after those loaders go.
  */
 final class LandDrawing {
@@ -18,14 +18,14 @@ final class LandDrawing {
     static final int CENTRE = 0;
     /** A billionth of a plot absorbs the rounding of plots into square kilometres. */
     static final double WHOLE_PLOT = 1e-9;
-    /** A fixture's iron field stands at least a kilometre from its founding site. */
+    /** A retained iron field stands at least a kilometre from its founding site. */
     static final double LEGACY_FIELD_KM = 1;
     /** Draws to find a dry plot for a fixture's iron field. */
     static final int LEGACY_DRAWS = 64;
     /** The deterministic stream used by the fixture's iron field. */
     private static final long LEGACY_STREAM = 0x1E6AC7L;
 
-    /** Whether a hand-set area agrees with the plotted ground to within one plot. */
+    /** Whether a saved or hand-set area agrees with plotted ground to within one plot. */
     static boolean sameGround(double ownedSqFt, double landDrySqFt) {
         return Math.abs(ownedSqFt - landDrySqFt) <= LandManager.sqFt(World.KM2_PER_PLOT) * (1 + 1e-12);
     }
@@ -39,7 +39,7 @@ final class LandDrawing {
         return new long[] { (long) Math.floor(d.x() + at[0] + 0.5), (long) Math.floor(d.y() + at[1] + 0.5) };
     }
 
-    /** A centre drawn to a fixture's area, with its books counted from those plots. */
+    /** A centre drawn to an area, with its books counted from those plots. */
     static final class Result {
         final long siteX, siteY;
         final LandGrid grid = new LandGrid();
@@ -64,7 +64,7 @@ final class LandDrawing {
         int legacySites() { return legacySites; }
     }
 
-    /** Draws whole dry plots round the same site, preserving the fixture's iron. */
+    /** Draws whole dry plots round the same site, preserving the city's iron. */
     public static Result draw(World world, long sx, long sy, double dryKm2, int ironSites, double ironTonnes,
                                     int minesCommitted, boolean legacy) {
         Result out = new Result(sx, sy);
@@ -289,7 +289,7 @@ final class LandDrawing {
     }
 
 
-    /** Redraws a hand-set area; a normal load never uses this fixture operation. */
+    /** Repairs a saved or hand-set area, retaining the city's iron and refreshing its offers. */
     public static void restate(LandManager lm, double drySqFt) {
         CityLand land = lm.land();
         World world = World.of(land.key());

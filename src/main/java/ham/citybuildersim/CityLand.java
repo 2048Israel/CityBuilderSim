@@ -1257,6 +1257,11 @@ public final class CityLand {
         return restore(World.Key.generated(seed), centre, rects, holdings, partRows, history);
     }
 
+    /** Whether the saved centre has the shape restore() can read (HA1). */
+    static boolean hasSavedCentre(double[] centre) {
+        return centre != null && centre.length == CENTRE_FIELDS;
+    }
+
     /** ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). Its ground by relief reads all flat (restore() with no relief rows). */
     public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows,
                                    double[][] history) {
@@ -1271,7 +1276,7 @@ public final class CityLand {
      */
     public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows,
                                    double[][] history, double[] centreRelief, double[][] holdingsRelief) {
-        if (centre == null || centre.length != CENTRE_FIELDS) return null;
+        if (!hasSavedCentre(centre)) return null;
         CityLand land = new CityLand(key, (long) centre[CENTRE_FIELDS - 2], (long) centre[CENTRE_FIELDS - 1]);
         int i = 0;
         for (int a = 0; a < AREAS; a++) land.centreKm2[a] = centre[i++];

@@ -676,26 +676,25 @@ public class KeptCheck {
                 !looks[0].equals(looks[1]) && looks[2].equals(looks[1]) && looks[3].equals(looks[0]));
         check("...and so does a header tile", !looks[4].equals(looks[5]) && looks[6].equals(looks[5]) && looks[7].equals(looks[4]));
 
+        System.out.println("\n--- 9: a city opened forgets the chrome ---");
+        int[] again = fx(() -> {
+            bench.clock(true, null);
+            bench.speed(3);
+            bench.drawChromeKept();
+            int[] quietCounts = bench.chromeCounts();
+            bench.forgetChrome();
+            bench.drawChromeKept();
+            int[] afterCounts = bench.chromeCounts();
+            return new int[]{quietCounts[0] + quietCounts[2] + quietCounts[4], afterCounts[0] + afterCounts[2] + afterCounts[4],
+                    afterCounts[1] + afterCounts[3] + afterCounts[5]};
+        });
+        System.out.printf("  a draw before: %d nodes made; the draw after the forgetting: %d made, %d handed back%n", again[0], again[1], again[2]);
+        check("before the forgetting a draw makes few nodes, after it every node is new (" + again[1] + " made, " + again[2] + " handed back)",
+                again[0] * 10 <= firstMade && again[2] == 0 && again[1] * 10 >= firstMade * 9L);
+
+        boolean nested = fx(KeptBench::nestedDrawsKeepEach);
+        check("a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)", nested);
         if (!Timing.skip("KeptCheck.chrome timing")) {
-            System.out.println("\n--- 9: a city opened forgets the chrome ---");
-            int[] again = fx(() -> {
-                bench.clock(true, null);
-                bench.speed(3);
-                bench.drawChromeKept();
-                int[] quietCounts = bench.chromeCounts();
-                bench.forgetChrome();
-                bench.drawChromeKept();
-                int[] afterCounts = bench.chromeCounts();
-                return new int[]{quietCounts[0] + quietCounts[2] + quietCounts[4], afterCounts[0] + afterCounts[2] + afterCounts[4],
-                        afterCounts[1] + afterCounts[3] + afterCounts[5]};
-            });
-            System.out.printf("  a draw before: %d nodes made; the draw after the forgetting: %d made, %d handed back%n", again[0], again[1], again[2]);
-            check("before the forgetting a draw makes few nodes, after it every node is new (" + again[1] + " made, " + again[2] + " handed back)",
-                    again[0] * 10 <= firstMade && again[2] == 0 && again[1] * 10 >= firstMade * 9L);
-
-            boolean nested = fx(KeptBench::nestedDrawsKeepEach);
-            check("a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)", nested);
-
             System.out.println("\n--- 10: what the kept chrome costs ---");
             double[] cost = fx(() -> {
                 List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();

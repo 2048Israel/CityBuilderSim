@@ -110,15 +110,30 @@ cd "$CLONE"
 mkdir -p target; printf 'fixture\n' > target/classpath.txt
 SEP=';'; LOG=$TEST/tier-report.log; : > "$LOG"
 java() { printf '%s\n' "$*" >> "$TEST/tier-command"; return "${TIER_EXIT:-0}"; }
+cat > batch-check.sh <<'EOF'
+#!/bin/sh
+echo "$*" >> "$TIER_JUDGE_LOG"
+exit "${TIER_JUDGE_EXIT:-0}"
+EOF
+chmod +x batch-check.sh
+TIER_JUDGE_LOG=$TEST/tier-judge-command; export TIER_JUDGE_LOG TIER_JUDGE_EXIT
 CASE='the nightly runs its tier on the fetched main tip'; nightly_tier "$TEST/tier-green"
 ok grep -q 'AllChecks -f --nightly' "$TEST/tier-command"
+ok grep -q -- '--judge' "$TIER_JUDGE_LOG"
+ok test "$(cat "$TEST/tier-green")" = "$FULL"
+TIER_EXIT=5; TIER_JUDGE_EXIT=3
+CASE='standing known reds are green under the common judge'; nightly_tier "$TEST/tier-green"
 ok test "$(cat "$TEST/tier-green")" = "$FULL"
 TIER_BASE=$(git rev-list --max-parents=0 "$FULL")
 printf '%s\n' "$TIER_BASE" > "$TEST/tier-green"
-TIER_EXIT=1
+TIER_EXIT=1; TIER_JUDGE_EXIT=4
 CASE='a red tier reports all merges since its last green'
-if nightly_tier "$TEST/tier-green"; then exit 1; else ok test "$?" = 1; fi
+if nightly_tier "$TEST/tier-green"; then exit 1; else ok test "$?" = 4; fi
 ok grep -q "merges since $TIER_BASE..$FULL" "$LOG"
 for n in 1 2 3 4 5; do ok grep -q "Merge batch/ST$n:" "$LOG"; done
 CASE='a red night cannot advance the green commit'; ok test "$(cat "$TEST/tier-green")" = "$TIER_BASE"
+TIER_JUDGE_EXIT=1
+CASE='an incomplete judged run also preserves the last green'
+if nightly_tier "$TEST/tier-green"; then exit 1; else ok test "$?" = 1; fi
+ok test "$(cat "$TEST/tier-green")" = "$TIER_BASE"
 echo 'nightly selftest OK'
