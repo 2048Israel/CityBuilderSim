@@ -17591,16 +17591,16 @@ _(this harness does not label its checks through a helper - it prints its findin
 _(this harness does not label its checks through a helper - it prints its findings; read its header and its sections)_
 
 - **L1430 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L3250 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L3305 AND EVERYTHING THAT IS A PURCHASE.**
-- **L3651 AND THE BEST OF THEM WINS.**
-- **L6214 founding: a few months at a time, by hand**
-- **L6311 then the real rhythm**
-- **L6444 the report**
-- **L6467 ==**
-- **L6564 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L7825 what the advisor tried, and what happened**
-- **L7831 findings**
+- **L3296 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L3351 AND EVERYTHING THAT IS A PURCHASE.**
+- **L3697 AND THE BEST OF THEM WINS.**
+- **L6264 founding: a few months at a time, by hand**
+- **L6361 then the real rhythm**
+- **L6494 the report**
+- **L6517 ==**
+- **L6614 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L7878 what the advisor tried, and what happened**
+- **L7884 findings**
 
 ## MainLineCheck.java - 160 labelled assertions
 

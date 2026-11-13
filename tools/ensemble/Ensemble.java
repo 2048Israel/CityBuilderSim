@@ -213,6 +213,16 @@ public class Ensemble {
         // the treasury and the bank
         c.put("treasury_cash", Adapter.num(g, "getCash"));
         c.put("treasury_debt", Adapter.num(g, "getDebtManager.getAllPrincipal"));
+        AutoBuilder works = g.getAutoBuilder();
+        c.put("works_on", works.isOn() ? 1.0 : 0.0);
+        c.put("works_over_limit", works.within(g) ? 0.0 : 1.0);
+        c.put("works_orders", (double) works.getOrders());
+        c.put("works_off_months", (double) LongPlaytest.worksOffMonths);
+        c.put("works_debt_idle_months", (double) LongPlaytest.worksDebtIdleMonths);
+        c.put("works_low_months", (double) LongPlaytest.worksLowMonths);
+        for (Map.Entry<String, Double> e : LongPlaytest.worksShares(g).entrySet()) {
+            c.put("served_" + e.getKey().toLowerCase(Locale.ROOT).replace(' ', '_'), e.getValue());
+        }
         c.put("cb_advances", Adapter.num(g, "getCentralBank.getAdvancesToTreasury"));
         c.put("bank_capital_ratio", Adapter.num(g, "getBank.capitalRatio"));
         // the checks

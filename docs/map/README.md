@@ -4,7 +4,7 @@ Generated 2026-11-12 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 565 files, 616,740 lines, 26,862 methods, 5,931 constants. `GameVersion.VERSION` is "0.9.97", `SAVE_FORMAT` 51.
+**The tree:** 565 files, 616,793 lines, 26,864 methods, 5,934 constants. `GameVersion.VERSION` is "0.9.97", `SAVE_FORMAT` 51.
 
 ## model (261 files)
 
@@ -480,7 +480,7 @@ Generated 2026-11-12 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandNationsCheck.java](LandNationsCheck.md) | 1,253 | 47 | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor an... | 1 |
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 739 | 29 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 0 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,363 | 95 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 5 |
-| [LongPlaytest.java](LongPlaytest.md) | 8,226 | 156 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 63 |
+| [LongPlaytest.java](LongPlaytest.md) | 8,279 | 158 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 63 |
 | [MainLineCheck.java](MainLineCheck.md) | 1,743 | 56 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 643 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
 | [MapCheck.java](MapCheck.md) | 15,628 | 412 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 13 |
