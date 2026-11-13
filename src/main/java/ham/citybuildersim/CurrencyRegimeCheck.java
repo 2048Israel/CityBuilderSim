@@ -930,16 +930,15 @@ public class CurrencyRegimeCheck {
             boolean twinHeld = Observation.reached("fixture: the twin's peg did not break that month, and the city's did",
                     !b.getForeignAccounts().brokeThisMonth(),
                     "played-city peg-break credibility dent");
-            boolean twinClimbed = Observation.reached("fixture: the twin's credibility climbed that month (the bank's gain branch, miss within tolerance)",
-                    Math.abs(afterB - (c0 + (Expectations.KMAX - c0) / Expectations.GAIN_MONTHS)) <= 1e-12,
-                    "played-city peg-break credibility dent");
+            if (twinHeld) assertTrue("the twin's credibility follows the bank's gain branch, miss within tolerance",
+                    Math.abs(afterB - (c0 + (Expectations.KMAX - c0) / Expectations.GAIN_MONTHS)) <= 1e-12);
             // The month's gain is linear in credibility, so the dent shows in the difference once the gain's pull is divided out.
             double dent = (afterB - afterA) / (1 - 1.0 / Expectations.GAIN_MONTHS);
             out.printf("   credibility %.4f before the break month: %.4f in the twin that held, %.4f in the city that broke%n", c0, afterB, afterA);
             double aim = a.getDebtManager().getInflationTarget();
             out.printf("   the smoothed inflation that month: %.4f in the twin, %.4f in the city (the band %.4f to %.4f)%n",
                     b.getExpectations().getSmoothedInflation(), a.getExpectations().getSmoothedInflation(), aim - Expectations.TOLERANCE, aim + Expectations.TOLERANCE);
-            if (twinHeld && twinClimbed)             close("the month a peg broke, credibility fell by PEG_BREAK_DENT of its distance to KMIN", dent,
+            if (twinHeld) close("the month a peg broke, credibility fell by PEG_BREAK_DENT of its distance to KMIN", dent,
                     Expectations.PEG_BREAK_DENT * (c0 - Expectations.KMIN), 1e-9);
         }
         Expectations bare = new Expectations();

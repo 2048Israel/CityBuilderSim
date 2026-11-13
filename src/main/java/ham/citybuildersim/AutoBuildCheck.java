@@ -465,8 +465,8 @@ public class AutoBuildCheck {
                 g.getPopulationManager().getPopulation(), passes, ordered, builtBy);
         out.printf("    (after each pass, of %d services kept: %d at the target, %d with works under way, %d held %s,"
                 + " %d with nothing to build)%n", kept, atTarget, works, held, heldBy, nothing);
-        Observation.reached("fixture: it ran a pass every month and placed orders for at least three services",
-                passes >= months - 1 && builtBy.size() >= 3);
+        assertTrue("it ran a pass every month", passes >= months - 1);
+        Observation.reached("fixture: it placed orders for at least three services", builtBy.size() >= 3);
         boolean borrowed = Observation.reached("fixture: it borrowed, on the funding page's bond, at least once",
                 borrowingPasses > 0,
                 "debt limit on borrowing passes");

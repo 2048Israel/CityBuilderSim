@@ -1397,7 +1397,8 @@ public class HealthCheck {
                     hungerAtEnd[k] * 100, hungerYear[k] * 100, hungerYearPriced[k] * 100, hungerYearShelf[k] * 100);
         }
         Observation.reached("fixture: the poor city has somebody at the eat-less step", hungerAtEnd[1] > 0);
-        Observation.reached("fixture: at the dial's top the fee priced somebody out", pricedOutMonths[2] > 0);
+        boolean pricedOut = Observation.reached("fixture: at the dial's top the fee priced somebody out",
+                pricedOutMonths[2] > 0, "coverage and baseline sickness consequences");
         Observation.reached("at a high fee a poor city serves a smaller share of its people than at the founding fee",
                 meanAffordable[2] < meanAffordable[1]);
         /*
@@ -1430,10 +1431,12 @@ public class HealthCheck {
                 places > Math.max(peakPeople[0], Math.max(peakPeople[1], peakPeople[2])));
         Observation.reached("fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away",
                 bedCover[2] - bedCover[1] < meanAffordable[1] - meanAffordable[2]);
-        Observation.reached("...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top",
-                coverRead[2] < coverRead[1]);
-        Observation.reached("...and its baseline sick rate, which coverage sets, is higher for it",
-                meanBaseline[2] > meanBaseline[1]);
+        if (pricedOut) {
+            assertTrue("...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top",
+                    coverRead[2] < coverRead[1]);
+            assertTrue("...and its baseline sick rate, which coverage sets, is higher for it",
+                    meanBaseline[2] > meanBaseline[1]);
+        }
         /*
          * AS A SHARE OF ITS PEOPLE, NOT A HEAD COUNT (2026-09-21). The two
          * cities are not the same size after eight years - the dear one is

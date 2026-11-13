@@ -373,11 +373,11 @@ public class DeskCheck {
         g.setCashForTest(Founding.WEALTHY_CASH);
         double carriedPer100 = line.getCarryingValue() / line.getOustandingPrincipal() * 100;
         Buyback.Result q = g.quoteBuyback(line, 1e12, carriedPer100);
-        Observation.reached("fixture: the played ten-year line is under carrying value", q.fairPer100() < carriedPer100);
-        Observation.reached("buybackAndCall: fixture: ...and the city buys back at a gain on the carrying value",
-                "fixture: ...and the city buys back at a gain on the carrying value",
-                q.takenFace() > 0 && q.gainOnCarrying() > 0,
-                "");
+        if (Observation.reached("fixture: the played ten-year line is under carrying value",
+                q.fairPer100() < carriedPer100, "buyback gain on carrying value")) {
+            check("...and the city buys back at a gain on the carrying value",
+                    q.takenFace() > 0 && q.gainOnCarrying() > 0);
+        }
 
         // The journal.
         double principal = line.getOustandingPrincipal();

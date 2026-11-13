@@ -14927,8 +14927,20 @@ public class MapCheck {
        20. THE ONE YARD STAYS WITH ITS DISTRICT (batch MF2, 2026-11-08)
        ===================================================================== */
 
-    // WHY (WN3-M(a), found on Historical's larger city, queued as MF2 item 2): CityMap.yardsOf() dealt the
-    // runs' yards to the districts counting a Rail Depot in the map's order, the first district first.
+    /*
+     * WHY (WN3-M(a), found on Historical's larger city, queued as MF2 item 2): CityMap.yardsOf() dealt the runs' yards to the districts counting a Rail Depot in the map's
+     * order, the first district first. A city has one yard however many depots it counts (a further yard is laid only beside works more than a district from every yard), so
+     * when a Rail Depot arrived in a district earlier in the order than the one that stood the yard, the yard's share moved to it: the district that stood the yard drew its
+     * own depot as a box at the place its log dates it, the boxes after it moved (m3995, district (-2,-3): 10 boxes), and the new depot vanished into a yard on another
+     * district's ground. MF2 deals a yard to the district whose frame holds it when that district counts a depot with no yard yet; only a yard no such district claims
+     * is dealt by the order.
+     *
+     * The fixture causes the condition, on the default world's dry place and no Game: two districts side by side, the first (the founding site's, 6 plots from its east
+     * edge) owned but for a strip along that edge, so the nearest crossing of the highways' lattice the city owns is across the edge, in the second, which owns a block
+     * only. One Rail Depot goes to the second district (a depot is an outer building: the last district with room), the railway starts at that crossing and lays the
+     * one yard there, in the second district's frame. The second district is then filled with works month by month until it has no room for a second depot, and
+     * the second depot goes to the first district, earlier in the map's order. The plans of both districts before it and after the month it arrives are compared.
+     */
 
     /** Where the founding site stands in 20's first district, plots from its north-west corner: 6 plots in from its east edge, so the nearest crossing it owns is across it. */
     static final int[] YARD_SITE_AT = { 250, 144 };
@@ -15047,11 +15059,15 @@ public class MapCheck {
        21 AND 22. TWO MOVED-BOX FINDINGS, CAUSED ON A BUILT DISTRICT (batch MF2, 2026-11-08)
        ===================================================================== */
 
-    // WHY (WN3-M(b) and HD1-M, queued as MF2 items 2 and 4): the bigger cities LongPlaytest watched met two
-    // cases of "a building on the map moved" with no run, reserve or yard to move it: WN3's Historical city
-    // at m2078, where 112 plots bought inside district (0,0) cost a Rod Mill, a Meat Works and a Bottling
-    // Plant each a standing box (again at m2323), and HD1's run at m3998, where three Convenience Stores of
-    // district (-1,-2) moved when one of their type left (623 drawn to 622).
+    /*
+     * WHY (WN3-M(b) and HD1-M, queued as MF2 items 2 and 4): the bigger cities LongPlaytest watched met two cases of "a building on the map moved" with no run, reserve or yard
+     * to move it: WN3's Historical city at m2078, where 112 plots bought inside district (0,0) cost a Rod Mill, a Meat Works and a Bottling Plant each a standing box (again
+     * at m2323), and HD1's run at m3998, where three Convenience Stores of district (-1,-2) moved when one of their type left (623 drawn to 622). Many such findings are DM2's
+     * class (the way FW11 keeps clear for a street piece the buildings wall in is worked out again from the whole log on every plan, so an arrival, a departure or a purchase
+     * changes it and first-fit cascades), and DM2 will date it; these two are asked of the plain case, with no wall to cross: a district of houses, stores and large works
+     * (a Rod Mill takes 12 plots) filled to BUILT_SHARE of its room, then (21) BUILT_BOUGHT plots bought inside its frame, or (22) one of its Convenience Stores leaves.
+     * Both are green on main (0.9.49): the fixtures stand guard, and a finding that moves a box needs more than this (MF2's report names what).
+     */
 
     /** The owned ground of 21 and 22's district, plots a side from its north-west corner; the founding site is in the middle of it. */
     static final int BUILT_SIDE = 160;

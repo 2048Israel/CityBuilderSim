@@ -897,8 +897,9 @@ public class HousingCheck {
         // ...and the share of its debt whose homes are closed goes through a save and a load.
         double share = re.strandedDebtShare();
         System.out.printf("   the landlords' debt on closed homes at the end: %.3f of it%n", share);
+        assertTrue("closed-home debt is a share in [0, 1]", share >= 0 && share <= 1);
         if (Observation.reached("fixture: the city closed homes and left their debt on the landlords",
-                share > 0 && share <= 1,
+                share > 0,
                 "closed-home share save round trip")) {
             assertTrue("saved", held.saveGame(1, "housing-held").ok);
             Game back = new Game(held.getGameFiles());

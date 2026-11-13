@@ -190,6 +190,7 @@ public class FloatLinkCheck {
 
     /** Which of sections 3-5 have run, for section 6 to know what it can ask of the months they pressed. */
     static final boolean[] ran = new boolean[10];
+    static boolean ranRisingMaturity, ranFallingMaturity;
 
     /** A month, held to the audit and told to the tally. */
     static MoneyAudit.Result press(Game g, String event) {
@@ -525,9 +526,9 @@ public class FloatLinkCheck {
             }
         }
         if (wanted(args, 5)) {
-            ran[5] = toMaturity();
+            toMaturity();
         }
-        if (wanted(args, 6) && (ran[3] || ran[4] || ran[5])) theMoneyCloses();
+        if (wanted(args, 6) && (ran[3] || ran[4] || wanted(args, 5))) theMoneyCloses();
         if (wanted(args, 7)) theBuyback();
         if (wanted(args, 8)) theRollover();
         if (wanted(args, 9)) theSave();
@@ -1342,12 +1343,18 @@ public class FloatLinkCheck {
         }
     }
 
-    static boolean toMaturity() {
+    static void toMaturity() {
         out.println("\n--- 5. to maturity: the indexed face under inflation, the original face under deflation, the books closing to the cent ---");
 
+        fixtureMaturity();
+        ranRisingMaturity = risingMaturity();
+        ranFallingMaturity = fallingMaturity();
+    }
+
+    static void fixtureMaturity() {
         // --- bank-held fixtures: the literal walk, the floor ---
         runFixtures();
-        if (fxCity == null) return false;
+        if (fxCity == null) return;
         DebtManager dm = fxCity.getDebtManager();
         NationalAccounts na = fxCity.getEconomyManager().getNationalAccounts();
         Books fb = fxBooks;
@@ -1371,6 +1378,9 @@ public class FloatLinkCheck {
         FX_ZERO.report("the walk from EARNED to the budget leaves nothing in any month - the uplift months, the margin under nothing, the maturity - when the bank holds the paper", 1e-3);
         report("fixtures", fb);
 
+    }
+
+    static boolean risingMaturity() {
         // --- a real linker under a rising index, a real floater to maturity with the dial moved twice ---
         Game rg = readyCity("floatlink-rising", true, .1);
         if (rg == null) return false;
@@ -1452,6 +1462,10 @@ public class FloatLinkCheck {
         check("fixture: the floater played to maturity moved the dial twice and rolled nothing (the rollover is off)",
                 !rdm.getDebt().contains(floater) && !rdm.getDebt().contains(linker) && rb.moves >= 2);
 
+        return true;
+    }
+
+    static boolean fallingMaturity() {
         // --- a real linker under a falling index ---
         Game dg = readyCity("floatlink-falling", true, .1);
         if (dg == null) return false;
@@ -1508,14 +1522,15 @@ public class FloatLinkCheck {
             if (e.getValue()[1] > 0) out.printf("   OPEN in %s: %d of %d months%n", e.getKey(), e.getValue()[1], e.getValue()[0]);
         }
         // The months each kind of event is pressed in, by the section that presses them.
-        String[][] needed = { { "3", "sale month: the settle" }, { "3", "dial moved up" }, { "3", "dial at nothing" },
-                { "4", "indexation: the index rises" }, { "4", "deflation month: the index falls" },
-                { "5", "maturity: a linker repays the indexed face by each holder's share" },
-                { "5", "maturity: a floater repays its face, the dial having moved twice" },
-                { "5", "maturity: a linker repays the original face (the floor), the index having fallen" } };
-        for (String[] need : needed) {
-            if (!ran[Integer.parseInt(need[0])]) continue;
-            check("...among them the month of: " + need[1], audits.byEvent.containsKey(need[1]) && audits.byEvent.get(need[1])[1] == 0);
+        record Event(boolean ran, String label) { }
+        Event[] needed = { new Event(ran[3], "sale month: the settle"), new Event(ran[3], "dial moved up"), new Event(ran[3], "dial at nothing"),
+                new Event(ran[4], "indexation: the index rises"), new Event(ran[4], "deflation month: the index falls"),
+                new Event(ranRisingMaturity, "maturity: a linker repays the indexed face by each holder's share"),
+                new Event(ranRisingMaturity, "maturity: a floater repays its face, the dial having moved twice"),
+                new Event(ranFallingMaturity, "maturity: a linker repays the original face (the floor), the index having fallen") };
+        for (Event need : needed) {
+            if (!need.ran()) continue;
+            check("...among them the month of: " + need.label(), audits.byEvent.containsKey(need.label()) && audits.byEvent.get(need.label())[1] == 0);
         }
         X_HOLDERS.report("every holder - households, businesses, the world, the central bank - was paid its share of every coupon, the uplift's in the last", 1e-6);
         X_TREASURY.report("the cash coupons the pieces paid are what the treasury paid on its interest line, with the uplift paid beside it - nothing counted twice", 1e-6);
