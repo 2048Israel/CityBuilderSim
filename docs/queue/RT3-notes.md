@@ -639,3 +639,90 @@ The forward-run summary records exit 0 for all three sets of eight trials.
 The source captures also exited 0. Full KeptCheck UI checks encountered while
 reaching the snapshots serve as fixture preparation for this investigation.
 The final batch gate and full ensemble await the held batch's release.
+
+
+## Count-only completion (Jerus, 23:35)
+
+Jerus answered "Yes, count only" when asked "Should RT3 ship as the
+retirement count only?" Lanekeeper's instruction is
+`20261112-233628-081-lanekeeper-4bcf`, 2026-11-12.
+
+The diagnosed fall had power 15% served and streets 1% served. Automatic
+building had been off since m1412 after KeptCheck section 38's fixture,
+and debt stood at 924% of GDP against a 240% limit. AW1 now starts the
+standalone test city and ensemble with automatic works and cash permission.
+Its implementation and recovery investigation are in [AW1's notes](AW1-notes.md).
+
+### Scope and retained measure
+
+Merged main `b5008d8693cb56d16ca18cad095f2670d3a582e9` (0.9.98). The merge
+is `107d0910` and the count-only cleanup is `98031178`. Generated-document
+conflicts took main and the final check regenerates their indexes.
+The merge's conflict-comment tail had followed its required author footer.
+A lease-protected branch update corrected that commit message and rebuilt
+its child with identical trees. The correction record is
+`target/checks/rt3-count-footer-correction.txt`.
+
+BusinessInvestment.java is byte-identical to main. AgricultureCheck and
+FoodProcessingCheck return to main's holding-based expected quantities.
+Main's rule needs neither cap edit. InvestCheck is also exactly main's.
+The cap-specific section returned 17 retired shops against its expected 5
+under main's rule. That assertion encoded the withdrawn cap and the section
+was dropped. The initial named check's exit 4 comes from that single
+assertion. Its logs are `target/checks/rt3-count-initial.txt`,
+`target/checks/rt3-count-initial-suite.txt` and
+`target/checks/InvestCheck.log`.
+
+KeptCheck's window was green on main's rule. It went from 93,154 posts at
+m2391 to 94,572 at m2416, with 93,154 the minimum. A second instrumented
+continuation counted the actual private retirement flow during m2392-2416.
+It retired **zero buildings and zero posts**. The calendar guard therefore
+passes without causing retirement, so it was dropped. KeptCheck is exactly
+main's. The two diagnostic logs are `target/checks/rt3-count-kept.log` and
+`target/checks/rt3-count-kept-cause.log`. Both window probes exited 0.
+
+LongPlaytest retains the printed measurement. Each sector's trailing
+12-month window sums posts in buildings actually retired by the spare and
+distress rules, divided by its building posts before the window began.
+It counts windows above one fifth, contiguous episodes per sector, and the
+largest share and its month. A bank branch sold through Retail belongs to the bank and is excluded
+from Retail's count. The measurement adds no
+model assertion.
+
+The default run reports **646 of 33,699** eligible sector-year windows
+above one fifth, **34 episodes**, and a maximum of **150.00%** in Heavy
+Industry at m741. Episodes by sector are Agriculture 1, Business Services 2,
+Cement & Concrete 1, Copper Refining 4, Freight 1, Heavy Industry 9,
+Industry 5, Manufacturing 1, Materials 2, Retail 2 and Wood Products 6.
+The share uses actual retirement over the year against its opening holding,
+including capacity opened during that year.
+
+### ScaleCheck and known reds
+
+ScaleCheck passes in full on the merged main-rule branch. Every one of the
+ten entries assigned to RT3 is green. Its log ends "All checks passed."
+The log is `target/checks/ScaleCheck.log`, also covered by the initial
+named check's suite log. No entry needed a replacement batch or queued row.
+
+### Default trace and ensemble
+
+Compiled main's exact LongPlaytest source from `b5008d86` into a temporary
+class directory over the same main-identical model classes. Ran main and
+the count-only harness with their default settings and separate trace
+prefixes. Each completed at m2405 with exit 0 and no findings.
+
+All eight CSV traces are byte-identical, covering month, borrowing, housing,
+population, bank, bonds, construction and labour. The normal reports differ
+only in the added count and wall-time readings. Main took 173 seconds and
+the branch 172 seconds. The layout-window wall times were 27.0 and 26.6
+seconds. These are soft observations.
+
+The comparison and SHA-256 values are in
+`target/checks/rt3-count-trace-comparison.txt`. Run logs are
+`target/checks/rt3-count-{main,branch}.log` and the traces use those same
+prefixes. The run wrapper is `target/checks/rt3-count-traces-run.txt`.
+
+The byte-identical default traces meet EN1's ensemble-skip condition.
+The current baseline is [0.9.98](../ensemble/0.9.98.md). The withdrawn
+cap's `docs/ensemble/RT3.md` was removed because the unversioned publisher
+requires a batch ensemble file to have a versioned ship record.

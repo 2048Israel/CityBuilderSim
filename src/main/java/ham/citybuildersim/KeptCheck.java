@@ -381,11 +381,6 @@ public class KeptCheck {
     /** What is done after every month played, with the log off, while a fixture has to be held through the months (KP3: the city's sites); null for nothing. */
     static Runnable afterMonth;
 
-    // RT3 watches the requested calendar window even when earlier fixtures move section 61.
-    static Game retirementCity;
-    static long retirementOpeningPosts, retirementLeastPosts;
-    static boolean retirementWindowChecked;
-
     /** A month, as the clock runs it, its log kept off this harness's output. */
     static void month(Game g) {
         PrintStream real = System.out;
@@ -395,20 +390,6 @@ public class KeptCheck {
             if (afterMonth != null) afterMonth.run();
         } finally {
             System.setOut(real);
-        }
-        if (g.getMonth() == 2391) {
-            retirementCity = g;
-            retirementOpeningPosts = retirementLeastPosts = g.getPopulationManager().getTotalJobs();
-        }
-        if (g == retirementCity) {
-            retirementLeastPosts = Math.min(retirementLeastPosts, g.getPopulationManager().getTotalJobs());
-            if (g.getMonth() == 2416) {
-                check("the city keeps four fifths of its posts throughout m2391-2416 (RT3, " + retirementOpeningPosts
-                        + " to " + g.getPopulationManager().getTotalJobs() + ", least " + retirementLeastPosts + ")",
-                        retirementOpeningPosts > 0 && retirementLeastPosts >= retirementOpeningPosts * .8);
-                retirementWindowChecked = true;
-                retirementCity = null;
-            }
         }
     }
 
@@ -1571,7 +1552,6 @@ public class KeptCheck {
         }
         System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d%n",
                 MONTHS, handedBack / MONTHS, quiet, madeMost);
-
         check("each month's redraw keeps the page it drew (the same top nodes, " + sameTop + " of " + MONTHS + ")", sameTop == MONTHS);
         check("each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
                 + firstMade + ")", handedBack / MONTHS * 10 >= firstMade * 9L);
@@ -8932,7 +8912,6 @@ public class KeptCheck {
         up7Frame(g, bench);
         up7Speed(g, bench);
 
-        check("fixture: the city's plain months reached the full RT3 window", retirementWindowChecked);
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();
         System.exit(fails);
