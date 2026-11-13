@@ -98,7 +98,8 @@ class Scoring(unittest.TestCase):
         javac = stub / "javac"
         javac.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
         javac.chmod(0o755)
-        env = dict(os.environ, PATH=str(stub) + os.pathsep + os.environ["PATH"], SEEDS="0",
+        env = dict(os.environ, PATH=str(stub) + os.pathsep + os.environ["PATH"], SEEDS="0", RESUME="1",
+                   POLICIES=" ".join(POLICIES), JOBS="1",
                    BASELINE=self.base.as_posix(), ENSEMBLE_OUT=self.run.parent.as_posix(), PYTHON=sys.executable)
         for expected in (0, 4):
             if expected == 4:
@@ -109,6 +110,7 @@ class Scoring(unittest.TestCase):
             self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
             self.assertTrue((self.run / "baseline.md").exists())
             self.assertIn("| class |", (self.run / "baseline.md").read_text(encoding="utf-8"))
+            env["BASELINE"] = (self.run / "baseline.md").as_posix()
 
 
 if __name__ == "__main__":

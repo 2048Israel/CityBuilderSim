@@ -22,7 +22,7 @@ Criteria (thresholds below, * in the report)
   M1 no failed or unread money-audit month in any policy.
   F1 runs with a LongPlaytest finding no greater than the baseline in any policy.
 
-Premise history and Jerus's decisions are in docs/queue/{P1,EN1,RN1,CD1}-notes.md.
+Premise history and Jerus's decisions are in docs/queue/{EN1,RN1,CD1}-notes.md.
 """
 import json
 import math
