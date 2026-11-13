@@ -79,7 +79,17 @@ and Stale reported 0 firm findings (193 soft).
 
 A mechanical label audit finds every moved literal label in its new owner:
 MoneyCheck, ConservationCheck, SectorBooksCheck and TruckCheck have no missing
-labels. The serial/bill/yield section is moved intact.
+labels. The serial/bill/yield section is moved intact. A token-stream comparison
+also confirms the four whole fixtures are identical after only their scope,
+entry-point and exit changes (comments/whitespace ignored).
+
+The publisher selftest passed 136/136 cases, including forced interruptions,
+rollback and Ready-flow reuse. A final rerun covers the last selection-metadata
+and preceding-publisher fallback changes. Shell syntax checks pass.
+
+The registry has 196 harnesses: the default gate tier runs 181, the nightly
+15. HA1 itself directly picks 13 nightly members, so its own full gate runs
+194; its elapsed time includes those deliberately picked heavy checks.
 
 In progress: post-change timing, final pick, fresh-clone gate and the final
 one-in/one-out line count.
