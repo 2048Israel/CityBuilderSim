@@ -50,3 +50,47 @@ All JVM checks use the supplied C:/ Earth and world paths in JDK_JAVA_OPTIONS.
   all five policies, old Markdown and JSON inputs, new summary comparisons,
   and the resumed runner retaining its baseline on exits 0 and 4.
 - Final checks, current-main merge and one-in/one-out count follow below.
+
+## Final verification
+
+The final implementation is 50e4b8c4e2a6c92b5a6e5dfd4763f7d363e88ca1.
+Fetched and merged origin/main d289e7d879d22829618d112f78a6f5c5fbb608c4 before
+readiness, already up to date. The starter confirmed PO1 changes other files
+and EI1 can finish independently. Its external builder prompt is its own
+update, as clarified above.
+
+- `./batch-check.sh --fast` exited 0. Compile passed, maps regenerated with
+  no generated changes, Stale reported 0 firm findings and 185 soft entries.
+  Kept log is `target/checks/EI1-fast.txt`.
+- `sh tools/ensemble/ensemble-selftest.sh` exited 0 on the final implementation,
+  3 tests in 26.5 seconds. Besides the cases above, the runner's second pass
+  reads its new Markdown baseline. Settings are pinned to resumed fixtures
+  so an ambient ensemble option cannot start a played city. Kept log is
+  `target/checks/EI1-selftest-final.txt`.
+- The compatibility probe scored the same fixture with origin/main's scorer
+  and EI1 against the real `docs/ensemble/0.9.98.md`. All 49 table rows'
+  measurements, thresholds and verdicts and every legacy summary field were
+  identical. The new reader imported 28 criterion readings from that legacy
+  baseline. Kept log is `target/checks/EI1-score-compat.txt`.
+- The first `./batch-check.sh --pick` exited 0, selecting EnsembleCheck alone,
+  suite green, maps unchanged and Stale at 0 firm findings. Kept log is
+  `target/checks/EI1-pick.txt`. The final pick uses the same implementation
+  and main identities named above. Its result follows.
+
+## One in, one out
+
+`git diff --numstat origin/main -- docs/batch.md docs/orchestrator.md tools/ensemble`
+gives **228 added, 207 removed, net +21**. The count includes both self-test
+files, all scorer/runner edits and the three rule documents. EI1's notes and
+ship file are excluded. Repeated introductions and premise-history prose
+were condensed to keep the process change near line-neutral.
+
+- The final `./batch-check.sh --pick` exited 0. EnsembleCheck was the only
+  selected harness (1 of 196), compile passed, the suite passed, maps were
+  unchanged, and Stale reported 0 firm findings and 185 soft entries.
+  Kept log is `target/checks/EI1-pick-final.txt`. Readiness follows the
+  selected-harness exit-0 rule in docs/batch.md 4 and 8.
+- `git diff --check`, shell syntax checks and the LF inventory passed.
+- ★ Recover legacy criterion readings from the baseline's existing table.
+  This lets the newest stored baseline supply verdict comparisons immediately
+  and keeps its historical measurements readable.
