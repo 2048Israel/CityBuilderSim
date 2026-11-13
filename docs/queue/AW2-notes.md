@@ -198,3 +198,28 @@ the tree/endings check passes. Logs: `target/checks/aw2-run.txt`,
 `target/checks/suite.txt` and each named harness's `.log`. Slot 10's SHA-256
 is unchanged after all diagnostics and checks. Main was fetched again and
 remains 5a87e102; HA1 has not landed, so there is no newer main to merge.
+
+### Retained fresh-clone dry run
+
+The required provisional ship file was pushed as
+`4c1cf2f5341e7a0da76919395efc0281a6318f24` before invoking
+`sh tools/gate.sh AW2 --dry-run`. The retained launcher run directory is
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-AW2-22S9uAGu`.
+Its recorded branch is `4c1cf2f5341e7a0da76919395efc0281a6318f24` and main
+is `5a87e102142ce5b3641b514f7ba1edf2ea775a4f`. The run is kept for the
+publisher; only AW2's notes and ship record change after this dry run.
+The launcher finishes with **exit 0**. Its complete picked suite returns
+**exit 3**, known reds only: **ALL 201**, 194 pass and seven recorded-red
+harnesses (MonetaryCheck, CentralBankCheck, HealthCheck, MapCheck, PlanCheck,
+KeptCheck and DeathRecordCheck). ReplayCheck passes in this fresh run.
+There are no NEW red lines and `unnamed.txt` is empty. SaveFileCheck's
+ordinary-load, changed-plot and played-continuation assertions all pass.
+
+The harnesses take 2,354 seconds; the complete check stage takes 2,441
+seconds, with 50 seconds compiling. There are 29 soft timing assertions;
+maps regenerate, Stale reports zero firm and 181 soft findings, and the
+tree/endings check passes. `ship.log`, `checks/`, `checks.complete`,
+`checks.sha256`, `generated/` and the commit/selection records remain in
+the retained directory. The dry run stages version 0.9.99 and restores
+its clone without committing, tagging or pushing main. A final fetch
+still finds main at 5a87e102, so no HA1 merge is needed for this readiness.
