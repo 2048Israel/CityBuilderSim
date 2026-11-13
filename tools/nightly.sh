@@ -61,7 +61,8 @@ if [ "$RC" != 0 ]; then
 fi
 TIMING='timing FAILED: incomplete run'
 nightly_tier; NRC=$?
+nightly_observations >> "$LOG" 2>&1; ORC=$?
 nightly_timing >> "$LOG" 2>&1; TRC=$?
 [ -z "$NIGHT" ] || cp "$LOG" "$NIGHT/nightly.log"
 verdict "$PLAY"
-[ "$RC" = 0 ] && [ "$NRC" = 0 ] && [ "$TRC" = 0 ]
+[ "$RC" = 0 ] && [ "$NRC" = 0 ] && [ "$ORC" = 0 ] && [ "$TRC" = 0 ]

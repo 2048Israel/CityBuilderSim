@@ -170,12 +170,21 @@ public final class Timing {
             rows.append(harness).append('\t').append(clean).append('\t').append(plain(r.figure())).append('\t')
                     .append(plain(r.budget())).append('\t').append(r.unit()).append('\t').append(status).append('\t').append(part).append('\n');
         }
-        try (FileChannel ch = FileChannel.open(Path.of(path), StandardOpenOption.CREATE, StandardOpenOption.WRITE); FileLock lock = ch.lock()) {
+        try {
+            append(Path.of(path), rows.toString());
+        } catch (IllegalStateException e) {
+            // The timing judge treats absent figures as an incomplete run.
+        }
+    }
+
+    /** Locked UTF-8 rows shared by timing and path observations (PO1). */
+    static synchronized void append(Path path, String rows) {
+        try (FileChannel ch = FileChannel.open(path, StandardOpenOption.CREATE, StandardOpenOption.WRITE); FileLock lock = ch.lock()) {
             ch.position(ch.size());
-            ByteBuffer bytes = ByteBuffer.wrap(rows.toString().getBytes(StandardCharsets.UTF_8));
+            ByteBuffer bytes = ByteBuffer.wrap(rows.getBytes(StandardCharsets.UTF_8));
             while (bytes.hasRemaining()) ch.write(bytes);
         } catch (IOException | RuntimeException e) {
-            // see above
+            throw new IllegalStateException("Cannot write check readings to " + path, e);
         }
     }
 
