@@ -4,3 +4,5 @@ LongPlaytest counts trailing sector-year windows in which retired buildings
 take over one fifth of the sector's opening posts, with episodes by sector
 and the largest share and month. It reads both retirement rules' actual
 sales and excludes bank branches from Retail's count.
+The picked check passed with recorded known reds, and all eight default
+CSV traces match main byte-for-byte.

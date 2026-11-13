@@ -731,8 +731,8 @@ requires a batch ensemble file to have a versioned ship record.
 ### Final picked check
 
 `./batch-check.sh --pick` completed with **exit 3** on 2026-11-13.
-It selected **69 of 201** harnesses. The runner included its mandatory
-checks and completed **73** in **1,541 seconds**, with 68 passing and five
+It selected **69 of 201** harness names. The runner's substring matching
+expanded those filters to **73**, completed in **1,541 seconds**, with 68 passing and five
 known-red harnesses. Every reported red is covered by the repository's
 existing records. The five are MonetaryCheck, CentralBankCheck, MapCheck,
 PlanCheck and KeptCheck. ScaleCheck and InvestCheck passed.
