@@ -1,3 +1,5 @@
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-AW2-22S9uAGu -->
+
 ## changelog
 ### {next} — AW2, allocated land kept through a normal load — 2026-11-13, ready, see docs/queue/AW2-notes.md
 Saves carry the live allocated-land counter and its building footprint, so an
