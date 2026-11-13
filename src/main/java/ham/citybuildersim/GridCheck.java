@@ -28,7 +28,7 @@ import java.util.Random;
  *      replay with one holding changed does not;
  *   3. the city's level is the largest at which FACE_BLOCKS blocks fit across
  *      its area, from MIN_LEVEL to MAX_LEVEL; a block's side is
- *      LegacyLand.sideLane()'s; every lane coordinate lies in one place;
+ *      the largest coordinate's; every lane coordinate lies in one place;
  *   4. a new default city, its centre in blocks of 120 m as the prototype
  *      drew it - and as the model founds it, block for block (CityLand.
  *      found(), 0.7.67) - lists its first offers one block across and
@@ -309,15 +309,16 @@ public class GridCheck {
         check("never under MIN_LEVEL (one plot, a new city's 310)", LandGrid.levelFor(1) == LandGrid.MIN_LEVEL
                 && LandGrid.levelFor(LandManager.km2(LandManager.STARTING_SQ_FT) / World.KM2_PER_PLOT) == LandGrid.MIN_LEVEL);
         check("never over MAX_LEVEL (the whole world)", LandGrid.levelFor((double) World.SIDE * World.SIDE) == LandGrid.MAX_LEVEL);
-        Random rnd = new Random(1);
-        boolean sides = true;
-        for (int i = 0; i < 100_000; i++) {
-            double dx = rnd.nextInt(2001) - 1000 + (rnd.nextBoolean() ? 0.5 : 0), dy = rnd.nextInt(2001) - 1000 + (rnd.nextBoolean() ? 0.5 : 0);
-            if (dx == 0 && dy == 0) continue;
-            sides &= GridOffers.sideOf(dx, dy) == LegacyLand.sideLane(dx, dy) / LegacyLand.LANES;
+        double[][] sides = {
+                {0, -4, 0}, {3, -4, 0}, {4, -4, 0}, {4.5, -4, 1},
+                {4, 0, 1}, {4, 3, 1}, {4, 4, 2}, {4, 4.5, 2},
+                {0, 4, 2}, {-3, 4, 2}, {-4, 4, 2}, {-4.5, 4, 3},
+                {-4, 0, 3}, {-4, -3, 3}, {-4, -4, 0}, {-4, -4.5, 0}
+        };
+        for (double[] point : sides) {
+            check("a point's side, worked by hand at (" + point[0] + ", " + point[1] + ")",
+                    GridOffers.sideOf(point[0], point[1]) == (int) point[2]);
         }
-        check("a point's side is the lanes' (LegacyLand.sideLane()), diagonals to North or South", sides
-                && GridOffers.sideOf(-3, -3) == 0 && GridOffers.sideOf(3, -3) == 0 && GridOffers.sideOf(3, 3) == 2 && GridOffers.sideOf(-3, 3) == 2);
         boolean one = true;
         for (int i = 0; i <= 12_000; i++) {
             double t = -1 + i / 6_000.0;
@@ -596,6 +597,7 @@ public class GridCheck {
        ===================================================================== */
 
     static void timing(City c) {
+        if (Timing.skip("GridCheck.timing")) return;
         System.out.println("--- 7. a plot's owner, in time ---");
         LandGrid g = c.grid;
         Random rnd = new Random(1);

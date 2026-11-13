@@ -148,6 +148,9 @@ echo "gate: exit $CODE; log $LOG; unnamed lines $RUN/unnamed.txt"
 # Keep stopped clones too, for inspecting HEAD and the unfinished merge. Logs always survive.
 if [ "$CODE" = 0 ]; then
     [ -f "$RUN/checks.complete" ] || [ ! -d "$CLONE/target/checks" ] || { mkdir -p "$RUN/checks"; cp -R "$CLONE/target/checks/." "$RUN/checks/"; }
+    if [ -f "$RUN/checks/times.tsv" ]; then
+        cp "$RUN/checks/times.tsv" "$HOME/.cbs-gate-times.tsv.$$" && mv "$HOME/.cbs-gate-times.tsv.$$" "$HOME/.cbs-gate-times.tsv"
+    fi
     rm -rf "$CLONE"
 fi
 exit "$CODE"

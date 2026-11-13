@@ -341,7 +341,7 @@ public class CopperMiningCheck {
                     w.totals(), w.seaTheta());
             land.restoreOwnedSqFt(land.getLandDrySqFt());
             g.setCashForTest(Founding.WEALTHY_CASH);
-            // ...the ground restated to hold the town (LandConversion.restate()), then the sulphide by fiat on it.
+            // ...the ground restated to hold the town (LandDrawing.restate()), then the sulphide by fiat on it.
             land.setOwnedSqFt(land.getOwnedSqFt() + 400_000_000L);
             int held = land.getSites(CU);
             lastSearch = String.format("field of %d site(s) at %,d m", field.sites(),

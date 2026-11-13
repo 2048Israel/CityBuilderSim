@@ -1,4 +1,4 @@
-# EarthCheck.java - 1,065 lines · 33 methods · 17 constants · harnesses
+# EarthCheck.java - 1,066 lines · 33 methods · 17 constants · harnesses
 
 `ham/citybuildersim/EarthCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >   8. A TILE INFLATES IN UNDER INFLATE_MS (spec: 0.13 ms measured; wall
 > ... (24 more lines in the source)
 
-**Uses:** [EarthData](EarthData.md) (120), [World](World.md) (63), [EarthProj](EarthProj.md) (44), [Timing](Timing.md) (2)
+**Uses:** [EarthData](EarthData.md) (120), [World](World.md) (63), [EarthProj](EarthProj.md) (44), [Timing](Timing.md) (3)
 
 **Used by (14):** [BridgeCheck](BridgeCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [GlobeCheck](GlobeCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [LandCheck](LandCheck.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [WorldDataCheck](WorldDataCheck.md)
 
@@ -78,7 +78,7 @@
 | 493 | 4 TO 6. THE READER AGAINST earthread.py |
 | 701 | 7. THE LRU |
 | 737 | 8. A TILE INFLATES IN UNDER A MILLISECOND |
-| 766 | 10 TO 12. EARTH-2'S LAYERS (ET1) |
+| 767 | 10 TO 12. EARTH-2'S LAYERS (ET1) |
 
 ## Constants
 
@@ -100,7 +100,7 @@
 | 136 | `EarthCheck.EARTH1_TILE_LAYERS` | `{ "sea", "lake", "landcover", "lakes.small", "rivers" }, EARTH2_TILE_LAYERS =...` | The 1-degree tile layers of earth-1 and of earth-2 section 12 inflates: the five a tile of earth-1 has, the four earth-2 adds. |
 | 139 | `EarthCheck.EARTH1_LAYERS` | `{ "sea", "lake", "lakes.small", "rivers", "landcover", "far.land", "far.lake"...` | The ten layers earth-2 holds of earth-1's byte for byte (meta is earth-2's own). |
 | 143 | `EarthCheck.out` | `System.out` | Where the harness prints: the console. |
-| 771 | `EarthCheck.RELIEF_KINDS` | `Set.of("slopeb", "shallowb", "depthb", "depthcode", "slopeest", "landmasstile...` | The expected figures' kinds relief() reads (agree() leaves them to it). |
+| 772 | `EarthCheck.RELIEF_KINDS` | `Set.of("slopeb", "shallowb", "depthb", "depthcode", "slopeest", "landmasstile...` | The expected figures' kinds relief() reads (agree() leaves them to it). |
 
 ## Fields (state)
 
@@ -114,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 107 | 959 | **type** `public class EarthCheck` | The Earth's reader (0.7.111, batch E1; the project's spec-earth.md 2 and 8): EarthProj's projection, blend and areas held to the spec's measures, and EarthData's reading of earth-2.bin (batch ET1; earth-1.bin before) ... |
+| 107 | 960 | **type** `public class EarthCheck` | The Earth's reader (0.7.111, batch E1; the project's spec-earth.md 2 and 8): EarthProj's projection, blend and areas held to the spec's measures, and EarthData's reading of earth-2.bin (batch ET1; earth-1.bin before) ... |
 | 145 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 150 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 156 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
@@ -163,26 +163,26 @@
 |---:|---:|---|---|
 | 705 | 31 | `static void lru(byte[] fixtureBytes) throws IOException` |  |
 
-### 8. A TILE INFLATES IN UNDER A MILLISECOND (lines 737-765)
+### 8. A TILE INFLATES IN UNDER A MILLISECOND (lines 737-766)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 741 | 24 | `static void inflateTime(EarthData d, byte[] fixtureBytes) throws Exception` |  |
+| 741 | 25 | `static void inflateTime(EarthData d, byte[] fixtureBytes) throws Exception` |  |
 
-### 10 TO 12. EARTH-2'S LAYERS (ET1) (lines 766-1065)
+### 10 TO 12. EARTH-2'S LAYERS (ET1) (lines 767-1066)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 775 | 3 | `static double[] centre(int tile, int cpd, int r, int c)` | The point at the centre of cell (r, c) of a 1-degree tile read at cpd cells a degree. |
-| 780 | 3 | `static int[] tilesWith(List<String[]> expect, String kind, String scope)` | The tile numbers of an expected figure's lines of this kind that are true of this scope (both, or the scope's own). |
-| 785 | 8 | `static boolean refuses(Runnable call)` | Whether a call is refused with an IllegalArgumentException. |
-| 795 | 79 | `static void relief(EarthData d, String scope, List<String[]> expect) throws Exception` | Every expected figure of earth-2's layers of this scope (both, or the scope's own), read through EarthData's readers and compared. |
-| 876 | 56 | `static void decoders()` | The unpacking of the slope byte and the depth code by hand, and the landmass palette's short-index form on a tile built for it. |
-| 934 | 7 | `static void varint(java.io.ByteArrayOutputStream o, long v)` | A value as a LEB128 varint, as the file's lists write them. |
-| 943 | 18 | `static void landmassLayer(EarthData d)` | The landmass layer is no byte grid, and the landmasses come largest first. |
-| 963 | 3 | **type** `interface Opener` | A reader to be opened with room in its LRU for every tile weigh() reads. |
-| 964 | 1 | `EarthData open() throws IOException` _(in EarthCheck.Opener)_ |  |
-| 968 | 40 | `static void weigh(String what, Opener opener, int[] tiles) throws IOException` | What a tile with every layer inflated holds in the LRU, from a reader with room for all of them: printed, with a loose bound that a city's tiles fit (the study's 2.9). |
-| 1010 | 44 | `static void sameAsEarth1(EarthData d2, Path full) throws IOException` | Section 11: the ten layers earth-2 holds of earth-1's, compared with earth-1.bin index entry by index entry and stored blob by stored blob. |
-| 1056 | 9 | `static boolean sameStored(FileChannel c1, long posA, FileChannel c2, long posB, int len, ByteBuffer a, ByteBuffer b) throws IOE...` | Whether len bytes at posA of one file are the same as those at posB of the other. |
+| 776 | 3 | `static double[] centre(int tile, int cpd, int r, int c)` | The point at the centre of cell (r, c) of a 1-degree tile read at cpd cells a degree. |
+| 781 | 3 | `static int[] tilesWith(List<String[]> expect, String kind, String scope)` | The tile numbers of an expected figure's lines of this kind that are true of this scope (both, or the scope's own). |
+| 786 | 8 | `static boolean refuses(Runnable call)` | Whether a call is refused with an IllegalArgumentException. |
+| 796 | 79 | `static void relief(EarthData d, String scope, List<String[]> expect) throws Exception` | Every expected figure of earth-2's layers of this scope (both, or the scope's own), read through EarthData's readers and compared. |
+| 877 | 56 | `static void decoders()` | The unpacking of the slope byte and the depth code by hand, and the landmass palette's short-index form on a tile built for it. |
+| 935 | 7 | `static void varint(java.io.ByteArrayOutputStream o, long v)` | A value as a LEB128 varint, as the file's lists write them. |
+| 944 | 18 | `static void landmassLayer(EarthData d)` | The landmass layer is no byte grid, and the landmasses come largest first. |
+| 964 | 3 | **type** `interface Opener` | A reader to be opened with room in its LRU for every tile weigh() reads. |
+| 965 | 1 | `EarthData open() throws IOException` _(in EarthCheck.Opener)_ |  |
+| 969 | 40 | `static void weigh(String what, Opener opener, int[] tiles) throws IOException` | What a tile with every layer inflated holds in the LRU, from a reader with room for all of them: printed, with a loose bound that a city's tiles fit (the study's 2.9). |
+| 1011 | 44 | `static void sameAsEarth1(EarthData d2, Path full) throws IOException` | Section 11: the ten layers earth-2 holds of earth-1's, compared with earth-1.bin index entry by index entry and stored blob by stored blob. |
+| 1057 | 9 | `static boolean sameStored(FileChannel c1, long posA, FileChannel c2, long posB, int len, ByteBuffer a, ByteBuffer b) throws IOE...` | Whether len bytes at posA of one file are the same as those at posB of the other. |
 

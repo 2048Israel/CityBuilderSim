@@ -1866,7 +1866,7 @@ public class LandManager {
     /**
      * The city's dry ground, set by hand. Since 0.7.57 the land is drawn
      * again to hold it, the city's iron and what it has taken out kept as
-     * they were (LandConversion.restate()) - a harness's ground by fiat.
+     * they were (LandDrawing.restate()) - a harness's ground by fiat.
      * Since 0.7.67 the centre is blocks round the same site, the last split
      * down to the plot, holding the figure to within a plot, the purchases
      * folded in and twenty-four offers listed round it; the figure is the one
@@ -1876,7 +1876,7 @@ public class LandManager {
     public void setOwnedSqFt(double sqFt) {
         land();
         this.ownedSqFt = sqFt;
-        LandConversion.restate(this, sqFt);
+        LandDrawing.restate(this, sqFt);
     }
 
     /** The figure alone, the land as it stands: a load putting back what the save says, or a restatement that has just drawn the land to hold it. */

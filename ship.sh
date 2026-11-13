@@ -250,6 +250,7 @@ say "merged $AHEAD commit(s) of $BRANCH, uncommitted"
 
 # Select the actual merge before publisher-generated VERSION and records can widen it.
 PICKED=$(sh tools/pick.sh "$HEAD0" 2> "$T/pick.txt") || die "the pick failed: $(cat "$T/pick.txt")"
+PICKED_NIGHTLY=$(sh tools/pick.sh --nightly "$HEAD0") || die "the nightly pick failed"
 cat "$T/pick.txt"
 
 # 8. the records (new way): staged, so one abort undoes them
@@ -401,7 +402,7 @@ shortlines() { awk '{ printf "%s%s", sep, substr($0, 1, 150); sep = "; " }' "$1"
 GAME=$(printf '%s\n' "$CHANGED" | grep '^src/main/java/.*\.java$' | grep -v -E '/tools/|/(LongPlaytest|[^/]*Check)\.java$' | grep .)
 FULL=0; [ -z "$GAME" ] && ! printf '%s\n' "$CHANGED" | grep -q -E '^pom\.xml$|^src/main/resources/|^batch-check\.sh$' || FULL=1
 [ "$PICKED" != ALL ] || FULL=1
-SELECTION="full"; SCOPE=""; TAKEN=""
+SELECTION="full${PICKED_NIGHTLY:+ nightly $PICKED_NIGHTLY}"; SCOPE=""; TAKEN=""
 [ "$#" = 0 ] || SELECTION="manual $*"
 if [ "$DOCSONLY" = 1 ]; then SELECTION=docs
 elif [ "$FULL" = 0 ]; then
@@ -414,7 +415,7 @@ selftests() {
     [ "${CBS_SELFTEST:-}" != 1 ] || return 0
     printf '%s\n' "$CHANGED" | while IFS= read -r file; do
         case "$file" in
-            ship.sh|tools/gate*.sh|tools/gate-process.ps1) echo tools/ship-selftest.sh ;;
+            ship.sh|tools/gate*.sh|tools/gate-process.ps1|tools/gate-record.awk) echo tools/ship-selftest.sh ;;
             *-selftest.sh) echo "$file" ;;
             *.sh) testfile="${file%.sh}-selftest.sh"; [ ! -f "$testfile" ] || echo "$testfile" ;;
         esac
@@ -444,7 +445,7 @@ else
         if [ "$FULL" = 0 ] && [ "$PICKED" = NONE ]; then run_check fast . true
         else CBS_KNOWN_REDS="$T/known" CBS_REJUDGE=rejudge run_check suite . ./batch-check.sh --judge target/checks/suite.txt; fi
     else
-        if [ "$FULL" = 1 ]; then CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh "$@"
+        if [ "$FULL" = 1 ]; then CBS_GATE_NIGHTLY="$PICKED_NIGHTLY" CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh "$@"
         elif [ "$PICKED" = NONE ]; then run_check fast . ./batch-check.sh --fast
         else CBS_KNOWN_REDS="$T/known" run_check suite . ./batch-check.sh $PICKED; fi
         [ "$FULL" = 1 ] || selftests
@@ -509,7 +510,7 @@ else
             echo "# suite: ${SUMMARY:-none}"
             if [ -s "$T/suite-new" ]; then sed "s/^/# suite red passed on Jerus's word ($REDOK): /" "$T/suite-new"; fi
             cat "$T/suite-reds.txt"
-            [ "$EARTH" = named ] || grep -E '^(Earth|Globe)[A-Za-z0-9]* \|' "$T/recorded"   # lines this gate could not see are kept
+            awk -v earth="$EARTH" -f tools/gate-record.awk target/checks/times.tsv "$T/recorded"
         } | awk '/^#/ || (NF && !seen[$0]++)' > docs/notes/gate.txt
         git add -- docs/notes/gate.txt
     fi

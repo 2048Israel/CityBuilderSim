@@ -2330,6 +2330,7 @@ public class PortCheck {
 
     /** Painting the large box's picture (a container yard, full, its track and train) costs no more than HarbourYard.PICTURE_MS. */
     static void yardCost() {
+        if (Timing.skip("PortCheck.yardCost")) return;
         CityShore.Work big = yardWork(3000, 3000, 1, 0, 7);
         int bits = HarbourYard.RAIL | HarbourYard.OPEN_LOW | HarbourYard.TRAIN, reps = 20;
         double best = Double.MAX_VALUE;

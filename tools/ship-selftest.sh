@@ -24,6 +24,17 @@ stopped() { [ "$RC" = 1 ] && said STOPPED && said "$1"; }   # a stop, with this 
 GVF=src/main/java/ham/citybuildersim/GameVersion.java
 
 rm -rf "$TA"; mkdir -p "$TA"; cd "$TA" || exit 1
+# HA1: an unpicked nightly harness keeps its record; a run green harness clears it.
+printf '2.0\tMapCheck\t0\n1.0\tGlobeCheck\t0\n' > record-times.txt
+printf 'MapCheck | resolved FAIL\nKeptCheck | standing FAIL\nGlobeCheck | unseen FAIL\n' > record-input.txt
+awk -v earth=named -f "$SRC/tools/gate-record.awk" record-times.txt record-input.txt > record-kept.txt
+LABEL='a default gate retains an unrun nightly red'; ok grep -q '^KeptCheck |' record-kept.txt
+LABEL='a green harness clears its old record'; ok sh -c '! grep -q "^MapCheck |\|^GlobeCheck |" record-kept.txt'
+awk -v earth=missing -f "$SRC/tools/gate-record.awk" record-times.txt record-input.txt > record-kept.txt
+LABEL='unseen full-file Earth/Globe lines remain covered'; ok grep -q '^GlobeCheck |' record-kept.txt
+: > record-times.txt
+awk -v earth=named -f "$SRC/tools/gate-record.awk" record-times.txt record-input.txt > record-kept.txt
+LABEL='an empty run list never loses standing reds'; ok cmp -s record-kept.txt record-input.txt
 COMMON=$(cd "$SRC" && cd "$(git rev-parse --git-common-dir)" && pwd); BASE=$(git -C "$SRC" rev-parse HEAD)
 git clone --bare -q "$COMMON" origin.git && git -C origin.git remote remove origin
 git -C origin.git update-ref refs/heads/main "$BASE"
@@ -75,6 +86,7 @@ esac
 echo "$MODE" > "$OUT/stage.txt"
 if [ "$MODE" != fast ]; then
     printf '%s\n' "$REDS" | tr ';' '\n' | grep . > "$OUT/reds.txt" || : > "$OUT/reds.txt"
+    { printf 'MapCheck\n'; cut -d ' ' -f1 "$OUT/reds.txt"; } | sort -u | awk '{print "0.1\t" $0 "\t0"}' > "$OUT/times.tsv"
     awk -F ' [|] ' '
         { h=$1; text=substr($0,index($0," | ")+3); if (!(h in seen)) order[++n]=h; seen[h]=1
           if (text ~ /^exit /) code[h]=substr(text,6); else lines[h]=lines[h] "    " text "\n" }
@@ -88,6 +100,7 @@ exit "$EXIT"
 EOF
 cp "$SRC/ship.sh" "$TA/main/ship.sh"; chmod +x "$TA/main/ship.sh" "$TA/main/batch-check.sh"
 mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/carries.sh" "$SRC/tools/pick.sh" "$SRC/tools/gate-reuse.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
+cp "$SRC/tools/gate-record.awk" "$TA/main/tools/"
 cp "$SRC/src/main/java/ham/citybuildersim/KnownReds.java" "$TA/main/src/main/java/ham/citybuildersim/"
 printf '\nMapCheck | stub known | FIX | 2026-11-12 | fixture\n' >> "$TA/main/docs/notes/known-reds.txt"
 IDS="TST TS2 NS GV GG GN GX GH GQ GC GE GB DOC TM ER NC NC2 OS SH PP PS PR PT"; FAKE=""
@@ -455,5 +468,6 @@ LABEL="Ready flow reuses the dry run after notes and ship commits are pushed"; o
 
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"
-[ "${CBS_SHIPTEST_KEEP:-0}" = 1 ] || { cd /; rm -rf "$TA"; }
+if [ "$FAILS" != 0 ] || [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ]; then echo "selftest area: $TA"
+else cd /; rm -rf "$TA"; fi
 exit "$FAILS"

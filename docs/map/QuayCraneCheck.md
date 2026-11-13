@@ -1,4 +1,4 @@
-# QuayCraneCheck.java - 408 lines · 17 methods · 1 constants · harnesses
+# QuayCraneCheck.java - 409 lines · 17 methods · 1 constants · harnesses
 
 `ham/citybuildersim/QuayCraneCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -29,7 +29,7 @@
 > 
 > Every fixture CAUSES its condition: the works are laid on a shore, the routes and the month's calls come from the trade at sea.
 
-**Uses:** [QuayCrane](QuayCrane.md) (72), [Ports](Ports.md) (31), [CityShore](CityShore.md) (29), [BoatSchedule](BoatSchedule.md) (25), [PortCheck](PortCheck.md) (15), [MapCheck](MapCheck.md) (7), [Timing](Timing.md) (2)
+**Uses:** [QuayCrane](QuayCrane.md) (72), [Ports](Ports.md) (31), [CityShore](CityShore.md) (29), [BoatSchedule](BoatSchedule.md) (25), [PortCheck](PortCheck.md) (15), [MapCheck](MapCheck.md) (7), [Timing](Timing.md) (3)
 
 ## Sections
 
@@ -61,7 +61,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 372 | **type** `public class QuayCraneCheck` | The quay crane (HB2, 2026-11-09; QuayCrane, BoatSchedule.atQuay()): a boat at its terminal's quay is worked by a light line from over the ship to the apron and a box that slides along it, as Jerus picked look 3a from ... |
+| 37 | 373 | **type** `public class QuayCraneCheck` | The quay crane (HB2, 2026-11-09; QuayCrane, BoatSchedule.atQuay()): a boat at its terminal's quay is worked by a light line from over the ship to the apron and a box that slides along it, as Jerus picked look 3a from ... |
 | 46 | 5 | `static void check(String label, boolean ok)` |  |
 | 53 | 5 | `static void timed(String label, boolean ok, String detail)` | A timing assertion's line, its verdict Timing's: soft under -Dcbs.timing=soft, hard at the gate. |
 | 59 | 4 | `static void section(String what)` |  |
@@ -109,10 +109,10 @@
 |---:|---:|---|---|
 | 324 | 26 | `static void theTerminal()` | Section 5: a berth's point finds its work. |
 
-### 6 (lines 351-408)
+### 6 (lines 351-409)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 354 | 36 | `static void theCost()` | Section 6: a frame's boats and cranes over a bay of 64 berths, within a frame's boat budget. |
-| 391 | 17 | `public static void main(String[] args) throws Exception` |  |
+| 354 | 37 | `static void theCost()` | Section 6: a frame's boats and cranes over a bay of 64 berths, within a frame's boat budget. |
+| 392 | 17 | `public static void main(String[] args) throws Exception` |  |
 

@@ -1,4 +1,4 @@
-# PartnerCallsCheck.java - 1,320 lines · 40 methods · 9 constants · harnesses
+# PartnerCallsCheck.java - 1,322 lines · 40 methods · 9 constants · harnesses
 
 `ham/citybuildersim/PartnerCallsCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -46,7 +46,7 @@
 >       no more than BOAT_FRAME_MS.</li>
 > </ol>
 
-**Uses:** [BoatSchedule](BoatSchedule.md) (174), [Ports](Ports.md) (141), [CallPartners](CallPartners.md) (60), [SeaRoutes](SeaRoutes.md) (57), [PartnerTrade](PartnerTrade.md) (43), [MapCheck](MapCheck.md) (42), [World](World.md) (39), [TrainSchedule](TrainSchedule.md) (39), [Good](Good.md) (18), [EarthProj](EarthProj.md) (10), [MapFrame](MapFrame.md) (8), [Timing](Timing.md) (7), [WorldMarket](WorldMarket.md) (4), [EarthData](EarthData.md) (4), [WorldData](WorldData.md) (3), [NationsMap](NationsMap.md) (2), [TradeLanes](TradeLanes.md) (1), [Founding](Founding.md) (1)
+**Uses:** [BoatSchedule](BoatSchedule.md) (174), [Ports](Ports.md) (141), [CallPartners](CallPartners.md) (60), [SeaRoutes](SeaRoutes.md) (57), [PartnerTrade](PartnerTrade.md) (43), [MapCheck](MapCheck.md) (42), [World](World.md) (39), [TrainSchedule](TrainSchedule.md) (39), [Good](Good.md) (18), [EarthProj](EarthProj.md) (10), [Timing](Timing.md) (9), [MapFrame](MapFrame.md) (8), [WorldMarket](WorldMarket.md) (4), [EarthData](EarthData.md) (4), [WorldData](WorldData.md) (3), [NationsMap](NationsMap.md) (2), [TradeLanes](TradeLanes.md) (1), [Founding](Founding.md) (1)
 
 ## Sections
 
@@ -61,8 +61,8 @@
 | 669 | 5. TRAINS DRAW LAND PARTNERS ONLY |
 | 741 | 6. THE COMPASS IS THE EARTH'S |
 | 790 | 7. TIMING |
-| 863 | 8. A BOAT AND A TRAIN NAME THEIR PARTNER |
-| 945 | 9. THE FORKS AT THE OFFING |
+| 864 | 8. A BOAT AND A TRAIN NAME THEIR PARTNER |
+| 946 | 9. THE FORKS AT THE OFFING |
 
 ## Constants
 
@@ -76,7 +76,7 @@
 | 335 | `PartnerCallsCheck.Coast.COAST` | `20_000` |  |
 | 413 | `PartnerCallsCheck.DRY_TONNES` | `2e7` | A month's trade of dry bulk, in tonnes: about 130 Capesize calls. |
 | 746 | `PartnerCallsCheck.STEP_PLOTS` | `2_000` | The longest step the compass is held over, in plots: 2,000, 60 km. |
-| 868 | `PartnerCallsCheck.DOT` | `" · "` | The middle dot the words carry between a class and its partner. |
+| 869 | `PartnerCallsCheck.DOT` | `" · "` | The middle dot the words carry between a class and its partner. |
 
 ## Fields (state)
 
@@ -100,7 +100,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1261 | **type** `public class PartnerCallsCheck` | The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by kind of cargo, CallPartners' draw of a nation for a call, the boats' e... |
+| 60 | 1263 | **type** `public class PartnerCallsCheck` | The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by kind of cargo, CallPartners' draw of a nation for a call, the boats' e... |
 | 65 | 4 | `static void check(String label, boolean ok)` |  |
 | 82 | 14 | `public static void main(String[] args) throws Exception` |  |
 
@@ -172,30 +172,30 @@
 | 751 | 12 | `static boolean compassFrom(EarthProj proj, double px, double py)` |  |
 | 764 | 25 | `static void compassOnTheEarth()` |  |
 
-### 7. TIMING (lines 790-862)
+### 7. TIMING (lines 790-863)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 794 | 68 | `static void frameAtTenBillion()` |  |
+| 794 | 69 | `static void frameAtTenBillion()` |  |
 
-### 8. A BOAT AND A TRAIN NAME THEIR PARTNER (lines 863-944)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 871 | 7 | `static Ports tradeBothWays(double dryOut, double dryIn, double boxes)` | A month's trade at sea both ways: dry bulk out and in, and boxes (which count one way and carry both). |
-| 879 | 65 | `static void wordsOfACall(Coast c)` |  |
-
-### 9. THE FORKS AT THE OFFING (lines 945-1320)
+### 8. A BOAT AND A TRAIN NAME THEIR PARTNER (lines 864-945)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 953 | 12 | `static double[] weights(PartnerTrade.Snapshot s, Ports.Cargo kind)` | A kind's tonnes by nation as pick() draws a boat of it, read off the snapshot with no help from CallPartners: in each direction the kind's own tonnes if it has any there, else every kind's (the boxes both ways added);... |
-| 971 | 14 | `static int[] expectedForks(BoatSchedule.Route rt, PartnerTrade.Snapshot s, CallPartners p)` | The forks of a route held to a plain read of the snapshot: each nation's share of the kind's tonnes (weights() over their sum, the nations with no bearing in the sum) added to the exit (oracleExit(), a scan of all 72)... |
-| 987 | 20 | `static Set<List<Double>> expectedLegs(List<BoatSchedule.Route> routes, PartnerTrade.Snapshot s, CallPartners p)` | The legs forks() should give for some routes: per distinct offing the union of their routes' expected forks, each as {offing x, y, end x, y}. |
-| 1009 | 10 | `static double[][] ringNodes(double...bearings)` | Nations standing 0.1 radian from the city at (0, 0) on the given compass bearings, one each: {latitudes, longitudes}. |
-| 1021 | 4 | `static CallPartners ringPartners(double[] bearings, double[] weights, Good good)` | A schedule of the given routes whose dry bulk goes to nations standing on `bearings`, `weights` tonnes each, and the partners it draws by. |
-| 1026 | 5 | `static Set<List<Double>> legsOf(double[] forks)` |  |
-| 1032 | 177 | `static void forksAtTheOffing(Coast c)` |  |
-| 1215 | 45 | `static void forksOnTheEarth()` | Printed, not asserted: how many forks a route draws on the open sea (all 72 exits open, the most there can be) from thirteen ports, were the Earth's nations trading dry bulk with the city in proportion to their GDP in... |
-| 1262 | 58 | `static void forksAtTenBillion()` | The forks of an offing a frame draws, on the 10-billion lanes sharing 200 offings (a late city's lanes share, SL1): built once, then a frame's forks in no more than BOAT_FRAME_MS. |
+| 872 | 7 | `static Ports tradeBothWays(double dryOut, double dryIn, double boxes)` | A month's trade at sea both ways: dry bulk out and in, and boxes (which count one way and carry both). |
+| 880 | 65 | `static void wordsOfACall(Coast c)` |  |
+
+### 9. THE FORKS AT THE OFFING (lines 946-1322)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 954 | 12 | `static double[] weights(PartnerTrade.Snapshot s, Ports.Cargo kind)` | A kind's tonnes by nation as pick() draws a boat of it, read off the snapshot with no help from CallPartners: in each direction the kind's own tonnes if it has any there, else every kind's (the boxes both ways added);... |
+| 972 | 14 | `static int[] expectedForks(BoatSchedule.Route rt, PartnerTrade.Snapshot s, CallPartners p)` | The forks of a route held to a plain read of the snapshot: each nation's share of the kind's tonnes (weights() over their sum, the nations with no bearing in the sum) added to the exit (oracleExit(), a scan of all 72)... |
+| 988 | 20 | `static Set<List<Double>> expectedLegs(List<BoatSchedule.Route> routes, PartnerTrade.Snapshot s, CallPartners p)` | The legs forks() should give for some routes: per distinct offing the union of their routes' expected forks, each as {offing x, y, end x, y}. |
+| 1010 | 10 | `static double[][] ringNodes(double...bearings)` | Nations standing 0.1 radian from the city at (0, 0) on the given compass bearings, one each: {latitudes, longitudes}. |
+| 1022 | 4 | `static CallPartners ringPartners(double[] bearings, double[] weights, Good good)` | A schedule of the given routes whose dry bulk goes to nations standing on `bearings`, `weights` tonnes each, and the partners it draws by. |
+| 1027 | 5 | `static Set<List<Double>> legsOf(double[] forks)` |  |
+| 1033 | 177 | `static void forksAtTheOffing(Coast c)` |  |
+| 1216 | 45 | `static void forksOnTheEarth()` | Printed, not asserted: how many forks a route draws on the open sea (all 72 exits open, the most there can be) from thirteen ports, were the Earth's nations trading dry bulk with the city in proportion to their GDP in... |
+| 1263 | 59 | `static void forksAtTenBillion()` | The forks of an offing a frame draws, on the 10-billion lanes sharing 200 offings (a late city's lanes share, SL1): built once, then a frame's forks in no more than BOAT_FRAME_MS. |
 

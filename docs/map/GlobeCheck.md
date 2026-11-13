@@ -1,4 +1,4 @@
-# GlobeCheck.java - 3,473 lines · 110 methods · 78 constants · harnesses
+# GlobeCheck.java - 3,482 lines · 110 methods · 78 constants · harnesses
 
 `ham/citybuildersim/GlobeCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      from its change rates along four offsets, and response() what it reads
 > ... (122 more lines in the source)
 
-**Uses:** [GlobeFrame](GlobeFrame.md) (266), [NationsMap](NationsMap.md) (175), [World](World.md) (142), [TradeLanes](TradeLanes.md) (91), [GlobePicture](GlobePicture.md) (52), [EarthData](EarthData.md) (45), [MapFrame](MapFrame.md) (38), [MapTiles](MapTiles.md) (31), [EarthTerrainCheck](EarthTerrainCheck.md) (30), [EarthTerrain](EarthTerrain.md) (28), [MapCheck](MapCheck.md) (28), [Nations](Nations.md) (28), [EarthProj](EarthProj.md) (26), [WorldData](WorldData.md) (26), [Timing](Timing.md) (10), [TileRaster](TileRaster.md) (8), [EarthCheck](EarthCheck.md) (5), [WorldDataCheck](WorldDataCheck.md) (5), [WorldMoneys](WorldMoneys.md) (3), [WorldMarket](WorldMarket.md) (2), [PolicyRates](PolicyRates.md) (2)
+**Uses:** [GlobeFrame](GlobeFrame.md) (266), [NationsMap](NationsMap.md) (175), [World](World.md) (142), [TradeLanes](TradeLanes.md) (91), [GlobePicture](GlobePicture.md) (52), [EarthData](EarthData.md) (45), [MapFrame](MapFrame.md) (38), [MapTiles](MapTiles.md) (31), [EarthTerrainCheck](EarthTerrainCheck.md) (30), [EarthTerrain](EarthTerrain.md) (28), [MapCheck](MapCheck.md) (28), [Nations](Nations.md) (28), [EarthProj](EarthProj.md) (26), [WorldData](WorldData.md) (26), [Timing](Timing.md) (16), [TileRaster](TileRaster.md) (8), [EarthCheck](EarthCheck.md) (5), [WorldDataCheck](WorldDataCheck.md) (5), [WorldMoneys](WorldMoneys.md) (3), [WorldMarket](WorldMarket.md) (2), [PolicyRates](PolicyRates.md) (2)
 
 **Used by (1):** [EarthTerrainCheck](EarthTerrainCheck.md)
 
@@ -76,20 +76,20 @@
 | 360 | 2. THE VIEW |
 | 532 | 2b. THE NEAR VIEW ANYWHERE AND NO WALL (MS1) |
 | 888 | 2c. THE NEAR VIEW PAST THE REACH IS THE PLANE'S GROUND (MS2) |
-| 1255 | 2d. THE SLANTED GROUND, MEASURED, AND FIXED BY THE CHARTS (MS3) |
-| 1898 | 3. THE HANDOFF |
-| 2015 | 4. THE PLANE'S CAMERA IS TODAY'S FAR NODES |
-| 2066 | 5. THE GLOBE'S CAMERAS |
-| 2135 | 6. THE PLANET'S PICTURE |
-| 2283 | 7. A FRAME |
-| 2316 | 8. THE RELIEF IN THE PICTURE (ET1 slice D; spec-earth2-terrain 9.3) |
-| 2454 | 9 TO 12. THE NATIONS ON THE MAP (WN2, slice A; docs/studies/spec-nations.md 6.1 and 8, board 1) |
-| 2546 | · 9. the levels |
-| 2634 | · 9. culled to the view, at its level, timed |
-| 2680 | · 10. the dots and labels |
-| 2763 | · 11. the hit test |
-| 2840 | · 12. the card |
-| 3023 | 13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4) |
+| 1257 | 2d. THE SLANTED GROUND, MEASURED, AND FIXED BY THE CHARTS (MS3) |
+| 1901 | 3. THE HANDOFF |
+| 2018 | 4. THE PLANE'S CAMERA IS TODAY'S FAR NODES |
+| 2069 | 5. THE GLOBE'S CAMERAS |
+| 2138 | 6. THE PLANET'S PICTURE |
+| 2286 | 7. A FRAME |
+| 2320 | 8. THE RELIEF IN THE PICTURE (ET1 slice D; spec-earth2-terrain 9.3) |
+| 2458 | 9 TO 12. THE NATIONS ON THE MAP (WN2, slice A; docs/studies/spec-nations.md 6.1 and 8, board 1) |
+| 2550 | · 9. the levels |
+| 2638 | · 9. culled to the view, at its level, timed |
+| 2686 | · 10. the dots and labels |
+| 2771 | · 11. the hit test |
+| 2848 | · 12. the card |
+| 3031 | 13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4) |
 
 ## Constants
 
@@ -133,46 +133,46 @@
 | 936 | `GlobeCheck.LAKE_VIEW_PX` | `256` | A lake view's side, pixels: 256, the lake's radius a quarter of it. |
 | 939 | `GlobeCheck.NEAR_SCALES` | `{ JERUS_KM, NEAR_KM / 2, NEAR_KM, NEAR_KM * 2, GlobeFrame.leastKmPx() }` | The scales the views straddling the reach are drawn at, km a pixel: Jerus's (1.8 px a plot), then 2, 4 and 8 plots a pixel - NEAR_KM among them - and the closest, 16 px a plot. |
 | 949 | `GlobeCheck.NO_NODE` | `- 1` | What the camera draws of the plane's nodes (GlobeFrame.ground()) over a w x h view, a class a pixel (MapTiles.nodeTerrain()), NO_NODE where it drew none, OFF where it drew the far rule's place (beyond()) - and how man... |
-| 1260 | `GlobeCheck.STREAK_LAG_PX` | `4` | The offset the ground's change rates are read at, in pixels: 4 - short enough that the share of pixel pairs that differ grows with the offset's length across a patch of the 2 km view's 20 to 60 px. |
-| 1263 | `GlobeCheck.STREAK_VIEW_PX` | `512` | The side of the views the ground's streak is read over, in pixels: 512 (the fixture's windows hold the 2c view of 1,345 x 806 at his scale, and this is a fraction of it). |
-| 1266 | `GlobeCheck.STREAK_KM` | `{ GlobeFrame.REACH_KM *(1 + 1e-6), 2000, 4000, 6000, 8000, 10000, 12000 }` | The distances the city is placed from the spot, in km: just past the reach (the spot's reference, where Lambert's plane is true to a thousandth) and 2,000 to 12,000 km, where it squashes the ground by 1.03 to 2.9 to 1. |
-| 1269 | `GlobeCheck.STREAK_READ_TOL` | `0.10` | The measure reads a field of no stretch as 1 within this, and a stretched one at most this above its stretch: 0.10 - set before the first run. |
-| 1272 | `GlobeCheck.STREAK_READ_FLOOR` | `0.65` | ...and a stretched field at least this share of its stretch: 0.65 - the measure's own reading, set from the calibration and not to pass a case: it reads 4 to 1 at 0.683 of it on the equal-area fields (lag saturation a... |
-| 1275 | `GlobeCheck.STREAK_PHI_DEG` | `5` | ...and the field's direction within this many degrees of the stretch's, for a stretch of at least 2: 5. |
-| 1278 | `GlobeCheck.STREAK_SEEDS` | `8` | The synthetic fields a stretch's response is averaged over, and the fields of the plane's noise a placement's: 8 (one field's E varies by a tenth). |
-| 1281 | `GlobeCheck.STREAK_TRACKS` | `0.15` | The plane's noise under the pixels is stretched as the measure reads Lambert's projection stretch it: its E over its E at the reach is within this share of response(sigma) / response(1), at every placement; and the dr... |
-| 1284 | `GlobeCheck.STREAK_BEARING_DEG` | `10` | Where the distortion is at least STREAK_FROM_SIGMA the drawn ground's streak runs along the line from the spot to the city to within this many degrees: 10. |
-| 1287 | `GlobeCheck.STREAK_FROM_SIGMA` | `1.5` | ...the shape distortion from which the streak's direction and its rise are asserted: 1.5 (the patches half again as long one way as the other). |
-| 1290 | `GlobeCheck.STREAK_SHOWN` | `1.5` | A ground read at this E / E_ref or more is visibly streaked: 1.5 - the measure reads Jerus's screenshot, Goose Bay from Singapore, at 2.4, and a window at 12,000 km at 1.6 to 2.0. |
-| 1293 | `GlobeCheck.STREAK_STRETCHES` | `{ 1, 2, 4 }` | The stretches the measure is calibrated on: 1, 2 and 4 to 1. |
-| 1296 | `GlobeCheck.STREAK_TURNED_S` | `3, STREAK_TURN_DEG = 30` | ...and once a stretch of STREAK_TURNED_S to 1 turned STREAK_TURN_DEG degrees on the screen: 3 to 1, 30 degrees. |
-| 1299 | `GlobeCheck.STREAK_SEED` | `0x5EED_2DL` | The synthetic fields' noise seed. |
-| 1302 | `GlobeCheck.SINGAPORE` | `{ 1.2903, 103.8519 }, HAPPY_VALLEY = { 53.3017, - 60.3261 }` | Singapore (Jerus's city, the brief's) and Happy Valley-Goose Bay, Labrador, whose place Goose Bay (GOOSE_BAY_NORTH_KM due north of it) is. |
-| 1305 | `GlobeCheck.GOOSE_BAY_NORTH_KM` | `42` | ...the distance due north of Happy Valley-Goose Bay Jerus's hover named, in km: 42. |
-| 1308 | `GlobeCheck.TROMSO` | `{ 69.65, 18.96 }` | A city where the plane's up is some degrees from north a little way out, for the roll's sign: Tromso (the view is put the reach's edge due east of it). |
-| 1393 | `GlobeCheck.RESPONSES` | `new java.util.HashMap<>()` | What response() has read, by stretch and turn. |
-| 1424 | `GlobeCheck.SPHERE_SEEDS` | `4` | The synthetic fields of the sphere's noise a placement's E is averaged over: 4 of the STREAK_SEEDS (its noise costs twice the plane's a pixel). |
-| 1621 | `GlobeCheck.SEAM_TOL` | `0.15` | The change rate of pixel pairs across the hand-over's line (or the band's far edge), over the rate on one side, may exceed the same figure of the same pixels drawn by the chart alone by this share: 0.15 - the most the... |
-| 1624 | `GlobeCheck.SHARE_TOL` | `0.05` | The class shares of the ground either side of the hand-over's line (water, forest, grass, the rest), pooled over the views, differ by at most this: 0.05. |
-| 1627 | `GlobeCheck.SEAM_BEARINGS` | `{ 0, 90, 180, 270 }` | The bearings the city is put at from the view's centre, degrees, to pool a seam over: the four screen directions - a pixel is on the plane's side in half of them and the chart's in the other, so the ground each side h... |
-| 1741 | `GlobeCheck.SEAM_NORTH_KM` | `60` | How far north of Jerus's hover (GOOSE_BAY_NORTH_KM from Happy Valley) the seam views near Goose Bay are centred, km: 60 - his own spot lies at the edge of Hamilton Inlet's 40 km wide "river" run of the data, which bot... |
-| 1744 | `GlobeCheck.SEAM_SHIFTS` | `{ - 0.5, 0.5 }` | The shifts along the line the views are taken at, as shares of the view's width: either side of the centre, so the ground the views hold is more than the one window's centre. |
-| 1747 | `GlobeCheck.SEAM_SHOWN` | `1.5` | A seam made on purpose (the sphere's noise switched on at the hand-over with no band) reads at least this: 1.5 - so the measure can see one. |
-| 1785 | `GlobeCheck.SPREAD_POINTS` | `1<<16` | The points the sphere's noise spread is read over: 2^16. |
-| 1788 | `GlobeCheck.SPREAD_TOL` | `0.02` | The sphere's noise's standard deviation is within this share of the plane's: 0.02. |
-| 1791 | `GlobeCheck.RANK_TOL` | `0.01` | ...and the share of its points under the ranking table's value for p (EarthTerrain.below()) is within this of p, and of the plane's: 0.01. |
-| 1794 | `GlobeCheck.RANK_P` | `{ 0.05, 0.25, 0.5, 0.75, 0.95 }` | The ranks the shares are read at. |
-| 2321 | `GlobeCheck.RELIEF_SIGMAS` | `4, RELIEF_ROUNDING = 0.03` | The picture's relief shares are the data's within this many binomial spreads of the dry texels drawn (a texel is a hash's draw against the 4' block's share, as a far node's pixel is) and a rounding of the slope layer'... |
-| 2459 | `GlobeCheck.VERTICES_MOST` | `45_000` | The most vertices the whole planet's borders may draw: 45,000 - measured 14,814 on the 1,389 x 868 view facing Halifax at the 4 km level, 2026-10-28, against 56,914 at the file's own; three times the measure, rounded up. |
-| 2462 | `GlobeCheck.NAME_PX` | `6.5, FIGURES_PX = 5.7` | The widths the harness gives the labels, pixels a character: the board's 11 px sans name (6.5) and its 9.5 px mono figures (5.7) - the screen measures its own fonts. |
-| 2463 | `GlobeCheck.NAME_W` | `s -> s.length() * NAME_PX, FIGURES_W = s -> s.length() * FIGURES_PX` |  |
-| 2466 | `GlobeCheck.YEAR` | `2020` | The year the nations' figures are read for: 2020, a published one (the marks are read at 2000, 2025 and 2030 too). |
-| 2469 | `GlobeCheck.D_PER_USD` | `1.16` | The game dollar's price in US$ the cards are given: D$1.16 a US$ (a figure to carry through, not a dial). |
-| 2472 | `GlobeCheck.VIEWS` | `{ { 0, 0, 0 }, { 50, - 30, 10 }, { 50, 10, 3 }, { CITIES [ 0 ] [ 0 ], CITIES ...` | The views of 9 and 10, {lat, lon, km a pixel} (0: the whole planet facing the city), and their names: the planet, the North Atlantic, Europe and the GROUND tier at the city. |
-| 2473 | `GlobeCheck.VIEW_NAMES` | `{ "the whole planet", "the North Atlantic at 10 km a pixel", "Europe at 3 km ...` |  |
-| 2844 | `GlobeCheck.RANK` | `Pattern.compile("(\\d+)(st\|nd\|rd\|th) of(\\d+)")` |  |
-| 3028 | `GlobeCheck.EUROPE` | `{ { 54.0, - 2.0 }, { 53.4, - 8.0 }, { 64.9, - 18.6 }, { 60.5, 8.5 }, { 46.6, ...` | Twelve partners of a Halifax city, {lat, lon}: the ten nodes of Europe that are partners at 1,000 sold and 500 bought, Poland at 100 and 100 (under MIN_LANE) and Sweden at 200 and 100 (at it). |
-| 3032 | `GlobeCheck.TRADE_ROUNDS` | `31, TRADE_WARM = 300` | The rounds a trade timing takes the median of (31), after as many as it takes to warm the JIT (300). |
+| 1262 | `GlobeCheck.STREAK_LAG_PX` | `4` | The offset the ground's change rates are read at, in pixels: 4 - short enough that the share of pixel pairs that differ grows with the offset's length across a patch of the 2 km view's 20 to 60 px. |
+| 1265 | `GlobeCheck.STREAK_VIEW_PX` | `512` | The side of the views the ground's streak is read over, in pixels: 512 (the fixture's windows hold the 2c view of 1,345 x 806 at his scale, and this is a fraction of it). |
+| 1268 | `GlobeCheck.STREAK_KM` | `{ GlobeFrame.REACH_KM *(1 + 1e-6), 2000, 4000, 6000, 8000, 10000, 12000 }` | The distances the city is placed from the spot, in km: just past the reach (the spot's reference, where Lambert's plane is true to a thousandth) and 2,000 to 12,000 km, where it squashes the ground by 1.03 to 2.9 to 1. |
+| 1271 | `GlobeCheck.STREAK_READ_TOL` | `0.10` | The measure reads a field of no stretch as 1 within this, and a stretched one at most this above its stretch: 0.10 - set before the first run. |
+| 1274 | `GlobeCheck.STREAK_READ_FLOOR` | `0.65` | ...and a stretched field at least this share of its stretch: 0.65 - the measure's own reading, set from the calibration and not to pass a case: it reads 4 to 1 at 0.683 of it on the equal-area fields (lag saturation a... |
+| 1277 | `GlobeCheck.STREAK_PHI_DEG` | `5` | ...and the field's direction within this many degrees of the stretch's, for a stretch of at least 2: 5. |
+| 1280 | `GlobeCheck.STREAK_SEEDS` | `8` | The synthetic fields a stretch's response is averaged over, and the fields of the plane's noise a placement's: 8 (one field's E varies by a tenth). |
+| 1283 | `GlobeCheck.STREAK_TRACKS` | `0.15` | The plane's noise under the pixels is stretched as the measure reads Lambert's projection stretch it: its E over its E at the reach is within this share of response(sigma) / response(1), at every placement; and the dr... |
+| 1286 | `GlobeCheck.STREAK_BEARING_DEG` | `10` | Where the distortion is at least STREAK_FROM_SIGMA the drawn ground's streak runs along the line from the spot to the city to within this many degrees: 10. |
+| 1289 | `GlobeCheck.STREAK_FROM_SIGMA` | `1.5` | ...the shape distortion from which the streak's direction and its rise are asserted: 1.5 (the patches half again as long one way as the other). |
+| 1292 | `GlobeCheck.STREAK_SHOWN` | `1.5` | A ground read at this E / E_ref or more is visibly streaked: 1.5 - the measure reads Jerus's screenshot, Goose Bay from Singapore, at 2.4, and a window at 12,000 km at 1.6 to 2.0. |
+| 1295 | `GlobeCheck.STREAK_STRETCHES` | `{ 1, 2, 4 }` | The stretches the measure is calibrated on: 1, 2 and 4 to 1. |
+| 1298 | `GlobeCheck.STREAK_TURNED_S` | `3, STREAK_TURN_DEG = 30` | ...and once a stretch of STREAK_TURNED_S to 1 turned STREAK_TURN_DEG degrees on the screen: 3 to 1, 30 degrees. |
+| 1301 | `GlobeCheck.STREAK_SEED` | `0x5EED_2DL` | The synthetic fields' noise seed. |
+| 1304 | `GlobeCheck.SINGAPORE` | `{ 1.2903, 103.8519 }, HAPPY_VALLEY = { 53.3017, - 60.3261 }` | Singapore (Jerus's city, the brief's) and Happy Valley-Goose Bay, Labrador, whose place Goose Bay (GOOSE_BAY_NORTH_KM due north of it) is. |
+| 1307 | `GlobeCheck.GOOSE_BAY_NORTH_KM` | `42` | ...the distance due north of Happy Valley-Goose Bay Jerus's hover named, in km: 42. |
+| 1310 | `GlobeCheck.TROMSO` | `{ 69.65, 18.96 }` | A city where the plane's up is some degrees from north a little way out, for the roll's sign: Tromso (the view is put the reach's edge due east of it). |
+| 1395 | `GlobeCheck.RESPONSES` | `new java.util.HashMap<>()` | What response() has read, by stretch and turn. |
+| 1426 | `GlobeCheck.SPHERE_SEEDS` | `4` | The synthetic fields of the sphere's noise a placement's E is averaged over: 4 of the STREAK_SEEDS (its noise costs twice the plane's a pixel). |
+| 1623 | `GlobeCheck.SEAM_TOL` | `0.15` | The change rate of pixel pairs across the hand-over's line (or the band's far edge), over the rate on one side, may exceed the same figure of the same pixels drawn by the chart alone by this share: 0.15 - the most the... |
+| 1626 | `GlobeCheck.SHARE_TOL` | `0.05` | The class shares of the ground either side of the hand-over's line (water, forest, grass, the rest), pooled over the views, differ by at most this: 0.05. |
+| 1629 | `GlobeCheck.SEAM_BEARINGS` | `{ 0, 90, 180, 270 }` | The bearings the city is put at from the view's centre, degrees, to pool a seam over: the four screen directions - a pixel is on the plane's side in half of them and the chart's in the other, so the ground each side h... |
+| 1743 | `GlobeCheck.SEAM_NORTH_KM` | `60` | How far north of Jerus's hover (GOOSE_BAY_NORTH_KM from Happy Valley) the seam views near Goose Bay are centred, km: 60 - his own spot lies at the edge of Hamilton Inlet's 40 km wide "river" run of the data, which bot... |
+| 1746 | `GlobeCheck.SEAM_SHIFTS` | `{ - 0.5, 0.5 }` | The shifts along the line the views are taken at, as shares of the view's width: either side of the centre, so the ground the views hold is more than the one window's centre. |
+| 1749 | `GlobeCheck.SEAM_SHOWN` | `1.5` | A seam made on purpose (the sphere's noise switched on at the hand-over with no band) reads at least this: 1.5 - so the measure can see one. |
+| 1787 | `GlobeCheck.SPREAD_POINTS` | `1<<16` | The points the sphere's noise spread is read over: 2^16. |
+| 1790 | `GlobeCheck.SPREAD_TOL` | `0.02` | The sphere's noise's standard deviation is within this share of the plane's: 0.02. |
+| 1793 | `GlobeCheck.RANK_TOL` | `0.01` | ...and the share of its points under the ranking table's value for p (EarthTerrain.below()) is within this of p, and of the plane's: 0.01. |
+| 1796 | `GlobeCheck.RANK_P` | `{ 0.05, 0.25, 0.5, 0.75, 0.95 }` | The ranks the shares are read at. |
+| 2325 | `GlobeCheck.RELIEF_SIGMAS` | `4, RELIEF_ROUNDING = 0.03` | The picture's relief shares are the data's within this many binomial spreads of the dry texels drawn (a texel is a hash's draw against the 4' block's share, as a far node's pixel is) and a rounding of the slope layer'... |
+| 2463 | `GlobeCheck.VERTICES_MOST` | `45_000` | The most vertices the whole planet's borders may draw: 45,000 - measured 14,814 on the 1,389 x 868 view facing Halifax at the 4 km level, 2026-10-28, against 56,914 at the file's own; three times the measure, rounded up. |
+| 2466 | `GlobeCheck.NAME_PX` | `6.5, FIGURES_PX = 5.7` | The widths the harness gives the labels, pixels a character: the board's 11 px sans name (6.5) and its 9.5 px mono figures (5.7) - the screen measures its own fonts. |
+| 2467 | `GlobeCheck.NAME_W` | `s -> s.length() * NAME_PX, FIGURES_W = s -> s.length() * FIGURES_PX` |  |
+| 2470 | `GlobeCheck.YEAR` | `2020` | The year the nations' figures are read for: 2020, a published one (the marks are read at 2000, 2025 and 2030 too). |
+| 2473 | `GlobeCheck.D_PER_USD` | `1.16` | The game dollar's price in US$ the cards are given: D$1.16 a US$ (a figure to carry through, not a dial). |
+| 2476 | `GlobeCheck.VIEWS` | `{ { 0, 0, 0 }, { 50, - 30, 10 }, { 50, 10, 3 }, { CITIES [ 0 ] [ 0 ], CITIES ...` | The views of 9 and 10, {lat, lon, km a pixel} (0: the whole planet facing the city), and their names: the planet, the North Atlantic, Europe and the GROUND tier at the city. |
+| 2477 | `GlobeCheck.VIEW_NAMES` | `{ "the whole planet", "the North Atlantic at 10 km a pixel", "Europe at 3 km ...` |  |
+| 2852 | `GlobeCheck.RANK` | `Pattern.compile("(\\d+)(st\|nd\|rd\|th) of(\\d+)")` |  |
+| 3036 | `GlobeCheck.EUROPE` | `{ { 54.0, - 2.0 }, { 53.4, - 8.0 }, { 64.9, - 18.6 }, { 60.5, 8.5 }, { 46.6, ...` | Twelve partners of a Halifax city, {lat, lon}: the ten nodes of Europe that are partners at 1,000 sold and 500 bought, Poland at 100 and 100 (under MIN_LANE) and Sweden at 200 and 100 (at it). |
+| 3040 | `GlobeCheck.TRADE_ROUNDS` | `31, TRADE_WARM = 300` | The rounds a trade timing takes the median of (31), after as many as it takes to warm the JIT (300). |
 
 ## Fields (state)
 
@@ -181,19 +181,19 @@
 | 260 | `static int fails` |  |
 | 1089 | `double same` | The least share of pixels at one plot a pixel whose class is the plot's; at 2 to 8 plots a pixel the least folded, and the least told apart; the largest the camera's speckle goes over the plane's; the far rule's most ... |
 | 1090 | `final List<String[]> lines` |  |
-| 1637 | `final long[][] pairs` | Pairs at the offset that cross the line [0] and that lie on one side [1], and how many of them change class: [0] the drawn ground, [1] the twin. |
-| 1639 | `final long[][] shares` | Pixels each side by group, [side][group]: side 0 nearer the city. |
-| 2184 | `int mixed, past` |  |
-| 2185 | `double mean, worst, pictureLand, dataLand` |  |
-| 2186 | `double[] diffs` |  |
-| 2237 | `long texels, seaWrong, iceWrong, desertWrong, dry, forest` |  |
-| 2238 | `double forestData` |  |
+| 1639 | `final long[][] pairs` | Pairs at the offset that cross the line [0] and that lie on one side [1], and how many of them change class: [0] the drawn ground, [1] the twin. |
+| 1641 | `final long[][] shares` | Pixels each side by group, [side][group]: side 0 nearer the city. |
+| 2187 | `int mixed, past` |  |
+| 2188 | `double mean, worst, pictureLand, dataLand` |  |
+| 2189 | `double[] diffs` |  |
+| 2240 | `long texels, seaWrong, iceWrong, desertWrong, dry, forest` |  |
+| 2241 | `double forestData` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 204 | 3270 | **type** `public class GlobeCheck` | The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's t... |
+| 204 | 3279 | **type** `public class GlobeCheck` | The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's t... |
 | 264 | 4 | `static void check(String label, boolean ok)` |  |
 | 272 | 35 | `public static void main(String[] args) throws Exception` |  |
 
@@ -223,7 +223,7 @@
 | 594 | 5 | `static double mixed(byte[] piece, int w, int col, int h)` | How the share of land and of water among a column's pixels mixes: the lesser of the two, 0 for a column all one or the other. |
 | 600 | 287 | `static void nearAnywhere(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full)` |  |
 
-### 2c. THE NEAR VIEW PAST THE REACH IS THE PLANE'S GROUND (MS2) (lines 888-1254)
+### 2c. THE NEAR VIEW PAST THE REACH IS THE PLANE'S GROUND (MS2) (lines 888-1256)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -242,162 +242,162 @@
 | 1061 | 24 | `static List<LakePick> lakes(String where, EarthData data, World.Key key, double cityLat, double cityLon, double lat, double lon...` | The small lakes of the 1-degree tiles round (lat, lon) within `withinKm` of it, at least LAKE_LEAST_PLOTS across: each viewed through the camera at the scale that makes its radius a quarter of LAKE_VIEW_PX, the plane'... |
 | 1087 | 28 | **type** `static final class Near` | What the views straddling the reach drew, the worst of each figure (the lines print them). |
 | 1093 | 21 | `void view(String name, World.Key key, double[] city, double[] at, double km, int n, int m)` _(in GlobeCheck.Near)_ | The view centred at `at` at `km`, the city at `city` on the world `key`: its classes through the camera against the plane's own plots, the plane's own picture and the far rule's. |
-| 1116 | 138 | `static void nearPastReach(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData data, EarthData full)` |  |
+| 1116 | 140 | `static void nearPastReach(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData data, EarthData full)` |  |
 
-### 2d. THE SLANTED GROUND, MEASURED, AND FIXED BY THE CHARTS (MS3) (lines 1255-1897)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1311 | 1 | `static double fold180(double deg)` | An angle folded into [0, 180). |
-| 1314 | 4 | `static double apart180(double a, double b)` | The angle between two directions given as angles folded into [0, 180), 0 to 90. |
-| 1327 | 23 | `static double[] streak(int[] cls, int w, int h, int lag)` | The ground's elongation from its change rates: for four offsets A = (lag, 0), B = (0, lag), C = (k, k), D = (k, -k), k = round(lag / sqrt 2) (screen x right, y down) the share p of pixel pairs - both drawn, class >= 0... |
-| 1352 | 1 | `static double streakBearing(double phi, double roll)` | The streak's direction on the planet, degrees clockwise from north folded into [0, 180): a screen direction beta clockwise from up has the bearing beta - roll (GlobeFrame.roll() is the angle clockwise from the view's ... |
-| 1355 | 1 | `static double planeDistortion(double km)` | Snyder's shape distortion of Lambert's azimuthal equal-area projection at `km` along the great circle from its centre, k / h = (1 / cos(c / 2)) / cos(c / 2) = 2 / (1 + cos c) - an independent textbook formula, as 1's ... |
-| 1358 | 5 | `static long[] fieldSeeds(int field)` | The octave streams of one synthetic field's noise, EarthTerrain.noiseAt()'s `os`: the harness's own seed, the field's number and the octave (NOISE_LO to NOISE_HI, as the rule's). |
-| 1365 | 11 | `static int[] belowMedian(double[] values, boolean[] used)` | The class of a value: 1 where it is below the median of `values` (the pixels in `used`), 0 above, -2 where unused - the rule's patches ("noise below its threshold"), half the pixels each. |
-| 1378 | 13 | `static int[] stretchedField(long[] os, int side, double s, double turnDeg)` | A class field of side x side pixels at JERUS_KM from the rule's own noise (EarthTerrain.noiseAt() at a stride of one, its octaves a plot to 16 plots): its patches s to 1 at the same area, as an equal-area projection m... |
-| 1396 | 15 | `static double[] response(double s, double turnDeg)` | The measure's reading of a stretch of s to 1 at the same area (stretchedField(): the equal-area form Lambert's projection gives round patches) turned `turnDeg` degrees: { the mean E of STREAK_SEEDS synthetic fields of... |
-| 1413 | 1 | `static double response(double s)` | ...a stretch along x: the mean E alone. |
-| 1420 | 2 | **type** `record Slant(String spot, double km, double sigma, double ePlots, double phiPlots, double eDrawn, double be...` | One placement of the city against a spot: what the plane's own plots show of the ground there (ePlots, the cause), what ground() draws with the charts (eDrawn, the fix), and the noise under the pixels - the plane's (e... |
-| 1427 | 54 | `static Slant slantAt(String spot, String dataId, double[] at, double[] city)` | The city at `city`, the view at `at` at JERUS_KM, STREAK_VIEW_PX square: the streak of the plane's own plots under each pixel and of what ground() draws with the charts (every pixel on the planet drawn), the lakes' al... |
-| 1482 | 137 | `static void slanted(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full)` |  |
-| 1630 | 3 | `static int shareGroup(int cls)` | The group a class counts in for the shares: water (salt, shallow, fresh), forest, grass, the rest. |
-| 1635 | 75 | **type** `static final class Seam` | What a seam view reads: the class changes across the line and away from it, in the drawn ground and in its twin - the same pixels drawn by the chart alone with one noise across the line, so continuous across it - and ... |
-| 1642 | 39 | `void add(String dataId, double[] at, double d, double bearing, double shiftKm, boolean abrupt)` _(in GlobeCheck.Seam)_ | One view at `at` shifted `shiftKm` along the line, the city `d` km from it on `bearing`: the line is the circle d km from the city. |
-| 1683 | 1 | `double rate(int which)` _(in GlobeCheck.Seam)_ | The change rate across the line over the rate on one side, of the drawn ground (which 0) or the twin (1). |
-| 1686 | 1 | `double ratio()` _(in GlobeCheck.Seam)_ | The drawn ground's ratio over the twin's: the same pixels, so the ground's own lines (a coast or river along the line) cancel. |
-| 1689 | 9 | `double shareGap()` _(in GlobeCheck.Seam)_ | The most any group's share differs between the sides. |
-| 1699 | 10 | `String sharesWords()` _(in GlobeCheck.Seam)_ |  |
-| 1712 | 6 | `static byte[] chartNode(World.Key key, GlobeFrame.Chart chart, long plots, long nx, long ny, double fromUp, double bandRad)` | A chart node with its blend set by hand (MapTiles.chartTerrain() sets it by GlobeFrame's dials): the sphere's noise from the angle whose cosine is `fromUp`, over a band of `bandRad` - nought for none, a seam made on p... |
-| 1720 | 19 | `static int[] chartOnly(GlobeFrame f, int w, int h, GlobeFrame.NodePixels nodes)` | A view's pixels all read from its chart's nodes (GlobeFrame.chartAt()), as ground() reads them where the chart draws: the plane's nodes not used. |
-| 1750 | 33 | `static void seams(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full)` | The seams (MS3): no line where the plane's ground hands over to the chart's, nor where the sphere's noise has been blended in whole - at the hand-over's circle and the band's far edge, on each fixture window and near ... |
-| 1797 | 27 | `static void spread()` | The sphere's noise keeps the plane's spread (MS3): the ranking table and the frays' rules, written for noiseAt(), hold for it. |
-| 1825 | 7 | `static double sd(double[] v)` |  |
-| 1834 | 5 | `static double share(double[] v, double t)` | The share of `v` under t. |
-| 1841 | 56 | `static void chartTiming(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full)` | The cost of the charts (MS3): a chart node (classes, relief, colours) at Goose Bay at one plot a pixel within MapCheck.SCREEN_MS, and a frame of 2d's view over held chart nodes within FRAME_MS - the main thread's CPU,... |
-
-### 3. THE HANDOFF (lines 1898-2014)
+### 2d. THE SLANTED GROUND, MEASURED, AND FIXED BY THE CHARTS (MS3) (lines 1257-1900)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1903 | 14 | `static double parting(GlobeFrame f, int step)` | The most the view and the plane it hands to part, in pixels, every `step` pixels across it and its edges. |
-| 1919 | 26 | `static double studyParting(GlobeFrame f, double lat, double lon, double kmPx)` | The study's measure (globe-prototype.py's reach_px): the globe north up turned by the plane's up and scaled to the plane's mean scale against the plane round the view centre, px. |
-| 1946 | 53 | `static void handoff()` |  |
-| 2001 | 13 | `static double northUpParting(GlobeFrame f, double lat, double lon)` | The view at (lat, lon) north up against the plane, px. |
+| 1313 | 1 | `static double fold180(double deg)` | An angle folded into [0, 180). |
+| 1316 | 4 | `static double apart180(double a, double b)` | The angle between two directions given as angles folded into [0, 180), 0 to 90. |
+| 1329 | 23 | `static double[] streak(int[] cls, int w, int h, int lag)` | The ground's elongation from its change rates: for four offsets A = (lag, 0), B = (0, lag), C = (k, k), D = (k, -k), k = round(lag / sqrt 2) (screen x right, y down) the share p of pixel pairs - both drawn, class >= 0... |
+| 1354 | 1 | `static double streakBearing(double phi, double roll)` | The streak's direction on the planet, degrees clockwise from north folded into [0, 180): a screen direction beta clockwise from up has the bearing beta - roll (GlobeFrame.roll() is the angle clockwise from the view's ... |
+| 1357 | 1 | `static double planeDistortion(double km)` | Snyder's shape distortion of Lambert's azimuthal equal-area projection at `km` along the great circle from its centre, k / h = (1 / cos(c / 2)) / cos(c / 2) = 2 / (1 + cos c) - an independent textbook formula, as 1's ... |
+| 1360 | 5 | `static long[] fieldSeeds(int field)` | The octave streams of one synthetic field's noise, EarthTerrain.noiseAt()'s `os`: the harness's own seed, the field's number and the octave (NOISE_LO to NOISE_HI, as the rule's). |
+| 1367 | 11 | `static int[] belowMedian(double[] values, boolean[] used)` | The class of a value: 1 where it is below the median of `values` (the pixels in `used`), 0 above, -2 where unused - the rule's patches ("noise below its threshold"), half the pixels each. |
+| 1380 | 13 | `static int[] stretchedField(long[] os, int side, double s, double turnDeg)` | A class field of side x side pixels at JERUS_KM from the rule's own noise (EarthTerrain.noiseAt() at a stride of one, its octaves a plot to 16 plots): its patches s to 1 at the same area, as an equal-area projection m... |
+| 1398 | 15 | `static double[] response(double s, double turnDeg)` | The measure's reading of a stretch of s to 1 at the same area (stretchedField(): the equal-area form Lambert's projection gives round patches) turned `turnDeg` degrees: { the mean E of STREAK_SEEDS synthetic fields of... |
+| 1415 | 1 | `static double response(double s)` | ...a stretch along x: the mean E alone. |
+| 1422 | 2 | **type** `record Slant(String spot, double km, double sigma, double ePlots, double phiPlots, double eDrawn, double be...` | One placement of the city against a spot: what the plane's own plots show of the ground there (ePlots, the cause), what ground() draws with the charts (eDrawn, the fix), and the noise under the pixels - the plane's (e... |
+| 1429 | 54 | `static Slant slantAt(String spot, String dataId, double[] at, double[] city)` | The city at `city`, the view at `at` at JERUS_KM, STREAK_VIEW_PX square: the streak of the plane's own plots under each pixel and of what ground() draws with the charts (every pixel on the planet drawn), the lakes' al... |
+| 1484 | 137 | `static void slanted(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full)` |  |
+| 1632 | 3 | `static int shareGroup(int cls)` | The group a class counts in for the shares: water (salt, shallow, fresh), forest, grass, the rest. |
+| 1637 | 75 | **type** `static final class Seam` | What a seam view reads: the class changes across the line and away from it, in the drawn ground and in its twin - the same pixels drawn by the chart alone with one noise across the line, so continuous across it - and ... |
+| 1644 | 39 | `void add(String dataId, double[] at, double d, double bearing, double shiftKm, boolean abrupt)` _(in GlobeCheck.Seam)_ | One view at `at` shifted `shiftKm` along the line, the city `d` km from it on `bearing`: the line is the circle d km from the city. |
+| 1685 | 1 | `double rate(int which)` _(in GlobeCheck.Seam)_ | The change rate across the line over the rate on one side, of the drawn ground (which 0) or the twin (1). |
+| 1688 | 1 | `double ratio()` _(in GlobeCheck.Seam)_ | The drawn ground's ratio over the twin's: the same pixels, so the ground's own lines (a coast or river along the line) cancel. |
+| 1691 | 9 | `double shareGap()` _(in GlobeCheck.Seam)_ | The most any group's share differs between the sides. |
+| 1701 | 10 | `String sharesWords()` _(in GlobeCheck.Seam)_ |  |
+| 1714 | 6 | `static byte[] chartNode(World.Key key, GlobeFrame.Chart chart, long plots, long nx, long ny, double fromUp, double bandRad)` | A chart node with its blend set by hand (MapTiles.chartTerrain() sets it by GlobeFrame's dials): the sphere's noise from the angle whose cosine is `fromUp`, over a band of `bandRad` - nought for none, a seam made on p... |
+| 1722 | 19 | `static int[] chartOnly(GlobeFrame f, int w, int h, GlobeFrame.NodePixels nodes)` | A view's pixels all read from its chart's nodes (GlobeFrame.chartAt()), as ground() reads them where the chart draws: the plane's nodes not used. |
+| 1752 | 33 | `static void seams(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full)` | The seams (MS3): no line where the plane's ground hands over to the chart's, nor where the sphere's noise has been blended in whole - at the hand-over's circle and the band's far edge, on each fixture window and near ... |
+| 1799 | 27 | `static void spread()` | The sphere's noise keeps the plane's spread (MS3): the ranking table and the frays' rules, written for noiseAt(), hold for it. |
+| 1827 | 7 | `static double sd(double[] v)` |  |
+| 1836 | 5 | `static double share(double[] v, double t)` | The share of `v` under t. |
+| 1843 | 57 | `static void chartTiming(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full)` | The cost of the charts (MS3): a chart node (classes, relief, colours) at Goose Bay at one plot a pixel within MapCheck.SCREEN_MS, and a frame of 2d's view over held chart nodes within FRAME_MS - the main thread's CPU,... |
 
-### 4. THE PLANE'S CAMERA IS TODAY'S FAR NODES (lines 2015-2065)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2020 | 17 | `static long fingerprint(World.Key key, int from, boolean world)` | Every stride from `from` to the widest the expanded map draws, a far node aligned on the spot's and one centred on it; then, `world`, the whole world's nodes at the widest - their CRC32. |
-| 2038 | 27 | `static void planeCamera(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full)` |  |
-
-### 5. THE GLOBE'S CAMERAS (lines 2066-2134)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2071 | 1 | `static int folded(byte b)` | A class with the forest folded into the dry ground it stands on, for comparing two dithers. |
-| 2073 | 61 | `static void cameras(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData data)` |  |
-
-### 6. THE PLANET'S PICTURE (lines 2135-2282)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2139 | 36 | `static GlobePicture picture(EarthData fixture, EarthData full)` |  |
-| 2177 | 4 | `static boolean freshNear(GlobePicture p, double lat, double lon)` | Whether the picture draws fresh water within a degree of (lat, lon). |
-| 2183 | 11 | **type** `static final class Land` | A picture's land per 1-degree cell against the far layers': cells with a coast, their mean and worst in points, how many past their own rounding, and the planet's land by area. |
-| 2188 | 5 | `public String toString()` _(in GlobeCheck.Land)_ |  |
-| 2195 | 39 | `static Land land(EarthData d, GlobePicture p)` |  |
-| 2236 | 13 | **type** `static final class Rule` | The far rule at each texel, read back from the data: sea, ice and desert by the rule, the forest's share. |
-| 2240 | 1 | `boolean ok()` _(in GlobeCheck.Rule)_ |  |
-| 2242 | 1 | `double forestPoints()` _(in GlobeCheck.Rule)_ |  |
-| 2244 | 4 | `public String toString()` _(in GlobeCheck.Rule)_ |  |
-| 2250 | 32 | `static Rule rule(EarthData d, GlobePicture p)` |  |
-
-### 7. A FRAME (lines 2283-2315)
+### 3. THE HANDOFF (lines 1901-2017)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2287 | 28 | `static void frame(GlobePicture pic)` |  |
+| 1906 | 14 | `static double parting(GlobeFrame f, int step)` | The most the view and the plane it hands to part, in pixels, every `step` pixels across it and its edges. |
+| 1922 | 26 | `static double studyParting(GlobeFrame f, double lat, double lon, double kmPx)` | The study's measure (globe-prototype.py's reach_px): the globe north up turned by the plane's up and scaled to the plane's mean scale against the plane round the view centre, px. |
+| 1949 | 53 | `static void handoff()` |  |
+| 2004 | 13 | `static double northUpParting(GlobeFrame f, double lat, double lon)` | The view at (lat, lon) north up against the plane, px. |
 
-### 8. THE RELIEF IN THE PICTURE (ET1 slice D; spec-earth2-terrain 9.3) (lines 2316-2453)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2324 | 10 | `static long[] dryTexelsByRelief(GlobePicture p, int row0, int col0, int rows, int cols)` | The dry texels (not ice, not water) in a box of the picture, `rows` x `cols` of them from (row0 from the north, col0 from 180 W), counted by relief. |
-| 2336 | 17 | `static double[] dataReliefShares(EarthData d, double lat0, double lat1, double lon0, double lon1)` | The data's relief shares over a box of 30" cells (the slope layer's bytes unpacked: flat is under foothill's share, foothill what is not steep, and so on): the mean over every cell. |
-| 2355 | 9 | `static boolean sharesMatch(long[] counts, double[] data)` | Whether the texels' shares (counts) are the data's within RELIEF_SIGMAS spreads and the rounding, each relief. |
-| 2365 | 4 | `static String sharesWords(long[] counts)` |  |
-| 2370 | 83 | `static void reliefInPicture(EarthData fixture, String id, EarthData full, GlobePicture fullPicture)` |  |
-
-### 9 TO 12. THE NATIONS ON THE MAP (WN2, slice A; docs/studies/spec-nations.md 6.1 and 8, board 1) (lines 2454-2545)
+### 4. THE PLANE'S CAMERA IS TODAY'S FAR NODES (lines 2018-2068)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2476 | 5 | `static GlobeFrame viewOf(double lat, double lon, double kmPx)` | A 1,389 x 868 view (MapCheck's screen) of a Halifax city looking at (lat, lon) from kmPx km a pixel; 0 for the whole planet facing the city. |
-| 2483 | 12 | `static double timed(GlobeFrame f, Consumer<GlobeFrame> work)` | The least of FRAME_ROUNDS rounds, after as many to warm, of what `work` takes of the main thread's CPU, ms - each round on a view moved a little, so the one-entry cache never answers. |
-| 2496 | 1 | `static String clock()` |  |
-| 2498 | 47 | `static void nations() throws Exception` |  |
+| 2023 | 17 | `static long fingerprint(World.Key key, int from, boolean world)` | Every stride from `from` to the widest the expanded map draws, a far node aligned on the spot's and one centred on it; then, `world`, the whole world's nodes at the widest - their CRC32. |
+| 2041 | 27 | `static void planeCamera(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full)` |  |
 
-### 9. the levels (lines 2546-2633)
+### 5. THE GLOBE'S CAMERAS (lines 2069-2137)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2549 | 4 | `static double[] vec(double lat, double lon)` | A vertex as a vector in km from the planet's centre, the harness's own (Math, not StrictMath). |
-| 2555 | 9 | `static double chordKm(double[] p, double[] a, double[] b)` | The km from a point to a segment of the sphere's chord, the harness's own way: the perpendicular's length if its foot falls on the segment, else the distance to the nearer end. |
-| 2565 | 41 | `static void bordersLevels(String scope, NationsMap map, WorldData file)` |  |
-| 2608 | 25 | `static void agreeWithAt(String where, NationsMap map, WorldData file, GlobeFrame f, int least)` | Whether the lines wholly inside a view's canvas come out of bordersAt(level 0) at the pixels GlobeFrame.at() gives each vertex; at least `least` such lines. |
+| 2074 | 1 | `static int folded(byte b)` | A class with the forest folded into the dry ground it stands on, for comparing two dithers. |
+| 2076 | 61 | `static void cameras(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData data)` |  |
 
-### 9. culled to the view, at its level, timed (lines 2634-2679)
+### 6. THE PLANET'S PICTURE (lines 2138-2285)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2636 | 43 | `static void bordersCulled(NationsMap map)` |  |
+| 2142 | 36 | `static GlobePicture picture(EarthData fixture, EarthData full)` |  |
+| 2180 | 4 | `static boolean freshNear(GlobePicture p, double lat, double lon)` | Whether the picture draws fresh water within a degree of (lat, lon). |
+| 2186 | 11 | **type** `static final class Land` | A picture's land per 1-degree cell against the far layers': cells with a coast, their mean and worst in points, how many past their own rounding, and the planet's land by area. |
+| 2191 | 5 | `public String toString()` _(in GlobeCheck.Land)_ |  |
+| 2198 | 39 | `static Land land(EarthData d, GlobePicture p)` |  |
+| 2239 | 13 | **type** `static final class Rule` | The far rule at each texel, read back from the data: sea, ice and desert by the rule, the forest's share. |
+| 2243 | 1 | `boolean ok()` _(in GlobeCheck.Rule)_ |  |
+| 2245 | 1 | `double forestPoints()` _(in GlobeCheck.Rule)_ |  |
+| 2247 | 4 | `public String toString()` _(in GlobeCheck.Rule)_ |  |
+| 2253 | 32 | `static Rule rule(EarthData d, GlobePicture p)` |  |
 
-### 10. the dots and labels (lines 2680-2762)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2682 | 80 | `static void dotsAndLabels(NationsMap map, WorldData file, Nations nations)` |  |
-
-### 11. the hit test (lines 2763-2839)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2766 | 10 | `static List<double[]> expectedCells(byte[] expect)` | The fixture's cells the expect file states, {lat, lon, owner} at each cell's centre, in the file's order. |
-| 2777 | 47 | `static void fixtureHits(NationsMap map, Nations nations, byte[] expect)` |  |
-| 2825 | 14 | `static void fullHits(NationsMap map, Nations nations)` |  |
-
-### 12. the card (lines 2840-3022)
+### 7. A FRAME (lines 2286-2319)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2842 | 1 | `static String markWords(int mark)` |  |
-| 2847 | 6 | `static boolean yearRowOk(String row, Nations nations, int nation, int year)` | Whether a card's "This year" row is right for a nation and year: a dash in the first year, else the growth with its sign and the prices, each to a decimal and within the rounding of the figure. |
-| 2855 | 3 | `static boolean moneyRowOk(String row, Nations.Year y)` | Whether a card's "Its money" row is right: the US dollar in its words, else the money, its rate a US$ and what one of it is worth in game dollars, the two figures' product the game dollar's price within their roundings. |
-| 2860 | 7 | `static boolean moneyRowOk(String row, Nations.Year y, double rateShown)` | ...and (WN4) the rate it shows is the one the card was handed: this month's from the world's moneys where there is one (NationsMap.card()'s last argument), else the year's from the file - the same source the card read... |
-| 2868 | 94 | `static void cards(String scope, NationsMap map, Nations nations, int lastYear)` |  |
-| 2969 | 52 | `static void policyRow(NationsMap map, Nations nations, WorldData full)` | 12, XR4: the card's Policy rate row. |
+| 2290 | 29 | `static void frame(GlobePicture pic)` |  |
 
-### 13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4) (lines 3023-3473)
+### 8. THE RELIEF IN THE PICTURE (ET1 slice D; spec-earth2-terrain 9.3) (lines 2320-2457)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3035 | 4 | `static double angleBetween(double[] a, double[] b)` | The angle between two unit vectors, radians, from the chord (exact for two that are the same place, where an arc cosine reads 1.5e-8). |
-| 3041 | 1 | `static double[] vertexOf(TradeLanes t, int vertex)` | A vertex of the lanes as a unit vector. |
-| 3044 | 5 | `static double lengthOf(TradeLanes t, int edge)` | An edge's length along its vertices, radians. |
-| 3051 | 5 | `static double medianOf(double[] v)` | The median of figures. |
-| 3058 | 11 | `static double[][] everywhere(int n, long seed)` | n partners all over the planet, seeded, each over MIN_LANE both ways: {lat}, {lon}, {sold}, {bought}. |
-| 3071 | 11 | `static double[][] europe()` | The twelve partners of EUROPE: {lat}, {lon}, {sold}, {bought}, the ten at 1,000 and 500, Poland at 100 and 100, Sweden at 200 and 100. |
-| 3083 | 10 | `static void tradeRoutes()` |  |
-| 3094 | 100 | `static void lanesShare()` |  |
-| 3196 | 9 | `static boolean widthsRise(double ref)` | Whether widthPx() never falls as the money grows, over a thousand steps. |
-| 3206 | 31 | `static void lanesCached()` |  |
-| 3238 | 25 | `static void lanesCulled()` |  |
-| 3264 | 44 | `static void lanesDrawn()` |  |
-| 3309 | 30 | `static void lanesTimed(String scope, double[][] a)` |  |
-| 3341 | 6 | `static double[] destination(double lat, double lon, double bearingDeg, double d)` | The place d radians from (lat, lon) on a bearing, degrees: {lat, lon}. |
-| 3348 | 87 | `static void arrowsAtTheEdge()` |  |
-| 3437 | 13 | `static void fullLanes(NationsMap map)` | The lanes of the full file's real nodes, 196 partners all over MIN_LANE, timed as the random ones are. |
-| 3452 | 21 | `static void tradeCard(String scope, NationsMap map, Nations nations)` | The card's trade rows (13): with the year's trade, three more rows in the card's own words and formats; without, the five alone and no word of "coming". |
+| 2328 | 10 | `static long[] dryTexelsByRelief(GlobePicture p, int row0, int col0, int rows, int cols)` | The dry texels (not ice, not water) in a box of the picture, `rows` x `cols` of them from (row0 from the north, col0 from 180 W), counted by relief. |
+| 2340 | 17 | `static double[] dataReliefShares(EarthData d, double lat0, double lat1, double lon0, double lon1)` | The data's relief shares over a box of 30" cells (the slope layer's bytes unpacked: flat is under foothill's share, foothill what is not steep, and so on): the mean over every cell. |
+| 2359 | 9 | `static boolean sharesMatch(long[] counts, double[] data)` | Whether the texels' shares (counts) are the data's within RELIEF_SIGMAS spreads and the rounding, each relief. |
+| 2369 | 4 | `static String sharesWords(long[] counts)` |  |
+| 2374 | 83 | `static void reliefInPicture(EarthData fixture, String id, EarthData full, GlobePicture fullPicture)` |  |
+
+### 9 TO 12. THE NATIONS ON THE MAP (WN2, slice A; docs/studies/spec-nations.md 6.1 and 8, board 1) (lines 2458-2549)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2480 | 5 | `static GlobeFrame viewOf(double lat, double lon, double kmPx)` | A 1,389 x 868 view (MapCheck's screen) of a Halifax city looking at (lat, lon) from kmPx km a pixel; 0 for the whole planet facing the city. |
+| 2487 | 12 | `static double timed(GlobeFrame f, Consumer<GlobeFrame> work)` | The least of FRAME_ROUNDS rounds, after as many to warm, of what `work` takes of the main thread's CPU, ms - each round on a view moved a little, so the one-entry cache never answers. |
+| 2500 | 1 | `static String clock()` |  |
+| 2502 | 47 | `static void nations() throws Exception` |  |
+
+### 9. the levels (lines 2550-2637)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2553 | 4 | `static double[] vec(double lat, double lon)` | A vertex as a vector in km from the planet's centre, the harness's own (Math, not StrictMath). |
+| 2559 | 9 | `static double chordKm(double[] p, double[] a, double[] b)` | The km from a point to a segment of the sphere's chord, the harness's own way: the perpendicular's length if its foot falls on the segment, else the distance to the nearer end. |
+| 2569 | 41 | `static void bordersLevels(String scope, NationsMap map, WorldData file)` |  |
+| 2612 | 25 | `static void agreeWithAt(String where, NationsMap map, WorldData file, GlobeFrame f, int least)` | Whether the lines wholly inside a view's canvas come out of bordersAt(level 0) at the pixels GlobeFrame.at() gives each vertex; at least `least` such lines. |
+
+### 9. culled to the view, at its level, timed (lines 2638-2685)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2640 | 45 | `static void bordersCulled(NationsMap map)` |  |
+
+### 10. the dots and labels (lines 2686-2770)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2688 | 82 | `static void dotsAndLabels(NationsMap map, WorldData file, Nations nations)` |  |
+
+### 11. the hit test (lines 2771-2847)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2774 | 10 | `static List<double[]> expectedCells(byte[] expect)` | The fixture's cells the expect file states, {lat, lon, owner} at each cell's centre, in the file's order. |
+| 2785 | 47 | `static void fixtureHits(NationsMap map, Nations nations, byte[] expect)` |  |
+| 2833 | 14 | `static void fullHits(NationsMap map, Nations nations)` |  |
+
+### 12. the card (lines 2848-3030)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2850 | 1 | `static String markWords(int mark)` |  |
+| 2855 | 6 | `static boolean yearRowOk(String row, Nations nations, int nation, int year)` | Whether a card's "This year" row is right for a nation and year: a dash in the first year, else the growth with its sign and the prices, each to a decimal and within the rounding of the figure. |
+| 2863 | 3 | `static boolean moneyRowOk(String row, Nations.Year y)` | Whether a card's "Its money" row is right: the US dollar in its words, else the money, its rate a US$ and what one of it is worth in game dollars, the two figures' product the game dollar's price within their roundings. |
+| 2868 | 7 | `static boolean moneyRowOk(String row, Nations.Year y, double rateShown)` | ...and (WN4) the rate it shows is the one the card was handed: this month's from the world's moneys where there is one (NationsMap.card()'s last argument), else the year's from the file - the same source the card read... |
+| 2876 | 94 | `static void cards(String scope, NationsMap map, Nations nations, int lastYear)` |  |
+| 2977 | 52 | `static void policyRow(NationsMap map, Nations nations, WorldData full)` | 12, XR4: the card's Policy rate row. |
+
+### 13 AND 14. THE CITY'S TRADE ON THE MAP (WN3, slice C; docs/studies/spec-nations.md 8, board 1, and 6.4) (lines 3031-3482)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3043 | 4 | `static double angleBetween(double[] a, double[] b)` | The angle between two unit vectors, radians, from the chord (exact for two that are the same place, where an arc cosine reads 1.5e-8). |
+| 3049 | 1 | `static double[] vertexOf(TradeLanes t, int vertex)` | A vertex of the lanes as a unit vector. |
+| 3052 | 5 | `static double lengthOf(TradeLanes t, int edge)` | An edge's length along its vertices, radians. |
+| 3059 | 5 | `static double medianOf(double[] v)` | The median of figures. |
+| 3066 | 11 | `static double[][] everywhere(int n, long seed)` | n partners all over the planet, seeded, each over MIN_LANE both ways: {lat}, {lon}, {sold}, {bought}. |
+| 3079 | 11 | `static double[][] europe()` | The twelve partners of EUROPE: {lat}, {lon}, {sold}, {bought}, the ten at 1,000 and 500, Poland at 100 and 100, Sweden at 200 and 100. |
+| 3091 | 10 | `static void tradeRoutes()` |  |
+| 3102 | 100 | `static void lanesShare()` |  |
+| 3204 | 9 | `static boolean widthsRise(double ref)` | Whether widthPx() never falls as the money grows, over a thousand steps. |
+| 3214 | 31 | `static void lanesCached()` |  |
+| 3246 | 25 | `static void lanesCulled()` |  |
+| 3272 | 44 | `static void lanesDrawn()` |  |
+| 3317 | 31 | `static void lanesTimed(String scope, double[][] a)` |  |
+| 3350 | 6 | `static double[] destination(double lat, double lon, double bearingDeg, double d)` | The place d radians from (lat, lon) on a bearing, degrees: {lat, lon}. |
+| 3357 | 87 | `static void arrowsAtTheEdge()` |  |
+| 3446 | 13 | `static void fullLanes(NationsMap map)` | The lanes of the full file's real nodes, 196 partners all over MIN_LANE, timed as the random ones are. |
+| 3461 | 21 | `static void tradeCard(String scope, NationsMap map, Nations nations)` | The card's trade rows (13): with the year's trade, three more rows in the card's own words and formats; without, the five alone and no word of "coming". |
 

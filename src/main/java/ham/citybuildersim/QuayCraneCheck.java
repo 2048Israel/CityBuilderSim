@@ -352,6 +352,7 @@ public class QuayCraneCheck {
 
     /** Section 6: a frame's boats and cranes over a bay of 64 berths, within a frame's boat budget. */
     static void theCost() {
+        if (Timing.skip("QuayCraneCheck.theCost")) return;
         section("6. THE COST: a frame's boats drawn() and the cranes of every docked one, over a bay of 64 berths");
         int berths = 64, pitch = PortCheck.BULK_ALONG + CityShore.CLEAR;
         double scale = PortCheck.BERTH_SCALES[1];

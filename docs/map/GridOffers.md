@@ -13,7 +13,7 @@
 > out. Jerus, 2026-10-07: six offers a side, never rerolled.
 > 
 > SIDE AND PLACE (spec-grid star 3). A block is seen from the founding
-> site's plot centre, as LegacyLand.sideLane() sees a point: its side by the
+> site's plot centre, with its side decided by the
 > larger of |dx| and |dy| (ties to North or South), and its place by its
 > lane coordinate t (across over out, -1 to 1, left to right facing out),
 > the place's lane holding t from -1 + 2j / PLACES to -1 + 2(j + 1) / PLACES.
@@ -49,7 +49,7 @@
 
 **Uses:** [LandGrid](LandGrid.md) (10), [World](World.md) (5), [CityLand](CityLand.md) (1)
 
-**Used by (10):** [BuildCardCheck](BuildCardCheck.md), [ConversionCheck](ConversionCheck.md), [GridCheck](GridCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandParcel](LandParcel.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md)
+**Used by (9):** [BuildCardCheck](BuildCardCheck.md), [GridCheck](GridCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandParcel](LandParcel.md), [LandmassCheck](LandmassCheck.md), [MapCheck](MapCheck.md)
 
 ## Sections
 
@@ -101,7 +101,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 124 | 5 | `public static int sideOf(double dx, double dy)` | The side a point (dx, dy) from the site lies on: LegacyLand.sideLane()'s rule - the larger of \|dx\| and \|dy\|, ties to North or South. |
+| 124 | 5 | `public static int sideOf(double dx, double dy)` | The side a point (dx, dy) from the site lies on: the larger of \|dx\| and \|dy\|, ties to North or South. |
 | 131 | 1 | `static double laneT0(int j)` | Where place j's lane begins in the lane coordinate, -1 to 1 (j = PLACES gives 1). |
 | 134 | 1 | `static double rayT(int j)` | The middle of place j's lane. |
 | 137 | 3 | `static boolean inLane(double t, int j)` | Whether lane coordinate t lies in place j's lane; the last lane holds t = 1. |

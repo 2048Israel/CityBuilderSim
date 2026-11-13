@@ -1,4 +1,4 @@
-# WorldMarketCheck.java - 1,019 lines · 35 methods · 12 constants · harnesses
+# WorldMarketCheck.java - 1,020 lines · 35 methods · 12 constants · harnesses
 
 `ham/citybuildersim/WorldMarketCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -62,7 +62,7 @@
 > good's own world use, a seed is drawn so that two worlds differ, a save is
 > restored into a market that has solved nothing.
 
-**Uses:** [WorldMarket](WorldMarket.md) (95), [Nations](Nations.md) (60), [Good](Good.md) (36), [WorldData](WorldData.md) (20), [Timing](Timing.md) (5), [WorldDataCheck](WorldDataCheck.md) (1)
+**Uses:** [WorldMarket](WorldMarket.md) (95), [Nations](Nations.md) (60), [Good](Good.md) (36), [WorldData](WorldData.md) (20), [Timing](Timing.md) (6), [WorldDataCheck](WorldDataCheck.md) (1)
 
 ## Sections
 
@@ -114,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 944 | **type** `public class WorldMarketCheck` | The world market (batch WN3; the project's spec-nations.md 4): the nations' January solve held to the equations it solves, the calibration held to the game's literals, and the city's band held to what makes it a band ... |
+| 76 | 945 | **type** `public class WorldMarketCheck` | The world market (batch WN3; the project's spec-nations.md 4): the nations' January solve held to the equations it solves, the calibration held to the game's literals, and the city's band held to what makes it a band ... |
 | 115 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 120 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 126 | 12 | **type** `static final class Tally` | Figures compared one by one, reported as one line: every one has to agree, and at least one has to have been read. |
@@ -202,9 +202,9 @@
 | 932 | 29 | `static void theWoodCase(Scope sc)` |  |
 | 962 | 4 | `static double demandShare(WorldMarket m, int gi, int nation)` |  |
 
-### 11. THE TIMINGS (lines 967-1019)
+### 11. THE TIMINGS (lines 967-1020)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 971 | 48 | `static void theTimings(Scope sc)` |  |
+| 971 | 49 | `static void theTimings(Scope sc)` |  |
 

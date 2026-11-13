@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### HA1 — the gate's harnesses — 2026-11-13, ready, no tag (process), see docs/queue/HA1-notes.md
+Harnesses start longest first from their last durations; soft runs skip
+clock-only rounds. The gate's nightly tier runs when directly picked;
+nightly reds use main's judge and name their merge range. Five merged fixture
+groups keep their assertions. Dead old-format converters, ConversionCheck
+and the listed run observations are removed. Current-format land repair
+stays; damaged centres are refused before rebuild. Gate records retain the
+reds of unrun harnesses. Allocated-land restoration stays AW2's.
+
 ### 0.9.99 — AW2, allocated land kept through a normal load — 2026-11-13, ready, see docs/queue/AW2-notes.md
 Saves carry the live allocated-land counter and its building footprint, so an
 ordinary load keeps the same free ground and construction behaviour while

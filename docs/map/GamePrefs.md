@@ -25,7 +25,7 @@
 
 **Uses:** [GameFiles](GameFiles.md) (3), [GameLog](GameLog.md) (2)
 
-**Used by (6):** [HistoryScreen](HistoryScreen.md), [MapCheck](MapCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckCheck](TruckCheck.md), [UiProbe](UiProbe.md), [UserInterface](UserInterface.md)
+**Used by (6):** [HistoryScreen](HistoryScreen.md), [MapCheck](MapCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckRouteCheck](TruckRouteCheck.md), [UiProbe](UiProbe.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

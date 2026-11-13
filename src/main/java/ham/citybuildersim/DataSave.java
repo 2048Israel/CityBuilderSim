@@ -355,12 +355,9 @@ public class DataSave implements Cloneable {
      * were: drawing again would tie every save to the exact counting and
      * pricing rules forever, and every player's offers would move with them.
      *
-     * READ ONLY TO CONVERT: landListing (the nine parcels), ironDeposits and
-     * ironReserveTonnes, which a save of format 30 or older carries and
-     * LandConversion reads - the iron, that is; the parcels go; and a format-31
-     * save's landLanes and landPurchases, with its 25-wide landCentre, which
-     * LandConversion.convertLanes() snaps to the grid. Boxed or null, so a save
-     * written now does not carry them.
+     * Older landListing, ironDeposits, ironReserveTonnes, landLanes and
+     * landPurchases keys are boxed or null so current saves omit them.
+     * HA1 removes their load converters: those formats are below the floor.
      * ---------------------------------------------------------------------- */
     private Double worldSeaTheta;
     private double[] worldTotals;
@@ -1531,7 +1528,7 @@ public class DataSave implements Cloneable {
     public double[] getLandListing()        { return landListing; }
     public void setLandMarketPrices(double[] state) { this.landMarketPrices = state; }
     public double[] getLandMarketPrices()   { return landMarketPrices; }
-    /** An older save's pool of iron sites, 0 when it carries none: what LandConversion reads. */
+    /** An older save's pool of iron sites, 0 when it carries none: kept only as an obsolete save key. */
     public int getIronDeposits()            { return ironDeposits != null ? ironDeposits : 0; }
     /** ...and its tonnes. */
     public double getIronReserveTonnes()    { return ironReserveTonnes != null ? ironReserveTonnes : 0; }

@@ -504,7 +504,7 @@ public class WaterCheck {
                 java.nio.file.Files.readString(conv.saveFile(4))).getAsJsonObject();
         for (String key : new String[] { "worldSeaTheta", "worldTotals", "landCentre", "landLanes", "landPurchases",
                 "landOffers", "nextOfferId", "depletion", "freshRights" }) j30.remove(key);
-        j30.addProperty("saveFormat", LandConversion.LAST_FORMAT_BEFORE);
+        j30.addProperty("saveFormat", 30);
         j30.addProperty("worldSeed", -2365104814562977942L);
         j30.addProperty("landOwned", 964_751_000);
         j30.addProperty("ironDeposits", 155);

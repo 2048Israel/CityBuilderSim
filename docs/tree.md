@@ -19,12 +19,12 @@ adds its line here, not in `CLAUDE.md`.
                                    demolitions, fabrication offcuts and worn wagon sets, 85% recovered,
                                    kept by seller; Iron & Steel's Scrap Yards buy it at 70% of scrap's
                                    export price, the rest to landfill - saved under one key, MaterialsCheck
-                                   12 and MoneyCheck hold it (docs/studies/spec-materials.md 2.9); since 0.7.133
+                                   12 and LongPlaytest hold it (docs/studies/spec-materials.md 2.9); since 0.7.133
                                    (batch I8) its old copper in a pool of its own beside it (copper():
                                    23 kg a car, 0.1 t a unit of a demolished building's material), which
                                    Copper Refining's Scrap Copper Refineries buy the same way at 70% of
                                    COPPER_SCRAP's export price before they bid for scrap -
-                                   CopperRefiningCheck and MoneyCheck hold it
+                                   CopperRefiningCheck and LongPlaytest hold it
         SimulationEngine.java      the order the month runs in (200 lines - read it whole)
         Sector.java / Sectors.java the template every business extends, and the registry
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
@@ -380,12 +380,12 @@ adds its line here, not in `CLAUDE.md`.
                                    stock bought on credit when the till could not pay, struck at the clearing
                                    and repaid at the next strike out of the sale it stocked, on both sides'
                                    books, the world's share in the money audit; SupplierCreditCheck holds it
-        World.java, Resource.java, Deposit.java, CityLand.java, LandConversion.java
+        World.java, Resource.java, Deposit.java, CityLand.java, LandDrawing.java
                                    the world a city stands on (0.7.56: one seed's coast, lakes, river and
                                    fields of seven resources; since 0.7.99 a tenth as many fields, each ten
                                    times bigger, in clusters, and no iron asked of a founding) and the
                                    city's land on it (0.7.57; since 0.7.67 whole blocks of a grid, six
-                                   offers a side; an older save converted once, and since 0.7.99 the ground
+                                   offers a side; HA1 removes obsolete load converters, and since 0.7.99 the ground
                                    it brings holding the old world's fields; since 0.7.106 a new city's
                                    centre its rings and its founding lake's blocks, one water plant's fresh
                                    water; since 0.7.110 each field of a type, Deposit.type() and
@@ -668,11 +668,11 @@ adds its line here, not in `CLAUDE.md`.
                                    cut so its parts add up to it, a zone's row, a sector's page and the
                                    forest law's before and after a staged copy - every figure a model
                                    read; pure, ui/ZoningScreen paints it, ZoningViewCheck holds it
-        LandGrid.java, GridOffers.java, LegacyLand.java, GridConversion.java
+        LandGrid.java, GridOffers.java
                                    the block grid (0.7.65 to 0.7.67): the ground owned as a quadtree of
                                    blocks lined up with the world, the six places a side and their
-                                   rectangles, spec-land's lanes kept read-only, and a saved city's ground
-                                   put on the grid once at load - GridCheck and ConversionCheck hold them
+                                   rectangles, and the current plotted-ground helpers in LandDrawing; old
+                                   save conversion is gone (HA1) - GridCheck and LandCheck hold them
         CityMap.java, TilePainter.java, TileRaster.java, BuildingVisual.java, DistrictPicture.java
                                    the city map (0.7.60): the buildings by type in 7.68 km districts,
                                    each drawn once on its own land; since 0.7.88 a tile painted from
@@ -835,7 +835,7 @@ adds its line here, not in `CLAUDE.md`.
                                    at most 1,000, each on a highway route from the world line
                                    (CityMap.truckRoutes()) or an access road to its gate - drawn at the
                                    near view alone and while the setting is on; a truck's body and
-                                   colour by its load - the map's - TruckCheck and TruckRouteCheck hold them
+                                   colour by its load - the map's - TruckRouteCheck hold them
         InterchangeGround.java     the ground a highway interchange keeps (0.8.6, batch FR7; spec-freight
                                    4.6, D19): a 19 x 19 reserve on a highway crossing (a cloverleaf), an
                                    11 x 11 one where an arm ends at another highway (a trumpet), else a

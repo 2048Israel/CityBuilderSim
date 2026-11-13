@@ -792,6 +792,7 @@ public class PartnerCallsCheck {
        ===================================================================== */
 
     static void frameAtTenBillion() {
+        if (Timing.skip("PartnerCallsCheck.frameAtTenBillion")) return;
         out.println("\n--- 7. at 10 billion a frame's boats with exits and partners over 196 nations ---");
         long sx = World.SIDE / 2, sy = World.SIDE / 2;
         double[] exits = new double[SeaRoutes.EXITS];
@@ -1260,6 +1261,7 @@ public class PartnerCallsCheck {
 
     /** The forks of an offing a frame draws, on the 10-billion lanes sharing 200 offings (a late city's lanes share, SL1): built once, then a frame's forks in no more than BOAT_FRAME_MS. */
     static void forksAtTenBillion() {
+        if (Timing.skip("PartnerCallsCheck.forksAtTenBillion")) return;
         long sx = World.SIDE / 2, sy = World.SIDE / 2;
         double[] exits = new double[SeaRoutes.EXITS];
         for (int k = 0; k < exits.length; k++) exits[k] = k >= 12 && k <= 24 ? 0 : SeaRoutes.ABYSS_M / World.PLOT_M;

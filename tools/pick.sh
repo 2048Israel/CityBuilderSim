@@ -7,8 +7,9 @@ LC_ALL=C; export LC_ALL
 
 say() { printf '%-9s %s\n' "$1" "$2" >&2; }
 files() { if [ "$1" = 1 ]; then echo "1 file"; else echo "$1 files"; fi; }
-usage() { say usage "sh tools/pick.sh [A [B]]  - no args: the working tree against origin/main (or the unmerged batch it is built on); A: against A; A B: what B has that A has not"; exit 2; }
+usage() { say usage "sh tools/pick.sh [--nightly] [A [B]] - working tree against main, A, or committed A B; --nightly: direct nightly picks only"; exit 2; }
 
+NIGHTLY=0; if [ "${1:-}" = --nightly ]; then NIGHTLY=1; shift; fi
 case $# in 0|1|2) ;; *) usage ;; esac
 case "$1" in -*) usage ;; esac
 TOP=$(git rev-parse --show-toplevel 2>/dev/null) || { say pick "not inside a git work tree"; exit 2; }
@@ -207,7 +208,7 @@ review() {
 }
 
 # --- the pick ------------------------------------------------------------------------
-if [ -n "$WHY" ]; then
+if [ -n "$WHY" ] && [ "$NIGHTLY" = 0 ]; then
     echo ALL
     say pick "ALL $HN harnesses - $WHY ($(files "$K") changed since $SHORT)"
     review
@@ -221,6 +222,11 @@ awk -F'\t' '$1 == "R" { print $2 }' "$TMP/ev" | sort -u > "$TMP/rnames"
     harness_files_with -w "$TMP/gnames" | sed 's#.*/##; s#\.java$##'
     harness_files_with "" "$TMP/rnames" | sed 's#.*/##; s#\.java$##'
 } | sort -u | awk 'FILENAME == ARGV[1] { h[$0] = 1; next } ($0 in h)' "$TMP/harn" - > "$TMP/pick"
+if [ "$NIGHTLY" = 1 ]; then
+    sed -n '/static final List<String> NIGHTLY =/,/);/p' "$TMP/allchecks" | grep -o '"[A-Za-z0-9_]*"' | tr -d '"' > "$TMP/nightly"
+    awk 'NR == FNR { n[$0] = 1; next } $0 in n' "$TMP/nightly" "$TMP/pick"
+    exit 0
+fi
 N=$(wc -l < "$TMP/pick" | tr -d ' ')
 
 if [ "$N" = 0 ]; then

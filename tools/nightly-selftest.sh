@@ -105,4 +105,37 @@ CASE='loaded night retains figures and leaves quiet baseline'; nightly_timing "$
 ok test "$(cat "$STORE/baseline")" = "$BASELINE"
 CASE='loaded metadata and verdict are retained'; ok test "$(cat "$NIGHT/loaded")" = 1
 CASE='machine data is isolated'; ok test "$STORE" = "$TEST_STORE/$(hostname | tr -d '\r\n' | tr -c 'A-Za-z0-9_.-' '_')"
+# HA1: the production tier entry point, with a no-JVM runner and the five merges above.
+cd "$CLONE"
+mkdir -p target; printf 'fixture\n' > target/classpath.txt
+SEP=';'; LOG=$TEST/tier-report.log; : > "$LOG"
+java() { printf '%s\n' "$*" >> "$TEST/tier-command"; return "${TIER_EXIT:-0}"; }
+cat > batch-check.sh <<'EOF'
+#!/bin/sh
+echo "$*" >> "$TIER_JUDGE_LOG"
+[ -z "${CBS_KNOWN_REDS:-}" ] && [ "${CBS_REJUDGE:-}" = rejudge ] || exit 1
+exit "${TIER_JUDGE_EXIT:-0}"
+EOF
+chmod +x batch-check.sh
+TIER_JUDGE_LOG=$TEST/tier-judge-command; export TIER_JUDGE_LOG TIER_JUDGE_EXIT
+CBS_KNOWN_REDS=wrong-caller-record; CBS_REJUDGE=; export CBS_KNOWN_REDS CBS_REJUDGE
+CASE='the nightly runs its tier on the fetched main tip'; nightly_tier "$TEST/tier-green"
+ok grep -q 'AllChecks -f --nightly' "$TEST/tier-command"
+ok grep -q -- '--judge' "$TIER_JUDGE_LOG"
+ok test "$(cat "$TEST/tier-green")" = "$FULL"
+TIER_EXIT=5; TIER_JUDGE_EXIT=3
+CASE='standing known reds are green under the common judge'; nightly_tier "$TEST/tier-green"
+ok test "$(cat "$TEST/tier-green")" = "$FULL"
+TIER_BASE=$(git rev-list --max-parents=0 "$FULL")
+printf '%s\n' "$TIER_BASE" > "$TEST/tier-green"
+TIER_EXIT=1; TIER_JUDGE_EXIT=4
+CASE='a red tier reports all merges since its last green'
+if nightly_tier "$TEST/tier-green"; then exit 1; else ok test "$?" = 4; fi
+ok grep -q "merges since $TIER_BASE..$FULL" "$LOG"
+for n in 1 2 3 4 5; do ok grep -q "Merge batch/ST$n:" "$LOG"; done
+CASE='a red night cannot advance the green commit'; ok test "$(cat "$TEST/tier-green")" = "$TIER_BASE"
+TIER_JUDGE_EXIT=1
+CASE='an incomplete judged run also preserves the last green'
+if nightly_tier "$TEST/tier-green"; then exit 1; else ok test "$?" = 1; fi
+ok test "$(cat "$TEST/tier-green")" = "$TIER_BASE"
 echo 'nightly selftest OK'

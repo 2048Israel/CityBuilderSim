@@ -1227,29 +1227,31 @@ public class GlobeCheck {
         check("fixture: lakes where the far rule draws a perfect disc and the plane's lake is frayed are found - at least LAKES_PICKED of them in the windows", lakes.size() >= LAKES_PICKED && disc);
         check("a small lake through the camera is the plane's own lake, pixel for pixel at one plot a pixel (LAKE_SAME_IOU), frayed by its own noise - not the far rule's disc", same && notDisc && plane);
 
-        // The cost: a frame of the camera over nodes held, the whole design view at his scale, on the main thread's CPU.
-        EarthTerrainCheck.Spot rot = spots.get("Rotterdam");
-        double[] city = GlobeFrame.destination(rot.lat(), rot.lon(), 0, GlobeFrame.REACH_KM * (1 + 1e-6));
-        World.Key key = World.Key.earth(EarthTerrainCheck.SEED, city[0], city[1], id);
-        GlobeFrame f = new GlobeFrame(w, h, city[0], city[1]);
-        f.set(rot.lat(), rot.lon(), JERUS_KM);
-        long plots = MapFrame.nodePlotsAt(f.planeScale()), span = (long) MapFrame.NODE_PX * plots;
-        Map<Long, int[]> nodes = new java.util.HashMap<>();
-        int[] frame = new int[n * m];
-        double cpu = Double.MAX_VALUE, wall = Double.MAX_VALUE;
-        for (int k = 0; k < 2 * FRAME_ROUNDS; k++) {
-            long c0 = MapCheck.monthClock(), w0 = System.nanoTime();
-            f.ground(plots, (nx, ny) -> nodes.computeIfAbsent(MapTiles.key(nx, ny), q -> widen(MapTiles.nodeTerrain(key, nx * span, ny * span, plots))), (i, j, vx, vy, vz) -> NO_NODE, -2, frame, n, 0, n, 0, m);
-            long c1 = MapCheck.monthClock(), w1 = System.nanoTime();
-            if (k >= FRAME_ROUNDS) {
-                cpu = Math.min(cpu, (c1 - c0) / 1e6);
-                wall = Math.min(wall, (w1 - w0) / 1e6);
+        if (!Timing.skip("GlobeCheck.nearPastReach timing")) {
+            // The cost: a frame of the camera over nodes held, the whole design view at his scale, on the main thread's CPU.
+            EarthTerrainCheck.Spot rot = spots.get("Rotterdam");
+            double[] city = GlobeFrame.destination(rot.lat(), rot.lon(), 0, GlobeFrame.REACH_KM * (1 + 1e-6));
+            World.Key key = World.Key.earth(EarthTerrainCheck.SEED, city[0], city[1], id);
+            GlobeFrame f = new GlobeFrame(w, h, city[0], city[1]);
+            f.set(rot.lat(), rot.lon(), JERUS_KM);
+            long plots = MapFrame.nodePlotsAt(f.planeScale()), span = (long) MapFrame.NODE_PX * plots;
+            Map<Long, int[]> nodes = new java.util.HashMap<>();
+            int[] frame = new int[n * m];
+            double cpu = Double.MAX_VALUE, wall = Double.MAX_VALUE;
+            for (int k = 0; k < 2 * FRAME_ROUNDS; k++) {
+                long c0 = MapCheck.monthClock(), w0 = System.nanoTime();
+                f.ground(plots, (nx, ny) -> nodes.computeIfAbsent(MapTiles.key(nx, ny), q -> widen(MapTiles.nodeTerrain(key, nx * span, ny * span, plots))), (i, j, vx, vy, vz) -> NO_NODE, -2, frame, n, 0, n, 0, m);
+                long c1 = MapCheck.monthClock(), w1 = System.nanoTime();
+                if (k >= FRAME_ROUNDS) {
+                    cpu = Math.min(cpu, (c1 - c0) / 1e6);
+                    wall = Math.min(wall, (w1 - w0) / 1e6);
+                }
             }
+            out.printf("      a frame %d x %d at %.4f km a pixel, %d nodes held: %.1f ms of %s (%.1f ms wall) on one thread%n", n, m, JERUS_KM, nodes.size(), cpu,
+                    MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock", wall);
+            check("a frame of the plane's nodes through the camera at his scale is drawn in no more than FRAME_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock"),
+                    Timing.within(cpu, FRAME_MS) && nodes.size() > 4);
         }
-        out.printf("      a frame %d x %d at %.4f km a pixel, %d nodes held: %.1f ms of %s (%.1f ms wall) on one thread%n", n, m, JERUS_KM, nodes.size(), cpu,
-                MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock", wall);
-        check("a frame of the plane's nodes through the camera at his scale is drawn in no more than FRAME_MS of " + (MapCheck.CPU_TIMED ? "the main thread's CPU" : "the wall clock"),
-                Timing.within(cpu, FRAME_MS) && nodes.size() > 4);
     }
 
     /* =====================================================================
@@ -1839,6 +1841,7 @@ public class GlobeCheck {
 
     /** The cost of the charts (MS3): a chart node (classes, relief, colours) at Goose Bay at one plot a pixel within MapCheck.SCREEN_MS, and a frame of 2d's view over held chart nodes within FRAME_MS - the main thread's CPU, as section 7 reads it. */
     static void chartTiming(Map<String, EarthTerrainCheck.Spot> spots, String id, EarthData full) {
+        if (Timing.skip("GlobeCheck.chartTiming")) return;
         String where = full != null ? "Goose Bay" : "Rotterdam";
         double[] at, city;
         String dataId;
@@ -2285,6 +2288,7 @@ public class GlobeCheck {
        ===================================================================== */
 
     static void frame(GlobePicture pic) {
+        if (Timing.skip("GlobeCheck.frame")) return;
         out.println("\n--- 7. a frame of the expanded map from the picture, timed on the main thread's CPU ---");
         double w = MapTiles.DESIGN_W, h = MapTiles.DESIGN_H;
         GlobeFrame f = new GlobeFrame(w, h, CITIES[1][0], CITIES[1][1]);
@@ -2670,10 +2674,12 @@ public class GlobeCheck {
         NationsMap.Runs own = map.bordersAt(frames[0], 0);
         check("the whole planet draws no more than VERTICES_MOST (" + VERTICES_MOST + ") vertices, " + runs[0].vertices() + ", where the file's own level would draw " + own.vertices() + ", over twice as many",
                 runs[0].vertices() <= VERTICES_MOST && own.vertices() > 2 * runs[0].vertices());
-        for (int v = 0; v < VIEWS.length; v++) {
-            double ms = timed(frames[v], f -> map.borders(f));
-            out.printf("      %s: the borders in %.3f ms of %s%n", VIEW_NAMES[v], ms, clock());
-            check(VIEW_NAMES[v] + ": the borders (cull, level, project, cut) in no more than BORDERS_MS (" + NationsMap.BORDERS_MS + ") of " + clock(), Timing.within(ms, NationsMap.BORDERS_MS));
+        if (!Timing.skip("GlobeCheck borders timing")) {
+            for (int v = 0; v < VIEWS.length; v++) {
+                double ms = timed(frames[v], f -> map.borders(f));
+                out.printf("      %s: the borders in %.3f ms of %s%n", VIEW_NAMES[v], ms, clock());
+                check(VIEW_NAMES[v] + ": the borders (cull, level, project, cut) in no more than BORDERS_MS (" + NationsMap.BORDERS_MS + ") of " + clock(), Timing.within(ms, NationsMap.BORDERS_MS));
+            }
         }
     }
 
@@ -2754,9 +2760,11 @@ public class GlobeCheck {
                 }
                 check("Luxembourg and Belgium, whose coarse area is under LABEL_AREA_TIMES boxes at this view, keep only their dots", kept);
             }
-            double ms = timed(f, g -> map.marks(g, nations, YEAR, NAME_W, FIGURES_W));
-            out.printf("      %s: the dots and labels in %.3f ms of %s%n", VIEW_NAMES[v], ms, clock());
-            check(VIEW_NAMES[v] + ": the dots and labels in no more than MARKS_MS (" + NationsMap.MARKS_MS + ") of " + clock(), Timing.within(ms, NationsMap.MARKS_MS));
+            if (!Timing.skip("GlobeCheck marks timing " + VIEW_NAMES[v])) {
+                double ms = timed(f, g -> map.marks(g, nations, YEAR, NAME_W, FIGURES_W));
+                out.printf("      %s: the dots and labels in %.3f ms of %s%n", VIEW_NAMES[v], ms, clock());
+                check(VIEW_NAMES[v] + ": the dots and labels in no more than MARKS_MS (" + NationsMap.MARKS_MS + ") of " + clock(), Timing.within(ms, NationsMap.MARKS_MS));
+            }
         }
     }
 
@@ -3307,6 +3315,7 @@ public class GlobeCheck {
     }
 
     static void lanesTimed(String scope, double[][] a) {
+        if (Timing.skip("GlobeCheck.lanesTimed")) return;
         int n = a[0].length;
         TradeLanes t = null;
         for (int k = 0; k < TRADE_WARM; k++) t = TradeLanes.of(CITIES[0][0], CITIES[0][1], k, a[0], a[1], a[2], a[3]);

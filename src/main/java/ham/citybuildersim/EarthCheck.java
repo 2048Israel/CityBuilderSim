@@ -739,6 +739,7 @@ public class EarthCheck {
        ===================================================================== */
 
     static void inflateTime(EarthData d, byte[] fixtureBytes) throws Exception {
+        if (Timing.skip("EarthCheck.inflateTime")) return;
         out.println("--- 8. a 15\" tile inflates in under a millisecond ---");
         EarthData.Layer sea = d.layer("sea");
         int best = -1;

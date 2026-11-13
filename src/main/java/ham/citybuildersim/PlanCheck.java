@@ -4507,6 +4507,9 @@ public class PlanCheck {
         }
         DistrictPlan.Input timed = keptInput(types, longLog, many, true);
         DistrictPlan a = makeGround(timed, true, false), b = makeGround(timed, false, false);
+        check("...the same plan both ways: " + fieldsDiffering(a, b).size() + " field(s) differ", fieldsDiffering(a, b).isEmpty() && a.movedOff + a.movedOver > 0);
+
+        if (Timing.skip("PlanCheck kept ground timing")) return;
         double keptMs, wholeMs;
         // in turn: the whole ground, the kept, the whole, the kept; and the same log with no run laid after the first batch, the floor
         wholeMs = planMs(timed, false, 5);
@@ -4516,7 +4519,6 @@ public class PlanCheck {
         double floorMs = planMs(keptInput(types, longLog, new Runs(), true), true, 5);
         out.printf("      the district with the most records (%,d in %d months, %,d boxes placed, %d moved off the runs): a plan takes %.1f ms with the whole ground worked out each time, %.1f ms with it kept (%.1fx);"
                 + " the same log with no run laid after the first batch, %.1f ms%n", timed.fixedLog.length, long_, a.buildings, a.movedOff + a.movedOver, wholeMs, keptMs, wholeMs / keptMs, floorMs);
-        check("...the same plan both ways: " + fieldsDiffering(a, b).size() + " field(s) differ", fieldsDiffering(a, b).isEmpty() && a.movedOff + a.movedOver > 0);
         check("...and the kept ground costs no more than the whole ground worked out each time", Timing.within(keptMs, wholeMs));
     }
 

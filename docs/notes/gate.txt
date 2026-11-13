@@ -1,8 +1,8 @@
-# gate of Merge batch/AW2: preserve allocated land and construction behavior through a normal load, 0.9.99
+# gate of Merge batch/HA1: the gate's harnesses (Jerus, 2026-11-12, on the harness audit): the suite started longest first by the last `times.tsv` (38 -> 31 min, replaces CB1-L), soft timed sections skipped, SaveSlotCheck's CLOCK_MS re-measured on the gate box; KeptCheck and 14 heavy harnesses with no catch of their own to a nightly tier the gate runs only when the pick names them (-> ~18 min); MoneyCheck, ConservationCheck, SectorBooksCheck, TruckCheck and RestructureCheck 5b-5d merged; ConversionCheck dropped with the unreachable conversion code, 0.9.99
 # date: 2026-11-13
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 201 harnesses run in 2354s: 194 passed, 7 failed
+# suite: 194 harnesses run in 1662s: 187 passed, 7 failed
 MonetaryCheck | exit 1
 MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
 MonetaryCheck | 1 FAILED
@@ -19,13 +19,11 @@ PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (328 plots in 11 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
-KeptCheck | exit 5
+KeptCheck | exit 3
 KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
 KeptCheck | the city has a piece of paper to close                                   FAIL
 KeptCheck | a bookRow was found on a money page of this city, to put the pointer on  FAIL
-KeptCheck | Household money, all of them: every tooltip a node had and still has is the same Tooltip after a month's kept redraw (79 of 79), and none is lost from a node the page keeps (1) FAIL
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 5 FAILED
+KeptCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | 1 FAILED

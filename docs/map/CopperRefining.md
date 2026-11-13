@@ -61,7 +61,7 @@
 
 **Uses:** [Good](Good.md) (23), [OldMetal](OldMetal.md) (10), [SpreadPlanner](SpreadPlanner.md) (3), [Trade](Trade.md) (2), [Formats](Formats.md) (2), [ProcessingSector](ProcessingSector.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Sector](Sector.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Game](Game.md) (1), [GoodsMarket](GoodsMarket.md) (1), [BuildCard](BuildCard.md) (1)
 
-**Used by (10):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [MoneyCheck](MoneyCheck.md), [ReadPathCheck](ReadPathCheck.md), [Sectors](Sectors.md)
+**Used by (10):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [Sectors](Sectors.md)
 
 ## Sections
 

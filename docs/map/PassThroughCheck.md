@@ -1,4 +1,4 @@
-# PassThroughCheck.java - 763 lines · 21 methods · 12 constants · harnesses
+# PassThroughCheck.java - 759 lines · 21 methods · 12 constants · harnesses
 
 `ham/citybuildersim/PassThroughCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -75,9 +75,9 @@
 | 270 | 2. the wiring, every month in a real city |
 | 358 | 3. a step in the D$ reaches the goods at PASS_THROUGH a month |
 | 429 | 4. the ring settles |
-| 630 | 5. a save carries it |
-| 680 | 6. how often it matters in a real city |
-| 706 | 7. the screen's reading |
+| 628 | 5. a save carries it |
+| 678 | 6. how often it matters in a real city |
+| 702 | 7. the screen's reading |
 
 ## Constants
 
@@ -94,7 +94,7 @@
 | 432 | `PassThroughCheck.SWING` | `.05` | The size of the treasury's swing: dollars worth this share of a year's GDP. |
 | 435 | `PassThroughCheck.HELD` | `12, FOLLOWED = 120` | The months the swing is bought, held and sold in, and the months it is followed for after: a year held, ten years in all. |
 | 438 | `PassThroughCheck.HORIZON` | `HELD +(int) Math.ceil(Math.log(.5) / Math.log(1 - K))` | The swing's own horizon, from the model's constants: the round trip (HELD) and the months the goods take to feel half of it (their half-life, rounded up). |
-| 712 | `PassThroughCheck.LOG_NOISE` | `1e-14` | The least a month's two figures in logs may differ by before section 7 calls them different: doubles' own noise (a log of a ratio and an exp-log round trip each carry a few 1e-16), so a month whose gap is tiny is not ... |
+| 708 | `PassThroughCheck.LOG_NOISE` | `1e-14` | The least a month's two figures in logs may differ by before section 7 calls them different: doubles' own noise (a log of a ratio and an exp-log round trip each carry a few 1e-16), so a month whose gap is tiny is not ... |
 
 ## Fields (state)
 
@@ -115,7 +115,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 679 | **type** `public class PassThroughCheck` | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUGH of its gap to the D$, in logs, and every world price is struck at it... |
+| 85 | 675 | **type** `public class PassThroughCheck` | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUGH of its gap to the D$, in logs, and every world price is struck at it... |
 | 94 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 99 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 110 | 9 | `static void closeRelative(String label, double actual, double expected, double tol)` | ...to a relative tolerance: the two figures' gap over the expected one's size. |
@@ -150,7 +150,7 @@
 |---:|---:|---|---|
 | 360 | 68 | `static void aStepReachesTheGoods()` |  |
 
-### 4. the ring settles (lines 429-629)
+### 4. the ring settles (lines 429-627)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -159,23 +159,23 @@
 | 478 | 84 | `static Swing swing(double speed, String name)` | The twins of the base city, one buying dollars worth SWING of a year's GDP and selling them back HELD months later, played FOLLOWED months, goods following the D$ at `speed`. |
 | 563 | 13 | `static void printSwing(String name, Swing s)` |  |
 | 578 | 5 | `static double meanGap(double[] series, int from, int to)` | The mean of the gaps' sizes over months `from` to `to`. |
-| 584 | 45 | `static void theRingSettles()` |  |
+| 584 | 43 | `static void theRingSettles()` |  |
 
-### 5. a save carries it (lines 630-679)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 632 | 47 | `static void aSaveCarriesIt()` |  |
-
-### 6. how often it matters in a real city (lines 680-705)
+### 5. a save carries it (lines 628-677)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 682 | 23 | `static void howOftenItMatters()` |  |
+| 630 | 47 | `static void aSaveCarriesIt()` |  |
 
-### 7. the screen's reading (lines 706-763)
+### 6. how often it matters in a real city (lines 678-701)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 714 | 49 | `static void theScreensReading()` |  |
+| 680 | 21 | `static void howOftenItMatters()` |  |
+
+### 7. the screen's reading (lines 702-759)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 710 | 49 | `static void theScreensReading()` |  |
 

@@ -438,7 +438,7 @@ public class CoalMiningCheck {
                     w.totals(), w.seaTheta());
             land.restoreOwnedSqFt(land.getLandDrySqFt());
             g.setCashForTest(Founding.WEALTHY_CASH);
-            // ...the ground restated to hold the town (LandConversion.restate()), then the thermal by fiat on it.
+            // ...the ground restated to hold the town (LandDrawing.restate()), then the thermal by fiat on it.
             land.setOwnedSqFt(land.getOwnedSqFt() + 400_000_000L);
             int held = land.getSites(Resource.COAL);
             land.restoreSites(Resource.COAL, held + thermalSites,

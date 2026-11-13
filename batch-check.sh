@@ -128,7 +128,8 @@ if [ "$PICK" = 1 ]; then
         echo "pick      FAILED (exit $PRC) - no suite: $OUT/pick.txt"
     else
         case "$PICKED" in
-            ALL)  set -- ;;   # the whole suite, whatever was typed
+            ALL)  NIGHTLY_PICKED=$(sh tools/pick.sh --nightly) || { FAILED=1; RUNSUITE=0; }
+                  set -- --gate $NIGHTLY_PICKED ;;   # nightly tier only by its direct rules (HA1)
             NONE) if [ "$#" = 0 ]; then
                       RUNSUITE=0
                       echo "suite     none picked - no harness reads what changed; the gate runs the suite"
@@ -149,6 +150,13 @@ elif [ "$FAST" = 0 ]; then
 fi
 
 # --- the suite -------------------------------------------------------------
+if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ] && [ "$#" = 0 ]; then
+    # HA1's own gate may still be launched by the preceding publisher.
+    if [ "${CBS_GATE_NIGHTLY+x}" != x ]; then
+        CBS_GATE_NIGHTLY=$(sh tools/pick.sh --nightly) || { FAILED=1; RUNSUITE=0; }
+    fi
+    set -- --gate $CBS_GATE_NIGHTLY
+fi
 if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ]; then
     touch "$OUT/.started"   # the logs this run writes are newer; an earlier run's are not read
     record_reds > "$OUT/known-reds.txt"   # AllChecks tags its red lines against it (FW7); UTF-8 so a non-ASCII label reads the same to Java and to awk

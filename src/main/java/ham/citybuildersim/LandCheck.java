@@ -922,7 +922,7 @@ public class LandCheck {
     static void theFoundingsWaterIsOnePatch(CityLand opening, int r0) {
         System.out.println("\n--- LM1: the founding's water is one patch ---");
         long b = 1L << opening.level(), last = World.SIDE / b - 1, reach = (CityLand.FRESH_REACH + b - 1) / b, patch = CityLand.FRESH_PATCH;
-        long target = (long) Math.ceil(LandManager.FOUNDING_FRESH_KM2 / World.KM2_PER_PLOT - GridConversion.WHOLE_PLOT);
+        long target = (long) Math.ceil(LandManager.FOUNDING_FRESH_KM2 / World.KM2_PER_PLOT - LandDrawing.WHOLE_PLOT);
         long sbx = last / 2, sby = last / 2;
         double lx = sbx * b + b / 2.0, ly = sby * b + b / 2.0;
         java.util.Set<Long> rings = new java.util.HashSet<>();
@@ -1374,7 +1374,7 @@ public class LandCheck {
         json.remove("landPaidFromVault");
         for (String key : new String[] { "worldSeaTheta", "worldTotals", "landCentre", "landCentreRects", "landHoldings",
                 "landPartFields", "landConverted", "landLanes", "landPurchases", "landOffers", "nextOfferId", "depletion" }) json.remove(key);
-        json.addProperty("saveFormat", LandConversion.LAST_FORMAT_BEFORE);
+        json.addProperty("saveFormat", 30);
         com.google.gson.JsonArray listing = new com.google.gson.JsonArray();
         listing.add(-5.0);
         listing.add(10.0);
@@ -1890,7 +1890,7 @@ public class LandCheck {
                 }
             }
         }
-        return GridConversion.km2Of(cls);
+        return LandDrawing.km2Of(cls);
     }
 
     /* ==================================================================
@@ -1983,7 +1983,7 @@ public class LandCheck {
         for (LandParcel p : tiled.getListing()) {
             int under = 0;
             for (int k = 0; k < onIron.sites(); k++) {
-                long[] at = GridConversion.sitePlot(onIron, k);
+                long[] at = LandDrawing.sitePlot(onIron, k);
                 if (p.contains(at[0], at[1]) && !t.ownsPlot(at[0], at[1])) under++;
             }
             sitesUnderOffers += under;
@@ -1992,7 +1992,7 @@ public class LandCheck {
         }
         System.out.printf("   a city founded on the iron field nearest the default site on dry ground (%d sites, %,.0f Mt, %.1f km out): %d of its sites under"
                         + " its first offers%n", onIron.sites(), onIron.amount() / 1e6,
-                LegacyLand.radius(onIron.x() - World.of(t.seed()).foundingX(), onIron.y() - World.of(t.seed()).foundingY()) * World.PLOT_M / 1000,
+                LandDrawing.radius(onIron.x() - World.of(t.seed()).foundingX(), onIron.y() - World.of(t.seed()).foundingY()) * World.PLOT_M / 1000,
                 sitesUnderOffers);
         assertTrue("fixture: a new city's centre holds an iron field some of whose sites lie under its first offers", sitesUnderOffers > 0);
         assertTrue("no offer of a new city's carries any of the field its centre holds: it goes whole with the ground its centre is on", noneCarry);
@@ -2008,7 +2008,7 @@ public class LandCheck {
             for (Resource r : Resource.values()) {
                 if (!r.inFields()) continue;
                 for (Deposit d : world.fieldsInCell(cell, r)) {
-                    if (LegacyLand.radius(d.x() - t.siteX(), d.y() - t.siteY()) > far) continue;
+                    if (LandDrawing.radius(d.x() - t.siteX(), d.y() - t.siteY()) > far) continue;
                     double each = 0;
                     for (int k = 0; k < d.sites(); k++) each += d.siteAmount(k);
                     sitesWhole &= each == d.amount();
@@ -2022,7 +2022,7 @@ public class LandCheck {
                     // Where its sites lie: under how many pieces (the old rule's test, site by site).
                     java.util.Set<Integer> under = new java.util.HashSet<>();
                     for (int k = 0; k < d.sites(); k++) {
-                        long[] at = GridConversion.sitePlot(d, k);
+                        long[] at = LandDrawing.sitePlot(d, k);
                         int h = t.holdingOf(at[0], at[1]);
                         if (h < 0) for (LandParcel p : tiled.getListing()) if (p.contains(at[0], at[1])) h = -1000 - p.getId();
                         under.add(h);
@@ -2052,7 +2052,7 @@ public class LandCheck {
         if (founding != null) {
             LandParcel first = MiningCheck.nearestOffer(fresh.getMarket(), founding.x(), founding.y());
             System.out.printf("   the founding field: %d sites, %,.0f Mt, its centre %.0f plots out; the offer nearest it, %s, runs [%d, %d) x [%d, %d)%n",
-                    founding.sites(), founding.amount() / 1e6, LegacyLand.radius(founding.x() - t0.siteX(), founding.y() - t0.siteY()),
+                    founding.sites(), founding.amount() / 1e6, LandDrawing.radius(founding.x() - t0.siteX(), founding.y() - t0.siteY()),
                     first.where(), first.getX0(), first.getX1(), first.getY0(), first.getY1());
             /*
              * IRON IN THE GROUND STAYS US$0.40 A TONNE (0.7.120, batch I3;
@@ -2195,7 +2195,7 @@ public class LandCheck {
         double plotSqFt = LandManager.sqFt(World.KM2_PER_PLOT);
         check("the city owns exactly the figure", hand.getOwnedSqFt(), want);
         assertTrue("...and its land's dry ground is that figure to within a plot, and never less",
-                hand.getLandDrySqFt() >= want - 1e-6 && hand.getLandDrySqFt() < want + plotSqFt && LandConversion.sameGround(want, hand.getLandDrySqFt()));
+                hand.getLandDrySqFt() >= want - 1e-6 && hand.getLandDrySqFt() < want + plotSqFt && LandDrawing.sameGround(want, hand.getLandDrySqFt()));
         check("...all of it in the centre, nothing bought", drawn.purchases().size(), 0);
         check("its iron sites are kept", hand.getIronDeposits(), 5);
         check("...and what remains of its tonnes", hand.getIronReserveTonnes(), 39_000_000);
@@ -2341,8 +2341,7 @@ public class LandCheck {
        (GameVersion.OLDEST_LOADABLE_FORMAT, raised to 37 by the rule: old
        saves need not load until the game is published), so each of the four
        is turned away in P7's words, its file untouched, and the conversion
-       above is not reached; LandConversion stays, for the day old saves load
-       again.
+       above is not reached; HA1 removes its unreachable converters.
        ================================================================== */
 
     /** One research city's land as its save carries it: its name, its world's seed, its square feet, iron sites and tonnes, and its Iron Mines. */
@@ -2372,7 +2371,7 @@ public class LandCheck {
                     java.nio.file.Files.readString(files.saveFile(4))).getAsJsonObject();
             for (String key : new String[] { "worldSeaTheta", "worldTotals", "landCentre", "landCentreRects", "landHoldings",
                     "landPartFields", "landConverted", "landLanes", "landPurchases", "landOffers", "nextOfferId", "depletion" }) json.remove(key);
-            json.addProperty("saveFormat", LandConversion.LAST_FORMAT_BEFORE);
+            json.addProperty("saveFormat", 30);
             json.addProperty("worldSeed", r.seed());
             json.addProperty("landOwned", r.landOwned());
             json.addProperty("ironDeposits", r.ironSites());
@@ -2402,7 +2401,7 @@ public class LandCheck {
             for (long x = cx - 1; x <= cx + 1; x++) {
                 if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
                 for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), kind)) {
-                    double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
+                    double r = LandDrawing.radius(d.x() - land.siteX(), d.y() - land.siteY());
                     if (land.ownsPlot(d.x(), d.y()) || r >= best) continue;
                     best = r;
                     nearest = d;
@@ -2423,7 +2422,7 @@ public class LandCheck {
                 if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
                 for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), kind)) {
                     byte c = world.terrainAt(d.x(), d.y());
-                    double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
+                    double r = LandDrawing.radius(d.x() - land.siteX(), d.y() - land.siteY());
                     if (c == World.SALT || c == World.FRESH || land.ownsPlot(d.x(), d.y()) || r >= best) continue;
                     best = r;
                     nearest = d;

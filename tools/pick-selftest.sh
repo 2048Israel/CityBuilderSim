@@ -89,5 +89,25 @@ LABEL="...once the predecessor's branch is gone from origin (merged) the diff is
 git update-ref refs/remotes/origin/batch/S HEAD~1; PICKED=$(sh tools/pick.sh 2>"$TA/err")
 LABEL="the branch's own pushed tip, behind its unpushed commits, is not a predecessor: the diff stays main's"; ok test "$PICKED" = "BarCheck FooCheck TimingCheck"
 
+reset
+# HA1: this class is named only by a nightly harness; ALL cannot widen the tier.
+printf 'class GlobeCheck { PlanetOnly p; }\n' > "$J/GlobeCheck.java"
+printf 'class PlanetOnly { }\n' > "$J/PlanetOnly.java"
+printf 'class AllChecks { String[] H = { "FooCheck", "BarCheck", "TimingCheck", "GlobeCheck" };\nstatic final List<String> NIGHTLY = List.of("GlobeCheck");\n}\n' > "$J/AllChecks.java"
+sed '/## Next/i | [PlanetOnly](x) | GlobeCheck |' docs/harnesses.md > "$TA/index"; mv "$TA/index" docs/harnesses.md
+git add -A; git commit -qm 'nightly fixture'; git update-ref refs/remotes/origin/main HEAD
+echo '// changed' >> "$J/PlanetOnly.java"; pick
+LABEL='a class only GlobeCheck names picks the nightly harness'; ok test "$PICKED" = GlobeCheck
+PICKED=$(sh tools/pick.sh --nightly origin/main 2>"$TA/err")
+LABEL='the direct nightly selection names GlobeCheck'; ok test "$PICKED" = GlobeCheck
+PICKED=$(CBS_PICK_FANOUT=0 sh tools/pick.sh --nightly origin/main 2>"$TA/err")
+LABEL='ALL from fanout never names a nightly harness'; ok test -z "$PICKED"
+reset; echo '// changed' >> "$J/AllChecks.java"
+PICKED=$(sh tools/pick.sh --nightly origin/main 2>"$TA/err")
+LABEL='ALL from the runner never names a nightly harness'; ok test -z "$PICKED"
+echo '// directly changed' >> "$J/PlanetOnly.java"
+PICKED=$(sh tools/pick.sh --nightly origin/main 2>"$TA/err")
+LABEL='a runner change cannot hide a direct nightly pick'; ok test "$PICKED" = GlobeCheck
+
 echo "pick-selftest: $((N - FAILS)) of $N passed"
 exit "$FAILS"

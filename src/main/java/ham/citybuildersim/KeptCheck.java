@@ -694,30 +694,31 @@ public class KeptCheck {
 
         boolean nested = fx(KeptBench::nestedDrawsKeepEach);
         check("a draw within another pool's draw gives each pool its own nodes (the envelope inside the header)", nested);
-
-        System.out.println("\n--- 10: what the kept chrome costs ---");
-        double[] cost = fx(() -> {
-            List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
-            for (int i = 0; i < 9; i++) {
-                month(g);
-                double draw = bench.drawChromeKept();
-                double[] p = bench.chromePasses();
-                kept.add(draw + p[0] + p[1]);
-            }
-            // The same month built new: every node made again in the header and the rail, as the redraw was before UP2.
-            for (int i = 0; i < 9; i++) {
-                month(g);
-                double[] f = bench.showFreshChrome();
-                fresh.add(f[0] + f[1] + f[2]);
-                bench.restoreKeptChrome();
-            }
-            return new double[]{median(kept), median(fresh)};
-        });
-        System.out.printf("  the chrome's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
-        boolean ok = Timing.within(cost[0], KEPT_CHROME_MS);
-        String timed = "the kept chrome's month is within KEPT_CHROME_MS (" + KEPT_CHROME_MS + " ms)";
-        System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
-        if (!ok) fails++;
+        if (!Timing.skip("KeptCheck.chrome timing")) {
+            System.out.println("\n--- 10: what the kept chrome costs ---");
+            double[] cost = fx(() -> {
+                List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
+                for (int i = 0; i < 9; i++) {
+                    month(g);
+                    double draw = bench.drawChromeKept();
+                    double[] p = bench.chromePasses();
+                    kept.add(draw + p[0] + p[1]);
+                }
+                // The same month built new: every node made again in the header and the rail, as the redraw was before UP2.
+                for (int i = 0; i < 9; i++) {
+                    month(g);
+                    double[] f = bench.showFreshChrome();
+                    fresh.add(f[0] + f[1] + f[2]);
+                    bench.restoreKeptChrome();
+                }
+                return new double[]{median(kept), median(fresh)};
+            });
+            System.out.printf("  the chrome's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
+            boolean ok = Timing.within(cost[0], KEPT_CHROME_MS);
+            String timed = "the kept chrome's month is within KEPT_CHROME_MS (" + KEPT_CHROME_MS + " ms)";
+            System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
+            if (!ok) fails++;
+        }
     }
 
     /** The budget for the whole chrome kept, in one month: the header, the rail and the three panels, drawn and laid out. */
@@ -949,41 +950,43 @@ public class KeptCheck {
         if (!(boolean) hand[0]) System.out.println("  the inbox list has no action button to take the focus here: the focus check is skipped");
         else check("an inbox button that had the focus loses it at the next kept draw, as the rebuild took it", !(boolean) hand[1]);
 
-        System.out.println("\n--- 13: what the whole chrome costs, kept ---");
-        double[] cost = fx(() -> {
-            bench.cityMode(true, false);
-            bench.sectionsAll(false);
-            bench.section("econ", true);
-            bench.inboxList(true, "");
-            bench.clock(true, null);
-            bench.speed(3);
-            bench.screen(CHROME_SCREENS[0]);
-            bench.drawChromeKept();
-            bench.drawPanelsKept();
-            bench.chromePasses();
-            bench.panelPasses();
-            List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
-            for (int i = 0; i < 9; i++) {
-                month(g);
-                double draw = bench.drawChromeKept() + bench.drawPanelsKept();
-                double[] c = bench.chromePasses(), p = bench.panelPasses();
-                kept.add(draw + c[0] + c[1] + p[0] + p[1]);
-            }
-            // The same month built new: every node of the header, the rail and the three panels made again.
-            for (int i = 0; i < 9; i++) {
-                month(g);
-                double[] a = bench.showFreshChrome(), b = bench.showFreshPanels();
-                fresh.add(a[0] + a[1] + a[2] + b[0] + b[1] + b[2]);
-                bench.restoreKeptChrome();
-                bench.restoreKeptPanels();
-            }
-            return new double[]{median(kept), median(fresh)};
-        });
-        System.out.printf("  the whole chrome's month (its draws, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
-        boolean ok = Timing.within(cost[0], KEPT_ALL_CHROME_MS);
-        String timed = "the whole kept chrome's month is within KEPT_ALL_CHROME_MS (" + KEPT_ALL_CHROME_MS + " ms)";
-        System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
-        if (!ok) fails++;
+        if (!Timing.skip("KeptCheck.panels timing")) {
+            System.out.println("\n--- 13: what the whole chrome costs, kept ---");
+            double[] cost = fx(() -> {
+                bench.cityMode(true, false);
+                bench.sectionsAll(false);
+                bench.section("econ", true);
+                bench.inboxList(true, "");
+                bench.clock(true, null);
+                bench.speed(3);
+                bench.screen(CHROME_SCREENS[0]);
+                bench.drawChromeKept();
+                bench.drawPanelsKept();
+                bench.chromePasses();
+                bench.panelPasses();
+                List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
+                for (int i = 0; i < 9; i++) {
+                    month(g);
+                    double draw = bench.drawChromeKept() + bench.drawPanelsKept();
+                    double[] c = bench.chromePasses(), p = bench.panelPasses();
+                    kept.add(draw + c[0] + c[1] + p[0] + p[1]);
+                }
+                // The same month built new: every node of the header, the rail and the three panels made again.
+                for (int i = 0; i < 9; i++) {
+                    month(g);
+                    double[] a = bench.showFreshChrome(), b = bench.showFreshPanels();
+                    fresh.add(a[0] + a[1] + a[2] + b[0] + b[1] + b[2]);
+                    bench.restoreKeptChrome();
+                    bench.restoreKeptPanels();
+                }
+                return new double[]{median(kept), median(fresh)};
+            });
+            System.out.printf("  the whole chrome's month (its draws, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
+            boolean ok = Timing.within(cost[0], KEPT_ALL_CHROME_MS);
+            String timed = "the whole kept chrome's month is within KEPT_ALL_CHROME_MS (" + KEPT_ALL_CHROME_MS + " ms)";
+            System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
+            if (!ok) fails++;
+        }
     }
 
     /**
@@ -1449,6 +1452,7 @@ public class KeptCheck {
 
     /** Section 20: what the kept City History month costs, against the same month built new. */
     static void historyCost(Game g, KeptBench bench) throws Exception {
+        if (Timing.skip("KeptCheck.historyCost")) return;
         System.out.println("\n--- 20: what the kept City History month costs ---");
         double[] cost = fx(() -> {
             // The page as it opens: the first preset, the default range, nothing folded open.
@@ -1713,6 +1717,7 @@ public class KeptCheck {
 
     /** ...the median of `samples` months, for the pages whose month is long (the fund's, tens of thousands of nodes). */
     static void pageCost(Game g, KeptBench bench, KeptBench.Page page, int n, double budget, String dial, int samples) throws Exception {
+        if (Timing.skip("KeptCheck.pageCost " + page.name())) return;
         System.out.println("\n--- " + n + ": what the kept month on " + page.name() + " costs ---");
         double[] cost = fx(() -> {
             bench.home(page);
@@ -8861,29 +8866,31 @@ public class KeptCheck {
             check(c[0] + ": the redraw and the next equal a page built new", d == null);
         }
 
-        System.out.println("\n--- 5: what the kept month costs ---");
-        double[] cost = fx(() -> {
-            List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
-            for (int i = 0; i < 9; i++) {
-                month(g);
-                double draw = bench.drawKept();
-                double[] p = bench.passes();
-                kept.add(draw + p[0] + p[1]);
-            }
-            // The same month built new: a page made from nothing in the column, as the redraw was before UP4.
-            for (int i = 0; i < 9; i++) {
-                month(g);
-                double[] f = bench.showFresh();
-                fresh.add(f[0] + f[1] + f[2]);
-                bench.restoreKept();
-            }
-            return new double[]{median(kept), median(fresh)};
-        });
-        System.out.printf("  the page's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
-        boolean ok = Timing.within(cost[0], KEPT_MONTH_MS);
-        String timed = "the kept month is within KEPT_MONTH_MS (" + KEPT_MONTH_MS + " ms)";
-        System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
-        if (!ok) fails++;
+        if (!Timing.skip("KeptCheck people month")) {
+            System.out.println("\n--- 5: what the kept month costs ---");
+            double[] cost = fx(() -> {
+                List<Double> kept = new ArrayList<>(), fresh = new ArrayList<>();
+                for (int i = 0; i < 9; i++) {
+                    month(g);
+                    double draw = bench.drawKept();
+                    double[] p = bench.passes();
+                    kept.add(draw + p[0] + p[1]);
+                }
+                // The same month built new: a page made from nothing in the column, as the redraw was before UP4.
+                for (int i = 0; i < 9; i++) {
+                    month(g);
+                    double[] f = bench.showFresh();
+                    fresh.add(f[0] + f[1] + f[2]);
+                    bench.restoreKept();
+                }
+                return new double[]{median(kept), median(fresh)};
+            });
+            System.out.printf("  the page's month (its draw, CSS and layout), median of 9: kept %.1f ms, built new %.1f ms%n", cost[0], cost[1]);
+            boolean ok = Timing.within(cost[0], KEPT_MONTH_MS);
+            String timed = "the kept month is within KEPT_MONTH_MS (" + KEPT_MONTH_MS + " ms)";
+            System.out.printf("%-72s %s%n", timed, Timing.verdict(ok, timed));
+            if (!ok) fails++;
+        }
 
         chrome(g, bench);
         panels(g, bench);

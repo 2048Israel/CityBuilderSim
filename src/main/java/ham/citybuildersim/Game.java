@@ -20400,6 +20400,11 @@ public class Game {
                     + "), its file left as it was. " + earth);
             return earth;
         }
+        if (!CityLand.hasSavedCentre(loaded.getLandCentre())) {
+            String why = "This save's land centre is missing or damaged.";
+            System.out.println(GameFiles.slotLabel(slot) + " not loaded, its file left as it was. " + why);
+            return why;
+        }
         return null;
     }
 
@@ -20476,33 +20481,6 @@ public class Game {
         }
     }
 
-    /*
-     * THE LAND ON THE WORLD, PUT BACK OR CONVERTED (0.7.57, SAVE_FORMAT 31;
-     * on the block grid since 0.7.67, SAVE_FORMAT 32).
-     *
-     * A format-32 save carries the city's land whole - its centre and its
-     * blocks, every purchase, the fields it holds in part, the twenty-four
-     * offers standing, what has been taken out of its ground and the world's
-     * totals - and it comes back as it was, the grid replayed from the
-     * rectangles. Its square feet (landOwned) are the land's dry ground, and
-     * are checked against it: a save whose figure is more than a plot from it
-     * has its land drawn again to hold the figure (LandConversion.restate()),
-     * and says so.
-     *
-     * A save of format 31 carries a centre and forty lanes, and is snapped to
-     * the grid, once (LandConversion.convertLanes(), spec-grid 2.6): one
-     * converted holding, its books the plots drawn, no field changing hands,
-     * no money moving. An older save carries one figure, a pool of iron and
-     * nine parcels with no place, and is converted, once (LandConversion.
-     * convert()): on its own world, a centre of blocks holding its ground to
-     * within a plot, its iron as it had it. Either way its figure becomes the
-     * converted ground's dry plots, and its old listing goes: twenty-four
-     * offers are listed afresh once the buildings are back (landConverted,
-     * readTheSave()), at the prices the save last struck: a load strikes
-     * none, and the next month strikes them on the converted ground.
-     *
-     * Returns whether the land was converted.
-     */
     /**
      * THE TWO OIL POOLS ON A LOAD (0.7.93, batch O10b; LandManager's THE TWO
      * OIL POOLS): once the land is in place, the offshore pool's E as saved -
@@ -20524,37 +20502,11 @@ public class Game {
         }
     }
 
-    private boolean restoreLandOnTheWorld(DataSave loaded, double owned) {
-        long seed = founding.getWorldSeed();
+    private void restoreLandOnTheWorld(DataSave loaded, double owned) {
         double sea = loaded.getWorldSeaTheta() != null ? loaded.getWorldSeaTheta() : World.of(founding.getWorldKey()).seaTheta();
         int format = loaded.getSaveFormat();
-        CityLand land = format > LandConversion.LAST_LANES_FORMAT
-                ? CityLand.restore(founding.getWorldKey(), loaded.getLandCentre(), loaded.getLandCentreRects(), loaded.getLandHoldings(),
-                        loaded.getLandPartFields(), loaded.getLandConverted(), loaded.getLandCentreRelief(), loaded.getLandHoldingsRelief())
-                : null;
-        if (land == null) {
-            long t0 = System.nanoTime();
-            boolean lanes = format == LandConversion.LAST_LANES_FORMAT && LandConversion.convertLanes(landManager, seed,
-                    loaded.getLandCentre(), loaded.getLandLanes(), loaded.getLandPurchases(), loaded.getGameVersion(),
-                    loaded.getDepletion(), loaded.getWorldTotals(), sea);
-            if (!lanes) {
-                LandConversion.convert(landManager, seed, owned, loaded.getIronDeposits(), loaded.getIronReserveTonnes(),
-                        minesCommitted());
-            }
-            CityLand on = landManager.getCityLand();
-            // Converted on the old world's fields (GridConversion, World.legacyFieldsInCell()): its ground is the old world's (0.7.99).
-            on.setOldWorldHoldings(1 + on.purchases().size());
-            System.out.printf("Put the city's land on the block grid (save format %d, %s): %s of dry ground for the save's %s,"
-                            + " %s in all, in blocks of %,.0f m at (%d, %d) on world %d, %d fields held in part; %d iron sites and"
-                            + " %,.0f t; %.0f ms.%n",
-                    format, lanes ? "its lanes snapped" : "a centre drawn to the plot",
-                    LandManager.areaWords(landManager.getOwnedSqFt()), LandManager.areaWords(owned),
-                    LandManager.areaWords(LandManager.sqFt(on.totalKm2(CityLand.TOTAL))),
-                    (1L << on.level()) * World.PLOT_M, on.siteX(), on.siteY(), seed,
-                    on.partFields().size(), landManager.getIronDeposits(), landManager.getIronReserveTonnes(),
-                    (System.nanoTime() - t0) / 1e6);
-            return true;
-        }
+        CityLand land = CityLand.restore(founding.getWorldKey(), loaded.getLandCentre(), loaded.getLandCentreRects(), loaded.getLandHoldings(),
+                loaded.getLandPartFields(), loaded.getLandConverted(), loaded.getLandCentreRelief(), loaded.getLandHoldingsRelief());
         // THE OLD WORLD'S GROUND (0.7.99, batch W1; CityLand.oldWorldHoldings()): a save since says how many of its
         // holdings hold the fields the world had to 0.7.98; one from before carries no such key, and holds them on all
         // the ground it owned, as saved. The key decides where it stands (a harness's save written again under an older
@@ -20577,15 +20529,13 @@ public class Game {
         }
         landManager.restoreOwnedSqFt(owned);
         double ground = landManager.getLandDrySqFt();
-        if (!LandConversion.sameGround(owned, ground)) {
+        if (!LandDrawing.sameGround(owned, ground)) {
             System.out.printf("The save's ground (%s) is not its land's (%s): the land is drawn again to hold it.%n",
                     LandManager.areaWords(owned), LandManager.areaWords(ground));
-            LandConversion.restate(landManager, owned);
+            LandDrawing.restate(landManager, owned);
         } else {
-            // A place the save listed nothing for gets its next, at the prices restored.
             landManager.getMarket().listMissing();
         }
-        return false;
     }
 
     /** The load itself; see loadGame(). */
@@ -21289,7 +21239,7 @@ public class Game {
                 landManager.setPricePerSqFt(loaded.getLandPricePerSqFt());
             }
 
-            boolean landConverted = restoreLandOnTheWorld(loaded, owned);
+            restoreLandOnTheWorld(loaded, owned);
             restoreOilPools(loaded);
             // ...and E by type as saved; a save without it reads as the walk (0.7.110, LandManager's THE GROUND BY TYPE).
             landManager.restoreDepletionByType(loaded.getDepletionByType());
@@ -21316,12 +21266,6 @@ public class Game {
             // ...after its long bridges, which the linked set is closed over (ET6; a save with none has no key).
             landManager.restoreBridges(loaded.getBridges());
             landManager.restoreLandmasses(loaded.getLandmasses());
-            // A converted city's offers (0.7.67, spec-grid 2.6): twenty-four
-            // places listed afresh, once, with the buildings back, at the
-            // prices the save last struck (settled above for an older save's
-            // local quote) - a load strikes no prices; the first month strikes
-            // them on the converted ground.
-            if (landConverted) landManager.getMarket().listMissing();
             landManager.clearMonth();
 
             // The water rights (0.7.59), after the buildings and the land they

@@ -1,9 +1,9 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
-#  Nightly on origin/main's tip: 4,000 months, then hard timing and attribution.
+#  Nightly on origin/main's tip: 4,000 months, the nightly tier, hard timing.
 #  One verdict in $HOME/.cbs-nightly.txt, detail in .cbs-nightly.log; figures
 #  and commit per machine/night in $HOME/.cbs-timing (GR1). No commits or saves.
-#  WHY (GR1): gate timing rounds cost 33.7 hours and named no faulty batch.
+#  WHY (HA1, GR1): heavy checks belong nightly; gate timing named no faulty batch.
 #  Exit: 0 OK, 1 RED, 2 not a checkout or an option, 3 a step before the run failed.
 #  WHY (GT1, 2026-11-01, Jerus: "do we need 4k months?"): the gate plays 2,400.
 # ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@ trap 'exit 3' INT TERM HUP
 
 clean() { sed 's/^ *//; s/  */ /g'; }
 verdict() {   # $1 the verdict after "N months: ": printed, and written over the last
-    printf '%s %s %s %s months: %s%s\n' "$(date '+%Y-%m-%d %H:%M')" "${VER:-?}" "${SHA:-?}" "$NUM" "$1" "${TIMING:+; $TIMING}" > "$TXT"
+    printf '%s %s %s %s months: %s%s%s\n' "$(date '+%Y-%m-%d %H:%M')" "${VER:-?}" "${SHA:-?}" "$NUM" "$1" "${TIER:+; $TIER}" "${TIMING:+; $TIMING}" > "$TXT"
     cat "$TXT"
 }
 failed() {   # $1 the step, its output in $STEP: the first error line (else the last) in the verdict
@@ -60,7 +60,8 @@ if [ "$RC" != 0 ]; then
     PLAY="RED, exit $RC in $SECS s: $(printf '%s' "$F" | cut -c1-200)"
 fi
 TIMING='timing FAILED: incomplete run'
+nightly_tier; NRC=$?
 nightly_timing >> "$LOG" 2>&1; TRC=$?
 [ -z "$NIGHT" ] || cp "$LOG" "$NIGHT/nightly.log"
 verdict "$PLAY"
-[ "$RC" = 0 ] && [ "$TRC" = 0 ]
+[ "$RC" = 0 ] && [ "$NRC" = 0 ] && [ "$TRC" = 0 ]
