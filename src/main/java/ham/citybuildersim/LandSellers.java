@@ -394,8 +394,8 @@ public final class LandSellers {
      */
     public record Part(int seller, long[] counts, int[] sites, double[] amounts) {
 
-        /** The five areas, in square kilometres (GridConversion.km2Of()). */
-        public double[] km2() { return GridConversion.km2Of(Arrays.copyOf(counts, World.CLASSES)); }
+        /** The five areas, in square kilometres (LandDrawing.km2Of()). */
+        public double[] km2() { return LandDrawing.km2Of(Arrays.copyOf(counts, World.CLASSES)); }
 
         /** The dry ground by relief and the shallow sea, in square kilometres (CityLand.RELIEF_FLAT to RELIEF_SHALLOW). */
         public double[] relief() { return CityLand.reliefKm2(counts, World.CLASSES); }

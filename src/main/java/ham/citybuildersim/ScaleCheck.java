@@ -409,7 +409,7 @@ public class ScaleCheck {
         assertTrue("its ground is K times the founded city's", groundK.getOwnedSqFt() == ground1.getOwnedSqFt() * k);
         assertTrue("...and its land's books K times the founded city's (scaled with it, 0.7.67): its dry ground that figure"
                 + " to within a plot, its blocks and its site the founded city's",
-                LandConversion.sameGround(groundK.getOwnedSqFt(), groundK.getLandDrySqFt())
+                LandDrawing.sameGround(groundK.getOwnedSqFt(), groundK.getLandDrySqFt())
                         && g.getCityLand().centreKm2(CityLand.DRY) == one.getCityLand().centreKm2(CityLand.DRY) * k
                         && g.getCityLand().purchases().size() == one.getCityLand().purchases().size()
                         && g.getCityLand().stamp() == one.getCityLand().stamp()

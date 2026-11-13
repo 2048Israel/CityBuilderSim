@@ -281,7 +281,7 @@ public class OilCheck {
             for (long x = cx - 1; x <= cx + 1; x++) {
                 if (x < 0 || y < 0 || x >= World.CELLS || y >= World.CELLS) continue;
                 for (Deposit d : world.fieldsInCell((int) (y * World.CELLS + x), Resource.OIL)) {
-                    double r = LegacyLand.radius(d.x() - land.siteX(), d.y() - land.siteY());
+                    double r = LandDrawing.radius(d.x() - land.siteX(), d.y() - land.siteY());
                     if (land.ownsPlot(d.x(), d.y()) || r >= best || world.depthAt(d.x(), d.y()) > 0) continue;
                     best = r;
                     nearest = d;

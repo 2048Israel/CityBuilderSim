@@ -15,7 +15,7 @@ import java.util.List;
  * out. Jerus, 2026-10-07: six offers a side, never rerolled.
  *
  * SIDE AND PLACE (spec-grid star 3). A block is seen from the founding
- * site's plot centre, as LegacyLand.sideLane() sees a point: its side by the
+ * site's plot centre, with its side decided by the
  * larger of |dx| and |dy| (ties to North or South), and its place by its
  * lane coordinate t (across over out, -1 to 1, left to right facing out),
  * the place's lane holding t from -1 + 2j / PLACES to -1 + 2(j + 1) / PLACES.
@@ -120,7 +120,7 @@ public final class GridOffers {
        SIDE AND PLACE (spec-grid star 3)
        ===================================================================== */
 
-    /** The side a point (dx, dy) from the site lies on: LegacyLand.sideLane()'s rule - the larger of |dx| and |dy|, ties to North or South. */
+    /** The side a point (dx, dy) from the site lies on: the larger of |dx| and |dy|, ties to North or South. */
     public static int sideOf(double dx, double dy) {
         double ax = Math.abs(dx), ay = Math.abs(dy);
         if (ay >= ax) return dy < 0 ? 0 : 2;
