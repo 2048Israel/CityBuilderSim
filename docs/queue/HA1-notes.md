@@ -1,4 +1,4 @@
-# HA1 notes ? the gate's harnesses
+# HA1 notes — the gate's harnesses
 
 Started from origin/main `5a87e102` on 2026-11-13. HA1 is **no tag
 (process)**, confirmed by lanekeeper's cbs-bus instruction
@@ -6,11 +6,11 @@ Started from origin/main `5a87e102` on 2026-11-13. HA1 is **no tag
 
 ## Built and decisions
 
-- ? Keep every moved assertion and its original fixture, in scoped helpers in
+- ★ Keep every moved assertion and its original fixture, in scoped helpers in
   LongPlaytest, SaveFileCheck, SectorStatementCheck and TruckRouteCheck.
-  RestructureCheck 5b?5d now belongs to BuybackCheck. No duplicate labels were
+  RestructureCheck 5b–5d now belongs to BuybackCheck. No duplicate labels were
   dropped in these five merges, so there are no dropped-label/twin pairs.
-- ? Keep current-format land allocation for AW2. Delete the unreachable old
+- ★ Keep current-format land allocation for AW2. Delete the unreachable old
   load branches and GridConversion, LandConversion, LegacyLand and
   ConversionCheck. `GameVersion.java:8316`, `OLDEST_LOADABLE_FORMAT = 51` already refuses
   both formats those converters served (30 and 31); SAVE_FORMAT is also 51.
@@ -22,14 +22,14 @@ Started from origin/main `5a87e102` on 2026-11-13. HA1 is **no tag
   EarthTerrainCheck's class checks, and LandCheck's drawing, site and distance
   helpers. Their algorithms survive in LandDrawing and CityLand.PartField.
   `setOwnedSqFt` retains its drawing behavior; normal load no longer converts.
-- ? A soft skip belongs only around clock-only work and its timing fixture.
+- ★ A soft skip belongs only around clock-only work and its timing fixture.
   Mixed sections keep correctness work. Hard/nightly runs retain the rounds
   and budgets. SaveSlotCheck's autosave correctness checks keep running.
 - The registry has one 15-harness nightly list. ALL excludes that tier; a
   direct pick still includes its named members, even alongside ALL. Longest
   first uses local times.tsv, then the last completed gate's retained times,
   then the refreshed median order. Malformed/nonfinite times are ignored.
-- ? The five explicit observation assertions in brief item 7 (called ?six? in
+- ★ The five explicit observation assertions in brief item 7 (called “six” in
   its heading) are removed; follow the listed labels rather than infer an
   unlisted sixth deletion: the mean-index gap, two pass-through run shares,
   the building count and foreign-account array length. The material-price
@@ -186,7 +186,7 @@ use a new post-review gate on this same main commit.
 ## Pending for the gate box
 
 SaveSlotCheck CLOCK_MS re-measurement remains unchanged until the quiet gate
-box arrives November 14?15. No other speed budget changes. An actual nightly
+box arrives November 14–15. No other speed budget changes. An actual nightly
 on main with the new tier can run only after publication; production-tier
 selection and red merge attribution are tested with the five-merge selftest.
 
@@ -239,7 +239,7 @@ and main `b8d4750d5e7882f7590ecdc905a2a83ab8525334`; it will not be reused.
    runs. Selftests cause raw known-red exits with judged 3, NEW 4, and incomplete
    1, checking green-marker advancement and preservation of attribution.
 3. **Current-format fallbacks:** restored the plot-mismatch redraw through
-   LandDrawing, unchanged in behavior. ? A missing/wrong-width current centre
+   LandDrawing, unchanged in behavior. ★ A missing/wrong-width current centre
    is refused before rebuild rather than guessing a city from a damaged file.
    CityLand and Game share the width predicate; SaveFileCheck causes both
    missing and wrong-width centres through normal and direct load, checks the
@@ -250,7 +250,7 @@ and main `b8d4750d5e7882f7590ecdc905a2a83ab8525334`; it will not be reused.
    The publisher selftest exercises an unrun KeptCheck red, a run-green record
    cleared, unseen Globe coverage and an empty run list. The fake runner now
    emits its actual run names as the production runner does.
-5. **Truck's tier:** ? Follow the brief's two explicit instructions together:
+5. **Truck's tier:** ★ Follow the brief's two explicit instructions together:
    merge TruckCheck into TruckRouteCheck, and put TruckRouteCheck in the nightly
    tier. Its 67 assertion lines remain there word for word, run at the gate
    whenever directly picked and every night otherwise. Its merged source names
