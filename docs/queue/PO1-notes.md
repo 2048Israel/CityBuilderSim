@@ -1,7 +1,8 @@
 # PO1 — The path lines as nightly observations
 
 Built from HA1 on main, 0f4fb634, on 2026-11-13. This is a no-tag process
-batch. Readiness is recorded by the ship file after the final checks.
+batch. The final ship file records readiness after the green fresh-clone gate
+on main's EI1 commit a26b79c3.
 
 ## Built and decisions
 
@@ -11,6 +12,10 @@ batch. Readiness is recorded by the ship file after the final checks.
 - ★ A compound premise's identities remain separate hard assertions. This
   includes payer records, equal quoted faces, same-line reopening, bank branch
   placement and card/funding-page quote equivalence.
+- ★ Timing and observations share a UTF-8 append writer. Its synchronized
+  method serializes same-JVM writers and its FileLock serializes child JVMs.
+  Timing retains its incomplete-write handling, and observation write failures
+  surface as an incomplete harness.
 - ★ Synthetic books use the prepared fixture even when the played market lacks
   room for a sale. Each actual-sale experiment guards its own availability.
 - ★ Nightly identities stay stable when measured figures in the printed label
@@ -144,8 +149,31 @@ path-only portions covered here.
 - The final named run passed PolicyPreviewCheck, ObservationCheck and TimingCheck
   with exit 0, including compilation, regenerated maps and zero firm Stale
   findings. Its log is `target/checks/po1-final-named.txt`.
-- The launcher dry run is pending. Its retained identities are recorded before
-  readiness.
+- The first fresh-clone no-tag dry run passed with launcher exit 0 and suite
+  exit 3. It ran 196 harnesses in 1,735 seconds, with 194 passing and only
+  DeathRecordCheck and PlanCheck known red. Compilation, maps and Stale
+  completed. Its kept directory is
+  `/c/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-PO1/target/po1-gate-final`,
+  with `ship.log` and `checks/suite.txt`. Its branch was
+  `5957b87aa5ad311273f4699db3f9668a2b311d39` and main was
+  `c5c7a460fd9c50b2070aae009045cbe349586b5c`.
+- ★ EI1 advanced main to `a26b79c30f048416cf614440ce88224cdc2e7f6d`
+  during that run. It changes the ensemble process, with no Java changes.
+  The cache's main-advance rule rejects those scripts, so a second fresh-clone
+  dry run verifies the merge on that main. Source remains at the first tested
+  commit.
+- The final fresh-clone dry run on EI1's main passed with launcher exit 0 and
+  suite exit 3. It ran 196 harnesses in 1,633 seconds, with 194 passing and
+  only DeathRecordCheck and PlanCheck known red. Compilation, regenerated maps,
+  zero firm Stale findings and tree validation completed. The retained run has
+  its completion marker and no unnamed reds.
+- The final kept run directory is
+  `/c/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-PO1/target/po1-gate-main-ei1`.
+  Its logs are `ship.log` and `checks/suite.txt`. The tested branch is
+  `5957b87aa5ad311273f4699db3f9668a2b311d39` and tested main is
+  `a26b79c30f048416cf614440ce88224cdc2e7f6d`. The ship file names this run for reuse.
+  After this dry run, the branch advances only through these notes and its
+  ship file.
 
 ## One in, one out
 
