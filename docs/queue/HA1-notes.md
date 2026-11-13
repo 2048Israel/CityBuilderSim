@@ -29,8 +29,9 @@ Started from origin/main `5a87e102` on 2026-11-13. HA1 is **no tag
   direct pick still includes its named members, even alongside ALL. Longest
   first uses local times.tsv, then the last completed gate's retained times,
   then the refreshed median order. Malformed/nonfinite times are ignored.
-- The five explicit observation assertions in brief item 7 (called ?six? in
-  its heading) are removed: the mean-index gap, two pass-through run shares,
+- ? The five explicit observation assertions in brief item 7 (called ?six? in
+  its heading) are removed; follow the listed labels rather than infer an
+  unlisted sixth deletion: the mean-index gap, two pass-through run shares,
   the building count and foreign-account array length. The material-price
   identity and OrderSearchCheck's fuzz remain.
 - QUEUE.md is publisher-owned. Lanekeeper confirms the publisher removes only HA1's own row and will not
@@ -43,37 +44,39 @@ The requested pre-change measurement runs only the 18 timing harnesses,
 soft, on the original compiled classes: **1906 seconds**, 15 passed and
 3 with known reds (MapCheck, PlanCheck, KeptCheck); 14 soft timing misses.
 This is a timing-harness measurement, not a baseline full suite.
-The same 18 harnesses after the soft skips took **2058 seconds**, again only
-known reds in MapCheck, PlanCheck and KeptCheck. EarthTerrainCheck fell from
-108.4 to 57.0 seconds and PartnerCallsCheck from 5.7 to 3.9; MapCheck and
-KeptCheck were slower on this shared PC. These unpaired, soft suite figures
-do not establish a total speedup. No budget was changed.
+The final corrected 18-harness soft serial run took **1880 seconds**, again
+only known reds in MapCheck, PlanCheck and KeptCheck, and 15 passed. These
+unpaired shared-PC figures do not establish a controlled speedup. No budget
+was changed. The initial 2058-second after sample was superseded because the
+review found correctness blocks inside two timing skips; the table below is
+from the corrected final code.
 
 | Timing harness | Before seconds | After seconds |
 |---|---:|---:|
-| BridgeCheck | 25.4 | 22.1 |
-| EarthCheck | 2.0 | 1.9 |
-| EarthTerrainCheck | 108.4 | 57.0 |
-| GlobeCheck | 219.0 | 203.9 |
-| GridCheck | 1.6 | 1.3 |
-| IslandNetCheck | 19.5 | 22.9 |
-| KeptCheck | 847.4 | 1014.5 |
-| LandNationsCheck | 20.5 | 17.7 |
-| MapCheck | 428.5 | 487.8 |
-| PartnerCallsCheck | 5.7 | 3.9 |
-| PlanCheck | 65.9 | 64.4 |
-| PortCheck | 7.7 | 8.2 |
-| QuayCraneCheck | 0.7 | 0.6 |
-| ReplayCheck | 59.4 | 63.7 |
-| SaveSlotCheck | 38.4 | 34.5 |
-| ScaleCheck | 16.1 | 13.6 |
-| WorldCheck | 18.8 | 18.8 |
-| WorldMarketCheck | 20.1 | 20.1 |
+| BridgeCheck | 25.4 | 32.9 |
+| EarthCheck | 2.0 | 1.8 |
+| EarthTerrainCheck | 108.4 | 59.2 |
+| GlobeCheck | 219.0 | 211.5 |
+| GridCheck | 1.6 | 1.2 |
+| IslandNetCheck | 19.5 | 18.5 |
+| KeptCheck | 847.4 | 901.2 |
+| LandNationsCheck | 20.5 | 16.6 |
+| MapCheck | 428.5 | 429.7 |
+| PartnerCallsCheck | 5.7 | 3.2 |
+| PlanCheck | 65.9 | 54.5 |
+| PortCheck | 7.7 | 6.8 |
+| QuayCraneCheck | 0.7 | 0.5 |
+| ReplayCheck | 59.4 | 55.5 |
+| SaveSlotCheck | 38.4 | 34.7 |
+| ScaleCheck | 16.1 | 12.9 |
+| WorldCheck | 18.8 | 19.6 |
+| WorldMarketCheck | 20.1 | 19.0 |
 
 Before logs: `target/checks/ha1-timing-before.txt` and
 `target/checks/ha1-times-before.tsv`. After logs:
-`target/checks/ha1-timing-after.txt`, `target/checks/ha1-times-after.tsv`;
-KeptCheck's after log is also preserved as `target/checks/ha1-kept-after.log`.
+`target/checks/ha1-review-timing-after.txt`,
+`target/checks/ha1-review-times-after.tsv`. Corrected child logs are preserved
+as `target/checks/ha1-review-kept.log` and `ha1-review-earth-terrain.log`.
 WorldCheck, ScaleCheck, SaveSlotCheck, IslandNetCheck, BridgeCheck, ReplayCheck
 and LandNationsCheck retain their mixed correctness/timing work. Clock-only
 sections in the other eleven harnesses skip before their timing rounds.
@@ -149,8 +152,8 @@ SaveFileCheck fixtures and LongPlaytest's measurement. Eight generated index
 conflicts took main's version before regeneration. `./batch-check.sh --fast`
 then exits 0: compile 44s, Stale 0 firm and 185 soft.
 
-The earlier full pick and 18-harness before/after measurement are retained
-as measurements on 5a87e102. A new fresh-clone gate on AW2's main is required
+The earlier full pick and initial timing samples are retained as measurements
+on 5a87e102; the final corrected timing sample is on the AW2 merge. A new fresh-clone gate on AW2's main is required
 and will be the readiness evidence. The final merged model's LongPlaytest exits 0. All eight CSV traces are
 **byte-identical** to AW2's recorded final main-equivalent traces (which AW2
 also matched to exact 5a87e102). The baseline was copied into HA1's target
@@ -173,12 +176,12 @@ Run: `target/ha1-final-traces.sh`; output:
 | month | `ae2f1905f699d2805b535bf4c189568bc085e33a09874531e0888f93750c166b` |
 | pop | `0429d2c39085493bcdf7a436e969224ef90cbc1516e44c41aa4b057b686e1fc3` |
 
-The one-in/one-out count is unchanged after the merge: +2378/-2871, net
--493 across 44 process source/script files, excluding generated indexes and
-HA1's own records. Protected publisher files have no HA1 diff from main.
+The original pre-review one-in/one-out scope was +2378/-2871, net -493.
+The final count in its section above includes the review fixes and new record
+helper. Protected publisher files have no HA1 diff from main.
 
-In progress: push this merged branch and run the fresh no-tag gate on
-`b8d4750d5e7882f7590ecdc905a2a83ab8525334`.
+The pre-review gate on this merge was stopped below; final readiness will
+use a new post-review gate on this same main commit.
 
 
 
@@ -199,16 +202,17 @@ lanekeeper confirmed this disposition in cbs-bus message
 ## One in, one out
 
 Process source and scripts (the `*Check.java` files, LongPlaytest, AllChecks,
-Timing, and changed `*.sh`; generated maps, these notes and the ship file
-excluded): **2378 lines added, 2871 removed, net -493** across 44 files.
+Timing, and changed `*.sh`/`*.awk`; generated maps, these notes and the ship
+file excluded): **2415 lines added, 2816 removed, net -401** across 46 files.
 The obsolete 702-line ConversionCheck leaves the machinery, while the four
 whole moved fixtures retain their token streams. The brief's narrower runner
 and routing files, from `git diff --numstat origin/main`, are:
 
 ```text
-3	2	ship.sh
+5	4	ship.sh
 45	14	src/main/java/ham/citybuildersim/AllChecks.java
-23	0	tools/nightly-timing.sh
+8	0	tools/gate-record.awk
+26	0	tools/nightly-timing.sh
 5	4	tools/nightly.sh
 8	2	tools/pick.sh
 ```
@@ -230,8 +234,8 @@ and main `b8d4750d5e7882f7590ecdc905a2a83ab8525334`; it will not be reused.
    and the earth-1 checks now run soft too. KeptCheck's section 9 forget and
    nested-pool checks are outside the section 10 measurement guard. Audited
    every other skip: whole skipped methods hold only a clock and its timing
-   fixture; mixed sections retain their laws. The earlier after-times for
-   EarthTerrainCheck/KeptCheck are superseded and will be replaced below.
+   fixture; mixed sections retain their laws. The earlier after-times were superseded by a full repeat on the repaired
+   code; the table above now contains the corrected values.
 2. **Nightly known reds:** the tier now invokes `batch-check.sh --judge` on its
    log, the same main gate judge, accepting 0/3 and failing on NEW or incomplete
    runs. Selftests cause raw known-red exits with judged 3, NEW 4, and incomplete
@@ -285,3 +289,16 @@ failures were the first launch and its two reuse checks. Isolated unit files
 as `record-*.txt`, retained failed selftest areas for diagnosis, and reran the
 complete selftest. The nightly selftest also verifies that a wrong inherited
 record is cleared and the log is rejudged against main's current known reds.
+
+Corrected serial soft measurement: **18 harnesses in 1880 seconds**, 15 pass,
+three only known reds; 9 soft timing misses. KeptCheck's section 9 forget and
+nested-pool assertions explicitly print OK in `ha1-review-kept.log`, and the
+six reviewed shallow-sea laws print OK in the corrected EarthTerrainCheck
+log. Its clock-only rounds still print SKIPPED. The whole 18-harness rerun,
+not a subset or a composite, supplies the final after column.
+
+Final post-review `--fast` exits **0** (41s compile), regenerates the indexes
+and reports Stale 0 firm/185 soft. The corrected full timing repeat is green
+(known only), the actual eight CSVs are identical, and the common-judge
+nightly selftest is green. The isolated 140-case publisher rerun is still
+running; final readiness requires it and a fresh post-review launcher gate.

@@ -1,4 +1,4 @@
-# CityLand.java - 1,337 lines · 95 methods · 29 constants · model
+# CityLand.java - 1,342 lines · 96 methods · 29 constants · model
 
 `ham/citybuildersim/CityLand.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -144,7 +144,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 1264 | **type** `public final class CityLand` | The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry... |
+| 74 | 1269 | **type** `public final class CityLand` | The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry... |
 
 ### THE STATE (lines 127-175)
 
@@ -273,7 +273,7 @@
 | 1104 | 26 | `long[] unownedCounts(long x0, long y0, long x1, long y1)` | ...and the same count with the dry ground's relief and the shallow sea after the classes (WIDE of them, ET1). |
 | 1132 | 35 | `private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1)` | One row of tiles' unowned plots of the rectangle, by class and by relief (WIDE). |
 
-### SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, (lines 1168-1337)
+### SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, (lines 1168-1342)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -285,9 +285,10 @@
 | 1230 | 13 | `public double[][] partFieldsState()` | The fields held in part, a record each: {kind, cell, index, then each owned site's index}. |
 | 1245 | 1 | `public double[][] convertedState()` | A converted city's purchase history (convertedHistory()), or null. |
 | 1255 | 4 | `public static CityLand restore(long seed, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, double[]...` | A city's land as saved (format 32): its centre's record (CENTRE_FIELDS wide), its blocks, its holdings, its part fields and its history. |
-| 1261 | 4 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). |
-| 1272 | 42 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...with the ground by relief a save kept beside them (ET1, spec-earth2-terrain 3.3; DataSave's landCentreRelief and landHoldingsRelief): the centre's RELIEF_AREAS figures, and a row of them for each row of `holdings`,... |
-| 1316 | 6 | `public CityLand copy()` | A copy, field for field: restore() of its own records and its old world's holdings - what the map's draft is drawn on (Game.MapDraft). |
-| 1324 | 7 | `public boolean same(CityLand o)` | Whether two cities' land is the same, field for field. |
-| 1332 | 5 | `private static double[][] deepCopy(double[][] rows)` |  |
+| 1261 | 3 | `static boolean hasSavedCentre(double[] centre)` | Whether the saved centre has the shape restore() can read (HA1). |
+| 1266 | 4 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). |
+| 1277 | 42 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...with the ground by relief a save kept beside them (ET1, spec-earth2-terrain 3.3; DataSave's landCentreRelief and landHoldingsRelief): the centre's RELIEF_AREAS figures, and a row of them for each row of `holdings`,... |
+| 1321 | 6 | `public CityLand copy()` | A copy, field for field: restore() of its own records and its old world's holdings - what the map's draft is drawn on (Game.MapDraft). |
+| 1329 | 7 | `public boolean same(CityLand o)` | Whether two cities' land is the same, field for field. |
+| 1337 | 5 | `private static double[][] deepCopy(double[][] rows)` |  |
 

@@ -1,4 +1,4 @@
-# GridCheck.java - 620 lines · 22 methods · 7 constants · harnesses
+# GridCheck.java - 621 lines · 22 methods · 7 constants · harnesses
 
 `ham/citybuildersim/GridCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -39,7 +39,7 @@
 >   7. owner() answers within OWNER_NS on the city of 5, a median of
 >      TIMING_RUNS runs.
 
-**Uses:** [LandGrid](LandGrid.md) (67), [GridOffers](GridOffers.md) (60), [World](World.md) (50), [LandManager](LandManager.md) (6), [Timing](Timing.md) (3), [CityLand](CityLand.md) (2), [Founding](Founding.md) (1)
+**Uses:** [LandGrid](LandGrid.md) (67), [GridOffers](GridOffers.md) (56), [World](World.md) (50), [LandManager](LandManager.md) (6), [Timing](Timing.md) (3), [CityLand](CityLand.md) (2), [Founding](Founding.md) (1)
 
 **Used by (1):** [LandCheck](LandCheck.md)
 
@@ -49,10 +49,10 @@
 |---:|---|
 | 90 | 1 AND 2. THE TREE AGAINST A RASTER, AND REPLAYED |
 | 295 | 3. THE LEVEL, THE SIDE AND THE PLACE |
-| 336 | 4. A NEW CITY'S FIRST OFFERS |
-| 463 | 5. A CITY BOUGHT EVENLY, CHECKED AFTER EVERY PURCHASE |
-| 556 | 6. A NOTCH FIRST |
-| 594 | 7. OWNER() IN TIME |
+| 337 | 4. A NEW CITY'S FIRST OFFERS |
+| 464 | 5. A CITY BOUGHT EVENLY, CHECKED AFTER EVERY PURCHASE |
+| 557 | 6. A NOTCH FIRST |
+| 595 | 7. OWNER() IN TIME |
 
 ## Constants
 
@@ -73,17 +73,17 @@
 | 50 | `static int fails` |  |
 | 96 | `final long ox, oy` |  |
 | 97 | `final int[] own` |  |
-| 342 | `final LandGrid grid` |  |
-| 343 | `final GridOffers offers` |  |
-| 344 | `final List<LandGrid.Fill> fills` |  |
-| 345 | `final long sx, sy` |  |
-| 346 | `int holdings` |  |
+| 343 | `final LandGrid grid` |  |
+| 344 | `final GridOffers offers` |  |
+| 345 | `final List<LandGrid.Fill> fills` |  |
+| 346 | `final long sx, sy` |  |
+| 347 | `int holdings` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 573 | **type** `public class GridCheck` | The block grid (0.7.65, batch M1): the city's owned ground as a quadtree, every plot's owner exact against a raster, and its offers six a side - apart, against its edge and whole blocks at 2:1 after every one of 600 p... |
+| 48 | 574 | **type** `public class GridCheck` | The block grid (0.7.65, batch M1): the city's owned ground as a quadtree, every plot's owner exact against a raster, and its offers six a side - apart, against its edge and whole blocks at 2:1 after every one of 600 p... |
 | 52 | 4 | `static void check(String label, boolean ok)` |  |
 | 78 | 11 | `public static void main(String[] args)` |  |
 
@@ -100,42 +100,42 @@
 | 117 | 12 | `long[] count(long x0, long y0, long x1, long y1)` _(in GridCheck.Raster)_ | {owned plots, plots of more than one holding's} in [x0, x1) x [y0, y1); outside the window nothing is owned. |
 | 131 | 163 | `static void rasterFixtures()` |  |
 
-### 3. THE LEVEL, THE SIDE AND THE PLACE (lines 295-335)
+### 3. THE LEVEL, THE SIDE AND THE PLACE (lines 295-336)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 299 | 36 | `static void levelSideAndPlace()` |  |
+| 299 | 37 | `static void levelSideAndPlace()` |  |
 
-### 4. A NEW CITY'S FIRST OFFERS (lines 336-462)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 341 | 8 | **type** `static final class City` | A city on the grid as the harness builds it: its grid, its offers, and every fill in order. |
-| 347 | 1 | `City(long sx, long sy)` _(in GridCheck.City)_ |  |
-| 359 | 23 | `static City found(World w, double dryKm2)` | A new city's centre on the grid, as the prototype the design was measured on drew it (spec-grid 1.5): blocks of the founding level in L-infinity rings round the site's block - each ring its north row west to east, its... |
-| 383 | 9 | `static byte terrain(World w, Map<Long, byte[]> tiles, long x, long y)` |  |
-| 394 | 9 | `static List<long[]> ringOf(long cx, long cy, int n)` | The blocks of one L-infinity ring round (cx, cy), in order: the north row west to east, the east column, the south row east to west, the west column. |
-| 405 | 15 | `static GridOffers.Rect buyEvenly(City c, int turn)` | Buys round the four sides in turn, on each the offer standing nearest the site (its rectangle's middle, L-infinity); a side with none is passed. |
-| 421 | 5 | `static int standing(City c)` |  |
-| 427 | 35 | `static void newCity(World w)` |  |
-
-### 5. A CITY BOUGHT EVENLY, CHECKED AFTER EVERY PURCHASE (lines 463-555)
+### 4. A NEW CITY'S FIRST OFFERS (lines 337-463)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 467 | 68 | `static City boughtEvenly(World w)` |  |
-| 537 | 9 | `static double reach(City c, GridOffers.Rect a, boolean inner)` | How far out an offer reaches from the site, in plots: its inner edge's distance, or its outer edge's. |
-| 548 | 7 | `static boolean touches(LandGrid g, GridOffers.Rect a)` | Whether an offer's rectangle holds, or has across one of its edges, a plot the city owns. |
+| 342 | 8 | **type** `static final class City` | A city on the grid as the harness builds it: its grid, its offers, and every fill in order. |
+| 348 | 1 | `City(long sx, long sy)` _(in GridCheck.City)_ |  |
+| 360 | 23 | `static City found(World w, double dryKm2)` | A new city's centre on the grid, as the prototype the design was measured on drew it (spec-grid 1.5): blocks of the founding level in L-infinity rings round the site's block - each ring its north row west to east, its... |
+| 384 | 9 | `static byte terrain(World w, Map<Long, byte[]> tiles, long x, long y)` |  |
+| 395 | 9 | `static List<long[]> ringOf(long cx, long cy, int n)` | The blocks of one L-infinity ring round (cx, cy), in order: the north row west to east, the east column, the south row east to west, the west column. |
+| 406 | 15 | `static GridOffers.Rect buyEvenly(City c, int turn)` | Buys round the four sides in turn, on each the offer standing nearest the site (its rectangle's middle, L-infinity); a side with none is passed. |
+| 422 | 5 | `static int standing(City c)` |  |
+| 428 | 35 | `static void newCity(World w)` |  |
 
-### 6. A NOTCH FIRST (lines 556-593)
+### 5. A CITY BOUGHT EVENLY, CHECKED AFTER EVERY PURCHASE (lines 464-556)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 560 | 33 | `static void notch(World w)` |  |
+| 468 | 68 | `static City boughtEvenly(World w)` |  |
+| 538 | 9 | `static double reach(City c, GridOffers.Rect a, boolean inner)` | How far out an offer reaches from the site, in plots: its inner edge's distance, or its outer edge's. |
+| 549 | 7 | `static boolean touches(LandGrid g, GridOffers.Rect a)` | Whether an offer's rectangle holds, or has across one of its edges, a plot the city owns. |
 
-### 7. OWNER() IN TIME (lines 594-620)
+### 6. A NOTCH FIRST (lines 557-594)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 598 | 22 | `static void timing(City c)` |  |
+| 561 | 33 | `static void notch(World w)` |  |
+
+### 7. OWNER() IN TIME (lines 595-621)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 599 | 22 | `static void timing(City c)` |  |
 

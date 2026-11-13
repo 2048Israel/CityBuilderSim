@@ -2,14 +2,14 @@
 
 `ham/citybuildersim/LandDrawing.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
-> Counts land's plotted ground and redraws a fixture's centre to an area.
+> Counts plotted ground and redraws a city's centre to a requested area.
 > 
-> WHY (HA1): the live ground helpers and setOwnedSqFt fixtures shared the
+> WHY (HA1): the live ground helpers, current-save repairs and fixtures shared the
 > obsolete save converters; keep their drawing here after those loaders go.
 
 **Uses:** [World](World.md) (59), [CityLand](CityLand.md) (16), [Resource](Resource.md) (12), [LandGrid](LandGrid.md) (8), [LandManager](LandManager.md) (3), [Deposit](Deposit.md) (2)
 
-**Used by (8):** [CityLand](CityLand.md), [EarthTerrainCheck](EarthTerrainCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandSellers](LandSellers.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [ScaleCheck](ScaleCheck.md)
+**Used by (10):** [CityLand](CityLand.md), [EarthTerrainCheck](EarthTerrainCheck.md), [Game](Game.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandSellers](LandSellers.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md)
 
 ## Sections
 
@@ -23,7 +23,7 @@
 |---:|---|---|---|
 | 18 | `LandDrawing.CENTRE` | `0` | The centre's holding id, before any purchases. |
 | 20 | `LandDrawing.WHOLE_PLOT` | `1e-9` | A billionth of a plot absorbs the rounding of plots into square kilometres. |
-| 22 | `LandDrawing.LEGACY_FIELD_KM` | `1` | A fixture's iron field stands at least a kilometre from its founding site. |
+| 22 | `LandDrawing.LEGACY_FIELD_KM` | `1` | A retained iron field stands at least a kilometre from its founding site. |
 | 24 | `LandDrawing.LEGACY_DRAWS` | `64` | Draws to find a dry plot for a fixture's iron field. |
 | 26 | `LandDrawing.LEGACY_STREAM` | `0x1E6AC7L` | The deterministic stream used by the fixture's iron field. |
 
@@ -46,12 +46,12 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14 | 295 | **type** `final class LandDrawing` | Counts land's plotted ground and redraws a fixture's centre to an area. |
+| 14 | 295 | **type** `final class LandDrawing` | Counts plotted ground and redraws a city's centre to a requested area. |
 | 15 | 1 | `private LandDrawing()` |  |
-| 29 | 3 | `static boolean sameGround(double ownedSqFt, double landDrySqFt)` | Whether a hand-set area agrees with the plotted ground to within one plot. |
+| 29 | 3 | `static boolean sameGround(double ownedSqFt, double landDrySqFt)` | Whether a saved or hand-set area agrees with plotted ground to within one plot. |
 | 34 | 1 | `static double radius(double dx, double dy)` | A point's distance from the site in the square grid's metric. |
 | 37 | 4 | `public static long[] sitePlot(Deposit d, int k)` | The plot nearest a field site's centre. |
-| 43 | 23 | **type** `static final class Result` | A centre drawn to a fixture's area, with its books counted from those plots. |
+| 43 | 23 | **type** `static final class Result` | A centre drawn to an area, with its books counted from those plots. |
 | 54 | 1 | `Result(long x, long y)` _(in LandDrawing.Result)_ |  |
 | 55 | 1 | `long siteX()` _(in LandDrawing.Result)_ |  |
 | 56 | 1 | `long siteY()` _(in LandDrawing.Result)_ |  |
@@ -63,7 +63,7 @@
 | 62 | 1 | `long legacyX()` _(in LandDrawing.Result)_ |  |
 | 63 | 1 | `long legacyY()` _(in LandDrawing.Result)_ |  |
 | 64 | 1 | `int legacySites()` _(in LandDrawing.Result)_ |  |
-| 68 | 50 | `public static Result draw(World world, long sx, long sy, double dryKm2, int ironSites, double ironTonnes, int minesCommitted, b...` | Draws whole dry plots round the same site, preserving the fixture's iron. |
+| 68 | 50 | `public static Result draw(World world, long sx, long sy, double dryKm2, int ironSites, double ironTonnes, int minesCommitted, b...` | Draws whole dry plots round the same site, preserving the city's iron. |
 | 120 | 12 | `static List<long[]> ringOf(long cx, long cy, int n)` | The blocks of one L-infinity ring round (cx, cy), in order: the north row west to east, the east column, the south row east to west, the west column. |
 | 134 | 13 | `private static void claimDry(World world, Map<Long, byte[]> tiles, Result out, int level, long bx, long by, long target, long[]...` | Takes block (bx, by) of `level` whole when its dry plots fit under the target, else its quarters in turn (north-west, north-east, south-west, south-east), down to the plot. |
 | 148 | 9 | `private static long dryIn(World world, Map<Long, byte[]> tiles, long x0, long y0, long b)` |  |
@@ -81,5 +81,5 @@
 | 257 | 6 | `private static void books(World world, Result out)` |  |
 | 264 | 3 | `private static void leaves(Result out)` |  |
 | 268 | 22 | `static long[] legacyPlot(World world, long seed, long sx, long sy, double reach, java.util.function.BiPredicate<Long, Long> onG...` |  |
-| 293 | 15 | `public static void restate(LandManager lm, double drySqFt)` | Redraws a hand-set area; a normal load never uses this fixture operation. |
+| 293 | 15 | `public static void restate(LandManager lm, double drySqFt)` | Repairs a saved or hand-set area, retaining the city's iron and refreshing its offers. |
 
