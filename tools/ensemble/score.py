@@ -3,83 +3,26 @@
 
 usage: python -I score.py <outdir> [--baseline <summary.json | docs/ensemble/<version>.md>] [--summary <summary.json to write>]
 
-A baseline .md is a docs/ensemble/<version>.md: what is between its first line that is exactly ```json and the next line
-that is exactly ``` is read as the summary.json. pandas is looked for first in ENSEMBLE_PYLIB (default
-~/.cache/cbs-ensemble/py, where tools/ensemble/ensemble.sh's README says to install it); exit 2 where it is missing.
+Reads monthly <POLICY>-<seed>.csv files and optional times.txt. Inflation is annualised
+index growth over each window. Policy comparisons use each seed's AUTO2 twin.
+ENSEMBLE_PYLIB (default ~/.cache/cbs-ensemble/py) supplies pandas under python -I.
 
-<outdir> holds <POLICY>-<seed>.csv as Ensemble.java writes them (one row a month) and,
-optionally, times.txt from ensemble.sh. Every criterion below is paired where it can be: the
-AUTO2 run of the same seed is the same city to the bit until the policy changes (same
-founding, same autopilot, same advisor rhythm), so "the policy's effect" is the run minus
-its AUTO2 twin over the same months, and the weather cancels.
+EI1 classes M1 and F1 as hard, every other criterion as info. Only hard failures set
+the batch verdict and exit 4. Every criterion keeps its thresholds and verdicts,
+paired with baseline readings. Markdown's fenced JSON and old table are readable.
+Criteria (thresholds below, * in the report)
+  A1 AUTO2 inflation from AUTO2_FROM, median in band and AUTO2_SEEDS_IN_BAND seeds in band.
+  A2/A3 AUTO2 runaway/deflation spells from AUTO2_FROM, completion and final/peak population.
+  S1 ZERO_SLACK excess inflation no greater than the currency's extra fall plus ANCHOR_TOL.
+  H1 ZERO_HOT's two halves against AUTO2, RETIRED by Jerus in CD1, still measured.
+  H2 ZERO_HOT's autopilot tail against AUTO2, below the burst when there was one.
+  K1/K2 SHOCK's step over AUTO2 and its tail's inflation/excess.
+  R1/R2/R3 HIGH's inflation, unemployment and final inflation against AUTO2.
+  T1/T2 takeoffs and each policy's final population against the baseline.
+  M1 no failed or unread money-audit month in any policy.
+  F1 runs with a LongPlaytest finding no greater than the baseline in any policy.
 
-Inflation over a window is the annualised change in the price index over that window:
-(index[m1] / index[m0]) ** (12 / (m1 - m0)) - 1. "yoy" is PriceIndex.inflation(), the
-twelve-month rate the autopilot itself reads. Medians and [min-max] are across seeds.
-
-==================================  THE CRITERIA  ==================================
-roadmap-inflation.md, five policies and "across all five", made precise (thresholds are
-the harness's judgement calls, marked * in the report):
-
-AUTO2  the autopilot at 2%, 2,400 months
-  A1 mean      inflation from month AUTO2_FROM to the end: the median seed within
-               TARGET +- BAND, and at least AUTO2_SEEDS_IN_BAND seeds individually within it
-  A2 runaway   (restated EN1) from month AUTO2_FROM, no seed has yoy above RUNAWAY_YOY for
-               RUN_MONTHS consecutive months. Until EN1 from month SPELL_FROM (120); the founding,
-               month 120 to AUTO2_FROM, is printed as info
-  A3 collapse  (restated EN1) from month AUTO2_FROM, no seed has yoy below COLLAPSE_YOY for
-               RUN_MONTHS consecutive months, every
-               seed finishes its months, and none ends below COLLAPSE_POP of its peak population
-ZERO_SLACK  the autopilot to month 1,800 (a mature city; Ensemble.SLACK_START), then 0% held 240 months
-  S1 little    (restated 0.7.100, A27) the zero window against its AUTO2 twin's same months: the
-               window's inflation over the twin's, in every seed at most the currency's extra
-               fall over the window (fx's growth a year over the twin's) plus ANCHOR_TOL, every
-               seed twinned: "the currency's and no more" (restated RN1; Jerus, 2026-10-31).
-               Until RN1: median at most SLACK_EXCESS_MEDIAN, every seed at most
-               SLACK_EXCESS_SEED, and no seed running away in the window (yoy above RUNAWAY_YOY
-               for RUN_MONTHS consecutive months), now info rows. Until 0.7.100: from
-               month 600, the window's own inflation, median at most SLACK_MEDIAN_MAX, every seed
-               at most SLACK_SEED_MAX, no yoy above RUNAWAY_YOY (see THE PREMISES RESTATED below)
-ZERO_HOT  0% held 240 months from HOT_START (young city), then the autopilot 120 months
-  H1 persists  RETIRED (CD1, 0.8.15; Jerus, 2026-10-21: "H1's premise is retired"): measured and
-               printed, neither scored nor counted (THE PREMISES RETIRED below). As it was written:
-               (restated 0.7.100, A27) the zero window's two halves against the AUTO2 twin's same
-               months: the first half's inflation over the twin's (the burst) and the second
-               half's (the burst persisting while the dial is held), median at least
-               HOT_PERSIST_MIN each, and the second half no faster than the first by
-               HOT_ACCEL_MIN or more (median) - a burst, not a spiral. Until 0.7.100 "H1 builds":
-               the second half at least HOT_SPIRAL_MIN, above the first half by at least
-               HOT_ACCEL_MIN and above the twin by at least HOT_EXCESS_MIN (medians)
-  H2 stops     (restated EN1) the last STOP_TAIL months of the autopilot phase against the AUTO2
-               twin's same months: their inflation over the twin's, median at most HOT_STOP_EXCESS,
-               and below the zero window's second half's over the twin's in at least SEEDS_MOST
-               seeds (vacuous - marked so - when H1's measure finds no burst to stop; it still
-               does, H1 retired or not). Until EN1
-               the tail's own inflation, median at most HOT_STOP_MAX (4%) and below the second
-               half's own in SEEDS_MOST seeds
-SHOCK  the autopilot; at month 600 the world's price level x 1.3, once; 240 months on
-  K1 step      the index above its AUTO2 twin's, at its highest within SHOCK_STEP_WINDOW months
-               of the shock: median at least SHOCK_STEP_MIN
-  K2 settles   the last SETTLE_TAIL months: median inflation at most TARGET + BAND, and their
-               inflation over the twin's at most SHOCK_SPIRAL_EXCESS a year (median) - a step,
-               not a spiral (judged whether or not K1 passed). First written as the gap's growth
-               over the tail (1% in ten years), which the weather between twins alone exceeds;
-               restated per year on 2026-10-04 before any later version was scored.
-HIGH  the autopilot to month 600, then 15% held 120 months
-  R1 falls     window inflation minus the twin's: median at most HIGH_FALL
-  R2 cost      window unemployment minus the twin's: median at least HIGH_COST
-  R3 no trap   the window's last TRAP_TAIL months, inflation minus the twin's: median at most 0,
-               and at most TRAP_SEEDS seeds above +1 point
-ALL
-  T1 takeoffs  AUTO2 seeds whose population reached TAKEOFF_POP: at least the baseline's
-               count less TAKEOFF_SLACK (no baseline: reported only). LongPlaytest has no takeoff
-               test of its own; 40,000 is past the old ~17k plateau, and every 0.7.41 seed passes
-               it between months 1,220 and 1,503. The other policies end by month 840, before any
-               city is that big, so they are judged by T2 and by their population against the twin.
-  T2 size      each policy's median final population at least POP_KEEP of the baseline's
-  M1 audit     the money audit clean in every month of every run
-  F1 findings  LongPlaytest's audit: runs with any finding (reported against the baseline)
-===================================================================================
+Premise history and Jerus's decisions are in docs/queue/{P1,EN1,RN1,CD1}-notes.md.
 """
 import json
 import math
@@ -133,98 +76,18 @@ TAKEOFF_POP = 40000
 TAKEOFF_SLACK = 2
 POP_KEEP = 0.75
 
-# ---- THE PREMISES RESTATED (0.7.100, batch P1; Jerus's A27 of 2026-10-10: "Rewrite both
-# premises; watch A2") --------------------------------------------------------------------
-# The anchor's tolerance: Expectations.TOLERANCE, 1 point - a miss within it rebuilds the
-# central bank's credibility, past it credibility falls toward KMIN (runs/spec-inflation.md 2.1,
-# star 14: "TOL 1 point"). What the anchor itself counts as inflation on target.
-ANCHOR_TOL = 0.01
-# S1, LITTLE INFLATION IN A SLACK CITY. Its window was months 600-840, a city at takeoff, not a
-# slack one (on 0.7.43 the twin's unemployment 14.9% at the switch and about 5% within it, the
-# population x2.44; the spec's section 8 had said so: "ZERO_SLACK at month 600 is not slack ...
-# use city2400-like mature seeds or month 1,800 for 'slack'"). The hold is at 1,800 now
-# (Ensemble.SLACK_START). There the autopilot's own weather is in the window too (A2: spells of
-# yoy over 10% in the autopilot alone), so S1 reads the run against its twin, which is the
-# autopilot as it actually runs, and the old window thresholds - set against the 2% target -
-# become their excess over TARGET: 3% -> +1 point, 5% -> +3. The median's +1 is the anchor's
-# tolerance: a held 0% that keeps the city within the tolerance of what the autopilot gives
-# leaves the anchor where it was, which is "little" in the model's own terms. The old guard, no
-# month's yoy above RUNAWAY_YOY, becomes A2's runaway (RUN_MONTHS on end above it): one month's
-# yoy rides the grocers' shelf cycle (the shelf cap alone is about +11% on the index, the
-# spec's star 17), which a run and its twin ride out of phase once their policies part, so
-# neither a month's yoy nor its gap to the twin's same month reads the policy. (First written as
-# that gap, at most RUNAWAY_YOY - TARGET; on 0.7.100's runs it read the cycle's phase - seed 0
-# at m1890, 16.3% against its twin's -4.1% - and was replaced before the score was taken. The
-# peaks and that gap are printed as info.)
-SLACK_EXCESS_MEDIAN = ANCHOR_TOL                          # = SLACK_MEDIAN_MAX - TARGET
-SLACK_EXCESS_SEED = SLACK_SEED_MAX - TARGET               # +3 points
-# H1, A BURST THAT PERSISTS. The model's Phillips curve is the existing level wage curve plus
-# expectations, with no rate term (the spec's star 1), and KMIN .25 keeps a quarter of expected
-# inflation on the target however long the miss (star 14; KMIN .1 was measured to lock the
-# founding at 10%). So a held 0% gives a burst that persists while the dial is held - credibility
-# falls toward KMIN and expected inflation follows smoothed inflation three parts in four - and
-# not a rising rate, which "H1 builds" asked for. H1 asks for that: each half of the zero window
-# above its twin's by at least the anchor's tolerance (beyond it the anchor keeps losing
-# credibility: the burst has not faded), and the second half no faster than the first by
-# HOT_ACCEL_MIN, the acceleration "H1 builds" required, now its ceiling.
+# Restated premises retain their thresholds (P1, EN1, RN1) and H1's retirement (CD1).
+ANCHOR_TOL = 0.01                          # Expectations.TOLERANCE, one percentage point
+SLACK_EXCESS_MEDIAN = ANCHOR_TOL
+SLACK_EXCESS_SEED = SLACK_SEED_MAX - TARGET
 HOT_PERSIST_MIN = ANCHOR_TOL
-# H2 then means something: whether the autopilot, back on for 120 months, stops that burst (its
-# thresholds as written; vacuous only when H1 finds no burst).
-
-# ---- THE PREMISES RESTATED, AGAIN (EN1, 2026-10-20; Jerus: "yes, do that") ----------------
-# On 0.8.9's ensemble (FR6's fr6s1, main's model through 0.8.11) four criteria failed on main
-# itself, run after run; docs/queue/EN1-notes.md has each one's figures. Two were premises out of
-# date, restated here; S1 waited on Jerus (EN1-C) and R3 on a fix of the model (both RN1, below).
-# A2, THE FOUNDING IS NOT A RUNAWAY. SPELL_FROM left out the founding's own blip as it was
-# measured on 0.7.4x, over by month 104. The founding has since moved later: on 0.8.9 the 13
-# seeds that fail A2 from SPELL_FROM all fail on the founding's rent boom, a spell of 12-19
-# months starting between months 128 and 141, in a city of 995-1,712 people whose rents rose
-# 32-82% in the year, while the autopilot already held 17-23%. A housing shortage in a village is
-# not the autopilot losing hold of the money. A2 and A3 now leave out the young city's first twenty years, the AUTO2_FROM
-# that A1 leaves out, and the founding's spells (month SPELL_FROM to AUTO2_FROM) are printed as
-# info. From AUTO2_FROM the longest spell on 0.8.9 is 11 months (seed 9, twice): one under
-# RUN_MONTHS, so A2 is still the criterion to watch.
-# H2, AGAINST THE TWIN, AS H1 IS. The autopilot alone runs a young city hot: on 0.8.9 the AUTO2
-# twins' own inflation over ZERO_HOT's tail months (342-402) is 4.99% at the median, above
-# HOT_STOP_MAX, so the 4% ceiling judged the young city's autopilot, not whether it stopped the
-# burst; the runs themselves end 0.40 points below their twins at the median. H2 reads the tail against the
-# twin, as A27 made H1 read the burst: the tail's excess at most the anchor's tolerance (back on
-# target in the anchor's own terms), and below the second half's excess, the burst it stops. The
-# young city's own inflation (AUTO2_FROM to YOUNG_TO) is printed as info beside A1.
 HOT_STOP_EXCESS = ANCHOR_TOL
-
-# S1, THE CURRENCY'S AND NO MORE (RN1; Jerus, 2026-10-31, on EN1-C's first call: "Take all
-# (Recommended)"). A held 0% in a mature city is a cut of nearly four points below what the
-# autopilot holds (3.82% in the window on 0.8.9), and an open city pays for that through its
-# currency: on 0.8.9 fx rose 2.43% a year faster than the twin's [1.78-3.68] and the excess
-# inflation, 2.17% [1.16-3.45], was below that fall in every seed, by 0.13-0.85 points, with
-# unemployment the same as the twin's. "Little inflation in a slack city" is a liquidity trap's
-# premise, and this city's own rate is never near zero. So S1 reads, in every seed, the excess
-# at most the currency's extra fall plus the anchor's tolerance, and drops the spell guard (seed
-# 14's 21 months over 10% rode a 5.0% trend). The old reading is printed as info rows.
-
-# ---- THE PREMISES RETIRED (CD1, 0.8.15; Jerus, 2026-10-21: "Keep D9 as decided: H1's premise is
-# retired, A2 ships as noise at its threshold. Ship CD1.") ---------------------------------------
-# A retired criterion is still measured and printed, with its numbers and its threshold as written,
-# so its history reads on from one baseline to the next; its verdict is RETIRED, with his words and
-# what the numbers alone would give, and it is neither scored (no PASS or FAIL) nor counted in
-# "criteria passed". Only Jerus retires a premise (EN1), and the entry names his words and the date.
-# H1 asserted that a young city whose dial is held at 0% by hand runs at least a point hotter than
-# its AUTO2 twin in each half of the zero window's twenty years, the second half no faster than the
-# first by a point or more: the burst a cheap dial buys, persisting while the dial is held. Its
-# premise was a curve that moved with the dial in parallel, so a dial at 0% made long money cheap
-# too. D9 (docs/studies/spec-city-debt.md section 9, built by CD1) has the market expect the dial
-# back at the city's own rule within about six months (YieldCurve.DRIFT_MONTHS), whoever holds it:
-# a dial held at 0% by hand makes short money cheap, and long money stays priced on where the rule
-# will take the dial - the study's "behind" city (section 3.3). On CD1's ensemble the first half's
-# excess over the twin is 0.27 points (0.8.12: 2.37) and the second's 3.02 (3.63): the burst comes,
-# a decade later. A first-decade burst needs a market that believes the hand on the dial, which D9
-# decided against. H2 still reads H1's measure of the burst, to know whether there is one to stop.
-# A2 is not retired: it is scored as written, red on 0.8.15's runs at its threshold (one seed's
-# spell of 12 months against "under 12"), and shipped as noise by the same word.
 RETIRED = {
     "H1": "Jerus, 2026-10-21, on CD1: \"Keep D9 as decided: H1's premise is retired\"",
 }
+
+# WHY (EI1): HW1's late-payoff works failed T2 in short scenarios. Outcomes remain information.
+HARD = {"M1", "F1"}
 
 POLICIES =["AUTO2", "ZERO_SLACK", "ZERO_HOT", "SHOCK", "HIGH"]
 # months each policy runs to, as Ensemble.end() sets them (ZERO_HOT's and, since 0.7.100, ZERO_SLACK's are read from their phases)
@@ -308,7 +171,22 @@ def read_baseline(path):
         if not inside:
             inside = line == "```json"
         elif line == "```":
-            return json.loads("\n".join(block))
+            summary = json.loads("\n".join(block))
+            # Pre-EI1 baselines kept verdicts only in the Markdown table.
+            criteria = summary.setdefault("criteria", {})
+            header = None
+            for row in text.splitlines():
+                cells = [cell.strip() for cell in row.strip().strip("|").split("|")]
+                if cells[:2] == ["policy", "id"]:
+                    header = cells
+                elif header and len(cells) == len(header) and cells[0] in POLICIES + ["ALL"]:
+                    entry = dict(zip(header, cells))
+                    if entry["id"] != "info":
+                        criteria.setdefault(f"{entry['policy']}/{entry['id']}", {
+                            "value": entry["median [min to max]"],
+                            "verdict": entry["verdict"].split()[0],
+                        })
+            return summary
         else:
             block.append(line)
     print(f"{path} has no ```json block to read as a baseline", file=sys.stderr)
@@ -332,7 +210,7 @@ def main():
 
     runs = load(outdir)
     seeds = sorted({s for (_, s) in runs})
-    rows = []      # (policy, id, criterion, measure, value, threshold, verdict)
+    rows = []      # (policy, id, measure, value, threshold, verdict)
     summary = {"seeds": len(seeds), "policies": {}}
 
     def add(pol, cid, what, value, threshold, ok, note=""):
@@ -579,10 +457,21 @@ def main():
     # ---------------------------------------------------------------- print
     print(f"# Ensemble score: {outdir}  ({len(seeds)} seeds; ZERO_HOT from month {hot})")
     print()
-    print("| policy | id | measure | median [min to max] | threshold | verdict |")
-    print("|---|---|---|---|---|---|")
+    print("| policy | id | class | measure | median [min to max] | threshold | verdict | baseline value | baseline verdict |")
+    print("|---|---|---|---|---|---|---|---|---|")
+    summary["criteria"] = {}
+    changes = []
     for pol, cid, what, value, thr, verdict in rows:
-        print(f"| {pol} | {cid} | {what} | {value} | {thr} | {verdict} |")
+        kind = "hard" if cid in HARD else "info"
+        prior = (base or {}).get("criteria", {}).get(f"{pol}/{cid}", {})
+        previous = prior.get("verdict", "unavailable") if cid != "info" else "-"
+        current = verdict.split()[0]
+        if cid != "info":
+            summary["criteria"][f"{pol}/{cid}"] = {"class": kind, "value": value, "verdict": current}
+            if prior and previous != current:
+                changes.append(f"changed verdict {pol} {cid} ({kind}) {previous} -> {current}")
+        print(f"| {pol} | {cid} | {kind} | {what} | {value} | {thr} | {verdict} | "
+              f"{prior.get('value', '-')} | {previous} |")
     crit = [r_ for r_ in rows if r_[1] not in ("info", "pairing") and r_[5].startswith(("PASS", "FAIL"))]
     npass = sum(1 for r_ in crit if r_[5].startswith("PASS"))
     vac = sum(1 for r_ in rows if r_[5].startswith("VACUOUS"))
@@ -590,6 +479,10 @@ def main():
     print()
     print(f"criteria passed: {npass}/{len(crit)} (vacuous, not counted: {vac}; retired, not counted: {ret}); "
           f"missing runs: {missing or 'none'}; short runs: {short or 'none'}")
+    hard = [row for row in crit if row[1] in HARD]
+    failed = sum(1 for row in hard if row[5].startswith("FAIL"))
+    print(f"batch verdict {'FAIL' if failed else 'PASS'} (hard criteria passed {len(hard) - failed}/{len(hard)})")
+    print("\n".join(changes) if changes else "changed verdicts none")
     times = os.path.join(outdir, "times.txt")
     if os.path.exists(times):
         t = pd.read_csv(times, sep=r"\s+", names=["policy", "seed", "months", "seconds"])
@@ -597,9 +490,10 @@ def main():
         print("time per run (median s): " + ", ".join(f"{p} {per[p]:.1f}" for p in POLICIES if p in per)
               + f"; total {t['seconds'].sum() / 60:.1f} min")
     if summary_out:
-        with open(summary_out, "w", newline="\n") as f:
+        with open(summary_out, "w", encoding="utf-8", newline="\n") as f:
             json.dump(summary, f, indent=1)
+    return 4 if failed else 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
