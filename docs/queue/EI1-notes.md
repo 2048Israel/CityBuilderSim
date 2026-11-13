@@ -34,6 +34,10 @@ written.
   scored artifacts before returning 4 so the author can inspect every row.
 - ★ Keep the compatible criteria-passed line and add a distinct hard-only
   batch verdict. Existing baseline readers still recognize the stored page.
+- ★ Recover legacy criterion readings from the baseline's existing table.
+  This lets the newest stored baseline supply verdict comparisons immediately
+  and keeps its historical measurements readable.
+
 - The starter clarified by cbs-bus that the brief template is its builder
   prompt outside the repository and it will update that itself. That item is
   outside this branch. No Claude memory file was edited.
@@ -77,6 +81,13 @@ update, as clarified above.
   `target/checks/EI1-pick.txt`. The final pick uses the same implementation
   and main identities named above. Its result follows.
 
+- The final `./batch-check.sh --pick` exited 0. EnsembleCheck was the only
+  selected harness (1 of 196), compile passed, the suite passed, maps were
+  unchanged, and Stale reported 0 firm findings and 185 soft entries.
+  Kept log is `target/checks/EI1-pick-final.txt`. Readiness follows the
+  selected-harness exit-0 rule in docs/batch.md 4 and 8.
+- `git diff --check`, shell syntax checks and the LF inventory passed.
+
 ## One in, one out
 
 `git diff --numstat origin/main -- docs/batch.md docs/orchestrator.md tools/ensemble`
@@ -84,13 +95,3 @@ gives **228 added, 207 removed, net +21**. The count includes both self-test
 files, all scorer/runner edits and the three rule documents. EI1's notes and
 ship file are excluded. Repeated introductions and premise-history prose
 were condensed to keep the process change near line-neutral.
-
-- The final `./batch-check.sh --pick` exited 0. EnsembleCheck was the only
-  selected harness (1 of 196), compile passed, the suite passed, maps were
-  unchanged, and Stale reported 0 firm findings and 185 soft entries.
-  Kept log is `target/checks/EI1-pick-final.txt`. Readiness follows the
-  selected-harness exit-0 rule in docs/batch.md 4 and 8.
-- `git diff --check`, shell syntax checks and the LF inventory passed.
-- ★ Recover legacy criterion readings from the baseline's existing table.
-  This lets the newest stored baseline supply verdict comparisons immediately
-  and keeps its historical measurements readable.
