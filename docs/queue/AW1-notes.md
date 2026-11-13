@@ -15,6 +15,7 @@ temporary exercise, followed by the fixture's restoration.
 The checkout's known-reds file contains no entry naming AW1.
 
 Initial batch-check --fast passed, with zero firm stale findings.
+The two later --fast runs also passed with zero firm stale findings.
 
 ## Calls and implementation
 
@@ -47,6 +48,10 @@ permission, land, and a higher debt limit. It supplies evidence for meeting
 the city's unmet needs. A stimulus comparison needs a city with spare
 power, rich cash and unemployment before either twin orders surplus works.
 This batch records the option for that separate measurement.
+
+The allocated-land load repair is queued as AW2 through AW1's ship file.
+Its brief and the RT3 policy-test evidence are in AW1.md's allocated-land
+follow-up section.
 
 ## Before the change
 

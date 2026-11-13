@@ -4,7 +4,7 @@ Generated 2026-11-12 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 565 files, 616,844 lines, 26,866 methods, 5,934 constants. `GameVersion.VERSION` is "0.9.97", `SAVE_FORMAT` 51.
+**The tree:** 565 files, 616,846 lines, 26,866 methods, 5,934 constants. `GameVersion.VERSION` is "0.9.97", `SAVE_FORMAT` 51.
 
 ## model (261 files)
 
@@ -372,7 +372,7 @@ Generated 2026-11-12 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AllChecks.java](AllChecks.md) | 439 | 18 | Runs every harness, one JVM each, and says which failed. | 4 |
 | [ArrivalMixCheck.java](ArrivalMixCheck.md) | 375 | 21 | The skill mix of the arrivals by year (R0d slice 2): the year's mix in a city founded the 1900 way, and WageBand's ceilings in every other city. | 0 |
 | [AuctionCheck.java](AuctionCheck.md) | 1,686 | 42 | The city's paper sold at auction: one clearing yield, and what it costs. | 0 |
-| [AutoBuildCheck.java](AutoBuildCheck.md) | 2,027 | 46 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 1 |
+| [AutoBuildCheck.java](AutoBuildCheck.md) | 2,029 | 46 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 1 |
 | [BankCheck.java](BankCheck.md) | 4,562 | 24 | The commercial bank, and the families it discharges. | 1 |
 | [BasketYearCheck.java](BasketYearCheck.md) | 775 | 36 | The household's basket by year (R0e slice 1): the year's basket in a city founded the 1900 way, today's in every other. | 0 |
 | [BondCheck.java](BondCheck.md) | 1,711 | 43 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
