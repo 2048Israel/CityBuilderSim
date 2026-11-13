@@ -3312,8 +3312,8 @@ final class BuildScreen {
                 HBox heldRow = Kept.row(5, icon(Icons.COIN, Palette.WARN, 12), held);
                 heldRow.setAlignment(Pos.TOP_LEFT);
                 heldRow.setStyle("-fx-padding: 3 0 0 0;");
-                Kept.tip(heldRow, "Automatic building orders a school, a police station, a prison or a"
-                        + " transit line only as far as it pays back over its life. The advice ranks by the cheapest per "
+                Kept.tip(heldRow, "Essential works are ordered when needed. Other works count the output losses they"
+                        + " prevent in their payback. The advice ranks by the net cost per "
                         + BuildCard.perWords(s.measure()) + "; the order is still yours to place, and the inbox has the same"
                         + " line.", 1000);
                 return heldRow;
@@ -3428,6 +3428,8 @@ final class BuildScreen {
                 };
         String tip = "Cheapest per " + per + priced + which + ": " + money(s.pricePerUnit()) + next
                 + ". Land at the land office's " + groundPrice(ui.game.getLandManager().getOfficePricePerSqFt()) + "/m².";
+        if (!s.paving()) tip += "\n" + WorksValue.of(ui.game, s.measure(), BuildAdvice.onSite(ui.game, s.measure()),
+                s.template(), s.count(), ui.game.getLandManager().getAvailableSqFt(), s.ahead()).words();
         return new CardWords(does, sized, land, tip, ui.game.getAutoBuilder().heldBackWords(s));
     }
 

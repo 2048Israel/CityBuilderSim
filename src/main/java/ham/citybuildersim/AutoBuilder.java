@@ -387,7 +387,7 @@ public final class AutoBuilder {
     public static final class PaybackHold {
         public String measure;
         public int templateId;
-        public double runs, covered, paid, costs;
+        public double runs, covered, paid, costs, prevented;
 
         public PaybackHold() { }
 
@@ -398,10 +398,11 @@ public final class AutoBuilder {
             covered = p.covered();
             paid = p.paid();
             costs = p.costs();
+            prevented = p.prevented();
         }
 
         /** The payback it weighed. */
-        public Payback payback() { return new Payback(runs, covered, paid, costs); }
+        public Payback payback() { return new Payback(runs, covered, paid, costs, prevented); }
     }
 
     /** The last pass's payback holds (PT1-M3), in the order it weighed them. */
@@ -483,7 +484,7 @@ public final class AutoBuilder {
     static boolean kept(Game game, BuildAdvice.Measure m, List<CityNeeds.Need> all) {
         if (m.kind() == BuildAdvice.Kind.TRANSIT) return false;
         if (m.kind() != BuildAdvice.Kind.SCHOOL) return true;
-        if (!m.school().isBasic()) return rowFor(all, m) != null;
+        if (!BuildAdvice.warranted(game, m)) return false;
         // ...a stage down the ladder with somebody to teach: with nobody its figure reads 0% (BuildAdvice.school()).
         return BuildAdvice.supplyDemand(game, m, new LinkedHashMap<>())[1] > 0;
     }
@@ -551,7 +552,7 @@ public final class AutoBuilder {
 
     /** Whether what stands keeps a measure at its target: off NEEDS YOU's list, and a served gauge at 100%, of today's demand with the spare margin past it (BuildAdvice.ahead()). */
     public boolean atTarget(Game game, BuildAdvice.Measure m) {
-        return BuildAdvice.ahead(game, m, new LinkedHashMap<>(), target());
+        return BuildAdvice.maintained(game, m, new LinkedHashMap<>(), target());
     }
 
     /* =====================================================================
@@ -901,7 +902,7 @@ public final class AutoBuilder {
     }
 
     /**
-     * An ESSENTIAL SERVICE (0.7.104, star P2b-1): power, water, care of
+     * An ESSENTIAL SERVICE (HW1): roads, schools and police join power, water, care of
      * every kind and death care. Jerus: "Essential services (death care,
      * health, water, power) skip the revenue budget. Only the debt limit
      * applies to them, and running a deficit to have them is fine." Health is
@@ -914,7 +915,8 @@ public final class AutoBuilder {
      */
     public static boolean essential(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case CARE: case DEATH: case PLOTS: return true;
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case PLOTS:
+            case SCHOOL: case POLICE: case CELLS: return true;
             default: return false;
         }
     }
@@ -1083,9 +1085,10 @@ public final class AutoBuilder {
      * (paid()) and what each already costs it (costs()). It pays back where
      * what they pay past what they cost covers its running.
      */
-    public record Payback(double runs, double covered, double paid, double costs) {
+    public record Payback(double runs, double covered, double paid, double costs, double prevented) {
+        public Payback(double runs, double covered, double paid, double costs) { this(runs, covered, paid, costs, 0); }
         /** What the residents it covers pay the city a month past what they already cost it. */
-        public double net() { return covered * (paid - costs); }
+        public double net() { return covered * (paid - costs) + prevented; }
         /** Whether it pays back: net() at least runs. */
         public boolean paysBack() { return runs <= 0 || net() >= runs; }
         /** net() over runs, nothing under nothing: 1 or more pays back. */
@@ -1098,7 +1101,9 @@ public final class AutoBuilder {
         double runs = n * running(game, t);
         double covered = coveredOverLife(game, m, BuildAdvice.onSite(game, m),
                 BuildAdvice.plus(new LinkedHashMap<>(), t, n), s.ahead());
-        return new Payback(runs, covered, paid(game), costs(game, m));
+        WorksValue.Value value = WorksValue.of(game, m, BuildAdvice.onSite(game, m), t, n,
+                game.getLandManager().getAvailableSqFt(), s.ahead());
+        return new Payback(runs, covered, paid(game), costs(game, m), value.avoided() / BuildAdvice.lifeFactor(game));
     }
 
     /** The last pass, a step a measure (not saved: a harness reads it the month it is made). */
@@ -1162,13 +1167,13 @@ public final class AutoBuilder {
      */
     private void step(Game game, List<CityNeeds.Need> all, BuildAdvice.Measure m) {
         Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
-        if (BuildAdvice.ahead(game, m, site, BuildAdvice.opening(game, 0, slack))) {
+        if (BuildAdvice.maintained(game, m, site, BuildAdvice.opening(game, 0, slack))) {
             steps.add(new Step(m, Outcome.AHEAD, null, 0, 0, Cut.NONE, 0, 0));
             return;
         }
         boolean worksOnSite = BuildAdvice.units(site) > 0;
         // A first of a kind where there is none is paid from the cash alone (0.7.101, star P2-1).
-        boolean fromCash = firstOfAKind(game, m);
+        boolean fromCash = firstOfAKind(game, m) && !essential(m);
         Set<BuildingsTemplate> skip = new HashSet<>();
         boolean noPaving = false;
         Refused first = null;
@@ -1176,7 +1181,7 @@ public final class AutoBuilder {
         Askable askable = null;
         while (true) {
             BuildAdvice.Suggestion s = BuildAdvice.suggestFor(game, rowFor(all, m), m, game.getCash(),
-                    game.getLandManager().getAvailableSqFt(), slack, skip, noPaving);
+                    game.getLandManager().getAvailableSqFt(), slack, skip, noPaving, true);
             if (s == null || s.count() < 1 || !orderable(s.template())) {
                 if (first != null) {
                     // Nothing in the ranking is paid for: a card whose bond came up short keeps its ask open (D30); any other hold is a hold.
@@ -1201,7 +1206,7 @@ public final class AutoBuilder {
             }
             int n = wanted;
             Cut cut = Cut.NONE;
-            if (wait(game, s, n) > ORDER_MONTHS) {
+            if (!essential(m) && wait(game, s, n) > ORDER_MONTHS) {
                 int lo = 0, hi = n;                      // lo opens inside, hi does not
                 while (hi - lo > 1) {
                     int mid = lo + (hi - lo) / 2;
@@ -1820,7 +1825,8 @@ public final class AutoBuilder {
         String leaves = String.format("it would not pay back: the %,.0f residents it would cover over its %d years pay the city ",
                 p.covered(), BuildAdvice.LIFE_YEARS) + money(p.paid()) + " a month each and cost it " + money(p.costs())
                 + " each, which leaves ";
-        if (!(p.paid() > p.costs())) return leaves + "nothing for the " + money(p.runs()) + " a month it runs at.";
+        if (!(p.paid() > p.costs()) && !(p.prevented() > 0)) return leaves + "nothing for the " + money(p.runs()) + " a month it runs at.";
+        leaves += "including " + money(p.prevented()) + " of prevented output loss, ";
         return leaves + money(p.net()) + " a month, " + String.format("%.0f%%", 100 * p.share()) + " of the "
                 + money(p.runs()) + " it runs at.";
     }
@@ -2319,6 +2325,7 @@ public final class AutoBuilder {
             h.runs *= scale;
             h.paid *= scale;
             h.costs *= scale;
+            h.prevented *= scale;
         }
     }
 

@@ -515,6 +515,14 @@ public final class BuildCard {
         return t.getUpkeep() + bill;
     }
 
+    /** The same full-horizon sum the advice uses, exposed to every city work's card (HW1). */
+    public static WorksValue.Value worksValue(Game game, BuildingsTemplate t, BuildAdvice.Measure m) {
+        BuildAdvice.Measure on = m != null && m.serves(t) ? m : cityMeasure(t);
+        if (on == null) return null;
+        return WorksValue.of(game, on, BuildAdvice.onSite(game, on), t, 1,
+                game.getLandManager().getAvailableSqFt(), BuildAdvice.opening(game, game.quoteBuild(t, 1).months));
+    }
+
     /** The sector whose money and staffing test a market building is judged by: its owner, or retail for the bank's branch (planBank() asks retail). */
     public static Sector ownerOf(Game game, BuildingsTemplate t) {
         Sector owner = game.getSectors().ownerOf(t);

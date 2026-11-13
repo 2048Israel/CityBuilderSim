@@ -982,7 +982,7 @@ public final class CityNeeds {
     /* ----- the student body the city would get and hire (0.7.51) ----- */
 
     /** A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, Agriculture.FIRST_FARM_UTILISATION). */
-    public static final double FIRST_SCHOOL_SHARE = .5;
+    public static final double FIRST_SCHOOL_SHARE = BuildAdvice.FIRST_WORK_SHARE;
 
     /** Whether a school above the ladder is a row: a class's worth wanted (SEATS_FLOOR), and with no seats of its kind yet, FIRST_SCHOOL_SHARE of the smallest school's. */
     public static boolean listsSchool(Game game, EducationType type, double want, double seats) {

@@ -1128,6 +1128,32 @@ public final class BuildAdvice {
         return CityNeeds.servedShare(sd[0], sd[1]) >= 1;
     }
 
+    /** Automatic works (HW1): every essential service meets the whole demand, including highways, police and professional schools. */
+    public static boolean maintained(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
+        if (!AutoBuilder.essential(m)) return ahead(game, m, added, p);
+        if (!warranted(game, m)) return true;
+        double[] sd = supplyDemand(game, m, added, p);
+        return !(sd[1] > 0) || sd[0] >= sd[1];
+    }
+
+    /** Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. */
+    public static final double FIRST_WORK_SHARE = .30;
+
+    /** Below a useful share of the smallest work, no shortage is declared or forced (HW1). */
+    public static boolean warranted(Game game, Measure m) {
+        if (!AutoBuilder.essential(m)) return true;
+        double demand = supplyDemand(game, m, Map.of())[1];
+        if (!(demand > 0)) return false;
+        double least = Double.POSITIVE_INFINITY;
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (!m.serves(t)) continue;
+            double unit = built(game, m, t);
+            if (m.kind() == Kind.HIGHWAYS) unit *= InfrastructureManager.FREE_FLOW;
+            if (unit > 0) least = Math.min(least, unit);
+        }
+        return !Double.isFinite(least) || demand >= FIRST_WORK_SHARE * least;
+    }
+
     /**
      * What `sqFt` of ground is worth to the city with `landLeft` free: the
      * free part at the cheaper of what a business pays the city for it and
@@ -1268,12 +1294,20 @@ public final class BuildAdvice {
     /** ...and with the city's gravel roads paved left out too when `noPaving` (0.7.101): a paving the money cannot pay for, passed over the same way (and the test player's paving once offered, since 0.7.103). */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving) {
+        return suggestFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, false);
+    }
+
+    /** The automatic builder's full-service target, with the player's slack (HW1); manual advice keeps its listing thresholds. */
+    public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
+                                        double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain) {
+        if (AutoBuilder.essential(m) && !warranted(game, m)) return null;
         // A berth (FR3): the terminal that pays back, if any (A BERTH THAT PAYS BACK, below) - not ranked like a service.
         if (m.kind() == Kind.PORT) return portSuggestion(game, m, cashLeft, landLeft, skip);
         Map<BuildingsTemplate, Integer> site = onSite(game, m);
         double whenOnSite = figure(game, m, site);
         // JUDGEMENT: what is on site already keeps it ahead, sized as an order placed now would be - nothing to add.
-        if (ahead(game, m, site, opening(game, 0, slack))) return null;
+        if (maintain ? maintained(game, m, site, opening(game, 0, slack))
+                : ahead(game, m, site, opening(game, 0, slack))) return null;
         double before = need != null ? need.value() : figure(game, m, new LinkedHashMap<>());
 
         List<Weighed> weighed = new ArrayList<>();
@@ -1283,16 +1317,24 @@ public final class BuildAdvice {
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway() : m.serves(t);
             if (!candidate || skip.contains(t)) continue;
             double unit = unit(game, m, t);
+            if (maintain && roadKind(m) && unit <= 0) unit = built(game, m, t);
             // A building the city cannot staff at all, or one that does not
             // move the figure, serves nothing.
             if (!(unit > 0)) continue;
             // Counted twice: at today's demand with the slack, for the order's
             // own wait; then at the demand it opens to after that wait.
-            int[] today = count(game, m, site, t, new Ahead(0, 1, slack));
+            int most = m.kind() == Kind.POWER && t.isHydro() ? Math.min(MOST, game.hydroSlotsFree(t)) : MOST;
+            Map<BuildingsTemplate, Integer> one = plus(new LinkedHashMap<>(), t, 1);
+            int[] today = count(game, m, site, one, new Ahead(0, 1, slack), most, maintain);
             if (today[0] <= 0) continue;
             double lead = game.quoteBuild(t, today[0]).months;
             Ahead p = opening(game, lead, slack);
-            int[] found = count(game, m, site, t, p);
+            // Power is a twenty-year capacity choice, not a plant fitted to the next three years (HW1).
+            if (m.kind() == Kind.POWER) {
+                double months = lead + LIFE_MONTHS;
+                p = new Ahead(months, lifeTrend(game, months), slack);
+            }
+            int[] found = count(game, m, site, one, p, most, maintain);
             if (found[0] <= 0) continue;
             boolean closes = found[1] == 1;
             boolean fits = t.getLandSqFt() * (double) found[0] <= landLeft;
@@ -1302,7 +1344,9 @@ public final class BuildAdvice {
             // care building's its order over the places the need lacks from
             // 0.7.71, and the rest their price a unit with their ground.)
             double per = lifePerServed(game, m, site, t, found[0], unit, p, landLeft);
-            weighed.add(new Weighed(t, (closes ? 0 : 2) + (fits ? 0 : 1), per, unit, found[0], closes, fits, p, lead,
+            // Automatic building can buy land: its full price ranks it, rather than a free-land veto (HW1).
+            weighed.add(new Weighed(t, (closes ? 0 : 2) + (!maintain && !fits ? 1 : 0), per, unit, found[0], closes, fits, p,
+                    game.quoteBuild(t, found[0]).months,
                     false));
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
@@ -1381,17 +1425,29 @@ public final class BuildAdvice {
      */
     static int[] count(Game game, Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTemplate, Integer> step,
                        Ahead p, int most) {
+        return count(game, m, site, step, p, most, false);
+    }
+
+    /** Count full staffed service for automatic essential works; other advice retains its own figure (HW1). */
+    private static int[] count(Game game, Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTemplate, Integer> step,
+                               Ahead p, int most, boolean maintain) {
         if (most < 1) return new int[] {0, 0};
         Ahead at = p == null ? NOW : p;
-        java.util.function.Predicate<Map<BuildingsTemplate, Integer>> done = p == null
-                ? a -> clear(m, figure(game, m, a)) : a -> ahead(game, m, a, at);
-        double before = figure(game, m, site, at);
-        boolean worseHigher = higherWorse(m);
+        boolean full = maintain && AutoBuilder.essential(m);
+        java.util.function.Predicate<Map<BuildingsTemplate, Integer>> done = full ? a -> maintained(game, m, a, at)
+                : p == null ? a -> clear(m, figure(game, m, a)) : a -> ahead(game, m, a, at);
+        java.util.function.ToDoubleFunction<Map<BuildingsTemplate, Integer>> reading = a -> {
+            if (!full) return figure(game, m, a, at);
+            double[] sd = supplyDemand(game, m, a, at);
+            return sd[0] - sd[1];
+        };
+        double before = reading.applyAsDouble(site);
+        boolean worseHigher = !full && higherWorse(m);
         double best = before;
         int tried = 0, n = 1;
         while (true) {
             Map<BuildingsTemplate, Integer> a = times(site, step, n);
-            double f = figure(game, m, a, at);
+            double f = reading.applyAsDouble(a);
             if (done.test(a)) {
                 int lo = tried, hi = n;           // lo fails (or is 0), hi is done
                 while (hi - lo > 1) {
@@ -1413,7 +1469,7 @@ public final class BuildAdvice {
         int lo = 0, hi = tried;
         while (hi - lo > 1) {
             int mid = lo + (hi - lo) / 2;
-            double f = figure(game, m, times(site, step, mid), at);
+            double f = reading.applyAsDouble(times(site, step, mid));
             boolean there = worseHigher ? f <= target + 1e-12 : f >= target - 1e-12;
             if (there) hi = mid; else lo = mid;
         }
@@ -1847,7 +1903,7 @@ public final class BuildAdvice {
     public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t,
                                        int count, double unit, Ahead p, double landLeft) {
         double served = servedOverLife(game, m, site, plus(new LinkedHashMap<>(), t, count), p);
-        return perServed(orderLife(game, t, count, landLeft, site), served, count, unit);
+        return perServed(WorksValue.of(game, m, site, t, count, landLeft, p).net(), served, count, unit);
     }
 
     /* =====================================================================

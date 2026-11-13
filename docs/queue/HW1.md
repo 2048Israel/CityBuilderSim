@@ -48,3 +48,35 @@ and building from cash grew from 311,150 to 578,800 people.
 Expected files: `AutoBuilder.java`, `BuildAdvice.java`, perhaps
 `LongPlaytest.java` and `AutoBuildCheck.java`. Moves the playtest: yes.
 Versioned.
+
+## Jerus's raised bar, 2026-11-13
+
+Jerus, about 16:15, through lanekeeper: "with automatic building on,
+technically, all services and everything the government builds should be
+near or around 100% with occasional blips, no?"
+
+Done now means every government service, including every professional
+school, stays near full service with only short blips. Count each service's
+months under 90%, months under a fifth, and longest spell under 90%.
+Explain remaining blips by lead time, cash, land or no available work, and
+what would close them. A shortage longer than its work's own lead time is
+a fault to fix: the 15% slack exists to build ahead of growth.
+
+Jerus's later instructions through lanekeeper, the same afternoon:
+
+- "its just it shouldnt be measure on payback, it should be measured also on
+  the losses it prevents no? cause if the economy is being halted?" Price
+  the output, wage and tax losses the model actually charges. Prevented
+  losses rank works and count for non-essential payback; essential service
+  remains the floor. Show the same sum on the Build advice cards.
+- "careful with colleges and above, cause technically in a city of 100
+  poeple they will show 0% coverage, even tho its not needed". His example:
+  "like for example if college has 500 seats, then it 150 people wanting
+  it, it may be realy worth it". Use 30% of the smallest work as the first
+  useful demand, consistently in eligibility and service measurements.
+- "also, too many windfarms when in reality the coal power plant is more
+  optimal, the auto builder is too short sighted". Compare the entire
+  horizon's order, land, running, jobs, workers, local/imported fuel and
+  every pollution/health cost the model actually charges. His card showed
+  79 wind farms and 12.8 km², sized only 37 months out. Report plant choices
+  and sums before and after. Coal must win whenever its full sum wins.
