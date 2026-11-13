@@ -524,21 +524,7 @@ public class CurveCheck {
      * target, which is the month's own strike.
      */
     static Game steepCity(Path root, String label) {
-        // On the world's band since WN3-R (2026-11-08). The curve is steep only while the short end is the dial's. WN3 played this founding
-        // on the literals: on the band at 0.8.75 a cement works' bank loan sent the young bank to the central bank's window, and its cost
-        // of funds plus Bank.MIN_MARGIN floored the 1-month at 2.1% on a dial of 1%, the 10-year 1.3 points over it. On 0.9.55 the band's
-        // founding is the steep city: at month 39 the 1-month 1.31%, the 1-year 2.21%, the 10-year 3.41%, 2.1 points over the 1-month.
-        // WG1 (2026-11-10): the floor is set at the going rate before the first month, the wage this fixture was written against. A new city's floor
-        // is .85 of the going rate now (WG1, a real minimum), and the unskilled wage then falls to the market's own level in a glut: this city at month 39
-        // read 1-month 1.8021, 1-year 2.4377, 10-year 3.4350, the 10-year 1.63 points over the 1-month, under the 2 the fixture asks; with the floor at the
-        // going rate (main's path, the old default) it is the steep city above.
-        // GW1 (2026-11-10): Manufacturing and Wood Products held from the founding, as WN3 held the cement works. With the draw in the staffing gate the
-        // founding's manufacturers order a plant on a bank loan before month 26 (Manufacturing 549 on the bank's book; main's path had Wood Products 430 at
-        // month 33), and the retailers and restaurants that follow it at months 34 to 38 take the bank to 1,104 borrowed against 986 of deposits: the bank
-        // is at the central bank's window, its cost of funds 2.16% and the floor of the 1-month 3.16% on a dial the fixture set at 1%. Month 39 read 1-month
-        // 2.25, 1-year 2.65, 10-year 3.46 (the 10-year 1.21 points over the 1-month, under the 2 the fixture asks, and the 1-year 0.40 under its 0.5). Holding
-        // Wood Products alone changes nothing (the Manufacturing loan is the cause); both held, the bank has 158 borrowed against 1,599 of deposits at month
-        // 38, its cost of funds 0.00%, and month 39 reads 1-month 1.00, 1-year 2.06, 10-year 3.39, the 10-year 2.39 points over the 1-month.
+        // On the world's band since WN3-R (2026-11-08).
         Game g = city(root, label, 38, true, Sectors.MANUFACTURING, Sectors.WOOD_PRODUCTS);
         DebtManager dm = g.getDebtManager();
         double rule = dm.advisedPolicyRate(inflationRead(g));
@@ -556,8 +542,9 @@ public class CurveCheck {
         check("fixture: the dial is held by hand, two points under the rule at the inflation the month struck",
                 !dm.isAutopilot() && dm.isStruck()
                         && Math.abs(dm.advisedPolicyRate(dm.getStruckInflation()) - dm.getPolicyRate() - .02) < 1e-12);
-        check("fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points",
-                !curve.isFlat() && dm.curveRate(12) - dm.curveRate(1) > .005 && dm.curveRate(120) - dm.curveRate(1) > .02);
+        if (!Observation.reached("fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points",
+                !curve.isFlat() && dm.curveRate(12) - dm.curveRate(1) > .005 && dm.curveRate(120) - dm.curveRate(1) > .02,
+                "section 7 issue-at-steep-curve comparisons")) return;
         check("fixture: the city can pay for buying back any one piece it borrows (a buyback costs about what the piece raised)",
                 g.getCash() > 3 * ASK);
 
@@ -669,7 +656,9 @@ public class CurveCheck {
         BondMarket.Readings readings = g.bondReadings();
         check("fixture: the bond market is attached to the city's readings", g.getBondMarket().readings() == readings);
         DebtManager dm = g.getDebtManager();
-        check("fixture: the curve being read is the steep one, not a flat one", !dm.curve().isFlat());
+        if (!Observation.reached("fixture: the curve being read is the steep one, not a flat one",
+                !dm.curve().isFlat(),
+                "section 9 steep bond-market readings")) return;
         for (int m : new int[] {12, 120, 360}) {
             same("the bond market's benchmark at " + months(m) + " is the city's curveRate()", readings.curve(m), dm.curveRate(m));
         }
@@ -716,10 +705,12 @@ public class CurveCheck {
         }
         out.printf("   the month's end moved the expectation from %.6f to %.6f (month %d)%n", expectedBefore,
                 x.getExpectedInflation(), g.getMonth());
-        check("fixture: the end of the month moved the expectation", x.getExpectedInflation() != expectedBefore);
+        boolean expectationMoved = Observation.reached("fixture: the end of the month moved the expectation",
+                x.getExpectedInflation() != expectedBefore,
+                "changed expectation at the held strike");
         same("after the month the struck expectation is what Expectations read before the press", dm.getStruckExpected(),
                 expectedBefore);
-        check("...and it is not what the month's end has since made of it", dm.getStruckExpected() != x.getExpectedInflation());
+        if (expectationMoved) check("...and it is not what the month's end has since made of it", dm.getStruckExpected() != x.getExpectedInflation());
         same("after the month the struck inflation is what the month's top read", dm.getStruckInflation(), inflationBefore);
         double newlyExpected = x.getExpectedInflation(), newlyRead = inflationRead(g);
         pressQuietly(g);

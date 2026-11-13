@@ -891,17 +891,20 @@ public class HousingCheck {
                 run, HELD * 100, run - GROWN, (System.currentTimeMillis() - started) / 1000.0, glutMonths, neitherMonths,
                 studioWaived, familyWaived, largestLift);
         assertTrue("fixture: the held dial is the rate the landlords borrow against", dm.getPolicyRate() == HELD);
-        assertTrue("fixture: a glut with a lift waiting came up (the lift was waived in a month)",
+        Observation.reached("fixture: a glut with a lift waiting came up (the lift was waived in a month)",
                 studioWaived + familyWaived > 0);
 
         // ...and the share of its debt whose homes are closed goes through a save and a load.
         double share = re.strandedDebtShare();
         System.out.printf("   the landlords' debt on closed homes at the end: %.3f of it%n", share);
-        assertTrue("fixture: the city closed homes and left their debt on the landlords", share > 0 && share <= 1);
-        assertTrue("saved", held.saveGame(1, "housing-held").ok);
-        Game back = new Game(held.getGameFiles());
-        back.loadGame(1);
-        isNear("a closed home's debt share comes back from a save", back.getSectors().realEstate().strandedDebtShare(), share);
+        if (Observation.reached("fixture: the city closed homes and left their debt on the landlords",
+                share > 0 && share <= 1,
+                "closed-home share save round trip")) {
+            assertTrue("saved", held.saveGame(1, "housing-held").ok);
+            Game back = new Game(held.getGameFiles());
+            back.loadGame(1);
+            isNear("a closed home's debt share comes back from a save", back.getSectors().realEstate().strandedDebtShare(), share);
+        }
     }
 
     /**

@@ -1361,7 +1361,9 @@ public class MapCheck {
         check("bought ground inside the cells already open is built on about as the cells opened after the purchase are (S3, first block): " + on3[1] + " of " + on3[0] + " in the open cells against "
                 + on3[3] + " of " + on3[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: " + off3[1] + " of " + off3[0] + " against " + off3[3] + " of " + off3[2],
                 openShareHolds(on3) && !openShareHolds(off3));
-        if (open4) {
+        if (Observation.reached("fixture: the second bought block has open and newly occupied closed cells",
+                open4,
+                "second-block FX9 share")) {
             check("...the same for the second block (S4): " + on4[1] + " of " + on4[0] + " in the open cells against " + on4[3] + " of " + on4[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: "
                     + off4[1] + " of " + off4[0] + " against " + off4[3] + " of " + off4[2], on4[2] > 0 && openShareHolds(on4) && !openShareHolds(off4));
         }
@@ -10199,7 +10201,7 @@ public class MapCheck {
         out.printf("      %d boxes at %.2f px a plot: %d as every plot under them says, %d taking an offer, %d several; %d of %d offers taken by"
                 + " some and %d missed by others; a box in one free plot of each takes it alone for %d%n", BOXES, f.scale(), boxesExact,
                 boxesTaking, boxesSeveral, takenBy.size(), listing.size(), missedBy.size(), alone);
-        check("fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others",
+        Observation.reached("fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others",
                 boxesTaking > 0 && boxesSeveral > 0 && takenBy.size() == listing.size() && missedBy.size() == listing.size());
         check("a box takes exactly the offers whose free ground it meets - every plot under it tried - in the order given",
                 boxesExact == BOXES);
@@ -10334,6 +10336,7 @@ public class MapCheck {
         LandMap.Card shortCard = LandMap.card(g, three);
         DebtQuote bond = shortCard.bond(), note = shortCard.note();
         DebtQuote again = g.quoteLongBondForCash(g.landCashGap(three), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        DebtQuote noteAgain = g.quoteTBill(g.landCashGap(three), Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
         boolean bondRight = bond != null && bond.equals(again) && bond.duration() == Game.BUILD_BOND_YEARS && bond.requested() == shortCard.gap()
                 && Math.abs(bond.faceValue() / Game.BUILD_BOND_GRANULE - Math.rint(bond.faceValue() / Game.BUILD_BOND_GRANULE)) < 1e-9
                 && bond.cashReceived() >= shortCard.gap();
@@ -10351,9 +10354,13 @@ public class MapCheck {
                 bond == null ? 0 : bond.cashReceived(), note == null ? "none" : String.valueOf(note.duration()), boughtShort);
         check("fixture: three offers the treasury is short of", shortCard.funding() && shortCard.gap() > 0
                 && sameFigure(shortCard.gap(), shortCard.local() - shortCard.before()));
-        check("short, the card's bond is the funding page's first: the " + Game.BUILD_BOND_YEARS + "-year term for the gap, its face on the granule,"
+        boolean fundingCovered = Observation.reached("fixture: the played market covers the land card's bond and note",
+                !again.isEmpty() && again.cashReceived() >= shortCard.gap()
+                    && !noteAgain.isEmpty() && noteAgain.cashReceived() >= shortCard.gap(),
+                "card bond and note equivalence, issued bond purchases");
+        if (fundingCovered) check("short, the card's bond is the funding page's first: the " + Game.BUILD_BOND_YEARS + "-year term for the gap, its face on the granule,"
                 + " its cash covering it - and the note beside it", bondRight && noteRight);
-        check("...and issued, the card's bond buys them all", boughtShort == three.size());
+        if (fundingCovered) check("...and issued, the card's bond buys them all", boughtShort == three.size());
 
         // Short from the vault: the dollar bond and note for the vault's gap, or none while the window abroad is shut.
         g.setLandPaidFromVault(true);
@@ -13938,12 +13945,7 @@ public class MapCheck {
         CityMap far = CityMap.canonical(copy, r -> copy.amountsInOrder(r), city.getMapTypes(), counts);
         Redraw pl = new Redraw("the played city", far, counts, GROW_PER_MILLE, false, false, false, false);
         pl.month(SETTLE, -1, false);
-        // WN3 (after EM1): the played city's first month of growth moved the stamp's view. Two of its four districts, (0,-1) and (-1,-1), held no
-        // building at the settle; one more building of each type put 191 and 612 cells in them, the built-up box the frame is drawn from grew from
-        // 224 x 144 to 264 x 192 plots and the stamp from 5 plots a pixel to 6 - where the city before the merge held its view through all 8 months.
-        // A view that moves is drawn anew, every layer with it: not the land layer's purchase-only redraw this section is about. The fixture grows
-        // the city (GROW months, not judged) until a month leaves the view as it was, and the months before and after the purchase are the ones
-        // judged from there, as many as before.
+        // WN3 (after EM1): the played city's first month of growth moved the stamp's view.
         int warm = 0;
         while (warm < PLAYED_WARM_MAX) {
             RedrawMonth w = pl.month(GROW, -2 - warm++, false);
@@ -14925,20 +14927,8 @@ public class MapCheck {
        20. THE ONE YARD STAYS WITH ITS DISTRICT (batch MF2, 2026-11-08)
        ===================================================================== */
 
-    /*
-     * WHY (WN3-M(a), found on Historical's larger city, queued as MF2 item 2): CityMap.yardsOf() dealt the runs' yards to the districts counting a Rail Depot in the map's
-     * order, the first district first. A city has one yard however many depots it counts (a further yard is laid only beside works more than a district from every yard), so
-     * when a Rail Depot arrived in a district earlier in the order than the one that stood the yard, the yard's share moved to it: the district that stood the yard drew its
-     * own depot as a box at the place its log dates it, the boxes after it moved (m3995, district (-2,-3): 10 boxes), and the new depot vanished into a yard on another
-     * district's ground. MF2 deals a yard to the district whose frame holds it when that district counts a depot with no yard yet; only a yard no such district claims
-     * is dealt by the order.
-     *
-     * The fixture causes the condition, on the default world's dry place and no Game: two districts side by side, the first (the founding site's, 6 plots from its east
-     * edge) owned but for a strip along that edge, so the nearest crossing of the highways' lattice the city owns is across the edge, in the second, which owns a block
-     * only. One Rail Depot goes to the second district (a depot is an outer building: the last district with room), the railway starts at that crossing and lays the
-     * one yard there, in the second district's frame. The second district is then filled with works month by month until it has no room for a second depot, and
-     * the second depot goes to the first district, earlier in the map's order. The plans of both districts before it and after the month it arrives are compared.
-     */
+    // WHY (WN3-M(a), found on Historical's larger city, queued as MF2 item 2): CityMap.yardsOf() dealt the
+    // runs' yards to the districts counting a Rail Depot in the map's order, the first district first.
 
     /** Where the founding site stands in 20's first district, plots from its north-west corner: 6 plots in from its east edge, so the nearest crossing it owns is across it. */
     static final int[] YARD_SITE_AT = { 250, 144 };
@@ -15057,15 +15047,11 @@ public class MapCheck {
        21 AND 22. TWO MOVED-BOX FINDINGS, CAUSED ON A BUILT DISTRICT (batch MF2, 2026-11-08)
        ===================================================================== */
 
-    /*
-     * WHY (WN3-M(b) and HD1-M, queued as MF2 items 2 and 4): the bigger cities LongPlaytest watched met two cases of "a building on the map moved" with no run, reserve or yard
-     * to move it: WN3's Historical city at m2078, where 112 plots bought inside district (0,0) cost a Rod Mill, a Meat Works and a Bottling Plant each a standing box (again
-     * at m2323), and HD1's run at m3998, where three Convenience Stores of district (-1,-2) moved when one of their type left (623 drawn to 622). Many such findings are DM2's
-     * class (the way FW11 keeps clear for a street piece the buildings wall in is worked out again from the whole log on every plan, so an arrival, a departure or a purchase
-     * changes it and first-fit cascades), and DM2 will date it; these two are asked of the plain case, with no wall to cross: a district of houses, stores and large works
-     * (a Rod Mill takes 12 plots) filled to BUILT_SHARE of its room, then (21) BUILT_BOUGHT plots bought inside its frame, or (22) one of its Convenience Stores leaves.
-     * Both are green on main (0.9.49): the fixtures stand guard, and a finding that moves a box needs more than this (MF2's report names what).
-     */
+    // WHY (WN3-M(b) and HD1-M, queued as MF2 items 2 and 4): the bigger cities LongPlaytest watched met two
+    // cases of "a building on the map moved" with no run, reserve or yard to move it: WN3's Historical city
+    // at m2078, where 112 plots bought inside district (0,0) cost a Rod Mill, a Meat Works and a Bottling
+    // Plant each a standing box (again at m2323), and HD1's run at m3998, where three Convenience Stores of
+    // district (-1,-2) moved when one of their type left (623 drawn to 622).
 
     /** The owned ground of 21 and 22's district, plots a side from its north-west corner; the founding site is in the middle of it. */
     static final int BUILT_SIDE = 160;

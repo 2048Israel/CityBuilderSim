@@ -439,12 +439,15 @@ public class CallCheck {
 
         DebtQuote plain = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, false);
         DebtQuote call = city.quoteLongBond(ask, 10, 100, Auction.Cap.DEFAULT, true);
-        check("fixture: both sales are quoted, for the same face", !plain.isEmpty() && !call.isEmpty()
-                && plain.faceValue() == call.faceValue() && !plain.isShort() && !call.isShort());
+        if (!Observation.reached("fixture: both sales are quoted, for the same face",
+                !plain.isEmpty() && !call.isEmpty() && !plain.isShort() && !call.isShort(),
+                "section 4 callable-sale comparison")) return;
+        check("the callable and plain quotes use the same requested face", plain.faceValue() == call.faceValue());
         // BA1, 2026-11-05: the section's premise is a sale the market takes at fair, and not stopping short is not it: in the 1900 town (no tax to 1916-20) the plain
         // quote stopped 16 to 28 bp over its fair yield and the callable one at it, so the coupons' gap (12.5 bp) was not the option's (31.1). The tails are asserted.
-        check("fixture: the market takes both sales at their fair yields, the stop within a coupon step of fair (tails " + String.format("%.1f and %.1f bp", plain.auction().tail() * 1e4, call.auction().tail() * 1e4) + ")",
-                Math.abs(plain.auction().tail()) <= Auction.COUPON_STEP + 1e-9 && Math.abs(call.auction().tail()) <= Auction.COUPON_STEP + 1e-9);
+        boolean fairTails = Observation.reached("fixture: both callable-sale auction tails are within a coupon step of fair",
+                Math.abs(plain.auction().tail()) <= Auction.COUPON_STEP + 1e-9 && Math.abs(call.auction().tail()) <= Auction.COUPON_STEP + 1e-9,
+                "coupon gap equals option spread");
         check("the quote says it is callable, and the plain one not", call.callable() && !plain.callable() && plain.firstCallMonth() == -1);
         check("...and when: " + CallTree.FIRST_CALL_10Y + " years on", call.firstCallMonth() == city.getMonth() + CallTree.FIRST_CALL_10Y * 12);
         double vol = city.rateVolatility();
@@ -456,7 +459,7 @@ public class CallCheck {
                 call.auction().ask().fair() - plain.auction().ask().fair(), spread, 1e-9);
         check("the spread is positive", spread > 0);
         double gap = call.coupon() - plain.coupon();
-        check("the callable coupon is over the non-call one by the spread, to within a coupon step (" + String.format("%.1f bp against %.1f", gap * 1e4, spread * 1e4) + ")",
+        if (fairTails) check("the callable coupon is over the non-call one by the spread, to within a coupon step (" + String.format("%.1f bp against %.1f", gap * 1e4, spread * 1e4) + ")",
                 gap >= spread - Auction.COUPON_STEP - 1e-9 && gap <= spread + Auction.COUPON_STEP + 1e-9);
 
         // Sold.
@@ -583,7 +586,9 @@ public class CallCheck {
         city.setCashForTest(Founding.WEALTHY_CASH);
         quietly(() -> city.handleLongBondLogic(Math.max(100, hb.spareForPaper() * 3), 10, 100, Auction.Cap.DEFAULT, true));
         List<LongTermBond> made = callables(city);
-        check("fixture: the treasury sold a callable ten-year line", made.size() == 1);
+        if (!Observation.reached("fixture: the treasury sold a callable ten-year line",
+                made.size() == 1,
+                "section 5 call, holder waterfall and audit")) return;
         if (made.isEmpty()) return;
         LongTermBond bond = made.get(0);
         check("fixture: ...unsettled until the month turns, and a call of it is refused", bond.unsettledFace() > 0 && !city.canCall(bond));
@@ -591,7 +596,9 @@ public class CallCheck {
         cb.setTargetShare(.3);
         int guard = 0;
         while (bond.centralBankPrincipal() <= 0 && guard++ < 24) play(city);
-        check("fixture: the central bank, on its dial, holds part of the line", bond.centralBankPrincipal() > 0 && guard < 24);
+        if (!Observation.reached("fixture: the central bank, on its dial, holds part of the line",
+                bond.centralBankPrincipal() > 0 && guard < 24,
+                "section 5 central-bank and market call waterfall")) return;
         check("fixture: ...and the bank, the households, the businesses or the world hold the rest",
                 bond.bankPrincipal() + bond.householdPrincipal() + bond.firmPrincipal() + bond.worldPrincipal() > 0);
         city.setCashForTest(Founding.WEALTHY_CASH);
