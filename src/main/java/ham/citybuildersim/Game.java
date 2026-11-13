@@ -901,8 +901,7 @@ public class Game {
          * still thought was free.
          *
          * It showed up as a SAVE bug, which is the interesting part. The load
-         * path does not restore the allocation: it derives it from what is
-         * standing, deliberately, so that any drift heals on the next load. So
+         * path then derived allocation from what was standing. So
          * the live city read 1,397,000 sq ft allocated and its own reload read
          * 1,442,000 - the reload was right - and a 1.3% difference in the land
          * price walked through the building costs into the treasury. Caught by
@@ -979,8 +978,7 @@ public class Game {
         buildingManager.addStack(yard, 1, true);
 
         // The ground under it, for the reason the bank's note gives: addStack()
-        // does not tell the land office, and the load path derives the
-        // allocation from what stands.
+        // does not tell the land office.
         landManager.allocate(yard.getLandSqFt());
     }
 
@@ -17247,6 +17245,7 @@ public class Game {
         // NOTE: reports/graphs settings were never saved at all - they'd silently
         // reset to their true/true defaults on every load.
         dataSave.setLandOwned(landManager.getOwnedSqFt());
+        dataSave.setLandAllocatedSqFt(landManager.getAllocatedSqFt());
         dataSave.setLandBlocksPurchased(landManager.getBlocksPurchased());
         dataSave.setLandPricePerSqFt(landManager.getPricePerSqFt());
         // ...the works' ground and the foothill prepared (ET2).
@@ -21262,8 +21261,11 @@ public class Game {
             }
 
             /*
-             * Land, after the buildings, because the allocation is derived from
-             * them rather than stored. A save from before land existed has
+             * Land, after the buildings: AW2 restores the live allocation, with
+             * the footprint as the fallback for a save without that key. Raw
+             * fixture stacks (KeptCheck's 760M sq ft behind WG2/RT3) can stand
+             * outside the ledger; replacing it on load stopped construction.
+             * A save from before land existed has
              * landOwned 0; that is not a city with no land, it is a save that
              * never knew about land, so it keeps the opening allocation - and
              * if what is already built exceeds that, the city is loaded owning
@@ -21288,7 +21290,7 @@ public class Game {
             restoreOilPools(loaded);
             // ...and E by type as saved; a save without it reads as the walk (0.7.110, LandManager's THE GROUND BY TYPE).
             landManager.restoreDepletionByType(loaded.getDepletionByType());
-            landManager.setAllocatedSqFt(built);
+            landManager.setAllocatedSqFt(loaded.getLandAllocatedSqFt() != null ? loaded.getLandAllocatedSqFt() : built);
             // ...and the part of it that works stand on, and the foothill prepared (ET2): a save from before them has
             // neither, and reads the standing works' ground (as the allocation is read from the buildings) and the
             // foothill the buildings stand on now.

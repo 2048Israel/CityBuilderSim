@@ -1,4 +1,4 @@
-# BuildingManager.java - 8,458 lines · 235 methods · 6 constants · model
+# BuildingManager.java - 8,457 lines · 235 methods · 6 constants · model
 
 `ham/citybuildersim/BuildingManager.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -71,7 +71,7 @@
 | 6657 | · THE POSTS A SECTOR OFFERS (0.7.17, revised to Jerus's answer): the |
 | 7239 | BY SECTOR (2026-09-11, the sector template) |
 | 7751 | THE SAME TWO SUMS, NARROWED TO ONE SERVICE. |
-| 8140 | · Construction state for the save, keyed by template id. |
+| 8139 | · Construction state for the save, keyed by template id. |
 
 ## Constants
 
@@ -82,7 +82,7 @@
 | 5840 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
 | 6022 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
 | 7188 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 8424 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 8423 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -123,17 +123,17 @@
 | 6756 | `public final String building` |  |
 | 6757 | `public final int quantity` |  |
 | 6983 | `private java.util.function.Supplier<long[]> postsPast` | The posts per job type the sectors run past their buildings' (R0c, the horse form; sectors.Agriculture): Game hands in Sectors.postsPastBuildings(), null for none. |
-| 8229 | `public int templateId` |  |
-| 8230 | `public String payer` |  |
-| 8231 | `public boolean creditable` |  |
-| 8233 | `public Double recovered` | The share of the tax on it the payer gets back; absent from a save written before the rebates, which read it off creditable. |
-| 8234 | `public double value, units, allowance` |  |
+| 8228 | `public int templateId` |  |
+| 8229 | `public String payer` |  |
+| 8230 | `public boolean creditable` |  |
+| 8232 | `public Double recovered` | The share of the tax on it the payer gets back; absent from a save written before the rebates, which read it off creditable. |
+| 8233 | `public double value, units, allowance` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 19 | 8440 | **type** `public class BuildingManager` | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed them, the yard's material, and what the work costs today (nonMaterialCost... |
+| 19 | 8439 | **type** `public class BuildingManager` | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed them, the yard's material, and what the work costs today (nonMaterialCost... |
 
 ### THE LABOUR IN A PRICE KEEPS UP WITH WAGES (0.7.19) (lines 74-263)
 
@@ -367,7 +367,7 @@
 | 7719 | 10 | `public double[] getBuiltEducationPlaces()` | Places without the staffing discount - what the buildings would seat. |
 | 7738 | 12 | `public double getCategoryPayroll(BuildingType category, double[] wagePerType, double[] jobFillRate)` | The healthcare service's wage bill, with the fill rate applied. |
 
-### THE SAME TWO SUMS, NARROWED TO ONE SERVICE. (lines 7751-8139)
+### THE SAME TWO SUMS, NARROWED TO ONE SERVICE. (lines 7751-8138)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -390,43 +390,43 @@
 | 7965 | 8 | `public int getQuantity(int i)` | How many of template id {@code i} are finished and standing. |
 | 7974 | 3 | `public int getTemplateCount()` |  |
 | 7978 | 9 | `public double[] getConstructionProgress()` |  |
-| 7997 | 27 | `public double getTotalLandFootprint()` | Every square foot the city has committed to buildings - standing and on site both, since a half-built plant is occupying its plot. |
-| 8031 | 16 | `public double getWorksLandFootprint(java.util.function.Predicate<BuildingsTemplate> works)` | The part of getTotalLandFootprint() that the buildings `works` picks stand on (ET2): the same sum, over the standing and on site, the stopped shells and the demolitions on site, of those templates alone - the ground L... |
-| 8066 | 18 | `public int retire(BuildingsTemplate template, int quantity)` | Scraps finished buildings. |
-| 8086 | 3 | `public int getStackCount()` | How many stacks exist, for callers checking a save's arrays line up. |
-| 8094 | 3 | `public List<BuildingsStacks> getStacksView()` | Every stack, in the order the month shares the crews out over them (R1; EquipmentForms): a read-only view of the live list, so a caller that adds a stack while walking it is walking a changed list. |
-| 8103 | 7 | `public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById()` | The buildings each stack lacks a piece of equipment on, by template id and then by the piece's id, for the save (R1; BuildingsStacks' unfitted counts): only the templates with any, so a city with none unfitted writes ... |
-| 8116 | 13 | `public void restoreUnfitted(java.util.Map<Integer, java.util.Map<String, Integer>> byId)` | ...and back onto the stacks the load path has put up (R1): each template's counts, clamped to what stands. |
-| 8130 | 9 | `public int[] getUnderConstructionArray()` |  |
+| 7996 | 27 | `public double getTotalLandFootprint()` | Every square foot the city has committed to buildings - standing and on site both, since a half-built plant is occupying its plot. |
+| 8030 | 16 | `public double getWorksLandFootprint(java.util.function.Predicate<BuildingsTemplate> works)` | The part of getTotalLandFootprint() that the buildings `works` picks stand on (ET2): the same sum, over the standing and on site, the stopped shells and the demolitions on site, of those templates alone - the ground L... |
+| 8065 | 18 | `public int retire(BuildingsTemplate template, int quantity)` | Scraps finished buildings. |
+| 8085 | 3 | `public int getStackCount()` | How many stacks exist, for callers checking a save's arrays line up. |
+| 8093 | 3 | `public List<BuildingsStacks> getStacksView()` | Every stack, in the order the month shares the crews out over them (R1; EquipmentForms): a read-only view of the live list, so a caller that adds a stack while walking it is walking a changed list. |
+| 8102 | 7 | `public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById()` | The buildings each stack lacks a piece of equipment on, by template id and then by the piece's id, for the save (R1; BuildingsStacks' unfitted counts): only the templates with any, so a city with none unfitted writes ... |
+| 8115 | 13 | `public void restoreUnfitted(java.util.Map<Integer, java.util.Map<String, Integer>> byId)` | ...and back onto the stacks the load path has put up (R1): each template's counts, clamped to what stands. |
+| 8129 | 9 | `public int[] getUnderConstructionArray()` |  |
 
-### Construction state for the save, keyed by template id. (lines 8140-8458)
+### Construction state for the save, keyed by template id. (lines 8139-8457)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8164 | 7 | `public int getMaxTemplateId()` | The highest id in the catalogue, not the number of templates. |
-| 8172 | 10 | `public double[] getConstructionProgressById()` |  |
-| 8183 | 10 | `public int[] getUnderConstructionById()` |  |
-| 8195 | 10 | `public double[] getMaterialsOwedById()` | Material the sites still have to draw, by template id. |
-| 8207 | 4 | `public void deliverToSites(BuildingsTemplate template, double units)` | Material delivered to a template's sites from the yard: off what they owe. |
-| 8213 | 4 | `public void bookContract(BuildingsTemplate template, double amount)` | The builders' price for an order, on the stack it was placed on. |
-| 8219 | 7 | `public void bookContract(BuildingsTemplate template, String payer, double recovered, double amount, double units, double allowa...` | ...and who placed it, with the material units it will draw beyond the yard and the allowance priced in for them (0.7.19), and the share of the tax on it the payer gets back (EconomyManager.taxRecoveredShare()). |
-| 8228 | 8 | **type** `public static final class ContractRecord` | One payer's contract on one template's sites, as the save carries it (0.7.19). |
-| 8238 | 17 | `public java.util.List<ContractRecord> getContractRecords()` | Every payer's contract on site, for the save. |
-| 8257 | 10 | `public void restoreContractRecords(java.util.List<ContractRecord> records)` | ...and back onto the stacks the load path has put up. |
-| 8276 | 15 | `public void inferContracts(java.util.function.Function<BuildingsTemplate, String> payerOf, java.util.function.ToDoubleBiFunctio...` | Every stack's contract read as one payer's, for a save from before the payers were kept (0.7.19; Game, OLD CONTRACTS): the whole contract left, the material its sites still owe, and an allowance of the contract less t... |
-| 8293 | 10 | `public void spreadContracts(double unearned)` | One order book, spread over the sites by the points they still owe. |
-| 8305 | 10 | `public double[] getContractValueById()` | The builders' contracts still on site, by template id. |
-| 8317 | 5 | `public double getMaterialsOwed()` | ...and in total, for the screens. |
-| 8330 | 13 | `public boolean restoreConstruction(int templateId, int underConstruction, double progress, double materialsOwed, double contrac...` | Puts a template's in-progress work back onto its stack. |
-| 8344 | 9 | `public void setConstructionProgress(double[] progress)` |  |
-| 8354 | 9 | `public void setUnderConstructionArray(int[] progress)` |  |
-| 8364 | 3 | `public void setConstructionMaterials(int constructionMaterials)` |  |
-| 8368 | 3 | `public void clearStacks()` |  |
-| 8397 | 3 | `public void handleConstructionMaterials(int required)` | Takes the order's materials out of the yard, importing whatever is short. |
-| 8408 | 5 | `public int takeFromYard(int required)` | Takes what the yard has, up to what was asked. |
-| 8414 | 9 | `public BuildingsStacks getStack(BuildingsTemplate template)` |  |
-| 8426 | 4 | `static { ... }` |  |
-| 8431 | 7 | `public void resetBuildingManager()` |  |
-| 8441 | 8 | `public void redenominate(double scale)` | Every template's price, and the materials the city is holding, in the new unit. |
-| 8452 | 5 | `public void seedConstants(double unit)` | Re-seeds every template's price at a given unit - since 0.7.42 the unit over the expected price level, every month (Game.restrikeMoneyConstants()). |
+| 8163 | 7 | `public int getMaxTemplateId()` | The highest id in the catalogue, not the number of templates. |
+| 8171 | 10 | `public double[] getConstructionProgressById()` |  |
+| 8182 | 10 | `public int[] getUnderConstructionById()` |  |
+| 8194 | 10 | `public double[] getMaterialsOwedById()` | Material the sites still have to draw, by template id. |
+| 8206 | 4 | `public void deliverToSites(BuildingsTemplate template, double units)` | Material delivered to a template's sites from the yard: off what they owe. |
+| 8212 | 4 | `public void bookContract(BuildingsTemplate template, double amount)` | The builders' price for an order, on the stack it was placed on. |
+| 8218 | 7 | `public void bookContract(BuildingsTemplate template, String payer, double recovered, double amount, double units, double allowa...` | ...and who placed it, with the material units it will draw beyond the yard and the allowance priced in for them (0.7.19), and the share of the tax on it the payer gets back (EconomyManager.taxRecoveredShare()). |
+| 8227 | 8 | **type** `public static final class ContractRecord` | One payer's contract on one template's sites, as the save carries it (0.7.19). |
+| 8237 | 17 | `public java.util.List<ContractRecord> getContractRecords()` | Every payer's contract on site, for the save. |
+| 8256 | 10 | `public void restoreContractRecords(java.util.List<ContractRecord> records)` | ...and back onto the stacks the load path has put up. |
+| 8275 | 15 | `public void inferContracts(java.util.function.Function<BuildingsTemplate, String> payerOf, java.util.function.ToDoubleBiFunctio...` | Every stack's contract read as one payer's, for a save from before the payers were kept (0.7.19; Game, OLD CONTRACTS): the whole contract left, the material its sites still owe, and an allowance of the contract less t... |
+| 8292 | 10 | `public void spreadContracts(double unearned)` | One order book, spread over the sites by the points they still owe. |
+| 8304 | 10 | `public double[] getContractValueById()` | The builders' contracts still on site, by template id. |
+| 8316 | 5 | `public double getMaterialsOwed()` | ...and in total, for the screens. |
+| 8329 | 13 | `public boolean restoreConstruction(int templateId, int underConstruction, double progress, double materialsOwed, double contrac...` | Puts a template's in-progress work back onto its stack. |
+| 8343 | 9 | `public void setConstructionProgress(double[] progress)` |  |
+| 8353 | 9 | `public void setUnderConstructionArray(int[] progress)` |  |
+| 8363 | 3 | `public void setConstructionMaterials(int constructionMaterials)` |  |
+| 8367 | 3 | `public void clearStacks()` |  |
+| 8396 | 3 | `public void handleConstructionMaterials(int required)` | Takes the order's materials out of the yard, importing whatever is short. |
+| 8407 | 5 | `public int takeFromYard(int required)` | Takes what the yard has, up to what was asked. |
+| 8413 | 9 | `public BuildingsStacks getStack(BuildingsTemplate template)` |  |
+| 8425 | 4 | `static { ... }` |  |
+| 8430 | 7 | `public void resetBuildingManager()` |  |
+| 8440 | 8 | `public void redenominate(double scale)` | Every template's price, and the materials the city is holding, in the new unit. |
+| 8451 | 5 | `public void seedConstants(double unit)` | Re-seeds every template's price at a given unit - since 0.7.42 the unit over the expected price level, every month (Game.restrikeMoneyConstants()). |
 

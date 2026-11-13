@@ -2479,8 +2479,7 @@ public class SaveFileCheck {
          * a save taken before the index is based - and the two cities play
          * six months each. Built with buildStack(), which tells the land
          * office, because a city stacked with addStack() stands on ground the
-         * ledger never allocated and the load path heals that on purpose
-         * (Game.foundingBank()); a twin of THAT city differs by design.
+         * ledger never allocated. AW2 tests that discrepancy separately below.
          */
         Game early = new Game(new GameFiles(root.resolve("early"), root.resolve("no-legacy")));
         early.run();
@@ -3247,6 +3246,7 @@ public class SaveFileCheck {
         onEarth(root);
         everyIdCrossesASave(root);
         worldMarketCrossesASave(root);
+        allocatedLandCrossesASave();
 
         cleanUp(root);
 
@@ -3259,6 +3259,67 @@ public class SaveFileCheck {
             if (t.getName().equals(name)) return t;
         }
         throw new IllegalStateException("no template named " + name);
+    }
+
+    /** AW2: the ordinary loader keeps the live ledger even when raw fixture stacks exceed its ground. */
+    static void allocatedLandCrossesASave() throws IOException {
+        System.out.println("\n--- allocated land survives an ordinary load (AW2) ---");
+        GameFiles files = GameFiles.scratch("allocated-land-save");
+        Game live = new Game(files);
+        quietly(() -> {
+            live.newGame();
+            // Settle the founding month's money constants before comparing construction invoices.
+            live.simulateMonths(1);
+            live.setCashForTest(Founding.WEALTHY_CASH);
+            // KeptCheck's injected sites: these bypass allocate(), exactly the 760M sq ft gap behind WG2/RT3.
+            for (String name : List.of("House", "Studio Apartments", "Convenience Store")) {
+                live.getBuildingManager().addStack(template(live, name), 20_000, false);
+            }
+        });
+        LandManager land = live.getLandManager();
+        double allocated = land.getAllocatedSqFt();
+        double free = land.getAvailableSqFt();
+        assertTrue("fixture: the injected footprint exceeds owned land but the live ledger has room for a house",
+                live.getBuildingManager().getTotalLandFootprint() > land.getOwnedSqFt()
+                        && land.canAllocate(template(live, "House").getLandSqFt()));
+        assertTrue("saved the discrepant live city in scratch", quietlyGet(() -> live.saveGame(1, "allocation")).ok);
+        String saved = Files.readString(files.saveFile(1));
+        Game loaded = new Game(files);
+        quietly(() -> loaded.loadGameSave(1));
+        assertTrue("the ordinary load succeeded", loaded.getLoadFailure() == null);
+        same("the live allocation came back", loaded.getLandManager().getAllocatedSqFt(), allocated);
+        same("the live free ground came back", loaded.getLandManager().getAvailableSqFt(), free);
+        same("the live building footprint came back", loaded.getBuildingManager().getTotalLandFootprint(),
+                live.getBuildingManager().getTotalLandFootprint());
+        same("the live ground price came back", loaded.getLandManager().getPricePerSqFt(), land.getPricePerSqFt());
+        same("the next building quote is unchanged", loaded.quoteBuild(template(loaded, "House"), 1).total,
+                live.quoteBuild(template(live, "House"), 1).total);
+        Game.BuildResult before = quietlyGet(() -> live.buildStack(template(live, "House"), 1, false));
+        Game.BuildResult after = quietlyGet(() -> loaded.buildStack(template(loaded, "House"), 1, false));
+        assertEquals("the live city orders its next house", before, Game.BuildResult.SUCCESS);
+        assertEquals("the ordinary load orders the same house", after, before);
+        same("both orders consume the same ground", loaded.getLandManager().getAllocatedSqFt(), land.getAllocatedSqFt());
+        same("both orders leave the same free ground", loaded.getLandManager().getAvailableSqFt(), land.getAvailableSqFt());
+        same("both orders leave the same treasury", loaded.getCash(), live.getCash());
+        assertEquals("both orders leave the same number on site", loaded.getBuildingManager().getUnderConstruction(),
+                live.getBuildingManager().getUnderConstruction());
+
+        // Absence keeps the existing reconstruction; zero must be a saved figure, never mistaken for absence.
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        com.google.gson.JsonObject absent = com.google.gson.JsonParser.parseString(saved).getAsJsonObject();
+        absent.remove("landAllocatedSqFt");
+        Files.writeString(files.saveFile(1), gson.toJson(absent));
+        Game legacy = new Game(files);
+        quietly(() -> legacy.loadGameSave(1));
+        same("a save without the allocation key still reads its building footprint", legacy.getLandManager().getAllocatedSqFt(),
+                legacy.getBuildingManager().getTotalLandFootprint());
+        assertEquals("fixture: that reconstruction refuses the very same house for land",
+                quietlyGet(() -> legacy.buildStack(template(legacy, "House"), 1, false)), Game.BuildResult.NO_LAND);
+        land.setAllocatedSqFt(0);
+        assertTrue("saved an explicit zero allocation in scratch", quietlyGet(() -> live.saveGame(1, "zero allocation")).ok);
+        Game zero = new Game(files);
+        quietly(() -> zero.loadGameSave(1));
+        same("an explicit zero allocation comes back as zero", zero.getLandManager().getAllocatedSqFt(), 0);
     }
 
     /**

@@ -635,6 +635,8 @@ public class DataSave implements Cloneable {
      * path treats as "no land data" and falls back to the starting allocation.
      */
     private double landOwned;
+    /** AW2: the live land ledger, including an explicit zero; absent saves retain footprint reconstruction. */
+    private Double landAllocatedSqFt;
     private int landBlocksPurchased;
     private double landPricePerSqFt;
     /*
@@ -921,6 +923,7 @@ public class DataSave implements Cloneable {
     public double getHouseholdSavings()            { return householdSavings; }
 
     public void setLandOwned(double sqFt)          { this.landOwned = sqFt; }
+    public void setLandAllocatedSqFt(double sqFt)  { this.landAllocatedSqFt = sqFt; }
     public void setLandBlocksPurchased(int blocks) { this.landBlocksPurchased = blocks; }
     public void setLandPricePerSqFt(double price)  { this.landPricePerSqFt = price; }
     /** The works' ground and the foothill prepared (ET2): LandManager.getWorksSqFt() and getPreparedSqFt(). */
@@ -932,6 +935,7 @@ public class DataSave implements Cloneable {
     public void setLandRuns(double runsSqFt) { this.landRunsSqFt = runsSqFt; }
 
     public double getLandOwned()          { return landOwned; }
+    public Double getLandAllocatedSqFt()  { return landAllocatedSqFt; }
     public int    getLandBlocksPurchased(){ return landBlocksPurchased; }
     public double getLandPricePerSqFt()   { return landPricePerSqFt; }
     /** The works' ground as saved (ET2), or null on a save without it: read from the standing buildings. */
