@@ -16,7 +16,7 @@ Started from origin/main `5a87e102` on 2026-11-13. HA1 is **no tag
   both formats those converters served (30 and 31); SAVE_FORMAT is also 51.
   `Game.refusal`, line 20380 before the load, calls
   `GameVersion.isNoLongerReadable(loaded.getSaveFormat())` and returns without
-  applying the save.
+  applying the save; `GameVersion.java:8349` compares it with the floor.
 - The dependency audit found live helpers: CityLand's plotted-area counts,
   PartField and redraw fixtures, LandSellers' class-to-area counts,
   EarthTerrainCheck's class checks, and LandCheck's drawing, site and distance
@@ -127,7 +127,12 @@ is unchanged. The extra moved-fixture report begins at
 model trace. The exact prefix diff is
 `target/checks/ha1-playtest-prefix.diff`.
 
-In progress: push the generated maps and run the fresh-clone no-tag gate.
+Generated maps/indexes are committed. Maps regenerates current sources but
+leaves old per-class files behind, so the eight maps for the deleted converter
+and harness classes are explicitly removed. The branch is pushed without a
+ship file (the no-tag dry-run contract).
+
+In progress: fresh-clone no-tag gate.
 
 ## Pending for the gate box
 
