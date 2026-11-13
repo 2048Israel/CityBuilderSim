@@ -271,3 +271,17 @@ publisher record selftest and final CSV verification are also running. Then
 regenerate indexes and make a new retained full dry run. The two interrupted
 runs are not readiness evidence.
 
+
+The repaired model's default LongPlaytest also exits 0 and matches all eight
+copied main-equivalent baseline CSVs byte for byte. Review validation logs:
+`target/checks/ha1-review-final-trace.log` and
+`target/checks/ha1-review-final-traces-result.txt`; hashes match the table
+above. No ensemble is required after these repairs either.
+
+The first expanded publisher selftest reported 137/140: the new record unit
+fixture had left a file named `kept`, colliding with the later launcher's
+`kept/` evidence directory. The four new record tests passed; the three
+failures were the first launch and its two reuse checks. Isolated unit files
+as `record-*.txt`, retained failed selftest areas for diagnosis, and reran the
+complete selftest. The nightly selftest also verifies that a wrong inherited
+record is cleared and the log is rejudged against main's current known reds.

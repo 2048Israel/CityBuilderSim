@@ -25,16 +25,16 @@ GVF=src/main/java/ham/citybuildersim/GameVersion.java
 
 rm -rf "$TA"; mkdir -p "$TA"; cd "$TA" || exit 1
 # HA1: an unpicked nightly harness keeps its record; a run green harness clears it.
-printf '2.0\tMapCheck\t0\n1.0\tGlobeCheck\t0\n' > times
-printf 'MapCheck | resolved FAIL\nKeptCheck | standing FAIL\nGlobeCheck | unseen FAIL\n' > recorded
-awk -v earth=named -f "$SRC/tools/gate-record.awk" times recorded > kept
-LABEL='a default gate retains an unrun nightly red'; ok grep -q '^KeptCheck |' kept
-LABEL='a green harness clears its old record'; ok sh -c '! grep -q "^MapCheck |\|^GlobeCheck |" kept'
-awk -v earth=missing -f "$SRC/tools/gate-record.awk" times recorded > kept
-LABEL='unseen full-file Earth/Globe lines remain covered'; ok grep -q '^GlobeCheck |' kept
-: > times
-awk -v earth=named -f "$SRC/tools/gate-record.awk" times recorded > kept
-LABEL='an empty run list never loses standing reds'; ok cmp -s kept recorded
+printf '2.0\tMapCheck\t0\n1.0\tGlobeCheck\t0\n' > record-times.txt
+printf 'MapCheck | resolved FAIL\nKeptCheck | standing FAIL\nGlobeCheck | unseen FAIL\n' > record-input.txt
+awk -v earth=named -f "$SRC/tools/gate-record.awk" record-times.txt record-input.txt > record-kept.txt
+LABEL='a default gate retains an unrun nightly red'; ok grep -q '^KeptCheck |' record-kept.txt
+LABEL='a green harness clears its old record'; ok sh -c '! grep -q "^MapCheck |\|^GlobeCheck |" record-kept.txt'
+awk -v earth=missing -f "$SRC/tools/gate-record.awk" record-times.txt record-input.txt > record-kept.txt
+LABEL='unseen full-file Earth/Globe lines remain covered'; ok grep -q '^GlobeCheck |' record-kept.txt
+: > record-times.txt
+awk -v earth=named -f "$SRC/tools/gate-record.awk" record-times.txt record-input.txt > record-kept.txt
+LABEL='an empty run list never loses standing reds'; ok cmp -s record-kept.txt record-input.txt
 COMMON=$(cd "$SRC" && cd "$(git rev-parse --git-common-dir)" && pwd); BASE=$(git -C "$SRC" rev-parse HEAD)
 git clone --bare -q "$COMMON" origin.git && git -C origin.git remote remove origin
 git -C origin.git update-ref refs/heads/main "$BASE"
@@ -468,5 +468,6 @@ LABEL="Ready flow reuses the dry run after notes and ship commits are pushed"; o
 
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"
-[ "${CBS_SHIPTEST_KEEP:-0}" = 1 ] || { cd /; rm -rf "$TA"; }
+if [ "$FAILS" != 0 ] || [ "${CBS_SHIPTEST_KEEP:-0}" = 1 ]; then echo "selftest area: $TA"
+else cd /; rm -rf "$TA"; fi
 exit "$FAILS"

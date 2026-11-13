@@ -113,10 +113,12 @@ java() { printf '%s\n' "$*" >> "$TEST/tier-command"; return "${TIER_EXIT:-0}"; }
 cat > batch-check.sh <<'EOF'
 #!/bin/sh
 echo "$*" >> "$TIER_JUDGE_LOG"
+[ -z "${CBS_KNOWN_REDS:-}" ] && [ "${CBS_REJUDGE:-}" = rejudge ] || exit 1
 exit "${TIER_JUDGE_EXIT:-0}"
 EOF
 chmod +x batch-check.sh
 TIER_JUDGE_LOG=$TEST/tier-judge-command; export TIER_JUDGE_LOG TIER_JUDGE_EXIT
+CBS_KNOWN_REDS=wrong-caller-record; CBS_REJUDGE=; export CBS_KNOWN_REDS CBS_REJUDGE
 CASE='the nightly runs its tier on the fetched main tip'; nightly_tier "$TEST/tier-green"
 ok grep -q 'AllChecks -f --nightly' "$TEST/tier-command"
 ok grep -q -- '--judge' "$TIER_JUDGE_LOG"
