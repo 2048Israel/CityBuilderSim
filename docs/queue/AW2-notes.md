@@ -179,3 +179,22 @@ pair preserves either sign of the live ledger/footprint gap. Diagnostic
 log: `target/checks/aw2-gap.log`, exit 0; temporary source generator and
 runner: `target/aw2-gap.py` and `target/aw2-gap.sh`. The production-caller
 audit above remains a source audit, with this measured qualification.
+
+### Final picked check
+
+`./batch-check.sh --pick` completes with **exit 3** on the final reviewed
+source (ae54682f; subsequent f22fe852 changes notes only), against main
+`5a87e102142ce5b3641b514f7ba1edf2ea775a4f`. It selects **ALL 201** harnesses:
+193 pass, eight have recorded known reds only, and there are **no NEW red
+lines**. SaveFileCheck, ReadPathCheck, ReloadCheck, HouseholdMemoryCheck
+and LongPlaytest are among the passes. The recorded red harnesses are
+MonetaryCheck, CentralBankCheck, HealthCheck, MapCheck, PlanCheck, KeptCheck,
+DeathRecordCheck and ReplayCheck. No new known-red entry is needed.
+
+The suite takes 2,402 seconds, compilation 46 seconds. There are 29 soft
+timing assertions and four starts wait for the commit charge to fall below
+75%. Maps regenerate, Stale reports zero firm and 181 soft findings, and
+the tree/endings check passes. Logs: `target/checks/aw2-run.txt`,
+`target/checks/suite.txt` and each named harness's `.log`. Slot 10's SHA-256
+is unchanged after all diagnostics and checks. Main was fetched again and
+remains 5a87e102; HA1 has not landed, so there is no newer main to merge.
