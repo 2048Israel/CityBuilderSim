@@ -150,8 +150,14 @@ elif [ "$FAST" = 0 ]; then
 fi
 
 # --- the suite -------------------------------------------------------------
+if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ] && [ "$#" = 0 ]; then
+    # HA1's own gate may still be launched by the preceding publisher.
+    if [ "${CBS_GATE_NIGHTLY+x}" != x ]; then
+        CBS_GATE_NIGHTLY=$(sh tools/pick.sh --nightly) || { FAILED=1; RUNSUITE=0; }
+    fi
+    set -- --gate $CBS_GATE_NIGHTLY
+fi
 if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ]; then
-    [ "$#" != 0 ] || set -- --gate ${CBS_GATE_NIGHTLY:-}
     touch "$OUT/.started"   # the logs this run writes are newer; an earlier run's are not read
     record_reds > "$OUT/known-reds.txt"   # AllChecks tags its red lines against it (FW7); UTF-8 so a non-ASCII label reads the same to Java and to awk
     rm -f "$OUT/timing.tsv"   # the figures of this run alone (TM3)

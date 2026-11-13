@@ -15,42 +15,19 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
- * The one helper every timing assertion in the suite goes through: a figure
- * on a clock against its budget, hard as the harness wrote it, or soft while
- * another batch's checks or Jerus's game share the machine.
+ * The suite's clock verdicts and the soft skip for work whose only verdict is time.
  *
- * <p>WHY (batch TM1, 2026-10-18): batches on the PC took turns under "one JVM
- * at a time on the machine", and waited on each other's suites and on
- * Jerus's game, though 14 cores and 32 GB fit two suites easily. What
- * clashed was only the timing assertions: EarthTerrainCheck 8 measured 116 ms
- * against its 80 ms with the game running, 27.8 ms without it. So under
- * {@code -Dcbs.timing=soft} a timing figure that misses its budget is not a
- * failure: the assertion's line says SOFT, with the figure and the budget,
- * and the harness does not count it. Without the property every assertion is
- * exactly as before, and no budget moved. The ship gate runs the timing
- * harnesses alone and hard ({@code AllChecks --timing}), so a budget is still
- * held where it means something.
+ * WHY (TM1, HA1): concurrent runs measure the PC's load as well as the code;
+ * the old gate spent 38 minutes doing clock-only rounds it did not judge.
+ * Soft runs skip those sections before their rounds. Mixed correctness
+ * sections still run; only a missed clock becomes SOFT and uncounted.
+ * Hard runs retain all rounds and budgets; nightly timing judges regressions.
  *
- * <p>How a harness uses it: the timing part of a condition is
- * {@code Timing.within(figure, budget)} in place of {@code figure <= budget},
- * and the harness's own line prints {@code Timing.verdict(ok)} in place of
- * {@code ok ? "OK" : "FAIL"}. A soft miss answers true and waits for the next
- * verdict, which then reads "SOFT - 116.2 ms, budget 80 ms". A condition whose
- * other part fails is FAIL as ever: only a clock is ever soft. TimingCheck
- * holds the mechanism, and holds that no harness compares a figure against a
- * {@code *_MS} or {@code *_NS} dial except through here.
- *
- * <p>WHY (batch TM3, 2026-10-27): a budget measured once on a PC that also runs
- * Jerus's game and other sessions measures the load as much as the code. HY1,
- * which touched nothing MapCheck times, stopped at the gate on three of its
- * lines; main's own run of one of them had read 75.5 ms against 58 earlier the
- * same day. So the gate no longer judges a timing red by one run: it times the
- * red harness again with main's classes and the merge's in turn, in the same
- * minutes, and the red counts against the batch only if the batch's median
- * figure is more than a margin over main's (ship.sh and tools/timing-pair.awk,
- * which hold the dial). To read the figures, never a label's prose, every
- * assertion's line goes through {@link #verdict(boolean, String)}, which
- * appends its figures to the file {@link #TSV_PROPERTY} names.
+ * A timing condition uses {@code Timing.within(figure, budget)} and prints
+ * through {@code Timing.verdict(ok, label)}. A non-clock failure stays FAIL,
+ * including beside a soft miss; NaN stays a failure. TimingCheck holds this
+ * contract and the source rules. {@link #TSV_PROPERTY} records each labelled
+ * figure, budget and unit for the nightly's paired comparisons (GR1).
  */
 public final class Timing {
 

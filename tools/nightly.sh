@@ -1,9 +1,9 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
-#  Nightly on origin/main's tip: 4,000 months, then hard timing and attribution.
+#  Nightly on origin/main's tip: 4,000 months, the nightly tier, hard timing.
 #  One verdict in $HOME/.cbs-nightly.txt, detail in .cbs-nightly.log; figures
 #  and commit per machine/night in $HOME/.cbs-timing (GR1). No commits or saves.
-#  WHY (GR1): gate timing rounds cost 33.7 hours and named no faulty batch.
+#  WHY (HA1, GR1): heavy checks belong nightly; gate timing named no faulty batch.
 #  Exit: 0 OK, 1 RED, 2 not a checkout or an option, 3 a step before the run failed.
 #  WHY (GT1, 2026-11-01, Jerus: "do we need 4k months?"): the gate plays 2,400.
 # ---------------------------------------------------------------------------
