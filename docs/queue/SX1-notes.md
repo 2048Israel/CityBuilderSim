@@ -54,3 +54,15 @@
   The long chart reads about 5.0% a year; both large position returns fit as
   multiples; the ordinary +12.3% gain keeps its former form. The target-only
   preview also asserts the chart uses a yearly rate and the positions use no %.
+- The orchestrator approved the exact two-line BuildScreen delegation in mail
+  20261114-033847-483-orchestrator-bf01. Whichever batch ships second resolves
+  that small merge. No other HW1 file is changed.
+- A target-only JavaFX routing check exercised the large ratio through Build,
+  Sector, Finances, Policy and Money helpers, and large changes through Fund,
+  Policy, Trade and Vault helpers. All match Formats exactly; signed negative
+  zero retains the old +0.0% in the fund.
+- Money review: the wage is a read of the already-struck monthly average in the
+  existing exchange adapter. No pool, payment, month phase, investment choice,
+  cost basis or currency unit was added. The split settlement remains intact;
+  only its dimensionless trigger and normalization yardstick changed.
+- There are no known-reds registry entries naming SX1 in this checkout.
