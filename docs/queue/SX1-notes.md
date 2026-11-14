@@ -1,5 +1,10 @@
 # SX1 — The exchange's prices readable
 
+Validation passed: the final full pick exited 3 and the retained fresh-merge
+dry run exited 0, with no NEW reds. Both ran 188 harnesses: 185 passed and
+only the three existing red harnesses remained. The 80-run ensemble passed
+all M1/F1 hard criteria. The ship file names the reusable full gate below.
+
 ## Built and calls
 
 - ★ The wage band is `Exchange.CONSOLIDATE_BELOW=.0025` through
@@ -131,3 +136,27 @@ formatting code changed, so the completed final-model ensemble remains valid.
 - The repaired ShortSellingCheck passed alone (batch-check exit 0), including
   the exact factor, both scaled share counts, unchanged collateral and the
   whole register identity. Compile, regenerated maps and Stale also passed.
+
+
+## Passed full pick and retained merge gate
+
+- Final `batch-check.sh --pick`: exit 3; ALL selected. 188 harnesses ran,
+  185 passed. The existing reds are PlanCheck (PX1: district checks and
+  avenues), KeptCheck (KF63: redraw node reuse), and DeathRecordCheck
+  (OX1: the orphan section). No NEW red, no new registry entry.
+- Final `sh tools/gate.sh SX1 --dry-run`: exit 0. Its suite exited 3 with
+  exactly those same known red harnesses. Compile, maps and Stale passed
+  (zero firm findings). Seven timing assertions were soft, and eight
+  played-path misses were informational; no correctness law was relaxed.
+- Keep /tmp/cbs-gate-SX1-x0V9WEWg, including ship.log, checks/, generated/,
+  checks.sha256 and checks.complete. It checked batch
+  5740fe0eb35cb390e5c4277f7c221b2141954cf1 against main
+  ef5cfe589277dd14e1a970ddb78212e82b571ee9. This replaces the failed first run.
+- Main still matched that commit at final validation. All changes after
+  the passed run are confined to these notes and the ship file.
+- ★ The final regeneration's one remaining index offset
+  (ShortSellingCheck.RUN_START, 895→903 in docs/dials.md) is in the gate's
+  hash-bound generated indexes. The publisher restores and commits those
+  indexes when reusing the run (tools/gate-reuse.sh). The local generated
+  copy was restored to HEAD, honoring the explicit post-gate records-only
+  rule while retaining the correct index for publication.

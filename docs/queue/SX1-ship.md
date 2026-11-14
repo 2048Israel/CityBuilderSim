@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-SX1-x0V9WEWg -->
 
 ## changelog
 ### {next} — SX1, The exchange's prices readable — 2026-11-14, ready, see docs/queue/SX1-notes.md
@@ -8,3 +9,5 @@ and charts kept per founding share. One shared formatter replaces percentages
 above 1,000% with compound yearly growth over an observed span or a compact
 multiple. Ordinary percentages keep their precision. Exact split, conservation,
 wage-band, formatter and save/reload checks cover the change.
+The 80-run ensemble passes money audit and findings; the full merged gate
+has only the existing PlanCheck, KeptCheck and DeathRecordCheck reds.
