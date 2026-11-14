@@ -70,6 +70,9 @@ import java.util.stream.Stream;
  *      the cost of a cold quote by level is measured and printed (what moved the hover's quote off the screen's thread); a LandMarket.Quoter made
  *      here and used on another thread gives the office's quote to the bit, block by block; it is the office as it stood when it was made, a purchase
  *      since not seen by it; making one takes no more than a frame; and the map's source quotes through one on its own thread.
+ *  13. PICKED GROUND (WN5c). A click by level and monthly pricing of 1, 10 and 50 picks are measured at the river and coast.
+ *      Worker results never change the live office before acceptance; a month that passes during pricing still gets today's
+ *      price, to the bit. Retained splits read no seller plots in the month. Changed ground and cancelled requests are rejected.
  *
  * Every premise is asserted before what rests on it. Without the world file (-Dcbs.world) nothing here runs; without the Earth's data (-Dcbs.earth)
  * sections 1 to 4 run and 5 to 12 say so and are skipped. The one timing it asserts is section 12's making of a quoter (Timing.within; TimingCheck owns the mechanism).
@@ -223,6 +226,7 @@ public class LandNationsCheck {
                 howOften(file);
                 theWords(file, windsor, windsorFounded, detroitQuote);
                 theHover(file, windsor, strait);
+                thePicks(windsor, strait);
             }
         }
         finish(started);
@@ -1249,5 +1253,103 @@ public class LandNationsCheck {
             check("the map's hover quotes through a quoter on its own thread, never the office's quote() on the screen's thread",
                     !src.contains("market.quote(") && src.contains(".quoter()") && src.contains("QUOTES.submit("));
         }
+    }
+    /* =====================================================================
+       13. PICKED GROUND MEASURED AWAY, PRICED IN THE CURRENT MONTH
+       ===================================================================== */
+
+    /** Separated rectangles so the 50-pick case cannot collapse into one rectangle. */
+    static List<long[]> pickedRects(City c, double lat, double lon, int level, int count) {
+        long[] base = blockAround(c.g.getWorld(), lat, lon, level);
+        long side = 1L << level;
+        List<long[]> rects = new ArrayList<>();
+        for (int n = 0; n < count; n++) {
+            long x = base[0] + (n % 10) * side, y = base[1] + (n / 10) * side;
+            rects.add(new long[] { x, y, x + side, y + side });
+        }
+        return rects;
+    }
+
+    static void reprice(City c, int month) {
+        LandManager lm = c.g.getLandManager();
+        c.office().update(lm.getOwnedSqFt(), lm.getAllocatedSqFt(), c.g.getPopulationManager().getPopulation(),
+                c.office().getUsPriceLevel() * 1.01, month);
+    }
+
+    static void frameTime(String label, double ms) {
+        boolean ok = Timing.within(ms, LandMarket.QUOTER_MS);
+        if (!ok) fails++;
+        out.printf("%-118s %s (%.3f ms, QUOTER_MS %.0f)%n", label, Timing.verdict(ok, label), ms, LandMarket.QUOTER_MS);
+    }
+
+    static void thePicks(City windsor, City strait) throws Exception {
+        out.println("\n--- 13. picked ground: worker measurement, current-month prices, and no seller walk in the month ---");
+        ExecutorService worker = Executors.newSingleThreadExecutor();
+        try {
+            for (City c : List.of(windsor, strait)) {
+                boolean river = c == windsor;
+                double lat = river ? RIVER_LAT : COAST_LAT, lon = river ? RIVER_LON : COAST_LON;
+                String where = river ? "Windsor" : "Strait";
+                LandMarket market = c.office();
+                for (int level = 4; level <= 12; level++) {
+                    long[] r = blockAround(c.g.getWorld(), lat, lon, level);
+                    market.draft(List.of());
+                    long start = System.nanoTime();
+                    LandMarket.DraftRequest request = market.requestDrafts(List.of(r));
+                    double ownerMs = (System.nanoTime() - start) / 1e6;
+                    start = System.nanoTime();
+                    worker.submit(request).get();
+                    double workerMs = (System.nanoTime() - start) / 1e6;
+                    check(where + " level " + level + ": worker leaves the live draft shelf empty", market.getDrafts().isEmpty());
+                    check(where + " level " + level + ": accepts the copied measurement", market.acceptDrafts(request));
+                    check(where + " level " + level + ": price and sellers match a synchronous quote to the bit",
+                            sameQuote(quoteOf(market, r), market.getDrafts().get(0), new int[1]));
+                    out.printf("   %s click level %d: owner %.3f ms, worker %.3f ms%n", where, level, ownerMs, workerMs);
+                    frameTime(where + " level " + level + ": making the picked-ground request fits a frame", ownerMs);
+                }
+                for (int count : new int[] { 1, 10, 50 }) {
+                    List<long[]> rects = pickedRects(c, lat, lon, 8, count);
+                    LandMarket.DraftRequest request = market.requestDrafts(rects);
+                    int newMonth = c.g.getMonth() + count;
+                    reprice(c, newMonth); // the month passes while the price is still coming
+                    worker.submit(request).get();
+                    check(where + ": accepts " + count + " picks after a month passed", market.acceptDrafts(request));
+                    List<LandParcel> before = market.getDrafts();
+                    long plots = c.sellers().plotsRead(), start = System.nanoTime();
+                    reprice(c, newMonth + 1);
+                    double ms = (System.nanoTime() - start) / 1e6;
+                    long walked = c.sellers().plotsRead() - plots;
+                    List<LandParcel> now = market.getDrafts();
+                    boolean same = now.size() == count;
+                    for (int n = 0; n < now.size(); n++) {
+                        LandParcel p = now.get(n);
+                        long[] r = { p.getX0(), p.getY0(), p.getX1(), p.getY1() };
+                        same &= sameQuote(p, quoteOf(market, r), new int[1]) && p.getId() == before.get(n).getId()
+                                && p.getListedMonth() == newMonth + 1;
+                    }
+                    report(where + ": " + count + " picks use THIS month's price, ids kept, with no seller plots walked",
+                            same && walked == 0, String.format("%.3f ms, %d plots", ms, walked));
+                    frameTime(where + ": monthly repricing of " + count + " picks fits a frame", ms);
+                }
+                LandMarket.DraftRequest cancelled = market.requestDrafts(pickedRects(c, lat, lon, 8, 1));
+                cancelled.cancel();
+                worker.submit(cancelled).get();
+                check(where + ": a cancelled result cannot restore a draft", !market.acceptDrafts(cancelled) && market.getDrafts().isEmpty());
+
+                LandParcel offer = c.offers().get(0);
+                long[] r = { offer.getX0(), offer.getY0(), offer.getX1(), offer.getY1() };
+                LandMarket.DraftRequest changed = market.requestDrafts(List.of(r));
+                worker.submit(changed).get();
+                quietly(() -> { c.g.setCashForTest(Founding.WEALTHY_CASH); c.g.setLandPaidFromVault(false); });
+                boolean bought = quietlyGet(() -> c.g.buyLandParcel(offer.getId()));
+                check(where + ": a purchase while pricing rejects the old ground", bought && !market.acceptDrafts(changed));
+                market.draft(List.of());
+            }
+        } finally { worker.shutdownNow(); }
+
+        // Game.nextMonth delegates the simulation to the same engine; this batch leaves that order untouched.
+        Path game = Path.of("src/main/java/ham/citybuildersim/Game.java");
+        if (Files.isRegularFile(game)) check("the month still runs through SimulationEngine, with no asynchronous month-end price delivery",
+                Files.readString(game, StandardCharsets.UTF_8).contains("simulationEngine.simulateMonth(this);"));
     }
 }

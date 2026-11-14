@@ -2,6 +2,8 @@ package ham.citybuildersim;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -548,6 +550,7 @@ public class LandMarket {
         this.takenFrom = -1;
         java.util.Arrays.fill(offers, null);
         drafts.clear();
+        draftGround.clear();
     }
 
     /** The city's land the offers stand round, or null on a bare office. */
@@ -592,12 +595,32 @@ public class LandMarket {
 
     /** ...under a given id, as listed in a given month. */
     private LandParcel measure(GridOffers.Rect r, int id, int listedIn) {
+        return priceGround(readGround(r), id, listedIn);
+    }
+
+    /** Geometry and seller parts of unowned ground; once made, only read, including after a worker hands it back. */
+    private record DraftGround(GridOffers.Rect rect, CityLand.Ground ground, int[] sites, double[] amounts,
+                               List<LandSellers.Part> parts, long plots) { }
+
+    private DraftGround readGround(GridOffers.Rect r) {
         CityLand.Ground ground = land.groundWithRelief(r.x0(), r.y0(), r.x1(), r.y1());
         double[] km2 = ground.km2();
         int[] sites = new int[CityLand.KINDS];
         double[] amounts = new double[CityLand.KINDS];
         land.fieldsOn(r.x0(), r.y0(), r.x1(), r.y1(), sites, amounts);
         amounts[Resource.FOREST.ordinal()] = Math.rint(km2[CityLand.FOREST] * World.FOREST_M3_PER_KM2);
+        List<LandSellers.Part> parts = sellers == null ? List.of()
+                : sellers.split(land, r.x0(), r.y0(), r.x1(), r.y1(), km2[CityLand.SEA]);
+        return new DraftGround(r, ground, sites, amounts, parts, land.grid().unowned(r.x0(), r.y0(), r.x1(), r.y1()));
+    }
+
+    /** Prices retained geometry at THIS office's month and price, without walking the seller plots again (WN5c). */
+    private LandParcel priceGround(DraftGround measured, int id, int listedIn) {
+        GridOffers.Rect r = measured.rect();
+        CityLand.Ground ground = measured.ground();
+        double[] km2 = ground.km2();
+        int[] sites = measured.sites();
+        double[] amounts = measured.amounts();
         // The one door an offer is priced through (measure() for a listing, a restating, a draft and a quote): with no sellers, price() as ever.
         List<LandParcel.Sale> sold = List.of();
         double usd;
@@ -605,7 +628,7 @@ public class LandMarket {
             usd = price(km2, ground.relief(), amounts, groundUsdPerSqFt, usPriceLevel);
         } else {
             sold = new ArrayList<>();
-            usd = priceBySellers(r, km2, sold);
+            usd = priceBySellers(measured.parts(), sold);
         }
         LandParcel offer = new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, ground.relief(), sites, amounts, usd, listedIn);
         offer.setSellers(sold);
@@ -629,6 +652,7 @@ public class LandMarket {
 
     /** Hands the office the sellers of its land (Game, before the founding's listing and in the load path); null for none. Offers listed from now on are priced by them. */
     void setSellers(LandSellers sellers) {
+        if (this.sellers != sellers) draftGround.clear();
         this.sellers = sellers;
     }
 
@@ -644,8 +668,7 @@ public class LandMarket {
      * part with ground taking what the others leave so the shares add up to the price exactly (all to the first where the parts are worth nothing).
      * One part at factor 1 is the raw price times 1.0, so the price is price()'s to the bit.
      */
-    private double priceBySellers(GridOffers.Rect r, double[] km2, List<LandParcel.Sale> sold) {
-        List<LandSellers.Part> parts = sellers.split(land, r.x0(), r.y0(), r.x1(), r.y1(), km2[CityLand.SEA]);
+    private double priceBySellers(List<LandSellers.Part> parts, List<LandParcel.Sale> sold) {
         LandFactors factors = sellers.factors();
         int n = parts.size();
         double[] weight = new double[n];
@@ -1241,6 +1264,10 @@ public class LandMarket {
     /** The drafts standing now, in the order the player's ground was cut; each a LandParcel under a negative id. */
     private final List<LandParcel> drafts = new ArrayList<>();
 
+    /** Draft geometry belongs to this office's owner thread; workers fill only their own copied office (WN5c). */
+    private final Map<GridOffers.Rect, DraftGround> draftGround = new HashMap<>();
+    private boolean asynchronousDrafts;
+
     /** The id the next draft takes: -1, then -2, and so on - a counter of its own, never nextId, so no offer's number moves for a draft. */
     private int nextDraftId = -1;
 
@@ -1271,6 +1298,7 @@ public class LandMarket {
         }
         drafts.clear();
         drafts.addAll(now);
+        draftGround.keySet().removeIf(r -> now.stream().noneMatch(d -> sameRect(d, r.x0(), r.y0(), r.x1(), r.y1())));
         return getDrafts();
     }
 
@@ -1297,17 +1325,94 @@ public class LandMarket {
     private LandParcel measureDraft(long x0, long y0, long x1, long y1, int id) {
         double dx = (x0 + x1) / 2.0 - (land.siteX() + 0.5), dy = (y0 + y1) / 2.0 - (land.siteY() + 0.5);
         int at = GridOffers.sidePlace(dx, dy);
-        return measure(new GridOffers.Rect(at / OFFERS_A_SIDE, at % OFFERS_A_SIDE, land.level(), x0, y0, x1, y1), id, month);
+        GridOffers.Rect r = new GridOffers.Rect(at / OFFERS_A_SIDE, at % OFFERS_A_SIDE, land.level(), x0, y0, x1, y1);
+        // A quote has no shelf; only drafts retain their measured unowned ground. Ownership only grows, so equal
+        // unowned counts prove no plot of this rectangle changed. Fields on unowned ground cannot be extracted.
+        if (id == 0) return measure(r, id, month);
+        DraftGround measured = draftGround.get(r);
+        long plots = land.grid().unowned(x0, y0, x1, y1);
+        if (measured == null || measured.plots() != plots) {
+            measured = readGround(r);
+            draftGround.put(r, measured);
+        }
+        return priceGround(measured, id, month);
     }
 
-    /** Every draft measured again at the price struck now, its id kept; one whose ground the city now wholly owns is dropped. */
+    /** Every draft priced again NOW, its geometry retained while its unowned plots are unchanged; bought ground is dropped. */
     private void remeasureDrafts() {
         if (drafts.isEmpty() || land == null) return;
         for (int i = drafts.size() - 1; i >= 0; i--) {
             LandParcel d = drafts.get(i);
-            if (land.grid().unowned(d.getX0(), d.getY0(), d.getX1(), d.getY1()) == 0) drafts.remove(i);
+            long plots = land.grid().unowned(d.getX0(), d.getY0(), d.getX1(), d.getY1());
+            DraftGround measured = draftGround.get(d.rect());
+            if (plots == 0 || (asynchronousDrafts && (measured == null || measured.plots() != plots))) {
+                // A purchase changed this draft: Picks notices its missing id and asks a worker for the new ground.
+                drafts.remove(i);
+                draftGround.remove(d.rect());
+            }
             else drafts.set(i, measureDraft(d.getX0(), d.getY0(), d.getX1(), d.getY1(), d.getId()));
         }
+    }
+
+    /**
+     * Starts a picked-ground measurement on the owner (FX) thread. It reserves ids and removes the previous drafts
+     * while the card says the price is coming; run() touches only a quoter's copied office. No month waits on a worker.
+     */
+    public DraftRequest requestDrafts(List<long[]> rects) {
+        Quoter copy = quoter();
+        if (copy == null) throw new IllegalStateException("The picked ground could not be copied");
+        copy.frozen.drafts.addAll(drafts);
+        copy.frozen.nextDraftId = nextDraftId;
+        nextDraftId -= rects.size(); // reserve enough ids even when invalid/duplicate rectangles leave gaps
+        asynchronousDrafts = true;
+        List<long[]> own = rects.stream().map(long[]::clone).toList();
+        DraftRequest request = new DraftRequest(copy, land, sellers, own);
+        drafts.clear();
+        draftGround.clear();
+        return request;
+    }
+
+    /** A one-use worker job. Publication through the screen's dispatcher happens before acceptDrafts reads its result. */
+    public static final class DraftRequest implements Runnable {
+        private final Quoter copy;
+        private final CityLand land;
+        private final LandGrid grid;
+        private final long owned;
+        private final LandSellers sellers;
+        private final List<long[]> rects;
+        private volatile boolean cancelled;
+        private boolean finished;
+
+        private DraftRequest(Quoter copy, CityLand land, LandSellers sellers, List<long[]> rects) {
+            this.copy = copy;
+            this.land = land;
+            this.grid = land.grid();
+            this.owned = grid.ownedPlots();
+            this.sellers = sellers;
+            this.rects = rects;
+        }
+
+        /** Obsolete jobs still queued cost no seller walk; a running job can finish only on its private copy. */
+        public void cancel() { cancelled = true; }
+
+        @Override public void run() {
+            if (cancelled) return;
+            copy.frozen.draft(rects);
+            finished = true;
+        }
+    }
+
+    /** Owner (FX) thread only: rejects changed ground, then prices the returned geometry in the CURRENT month. */
+    public boolean acceptDrafts(DraftRequest request) {
+        if (request.cancelled || !request.finished || land != request.land || sellers != request.sellers
+                || land.grid() != request.grid || land.grid().ownedPlots() != request.owned) return false;
+        draftGround.clear();
+        draftGround.putAll(request.copy.frozen.draftGround);
+        drafts.clear();
+        for (LandParcel d : request.copy.frozen.drafts) {
+            drafts.add(measureDraft(d.getX0(), d.getY0(), d.getX1(), d.getY1(), d.getId()));
+        }
+        return true;
     }
 
     /**
