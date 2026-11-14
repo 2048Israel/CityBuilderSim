@@ -1,4 +1,4 @@
-# ExchangeCheck.java - 1,259 lines · 29 methods · 5 constants · harnesses
+# ExchangeCheck.java - 1,305 lines · 33 methods · 5 constants · harnesses
 
 `ham/citybuildersim/ExchangeCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      exchange's mark, every price read is the quote (EM2) the book as it
 > ... (5 more lines in the source)
 
-**Uses:** [Exchange](Exchange.md) (127), [Equity](Equity.md) (65), [HouseholdBalance](HouseholdBalance.md) (52), [OrderBook](OrderBook.md) (41), [PayTier](PayTier.md) (23), [Bank](Bank.md) (19), [FamilyStructure](FamilyStructure.md) (15), [TreasuryFund](TreasuryFund.md) (14), [Household](Household.md) (7), [Sectors](Sectors.md) (4), [Game](Game.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [GameFiles](GameFiles.md) (2), [MoneyAudit](MoneyAudit.md) (2), [DebtManager](DebtManager.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [Exchange](Exchange.md) (132), [Equity](Equity.md) (67), [HouseholdBalance](HouseholdBalance.md) (53), [OrderBook](OrderBook.md) (41), [PayTier](PayTier.md) (23), [Bank](Bank.md) (20), [FamilyStructure](FamilyStructure.md) (15), [TreasuryFund](TreasuryFund.md) (14), [Household](Household.md) (7), [Sectors](Sectors.md) (5), [Game](Game.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [GameFiles](GameFiles.md) (2), [MoneyAudit](MoneyAudit.md) (2), [DebtManager](DebtManager.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1)
 
 **Used by (4):** [BankCheck](BankCheck.md), [MarketCheck](MarketCheck.md), [OwnerCheck](OwnerCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
@@ -72,20 +72,20 @@
 
 | line | section |
 |---:|---|
-| 302 | · 1. the price is the quote |
-| 344 | · 2. nobody is obliged |
-| 395 | · 2b. the desk's caps (round 3) |
-| 442 | · 2c. what is over the caps, offered at fair value |
-| 536 | · 3. the leavers |
-| 578 | · 4. the world |
-| 635 | · 5. the household cells |
-| 730 | · 6. cell to cell |
-| 777 | · 6b. the cells rebalance by the bond rule (round 3) |
-| 808 | · 7. the buyback, and the money that stays |
-| 942 | · 7b. the fund past its cap (RB1) |
-| 1032 | · 8. the split |
-| 1076 | · 9. the save |
-| 1113 | · 10. a live city |
+| 351 | · 1. the price is the quote |
+| 393 | · 2. nobody is obliged |
+| 444 | · 2b. the desk's caps (round 3) |
+| 491 | · 2c. what is over the caps, offered at fair value |
+| 585 | · 3. the leavers |
+| 627 | · 4. the world |
+| 684 | · 5. the household cells |
+| 779 | · 6. cell to cell |
+| 826 | · 6b. the cells rebalance by the bond rule (round 3) |
+| 857 | · 7. the buyback, and the money that stays |
+| 991 | · 7b. the fund past its cap (RB1) |
+| 1081 | · 8. the split |
+| 1126 | · 9. the save |
+| 1163 | · 10. a live city |
 
 ## Constants
 
@@ -109,12 +109,14 @@
 | 194 | `final double[] debt` | Interest and principal a month (0.7.11, round 2): nothing unless a fixture says so. |
 | 195 | `final double[] boughtBack` |  |
 | 204 | `final double[] money` | The money it holds, at face, and what that money earns it a year (EM1): nothing unless a fixture says so; worth() sets the first. |
+| 246 | `int months` |  |
+| 247 | `double worstRelative` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 1186 | **type** `public class ExchangeCheck` | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what price, what a company does with its surplus, a split, and that a city ... |
+| 74 | 1232 | **type** `public class ExchangeCheck` | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what price, what a company does with its surplus, a split, and that a city ... |
 | 80 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 85 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 109 | 1 | `static Equity equity()` | A register in the fixtures' dollar. |
@@ -143,6 +145,11 @@
 | 224 | 5 | `static void step(Exchange ex, Equity reg, HouseholdBalance hb, Bank bank, Firms firms, double[] book, double worldRate, double ...` | The exchange's step for month m, its flows opened first, as Game runs it. |
 | 231 | 6 | `static double freshDeskLimit(Bank bank, double bid, double fair, double floatShares)` | What a desk holding nothing bids for at this price: the tightest of its capital, its two caps at fair value, and the float (round 3). |
 | 238 | 5 | `static double[] bookOf(int company, double equity)` |  |
-| 245 | 46 | `static void wageBand()` | A century of rising and falling founding-share prices, with an independently growing wage. |
-| 292 | 967 | `public static void main(String[] args) throws Exception` |  |
+| 245 | 18 | **type** `static final class SplitAudit` | A split-month audit must observe an adjustment before its residual can prove anything (REV-SX1-1). |
+| 249 | 10 | `void observe(Exchange exchange, double relative)` _(in ExchangeCheck.SplitAudit)_ |  |
+| 260 | 1 | `boolean happened()` _(in ExchangeCheck.SplitAudit)_ |  |
+| 261 | 1 | `boolean conserved()` _(in ExchangeCheck.SplitAudit)_ |  |
+| 265 | 27 | `static void splitOccurrenceControls(Exchange realSplit)` | A perfectly closed audit without any split must fail the same law the played city uses. |
+| 294 | 46 | `static void wageBand()` | A century of rising and falling founding-share prices, with an independently growing wage. |
+| 341 | 964 | `public static void main(String[] args) throws Exception` |  |
 

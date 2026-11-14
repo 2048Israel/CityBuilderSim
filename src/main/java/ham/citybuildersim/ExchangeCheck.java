@@ -241,6 +241,55 @@ public class ExchangeCheck {
         return book;
     }
 
+    /** A split-month audit must observe an adjustment before its residual can prove anything (REV-SX1-1). */
+    static final class SplitAudit {
+        int months;
+        double worstRelative;
+
+        void observe(Exchange exchange, double relative) {
+            for (int c = 0; c < N; c++) {
+                // Exchange.startMonth clears this to zero; a split or consolidation writes its factor.
+                if (exchange.getSplit(c) != 0) {
+                    months++;
+                    worstRelative = Math.max(worstRelative, Math.abs(relative));
+                    return;
+                }
+            }
+        }
+
+        boolean happened() { return months > 0; }
+        boolean conserved() { return happened() && worstRelative < 1e-9; }
+    }
+
+    /** A perfectly closed audit without any split must fail the same law the played city uses. */
+    static void splitOccurrenceControls(Exchange realSplit) {
+        out.println("\n--- 8c. split-month audit rejects a no-split run and accepts an actual adjustment ---");
+        int industry = Equity.indexOf(Sectors.INDUSTRY);
+        Equity reg = equity();
+        HouseholdBalance hb = savers(20, 4);
+        reg.listIfUnlisted(industry, 10, hb);
+        Exchange ex = exchange();
+        Firms firms = new Firms();
+        firms.wage = 1 / Math.sqrt(Exchange.SPLIT_AT * Exchange.CONSOLIDATE_BELOW);
+        Bank bank = bankWith(100_000);
+        SplitAudit noSplits = new SplitAudit();
+        for (int m = 1; m <= 12; m++) {
+            step(ex, reg, hb, bank, firms, bookOf(industry, 10), W, .10, m);
+            noSplits.observe(ex, 0); // Even perfect closure cannot supply a missing split.
+        }
+        close("twelve actual exchange steps without a split count zero split months", noSplits.months, 0, 0);
+        assertTrue("the played-city split-occurrence assertion rejects that no-split run", !noSplits.happened());
+        assertTrue("the played-city split-month audit assertion rejects it too", !noSplits.conserved());
+        SplitAudit withSplit = new SplitAudit();
+        withSplit.observe(realSplit, 0);
+        close("the fixture's real split counts exactly one split month", withSplit.months, 1, 0);
+        assertTrue("the same occurrence and audit gates accept a real split with a closed audit",
+                withSplit.happened() && withSplit.conserved());
+        out.printf("   controls: no-split run %d months, split law %s, audit law %s; real-split run %d month, both laws %s%n",
+                noSplits.months, noSplits.happened(), noSplits.conserved(), withSplit.months,
+                withSplit.happened() && withSplit.conserved());
+    }
+
     /** A century of rising and falling founding-share prices, with an independently growing wage. */
     static void wageBand() {
         int INDUSTRY = Equity.indexOf(Sectors.INDUSTRY);
@@ -1072,6 +1121,7 @@ public class ExchangeCheck {
         close("...the households still agreeing with the register", lots.sharesHeld(INDUSTRY), reg8b.getDomesticShares(INDUSTRY), 1e-9);
 
         wageBand();
+        splitOccurrenceControls(ex8);
 
         /* ================= 9. the save ================= */
         out.println("\n--- 9. the exchange survives a save: the books, their orders, the last trade ---");
@@ -1121,28 +1171,24 @@ public class ExchangeCheck {
         int monthsTraded = 0, quoteMisread = 0, tradedBooks = 0, quoteNotLastTrade = 0;
         double bought = 0, soldBack = 0, boughtBack = 0, between = 0, emigrants = 0;
         double worstMarkGap = 0;
-        int excessMonths = 0, deskToCompanyMonths = 0, splitMonths = 0, outsideWageBand = 0;
-        double worstExcessResidual = 0, excessSoldBefore = 0, worstDeskSaleResidual = 0, worstSplitResidual = 0;
+        int excessMonths = 0, deskToCompanyMonths = 0, outsideWageBand = 0;
+        SplitAudit splitAudit = new SplitAudit();
+        double worstExcessResidual = 0, excessSoldBefore = 0, worstDeskSaleResidual = 0;
         try {
             city.run();
             for (int m = 0; m < 240; m++) {
                 city.simulateMonths(1);
                 worstResidual = Math.max(worstResidual, Math.abs(city.getLastMoneyAudit().relative()));
                 Exchange x = city.getExchange();
-                boolean splitThisMonth = false;
                 double wage = city.getPopulationManager().getAverageWage();
                 for (int c = 0; c < N; c++) {
-                    if (x.getSplit(c) != 1) splitThisMonth = true;
                     if (wage > 0 && city.getEquity().getShares(c) > 0 && !x.atFloor(c)) {
                         double ratio = x.price(c) / wage;
                         if (ratio > Exchange.SPLIT_AT * (1 + 1e-12)
                                 || ratio < Exchange.CONSOLIDATE_BELOW * (1 - 1e-12)) outsideWageBand++;
                     }
                 }
-                if (splitThisMonth) {
-                    splitMonths++;
-                    worstSplitResidual = Math.max(worstSplitResidual, Math.abs(city.getLastMoneyAudit().relative()));
-                }
+                splitAudit.observe(x, city.getLastMoneyAudit().relative());
                 // The months the desk's excess over its caps sold (round 4).
                 if (x.getLifeExcessSold() > excessSoldBefore + 1e-12) {
                     excessMonths++;
@@ -1187,11 +1233,11 @@ public class ExchangeCheck {
                 emigrants, city.getBank().getSecurities());
         assertTrue("the city's shares traded on the book", monthsTraded > 0 && x.getLifeTrades() > 0);
         assertTrue("...and every month of it is conserved", worstResidual < 1e-9);
-        assertTrue("the played city actually splits shares", splitMonths > 0);
-        assertTrue("MoneyAudit closes in every month with a split", splitMonths > 0 && worstSplitResidual < 1e-9);
+        assertTrue("the played city actually splits shares", splitAudit.happened());
+        assertTrue("MoneyAudit closes in every month with a split", splitAudit.conserved());
         assertTrue("the dearest and cheapest live quotes stay inside the wage band every month", outsideWageBand == 0);
         out.printf("   wage band: %d months with splits, %d quotes outside, worst split audit %.3g%n",
-                splitMonths, outsideWageBand, worstSplitResidual);
+                splitAudit.months, outsideWageBand, splitAudit.worstRelative);
         out.printf("   the desk's excess over its caps sold in %d month(s), $%,.0fk offered and $%,.0fk sold over the 20 years%n",
                 excessMonths, x.getLifeExcessOffered(), x.getLifeExcessSold());
         /*

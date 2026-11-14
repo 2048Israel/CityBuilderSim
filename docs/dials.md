@@ -7778,7 +7778,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 142 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
 | 225 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
 | 339 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
-| 895 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
+| 903 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
 
 ### SlopeCheck.java ([map](map/SlopeCheck.md))
 

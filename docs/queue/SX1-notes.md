@@ -1,9 +1,10 @@
 # SX1 — The exchange's prices readable
 
-Validation passed: the final full pick exited 3 and the retained fresh-merge
-dry run exited 0, with no NEW reds. Both ran 188 harnesses: 185 passed and
-only the three existing red harnesses remained. The 80-run ensemble passed
-all M1/F1 hard criteria. The ship file names the reusable full gate below.
+Readiness was withdrawn for REV-SX1-1 before changing the harness. The previous
+split-month count was wrong: getSplit() uses zero for no adjustment. The
+corrected city fixture observes 40 of 240 months, worst split-month audit
+1.96e-14. Revision validation and the replacement fresh gate are recorded below.
+The simulation and the 80-run ensemble are unchanged.
 
 ## Built and calls
 
@@ -46,9 +47,11 @@ all M1/F1 hard criteria. The ship file names the reusable full gate below.
 - ExchangeCheck's century fixture crosses both triggers, keeps every quote in
   band and preserves household value and every founding-share chart point.
   Exact boundaries and missing/invalid wages are checked.
-- The played 240-month fixture split in all 240 months, had zero live quotes
-  outside the wage band, and its worst split-month relative MoneyAudit residual
-  was 6.00e-14. Its save/reload retains factors, founding-share prices, register,
+- Corrected by REV-SX1-1: the played 240-month fixture has 40 months with
+  actual adjustments, zero live quotes outside the wage band, and a worst
+  split-month relative MoneyAudit residual of 1.96e-14. The original claim
+  of 240 split months / 6.00e-14 used the wrong no-split sentinel and is
+  withdrawn. Save/reload retains factors, founding-share prices, register,
   fund and household holdings.
 - FormatsCheck checks unchanged percentages through the dial, the closed-form
   yearly rate, short spans, ratios versus gains, named trillions, extreme
@@ -138,7 +141,7 @@ formatting code changed, so the completed final-model ensemble remains valid.
   whole register identity. Compile, regenerated maps and Stale also passed.
 
 
-## Passed full pick and retained merge gate
+## Pre-review full pick and merge gate (superseded by REV-SX1-1)
 
 - Final `batch-check.sh --pick`: exit 3; ALL selected. 188 harnesses ran,
   185 passed. The existing reds are PlanCheck (PX1: district checks and
@@ -166,3 +169,38 @@ formatting code changed, so the completed final-model ensemble remains valid.
   bdeaa29e22b0001a2a249c4cffbdfcb63d514a44 and main
   ef5cfe589277dd14e1a970ddb78212e82b571ee9. It confirms the final records,
   reusable evidence and publisher-owned generated indexes remain valid.
+
+
+## REV-SX1-1 — non-vacuous split-month audit
+
+The review correctly found the sentinel error: Exchange.startMonth() writes
+zero into each split slot; Exchange.getSplit() returns that slot unchanged.
+Readiness was taken off first in e0536d8d and the old gate-run marker removed.
+The older kept runs above are historical and will not be reused after this
+harness change.
+
+- The shared SplitAudit observer counts a month only when at least one factor
+  is nonzero, and uses that same observation for the occurrence and split-month
+  conservation assertions. The original 1e-9 audit bound is unchanged.
+- A twelve-step exchange run with quotes inside the wage band produces zero
+  split months. The exact conditions used by the played-city assertions both
+  reject it, even with a perfect zero audit residual.
+- The existing forced, real split counts exactly one month and passes both
+  conditions. The actual 240-month city has 40 split months; every one closes
+  the real MoneyAudit, worst relative residual 1.96e-14. Its quotes remain
+  inside the wage band, and the save/reload checks still pass.
+- The picker against readiness commit 9bc2cfc0 selected BankCheck, ExchangeCheck,
+  MarketCheck, MortgageCheck, OrderBookCheck, OwnerCheck, ShortSellingCheck and
+  TimingCheck. The name filters ran 11 harnesses; batch-check exit 0, all green.
+  Compile, regenerated maps and Stale (zero firm findings) also passed.
+- Regression proof: an isolated target/rev-sx1-1-mutant classpath restores only
+  the old != 1 comparison. It exits 1 with exactly three failed assertions:
+  zero split months, no-split occurrence rejection, and no-split audit rejection.
+  It reproduces the old false 240-month count and 6.00e-14. The fixed code
+  reports zero for the negative control, one for the real-split control, and
+  forty in the city. The mutant does not alter source or target/classes.
+- Logs: /tmp/sx1-rev1-pick.txt; target/checks/ExchangeCheck.log;
+  target/rev-sx1-1-mutant/run.txt. No model or formatting code changed, so the
+  completed ensemble stands, as the send-back directs.
+- All regenerated indexes are committed before the replacement gate, including
+  the previously publisher-owned ShortSellingCheck.RUN_START offset in dials.
