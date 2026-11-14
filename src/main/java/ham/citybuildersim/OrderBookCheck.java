@@ -89,6 +89,7 @@ public class OrderBookCheck {
     public static void main(String[] args) {
         out = System.out;
         floatingPrices();
+        staggeredBand();
         priceTime();
         restingPrice();
         nobodyObliged();
@@ -134,6 +135,25 @@ public class OrderBookCheck {
                     queue.bids().get(0).who().equals("first"));
             close("depth uses the same price comparison", queue.depth(OrderBook.Side.BUY, Math.nextUp(price)), 2, 0);
             assertTrue("the same numerical price is one depth level", queue.levels(OrderBook.Side.BUY).size() == 1);
+        }
+    }
+
+    static void staggeredBand() {
+        out.println("--- 11. a rounding band cannot hide a later crossing order ---");
+        double step = Math.ulp(1.0);
+        for (OrderBook.Side side : OrderBook.Side.values()) {
+            double sign = side == OrderBook.Side.SELL ? 1 : -1;
+            OrderBook book = new OrderBook("staggered");
+            book.submit("first", side, 1 + sign * .75 * MoneyAudit.ULP_STEPS * step, 1, 1, null);
+            book.submit("second", side, 1, 1, 1, null);
+            double limit = 1 - sign * .5 * MoneyAudit.ULP_STEPS * step;
+            close("depth finds the later crossing order on " + side, book.depth(side, limit), 1, 0);
+            List<OrderBook.Fill> fills = book.submit("taker",
+                    side == OrderBook.Side.SELL ? OrderBook.Side.BUY : OrderBook.Side.SELL,
+                    limit, 1, 1, null, false);
+            assertTrue("the later crossing order trades on " + side,
+                    fills.size() == 1 && fills.get(0).seller().equals(side == OrderBook.Side.SELL ? "second" : "taker")
+                    && fills.get(0).buyer().equals(side == OrderBook.Side.BUY ? "second" : "taker"));
         }
     }
 

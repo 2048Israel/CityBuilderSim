@@ -533,7 +533,7 @@ public class PriceLevelCheck {
        6. THE TWIN
        ================================================================= */
 
-    /** BF1: a small residual uses its flows' scale, as the nudge guard does; a real miss and a one-person miss still fail. */
+    /** BF1: real comparisons keep their pointwise relative law after a series falls from its peak. */
     static void comparisonBands() {
         Child a = new Child(), b = new Child();
         a.ok = b.ok = true;
@@ -560,7 +560,7 @@ public class PriceLevelCheck {
                 misses[i] = fails;
             }
         } finally { out = savedOut; fails = savedFails; }
-        assertTrue("real residuals use the same running scale as the nudge guard", misses[0] == 0);
+        assertTrue("a real difference above the current value's relative band is rejected after a peak", misses[0] == 1);
         assertTrue("a real difference outside the unchanged band is rejected", misses[1] == 1);
         assertTrue("a one-person difference is rejected even in a trillion-person city", misses[2] == 1);
     }

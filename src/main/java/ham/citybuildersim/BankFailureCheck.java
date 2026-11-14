@@ -134,6 +134,30 @@ public final class BankFailureCheck {
         shared.issueProjectLoan(Sectors.WOOD_PRODUCTS, room * .75, 1);
         close("one sector's commitment consumes the shared room", shared.projectRoom(), room * .25);
         check("another sector cannot spend the same capital again", !shared.canFundProject(Sectors.MANUFACTURING, room * .5));
+        Game bonds = town("bankfailure-bond-capital");
+        bonds.simulateMonths(2);
+        BusinessDebtManager claims = bonds.getEconomyManager().getBusinessDebtManager();
+        Bank bank = bonds.getBank();
+        double deposits = 1e6 * PriceLevel.FACTOR;
+        bank.refresh(1, deposits, 0, 0, 0, 0);
+        bank.setCash(deposits * 1.1);
+        claims.setProjectBudget(bank.projectHeadroom());
+        double before = claims.projectRoom();
+        claims.setAssets(sector, request * 100);
+        BondMarket market = bonds.getBondMarket();
+        double face = before * .75, book = market.faceHeldByBank();
+        market.issue(new BusinessDebtManager.Plan(sector, face, face, 1, 1,
+                0, 1, 1, market.issueCost(face), 1, request * 100, face, face), bonds.getMonth());
+        double bought = market.faceHeldByBank() - book;
+        check("fixture: the bank actually buys the corporate issue", before > 0 && bought > 0);
+        out.printf("bond allowance before %.17g bought %.17g room %.17g headroom %.17g%n", before, bought, claims.projectRoom(), bank.projectHeadroom());
+        double remaining = bank.projectHeadroom()
+                - Math.max(0, claims.getLentThisMonth() - claims.getRepaidThisMonth());
+        check("corporate bonds and pending loans share the bank's remaining capital",
+                claims.projectRoom() <= Math.max(0, remaining)
+                    + MoneyAudit.tolerance(0, before));
+        check("a later project cannot reuse the capital spent on corporate bonds",
+                !claims.canFundProject(Sectors.MANUFACTURING, (before + Math.max(0, remaining)) / 2));
         g.getBank().writeOffSector(sector, g.getBank().equity() + g.getBank().getSectorAllowance(sector));
         close("uncovered defaults reach the growth desk before the bank's month-end settle", g.getBank().projectHeadroom(), 0);
 
