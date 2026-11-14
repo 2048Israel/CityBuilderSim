@@ -283,7 +283,7 @@ final class FundScreen {
 
     /** A share as a percentage, to one place, with a true minus. */
     static String pct1(double share) {
-        return Double.isFinite(share) ? String.format("%.1f%%", share * 100).replace('-', '−') : "—";
+        return Formats.INSTANCE.percentage(share, "%.1f%%").replace('-', '−');
     }
 
     /** A unit share as "a tenth" or "a 24th": the dial the sentence names (the fund's sale of the excess, its idle cash's transfer), not a copy of it. */
@@ -299,7 +299,7 @@ final class FundScreen {
     /** ...signed: "+14.4%". */
     static String signedPct(double share) {
         if (!Double.isFinite(share)) return "—";
-        return (share < 0 ? "−" : "+") + String.format("%,.1f%%", Math.abs(share) * 100);
+        return Formats.INSTANCE.change(share, 0, "%+,.1f%%").replace('-', '−');
     }
 
     /** A move in ink with its arrow: "▲ +4.3%", or "unchanged" when it rounds to none - never a verdict's colour. */
@@ -1682,7 +1682,9 @@ final class FundScreen {
         while (i0 < i1 && !(series[i0] > 0)) i0++;
         double a = series[i0], b = series[i1];
         if (!(a > 0) || !(b > 0) || i1 <= i0) return null;
-        String m = move(b / a - 1);
+        double gain = b / a - 1;
+        String m = Math.abs(gain) <= Formats.LARGE_PERCENT ? move(gain)
+                : (gain > 0 ? "▲ " : "▼ ") + Formats.INSTANCE.change(gain, axis.get(i1) - axis.get(i0), "%+,.1f%%");
         return m == null ? null : m + (wholeRange(window) ? " over " + rangeName(window.range())
                 : " from " + month(axis.get(i0)) + " to " + month(axis.get(i1)));
     }

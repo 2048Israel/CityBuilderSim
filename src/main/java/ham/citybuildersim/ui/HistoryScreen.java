@@ -2446,12 +2446,7 @@ final class HistoryScreen {
                 // amount, in its own unit (0.7.37: it read "×-7").
                 if ((first < 0) != (last < 0) && last != 0) return (delta > 0 ? "+" : "-") + fmtUnit(unit, Math.abs(delta));
                 double share = delta / Math.abs(first);
-                // A city that grew its output a thousandfold did not grow it by
-                // "+136683.6%". Past a fivefold move the multiple is the figure
-                // a reader can hold, and the percentage is noise with a sign on
-                // it.
-                if (Math.abs(share) >= 5) return String.format("\u00d7%,.0f", last / first);
-                return String.format("%+.1f%%", unsigned0(share * 100, 1));
+                return Formats.INSTANCE.change(share, 0, "%+.1f%%");
         }
     }
 
@@ -2773,7 +2768,7 @@ final class HistoryScreen {
         switch (unit) {
             // Thousands, like everything else the model counts - see money().
             case "money":     return tightMoney(v * 1000);
-            case "percent":   return String.format("%.1f%%", unsigned0(v * 100, 1));
+            case "percent":   return Formats.INSTANCE.percentage(unsigned0(v * 100, 1) / 100, "%.1f%%");
             // Ground is kept per square foot in thousands, and the land screen
             // already shows it multiplied out. Two screens, one convention -
             // and in US dollars since 0.7.6, which is what the world asks, a

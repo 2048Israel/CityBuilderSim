@@ -6578,7 +6578,7 @@ public final class Pieces {
         // A percentage to one place, two under a twentieth of a point, none at all under a two-hundredth: never "+0.0%".
         double p = Double.isFinite(share) ? Math.abs(share) * 100 : 0;
         String pct = !Double.isFinite(share) || nothing || p < 0.005 ? ""
-                : String.format(p >= 0.05 ? " (%s%,.1f%%)" : " (%s%.2f%%)", share < 0 ? "\u2212" : "+", p);
+                : " (" + Formats.INSTANCE.change(share, 0, p >= 0.05 ? "%+,.1f%%" : "%+.2f%%").replace('-', '−') + ")";
         // The verdict's colour from BRIDGE_NOTHING up (the spec's D7); under it the body's ink, its sign and arrow kept.
         String tone = nothing || Math.abs(amount) < BRIDGE_NOTHING ? Palette.TEXT_BODY : amount > 0 ? Palette.GOOD_MONEY : Palette.BAD;
         return new Pnl(arrow + sign + figure + pct, tone);
