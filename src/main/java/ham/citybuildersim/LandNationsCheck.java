@@ -1534,12 +1534,13 @@ public class LandNationsCheck {
         final LandMap.Quotes quotes;
         final long block;
         int fault;
+        int changes;
 
         HoverFixture(int fault) {
             this.fault = fault;
             LandParcel offer = city.offers().get(0);
             block = LandMap.blockAt(city.office().getLevel(), offer.getX0(), offer.getY0());
-            quotes = new LandMap.Quotes(() -> city.g, jobs::add, returns::add, () -> { }, () -> now[0]) {
+            quotes = new LandMap.Quotes(() -> city.g, jobs::add, returns::add, () -> changes++, () -> now[0]) {
                 @Override LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect) {
                     int fail = HoverFixture.this.fault;
                     HoverFixture.this.fault = 0;
@@ -1662,9 +1663,29 @@ public class LandNationsCheck {
             f.work(); f.handBack();
             check("a later hover of the cancelled block receives its price", hasPrice(f.words()));
         }
+        hoverAdoption();
         hoverQueueWait();
         hoverRealCancellation();
         hoverCountPriority();
+    }
+
+    static void hoverAdoption() throws Exception {
+        try (HoverFixture f = new HoverFixture(0)) {
+            List<String> card = f.words();
+            check("adoption premise: a stationary pointer has a quote out and its pricing card", card.contains(LandMap.QUOTING) && f.jobs.size() == 1);
+            f.quotes.redraw(); // MapView.reset(), called by keepUp() when its initial map draft is adopted
+            if (f.changes > 0) card = f.words(); // the screen's changed callback re-asks the same pointer
+            while (!f.jobs.isEmpty()) { f.work(); f.handBack(); }
+            if (f.changes > 0) card = f.words();
+            check("adopting the map draft re-asks a stationary hover and replaces its pricing card with a price", f.changes > 0 && hasPrice(card));
+        }
+        Path view = Path.of("src", "main", "java", "ham", "citybuildersim", "ui", "MapView.java");
+        if (Files.isRegularFile(view)) {
+            String source = Files.readString(view, StandardCharsets.UTF_8);
+            int reset = source.indexOf("private void reset()");
+            int end = source.indexOf("private void", reset + 1);
+            check("the normal map reset delegates to the stationary-hover redraw lifecycle", source.substring(reset, end).contains("hoverQuotes.redraw()"));
+        }
     }
 
     static void hoverRealCancellation() throws Exception {

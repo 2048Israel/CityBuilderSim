@@ -1721,6 +1721,12 @@ public final class LandMap {
         /** The pointer left quoteable ground. */
         public void leave() { cancel(); wanted = -1; }
 
+        /** A new map picture under a stationary pointer must ask its hover again. Owner thread only. */
+        public void redraw() {
+            cancel();
+            if (wanted >= 0) changed.run();
+        }
+
         /** Owner-thread clock work, called by the map's frame. */
         public boolean tick() {
             sync();

@@ -642,7 +642,7 @@ final class MapView {
 
     private void reset() {
         resetGlobePicture();
-        hoverQuotes.leave();
+        hoverQuotes.redraw();
         shownMap = null;
         tiles = null;
         draft = null;
