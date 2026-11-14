@@ -1,4 +1,4 @@
-<!-- gate-run: /tmp/cbs-gate-SX1-x0V9WEWg -->
+<!-- readiness: provisional -->
 
 ## changelog
 ### {next} — SX1, The exchange's prices readable — 2026-11-14, ready, see docs/queue/SX1-notes.md
