@@ -3,6 +3,12 @@
 Built from main e5642145 (SX1, 0.9.101), on batch/BF1. HW1's named
 files are kept out of this batch.
 
+Insurance-corrected preflight 7e29b76e counts **0/24 bank failures**, against unchanged SX1's
+5/24 and LD2's historical 8/24. All 2,880 MoneyAudits and every bank equity
+bridge close. Pellet exports occur in 176 city-months; 532 split/consolidation
+events are counted. Readiness remains provisional pending the final ALL
+pick, ensemble and fresh-clone gate.
+
 ## Evidence before the mends
 
 - LD2's historical count was 8/24; the current SX1 tree is 5/24 (seeds
@@ -38,7 +44,7 @@ files are kept out of this batch.
 
 ## Checks and records
 
-Work in progress. Pre-mend logs are target/checks/bf1-fixtures-before.log,
+Pre-mend logs are target/checks/bf1-fixtures-before.log,
 bf1-count-before.log, bf1-before-seeds.log and bf1-ld2-shares.log.
 
 ## Implementation review
@@ -219,8 +225,92 @@ FinancesScreen.lineCell now gives its terms their own scope so an added phrase
 cannot borrow the next numeric cell's label. The unchanged fresh/kept equality
 failed twice before the correction; an identical prefix replay checks it after.
 
-The corrected AUTO2 seed 10 completes all 2,400 months with no finding and
-no money-audit miss (bf1-insurance-seed10.csv/.log). The corrected 24-city
+Corrected AUTO2 seeds 7, 10 and 13 each complete all 2,400 months with no
+finding and no money-audit miss (bf1-insurance-seed7/10/13.csv/.log). The corrected 24-city
 BankFailureCheck count also passes every audit and bank equity bridge
-(bf1-insurance-count.log). Seeds 7 and 13 are being replayed before the final
-ensemble snapshot. The model changes here stop short of HW1's named files.
+(bf1-insurance-count.log). The final ensemble snapshot is 7e29b76e, label BF1-7e29,
+against docs/ensemble/0.9.101.md. The model changes here stop short of HW1's named files.
+
+On corrected source 7e29b76e, PriceLevelCheck again passes its complete
+60/120/120/120-month horizons, without trimming. The full ALL pick is
+target/checks/bf1-pick-7e29.txt. The obsolete f00e ALL process supplied no
+passing verdict: jcmd verified its BF1 user.dir before its PID tree alone
+was stopped. Relevant logs are in target/bf1-f00e-preflight. The 768 MB
+display diagnostic exhausted its heap; the identical old-model prefix
+replay uses the harness's normal 2 GB and soft timing, with its correctness
+assertions unchanged.
+
+## Unrelated final map reds
+
+The final-source replay with main's unchanged mapper reproduces the network
+and junction failures too (bf1-main-mapper-7e29.log): 625 road plots plus a
+67-plot piece, with the city's ground joining them, despite a connected
+district plan. Bounds and reproduction are in docs/queue/BF1-map.md, queued
+as BF1-M through the ship file. Closest + 4 against LATTICE 8 remains PX1;
+the existing full map-count oracle row remains DM3. No map source or oracle
+is changed. The ship file names the two newly reached assertion parts;
+there is no BF1-owned known-red row to transfer.
+
+## 7e29 preflight ensemble and display control
+
+The final ensemble, target/ensemble/BF1-7e29 (snapshot 7e29b76e), completed
+80/80 runs, none short or missing, in 27.1 minutes. Exit 0: all 10 hard M1/F1
+criteria pass, with zero audit failures/unread months and zero runs with a
+finding in every policy. BF1 scores 23/26 against SX1's 24/26. All changed
+verdicts below are informational, as Jerus specified:
+
+| criterion | SX1 baseline | BF1 | verdict change |
+|---|---|---|---|
+| AUTO2 A1, yearly inflation m240–end | 2.89% median, 11/16 in band | 2.82%, 15/16 | FAIL → PASS |
+| SHOCK T2, final population | 115,870 | 77,432, below 75% of baseline | PASS → FAIL |
+| HIGH T2, final population | 63,992 | 35,130, below 75% of baseline | PASS → FAIL |
+
+The committed baseline is docs/ensemble/BF1.md, carrying the next-version
+token only in its heading/model line. Main was not rerun for a baseline.
+Score and raw CSVs remain under target/ensemble/BF1-7e29.
+
+The old-model (f00e classes) identical Kept prefix through section 64,
+using the normal 2 GB and soft timing, now has zero DeskCurve fresh/kept
+differences. It exits 1 only for the existing KF63 retention case; the
+previous source had two DeskCurve equality misses on this exact prefix.
+Log: target/checks/bf1-finances-prefix-2g.log. The final full KeptCheck also
+finishes with only the existing KF63 line. Both scope fixes are verified
+without changing its signature, pixel or retention laws.
+
+## Corrections from the completed 7e29 preflight
+
+The 7e29 full pick also found one own stock-policy regression: early
+warehouse loss ran before Refining's existing O1 liquidation. OilCheck 11's
+unchanged fixture caught 15.9M litres being written off instead of sold.
+★ Refining defers that early loss to its existing produceStock, which ships
+past-room oil before any cap; oil does not spoil and its tanks are emptied
+before demolition. OilCheck and the unchanged GDP/stock laws now pass.
+
+CallCheck's first-call equality found another money arithmetic issue:
+principal times 100 divided by 100 can differ by one ULP from principal.
+★ Divide CallTree.CALL_PRICE by 100 first. A call at par is then exactly
+principal; the existing call/holder/audit fixture passes without a tolerance
+change.
+
+PrizeCheck's next-month ordering fixture was missing two of its own
+conditions: the village could staff only 70% of a lab against the model's
+80% gate, and its eligible owners could put up only 547 of the 990 needed.
+★ Use the existing extra-college-head helper, and give eligible owner cells
+a liquidity buffer derived from lab cost/stake and SHARE_OF_EXCESS, equally
+in all three controls. The fixture still asserts a positive owner raise,
+no loan, the one-field/month limit and no order one prize-hair under.
+Its isolated section 12 now passes (bf1-prize-section12.log).
+
+StaffingDrawCheck's saved 1900 city has 638 people of room and no single
+building that needs all of it. ★ Retain the same month, door census and
+one-building comparisons, and also ask the first doubled order quantity
+that binds the room. Both quantities compare every sector/template against
+the saved twin to the bit. Its original cap/formula and all save laws pass.
+
+The seven-harness run bf1-last-causes.txt passes Oil, Call, StaffingDraw,
+GDP, BankFailure and PriceLevel; it caught the owner-liquidity condition
+then corrected in the isolated Prize control. BankFailure stays 0/24 with
+all 2,880 audits. These last model corrections supersede the 7e29 ensemble
+as final evidence: that preflight score is retained above, and the final
+model must run its own full ensemble before readiness.
+The extra PlanCheck line is the same PX1 + floor, not a new map-law waiver.

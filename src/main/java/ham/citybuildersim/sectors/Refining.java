@@ -577,6 +577,10 @@ public final class Refining extends Sector {
         return all > 0 ? tankage * one.of(g) / all : 0;
     }
 
+    /** Oil does not spoil: produceStock liquidates tanks before they go (O1), rather than discarding them early (BF1). */
+    @Override
+    public void writeOffUnhousedStock() { }
+
     /**
      * The month's production into the tanks - after shipping, from the tanks,
      * whatever of a product they no longer have room for (0.7.76, ★ O1).

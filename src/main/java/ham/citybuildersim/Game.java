@@ -19808,7 +19808,7 @@ public class Game {
 
     /** What calling this piece costs: its outstanding principal, 100 per 100 (CallTree.CALL_PRICE), paid to every holder, the central bank's too. */
     public double callCost(Debt debt) {
-        return debt == null ? 0 : debt.getOustandingPrincipal() * CallTree.CALL_PRICE / 100;
+        return debt == null ? 0 : debt.getOustandingPrincipal() * (CallTree.CALL_PRICE / 100);
     }
 
     /**

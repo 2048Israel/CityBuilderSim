@@ -1547,9 +1547,29 @@ public class PrizeCheck {
             double cost = a.getBusinessInvestment().getCostOf(lab, 1), stake = ra.labStake(F, m, w);
             check("fixture: the lab has a target, a cost and a stake above nothing", target != null && cost > 0 && stake > 0);
 
-            playHanded(a, 1);
-            playHanded(b, 1);
-            playHanded(c, 1);
+            // BF1: a prize does not give its owners cash. Supply the liquidity
+            // this ordering fixture requires, equally in all three villages.
+            for (Game village : new Game[] { a, b, c }) {
+                java.util.List<Household> cells = village.getHouseholdBalance().cells();
+                double[] weight = new double[cells.size()];
+                for (int i = 0; i < weight.length; i++) {
+                    Household cell = cells.get(i);
+                    if (!cell.isEmpty() && cell.canInvest() && cell.tradesShares() && cell.debt <= 0
+                            && cell.lockout <= 0 && !cell.isGoingShort()) weight[i] = cell.households();
+                }
+                double supplied = 2 * (cost + stake) / HouseholdBalance.SHARE_OF_EXCESS;
+                check("fixture: eligible owners receive the lab's liquidity buffer",
+                        village.getHouseholdBalance().creditByWeight(supplied, weight) == supplied);
+            }
+
+            // BF1: the growing village can use up hand()'s college heads.
+            // As in the medical case below, supply the lab's staffing premise.
+            handMore(a);
+            check("fixture: the handed village can staff its Engineering lab",
+                    a.getSectors().businessServices().staffing(lab).passes());
+            playHandedMore(a, 1);
+            playHandedMore(b, 1);
+            playHandedMore(c, 1);
             check("within a month of play a lab is ordered: one is on site, none standing yet, and the month's word under " + Game.LABS_SLOT + " names it and the problem its purse pays for",
                     a.labsOnSite(F) == 1 && a.labsStanding(F) == 0 && a.getLastInvestment(Game.LABS_SLOT).equals(String.format("Built %s - the purse pays for %s", lab.getName(), target.name())), labsOf(a) + " | " + a.getLastInvestment(Game.LABS_SLOT));
             double raised = a.getEconomyManager().getEquityRaised(BS) - b.getEconomyManager().getEquityRaised(BS);
