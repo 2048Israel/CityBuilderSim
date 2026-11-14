@@ -464,9 +464,9 @@ public class BuildAdviceCheck {
             String what = s.need().label() + ", " + s.template().getName();
             assertTrue(what + ": not on credit - the Wealthy city's cash covers its quote", !s.needsCredit() && s.credit() == 0);
             assertTrue(what + ": the count keeps it ahead at its projection",
-                    s.closes() && BuildAdvice.ahead(g, m, BuildAdvice.plus(site, s.template(), s.count()), s.ahead()));
+                    s.closes() && BuildAdvice.maintained(g, m, BuildAdvice.plus(site, s.template(), s.count()), s.ahead()));
             assertTrue(what + ": ...and one fewer does not",
-                    !BuildAdvice.ahead(g, m, BuildAdvice.plus(site, s.template(), s.count() - 1), s.ahead()));
+                    !BuildAdvice.maintained(g, m, BuildAdvice.plus(site, s.template(), s.count() - 1), s.ahead()));
             bits(what + ": the price is Game.quoteBuild() for the count", s.price(), g.quoteBuild(s.template(), s.count()).total);
             bits(what + ": before is the figure NEEDS YOU read", s.before(), s.need().value());
             assertTrue(what + ": it fits the land the cards before leave, or no building that closes it does",
@@ -758,7 +758,7 @@ public class BuildAdviceCheck {
     /**
      * Two clinics alike in everything - price, capacity, land, posts in all -
      * but how many of the scarcest of the clinic's own posts they need: the
-     * advice takes the one with fewer.
+     * fewer serve more. Filled-post payroll and whole-plan cost decide the order (HW1).
      */
     static void theStaffingWeighting(Path root) {
         out.println("\n--- 5. the staffing weighting: short of a job, the building with fewer of those posts ---");
@@ -807,7 +807,19 @@ public class BuildAdviceCheck {
         assertTrue("the one with fewer of the short posts serves more at today's staffing",
                 BuildAdvice.unit(g, gm, fewer) > BuildAdvice.unit(g, gm, more));
         assertTrue("general care is suggested", general != null);
-        assertTrue("...and with the clinic needing fewer of them", general != null && general.template() == fewer);
+        double least = Double.POSITIVE_INFINITY;
+        for (BuildingsTemplate candidate : catalogue) {
+            if (!gm.serves(candidate)) continue;
+            Set<BuildingsTemplate> skip = new HashSet<>(catalogue);
+            skip.remove(candidate);
+            BuildAdvice.Suggestion alternative = BuildAdvice.suggestFor(g, null, gm, g.getCash(),
+                    g.getLandManager().getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip, true);
+            if (alternative != null && alternative.closes())
+                least = Math.min(least, valueFigure(g, alternative, g.getLandManager().getAvailableSqFt())[0]);
+        }
+        assertTrue("...and its whole plan costs no more than any alternative, including either staffing mix",
+                general != null && general.closes() && Double.isFinite(least)
+                        && Math.abs(general.value().net() - least) < 1e-9 * Math.max(1, Math.abs(least)));
         catalogue.remove(more);
         catalogue.remove(fewer);
         catalogue.add(clinic);
@@ -1060,7 +1072,7 @@ public class BuildAdviceCheck {
             BuildAdvice.Measure m = s.measure();
             Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(BuildAdvice.onSite(g, m), s.template(), s.count());
             String what = s.need().label() + ", " + s.count() + " " + s.template().getName();
-            bits(what + ": sized with the businesses' headroom as its slack", s.ahead().slack(), BusinessInvestment.TARGET_HEADROOM);
+            bits(what + ": sized with the player's automatic reserve as its slack", s.ahead().slack(), g.getAutoBuilder().getSlack());
             if (BuildAdvice.isServed(m) && m.kind() != BuildAdvice.Kind.TRANSIT) {
                 double[] there = BuildAdvice.supplyDemand(g, m, with, s.ahead());
                 assertTrue(what + ": at 100% or more of its demand projected and SLACK past it ("
@@ -1075,7 +1087,17 @@ public class BuildAdviceCheck {
             assertTrue(what + ": never fewer than the old rule's count (" + old + ")", s.count() >= old);
             more |= s.count() > old;
         }
-        assertTrue("fixture: the slack and the projection add buildings to at least one card", more);
+        // Whole-plan ranking can select a larger unit whose rounding absorbs the margin.
+        // The same city's walk-in-only fallback card still exposes the added buildings.
+        BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+        BuildingsTemplate clinic = template(g, "Walk-in Clinic");
+        Set<BuildingsTemplate> skip = new HashSet<>(g.getBuildingManager().getTemplates());
+        skip.remove(clinic);
+        BuildAdvice.Suggestion fallback = BuildAdvice.suggestFor(g, null, care, g.getCash(),
+                g.getLandManager().getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip, true);
+        int oldFallback = BuildAdvice.count(g, care, BuildAdvice.onSite(g, care), clinic)[0];
+        assertTrue("fixture: the slack and projection add buildings to a listed or fallback card in the same city",
+                more || fallback != null && fallback.count() > oldFallback);
     }
 
     /* ============================ 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE ============================ */

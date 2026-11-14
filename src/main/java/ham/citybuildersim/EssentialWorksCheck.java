@@ -70,6 +70,49 @@ public final class EssentialWorksCheck {
                         && g.getLandManager().getOwnedSqFt() > owned) && AutoBuilder.debt(g) == debt && ab.getBonds() == 0);
     }
 
+    static void anticipateHighway(Path root) {
+        out.println("--- a growing highway is ordered before its construction lead consumes the reserve ---");
+        Game g = town(root, "highway-ahead");
+        AutoBuilder ab = g.getAutoBuilder();
+        BuildingsTemplate highway = g.getBuildingManager().getTemplateByName("Elevated Highway");
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
+        // Growing population history and homes for the people it predicts.
+        quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("House"), 1000, true));
+        var history = g.getHistorySave().getPopulation();
+        long pop = g.getPopulationManager().getPopulation();
+        history.clear();
+        for (int i = 0; i <= 12; i++) history.add(Math.round(pop * (.7 + .3 * i / 12)));
+        InfrastructureManager roads = g.getInfrastructureManager();
+        roads.setThrough(highway.getCapacity() * 2, LandManager.SQ_FT_PER_KM2 * 100, 0);
+        g.getBusinessInvestment().restorePopulationHistory(history);
+        double lead = g.quoteBuild(highway, 1).months;
+        double shortGrowth = BuildAdvice.opening(g, 0, ab.getSlack()).scale();
+        double longGrowth = BuildAdvice.opening(g, lead, ab.getSlack()).scale();
+        // Find traffic whose six-month reserve is covered, but its construction-lead reserve is short.
+        roads.setLoad(1000);
+        double loadForOne = BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of())[1];
+        double capacity = BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of())[0];
+        roads.setLoad(1000 * capacity / loadForOne / ((shortGrowth + longGrowth) / 2));
+        out.printf("lead %.2f short growth %.3f long growth %.3f sd %s%n", lead, shortGrowth, longGrowth, java.util.Arrays.toString(BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of())));
+        boolean current = BuildAdvice.maintained(g, HIGHWAYS, Map.of(), BuildAdvice.opening(g, 0, ab.getSlack()));
+        boolean atOpening = BuildAdvice.maintained(g, HIGHWAYS, Map.of(), BuildAdvice.opening(g, lead, ab.getSlack()));
+        check("fixture: today's highway and six-month reserve are covered, but demand outgrows them before a new highway opens",
+                current && !atOpening && BuildAdvice.warranted(g, HIGHWAYS) && lead > BuildAdvice.HORIZON
+                        && Double.isFinite(longGrowth) && longGrowth > shortGrowth);
+        BuildAdvice.Suggestion card = BuildAdvice.suggestFor(g, null, HIGHWAYS, g.getCash(),
+                g.getLandManager().getAvailableSqFt());
+        check("the highway card's projection uses the quoted opening of its entire final order",
+                card != null && Math.abs(card.ahead().months()
+                        - BuildAdvice.opening(g, g.quoteBuild(card.template(), card.count()).months, ab.getSlack()).months()) < 1e-9);
+        ab.setOn(true, null);
+        quietly(() -> ab.pass(g));
+        AutoBuilder.Step order = step(g, HIGHWAYS);
+        check("the card and automatic path both order a highway before the six-month reserve is used",
+                card != null && order != null && order.ordered() > 0
+                        && order.building().equals(card.template().getName()));
+    }
+
     static void schoolsAndPolice(Path root) {
         out.println("--- schools and police serve people without a payback veto ---");
         Game g = town(root, "schools-police");
@@ -289,13 +332,16 @@ public final class EssentialWorksCheck {
         u.setWattsConsumption(u.getProduction() * 2);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         var all = CityNeeds.measure(g, CityNeeds.PLAIN);
-        BuildAdvice.Suggestion card = BuildAdvice.suggestFor(g, BuildAdvice.needFor(all, power), power,
-                g.getCash(), g.getLandManager().getAvailableSqFt());
+        BuildAdvice.Suggestion card = BuildAdvice.suggest(g, all).stream()
+                .filter(s -> s.measure().equals(power)).findFirst().orElse(null);
         check("fixture: the power card leads the automatic remit and its full order is fundable",
                 card != null && AutoBuilder.remit(g, all).get(0).equals(power)
                         && g.quoteBuild(card.template(), card.count()).total < AutoBuilder.spendable(g)
                         && card.landSqFt() < g.getLandManager().getAvailableSqFt());
         if (card == null) return;
+        check("the power plan is sized to its whole order's actual opening and planning horizon",
+                Math.abs(card.ahead().months() - g.quoteBuild(card.template(), card.count()).months
+                        - BusinessInvestment.horizonFor(g.quoteBuild(card.template(), card.count()).months)) < 1e-9);
         String cardValue = card.value().words();
         ab.setOn(true, null);
         quietly(() -> ab.pass(g));
@@ -307,6 +353,55 @@ public final class EssentialWorksCheck {
         check("the automatic path records the exact whole-plan valuation displayed by the card",
                 ab.powerValues().size() == 1
                         && ab.powerValues().get(0).equals(card.count() + " " + card.template().getName() + ": " + cardValue));
+    }
+
+    static void interimPower(Path root) {
+        out.println("--- pending coal does not hide an earlier forecast power loss ---");
+        Game g = town(root, "interim-power");
+        BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
+        BuildingsTemplate wind = g.getBuildingManager().getTemplateByName("Wind Farm");
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        AutoBuilder ab = g.getAutoBuilder();
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
+        quietly(() -> g.buildStack(coal, 1, false));
+        var people = g.getHistorySave().getPopulation();
+        var months = g.getHistorySave().getMonth();
+        people.clear(); months.clear();
+        long pop = g.getPopulationManager().getPopulation();
+        for (int i = 0; i <= 12; i++) {
+            people.add(Math.round(pop * (.8 + .2 * i / 12)));
+            months.add(g.getMonth() - 12 + i);
+        }
+        g.getBusinessInvestment().restorePopulationHistory(people);
+        UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
+        utilities.setWattsConsumption(utilities.getProduction() * .8);
+        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, power);
+        double first = Math.ceil(g.onSiteMonths(coal));
+        double windLead = g.quoteBuild(wind, 1).months;
+        check("fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner",
+                BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
+                        && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.opening(g, windLead, ab.getSlack()))
+                        && BuildAdvice.maintained(g, power, site, BuildAdvice.NOW)
+                        && Double.isFinite(first) && windLead < first);
+        WorksValue.Value value = WorksValue.of(g, power, site, wind, 1, g.getLandManager().getAvailableSqFt());
+        check("wind prevents positive physical output loss before the pending coal opens", value.used() > 0 && value.avoided() > 0);
+        ab.setOn(true, null);
+        quietly(() -> ab.pass(g));
+        AutoBuilder.Step order = step(g, power);
+        check("the automatic path orders earlier wind before the forecast shortage becomes physical",
+                order != null && order.ordered() > 0 && order.building().equals(wind.getName()));
+        BuildingsStacks pendingWind = g.getBuildingManager().getStack(wind);
+        if (pendingWind == null || pendingWind.getUnderConstruction() <= 0) return;
+        double owed = pendingWind.getUnderConstruction() * (double) wind.getConstructionPoints()
+                - pendingWind.getConstructionProgress();
+        double windFirst = Math.ceil(g.onSiteMonths(wind)
+                * Math.max(0, wind.getConstructionPoints() - pendingWind.getConstructionProgress()) / owed);
+        var state = new com.google.gson.Gson().toJsonTree(ab.toState()).getAsJsonObject();
+        var dates = state.has("pendingUntil") ? state.getAsJsonObject("pendingUntil") : null;
+        double due = dates != null && dates.has(power.label()) ? dates.get(power.label()).getAsDouble() : Double.POSITIVE_INFINITY;
+        check("the faster wind brings the saved first-completion deadline forward from the coal quote",
+                due <= g.getMonth() + windFirst && due < g.getMonth() + first);
     }
 
     static void overduePending(Path root) {
@@ -370,6 +465,7 @@ public final class EssentialWorksCheck {
         Path root = TempDirs.create("essential-works");
         highways(root, true);
         highways(root, false);
+        anticipateHighway(root);
         schoolsAndPolice(root);
         lostOutput(root);
         scarceCash(root);
@@ -378,6 +474,7 @@ public final class EssentialWorksCheck {
         cappedCare(root);
         adviceParity(root);
         overduePending(root);
+        interimPower(root);
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

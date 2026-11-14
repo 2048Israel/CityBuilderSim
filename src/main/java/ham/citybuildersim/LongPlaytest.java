@@ -2265,8 +2265,10 @@ public class LongPlaytest {
     /** Jerus's HW1 bar: near full service, with the length and cause of every dip visible. */
     static final double WORKS_NEAR = .90;
     static final Map<String, Integer> worksUnder90 = new LinkedHashMap<>(), worksSpell = new LinkedHashMap<>(),
-            worksLongest = new LinkedHashMap<>(), worksShortReasons = new LinkedHashMap<>();
+            worksLongest = new LinkedHashMap<>(), worksLongestEnd = new LinkedHashMap<>(), worksShortReasons = new LinkedHashMap<>();
     static final Map<String, Double> worksSpellLead = new LinkedHashMap<>(), worksLongestLead = new LinkedHashMap<>();
+    static final Map<String, Map<String, Integer>> worksSpellReasons = new LinkedHashMap<>(),
+            worksLongestReasons = new LinkedHashMap<>();
 
     /** Staffed supply over today's demand, capped at full service, with no demand fully served. */
     static Map<String, Double> worksShares(Game g) {
@@ -2310,13 +2312,18 @@ public class LongPlaytest {
             worksLow.putIfAbsent(e.getKey(), 0);
             int spell = e.getValue() < WORKS_NEAR ? worksSpell.getOrDefault(e.getKey(), 0) + 1 : 0;
             worksSpell.put(e.getKey(), spell);
-            if (spell == 0) worksSpellLead.remove(e.getKey());
+            if (spell == 0) {
+                worksSpellLead.remove(e.getKey());
+                worksSpellReasons.remove(e.getKey());
+            }
             if (spell > 0) {
                 worksUnder90.merge(e.getKey(), 1, Integer::sum);
                 AutoBuilder.Step step = g.getAutoBuilder().steps().stream()
                         .filter(s -> s.measure().label().equals(e.getKey())).findFirst().orElse(null);
                 String reason = step == null ? "not offered" : step.outcome() + "/" + step.cut();
                 worksShortReasons.merge(e.getKey() + " " + reason, 1, Integer::sum);
+                worksSpellReasons.computeIfAbsent(e.getKey(), key -> new LinkedHashMap<>())
+                        .merge(reason, 1, Integer::sum);
                 if (step != null && !worksSpellLead.containsKey(e.getKey())) {
                     double first = BuildAdvice.firstCompletion(g, step.measure(), BuildAdvice.onSite(g, step.measure()));
                     if (Double.isFinite(first)) worksSpellLead.put(e.getKey(), first);
@@ -2324,6 +2331,8 @@ public class LongPlaytest {
             }
             if (spell > worksLongest.getOrDefault(e.getKey(), 0)) {
                 worksLongest.put(e.getKey(), spell);
+                worksLongestEnd.put(e.getKey(), g.getMonth());
+                worksLongestReasons.put(e.getKey(), new LinkedHashMap<>(worksSpellReasons.get(e.getKey())));
                 worksLongestLead.put(e.getKey(), worksSpellLead.getOrDefault(e.getKey(), Double.NaN));
             }
             worksMin.merge(e.getKey(), e.getValue(), Math::min);
@@ -7825,6 +7834,8 @@ public class LongPlaytest {
         out.printf("  ...essential works decisions: %s%n", worksReasons);
         out.printf("  ...months under 90%% served: %s%n", worksUnder90);
         out.printf("  ...longest spell under 90%%: %s%n", worksLongest);
+        out.printf("  ...last month of that longest spell: %s%n", worksLongestEnd);
+        out.printf("  ...pass outcomes during that longest spell: %s%n", worksLongestReasons);
         out.printf("  ...first work's quoted lead near the start of that spell: %s%n", worksLongestLead);
         out.printf("  ...under 90%% by pass outcome/cut: %s%n", worksShortReasons);
         out.printf("  ...automatic power buildings ordered: %s%n", worksPowerOrders);

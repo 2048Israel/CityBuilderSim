@@ -74,7 +74,6 @@ public final class WorksValue {
     /** Demand is physical: the reserve dial sizes orders but cannot create lost output. */
     private static Relief relief(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
                                  Map<BuildingsTemplate, Integer> order, double lead) {
-        Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(site, order);
         Map<Sector, double[]> traffic = new LinkedHashMap<>();
         if (BuildAdvice.roadKind(m) || m.kind() == BuildAdvice.Kind.TRANSIT) for (Sector sector : g.getSectors().all()) {
             double[] mix = new double[Traffic.values().length];
@@ -86,14 +85,36 @@ public final class WorksValue {
         for (int year = 0; year < BuildAdvice.LIFE_YEARS; year++) {
             double months = lead + year * 12 + 6;
             BuildAdvice.Ahead at = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), 0);
+            Map<BuildingsTemplate, Integer> ready = m.kind() == BuildAdvice.Kind.POWER ? powerOnSiteAt(g, site, months) : site;
+            Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(ready, order);
             double weight = 0;
             for (int j = 1; j <= 12; j++) weight += Math.pow(1 + rate, -(lead + year * 12 + j));
-            result += weight * outputRestored(g, m, site, with, at, traffic);
-            double[] before = BuildAdvice.supplyDemand(g, m, site, at), after = BuildAdvice.supplyDemand(g, m, with, at);
+            result += weight * outputRestored(g, m, ready, with, at, traffic);
+            double[] before = BuildAdvice.supplyDemand(g, m, ready, at), after = BuildAdvice.supplyDemand(g, m, with, at);
             used += weight * Math.max(0, Math.max(0, before[1] - before[0]) - Math.max(0, after[1] - after[0]));
             weights += weight;
         }
         return new Relief(weights > 0 ? used / weights : 0, Math.max(0, result));
+    }
+
+    /** Pending power contributes only after its construction output can finish it, including preparation. */
+    private static Map<BuildingsTemplate, Integer> powerOnSiteAt(Game g,
+            Map<BuildingsTemplate, Integer> site, double months) {
+        Map<BuildingsTemplate, Integer> ready = new LinkedHashMap<>();
+        for (Map.Entry<BuildingsTemplate, Integer> e : site.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            BuildingsStacks stack = g.getBuildingManager().getStack(t);
+            if (stack == null || stack.getUnderConstruction() <= 0) {
+                ready.put(t, e.getValue());
+                continue;
+            }
+            double wait = g.onSiteMonths(t);
+            double owed = stack.getUnderConstruction() * (double) t.getConstructionPoints() - stack.getConstructionProgress();
+            double progress = stack.getConstructionProgress() + (Double.isFinite(wait) && wait > 0 ? owed * months / wait : 0);
+            int finished = (int) Math.max(0, Math.min(e.getValue(), Math.floor(progress / t.getConstructionPoints())));
+            if (finished > 0) ready.put(t, finished);
+        }
+        return ready;
     }
 
     static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added, BuildAdvice.Ahead at) {

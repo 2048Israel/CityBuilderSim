@@ -23,7 +23,7 @@ import java.util.Map;
  * (BuildAdviceCheck) can hold it without the toolkit.
  *
  * THE RULE (0.7.51; the brief's section 4 at 0.7.24), in one paragraph:
- * take NEEDS YOU's needs in its order (CityNeeds.biting()) - a school above
+ * take the automatic remit in its order (AutoBuilder.remit()) - a school above
  * the ladder listed only for the students the city would both get and hire
  * (CityNeeds.wanted(), listsSchool()) - and keep those a city-built building
  * answers and what is on site does not already keep ahead; for each, of the
@@ -36,7 +36,7 @@ import java.util.Map;
  * the same physical valuation appears on the Build card. The
  * count that keeps the need ahead at the demand it opens to, projected
  * the way the businesses project theirs (above the ladder, the students it
- * would get and hire by then, its feeder's graduates counted) and SLACK
+ * would get and hire by then, its feeder's graduates counted) and the player's reserve
  * past it - off NEEDS YOU's list there, and a served gauge at 100% of it -
  * after what is on site at its staffed capacity; on credit when its quote
  * is more than the cash the ones before leave, never cut to the cash; at
@@ -1078,7 +1078,7 @@ public final class BuildAdvice {
     /** The most of one building a search will count to. */
     static final int MOST = 1 << 22;
 
-    /** The slack an order is sized with past its projection: the businesses' own headroom (BusinessInvestment.TARGET_HEADROOM). */
+    /** The businesses' headroom, retained for explicit callers. Normal cards use AutoBuilder.getSlack() (HW1). */
     public static final double SLACK = BusinessInvestment.TARGET_HEADROOM;
 
     /** The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size theirs (BusinessInvestment.horizonFor(), since BA1). */
@@ -1103,7 +1103,7 @@ public final class BuildAdvice {
      * for a building that takes so long (BusinessInvestment.horizonFor(): HORIZON
      * for a short wait, growing with a long one - the wait was held to twelve
      * months here until BA1) - the businesses' growthFactor() over those
-     * months - and SLACK past it.
+     * months, padded by the player's automatic reserve setting.
      */
     public static Ahead opening(Game game, double lead) {
         return opening(game, lead, game.getAutoBuilder().getSlack());
@@ -1316,8 +1316,8 @@ public final class BuildAdvice {
         Map<BuildingsTemplate, Integer> site = maintain ? game.getAutoBuilder().pendingCapacity(game, m) : onSite(game, m);
         double whenOnSite = figure(game, m, site);
         // JUDGEMENT: what is on site already keeps it ahead, sized as an order placed now would be - nothing to add.
-        if (maintain ? maintained(game, m, site, opening(game, 0, slack))
-                : ahead(game, m, site, opening(game, 0, slack))) return null;
+        boolean full = maintain && AutoBuilder.essential(m);
+        if (!full && ahead(game, m, site, opening(game, 0, slack))) return null;
         double before = need != null ? need.value() : figure(game, m, new LinkedHashMap<>());
 
         List<Weighed> weighed = new ArrayList<>();
@@ -1336,16 +1336,22 @@ public final class BuildAdvice {
             int most = m.kind() == Kind.POWER && t.isHydro() ? Math.min(MOST, game.hydroSlotsFree(t)) : MOST;
             Map<BuildingsTemplate, Integer> one = plus(new LinkedHashMap<>(), t, 1);
             int[] today = count(game, m, site, one, new Ahead(0, 1, slack), most, maintain);
-            if (today[0] <= 0) continue;
-            double lead = game.quoteBuild(t, today[0]).months;
-            Ahead p = opening(game, lead, slack);
-            // Power is a twenty-year capacity choice, not a plant fitted to the next three years (HW1).
-            if (m.kind() == Kind.POWER) {
-                double months = (Double.isFinite(lead) ? Math.max(0, lead) : 0) + LIFE_MONTHS;
-                p = new Ahead(months, lifeTrend(game, months), slack);
+            if (today[0] <= 0 && !full) continue;
+            int n = Math.max(1, today[0]);
+            double lead;
+            Ahead p;
+            int[] found;
+            while (true) {
+                lead = game.quoteBuild(t, n).months;
+                p = opening(game, lead, slack);
+                found = count(game, m, site, one, p, most, maintain);
+                if (!full || found[0] <= n) break;
+                n = found[0];
             }
-            int[] found = count(game, m, site, one, p, most, maintain);
-            if (found[0] <= 0) continue;
+            if (found[0] <= 0) {
+                if (!full) continue;
+                found = new int[] {1, 1};
+            }
             boolean closes = found[1] == 1;
             boolean fits = t.getLandSqFt() * (double) found[0] <= landLeft;
             // Every candidate's figure since 0.7.101: its order over its life
@@ -1353,7 +1359,7 @@ public final class BuildAdvice {
             // road's was its cost over its life a trip from 0.7.70, a living
             // care building's its order over the places the need lacks from
             // 0.7.71, and the rest their price a unit with their ground.)
-            WorksValue.Value value = WorksValue.of(game, m, site, t, found[0], landLeft);
+            WorksValue.Value value = WorksValue.of(game, m, onSite(game, m), t, found[0], landLeft);
             double per = value.perUsed();
             // Automatic building can buy land: its full price ranks it, rather than a free-land veto (HW1).
             weighed.add(new Weighed(t, closes ? 0 : 1, per, unit, found[0], closes, fits, p,
@@ -1373,6 +1379,9 @@ public final class BuildAdvice {
          */
         weighed.sort(java.util.Comparator.comparingInt(Weighed::tier).thenComparingDouble(w -> w.value().net()));
         Weighed best = weighed.get(0);
+        // Plan the chosen work before its actual order can open. A cheaper small
+        // alternative can wait for its own lead, while a coal-sized plan starts earlier.
+        if (full && maintained(game, m, site, opening(game, best.lead(), slack))) return null;
         Weighed next = weighed.size() > 1 ? weighed.get(1) : null;
         Lost lost = next == null ? null
                 : next.closes() != best.closes() ? Lost.CANNOT_CLOSE

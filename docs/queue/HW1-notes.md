@@ -1008,3 +1008,123 @@ below-90% spell is 84 months, death care 3 and cells 0, against the
 withdrawn run's 175, 29 and 56. Its plant orders are 42 wind and one coal.
 These preliminary figures will be superseded by the final combined run.
 No buildings.json balance values were changed.
+
+### Lead-aware ordering and the later instructions
+
+The orchestrator's 02:28 instruction required diagnosis of the remaining
+84-month highway spell, and 02:34 required the same for power.
+The snapshot diagnostic target/checks/hw1-sb1-highway-trace.log showed
+a six-month AHEAD forecast even when a new highway's first opening was
+quoted at 74–93 months. At m2211 a highway was ordered with operating
+capacity 4,050, demand 3,402 and its first completion near m2304.
+Demand reached 6,416 by m2280 while that capacity still stood at 4,050.
+
+★ The start decision now follows the chosen work's actual order lead.
+The full plan is weighed before AHEAD can stop an essential order.
+A candidate with no immediate count still participates as its next unit,
+so a long lead can trigger an early order and a cheap short-lead work can
+wait for its own opening. Sizing converges on the quote of the entire
+final order. An initial small count's shorter quote cannot size a much
+larger, later-opening order. The default card and automatic pass use the
+same procedure. Open asks are reweighed through that procedure too.
+
+★ Twenty years remains the economic comparison horizon. It is no longer
+the amount of future capacity bought in the current order. Current
+orders meet the demand projected at their whole-order opening plus the
+existing planning horizon and the player's reserve. Buying twenty years'
+forecast supply at once produced much larger capital orders, fiscal
+refusals and worse service in the diagnostic trial. The full twenty-year
+cost, prevented output, payroll and tax sum remains in WorksValue.
+
+★ Pending power is phased into the physical-loss comparison as its
+construction output can finish units, including site preparation.
+Previously an unfinished coal plant counted as producing immediately
+throughout an earlier wind plan's comparison and erased that wind's
+prevented losses. A faster work can now be ordered when the operating
+grid's forecast needs it before the existing plant can open. A new faster
+order brings the saved first-completion date forward. It cannot postpone
+a still-live promise. Expired capacity also stops covering a forecast
+reserve gap before it becomes a physical shortage.
+
+The model deliberately has no weather-driven intermittency.
+BuildingManager's wind definition already uses a 40% capacity factor,
+8,100 units, just as coal's capacity factor is baked in. Staff fill,
+construction and retirement affect delivered output. The orchestrator
+agreed at 02:40 to price this model and leave weather and balance data
+alone. No buildings.json values changed.
+
+The early-deadline fixture now supplies both population histories with
+the same controlled growth and housing room. Its highway is covered
+today and by the old six-month forecast, but short at its construction
+lead. Normal card and automatic paths must order early. Its final card
+projection must match the full order's own quote. Removing repeated
+sizing fails that exact invariant while the other premises pass
+(target/checks/hw1-sb1-resizing-mutant.log). The pre-mend model fails the
+early order (hw1-sb1-anticipate-before.log).
+
+The new power fixture has operating power covered now, projected need
+before pending coal opens, and an earlier wind opportunity. It requires
+positive prevented output, the actual early wind order and a saved
+first-completion date advanced from coal's quote. All pass in
+hw1-sb1-forward-power.log. The pre-mend model fails the actual order
+with its forecast premise reached (hw1-sb1-forward-power-before.log).
+The separate constant-demand, physically short fixture failed both
+prevented-loss and early-order assertions before the mends
+(hw1-sb1-interim-before2.log). The first old-class attempt referenced a
+new helper and failed linkage, so it was replaced by an independent
+one-coal completion quote before drawing this conclusion.
+
+Additional BuildAdviceCheck adaptations keep their conditions hard.
+
+- Section 3 counts the complete essential-service target for the chosen
+  count and one fewer. The old road utilisation listing threshold differs
+  from that target. The quote, staffing and ground identities are retained.
+- Section 5 retains equal capital price, equal total posts and the higher
+  staffed output of the clone with fewer scarce posts. It now requires
+  the least independently recomputed whole-plan sum across alternatives.
+  Filled-post payroll makes the less staffed mix cheaper to run, so the
+  old unconditional preference for fewer scarce posts is no longer a law.
+- Section 8 requires the player's automatic reserve exactly. It retains
+  full projected coverage and no smaller count than the old listing rule.
+  The selected larger unit's integer rounding can absorb the margin.
+  The same city's walk-in-only fallback card supplies the hard premise
+  that margin/projection adds at least one building. No observation
+  replaces any of these checks.
+
+The young refusal fixture reached a saved 60% debt limit on the new path.
+AutoBuilder.restore intentionally migrates that legacy default to 240%,
+so the loaded probe could borrow while the original was at its cap.
+Its existing pin helper now chooses the next ordinary slider step when
+the step would equal that migration sentinel. The same young, care-short,
+cash-short, bounded-recovery premise is thereby preserved through load.
+A finer-issue-rounding trial did not address the cause and was reverted.
+
+Five focused harnesses pass in
+target/checks/hw1-sb1-reserve-deadline-checks.log, exit 0.
+LongPlaytest now records the last month and the exact pass outcomes of
+each service's longest below-90% spell, so final cash, ground, debt and
+pending explanations can be tied to that spell.
+
+Pre-GD4 diagnostic snapshots, superseded by the combined final run
+
+| trial | power minimum | power longest below 90% | highway longest | wind / coal |
+|---|---|---|---|---|
+| withdrawn ready model | 89.9958% | 1 | 175 | 7 / 19 |
+| first deadline, filled-post and cap mends | 75.7802% | 55 | 84 | 42 / 1 |
+| earliest-work lead forecast | 81.2094% | 17 | 6 | 108 / 14 |
+| chosen lead with twenty years' capacity sized now | 41.0985% | 180 | 84 | 25 / 7 |
+| timing pending power, opening-sized orders | 85.6769% | 21 | 27 | 49 / 21 |
+| forecast deadline with faster quote advancement | 93.5346% | 0 | 65 | 79 / 10 |
+
+The last trial is target/checks/hw1-sb1-reserve-deadline-playtest.log,
+exit 0, with no findings. Its power is full at the end. Its highway's
+longest spell ends at m1593; the final combined run will identify its own
+spell and exact refusal counts. Its cells' 231-month spell has an initial
+272-month first-completion quote. The timing-power trial had two map
+round-trip findings at its last save, to investigate if repeated on the
+combined model. The separate chosen-lead trial interrupted by compiling
+over live target/classes is invalid. All later diagnostic defaults run
+immutable class snapshots.
+
+GD4 arrived on main at ef5cfe58, 0.9.100, at 03:18.
+The implementation is being merged before the final pick and ensemble.

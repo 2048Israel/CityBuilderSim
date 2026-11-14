@@ -1128,9 +1128,21 @@ public final class AutoBuilder {
     public Map<BuildingsTemplate, Integer> pendingCapacity(Game game, BuildAdvice.Measure m) {
         Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
         Double due = pendingUntil.get(m.label());
-        boolean overdue = due != null && game.getMonth() > due
-                && !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.NOW);
-        return overdue ? Map.of() : site;
+        boolean shortAhead = !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, 0, slack));
+        if (shortAhead && due != null && game.getMonth() > due) return Map.of();
+        // A slow plant cannot stand in for power a faster work can deliver sooner.
+        if (m.kind() == BuildAdvice.Kind.POWER && BuildAdvice.units(site) > 0) {
+            double first = BuildAdvice.firstCompletion(game, m, site);
+            for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+                if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
+                if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
+                double lead = game.quoteBuild(t, 1).months;
+                if (Double.isFinite(lead) && lead < first
+                        && !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, lead, slack)))
+                    return Map.of();
+            }
+        }
+        return site;
     }
 
     private void rememberPending(Game game, BuildAdvice.Measure m, boolean newOrder) {
@@ -1141,9 +1153,12 @@ public final class AutoBuilder {
             return;
         }
         Double due = pendingUntil.get(m.label());
-        if (due != null && (!newOrder || game.getMonth() <= due)) return;
+        if (due != null && !newOrder) return;
         double lead = BuildAdvice.firstCompletion(game, m, site);
-        pendingUntil.put(m.label(), game.getMonth() + (Double.isFinite(lead) ? Math.max(1, lead) : 0));
+        double quoted = game.getMonth() + (Double.isFinite(lead) ? Math.max(1, lead) : 0);
+        // A faster new work brings the first completion forward. Another order
+        // cannot postpone an existing promise while that promise is still live.
+        pendingUntil.put(m.label(), due != null && game.getMonth() <= due ? Math.min(due, quoted) : quoted);
     }
 
     /**
@@ -1200,7 +1215,7 @@ public final class AutoBuilder {
      */
     private void step(Game game, List<CityNeeds.Need> all, BuildAdvice.Measure m) {
         Map<BuildingsTemplate, Integer> site = pendingCapacity(game, m);
-        if (BuildAdvice.maintained(game, m, site, BuildAdvice.opening(game, 0, slack))) {
+        if (!essential(m) && BuildAdvice.maintained(game, m, site, BuildAdvice.opening(game, 0, slack))) {
             steps.add(new Step(m, Outcome.AHEAD, null, 0, 0, Cut.NONE, 0, 0));
             return;
         }
@@ -1222,7 +1237,9 @@ public final class AutoBuilder {
                     hold(m, first.s(), first.cut(), first.wanted(), first.line(), first.payback());
                     return;
                 }
-                steps.add(new Step(m, Outcome.NOTHING, null, 0, 0, Cut.NONE, 0, 0));
+                Outcome outcome = BuildAdvice.maintained(game, m, site, BuildAdvice.opening(game, 0, slack))
+                        ? Outcome.AHEAD : Outcome.NOTHING;
+                steps.add(new Step(m, outcome, null, 0, 0, Cut.NONE, 0, 0));
                 // ...said in the inbox while the measure is short of its margin.
                 if (!atTarget(game, m)) held.add(nothingWords(game, m));
                 return;
@@ -2198,13 +2215,12 @@ public final class AutoBuilder {
             withdrawAsk(a, "its measure is no longer one the builder keeps", null);
             return;
         }
-        if (BuildAdvice.maintained(game, m, pendingCapacity(game, m), BuildAdvice.opening(game, 0, slack))) {
-            withdrawAsk(a, "what stands and what is on site keep " + m.label() + " ahead of its margin without it", null);
-            return;
-        }
         BuildAdvice.Suggestion c = cardFor(game, all, m, a);
         if (c == null) {
-            withdrawAsk(a, "the advice no longer ranks it for " + m.label(), null);
+            String why = BuildAdvice.maintained(game, m, pendingCapacity(game, m), BuildAdvice.opening(game, 0, slack))
+                    ? "what stands and what is on site keep " + m.label() + " ahead of its margin without it"
+                    : "the advice no longer ranks it for " + m.label();
+            withdrawAsk(a, why, null);
             return;
         }
         int n = Math.max(1, Math.min(a.count, c.count()));

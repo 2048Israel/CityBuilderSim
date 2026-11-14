@@ -1750,6 +1750,10 @@ public class AutoBuildCheck {
      */
     static double nearTheLimit(Game g) {
         double limit = justOver(g);
+        // A saved .60 is the legacy default and restores to 2.40. Pin another
+        // ordinary slider step so the loaded refusal keeps the stated limit.
+        if (Math.abs(limit - AutoBuilder.OLD_DEFAULT_DEBT_LIMIT) < 1e-9)
+            limit += AutoBuilder.DEBT_STEP;
         double lo = 0, hi = limit * AutoBuilder.annualGdp(g);
         for (int i = 0; i < 60; i++) {
             double mid = (lo + hi) / 2;
