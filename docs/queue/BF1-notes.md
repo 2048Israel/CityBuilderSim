@@ -139,3 +139,36 @@ compares the fall month's residual with a no-move counterfactual in the same
 month, whose opening month, cash and debt must match, rather than assuming
 ordinary residuals equal in successive months. Both financial controls passed
 in isolated runs without relaxing a tolerance.
+
+## Price-level regressions traced to money floors
+
+After the crossing repair, the first remaining non-roundoff cash difference
+is Construction at month 44. A temporary setter trace locates it in the bond
+market, not production or retirement: its face dust still has the old
+1e-9 nominal value at the founding price level. Small household-company
+trades are omitted in different denominations. Scaling that floor removes
+the five nominal-series failures; only two Truck quantity lines remain at
+the 1e-9 comparison boundary.
+
+★ The bond face, foreign-move, household-move, fair-price and offering-tail
+floors are money constants. They now enter through PriceLevel.atFounding,
+then retain their existing currency-reform scaling. PriceLevelCheck includes
+all five anchors in its hard constant comparison. Its tolerance, nudge,
+growth, count, history and cutoff laws are unchanged. BankFailureCheck's
+above/below bond-face fixture fails both above-floor trades on the old
+market, at units 1 and 100, while its below-floor controls pass.
+Its numeric identities now also use MoneyAudit's own floor-zero tolerance.
+The exploratory 3273cbab ensemble snapshot was stopped by its own run
+folder/PIDs; a new final-model label will supersede it.
+
+The two remaining Truck misses are about 2.5e-10 of a truck, just over
+1e-9 of that month's small fleet gap. PO1's stableMonths already compares
+real quantities against their running size, while theTwin used the current
+residual alone; nominal series already used the running scale in both.
+★ Align theTwin's real-series scale with its nudge guard and the documented
+same-band rule. TWIN_REAL_TOLERANCE remains 1e-9. A synthetic 205-series
+experiment fails before this correction, accepts only the in-band residual
+afterward, and still rejects an out-of-band quantity and one extra person
+at a trillion people. Exact population/workforce/home/store counts remain
+exact; the full-run cutoff, history, growth and save checks are retained.
+Logs: target/checks/bf1-band-before.log and bf1-band-after.log.

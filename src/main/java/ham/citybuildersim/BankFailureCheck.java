@@ -23,7 +23,7 @@ public final class BankFailureCheck {
     }
 
     static void close(String label, double a, double b) {
-        check(label, Math.abs(a - b) <= 1e-8 * Math.max(1, Math.max(Math.abs(a), Math.abs(b))));
+        check(label, Math.abs(a - b) <= MoneyAudit.tolerance(0, Math.max(Math.abs(a), Math.abs(b))));
     }
 
     static Game town(String label) {
@@ -203,6 +203,24 @@ public final class BankFailureCheck {
         }
     }
 
+    static void bondDust() throws Exception {
+        out.println("--- 5b. a bond's face floor is money at the founding price level ---");
+        Method open = BondMarket.class.getDeclaredMethod("openBook", CorporateBond.class);
+        open.setAccessible(true);
+        for (double unit : new double[] { 1, 100 }) {
+            BondMarket market = new BondMarket();
+            market.seedConstants(unit);
+            CorporateBond bond = new CorporateBond(1, Sectors.CONSTRUCTION, 1, .04, 0, 120);
+            OrderBook book = (OrderBook) open.invoke(market, bond);
+            double floor = PriceLevel.atFounding(OrderBook.DUST) / unit;
+            book.submit("seller", OrderBook.Side.SELL, 1, floor * 2, 0, null);
+            check("a face above the same real dust trades at unit " + unit,
+                    book.submit("buyer", OrderBook.Side.BUY, 1, floor * 2, 0, null).size() == 1);
+            book.submit("seller", OrderBook.Side.SELL, 1, floor / 2, 0, null);
+            check("a face below the same real dust is ignored at unit " + unit, book.asks().isEmpty());
+        }
+    }
+
     static void seeds() {
         out.println("--- 6. 24 default Random cities, button unpressed, every one of 120 months audited ---");
         int failed = 0, audited = 0, badAudits = 0, badEquity = 0, selling = 0, splits = 0;
@@ -242,7 +260,7 @@ public final class BankFailureCheck {
     public static void main(String[] args) throws Exception {
         System.setOut(quiet);
         try {
-            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); credit(); shares(); rounding(); }
+            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); credit(); shares(); rounding(); bondDust(); }
             if (!Arrays.asList(args).contains("--fixtures")) seeds();
         } finally { System.setOut(out); }
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");

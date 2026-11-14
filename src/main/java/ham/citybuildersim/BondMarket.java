@@ -322,12 +322,13 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
        reform does not move, so OrderBook.DUST stays a literal there.
        ===================================================================== */
 
-    /** OrderBook.DUST of face, in today's money. See above. */
-    private double dust = OrderBook.DUST;
+    /** OrderBook.DUST of face is money, seeded at founding prices (BF1). */
+    static final double FACE_DUST = PriceLevel.atFounding(OrderBook.DUST);
+    private double dust = FACE_DUST;
 
     /** Re-seeds the dust at a given unit, and every open book's with it. See Denomination. */
     public void seedConstants(double unit) {
-        dust = OrderBook.DUST / (unit > 0 ? unit : 1);
+        dust = FACE_DUST / (unit > 0 ? unit : 1);
         for (OrderBook book : books.values()) book.setDust(dust);
     }
 

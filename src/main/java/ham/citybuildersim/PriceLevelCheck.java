@@ -110,7 +110,7 @@ public class PriceLevelCheck {
      */
     static final double TWIN_NOMINAL_TOLERANCE = 1e-9;
 
-    /** ...and a real one (a count, a ratio, a quantity in units), the same band: nothing real is rounded differently by a change of price level. */
+    /** ...and a real one, the same band against its running size (as stableMonths reads it); counts also remain exact below. */
     static final double TWIN_REAL_TOLERANCE = 1e-9;
 
     /**
@@ -210,6 +210,7 @@ public class PriceLevelCheck {
 
         out.println("\n--- 4. the rankings' bridge is the series' ratio ---");
         theBridge();
+        comparisonBands();
 
         // 5 and 6 need the children: the named literals and the ratios, then the twin's months.
         String why = null;
@@ -474,7 +475,8 @@ public class PriceLevelCheck {
         "Healthcare.GENERAL_FEE", "Healthcare.CHILDCARE_FEE", "Healthcare.SENIOR_FEE", "Healthcare.BURIAL_FEE", "Healthcare.CREMATION_FEE",
         "LandManager.DEFAULT_PRICE_PER_SQ_FT", "LandMarket.BASE_PRICE_PER_SQ_FT", "LandMarket.PRICE_STEP_USD", "sectors.Retail.OPENING_SELL_PRICE",
         "TaxPolicy.DEFAULT_TRANSIT_FARE", "TaxPolicy.MAX_TRANSIT_FARE", "TaxPolicy.MAX_FUEL_DUTY",
-        "Equity.FOUNDING_PRICE", "FundView.MIN_RECORDED_PRICE", "Exchange.MIN_DEALER_EQUITY", "ForeignAccounts.MIN_TRADE", "CapitalFlows.MIN_STOCK",
+        "Equity.FOUNDING_PRICE", "Equity.OFFER_DUST", "BondMarket.FACE_DUST", "Exchange.MIN_FAIR", "OutwardInvestment.MIN_MOVE", "HouseholdBalance.MIN_MOVE",
+        "FundView.MIN_RECORDED_PRICE", "Exchange.MIN_DEALER_EQUITY", "ForeignAccounts.MIN_TRADE", "CapitalFlows.MIN_STOCK",
         "EconomyManager.NRRP_CAP", "EconomyManager.NRRP_FULL_BELOW", "EconomyManager.NRRP_NONE_FROM",
         "Motoring.CAR_FUEL_PER_JOURNEY", "sectors.Freight.WORLD_FUEL_PER_TONNE", "BuildingManager.MATERIALS_WORLD_PRICE",
         "SitePreparation.EARTH_USD_PER_M3", "SitePreparation.WALL_USD_PER_M2", "SitePreparation.USD_PER_M2",
@@ -530,6 +532,38 @@ public class PriceLevelCheck {
     /* =================================================================
        6. THE TWIN
        ================================================================= */
+
+    /** BF1: a small residual uses its flows' scale, as the nudge guard does; a real miss and a one-person miss still fail. */
+    static void comparisonBands() {
+        Child a = new Child(), b = new Child();
+        a.ok = b.ok = true;
+        a.factor = PriceLevel.FACTOR;
+        b.factor = 1;
+        for (int i = 0; i < 201; i++) {
+            a.series.put("r." + i, new Series('R', new double[] { 100, 1 }));
+            b.series.put("r." + i, new Series('R', new double[] { 100, 1 }));
+        }
+        for (String key : new String[] { "pop", "workforce", "homes", "stores" }) {
+            a.series.put(key, new Series('R', new double[] { 1e12, 1e12 }));
+            b.series.put(key, new Series('R', new double[] { 1e12, 1e12 }));
+        }
+        int savedFails = fails;
+        PrintStream savedOut = out;
+        int[] misses = new int[3];
+        try (PrintStream sink = new PrintStream(OutputStream.nullOutputStream())) {
+            out = sink;
+            for (int i = 0; i < 3; i++) {
+                b.series.get("r.0").v[1] = 1 + (i == 0 ? .5 : i == 1 ? 2 : 0) * TWIN_REAL_TOLERANCE * 100;
+                b.series.get("pop").v[1] = 1e12 + (i == 2 ? 1 : 0);
+                fails = 0;
+                theTwin(a, b, 1);
+                misses[i] = fails;
+            }
+        } finally { out = savedOut; fails = savedFails; }
+        assertTrue("real residuals use the same running scale as the nudge guard", misses[0] == 0);
+        assertTrue("a real difference outside the unchanged band is rejected", misses[1] == 1);
+        assertTrue("a one-person difference is rejected even in a trillion-person city", misses[2] == 1);
+    }
 
     /** Compare every law up to the first same-level nudge that changes the city's path. */
     static void observedTwin(Child plain, Child today, int months, String flag) throws Exception {
@@ -618,7 +652,7 @@ public class PriceLevelCheck {
                     double allowed = .5 * grid * (1 / plain.factor + 1) * (1 + 1e-9) + TWIN_NOMINAL_TOLERANCE * Math.max(Math.abs(x), Math.abs(y));
                     g = Double.isNaN(x) != Double.isNaN(y) ? Double.POSITIVE_INFINITY : (Double.isNaN(x) ? 0 : Math.abs(x - y) / allowed);
                     if (g <= 1) g = 0;
-                } else if (nominal && !recorded && scale > 0 && !Double.isNaN(x) && !Double.isNaN(y)) g = Math.abs(x - y) / scale;
+                } else if (!recorded && scale > 0 && !Double.isNaN(x) && !Double.isNaN(y)) g = Math.abs(x - y) / scale;
                 else g = gap(x, y);
                 if (g > worst) { worst = g; at = m; }
             }
