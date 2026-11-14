@@ -1639,14 +1639,13 @@ public class AuctionCheck {
         String logC = month(c, false);
         c.autoBuildProbeForTest = null;
         String withdrew = String.join(" ", cb.asked());
-        assertTrue("fixture: the town had an ask open for its general care, and then twenty Health Centres stand:"
+        assertTrue("fixture: the town had a funded ask open for its general care, and then twenty Health Centres stand:"
                         + " the measure is ahead of its margin without another",
-                careAsk != null && general != null
+                careAsk != null && raisedC > 0 && general != null
                         && BuildAdvice.ahead(c, general, BuildAdvice.onSite(c, general), BuildAdvice.opening(c, 0, cb.getSlack())));
-        Observation.reached("the general-care ask raised cash before withdrawal", raisedC > 0);
         String careBuilding = careAsk == null ? "missing" : careAsk.building();
-        String cashWords = raisedC > 0 ? "stays in the treasury" : "Nothing had been raised";
-        String debtWords = raisedC > 0 ? "cannot be unsold" : "nothing was borrowed for it";
+        String cashWords = "stays in the treasury";
+        String debtWords = "cannot be unsold";
         assertTrue("an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the"
                         + " treasury - the paper is sold and cannot be unsold",
                 general != null && cb.askFor(general) == null
@@ -1658,6 +1657,15 @@ public class AuctionCheck {
         assertTrue("...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed"
                         + " (the withdrawn ask's money is the treasury's to spend now), and the city still owes every bond it sold",
                 cb.askFor(streets) != null && snapC[1] >= snapC[0] - placedIn(cb, (int) snapC[4]) - 1e-6 && snapC[3] >= snapC[2] - 1e-6);
+
+        double cashSoldC = c.getAutoSalesThisMonth().stream().filter(x -> x.by().equals("Automatic building"))
+                .mapToDouble(TimeSkipReport.AutoSale::raised).sum();
+        double faceSoldC = c.getAutoSalesThisMonth().stream().filter(x -> x.by().equals("Automatic building"))
+                .mapToDouble(TimeSkipReport.AutoSale::sold).sum();
+        close("funded withdrawal retains every dollar: cash changes only by new sales less placed orders",
+                snapC[1] - snapC[0], cashSoldC - placedIn(cb, (int) snapC[4]), 1e-8);
+        close("funded withdrawal retains every bond: principal changes only by newly sold face",
+                snapC[3] - snapC[2], faceSoldC, 1e-8);
 
         /* WITHDRAWN: the debt limit closes. */
         Game d = load(saved);

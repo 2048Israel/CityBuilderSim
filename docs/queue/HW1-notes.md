@@ -1,7 +1,8 @@
 # HW1 — The auto city builds its works when they are needed
 
-**READY. Jerus-approved completion passes the final-model M1/F1 criteria
-and the fresh-clone merge dry run (exit 0; suite known reds only).**
+**Readiness withdrawn for REV-HW1-1, send-back 1 of 3.**
+The 03ec72c9 readiness and its verification below are historical.
+The ship file was removed and pushed first at ded05d79.
 The earlier held candidate below is retained as history; the resumed model
 and final verification are recorded under the resumed-completion section.
 
@@ -887,3 +888,123 @@ After the tested revision only HW1-notes.md and HW1-ship.md advance.
 The notes are pushed first; removing the provisional marker is the
 final ship-only readiness commit, pushed last. The publisher-owned
 files and all implementation files remain as tested.
+
+## REV-HW1-1 send-back, 2026-11-14
+
+The orchestrator identified nine faults after readiness. The ship file is
+withdrawn while each is mended. Funded withdrawal, service-specific
+recovery, monthly duplicate-link coverage, professional eligibility and
+card/automatic parity will be hard causal fixtures. The model will bound
+pending coverage by its first quoted completion, price filled-post wages,
+apply the sickness cap to care benefits, and share automatic sizing with
+the cards. Each regression will be checked against a missing or broken
+mend and its exact failure recorded.
+
+The final combined model must include GD4 from main before the final pick
+and once-only final-model ensemble. GD4's matching Government allocation
+entry will transfer from KS1-UI to KS1-Gov with a same-part ship row.
+The next ship file will be provisional for a fresh dry run, then pushed
+last after the green result.
+
+### Send-back mends and causal checks
+
+★ Pending service now has a fixed, saved first-completion date. Monthly
+passes adopt existing sites in older saves. A physically short service
+stops counting its overdue pending capacity and can place more work.
+Orders placed after expiry receive a fresh quote. The quote includes
+preparation and queue shares, and paving is already on the Paved Road
+stack. A site may still cover a reserve-only gap while operating service
+is sufficient. The ordinary card and automatic path share this same
+pending map.
+
+★ Running wages use filled posts throughout BuildCard, BuildAdvice and
+WorksValue. Health exposes the same capped sum its monthly update uses,
+including outbreak, influenza, hunger, injury, unburied and unhoused
+sickness. Care's change to baseline also changes the unhoused cause.
+Care, police and death-care benefits use only the resulting work-ratio
+improvement. The manual defaults and listing now use the player's
+automatic reserve and full-service target, including the same remit.
+
+REV-HW1-1's assertion repairs keep these premises hard.
+
+1. AuctionCheck's general-care ask must have positive raised cash before
+   withdrawal. The same town, cap, margin and passes now reach this
+   funded premise. Removed the unsold-ask alternative and observation.
+   Added exact pass cash and principal identities so a refund or erased
+   bond fails even when other orders happen.
+2. AutoBuildCheck's restored debt limit must recover General care's own
+   order within the existing six months, and operating general-care
+   capacity must increase while the town grows. The first refused
+   measure is explicitly asserted to be General care. Unrelated orders
+   satisfy neither check. With the deadline mend the order returns in
+   six months. Before it, the hard six-month check read eleven months.
+3. IslandLinkCheck again advances real months with the first bridge or
+   terminals pending. Before each pass, street load causes an actual
+   shortage beyond all pending street capacity and ground is cut low.
+   The existing cue requirement remains one later ground-short pass.
+   Counts and monthly-reset link steps must show no duplicate link.
+4. EssentialWorksCheck causes eligible medical-school demand on both
+   sides of the 30%-of-smallest-school threshold. The upper case has no
+   school and must be warranted, in remit, and unmaintained. Removing
+   eligibility from this case cannot pass through maintained()'s
+   unwarranted shortcut.
+5. Card parity now compares BuildAdvice's normal card default against
+   AutoBuilder.pass's actual building, count and recorded full-plan
+   value. The player's margin is set to 35% so a hard-coded default is
+   exposed. The full card order must fit both cash and ground.
+6. The overdue fixture starts with physical power short, enough pending
+   wind, and a finite first-completion quote within three years. A real
+   later road order is prioritised ahead of wind. Normal monthly passes
+   must withhold extra power until that fixed date and order afterward,
+   including after serialising/restoring AutoBuilder.State. The test
+   includes the first pass strictly after the deadline because Game
+   runs automatic building before incrementing its month.
+7. An independently counted, partially staffed plant must price upkeep
+   plus filled-post wages. Payroll and discounted running must use
+   that same sum.
+8. Founding care remains in the capped-care fixture. It is explicitly
+   short and the proposed order covers the population. Independent
+   Health monthly updates stay capped before and after, so prevented
+   output must be zero. A second uncapped comparison includes unhoused
+   sickness and must equal the independent model's change.
+9. The card's margin, full-service count and whole-plan value must equal
+   those of the actual automatic order, as in item 5.
+
+Focused run target/checks/hw1-sb1-pending-monthly.log compiled and passed
+AuctionCheck, AutoBuildCheck and IslandLinkCheck. Its sole failure was the
+new deadline test stopping one pass early, corrected at the real monthly
+boundary. target/checks/hw1-sb1-essential-final.log then passed every
+EssentialWorksCheck assertion. --fast compiled with zero firm Stale
+findings, 186 soft.
+
+Negative controls are scratch source/class shadows under ignored
+target/hw1-sendback1, leaving production files intact.
+
+- On the pre-mend model, the strengthened funded-withdrawal section fails
+  its positive-cash premise and withdrawal law. Log
+  target/checks/hw1-sb1-funded-before.log.
+- Skipping General care only after the default debt limit is restored
+  leaves the original refusal premises intact and fails its own-service
+  recovery as never. Log target/checks/hw1-sb1-recovery-mutant.log.
+- Retaining the previous month's link steps fails both later monthly
+  bridge/terminal assertions. This catches the reset coverage that direct
+  same-month link calls lost. Log target/checks/hw1-sb1-link-mutant.log.
+- Changing professional eligibility to 50% fails the upper 30% case.
+  Log target/checks/hw1-sb1-school-mutant.log.
+- Before the model mends, hard filled-post costs, capped care and the
+  uncapped unhoused comparison fail, and the card's three actual-path
+  parity checks fail. The initial negative-control JVM used a 1.5-GB
+  heap and exhausted it drawing the fixture's unnecessarily large
+  land endowment. The endowment is reduced from 100,000 to 1,000 km²,
+  preserving the hard full-order-fits premise and reducing fixture cost.
+  The corrected negative-control log is
+  target/checks/hw1-sb1-value-parity-before2.log.
+- Without the deadline mend, its saved-state and post-deadline-order
+  assertions fail. Log target/checks/hw1-sb1-hard-before-pending.log.
+
+The preliminary pre-GD4 default run is
+target/checks/hw1-sb1-premerge-playtest.log, exit 0. Highways' longest
+below-90% spell is 84 months, death care 3 and cells 0, against the
+withdrawn run's 175, 29 and 56. Its plant orders are 42 wind and one coal.
+These preliminary figures will be superseded by the final combined run.
+No buildings.json balance values were changed.

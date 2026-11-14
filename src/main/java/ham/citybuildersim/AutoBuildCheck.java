@@ -1290,6 +1290,8 @@ public class AutoBuildCheck {
                 assertTrue("fixture: at the reserve its pass holds an order for the money, none ordered ahead of it", false);
                 return;
             }
+            assertTrue("fixture: the first refused order is for the young city's own general-care shortage",
+                    target.measure().equals(care));
             double one = oneOf(g, target);
             double cash = AutoBuilder.reserve(g) + one - SHORT;
             g.setCashForTest(cash);
@@ -1364,18 +1366,14 @@ public class AutoBuildCheck {
             long twinPeople = twin.getPopulationManager().getPopulation();
             AutoBuilder.Entry again = null;
             for (AutoBuilder.Entry e : at.log()) {
-                if (e.month() > refusedTwin && e.measure().equals(target.measure().label()) && e.building().equals(target.building())
-                        && again == null) again = e;
+                if (e.month() > refusedTwin && e.measure().equals(target.measure().label()) && again == null) again = e;
             }
-            Observation.reached("the formerly refused template returns within LOOK_MONTHS",
-                    String.format("it keeps building: with the limit put back to %.0f%% once the pass has refused, the refused %s is"
-                            + " ordered %s (within %d months of it), %d orders in the %d months, and the city has %,d people against %,d at the"
-                            + " refusal", AutoBuilder.DEFAULT_DEBT_LIMIT * 100, target.building(),
-                            again == null ? "never" : "in month " + again.month() + ", " + (again.month() - refusedTwin) + " after the refusal",
-                            LOOK_MONTHS, at.getOrders() - twinBefore, AFTER_MONTHS, twinPeople, people),
-                    again != null && again.month() - refusedTwin <= LOOK_MONTHS && twinPeople > people, "");
-            assertTrue("restoring the limit resumes orders and the city grows past the refusal",
-                    at.getOrders() > twinBefore && twinPeople > people);
+            assertTrue(String.format("restoring the limit recovers the refused %s service's own order within %d months: %s",
+                            target.measure().label(), LOOK_MONTHS, again == null ? "never" : again.month() - refusedTwin),
+                    again != null && again.month() - refusedTwin <= LOOK_MONTHS);
+            double recovered = BuildAdvice.supplyDemand(twin, target.measure(), Map.of())[0];
+            assertTrue("the formerly refused general-care service itself gains operating capacity, and the city grows",
+                    recovered > supplyDemand[0] && twinPeople > people);
         } finally {
             LongPlaytest.AUTOBUILD = flag;
             LongPlaytest.out = was;
