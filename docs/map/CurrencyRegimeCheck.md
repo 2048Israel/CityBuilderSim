@@ -1,4 +1,4 @@
-# CurrencyRegimeCheck.java - 2,545 lines · 75 methods · 14 constants · harnesses
+# CurrencyRegimeCheck.java - 2,547 lines · 75 methods · 14 constants · harnesses
 
 `ham/citybuildersim/CurrencyRegimeCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -76,21 +76,21 @@
 | 437 | 1. Float sells nothing |
 | 475 | 2. a peg holds to the digit, and the vault pays the pressure |
 | 572 | 3. a vault at the floor breaks that month |
-| 954 | 4. the chance of a break, counted over 1,000 seeded pegs |
-| 1041 | 5. the doubt takes the hot money home |
-| 1189 | 6. a band's edges hold and its inside is free |
-| 1301 | 7. under a peg the dial is the US's rate plus the spread; the aim |
-| 1415 | 8. the currency aim holds a band, counted over 1,000 seeded years |
-| 1459 | 9. the toggle's two payers each pay exactly what the edge bought |
-| 1672 | 10. saved and loaded mid-peg |
-| 1829 | 11. a real run, counted |
-| 1897 | 12. the hot money's month crosses a save (FX8) |
-| 1963 | 13. leaving a peg takes its doubt with it (FX8) |
-| 2026 | 14. a peg pays the pressure, not the month's balance (XR5) |
-| 2135 | 15. a band's edges pay the pressure (XR5) |
-| 2212 | 16. the overshoot both ways (XR5) |
-| 2289 | 17. the tied path prices the curve (XR5) |
-| 2403 | 18. a thin vault's months are what the hold does (XR5) |
+| 956 | 4. the chance of a break, counted over 1,000 seeded pegs |
+| 1043 | 5. the doubt takes the hot money home |
+| 1191 | 6. a band's edges hold and its inside is free |
+| 1303 | 7. under a peg the dial is the US's rate plus the spread; the aim |
+| 1417 | 8. the currency aim holds a band, counted over 1,000 seeded years |
+| 1461 | 9. the toggle's two payers each pay exactly what the edge bought |
+| 1674 | 10. saved and loaded mid-peg |
+| 1831 | 11. a real run, counted |
+| 1899 | 12. the hot money's month crosses a save (FX8) |
+| 1965 | 13. leaving a peg takes its doubt with it (FX8) |
+| 2028 | 14. a peg pays the pressure, not the month's balance (XR5) |
+| 2137 | 15. a band's edges pay the pressure (XR5) |
+| 2214 | 16. the overshoot both ways (XR5) |
+| 2291 | 17. the tied path prices the curve (XR5) |
+| 2405 | 18. a thin vault's months are what the hold does (XR5) |
 
 ## Constants
 
@@ -103,13 +103,13 @@
 | 223 | `CurrencyRegimeCheck.DOLLAR` | `1e-6` | What the harness's own sums are held to where they are exact arithmetic on dollars. |
 | 606 | `CurrencyRegimeCheck.PEG_DEPOTS` | `12` | BA1, 2026-11-04: THE PEG TOWNS NO LONGER CAUSED THEIR CONDITION. |
 | 607 | `CurrencyRegimeCheck.PEG_VAULT_MONTHS` | `2 * ForeignAccounts.COMFORTABLE_COVER` |  |
-| 622 | `CurrencyRegimeCheck.CLIMB_LOOK_MONTHS` | `120` | BA1, 2026-11-04, REDONE 2026-11-05: the months past its 36 that a town played for the credibility fixture is given at most to find prices in the band where the bank's credibility climbs (a smoothed miss within TOLERAN... |
-| 644 | `CurrencyRegimeCheck.DOUBT_CRAWL_MONTHS` | `8` | The months doubtTown() plays at the shadow, the peg following it, before the revaluation: the eight months the hot money takes to gather. |
-| 652 | `CurrencyRegimeCheck.BREAK_LOOK_MONTHS` | `3` | GW1: the months after the revaluation whose breaks section 3 can use: a break by doubt needs the month before it and its own month to be months where the smoothed miss is within TOLERANCE (the city's climb, the twin's... |
-| 655 | `CurrencyRegimeCheck.climbMonths` | `new java.util.HashMap<>()` | The months a probe town is played to, by (depots, causes held off): where the climbing town is pegged is found once (climbMonth()). |
-| 1181 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLO...` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
-| 1462 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
-| 1479 | `CurrencyRegimeCheck.SURPLUS_DEPOTS` | `{ PEG_DEPOTS, 18, 20, 22, 24, 30, 36 }` | BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. |
+| 624 | `CurrencyRegimeCheck.CLIMB_LOOK_MONTHS` | `600` | BF1: the first full in-band window is later than the old search cap. |
+| 646 | `CurrencyRegimeCheck.DOUBT_CRAWL_MONTHS` | `8` | The months doubtTown() plays at the shadow, the peg following it, before the revaluation: the eight months the hot money takes to gather. |
+| 654 | `CurrencyRegimeCheck.BREAK_LOOK_MONTHS` | `3` | GW1: the months after the revaluation whose breaks section 3 can use: a break by doubt needs the month before it and its own month to be months where the smoothed miss is within TOLERANCE (the city's climb, the twin's... |
+| 657 | `CurrencyRegimeCheck.climbMonths` | `new java.util.HashMap<>()` | The months a probe town is played to, by (depots, causes held off): where the climbing town is pegged is found once (climbMonth()). |
+| 1183 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLO...` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
+| 1464 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
+| 1481 | `CurrencyRegimeCheck.SURPLUS_DEPOTS` | `{ PEG_DEPOTS, 18, 20, 22, 24, 30, 36 }` | BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. |
 
 ## Fields (state)
 
@@ -119,16 +119,16 @@
 | 173 | `static PrintStream out` |  |
 | 174 | `static PrintStream quiet` |  |
 | 264 | `double rateBefore, vaultBefore, faded, annual, balance, deal, free` |  |
-| 640 | `static int pegMonth` | The month the climbing town was pegged and the smoothed inflation it read then (GW1: the log's figures). |
-| 641 | `static double pegSmoothed` |  |
-| 1480 | `static int surplusDepotsFound` |  |
-| 1900 | `static Game doubtCitySaved` | Section 12's city, kept for section 13: saved to slot 2 of its own scratch folder in the month the hot money left on doubt, then played on. |
+| 642 | `static int pegMonth` | The month the climbing town was pegged and the smoothed inflation it read then (GW1: the log's figures). |
+| 643 | `static double pegSmoothed` |  |
+| 1482 | `static int surplusDepotsFound` |  |
+| 1902 | `static Game doubtCitySaved` | Section 12's city, kept for section 13: saved to slot 2 of its own scratch folder in the month the hot money left on doubt, then played on. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 170 | 2376 | **type** `public class CurrencyRegimeCheck` | Proves the D$'s four regimes - Float, Lean against falls (the default), Band and Peg to the US$ - hold the currency where they say and cost what they should (XR2, 2026-10-22; XR5, 2026-11-06): Lean is exactly the floa... |
+| 170 | 2378 | **type** `public class CurrencyRegimeCheck` | Proves the D$'s four regimes - Float, Lean against falls (the default), Band and Peg to the US$ - hold the currency where they say and cost what they should (XR2, 2026-10-22; XR5, 2026-11-06): Lean is exactly the floa... |
 | 176 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 181 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 192 | 9 | `static void same(String label, double actual, double expected)` | Equal to the bit. |
@@ -168,136 +168,136 @@
 |---:|---:|---|---|
 | 477 | 94 | `static void aPegHolds()` |  |
 
-### 3. a vault at the floor breaks that month (lines 572-953)
+### 3. a vault at the floor breaks that month (lines 572-955)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 575 | 6 | `static void driftMonth(ForeignAccounts fx, int m)` | Two currencies, one on a peg and one floating, the same seed, trade in balance and a parity drifting weaker 5% a year: the pair a peg breaks beside. |
 | 589 | 3 | `static Founding steady()` | The founding the peg fixtures stand on: the default's, on the Historical path (EP1). |
-| 625 | 3 | `static Game pegTown(String label)` | A trading town on the default founding as the peg fixtures need it (see PEG_DEPOTS), played its 36 months and its vault deepened: ready to be pegged. |
-| 630 | 3 | `static Game pegTown(String label, boolean climbing)` | ...and, if `climbing`, played on until prices are in the band where the bank's credibility can climb (see CLIMB_LOOK_MONTHS). |
-| 635 | 3 | `static Game pegTown(String label, boolean climbing, int depots)` | ...with this many depots standing (see PEG_DEPOTS, and surplusDepots() for a town that needs more). |
-| 668 | 27 | `static int climbMonth(int depots, boolean causesHeldOff)` | GW1: the month the climbing town is pegged in. |
-| 697 | 22 | `static Game pegTown(String label, boolean climbing, int depots, boolean causesHeldOff)` | ...with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). |
-| 729 | 3 | `static Game doubtTown(String label, long reseed)` | A city on the default founding pegged with the peg revalued a fifth under its shadow: the doubt fixture, a few months from its break at the peg's chance. |
-| 734 | 14 | `static Game doubtTown(String label, long reseed, boolean climbing, boolean causesHeldOff)` | ...and, if `climbing`, pegged in the month prices are back near the target (pegTown(), CLIMB_LOOK_MONTHS); with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). |
-| 753 | 3 | `static Game heldTwin(String label, long seed, int months, double[] start)` | The doubt town's twin: played to the month before `months`, its credibility (start[0]) read, its peg moved to a rate so weak the shadow sits far under it, so that month nothing breaks by chance, and played the month. |
-| 757 | 8 | `static Game heldTwin(String label, long seed, int months, double[] start, boolean climbing)` |  |
-| 773 | 7 | `static ForeignAccounts pegAtTheFloor(double vaultUsd)` | A peg a few deficit months old, quiet, whose vault is then sold down to this many dollars by the treasury (a set-up, not a deal: forgotten by the rate). |
-| 782 | 3 | `static double saleAt(double vaultUsd)` | The dollars the hold needs to sell in the peg's next deficit month at this vault, from the harness's sums (Held): the sale that month, whether the peg then held or broke. |
-| 786 | 167 | `static void aVaultAtTheFloorBreaks()` |  |
+| 627 | 3 | `static Game pegTown(String label)` | A trading town on the default founding as the peg fixtures need it (see PEG_DEPOTS), played its 36 months and its vault deepened: ready to be pegged. |
+| 632 | 3 | `static Game pegTown(String label, boolean climbing)` | ...and, if `climbing`, played on until prices are in the band where the bank's credibility can climb (see CLIMB_LOOK_MONTHS). |
+| 637 | 3 | `static Game pegTown(String label, boolean climbing, int depots)` | ...with this many depots standing (see PEG_DEPOTS, and surplusDepots() for a town that needs more). |
+| 670 | 27 | `static int climbMonth(int depots, boolean causesHeldOff)` | GW1: the month the climbing town is pegged in. |
+| 699 | 22 | `static Game pegTown(String label, boolean climbing, int depots, boolean causesHeldOff)` | ...with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). |
+| 731 | 3 | `static Game doubtTown(String label, long reseed)` | A city on the default founding pegged with the peg revalued a fifth under its shadow: the doubt fixture, a few months from its break at the peg's chance. |
+| 736 | 14 | `static Game doubtTown(String label, long reseed, boolean climbing, boolean causesHeldOff)` | ...and, if `climbing`, pegged in the month prices are back near the target (pegTown(), CLIMB_LOOK_MONTHS); with the causes of 1900 held off from the first month where asked (R0b call 7: see savedMidPeg()). |
+| 755 | 3 | `static Game heldTwin(String label, long seed, int months, double[] start)` | The doubt town's twin: played to the month before `months`, its credibility (start[0]) read, its peg moved to a rate so weak the shadow sits far under it, so that month nothing breaks by chance, and played the month. |
+| 759 | 8 | `static Game heldTwin(String label, long seed, int months, double[] start, boolean climbing)` |  |
+| 775 | 7 | `static ForeignAccounts pegAtTheFloor(double vaultUsd)` | A peg a few deficit months old, quiet, whose vault is then sold down to this many dollars by the treasury (a set-up, not a deal: forgotten by the rate). |
+| 784 | 3 | `static double saleAt(double vaultUsd)` | The dollars the hold needs to sell in the peg's next deficit month at this vault, from the harness's sums (Held): the sale that month, whether the peg then held or broke. |
+| 788 | 167 | `static void aVaultAtTheFloorBreaks()` |  |
 
-### 4. the chance of a break, counted over 1,000 seeded pegs (lines 954-1040)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 956 | 84 | `static void theChanceOfABreak()` |  |
-
-### 5. the doubt takes the hot money home (lines 1041-1188)
+### 4. the chance of a break, counted over 1,000 seeded pegs (lines 956-1042)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1044 | 4 | `static void hotMonth(CapitalFlows f, int m)` | One month of hot money at a 9% rate against the world's 2% and a point of risk: the standing fixture of CapitalFlowCheck. |
-| 1049 | 5 | `static CapitalFlows stocked(int months)` |  |
-| 1055 | 124 | `static void theDoubtTakesTheHotMoneyHome()` |  |
-| 1183 | 5 | `static CapitalFlows restored(CapitalFlows f)` |  |
+| 958 | 84 | `static void theChanceOfABreak()` |  |
 
-### 6. a band's edges hold and its inside is free (lines 1189-1300)
+### 5. the doubt takes the hot money home (lines 1043-1190)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1192 | 7 | `static ForeignAccounts bandAtTheFloor(double vaultUsd, double width)` | A band this wide centred on the rate of the day, quiet, whose vault is sold down to this many dollars by the treasury (a set-up, not a deal: forgotten by the rate). |
-| 1201 | 3 | `static double bandSaleAt(double vaultUsd, double width)` | The dollars the band's hold needs to sell in its first deficit month at this vault, from the harness's sums (Held): what it would sell, whether it then sold or gave way. |
-| 1205 | 95 | `static void aBandsEdgesHold()` |  |
+| 1046 | 4 | `static void hotMonth(CapitalFlows f, int m)` | One month of hot money at a 9% rate against the world's 2% and a point of risk: the standing fixture of CapitalFlowCheck. |
+| 1051 | 5 | `static CapitalFlows stocked(int months)` |  |
+| 1057 | 124 | `static void theDoubtTakesTheHotMoneyHome()` |  |
+| 1185 | 5 | `static CapitalFlows restored(CapitalFlows f)` |  |
 
-### 7. under a peg the dial is the US's rate plus the spread; the aim (lines 1301-1414)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1304 | 4 | `static double dialAfter(Game g)` | Plays a month and returns the dial it set: nothing else moves the policy rate in a month. |
-| 1310 | 6 | `static void pegWithGap(Game g, double logGap)` | Puts the city on a peg a share of the D$'s shadow under it, so the gap the aim reads is not nothing. |
-| 1318 | 6 | `static void bandWithGap(Game g, double logGap)` | The same for a band, centred a share under the shadow. |
-| 1325 | 89 | `static void underAPegTheDialIsTheUSes()` |  |
-
-### 8. the currency aim holds a band, counted over 1,000 seeded years (lines 1415-1458)
+### 6. a band's edges hold and its inside is free (lines 1191-1302)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1423 | 20 | `static double[] bandYears(boolean aimed)` | 12,000 months of a band narrower than the market's swing, the real rate gap fed each month from a stand-in dial: the neutral dial, or the one the currency aim sets (DebtManager.currencyRate(), the model's own). |
-| 1444 | 14 | `static void theCurrencyAimHoldsABand()` |  |
+| 1194 | 7 | `static ForeignAccounts bandAtTheFloor(double vaultUsd, double width)` | A band this wide centred on the rate of the day, quiet, whose vault is sold down to this many dollars by the treasury (a set-up, not a deal: forgotten by the rate). |
+| 1203 | 3 | `static double bandSaleAt(double vaultUsd, double width)` | The dollars the band's hold needs to sell in its first deficit month at this vault, from the harness's sums (Held): what it would sell, whether it then sold or gave way. |
+| 1207 | 95 | `static void aBandsEdgesHold()` |  |
 
-### 9. the toggle's two payers each pay exactly what the edge bought (lines 1459-1671)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1482 | 18 | `static int surplusDepots()` |  |
-| 1502 | 9 | `static Game surplusTown(String label, ForeignAccounts.EdgePayer payer)` | A city pegged at 36 months with a large positive spread: the dial high, money arriving, the shadow under the peg and the vault buying (XR5: the lift, not the month's surplus). |
-| 1513 | 5 | `static double billPaid(Game g)` | What the treasury paid for the edge's dollars last month, from its journal (0 when the journal has no such line). |
-| 1519 | 133 | `static void theTwoPayers()` |  |
-| 1654 | 3 | `static double kept(CentralBank cb)` | The central bank keeps nothing, as FX8 states it: equity less the vault, plus what it paid in new money for the vault's dollars, less the remittance due plus the loss carried. |
-| 1659 | 4 | `static boolean keepsSomething(CentralBank cb)` | A miss, as LongPlaytest counts one: past a cent and past a billionth of M0. |
-| 1665 | 6 | `static void tallyKept(int[] tally, Game...cities)` | One more month held to the identity in each of these cities: tally[0] counts the city-months, tally[1] the misses. |
-
-### 10. saved and loaded mid-peg (lines 1672-1828)
+### 7. under a peg the dial is the US's rate plus the spread; the aim (lines 1303-1416)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1675 | 7 | `static double[] regimeFields(ForeignAccounts fx)` | The regime's state as the getters say it: every figure XR2 added to the currency, and XR5's hold, as one row. |
-| 1683 | 145 | `static void savedMidPeg()` |  |
+| 1306 | 4 | `static double dialAfter(Game g)` | Plays a month and returns the dial it set: nothing else moves the policy rate in a month. |
+| 1312 | 6 | `static void pegWithGap(Game g, double logGap)` | Puts the city on a peg a share of the D$'s shadow under it, so the gap the aim reads is not nothing. |
+| 1320 | 6 | `static void bandWithGap(Game g, double logGap)` | The same for a band, centred a share under the shadow. |
+| 1327 | 89 | `static void underAPegTheDialIsTheUSes()` |  |
 
-### 11. a real run, counted (lines 1829-1896)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1831 | 65 | `static void aRealRun()` |  |
-
-### 12. the hot money's month crosses a save (FX8) (lines 1897-1962)
+### 8. the currency aim holds a band, counted over 1,000 seeded years (lines 1417-1460)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1902 | 60 | `static void theHotMoneysMonthCrossesASave()` |  |
+| 1425 | 20 | `static double[] bandYears(boolean aimed)` | 12,000 months of a band narrower than the market's swing, the real rate gap fed each month from a stand-in dial: the neutral dial, or the one the currency aim sets (DebtManager.currencyRate(), the model's own). |
+| 1446 | 14 | `static void theCurrencyAimHoldsABand()` |  |
 
-### 13. leaving a peg takes its doubt with it (FX8) (lines 1963-2025)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1965 | 60 | `static void leavingAPegTakesItsDoubt()` |  |
-
-### 14. a peg pays the pressure, not the month's balance (XR5) (lines 2026-2134)
+### 9. the toggle's two payers each pay exactly what the edge bought (lines 1461-1673)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2028 | 106 | `static void aPegPaysThePressure()` |  |
+| 1484 | 18 | `static int surplusDepots()` |  |
+| 1504 | 9 | `static Game surplusTown(String label, ForeignAccounts.EdgePayer payer)` | A city pegged at 36 months with a large positive spread: the dial high, money arriving, the shadow under the peg and the vault buying (XR5: the lift, not the month's surplus). |
+| 1515 | 5 | `static double billPaid(Game g)` | What the treasury paid for the edge's dollars last month, from its journal (0 when the journal has no such line). |
+| 1521 | 133 | `static void theTwoPayers()` |  |
+| 1656 | 3 | `static double kept(CentralBank cb)` | The central bank keeps nothing, as FX8 states it: equity less the vault, plus what it paid in new money for the vault's dollars, less the remittance due plus the loss carried. |
+| 1661 | 4 | `static boolean keepsSomething(CentralBank cb)` | A miss, as LongPlaytest counts one: past a cent and past a billionth of M0. |
+| 1667 | 6 | `static void tallyKept(int[] tally, Game...cities)` | One more month held to the identity in each of these cities: tally[0] counts the city-months, tally[1] the misses. |
 
-### 15. a band's edges pay the pressure (XR5) (lines 2135-2211)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2137 | 74 | `static void aBandsEdgesPayThePressure()` |  |
-
-### 16. the overshoot both ways (XR5) (lines 2212-2288)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2215 | 6 | `static void fallMonth(ForeignAccounts fx, int m)` | A month of balanced trade and a parity falling away by 60% over 30 months and staying there: the shadow far under the peg, where the chance of a break is BREAK_BASE a month. |
-| 2222 | 66 | `static void theOvershootBothWays()` |  |
-
-### 17. the tied path prices the curve (XR5) (lines 2289-2402)
+### 10. saved and loaded mid-peg (lines 1674-1830)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2292 | 8 | `static DebtManager tiedManager(boolean[] tie, double world)` | A bare debt manager on a dial and a world rate, struck on inflation well off its target, its tie read from this switch (null: never handed one). |
-| 2302 | 9 | `static int pathsApart(DebtManager a, DebtManager b)` | How many of the manager's paths and rates differ from another's by a bit: the curve's expected dial 600 months out, the floater's path, the long yields, the rule and where it settles. |
-| 2312 | 84 | `static void theTiedPathPricesTheCurve()` |  |
-| 2398 | 4 | `static boolean tiedIn(Game city, DebtManager dm, ForeignAccounts.Regime regime)` | Whether the city's debt manager is tied with the city in this regime. |
+| 1677 | 7 | `static double[] regimeFields(ForeignAccounts fx)` | The regime's state as the getters say it: every figure XR2 added to the currency, and XR5's hold, as one row. |
+| 1685 | 145 | `static void savedMidPeg()` |  |
 
-### 18. a thin vault's months are what the hold does (XR5) (lines 2403-2545)
+### 11. a real run, counted (lines 1831-1898)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2410 | 5 | `static ForeignAccounts steadyGap(double gap, double vaultUsd)` | A bare currency pegged at its rate with its shadow a steady gap (a log) over the peg, on balanced trade and a quiet market: the parity is set once, before the first reprice, so the trend opens on it and stays (a level... |
-| 2417 | 3 | `static double firstMonthUsd(ForeignAccounts fx, double gap)` | The first month's cost of holding a steady gap, in dollars, from the model's own constants and getters: interventionLocalFor(gap, a year's GDP) over the rate. |
-| 2422 | 3 | `static double eachMonthUsd(ForeignAccounts fx, double gap)` | ...and each month after it: what the support's fading takes, (1 - 0.5^(1 / INTERVENTION_HALF_LIFE)) of the gap. |
-| 2426 | 114 | `static void aThinVaultsMonthsAreWhatTheHoldDoes()` |  |
-| 2542 | 3 | `static String ordinal(int n)` | 21 as "21st", for a printed line. |
+| 1833 | 65 | `static void aRealRun()` |  |
+
+### 12. the hot money's month crosses a save (FX8) (lines 1899-1964)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1904 | 60 | `static void theHotMoneysMonthCrossesASave()` |  |
+
+### 13. leaving a peg takes its doubt with it (FX8) (lines 1965-2027)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1967 | 60 | `static void leavingAPegTakesItsDoubt()` |  |
+
+### 14. a peg pays the pressure, not the month's balance (XR5) (lines 2028-2136)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2030 | 106 | `static void aPegPaysThePressure()` |  |
+
+### 15. a band's edges pay the pressure (XR5) (lines 2137-2213)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2139 | 74 | `static void aBandsEdgesPayThePressure()` |  |
+
+### 16. the overshoot both ways (XR5) (lines 2214-2290)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2217 | 6 | `static void fallMonth(ForeignAccounts fx, int m)` | A month of balanced trade and a parity falling away by 60% over 30 months and staying there: the shadow far under the peg, where the chance of a break is BREAK_BASE a month. |
+| 2224 | 66 | `static void theOvershootBothWays()` |  |
+
+### 17. the tied path prices the curve (XR5) (lines 2291-2404)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2294 | 8 | `static DebtManager tiedManager(boolean[] tie, double world)` | A bare debt manager on a dial and a world rate, struck on inflation well off its target, its tie read from this switch (null: never handed one). |
+| 2304 | 9 | `static int pathsApart(DebtManager a, DebtManager b)` | How many of the manager's paths and rates differ from another's by a bit: the curve's expected dial 600 months out, the floater's path, the long yields, the rule and where it settles. |
+| 2314 | 84 | `static void theTiedPathPricesTheCurve()` |  |
+| 2400 | 4 | `static boolean tiedIn(Game city, DebtManager dm, ForeignAccounts.Regime regime)` | Whether the city's debt manager is tied with the city in this regime. |
+
+### 18. a thin vault's months are what the hold does (XR5) (lines 2405-2547)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2412 | 5 | `static ForeignAccounts steadyGap(double gap, double vaultUsd)` | A bare currency pegged at its rate with its shadow a steady gap (a log) over the peg, on balanced trade and a quiet market: the parity is set once, before the first reprice, so the trend opens on it and stays (a level... |
+| 2419 | 3 | `static double firstMonthUsd(ForeignAccounts fx, double gap)` | The first month's cost of holding a steady gap, in dollars, from the model's own constants and getters: interventionLocalFor(gap, a year's GDP) over the rate. |
+| 2424 | 3 | `static double eachMonthUsd(ForeignAccounts fx, double gap)` | ...and each month after it: what the support's fading takes, (1 - 0.5^(1 / INTERVENTION_HALF_LIFE)) of the gap. |
+| 2428 | 114 | `static void aThinVaultsMonthsAreWhatTheHoldDoes()` |  |
+| 2544 | 3 | `static String ordinal(int n)` | 21 as "21st", for a printed line. |
 

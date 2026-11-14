@@ -1,4 +1,4 @@
-# OrderBookCheck.java - 297 lines · 16 methods · 0 constants · harnesses
+# OrderBookCheck.java - 333 lines · 17 methods · 0 constants · harnesses
 
 `ham/citybuildersim/OrderBookCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -25,102 +25,105 @@
 >      money, prices for one that is not.
 >   9. SAVE AND LOAD: a book with resting orders round-trips through Gson,
 >      and the next order after a reload still arrives after them.
+>  10. FLOATING PRICES: a one-step roundoff crosses and keeps time priority,
+>      in both money units; a gap past the model's allowance never crosses.
 > 
 > The bond market's own use of the book - its participants, their orders,
 > and a played month's audit closing through the trades - is BondCheck's,
 > and the shares' since 0.7.12 round 2 ExchangeCheck's.
 > Every fixture causes its condition.
 
-**Uses:** [OrderBook](OrderBook.md) (92)
+**Uses:** [OrderBook](OrderBook.md) (115), [PriceLevel](PriceLevel.md) (1), [MoneyAudit](MoneyAudit.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 102 | 1. PRICE-TIME |
-| 134 | 2. RESTING PRICE |
-| 151 | 3. NOBODY OBLIGED |
-| 173 | 4. PARTIAL FILLS |
-| 194 | 5. NO SELF-TRADE |
-| 209 | 6. CLEARING LIMITS |
-| 230 | 7. THE RECORD |
-| 255 | 8. A CURRENCY REFORM |
-| 273 | 9. SAVE AND LOAD |
+| 105 | 1. PRICE-TIME |
+| 170 | 2. RESTING PRICE |
+| 187 | 3. NOBODY OBLIGED |
+| 209 | 4. PARTIAL FILLS |
+| 230 | 5. NO SELF-TRADE |
+| 245 | 6. CLEARING LIMITS |
+| 266 | 7. THE RECORD |
+| 291 | 8. A CURRENCY REFORM |
+| 309 | 9. SAVE AND LOAD |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 42 | `static int fails` |  |
-| 43 | `static PrintStream out` |  |
-| 58 | `final Map<String, Double> cash` |  |
-| 59 | `int settled` |  |
+| 44 | `static int fails` |  |
+| 45 | `static PrintStream out` |  |
+| 60 | `final Map<String, Double> cash` |  |
+| 61 | `int settled` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 258 | **type** `public class OrderBookCheck` | The limit-order book (0.7.12), on its own: the rules any instrument trades by, proved on a book that knows nothing about what it trades. |
-| 45 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 50 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 57 | 22 | **type** `static final class Ledger implements OrderBook.Clearing` | A clearing with cash and holdings per participant: each buyer pays out of its cash, each seller delivers out of its holding. |
-| 61 | 5 | `Ledger give(String who, double money, double units)` _(in OrderBookCheck.Ledger)_ |  |
-| 67 | 3 | `public double capacity(String who, OrderBook.Side side, double price)` _(in OrderBookCheck.Ledger)_ |  |
-| 71 | 7 | `public void settle(String buyer, String seller, double quantity, double price)` _(in OrderBookCheck.Ledger)_ |  |
-| 81 | 5 | `static Ledger rich(String...who)` | Everybody able to settle anything. |
-| 87 | 14 | `public static void main(String[] args)` |  |
+| 42 | 292 | **type** `public class OrderBookCheck` | The limit-order book (0.7.12), on its own: the rules any instrument trades by, proved on a book that knows nothing about what it trades. |
+| 47 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 52 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 59 | 22 | **type** `static final class Ledger implements OrderBook.Clearing` | A clearing with cash and holdings per participant: each buyer pays out of its cash, each seller delivers out of its holding. |
+| 63 | 5 | `Ledger give(String who, double money, double units)` _(in OrderBookCheck.Ledger)_ |  |
+| 69 | 3 | `public double capacity(String who, OrderBook.Side side, double price)` _(in OrderBookCheck.Ledger)_ |  |
+| 73 | 7 | `public void settle(String buyer, String seller, double quantity, double price)` _(in OrderBookCheck.Ledger)_ |  |
+| 83 | 5 | `static Ledger rich(String...who)` | Everybody able to settle anything. |
+| 89 | 15 | `public static void main(String[] args)` |  |
 
-### 1. PRICE-TIME (lines 102-133)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 104 | 29 | `static void priceTime()` |  |
-
-### 2. RESTING PRICE (lines 134-150)
+### 1. PRICE-TIME (lines 105-169)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 136 | 14 | `static void restingPrice()` |  |
+| 107 | 32 | `static void floatingPrices()` |  |
+| 140 | 29 | `static void priceTime()` |  |
 
-### 3. NOBODY OBLIGED (lines 151-172)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 153 | 19 | `static void nobodyObliged()` |  |
-
-### 4. PARTIAL FILLS (lines 173-193)
+### 2. RESTING PRICE (lines 170-186)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 175 | 18 | `static void partialFills()` |  |
+| 172 | 14 | `static void restingPrice()` |  |
 
-### 5. NO SELF-TRADE (lines 194-208)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 196 | 12 | `static void noSelfTrade()` |  |
-
-### 6. CLEARING LIMITS (lines 209-229)
+### 3. NOBODY OBLIGED (lines 187-208)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 211 | 18 | `static void clearingLimits()` |  |
+| 189 | 19 | `static void nobodyObliged()` |  |
 
-### 7. THE RECORD (lines 230-254)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 232 | 22 | `static void theRecord()` |  |
-
-### 8. A CURRENCY REFORM (lines 255-272)
+### 4. PARTIAL FILLS (lines 209-229)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 257 | 15 | `static void currencyReform()` |  |
+| 211 | 18 | `static void partialFills()` |  |
 
-### 9. SAVE AND LOAD (lines 273-297)
+### 5. NO SELF-TRADE (lines 230-244)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 275 | 22 | `static void saveAndLoad()` |  |
+| 232 | 12 | `static void noSelfTrade()` |  |
+
+### 6. CLEARING LIMITS (lines 245-265)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 247 | 18 | `static void clearingLimits()` |  |
+
+### 7. THE RECORD (lines 266-290)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 268 | 22 | `static void theRecord()` |  |
+
+### 8. A CURRENCY REFORM (lines 291-308)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 293 | 15 | `static void currencyReform()` |  |
+
+### 9. SAVE AND LOAD (lines 309-333)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 311 | 22 | `static void saveAndLoad()` |  |
 

@@ -3,11 +3,11 @@
 Built from main e5642145 (SX1, 0.9.101), on batch/BF1. HW1's named
 files are kept out of this batch.
 
-Insurance-corrected preflight 7e29b76e counts **0/24 bank failures**, against unchanged SX1's
+Final model 272bef8f counts **0/24 bank failures**, against unchanged SX1's
 5/24 and LD2's historical 8/24. All 2,880 MoneyAudits and every bank equity
 bridge close. Pellet exports occur in 176 city-months; 532 split/consolidation
 events are counted. Readiness remains provisional pending the final ALL
-pick, ensemble and fresh-clone gate.
+fresh-clone gate; the full pick and final ensemble have passed.
 
 ## Evidence before the mends
 
@@ -314,3 +314,39 @@ all 2,880 audits. These last model corrections supersede the 7e29 ensemble
 as final evidence: that preflight score is retained above, and the final
 model must run its own full ensemble before readiness.
 The extra PlanCheck line is the same PX1 + floor, not a new map-law waiver.
+
+## Final model ensemble
+
+Snapshot 272bef8f, label BF1-272b, completes 80/80 runs with no missing or
+short run in 33.7 minutes. Exit 0: M1/F1 pass 10/10, every policy has zero
+audit failures/unread months and zero of 16 runs with a finding. Its final
+score is 23/26 against SX1 0.9.101 at 24/26. The final baseline, replacing
+the 7e29 preflight artifact, is docs/ensemble/BF1.md. Raw CSVs and score
+are under target/ensemble/BF1-272b. The final full pick is
+target/checks/bf1-pick-release.txt and has exited 3.
+
+The complete changed-verdict rows (all informational) are:
+
+| policy | id | class | measure | BF1 median [range] | threshold | BF1 verdict | SX1 value | SX1 verdict |
+|---|---|---|---|---|---|---|---|---|
+| AUTO2 | A1 | info | inflation m240-end, a year | 2.82% [2.42% to 3.37%] | median 2.00%±1.00%, ≥12/16 in band* | PASS (15/16 in band) | 2.89% [2.49% to 3.36%] | FAIL |
+| SHOCK | T2 | info | final population | 77,432 [9,054 to 142,217] | ≥ 75.00% of baseline 115,870* | FAIL | 115,870 [12,480 to 168,445] | PASS |
+| HIGH | T2 | info | final population | 35,130 [2,463 to 78,200] | ≥ 75.00% of baseline 63,992* | FAIL | 63,992 [6,402 to 142,318] | PASS |
+
+## Final full pick
+
+The final --pick selects ALL 200 and exits 3: 193 harnesses run in 2,551 s,
+189 pass and four have known reds only: MapCheck (DM3/BF1-M/PX1), PlanCheck
+(PX1), KeptCheck (KF63) and DeathRecordCheck (OX1). Every owned regression
+is green, including Oil, Call, Prize, StaffingDraw, bank/credit, GDP, save
+and full price-level checks. Logs: target/checks/bf1-pick-release.txt and
+target/checks/suite.txt. Maps regenerate; Stale reports zero firm findings
+(185 soft); tree validation passes. Fifteen timing assertions are soft and
+eight path readings are observations; no correctness failure is reclassified
+as timing. The runner held 26 starts until commit charge fell under its
+existing 75% threshold on the shared PC.
+
+No scripts or checking machinery change. AllChecks' harness registration
+is one line in and one out; the remaining harness edits are domain fixtures.
+Generated maps, dials, harness index and month order are committed with the
+final baseline before the fresh-clone gate.

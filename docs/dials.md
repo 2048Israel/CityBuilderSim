@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,932 constants in 563 files.**
+**5,936 constants in 564 files.**
 
-## model (2841 constants)
+## model (2843 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -117,8 +117,8 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 4876 | `Bank.OWN_ISSUE_DEAD_BAND` | `1e-9` | How far under its target, as a share of it, the bank must be before it issues its own shares: a billionth - rounding, not a rule - so a buyback that stopped exactly on the target does not turn into... |
 | 4957 | `Bank.RATIONED_GROWTH` | `.01` | A borrower's debt may grow this much a month halfway between the minimum and the target: 1%, the top of the 0-1% a month Jerus's brief gave a bank short of capital; nothing at the minimum, no limit... |
 | 5335 | `Bank.CUSTOMERS_PER_BRANCH` | `16_000` | The customers one branch serves: 16,000, TD's clients per branch - "approximately 16 million clients in Canadian Personal and Business banking" through "more than 1,000 branches" (TD, corporate inf... |
-| 6188 | `Bank.SHEET_ASSETS` | `{ Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM, Sheet.MORTGAGES, Sheet.FAMILIES,...` | The asset lines, in the page's order: they sum to totalAssets(). |
-| 6192 | `Bank.SHEET_LIABILITIES` | `{ Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS, Sheet.DESK_SHORT, Sheet....` | ...and the liability lines: they sum to totalLiabilities(). |
+| 6205 | `Bank.SHEET_ASSETS` | `{ Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM, Sheet.MORTGAGES, Sheet.FAMILIES,...` | The asset lines, in the page's order: they sum to totalAssets(). |
+| 6209 | `Bank.SHEET_LIABILITIES` | `{ Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS, Sheet.DESK_SHORT, Sheet....` | ...and the liability lines: they sum to totalLiabilities(). |
 
 ### BoatSchedule.java ([map](map/BoatSchedule.md))
 
@@ -155,6 +155,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 151 | `BondMarket.CHEAPER_BY` | `1e-11` | The arithmetic a bond's all-in cost may sit over the loan's and still be "no dearer": a billionth of a point a year - the bisection's own resolution, not a margin (plan()). |
 | 154 | `BondMarket.ISSUE_ROUNDING` | `1e-14` | The relative shortfall at the issue-size fixed point, below the nominal twins' 1e-9 tolerance even after repeated refinancing (BS1). |
 | 157 | `BondMarket.PRICE_TICK` | `1e-12` | The price step per unit of bond face, so mathematically equal bids retain arrival priority across currency units (OB1, BS1). |
+| 326 | `BondMarket.FACE_DUST` | `PriceLevel.atFounding(OrderBook.DUST)` | OrderBook.DUST of face is money, seeded at founding prices (BF1). |
 
 ### BridgeSurvey.java ([map](map/BridgeSurvey.md))
 
@@ -360,20 +361,20 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 524 | `BusinessDebtManager.DEFAULT_SURCHARGE_MAX_COUNT` | `3` | The most write-downs DEFAULT_SURCHARGE is charged for: a record adds three points at the most. |
 | 527 | `BusinessDebtManager.LOAN_TERM_MONTHS` | `36` | How long a business loan runs, interest only, before its principal is due: three years, and it keeps the rate it was written at for all of them. |
 | 537 | `BusinessDebtManager.BUFFER_MONTHS` | `3` | Borrow enough to cover the hole plus this many months of the current loss. |
-| 1118 | `BusinessDebtManager.DEBT_KINDS` | `{ "Bank loans", "Bonds", "Mortgages", "Interim financing" }` | The four kinds of debt, in the order the statements print them. |
-| 1136 | `BusinessDebtManager.DUE_HORIZONS` | `{ 12, 60 }` | The two horizons R2 reads, in settles: a year and five. |
-| 1139 | `BusinessDebtManager.OWED` | `0, WITHIN_YEAR = 1, WITHIN_FIVE = 2, RATE = 3, RUNS_TO = 4` | debtByKind()'s rows: what is owed, what falls due within a year and within five, the rate it pays a year weighted by what is owed, and the month the last of it falls due (0 with none) - the last tw... |
-| 1211 | `BusinessDebtManager.BORROWED` | `0, REPAID = 1, WRITTEN_OFF = 2` | debtMovedByKind()'s rows: borrowed (the principal written, a bond's face), repaid, written off. |
-| 2066 | `BusinessDebtManager.MORTGAGE_BANK_SHUT` | `"the bank is shut"` | canFundMortgage()'s refusal when the bank behind the lender has failed (lendingOpen). |
-| 2068 | `BusinessDebtManager.MORTGAGE_BANNED` | `"borrowing ban"` | ...when the sector is serving a borrowing ban. |
-| 2070 | `BusinessDebtManager.MORTGAGE_DOWN_PAYMENT` | `Mortgage.Decision.DOWN_PAYMENT` | ...when the loan would be more than Mortgage.MORTGAGE_MAX_LOAN_TO_COST of the cost - the down payment, Mortgage.Decision.DOWN_PAYMENT. |
-| 2072 | `BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT` | `"past the default point"` | ...when the deal would leave the borrower owing past INSOLVENCY_TRIGGER times what it owns. |
-| 2074 | `BusinessDebtManager.MORTGAGE_CAPITAL` | `"the bank's capital"` | ...when the bank's capital rule has no room for it: only while the leverage requirement binds (round 2; setCapitalRule()). |
-| 2076 | `BusinessDebtManager.MORTGAGE_NOTHING` | `"nothing to borrow"` | ...when there is nothing to borrow. |
-| 2570 | `BusinessDebtManager.STATEMENT_MONTHS` | `3` | How many month-end readings the bank averages a borrower over: a quarter, as a real lender reads its statements. |
-| 3158 | `BusinessDebtManager.INTERIM_PAST_LINE` | `"past the default point after the write-down"` | Why the interim lender would not lend: the sector still past the default point after the write-down. |
-| 3160 | `BusinessDebtManager.INTERIM_BANK_SHUT` | `"the bank is shut"` | ...or the bank that would lend it has failed or is frozen in resolution. |
-| 3581 | `BusinessDebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 1153 | `BusinessDebtManager.DEBT_KINDS` | `{ "Bank loans", "Bonds", "Mortgages", "Interim financing" }` | The four kinds of debt, in the order the statements print them. |
+| 1171 | `BusinessDebtManager.DUE_HORIZONS` | `{ 12, 60 }` | The two horizons R2 reads, in settles: a year and five. |
+| 1174 | `BusinessDebtManager.OWED` | `0, WITHIN_YEAR = 1, WITHIN_FIVE = 2, RATE = 3, RUNS_TO = 4` | debtByKind()'s rows: what is owed, what falls due within a year and within five, the rate it pays a year weighted by what is owed, and the month the last of it falls due (0 with none) - the last tw... |
+| 1246 | `BusinessDebtManager.BORROWED` | `0, REPAID = 1, WRITTEN_OFF = 2` | debtMovedByKind()'s rows: borrowed (the principal written, a bond's face), repaid, written off. |
+| 2101 | `BusinessDebtManager.MORTGAGE_BANK_SHUT` | `"the bank is shut"` | canFundMortgage()'s refusal when the bank behind the lender has failed (lendingOpen). |
+| 2103 | `BusinessDebtManager.MORTGAGE_BANNED` | `"borrowing ban"` | ...when the sector is serving a borrowing ban. |
+| 2105 | `BusinessDebtManager.MORTGAGE_DOWN_PAYMENT` | `Mortgage.Decision.DOWN_PAYMENT` | ...when the loan would be more than Mortgage.MORTGAGE_MAX_LOAN_TO_COST of the cost - the down payment, Mortgage.Decision.DOWN_PAYMENT. |
+| 2107 | `BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT` | `"past the default point"` | ...when the deal would leave the borrower owing past INSOLVENCY_TRIGGER times what it owns. |
+| 2109 | `BusinessDebtManager.MORTGAGE_CAPITAL` | `"the bank's capital"` | ...when the bank's capital rule has no room for it: only while the leverage requirement binds (round 2; setCapitalRule()). |
+| 2111 | `BusinessDebtManager.MORTGAGE_NOTHING` | `"nothing to borrow"` | ...when there is nothing to borrow. |
+| 2618 | `BusinessDebtManager.STATEMENT_MONTHS` | `3` | How many month-end readings the bank averages a borrower over: a quarter, as a real lender reads its statements. |
+| 3210 | `BusinessDebtManager.INTERIM_PAST_LINE` | `"past the default point after the write-down"` | Why the interim lender would not lend: the sector still past the default point after the write-down. |
+| 3212 | `BusinessDebtManager.INTERIM_BANK_SHUT` | `"the bank is shut"` | ...or the bank that would lend it has failed or is frozen in resolution. |
+| 3637 | `BusinessDebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BusinessInvestment.java ([map](map/BusinessInvestment.md))
 
@@ -1280,8 +1281,8 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1065 | `EconomyManager.NRRP_CAP` | `6.3 * PriceLevel.FACTOR` | ...and its most a unit, in founding thousands: $6,300. |
 | 1067 | `EconomyManager.NRRP_FULL_BELOW` | `350 * PriceLevel.FACTOR` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
 | 1069 | `EconomyManager.NRRP_NONE_FROM` | `450 * PriceLevel.FACTOR` | ...and none for a unit worth this or more: $450,000. |
-| 1534 | `EconomyManager.BUDGET_NOISE` | `1e-12` | The share of its terms (what the settle leaves it, what it could raise) under which a purchase budget is arithmetic noise and reads nothing (est.: a double carries sixteen digits, and a budget is t... |
-| 2618 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 1538 | `EconomyManager.BUDGET_NOISE` | `1e-12` | The share of its terms (what the settle leaves it, what it could raise) under which a purchase budget is arithmetic noise and reads nothing (est.: a double carries sixteen digits, and a budget is t... |
+| 2622 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### Education.java ([map](map/Education.md))
 
@@ -1309,22 +1310,23 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 109 | `Equity.BANK` |  |  |
 | 126 | `Equity.PAYOUT` | `.40` | The share of a positive month's net income paid to the owners - of what it leaves after the principal repaid, since round 2 of 0.7.11 (dividendDue()) - every company's but the bank's, which pays by... |
 | 129 | `Equity.FOUNDING_PRICE` | `1.0 * PriceLevel.FACTOR` | A founding share: a thousand dollars, in the game's thousands, at today's prices. |
-| 161 | `Equity.RECORD_MONTHS` | `12` | Months on the books before a company has a record to be judged on. |
-| 164 | `Equity.GOOD_MONTHS` | `9` | Profitable months of the last twelve that make a good year. |
-| 167 | `Equity.BAD_MONTHS` | `6` | ...and the most a bad year has. |
-| 170 | `Equity.BASE_EQUITY_SHARE` | `.30` | What a steady business keeps as equity: the rest is leverage. |
-| 173 | `Equity.RISK_SLOPE` | `.20` | How much the target rises per unit of income swing (std dev over \|mean\|). |
-| 175 | `Equity.MAX_EQUITY_SHARE` | `.70` |  |
-| 178 | `Equity.NEW_EQUITY_SHARE` | `.50` | A new company's plans are this much equity, whatever its assets say. |
-| 181 | `Equity.HORIZON_YEARS` | `3` | In good times, the years of expansion a company raises for ahead. |
-| 184 | `Equity.UNDER_TARGET` | `.10` | Under target by this much before a normal year raises instead of borrows. |
-| 187 | `Equity.FOREIGN_PREMIUM` | `.03` | What the world wants over its own rate to buy a share here, annual. |
-| 1141 | `Equity.SLOTS_BEFORE_DESK` | `RECORD_MONTHS * 2 + 10` | Slots a company before the desk (2026-09-10, night). |
-| 1144 | `Equity.SLOTS_BEFORE_PAID` | `SLOTS_BEFORE_DESK + 2` | ...and before the dividends actually paid (0.7.12 round 2). |
-| 1147 | `Equity.SLOTS_BEFORE_CITY` | `SLOTS_BEFORE_PAID + RECORD_MONTHS + 1` | ...and before the city's fund (0.7.14): the ring of dividends paid and its count, appended. |
-| 1150 | `Equity.SLOTS_BEFORE_PAID_IN` | `SLOTS_BEFORE_CITY + 3` | ...and before its paid-in capital (0.7.75): the city's shares, its rescue book and what it has been paid, appended (0.7.14). |
-| 1153 | `Equity.SLOTS` | `SLOTS_BEFORE_PAID_IN + 3` | Its founders' book, what its buybacks paid and whether the two were derived, appended (0.7.75, R3; SAVE_FORMAT 33). |
-| 1156 | `Equity.PAID_IN_FORMAT` | `33` | The first save format that keeps a company's paid-in capital (0.7.75, R3): an older save's is derived at the load (restore(), SectorBooks.derivePaidIn()). |
+| 132 | `Equity.OFFER_DUST` | `PriceLevel.atFounding(1e-9)` | An offering's money tail, at founding prices and reseeded with the founding quote (BF1). |
+| 164 | `Equity.RECORD_MONTHS` | `12` | Months on the books before a company has a record to be judged on. |
+| 167 | `Equity.GOOD_MONTHS` | `9` | Profitable months of the last twelve that make a good year. |
+| 170 | `Equity.BAD_MONTHS` | `6` | ...and the most a bad year has. |
+| 173 | `Equity.BASE_EQUITY_SHARE` | `.30` | What a steady business keeps as equity: the rest is leverage. |
+| 176 | `Equity.RISK_SLOPE` | `.20` | How much the target rises per unit of income swing (std dev over \|mean\|). |
+| 178 | `Equity.MAX_EQUITY_SHARE` | `.70` |  |
+| 181 | `Equity.NEW_EQUITY_SHARE` | `.50` | A new company's plans are this much equity, whatever its assets say. |
+| 184 | `Equity.HORIZON_YEARS` | `3` | In good times, the years of expansion a company raises for ahead. |
+| 187 | `Equity.UNDER_TARGET` | `.10` | Under target by this much before a normal year raises instead of borrows. |
+| 190 | `Equity.FOREIGN_PREMIUM` | `.03` | What the world wants over its own rate to buy a share here, annual. |
+| 1144 | `Equity.SLOTS_BEFORE_DESK` | `RECORD_MONTHS * 2 + 10` | Slots a company before the desk (2026-09-10, night). |
+| 1147 | `Equity.SLOTS_BEFORE_PAID` | `SLOTS_BEFORE_DESK + 2` | ...and before the dividends actually paid (0.7.12 round 2). |
+| 1150 | `Equity.SLOTS_BEFORE_CITY` | `SLOTS_BEFORE_PAID + RECORD_MONTHS + 1` | ...and before the city's fund (0.7.14): the ring of dividends paid and its count, appended. |
+| 1153 | `Equity.SLOTS_BEFORE_PAID_IN` | `SLOTS_BEFORE_CITY + 3` | ...and before its paid-in capital (0.7.75): the city's shares, its rescue book and what it has been paid, appended (0.7.14). |
+| 1156 | `Equity.SLOTS` | `SLOTS_BEFORE_PAID_IN + 3` | Its founders' book, what its buybacks paid and whether the two were derived, appended (0.7.75, R3; SAVE_FORMAT 33). |
+| 1159 | `Equity.PAID_IN_FORMAT` | `33` | The first save format that keeps a company's paid-in capital (0.7.75, R3): an older save's is derived at the load (restore(), SectorBooks.derivePaidIn()). |
 
 ### Exchange.java ([map](map/Exchange.md))
 
@@ -1353,7 +1355,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 348 | `Exchange.BOOK_LIMIT` | `.50` | ...and in all companies' together: the book's aggregate limit. |
 | 351 | `Exchange.SPLIT_AT` | `.25` | A share costing more than this share of the city's average monthly wage splits (SX1). |
 | 354 | `Exchange.CONSOLIDATE_BELOW` | `.0025` | A share costing less than this fraction of the average monthly wage consolidates (SX1). |
-| 364 | `Exchange.MIN_FAIR` | `1e-9` | The least a share may be worth before the market treats the company as worthless. |
+| 364 | `Exchange.MIN_FAIR` | `PriceLevel.atFounding(1e-9)` | The least a share may be worth before the market treats the company as worthless. |
 | 382 | `Exchange.MIN_DEALER_EQUITY` | `1.0 * PriceLevel.FACTOR` | The least equity a bank's desk needs to post a market, founding thousands: a thousand dollars, Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). |
 | 402 | `Exchange.DESK` | `"bank"` | The bank's trading desk. |
 | 404 | `Exchange.WORLD` | `"world"` | The world's investors. |
@@ -1564,31 +1566,31 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1658 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
 | 1988 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
 | 3239 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
-| 3918 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 3921 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
-| 7115 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 7118 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 8104 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
-| 8863 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 9075 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 10240 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 10800 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 11580 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
-| 12223 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 12393 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 12437 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 12597 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 14483 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 14495 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 14498 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 14515 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 14526 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 14566 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 16296 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 16700 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 17324 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 17327 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 17330 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 3922 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 3925 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
+| 7130 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 7133 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 8119 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
+| 8878 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 9090 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 10255 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 10815 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 11595 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
+| 12238 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 12408 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 12452 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 12612 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
+| 14499 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 14511 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 14514 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 14531 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 14542 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 14582 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 16312 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 16716 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 17340 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 17343 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 17346 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1958,7 +1960,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2343 | `HouseholdBalance.CAR_SALE_HORIZON_MONTHS` | `CREDIT_LIMIT_MONTHS` | How far ahead a household looks before it decides the car has to go. |
 | 2425 | `HouseholdBalance.FOOD_ASSISTANCE_MEANS_SHARE` | `.5` | A household is eligible for food assistance when a basket a head would take more than this share of what it has after its fixed bills and its investment income over the year: half. |
 | 2439 | `HouseholdBalance.MEANS_INCOME_MONTHS` | `12` | Months the means test's investment income is smoothed over, as an exponential average - a twelfth of the gap a month, the year Expectations smooths inflation over (0.7.45; the UI spec's B16). |
-| 3140 | `HouseholdBalance.MIN_MOVE` | `1e-12` |  |
+| 3140 | `HouseholdBalance.MIN_MOVE` | `PriceLevel.atFounding(1e-12)` |  |
 | 3340 | `HouseholdBalance.HOUSEHOLD_PAPER_APPETITE` | `20` | The share of an issue the households take, per unit of spread between its yield and the deposit rate: 20 - a fifth of an issue for each point. |
 | 3343 | `HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE` | `.5` | ...and, for a BUSINESS issue, never more than this share of one: half, because a bond market with no bank in it is no longer the bank's market (BondMarket). |
 | 4132 | `HouseholdBalance.SHARE_CUSHION_MONTHS` | `3` | Months of take-home a household keeps in the bank before it buys a share. |
@@ -2674,7 +2676,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 85 | `OutwardInvestment.MAX_SHARE` | `.9` | Never more than this. |
 | 92 | `OutwardInvestment.OUT_SPEED` | `.04` | How much of the gap to its target moves abroad in a month. |
 | 95 | `OutwardInvestment.HOME_SPEED` | `.10` | ...and how much comes home in a month, which is faster, because it is needed. |
-| 119 | `OutwardInvestment.MIN_MOVE` | `1e-9` |  |
+| 119 | `OutwardInvestment.MIN_MOVE` | `PriceLevel.atFounding(1e-9)` |  |
 
 ### OwnerHousehold.java ([map](map/OwnerHousehold.md))
 
@@ -4164,12 +4166,12 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 158 | `Refining.BOUGHT_HERE` | `{ Good.PETROL, Good.DIESEL }` | The products something in the city buys (spec-oil 2.5, O1): the drivers' petrol and the railway's diesel - what the gate is struck on. |
 | 358 | `Refining.RUN_KEY` | `"run.share"` | The run's share in the saved extras (THE RUN). |
 | 361 | `Refining.RUN_HISTORY_KEY` | `"run.history."` | ...and each of the last months' shares, the oldest at 0 (THE RUN). |
-| 675 | `Refining.LUBRICANTS_WORLD_SHARE` | `.01` | The share of a city's crude, litre for litre, the world takes in lubricants a month: the real share of crude that becomes lubricants, about 1% [R37] (docs/studies/spec-oil.md 6; the research's risk... |
-| 786 | `Refining.CRUDE_COVER_MONTHS` | `1` | Months of the crude units' run kept on hand in a Tank Farm's room (★ spec-oil 2.8): one, a month's run. |
-| 828 | `Refining.CARGO_KEPT_FREE` | `ham.citybuildersim.Ports.Ship.MR.tonnes()` | Tonnes of a farm's room kept free for the next cargo (R2): an MR's, the smallest tanker's (Ports.Ship.MR). |
-| 1042 | `Refining.RUN_PACE` | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | The most of nameplate the crude units' run moves in a month (★ the brief's example, not measured): BusinessInvestment.MAX_RETIREMENT_FRACTION, the quarter the spare-capacity rule sheds at most. |
-| 1342 | `Refining.PACKAGE_MOST_UNITS` | `12` | The most conversion units a crude unit is weighed with: the prototype's twelve rounds (spread.py, its package) - more than one of each of the seven kinds. |
-| 1345 | `Refining.KIND_NAMES` |  | Each kind's name, in Kind's order: what the idle months are saved by. |
+| 679 | `Refining.LUBRICANTS_WORLD_SHARE` | `.01` | The share of a city's crude, litre for litre, the world takes in lubricants a month: the real share of crude that becomes lubricants, about 1% [R37] (docs/studies/spec-oil.md 6; the research's risk... |
+| 790 | `Refining.CRUDE_COVER_MONTHS` | `1` | Months of the crude units' run kept on hand in a Tank Farm's room (★ spec-oil 2.8): one, a month's run. |
+| 832 | `Refining.CARGO_KEPT_FREE` | `ham.citybuildersim.Ports.Ship.MR.tonnes()` | Tonnes of a farm's room kept free for the next cargo (R2): an MR's, the smallest tanker's (Ports.Ship.MR). |
+| 1046 | `Refining.RUN_PACE` | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | The most of nameplate the crude units' run moves in a month (★ the brief's example, not measured): BusinessInvestment.MAX_RETIREMENT_FRACTION, the quarter the spare-capacity rule sheds at most. |
+| 1346 | `Refining.PACKAGE_MOST_UNITS` | `12` | The most conversion units a crude unit is weighed with: the prototype's twelve rounds (spread.py, its package) - more than one of each of the seven kinds. |
+| 1349 | `Refining.KIND_NAMES` |  | Each kind's name, in Kind's order: what the idle months are saved by. |
 
 ### Restaurants.java ([map](map/Restaurants.md))
 
@@ -4391,45 +4393,45 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 3384 | `FinancesScreen.CLOSE_HEAD` | `new javafx.geometry.Insets(0, CLOSE_BUTTON + CLOSE_GAP, 0, 0)` | The room at the right of the desk's "If closed now" heading (KP2b: one object, not one at each draw). |
 | 3387 | `FinancesScreen.DESK_ROOM` | `new javafx.geometry.Insets(5, 0, 5, 0), DESK_FOOT_ROOM = new javafx.geometry.Insets(5, ...` | The room round a cell of the desk's lines, and of its foot (KP2b: one object each). |
 | 3447 | `FinancesScreen.ACROSS_TABLE` | `"finances.table", TABLE_ACROSS = "finances.across"` | The keys a scroller keeps the table it holds under, and a table the scroller that holds it (acrossWhenNarrow()). |
-| 3608 | `FinancesScreen.LINE_PRICE_INFO` | `"The price is the market's: what the line's remaining payments are worth on " + "each m...` | THE PRICE card's (i): board 2, note A. |
-| 3624 | `FinancesScreen.LINE_BOOKS_INFO` | `"The books in full: what the line is carried at when the month opens, the " + "interest...` | THE NEXT SIX MONTHS' (i): board 2, note C. |
-| 3631 | `FinancesScreen.LINE_SALES_INFO` | `"Each sale into the line: when, how much face, what it raised, the price it " + "made f...` | ITS SALES, AND ITS RISK's (i). |
-| 3637 | `FinancesScreen.LINE_PAGE` | `"A line"` | The name of a line's page, under The book: no chip's, open while its line is on the books (lineOpenNow()). |
-| 3861 | `FinancesScreen.THREE_NARROW` | `1000` | The width under which a line's page stacks its three cards (CD6): the books' table, then the other two side by side. |
-| 3864 | `FinancesScreen.THREE_CARDS` | `"finances.three"` | The key a line's page keeps its three cards under on their grid, for the width listener to arrange (linePage()). |
-| 4119 | `FinancesScreen.DeskCurve.H` | `232, LEFT = 46, RIGHT = 14, TOP = 12, FOOT = 26` |  |
-| 4220 | `FinancesScreen.DeskBars.H` | `158, LEFT = 84, RIGHT = 76, TOP = 26, ROW = 42, BAR = 26` |  |
-| 4221 | `FinancesScreen.DeskBars.ROWS` | `{ "at face", "carried", "worth today" }` |  |
-| 4279 | `FinancesScreen.PathChart.H` | `212, LEFT = 40, RIGHT = 16, TOP = 14, FOOT = 26` |  |
-| 4426 | `FinancesScreen.CLOSE_BOOKS_INFO` | `"The auction pays each holder its own ask, so what the books would show is the carrying...` | WHAT THIS BUYBACK WOULD BOOK's (i): BB1, CD6-C ★1. |
-| 4432 | `FinancesScreen.CLOSE_INFO` | `"Closing a piece early is a reverse auction, not one price.Name the face you want " + "...` | THE TICKET's (i): the spec's 6.2. |
-| 4441 | `FinancesScreen.OFFERS_INFO` | `"Each bar is one slice a holder offers: its length is the slice's face, the number " + ...` | THE OFFERS' (i). |
-| 4447 | `FinancesScreen.COMPARE_INFO` | `"One buyback, read three ways.Against carrying value is the figure the books keep, " + ...` | THE THREE COMPARISONS' (i): the spec's 6.3. |
-| 4455 | `FinancesScreen.CALL_INFO` | `"From its first call date the city can pay every holder 100 for each 100 of face, " + "...` | THE CALL's (i): the spec's 6.4 and D22 to D24. |
-| 4574 | `FinancesScreen.CLOSE_SHOWN` | `"finances.closeShown"` | The key a Close it now box keeps the text the page was last drawn on under, for its focus listener (closeBox()). |
-| 4918 | `FinancesScreen.BuybackLadder.LEFT` | `74, FACE_ROOM = 76, MARKS = 134, TOP = 26, FOOT = 10, FIRST_W = 720, LEAST_W = 440` | The margins, in pixels: the prices at the left; at the right the room for a slice's face (FACE_ROOM) and for the marks' names (MARKS). |
-| 5105 | `FinancesScreen.TERMS_INFO` | `"Each column is today's fair yield for this paper at that term: what the curve " + "say...` | The terms' (i): the spec's T55, on the auction's fair yield (CD2). |
-| 5115 | `FinancesScreen.CAP_INFO` | `"The most the city will pay to sell this: fair plus a point, a yield you name, or " + "...` | THE HIGHEST YIELD's (i): the spec's 4.1 and 4.3 in two sentences. |
-| 5123 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " + "smalles...` | The ask's (i): the spec's T56. |
-| 5127 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here - at home the auction itself, run on " + ...` | The quote's empty state: the spec's T57. |
-| 5132 | `FinancesScreen.PROCEEDS_INFO` | `"A bill's ask is the cash it should raise, and its face is the lot that brings " + "it,...` | Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). |
-| 5138 | `FinancesScreen.BUYERS_INFO` | `"Each bidder bids by the rule it follows elsewhere in the game.The households " + "firs...` | Who bids: the spec's T61 and 4.2 (CD2). |
-| 5148 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "devaluation...` | Where the dollars go: the spec's T62. |
-| 5435 | `FinancesScreen.CALLABLE_SALE_INFO` | `"A bond of ten years or more can be sold callable: from its first call date " + "(five ...` | The CALLABLE switch's (i) (CD4, spec-city-debt.md 2.6 and D22 to D24). |
-| 6063 | `FinancesScreen.STOP_INFO` | `"The one yield at which the bids first cover the issue - never under fair, never " + "o...` | STOPS AT's (i): the stop and the tail (the spec's 4.3). |
-| 6068 | `FinancesScreen.COVER_INFO` | `"What was bid up to your highest yield, each bidder counted at most the issue, " + "ove...` | BIDS' (i): the cover. |
-| 6241 | `FinancesScreen.AuctionChart.WHO_COLOURS` | `{ Palette.PEOPLE, Palette.BUSINESS, Palette.ORE, Palette.MONEY }` | The bidders' colours in Auction.Fill's order, as the holders' bar has them. |
-| 6243 | `FinancesScreen.AuctionChart.WHO` | `{ "households", "the firms", "the world", "the bank" }` | ...and their names, in the same order. |
-| 6245 | `FinancesScreen.AuctionChart.H` | `240, LEFT = 62, RIGHT = 16, TOP = 16, FOOT = 26, FIRST_W = 720, LEAST_W = 420` | Its height and its margins, in pixels; the width it is first drawn at, and the least it is drawn at. |
-| 6247 | `FinancesScreen.AuctionChart.SAMPLES` | `60` | How many yields the bids are read at across the axis. |
-| 6436 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate and " + "eno...` | The default page's (i). |
-| 6591 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's - plus " ...` | M2's (i): the spec's T69. |
-| 6684 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no more " + "...` | No bond outstanding: the spec's T70. |
-| 6689 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has not " + "t...` | The prices' (i): the spec's T71. |
-| 6694 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when it " + "me...` | The order books' (i): the spec's T74. |
-| 6702 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
-| 6704 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY_DARK }` | ...and their colours on it. |
-| 6885 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since " + "whate...` | A bond's book's (i): the spec's T75, T77 and T78. |
+| 3612 | `FinancesScreen.LINE_PRICE_INFO` | `"The price is the market's: what the line's remaining payments are worth on " + "each m...` | THE PRICE card's (i): board 2, note A. |
+| 3628 | `FinancesScreen.LINE_BOOKS_INFO` | `"The books in full: what the line is carried at when the month opens, the " + "interest...` | THE NEXT SIX MONTHS' (i): board 2, note C. |
+| 3635 | `FinancesScreen.LINE_SALES_INFO` | `"Each sale into the line: when, how much face, what it raised, the price it " + "made f...` | ITS SALES, AND ITS RISK's (i). |
+| 3641 | `FinancesScreen.LINE_PAGE` | `"A line"` | The name of a line's page, under The book: no chip's, open while its line is on the books (lineOpenNow()). |
+| 3865 | `FinancesScreen.THREE_NARROW` | `1000` | The width under which a line's page stacks its three cards (CD6): the books' table, then the other two side by side. |
+| 3868 | `FinancesScreen.THREE_CARDS` | `"finances.three"` | The key a line's page keeps its three cards under on their grid, for the width listener to arrange (linePage()). |
+| 4123 | `FinancesScreen.DeskCurve.H` | `232, LEFT = 46, RIGHT = 14, TOP = 12, FOOT = 26` |  |
+| 4224 | `FinancesScreen.DeskBars.H` | `158, LEFT = 84, RIGHT = 76, TOP = 26, ROW = 42, BAR = 26` |  |
+| 4225 | `FinancesScreen.DeskBars.ROWS` | `{ "at face", "carried", "worth today" }` |  |
+| 4283 | `FinancesScreen.PathChart.H` | `212, LEFT = 40, RIGHT = 16, TOP = 14, FOOT = 26` |  |
+| 4430 | `FinancesScreen.CLOSE_BOOKS_INFO` | `"The auction pays each holder its own ask, so what the books would show is the carrying...` | WHAT THIS BUYBACK WOULD BOOK's (i): BB1, CD6-C ★1. |
+| 4436 | `FinancesScreen.CLOSE_INFO` | `"Closing a piece early is a reverse auction, not one price.Name the face you want " + "...` | THE TICKET's (i): the spec's 6.2. |
+| 4445 | `FinancesScreen.OFFERS_INFO` | `"Each bar is one slice a holder offers: its length is the slice's face, the number " + ...` | THE OFFERS' (i). |
+| 4451 | `FinancesScreen.COMPARE_INFO` | `"One buyback, read three ways.Against carrying value is the figure the books keep, " + ...` | THE THREE COMPARISONS' (i): the spec's 6.3. |
+| 4459 | `FinancesScreen.CALL_INFO` | `"From its first call date the city can pay every holder 100 for each 100 of face, " + "...` | THE CALL's (i): the spec's 6.4 and D22 to D24. |
+| 4578 | `FinancesScreen.CLOSE_SHOWN` | `"finances.closeShown"` | The key a Close it now box keeps the text the page was last drawn on under, for its focus listener (closeBox()). |
+| 4922 | `FinancesScreen.BuybackLadder.LEFT` | `74, FACE_ROOM = 76, MARKS = 134, TOP = 26, FOOT = 10, FIRST_W = 720, LEAST_W = 440` | The margins, in pixels: the prices at the left; at the right the room for a slice's face (FACE_ROOM) and for the marks' names (MARKS). |
+| 5109 | `FinancesScreen.TERMS_INFO` | `"Each column is today's fair yield for this paper at that term: what the curve " + "say...` | The terms' (i): the spec's T55, on the auction's fair yield (CD2). |
+| 5119 | `FinancesScreen.CAP_INFO` | `"The most the city will pay to sell this: fair plus a point, a yield you name, or " + "...` | THE HIGHEST YIELD's (i): the spec's 4.1 and 4.3 in two sentences. |
+| 5127 | `FinancesScreen.LOTS_INFO` | `"Issues round to a lot, and the market will not arrange anything under the " + "smalles...` | The ask's (i): the spec's T56. |
+| 5131 | `FinancesScreen.NO_ASK` | `"Ask for something and the quote appears here - at home the auction itself, run on " + ...` | The quote's empty state: the spec's T57. |
+| 5136 | `FinancesScreen.PROCEEDS_INFO` | `"A bill's ask is the cash it should raise, and its face is the lot that brings " + "it,...` | Why a bill's proceeds are not the ask: the spec's T58 (a bill's ask is the cash; a bond's is the face). |
+| 5142 | `FinancesScreen.BUYERS_INFO` | `"Each bidder bids by the rule it follows elsewhere in the game.The households " + "firs...` | Who bids: the spec's T61 and 4.2 (CD2). |
+| 5152 | `FinancesScreen.DOLLARS_INFO` | `"Spending it leaves a dollar debt with nothing behind it, and the next " + "devaluation...` | Where the dollars go: the spec's T62. |
+| 5439 | `FinancesScreen.CALLABLE_SALE_INFO` | `"A bond of ten years or more can be sold callable: from its first call date " + "(five ...` | The CALLABLE switch's (i) (CD4, spec-city-debt.md 2.6 and D22 to D24). |
+| 6067 | `FinancesScreen.STOP_INFO` | `"The one yield at which the bids first cover the issue - never under fair, never " + "o...` | STOPS AT's (i): the stop and the tail (the spec's 4.3). |
+| 6072 | `FinancesScreen.COVER_INFO` | `"What was bid up to your highest yield, each bidder counted at most the issue, " + "ove...` | BIDS' (i): the cover. |
+| 6245 | `FinancesScreen.AuctionChart.WHO_COLOURS` | `{ Palette.PEOPLE, Palette.BUSINESS, Palette.ORE, Palette.MONEY }` | The bidders' colours in Auction.Fill's order, as the holders' bar has them. |
+| 6247 | `FinancesScreen.AuctionChart.WHO` | `{ "households", "the firms", "the world", "the bank" }` | ...and their names, in the same order. |
+| 6249 | `FinancesScreen.AuctionChart.H` | `240, LEFT = 62, RIGHT = 16, TOP = 16, FOOT = 26, FIRST_W = 720, LEAST_W = 420` | Its height and its margins, in pixels; the width it is first drawn at, and the least it is drawn at. |
+| 6251 | `FinancesScreen.AuctionChart.SAMPLES` | `60` | How many yields the bids are read at across the axis. |
+| 6440 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate and " + "eno...` | The default page's (i). |
+| 6595 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's - plus " ...` | M2's (i): the spec's T69. |
+| 6688 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no more " + "...` | No bond outstanding: the spec's T70. |
+| 6693 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has not " + "t...` | The prices' (i): the spec's T71. |
+| 6698 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when it " + "me...` | The order books' (i): the spec's T74. |
+| 6706 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
+| 6708 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY_DARK }` | ...and their colours on it. |
+| 6889 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since " + "whate...` | A bond's book's (i): the spec's T75, T77 and T78. |
 
 ### FollowBench.java ([map](map/FollowBench.md))
 
@@ -5060,15 +5062,15 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 4463 | `Pieces.Columns.TOP` | `34, FOOT = 30, GAP = 8` | The room over the plot for a tag and a figure, under it for a label and its second line, and the gap between columns. |
 | 4752 | `Pieces.BAND_SCALE` | `1.6` | How far past the top of its band a ratio's bar runs, as a multiple of the top: the band sits in the left of it, so a ratio well over its band reads as full (BankScreen's capital band's since 0.7.9). |
 | 4816 | `Pieces.RUNG_ROW` | `30, RUNG_BAND = 12` | A rung's least height, and its bar's band. |
-| 5025 | `Pieces.ACTION_TALL` | `40` | An action button's height on a card, where it is the thing the card is for. |
-| 5028 | `Pieces.ACTION_INLINE` | `32` | ...beside a heading, where it shares a row with words: Build's "Build all three", the land office's "Buy the next 5". |
-| 5031 | `Pieces.DOOR_TALL` | `30` | A door pill's height. |
-| 5234 | `Pieces.DOOR_ACCENT` | `"pieces.doorAccent"` | The key under which a door pill carries its accent, for the listeners added once to read. |
-| 5612 | `Pieces.MirrorRows.ROW` | `28, BAR = 12, ICON = 18, GAP = 8` | A row's least height, its bar's thickness, an icon's size and the gaps between the columns. |
-| 5954 | `Pieces.DivergingBars.ROW` | `30, BAR = 12` | A row's least height and its bar's thickness. |
-| 6442 | `Pieces.RangeBar.TRACK` | `6, DOT = 10, TICK_W = 5, TICK_H = 14, PAD = 6` | The track's height, the dot's size, the tick's width and height, and the room either end so the dot is never cut. |
-| 6560 | `Pieces.TYPED` | `"pieces.typed"` | The key under which a search box carries the consumer of what is typed in it, for the listener added once to call. |
-| 6620 | `Pieces.HUNGER_INFO` | `"The measure is struck at the top of the month on the last sale: what each " + "househo...` | The (i): when the measure is struck, and what each half means. |
+| 5028 | `Pieces.ACTION_TALL` | `40` | An action button's height on a card, where it is the thing the card is for. |
+| 5031 | `Pieces.ACTION_INLINE` | `32` | ...beside a heading, where it shares a row with words: Build's "Build all three", the land office's "Buy the next 5". |
+| 5034 | `Pieces.DOOR_TALL` | `30` | A door pill's height. |
+| 5237 | `Pieces.DOOR_ACCENT` | `"pieces.doorAccent"` | The key under which a door pill carries its accent, for the listeners added once to read. |
+| 5615 | `Pieces.MirrorRows.ROW` | `28, BAR = 12, ICON = 18, GAP = 8` | A row's least height, its bar's thickness, an icon's size and the gaps between the columns. |
+| 5957 | `Pieces.DivergingBars.ROW` | `30, BAR = 12` | A row's least height and its bar's thickness. |
+| 6445 | `Pieces.RangeBar.TRACK` | `6, DOT = 10, TICK_W = 5, TICK_H = 14, PAD = 6` | The track's height, the dot's size, the tick's width and height, and the room either end so the dot is never cut. |
+| 6563 | `Pieces.TYPED` | `"pieces.typed"` | The key under which a search box carries the consumer of what is typed in it, for the listener added once to call. |
+| 6623 | `Pieces.HUNGER_INFO` | `"The measure is struck at the top of the month on the last sale: what each " + "househo...` | The (i): when the measure is struck, and what each half means. |
 
 ### PolicyScreen.java ([map](map/PolicyScreen.md))
 
@@ -5666,7 +5668,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1637 constants)
+## harnesses (1639 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5736,6 +5738,13 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1442 | `AutoBuildCheck.ROOM` | `50_000 * PriceLevel.FACTOR` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
 | 1544 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
 | 1585 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
+
+### BankFailureCheck.java ([map](map/BankFailureCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 16 | `BankFailureCheck.out` | `System.out` |  |
+| 17 | `BankFailureCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 
 ### BasketYearCheck.java ([map](map/BasketYearCheck.md))
 
@@ -6046,13 +6055,13 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 223 | `CurrencyRegimeCheck.DOLLAR` | `1e-6` | What the harness's own sums are held to where they are exact arithmetic on dollars. |
 | 606 | `CurrencyRegimeCheck.PEG_DEPOTS` | `12` | BA1, 2026-11-04: THE PEG TOWNS NO LONGER CAUSED THEIR CONDITION. |
 | 607 | `CurrencyRegimeCheck.PEG_VAULT_MONTHS` | `2 * ForeignAccounts.COMFORTABLE_COVER` |  |
-| 622 | `CurrencyRegimeCheck.CLIMB_LOOK_MONTHS` | `120` | BA1, 2026-11-04, REDONE 2026-11-05: the months past its 36 that a town played for the credibility fixture is given at most to find prices in the band where the bank's credibility climbs (a smoothed... |
-| 644 | `CurrencyRegimeCheck.DOUBT_CRAWL_MONTHS` | `8` | The months doubtTown() plays at the shadow, the peg following it, before the revaluation: the eight months the hot money takes to gather. |
-| 652 | `CurrencyRegimeCheck.BREAK_LOOK_MONTHS` | `3` | GW1: the months after the revaluation whose breaks section 3 can use: a break by doubt needs the month before it and its own month to be months where the smoothed miss is within TOLERANCE (the city... |
-| 655 | `CurrencyRegimeCheck.climbMonths` | `new java.util.HashMap<>()` | The months a probe town is played to, by (depots, causes held off): where the climbing town is pegged is found once (climbMonth()). |
-| 1181 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
-| 1462 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
-| 1479 | `CurrencyRegimeCheck.SURPLUS_DEPOTS` | `{ PEG_DEPOTS, 18, 20, 22, 24, 30, 36 }` | BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. |
+| 624 | `CurrencyRegimeCheck.CLIMB_LOOK_MONTHS` | `600` | BF1: the first full in-band window is later than the old search cap. |
+| 646 | `CurrencyRegimeCheck.DOUBT_CRAWL_MONTHS` | `8` | The months doubtTown() plays at the shadow, the peg following it, before the revaluation: the eight months the hot money takes to gather. |
+| 654 | `CurrencyRegimeCheck.BREAK_LOOK_MONTHS` | `3` | GW1: the months after the revaluation whose breaks section 3 can use: a break by doubt needs the month before it and its own month to be months where the smoothed miss is within TOLERANCE (the city... |
+| 657 | `CurrencyRegimeCheck.climbMonths` | `new java.util.HashMap<>()` | The months a probe town is played to, by (depots, causes held off): where the climbing town is pegged is found once (climbMonth()). |
+| 1183 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
+| 1464 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
+| 1481 | `CurrencyRegimeCheck.SURPLUS_DEPOTS` | `{ PEG_DEPOTS, 18, 20, 22, 24, 30, 36 }` | BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. |
 
 ### CurveCheck.java ([map](map/CurveCheck.md))
 
@@ -7473,7 +7482,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 97 | `PriceLevelCheck.US_LEVEL_TOLERANCE` | `.003` | How far the world file's US price level from founding to 2025, times PriceLevel.FACTOR, may be from 1, as a share. |
 | 100 | `PriceLevelCheck.STAND_IN_TOLERANCE` | `1e-9` | The stand-in century follows the series to this share: floating point of one logarithm, nothing the model rounds. |
 | 111 | `PriceLevelCheck.TWIN_NOMINAL_TOLERANCE` | `1e-9` | How far a nominal series of the factor's city, divided by the factor, may be from the same series in the city at today's prices, as a share of the larger of the two series' largest size so far (a b... |
-| 114 | `PriceLevelCheck.TWIN_REAL_TOLERANCE` | `1e-9` | ...and a real one (a count, a ratio, a quantity in units), the same band: nothing real is rounded differently by a change of price level. |
+| 114 | `PriceLevelCheck.TWIN_REAL_TOLERANCE` | `1e-9` | ...and a real one, the same band against its running size (as stableMonths reads it); counts also remain exact below. |
 | 120 | `PriceLevelCheck.TWIN_MONEY_FLOOR` | `1e-9` | A nominal series' value below this, in today's thousands, is zero for the comparison (a millionth of a dollar): the model's own numeric floors are at 1e-9 (OrderBook.DUST, Exchange.MIN_FAIR), and a... |
 | 129 | `PriceLevelCheck.HISTORY_SIG_TOLERANCE` | `1.1e-5` | The history records money to a fixed grid (HistorySave.round2, round4, round6) or to six significant figures (roundSig), so a nominal history series of the factor's city, divided by the factor, is ... |
 | 136 | `PriceLevelCheck.TWIN_QUANTITY_FLOOR` | `1e-9` | A real quantity below this, in units, is zero for the comparison: a billionth of a unit, the size of the model's own numeric floors (OrderBook.DUST, Exchange.MIN_FAIR). |
@@ -7481,9 +7490,9 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 146 | `PriceLevelCheck.CONSTANT_TOLERANCE` | `1e-12` | The relative gap allowed between a constant that carries the factor and today's figure times it, and between a ratio and today's ratio: one rounding of one product. |
 | 149 | `PriceLevelCheck.OLD_CUT` | `.5` | The literal half-thousand the screens held before EP2 as their "nothing" (ui.Money, FundView's fold), in thousands as written: the figures between it and the factor's own cut-off are the ones the o... |
 | 152 | `PriceLevelCheck.DOOR` | `"cbs.priceLevel"` | The child property that stands in for the factor (PriceLevel's one door). |
-| 469 | `PriceLevelCheck.NOMINAL_CONSTANTS` | `{ "Game.FOUNDING_CASH", "Game.FOUNDING_RESERVE_USD", "Game.FIXED_ISSUE_COST", "Game.BUI...` | The nominal amounts struck as constants, each a class and a name: today's figure times the factor, in both children. |
-| 660 | `PriceLevelCheck.SIG_RECORDED` | `java.util.regex.Pattern.compile("h\\.(minimumWage\|landPrice\|foodPrice\|materialsPrice\|or...` | The history series recorded to six significant figures (HistorySave.roundSig) rather than to a grid: the share prices and the household-scale prices. |
-| 798 | `PriceLevelCheck.CHILD_MINUTES` | `10` | How long a child JVM may run before the check kills it and fails: the longest (the played city) takes a few minutes. |
+| 470 | `PriceLevelCheck.NOMINAL_CONSTANTS` | `{ "Game.FOUNDING_CASH", "Game.FOUNDING_RESERVE_USD", "Game.FIXED_ISSUE_COST", "Game.BUI...` | The nominal amounts struck as constants, each a class and a name: today's figure times the factor, in both children. |
+| 694 | `PriceLevelCheck.SIG_RECORDED` | `java.util.regex.Pattern.compile("h\\.(minimumWage\|landPrice\|foodPrice\|materialsPrice\|or...` | The history series recorded to six significant figures (HistorySave.roundSig) rather than to a grid: the share prices and the household-scale prices. |
+| 832 | `PriceLevelCheck.CHILD_MINUTES` | `10` | How long a child JVM may run before the check kills it and fails: the longest (the played city) takes a few minutes. |
 
 ### PrizeCheck.java ([map](map/PrizeCheck.md))
 
@@ -7819,7 +7828,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 87 | `StaffingDrawCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
 | 88 | `StaffingDrawCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
 | 89 | `StaffingDrawCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
-| 856 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
+| 864 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
 
 ### StaleCheck.java ([map](map/StaleCheck.md))
 

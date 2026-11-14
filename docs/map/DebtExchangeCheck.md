@@ -1,4 +1,4 @@
-# DebtExchangeCheck.java - 703 lines · 23 methods · 6 constants · harnesses
+# DebtExchangeCheck.java - 721 lines · 23 methods · 6 constants · harnesses
 
 `ham/citybuildersim/DebtExchangeCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -47,25 +47,25 @@
 >      does not), and the EARNED-to-budget residual is nothing of it - minus the domestic coupons the holders outside the
 >      bank were paid, where there are any (FloatLinkCheck's X_EARNED), which is not this batch's to change.
 
-**Uses:** [Debt](Debt.md) (27), [Game](Game.md) (21), [MoneyAudit](MoneyAudit.md) (20), [BookDesk](BookDesk.md) (10), [TaxPolicy](TaxPolicy.md) (9), [PriceLevel](PriceLevel.md) (8), [NationalAccounts](NationalAccounts.md) (8), [TreasuryJournal](TreasuryJournal.md) (6), [FamilyModel](FamilyModel.md) (5), [ForeignAccounts](ForeignAccounts.md) (3), [DebtManager](DebtManager.md) (3), [GameFiles](GameFiles.md) (2), [EducationCheck](EducationCheck.md) (2), [Rollover](Rollover.md) (2), [EconomyManager](EconomyManager.md) (2), [HistorySave](HistorySave.md) (1), [CityCalendar](CityCalendar.md) (1), [LongTermBond](LongTermBond.md) (1)
+**Uses:** [Debt](Debt.md) (27), [Game](Game.md) (22), [MoneyAudit](MoneyAudit.md) (20), [PriceLevel](PriceLevel.md) (12), [BookDesk](BookDesk.md) (10), [TaxPolicy](TaxPolicy.md) (9), [NationalAccounts](NationalAccounts.md) (8), [TreasuryJournal](TreasuryJournal.md) (6), [FamilyModel](FamilyModel.md) (5), [ForeignAccounts](ForeignAccounts.md) (3), [DebtManager](DebtManager.md) (3), [GameFiles](GameFiles.md) (2), [EducationCheck](EducationCheck.md) (2), [Rollover](Rollover.md) (2), [EconomyManager](EconomyManager.md) (2), [HistorySave](HistorySave.md) (1), [CityCalendar](CityCalendar.md) (1), [LongTermBond](LongTermBond.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 259 | · 1. the fixture |
-| 299 | · 2. the D$ falls 10% |
-| 323 | · 3. the bridge foots |
-| 357 | · 4. MoneyAudit untouched |
-| 367 | · 5. the book after the fall |
-| 390 | · 6. the D$ rises back |
-| 427 | · 7. the book after the rise |
-| 441 | · 8. the cash rules leave it out |
-| 485 | · 9. across a save and a load |
-| 520 | · 10. the rule alone |
-| 563 | · 11. the student grant on a surplus share reads the cash |
-| 619 | · 12. ...and a buyback below book |
-| 651 | · 13. EARNED carries the coupons abroad (CD9, CD7-E) |
+| 317 | · 2. the D$ falls 10% |
+| 341 | · 3. the bridge foots |
+| 375 | · 4. MoneyAudit untouched |
+| 385 | · 5. the book after the fall |
+| 408 | · 6. the D$ rises back |
+| 445 | · 7. the book after the rise |
+| 459 | · 8. the cash rules leave it out |
+| 503 | · 9. across a save and a load |
+| 538 | · 10. the rule alone |
+| 581 | · 11. the student grant on a surplus share reads the cash |
+| 637 | · 12. ...and a buyback below book |
+| 669 | · 13. EARNED carries the coupons abroad (CD9, CD7-E) |
 
 ## Constants
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 650 | **type** `public class DebtExchangeCheck` | The exchange gain (loss) on the city's foreign-currency debt (CD7, spec-city-debt.md section 5): each dollar piece carried in US$ and read in D$ at the rate it was last valued at, so a month in which the D$ moves move... |
+| 54 | 668 | **type** `public class DebtExchangeCheck` | The exchange gain (loss) on the city's foreign-currency debt (CD7, spec-city-debt.md section 5): each dollar piece carried in US$ and read in D$ at the rate it was last valued at, so a month in which the D$ moves move... |
 | 78 | 5 | `static void check(String label, boolean ok)` |  |
 | 85 | 3 | `static void near(String label, double actual, double expected)` | Two figures of the books that must agree to the tolerance MoneyAudit gives at their size, the figures printed on a failure. |
 | 89 | 10 | `static void near(String label, double actual, double expected, double tolerance)` |  |
@@ -114,7 +114,7 @@
 | 222 | 16 | **type** `static final class Month` | What a month's press left that the sections read afterwards. |
 | 226 | 11 | `Month(Game g, double rateBefore, List<Debt> abroad, double[] ownBefore, List<Debt> home, double[] homeBefore)` _(in DebtExchangeCheck.Month)_ |  |
 | 240 | 9 | `static Month move(Game g, double factorOfTheRate)` | Moves the D$ by this factor of its rate before the press (pinned, so the reprice leaves it where it is) and presses. |
-| 250 | 434 | `public static void main(String[] args)` |  |
-| 686 | 10 | `static void accountsAlone()` | The government account's setter alone: a figure that is no number reads nothing, a number is kept. |
-| 698 | 5 | `static String quote(Game g, String type, double usd, int years)` | Sells dollar paper through the game's own door: returns what it said. |
+| 250 | 452 | `public static void main(String[] args)` |  |
+| 704 | 10 | `static void accountsAlone()` | The government account's setter alone: a figure that is no number reads nothing, a number is kept. |
+| 716 | 5 | `static String quote(Game g, String type, double usd, int years)` | Sells dollar paper through the game's own door: returns what it said. |
 

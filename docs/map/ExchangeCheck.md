@@ -66,7 +66,7 @@
 
 **Uses:** [Exchange](Exchange.md) (132), [Equity](Equity.md) (67), [HouseholdBalance](HouseholdBalance.md) (53), [OrderBook](OrderBook.md) (41), [PayTier](PayTier.md) (23), [Bank](Bank.md) (20), [FamilyStructure](FamilyStructure.md) (15), [TreasuryFund](TreasuryFund.md) (14), [Household](Household.md) (7), [Sectors](Sectors.md) (5), [Game](Game.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [GameFiles](GameFiles.md) (2), [MoneyAudit](MoneyAudit.md) (2), [DebtManager](DebtManager.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1)
 
-**Used by (4):** [BankCheck](BankCheck.md), [MarketCheck](MarketCheck.md), [OwnerCheck](OwnerCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
+**Used by (5):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [MarketCheck](MarketCheck.md), [OwnerCheck](OwnerCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Sections
 
