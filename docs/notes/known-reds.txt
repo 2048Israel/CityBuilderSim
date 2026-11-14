@@ -3,26 +3,14 @@
 # Harness | part of the red line | queued mending batch | date | cause
 # Count lines follow covered assertions automatically. WHY (GR2): temp launchers hid the list.
 
-CentralBankCheck | ...and in at least STRICT_SHARE of them | CB2 | 2026-11-11 | RT1 reversal sample sits on STRICT_SHARE. policy paths change the reading
-CentralBankCheck | very loose costs trust, through the lean measured against holding the target | CB2 | 2026-11-11 | RT1 reversal sample sits on STRICT_SHARE. policy paths change the reading
-HealthCheck | ...and it buries more of its people over the run | HX1 | 2026-11-11 | GW1 fee twins compare path noise. the fixture does not cause partial bill coverage
-HealthCheck | ...its old first, whom a fee on senior care turns away | HX1 | 2026-11-11 | GW1 fee twins compare path noise. the fixture does not cause partial bill coverage
-HealthCheck | fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away | HX1 | 2026-11-11 | GW1 fee twins compare path noise. the fixture does not cause partial bill coverage
-KeptCheck | a bookRow was found on a money page of this city | KS2 | 2026-11-11 | RB1 sections 51/66/67 look for moving figures or paper instead of causing them
-KeptCheck | a month landing starts a business's KEPT and the Income page's waterfall counting exactly at the rungs countsUp() allows | KS2 | 2026-11-11 | RB1 sections 51/66/67 look for moving figures or paper instead of causing them
-KeptCheck | the BuybackLadder on Close it now: no month draws it again with nothing changed in it | KL1 | 2026-11-11 | GW1 bitwise face comparison redraws a picture unchanged at four decimals
-KeptCheck | the city has a piece of paper to close | KS2 | 2026-11-11 | RB1 sections 51/66/67 look for moving figures or paper instead of causing them
 KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung | KS1-UI | 2026-11-11 | Unchanged main reproduces retained bounds on the hidden RATE label. The screen repair is queued as KS1-UI
 KeptCheck | the whole kept chrome's month is within KEPT_ALL_CHROME_MS | KS1-rest | 2026-11-11 | Loaded-PC kept chrome timing remains deferred to KS1-rest and is measured nightly. KS1 repairs fixtures
 LongPlaytest | (no FAIL line) | CL6 | 2026-11-11 | CL6's industry ring at m2400 makes the watch exit without a FAIL assertion
 LongPlaytest | industry stands farther out than the homes | CL6 | 2026-11-11 | WG2 late industry ring extends beyond the homes
-MapCheck | ...and issued, the card's bond buys them all | BQ1 | 2026-11-11 | LM1 term auction sells nothing. the fixture does not cause clearing
 MapCheck | a month's FX-side map work at 5B | KS1-rest | 2026-11-11 | GT1-T FX-side map timing at 5B remains deferred to KS1-rest and is measured nightly
 MapCheck | at 10 billion a month's change takes no more than 5 ms of the wall clock | KS1-rest | 2026-11-11 | GT1-T map month timing at 10B remains deferred to KS1-rest and is measured nightly
 MapCheck | at 5 billion a month's change takes no more than 5 ms of the wall clock | KS1-rest | 2026-11-11 | GT1-T map month timing at 5B remains deferred to KS1-rest and is measured nightly
 MapCheck | at every 30th month the map draws exactly what the city has | DM3 | 2026-11-11 | WG2 edge packing leaves 27 model buildings undrawn at month 91
-MapCheck | short, the card's bond is the funding page's first: the 20-year term for the gap | BQ1 | 2026-11-11 | LM1 term auction sells nothing. the fixture does not cause clearing
-MonetaryCheck | a month's delay in the hand moves them less than the allowance | MQ1 | 2026-11-11 | GW1 shelf settles before its price index. the delay compares an inflating city
 PlanCheck | ...the avenues were laid in the played city | PX1 | 2026-11-11 | LM1 exposes CL4 comb junctions four plots apart
 PlanCheck | at every 30th month every district's plan keeps every check | PX1 | 2026-11-11 | LM1 exposes CL4 comb junctions four plots apart
 SaveSlotCheck | ...after waiting for it: its swap was refused and landed on a later try | SS1 | 2026-11-11 | LB3 held-open fixture observes the process-wide WAITED counter after its refused swap
@@ -34,6 +22,4 @@ KeptCheck | the read of the saved cities landed within a minute | KS1-Saved | 20
 KeptCheck | a materials industry's picture (Wood Products): the page equals a page built new at every month | KS1-UI | 2026-11-12 | The normal harness prefix reproduces differing Residues Text bounds at month 1868 after both pages render and settle
 FoodProcessingCheck | ...and the difference is most of what a Meat Works is worth | FPK1 | 2026-11-12 | The fixture reads the city's own meat prices, which any path change moves. 1.8x on BS1, 2.6x on main. Jerus accepts this line as noise.
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years | OX1 | 2026-11-12 | The family builder leaves children unplaced when a wave of adults is rehired. This line is already red on main and queued under OX1.
-KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more | KBF1 | 2026-11-12 | Section 44 causes a cash gap but leaves auction coverage free to change. The previews become short and correctly add 19 response nodes while retaining 74. Main 6e369844 adds none.
-KeptCheck | Household money, all of them: every tooltip a node had and still has is the same Tooltip after a month's kept redraw | KHT1 | 2026-11-12 | The fixture lets the Couple, no children, Senior professional cell fall below 0.5 households. cashCell correctly draws an empty dash and clears its tooltip. Main 6e369844 retains 94 of 94.
-MapCheck | fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others | M6-F | 2026-11-12 | GDP1's legal city geometry leaves 2 of 24 offers untouched by the 200 scattered boxes; all 200 oracle comparisons and all 24 targeted selectors pass. Main-model control covers 24/24. The fixture must cause its own coverage premise; see GDP1-notes.md.
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more | KF63 | 2026-11-13 | Main df08523f and PO1 both retain 282 nodes and create 36 at B:3713's buy-by-amount-at-fair review, 88.7%. Main's prefix through section 63 has this sole failure. Preserve the hard floor and cause stable holding/review coverage. Distinct from retired KBF1's section 44 case.

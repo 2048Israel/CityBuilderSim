@@ -122,7 +122,7 @@ stuff".
 | KBF1 | Cause stable auction coverage in KeptCheck 44's funding-page monthly reuse fixture and explicitly cause the first shortfall controls, preserving the 90% floor. | [BS1 notes](docs/queue/BS1-notes.md#kbf1) |
 | KHT1 | Cause populated cash-grid cells to persist across KeptCheck 89's all-households tooltip month, preserving the tooltip identity and zero-loss assertions. | [BS1 notes](docs/queue/BS1-notes.md#kht1) |
 | M6-F | MapCheck 14's scattered boxes do not guarantee every offer is hit and missed: cause those conditions explicitly, retaining all 200 scatter/oracle checks and the original premise | [brief](docs/queue/GDP1-notes.md#mapcheck-offer-fixture-follow-up-m6-f) |
-| PO1 | The path lines as nightly observations (Jerus, 2026-11-12, harness audit second round: "Nightly observations"): about 470 fixture lines in 29 harnesses that only hope the played city reaches their condition go through a soft/hard helper beside `Timing`; at the gate a miss prints OBSERVED and skips the laws that stand on it, never fails; the nightly reports each miss with its merge range; their known-reds entries go. After HA1 (same files) | [PO1](docs/queue/PO1.md) |
+| KF63 | Cause stable holding/review coverage in KeptCheck 63 while preserving its hard 90% monthly retention floor and kept/fresh equality. | [PO1 notes](docs/queue/PO1-notes.md#kf63) |
 
 ## Pending
 

@@ -79,48 +79,8 @@ public class PriceLevelCheck {
     /** ...and the built city's: ten years, as DenominationCheck's reformed town is run (its fixture reads the loans, the schools and the first replacements). */
     static final int BUILT_MONTHS = 120;
 
-    /**
-     * ...and the town's: ScaleCheck's founded city (its section 1), to month 33 (55 until FC1, 34 until BA1, below) - EP1's gate review found that this town parts from its twin at
-     * the factor where the three cities above did not (the second January's terms of trade, from a history that rounded a young city's exports
-     * to a fixed hundredth of a thousand: PartnerTrade.HISTORY_ROUND_MONEY), and the twin holds it to the bit-level of rounding until then. It
-     * stops there on purpose: in month 56 a cell's debt is a hair above zero (5e-18) at today's prices and exactly zero at the factor and at 0.5, and
-     * Exchange.mayBuy() reads the hair as a debt, so one cell buys a company's shares at one level and not at the other; the town then parts
-     * from month 57 at 0.0259, 0.5, 0.25, 0.1 and at 0.999999 and 1.000001 beside 1 (a millionth off 1 is enough), so it is a draw of the
-     * rounding and not of the price level, and a twin cannot hold two draws equal. To month 34 since FC1 (2026-11-02), by the
-     * nudge below (35 on the world file before LC3's; on LC3's it parts a month sooner, a tie by the same nudge): the builders'
-     * scarcity premium is on through the town's long founding queue, and from month 35 the town
-     * at today's prices parts from every other level - the factor, the factor nudged by 1e-12 and today's nudged by 1e-12
-     * all run equal - by a tie in a planner's cost (BusinessInvestment.totalCostOf(), the work times the multiple). To month 33 since BA1
-     * (2026-11-03): with each building of an order priced on the queue the ones before it leave (BuildersShort.meanPremium()) the same tie
-     * comes a month sooner, at month 34 - the factor, the factor nudged by 1e-12 and today's nudged by 1e-12 run equal for 35 months on
-     * world-1.bin, and today's alone parts.
-     */
-    static final int TOWN_MONTHS = 33;
-
-    /**
-     * ...and the played city's: past its demolition (PLAYED_DEMOLITION), its iron mine (PLAYED_IRON) and the land the advisor keeps buying ahead
-     * of the city (month 96 was the first to part), to month 103 (105 until RT1, below) - ten years until EP1 merged IC1, when the played city became another and
-     * parted from its twin at month 106 by a rounding tie, not a missed price (EP1's notes, "PriceLevelCheck 8, traced"): a household cell's
-     * count is 1e-16 at one level and 0 at the other from month 104, 70 cells move by a fraction of a household at 106 with people, homes and
-     * stores equal to the person; the factor nudged by 1e-12 either way runs equal to today's for 120 months, and today's own nudged to
-     * 1.0000001 parts from 1 at the same month with the same two values. A twin cannot hold two draws equal, so the horizon stops before it,
-     * as TOWN_MONTHS does. When a later batch parts this city earlier, nudge the factor by 1e-12 first: a parting the nudge moves is a tie
-     * (the horizon goes to the month before it), one it does not move is a price the factor missed (mend it). RT1 (2026-11-05) did both: with a
-     * farm counted in money (Agriculture.unitsOf()) one retires at the factor as at today's prices, and the city first parted at month 70, on a
-     * businesses' holding of a city bond left 4.4e-16 at today's prices and none at the factor (a sale struck pro rata an ulp short), which the
-     * nudge did not move: mended in Debt.moved(). Then at month 104 in Manufacturing's cash by 4.9e-9, where the factor nudged by 1e-12 parts
-     * from the factor by 3.5e-9 and today's nudged from today's by 2.1e-9: a tie (the bond search's stop, BS1). So to month 103.
-     * WG2, {next}, 2026-11-10: with the pulls lifting the homes' draw only (Migration.jobsPull()/homesPull()) the played city is another path - the same
-     * people, workforce, homes and stores to the person at both levels to month 103, but Manufacturing's cash parts at month 83 (3.3e-5 of 8,073 at its
-     * peak so far, 4e-9 of it; bank.deposits 2.2e-9 at 88, cash 3.8e-9 at 94, TRUCKS demand 2.3e-8 at 96, Manufacturing's cash 1.5e-7 at 103). It is a draw
-     * of rounding and not a price the factor missed: the factor nudged by 1e-12 (0.025883463843004304) parts from the factor, today's nudged by 1e-12
-     * parts from today's, and each of those against the other level parts in the same series at the same month 83 (first month over 1e-9, four pairs:
-     * 83, 83, 83, 83), and the gap is Manufacturing's cash refilled by a lump in months 52, 59, 63, 70, 76, 79 and 83 with each lump taking the last one's
-     * gap a factor of 10 to 100 larger (1e-12, 4e-10, 6e-9, 5e-9, 4e-8, 1.4e-6, 3.3e-5 of a thousand) and a month of cash below zero (66-69, 73-75, 82)
-     * putting it back to 1e-13. The Migration brake and drift of WG2 do not act in it (BRAKE_FROM_MONTH, month 240). To month 82: the worst nominal gap to
-     * there is 3.6e-10 (Manufacturing's cash, month 80) and the worst real one 3e-12, in all four pairs.
-     */
-    static final int PLAYED_MONTHS = 82;
+    /** Town and played-city maximum horizons; their nudge twins derive the comparable prefix (PO1). */
+    static final int TOWN_MONTHS = 120, PLAYED_MONTHS = 120;
 
     /** The month the played city pulls down ten houses: month 60, as when the horizon was 120 months and the demolition its half. */
     static final int PLAYED_DEMOLITION = 60;
@@ -263,19 +223,19 @@ public class PriceLevelCheck {
             theLiterals(plain, today);
             theRatios(plain, today);
             out.println("\n--- 6. the twin: the default founding at the factor and at today's prices, " + TWIN_MONTHS + " months, month by month ---");
-            theTwin(plain, today, TWIN_MONTHS);
+            observedTwin(plain, today, TWIN_MONTHS, "--twin");
             Child builtPlain = Child.run(false, true);
             Child builtToday = Child.run(true, true);
             out.println("\n--- 7. the twin again, on a built city (400 houses, schools, clinics, a bank, mines, furnaces, roads and a bus network), " + BUILT_MONTHS + " months ---");
-            theTwin(builtPlain, builtToday, BUILT_MONTHS);
+            observedTwin(builtPlain, builtToday, BUILT_MONTHS, "--twin-built");
             Child playedPlain = Child.run(false, "--twin-played");
             Child playedToday = Child.run(true, "--twin-played");
             out.println("\n--- 8. the twin on the played city (MapCheck's: houses, stores and farms, the advisor every six months, a demolition, an iron mine), " + PLAYED_MONTHS + " months ---");
-            theTwin(playedPlain, playedToday, PLAYED_MONTHS);
+            observedTwin(playedPlain, playedToday, PLAYED_MONTHS, "--twin-played");
             Child townPlain = Child.run(false, "--twin-town");
             Child townToday = Child.run(true, "--twin-town");
             out.println("\n--- 9. the twin on ScaleCheck's town (the playtest's founding, forty houses, stores and farms, twenty houses more, a depot; saved and loaded as ScaleCheck loads it), " + TOWN_MONTHS + " months ---");
-            theTwin(townPlain, townToday, TOWN_MONTHS);
+            observedTwin(townPlain, townToday, TOWN_MONTHS, "--twin-town");
             out.println("\n--- 10. the screens' cut-offs, at the factor and at today's prices: the lanes drawn, the holdings folded, the lines shown ---");
             theCutOffs(plain, today, builtPlain, builtToday, townPlain, townToday);
         }
@@ -571,6 +531,46 @@ public class PriceLevelCheck {
        6. THE TWIN
        ================================================================= */
 
+    /** Compare every law up to the first same-level nudge that changes the city's path. */
+    static void observedTwin(Child plain, Child today, int months, String flag) throws Exception {
+        assertTrue("...and the city really lived (more people at the end than the start)",
+                today.series.get("pop") != null && today.series.get("pop").v[today.series.get("pop").v.length - 1] > today.series.get("pop").v[0]);
+        Child nudgedFactor = Child.run(false, flag, true), nudgedToday = Child.run(true, flag, true);
+        assertTrue(flag + ": both nudge children completed", nudgedFactor.ok && nudgedToday.ok);
+        if (!nudgedFactor.ok || !nudgedToday.ok) return;
+        int horizon = Math.min(stableMonths(plain, nudgedFactor, months), stableMonths(today, nudgedToday, months));
+        Observation.reached(flag + ": same-level nudge preserves the full comparison path",
+                horizon == months,
+                flag + " nominal, real and count equalities after month " + horizon);
+        out.println("   " + flag + ": nudge-derived comparison horizon " + horizon + " of " + months + " months");
+        theTwin(plain.prefix(horizon), today.prefix(horizon), horizon);
+    }
+
+    /** The month before a nudge changes a live series beyond the existing comparison tolerance. */
+    static int stableMonths(Child base, Child nudged, int months) {
+        int horizon = months;
+        for (Map.Entry<String, Series> entry : base.series.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith("h.") || key.startsWith("reload.")) continue;
+            Series a = entry.getValue(), b = nudged.series.get(key);
+            assertTrue(key + ": nudge digest has the same shape", b != null && a.kind == b.kind && a.v.length == b.v.length);
+            if (b == null || a.v.length != b.v.length) continue;
+            boolean nominal = a.kind == 'N';
+            double scale = 0, tolerance = nominal ? TWIN_NOMINAL_TOLERANCE : TWIN_REAL_TOLERANCE;
+            boolean exact = List.of("pop", "workforce", "homes", "stores").contains(key);
+            for (int m = 0; m <= horizon && m < a.v.length; m++) {
+                double x = nominal ? a.v[m] / base.factor : a.v[m], y = nominal ? b.v[m] / nudged.factor : b.v[m];
+                scale = Math.max(scale, Math.max(Math.abs(x), Math.abs(y)));
+                double floor = nominal ? TWIN_MONEY_FLOOR : TWIN_QUANTITY_FLOOR;
+                boolean same = Double.doubleToLongBits(x) == Double.doubleToLongBits(y)
+                        || !exact && (Math.abs(x) < floor && Math.abs(y) < floor || Math.abs(x - y) <= tolerance * scale);
+                if (!same) { horizon = m - 1; break; }
+            }
+        }
+        assertTrue("the nudge retains the founding month", horizon >= 0);
+        return Math.max(0, horizon);
+    }
+
     static void theTwin(Child plain, Child today, int monthsRun) {
         assertTrue("the child at the factor ran with the factor (" + plain.factor + ")", plain.ok && gap(plain.factor, PriceLevel.FACTOR) <= 1e-15);
         assertTrue("the child at today's prices ran with 1", today.ok && today.factor == 1);
@@ -654,8 +654,6 @@ public class PriceLevelCheck {
             boolean same = a != null && b != null && java.util.Arrays.equals(a.v, b.v);
             assertTrue("...the " + key + " is the same to the person in every month", same);
         }
-        assertTrue("...and the city really lived (more people at the end than the start)",
-                today.series.get("pop") != null && today.series.get("pop").v[today.series.get("pop").v.length - 1] > today.series.get("pop").v[0]);
     }
 
     /** The history series recorded to six significant figures (HistorySave.roundSig) rather than to a grid: the share prices and the household-scale prices. */
@@ -809,6 +807,19 @@ public class PriceLevelCheck {
         /** What the screens' cut-offs did each month (EP2, the K lines: Counts); kept apart from the series so that theTwin never sees them. */
         final Map<String, double[]> counts = new LinkedHashMap<>();
 
+        /** A detached comparison prefix. Full-run series and cut-off counts stay on this child. */
+        Child prefix(int months) {
+            Child copy = new Child();
+            copy.factor = factor;
+            copy.ok = ok;
+            copy.consts.putAll(consts);
+            copy.ratios.putAll(ratios);
+            series.forEach((key, value) -> copy.series.put(key, key.startsWith("reload.") ? value
+                    : new Series(value.kind, java.util.Arrays.copyOf(value.v, Math.min(value.v.length, months + 1)))));
+            counts.forEach((key, value) -> copy.counts.put(key, java.util.Arrays.copyOf(value, Math.min(value.length, months + 1))));
+            return copy;
+        }
+
         /** A child JVM started as AllChecks starts a harness, with the one door open or not; one after the other, never at once. */
         static Child run(boolean todaysPrices, boolean built) throws Exception {
             return run(todaysPrices, built ? "--twin-built" : "--twin");
@@ -816,10 +827,15 @@ public class PriceLevelCheck {
 
         /** ...of the scenario the flag names: --twin, --twin-built, --twin-played. */
         static Child run(boolean todaysPrices, String flag) throws Exception {
+            return run(todaysPrices, flag, false);
+        }
+
+        static Child run(boolean todaysPrices, String flag, boolean nudge) throws Exception {
             String javaExe = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
             List<String> cmd = new ArrayList<>(AllChecks.command(javaExe, System.getProperty("java.class.path"), "PriceLevelCheck", true));
             int at = cmd.indexOf("-cp");
-            if (todaysPrices) cmd.add(at, "-D" + DOOR + "=1");
+            if (todaysPrices || nudge) cmd.add(at, "-D" + DOOR + "="
+                    + ((todaysPrices ? 1 : PriceLevel.FACTOR) * (nudge ? 1 + 1e-12 : 1)));
             for (String key : new String[] { "cbs.earth", WorldData.PROPERTY }) {
                 String v = System.getProperty(key);
                 if (v != null) cmd.add(at, "-D" + key + "=" + v);

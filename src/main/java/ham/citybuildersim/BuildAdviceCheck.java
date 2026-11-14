@@ -773,17 +773,18 @@ public class BuildAdviceCheck {
         }
         out.printf("      the clinic's scarcest post: %s at %.3f filled; a job filled whole: %s%n",
                 scarce, scarce == null ? 1 : fill[scarce.ordinal()], full);
-        assertTrue("fixture: the city fills one of the clinic's job types short", scarce != null && fill[scarce.ordinal()] < .999);
-        assertTrue("fixture: and one job type whole", full != null);
+        if (!Observation.reached("fixture: the city fills one of the clinic's job types short",
+                scarce != null && fill[scarce.ordinal()] < .999,
+                "section 5 two-clinic staffing weighting")) return;
+        if (!Observation.reached("fixture: and one job type whole",
+                full != null,
+                "section 5 two-clinic staffing weighting")) return;
         if (scarce == null || full == null || fill[scarce.ordinal()] >= .999) return;
         int k = clinic.getJobs(scarce);
-        /*
-         * WG2, {next}, 2026-11-10: the one job type this city fills whole is UNIV_HIGHTECH_ENG, of which a clinic has no posts (the scarcest
-         * post is UNIV_DOCTOR, at .059, k 2), so the clone that gives up k of them for the scarce post's 2k could not, and the two came out k
-         * posts apart (it is the same fixture the R0 note in shortCity() records, come back). Both clones are built on a base of at least k
-         * of the whole job's posts, the clinic's own where it has that many: the fewer takes k more of them for the k it gives up, the
-         * more gives up k for the k it takes, and the two stand alike in all.
-         */
+        // WG2, 2026-11-10: the one job type this city fills whole is UNIV_HIGHTECH_ENG, of which a clinic has
+        // no posts (the scarcest post is UNIV_DOCTOR, at .059, k 2), so the clone that gives up k of them for
+        // the scarce post's 2k could not, and the two came out k posts apart (it is the same fixture the R0
+        // note in shortCity() records, come back).
         int wholePosts = Math.max(clinic.getJobs(full), k);
         BuildingsTemplate fewer = clone(clinic, "Clinic with fewer", scarce, 0, full, wholePosts + k);
         BuildingsTemplate more = clone(clinic, "Clinic with more", scarce, 2 * k, full, wholePosts - k);
@@ -1118,13 +1119,7 @@ public class BuildAdviceCheck {
 
         Game f = founded(root, "founded", 9);
         double come9 = CityNeeds.wouldCome(f, uni);
-        /*
-         * ...ITS FIRST MONTH FROM THE NINTH THAT A CLASS WOULD COME TO (LD1, 2026-10-31). The ninth month drew 31 on
-         * 0.8.89 and 22 on LD1's path, whose founding prices the posts the staffing gate refused into its wages and so
-         * moves who would study. The question is the rule's - a founding a class would come to, and few posts would
-         * hire, is shown no university - so the fixture plays on to the month that has its class, inside the
-         * founding's third year.
-         */
+        // ...ITS FIRST MONTH FROM THE NINTH THAT A CLASS WOULD COME TO (LD1, 2026-10-31).
         while (come9 < CityNeeds.SEATS_FLOOR && f.getMonth() < 36) {
             quietly(() -> f.simulateMonths(1));
             come9 = CityNeeds.wouldCome(f, uni);
@@ -1252,9 +1247,9 @@ public class BuildAdviceCheck {
                 raised |= s.count() > f.count();
             }
         }
-        assertTrue("fixture: every card grows with the trend (k over 1)", grows);
-        assertTrue("fixture: a card of the same building in both", compared);
-        assertTrue("fixture: and the projection raises one count", raised);
+        Observation.reached("fixture: every card grows with the trend (k over 1)", grows);
+        Observation.reached("fixture: a card of the same building in both", compared);
+        Observation.reached("fixture: and the projection raises one count", raised);
     }
 
     /* ============================ 11. THE RUN ============================ */
@@ -1335,7 +1330,9 @@ public class BuildAdviceCheck {
             double b = bm.getStaffedCareCapacity(c, fill), n = c.populationServed(g.getCohorts());
             if (care == null && b > 0 && b < n) { care = c; beds = b; people = n; }
         }
-        assertTrue("fixture: a kind of care whose staffed beds are short of its people", care != null);
+        if (!Observation.reached("fixture: a kind of care whose staffed beds are short of its people",
+                care != null,
+                "section 12 priced-out care advice")) return;
         if (care == null) return;
         BuildAdvice.Measure m = BuildAdvice.Measure.care(care);
         double[] offered = new double[CareType.values().length], half = new double[CareType.values().length];

@@ -837,8 +837,9 @@ public class ForeignCheck {
                 + " (current account $%,.0fk)%n",
                 lifeImpWeak, lifeExpWeak, lifeExpWeak - lifeImpWeak, lifeCaWeak);
 
-        assertTrue("the fixture trades enough for the question to mean anything",
-                lifeImpPar > 500);
+        boolean programmeTraded = Observation.reached("the fixture trades enough for the question to mean anything",
+                lifeImpPar > 500,
+                "programme-dollar comparison");
 
         /*
          * ON THE TRADE BALANCE, AND NOT ON THE IMPORT BILL ALONE.
@@ -942,10 +943,10 @@ public class ForeignCheck {
         double usdImpPar = lifeImpPar / 1.00 + salvagePar, usdImpWeak = lifeImpWeak / 1.40 + salvageWeak;
         out.printf("   food, in dollars: out $%,.0fk in $%,.0fk at parity; out $%,.0fk in $%,.0fk weaker%n",
                 foodPar[0], foodPar[1], foodWeak[0] / 1.40, foodWeak[1] / 1.40);
-        assertTrue("the fixture sells food abroad at all", foodPar[0] > 0);
+        Observation.reached("the fixture sells food abroad at all", foodPar[0] > 0);
         out.printf("   the programme, in dollars: $%,.0fk at parity, $%,.0fk weaker (x%.4f); of it built from scrapped plant $%,.0fk and $%,.0fk%n",
                 usdImpPar, usdImpWeak, usdImpPar > 0 ? usdImpWeak / usdImpPar : 0, salvagePar, salvageWeak);
-        close("the same programme costs the same in the world's money",
+        if (programmeTraded) close("the same programme costs the same in the world's money",
                 usdImpWeak / usdImpPar, 1.0, .05);
 
         /*
@@ -1621,15 +1622,8 @@ public class ForeignCheck {
          * premise to 1.0533. Held, the weaker city imports the programme and nothing that grows with its own size.
          */
         g.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
-        /*
-         * ...AND HEAVY INDUSTRY (LD1, 2026-10-31), the same hinge a fourth time, found where the premise read 0.9438 against a band
-         * of .05. A refused plant now prices its posts into the band's wage (WantedPosts), as far as the building can pay, and what
-         * a building can pay in local money is the currency's: at about month 72 the parity city's Blast Furnace asked 1,099 posts
-         * (the unskilled wage 1.52 for a month), passed the staffing gate and was built, and its materials landed as $16,332k of
-         * Heavy Industry imports; the weaker city's asked 111 posts, for a Mini Blast Furnace, and built nothing (none). The
-         * furnace is no part of the programme, it grows with a city's own size, and which furnace a city can staff is the rate's
-         * doing twice over. Held, both cities import the programme and the shops' and mills' lesser share, and the premise reads 0.9777.
-         */
+        // ...AND HEAVY INDUSTRY (LD1, 2026-10-31), the same hinge a fourth time, found where the premise read
+        // 0.9438 against a band of .05.
         g.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         /*
          * ...AND CEMENT & CONCRETE (IC1, 2026-11-01), the same hinge a fifth time, found where the premise read 1.1266 against a band

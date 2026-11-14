@@ -197,25 +197,23 @@ public class BondCheck {
            re-caused on (held there, Manufacturing has an order on site and the second branch's fixture fails). */
         companies(city(root, "companies", 24, true));
         CorporateBond bond = issuedInTheMonth(g);
-        if (bond == null) {
-            out.println("\nno bond was issued in the fixture's month: the rest cannot run");
-            out.println("\n" + (fails + 1) + " FAILED");
-            System.exit(1);
-        }
-        theBankHoldsSome(g);
-        theBookInPlay(g);
-        participants(g, bond);
+        boolean paperIssued = Observation.reached("fixture: the played city issued a corporate bond",
+                bond != null,
+                "played corporate-bond holders, coupons, seniority, waterfall, concentration, save and maturity");
+        if (paperIssued) theBankHoldsSome(g);
+        if (paperIssued) theBookInPlay(g);
+        if (paperIssued) participants(g, bond);
         seniorityOnTheLender();
-        seniorityInPlay(g);
-        cantPayInPlay(g);
+        if (paperIssued) seniorityInPlay(g);
+        if (paperIssued) cantPayInPlay(g);
         buyOnlyWhatItCanPayFor(root);
-        theBankHoldsSome(g);        // ...again: by this section the sections between have played on and the bank holds none of them (measured)
-        coupons(g);
-        concentration(g);
+        if (paperIssued) theBankHoldsSome(g);        // ...again: by this section the sections between have played on and the bank holds none of them (measured)
+        if (paperIssued) coupons(g);
+        if (paperIssued) concentration(g);
         eachTypeTrades();
         priceTick();
-        saveAndLoad(g, root);
-        maturity(g);
+        if (paperIssued) saveAndLoad(g, root);
+        if (paperIssued) maturity(g);
 
         assertTrue("every month this harness played closed the audit (" + closedMonths + ")", brokenMonths == 0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -560,9 +558,10 @@ public class BondCheck {
         BondMarket bm = g.getBondMarket();
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
         String other = Sectors.RETAIL;
-        assertTrue("fixture: " + ISSUER + " has idle cash and owes nothing; " + other + " owes the bank",
+        if (!Observation.reached("fixture: " + ISSUER + " has idle cash and owes nothing; " + other + " owes the bank",
                 g.getEconomyManager().getSectorCash(ISSUER) > 0 && credit.getPrincipal(ISSUER) == 0
-                        && credit.getPrincipal(other) > 0);
+                    && credit.getPrincipal(other) > 0,
+                "section 7c company bids, own-issue refusal and indebted-company refusal")) return;
         BondMarket.Demand theirs = bm.new Demand(other, 1_000, 1_000, 1_000, 0);
         BondMarket.Demand own = bm.new Demand(ISSUER, 1_000, 1_000, 1_000, 0);
         int at = -1;
@@ -756,16 +755,8 @@ public class BondCheck {
             g.getBusinessInvestment().holdSector(w0);
             for (int wait = 0; wait < 60 && g.getBuildingManager().getUnderConstructionBySector(w0) > 0; wait++) play(g);
         }
-        // The company holding the most of the other sectors' bonds (Retail
-        // if none does), handed half the world's holding between months - a
-        // claim, no money moved.
-        //
-        // HANDED IT WHETHER OR NOT IT HELD ANY, SINCE 0.7.43 (the fixture
-        // re-caused): the sale this section asserts needs a bid resting at
-        // the settle that is not the bank's - a rationing bank buys nothing
-        // (BondMarket.bankBuys()) - and the world under its target is that
-        // bidder. By 0.7.43 this city's world held its target on every bond,
-        // so only the bank bid, and the shops sold no bond at all.
+        // The company holding the most of the other sectors' bonds (Retail if none does), handed half the
+        // world's holding between months - a claim, no money moved.
         String y = heaviestHolder(credit, bm);
         {
             if (y == null) y = Sectors.RETAIL;
@@ -802,6 +793,9 @@ public class BondCheck {
         // ...and a sector over the shortfall desk's ceiling and under the
         // line: 1.2 times what it owns, the same way.
         final String W = widestUnderTheCeiling(credit, Y);
+        if (!Observation.reached("fixture: the played city has a sector over the shortfall ceiling",
+                W != null,
+                "section 5c over-ceiling and rationing waterfall")) return;
         g.getBusinessInvestment().holdSector(W);
         credit.issueLoan(W, Math.max(0, 1.2 * credit.getAssets(W) - credit.getPrincipal(W)), g.getMonth());
         // A month for the bank to book the two claims on its book and its
@@ -835,6 +829,9 @@ public class BondCheck {
             if (!(g.getSectors().byKey(s).getNetIncome() < 0)) continue;
             if (z == null || credit.getPrincipal(s) / credit.getAssets(s) < credit.getPrincipal(z) / credit.getAssets(z)) z = s;
         }
+        if (!Observation.reached("fixture: the played city has a healthy loss-making shortfall borrower",
+                z != null,
+                "section 5c working-capital, bond sale and interim-loan waterfall")) return;
         final String Z = z;
         double zShort = .01 * credit.getAssets(Z);
         em.setSectorCash(Z, -zShort);
@@ -948,11 +945,13 @@ public class BondCheck {
         double[] under = stockBought(shops);
         out.printf("   under the ceiling: ordered $%,.1fk of stock, could pay for $%,.1fk, bought $%,.1fk%n",
                 shops.getOrderValue(), shops.getPurchaseBudget(), under[0]);
-        assertTrue("fixture: it ordered stock, and could pay for all of it", shops.getOrderValue() > 0
-                && shops.getPurchaseBudget() >= shops.getOrderValue());
-        assertTrue("a sector under its ceiling buys as before: every order placed whole",
+        boolean wholeOrder = Observation.reached("fixture: it ordered stock, and could pay for all of it",
+                shops.getOrderValue() > 0
+                    && shops.getPurchaseBudget() >= shops.getOrderValue(),
+                "whole-order purchase law");
+        if (wholeOrder) assertTrue("a sector under its ceiling buys as before: every order placed whole",
                 !shops.wasPurchaseLimited() && shops.getPurchasesForgone() == 0);
-        close("...and filled whole", under[1], under[2], 1e-9);
+        if (wholeOrder) close("...and filled whole", under[1], under[2], 1e-9);
 
         // OVER ITS CEILING AND SHORT: owing 1.2 times what it owns - a claim
         // taken on between months, the quarter the bank reads with it - and
@@ -990,10 +989,12 @@ public class BondCheck {
         double budget = shops.getPurchaseBudget(), ordered = shops.getOrderValue();
         out.printf("   over the ceiling, half a month's running costs in the till: ordered $%,.1fk of stock, could pay for $%,.1fk, bought $%,.1fk,"
                 + " did not buy $%,.1fk%n", ordered, budget, over[0], shops.getPurchasesForgone());
-        assertTrue("fixture: it could pay for some of its order and not all of it", budget > 0 && budget < ordered);
-        assertTrue("a sector over its ceiling and short buys only what its cash and the credit it can get cover",
+        boolean partialOrder = Observation.reached("fixture: it could pay for some of its order and not all of it",
+                budget > 0 && budget < ordered,
+                "limited purchase and forgone order laws");
+        if (partialOrder) assertTrue("a sector over its ceiling and short buys only what its cash and the credit it can get cover",
                 over[0] > 0 && over[0] <= budget * (1 + 1e-9));
-        assertTrue("...and does not order the rest", shops.wasPurchaseLimited() && shops.getPurchasesForgone() > 0);
+        if (partialOrder) assertTrue("...and does not order the rest", shops.wasPurchaseLimited() && shops.getPurchasesForgone() > 0);
         /*
          * ...AND A MONTH'S RUNNING COSTS IN THE TILL AGAIN FOR THE SETTLE
          * (0.7.55), between months, as before the month it bought short: the
@@ -1209,8 +1210,10 @@ public class BondCheck {
         credit.issueLoan(ISSUER, claim, g.getMonth());
         MoneyAudit.Result r = play(g);
         double loanLoss = credit.getWrittenOffThisMonth(ISSUER), bondLoss = credit.getBondWrittenOffThisMonth(ISSUER);
-        assertTrue("fixture: " + ISSUER + "'s firms defaulted a slice, its bonds among it", bondLoss > 0 && loanLoss > 0
-                && !credit.wasRestructuredThisMonth(ISSUER));
+        if (!Observation.reached("fixture: " + ISSUER + "'s firms defaulted a slice, its bonds among it",
+                bondLoss > 0 && loanLoss > 0
+                    && !credit.wasRestructuredThisMonth(ISSUER),
+                "section 5b corporate-bond default loss by holder and cross-border waterfall")) return;
         double loansDefaulted = credit.getLoansDefaultedThisMonth(ISSUER), bondsDefaulted = credit.getBondsDefaultedThisMonth(ISSUER);
         close("the loans lost (1 - LOAN_RECOVERY) of what of them defaulted", loanLoss,
                 loansDefaulted * (1 - BusinessDebtManager.LOAN_RECOVERY), 1e-9);

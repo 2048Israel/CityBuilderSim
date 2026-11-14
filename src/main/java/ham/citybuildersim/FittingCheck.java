@@ -626,42 +626,29 @@ public class FittingCheck {
                         && fitting.reason.contains(String.format("%.2f%% a month", rich.earningsOnCost() * 100)), fitting.reason);
 
         // Ranked with the building, both ways, from the getters the choice reads.
-        /*
-         * WG2, {next}, 2026-11-10: BREAD'S PRICE IS MOVED HERE TOO, TO WHERE A BAKERY EARNS HALF WHAT THE DRIVE DOES. WG2's pulls (Migration.jobsPull(),
-         * homesPull()) put this village on another path, and the investors' estimate of a Bakery over the cost of one stood at 0.00154 a month on main
-         * (the GW1 note below) and stands at -0.0020577 now, under nothing, while the drive at three times the break-even earns 0.0186495: the fixture
-         * below needs a Bakery that earns something, and less than the fitting. Bread's price is moved (the way GW1's is below, world prices) to where
-         * the Bakery's score is half the drive's at three times; the move below then goes on from that price to its own target, which is dearer.
-         */
+        // WG2, 2026-11-10: BREAD'S PRICE IS MOVED HERE TOO, TO WHERE A BAKERY EARNS HALF WHAT THE DRIVE DOES.
         boolean breadFirst = breadForBakeryScore(g, plans, key, t, rich.earningsOnCost() / 2);
-        check("fixture: bread's price moves until a Bakery earns on its cost half of what the drive earns at three times the break-even",
+        boolean fittingOutranksBuilding = Observation.reached("fixture: bread's price moves until a Bakery earns on its cost half of what the drive earns at three times the break-even",
                 breadFirst && Math.abs(plans.estimatedMonthlyProfit(key, t) / plans.getCostOf(t, 1) - rich.earningsOnCost() / 2) <= 1e-6 * rich.earningsOnCost(),
-                plans.estimatedMonthlyProfit(key, t) / plans.getCostOf(t, 1) + " vs " + rich.earningsOnCost());
+                "fitting outranks a new Bakery");
         double buildScore = plans.estimatedMonthlyProfit(key, t) / plans.getCostOf(t, 1);
-        check("fixture: at three times the break-even the fitting earns more on its cost than a Bakery would (the investors' estimate over its cost of one)",
-                buildScore > 0 && rich.earningsOnCost() > buildScore, rich.earningsOnCost() + " vs " + buildScore);
+        boolean positiveBuildScore = Observation.reached("fixture: at three times the break-even the fitting earns more on its cost than a Bakery would (the investors' estimate over its cost of one)",
+                buildScore > 0 && rich.earningsOnCost() > buildScore,
+                "fitting outranks a new Bakery");
         BusinessInvestment.Decision wins = EquipmentFit.choose(g, industry, builds);
-        check("the plan builds a Bakery and the fitting earns more on its cost: the month's decision is the fitting, and not the plan's", wins != builds && wins.piece == drive && wins.template == t);
+        if (fittingOutranksBuilding && positiveBuildScore) check("the plan builds a Bakery and the fitting earns more on its cost: the month's decision is the fitting, and not the plan's", wins != builds && wins.piece == drive && wins.template == t);
         check("fixture: the price of coal moves to one and a half times the break-even", EquipmentCheck.priceCoalAt(g, even * 1.5));
         EquipmentFit.Verdict middling = EquipmentFit.verdict(g, bakery, drive);
-        /*
-         * ...WITH BREAD AT THE PRICE THAT PUTS A BAKERY BETWEEN THE TWO (GW1, 2026-11-10). A drive that pays earns on its cost at least the annuity's
-         * and the hurdle's share of it (0.0058 a month here), and the claim below needs a Bakery that earns more than that. The staffing gate counts the
-         * workers a building's own posts would draw (Sector.GATE_DRAW_MONTHS), so this village's businesses build earlier and its wages stand higher
-         * at the order, and a Bakery earns 0.00154 a month on its cost (the investors' estimate over the cost of one) - under the drive at any price
-         * at which it pays (0.00904 at one and a half times the break-even, 0.01881 at three times): the Bakery could not earn more than a fitting
-         * that pays. Bread's price is moved (world prices, the way the coal's is) to where a Bakery earns the mean of those two, so the drive at
-         * three times earns more than a Bakery, as the fixture above read, and at one and a half times earns less, as the claim below needs.
-         */
+        // ...WITH BREAD AT THE PRICE THAT PUTS A BAKERY BETWEEN THE TWO (GW1, 2026-11-10).
         double wanted = (middling.earningsOnCost() + rich.earningsOnCost()) / 2;
         boolean breadMoved = breadForBakeryScore(g, plans, key, t, wanted);
         double buildScore2 = plans.estimatedMonthlyProfit(key, t) / plans.getCostOf(t, 1);
-        check("fixture: bread's price moves until a Bakery earns on its cost the mean of what the drive earns at one and a half times and at three times the break-even",
+        boolean buildingOutranksFitting = Observation.reached("fixture: bread's price moves until a Bakery earns on its cost the mean of what the drive earns at one and a half times and at three times the break-even",
                 breadMoved && Math.abs(buildScore2 - wanted) <= 1e-6 * wanted && middling.earningsOnCost() < buildScore2 && buildScore2 < rich.earningsOnCost(),
-                buildScore2 + " vs " + middling.earningsOnCost() + " / " + rich.earningsOnCost());
-        check("...where the drive still pays but earns less on its cost than a Bakery would", middling.kind() == EquipmentFit.Kind.PAYS && middling.earningsOnCost() < buildScore2,
+                "new Bakery outranks the fitting");
+        if (buildingOutranksFitting) check("...where the drive still pays but earns less on its cost than a Bakery would", middling.kind() == EquipmentFit.Kind.PAYS && middling.earningsOnCost() < buildScore2,
                 middling.earningsOnCost() + " vs " + buildScore2);
-        check("the plan builds a Bakery and the building earns more on its cost: the plan's own decision comes back, the very object", EquipmentFit.choose(g, industry, builds) == builds);
+        if (buildingOutranksFitting) check("the plan builds a Bakery and the building earns more on its cost: the plan's own decision comes back, the very object", EquipmentFit.choose(g, industry, builds) == builds);
         check("...but the plan that builds nothing still gets the fitting that pays, however little", EquipmentFit.choose(g, industry, idle).piece == drive);
         SpreadPlanner.Candidate b1 = new SpreadPlanner.Candidate(t, 2, 100, null, null, java.util.Map.of(), java.util.List.of());
         SpreadPlanner.Candidate b2 = new SpreadPlanner.Candidate(t, 4, 200, null, null, java.util.Map.of(), java.util.List.of());

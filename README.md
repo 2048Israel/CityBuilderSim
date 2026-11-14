@@ -121,6 +121,11 @@ java -cp <classes>:<javafx jars>:<gson.jar> ham.citybuildersim.AllChecks
   `--nightly` runs the 15 heavy harnesses listed once in `AllChecks.NIGHTLY`.
   `tools/pick.sh --nightly` names only direct picks, even beside an `ALL` fallback.
   The nightly runs the tier on main and reports merges since its last green run.
+- Played-path premises use `Observation.reached`. A miss prints `OBSERVED`
+  and names the dependent laws skipped. Reached laws retain their verdicts.
+  `AllChecks --observations` selects these harnesses, combined with the tier
+  by `--nightly --observations`. Nightly records each line's last hold and
+  reports every miss with the intervening merges. A miss is informational.
 - The exit status is the number of harnesses that failed, so a build script can
   read it.
 - `BuildMenuCheck` and `KeptCheck` need JavaFX on the classpath and are skipped

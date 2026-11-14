@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### PO1 — The path lines as nightly observations — 2026-11-13, ready, no tag (process), see docs/queue/PO1-notes.md
+Played-path premises in 29 harnesses report OBSERVED and skip their dependent
+laws. Reached laws retain their correctness verdicts, and shared helpers keep
+unlisted callers hard. Nightly records each line's last hold and merge range.
+Fifteen superseded repository known-red entries are retired. Review repairs
+cover legacy log bytes, running-harness attribution, full price data, independent
+maturity experiments, clock ownership and visible observation totals.
+The full pick and fresh no-tag gate are green with known reds. Main's hard
+section 63 fund-retention miss is traced and queued as KF63.
+
 ### EI1 — The ensemble's outcome criteria as information — 2026-11-13, ready, no tag (process), see docs/queue/EI1-notes.md
 
 The ensemble gives every criterion a hard or info class. M1 (money audit) and F1 (findings) alone determine
