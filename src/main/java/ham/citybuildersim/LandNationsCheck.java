@@ -75,7 +75,7 @@ import java.util.stream.Stream;
  *      price, to the bit. Retained splits read no seller plots in the month. Changed ground and cancelled requests are rejected.
  *
  * Every premise is asserted before what rests on it. Without the world file (-Dcbs.world) nothing here runs; without the Earth's data (-Dcbs.earth)
- * sections 1 to 4 run and 5 to 12 say so and are skipped. The one timing it asserts is section 12's making of a quoter (Timing.within; TimingCheck owns the mechanism).
+ * sections 1 to 4 run and 5 to 13 say so and are skipped. Sections 12 and 13 hold frame budgets through Timing.within (TimingCheck owns the mechanism).
  *
  * @author Jerus
  */
@@ -147,6 +147,16 @@ public class LandNationsCheck {
             });
         }
 
+        /** Copy a played fixture through slot 10 in two scratch folders; neither folder is a player's save folder. */
+        City(String label, City played) throws IOException {
+            files = GameFiles.scratch(label);
+            quietly(() -> played.g.saveGame(10));
+            Files.createDirectories(files.saveFile(10).getParent());
+            Files.copy(played.files.saveFile(10), files.saveFile(10), StandardCopyOption.REPLACE_EXISTING);
+            g = new Game(files);
+            quietly(() -> g.loadGame(10));
+        }
+
         LandSellers sellers() { return g.getLandSellers(); }
 
         LandMarket office() { return g.getLandManager().getMarket(); }
@@ -203,7 +213,7 @@ public class LandNationsCheck {
             randomMovesIt(file, hist, randA, randB);
             EarthSite.Data earth = EarthSite.gameData();
             if (!earth.here()) {
-                out.println("\nthe game's Earth is not here (" + earth.words() + "): sections 5 to 12 were not run");
+                out.println("\nthe game's Earth is not here (" + earth.words() + "): sections 5 to 13 were not run");
             } else {
                 out.println("\n--- the fixtures: Windsor, Halifax and the Strait on the real Earth, and a generated world ---");
                 City windsor = new City("land-nations-windsor", onEarth(WINDSOR_LAT, WINDSOR_LON));
@@ -1103,6 +1113,8 @@ public class LandNationsCheck {
         if (a == null || b == null) return a == b;
         boolean same = bits(a.getPriceUsd(), b.getPriceUsd());
         for (int k = 0; k < CityLand.AREAS; k++) same &= bits(a.getKm2(k), b.getKm2(k));
+        for (int k = 0; k < CityLand.RELIEF_AREAS; k++) same &= bits(a.getReliefKm2(k), b.getReliefKm2(k));
+        for (Resource r : Resource.values()) same &= a.getSites(r) == b.getSites(r) && bits(a.getAmount(r), b.getAmount(r));
         List<LandParcel.Sale> sa = a.getSellers(), sb = b.getSellers();
         same &= sa.size() == sb.size();
         for (int i = 0; i < Math.min(sa.size(), sb.size()); i++) {
@@ -1258,7 +1270,7 @@ public class LandNationsCheck {
        13. PICKED GROUND MEASURED AWAY, PRICED IN THE CURRENT MONTH
        ===================================================================== */
 
-    /** Separated rectangles so the 50-pick case cannot collapse into one rectangle. */
+    /** Individual rectangles supplied directly so the 50-pick case cannot collapse into one rectangle. */
     static List<long[]> pickedRects(City c, double lat, double lon, int level, int count) {
         long[] base = blockAround(c.g.getWorld(), lat, lon, level);
         long side = 1L << level;
@@ -1282,8 +1294,17 @@ public class LandNationsCheck {
         out.printf("%-118s %s (%.3f ms, QUOTER_MS %.0f)%n", label, Timing.verdict(ok, label), ms, LandMarket.QUOTER_MS);
     }
 
+    static boolean sameDraft(LandParcel a, LandParcel b) {
+        return sameQuote(a, b, new int[1]) && a != null && b != null
+                && bits(a.getUnlinkedDryKm2(), b.getUnlinkedDryKm2())
+                && bits(a.getUnlinkedBuildableKm2(), b.getUnlinkedBuildableKm2())
+                && a.getUnlinkedLargest() == b.getUnlinkedLargest();
+    }
+
     static void thePicks(City windsor, City strait) throws Exception {
         out.println("\n--- 13. picked ground: worker measurement, current-month prices, and no seller walk in the month ---");
+        windsor = new City("wn5c-windsor-copy", windsor);
+        strait = new City("wn5c-strait-copy", strait);
         ExecutorService worker = Executors.newSingleThreadExecutor();
         try {
             for (City c : List.of(windsor, strait)) {
@@ -1297,15 +1318,22 @@ public class LandNationsCheck {
                     long start = System.nanoTime();
                     LandMarket.DraftRequest request = market.requestDrafts(List.of(r));
                     double ownerMs = (System.nanoTime() - start) / 1e6;
+                    long liveLinkage = c.g.getLandManager().getLandmasses().plotsRead();
                     start = System.nanoTime();
                     worker.submit(request).get();
                     double workerMs = (System.nanoTime() - start) / 1e6;
                     check(where + " level " + level + ": worker leaves the live draft shelf empty", market.getDrafts().isEmpty());
-                    check(where + " level " + level + ": accepts the copied measurement", market.acceptDrafts(request));
+                    check(where + " level " + level + ": worker leaves the live landmass cache untouched",
+                            liveLinkage == c.g.getLandManager().getLandmasses().plotsRead());
+                    start = System.nanoTime();
+                    boolean accepted = market.acceptDrafts(request);
+                    double acceptMs = (System.nanoTime() - start) / 1e6;
+                    check(where + " level " + level + ": accepts the copied measurement", accepted);
                     check(where + " level " + level + ": price and sellers match a synchronous quote to the bit",
-                            sameQuote(quoteOf(market, r), market.getDrafts().get(0), new int[1]));
-                    out.printf("   %s click level %d: owner %.3f ms, worker %.3f ms%n", where, level, ownerMs, workerMs);
+                            sameDraft(quoteOf(market, r), market.getDrafts().get(0)));
+                    out.printf("   %s click level %d: owner %.3f ms, worker %.3f ms, acceptance %.3f ms%n", where, level, ownerMs, workerMs, acceptMs);
                     frameTime(where + " level " + level + ": making the picked-ground request fits a frame", ownerMs);
+                    frameTime(where + " level " + level + ": accepting the picked-ground price fits a frame", acceptMs);
                 }
                 for (int count : new int[] { 1, 10, 50 }) {
                     List<long[]> rects = pickedRects(c, lat, lon, 8, count);
@@ -1315,22 +1343,28 @@ public class LandNationsCheck {
                     worker.submit(request).get();
                     check(where + ": accepts " + count + " picks after a month passed", market.acceptDrafts(request));
                     List<LandParcel> before = market.getDrafts();
-                    long plots = c.sellers().plotsRead(), start = System.nanoTime();
+                    long plots = c.sellers().plotsRead(), linkagePlots = c.g.getLandManager().getLandmasses().plotsRead(), start = System.nanoTime();
                     reprice(c, newMonth + 1);
                     double ms = (System.nanoTime() - start) / 1e6;
                     long walked = c.sellers().plotsRead() - plots;
+                    long linkedWalk = c.g.getLandManager().getLandmasses().plotsRead() - linkagePlots;
                     List<LandParcel> now = market.getDrafts();
                     boolean same = now.size() == count;
                     for (int n = 0; n < now.size(); n++) {
                         LandParcel p = now.get(n);
                         long[] r = { p.getX0(), p.getY0(), p.getX1(), p.getY1() };
-                        same &= sameQuote(p, quoteOf(market, r), new int[1]) && p.getId() == before.get(n).getId()
+                        same &= sameDraft(p, quoteOf(market, r)) && p.getId() == before.get(n).getId()
                                 && p.getListedMonth() == newMonth + 1;
                     }
                     report(where + ": " + count + " picks use THIS month's price, ids kept, with no seller plots walked",
-                            same && walked == 0, String.format("%.3f ms, %d plots", ms, walked));
+                            same && walked == 0 && linkedWalk == 0, String.format("%.3f ms, %d seller plots, %d linkage plots", ms, walked, linkedWalk));
                     frameTime(where + ": monthly repricing of " + count + " picks fits a frame", ms);
                 }
+                c.months(1);
+                boolean current = !market.getDrafts().isEmpty();
+                for (LandParcel p : market.getDrafts()) current &= p.getListedMonth() == c.g.getMonth()
+                        && sameDraft(p, market.quote(p.getX0(), p.getY0(), p.getX1(), p.getY1()));
+                check(where + ": a real Game.nextMonth/SimulationEngine month leaves drafts at that month's exact prices", current);
                 LandMarket.DraftRequest cancelled = market.requestDrafts(pickedRects(c, lat, lon, 8, 1));
                 cancelled.cancel();
                 worker.submit(cancelled).get();
@@ -1344,6 +1378,17 @@ public class LandNationsCheck {
                 boolean bought = quietlyGet(() -> c.g.buyLandParcel(offer.getId()));
                 check(where + ": a purchase while pricing rejects the old ground", bought && !market.acceptDrafts(changed));
                 market.draft(List.of());
+                picksLifecycle(c, worker, where);
+                LandMarket.DraftRequest relinked = market.requestDrafts(pickedRects(c, lat, lon, 8, 1));
+                worker.submit(relinked).get();
+                Landmasses masses = c.g.getLandManager().getLandmasses();
+                int[] linked = masses.linkedIds();
+                int extra = Arrays.stream(linked).max().orElse(0) + 1;
+                check(where + ": premise: the fixture has an unlinked landmass id", !masses.linked(extra));
+                masses.setJoins(id -> new int[] { extra });
+                masses.refresh();
+                check(where + ": a changed linked set rejects an old worker split", !market.acceptDrafts(relinked));
+                market.draft(List.of());
             }
         } finally { worker.shutdownNow(); }
 
@@ -1351,5 +1396,41 @@ public class LandNationsCheck {
         Path game = Path.of("src/main/java/ham/citybuildersim/Game.java");
         if (Files.isRegularFile(game)) check("the month still runs through SimulationEngine, with no asynchronous month-end price delivery",
                 Files.readString(game, StandardCharsets.UTF_8).contains("simulationEngine.simulateMonth(this);"));
+    }
+
+    /** Exercise the screen's Picks path with a held worker queue and an owner-only completion queue. */
+    static void picksLifecycle(City c, ExecutorService worker, String where) throws Exception {
+        List<Runnable> work = new ArrayList<>(), returned = new ArrayList<>();
+        int[] changes = { 0 };
+        LandMap.Picks picks = new LandMap.Picks(work::add, returned::add, () -> changes[0]++);
+        int level = c.office().getLevel();
+        long picked = 0;
+        outer: for (LandParcel offer : c.offers()) {
+            for (long y = offer.getY0() >> level; y <= (offer.getY1() - 1) >> level; y++) {
+                for (long x = offer.getX0() >> level; x <= (offer.getX1() - 1) >> level; x++) {
+                    long key = LandMap.blockKey(x, y);
+                    if (picks.onlyBlock(c.g, key) && picks.pricing()) { picked = key; break outer; }
+                }
+            }
+        }
+        check(where + ": premise: a clicked block needs a worker draft rather than becoming a whole listed offer", picks.pricing());
+        if (!picks.pricing()) return;
+        check(where + ": while pricing the block stays outlined and no draft is purchasable",
+                picks.blocks().contains(picked) && picks.draftIds().isEmpty() && c.office().getDrafts().isEmpty());
+        for (Runnable job : work) worker.submit(job).get();
+        work.clear();
+        check(where + ": completing work does not publish before the owner dispatch", picks.pricing() && c.office().getDrafts().isEmpty());
+        for (Runnable completion : returned) completion.run();
+        returned.clear();
+        check(where + ": the owner installs drafts and redraws once", !picks.pricing() && !picks.live(c.g).isEmpty() && changes[0] == 1);
+
+        picks.toggleBlock(c.g, picked); // drop the original, then queue its replacement
+        picks.onlyBlock(c.g, picked);
+        check(where + ": a second click can start another measurement", picks.pricing());
+        picks.clear();
+        for (Runnable job : work) worker.submit(job).get();
+        for (Runnable completion : returned) completion.run();
+        check(where + ": clearing picks while queued prevents a late card or draft from returning",
+                !picks.pricing() && picks.live(c.g).isEmpty() && c.office().getDrafts().isEmpty() && changes[0] == 1);
     }
 }

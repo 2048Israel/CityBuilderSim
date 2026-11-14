@@ -543,6 +543,8 @@ public class LandMarket {
 
     /** Puts the office on a city's land with nothing on its shelf: what LandManager does when a city is founded, converted, loaded or restated. */
     void attach(CityLand land) {
+        if (latestDraft != null) latestDraft.cancel();
+        latestDraft = null;
         this.land = land;
         // ...and the sellers of another world's ground are not this land's (WN5): dropped, and the office prices as it always did.
         if (sellers != null && land != null && !sellers.standsOn(land.key())) sellers = null;
@@ -600,7 +602,10 @@ public class LandMarket {
 
     /** Geometry and seller parts of unowned ground; once made, only read, including after a worker hands it back. */
     private record DraftGround(GridOffers.Rect rect, CityLand.Ground ground, int[] sites, double[] amounts,
-                               List<LandSellers.Part> parts, long plots) { }
+                               List<LandSellers.Part> parts, long plots, Linkage linkage) { }
+
+    /** A measured landmass split at a linked-set version: numbers only, no reference to the live landmass books. */
+    private record Linkage(int version, double dry, double buildable, int largest) { }
 
     private DraftGround readGround(GridOffers.Rect r) {
         CityLand.Ground ground = land.groundWithRelief(r.x0(), r.y0(), r.x1(), r.y1());
@@ -611,7 +616,7 @@ public class LandMarket {
         amounts[Resource.FOREST.ordinal()] = Math.rint(km2[CityLand.FOREST] * World.FOREST_M3_PER_KM2);
         List<LandSellers.Part> parts = sellers == null ? List.of()
                 : sellers.split(land, r.x0(), r.y0(), r.x1(), r.y1(), km2[CityLand.SEA]);
-        return new DraftGround(r, ground, sites, amounts, parts, land.grid().unowned(r.x0(), r.y0(), r.x1(), r.y1()));
+        return new DraftGround(r, ground, sites, amounts, parts, land.grid().unowned(r.x0(), r.y0(), r.x1(), r.y1()), null);
     }
 
     /** Prices retained geometry at THIS office's month and price, without walking the seller plots again (WN5c). */
@@ -633,7 +638,11 @@ public class LandMarket {
         LandParcel offer = new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, ground.relief(), sites, amounts, usd, listedIn);
         offer.setSellers(sold);
         // ...and what of it is on ground the city has not linked (ET5): derived, never in the offer's record.
-        if (landmasses != null) landmasses.offerSplit(World.of(land.key()), land, offer);
+        if (landmasses != null) {
+            Linkage link = measured.linkage();
+            if (link != null && link.version() == landmasses.version()) offer.setUnlinked(link.dry(), link.buildable(), link.largest());
+            else landmasses.offerSplit(World.of(land.key()), land, offer);
+        }
         return offer;
     }
 
@@ -705,6 +714,7 @@ public class LandMarket {
 
     /** Hands the office the city's landmasses (LandManager's constructor): every offer listed or restored from now on is split against them. */
     void setLandmasses(Landmasses landmasses) {
+        if (this.landmasses != landmasses) draftGround.clear();
         this.landmasses = landmasses;
     }
 
@@ -717,7 +727,17 @@ public class LandMarket {
         if (landmasses == null || land == null) return;
         World world = World.of(land.key());
         for (LandParcel p : offers) if (p != null) landmasses.offerSplit(world, land, p);
-        for (LandParcel d : drafts) landmasses.offerSplit(world, land, d);
+        for (int i = drafts.size() - 1; i >= 0; i--) {
+            LandParcel d = drafts.get(i);
+            DraftGround measured = draftGround.get(d.rect());
+            if (asynchronousDrafts) {
+                if (measured == null || !linkedAsMeasured(measured)
+                        || measured.plots() != land.grid().unowned(d.getX0(), d.getY0(), d.getX1(), d.getY1())) {
+                    drafts.remove(i);
+                    draftGround.remove(d.rect());
+                }
+            } else landmasses.offerSplit(world, land, d);
+        }
     }
 
     /**
@@ -1267,6 +1287,7 @@ public class LandMarket {
     /** Draft geometry belongs to this office's owner thread; workers fill only their own copied office (WN5c). */
     private final Map<GridOffers.Rect, DraftGround> draftGround = new HashMap<>();
     private boolean asynchronousDrafts;
+    private DraftRequest latestDraft;
 
     /** The id the next draft takes: -1, then -2, and so on - a counter of its own, never nextId, so no offer's number moves for a draft. */
     private int nextDraftId = -1;
@@ -1280,6 +1301,8 @@ public class LandMarket {
      * of the same. Returns the drafts, in the order given.
      */
     public List<LandParcel> draft(List<long[]> rects) {
+        if (latestDraft != null) latestDraft.cancel();
+        latestDraft = null;
         List<LandParcel> now = new ArrayList<>();
         if (land != null && rects != null) {
             for (long[] r : rects) {
@@ -1335,7 +1358,17 @@ public class LandMarket {
             measured = readGround(r);
             draftGround.put(r, measured);
         }
-        return priceGround(measured, id, month);
+        LandParcel priced = priceGround(measured, id, month);
+        if (!linkedAsMeasured(measured)) {
+            Linkage link = new Linkage(landmasses == null ? -1 : landmasses.version(), priced.getUnlinkedDryKm2(),
+                    priced.getUnlinkedBuildableKm2(), priced.getUnlinkedLargest());
+            draftGround.put(r, new DraftGround(r, measured.ground(), measured.sites(), measured.amounts(), measured.parts(), measured.plots(), link));
+        }
+        return priced;
+    }
+
+    private boolean linkedAsMeasured(DraftGround measured) {
+        return measured.linkage() != null && measured.linkage().version() == (landmasses == null ? -1 : landmasses.version());
     }
 
     /** Every draft priced again NOW, its geometry retained while its unowned plots are unchanged; bought ground is dropped. */
@@ -1345,7 +1378,7 @@ public class LandMarket {
             LandParcel d = drafts.get(i);
             long plots = land.grid().unowned(d.getX0(), d.getY0(), d.getX1(), d.getY1());
             DraftGround measured = draftGround.get(d.rect());
-            if (plots == 0 || (asynchronousDrafts && (measured == null || measured.plots() != plots))) {
+            if (plots == 0 || (asynchronousDrafts && (measured == null || measured.plots() != plots || !linkedAsMeasured(measured)))) {
                 // A purchase changed this draft: Picks notices its missing id and asks a worker for the new ground.
                 drafts.remove(i);
                 draftGround.remove(d.rect());
@@ -1359,14 +1392,17 @@ public class LandMarket {
      * while the card says the price is coming; run() touches only a quoter's copied office. No month waits on a worker.
      */
     public DraftRequest requestDrafts(List<long[]> rects) {
+        if (latestDraft != null) latestDraft.cancel();
         Quoter copy = quoter();
         if (copy == null) throw new IllegalStateException("The picked ground could not be copied");
         copy.frozen.drafts.addAll(drafts);
+        copy.frozen.landmasses = landmasses == null ? null : landmasses.forOffers();
         copy.frozen.nextDraftId = nextDraftId;
         nextDraftId -= rects.size(); // reserve enough ids even when invalid/duplicate rectangles leave gaps
         asynchronousDrafts = true;
         List<long[]> own = rects.stream().map(long[]::clone).toList();
-        DraftRequest request = new DraftRequest(copy, land, sellers, own);
+        DraftRequest request = new DraftRequest(copy, land, sellers, landmasses, own);
+        latestDraft = request;
         drafts.clear();
         draftGround.clear();
         return request;
@@ -1379,16 +1415,20 @@ public class LandMarket {
         private final LandGrid grid;
         private final long owned;
         private final LandSellers sellers;
+        private final Landmasses landmasses;
+        private final int linkedVersion;
         private final List<long[]> rects;
         private volatile boolean cancelled;
         private boolean finished;
 
-        private DraftRequest(Quoter copy, CityLand land, LandSellers sellers, List<long[]> rects) {
+        private DraftRequest(Quoter copy, CityLand land, LandSellers sellers, Landmasses landmasses, List<long[]> rects) {
             this.copy = copy;
             this.land = land;
             this.grid = land.grid();
             this.owned = grid.ownedPlots();
             this.sellers = sellers;
+            this.landmasses = landmasses;
+            this.linkedVersion = landmasses == null ? -1 : landmasses.version();
             this.rects = rects;
         }
 
@@ -1404,8 +1444,10 @@ public class LandMarket {
 
     /** Owner (FX) thread only: rejects changed ground, then prices the returned geometry in the CURRENT month. */
     public boolean acceptDrafts(DraftRequest request) {
-        if (request.cancelled || !request.finished || land != request.land || sellers != request.sellers
-                || land.grid() != request.grid || land.grid().ownedPlots() != request.owned) return false;
+        if (latestDraft != request || request.cancelled || !request.finished || land != request.land || sellers != request.sellers
+                || land.grid() != request.grid || land.grid().ownedPlots() != request.owned || landmasses != request.landmasses
+                || (landmasses != null && landmasses.version() != request.linkedVersion)) return false;
+        latestDraft = null;
         draftGround.clear();
         draftGround.putAll(request.copy.frozen.draftGround);
         drafts.clear();

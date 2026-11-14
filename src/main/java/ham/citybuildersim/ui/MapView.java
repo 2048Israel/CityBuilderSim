@@ -3926,10 +3926,7 @@ final class MapView {
             cardFor = cardKey(ids);
             hideNationCard();
             rings = List.of();
-            Label coming = new Label(LandMap.QUOTING);
-            coming.setWrapText(true);
-            coming.setStyle("-fx-padding: 16;");
-            buyBox.getChildren().setAll(coming);
+            buyBox.getChildren().setAll(ui.landScreen.mapPricingNode(LandMap.groundTitle(picks.blocks().size()), this));
             buyBox.setVisible(true);
             layoutBuyCard();
             return;
