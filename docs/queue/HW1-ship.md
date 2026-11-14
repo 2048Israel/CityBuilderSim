@@ -13,7 +13,7 @@ spells, plant choices and ensemble verdicts.
 
 ## queued
 | HW1-V | Refine carried purchased steep/zoned ground and retain rounded bond cash above the funding gap in future plan cash, WorksValue.java:135/184/222 and AdviceValueOracle.java:216/40/86, REV-HW1-4 findings 3 and 4 | [brief](docs/queue/HW1-V.md) |
-| DM3-R | Repair the unchanged map renderer's road-surface loss, six ordinary buildings beyond REACH on HW1's played-city path, the m2389 standing-box movement and the post-verdict JavaFX shutdown diagnostic; preserve the hard drawing laws | [cause and done condition](docs/queue/HW1-notes.md#map-renderer-follow-up-dm3-r) |
+| DM3-R | Repair the unchanged map renderer's road-surface loss, six ordinary buildings beyond REACH on HW1's played-city path, the m2389 standing-box movement and the post-verdict JavaFX shutdown diagnostic while preserving the hard drawing laws | [cause and done condition](docs/queue/HW1-notes.md#map-renderer-follow-up-dm3-r) |
 | KS1-Gov | Retain the Government Overview's transient cash-flow and bridge rows so its eventful monthly allocation stays within the existing tenth-of-first-draw floor | [cause and done condition](docs/queue/HW1-notes.md#government-allocation-follow-up-ks1-gov) |
 
 

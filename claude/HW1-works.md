@@ -22,6 +22,10 @@ essential's promise through automatic reserves, including depots promoted
 to builders-first by the proposed order. Current shortages and the player's
 construction priorities remain part of the actual schedule.
 
+WN5c is merged from main 0.9.103. Its headless pricing and default trace
+are unchanged. The orchestrator explicitly retains the combined-model
+default and final ensemble measurements below.
+
 ## Combined default on main 0.9.102
 
 Merge 75bf8209 combines HW1 with BF1 on main 1e5dffa8. The full default's

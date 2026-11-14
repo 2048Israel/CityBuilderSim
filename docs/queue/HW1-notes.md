@@ -3368,3 +3368,27 @@ Jerus's balance calls. No buildings.json value is changed.
 The normal-heap affected BuildAdviceCheck retry is exit 0 in
 target/checks/hw1-bf1-advice-retry.log. Its generated maps are retained.
 The source model remains unchanged by that fixture correction.
+
+
+## WN5c merged before the launcher
+
+Orchestrator's mail 20261114-174513 requires merging main e8a468c2,
+version 0.9.103. Merge 3632717b integrates WN5c while the immutable
+HW1-bf1-final ensemble continues. The four conflicts are generated
+indexes, regenerated from the combined source. Fast verification exits
+0 in target/checks/hw1-wn5c-fast.log. LandNationsCheck exits 0 in
+target/checks/hw1-wn5c-land.log, including the worker-pricing and current
+price laws.
+
+WN5c retains synchronous headless pricing and changes the screen's
+draft geometry work and caching. Its default trace is unchanged.
+The orchestrator explicitly states that HW1's combined-model ensemble
+stays valid. The financial/service default above and the a0efd26d
+ensemble therefore retain their actual 0.9.102 identities while main
+0.9.103 supplies the final merged land implementation to the launcher.
+
+BF1's main registry already assigns the identical MapCheck network
+part to BF1-M. HW1's former DM3-R ship override for that part was removed
+so the existing main entry owns connectivity. DM3-R retains the surface,
+reach, standing-box movement and shutdown diagnostic cases described
+in these notes. The hard drawing and movement laws remain unchanged.
