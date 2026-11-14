@@ -2,7 +2,7 @@
 
 Generated 2026-11-13 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**198 harness files, 23,697 labelled assertions.** AllChecks runs 198 of them.
+**198 harness files, 23,700 labelled assertions.** AllChecks runs 198 of them.
 
 ## Which harnesses read which class
 
@@ -817,21 +817,21 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1541 the room back, the ask is covered by the sale that month and its order is placed on the same path as any other:
   - L1545 ...paid for by the bond sales it raised: the log shows all of them as its borrowing, the cost of the order covered
   - L1548 ...and says it waited, and the inbox says the order was placed
-  - L1567 the treasury can pay for what is left of the orders: they are placed with no sale at all - no bond, no new paper,
-  - L1571 ...the streets' log entry shows the bond money its ask had raised, borrowed on an earlier month, and no more
-  - L1588 treasury at the reserve, the room back: each ask is offered what it still has to raise and sells it in full (the
-  - L1592 ...but the money it raised before was drawn by the month's bills, so the treasury does not hold the cost for any: no
-  - L1599 next month, drawn again, the asks have raised their whole cost and the paper is not sold twice: the only sales are a
-  - L1605 ...and the inbox says the month's bills drew the money and that nothing more is borrowed for it
-  - L1612 the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt
-  - L1636 fixture: the town had an ask open for its general care, with money raised for it, and then twenty Health Centres stand:
-  - L1640 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
-  - L1648 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
-  - L1661 fixture: the debt limit is under what the city owes
-  - L1662 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
-  - L1675 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
-  - L1686 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
-  - L1691 ...and its headlines say automatic building came up short at its cap, and how many times it sold
+  - L1568 the treasury can pay for what is left of the orders: they are placed with no sale at all - no bond, no new paper,
+  - L1572 ...the streets' log entry shows the bond money its ask had raised, borrowed on an earlier month, and no more
+  - L1589 treasury at the reserve, the room back: each ask is offered what it still has to raise and sells it in full (the
+  - L1593 ...but the money it raised before was drawn by the month's bills, so the treasury does not hold the cost for any: no
+  - L1605 next month, drawn again, the paper already raised is not sold twice: new sales cover only the repriced cost
+  - L1611 ...and the inbox says the month's bills drew the money and that nothing more is borrowed for it
+  - L1618 the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt
+  - L1642 fixture: the town had an ask open for its general care, and then twenty Health Centres stand:
+  - L1650 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
+  - L1658 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
+  - L1671 fixture: the debt limit is under what the city owes
+  - L1672 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
+  - L1685 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
+  - L1696 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
+  - L1701 ...and its headlines say automatic building came up short at its cap, and how many times it sold
 
 ## AutoBuildCheck.java - 65 labelled assertions
 
@@ -14722,7 +14722,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2069 A BUSINESS ORDERED WHILE ITS OWN SECTOR ALREADY HAD AN ORDER ON SITE in the run (the cap would have said \"already building\")
   - L2071 ...and the largest order cleared is more than one building
 
-## IslandLinkCheck.java - 58 labelled assertions
+## IslandLinkCheck.java - 61 labelled assertions
 
 > The island link checked (AL1, 2026-11-09; docs/queue/AL1.md): the rule that says what the city should order to link an
 > island it owns ground on, the automatic builder that orders it once its orders lack ground, and the test player that
@@ -14772,39 +14772,42 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L442 4. the auto-builder, ground low caused, an island across shallow water: one bridge ordered, none ordered twice, none where there is room**
   - L457 a city with room (the island owned and unlinked, a crossing allowed):
   - L472 premise: the linked free ground is cut to nothing, the island has free ground that is no room, and the rule is the Road Bridge for it
-  - L479 one pass: groundShort() is set and the pass orders one link, ORDERED, a bridge for the island
-  - L483 ...a bridge is on site toward the island (Bridges.buildingTo), none stands, and the island is unlinked while it is
-  - L497 ...the log has its entry (the island links' label, the Road Bridge, one, the island named in the why) and the totals count it with the pass's other orders
-  - L501 ...the step's line is the pass's sentence for the order, and the rule asked again says every link is under way: null
-  - L506 the next passes, the ground cut low before each, until one met an order short of ground (the cue): no link step, no second bridge, and the island unlinked wh...
-- **L518 5. the auto-builder, ground low caused, an island across deep water: the terminals ordered, once, and the island linked when both stand**
-  - L529 premise: the linked free ground is cut to nothing, no terminal anywhere, and the rule is a port: the island's terminal and one at home
-  - L534 one pass: groundShort() is set and the pass orders the link, ORDERED, a port for the island
-  - L541 ...a terminal is on site on the island and one at home, none stands, and the island is unlinked
-  - L547 ...the log has an entry for each of the two orders
-  - L549 the next passes, the ground cut low before each, until one met an order short of ground (the cue): no link step, no more terminals than the two
-  - L553 the terminals stand after some months and the island is linked, nothing unlinked, each landmass holding its own
-  - L556 the passes after, the ground cut low (the village orders only when it needs something, so the cue may not come): no link step, and the rule is null
-- **L565 6. the money: a debt limit of 0 and the cash at the reserve hold the link, with the limit's words, and nothing is bought or borrowed**
-  - L577 premise: the debt limit is 0, the cash is the reserve - the link's price is far past what is spendable - and the ground is cut low
-  - L588 one pass: groundShort() is set, the link is HELD, and the line is in held() naming the island and the limit
-  - L592 ...nothing is ordered, no ground bought, no bond sold, nothing borrowed, and no bridge placed
-  - L604 ...asked again with the cash at the reserve once more it is held again, one more HELD step and no order - it asks again, it does not give up
-- **L613 7. the bridge stands and links: the island linked, its free ground room, and the next pass with ground low orders nothing more**
-  - L615 section 4's city was played
-  - L632 the bridge the auto-builder ordered stands after some months, and the island stayed unlinked every month it was on site
-  - L634 the month it stood the island was linked: the linked set moved once, nothing is unlinked, the island's ground is the linked ground and is room (the linked fr...
-  - L638 the rule is null: nothing is unlinked
-  - L641 the passes after, the ground cut low (the cue may not come): no link step, no more bridges
-- **L650 8. the test player links as the auto-builder does: the same rule, the same templates, the same landmass, counted**
-  - L660 premise: the used share is over the test player's line (groundAheadUtilisation) and the island is owned and unlinked
-  - L666 on the crossing it orders the bridge the rule gives, toward the landmass the rule gives, and counts it
-  - L679 on deep sea it orders the terminals the rule gives, one on the island and one at home, and counts two
-  - L690 where the rule is NONE it orders nothing and counts the link held
-  - L706 premise: the city owns the island square, unlinked, home's coast too, and the strait between is the fixture's own (no seam handed to the survey)
-  - L743 ...at most one link order for an island while one is under way, and every order was for an island unlinked when it was ordered
-  - L744 ...the island is linked by the end (the terminals stand on both sides), and nothing is unlinked
-  - L761 a generated world, the town with its ground cut to what it uses,
+  - L480 premise: an order met the linked-ground shortage
+  - L482 the first pass meeting the ground shortage: groundShort() is set and the pass orders one link, ORDERED, a bridge for the island
+  - L486 ...a bridge is on site toward the island (Bridges.buildingTo), none stands, and the island is unlinked while it is
+  - L500 ...the log has its entry (the island links' label, the Road Bridge, one, the island named in the why) and the totals count it with the pass's other orders
+  - L504 ...the step's line is the pass's sentence for the order, and the rule asked again says every link is under way: null
+  - L509 the pass's last line asked twice with ground cut and the bridge on site orders no second link
+- **L521 5. the auto-builder, ground low caused, an island across deep water: the terminals ordered, once, and the island linked when both stand**
+  - L532 premise: the linked free ground is cut to nothing, no terminal anywhere, and the rule is a port: the island's terminal and one at home
+  - L538 premise: an order met the linked-ground shortage
+  - L540 the first pass meeting the ground shortage: groundShort() is set and the pass orders the link, ORDERED, a port for the island
+  - L547 ...a terminal is on site on the island and one at home, none stands, and the island is unlinked
+  - L553 ...the log has an entry for each of the two orders
+  - L554 the pass's last line asked twice with ground cut and both terminals on site orders no more
+  - L558 the terminals stand after some months and the island is linked, nothing unlinked, each landmass holding its own
+  - L561 the passes after, the ground cut low (the village orders only when it needs something, so the cue may not come): no link step, and the rule is null
+- **L570 6. the money: a debt limit of 0 and the cash at the reserve hold the link, with the limit's words, and nothing is bought or borrowed**
+  - L582 premise: the debt limit is 0, the cash is the reserve - the link's price is far past what is spendable - and the ground is cut low
+  - L594 premise: an order met the linked-ground shortage with the cash at the reserve
+  - L597 the first pass meeting the ground shortage: groundShort() is set, the link is HELD, and the line is in held() naming the island and the limit
+  - L601 ...nothing is ordered, no ground bought, no bond sold, nothing borrowed, and no bridge placed
+  - L613 ...asked again with the cash at the reserve once more it is held again, one more HELD step and no order - it asks again, it does not give up
+- **L622 7. the bridge stands and links: the island linked, its free ground room, and the next pass with ground low orders nothing more**
+  - L624 section 4's city was played
+  - L641 the bridge the auto-builder ordered stands after some months, and the island stayed unlinked every month it was on site
+  - L643 the month it stood the island was linked: the linked set moved once, nothing is unlinked, the island's ground is the linked ground and is room (the linked fr...
+  - L647 the rule is null: nothing is unlinked
+  - L650 the passes after, the ground cut low (the cue may not come): no link step, no more bridges
+- **L659 8. the test player links as the auto-builder does: the same rule, the same templates, the same landmass, counted**
+  - L669 premise: the used share is over the test player's line (groundAheadUtilisation) and the island is owned and unlinked
+  - L675 on the crossing it orders the bridge the rule gives, toward the landmass the rule gives, and counts it
+  - L688 on deep sea it orders the terminals the rule gives, one on the island and one at home, and counts two
+  - L699 where the rule is NONE it orders nothing and counts the link held
+  - L715 premise: the city owns the island square, unlinked, home's coast too, and the strait between is the fixture's own (no seam handed to the survey)
+  - L752 ...at most one link order for an island while one is under way, and every order was for an island unlinked when it was ordered
+  - L753 ...the island is linked by the end (the terminals stand on both sides), and nothing is unlinked
+  - L770 a generated world, the town with its ground cut to what it uses,
 
 ## IslandNetCheck.java - 93 labelled assertions
 
