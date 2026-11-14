@@ -1150,3 +1150,17 @@ model passes and the old model fails both the constant-demand benefit
 and early-order laws. Logs are hw1-sb1-final-interim.log and
 hw1-sb1-final-interim-before.log. The full pick now runs on this combined
 model. The once-only ensemble will follow the completed pick.
+
+## REV-HW1-2, provisional review at 03:38
+
+The provisional review found five further faults. The ensemble has not
+started. The obsolete ALL pick was stopped by its own verified sh process
+38232 and descendant process IDs. Other check sessions were left running.
+Its log is target/checks/hw1-sb1-final-pick.log and is incomplete.
+
+The required mends are a zero-help fresh-water candidate, queue-aware
+first-unit and pending-power completion, power benefit windows shorter
+than the yearly sample, converged paving order sizing, and a real scratch
+save/load with an unbroken twin compared order by order. Each needs its
+own causal regression before the replacement pick and once-only final
+ensemble. The ship file remains marked provisional.
