@@ -3541,7 +3541,7 @@ and SpreadPlanner's earnings gate judge capital investment, so they
 do not stop this monthly inherited buffer rule. The existing-stock
 sales/dump rule is separate.
 
-EconomyManager 2282 gathers the struck imports. NationalAccounts 617
+EconomyManager 2278 gathers the struck imports. NationalAccounts 617
 prices the cathode stock delta, 648 books raw imports and 689 sums GDP.
 In seed 3 anode costs 3.033784105 while cathode earns 2.694686929.
 In seed 9 those are 8.596353592 and 8.216458133. Both have zero

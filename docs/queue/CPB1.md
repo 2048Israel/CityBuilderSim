@@ -24,7 +24,7 @@ separately. Its dump rule can release stock past the buffer while the
 next monthly input plan refills it.
 
 The resulting imported anode is more valuable than the cathode made
-for an empty local market. EconomyManager 2282 sums the struck import
+for an empty local market. EconomyManager 2278 sums the struck import
 cost into raw imports. NationalAccounts 617 books the change in held
 cathode at the current price, 648 includes raw imports in NX, and 689
 sums C + I + G + NX. C, I and G remain positive in both failing cities.
