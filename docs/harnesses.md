@@ -2406,66 +2406,66 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L941 ...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit
   - L1005 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
   - L1009 the streets' card has the least complete maintained-service plan at every price of ground
-  - L1093 fixture: the slack and projection add buildings to a listed or fallback card in the same city
-  - L1123 fixture: with no university and its fees paid, more would come than a first one wants
-  - L1124 fixture: ...and its graduates' posts would not fill one
-  - L1126 no UNIVERSITY row
-  - L1127 ...and no university card
-  - L1139 fixture: the offices' posts bring the hires to a first university's
-  - L1141 ...and the UNIVERSITY row is there
-  - L1143 fixture: the rows above held a school with seats and one with none
-  - L1157 fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university
-  - L1160 no university row there
-  - L1161 ...and no university card
-- **L1245 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
-  - L1259 fixture: the rising history is a trend the businesses read
-  - L1297 the run is the cards' orders in their order, two of one building added together
-  - L1301 fixture: the short city has the ground for every card
-  - L1302 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
-  - L1315 fixture: the run placed in turn in a twin
-  - L1316 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
-  - L1328 fixture: with the ground for the first card alone, a card after it is short of land
-  - L1329 fixture: ...and no two cards are one building, so the run's orders are the cards
-  - L1330 ...and the run stops at the first short card, for land
-- **L1348 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
-  - L1371 fixture: the fee turned away half of those the beds could take
-  - L1376 fixture: NEEDS YOU has its row
-  - L1378 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
-  - L1379 ...and reads them served over its people
-  - L1381 ...lower than the beds alone read
-  - L1383 ...the share the month itself applies with the beds short: their cover times the share who could pay
-  - L1385 BUILD'S RING READS THE SAME
-  - L1390 AN ORDER'S AFTER: its staffed places added, the month's priced out held
-  - L1396 NOBODY PRICED OUT, THE BEDS, AS BEFORE
-- **L1412 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
-  - L1425 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
-  - L1428 fixture: no berth stands or is on site, and the dues dial is at its default
-  - L1434 fixture: the city owns no sea
-  - L1435 fixture: the uncovered dry bulk is the tonnes told
-  - L1437 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
-  - L1442 fixture: the city buys an offer that runs out to the sea
-  - L1448 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
-  - L1450 ...its card reads the uncovered tonnes now
-  - L1451 ...and the tonnes left with the berth standing
-  - L1452 ...at the price the Build button charges
-  - L1455 JUST UNDER IT: no berth is advised
-  - L1458 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
-  - L1462 ...a hair under it, the Bulk Berth again
-  - L1464 ...with the Bulk Terminal passed over, the Bulk Berth
-  - L1470 fixture: half the threshold is no berth's worth at the default dial
-  - L1473 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
-  - L1475 ...a hair under half, none
-  - L1478 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
-  - L1481 ...and back at the default the same tonnes advise the Bulk Terminal
-  - L1486 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
-  - L1488 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
-  - L1490 ...at the price the Build button charges for the three
-  - L1491 ...the tonnes left with the three standing, none
-  - L1492 ...the order closes the measure and its ground is the three terminals'
-  - L1500 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
-  - L1504 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
-  - L1507 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
-  - L1511 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
+  - L1101 fixture: the slack and projection add buildings to a listed or fallback card in the same city
+  - L1131 fixture: with no university and its fees paid, more would come than a first one wants
+  - L1132 fixture: ...and its graduates' posts would not fill one
+  - L1134 no UNIVERSITY row
+  - L1135 ...and no university card
+  - L1147 fixture: the offices' posts bring the hires to a first university's
+  - L1149 ...and the UNIVERSITY row is there
+  - L1151 fixture: the rows above held a school with seats and one with none
+  - L1165 fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university
+  - L1168 no university row there
+  - L1169 ...and no university card
+- **L1253 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
+  - L1267 fixture: the rising history is a trend the businesses read
+  - L1305 the run is the cards' orders in their order, two of one building added together
+  - L1309 fixture: the short city has the ground for every card
+  - L1310 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
+  - L1323 fixture: the run placed in turn in a twin
+  - L1324 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
+  - L1336 fixture: with the ground for the first card alone, a card after it is short of land
+  - L1337 fixture: ...and no two cards are one building, so the run's orders are the cards
+  - L1338 ...and the run stops at the first short card, for land
+- **L1356 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
+  - L1379 fixture: the fee turned away half of those the beds could take
+  - L1384 fixture: NEEDS YOU has its row
+  - L1386 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
+  - L1387 ...and reads them served over its people
+  - L1389 ...lower than the beds alone read
+  - L1391 ...the share the month itself applies with the beds short: their cover times the share who could pay
+  - L1393 BUILD'S RING READS THE SAME
+  - L1398 AN ORDER'S AFTER: its staffed places added, the month's priced out held
+  - L1404 NOBODY PRICED OUT, THE BEDS, AS BEFORE
+- **L1420 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
+  - L1433 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
+  - L1436 fixture: no berth stands or is on site, and the dues dial is at its default
+  - L1442 fixture: the city owns no sea
+  - L1443 fixture: the uncovered dry bulk is the tonnes told
+  - L1445 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
+  - L1450 fixture: the city buys an offer that runs out to the sea
+  - L1456 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
+  - L1458 ...its card reads the uncovered tonnes now
+  - L1459 ...and the tonnes left with the berth standing
+  - L1460 ...at the price the Build button charges
+  - L1463 JUST UNDER IT: no berth is advised
+  - L1466 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
+  - L1470 ...a hair under it, the Bulk Berth again
+  - L1472 ...with the Bulk Terminal passed over, the Bulk Berth
+  - L1478 fixture: half the threshold is no berth's worth at the default dial
+  - L1481 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
+  - L1483 ...a hair under half, none
+  - L1486 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
+  - L1489 ...and back at the default the same tonnes advise the Bulk Terminal
+  - L1494 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
+  - L1496 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
+  - L1498 ...at the price the Build button charges for the three
+  - L1499 ...the tonnes left with the three standing, none
+  - L1500 ...the order closes the measure and its ground is the three terminals'
+  - L1508 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
+  - L1512 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
+  - L1515 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
+  - L1519 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
 
 ## BuildCardCheck.java - 210 labelled assertions
 

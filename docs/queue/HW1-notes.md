@@ -1,4 +1,19 @@
-# HW1 final common-calendar verification
+# HW1 combined-model verification after BF1
+
+The current production model is merge 75bf8209 on main 1e5dffa8,
+version 0.9.102. The corrected assertion snapshot is a0efd26d.
+Fast verification passes. Sixteen affected harnesses ran, with the one
+old-rule street assertion repaired. Its official retry passes, exit 0.
+The combined default's money fixtures and six reloads pass. It has one
+unchanged-renderer movement finding at m2389 and exits 1.
+
+The final combined-model ensemble HW1-bf1-final is running against
+0.9.102. The completed pre-BF1 ensemble and default below identify the
+preceding candidate. The ship remains provisional. After the ensemble,
+a fresh complete lower-load launcher run requires the orchestrator go.
+
+# Pre-BF1 common-calendar verification, superseded
+
 
 The current production model is 913dd341 on merged main e5642145
 (0.9.101). REV-HW1-7 reports SHIP with no findings. The complete
@@ -3274,3 +3289,82 @@ ensemble and its service table above therefore identify the pre-BF1
 candidate, and their readiness evidence is superseded. The combined
 model needs its own final ensemble against 0.9.102. The original
 0.9.98 comparison will use those same new 80 CSVs.
+
+
+## Verified default on combined main 0.9.102
+
+The immutable combined classes are in
+target/hw1-sendback1/bf1-model-classes. The read-only financial hook is
+the same LongPlaytest prefix as the preceding candidate, with the
+current combined production classes behind it. Its complete log is
+target/checks/hw1-bf1-default.log. All money fixtures pass, six of six
+reloads match, and 2,404 automatic-work months are measured. One hard
+layout movement finding makes its process exit 1, as recorded above.
+The metrics are target/checks/hw1-bf1-metrics.json and the table at
+target/checks/hw1-bf1-service-table.md.
+
+| Service | Months below 90% | Months below 20% | Longest below 90% | Months of longest | First quoted lead near its start |
+|---|---:|---:|---:|---|---:|
+| Power | 0 | 0 | 0 | — | — |
+| Water | 155 | 0 | 53 | 2040–2092 | 57.0 |
+| Streets | 13 | 0 | 13 | 20–32 | 25.0 |
+| Through traffic | 64 | 28 | 28 | 1638–1665 | 26.0 |
+| General care | 0 | 0 | 0 | — | — |
+| Childcare | 1 | 0 | 1 | 43–43 | 1.0 |
+| Senior care | 0 | 0 | 0 | — | — |
+| Death care | 2 | 2 | 2 | 512–513 | 1.0 |
+| Elementary | 3 | 3 | 3 | 110–112 | 2.0 |
+| Middle school | 3 | 3 | 3 | 119–121 | 1.0 |
+| High school | 3 | 3 | 3 | 180–182 | 2.0 |
+| College | 40 | 19 | 19 | 371–389 | 18.0 |
+| University | 96 | 96 | 96 | 1687–1782 | 90.0 |
+| Medical school | 235 | 184 | 184 | 1824–2007 | 232.0 |
+| Law school | 0 | 0 | 0 | — | — |
+| Business school | 0 | 0 | 0 | — | — |
+| Institute of technology | 0 | 0 | 0 | — | — |
+| Police | 17 | 3 | 8 | 2096–2103 | 7.0 |
+| Cells | 7 | 7 | 7 | 1868–1874 | 153.0 |
+
+The service figures apply the same useful-demand threshold as the
+builder. A demand below 30% of the smallest unit contributes a served
+reading of one. These are useful-service spells and can end at either
+supply recovery or the eligibility boundary.
+
+Power's minimum is 100%, general care's 93.83%, childcare's 88.74%
+and senior care's 97.51%. Highways have 64 total months below 90%,
+with their longest 28 months at 1638–1665, against a 26-month quote
+near the start. That spell has 27 pending passes and one additional
+order. Death care's two months are 512–513 against one quoted.
+Cells have seven months at 1868–1874 against 153 quoted, with one
+order and six pending passes. University has 96 months against 90
+quoted, with two orders. Medical school's longest 184 months are
+1824–2007 against 232 quoted, with two orders and 181 pending passes.
+Its total below 90% is 235 months. Water's longest 53 months are
+inside a 57-month quote and include ten ground-held passes.
+
+Elementary qualifies at m110 and is ordered on that pass, borrowing
+1,038.59598764 local thousands toward its 1,052.80344301 quote.
+It reaches 90% at m113. There is no funding hold in its three-month
+spell. At m194, cash is -43.35713111 local thousands, debt
+11,311.33275815 and debt/GDP 125.136867%. At m357 those are
+1,329.22724683, 13,596.58355672 and 89.264247%.
+The debt-cap dial remains 240%. These combined-path debt readings
+are calls for Jerus. The earlier main comparison was 0.9.101.
+
+Automatic power orders total 224 Wind Farms and two Coal Power Plants,
+with 81 actual power-order comparisons retained in the complete log.
+The final comparisons each start with one unit and maintain the later
+service on the shared 240-month calendar. They include the later
+physical shortages projected by that comparison.
+
+...power comparison at m2405, one Coal Power Plant: 20-year maintained-service present value: order $105.7B + land $10.5B + 1 later works and land $91.9B + new financing $0.00 + running $10.1B - prevented output loss $35.2B - payroll returned $501.1M = $182.4B. Physical relief 1021.6/month; initial 68 posts (0 unfilled); initial payroll $33.1M/month; opens 110.5 months.
+
+...power comparison at m2405, one Wind Farm: 20-year maintained-service present value: order $2.2B + land $9.1B + 41 later works and land $359.0B + new financing $0.00 + running $11.3B - prevented output loss $35.3B - payroll returned $1.2B = $345.2B. Physical relief 593.9/month; initial 7 posts (0 unfilled); initial payroll $3.4M/month; opens 35.1 months.
+
+...power comparison at m2405, one Hydro Station: 20-year maintained-service present value: order $2.1B + land $2.3B + 0 later works and land $0.00 + new financing $0.00 + running $572.3M - prevented output loss $9.9B - payroll returned $55.2M = -$5.0B. Physical relief 170.7/month; initial 5 posts (0 unfilled); initial payroll $2.4M/month; opens 39.3 months.
+
+Coal's founding 162-month construction, fuel and pollution remain
+Jerus's balance calls. No buildings.json value is changed.
+The normal-heap affected BuildAdviceCheck retry is exit 0 in
+target/checks/hw1-bf1-advice-retry.log. Its generated maps are retained.
+The source model remains unchanged by that fixture correction.
