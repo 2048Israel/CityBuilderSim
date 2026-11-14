@@ -1,4 +1,4 @@
-<!-- readiness: provisional -->
+<!-- gate-run: /c/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-GG1/target/gg1-gate-candidate -->
 
 ## changelog
 ### GG1 — The new gate's gaps — 2026-11-13, ready, no tag (process), see docs/queue/GG1-notes.md
