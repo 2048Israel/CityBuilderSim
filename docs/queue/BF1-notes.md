@@ -44,7 +44,7 @@ bf1-count-before.log, bf1-before-seeds.log and bf1-ld2-shares.log.
 ## Implementation review
 
 The final sales path keeps the existing stock target: Markets clears local
-orders, then Sector.shipUnsoldStock sells the shed's remainder to the world
+orders, then ProcessingSector.shipUnsoldStock sells the shed's remainder to the world
 at its net-bid marginal-cost/dump-line rule. The following production fills
 the shed again. This fixes the missing buyer, rather than removing inventories;
 WoodProductsCheck's positive-yard premise passes unchanged. The revised mill
@@ -111,13 +111,23 @@ Consequently GdpCheck, SaveFileCheck, RefineryCheck, GoldMiningCheck and SlopeCh
 pass, including the original food-conservation law. No HW1 source or fixture
 is changed. The temporary GDP restocking change was removed.
 
-The narrower model's first price-level twin diverges physically at month 39.
-A probe finds the earlier difference at month 16: a near-zero Real Estate
-cash subtraction draws a working-capital loss buffer in one denomination and
-none in the other. ★ A repayment short only by MoneyAudit's existing floating
-point allowance (floor zero) is roundoff, not a new shortfall. EconomyManager
-normalizes that tail before asset sales and credit; a caused one-ULP fixture
-and a real-shortfall control retain the loss-buffer rule against BUFFER_MONTHS.
+The narrower model's first price-level twin diverged physically at month 39.
+The first differing trade was an elder household's Industry sale at month 16:
+its bid was one ULP below its ask at the factor, and equal at today's prices.
+★ OrderBook treats prices inside MoneyAudit's existing relative floating-point
+allowance (floor zero) as equal for crossing, priority and depth. The original
+book fails ten new denomination/crossing/FIFO/depth laws; the corrected book
+passes them. A real gap beyond the allowance still does not trade. This
+removes the physical separation and most PriceLevelCheck failures.
+
+An independent caused repayment fixture also finds that a one-ULP negative
+cash tail can draw three months of the sector's losses as fresh credit.
+★ EconomyManager normalizes that repayment tail using MoneyAudit's existing
+allowance before asset sales and credit. The fixture removes alternative
+liquid assets and asserts a positive pre-tax loss: old EconomyManager fails
+both no-buffer/empty-till laws; the real-shortfall control still draws the
+unchanged BUFFER_MONTHS allowance. Logs: bf1-round-before.log and
+bf1-round-after.log. This rounding fix alone did not cure the twin path.
 
 The first full pick also exposed three fixture assumptions. BankCheck's 200x
 capital injection is topped up if subsequent lending means its reserves no

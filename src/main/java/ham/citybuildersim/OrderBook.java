@@ -226,7 +226,7 @@ public class OrderBook implements Cloneable {
         Iterator<Order> it = other.iterator();
         while (order.quantity > dust && it.hasNext()) {
             Order resting = it.next();
-            boolean crosses = side == Side.BUY ? resting.price <= order.price : resting.price >= order.price;
+            boolean crosses = side == Side.BUY ? meets(order.price, resting.price) : meets(resting.price, order.price);
             if (!crosses) break;                        // the rest are worse still
             if (resting.who.equals(order.who)) continue; // no trade with oneself
 
@@ -279,6 +279,16 @@ public class OrderBook implements Cloneable {
         return fills;
     }
 
+    /** BF1: equivalent price calculations can differ by a floating-point step across money units. */
+    private static boolean samePrice(double a, double b) {
+        return Math.abs(a - b) <= MoneyAudit.tolerance(0, Math.max(Math.abs(a), Math.abs(b)));
+    }
+
+    /** A genuine gap does not cross; roundoff at the same price does. */
+    private static boolean meets(double bid, double ask) {
+        return bid >= ask || samePrice(bid, ask);
+    }
+
     private void recordTrade(double q, double price, int month) {
         volume += q;
         turnover += q * price;
@@ -295,7 +305,8 @@ public class OrderBook implements Cloneable {
         int i = 0;
         while (i < side.size()) {
             Order o = side.get(i);
-            boolean worse = order.side == Side.BUY ? o.price < order.price : o.price > order.price;
+            boolean worse = !samePrice(o.price, order.price)
+                    && (order.side == Side.BUY ? o.price < order.price : o.price > order.price);
             if (worse || (o.price == order.price && o.seq > order.seq)) break;
             i++;
         }
@@ -359,7 +370,7 @@ public class OrderBook implements Cloneable {
     public double depth(Side side, double price) {
         double total = 0;
         for (Order o : side == Side.BUY ? bids : asks) {
-            boolean better = side == Side.BUY ? o.price >= price : o.price <= price;
+            boolean better = side == Side.BUY ? meets(o.price, price) : meets(price, o.price);
             if (!better) break;
             total += o.quantity;
         }
@@ -373,7 +384,7 @@ public class OrderBook implements Cloneable {
     public List<Level> levels(Side side) {
         List<Level> out = new ArrayList<>();
         for (Order o : side == Side.BUY ? bids : asks) {
-            if (!out.isEmpty() && out.get(out.size() - 1).price() == o.price) {
+            if (!out.isEmpty() && samePrice(out.get(out.size() - 1).price(), o.price)) {
                 Level l = out.remove(out.size() - 1);
                 out.add(new Level(l.price(), l.quantity() + o.quantity, l.orders() + 1));
             } else {

@@ -31,6 +31,8 @@ import java.util.Map;
  *      money, prices for one that is not.
  *   9. SAVE AND LOAD: a book with resting orders round-trips through Gson,
  *      and the next order after a reload still arrives after them.
+ *  10. FLOATING PRICES: a one-step roundoff crosses and keeps time priority,
+ *      in both money units; a gap past the model's allowance never crosses.
  *
  * The bond market's own use of the book - its participants, their orders,
  * and a played month's audit closing through the trades - is BondCheck's,
@@ -86,6 +88,7 @@ public class OrderBookCheck {
 
     public static void main(String[] args) {
         out = System.out;
+        floatingPrices();
         priceTime();
         restingPrice();
         nobodyObliged();
@@ -100,6 +103,39 @@ public class OrderBookCheck {
     }
 
     /* ============================== 1. PRICE-TIME ============================== */
+
+    static void floatingPrices() {
+        out.println("--- 10. floating prices meet at the model's rounding allowance ---");
+        for (double unit : new double[] { PriceLevel.FACTOR, 1 }) {
+            double price = .15195099627782777 * unit;
+            for (OrderBook.Side first : OrderBook.Side.values()) {
+                OrderBook book = new OrderBook("rounding");
+                Ledger ledger = rich("buyer", "seller");
+                double bid = Math.nextDown(price);
+                book.submit(first == OrderBook.Side.BUY ? "buyer" : "seller", first,
+                        first == OrderBook.Side.BUY ? bid : price, 1, 1, ledger);
+                List<OrderBook.Fill> fills = book.submit(first == OrderBook.Side.BUY ? "seller" : "buyer",
+                        first == OrderBook.Side.BUY ? OrderBook.Side.SELL : OrderBook.Side.BUY,
+                        first == OrderBook.Side.BUY ? price : bid, 1, 1, ledger);
+                assertTrue("a one-step price difference crosses with either side resting, unit " + unit + " " + first,
+                        fills.size() == 1 && ledger.settled == 1);
+                if (!fills.isEmpty()) close("the resting price still settles", fills.get(0).price(),
+                        first == OrderBook.Side.BUY ? bid : price, 0);
+            }
+            double gap = 2 * MoneyAudit.ULP_STEPS * Math.ulp(price);
+            OrderBook separated = new OrderBook("separated");
+            separated.submit("seller", OrderBook.Side.SELL, price + gap, 1, 1, null);
+            assertTrue("a price gap past the model's allowance stays unfilled, unit " + unit,
+                    separated.submit("buyer", OrderBook.Side.BUY, price, 1, 1, null).isEmpty());
+            OrderBook queue = new OrderBook("time");
+            queue.submit("first", OrderBook.Side.BUY, price, 1, 1, null);
+            queue.submit("second", OrderBook.Side.BUY, Math.nextUp(price), 1, 1, null);
+            assertTrue("a roundoff price improvement keeps arrival priority, unit " + unit,
+                    queue.bids().get(0).who().equals("first"));
+            close("depth uses the same price comparison", queue.depth(OrderBook.Side.BUY, Math.nextUp(price)), 2, 0);
+            assertTrue("the same numerical price is one depth level", queue.levels(OrderBook.Side.BUY).size() == 1);
+        }
+    }
 
     static void priceTime() {
         out.println("--- 1. price-time priority: the best price first, and at one price the first to come ---");

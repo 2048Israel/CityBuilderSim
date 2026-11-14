@@ -180,8 +180,16 @@ public final class BankFailureCheck {
             credit.setLoans(new java.util.ArrayList<>(java.util.List.of(
                     new BusinessLoan(s.key(), principal, 1, g.getMonth() - 1, .04))));
             credit.startAuditMonth();
+            credit.setAssets(s.key(), principal * 100);
+            credit.setLendingOpen(true);
+            g.getOutwardInvestment().recall(s.key(), principal * 1000, g.getEconomyManager());
+            g.getBondMarket().sellForCompany(s.key(), principal * 1000, credit.getRate(s.key()));
+            check("fixture: no liquid foreign assets or bonds can cover the shortfall",
+                    g.getEconomyManager().getForeignAssets(s.key()) == 0 && g.getEconomyManager().getBondAssets(s.key()) == 0);
             s.setCash(principal - gap);
             s.statement().netIncome = -principal / 10;
+            s.statement().preTaxIncome = -principal / 10;
+            check("fixture: a shortfall would draw a positive loss buffer", s.getNetIncome() < 0);
             check("fixture: " + (rounding ? "rounding" : "real shortfall") + " is on its intended side of the model's roundoff band",
                     gap > 0 && (gap <= MoneyAudit.tolerance(0, principal)) == rounding);
             g.getEconomyManager().settleBusinessCredit(g.getMonth());
