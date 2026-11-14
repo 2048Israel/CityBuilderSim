@@ -1,4 +1,4 @@
-<!-- readiness: provisional -->
+<!-- gate-run: /c/Users/Jerus/AppData/Local/Temp/cbs-gate-WN5c-aXBds9Re -->
 
 ## changelog
 ### {next} — WN5c, A picked block priced off the screen's thread — 2026-11-14, ready, see docs/queue/WN5c-notes.md
