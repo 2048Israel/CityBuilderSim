@@ -1,3 +1,15 @@
+# HW1 current verification
+
+The current production model is 3b252292 on merged main e5642145
+(0.9.101). All eight affected harnesses and all eight causal controls
+pass. Its full default run exits 0 with zero findings. The full pick and
+once-only final ensemble are running. The ship record is provisional.
+
+The current service table and financial comparison appear under
+“Verified default on the REV-HW1-3 model” below. Earlier readiness, gate,
+ensemble and candidate measurements are historical and superseded.
+A fresh kept dry run is required for readiness.
+
 # HW1 — The auto city builds its works when they are needed
 
 **Readiness withdrawn for REV-HW1-1, send-back 1 of 3.**
@@ -2249,3 +2261,131 @@ with zero firm Stale findings and 186 soft. The production model is
 3b252292. Its new full default run is in progress over an immutable
 class snapshot, with a read-only monthly financial hook. The earlier
 e142 default and incomplete pick remain superseded.
+
+## Verified default on the REV-HW1-3 model
+
+The log is target/checks/hw1-rev3-default-final.log, over the immutable
+3b252292 compiled production model. Its LongPlaytest diagnostic copy
+uses the existing read-only pre/post automatic-pass hook. It records
+2,404 audited months, six successful reloads, zero findings and exit 0.
+All nineteen measured services are fully served at m2400. The normal
+production LongPlaytest also runs in the full pick.
+
+| Service | Months below 90% | Months below 20% | Longest below 90% | Months of longest | First quoted lead near its start |
+|---|---:|---:|---:|---|---:|
+| Power | 0 | 0 | 0 | — | — |
+| Water | 172 | 0 | 70 | 1726–1795 | 118.0 |
+| Streets | 16 | 0 | 16 | 22–37 | 17.0 |
+| Through traffic | 36 | 21 | 21 | 1285–1305 | 2.0 |
+| General care | 0 | 0 | 0 | — | — |
+| Childcare | 0 | 0 | 0 | — | — |
+| Senior care | 11 | 0 | 5 | 1645–1649 | 4.0 |
+| Death care | 3 | 3 | 3 | 545–547 | 1.0 |
+| Elementary | 3 | 3 | 3 | 182–184 | 2.0 |
+| Middle school | 3 | 3 | 3 | 186–188 | 2.0 |
+| High school | 15 | 15 | 15 | 203–217 | 8.0 |
+| College | 17 | 17 | 17 | 217–233 | 18.0 |
+| University | 104 | 75 | 104 | 1675–1778 | 117.0 |
+| Medical school | 107 | 79 | 107 | 1675–1781 | 137.0 |
+| Law school | 0 | 0 | 0 | — | — |
+| Business school | 0 | 0 | 0 | — | — |
+| Institute of technology | 0 | 0 | 0 | — | — |
+| Police | 6 | 6 | 6 | 474–479 | 6.0 |
+| Cells | 163 | 163 | 163 | 1938–2100 | 96.0 |
+
+Eligibility uses the same 30%-of-smallest-work rule as automatic building.
+Below-threshold schools contribute a served reading of one. “Through
+traffic” is highways. The near-start quote is a first-unit completion
+quote rounded up.
+
+Highways' longest spell, m1285–1305, contains eighteen debt holds, two
+pending-capacity passes and an order at m1303. The near-start quote is
+two months. This is a funding delay followed by a short build. There are
+98 months with no automatic order while over the debt limit, beside
+448 on the superseded e142 candidate.
+
+Cells' first jail is ordered at m1938 with a near-start 96-month quote.
+The second is ordered at m2036 after the original promise expires.
+Service recovers at m2101. The 163-month construction spell remains
+information for Jerus. Pending capacity does cause a fresh order after
+expiry, as the hard save/load deadline fixture independently proves.
+
+Water's longest spell is seventy months against 118 quoted. University
+and medical school have 104 and 107 months against 117 and 137 quoted,
+with five orders each during their longest spells. Death care has three
+months below 90%. Eligibility/calendar and staffing transitions can put
+a short blip a month or two beyond a first quote. Every pass-reason count
+remains in the log.
+
+The former 76-month street cash freeze is resolved. Streets' only sixteen
+low months are the founding spell, against seventeen quoted. Elementary's
+only low spell is m182–184, with first 90% service at m185. In the common
+m194–357 window HW1 has no elementary month below 90%, while main has
+67 consecutive, m194–260.
+
+| Pre-pass month | HW1 cash, thousands | HW1 debt, thousands | HW1 debt/GDP | Main cash, thousands | Main debt, thousands | Main debt/GDP |
+|---|---:|---:|---:|---:|---:|---:|
+| 84 | -5.91 | 1,495.86 | 49.72% | — | — | — |
+| 194 | 108.99 | 5,495.06 | 74.14% | 35.43 | 2,937.46 | 50.02% |
+| 357 | 152.11 | 24,480.58 | 113.35% | 9,898.30 | 7,941.02 | 24.51% |
+
+No automatic order is placed at m84. The higher later debt is recorded
+beside the earlier service recovery. Main's figures come from the already
+recorded exact e5642145 replay, target/checks/hw1-main-funding2.log.
+Its ensemble baseline is retained from the repository.
+
+### Verified plant choices and quote sums
+
+Actual automatic orders total 145 wind farms and 23 coal plants.
+The superseded e142 candidate ordered 35 and 7. The original before-HW1
+run recorded earlier ordered 22 and 14. Each played path retains its
+own model identification.
+
+The end-city one-plant comparisons have zero physical shortage and zero
+prevented-output credit. Their rounded components follow.
+
+- one Coal Power Plant: 20-year maintained-service present value: order $64.7B + land $8.9B + 0 later works and land $0.00 + new financing $0.00 + running $16.4B - prevented output loss $0.00 - payroll returned $785.9M = $89.2B. Physical relief 0.0/month; initial 68 posts (0 unfilled); initial payroll $28.6M/month; opens 16.0 months.
+- one Wind Farm: 20-year maintained-service present value: order $1.4B + land $7.7B + 0 later works and land $0.00 + new financing $0.00 + running $792.6M - prevented output loss $0.00 - payroll returned $82.1M = $9.8B. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $2.9M/month; opens 4.3 months.
+- one Hydro Station: 20-year maintained-service present value: order $1.3B + land $1.9B + 0 later works and land $0.00 + new financing $0.00 + running $632.4M - prevented output loss $0.00 - payroll returned $59.7M = $3.8B. Physical relief 0.0/month; initial 5 posts (0 unfilled); initial payroll $2.1M/month; opens 4.8 months.
+
+Coal's 162-month founding quote and fuel/pollution treatment are Jerus's
+balance calls. The utility books price coal fuel and plant emissions at
+zero. All charged capital, land, filled posts, upkeep, repairs, utility
+bills, finance and health effects enter the comparison.
+
+Each actual-order quote below is discounted at that order's own date
+and prices. Later additions are comparison projections placed by later
+real passes. Chronological components are retained individually.
+
+- power choice m440 1 Wind Farm: 20-year maintained-service present value: order $5.1M + land $10.2M + 0 later works and land $0.00 + new financing $7.3M + running $1.1M - prevented output loss $112.5M - payroll returned $87,565 = -$88.9M. Physical relief 1755.8/month; initial 7 posts (0 unfilled); initial payroll $4,491/month; opens 14.7 months.
+- power choice m605 1 Wind Farm: 20-year maintained-service present value: order $6.5M + land $17.2M + 1 later works and land $13.8M + new financing $0.00 + running $2.5M - prevented output loss $280.3M - payroll returned $210,396 = -$240.6M. Physical relief 2024.1/month; initial 7 posts (0 unfilled); initial payroll $7,055/month; opens 5.5 months.
+- power choice m712 1 Wind Farm: 20-year maintained-service present value: order $10.2M + land $39.6M + 1 later works and land $28.2M + new financing $3.3M + running $3.7M - prevented output loss $444.1M - payroll returned $326,956 = -$359.4M. Physical relief 2622.2/month; initial 7 posts (0 unfilled); initial payroll $11,450/month; opens 12.1 months.
+- power choice m1194 1 Wind Farm: 20-year maintained-service present value: order $33.7M + land $182.4M + 1 later works and land $84.0M + new financing $136.7M + running $9.8M - prevented output loss $321.8M - payroll returned $821,966 = $124.1M. Physical relief 644.7/month; initial 7 posts (0 unfilled); initial payroll $35,218/month; opens 2.6 months.
+- power choice m1217 1 Wind Farm: 20-year maintained-service present value: order $41.8M + land $193.4M + 1 later works and land $144.5M + new financing $327.1M + running $16.1M - prevented output loss $709.7M - payroll returned $1.3M = $11.9M. Physical relief 1157.9/month; initial 7 posts (0 unfilled); initial payroll $42,476/month; opens 3.0 months.
+- power choice m1245 1 Wind Farm: 20-year maintained-service present value: order $45.4M + land $170.3M + 1 later works and land $146.4M + new financing $217.2M + running $20.0M - prevented output loss $632.7M - payroll returned $1.7M = -$35.1M. Physical relief 1072.9/month; initial 7 posts (0 unfilled); initial payroll $49,286/month; opens 3.4 months.
+- power choice m1410 1 Wind Farm: 20-year maintained-service present value: order $42.1M + land $134.6M + 0 later works and land $0.00 + new financing $0.00 + running $12.7M - prevented output loss $574.1M - payroll returned $1.1M = -$385.8M. Physical relief 1382.5/month; initial 7 posts (0 unfilled); initial payroll $40,105/month; opens 16.8 months.
+- power choice m1416 1 Wind Farm: 20-year maintained-service present value: order $41.4M + land $146.0M + 0 later works and land $0.00 + new financing $0.00 + running $13.6M - prevented output loss $0.00 - payroll returned $1.2M = $199.8M. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $39,502/month; opens 11.6 months.
+- power choice m1431 1 Wind Farm: 20-year maintained-service present value: order $35.6M + land $230.1M + 0 later works and land $0.00 + new financing $0.00 + running $12.0M - prevented output loss $0.00 - payroll returned $1.0M = $276.7M. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $38,965/month; opens 8.3 months.
+- power choice m1443 2 Wind Farm: 20-year maintained-service present value: order $90.7M + land $384.4M + 0 later works and land $0.00 + new financing $838.9M + running $19.2M - prevented output loss $1.0B - payroll returned $1.6M = $292.3M. Physical relief 3976.2/month; initial 14 posts (0 unfilled); initial payroll $81,468/month; opens 14.7 months.
+- power choice m1451 1 Wind Farm: 20-year maintained-service present value: order $45.3M + land $177.1M + 0 later works and land $0.00 + new financing $999.6M + running $9.9M - prevented output loss $0.00 - payroll returned $814,017 = $1.2B. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $43,005/month; opens 12.8 months.
+- power choice m1458 1 Wind Farm: 20-year maintained-service present value: order $50.7M + land $177.2M + 0 later works and land $0.00 + new financing $508.6M + running $10.6M - prevented output loss $0.00 - payroll returned $861,972 = $746.1M. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $45,364/month; opens 13.6 months.
+- power choice m1465 1 Wind Farm: 20-year maintained-service present value: order $51.4M + land $172.4M + 0 later works and land $0.00 + new financing $58.5M + running $11.5M - prevented output loss $0.00 - payroll returned $944,055 = $292.8M. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $47,752/month; opens 14.8 months.
+- power choice m1483 1 Wind Farm: 20-year maintained-service present value: order $57.4M + land $138.5M + 0 later works and land $0.00 + new financing $414.9M + running $13.8M - prevented output loss $0.00 - payroll returned $1.1M = $623.4M. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $54,205/month; opens 14.0 months.
+- power choice m1501 1 Wind Farm: 20-year maintained-service present value: order $59.1M + land $155.1M + 0 later works and land $0.00 + new financing $153.6M + running $21.3M - prevented output loss $0.00 - payroll returned $1.8M = $387.3M. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $59,167/month; opens 12.4 months.
+- power choice m1606 1 Coal Power Plant: 20-year maintained-service present value: order $3.7B + land $285.3M + 0 later works and land $0.00 + new financing $946.3M + running $710.7M - prevented output loss $31.7B - payroll returned $22.9M = -$26.1B. Physical relief 22311.3/month; initial 68 posts (1 unfilled); initial payroll $870,515/month; opens 27.0 months.
+- power choice m1607 1 Wind Farm: 20-year maintained-service present value: order $78.9M + land $248.0M + 1 later works and land $318.1M + new financing $296.1M + running $56.2M - prevented output loss $0.00 - payroll returned $4.8M = $992.6M. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $89,522/month; opens 8.7 months.
+- power choice m1617 2 Wind Farm: 20-year maintained-service present value: order $169.4M + land $485.5M + 0 later works and land $0.00 + new financing $0.00 + running $62.6M - prevented output loss $0.00 - payroll returned $5.3M = $712.1M. Physical relief 0.0/month; initial 14 posts (0 unfilled); initial payroll $183,728/month; opens 10.1 months.
+- power choice m1626 3 Wind Farm: 20-year maintained-service present value: order $275.2M + land $792.2M + 0 later works and land $0.00 + new financing $0.00 + running $99.4M - prevented output loss $0.00 - payroll returned $8.5M = $1.2B. Physical relief 0.0/month; initial 21 posts (0 unfilled); initial payroll $279,362/month; opens 14.8 months.
+- power choice m1676 13 Wind Farm: 20-year maintained-service present value: order $1.7B + land $3.2B + 0 later works and land $0.00 + new financing $1.9B + running $431.6M - prevented output loss $0.00 - payroll returned $37.1M = $7.2B. Physical relief 0.0/month; initial 91 posts (0 unfilled); initial payroll $1.4M/month; opens 49.6 months.
+- power choice m1726 1 Coal Power Plant: 20-year maintained-service present value: order $8.1B + land $238.1M + 0 later works and land $0.00 + new financing $1.9B + running $305.9M - prevented output loss $21.9B - payroll returned $9.3M = -$11.3B. Physical relief 58310.1/month; initial 68 posts (2 unfilled); initial payroll $1.3M/month; opens 288.5 months.
+- power choice m1858 9 Wind Farm: 20-year maintained-service present value: order $2.4B + land $3.9B + 18 later works and land $8.5B + new financing $0.00 + running $929.2M - prevented output loss $31.1B - payroll returned $86.9M = -$15.4B. Physical relief 9744.7/month; initial 63 posts (2 unfilled); initial payroll $2.5M/month; opens 29.7 months.
+- power choice m1927 1 Coal Power Plant: 20-year maintained-service present value: order $16.7B + land $1.4B + 2 later works and land $27.4B + new financing $0.00 + running $2.8B - prevented output loss $984.8B - payroll returned $90.0M = -$936.6B. Physical relief 302219.2/month; initial 68 posts (6 unfilled); initial payroll $2.9M/month; opens 113.7 months.
+- power choice m1938 1 Coal Power Plant: 20-year maintained-service present value: order $18.3B + land $1.3B + 2 later works and land $24.9B + new financing $0.00 + running $2.2B - prevented output loss $558.2B - payroll returned $72.6M = -$511.4B. Physical relief 221104.6/month; initial 68 posts (7 unfilled); initial payroll $3.1M/month; opens 129.3 months.
+- power choice m1939 1 Coal Power Plant: 20-year maintained-service present value: order $18.5B + land $1.4B + 1 later works and land $10.3B + new financing $0.00 + running $1.5B - prevented output loss $124.9B - payroll returned $48.6M = -$93.3B. Physical relief 54325.2/month; initial 68 posts (6 unfilled); initial payroll $3.2M/month; opens 133.1 months.
+- power choice m1940 1 Wind Farm: 20-year maintained-service present value: order $383.8M + land $1.2B + 8 later works and land $12.7B + new financing $0.00 + running $652.1M - prevented output loss $0.00 - payroll returned $57.0M = $14.9B. Physical relief 0.0/month; initial 7 posts (0 unfilled); initial payroll $346,555/month; opens 38.6 months.
+- power choice m1980 68 Wind Farm: 20-year maintained-service present value: order $41.7B + land $170.5B + 64 later works and land $77.5B + new financing $301.7B + running $4.5B - prevented output loss $1.3T - payroll returned $384.9M = -$660.6B. Physical relief 454449.9/month; initial 476 posts (28 unfilled); initial payroll $34.9M/month; opens 151.1 months.
+- power choice m1982 5 Coal Power Plant: 20-year maintained-service present value: order $150.7B + land $4.4B + 0 later works and land $0.00 + new financing $165.6B + running $839.5M - prevented output loss $114.1B - payroll returned $26.1M = $207.4B. Physical relief 467037.9/month; initial 340 posts (39 unfilled); initial payroll $23.9M/month; opens 500.2 months.
+- power choice m1985 5 Coal Power Plant: 20-year maintained-service present value: order $155.9B + land $4.5B + 0 later works and land $0.00 + new financing $157.5B + running $476.5M - prevented output loss $0.00 - payroll returned $14.7M = $318.3B. Physical relief 0.0/month; initial 340 posts (39 unfilled); initial payroll $24.7M/month; opens 528.1 months.
+- power choice m1987 5 Coal Power Plant: 20-year maintained-service present value: order $159.1B + land $9.2B + 0 later works and land $0.00 + new financing $252.7B + running $354.6M - prevented output loss $0.00 - payroll returned $11.0M = $421.3B. Physical relief 0.0/month; initial 340 posts (39 unfilled); initial payroll $25.3M/month; opens 538.6 months.
+- power choice m1989 3 Coal Power Plant: 20-year maintained-service present value: order $97.3B + land $2.3B + 0 later works and land $0.00 + new financing $114.4B + running $185.4M - prevented output loss $0.00 - payroll returned $5.8M = $214.1B. Physical relief 0.0/month; initial 204 posts (23 unfilled); initial payroll $15.5M/month; opens 536.2 months.
+- power choice m1992 32 Wind Farm: 20-year maintained-service present value: order $22.4B + land $23.0B + 0 later works and land $0.00 + new financing $35.9B + running $1.2B - prevented output loss $0.00 - payroll returned $101.6M = $82.4B. Physical relief 0.0/month; initial 224 posts (12 unfilled); initial payroll $18.8M/month; opens 154.1 months.
