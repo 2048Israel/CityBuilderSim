@@ -1752,13 +1752,18 @@ public class LandNationsCheck {
         Set<String> readers = new HashSet<>(), normal = new HashSet<>();
         try {
             double idleMs = hoverFrameMs(city);
+            java.util.concurrent.CountDownLatch counted = new java.util.concurrent.CountDownLatch(1);
             java.util.concurrent.Future<long[]> counting = worker.submit(() -> {
                 long[] last = null;
-                for (int i = 0; i < 16; i++) last = copy.unownedCounts(rect[0], rect[1], rect[2], rect[3]);
+                for (int i = 0; i < 16; i++) {
+                    last = copy.unownedCounts(rect[0], rect[1], rect[2], rect[3]);
+                    counted.countDown();
+                }
                 return last;
             });
-            boolean active = !counting.isDone();
+            boolean active = counted.await(10, java.util.concurrent.TimeUnit.SECONDS) && !counting.isDone();
             double busyMs = hoverFrameMs(city);
+            active &= !counting.isDone();
             check("frame premise: the level-12 count is out while the map's owner-thread geometry is timed", active && frameChecksum != 0);
             String label = "the map frame's geometry stays within one frame with a low-priority quote out";
             boolean framed = Timing.within(busyMs, LandMarket.QUOTER_MS) && Timing.within(Math.max(0, busyMs - idleMs), LandMarket.QUOTER_MS / 4);
