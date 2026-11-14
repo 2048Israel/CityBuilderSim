@@ -1,8 +1,8 @@
-# gate of Merge batch/BF1: the hands-off bank fails on the sawmills (LD2's notes 5): in 8 of 24 Random seeds a default 1900 city's bank fails within 120 months, against 14 of 24 with LD1's bid off; in each, Wood Products borrows for a Wood Pellet Mill that never sells, closes it with its loans left (written off at once), and orders another mill the next month on new credit up to 4.4x the bank's capital, which defaults within months; and at month 50 the desk's Wood Products shares leave the register for nothing (15,206 to 2, no buyback, no split). Find why the mill never sells, why its closing leaves its debt standing on nothing, why the bank lends past its capital to a sector in default, and where the shares go; the harness counts the failures over the 24 seeds, 0.9.102
+# gate of Merge batch/WN5c: a picked block priced off the screen's thread: a click that picks a block (`LandMarket.draft()`) and the month's `remeasureDrafts()` still split each picked block by seller on the FX thread (45-76 ms a block at level 8 near a coast, seconds at 11-12). Measure a click and a month with picks first; move them as WN5b moved the hover (`LandMarket.quoter()`) only if either can take more than a frame (found by WN5b, ★2), 0.9.103
 # date: 2026-11-14
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 194 harnesses run in 1933s: 189 passed, 5 failed
+# suite: 189 harnesses run in 1541s: 185 passed, 4 failed
 MapCheck | exit 1
 MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
@@ -11,12 +11,12 @@ MapCheck | 3 FAILED
 PlanCheck | exit 1
 PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
 PlanCheck | 1 FAILED
-KeptCheck | exit 2
-KeptCheck | Search "#3200" on the Bonds chip: the redraw and the next equal a page built new FAIL
-KeptCheck | the kept page and the new page are the same picture at 3 months, to SHADE_LEVELS (2) FAIL
-KeptCheck | 2 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | 1 FAILED
 LongPlaytest | exit 1
 LongPlaytest | (no FAIL line)
+KeptCheck | exit 2
+KeptCheck | Search "#3200" on the Bonds chip: the redraw and the next equal a page built new FAIL
+KeptCheck | the kept page and the new page are the same picture at 3 months, to SHADE_LEVELS (2) FAIL
+KeptCheck | 2 FAILED

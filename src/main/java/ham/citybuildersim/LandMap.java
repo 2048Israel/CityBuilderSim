@@ -1611,6 +1611,40 @@ public final class LandMap {
      * plot twice.
      */
     public static final class Picks {
+        private final java.util.concurrent.Executor draftWorker;
+        private final java.util.function.Consumer<Runnable> returnToOwner;
+        private final Runnable pricesChanged;
+        private LandMarket.DraftRequest pendingDraft;
+
+        /** Model/harness picks run synchronously. A screen supplies its worker and FX dispatcher instead (WN5c). */
+        public Picks() { this(null, null, null); }
+
+        public Picks(java.util.concurrent.Executor worker, java.util.function.Consumer<Runnable> dispatcher, Runnable changed) {
+            draftWorker = worker;
+            returnToOwner = dispatcher;
+            pricesChanged = changed;
+        }
+
+        /** The picked blocks remain outlined, but no purchase uses an unfinished price. Owner thread only. */
+        public boolean pricing() { return pendingDraft != null; }
+
+        /** Words over picked ground, shared by the map hover and the headless check (WN5c). */
+        public List<String> groundWords(Game g, java.util.function.DoubleFunction<String> money) {
+            List<Integer> ids = live(g);
+            List<String> words = new ArrayList<>();
+            int offers = 0;
+            for (int id : ids) if (id > 0) offers++;
+            words.add(pickedWords(offers, blocks.size()));
+            if (pricing()) {
+                words.add(QUOTING);
+                return List.copyOf(words);
+            }
+            Card card = card(g, ids);
+            words.add(kindWords(card.km2(), card.dryKm2(), card.freshKm2(), card.seaKm2()));
+            words.add("Price " + money.apply(card.usd()));
+            return List.copyOf(words);
+        }
+
         /** An offer picked: its id, its rectangle in plots as picked (half-open), and the land office's name for it ("North 3"), which outlives the offer. */
         private record Pick(int id, long x0, long y0, long x1, long y1, String where) {
             static Pick of(LandParcel p) { return new Pick(p.getId(), p.getX0(), p.getY0(), p.getX1(), p.getY1(), p.where()); }
@@ -1643,6 +1677,7 @@ public final class LandMap {
         public List<Integer> live(Game g) {
             LandManager now = g == null ? null : g.getLandManager();
             if (now == null || now != office) {
+                cancelDraft();
                 held.clear();
                 blocks.clear();
                 blocksLevel = -1;
@@ -1760,7 +1795,34 @@ public final class LandMap {
 
         /** The picked blocks cut into rectangles and drafted into the office (LandMarket.draft(): the ids kept for a rectangle that stands), the ground this was cut for kept. */
         private void cut(LandMarket market, CityLand land, int level) {
-            List<LandParcel> drafted = market.draft(blocks.isEmpty() ? List.of() : rectangles(blocks, level));
+            cancelDraft();
+            List<long[]> rects = blocks.isEmpty() ? List.of() : rectangles(blocks, level);
+            List<LandParcel> drafted;
+            if (draftWorker == null || rects.isEmpty()) drafted = market.draft(rects);
+            else {
+                LandMarket.DraftRequest request = market.requestDrafts(rects);
+                pendingDraft = request;
+                draftWorker.execute(() -> {
+                    RuntimeException failure = null;
+                    try { request.run(); }
+                    catch (RuntimeException e) { failure = e; }
+                    RuntimeException failed = failure;
+                    returnToOwner.accept(() -> {
+                        if (pendingDraft != request) return;
+                        pendingDraft = null;
+                        if (failed != null) {
+                            System.out.println("The picked ground could not be priced: " + failed);
+                            blocks.clear();
+                            blocksStale = true;
+                            note = "The picked ground could not be priced. Pick it again.";
+                        } else if (!market.acceptDrafts(request)) blocksStale = true;
+                        draftIds = market.getDrafts().stream().map(LandParcel::getId).toList();
+                        snapshot = view();
+                        pricesChanged.run();
+                    });
+                });
+                drafted = List.of();
+            }
             List<Integer> ids = new ArrayList<>(drafted.size());
             for (LandParcel d : drafted) ids.add(d.getId());
             draftIds = List.copyOf(ids);
@@ -1768,6 +1830,11 @@ public final class LandMap {
             ownedSeen = groundSeen.ownedPlots();
             blocksStale = false;
             blockView = blocks.isEmpty() ? java.util.Set.of() : java.util.Collections.unmodifiableSet(new java.util.LinkedHashSet<>(blocks));
+        }
+
+        private void cancelDraft() {
+            if (pendingDraft != null) pendingDraft.cancel();
+            pendingDraft = null;
         }
 
         /**
@@ -1865,7 +1932,7 @@ public final class LandMap {
                 if (lost[1] > 0) says.add(plural(lost[1], BLOCK_UNJOINED_NOTE, BLOCKS_UNJOINED_NOTE));
                 if (!says.isEmpty()) note = String.join("; ", says);
             }
-            if (!blocks.isEmpty() || !draftIds.isEmpty()) cut(market, land, level);
+            if (!blocks.isEmpty() || !draftIds.isEmpty() || pendingDraft != null) cut(market, land, level);
             blockView = blocks.isEmpty() ? java.util.Set.of() : java.util.Collections.unmodifiableSet(new java.util.LinkedHashSet<>(blocks));
             snapshot = view();
         }
@@ -1943,6 +2010,7 @@ public final class LandMap {
 
         /** Esc, a click off the offers, the map collapsed: none - the blocks and their drafts too. */
         public void clear() {
+            cancelDraft();
             held.clear();
             blocks.clear();
             blocksLevel = -1;
@@ -1950,7 +2018,7 @@ public final class LandMap {
             blocksStale = false;
             groundSeen = null;
             ownedSeen = -1;
-            if (!draftIds.isEmpty() && office != null) office.getMarket().draft(List.of());
+            if (office != null) office.getMarket().draft(List.of());
             draftIds = List.of();
             snapshot = List.of();
             note = null;
