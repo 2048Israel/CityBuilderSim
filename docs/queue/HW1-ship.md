@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HW1-GjhY7lIZ -->
 ## changelog
 ### {next} — HW1, The auto city builds its works when they are needed — 2026-11-14, ready, see docs/queue/HW1-notes.md
 Essential works target full useful service plus the player's reserve, without their payback veto or twelve-
@@ -32,3 +33,6 @@ MapCheck | ...every building within REACH plots of a street, but those packed at
 LongPlaytest | a building on the map moved | DM3-R | 2026-11-14 | Combined BF1/HW1 default moves twelve of district(-1,-1) 4301 boxes at m2389. Renderer classes remain main's, the nightly already records this movement class, and all six reloads and money fixtures pass. Preserve the watch and cause the retained m2388-2389 case in DM3-R.
 
 LongPlaytest | negative monthly GDP | CPB1 | 2026-11-14 | AUTO2 and ZERO_SLACK seeds3/9 reproduce on whole main0.9.102 at the same copied pre734/pre1513 states, with identical negative GDP components. A real-refinery zero-demand buffer probe also reproduces. Orchestrator20261114-180838 passes this outside-HW1 finding by name with CPB1 queued. Raw ensemble scores remain recorded.
+
+KeptCheck | The position, Your rate: the redraw and the next equal a page built new | KS1-UI | 2026-11-14 | Whole main0.9.102 UI ahead of the same HW1 fixture reproduces the identical hidden empty9px Label layout0x20 versus fresh0x13. FinancesScreen/Pieces/Kept/KeptBench code matches main. Bounded unchanged prefix through section68 has exactly the same two failures, retained in HW1 notes; preserve the hard signature law.
+KeptCheck | the Columns on Borrow at home, asking for a sixth of the cash: each month's redraw hands back nine in ten of the pictures it had, or more (7 of 10) | KS1-UI | 2026-11-14 | Whole main0.9.102 UI on the identical original six-month fixture reproduces seven of ten pictures handed back, with all six redraws active and two initial pictures. The main-UI prefix log and hard done condition are in HW1 notes; the 90percent law is unchanged.

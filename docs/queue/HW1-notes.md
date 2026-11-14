@@ -1,4 +1,20 @@
-# HW1 final verification after GDP attribution
+# HW1 complete dry run and main UI attribution
+
+The fresh merged dry run completed 195 harnesses, 190 passing, in
+2,111 seconds. KeptCheck completed every section and exited normally
+after 764.6 seconds. Its two Finances failures are reproduced exactly
+with independently compiled main 0.9.102 UI on the same HW1 fixture.
+KS1-UI owns those retained bounds and picture-reuse cases.
+The other four red harnesses have the recorded outside-batch findings.
+A retained-run rejudge with these two named rows is pending.
+
+Main e8a468c2, version 0.9.103, remains fixed for this record-only
+rejudge. The model and raw final ensemble are unchanged. CPB1 names
+the main stock-planner GDP finding under the orchestrator's explicit
+outside-batch treatment. The provisional ship file points to the kept run.
+
+# GDP attribution before the complete dry run
+
 
 The production model is unchanged. Main 0.9.103 is merged.
 The 80-run ensemble retains its raw 8/10 hard score, with M1 passing and
@@ -3576,3 +3592,69 @@ the reduced fixture and hard done conditions. Per orchestrator
 The raw final ensemble scores remain FAIL, and the negative GDP
 finding remains hard. Production is unchanged, so the orchestrator
 directs retaining this final-model ensemble without another rerun.
+
+
+## Complete fresh dry run and two Finances findings
+
+Orchestrator's go is 20261114-181725. The normal launcher run is
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HW1-GjhY7lIZ.
+It judges branch 91419d03e3b5d4e18476080ab4b9751bf7c963b8 against
+main e8a468c219252ffd0c4f1424ea2efc52b4aaf565, with planned version
+0.9.104. Its source selection is ALL 202, with the nightly tier's
+direct selection including KeptCheck. The actual run completes
+195 harnesses, 190 passing and five red, in 2,111 seconds. Compile
+takes 47 seconds. The launcher finishes its checks in 2,185 seconds,
+with suite exit 4 and launcher exit 1 for the two unnamed UI laws.
+
+MapCheck's four geometric laws, PlanCheck's junction floor,
+DeathRecordCheck's orphan placement and LongPlaytest's standing-box
+movement are the already-recorded outside-batch findings.
+There are eight soft timing lines and four path observations.
+
+KeptCheck starts at 18:42:04 with its normal 2,048 MiB heap and soft
+timing, PID 19588 owned by this launcher. It finishes every section,
+including Research Funding at 100 and the final controls, and exits
+2 normally after 764.6 seconds. Its footer is 2 FAILED. There is no
+timeout or incomplete-coverage exception.
+
+The new lines are the following hard laws.
+
+- The position, Your rate: the redraw and the next equal a page built new.
+  Its hidden empty Label, styled at 9px, retains a 0x20 layout box where
+  the fresh Label is 0x13, at the same 337,27 position. The difference
+  is line 371, character 190 of the page signature. This is the retained
+  hidden-label bounds class already owned by KS1-UI.
+- The Columns on Borrow at home, asking for a sixth of the cash:
+  each month's redraw hands back nine in ten of the pictures it had,
+  or more. The unchanged six-month fixture redraws in all six months,
+  with two pictures initially and seven of ten prior picture instances
+  handed back. The existing 90% floor remains hard.
+
+FinancesScreen, Pieces, Kept, KeptBench and KeptCheck have no diff
+against main. To verify the input-sensitive attribution, the bounded
+prefix retains the exact KeptCheck fixture, actions and assertions
+through money(), section 68, and then ends. Every UI class is loaded
+from the complete separately compiled main 0.9.102 UI directory,
+including main's BuildScreen. The HW1 model classes stay behind it.
+The prefix is the original source with only an early stop after money().
+
+That main-UI prefix reproduces exactly both new failures and no others,
+including the hidden Label's 0x20/0x13 difference and the Columns'
+seven-of-ten result. Its log is
+target/checks/hw1-kept-final-main-ui-prefix.log, exit 2, ending
+MAIN-UI FINANCES PREFIX COMPLETE, failures=2.
+The source, compiled prefix and main UI classes are retained at
+target/hw1-kept-final-proof. This diagnostic is a bounded attribution
+replay. The original launcher supplies the complete 100-section run.
+
+Orchestrator 20261114-185817 directs moving both findings to an
+existing owner if main's UI reproduces them. The exact ship rows
+therefore name KS1-UI. Its done condition includes restoring these
+two exact input cases while preserving fresh-page signature equality
+and the existing picture-reuse floor. No assertion is changed,
+no production source is edited, and no timeout is filed.
+
+The original run's checks.complete, checks.sha256, selection, stage
+logs, commit identities and raw harness logs remain untouched.
+The ship's gate-run marker points at this directory for the common
+judge's record-only reuse under batch.md section 5.
