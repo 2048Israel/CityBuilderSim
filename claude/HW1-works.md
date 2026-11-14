@@ -94,10 +94,18 @@ zoned ground is carried as usable across subsequent linked works, and
 rounded bond proceeds above the funding gap are discarded from the
 future-plan cash projection.
 
-## Final verification
+## Final verification and hold
 
-The final combined-model ensemble HW1-bf1-final is running against
-0.9.102. Its same eighty runs will also be scored against 0.9.98.
-The completed pre-BF1 ensemble identifies that preceding candidate.
-The final scores and the complete launcher verdict belong in the batch
-notes and the ship file.
+The final combined-model ensemble finishes all eighty runs.
+M1 passes in every policy. F1 fails in AUTO2 and ZERO_SLACK, each with
+two of sixteen seeded runs reporting negative monthly GDP against
+zero in both 0.9.102 and 0.9.98. The other three policies pass F1.
+
+The hard score is 8/10. The overall score is 19/26 against 0.9.102 and
+17/26 against 0.9.98. Both failing policies share seed 3's months
+735, 739 and 749, and seed 9's twelve months during 1514–1537, before
+ZERO_SLACK switches policy. The economic cause remains untraced.
+
+EI1 holds shipping on this F1 failure. The provisional ship file has
+been withdrawn, and no fresh launcher run is started. The batch notes
+retain every changed verdict and each criterion beside both baselines.

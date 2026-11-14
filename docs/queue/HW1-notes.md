@@ -1,4 +1,19 @@
-# HW1 combined-model verification after BF1
+# HW1 held at the final combined ensemble
+
+All eighty final-model runs finish. M1 passes in every policy.
+F1 fails for AUTO2 and ZERO_SLACK, each 2/16 runs with negative monthly
+GDP against zero in both baselines. Hard criteria pass 8/10, so the
+batch stops under EI1. The provisional ship file is removed on origin.
+No readiness is claimed and no fresh dry run has started.
+
+The current branch includes main e8a468c2, version 0.9.103.
+The final ensemble snapshot is a0efd26d on combined model 75bf8209,
+with WN5c's trace-preserving carry explicitly approved.
+The complete failing scores and exact seeded months are under
+“Final combined ensemble hard stop” at the end of these notes.
+
+# Combined-model verification before the hard stop
+
 
 The current production model is merge 75bf8209 on main 1e5dffa8,
 version 0.9.102. The corrected assertion snapshot is a0efd26d.
@@ -3392,3 +3407,101 @@ part to BF1-M. HW1's former DM3-R ship override for that part was removed
 so the existing main entry owns connectivity. DM3-R retains the surface,
 reach, standing-box movement and shutdown diagnostic cases described
 in these notes. The hard drawing and movement laws remain unchanged.
+
+## Final combined ensemble hard stop
+
+The final-model HW1-bf1-final ensemble finishes all 80 runs in 85.1
+minutes elapsed, exit 4, with no missing or short runs. Its immutable
+snapshot is a0efd26d, the combined HW1/BF1 model on main 0.9.102.
+WN5c is merged on main 0.9.103 with its trace-preserving carry approved
+by the orchestrator. All 64 policy runs match their AUTO2 twins before
+the switches.
+
+M1 passes in all five policies with zero failed or unread audit months.
+F1 fails for AUTO2 and ZERO_SLACK, each with two of sixteen runs reporting
+negative monthly GDP against a baseline of zero. The other three policies
+pass F1. This is 8 of 10 hard criteria, so the batch is held under EI1.
+The economic cause of negative GDP remains untraced. It is not entered
+as a known-red exception.
+
+The official newest-baseline score is 19/26 counted criteria against
+0.9.102. Rescoring the same eighty CSVs against the requested 0.9.98
+produces 17/26, also exit 4 and 8/10 hard criteria. H1 remains retired.
+Raw CSVs, logs, times, summary.json, score.md and baseline.md are retained
+in target/ensemble/HW1-bf1-final. The older comparison is
+target/checks/hw1-bf1-score-098.md with summary-098.json in the run root.
+The failed current-baseline report replaces docs/ensemble/HW1.md.
+
+The provisional ship file was removed and pushed first at 39c8eaa7.
+No fresh dry run was requested or started after this hard stop, and no
+readiness is claimed. Earlier completed ensembles describe preceding
+candidates and cannot satisfy this combined-model F1 condition.
+
+| Run | Negative-GDP months | First GDP | Worst GDP |
+|---|---|---:|---:|
+| AUTO2-3.csv | 735, 739, 749 | -9183.22750000 | -9183.22750000 |
+| AUTO2-9.csv | 1514, 1516, 1518, 1520, 1522, 1524, 1526, 1529, 1531, 1533, 1535, 1537 | -12961.07950000 | -21016.24190000 |
+| ZERO_SLACK-3.csv | 735, 739, 749 | -9183.22750000 | -9183.22750000 |
+| ZERO_SLACK-9.csv | 1514, 1516, 1518, 1520, 1522, 1524, 1526, 1529, 1531, 1533, 1535, 1537 | -12961.07950000 | -21016.24190000 |
+
+The two policies hit the same seed 3 and seed 9 paths before ZERO_SLACK
+switches at m1800. These are two underlying seeded city paths, recorded
+as four runs by F1. Seed 3 has three negative-GDP months, and seed 9
+has twelve. The values above retain the CSV native GDP units.
+
+| Criterion | Class | 0.9.98 value | 0.9.98 verdict | HW1 versus 0.9.98 | 0.9.102 value | 0.9.102 verdict | HW1 value | HW1 versus 0.9.102 |
+|---|---|---|---|---|---|---|---|---|
+| AUTO2/A1 | info | 2.79% [2.46% to 3.59%] | PASS | FAIL | 2.97% [2.61% to 3.43%] | FAIL | 3.04% [2.62% to 3.69%] | FAIL |
+| AUTO2/A2 | info | 31 [12 to 44] | FAIL | FAIL | 26 [12 to 36] | FAIL | 18 [8 to 48] | FAIL |
+| AUTO2/A3 | info | 0 [0 to 12]; 100.00% [98.09% to 100.00%] | FAIL | PASS | 0 [0 to 15]; 100.00% [96.63% to 100.00%] | FAIL | 0 [0 to 6]; 100.00% [98.56% to 100.00%] | PASS |
+| ZERO_SLACK/S1 | info | 1.94% [1.00% to 4.51%] | PASS | PASS | 2.12% [1.02% to 4.59%] | PASS | 2.40% [0.97% to 5.43%] | PASS |
+| ZERO_HOT/H1 | info | 5.51% [-2.38% to 12.69%]; 3.49% [-1.25% to 6.64%]; -3.93% [-14.55% to 1.60%] | RETIRED | RETIRED | 6.13% [-3.18% to 10.48%]; 2.74% [-5.71% to 9.89%]; -2.73% [-14.42% to 11.29%] | RETIRED | 3.39% [-0.06% to 11.77%]; 1.48% [-2.59% to 8.99%]; -5.56% [-9.96% to 2.10%] | RETIRED |
+| ZERO_HOT/H2 | info | 0.15% [-3.56% to 3.25%] | PASS | FAIL | 0.84% [-2.77% to 3.94%] | PASS | -0.36% [-5.42% to 4.53%] | FAIL |
+| SHOCK/K1 | info | 15.75% [12.08% to 22.96%] | PASS | PASS | 15.51% [12.21% to 23.14%] | PASS | 14.49% [11.76% to 17.09%] | PASS |
+| SHOCK/K2 | info | 1.73% [-0.37% to 4.31%]; 0.12% [-2.10% to 1.50%] | PASS | PASS | 2.23% [0.39% to 4.50%]; 0.11% [-1.40% to 1.04%] | PASS | 2.21% [-1.58% to 5.51%]; 0.24% [-1.54% to 2.96%] | PASS |
+| HIGH/R1 | info | -3.75% [-5.14% to -1.43%] | PASS | PASS | -4.05% [-6.04% to -1.60%] | PASS | -4.45% [-6.47% to -1.29%] | PASS |
+| HIGH/R2 | info | 0.59% [-0.69% to 4.39%] | PASS | PASS | 2.19% [-1.24% to 6.75%] | PASS | 1.71% [-0.41% to 13.15%] | PASS |
+| HIGH/R3 | info | -4.54% [-7.64% to -1.04%] | PASS | PASS | -4.23% [-6.26% to -1.63%] | PASS | -4.33% [-7.72% to -0.73%] | PASS |
+| ALL/T1 | info | 16/16 (m608 [486 to 895]) | PASS | PASS | 16/16 (m730 [555 to 1,123]) | PASS | 16/16 (m1,192 [622 to 1,728]) | PASS |
+| AUTO2/T2 | info | 1,538,083 [1,045,160 to 1,930,257] | PASS | PASS | 1,271,534 [764,794 to 1,897,909] | PASS | 1,596,950 [505,663 to 2,866,309] | PASS |
+| AUTO2/M1 | hard | 0 (0) | PASS | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| AUTO2/F1 | hard | 0/16 [] | PASS | FAIL | 0/16 [] | PASS | 2/16 ['negative monthly GDP'] | FAIL |
+| ZERO_SLACK/T2 | info | 1,126,109 [703,694 to 1,367,813] | PASS | FAIL | 904,344 [451,930 to 1,333,225] | PASS | 780,858 [100,209 to 1,932,923] | PASS |
+| ZERO_SLACK/M1 | hard | 0 (0) | PASS | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| ZERO_SLACK/F1 | hard | 0/16 [] | PASS | FAIL | 0/16 [] | PASS | 2/16 ['negative monthly GDP'] | FAIL |
+| ZERO_HOT/T2 | info | 10,574 [4,329 to 30,139] | PASS | FAIL | 10,523 [3,404 to 27,425] | PASS | 6,644 [4,733 to 13,403] | FAIL |
+| ZERO_HOT/M1 | hard | 0 (0) | PASS | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| ZERO_HOT/F1 | hard | 0/16 [] | PASS | PASS | 0/16 [] | PASS | 0/16 [] | PASS |
+| SHOCK/T2 | info | 103,965 [23,437 to 162,411] | PASS | FAIL | 72,408 [11,118 to 132,805] | FAIL | 34,104 [20,390 to 91,368] | FAIL |
+| SHOCK/M1 | hard | 0 (0) | PASS | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| SHOCK/F1 | hard | 0/16 [] | PASS | PASS | 0/16 [] | PASS | 0/16 [] | PASS |
+| HIGH/T2 | info | 55,503 [10,659 to 118,156] | PASS | FAIL | 33,770 [2,462 to 74,967] | FAIL | 26,730 [4,772 to 33,276] | PASS |
+| HIGH/M1 | hard | 0 (0) | PASS | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| HIGH/F1 | hard | 0/16 [] | PASS | PASS | 0/16 [] | PASS | 0/16 [] | PASS |
+| ALL/pairing | info | 64/64 | PASS | PASS | 64/64 | PASS | 64/64 | PASS |
+
+Changed verdicts against 0.9.102 follow.
+
+- AUTO2 A3 (info) FAIL -> PASS
+- ZERO_HOT H2 (info) PASS -> FAIL
+- AUTO2 F1 (hard) PASS -> FAIL
+- ZERO_SLACK F1 (hard) PASS -> FAIL
+- ZERO_HOT T2 (info) PASS -> FAIL
+- HIGH T2 (info) FAIL -> PASS
+
+Changed verdicts against 0.9.98 follow.
+
+- AUTO2 A1 (info) PASS -> FAIL
+- AUTO2 A3 (info) FAIL -> PASS
+- ZERO_HOT H2 (info) PASS -> FAIL
+- AUTO2 F1 (hard) PASS -> FAIL
+- ZERO_SLACK T2 (info) PASS -> FAIL
+- ZERO_SLACK F1 (hard) PASS -> FAIL
+- ZERO_HOT T2 (info) PASS -> FAIL
+- SHOCK T2 (info) PASS -> FAIL
+- HIGH T2 (info) PASS -> FAIL
+
+All service spells, plant choices, financing observations and affected
+harness outcomes remain in the combined-default sections above. The
+next shipping attempt requires resolving the F1 stop with its findings
+preserved, then a final-model ensemble and complete coordinated dry run.
