@@ -2,7 +2,8 @@
 
 Built from HA1 on main, 0f4fb634, on 2026-11-13. This is a no-tag process
 batch. Readiness at 09fcecdc was withdrawn in 4805c96a for lanekeeper's send-back 1.
-The ship file returns only after the repaired branch's fresh no-tag dry run.
+The repaired source at 249102d5 passes the fresh no-tag gate recorded below.
+The restored ship file records readiness.
 
 ## Built and decisions
 
@@ -258,7 +259,19 @@ mended below. These repairs supersede the initial ready result.
   pick. The final fast check and fresh-clone gate verify that final tree.
 - The final fast check passed with compile, regenerated maps and zero firm
   Stale findings. Its log is `target/checks/po1-review-final-fast.txt`.
-- The fresh no-tag dry-run result is recorded before readiness.
+- The fresh no-tag dry run passed with launcher exit 0 and suite exit 3.
+  It ran 196 harnesses in 1,887 seconds, with 193 passing. DeathRecordCheck,
+  KeptCheck and PlanCheck are the three known-red harnesses. KeptCheck's sole
+  failure is the main-controlled section 63 law described below. No new red
+  remained. Compilation, regenerated maps, zero firm Stale findings and tree
+  validation completed. The actual suite reports 8 OBSERVED misses.
+- The final retained run is
+  `/c/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-PO1/target/po1-gate-review1`.
+  Logs are `ship.log` and `checks/suite.txt`. It tests branch
+  `249102d5f60b09c4573f5fd141843d074b44dabc` against main
+  `df08523f62d796b61b8b08524451d69f89ab1557`. The completion marker
+  and evidence hashes are verified. The ship file names this run for reuse.
+  Only notes and ship advance after this gate.
 
 ## KF63
 
