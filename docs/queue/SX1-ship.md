@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-SX1-x0V9WEWg -->
 
 ## changelog
