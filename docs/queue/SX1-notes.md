@@ -1,10 +1,11 @@
 # SX1 — The exchange's prices readable
 
-Readiness was withdrawn for REV-SX1-1 before changing the harness. The previous
-split-month count was wrong: getSplit() uses zero for no adjustment. The
-corrected city fixture observes 40 of 240 months, worst split-month audit
-1.96e-14. Revision validation and the replacement fresh gate are recorded below.
-The simulation and the 80-run ensemble are unchanged.
+REV-SX1-1 validation passed: selected checks exit 0 (11 harnesses), replacement
+fresh merge gate exit 0 (188 harnesses; only three existing red harnesses).
+The corrected city fixture observes 40 of 240 split months, worst split-month
+audit 1.96e-14. Both actual played-city assertions fail when adjustments are
+disabled. Readiness was withdrawn before the repair; the previous 240-month
+claim is withdrawn. The simulation and the 80-run ensemble are unchanged.
 
 ## Built and calls
 
@@ -179,7 +180,7 @@ Readiness was taken off first in e0536d8d and the old gate-run marker removed.
 The older kept runs above are historical and will not be reused after this
 harness change.
 
-- The shared SplitAudit observer counts a month only when at least one factor
+- ★ The shared SplitAudit observer counts a month only when at least one factor
   is nonzero, and uses that same observation for the occurrence and split-month
   conservation assertions. The original 1e-9 audit bound is unchanged.
 - A twelve-step exchange run with quotes inside the wage band produces zero
@@ -204,3 +205,31 @@ harness change.
   completed ensemble stands, as the send-back directs.
 - All regenerated indexes are committed before the replacement gate, including
   the previously publisher-owned ShortSellingCheck.RUN_START offset in dials.
+- Additional direct failure proof uses only target/rev-sx1-1-no-split: a
+  private compiled copy of Exchange disables adjustments in that JVM. The
+  real played-city assertions both print FAIL (“the played city actually
+  splits shares” and “MoneyAudit closes in every month with a split”); the
+  count is zero, its split residual is zero, and ExchangeCheck exits 1.
+  Normal compiled source passes those same assertions with forty observed
+  months. This experiment changes neither source nor target/classes, and
+  its intentional reds are not part of the shipping model or registry.
+
+
+## REV-SX1-1 replacement gate and readiness
+
+- Fresh `sh tools/gate.sh SX1 --dry-run` exited 0, with no reuse of the old
+  evidence. Its suite exited 3: 188 ran, 185 passed; only existing PlanCheck
+  (PX1), KeptCheck (KF63) and DeathRecordCheck (OX1) reds. No NEW red or registry
+  change. Compile, generated maps and Stale passed, with zero firm findings.
+  Eight timing assertions were soft and eight path misses informational.
+- Keep /tmp/cbs-gate-SX1-IHgxFMHv, including ship.log, checks/, generated/,
+  checks.sha256 and checks.complete. It was of branch
+  d665c4859b3d1e75b1d57b09cb77b50d82819db5 and current main
+  ef5cfe589277dd14e1a970ddb78212e82b571ee9. The ship file names this run, replacing
+  the pre-review runs. Main still matched this identity at final verification.
+- The fresh gate's ExchangeCheck independently reports 40 real split months,
+  zero quotes outside the band, worst split-month audit 1.96e-14; its negative
+  control rejects both conditions and its actual split control accepts both.
+- After this run only the notes and ship file advance. The ship file is pushed
+  last with the provisional marker removed. Ensemble evidence is retained
+  unchanged, per the send-back: this repair changes harness code alone.
