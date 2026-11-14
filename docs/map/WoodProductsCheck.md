@@ -1,6 +1,6 @@
 # WoodProductsCheck.java - 642 lines · 16 methods · 30 constants · harnesses
 
-`ham/citybuildersim/WoodProductsCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WoodProductsCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Wood Products, checked (0.7.140, batch I10; docs/studies/spec-materials.md
 > 2.1, 2.2, 2.3, 2.7, 2.8, 2.12, 4 and 5's I10 row; the study's -
@@ -18,14 +18,14 @@
 > 
 > WHAT THIS HAS TO PROVE:
 > 
->   1. THE SECTOR ON THE REGISTRY: Wood Products the twenty-fourth and last
+>   1. THE SECTOR ON THE REGISTRY: Wood Products the twenty-fourth, followed by Gold Mining
 >      key, after Forestry; a ProcessingSector making lumber, residues,
 >      panels, pulp, paper and pellets of sawlogs, pulpwood, residues, pulp
 >      and fuel oil, Iron & Steel's group; residues and pulp captive, lumber
 >      its planning good; what is as long as the keys grew with them; the six
 >      goods at the study's 5.3 prices, freight three eighths of each wedge,
 >      lumber, panels and residues by the cubic metre at their tonnes, the
->      five stockable on HELD's end; the buyers (spec 2.12) - the logs, the
+>      five stockable after copper on HELD; the buyers (spec 2.12) - the logs, the
 >      residues and the pulp its own, the fuel oil the paper mill's, the rest
 >      nobody's here, shipped.
 > 
@@ -64,7 +64,7 @@
 > 
 > ... (2 more lines in the source)
 
-**Uses:** [Good](Good.md) (156), [WoodProducts](WoodProducts.md) (29), [JobType](JobType.md) (12), [Sectors](Sectors.md) (11), [NationalAccounts](NationalAccounts.md) (10), [SpreadPlanner](SpreadPlanner.md) (10), [BuildingManager](BuildingManager.md) (9), [Sector](Sector.md) (8), [MaterialsCheck](MaterialsCheck.md) (8), [Game](Game.md) (7), [Traffic](Traffic.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [PriceLevelCheck](PriceLevelCheck.md) (5), [MoneyAudit](MoneyAudit.md) (5), [Ports](Ports.md) (5), [Equity](Equity.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [Forestry](Forestry.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PayTier](PayTier.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [GameFiles](GameFiles.md) (2), [Markets](Markets.md) (1), [ProcessingSector](ProcessingSector.md) (1), [Bank](Bank.md) (1), [PriceLevel](PriceLevel.md) (1), [Statement](Statement.md) (1), [ForestryCheck](ForestryCheck.md) (1)... and 1 more
+**Uses:** [Good](Good.md) (157), [WoodProducts](WoodProducts.md) (29), [Sectors](Sectors.md) (12), [JobType](JobType.md) (12), [NationalAccounts](NationalAccounts.md) (11), [SpreadPlanner](SpreadPlanner.md) (10), [BuildingManager](BuildingManager.md) (9), [Sector](Sector.md) (8), [MaterialsCheck](MaterialsCheck.md) (8), [Game](Game.md) (7), [Traffic](Traffic.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [PriceLevelCheck](PriceLevelCheck.md) (5), [MoneyAudit](MoneyAudit.md) (5), [Ports](Ports.md) (5), [Equity](Equity.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [Forestry](Forestry.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PayTier](PayTier.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [GameFiles](GameFiles.md) (2), [Markets](Markets.md) (1), [ProcessingSector](ProcessingSector.md) (1), [Bank](Bank.md) (1), [PriceLevel](PriceLevel.md) (1), [Statement](Statement.md) (1), [ForestryCheck](ForestryCheck.md) (1)... and 1 more
 
 ## Sections
 

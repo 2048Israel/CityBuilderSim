@@ -1,6 +1,6 @@
 # ConstructionControl.java - 911 lines · 66 methods · 11 constants · model
 
-`ham/citybuildersim/ConstructionControl.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ConstructionControl.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The player's hand on the construction queue (0.7.22): the order the
 > city's own sites are served in, the sites it has put on overtime, the
@@ -40,7 +40,7 @@
 
 **Uses:** [SaveCopy](SaveCopy.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (4)
 
-**Used by (25):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [DataSave](DataSave.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [Game](Game.md), [Inbox](Inbox.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [RoadCheck](RoadCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md), [WorksValue](WorksValue.md)
+**Used by (26):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankCheck](BankCheck.md), [BridgeCheck](BridgeCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [DataSave](DataSave.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Game](Game.md), [Inbox](Inbox.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [RoadCheck](RoadCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UserInterface](UserInterface.md), [WorksValue](WorksValue.md)
 
 ## Sections
 

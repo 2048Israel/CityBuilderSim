@@ -1,6 +1,6 @@
 # SectorState.java - 278 lines · 6 methods · 0 constants · model
 
-`ham/citybuildersim/SectorState.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorState.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > One sector, as a save carries it.
 > 
@@ -19,7 +19,7 @@
 
 **Uses:** [Sector](Sector.md) (16), [Good](Good.md) (13), [Statement](Statement.md) (4)
 
-**Used by (12):** [BooksCheck](BooksCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FreightViewCheck](FreightViewCheck.md), [FuelSplit](FuelSplit.md), [HomeRailCheck](HomeRailCheck.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [TruckRouteCheck](TruckRouteCheck.md), [VanCheck](VanCheck.md)
+**Used by (13):** [BooksCheck](BooksCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FreightViewCheck](FreightViewCheck.md), [FuelSplit](FuelSplit.md), [GoldMiningCheck](GoldMiningCheck.md), [HomeRailCheck](HomeRailCheck.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [TruckRouteCheck](TruckRouteCheck.md), [VanCheck](VanCheck.md)
 
 ## Fields (state)
 

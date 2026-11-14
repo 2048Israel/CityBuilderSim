@@ -1,6 +1,6 @@
 # KnownReds.java - 129 lines · 8 methods · 3 constants · model
 
-`ham/citybuildersim/KnownReds.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/KnownReds.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The common red-line judge for the suite, batch checks and publisher.
 > WHY (GR2): temp gate scripts held approvals the builder could never read.

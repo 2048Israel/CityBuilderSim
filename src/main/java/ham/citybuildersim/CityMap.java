@@ -173,8 +173,8 @@ public final class CityMap {
     /** How many types a district notes as changed between two logs (District.touch()) before the log compares them all: 8. */
     static final int TOUCHED_MAX = 8;
 
-    /** The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5); since 0.8.0 (batch I14) coal, stone and copper after them, every resource a works on dry ground stands on. */
-    static final Resource[] SITED = { Resource.IRON, Resource.OIL, Resource.COAL, Resource.STONE, Resource.COPPER };
+    /** The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5); since 0.8.0 (batch I14) coal, stone and copper after them, every resource a works on dry ground stands on, including gold since GD4. */
+    static final Resource[] SITED = { Resource.IRON, Resource.OIL, Resource.COAL, Resource.STONE, Resource.COPPER, Resource.GOLD };
 
     /** The site slots (0.8.0, batch I14): each SITED resource's types of field in Resource.typesOf()'s order - iron's hematite and magnetite, oil's one, coal's thermal and coking, stone's limestone and hard rock, copper's sulphide and oxide - what a district counts its sites by, and a works of a type stands on. */
     static final int SLOTS;

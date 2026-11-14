@@ -1,6 +1,6 @@
 # ResearchScreen.java - 1,199 lines · 73 methods · 28 constants · interface
 
-`ham/citybuildersim/ui/ResearchScreen.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ResearchScreen.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Policy › Research (R5, slice B1; R3b, slice B): the sixth Policy area, drawn in Policy's own style - three pages: the Overview (who is at research and
 > what is in their reach), Funding (a grant and a prize for each field, staged through Policy's set and tray) and Found (what the city has discovered

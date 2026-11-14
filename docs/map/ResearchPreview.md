@@ -1,6 +1,6 @@
 # ResearchPreview.java - 450 lines · 26 methods · 7 constants · model
 
-`ham/citybuildersim/ResearchPreview.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchPreview.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > What a set of research dials would find in this city over the next YEARS years, from the DISTRIBUTION of the hidden sizes and never from the
 > city's own draw: the number each dial card on Policy > Research shows beside the dial (research-design 5.4, 6.2; mockups-research/1-funding.html).

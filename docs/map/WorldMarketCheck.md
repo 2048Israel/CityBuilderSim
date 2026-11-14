@@ -1,6 +1,6 @@
 # WorldMarketCheck.java - 1,020 lines · 35 methods · 12 constants · harnesses
 
-`ham/citybuildersim/WorldMarketCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMarketCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The world market (batch WN3; the project's spec-nations.md 4): the nations'
 > January solve held to the equations it solves, the calibration held to the

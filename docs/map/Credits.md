@@ -1,6 +1,6 @@
 # Credits.java - 100 lines · 7 methods · 4 constants · model
 
-`ham/citybuildersim/Credits.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Credits.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The Credits page's sections: the Earth data's attribution, the nations' attribution and the
 > fonts' notice with its licence, each read from the jar as the exe ships it, and the text of each

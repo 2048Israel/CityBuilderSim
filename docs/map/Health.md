@@ -1,6 +1,6 @@
-# Health.java - 428 lines · 23 methods · 14 constants · model
+# Health.java - 442 lines · 26 methods · 14 constants · model
 
-`ham/citybuildersim/Health.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Health.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > How much of the workforce is off sick this month.
 > 
@@ -50,7 +50,7 @@
 
 **Uses:** [Unemployment](Unemployment.md) (1), [CausesOfDeath](CausesOfDeath.md) (1)
 
-**Used by (24):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CausesOfDeath](CausesOfDeath.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [ChartCheck](ChartCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WorksValue](WorksValue.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
+**Used by (25):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CausesOfDeath](CausesOfDeath.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [ChartCheck](ChartCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [OutsideCheck](OutsideCheck.md), [PeopleScreen](PeopleScreen.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WorksValue](WorksValue.md), [YearBook](YearBook.md), [YearBookCheck](YearBookCheck.md)
 
 ## Sections
 
@@ -61,8 +61,8 @@
 | 102 | OUTBREAKS |
 | 136 | · state |
 | 178 | · the month |
-| 317 | · reading it |
-| 353 | · saving |
+| 314 | · reading it |
+| 367 | · saving |
 
 ## Constants
 
@@ -94,16 +94,16 @@
 | 147 | `private double baselineRate` |  |
 | 150 | `private double unburiedRate` | What the unburied dead are adding this month. |
 | 153 | `private double hungerRate` | ...and what hunger is adding. |
-| 285 | `private double influenzaRate` | What the 1918 influenza is adding on top: its sick, in its months only (R0b). |
-| 292 | `private boolean influenzaHeldOff` | The influenza held off, for a harness fixture sized on today's deaths: see CausesOfDeath.holdOff(). |
-| 296 | `private double unhousedRate` |  |
-| 299 | `private double injuryRate` | What violent crime is adding on top: the injured, off work. |
+| 282 | `private double influenzaRate` | What the 1918 influenza is adding on top: its sick, in its months only (R0b). |
+| 289 | `private boolean influenzaHeldOff` | The influenza held off, for a harness fixture sized on today's deaths: see CausesOfDeath.holdOff(). |
+| 293 | `private double unhousedRate` |  |
+| 296 | `private double injuryRate` | What violent crime is adding on top: the injured, off work. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 377 | **type** `public class Health` | How much of the workforce is off sick this month. |
+| 52 | 391 | **type** `public class Health` | How much of the workforce is off sick this month. |
 
 ### THE BASELINE (lines 54-76)
 
@@ -113,7 +113,7 @@
 
 ### state (lines 136-177)
 
-### the month (lines 178-316)
+### the month (lines 178-313)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -121,33 +121,36 @@
 | 186 | 4 | `public void advanceMonth(double generalCareCapacity, double population, int month, double unburied)` | ...and the four-argument form: a city that can feed itself. |
 | 201 | 4 | `public void advanceMonth(double generalCareCapacity, double population, int month, double unburied, double hungry)` | Works out this month's sick rate. |
 | 211 | 4 | `public void advanceMonth(double generalCareCapacity, double population, int month, double unburied, double hungry, double unhou...` | the orphans - who get sick UNHOUSED_SICKNESS times as often. |
-| 222 | 61 | `public void advanceMonth(double generalCareCapacity, double population, int month, double unburied, double hungry, double unhou...` | violent crime - Crime.getInjuredShare(). |
-| 286 | 1 | `public double getInfluenzaRate()` |  |
-| 293 | 1 | `public void holdInfluenzaOff()` |  |
-| 294 | 1 | `public boolean isInfluenzaHeldOff()` |  |
-| 300 | 1 | `public double getInjuryRate()` |  |
-| 303 | 1 | `public double getUnhousedRate()` | What the unhoused and the orphans are adding on top. |
-| 312 | 4 | `public static double coverageOf(double capacity, double population)` | Share of the people general care has to serve that it has room for. |
+| 222 | 58 | `public void advanceMonth(double generalCareCapacity, double population, int month, double unburied, double hungry, double unhou...` | violent crime - Crime.getInjuredShare(). |
+| 283 | 1 | `public double getInfluenzaRate()` |  |
+| 290 | 1 | `public void holdInfluenzaOff()` |  |
+| 291 | 1 | `public boolean isInfluenzaHeldOff()` |  |
+| 297 | 1 | `public double getInjuryRate()` |  |
+| 300 | 1 | `public double getUnhousedRate()` | What the unhoused and the orphans are adding on top. |
+| 309 | 4 | `public static double coverageOf(double capacity, double population)` | Share of the people general care has to serve that it has room for. |
 
-### reading it (lines 317-352)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 320 | 1 | `public double getSickRate()` | The share of the workforce that is off sick. |
-| 329 | 1 | `public double getWorkRatio()` | What sickness leaves of the month's output: 1 when nobody is ill. |
-| 336 | 1 | `public double getCoverage()` | People treated per person, capped at 1 - which since 2026-09-19 is the staffed beds LESS whoever the clinic's fee turned away, because that is what Game passes in. |
-| 339 | 1 | `public double getBaselineRate()` | What the rate would be with no outbreak running. |
-| 342 | 1 | `public double getOutbreakSeverity()` | What the current outbreak is adding on top. |
-| 345 | 1 | `public double getUnburiedRate()` | What the unburied dead are adding on top. |
-| 346 | 1 | `public double getHungerRate()` |  |
-| 348 | 1 | `public boolean isOutbreak()` |  |
-| 351 | 1 | `public int getOutbreakStarted()` | The month the running outbreak began, or 0. |
-
-### saving (lines 353-428)
+### reading it (lines 314-366)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 363 | 21 | `public double[] getState()` | The state, in order. |
-| 394 | 26 | `public boolean restore(double[] state)` | Puts a saved month's health back. |
-| 422 | 6 | `private static long scramble(long value)` | SplitMix64, same as LandMarket's, so adjacent months look unrelated. |
+| 316 | 4 | `private static double baselineAt(double coverage)` |  |
+| 321 | 4 | `private double sicknessAt(double baseline, double unhoused, double unburied, double injured)` |  |
+| 327 | 5 | `public double workRatioAt(double coverage, double unburied, double injured)` | Current causes at another service level. |
+| 334 | 1 | `public double getSickRate()` | The share of the workforce that is off sick. |
+| 343 | 1 | `public double getWorkRatio()` | What sickness leaves of the month's output: 1 when nobody is ill. |
+| 350 | 1 | `public double getCoverage()` | People treated per person, capped at 1 - which since 2026-09-19 is the staffed beds LESS whoever the clinic's fee turned away, because that is what Game passes in. |
+| 353 | 1 | `public double getBaselineRate()` | What the rate would be with no outbreak running. |
+| 356 | 1 | `public double getOutbreakSeverity()` | What the current outbreak is adding on top. |
+| 359 | 1 | `public double getUnburiedRate()` | What the unburied dead are adding on top. |
+| 360 | 1 | `public double getHungerRate()` |  |
+| 362 | 1 | `public boolean isOutbreak()` |  |
+| 365 | 1 | `public int getOutbreakStarted()` | The month the running outbreak began, or 0. |
+
+### saving (lines 367-442)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 377 | 21 | `public double[] getState()` | The state, in order. |
+| 408 | 26 | `public boolean restore(double[] state)` | Puts a saved month's health back. |
+| 436 | 6 | `private static long scramble(long value)` | SplitMix64, same as LandMarket's, so adjacent months look unrelated. |
 

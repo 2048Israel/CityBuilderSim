@@ -3250,9 +3250,13 @@ public abstract class Sector {
         stock.put(g, capped);
 
         if (direct > 0 && g.exportable() && market != null) {
-            Trade t = market.record(key, Trade.WORLD, direct, market.exportPrice());
-            bookSale(t);
+            sellDirectOutput(g, market, direct);
         }
+    }
+
+    /** Sells the line's surplus. Gold Mining offers it to the mint under Gold (GD4). */
+    protected void sellDirectOutput(Good g, GoodsMarket market, double units) {
+        bookSale(market.record(key, Trade.WORLD, units, market.exportPrice()));
     }
 
     /** Units of a good taken out of stock by a local sale or an export from the shed. */

@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.100 — GD4, Gold mines by geology — 2026-11-14, ready, see docs/queue/GD4-notes.md
+Gold fields follow geology, with declining grades at fixed ore throughput.
+Gold Mining is the twenty-fifth sector and its Mine & Mill uses permanent
+id 152, after the research labs. Bullion follows GoldPrice. Under Gold the
+mint buys at its par, receives the metal and issues audited money when the
+sale settles. New gold enters investment as valuables. Bullion quotes,
+inventory and accepted offers survive a reload and currency reform.
+The save format and load floor rise together for the wider land rows.
+
 ### GG1 — The new gate's gaps — 2026-11-13, ready, no tag (process), see docs/queue/GG1-notes.md
 
 Versioned dry runs read provisional records without advertising readiness.

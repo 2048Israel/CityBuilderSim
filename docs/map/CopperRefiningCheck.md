@@ -1,6 +1,6 @@
 # CopperRefiningCheck.java - 1,132 lines · 27 methods · 16 constants · harnesses
 
-`ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CopperRefiningCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
 > 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -
@@ -64,7 +64,7 @@
 > 
 > ... (33 more lines in the source)
 
-**Uses:** [Good](Good.md) (202), [CopperRefining](CopperRefining.md) (46), [Sector](Sector.md) (43), [OldMetal](OldMetal.md) (29), [Game](Game.md) (28), [Sectors](Sectors.md) (23), [BuildingManager](BuildingManager.md) (23), [SpreadPlanner](SpreadPlanner.md) (18), [LongPlaytest](LongPlaytest.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (14), [GoodsMarket](GoodsMarket.md) (11), [CopperMiningCheck](CopperMiningCheck.md) (10), [MaterialsCheck](MaterialsCheck.md) (9), [Manufacturing](Manufacturing.md) (8), [ProcessingSector](ProcessingSector.md) (6), [JobType](JobType.md) (6), [CopperMining](CopperMining.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [Trade](Trade.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PriceLevel](PriceLevel.md) (2), [MoneyAudit](MoneyAudit.md) (2), [NationalAccounts](NationalAccounts.md) (2), [Markets](Markets.md) (1), [PayTier](PayTier.md) (1), [Statement](Statement.md) (1), [EarthSite](EarthSite.md) (1)... and 2 more
+**Uses:** [Good](Good.md) (202), [CopperRefining](CopperRefining.md) (46), [Sector](Sector.md) (43), [OldMetal](OldMetal.md) (29), [Game](Game.md) (28), [Sectors](Sectors.md) (24), [BuildingManager](BuildingManager.md) (23), [SpreadPlanner](SpreadPlanner.md) (18), [LongPlaytest](LongPlaytest.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (14), [GoodsMarket](GoodsMarket.md) (11), [CopperMiningCheck](CopperMiningCheck.md) (10), [MaterialsCheck](MaterialsCheck.md) (9), [Manufacturing](Manufacturing.md) (8), [ProcessingSector](ProcessingSector.md) (6), [JobType](JobType.md) (6), [CopperMining](CopperMining.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [PriceLevelCheck](PriceLevelCheck.md) (3), [Trade](Trade.md) (3), [BuildingType](BuildingType.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [PriceLevel](PriceLevel.md) (2), [MoneyAudit](MoneyAudit.md) (2), [NationalAccounts](NationalAccounts.md) (2), [Markets](Markets.md) (1), [PayTier](PayTier.md) (1), [Statement](Statement.md) (1), [EarthSite](EarthSite.md) (1)... and 2 more
 
 ## Sections
 

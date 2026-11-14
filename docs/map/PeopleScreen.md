@@ -1,6 +1,6 @@
 # PeopleScreen.java - 4,794 lines · 167 methods · 27 constants · interface
 
-`ham/citybuildersim/ui/PeopleScreen.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/PeopleScreen.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The People tab and its second page, Household money.
 > 

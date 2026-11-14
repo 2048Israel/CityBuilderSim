@@ -1,6 +1,6 @@
-# PriceLevel.java - 81 lines · 5 methods · 5 constants · model
+# PriceLevel.java - 84 lines · 5 methods · 6 constants · model
 
-`ham/citybuildersim/PriceLevel.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PriceLevel.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The price level a city is founded at, 1900's: the US consumer price index of the calendar's first year over its 2025, and the series it is
 > read from, the US CPI-U a year from 1900 to 2025 (EP1; docs/studies/spec-1900-start.md 1 and its calls 1 and 3).
@@ -18,7 +18,7 @@
 > 1975), series E 135, 1967 = 100 in whole numbers (US public domain; licences.md, LC1), joined at 1913 (BLS 9.9 over E 135's 29.7: divided
 > by 3). The table is docs/studies/1900-start/price-level-us.csv.
 
-**Uses:** [CityCalendar](CityCalendar.md) (1)
+**Uses:** [CityCalendar](CityCalendar.md) (2)
 
 **Used by (108):** [AgricultureCheck](AgricultureCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BridgeCheck](BridgeCheck.md), [BridgeWorks](BridgeWorks.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [BusinessServicesCheck](BusinessServicesCheck.md), [BuybackCheck](BuybackCheck.md), [CapitalFlows](CapitalFlows.md), [CarCheck](CarCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CentralBankCheck](CentralBankCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [Consumption](Consumption.md), [ConsumptionCheck](ConsumptionCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [CrimeCheck](CrimeCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DenominationCheck](DenominationCheck.md), [DeskCheck](DeskCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [EconomyManager](EconomyManager.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [Equity](Equity.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [ExchangeRateCheck](ExchangeRateCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignAccounts](ForeignAccounts.md), [ForeignDebtCheck](ForeignDebtCheck.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [Freight](Freight.md), [FundCheck](FundCheck.md), [FundView](FundView.md), [Game](Game.md), [GoldPrice](GoldPrice.md), [GoldPriceCheck](GoldPriceCheck.md), [Good](Good.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HoldersCheck](HoldersCheck.md), [HouseholdCheck](HouseholdCheck.md), [HousingCheck](HousingCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [InvestCheck](InvestCheck.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LandCheck](LandCheck.md), [LandManager](LandManager.md), [LandMarket](LandMarket.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [MonetaryCheck](MonetaryCheck.md), [Money](Money.md), [MoneyAudit](MoneyAudit.md), [Motoring](Motoring.md), [NationsCheck](NationsCheck.md), [OilCheck](OilCheck.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PartnerTrade](PartnerTrade.md), [PayTier](PayTier.md), [PolicyCheck](PolicyCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PortCheck](PortCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealDollar](RealDollar.md), [RecipeCheck](RecipeCheck.md), [RefineryCheck](RefineryCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [RestructureCheck](RestructureCheck.md), [Retail](Retail.md), [RunWorks](RunWorks.md), [SaveFileCheck](SaveFileCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SitePreparation](SitePreparation.md), [TaxPolicy](TaxPolicy.md), [TradeCostCheck](TradeCostCheck.md), [TradeLanes](TradeLanes.md), [TreasuryCheck](TreasuryCheck.md), [UtilitiesHandler](UtilitiesHandler.md), [VanCheck](VanCheck.md), [WaterCheck](WaterCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [WorldData](WorldData.md), [WorldDataCheck](WorldDataCheck.md), [YearBookCheck](YearBookCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
 
@@ -31,15 +31,16 @@
 | 29 | `PriceLevel.FIRST_PUBLISHED_YEAR` | `1913` | The first year the BLS published the index; the years before it are Rees's index joined at it (est.). |
 | 32 | `PriceLevel.US_CPI` | `{ 8.333, 8.333, 8.667, 9.000, 9.000, 9.000, 9.000, 9.333, 9.000, 9.000, 9.333...` | The US CPI-U a year, 1900 to 2025, 1982-84 = 100 (the class's sources). |
 | 52 | `PriceLevel.FACTOR` | `factor()` | Every nominal anchor's multiplier, the US CPI of the calendar's first year over its 2025: 8.333 / 321.943 = 0.02588, 1/38.6 (call 1). |
+| 55 | `PriceLevel.HISTORICAL_FACTOR` | `usCpi(CityCalendar.EPOCH_YEAR) / usCpi(LAST_YEAR)` | The calendar's actual US CPI ratio, independent of a counterfactual price-level override. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 20 | 62 | **type** `public final class PriceLevel` | The price level a city is founded at, 1900's: the US consumer price index of the calendar's first year over its 2025, and the series it is read from, the US CPI-U a year from 1900 to 2025 (EP1; docs/studies/spec-1900-... |
-| 54 | 1 | `private PriceLevel()` |  |
-| 56 | 9 | `private static double factor()` |  |
-| 67 | 4 | `public static double usCpi(int year)` | The US CPI-U in a year, FIRST_YEAR to LAST_YEAR, 1982-84 = 100; refused outside them. |
-| 73 | 3 | `public static boolean isPublished(int year)` | Whether that year's figure is the BLS's own (true) or Rees's joined at 1913 (false, est.). |
-| 78 | 3 | `public static double atFounding(double today)` | A nominal amount priced at today's (2025's) level, priced at the founding's: amount times FACTOR. |
+| 20 | 65 | **type** `public final class PriceLevel` | The price level a city is founded at, 1900's: the US consumer price index of the calendar's first year over its 2025, and the series it is read from, the US CPI-U a year from 1900 to 2025 (EP1; docs/studies/spec-1900-... |
+| 57 | 1 | `private PriceLevel()` |  |
+| 59 | 9 | `private static double factor()` |  |
+| 70 | 4 | `public static double usCpi(int year)` | The US CPI-U in a year, FIRST_YEAR to LAST_YEAR, 1982-84 = 100; refused outside them. |
+| 76 | 3 | `public static boolean isPublished(int year)` | Whether that year's figure is the BLS's own (true) or Rees's joined at 1913 (false, est.). |
+| 81 | 3 | `public static double atFounding(double today)` | A nominal amount priced at today's (2025's) level, priced at the founding's: amount times FACTOR. |
 

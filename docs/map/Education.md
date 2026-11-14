@@ -1,6 +1,6 @@
 # Education.java - 1,098 lines · 60 methods · 7 constants · model
 
-`ham/citybuildersim/Education.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Education.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Who the city teaches, what it costs, and why anybody bothers.
 > 
@@ -64,7 +64,7 @@
 
 **Uses:** [EducationType](EducationType.md) (77), [WageBand](WageBand.md) (17), [LabourMarket](LabourMarket.md) (12), [DecisionLog](DecisionLog.md) (5), [JobType](JobType.md) (5), [PopulationManager](PopulationManager.md) (5), [AgeBand](AgeBand.md) (4), [TaxPolicy](TaxPolicy.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [PriceLevel](PriceLevel.md) (1), [PayTier](PayTier.md) (1)
 
-**Used by (13):** [BuildAdvice](BuildAdvice.md), [CityNeeds](CityNeeds.md), [EducationCheck](EducationCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [PolicyScreen](PolicyScreen.md), [PriceLevelCheck](PriceLevelCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
+**Used by (14):** [BuildAdvice](BuildAdvice.md), [CityNeeds](CityNeeds.md), [EducationCheck](EducationCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HistorySave](HistorySave.md), [LongPlaytest](LongPlaytest.md), [MoneyAudit](MoneyAudit.md), [PolicyScreen](PolicyScreen.md), [PriceLevelCheck](PriceLevelCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
 # CityBasket.java - 122 lines · 2 methods · 0 constants · model
 
-`ham/citybuildersim/CityBasket.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityBasket.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > What the city eats: the basket per head, struck from the households' own
 > statements, and the file's reference basket for a city that has none yet.

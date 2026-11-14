@@ -929,6 +929,7 @@ public final class MoneyAudit {
         // DollarsBoughtAbroad, RESERVE), so no pool moves and the month's MONEY
         // in less out is still M0's move.
         in += credit.apply("+ centralbank IssuedForDollars", cb.getDollarsBought(), Scope.MONEY);
+        in += credit.apply("+ centralbank GoldMinted", cb.getGoldMinted(), Scope.MONEY);
 
         double out = 0;
         // Payrolls, as each statement charged them.

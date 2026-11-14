@@ -1923,7 +1923,7 @@ public class Game {
     private void restoreWorldMarket(DataSave loaded) {
         WorldMarket market = ensureWorldMarket();
         if (market == null) {
-            getMarkets().clearWorldPrices();
+            getMarkets().clearWorldPricesExcept(Good.GOLD);
             return;
         }
         market.setBerth(hasBerth());
@@ -2176,7 +2176,7 @@ public class Game {
 
     /** Gold's price in a month, US$ a troy ounce (GoldPrice): the month is an index as the moneys' are, months since January of Nations.FIRST_YEAR (WorldMoneys.monthIndex). NaN with no nations or a month before the first. */
     public double goldUsdPerOunce(int month) {
-        return priceOrNaN(goldPrice(), month);
+        return priceOrNaN(goldPrice(), month) * (PriceLevel.FACTOR / PriceLevel.HISTORICAL_FACTOR);
     }
 
     /**
@@ -14169,6 +14169,14 @@ public class Game {
         economyManager.strikeExchangeRate(foreign.getRate(), world.getPriceLevel());
         // ...AND THE WORLD'S BAND BEHIND IT (WN3): the January solve when the year has turned, then every good's floor and ceiling from last month's trade; before any market clears.
         strikeTheWorldMarket();
+        // Bullion's nominal US$ path and spot exchange already include the dollar's price path (GD4).
+        double gold = goldUsdPerOunce(WorldMoneys.monthIndex(month));
+        if (Double.isFinite(gold) && gold > 0) {
+            GoodsMarket bullion = economyManager.getMarkets().get(Good.GOLD);
+            bullion.setExchangeRate(foreign.getRate());
+            bullion.setWorldPrices(gold * (1 + (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / 1000,
+                    gold * (1 - (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / 1000);
+        }
 
         /*
          * ...and wages start chasing what the basket now costs.

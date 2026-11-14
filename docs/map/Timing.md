@@ -1,6 +1,6 @@
 # Timing.java - 208 lines · 16 methods · 8 constants · model
 
-`ham/citybuildersim/Timing.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Timing.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The suite's clock verdicts and the soft skip for work whose only verdict is time.
 > 

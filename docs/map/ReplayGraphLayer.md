@@ -1,6 +1,6 @@
 # ReplayGraphLayer.java - 197 lines · 9 methods · 6 constants · interface
 
-`ham/citybuildersim/ui/ReplayGraphLayer.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ReplayGraphLayer.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The faint GDP and population lines behind the city in a replay (TR1, 2026-10-31): one mouse-transparent canvas laid over the
 > window's content and under the time bar, drawn from the recording's first month to the month on screen and scaled to the whole

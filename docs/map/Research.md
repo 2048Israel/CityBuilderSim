@@ -1,6 +1,6 @@
 # Research.java - 1,168 lines · 98 methods · 24 constants · model
 
-`ham/citybuildersim/Research.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Research.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The city's research (R3): the grants the player sets, the posts they buy, the researchers who fill them, the work piled on each open problem, the
 > discoveries found here and the month's pure step that moves the work on (docs/studies/research-design.md 1.8, 5.1, 5.2, 6.3).

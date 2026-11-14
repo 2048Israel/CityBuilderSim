@@ -207,7 +207,7 @@
   "If this file is missing or malformed the game falls back to its built-in",
   "buildings and prints why, so a typo here can never stop it starting."
  ],
- "nextId": 144,
+ "nextId": 153,
  "buildings": [
   {
    "id": 0,
@@ -4537,6 +4537,39 @@
    },
    "land": 33000,
    "roadLoad": 106
+  },
+  {
+   "id": 152,
+   "name": "Gold Mine & Mill",
+   "category": "MINING",
+   "sector": "Gold Mining",
+   "cashCost": 123082,
+   "constructionPoints": 61541,
+   "constructionMaterials": 2051,
+   "makes": {
+    "GOLD": 9645.223970588395
+   },
+   "uses": {
+    "ACID": 30,
+    "DIESEL": 90000
+   },
+   "electricity": 5500,
+   "water": 476,
+   "consumables": 1720,
+   "land": 1076391,
+   "roadLoad": 40,
+   "jobs": {
+    "NO_DIPLOMA": 90,
+    "DIPLOMA": 24,
+    "COLLEGE_ENGINEERING": 6
+   },
+   "site": {
+    "resource": "GOLD",
+    "type": "NONE",
+    "sites": 1,
+    "dig": 1
+   },
+   "since": 1900
   }
  ]
 }
