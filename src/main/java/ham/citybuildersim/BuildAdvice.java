@@ -28,17 +28,12 @@ import java.util.Map;
  * (CityNeeds.wanted(), listsSchool()) - and keep those a city-built building
  * answers and what is on site does not already keep ahead; for each, of the
  * buildings that serve its measure (for the roads, any road or line, and
- * the city's gravel roads paved beside them), the one whose order costs
- * least over its life for each unit it will serve (since 0.7.101,
- * lifePerServed(): its quote, its ground at what the city would pay to
- * replace it - landValue(), the land office's price - and its running for
- * BUILD_BOND_YEARS, as a road's has been since 0.7.70; over what it will
- * serve of the need as the city grows into it, for power, water, the
- * roads and care, so a building far bigger than the need pays for what
- * stands idle, and what its count adds for the rest; see A BUILDING OVER
- * ITS LIFE) - preferring one that can keep the need ahead at all, and
- * then one
- * whose whole count fits the ground the suggestions before it leave; the
+ * the city's gravel roads paved beside them), the plan with the lowest
+ * whole-life net cost (HW1, WorksValue: order, replacement land and running
+ * for BUILD_BOND_YEARS, less physical output loss prevented and payroll
+ * taxes returned). A plan that closes the need ranks before one that cannot.
+ * Reserve headroom sizes the plan but cannot claim prevented output loss;
+ * the same physical valuation appears on the Build card. The
  * count that keeps the need ahead at the demand it opens to, projected
  * the way the businesses project theirs (above the ladder, the students it
  * would get and hire by then, its feeder's graduates counted) and SLACK
@@ -49,7 +44,7 @@ import java.util.Map;
  * below, and in the project's design notes for 0.7.24 and 0.7.51. A first
  * building where none stands is suggested however far past the need one
  * goes (Jerus's school at 0% that one would take to 20,000%): the overshoot
- * ranks the candidates, it never stops one (0.7.101).
+ * enters the plan's cost, it never stops one (0.7.101, HW1).
  */
 public final class BuildAdvice {
 
@@ -1168,7 +1163,7 @@ public final class BuildAdvice {
         return free * Math.min(land.getPricePerSqFt(), office) + Math.max(0, sqFt - Math.max(0, landLeft)) * office;
     }
 
-    /** Why the next building in the ranking lost to the one suggested: dearer over its life for what it serves (a unit with its land until 0.7.101), it cannot keep the need ahead, or its count needs more land than is left. */
+    /** Why the next plan lost: greater whole-life net cost, or it cannot close the need (HW1). NO_ROOM remains for historical callers. */
     public enum Lost { DEARER, CANNOT_CLOSE, NO_ROOM }
 
     /**
@@ -1192,10 +1187,8 @@ public final class BuildAdvice {
      *                    before it leave
      * @param onSite      units on site that already serve the measure
      * @param unit        what one serves at today's staffing
-     * @param pricePerUnit informational net cost per physical unit relieved (since HW1 it does not rank the plan; before
-     *                    0.7.101): its order over its life, its ground at
-     *                    landValue() on the land the ones before leave, for
-     *                    each unit it will serve over that life
+     * @param pricePerUnit informational net cost per physical unit relieved;
+     *                    since HW1 the whole plan's value ranks it instead
      * @param ahead       the demand it is sized to (opening(lead))
      * @param lead        the city order's own wait, Game.quoteBuild()'s months
      *                    for the count at today's demand with the slack
