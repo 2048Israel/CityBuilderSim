@@ -185,6 +185,22 @@ public final class BankFailureCheck {
 
     }
 
+    static void writtenOffRetirement() {
+        out.println("--- 8. a written-off retired bullet leaves the loan book at maturity ---");
+        String sector = Sectors.REFINING;
+        BusinessDebtManager credit = new BusinessDebtManager();
+        BusinessLoan claim = new BusinessLoan(sector, 100, 1, 1, .04);
+        credit.setLoans(new java.util.ArrayList<>(java.util.List.of(claim)));
+        credit.settleRetirement(sector, 0, true);
+        claim.writeDown(0);
+        check("fixture: the marked claim has no principal or interest and no cash to sweep it",
+                claim.isRetirementClaim() && claim.getOutstandingPrincipal() == 0
+                    && claim.getMonthlyInterestExpense() == 0 && claim.getRemainingMonths() == 1);
+        credit.processMonth();
+        check("a written-off retired claim leaves the loan list at maturity", !credit.getLoans().contains(claim));
+        check("Loans running no longer counts the written-off retired claim", credit.getLoanCount(sector) == 0);
+    }
+
     static void credit() throws Exception {
         out.println("--- 3. a new project cannot spend capital the bank does not have ---");
         Game g = town("bankfailure-capital");
@@ -450,7 +466,7 @@ public final class BankFailureCheck {
     public static void main(String[] args) throws Exception {
         System.setOut(quiet);
         try {
-            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); refineryClosing(); credit(); shares(); rounding(); bondDust(); }
+            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); refineryClosing(); writtenOffRetirement(); credit(); shares(); rounding(); bondDust(); }
             if (!Arrays.asList(args).contains("--fixtures")) seeds();
         } finally { System.setOut(out); }
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
