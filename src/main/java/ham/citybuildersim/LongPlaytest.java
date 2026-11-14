@@ -2318,15 +2318,7 @@ public class LongPlaytest {
                 String reason = step == null ? "not offered" : step.outcome() + "/" + step.cut();
                 worksShortReasons.merge(e.getKey() + " " + reason, 1, Integer::sum);
                 if (step != null && !worksSpellLead.containsKey(e.getKey())) {
-                    double first = Double.POSITIVE_INFINITY;
-                    for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (step.measure().serves(t)) {
-                        BuildingsStacks stack = g.getBuildingManager().getStack(t);
-                        if (stack == null || stack.getUnderConstruction() == 0) continue;
-                        double owed = stack.getUnderConstruction() * (double) t.getConstructionPoints() - stack.getConstructionProgress();
-                        double one = Math.max(0, t.getConstructionPoints() - stack.getConstructionProgress());
-                        double lead = g.onSiteMonths(t);
-                        if (owed > 0 && Double.isFinite(lead)) first = Math.min(first, Math.ceil(lead * one / owed));
-                    }
+                    double first = BuildAdvice.firstCompletion(g, step.measure(), BuildAdvice.onSite(g, step.measure()));
                     if (Double.isFinite(first)) worksSpellLead.put(e.getKey(), first);
                 }
             }

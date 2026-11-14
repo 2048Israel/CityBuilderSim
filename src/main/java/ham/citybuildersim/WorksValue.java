@@ -111,6 +111,7 @@ public final class WorksValue {
             r1 = BuildAdvice.roads(g, after, at.scale());
         }
         double result = 0;
+        Health health = g.getHealth();
         for (Sector sector : g.getSectors().all()) {
             Sector.Statement book = sector.statement();
             double valueAdded = Math.max(0, book.revenue - book.inputs - book.electricity - book.water);
@@ -125,16 +126,16 @@ public final class WorksValue {
                 case CARE:
                     if (m.care() != CareType.GENERAL) continue;
                     oldFactor = sector.getHealthRatio();
-                    a = 1 - Health.UNTREATED_RATE + pre * (Health.UNTREATED_RATE - Health.WELL_SERVED_RATE);
-                    b = a + (post - pre) * (Health.UNTREATED_RATE - Health.WELL_SERVED_RATE); break;
+                    a = health.workRatioAt(pre, health.getUnburiedRate(), health.getInjuryRate());
+                    b = health.workRatioAt(post, health.getUnburiedRate(), health.getInjuryRate()); break;
                 case POLICE: {
                     oldFactor = sector.getHealthRatio();
                     double pop = g.getCrime().getPopulation();
                     if (!(pop > 0)) continue;
                     double injury0 = g.getCrime().crimesAt(pre) * Crime.VIOLENT_SHARE * Crime.MONTHS_OFF_PER_VIOLENT / pop;
                     double injury1 = g.getCrime().crimesAt(post) * Crime.VIOLENT_SHARE * Crime.MONTHS_OFF_PER_VIOLENT / pop;
-                    a = Math.max(0, oldFactor + g.getCrime().getInjuredShare() - injury0);
-                    b = Math.min(1, a + injury0 - injury1); break;
+                    a = health.workRatioAt(health.getCoverage(), health.getUnburiedRate(), injury0);
+                    b = health.workRatioAt(health.getCoverage(), health.getUnburiedRate(), injury1); break;
                 }
                 case DEATH: {
                     oldFactor = sector.getHealthRatio();
@@ -143,9 +144,11 @@ public final class WorksValue {
                     double backlog = g.getHealthcare().getUnburied();
                     double handled = BuildAdvice.supplyDemand(g, m, after, at)[0]
                             - BuildAdvice.supplyDemand(g, m, before, at)[0];
-                    double saved = Math.min(Health.MAX_UNBURIED_SICKNESS, backlog / pop * Health.UNBURIED_WEIGHT)
-                            - Math.min(Health.MAX_UNBURIED_SICKNESS, Math.max(0, backlog - handled) / pop * Health.UNBURIED_WEIGHT);
-                    a = oldFactor; b = Math.min(1, a + saved); break;
+                    double beforeSickness = Math.min(Health.MAX_UNBURIED_SICKNESS, backlog / pop * Health.UNBURIED_WEIGHT);
+                    double afterSickness = Math.min(Health.MAX_UNBURIED_SICKNESS,
+                            Math.max(0, backlog - handled) / pop * Health.UNBURIED_WEIGHT);
+                    a = health.workRatioAt(health.getCoverage(), beforeSickness, health.getInjuryRate());
+                    b = health.workRatioAt(health.getCoverage(), afterSickness, health.getInjuryRate()); break;
                 }
                 default: continue;
             }

@@ -510,6 +510,22 @@ public final class BuildAdvice {
         return out;
     }
 
+    /** First pending unit's quoted opening at the current shares, including preparation owed before it (HW1). */
+    public static double firstCompletion(Game game, Measure m, Map<BuildingsTemplate, Integer> site) {
+        double first = Double.POSITIVE_INFINITY;
+        for (Map.Entry<BuildingsTemplate, Integer> e : site.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            if (e.getValue() <= 0 || m.kind() == Kind.HIGHWAYS && !t.isHighway()) continue;
+            BuildingsStacks stack = game.getBuildingManager().getStack(t);
+            if (stack == null || stack.getUnderConstruction() <= 0) continue;
+            double owed = stack.getUnderConstruction() * (double) t.getConstructionPoints() - stack.getConstructionProgress();
+            double one = Math.max(0, t.getConstructionPoints() - stack.getConstructionProgress());
+            double lead = game.onSiteMonths(t);
+            if (owed > 0 && Double.isFinite(lead)) first = Math.min(first, Math.ceil(lead * one / owed));
+        }
+        return first;
+    }
+
     /** Units on site, all told: the buildings going up (a gravel road a paving takes away is not one). */
     public static int units(Map<BuildingsTemplate, Integer> added) {
         int n = 0;
@@ -1090,7 +1106,7 @@ public final class BuildAdvice {
      * months - and SLACK past it.
      */
     public static Ahead opening(Game game, double lead) {
-        return opening(game, lead, SLACK);
+        return opening(game, lead, game.getAutoBuilder().getSlack());
     }
 
     /** ...with another slack past it (0.7.73): automatic building's, the player's slider (AutoBuilder). */
@@ -1231,11 +1247,9 @@ public final class BuildAdvice {
         List<Suggestion> out = new ArrayList<>();
         double cashLeft = game.getCash();
         double landLeft = game.getLandManager().getAvailableSqFt();
-        for (CityNeeds.Need need : CityNeeds.biting(all)) {
+        for (Measure m : AutoBuilder.remit(game, all)) {
             if (out.size() >= MAX_SUGGESTIONS) break;
-            if (!need.cityBuilds()) continue;
-            Measure m = measureOf(need);
-            if (m == null) continue;
+            CityNeeds.Need need = needFor(all, m);
             Suggestion s = suggestFor(game, need, m, cashLeft, landLeft);
             if (s == null) continue;
             out.add(s);
@@ -1265,7 +1279,7 @@ public final class BuildAdvice {
 
     /** One need's suggestion, or null when what is on site already keeps it ahead or no building can help. */
     static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft) {
-        return suggestFor(game, need, m, cashLeft, landLeft, SLACK);
+        return suggestFor(game, need, m, cashLeft, landLeft, game.getAutoBuilder().getSlack());
     }
 
     /**
@@ -1290,16 +1304,16 @@ public final class BuildAdvice {
     /** ...and with the city's gravel roads paved left out too when `noPaving` (0.7.101): a paving the money cannot pay for, passed over the same way (and the test player's paving once offered, since 0.7.103). */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving) {
-        return suggestFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, false);
+        return suggestFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, true);
     }
 
-    /** The automatic builder's full-service target, with the player's slack (HW1); manual advice keeps its listing thresholds. */
+    /** The shared Build-card and automatic full-service target, with the player's reserve setting (HW1). */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain) {
         if (AutoBuilder.essential(m) && !warranted(game, m)) return null;
         // A berth (FR3): the terminal that pays back, if any (A BERTH THAT PAYS BACK, below) - not ranked like a service.
         if (m.kind() == Kind.PORT) return portSuggestion(game, m, cashLeft, landLeft, skip);
-        Map<BuildingsTemplate, Integer> site = onSite(game, m);
+        Map<BuildingsTemplate, Integer> site = maintain ? game.getAutoBuilder().pendingCapacity(game, m) : onSite(game, m);
         double whenOnSite = figure(game, m, site);
         // JUDGEMENT: what is on site already keeps it ahead, sized as an order placed now would be - nothing to add.
         if (maintain ? maintained(game, m, site, opening(game, 0, slack))
@@ -1699,7 +1713,7 @@ public final class BuildAdvice {
      * none to pave, or a paving that takes nothing off.
      */
     static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Integer> site, double landLeft) {
-        return weighPaving(game, m, site, landLeft, SLACK);
+        return weighPaving(game, m, site, landLeft, game.getAutoBuilder().getSlack());
     }
 
     /** ...at another slack past its projection (0.7.73, AutoBuilder). */

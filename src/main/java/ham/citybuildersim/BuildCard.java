@@ -503,14 +503,15 @@ public final class BuildCard {
                 BuildAdvice.pavingBeatsPaved(game, free, site));
     }
 
-    /** What one costs to keep a month, which is not what it costs to buy: its upkeep and its posts at today's wages (PopulationManager.getWagesPerType()). */
+    /** What one costs to keep a month: upkeep and filled posts at today's wages, as the utility and government books pay them. */
     public static double runningCost(Game game, BuildingsTemplate t) {
         double[] wages = game.getPopulationManager().getWagesPerType();
+        double[] fill = game.getPopulationManager().getJobFillRate();
         double bill = 0;
         for (JobType job : JobType.values()) {
             int n = t.getJobs(job);
             if (n == 0) continue;
-            if (wages != null && job.ordinal() < wages.length) bill += n * wages[job.ordinal()];
+            if (wages != null && job.ordinal() < wages.length) bill += n * wages[job.ordinal()] * fill[job.ordinal()];
         }
         return t.getUpkeep() + bill;
     }

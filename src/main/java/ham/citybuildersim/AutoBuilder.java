@@ -1121,6 +1121,31 @@ public final class AutoBuilder {
     /** Whether the last pass met an order short of ground (AL1): what sets the island links going. */
     public boolean groundShort() { return groundShort; }
 
+    /** Fixed first-completion dates for pending service, saved across reloads (HW1). */
+    private final Map<String, Double> pendingUntil = new LinkedHashMap<>();
+
+    /** Pending capacity stops covering an operating shortage after its original quote expires. */
+    public Map<BuildingsTemplate, Integer> pendingCapacity(Game game, BuildAdvice.Measure m) {
+        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
+        Double due = pendingUntil.get(m.label());
+        boolean overdue = due != null && game.getMonth() > due
+                && !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.NOW);
+        return overdue ? Map.of() : site;
+    }
+
+    private void rememberPending(Game game, BuildAdvice.Measure m, boolean newOrder) {
+        if (!essential(m)) return;
+        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
+        if (BuildAdvice.units(site) == 0) {
+            pendingUntil.remove(m.label());
+            return;
+        }
+        Double due = pendingUntil.get(m.label());
+        if (due != null && (!newOrder || game.getMonth() <= due)) return;
+        double lead = BuildAdvice.firstCompletion(game, m, site);
+        pendingUntil.put(m.label(), game.getMonth() + (Double.isFinite(lead) ? Math.max(1, lead) : 0));
+    }
+
     /**
      * The month's pass (see the header): nothing while it is off. Called by
      * Game.nextMonth() first; a harness may call it on a city between presses.
@@ -1143,6 +1168,7 @@ public final class AutoBuilder {
         try {
             List<CityNeeds.Need> all = CityNeeds.measure(game, CityNeeds.PLAIN);
             List<BuildAdvice.Measure> kept = remit(game, all);
+            for (BuildAdvice.Measure m : kept) rememberPending(game, m, false);
             // Every open ask is offered again first, before the pass ranks anything new (D30); a measure that has
             // one is not stepped: its order waits for its money.
             for (OpenAsk a : new ArrayList<>(asks)) reoffer(game, all, kept, a);
@@ -1173,7 +1199,7 @@ public final class AutoBuilder {
      * nothing is paid for, and it holds at once.
      */
     private void step(Game game, List<CityNeeds.Need> all, BuildAdvice.Measure m) {
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
+        Map<BuildingsTemplate, Integer> site = pendingCapacity(game, m);
         if (BuildAdvice.maintained(game, m, site, BuildAdvice.opening(game, 0, slack))) {
             steps.add(new Step(m, Outcome.AHEAD, null, 0, 0, Cut.NONE, 0, 0));
             return;
@@ -1389,6 +1415,7 @@ public final class AutoBuilder {
             hold(m, s, Cut.NONE, wanted, m.label() + ": " + n + " " + name + " could not be placed.", weighed);
             return false;
         }
+        rememberPending(game, m, true);
         String after = reading(game, m, BuildAdvice.onSite(game, m));
         String land = got.isEmpty() ? "" : "; " + LandManager.areaWords(landSq) + " of ground bought for it first ("
                 + String.join(", ", places) + ", " + money(landCost) + ")";
@@ -2171,7 +2198,7 @@ public final class AutoBuilder {
             withdrawAsk(a, "its measure is no longer one the builder keeps", null);
             return;
         }
-        if (BuildAdvice.ahead(game, m, BuildAdvice.onSite(game, m), BuildAdvice.opening(game, 0, slack))) {
+        if (BuildAdvice.maintained(game, m, pendingCapacity(game, m), BuildAdvice.opening(game, 0, slack))) {
             withdrawAsk(a, "what stands and what is on site keep " + m.label() + " ahead of its margin without it", null);
             return;
         }
@@ -2282,11 +2309,14 @@ public final class AutoBuilder {
         public List<OpenAsk> asks;
         /** What the last pass held back as not paying back (PT1-M3), for the advice's card: a save from before has none, and its cards say nothing until the next pass. */
         public List<PaybackHold> paybackHolds;
+        /** Original first-completion dates for pending capacity, by service label (HW1). */
+        public Map<String, Double> pendingUntil;
     }
 
     public State toState() {
         State s = new State();
         s.on = on;
+        s.pendingUntil = new LinkedHashMap<>(pendingUntil);
         s.slack = slack;
         s.debtToGdp = debtLimit;
         s.cashAnyway = cashAnyway;
@@ -2341,6 +2371,7 @@ public final class AutoBuilder {
 
     /** Puts a saved state back; null - a save from before 0.7.73 - is off, at the defaults, with nothing done; one from 0.7.73 to 0.7.80 keeps its switch and margin and reads the default limit, "Build from cash anyway" off; one from 0.7.81 to 0.7.100 at the old default, 60%, reads the new one (0.7.101), and any other limit stands on the new steps. */
     public void restore(State s) {
+        pendingUntil.clear();
         log.clear();
         held.clear();
         paybackHolds.clear();
@@ -2360,6 +2391,10 @@ public final class AutoBuilder {
             buildings = 0;
             spent = borrowed = landSqFt = landSpent = 0;
             return;
+        }
+        if (s.pendingUntil != null) for (Map.Entry<String, Double> e : s.pendingUntil.entrySet()) {
+            if (e.getKey() != null && e.getValue() != null && Double.isFinite(e.getValue()) && e.getValue() >= 0)
+                pendingUntil.put(e.getKey(), e.getValue());
         }
         on = s.on;
         slack = onSteps(s.slack, SLACK_MOST);
