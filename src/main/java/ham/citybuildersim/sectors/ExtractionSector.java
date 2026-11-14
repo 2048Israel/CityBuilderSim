@@ -357,8 +357,8 @@ public abstract class ExtractionSector extends Sector {
         BuildingsTemplate.Site site = best.site();
         Deposit.FieldType type = site == null ? null : site.type();
         return new BusinessInvestment.Decision(sector, best, 1,
-                String.format("%d deposit(s) unworked, %,.0fk tonnes %sin the ground",
-                        unminedDeposits, land.getRemaining(resource, type) / 1000,
+                String.format("%d deposit(s) unworked, %,.0fk %s %sin the ground",
+                        unminedDeposits, land.getRemaining(resource, type) / 1000, resource.unit() + "s",
                         type == null ? "" : "of " + typeWord(type) + " "), true);
     }
 

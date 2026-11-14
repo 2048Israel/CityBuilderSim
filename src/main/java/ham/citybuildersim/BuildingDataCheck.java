@@ -609,14 +609,19 @@ public class BuildingDataCheck {
                 copperSites.put(t.getId(), site.type() + " " + site.sites() + " " + site.dig());
                 continue;
             }
+            if (site.resource() == Resource.GOLD) {
+                shape &= t.getId() == ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL
+                        && site.any() && site.sites() == 1 && site.dig() == 1;
+                continue;
+            }
             shape &= site.any() && (t.isPlatform() ? site.sites() == 0 && site.dig() == 0 : site.sites() == 1 && site.dig() == 1);
         }
         assertTrue("every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone"
                 + " Quarry's (0.7.131) and copper's two mines' (0.7.133), which the rule gave none, and Forestry's two crews (0.7.138),"
                 + " which the rule gave the forest and which cut it on no site", rule);
-        assertTrue("...sixteen stand on sites - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three"
+        assertTrue("...seventeen stand on sites, including GD4 gold - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three"
                 + " mines, stone's three quarries and copper's three (thirteen until 0.7.133, ten until 0.7.131, seven until 0.7.126)",
-                onSites == 16);
+                onSites == 17);
         assertTrue("...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none", shape);
         java.util.Map<Integer, String> byType = new java.util.TreeMap<>();
         byType.put(ham.citybuildersim.sectors.Mining.IRON_MINE, "HEMATITE 1 1.0");
@@ -702,7 +707,8 @@ public class BuildingDataCheck {
         for (int id = ham.citybuildersim.sectors.CopperMining.MINE_AND_MILL; id <= ham.citybuildersim.sectors.Manufacturing.WIRE_CABLE_WORKS; id++) iron.add(id);
         for (int id = ham.citybuildersim.sectors.Forestry.LOGGING_CAMP; id <= ham.citybuildersim.sectors.Forestry.WOODLOT; id++) iron.add(id);
         for (int id = ham.citybuildersim.sectors.WoodProducts.SAWMILL; id <= ham.citybuildersim.sectors.WoodProducts.PELLET_MILL; id++) iron.add(id);
-        assertTrue("forty-one buy consumables, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and"
+        iron.add(ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL);
+        assertTrue("forty-two buy consumables, including GD4 gold, the materials chains' rows: the Electric Arc Furnace (11), the Steel Mini-Mill (12) and"
                 + " the Iron Mine (14) of batch I3, Iron & Steel's seven of batch I4 (101-107), Iron Mining's three of batch I5 (108-110),"
                 + " Coal Mining's four of batch I6 (111-114), stone's six of batch I7 (115-120), copper's eight of batch I8 (121-128,"
                 + " the wire works' insulation among them), Forestry's four of batch I9 (129-132: the crews' fuel and wear, the"
@@ -797,6 +803,7 @@ public class BuildingDataCheck {
         years.put(144, 1900);   // HY1's Hydro Station: it stood before the start (Appleton 1882, Niagara 1895)
         years.put(146, 1900);   // ET6's Rail Bridge and Road Bridge: they stood before the start (the Forth Bridge, 1890); the Highway Bridge is undated, as the Elevated Highway is
         years.put(147, 1900);
+        years.put(ham.citybuildersim.sectors.GoldMining.MINE_AND_MILL, 1900);
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
                         + " and not the building; it was 1952, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"

@@ -2284,7 +2284,8 @@ public class EconomyManager {
                 governmentServices,
                 foodImports, materialImports,
                 rawImports, exports,
-                heldUnits, heldWrittenOff, heldPrices);
+                heldUnits, heldWrittenOff, heldPrices,
+                sectors.goldMining().statement().localSales);
 
         nationalAccounts.updateGovernment(
                 getBusinessTax(), getIndustrialTax(), salesTax, totalWageTax,
@@ -2447,6 +2448,8 @@ public class EconomyManager {
         // 0.7.62-0.7.75 file's FUEL is PETROL's and DIESEL's by now (FuelSplit, 0.7.76).
         nationalAccounts.restoreHeld(held >= NationalAccounts.HELD_BEFORE_FUEL
                 ? java.util.Arrays.copyOfRange(a, heldAt, heldAt + held) : null);
+        int valuablesAt = heldAt + NationalAccounts.HELD.length;
+        nationalAccounts.restoreValuables(a.length > valuablesAt ? a[valuablesAt] : 0);
     }
 
     public double[] getNationalAccountsState() {
@@ -2469,8 +2472,9 @@ public class EconomyManager {
         };
         // ...and slots 15 on, the other goods held (0.7.58), in HELD's order.
         double[] held = nationalAccounts.getLastHeldUnits();
-        double[] out = java.util.Arrays.copyOf(base, base.length + held.length);
+        double[] out = java.util.Arrays.copyOf(base, base.length + held.length + 1);
         System.arraycopy(held, 0, out, base.length, held.length);
+        out[base.length + held.length] = nationalAccounts.getInvestmentValuables();
         return out;
     }
 

@@ -360,8 +360,8 @@ public class SaveFileCheck {
         assertTrue("...and the offers restored from them are the offers written, sellers and all (LandParcel.same())", sellersSame
                 && sellerBack.getMarket().getListing().get(0).getSellers().size() == 2 && sellerBack.getMarket().getListing().get(2).getSellers().isEmpty());
         LandParcel plain = named.get(2);
-        assertTrue("an offer's record is not wider for its sellers (a wider row is passed over by every save before): 29 as ever",
-                named.get(0).offerRow().length == LandParcel.OFFER_FIELDS && LandParcel.OFFER_FIELDS == 29
+        assertTrue("an offer's record is not wider for its sellers (a wider row is passed over by every save before): GD4's widened resource row",
+                named.get(0).offerRow().length == LandParcel.OFFER_FIELDS && LandParcel.OFFER_FIELDS == 31
                         && LandParcel.fromOfferRow(named.get(0).offerRow(), named.get(0).reliefRow(), named.get(0).sellersRow()).same(named.get(0))
                         && !LandParcel.fromOfferRow(named.get(0).offerRow(), named.get(0).reliefRow()).same(named.get(0)));
         assertTrue("...and a row of sellers of the wrong shape, or with a figure that is not a number or a seller that is no nation's number, reads as none",
@@ -3602,10 +3602,10 @@ public class SaveFileCheck {
                         && earthJson.getAsJsonArray("landHoldingsRelief").size() == earthJson.getAsJsonArray("landHoldings").size()
                         && earthJson.getAsJsonArray("landOffersRelief").size() == earthJson.getAsJsonArray("landOffers").size()
                         && earthJson.getAsJsonArray("landOffersRelief").size() > 0);
-        assertTrue("...and no row of the land's own is wider for it: the centre 24, a holding 31, an offer 29",
-                earthJson.getAsJsonArray("landCentre").size() == CityLand.CENTRE_FIELDS && CityLand.CENTRE_FIELDS == 24
-                        && earthJson.getAsJsonArray("landOffers").get(0).getAsJsonArray().size() == LandParcel.OFFER_FIELDS && LandParcel.OFFER_FIELDS == 29
-                        && LandParcel.PURCHASE_FIELDS == 31);
+        assertTrue("...and no row of the land's own is wider for it: GD4's centre 26, a holding 33, an offer 31",
+                earthJson.getAsJsonArray("landCentre").size() == CityLand.CENTRE_FIELDS && CityLand.CENTRE_FIELDS == 26
+                        && earthJson.getAsJsonArray("landOffers").get(0).getAsJsonArray().size() == LandParcel.OFFER_FIELDS && LandParcel.OFFER_FIELDS == 31
+                        && LandParcel.PURCHASE_FIELDS == 33);
         assertTrue("...read back, the relief is the city's: its centre's, each holding's and each offer's, to the bit",
                 java.util.Arrays.equals(read.getLandCentreRelief(), city.getCityLand().centreReliefState())
                         && java.util.Arrays.deepEquals(read.getLandHoldingsRelief(), city.getCityLand().holdingsReliefState())

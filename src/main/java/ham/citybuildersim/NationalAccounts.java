@@ -88,6 +88,8 @@ public class NationalAccounts {
     private double consumptionHousing;
     private double investmentConstruction;
     private double investmentInventories;
+    /** Newly mined fine gold acquired by the mint as valuables, before monetization (GD4). */
+    private double investmentValuables;
     private double government;
     private double importsFood;
     private double importsMaterials;
@@ -232,7 +234,7 @@ public class NationalAccounts {
             Good.LPG, Good.NAPHTHA, Good.JET, Good.LUBRICANTS, Good.FUEL_OIL, Good.BITUMEN, Good.COKE, Good.CRUDE,
             Good.MET_COKE, Good.THERMAL_COAL, Good.COKING_COAL, Good.CEMENT, Good.COPPER,
             Good.LUMBER, Good.PANELS, Good.PULP, Good.PAPER, Good.WOOD_PELLETS,
-            Good.TRUCKS };
+            Good.TRUCKS, Good.GOLD };
 
     /** ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. */
     public static final int HELD_BEFORE_FUEL = 3;
@@ -334,6 +336,7 @@ public class NationalAccounts {
         this.consumptionHousing = consumptionHousing;
         this.investmentConstruction = investmentConstruction;
         this.investmentInventories = investmentInventories;
+        this.investmentValuables = 0;
         this.government = government;
         this.importsFood = importsFood;
         this.importsMaterials = importsMaterials;
@@ -470,11 +473,27 @@ public class NationalAccounts {
                        double foodImports, double materialImports,
                        double rawMaterialImports, double exportRevenue,
                        double[] heldUnits, double[] heldWrittenOff, double[] heldPrices) {
+        update(retailSales, rentPaid, constructionWorkDone, foodUnits, foodStockWrittenOff, foodPrice,
+                materialUnits, materialWrittenOff, materialPrice, luxuryUnits, luxuryWrittenOff, luxuryPrice,
+                governmentServices, foodImports, materialImports, rawMaterialImports, exportRevenue,
+                heldUnits, heldWrittenOff, heldPrices, 0);
+    }
+
+    public void update(double retailSales, double rentPaid,
+                       double constructionWorkDone,
+                       double foodUnits, double foodStockWrittenOff, double foodPrice,
+                       double materialUnits, double materialWrittenOff, double materialPrice,
+                       double luxuryUnits, double luxuryWrittenOff, double luxuryPrice,
+                       double governmentServices,
+                       double foodImports, double materialImports,
+                       double rawMaterialImports, double exportRevenue,
+                       double[] heldUnits, double[] heldWrittenOff, double[] heldPrices, double valuables) {
 
         consumptionGoods = retailSales;
         consumptionHousing = rentPaid;
 
         investmentConstruction = constructionWorkDone;
+        investmentValuables = valuables;
 
         /*
          * The change in stock, as a VOLUME, priced today.
@@ -1297,7 +1316,7 @@ public class NationalAccounts {
     /* ------------------------------- GDP ------------------------------------ */
 
     public double getConsumption()  { return consumptionGoods + consumptionHousing; }
-    public double getInvestment()   { return investmentConstruction + investmentInventories; }
+    public double getInvestment()   { return investmentConstruction + investmentInventories + investmentValuables; }
     public double getNetExports() {
         return exports - (importsFood + importsMaterials + importsRawMaterial);
     }
@@ -1306,6 +1325,10 @@ public class NationalAccounts {
     public double getConsumptionHousing()     { return consumptionHousing; }
     public double getInvestmentConstruction() { return investmentConstruction; }
     public double getInvestmentInventories()  { return investmentInventories; }
+    public double getInvestmentValuables() { return investmentValuables; }
+
+    /** The saved month's valuables acquisition, alongside its other restored GDP components. */
+    void restoreValuables(double value) { investmentValuables = value; }
     public double getGovernment()             { return government; }
     public double getImportsFood()            { return importsFood; }
     public double getImportsMaterials()       { return importsMaterials; }
@@ -1505,6 +1528,7 @@ public class NationalAccounts {
         inventoryBaselineKnown = true;   // an empty warehouse is a real baseline
         heldBaselineKnown = true;
         gdp = 0;
+        investmentValuables = 0;
     }
 
     /**
@@ -1530,6 +1554,7 @@ public class NationalAccounts {
     public void redenominate(double scale) {
         consumptionGoods *= scale;  consumptionHousing *= scale;
         investmentConstruction *= scale;  investmentInventories *= scale;
+        investmentValuables *= scale;
         government *= scale;
         importsFood *= scale;  importsMaterials *= scale;  importsRawMaterial *= scale;
         exports *= scale;  gdp *= scale;

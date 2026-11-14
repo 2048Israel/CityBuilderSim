@@ -1355,6 +1355,9 @@ public class EarthTerrainCheck {
         Geology.Kind[] hand = g.kinds(), rules = g.rulesKinds();
         double[] pf = g.petroleum();
         Resource[] six = { Resource.IRON, Resource.OIL, Resource.STONE, Resource.COAL, Resource.COPPER, Resource.URANIUM };
+        double goldZ = m.zOf(Resource.GOLD, g);
+        report("gold Z is the measured land over W_GOLD-weighted land to Z_ROUNDING",
+                Math.abs(goldZ - Geology.Z_GOLD) <= Z_ROUNDING, String.format("%.8f", goldZ));
         boolean zs = true, e3 = true;
         StringBuilder z = new StringBuilder(), zr = new StringBuilder(), z3 = new StringBuilder();
         for (Resource r : six) {

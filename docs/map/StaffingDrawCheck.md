@@ -1,6 +1,6 @@
 # StaffingDrawCheck.java - 1,086 lines · 50 methods · 16 constants · harnesses
 
-`ham/citybuildersim/StaffingDrawCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StaffingDrawCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff
 > Sector.MIN_STAFFABLE_TO_ORDER of its posts, and since GW1 that count is the spare workers and the workers migration would bring for

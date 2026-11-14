@@ -2692,9 +2692,13 @@ final class GovernmentScreen {
             + "the month it was produced rather than the month it clears.";
 
     VBox investmentCard(NationalAccounts na) {
-        return partCard("INVESTMENT", Palette.GDP_LAYERS[1], m(na.getInvestment()), STOCK_INFO,
+        VBox card = partCard("INVESTMENT", Palette.GDP_LAYERS[1], m(na.getInvestment()), STOCK_INFO,
                 cardLine("construction put up", m(na.getInvestmentConstruction()), null),
                 cardLine("change in stock", s(na.getInvestmentInventories()), null));
+        if (na.getInvestmentValuables() != 0) {
+            card.getChildren().add(cardLine("new gold acquired by the mint", m(na.getInvestmentValuables()), null));
+        }
+        return card;
     }
 
     /** P35, rewritten (B5): what G is, as the model counts it. */

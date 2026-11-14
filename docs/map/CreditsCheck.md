@@ -1,6 +1,6 @@
 # CreditsCheck.java - 177 lines · 4 methods · 0 constants · harnesses
 
-`ham/citybuildersim/CreditsCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CreditsCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and
 > licence, and says where a file is when this build lacks it (CR1, 2026-11-09).

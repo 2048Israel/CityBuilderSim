@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry, fresh, sea and forest, counted plot by plot, and the sites and amounts of the seven resources.
+ * The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry, fresh, sea and forest, counted plot by plot, and the sites and amounts of the eight resources.
  *
  * WHY THIS EXISTS (0.7.57, batch J1b; the project's spec-land.md 2.2). Until
  * then the city's land was one number, the square feet it owned, and the land

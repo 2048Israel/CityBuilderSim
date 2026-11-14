@@ -1112,7 +1112,18 @@ public enum Good {
        ======================================================================= */
 
     /** A heavy truck - tractor and semitrailer, 25 t a load - by the unit: the Heavy Truck Plant's; Freight's Haulage division's fleet. Imported, never exported. Stockable. */
-    TRUCKS("Trucks", "truck", 215.0, Double.NaN, 13.4375, true, Pricing.BAND, false);
+    TRUCKS("Trucks", "truck", 215.0, Double.NaN, 13.4375, true, Pricing.BAND, false),
+
+    /** Fine gold, a stockable troy ounce. GoldPrice supplies the month's nominal US$ band (GD4). */
+    GOLD("Gold", "troy ounce", GoldPrice.PAR_1900 * (1 + (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / (1000 * PriceLevel.HISTORICAL_FACTOR),
+            GoldPrice.PAR_1900 * (1 - (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / (1000 * PriceLevel.HISTORICAL_FACTOR),
+            GoldPrice.PAR_1900 * Good.GOLD_FREIGHT_SHARE / (1000 * PriceLevel.HISTORICAL_FACTOR), true, Pricing.BAND, false);
+
+    /** Bullion freight each way as a share of its nominal price (GD4, estimate). */
+    public static final double GOLD_FREIGHT_SHARE = .0025;
+
+    /** The bullion dealer's margin each way as a share of its nominal price (GD4, estimate). */
+    public static final double GOLD_MARGIN_SHARE = .0025;
 
     /** How a good's price is struck. */
     public enum Pricing {
@@ -1285,6 +1296,7 @@ public enum Good {
     public double tonnesPerUnit() {
         if (this == MATERIALS) return 5;
         switch (unit) {
+            case "troy ounce": return GoldPrice.GRAMS_PER_TROY_OUNCE / 1_000_000;
             case "kg":    return .001;
             case "tonne": return 1;
             /*

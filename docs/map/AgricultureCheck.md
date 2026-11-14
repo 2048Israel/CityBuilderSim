@@ -1,6 +1,6 @@
 # AgricultureCheck.java - 463 lines · 7 methods · 3 constants · harnesses
 
-`ham/citybuildersim/AgricultureCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AgricultureCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The ground under the loaf.
 > 

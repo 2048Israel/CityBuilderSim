@@ -5,7 +5,7 @@ the exe and the save folder keep the old one, CityBuilderSim.
 
 A macroeconomic city simulator in Java 21 and JavaFX. You lay out a city; the
 economy underneath it is the game. An age pyramid decides the workforce, a
-labour market prices it, twenty-four private sectors keep their own books and expand on
+labour market prices it, twenty-five private sectors keep their own books and expand on
 their own judgement, a commercial bank funds them and cannot lend below what its
 own money costs it, a treasury borrows at a rate the market quotes it, and a
 currency floats against a world that has its own prices and its own inflation.
@@ -255,7 +255,7 @@ src/main/java/ham/citybuildersim/     over 450 files
     CityCalendar.java                 the date, and the days the clock runs through
     Sector.java                       the template every business extends
     Sectors.java                      the registry — the only list of them
-    sectors/                          the twenty-four sector classes, the refinery's flow and spread planner,
+    sectors/                          the twenty-five sector classes, the refinery's flow and spread planner,
                                       the materials chains' two bases (ProcessingSector, ExtractionSector), and
                                       Freight's Haulage and Ports divisions (Haulage, PortDivision)
     BondMarket.java, CorporateBond.java, OrderBook.java

@@ -1,6 +1,6 @@
 # GoldPrice.java - 332 lines · 22 methods · 18 constants · model
 
-`ham/citybuildersim/GoldPrice.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoldPrice.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Gold's price in US dollars a fine troy ounce, a month at a time (batch GD1; spec-gold-money 4.1): the statute's par to March 1933, a ten-month path
 > to the new par, that par to July 1971, then on Historical the USGS's annual price to December 2025, and an AR(1) in gold's real price where the
@@ -23,7 +23,7 @@
 
 **Uses:** [Nations](Nations.md) (18), [PriceLevel](PriceLevel.md) (2), [WorldMoneys](WorldMoneys.md) (1)
 
-**Used by (7):** [Game](Game.md), [GoldPriceCheck](GoldPriceCheck.md), [GoldStandardCheck](GoldStandardCheck.md), [Inbox](Inbox.md), [PegAnchorCheck](PegAnchorCheck.md), [PolicyScreen](PolicyScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md)
+**Used by (12):** [BuildingManager](BuildingManager.md), [Game](Game.md), [GoldMiningCheck](GoldMiningCheck.md), [GoldPriceCheck](GoldPriceCheck.md), [GoldStandardCheck](GoldStandardCheck.md), [Good](Good.md), [Inbox](Inbox.md), [PegAnchorCheck](PegAnchorCheck.md), [PolicyScreen](PolicyScreen.md), [Resource](Resource.md), [TradeCostCheck](TradeCostCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
 ## Sections
 

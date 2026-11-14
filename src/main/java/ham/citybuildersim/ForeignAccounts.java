@@ -2739,6 +2739,17 @@ public class ForeignAccounts {
     public double getDealtSinceReprice() { return dealtSinceReprice; }
 
     /**
+     * Receives fine ounces offered to the mint under Gold, at the next
+     * strike when their agreed payment reaches the miner. A change of regime
+     * between offer and settlement leaves that contract payable. The vault
+     * keeps thousands of ounces. The central bank issues the agreed payment.
+     */
+    public void receiveMinedGold(double ounces) {
+        if (!(ounces > 0) || !Double.isFinite(ounces)) return;
+        vault[GOLD] += ounces / 1000;
+    }
+
+    /**
      * Local currency spent buying foreign money. Raises the stock.
      *
      * BOOKED AGAINST lifetimeIntervention, NOT lifetimeFinancial, and that is

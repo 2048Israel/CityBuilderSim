@@ -1,6 +1,6 @@
 # Nations.java - 780 lines · 44 methods · 42 constants · model
 
-`ham/citybuildersim/Nations.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Nations.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The nations beyond the city, each on the world's path: its year - output,
 > people, prices and its money's rate to the US dollar - from the path

@@ -1,6 +1,6 @@
 # AllChecks.java - 490 lines · 21 methods · 20 constants · harnesses
 
-`ham/citybuildersim/AllChecks.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AllChecks.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Runs every harness, one JVM each, and says which failed.
 > 

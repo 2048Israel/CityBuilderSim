@@ -1,6 +1,6 @@
 # ObservationCheck.java - 126 lines · 4 methods · 0 constants · harnesses
 
-`ham/citybuildersim/ObservationCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ObservationCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Holds the path-observation contract with a premise deliberately held off.
 > 

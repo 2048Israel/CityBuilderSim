@@ -1,6 +1,6 @@
-# Markets.java - 608 lines · 30 methods · 0 constants · model
+# Markets.java - 619 lines · 31 methods · 0 constants · model
 
-`ham/citybuildersim/Markets.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Markets.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Every goods market in the city, and the month they clear in.
 > 
@@ -48,18 +48,18 @@
 > NOTHING HERE MOVES MONEY. Trades land in the sectors' ledgers and are
 > banked at the strike; see Sector.
 
-**Uses:** [Good](Good.md) (27), [Sector](Sector.md) (27), [GoodsMarket](GoodsMarket.md) (20), [Trade](Trade.md) (15), [Sectors](Sectors.md) (6), [WorldMarket](WorldMarket.md) (1), [Game](Game.md) (1), [SupplierCredit](SupplierCredit.md) (1)
+**Uses:** [Good](Good.md) (30), [Sector](Sector.md) (27), [GoodsMarket](GoodsMarket.md) (20), [Trade](Trade.md) (15), [Sectors](Sectors.md) (6), [WorldMarket](WorldMarket.md) (1), [Game](Game.md) (1), [SupplierCredit](SupplierCredit.md) (1)
 
-**Used by (41):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [EquipmentFit](EquipmentFit.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryView](IndustryView.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [RealEstate](RealEstate.md), [Recipes](Recipes.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md), [TradeBand](TradeBand.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (42):** [BooksCheck](BooksCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BusinessInvestment](BusinessInvestment.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [EquipmentFit](EquipmentFit.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForestryCheck](ForestryCheck.md), [Freight](Freight.md), [FuelSplit](FuelSplit.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GoldMiningCheck](GoldMiningCheck.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HomeRailCheck](HomeRailCheck.md), [IndustryView](IndustryView.md), [InfrastructureCheck](InfrastructureCheck.md), [InvestCheck](InvestCheck.md), [LuxuryRetail](LuxuryRetail.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [Motoring](Motoring.md), [OilCheck](OilCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [RealEstate](RealEstate.md), [Recipes](Recipes.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorFlow](SectorFlow.md), [Sectors](Sectors.md), [SpreadPlanner](SpreadPlanner.md), [StrategicReserve](StrategicReserve.md), [TradeBand](TradeBand.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 143 | THE MONTH |
-| 407 | DRAWS - taken on demand, at the price of the month |
-| 532 | READERS |
-| 540 | SAVE, RESET, THE REFORM |
+| 148 | THE MONTH |
+| 412 | DRAWS - taken on demand, at the price of the month |
+| 537 | READERS |
+| 545 | SAVE, RESET, THE REFORM |
 
 ## Fields (state)
 
@@ -67,17 +67,18 @@
 |---:|---|---|
 | 57 | `private final Map<Good, GoodsMarket> markets` |  |
 | 81 | `private CityTrader city` | The city's trader, or null - a harness's bare market (0.7.85). |
-| 550 | `public String good` |  |
-| 551 | `public double price, flow, stock, demand` |  |
-| 552 | `public double[] taken` |  |
-| 553 | `public double imported, exported, localFilled, offered, bid, drawn` |  |
-| 558 | `public Double worldImport, worldExport` | The world's band the month was struck at (WN3): its import and export prices, thousands of world dollars a unit. |
+| 555 | `public String good` |  |
+| 556 | `public double price, flow, stock, demand` |  |
+| 557 | `public double[] taken` |  |
+| 558 | `public double imported, exported, localFilled, offered, bid, drawn` |  |
+| 563 | `public Double worldImport, worldExport` | The world's band the month was struck at (WN3): its import and export prices, thousands of world dollars a unit. |
+| 565 | `public Double goldExchangeRate` | Gold's spot D$ quote, separate from ordinary goods' lagged, inflation-adjusted rate (GD4). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 554 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
+| 55 | 565 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
 | 67 | 12 | **type** `public interface CityTrader` | The city as a trader in a market (0.7.85): what it bids for and offers in the month's clearing of a good, and what it bought and sold there - its strategic reserve's crude (StrategicReserve). |
 | 69 | 1 | `double cityBid(Good g)` _(in Markets.CityTrader)_ | Units of a good the city bids for in this month's clearing. |
 | 71 | 1 | `double cityOffer(Good g)` _(in Markets.CityTrader)_ | ...and offers in it. |
@@ -91,44 +92,45 @@
 | 95 | 3 | `public void setExchangeRate(double rate)` | City money per dollar, times the world's price level - since AN1 at the D$ the goods are struck at (EconomyManager.strikeExchangeRate()). |
 | 107 | 16 | `public void setWorldBand(WorldMarket world, java.util.function.ToDoubleFunction<Good> exportedLastMonth, java.util.function.ToD...` | Gives every good the world market models its band for the month (Game, THE WORLD MARKET; WN3): from LAST month's exports and imports of it, in units, as the city's record of the month has them (PartnerTrade.monthExpor... |
 | 125 | 3 | `public void clearWorldPrices()` | Every market back on the good's literal prices: a city with no world market, or whose market was refused. |
-| 138 | 4 | `public double getExchangeRate()` | The one rate every market here was told, read off one of them. |
+| 130 | 3 | `void clearWorldPricesExcept(Good kept)` | Clears the world-market bands while retaining an independent quote, such as GoldPrice on load. |
+| 143 | 4 | `public double getExchangeRate()` | The one rate every market here was told, read off one of them. |
 
-### THE MONTH (lines 143-406)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 147 | 62 | `public void clearMonth(Sectors sectors, Game game)` |  |
-| 211 | 12 | `private double orderValue(Sector s, boolean stock)` | What a sector's orders this month would come to, each at what a unit costs to bring in (GoodsMarket.landedPrice()): its orders for stock, or its inputs. |
-| 225 | 14 | `private double coveredOrderValue(Sector s)` | ...and what its orders for the stock its suppliers' credit covers would come to (0.7.44; SupplierCredit): nothing without one. |
-| 241 | 156 | `private void clear(Good g, Sectors sectors)` | Prices one good, then everybody trades it. |
-| 399 | 7 | `private void trade(GoodsMarket m, Sector seller, Sector buyer, double units, double price)` | One local fill between two sectors, booked both sides. |
-
-### DRAWS - taken on demand, at the price of the month (lines 407-531)
+### THE MONTH (lines 148-411)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 412 | 3 | **type** `public record Draw(double units, double local, double imported, double localCost, double importCost)` | What a draw came to. |
-| 413 | 1 | `public double cost()` _(in Markets.Draw)_ |  |
-| 421 | 3 | `public Draw quote(Good g, double units, Sectors sectors)` | What a draw WOULD come to, at today's prices, without taking anything - the quote the build screen shows and the affordability check uses. |
-| 431 | 12 | `public Draw quote(Good g, double units, Sectors sectors, double takenAhead)` | ...with `takenAhead` units of the makers' stock drawn first by orders placed before this one (0.7.83: the refiners' bitumen a run's earlier roads take as they are placed - Game.buildRunInvoice()). |
-| 451 | 43 | `public Draw draw(Good g, Sector buyer, String buyerKey, double units, Sectors sectors)` | Takes units of a good now, from whoever makes and holds it, and imports the rest. |
-| 502 | 3 | `public void closeMonth()` | The month is over: every market forgets the draws it kept (FW5, 2026-10-25). |
-| 522 | 9 | `public void rowDrawsBeforeStrike(Sectors sectors)` | Puts the draws made before the strike back on their sellers' rows (FW5, 2026-10-25). |
+| 152 | 62 | `public void clearMonth(Sectors sectors, Game game)` |  |
+| 216 | 12 | `private double orderValue(Sector s, boolean stock)` | What a sector's orders this month would come to, each at what a unit costs to bring in (GoodsMarket.landedPrice()): its orders for stock, or its inputs. |
+| 230 | 14 | `private double coveredOrderValue(Sector s)` | ...and what its orders for the stock its suppliers' credit covers would come to (0.7.44; SupplierCredit): nothing without one. |
+| 246 | 156 | `private void clear(Good g, Sectors sectors)` | Prices one good, then everybody trades it. |
+| 404 | 7 | `private void trade(GoodsMarket m, Sector seller, Sector buyer, double units, double price)` | One local fill between two sectors, booked both sides. |
 
-### READERS (lines 532-539)
+### DRAWS - taken on demand, at the price of the month (lines 412-536)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 537 | 1 | `public double importedUnits(Good g)` | Units the world sold the city this month, of one good, from the markets' own record. |
-| 538 | 1 | `public double exportedUnits(Good g)` |  |
+| 417 | 3 | **type** `public record Draw(double units, double local, double imported, double localCost, double importCost)` | What a draw came to. |
+| 418 | 1 | `public double cost()` _(in Markets.Draw)_ |  |
+| 426 | 3 | `public Draw quote(Good g, double units, Sectors sectors)` | What a draw WOULD come to, at today's prices, without taking anything - the quote the build screen shows and the affordability check uses. |
+| 436 | 12 | `public Draw quote(Good g, double units, Sectors sectors, double takenAhead)` | ...with `takenAhead` units of the makers' stock drawn first by orders placed before this one (0.7.83: the refiners' bitumen a run's earlier roads take as they are placed - Game.buildRunInvoice()). |
+| 456 | 43 | `public Draw draw(Good g, Sector buyer, String buyerKey, double units, Sectors sectors)` | Takes units of a good now, from whoever makes and holds it, and imports the rest. |
+| 507 | 3 | `public void closeMonth()` | The month is over: every market forgets the draws it kept (FW5, 2026-10-25). |
+| 527 | 9 | `public void rowDrawsBeforeStrike(Sectors sectors)` | Puts the draws made before the strike back on their sellers' rows (FW5, 2026-10-25). |
 
-### SAVE, RESET, THE REFORM (lines 540-608)
+### READERS (lines 537-544)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 549 | 11 | **type** `public static final class State` | One market as a save carries it: the price it traded at, the strike behind it and, since FW6 (2026-10-25), the month's tally (units imported, exported, filled at home, offered, bid) and the units drawn since the last ... |
-| 561 | 23 | `public List<State> toState()` |  |
-| 585 | 15 | `public void restore(List<State> saved)` |  |
-| 601 | 3 | `public void reset()` |  |
-| 605 | 3 | `public void redenominate(double scale)` |  |
+| 542 | 1 | `public double importedUnits(Good g)` | Units the world sold the city this month, of one good, from the markets' own record. |
+| 543 | 1 | `public double exportedUnits(Good g)` |  |
+
+### SAVE, RESET, THE REFORM (lines 545-619)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 554 | 13 | **type** `public static final class State` | One market as a save carries it: the price it traded at, the strike behind it and, since FW6 (2026-10-25), the month's tally (units imported, exported, filled at home, offered, bid) and the units drawn since the last ... |
+| 568 | 24 | `public List<State> toState()` |  |
+| 593 | 18 | `public void restore(List<State> saved)` |  |
+| 612 | 3 | `public void reset()` |  |
+| 616 | 3 | `public void redenominate(double scale)` |  |
 

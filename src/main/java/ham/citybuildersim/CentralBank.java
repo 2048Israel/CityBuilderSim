@@ -219,6 +219,12 @@ public final class CentralBank {
     /** The mirror of the defence (XR2): the local price of the dollars it bought for the vault this month at the strong edge of a band or a peg, in money made and paid abroad for them. */
     private double dollarsBought;
 
+    /** New D$ paid for domestically mined gold this month (GD4). */
+    private double goldMinted;
+
+    /** New D$ paid for domestically mined gold since founding (GD4). */
+    private double goldMintedLifetime;
+
     /* ------------------------------------------------------------------ the city's life */
 
     /** Advanced to the treasury since founding - "printed since founding". Zero on an old save. */
@@ -260,6 +266,7 @@ public final class CentralBank {
         boughtAtIssue = parAtIssue = 0;
         defendedThisMonth = 0;
         dollarsBought = 0;
+        goldMinted = 0;
     }
 
     private void issue(double x)  { reserves += x; issued += x;  issuedLifetime += x; }
@@ -700,6 +707,20 @@ public final class CentralBank {
         return local;
     }
 
+    /** Issues the mint's payment to a domestic miner, thousands of D$ (GD4). */
+    public void mintGold(double local) {
+        if (!(local > 0) || !Double.isFinite(local)) return;
+        issue(local);
+        goldMinted += local;
+        goldMintedLifetime += local;
+    }
+
+    /** The month's domestic mint payment, kept on save for the audit and the books. */
+    public double getGoldMinted() { return goldMinted; }
+
+    /** The domestic mint's new money since founding. */
+    public double getGoldMintedLifetime() { return goldMintedLifetime; }
+
     /** What it paid, in new money, for the dollars it bought for the vault this month. */
     public double getDollarsBought()         { return dollarsBought; }
     /** ...and since founding. */
@@ -841,7 +862,7 @@ public final class CentralBank {
      * two dials, the holdings and the ceiling, are under keys of their own.
      */
     public double[] toSaveArray() {
-        double[] out = new double[13 + REVENUE_MONTHS + 10];
+        double[] out = new double[13 + REVENUE_MONTHS + 12];
         int i = 0;
         out[i++] = advancesToBank;
         out[i++] = advancesToTreasury;
@@ -867,6 +888,8 @@ public final class CentralBank {
         out[i++] = boughtAtIssueLifetime;
         out[i++] = parAtIssueLifetime;
         out[i++] = dollarsBoughtLifetime;
+        out[i++] = goldMinted;
+        out[i++] = goldMintedLifetime;
         return out;
     }
 
@@ -903,6 +926,8 @@ public final class CentralBank {
         if (i < saved.length) parAtIssueLifetime    = Math.max(0, saved[i++]);
         // ...and XR2's: an older save has bought no dollars for the vault in new money.
         if (i < saved.length) dollarsBoughtLifetime = Math.max(0, saved[i++]);
+        if (i < saved.length) goldMinted = Math.max(0, saved[i++]);
+        if (i < saved.length) goldMintedLifetime = Math.max(0, saved[i++]);
     }
 
     /** An empty bank: nothing lent, nothing made. */
@@ -916,7 +941,7 @@ public final class CentralBank {
         boughtFromHouseholdsLifetime = 0;
         boughtAtIssueLifetime = parAtIssueLifetime = 0;
         defendedLifetime = 0;
-        dollarsBoughtLifetime = 0;
+        dollarsBoughtLifetime = goldMinted = goldMintedLifetime = 0;
         targetShare = previousTarget = 0;
         advancesCeilingMonths = DEFAULT_ADVANCES_MONTHS;
         java.util.Arrays.fill(revenue, 0);
@@ -949,6 +974,7 @@ public final class CentralBank {
         boughtAtIssueLifetime *= scale;  parAtIssueLifetime *= scale;
         paperRedeemed *= scale;  boughtBack *= scale;  paperGains *= scale;
         defendedThisMonth *= scale;  defendedLifetime *= scale;
+        goldMinted *= scale; goldMintedLifetime *= scale;
         dollarsBought *= scale;  dollarsBoughtLifetime *= scale;
         for (int r = 0; r < REVENUE_MONTHS; r++) revenue[r] *= scale;
     }

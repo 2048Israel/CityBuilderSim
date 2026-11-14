@@ -1,6 +1,6 @@
 # HarbourRenders.java - 983 lines · 53 methods · 8 constants · tools
 
-`ham/citybuildersim/tools/HarbourRenders.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/tools/HarbourRenders.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Renders a Bergen city's harbour for review, headless: HB1's placement before and after, and three ways to draw a terminal's box
 > under the quay walls and the docked boats HB1 draws from the detail zoom, by the game's own painters.

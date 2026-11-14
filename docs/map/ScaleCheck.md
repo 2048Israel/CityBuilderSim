@@ -1,6 +1,6 @@
 # ScaleCheck.java - 1,938 lines · 59 methods · 29 constants · harnesses
 
-`ham/citybuildersim/ScaleCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ScaleCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > A city past 2^31 people (0.7.53): its counts read back whole, its posts,
 > doors and household places add up to the last one, and a save gives them

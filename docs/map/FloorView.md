@@ -1,6 +1,6 @@
 # FloorView.java - 376 lines · 61 methods · 8 constants · model
 
-`ham/citybuildersim/FloorView.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FloorView.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > What the Policy tab's minimum-wage page draws (WS1): the floor against the going rate and the unskilled wage, against the average wage and the world's
 > nations, what a full-time floor job pays for, who is paid it or near it, the tie, the move a staged floor makes, every job's target at the two floors,
