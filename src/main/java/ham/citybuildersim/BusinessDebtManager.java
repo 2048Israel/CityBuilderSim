@@ -1423,6 +1423,12 @@ public class BusinessDebtManager {
 
         while (iterator.hasNext()) {
             BusinessDebt loan = iterator.next();
+            // A retired bullet waits for its liquidation cash, keeping its marker and interest.
+            // Refinancing its maturity here would turn that claim into an ordinary new loan.
+            if (!(loan instanceof Mortgage) && loan.isRetirementClaim()) {
+                if (!loan.isMatured()) loan.processMonth();
+                continue;
+            }
             loan.processMonth();
 
             /*

@@ -487,3 +487,34 @@ proceeds, and funds the waiting interest separately. All premises are
 explicit. The after fixture passes; removing only the cash repayment
 call fails both repayment/haircut pairs (bf1-rev3-no-pay-control.txt).
 Logs are under target/checks; only GameFiles.scratch slot 10 is used.
+
+The final-model named run, bf1-rev3-named.txt, exits 0: BankFailureCheck,
+SaveFileCheck, ReadPathCheck and OilCheck all pass; maps regenerate and
+Stale has zero firm findings (185 soft). Model b8898a07 counts 0/24 bank
+failures, 2,880 closed MoneyAudits, 210 pellet-sale months and 485
+split/consolidation events. The a720 intermediate count was 1/24;
+its seed-13 trace starts with Copper Refining losses while new project
+room is zero (bf1-rev2-seed13.txt). It is superseded by the completed
+retirement-cash repair and the final 0/24 count.
+
+## REV-BF1-4 — maturity while the invoice waits
+
+The b8898a07 ALL pick was stopped at verified BF1 JDK PID 2084,
+parent 18868, before changing the model. No ensemble had started.
+
+The refinery fixture now runs both its original bullet and an aged
+bullet with exactly one month left: its saved maturity is the pending
+invoice month. Before the mend the latter fails eight laws, live and
+reloaded, because maturity removes the marked loan and refinancing
+replaces it with an ordinary loan. All fixture premises are green
+(bf1-rev4-before.txt).
+
+★ Keep a marked retired bullet on its liquidation path at maturity,
+rather than refinance its principal while proceeds wait. Its remaining
+clock stops at zero; the same claim and interest rate stand, interest
+continues to accrue, and the existing cash repayment clears it when the
+invoice is banked. Ordinary bullets and mortgage terms keep their rules.
+The fixture asserts that the maturing claim stays registered and marked,
+does not draw replacement credit, takes no haircut while the invoice
+waits, and is fully repaid from banked cash. Both live and whole-city
+save/reload cases pass (bf1-rev4-after.txt).
