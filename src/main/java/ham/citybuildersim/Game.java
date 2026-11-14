@@ -6547,6 +6547,8 @@ public class Game {
         if (scrapped <= 0) {
             return 0;
         }
+        Sector closing = getSectors().byKey(decision.sector);
+        if (closing != null) closing.writeOffUnhousedStock();
         // ...its steel to the city's old steel, its owner's to sell (0.7.123; OldMetal).
         oldMetal.demolished(decision.template, scrapped, decision.sector);
 

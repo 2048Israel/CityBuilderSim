@@ -3202,21 +3202,23 @@ public abstract class Sector {
         }
     }
 
+    /** A processor's wholesale shed can ship after local fills (BF1); other sectors keep their own selling rules. */
+    public void shipUnsoldStock(Good g, GoodsMarket market) { }
+
     /**
-     * Stock offered at home also has the world's buyers (BF1). Previously
-     * only surplus off the production line could export: a lightly staffed
-     * mill filled its shed for months without selling a single pellet.
-     * Local orders clear first; the remaining stock follows the same
-     * marginal-cost and dump-line rule as the home offer, at the net bid.
+     * Losing a warehouse loses the stock it cannot hold before any sale or
+     * credit reading can use it (BF1). Keep the existing write-off flow for
+     * the next accounts strike; subsequent production may lose more.
      */
-    public void shipUnsoldStock(Good g, GoodsMarket market) {
-        if (!g.stockable() || !g.exportable()) return;
-        double held = getStock(g);
-        double units = market.netExportPrice() >= getMarginalCostPerUnit(g)
-                ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
-        if (!(units > 0)) return;
-        bookSale(market.record(key, Trade.WORLD, units, market.exportPrice()));
-        takeFromStock(g, units);
+    public void writeOffUnhousedStock() {
+        for (Good g : makes) {
+            if (!g.stockable()) continue;
+            double held = getStock(g), room = getStockCapacity(g);
+            if (held > room) {
+                output(g).writtenOff += held - room;
+                stock.put(g, room);
+            }
+        }
     }
 
     /**
@@ -3263,7 +3265,7 @@ public abstract class Sector {
         double held = getStock(g) + planned + rest;
         double room = getStockCapacity(g);
         double capped = Math.min(held, room);
-        o.writtenOff = Math.max(0, held - capped);
+        o.writtenOff += Math.max(0, held - capped);
         stock.put(g, capped);
 
         if (direct > 0 && g.exportable() && market != null) {
@@ -3277,7 +3279,7 @@ public abstract class Sector {
     }
 
     /** Units of a good taken out of stock by a local sale or an export from the shed. */
-    void takeFromStock(Good g, double units) {
+    protected void takeFromStock(Good g, double units) {
         if (!g.stockable()) return;
         stock.put(g, Math.max(0, getStock(g) - units));
     }

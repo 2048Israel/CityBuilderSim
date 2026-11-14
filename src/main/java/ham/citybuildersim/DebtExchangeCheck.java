@@ -296,6 +296,24 @@ public class DebtExchangeCheck {
         double quietOutside = outsideCoupons(city);   // (CD9) what a quiet month paid the domestic holders outside the bank, which the walk leaves
         double quietSize = sizeOf(city);
 
+        // BF1: compare with the same month's no-move counterfactual.
+        // Ordinary cash residuals need not be equal in consecutive months.
+        Game control = founded("debt-exchange-control");
+        press(control);
+        control.getForeignAccounts().pinRate(OPENING);
+        press(control);
+        quote(control, "Term", 20_000, 5);
+        quietly(() -> {
+            control.handleLongBondLogic(30_000 * PriceLevel.FACTOR, 5, 1000 * PriceLevel.FACTOR);
+            control.handleTBillLogic(10_000 * PriceLevel.FACTOR, 12, 1000 * PriceLevel.FACTOR);
+        });
+        for (int i = 0; i < 3; i++) move(control, 1.0);
+        check("the quiet counterfactual starts in the same month with the same cash and debt",
+                control.getMonth() == city.getMonth() && control.getCash() == city.getCash()
+                && control.getDebtManager().getAllPrincipal() == dm.getAllPrincipal());
+        move(control, 1.0);
+        double controlResidual = control.getTreasuryResidual(), controlSize = sizeOf(control);
+
         /* ============ 2. the D$ falls 10% ============ */
         out.println("\n--- the D$ falls 10%: the month books what the dollars cost more of it ---");
 
@@ -332,8 +350,8 @@ public class DebtExchangeCheck {
                         + journal + city.getTreasuryResidual(),
                 city.getTreasuryChange(), MoneyAudit.tolerance(TOLERANCE, sizeOf(city)));
         double fallResidual = city.getTreasuryResidual();
-        near("...and what it leaves over is what a month with no move left over (the line did not slip into it)", fallResidual, quietResidual,
-                MoneyAudit.tolerance(TOLERANCE, Math.max(sizeOf(city), quietSize)) + .05 * Math.abs(quietResidual));
+        near("...and what it leaves over is what a month with no move left over (the line did not slip into it)", fallResidual, controlResidual,
+                MoneyAudit.tolerance(TOLERANCE, Math.max(sizeOf(city), controlSize)) + .05 * Math.abs(controlResidual));
         check("premise: had the bridge not taken the line out, the residual would have carried it and missed by more than that",
                 Math.abs(fall.line) > 10 * (MoneyAudit.tolerance(TOLERANCE, Math.max(sizeOf(city), quietSize)) + .05 * Math.abs(quietResidual)));
         TreasuryJournal.Entry walk = entry(city.getEarnedToBudget(), "Exchange gain (loss) on foreign debt");

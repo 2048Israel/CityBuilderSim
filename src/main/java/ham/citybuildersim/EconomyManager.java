@@ -1463,6 +1463,10 @@ public class EconomyManager {
             double matured = businessDebtManager.takeMaturedPrincipal(s.key());
             businessDebtManager.setMonthObligations(s.key(), monthObligations(s, matured));
             double cash = s.getCash() - matured;
+            // BF1: a subtraction's rounding is not a cash shortfall. A hair
+            // below zero otherwise draws BUFFER_MONTHS of losses, while the
+            // same books in another money unit draw nothing.
+            if (cash < 0 && -cash <= MoneyAudit.tolerance(0, businessDebtManager.getMonthObligations(s.key()))) cash = 0;
             if (cash < 0) {
                 double need = -cash;
                 if (outward != null) need -= outward.recall(s.key(), need, this);

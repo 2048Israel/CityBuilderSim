@@ -534,7 +534,7 @@ public class BusinessDebtManager {
      * by now, and the debt schedule would be unreadable. Overshooting slightly
      * keeps it to a handful of larger loans.
      */
-    private static final double BUFFER_MONTHS = 3;
+    static final double BUFFER_MONTHS = 3;
 
     private List<BusinessDebt> loans = new ArrayList<>();
 

@@ -151,6 +151,9 @@ public final class Markets {
 
     public void clearMonth(Sectors sectors, Game game) {
 
+        // BF1: a demolished shed's lost stock cannot be sold by this clearing.
+        for (Sector s : sectors.all()) s.writeOffUnhousedStock();
+
         /*
          * 0. THE FLEETS, before anything is made with them.
          *

@@ -85,3 +85,47 @@ The first full pick's default 2,400-month LongPlaytest is green. Its economic
 trace differs from the stored SX1 gate's LongPlaytest.log beyond runtime
 (first served-works reading and the market/stock series differ), so the final
 model must run the ensemble against docs/ensemble/0.9.101.md.
+
+The first full pick exposed a missing ordering constraint: warehouse exports
+could sell stock after the warehouse had been demolished, ahead of the old
+end-of-market cap. GdpCheck's unchanged write-off fixtures caught it. Stock
+past the surviving room is now written off before the market or the closing
+borrower's credit reading. Production adds any further write-off to the same
+existing flow. The initial BF1 ensemble snapshot was stopped by its own run
+folder/PIDs and is superseded; the final model will use a new label.
+
+The changed path also exposes KeptCheck 55's Bank Overview tag churn: 9 months
+allocate one label and 6 allocate two, most saying "defaulting". Its unchanged
+25-month prefix reproduces 8 quiet months. Pieces.rungRow now retains its status
+label hidden and unmanaged when absent. This is a UI reuse fix; it does not
+change what the player sees or weaken the assertion. Temporary instrumentation
+is isolated under target/bf1-kept-classes and is not in the source.
+
+## Corrections from the first full pick
+
+The generic warehouse exporter reached food and refinery policies which were
+not the processing planner's contract. The final exporter is ProcessingSector's:
+Wood Products, Copper Refining, Cement & Concrete and Heavy Industry. Sector's
+hook defaults to no shipment, preserving other sectors' sales policies.
+Consequently GdpCheck, SaveFileCheck, RefineryCheck, GoldMiningCheck and SlopeCheck
+pass, including the original food-conservation law. No HW1 source or fixture
+is changed. The temporary GDP restocking change was removed.
+
+The narrower model's first price-level twin diverges physically at month 39.
+A probe finds the earlier difference at month 16: a near-zero Real Estate
+cash subtraction draws a working-capital loss buffer in one denomination and
+none in the other. ★ A repayment short only by MoneyAudit's existing floating
+point allowance (floor zero) is roundoff, not a new shortfall. EconomyManager
+normalizes that tail before asset sales and credit; a caused one-ULP fixture
+and a real-shortfall control retain the loss-buffer rule against BUFFER_MONTHS.
+
+The first full pick also exposed three fixture assumptions. BankCheck's 200x
+capital injection is topped up if subsequent lending means its reserves no
+longer dwarf the live book; the 100x premise is unchanged. CurrencyRegimeCheck
+keeps searching for its actual gain-branch window, stopping at the first hold,
+with a 600-month cap (the probe reaches its first full window at month 173);
+the gain/dent laws and inflation tolerance are unchanged. DebtExchangeCheck
+compares the fall month's residual with a no-move counterfactual in the same
+month, whose opening month, cash and debt must match, rather than assuming
+ordinary residuals equal in successive months. Both financial controls passed
+in isolated runs without relaxing a tolerance.

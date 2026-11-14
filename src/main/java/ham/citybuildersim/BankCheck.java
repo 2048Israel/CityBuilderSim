@@ -3637,6 +3637,14 @@ public class BankCheck {
             eaClosed.set(eaClosed.size() - 1, bank.earningAssets());
             playRecordingEarningAssets(city, 2, eaClosed);
 
+            // BF1: growth after the injection can enlarge the book. Cause
+            // the same reserves/book premise on that book, through capital,
+            // and file the between-presses addition just as above.
+            if (bank.sheet(Bank.Sheet.RESERVES) < 100 * bank.getBook()) {
+                bank.injectCapital(0, 200 * bank.getBook() - bank.sheet(Bank.Sheet.RESERVES));
+                eaClosed.set(eaClosed.size() - 1, bank.earningAssets());
+            }
+
             // The issue's case: reserves that dwarf the book.
             double eaReserves = bank.sheet(Bank.Sheet.RESERVES), eaBook = bank.getBook();
             assertTrue("fixture: its reserves are at least a hundred times its book, and it still lends",

@@ -73,6 +73,8 @@ public final class BankFailureCheck {
         BuildingsTemplate mill = buildings.getTemplate(WoodProducts.PELLET_MILL);
         WoodProducts wood = g.getSectors().woodProducts();
         buildings.addStack(mill, 1, true);
+        double doomed = wood.getStockCapacity(Good.WOOD_PELLETS) * Sector.DUMP_THRESHOLD;
+        wood.setStock(Good.WOOD_PELLETS, doomed);
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
         double principal = buildings.getBuildingsValueBySector(wood.key());
         credit.issueProjectLoan(wood.key(), principal, g.getMonth());
@@ -85,6 +87,7 @@ public final class BankFailureCheck {
         int gone = (int) retire.invoke(g, new BusinessInvestment.Decision(wood.key(), mill, 1, "BF1 fixture", true),
                 investor.invoke(g, wood.key()), true);
         g.getEconomyManager().settleInsolvency();
+        close("the demolished shed's stock is written off before creditors value it", wood.unitsWrittenOff(Good.WOOD_PELLETS), doomed);
         check("fixture: the only mill was retired and its creditor suffered a loss", gone == 1
                 && buildings.getBuildingsValueBySector(wood.key()) == 0 && credit.getWrittenOffThisMonth(wood.key()) > 0);
         close("cash from closing repays the bank before its remaining claim is resolved", credit.getPrincipal(wood.key()), 0);
@@ -165,8 +168,35 @@ public final class BankFailureCheck {
         }
     }
 
+    static void rounding() {
+        out.println("--- 5. a repayment's rounding does not draw a loss buffer ---");
+        for (boolean rounding : new boolean[] { true, false }) {
+            Game g = town("bankfailure-short-" + rounding);
+            g.simulateMonths(2);
+            Sector s = g.getSectors().retail();
+            BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
+            double principal = g.getBank().equity() / 10;
+            double gap = rounding ? principal - Math.nextDown(principal) : principal * 1e-6;
+            credit.setLoans(new java.util.ArrayList<>(java.util.List.of(
+                    new BusinessLoan(s.key(), principal, 1, g.getMonth() - 1, .04))));
+            credit.startAuditMonth();
+            s.setCash(principal - gap);
+            s.statement().netIncome = -principal / 10;
+            check("fixture: " + (rounding ? "rounding" : "real shortfall") + " is on its intended side of the model's roundoff band",
+                    gap > 0 && (gap <= MoneyAudit.tolerance(0, principal)) == rounding);
+            g.getEconomyManager().settleBusinessCredit(g.getMonth());
+            if (rounding) {
+                close("rounding borrows no loss buffer", credit.getLentThisMonth(s.key()), 0);
+                close("the repaid borrower's till is empty", s.getCash(), 0);
+            } else {
+                check("a real shortfall still draws the working-capital line and its loss buffer", credit.getLentThisMonth(s.key())
+                        >= -s.getNetIncome() * BusinessDebtManager.BUFFER_MONTHS);
+            }
+        }
+    }
+
     static void seeds() {
-        out.println("--- 5. 24 default Random cities, button unpressed, every one of 120 months audited ---");
+        out.println("--- 6. 24 default Random cities, button unpressed, every one of 120 months audited ---");
         int failed = 0, audited = 0, badAudits = 0, badEquity = 0, selling = 0, splits = 0;
         for (int seed = 0; seed < 24; seed++) {
             Game g = new Game(GameFiles.scratch("bankfailure-seed-" + seed));
@@ -204,7 +234,7 @@ public final class BankFailureCheck {
     public static void main(String[] args) throws Exception {
         System.setOut(quiet);
         try {
-            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); credit(); shares(); }
+            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); credit(); shares(); rounding(); }
             if (!Arrays.asList(args).contains("--fixtures")) seeds();
         } finally { System.setOut(out); }
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
