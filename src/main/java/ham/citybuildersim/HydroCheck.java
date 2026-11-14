@@ -461,7 +461,7 @@ public class HydroCheck {
         assertTrue("with ample slots, the twenty-year plan uses only the slots it needs or has and reports whether it closes",
                 plenty != null && plenty.template() == hydro && plenty.count() > free && plenty.count() <= ample
                         && (plenty.closes() || plenty.count() == ample)
-                        && plenty.closes() == BuildAdvice.ahead(g, power, BuildAdvice.plus(BuildAdvice.onSite(g,power),hydro,plenty.count()),plenty.ahead()));
+                        && plenty.closes() == BuildAdvice.maintained(g, power, BuildAdvice.plus(BuildAdvice.onSite(g,power),hydro,plenty.count()),plenty.ahead()));
         // The notes' star 4, measured: with every power plant in the ranking and the river's slots ample, what the advice names.
         BuildAdvice.Suggestion open = BuildAdvice.suggestFor(g, null, power, Founding.WEALTHY_CASH, 1e12, BuildAdvice.SLACK, new java.util.HashSet<>());
         System.out.println("   with every power plant in the ranking and " + ample + " slots free, the advice names "

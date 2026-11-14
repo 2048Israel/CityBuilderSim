@@ -2622,3 +2622,19 @@ are target/checks/hw1-rev5-control-promote.log, -highway.log and
 -paving.log. Each keeps every fixture premise and must fail its
 mended hard assertion. The source snapshot used for the controls is
 target/hw1-sendback1/rev5-model-classes.
+
+### Hydro assertion's retained ample-river premise
+
+The earlier interrupted pick exposed HydroCheck's ample-river closure
+law. The original hard assertion is rerun on the final d38638ef model
+in target/checks/hw1-rev5-hydro-current.log and exits 1 on that line.
+Its river, consumption, two-slot shortage, hundred-slot extension,
+chosen hydro template and bounded count premises remain exactly as
+before. Only the closure predicate changes from BuildAdvice.ahead to
+BuildAdvice.maintained. HW1's essential advice now reports complete
+useful service at the supplied margin, while ahead retains the old
+NEEDS YOU threshold. The assertion stays hard and compares the actual
+suggestion's closes flag against the full-service predicate at its
+actual count and opening projection. No count, slot or shortage premise
+changes. The aligned harness in hw1-rev5-hydro-aligned.log exits 0.
+Restoring the old predicate is precisely the retained exit-1 control.
