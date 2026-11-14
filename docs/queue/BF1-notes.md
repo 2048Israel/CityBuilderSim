@@ -4,7 +4,7 @@ Built from main e5642145 (SX1, 0.9.101), on batch/BF1. HW1's named
 files are kept out of this batch.
 
 Readiness remains provisional while the reviewed model completes its
-ensemble and fresh-clone gate. All five review findings have causal
+fresh-clone gate. Its final ensemble passes both hard criteria. All five review findings have causal
 fixtures and mends; the last economic change is 85fb890a. Its hands-off
 count is 1/24 failures, against 5/24 on current SX1 (LD2's historical 8/24),
 with all 2,880 monthly MoneyAudits and bank equity bridges closed.
@@ -629,3 +629,37 @@ timeout remains evidence, not a waiver. Standalone logs are retained in
 target/bf1-reviewed-kept (bf1-kept-reviewed-alone.txt and KeptCheck.log).
 The suite wrapper regenerates maps with no changed generated documents;
 Stale remains 0 firm, 185 soft.
+
+
+## Final reviewed ensemble
+
+The one final-model ensemble is BF1-R5-d1eaff: classes copied from
+d1eaff05 (economic model 85fb890a), 80/80 complete, no short or missing
+runs, 38.9 minutes elapsed, exit 0. Its baseline replaces the superseded
+272bef8f record in docs/ensemble/BF1.md. Against 0.9.101's 24/26,
+BF1 scores 21/26; hard M1 and F1 pass 10/10. All five policies have
+zero failed/unread MoneyAudits and zero findings in 16 seeds apiece.
+
+Every changed verdict is information under the batch brief:
+
+| criterion | 0.9.101 | final BF1 | verdict |
+|---|---|---|---|
+| AUTO2 A3, longest deflation spell from m240 | 7 months at most | 15 months at most; all finish, final/peak population at least 96.63% | PASS to FAIL |
+| SHOCK T2, median final population | 115,870 | 72,408 (floor 86,902.5) | PASS to FAIL |
+| HIGH T2, median final population | 63,992 | 33,770 (floor 47,994) | PASS to FAIL |
+
+AUTO2 A1 and A2 remain FAIL as on the baseline; all other verdicts are
+unchanged. The remaining changed outcomes are reported without altering
+their laws. Only M1 and F1 stop shipping, as Jerus specified.
+
+Preparation evidence: BF1-reviewed-d1eaff failed before simulation when
+Windows denied the copied classes directory's rename. A shorter label,
+BF1-final, collided with the old 3273cbab snapshot; that resumed run was
+stopped immediately with the runner's own stop command. Neither supplies
+a final score. The verified unused BF1-R5-d1eaff label records d1eaff05
+and starts 80/80 new runs. Logs: target/checks/bf1-r5-ensemble.txt and
+target/ensemble/BF1-R5-d1eaff/{snapshot.txt,score.md,baseline.md}.
+
+The 15:16 orchestrator instruction serializes the two builders' fresh
+dry runs. At ensemble completion BF1 sent 'BF1 dry run?' and waits for
+the go before launching. Main fetched here is still e5642145.
