@@ -548,3 +548,24 @@ liquidation path now removes a claim whose principal and interest are
 both zero. The same fixture passes, while the positive maturing-claim
 save/reload fixture still retains its real claim until repayment
 (bf1-rev5-after.txt). No counter or tolerance is changed.
+
+## Final ALL findings after the model review
+
+The 85fb890a full pick exits 4 (bf1-final-pick-85fb.txt): one
+OrderSearchCheck premise and two KeptCheck comparisons are new reds.
+The bank's 24-seed count remains 1/24 with all audits closed.
+
+★ Cause the copy's below-counted search explicitly using tillsAsTheLine,
+the existing control already applied to its twin. This copy's natural
+interest orders all pass whole or are refused, so they supply no deep
+boundary. The added zero-earnings cash-boundary cases exhaust the lower
+search and are checked against the same countdown; the twin still finds
+positive deep trims. No assertion, tolerance or countdown is weakened.
+OrderSearchCheck then passes (bf1-ordersearch-after.txt).
+
+KeptCheck: Search "#3200" on Bonds retains a 1466-wide body against a
+fresh 1454-wide body. Partners has one 62-pixel difference at month 3169
+with equal signatures. An unchanged normal prefix through Trade reproduces
+the Bonds bounds failure but not the Partners pixel failure
+(bf1-kept-review-prefix.txt). Focused UI diagnosis is in progress; no
+release verdict or ensemble is taken from the red ALL run.

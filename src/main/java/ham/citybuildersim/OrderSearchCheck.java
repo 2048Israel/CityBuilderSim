@@ -256,6 +256,9 @@ public class OrderSearchCheck {
         });
         out.printf("      month %d, %,d people, at a %.0f%% policy rate%n", copy.getMonth(), copy.getPopulationManager().getPopulation(),
                 COPY_RATE * 100);
+        // BF1: a solvent path can accept every natural interest order whole. Cause the deep search
+        // on this copy too, with the same cash-funded boundary already exercised on its twin below.
+        tillsAsTheLine(copy, wc);
         wc.report("the copy");
         assertTrue("fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some"
                 + " below the counted slices, so the search found them", wc.largestInvested > Game.COUNTDOWN_SLICES && wc.searched > 0);
