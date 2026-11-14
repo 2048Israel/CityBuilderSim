@@ -3026,3 +3026,26 @@ target/checks/hw1-card-filled-control.log. The paid staff-short premise
 passes in both runs, and the filled-post running-cost law fails only in
 the omission control. This is an assertion adaptation to HW1's production
 change, with its physical premise retained.
+
+
+## Final pick map reach attribution
+
+The final pick adds a hard reach failure on its played city. Of 593 ordinary
+drawn buildings, 587 are within four street plots and six are farther.
+Five mines and 119 edge-packed buildings retain their original exclusions.
+The raster draws all 715 buildings, with gravel surface 131.5 of the
+model's 138 plots. The connectivity and surface laws also fail as before.
+
+The current-main prefix replay in target/checks/hw1-calendar-main-map.log
+reproduces these exact counts and all three network laws on the final HW1
+city. CityMap, DistrictPlan, StreetCurves and TilePainter are byte-identical
+to origin/main e56421457c98e0c5d115ebdbd9e701dcdd7a4fc6. The prefix was
+compiled from that main's sources. This local diagnostic accidentally used
+hard timing, so its timing failures are excluded from the attribution.
+The full pick used the required soft timing.
+
+The reach law remains hard and unchanged. DM3-R's queued done condition
+also requires every ordinary building in this replay to meet the existing
+REACH bound, while retaining its mines and packed-edge exclusions, alongside
+the original connectivity and surface repairs. HW1's city path exposes
+the unchanged renderer's geometric fault.

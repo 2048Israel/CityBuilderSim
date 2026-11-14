@@ -13,7 +13,7 @@ spells, plant choices and ensemble verdicts.
 
 ## queued
 | HW1-V | Refine carried purchased steep/zoned ground and retain rounded bond cash above the funding gap in future plan cash, WorksValue.java:135/184/222 and AdviceValueOracle.java:216/40/86, REV-HW1-4 findings 3 and 4 | [brief](docs/queue/HW1-V.md) |
-| DM3-R | Repair the unchanged map renderer's paved-surface loss and joinable disconnected component on HW1's played-city path, plus the post-verdict JavaFX shutdown diagnostic; preserve the hard drawing laws | [cause and done condition](docs/queue/HW1-notes.md#map-renderer-follow-up-dm3-r) |
+| DM3-R | Repair the unchanged map renderer's road-surface loss, six ordinary buildings beyond REACH and joinable disconnected component on HW1's played-city path, plus the post-verdict JavaFX shutdown diagnostic; preserve the hard drawing laws | [cause and done condition](docs/queue/HW1-notes.md#map-renderer-follow-up-dm3-r) |
 | KS1-Gov | Retain the Government Overview's transient cash-flow and bridge rows so its eventful monthly allocation stays within the existing tenth-of-first-draw floor | [cause and done condition](docs/queue/HW1-notes.md#government-allocation-follow-up-ks1-gov) |
 
 ## known-reds
@@ -23,3 +23,5 @@ KeptCheck | no month makes more than a tenth of the nodes the first draw made (t
 MapCheck | Exception in thread "Thread-1" java.lang.NullPointerException | DM3-R | 2026-11-14 | Post-verdict diagnostic immediately after the three drawing failures, with no stack emitted; unchanged MapCheck exits with a live JavaFX toolkit, see HW1 attribution notes
 
 KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 40 of 384 | KS1-Gov | 2026-11-14 | GD4 reaches returning Principal repaid, Raised by issuing paper, Today's dials, Paid out and Sales tax graphics. All 40 nodes are existing fiscal rows, verified by temporary Kept instrumentation. Main 97eaa608 passes this section, GD4 signatures stay equal, and the Overview/Pieces/Kept code is unchanged. See GD4-notes.md. Transferred to the same Government retention fix as HW1, one fault and one queued fix.
+
+MapCheck | ...every building within REACH plots of a street, but those packed at the city's edge and the mines on their sites | DM3-R | 2026-11-14 | Current main's byte-identical CityMap, DistrictPlan, StreetCurves and TilePainter reproduce six ordinary buildings beyond four street plots, with all 715 buildings drawn, on the final HW1 played city. Main-prefix replay in HW1 notes retains the hard reach law and its exclusions.
