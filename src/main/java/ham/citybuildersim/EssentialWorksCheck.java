@@ -331,6 +331,8 @@ public final class EssentialWorksCheck {
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         u.setWattsConsumption(u.getProduction() * 2);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        check("overview cards require the NEEDS YOU row their screen reads",
+                BuildAdvice.suggest(g, java.util.List.of()).isEmpty());
         var all = CityNeeds.measure(g, CityNeeds.PLAIN);
         BuildAdvice.Suggestion card = BuildAdvice.suggest(g, all).stream()
                 .filter(s -> s.measure().equals(power)).findFirst().orElse(null);

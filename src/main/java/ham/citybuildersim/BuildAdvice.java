@@ -1248,6 +1248,7 @@ public final class BuildAdvice {
         for (Measure m : AutoBuilder.remit(game, all)) {
             if (out.size() >= MAX_SUGGESTIONS) break;
             CityNeeds.Need need = needFor(all, m);
+            if (need == null) continue;
             Suggestion s = suggestFor(game, need, m, cashLeft, landLeft);
             if (s == null) continue;
             out.add(s);

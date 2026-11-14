@@ -1249,3 +1249,22 @@ reload log is hw1-rev2-reload-true-twin.log. The cap, queue, short-window
 and paving cases are also included in the green named run. No assertion
 was converted into an observation for these mends. No building balance
 data was edited.
+
+### Overview entry-point review
+
+The provisional full pick was stopped before its completed verdict after
+finding that the overview's use of the automatic remit could return a
+suggestion with no NEEDS YOU row. BuildScreen.suggestionCard requires that
+row. ★ Keep the overview's row requirement while retaining the automatic
+remit's ordering, full-service target and shared reserve for cards it can
+show. Category and automatic advice still cover the complete remit.
+The parity fixture's same funded power-short city now also supplies an
+empty measured-row list and requires no overview cards. Without the guard,
+the power suggestion has a null row and this assertion fails. The stopped
+run is target/checks/hw1-rev2-final-pick.log, no completed verdict. Its
+verified shell tree rooted at PID 40092 was stopped, leaving other sessions.
+
+The overview guard's production run, hw1-rev2-overview-named.log, exits 0.
+The isolated ff2a8ac4 BuildAdvice shadow fails only the new empty-row-list
+assertion while the funded exact-order/value parity still passes. Its log
+is hw1-rev2-overview-mutant.log, expected exit 1.

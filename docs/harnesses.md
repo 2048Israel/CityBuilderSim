@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**199 harness files, 23,793 labelled assertions.** AllChecks runs 199 of them.
+**199 harness files, 23,794 labelled assertions.** AllChecks runs 199 of them.
 
 ## Which harnesses read which class
 
@@ -8564,7 +8564,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L372 ...and every month of it is conserved
   - L381 ...with the register and the households agreeing on every company
 
-## EssentialWorksCheck.java - 54 labelled assertions
+## EssentialWorksCheck.java - 55 labelled assertions
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools
@@ -8605,41 +8605,42 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L306 fixture: uncapped care comparison has the same other causes and no outbreak
   - L318 uncapped care's credit equals the model's sickness reduction, including its unhoused cause
 - **L323 the Build advice and automatic order use the same plan**
-  - L337 fixture: the power card leads the automatic remit and its full order is fundable
-  - L342 the power plan is sized to its whole order's actual opening and planning horizon
-  - L349 the card uses the player's automatic reserve and full-service target
-  - L351 the automatic path orders the card's exact building and count
-  - L353 the automatic path records the exact whole-plan valuation displayed by the card
-- **L359 pending coal does not hide an earlier forecast power loss**
-  - L377 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
-  - L382 wind prevents positive physical output loss before the pending coal opens
-  - L390 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
-  - L399 the automatic path orders earlier wind before the forecast shortage becomes physical
-  - L407 the faster wind brings the saved first-completion deadline forward from the coal quote
-- **L412 pending fresh water at its cap cannot be called a closing plan**
-  - L432 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
-  - L439 the fresh-only path offers no zero-help order
-  - L442 the normal water card chooses desalination and its count closes the demand
-- **L448 priority work waits in front of the first pending plant**
-  - L476 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
-  - L479 the first coal quote retains the entire earlier priority delay
-  - L482 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
-- **L487 power delivered for fewer than six months still prevents lost work**
-  - L511 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
-  - L517 the sub-six-month service window has positive relief and avoided output loss
-- **L522 paving is sized to the final order's own opening**
-  - L553 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
-  - L557 the paving quote and projection both use the final count's complete opening
-- **L563 pending capacity keeps its deadline through a real mid-construction save and load**
-  - L578 fixture: operating power is short, pending wind covers it, and the first completion is quoted within three years
-  - L585 pending capacity covers the shortage before its quoted deadline
-  - L591 the unbroken city reaches the mid-construction save month
-  - L625 the mid-construction scratch save loaded through DataSave with its original pending date
-  - L635 both scratch timelines advance every compared month
-  - L638 fixture: later priority work kept operating power short throughout the original deadline
-  - L639 monthly passes respect the original pending deadline before it expires
-  - L640 past that deadline the automatic path orders more power despite the pending wind
-  - L641 the real loaded city and its unbroken twin place the same later automatic orders, one by one
+  - L334 overview cards require the NEEDS YOU row their screen reads
+  - L339 fixture: the power card leads the automatic remit and its full order is fundable
+  - L344 the power plan is sized to its whole order's actual opening and planning horizon
+  - L351 the card uses the player's automatic reserve and full-service target
+  - L353 the automatic path orders the card's exact building and count
+  - L355 the automatic path records the exact whole-plan valuation displayed by the card
+- **L361 pending coal does not hide an earlier forecast power loss**
+  - L379 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
+  - L384 wind prevents positive physical output loss before the pending coal opens
+  - L392 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
+  - L401 the automatic path orders earlier wind before the forecast shortage becomes physical
+  - L409 the faster wind brings the saved first-completion deadline forward from the coal quote
+- **L414 pending fresh water at its cap cannot be called a closing plan**
+  - L434 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
+  - L441 the fresh-only path offers no zero-help order
+  - L444 the normal water card chooses desalination and its count closes the demand
+- **L450 priority work waits in front of the first pending plant**
+  - L478 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
+  - L481 the first coal quote retains the entire earlier priority delay
+  - L484 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
+- **L489 power delivered for fewer than six months still prevents lost work**
+  - L513 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
+  - L519 the sub-six-month service window has positive relief and avoided output loss
+- **L524 paving is sized to the final order's own opening**
+  - L555 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
+  - L559 the paving quote and projection both use the final count's complete opening
+- **L565 pending capacity keeps its deadline through a real mid-construction save and load**
+  - L580 fixture: operating power is short, pending wind covers it, and the first completion is quoted within three years
+  - L587 pending capacity covers the shortage before its quoted deadline
+  - L593 the unbroken city reaches the mid-construction save month
+  - L627 the mid-construction scratch save loaded through DataSave with its original pending date
+  - L637 both scratch timelines advance every compared month
+  - L640 fixture: later priority work kept operating power short throughout the original deadline
+  - L641 monthly passes respect the original pending deadline before it expires
+  - L642 past that deadline the automatic path orders more power despite the pending wind
+  - L643 the real loaded city and its unbroken twin place the same later automatic orders, one by one
 
 ## ExchangeCheck.java - 209 labelled assertions
 
