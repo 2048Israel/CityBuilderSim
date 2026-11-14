@@ -43,8 +43,9 @@ public final class WorksValue {
         if (count <= 0) return new Value(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         Game.BuildQuote q = g.quoteBuild(t, count);
         double lead = Double.isFinite(q.months) ? Math.max(0, q.months) : 0;
-        double factor = BuildAdvice.lifeFactor(g)
-                * Math.pow(1 + Math.max(0, BuildAdvice.lifeRate(g)) / 12, -lead);
+        double monthlyRate = Math.max(0, BuildAdvice.lifeRate(g)) / 12;
+        double factor = annuity(monthlyRate, Math.max(0, BuildAdvice.LIFE_MONTHS - lead))
+                * Math.pow(1 + monthlyRate, -lead);
         double jobs = 0, payroll = 0, returned = 0;
         PopulationManager people = g.getPopulationManager();
         double[] wages = people.getWagesPerType(), fill = people.getJobFillRate();
@@ -155,7 +156,7 @@ public final class WorksValue {
         return relief(g, m, site, order, lead, null).avoided();
     }
 
-    /** Demand is physical: the reserve dial sizes orders but cannot create lost output. */
+    /** Compare every plan to the same date, LIFE_MONTHS from now. Demand is physical and the reserve cannot create lost output. */
     private static Relief relief(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
                                  Map<BuildingsTemplate, Integer> order, double lead, Maintenance maintenance) {
         Map<Sector, double[]> traffic = traffic(g, m);
@@ -169,7 +170,7 @@ public final class WorksValue {
             double valueAdded = Math.max(0, book.revenue - book.inputs - book.electricity - book.water);
             if (sector.getEnergyRatio() > 0) powerPotential += valueAdded / sector.getEnergyRatio();
         }
-        double horizon = lead + BuildAdvice.LIFE_MONTHS;
+        double horizon = BuildAdvice.LIFE_MONTHS;
         double futureCapital = 0, futureMonths = 0, financingCost = 0, runningCost = 0;
         int futureUnits = 0;
         double futureLead = 0, initialFootprint = 0, cashForLater = 0;
@@ -192,8 +193,10 @@ public final class WorksValue {
         double[] powerBefore = null, powerAfter = null;
         double basePowerDemand = g.getServicesManager().getUtilitiesHandler().getConsumption();
         int interval = power ? 1 : 12;
-        for (int start = 0; start < BuildAdvice.LIFE_MONTHS; start += interval) {
-            double months = lead + start + interval / 2.0;
+        double operatingMonths = Math.max(0, horizon - lead);
+        for (int start = 0; start < operatingMonths; start += interval) {
+            double duration = Math.min(interval, operatingMonths - start);
+            double months = lead + start + duration / 2;
             BuildAdvice.Ahead at = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), 0);
             Map<BuildingsTemplate, Integer> ready = power ? completedAt(g, schedule, months) : site;
             Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(ready, order);
@@ -225,8 +228,7 @@ public final class WorksValue {
                     }
                 }
             }
-            double weight = 0;
-            for (int j = 1; j <= interval; j++) weight += Math.pow(1 + rate, -(lead + start + j));
+            double weight = annuity(rate, duration) * Math.pow(1 + rate, -(lead + start));
             futureMonths += weight * futureUnits;
             if (maintenance != null) runningCost += weight * BuildAdvice.runningChange(g, ready, with, at);
             double[] before, after;

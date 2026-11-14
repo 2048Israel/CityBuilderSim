@@ -71,7 +71,7 @@ public final class WorksFinanceCheck {
         double cash = g.getCash(), debt = AutoBuilder.debt(g), reserves = g.getForeignAccounts().getReserves();
         WorksValue.Value value = WorksValue.of(g, power, Map.of(), wind, 1, 0);
         double invoice = g.quoteBuild(wind, 1).total + ground.cash();
-        double expected = financing(g, invoice, value.lead() + BuildAdvice.LIFE_MONTHS);
+        double expected = financing(g, invoice, BuildAdvice.LIFE_MONTHS);
         check("fixture: this flat one-wind comparison needs no later plant", value.futureUnits() == 0);
         check("financing uses the actual parcel cash and the vault's actual top-up",
                 close(value.financing(), expected));
@@ -101,7 +101,7 @@ public final class WorksFinanceCheck {
                 Map.of(), wind, 1, g.getLandManager().getAvailableSqFt());
         check("fixture: the flat comparison needs no later plant", value.futureUnits() == 0);
         check("the initial financing stops at the quoted benchmark maturity",
-                close(value.financing(), financing(g, invoice, value.lead() + BuildAdvice.LIFE_MONTHS)));
+                close(value.financing(), financing(g, invoice, BuildAdvice.LIFE_MONTHS)));
     }
 
     static void laterQuotes(Path root) {
@@ -253,7 +253,7 @@ public final class WorksFinanceCheck {
         check("fixture: the flat-demand comparison borrows its build price and needs no later unit",
                 value.futureUnits() == 0 && q.cashReceived() > 0 && land.getOfficePricePerSqFt() > 0);
         check("owned run or works ground adds no parcel borrowing",
-                close(value.financing(), financing(g, invoice, value.lead() + BuildAdvice.LIFE_MONTHS)));
+                close(value.financing(), financing(g, invoice, BuildAdvice.LIFE_MONTHS)));
     }
 
     static void independentPending(Path root) {
@@ -655,9 +655,122 @@ public final class WorksFinanceCheck {
         }
     }
 
+    static void commonCalendar(Path root) {
+        out.println("--- a work opening after the common comparison end earns no operating credit ---");
+        Game g = flat(root, "common-calendar");
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        BuildingManager bm = g.getBuildingManager();
+        bm.setBuildersFirstForTest(false);
+        bm.setUnburied(() -> 0);
+        BuildingsTemplate road = bm.getTemplateByName("Paved Road"), wind = bm.getTemplateByName("Wind Farm");
+        int queued = Math.max(1, (int) Math.ceil((BuildAdvice.LIFE_MONTHS + 12.0)
+                * g.getBuildingOutputAtEveryPost() / road.getConstructionPoints()));
+        EssentialWorksCheck.quietly(() -> g.buildStack(road, queued, false));
+        bm.getControl().setOrder(List.of(ConstructionControl.keyOf(road), ConstructionControl.keyOf(wind)));
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        UtilitiesHandler utility = g.getServicesManager().getUtilitiesHandler();
+        utility.setWattsConsumption(utility.getProduction() * 1.2);
+        g.getEconomyManager().getTaxPolicy().openAll();
+        for (Sector sector : g.getSectors().all()) sector.setEnergyRatio(.8);
+        double lead = g.quoteBuild(wind, 1).months;
+        check("fixture: funded priority work delays a staffable plant beyond twenty years while operating power is physically short",
+                Double.isFinite(lead) && lead > BuildAdvice.LIFE_MONTHS && lead < 2 * BuildAdvice.LIFE_MONTHS
+                        && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
+                        && BuildAdvice.unit(g, power, wind) > 0
+                        && g.getSectors().all().stream().anyMatch(t -> t.statement().revenue > t.statement().inputs));
+        WorksValue.Value value = WorksValue.of(g, power, Map.of(), wind, 1,
+                g.getLandManager().getAvailableSqFt());
+        check("a post-horizon opening keeps its capital and posts but claims no operating loss relief, running, tax return or later works",
+                value.capital() > 0 && value.jobs() > 0 && value.payroll() > 0
+                        && value.used() == 0 && value.avoided() == 0 && value.running() == 0
+                        && value.payrollReturned() == 0 && value.futureUnits() == 0);
+    }
+
+    static void growingCalendarChoice(Path root) {
+        out.println("--- growing works share a calendar end before their actual funded choice ---");
+        Game g = reserveTown(root, "growing-calendar");
+        BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        check("fixture: unrelated essential services already have their operating capacity",
+                EssentialWorksCheck.serveOtherEssentials(g, streets));
+        BuildingManager bm = g.getBuildingManager();
+        EssentialWorksCheck.quietly(() -> g.buildStack(bm.getTemplateByName("House"), 100, false));
+        BuildingsTemplate paved = bm.getTemplateByName("Paved Road"), rail = bm.getTemplateByName("Light Rail Line");
+        List<BuildingsTemplate> catalogue = new ArrayList<>(bm.getTemplates());
+        bm.getTemplates().removeIf(t -> t.getCategory() == BuildingType.INFRASTRUCTURE && t != paved && t != rail);
+        try {
+            long people = g.getPopulationManager().getPopulation();
+            var population = g.getHistorySave().getPopulation();
+            var months = g.getHistorySave().getMonth();
+            population.clear();
+            months.clear();
+            for (int i = 0; i <= 12; i++) {
+                population.add(Math.round(people * (.9 + .1 * i / 12)));
+                months.add(g.getMonth() - 12 + i);
+            }
+            g.getBusinessInvestment().restorePopulationHistory(population);
+            InfrastructureManager roads = g.getInfrastructureManager();
+            roads.setModes(0, 0);
+            roads.setThrough(0, LandManager.SQ_FT_PER_KM2 * 100, 0);
+            double capacity = InfrastructureManager.BASE_CAPACITY + paved.getCapacity();
+            roads.setBuiltCapacity(paved.getCapacity());
+            roads.setLoad(capacity * .6);
+            double[] traffic = new double[Traffic.values().length];
+            traffic[Traffic.COMMUTERS.ordinal()] = roads.getLoad();
+            roads.setBreakdown(traffic);
+            roads.setBuiltCapacity(roads.getStreetLoad() / .6 - InfrastructureManager.BASE_CAPACITY);
+            // A high-value trading month makes the different forecast endpoints affect the funded choice.
+            for (Sector sector : g.getSectors().all()) {
+                Sector.Statement book = sector.statement();
+                book.revenue += Math.max(0, book.revenue - book.inputs - book.electricity - book.water);
+            }
+            AutoBuilder auto = g.getAutoBuilder();
+            auto.setCap(Auction.Cap.FILL, null);
+            g.setCashForTest(AutoBuilder.reserve(g) + 1);
+            Set<BuildingsTemplate> skip = new HashSet<>(bm.getTemplates());
+            skip.remove(paved);
+            BuildAdvice.Suggestion roadPlan = BuildAdvice.suggestFor(g, null, streets, g.getCash(),
+                    g.getLandManager().getAvailableSqFt(), auto.getSlack(), skip, true);
+            skip.add(paved);
+            skip.remove(rail);
+            BuildAdvice.Suggestion railPlan = BuildAdvice.suggestFor(g, null, streets, g.getCash(),
+                    g.getLandManager().getAvailableSqFt(), auto.getSlack(), skip, true);
+            check("fixture: currently served streets have two growing plans, with slower dearer rail, both needing credit inside the player's limit",
+                    roadPlan != null && railPlan != null
+                            && BuildAdvice.maintained(g, streets, Map.of(), auto.target())
+                            && railPlan.lead() > roadPlan.lead() && railPlan.lead() < BuildAdvice.LIFE_MONTHS
+                            && railPlan.price() > roadPlan.price()
+                            && auto.canPay(g, roadPlan.price()) && auto.canPay(g, railPlan.price())
+                            && AutoBuilder.gapFor(g, roadPlan.price()) > 0);
+            if (roadPlan == null || railPlan == null) return;
+            double[] roadValue = AdviceValueOracle.value(g, roadPlan,
+                    g.getLandManager().getAvailableSqFt(), g.getCash());
+            double[] railValue = AdviceValueOracle.value(g, railPlan,
+                    g.getLandManager().getAvailableSqFt(), g.getCash());
+            out.printf("      growing plan values: road %.9f, rail %.9f; independent road %.9f, rail %.9f%n",
+                    roadPlan.planValue(), railPlan.planValue(), roadValue[0], railValue[0]);
+            check("the independent common-calendar values favour the timely road and match both complete plan sums",
+                    roadValue[0] < railValue[0] && close(roadPlan.planValue(), roadValue[0])
+                            && close(railPlan.planValue(), railValue[0]));
+            double railGap = AutoBuilder.gapFor(g, railPlan.price());
+            auto.setOn(true, null);
+            EssentialWorksCheck.quietly(() -> auto.pass(g));
+            AutoBuilder.Step order = EssentialWorksCheck.step(g, streets);
+            check("the real automatic order takes the timely road with less new borrowing than rail requires",
+                    order != null && order.ordered() == roadPlan.count() && order.building().equals(paved.getName())
+                            && order.borrowed() < railGap);
+        } finally {
+            bm.getTemplates().clear();
+            bm.getTemplates().addAll(catalogue);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("worksfinancecheck");
+        commonCalendar(root);
+        growingCalendarChoice(root);
         reservationRelease(root);
         reservationRelease(root, true);
         groundUse("Elevated Highway");

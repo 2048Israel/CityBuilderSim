@@ -36,14 +36,16 @@ final class AdviceValueOracle {
         double invoice = quote.total + ground.use(s.paving() ? footprint : g.landNeededFor(t, s.count()));
         double available = g.getAutoBuilder().spendableForMeasure(g, measure) - (g.getCash() - treasury);
         double initialFinance = credit(g, Math.max(0, invoice - available), nominal,
-                opening + BuildAdvice.LIFE_MONTHS);
+                BuildAdvice.LIFE_MONTHS);
         available = Math.max(0, available - invoice);
         double perUnitReturned = 0;
         double[] wages = g.getPopulationManager().getWagesPerType(), fill = g.getPopulationManager().getJobFillRate();
         if (!s.paving()) for (JobType job : JobType.values())
             perUnitReturned += s.count() * (double) t.getJobs(job) * wages[job.ordinal()] * fill[job.ordinal()]
                     * g.getEconomyManager().getTaxPolicy().payslipShare(WageBand.of(job));
-        double returned = perUnitReturned * BuildAdvice.lifeFactor(g) * Math.pow(1 + monthly, -opening);
+        double openMonths = Math.max(0, BuildAdvice.LIFE_MONTHS - opening);
+        double openFactor = Math.abs(monthly) > 1e-12 ? (1 - Math.pow(1 + monthly, -openMonths)) / monthly : openMonths;
+        double returned = perUnitReturned * openFactor * Math.pow(1 + monthly, -opening);
         perUnitReturned /= s.count();
         double capitalLater = 0, financing = initialFinance, operating = 0, saved = 0, units = 0, weights = 0, unitMonths = 0;
         int additions = 0;
@@ -61,8 +63,9 @@ final class AdviceValueOracle {
                 loads.put(load, stack.getUnderConstruction());
         }
         int block = power ? 1 : 12;
-        for (int start = 0; start < BuildAdvice.LIFE_MONTHS; start += block) {
-            double date = opening + start + block / 2.0;
+        for (int start = 0; start < openMonths; start += block) {
+            double duration = Math.min(block, openMonths - start);
+            double date = opening + start + duration / 2;
             BuildAdvice.Ahead future = new BuildAdvice.Ahead(date, BuildAdvice.lifeTrend(g, date), 0);
             Map<BuildingsTemplate, Integer> base = power ? ready(g, site, date) : site;
             Map<BuildingsTemplate, Integer> planned = BuildAdvice.plus(BuildAdvice.plus(base, order), Map.of(t, additions));
@@ -79,15 +82,15 @@ final class AdviceValueOracle {
                     capitalLater += (build + BuildAdvice.landValue(g, t.getLandSqFt() * (double) extra, free)) * discount;
                     double needed = build + ground.use(g.landNeededFor(t, extra));
                     financing += credit(g, Math.max(0, needed - available), nominal,
-                            Math.min(opening + BuildAdvice.LIFE_MONTHS - paidDate, Game.BUILD_BOND_YEARS * 12)) * discount;
+                            Math.min(BuildAdvice.LIFE_MONTHS - paidDate, Game.BUILD_BOND_YEARS * 12)) * discount;
                     available = Math.max(0, available - needed);
                     additions += extra;
                     planned = BuildAdvice.plus(planned, Map.of(t, extra));
                 }
             }
-            double weight = 0;
-            for (int month = 1; month <= block; month++)
-                weight += Math.pow(1 + monthly, -(opening + start + month));
+            double flowFactor = Math.abs(monthly) > 1e-12
+                    ? (1 - Math.pow(1 + monthly, -duration)) / monthly : duration;
+            double weight = flowFactor * Math.pow(1 + monthly, -(opening + start));
             unitMonths += weight * additions;
             operating += weight * running(g, base, planned, future);
             double[] before = power ? powerService(g, base, BuildAdvice.NOW, loads)

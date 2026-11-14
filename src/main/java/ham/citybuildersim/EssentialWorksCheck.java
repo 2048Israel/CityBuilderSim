@@ -600,7 +600,10 @@ public final class EssentialWorksCheck {
                 Map.of(), coal, 1, g.getLandManager().getAvailableSqFt());
         double delay = Math.pow(1 + Math.max(0, BuildAdvice.lifeRate(g)) / 12, -v.lead());
         double nonPayroll = BuildAdvice.running(g, coal, Map.of()) - card;
-        double expected = (nonPayroll + coal.getUpkeep() + paid) * BuildAdvice.lifeFactor(g) * delay;
+        double rate = Math.max(0, BuildAdvice.lifeRate(g)) / 12;
+        double months = Math.max(0, BuildAdvice.LIFE_MONTHS - v.lead());
+        double factor = rate > 0 ? (1 - Math.pow(1 + rate, -months)) / rate : months;
+        double expected = (nonPayroll + coal.getUpkeep() + paid) * factor * delay;
         check("the plan's running cost and payroll use the same filled-post basis",
                 Math.abs(v.payroll() - paid) < 1e-9 * full
                         && Math.abs(v.running() - expected) < 1e-9 * Math.max(1, Math.abs(expected)));

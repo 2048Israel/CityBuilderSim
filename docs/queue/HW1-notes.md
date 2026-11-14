@@ -1,10 +1,11 @@
-# HW1 final verification in progress
+# HW1 common-calendar valuation mend in progress
 
-REV-HW1-6 accepts the three guard repairs and forecast fixture change.
-The production model is d38638ef on main e5642145, with the final default
-running on its immutable compiled snapshot. The two older incomplete
-ensembles are void. The ship file remains provisional. The final pick,
-once-only complete ensemble and kept dry run follow the harness mend.
+REV-HW1-6 accepts the guard repairs and forecast fixtures. Its helper
+ownership mend is fdc022fd. The d38638ef default completes and exposes
+a 67-month elementary funding failure. The orchestrator requires that
+cause mended before readiness. The incomplete HW1-rev6-final ensemble
+and pick are void. The ship file remains provisional. The common
+valuation calendar is being repaired, followed by fresh verification.
 
 # HW1 revision 3 verification, superseded
 
@@ -2662,3 +2663,156 @@ predicate to false and runs the real WorksFinanceCheck.main. Its log
 is target/checks/hw1-rev6-control-prerequisite.log. The kept affected
 harnesses run through batch-check in hw1-rev6-named.log. Results are
 recorded at completion below.
+
+The REV-HW1-6 forced-prerequisite control completes with exit 1.
+Exactly two assertions fail, both the caller-owned unrelated operating
+capacity prerequisite. All other WorksFinanceCheck assertions pass.
+The real harness main prints 2 FAILED and exits 1, proving that those
+failures reach the process judgment. No working source was mutated.
+
+## d38638ef default, accepted guard and remaining elementary regression
+
+The complete log is target/checks/hw1-rev5-default-final.log. It exits
+0 with zero findings and six matching reloads. It measures 2,401 months
+of automatic works. All nineteen services are fully served at m2400.
+
+| Service | Months below 90% | Months below 20% | Longest below 90% | Months of longest | First quoted lead near its start |
+|---|---:|---:|---:|---|---:|
+| Power | 0 | 0 | 0 | — | — |
+| Water | 138 | 0 | 69 | 1688–1756 | 71.0 |
+| Streets | 19 | 0 | 17 | 22–38 | 17.0 |
+| Through traffic | 19 | 2 | 9 | 1901–1909 | 4.0 |
+| General care | 0 | 0 | 0 | — | — |
+| Childcare | 0 | 0 | 0 | — | — |
+| Senior care | 5 | 0 | 2 | 666–667 | 3.0 |
+| Death care | 3 | 3 | 3 | 759–761 | 1.0 |
+| Elementary | 67 | 67 | 67 | 236–302 | 2.0 |
+| Middle school | 3 | 3 | 3 | 301–303 | 4.0 |
+| High school | 5 | 5 | 5 | 410–414 | 3.0 |
+| College | 24 | 12 | 12 | 418–429 | 12.0 |
+| University | 110 | 73 | 73 | 1629–1701 | 79.0 |
+| Medical school | 78 | 78 | 78 | 1672–1749 | 95.0 |
+| Law school | 0 | 0 | 0 | — | — |
+| Business school | 0 | 0 | 0 | — | — |
+| Institute of technology | 0 | 0 | 0 | — | — |
+| Police | 29 | 16 | 16 | 722–737 | 18.0 |
+| Cells | 256 | 256 | 256 | 2054–2309 | 284.0 |
+
+Cells order one Jail at m2054. The saved due is m2337 and the near-start
+quote 284 months. Recovery is m2310 after 256 months, so the reserve
+guard prevents the former construction overrun. Highways' longest
+nine-month spell contains five cash holds, two orders and two pending
+passes. Death care has three months against a one-month near-start
+quote. Water, university and medical school's longest spells are
+inside their first quoted lead.
+
+The plant mix is thirty wind farms and ten coal plants, with 28 actual
+power-order component quotes. The full quote list and end-city values
+remain in the log and target/checks/hw1-final-metrics.json.
+
+Elementary's 67-month spell is m236–302, with 63 debt holds and a
+two-month quoted work. First 90% is m303. Main's first 90% is m261,
+with 67 low months m194–260. In common months 194–357 both have 67
+low months. The final d386 path delays eligibility and then lacks
+funding. Debt/GDP at m194 is 207.85% beside main's 50.02%, and at
+m357 it is 160.72% beside main's 24.51%. No order occurs at m84.
+The raw financial figures are nominal local thousands.
+
+The cause is a Light Rail Line ordered at m42 for 2,579.71, with
+2,521.30 borrowed, followed by its wages and coupons. Before that
+order principal is 357.19, annual GDP 2,269.45 and debt 15.74%.
+The order is inside the player's 240% limit, but leaves running
+obligations that consume future school funding. At m42 every
+operating essential target is covered and schools are unwarranted.
+Current-shortage funding protection therefore never activates then.
+The later qualified elementary shortage reaches that protection,
+with cash already negative and borrowing room exhausted.
+
+The orchestrator's 20261114-123157-927-orchestrator-ca97 identifies
+this as HW1's fault and requires the cause mended before readiness.
+These debt figures and their cause are a call for Jerus. They do
+not replace his eligibility or building balance decisions.
+
+### Identical-state m42 valuation trace
+
+Read-only diagnostic target/checks/hw1-rev6-rail42.log preserves
+the complete preceding model and stops before its m42 automatic pass.
+Rail's whole-plan value is -54.03M, with 64.3M prevented output.
+Paved Road's is -51.74M, with 53.3M prevented output. Rail therefore
+wins despite its 2.58M initial price against a 336,309 paved road.
+Both financing and staffed running are already charged.
+
+The valuation gives every candidate 240 operating months after its
+own opening. Rail opens in 28.42 months and paved road in 14.93.
+Their forecasts consequently end on different calendar dates. Growth
+lets the slower plan claim more later-calendar output, falsely
+improving the comparison and consuming funding for later essentials.
+
+A source-isolated m42-only common-calendar diagnostic is
+target/checks/hw1-rev6-calendar42.log. It leaves every earlier month
+unchanged. On that identical m42 state, ending every plan at
+today plus 240 months makes Paved Road first at -42.81M and Rail
+-35.56M. Paved Road's prevented output becomes 44.4M, Rail's 45.5M.
+The prototype only establishes the cause, with its final partial
+interval still approximate. The production mend must use the exact
+common endpoint and fractional final period, with the independent
+oracle corrected separately.
+
+The owned incomplete pick root 29356, created 12:16:26, and ensemble
+xargs root 42212, created 12:15:26 with the exact HW1-rev6-final run
+path, were checked and their trees ended. Twenty remaining own
+ensemble children were ended by their process IDs. These runs
+cannot count as final after the calendar model changes.
+
+### Common-calendar mend and hard fixtures
+
+The orchestrator accepts this correctness repair in
+20261114-123824-525-orchestrator-0664. The quoted remaining maturity
+was already repaired under REV-HW1-3. HW1-V still contains only its
+two assigned refinements, purchased steep/zoned ground and rounded
+bond excess cash. The calendar repair does not settle either one.
+
+★ Every compared plan ends LIFE_MONTHS from today, including its
+construction wait. The remaining operating duration is the positive
+part of LIFE_MONTHS minus opening. Annual non-power and monthly
+power projection blocks stop on that common date, with the exact
+fractional final block. Flow annuities, physical loss relief, running,
+returned payroll taxes, later works and financing use that endpoint.
+Initial capital remains charged when a work cannot open inside it.
+The independent oracle computes the same common interval separately.
+No budget or payback veto is added to an essential work.
+
+The first new fixture pays for priority construction and uses its
+actual queue quote to place a staffable plant beyond the twenty-year
+endpoint, while current physical power is short. It retains initial
+capital and posts, with zero operating relief, avoided output, running,
+tax return and later works inside the comparison. The queued quantity
+is calculated from the model's output, construction points and horizon.
+
+The second fixture creates a growing, physically served street with
+two financed candidate plans. Paid pending homes delay their quotes,
+and a high-value trading month makes the different forecast endpoints
+affect the actual financed choice. Both road and rail need credit
+inside the player's unchanged debt limit. Rail opens later and has
+the greater upfront price. Independent common-calendar sums favour
+the timely paved road. The real automatic pass must order that road
+with less borrowing than the rail requires. The complete setup,
+credit, capacity and timing premises stay hard.
+
+The kept target/checks/hw1-calendar-fixtures2-new.log exits 0.
+Restoring only fdc022fd's WorksValue, while keeping the new fixture and
+independent oracle, exits 1 in hw1-calendar-fixtures2-old.log. Every
+fixture premise passes. The post-horizon operating-credit assertion,
+both independent plan sums and actual automatic choice all fail.
+Under that omitted-mend control, old road value is -22.25M and old
+rail -25.68M, while independent common values are -13.76M and -5.80M.
+The actual bad rail choice returns, proving the funding regression's
+cause through the normal automatic entry point.
+
+EssentialWorksCheck's filled-post-cost assertion keeps its staff-short
+plant and filled payroll premise. Only its independent operating
+annuity ends on the common date. WorksFinanceCheck's three initial
+financing comparisons use the same common endpoint, retaining the
+whole-parcel, foreign-vault, reopened benchmark and actual-use land
+premises. The independent oracle's initial and later coupon windows
+are cut at that date too. All assertions remain hard.
