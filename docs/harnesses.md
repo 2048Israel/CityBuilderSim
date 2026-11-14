@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**200 harness files, 23,843 labelled assertions.** AllChecks runs 200 of them.
+**200 harness files, 23,863 labelled assertions.** AllChecks runs 200 of them.
 
 ## Which harnesses read which class
 
@@ -207,7 +207,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LuxuryRetail](map/LuxuryRetail.md) | **none** |
 | [ManualToMarkdown](map/ManualToMarkdown.md) | **none** |
 | [Manufacturing](map/Manufacturing.md) | BuildingDataCheck, CopperRefiningCheck, GdpCheck, ManufacturingCheck |
-| [MapFrame](map/MapFrame.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MapCheck, PartnerCallsCheck, PortCheck, RailDrawCheck, ReplayCheck, TruckRouteCheck |
+| [MapFrame](map/MapFrame.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, LandNationsCheck, MapCheck, PartnerCallsCheck, PortCheck, RailDrawCheck, ReplayCheck, TruckRouteCheck |
 | [MapSiteHistory](map/MapSiteHistory.md) | **none** |
 | [MapTiles](map/MapTiles.md) | EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, RailDrawCheck, ReplayCheck |
 | [MapView](map/MapView.md) | **none** |
@@ -17016,7 +17016,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1339 the game's overload says the same with the city's own mark
   - L1346 a city of flat ground has no note 11 lines, nor does a month that is not there
 
-## LandNationsCheck.java - 107 labelled assertions
+## LandNationsCheck.java - 127 labelled assertions
 
 > Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and
 > how it moves, the seller of every plot of a real-Earth world and the territorial sea, an offer's ground split by its sellers, the price each part
@@ -17032,126 +17032,147 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L218 the fixtures: Windsor, Halifax and the Strait on the real Earth, and a generated world**
-- **L256 1. the table: a line for every nation, 25 published, the rest fitted**
-  - L275 the world file has
-  - L292 tools/world/land.tsv has 25 published rows (23 Eurostat, the USDA's and Statistics Canada's)
-  - L306 ...each reads its published figure (per acre times acres a hectare, then the tsv's own rate to US$) to a millionth
-  - L308 ...with mark 3, and its source's name
-  - L309 ...and no other line is published:
-  - L311 every other line is the fit's, mark 1 (
-  - L312 ...and no fitted nation is dearer than the dearest published
-  - L314 the fit's elasticity of price on output a head is positive
-- **L322 2. Canada is 1: exactly, in every month, on every path**
-  - L324 premise: the world file has Canada
-  - L328 premise: the table's reference is Canada, and the two paths are handed
-  - L335 Canada's level and factor are 1.0 exactly in months 0, 1, 600 and 1,488, on
-  - L341 ...and a number outside 1..
-  - L345 ...while the other nations' factors do move on the Historical path (the table is not simply 1 everywhere)
-- **L353 3. the founding is the level; Historical meets the published ratio in January 2024**
-  - L356 premise: January
-  - L365 factorAt(n, 0) is level(n) for all
-  - L366 ...and so is January of
-  - L386 on the Historical path in January
-  - L389 ...nearly all of them: the bounds leave out under a tenth of the nations
-- **L397 4. a Random path moves the factors, and never past the floor or the ceiling**
-  - L412 in January
-  - L413 ...and the two seeds' differ from each other for most
-  - L414 ...while one seed drawn twice (two Nations, one seed) gives the same factors in every nation, in January and in June
-  - L433 every factor is a number between
-- **L444 5. the sellers: the host, either bank of the river, the areas, the territorial sea**
-  - L447 premise: a city on the real Earth with the world file here has sellers
-  - L449 the host at Windsor is Canada, and is the world market's host for the same city
-  - L451 ...at Halifax is Canada, and the world market's
-  - L452 ...at the Strait is the nation the world market finds (
-  - L456 a plot at Windsor sells through Canada and a plot across the Detroit River through the United States (
-  - L458 premise: the two points are two plots, not one
-  - L462 a nation's own ground is its own to sell: sellerOfOwner(1..
-  - L468 premise: none of the file's
-  - L469 ...so every area (
-  - L488 premise: the Strait city's world has a landmass layer on the owner layer's grid (240 cells a degree), and the file has Morocco
-  - L492 a walk south-west across the Strait: each of its
-  - L494 a walk due west off Larache: each of its
-  - L495 ...and that walk crossed from Morocco's sea to the host's:
-  - L498 ...and the owner layer gave Morocco every plot of the stretch that was given away (the layer's sea is a tile's nearest owner's, the rule's work is the cut)
-- **L594 6. the split: an offer across the river, a rectangle across it, a block of Canada's own ground**
-  - L602 premise: the founding's offers include some that cross the river (named by more than one seller)
-  - L622 every offer names its sellers, and the parts' areas add up to the offer's own to a part in a billion
-  - L624 ...and their dollars add up to its price (to the last bit in
-  - L628 ...an offer across the river is sold by Canada and by the United States, both
-  - L635 split() of each of the
-  - L646 a rectangle of
-  - L648 ...the larger part first (the order split() says), each with ground
-  - L649 ...and a border ran through it, so the plots of its tiles were read one by one
-  - L663 a block of Canada's own ground away from the river, three of them, is one part (Canada's) counted as CityLand counts it
-  - L664 ...and reads no plot
-- **L685 7. the price: the one-part formula to the bit where the seller is the reference, its factor times that where it is not**
-  - L687 premise: Halifax's offers stand (
-  - L691 a Halifax offer is priced as LandMarket.price() of its own ground, the same bits, for all
-  - L701 an offer at Windsor wholly Canada's is priced so too, the same bits (
-  - L703 premise: the generated world's city has no sellers, and none of its
-  - L707 a generated world's offer is priced as LandMarket.price() of its own ground, the same bits, for all of them
-  - L709 premise: the quoted block in Detroit is wholly the United States' (
-  - L714 ...and is dearer than the one-part formula by the United States' factor, to the two roundings (the formula's, the sum's)
-- **L724 8. paying: each part from the vault's holding of its seller's money, or converted at usd x rate; the receipt; the tally**
-  - L731 premise: in this month Canada's money is the C$ and the United States' the US$, both among the vault's eight, and the C$ has a rate
-  - L737 premise: two offers across the river stand (one to buy from the vault, one converting)
-  - L749 premise: the vault holds the C$ and the US$ each at many times the offer's part
-  - L755 the offer across the river is bought out of the vault
-  - L757 ...the US$ holding by the United States' part, and by nothing else
-  - L760 ...no other money's holding moved, and no cash went
-  - L762 ...the receipt says it came out of the vault and names the sellers: \"
-  - L764 ...and the tally took each part: its km2 and its dollars by nation, and none to the no-seller index
-  - L771 premise: the second offer across the river still stands
-  - L787 the second offer across the river is bought converting
-  - L788 ...the treasury paid usd x rate to a part in a billion, as it does for an offer with one seller
-  - L790 ...and the vault ended where it began
-  - L792 ...the receipt says it converted and names the sellers: \"
-  - L794 ...and the tally took its parts too
-  - L801 a Halifax offer (Canada's, the host's) is bought
-  - L802 ...its receipt names no seller: \"
-  - L803 ...and the tally took its ground and dollars for Canada
-  - L810 a generated world's offer is bought
-  - L811 ...its receipt names no seller: \"
-  - L812 ...and the tally took it at index 0, the purchase that named no seller, and at no nation's
-- **L827 9. the save: the sellers and the tally survive, a save without the keys is the host's whole, a generated city carries none**
-  - L831 premise: the Windsor city, after its purchases, saved
-  - L833 the save carries the three keys, landOffersSellers, landBoughtKm2 and landBoughtUsd
-  - L836 loaded into a fresh game in another folder it loads whole
-  - L845 ...its
-  - L850 ...and the tally is the saved one in every nation (US$
-  - L864 the same save with the three keys taken out loads: every offer is the host's whole (no seller named), at the price it was listed, and nothing is bought
-  - L871 a generated city saved carries none of the three keys
-  - L878 ...and loads with no sellers, the offers as saved, and nothing bought
-  - L950 the run played its
-  - L951 offers of both kinds were listed: the host's own, and offers sold by another nation (split or wholly foreign)
-  - L952 ...and purchases that named a foreign seller were made
-- **L969 11. the words: \"Sold by United States 62% (a middle dot) Canada 38%\"**
-  - L1016 on the Windsor offers at the founding and a block of Detroit, the line is empty for the host's own and names each seller, in order, with whole percents that ...
-  - L1022 an offer sold 0.62 km2 by the United States and 0.38 by Canada reads \"Sold by
-  - L1030 a three-way split whose shares round to 99 (33.3, 33.3, 33.4) still adds to 100: the largest remainder takes the point, \"
-  - L1035 ...three equal shares are 34, 33 and 33 (a tie goes to the seller that comes first)
-  - L1038 ...an offer whose parts have no area is shared by their dollars (75 and 25), and one with neither equally
-  - L1048 an offer wholly the host's says nothing, an offer wholly the United States' reads \"Sold by
-  - L1050 ...a split that includes the host is named in full, and no sellers (a generated world's) or no offer say nothing
-  - L1078 premise: rounding each share on its own does not add to 100 for either split (the receipt's old way):
-  - L1079 a split whose shares round differently reads the same on the card and the receipt: the percents are percents()' own, adding to 100 (card / receipt)
-- **L1165 12. the hover's quote away from the screen's thread: a quoter made here and used on another thread gives the office's quote to the bit**
-  - L1168 premise: both offices have sellers (a quote then splits the block's ground by nation, which is what costs)
-  - L1171 premise: the block of 256 plots a side across the Detroit River at Windsor is quoted with two sellers or more
-  - L1173 premise: the block of 512 plots a side at the Strait of Gibraltar is quoted with two sellers or more
-  - L1190 the cost was measured at every level asked (9 at Windsor, 8 at the Strait), each quote a parcel with a seller
-  - L1197 a quoter is made of each office (neither is bare, and the land copies)
-  - L1204 a quoter made on this thread and quoted on another gives the office's quote to the bit: the price, every kind's area and every seller (seller, area, dollars)
-  - L1226 premise: a standing offer of the Windsor city has free ground, and a block of 256 plots a side round it
-  - L1229 premise: the block is quoted, with ground, and the old quoter's quote of it is the office's
-  - L1237 premise: the offer was bought, and the ground of it in the block is the city's: the office quotes the block with less ground than before
-  - L1239 the quoter made before the purchase quotes the block as the office did before it, to the bit: a purchase after it is not seen
-  - L1240 ...and a quoter made after it quotes the office's quote now to the bit, with less ground
-  - L1242 ...and a quoter keeps the month it was made in
-  - L1265 the map's hover quotes through a quoter on its own thread, never the office's quote() on the screen's thread
-- **L1305 13. picked ground: worker measurement, current-month prices, and no seller walk in the month**
-  - L1398 the month still runs through SimulationEngine, with no asynchronous month-end price delivery
+- **L220 the fixtures: Windsor, Halifax and the Strait on the real Earth, and a generated world**
+- **L259 1. the table: a line for every nation, 25 published, the rest fitted**
+  - L278 the world file has
+  - L295 tools/world/land.tsv has 25 published rows (23 Eurostat, the USDA's and Statistics Canada's)
+  - L309 ...each reads its published figure (per acre times acres a hectare, then the tsv's own rate to US$) to a millionth
+  - L311 ...with mark 3, and its source's name
+  - L312 ...and no other line is published:
+  - L314 every other line is the fit's, mark 1 (
+  - L315 ...and no fitted nation is dearer than the dearest published
+  - L317 the fit's elasticity of price on output a head is positive
+- **L325 2. Canada is 1: exactly, in every month, on every path**
+  - L327 premise: the world file has Canada
+  - L331 premise: the table's reference is Canada, and the two paths are handed
+  - L338 Canada's level and factor are 1.0 exactly in months 0, 1, 600 and 1,488, on
+  - L344 ...and a number outside 1..
+  - L348 ...while the other nations' factors do move on the Historical path (the table is not simply 1 everywhere)
+- **L356 3. the founding is the level; Historical meets the published ratio in January 2024**
+  - L359 premise: January
+  - L368 factorAt(n, 0) is level(n) for all
+  - L369 ...and so is January of
+  - L389 on the Historical path in January
+  - L392 ...nearly all of them: the bounds leave out under a tenth of the nations
+- **L400 4. a Random path moves the factors, and never past the floor or the ceiling**
+  - L415 in January
+  - L416 ...and the two seeds' differ from each other for most
+  - L417 ...while one seed drawn twice (two Nations, one seed) gives the same factors in every nation, in January and in June
+  - L436 every factor is a number between
+- **L447 5. the sellers: the host, either bank of the river, the areas, the territorial sea**
+  - L450 premise: a city on the real Earth with the world file here has sellers
+  - L452 the host at Windsor is Canada, and is the world market's host for the same city
+  - L454 ...at Halifax is Canada, and the world market's
+  - L455 ...at the Strait is the nation the world market finds (
+  - L459 a plot at Windsor sells through Canada and a plot across the Detroit River through the United States (
+  - L461 premise: the two points are two plots, not one
+  - L465 a nation's own ground is its own to sell: sellerOfOwner(1..
+  - L471 premise: none of the file's
+  - L472 ...so every area (
+  - L491 premise: the Strait city's world has a landmass layer on the owner layer's grid (240 cells a degree), and the file has Morocco
+  - L495 a walk south-west across the Strait: each of its
+  - L497 a walk due west off Larache: each of its
+  - L498 ...and that walk crossed from Morocco's sea to the host's:
+  - L501 ...and the owner layer gave Morocco every plot of the stretch that was given away (the layer's sea is a tile's nearest owner's, the rule's work is the cut)
+- **L597 6. the split: an offer across the river, a rectangle across it, a block of Canada's own ground**
+  - L605 premise: the founding's offers include some that cross the river (named by more than one seller)
+  - L625 every offer names its sellers, and the parts' areas add up to the offer's own to a part in a billion
+  - L627 ...and their dollars add up to its price (to the last bit in
+  - L631 ...an offer across the river is sold by Canada and by the United States, both
+  - L638 split() of each of the
+  - L649 a rectangle of
+  - L651 ...the larger part first (the order split() says), each with ground
+  - L652 ...and a border ran through it, so the plots of its tiles were read one by one
+  - L666 a block of Canada's own ground away from the river, three of them, is one part (Canada's) counted as CityLand counts it
+  - L667 ...and reads no plot
+- **L688 7. the price: the one-part formula to the bit where the seller is the reference, its factor times that where it is not**
+  - L690 premise: Halifax's offers stand (
+  - L694 a Halifax offer is priced as LandMarket.price() of its own ground, the same bits, for all
+  - L704 an offer at Windsor wholly Canada's is priced so too, the same bits (
+  - L706 premise: the generated world's city has no sellers, and none of its
+  - L710 a generated world's offer is priced as LandMarket.price() of its own ground, the same bits, for all of them
+  - L712 premise: the quoted block in Detroit is wholly the United States' (
+  - L717 ...and is dearer than the one-part formula by the United States' factor, to the two roundings (the formula's, the sum's)
+- **L727 8. paying: each part from the vault's holding of its seller's money, or converted at usd x rate; the receipt; the tally**
+  - L734 premise: in this month Canada's money is the C$ and the United States' the US$, both among the vault's eight, and the C$ has a rate
+  - L740 premise: two offers across the river stand (one to buy from the vault, one converting)
+  - L752 premise: the vault holds the C$ and the US$ each at many times the offer's part
+  - L758 the offer across the river is bought out of the vault
+  - L760 ...the US$ holding by the United States' part, and by nothing else
+  - L763 ...no other money's holding moved, and no cash went
+  - L765 ...the receipt says it came out of the vault and names the sellers: \"
+  - L767 ...and the tally took each part: its km2 and its dollars by nation, and none to the no-seller index
+  - L774 premise: the second offer across the river still stands
+  - L790 the second offer across the river is bought converting
+  - L791 ...the treasury paid usd x rate to a part in a billion, as it does for an offer with one seller
+  - L793 ...and the vault ended where it began
+  - L795 ...the receipt says it converted and names the sellers: \"
+  - L797 ...and the tally took its parts too
+  - L804 a Halifax offer (Canada's, the host's) is bought
+  - L805 ...its receipt names no seller: \"
+  - L806 ...and the tally took its ground and dollars for Canada
+  - L813 a generated world's offer is bought
+  - L814 ...its receipt names no seller: \"
+  - L815 ...and the tally took it at index 0, the purchase that named no seller, and at no nation's
+- **L830 9. the save: the sellers and the tally survive, a save without the keys is the host's whole, a generated city carries none**
+  - L834 premise: the Windsor city, after its purchases, saved
+  - L836 the save carries the three keys, landOffersSellers, landBoughtKm2 and landBoughtUsd
+  - L839 loaded into a fresh game in another folder it loads whole
+  - L848 ...its
+  - L853 ...and the tally is the saved one in every nation (US$
+  - L867 the same save with the three keys taken out loads: every offer is the host's whole (no seller named), at the price it was listed, and nothing is bought
+  - L874 a generated city saved carries none of the three keys
+  - L881 ...and loads with no sellers, the offers as saved, and nothing bought
+  - L953 the run played its
+  - L954 offers of both kinds were listed: the host's own, and offers sold by another nation (split or wholly foreign)
+  - L955 ...and purchases that named a foreign seller were made
+- **L972 11. the words: \"Sold by United States 62% (a middle dot) Canada 38%\"**
+  - L1019 on the Windsor offers at the founding and a block of Detroit, the line is empty for the host's own and names each seller, in order, with whole percents that ...
+  - L1025 an offer sold 0.62 km2 by the United States and 0.38 by Canada reads \"Sold by
+  - L1033 a three-way split whose shares round to 99 (33.3, 33.3, 33.4) still adds to 100: the largest remainder takes the point, \"
+  - L1038 ...three equal shares are 34, 33 and 33 (a tie goes to the seller that comes first)
+  - L1041 ...an offer whose parts have no area is shared by their dollars (75 and 25), and one with neither equally
+  - L1051 an offer wholly the host's says nothing, an offer wholly the United States' reads \"Sold by
+  - L1053 ...a split that includes the host is named in full, and no sellers (a generated world's) or no offer say nothing
+  - L1081 premise: rounding each share on its own does not add to 100 for either split (the receipt's old way):
+  - L1082 a split whose shares round differently reads the same on the card and the receipt: the percents are percents()' own, adding to 100 (card / receipt)
+- **L1168 12. the hover's quote away from the screen's thread: a quoter made here and used on another thread gives the office's quote to the bit**
+  - L1171 premise: both offices have sellers (a quote then splits the block's ground by nation, which is what costs)
+  - L1174 premise: the block of 256 plots a side across the Detroit River at Windsor is quoted with two sellers or more
+  - L1176 premise: the block of 512 plots a side at the Strait of Gibraltar is quoted with two sellers or more
+  - L1193 the cost was measured at every level asked (9 at Windsor, 8 at the Strait), each quote a parcel with a seller
+  - L1200 a quoter is made of each office (neither is bare, and the land copies)
+  - L1207 a quoter made on this thread and quoted on another gives the office's quote to the bit: the price, every kind's area and every seller (seller, area, dollars)
+  - L1229 premise: a standing offer of the Windsor city has free ground, and a block of 256 plots a side round it
+  - L1232 premise: the block is quoted, with ground, and the old quoter's quote of it is the office's
+  - L1240 premise: the offer was bought, and the ground of it in the block is the city's: the office quotes the block with less ground than before
+  - L1242 the quoter made before the purchase quotes the block as the office did before it, to the bit: a purchase after it is not seen
+  - L1243 ...and a quoter made after it quotes the office's quote now to the bit, with less ground
+  - L1245 ...and a quoter keeps the month it was made in
+  - L1268 the map's hover quotes through a quoter on its own thread, never the office's quote() on the screen's thread
+- **L1308 13. picked ground: worker measurement, current-month prices, and no seller walk in the month**
+  - L1401 the month still runs through SimulationEngine, with no asynchronous month-end price delivery
+- **L1579 14. the hover keeps a price across months, yields to a newer block, and retries failures**
+  - L1581 a first hover queues a worker and shows the pricing line
+  - L1589 a quote held through two played months becomes visible at the current month's exact price
+  - L1595 while a new month's measurement is queued the block keeps its last price, labelled Last month
+  - L1618 a successful empty quote keeps its none result for the month
+  - L1635 leaving ground after worker completion rejects its still-queued owner result
+  - L1643 a failed refresh keeps the old price with its age and a separate failure line
+  - L1647 the next month retries a failed refresh even before RETRY_MS elapses
+  - L1656 level premise: a measured disjoint purchase raises the grid level
+  - L1658 a changed grid level rejects the old block's still-queued quote
+  - L1662 an unwanted quote cancelled before execution is released for a later hover
+  - L1664 a later hover of the cancelled block receives its price
+  - L1675 adoption premise: a stationary pointer has a quote out and its pricing card
+  - L1680 adopting the map draft re-asks a stationary hover and replaces its pricing card with a price
+  - L1687 the normal map reset delegates to the stationary-hover redraw lifecycle
+  - L1717 real cancellation premise: the level-12 river quote is still walking seller plots
+  - L1749 queue premise: the old block is already measuring
+  - L1769 priority premise: a level-12 quote crosses the parallel tile threshold
+  - L1788 frame premise: the level-12 count is out while the map's owner-thread geometry is timed
+  - L1803 the parallel count really walked rows and counted the block's unowned plots
+  - L1804 every row of a low-priority quote runs at low priority
 
 ## LandlordPortCheck.java - 52 labelled assertions
 

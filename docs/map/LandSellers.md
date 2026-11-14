@@ -1,4 +1,4 @@
-# LandSellers.java - 511 lines · 35 methods · 7 constants · model
+# LandSellers.java - 513 lines · 35 methods · 7 constants · model
 
 `ham/citybuildersim/LandSellers.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -23,9 +23,9 @@
 > (a tile uniform to one owner is one read); an offer wholly one seller's is counted as the land office counts it today (CityLand.unownedCounts()), and
 > only the tiles a border or a foreign coast crosses are read plot by plot (plotsRead()).
 
-**Uses:** [World](World.md) (18), [CityLand](CityLand.md) (17), [WorldData](WorldData.md) (8), [EarthProj](EarthProj.md) (6), [LandFactors](LandFactors.md) (4), [LandGrid](LandGrid.md) (3), [EarthData](EarthData.md) (2), [EarthTerrain](EarthTerrain.md) (1), [LandDrawing](LandDrawing.md) (1)
+**Uses:** [CityLand](CityLand.md) (19), [World](World.md) (18), [WorldData](WorldData.md) (8), [EarthProj](EarthProj.md) (6), [LandFactors](LandFactors.md) (4), [LandGrid](LandGrid.md) (3), [EarthData](EarthData.md) (2), [EarthTerrain](EarthTerrain.md) (1), [LandDrawing](LandDrawing.md) (1)
 
-**Used by (6):** [Game](Game.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandSellersView](LandSellersView.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md)
+**Used by (7):** [Game](Game.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandSellersView](LandSellersView.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md)
 
 ## Sections
 
@@ -77,7 +77,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 35 | 477 | **type** `public final class LandSellers` | The nation that sells each plot of a real-Earth world's ground, and an offer's unowned ground split by its sellers. |
+| 35 | 479 | **type** `public final class LandSellers` | The nation that sells each plot of a real-Earth world's ground, and an offer's unowned ground split by its sellers. |
 | 75 | 32 | `private LandSellers(World world, WorldData file, LandFactors factors)` |  |
 | 112 | 4 | `public static LandSellers on(World world, WorldData file, LandFactors factors)` | The sellers of a real-Earth world's ground, or null where the world is a generated one (it has no borders: every offer is the host's, at factor 1, and the land office does as it did). |
 
@@ -126,7 +126,7 @@
 | 364 | 14 | `private int sellerOfRect(long x0, long y0, long x1, long y1)` | The one seller of a rectangle of plots, from the boxes of the tiles along its edge (the interior of a smooth projection lies inside what its edge does); MANY where it cannot tell. |
 | 380 | 5 | `private int sellerOfTile(long px0, long py0)` | The one seller of the ground of a tile, MANY where its box crosses a border or cannot be told. |
 
-### THE SPLIT OF AN OFFER'S GROUND (lines 386-511)
+### THE SPLIT OF AN OFFER'S GROUND (lines 386-513)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -135,9 +135,9 @@
 | 401 | 1 | `public double[] relief()` _(in LandSellers.Part)_ | The dry ground by relief and the shallow sea, in square kilometres (CityLand.RELIEF_FLAT to RELIEF_SHALLOW). |
 | 404 | 5 | `long plots()` _(in LandSellers.Part)_ | The plots the part holds: the class counts summed. |
 | 410 | 5 | `boolean empty()` _(in LandSellers.Part)_ |  |
-| 425 | 49 | `public List<Part> split(CityLand land, long x0, long y0, long x1, long y1, double seaKm2)` | The unowned ground of [x0, x1) x [y0, y1) and its fields, split by the nation that sells each plot: the parts by plots, most first (ties to the lower nation), those with no ground and no field left out; a rectangle wi... |
-| 476 | 4 | `private boolean hasSea(long tx, long ty)` | Whether a whole tile of the world holds any sea (its kept count: SALT and SHALLOW). |
-| 481 | 4 | `private static void add(TreeMap<Integer, long[]> counts, int seller, long[] more)` |  |
-| 487 | 20 | `private List<Part> withFields(CityLand land, long x0, long y0, long x1, long y1, TreeMap<Integer, long[]> counts)` | The parts, each with the fields whose centre or site plot it sells (a field's seller is found by plot, remembered for the call), in the order split() says. |
-| 508 | 3 | `private static Part empty(int seller)` |  |
+| 425 | 51 | `public List<Part> split(CityLand land, long x0, long y0, long x1, long y1, double seaKm2)` | The unowned ground of [x0, x1) x [y0, y1) and its fields, split by the nation that sells each plot: the parts by plots, most first (ties to the lower nation), those with no ground and no field left out; a rectangle wi... |
+| 478 | 4 | `private boolean hasSea(long tx, long ty)` | Whether a whole tile of the world holds any sea (its kept count: SALT and SHALLOW). |
+| 483 | 4 | `private static void add(TreeMap<Integer, long[]> counts, int seller, long[] more)` |  |
+| 489 | 20 | `private List<Part> withFields(CityLand land, long x0, long y0, long x1, long y1, TreeMap<Integer, long[]> counts)` | The parts, each with the fields whose centre or site plot it sells (a field's seller is found by plot, remembered for the call), in the order split() says. |
+| 510 | 3 | `private static Part empty(int seller)` |  |
 

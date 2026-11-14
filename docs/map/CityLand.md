@@ -1,4 +1,4 @@
-# CityLand.java - 1,342 lines · 96 methods · 29 constants · model
+# CityLand.java - 1,375 lines · 97 methods · 31 constants · model
 
 `ham/citybuildersim/CityLand.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -79,7 +79,7 @@
 | 669 | THE FIELDS ON A PIECE OF GROUND (spec-land star 12; spec-grid 2.6) |
 | 889 | · the ground by type (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) |
 | 1012 | THE GROUND AN OFFER HOLDS: EXACT AT EVERY SIZE (spec-grid star 8) |
-| 1168 | SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, |
+| 1201 | SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, |
 
 ## Constants
 
@@ -110,10 +110,12 @@
 | 965 | `CityLand.CELLS` | `new LinkedHashMap<>(64, 0.75f, true) { @ Override protected boolean removeEld...` |  |
 | 1030 | `CityLand.TILE_COUNTS_KEPT` | `65_536` | Tiles' counts kept, by world and tile: 65,536 (a few megabytes) - the whole tiles an offer's count reads, which the next city on the same world's ground, or the same city drawn again, reads again. |
 | 1033 | `CityLand.PARALLEL_TILES` | `2_048` | A rectangle of this many tiles or more is counted over the machine's cores: 2,048 (about an eighth of a second's reading on one core). |
-| 1037 | `CityLand.TILE_COUNTS` | `new LinkedHashMap<>(1024, 0.75f, true) { @ Override protected boolean removeE...` |  |
-| 1047 | `CityLand.WIDE` | `World.CLASSES + RELIEF_AREAS` | How wide a count of plots is (ET1): World.CLASSES plots by class, then RELIEF_AREAS more - the dry plots by relief (World.dry() classes, FLAT to VERY_STEEP) and the shallow sea's (SHALLOW), counted in the same pass. |
-| 1190 | `CityLand.CENTRE_FIELDS` | `AREAS + 2 * KINDS + 3 + 2` | How wide the centre's record is: 24 (spec-grid 3, M3; 25 with a half-side before, format 31). |
-| 1193 | `CityLand.RECT_FIELDS` | `4` | How wide a centre rectangle's record is: x0, y0, x1, y1 - its plots, half-open. |
+| 1036 | `CityLand.QUOTE_COUNT_WORKERS` | `2` | Low-priority ground counts use two workers, preserving room for FX and the month (WN5d). |
+| 1038 | `CityLand.QUOTE_COUNTS` | `new java.util.concurrent.ForkJoinPool(QUOTE_COUNT_WORKERS, pool -> { java.uti...` |  |
+| 1053 | `CityLand.TILE_COUNTS` | `new LinkedHashMap<>(1024, 0.75f, true) { @ Override protected boolean removeE...` |  |
+| 1063 | `CityLand.WIDE` | `World.CLASSES + RELIEF_AREAS` | How wide a count of plots is (ET1): World.CLASSES plots by class, then RELIEF_AREAS more - the dry plots by relief (World.dry() classes, FLAT to VERY_STEEP) and the shallow sea's (SHALLOW), counted in the same pass. |
+| 1223 | `CityLand.CENTRE_FIELDS` | `AREAS + 2 * KINDS + 3 + 2` | How wide the centre's record is: 24 (spec-grid 3, M3; 25 with a half-side before, format 31). |
+| 1226 | `CityLand.RECT_FIELDS` | `4` | How wide a centre rectangle's record is: x0, y0, x1, y1 - its plots, half-open. |
 
 ## Fields (state)
 
@@ -144,7 +146,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 74 | 1269 | **type** `public final class CityLand` | The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry... |
+| 74 | 1302 | **type** `public final class CityLand` | The city's land on the world: whole blocks of a grid lined up with the world - the centre it was founded or converted with, and every purchase since, each a rectangle of blocks - and what all of it holds: its area dry... |
 
 ### THE STATE (lines 127-175)
 
@@ -258,37 +260,38 @@
 | 981 | 10 | `private static List<Deposit> kept(World world, int cell, Resource r, boolean legacy)` |  |
 | 1002 | 9 | `public List<Deposit> fieldsIn(int cell, Resource r)` | A cell's fields of a resource as this city sees them (0.7.99, batch W1): the world's (fields()), but on ground held under the old world - the holdings an older save brought with it, oldWorldHoldings() - the fields tha... |
 
-### THE GROUND AN OFFER HOLDS: EXACT AT EVERY SIZE (spec-grid star 8) (lines 1012-1167)
+### THE GROUND AN OFFER HOLDS: EXACT AT EVERY SIZE (spec-grid star 8) (lines 1012-1200)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1035 | 1 | **type** `private record TileKey(World.Key world, long tx, long ty)` |  |
-| 1054 | 6 | `static void tally(byte[] t, byte[] r, int at, long[] cls, long[] relief, int from)` | Counts one plot: its class into `cls`, then - on dry ground - its relief into relief[from + relief], or - on the shallow sea - into relief[from + RELIEF_SHALLOW]. |
-| 1062 | 14 | `static long[] tileCounts(World world, long tx, long ty)` | A whole tile's plots by World's classes, and its dry ground by relief and shallow sea after them (WIDE), kept. |
-| 1078 | 3 | `public double[] groundOf(long x0, long y0, long x1, long y1)` | The five areas, in square kilometres, of the plots of [x0, x1) x [y0, y1) no holding owns, each counted by its class. |
-| 1083 | 1 | **type** `public record Ground(double[] km2, double[] relief)` | What a rectangle's unowned plots hold: the five areas (groundOf()) and the dry ground by relief with the shallow sea (RELIEF_FLAT to RELIEF_SHALLOW), in square kilometres, counted plot by plot in one pass. |
-| 1086 | 4 | `public Ground groundWithRelief(long x0, long y0, long x1, long y1)` | The five areas and the relief of the plots of [x0, x1) x [y0, y1) no holding owns (ET1, spec-earth2-terrain 3.3): groundOf() and what it splits, from the same plots. |
-| 1092 | 5 | `static double[] reliefKm2(long[] counts, int from)` | A count's relief plots from index `from` on (RELIEF_AREAS of them), in square kilometres. |
-| 1099 | 3 | `long[] unownedClasses(long x0, long y0, long x1, long y1)` | ...as plots by World's classes (GRASS, FOREST, FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT and since ET1 SHALLOW), World.CLASSES of them. |
-| 1104 | 26 | `long[] unownedCounts(long x0, long y0, long x1, long y1)` | ...and the same count with the dry ground's relief and the shallow sea after the classes (WIDE of them, ET1). |
-| 1132 | 35 | `private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1)` | One row of tiles' unowned plots of the rectangle, by class and by relief (WIDE). |
+| 1047 | 3 | `static void checkInterrupted()` | A superseded background measurement stops between tiles or seller rows. |
+| 1051 | 1 | **type** `private record TileKey(World.Key world, long tx, long ty)` |  |
+| 1070 | 6 | `static void tally(byte[] t, byte[] r, int at, long[] cls, long[] relief, int from)` | Counts one plot: its class into `cls`, then - on dry ground - its relief into relief[from + relief], or - on the shallow sea - into relief[from + RELIEF_SHALLOW]. |
+| 1078 | 14 | `static long[] tileCounts(World world, long tx, long ty)` | A whole tile's plots by World's classes, and its dry ground by relief and shallow sea after them (WIDE), kept. |
+| 1094 | 3 | `public double[] groundOf(long x0, long y0, long x1, long y1)` | The five areas, in square kilometres, of the plots of [x0, x1) x [y0, y1) no holding owns, each counted by its class. |
+| 1099 | 1 | **type** `public record Ground(double[] km2, double[] relief)` | What a rectangle's unowned plots hold: the five areas (groundOf()) and the dry ground by relief with the shallow sea (RELIEF_FLAT to RELIEF_SHALLOW), in square kilometres, counted plot by plot in one pass. |
+| 1102 | 4 | `public Ground groundWithRelief(long x0, long y0, long x1, long y1)` | The five areas and the relief of the plots of [x0, x1) x [y0, y1) no holding owns (ET1, spec-earth2-terrain 3.3): groundOf() and what it splits, from the same plots. |
+| 1108 | 5 | `static double[] reliefKm2(long[] counts, int from)` | A count's relief plots from index `from` on (RELIEF_AREAS of them), in square kilometres. |
+| 1115 | 3 | `long[] unownedClasses(long x0, long y0, long x1, long y1)` | ...as plots by World's classes (GRASS, FOREST, FRESH, SALT, SAND, and on Earth since 0.7.127 ICE and DESERT and since ET1 SHALLOW), World.CLASSES of them. |
+| 1120 | 40 | `long[] unownedCounts(long x0, long y0, long x1, long y1)` | ...and the same count with the dry ground's relief and the shallow sea after the classes (WIDE of them, ET1). |
+| 1162 | 38 | `private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1, java.util.concurrent.at...` | One row of tiles' unowned plots of the rectangle, by class and by relief (WIDE). |
 
-### SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, (lines 1168-1342)
+### SAVE AND RESTORE (DataSave's landCentre, landCentreRects, landHoldings, (lines 1201-1375)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1175 | 13 | `public double[] centreState()` | The centre's record: its five areas, its sites and amounts, the legacy field's plot and sites, and the site's plot - CENTRE_FIELDS doubles. |
-| 1196 | 8 | `public double[][] centreRectsState()` | The centre's blocks, a record each: {x0, y0, x1, y1}. |
-| 1206 | 8 | `public double[][] holdingsState()` | The purchases, one record each in the order they were made (LandParcel.purchaseRow(), 31 wide). |
-| 1220 | 1 | `public double[] centreReliefState()` | The centre's dry ground by relief and its shallow sea (ET1, spec-earth2-terrain 3.3), RELIEF_AREAS km2 in the order RELIEF_FLAT to RELIEF_SHALLOW: DataSave's landCentreRelief, a key of its own beside landCentre (a wid... |
-| 1223 | 5 | `public double[][] holdingsReliefState()` | The purchases' relief, a record each in the order they were made (LandParcel.reliefRow(), RELIEF_AREAS wide): landHoldingsRelief, parallel to holdingsState(). |
-| 1230 | 13 | `public double[][] partFieldsState()` | The fields held in part, a record each: {kind, cell, index, then each owned site's index}. |
-| 1245 | 1 | `public double[][] convertedState()` | A converted city's purchase history (convertedHistory()), or null. |
-| 1255 | 4 | `public static CityLand restore(long seed, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, double[]...` | A city's land as saved (format 32): its centre's record (CENTRE_FIELDS wide), its blocks, its holdings, its part fields and its history. |
-| 1261 | 3 | `static boolean hasSavedCentre(double[] centre)` | Whether the saved centre has the shape restore() can read (HA1). |
-| 1266 | 4 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). |
-| 1277 | 42 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...with the ground by relief a save kept beside them (ET1, spec-earth2-terrain 3.3; DataSave's landCentreRelief and landHoldingsRelief): the centre's RELIEF_AREAS figures, and a row of them for each row of `holdings`,... |
-| 1321 | 6 | `public CityLand copy()` | A copy, field for field: restore() of its own records and its old world's holdings - what the map's draft is drawn on (Game.MapDraft). |
-| 1329 | 7 | `public boolean same(CityLand o)` | Whether two cities' land is the same, field for field. |
-| 1337 | 5 | `private static double[][] deepCopy(double[][] rows)` |  |
+| 1208 | 13 | `public double[] centreState()` | The centre's record: its five areas, its sites and amounts, the legacy field's plot and sites, and the site's plot - CENTRE_FIELDS doubles. |
+| 1229 | 8 | `public double[][] centreRectsState()` | The centre's blocks, a record each: {x0, y0, x1, y1}. |
+| 1239 | 8 | `public double[][] holdingsState()` | The purchases, one record each in the order they were made (LandParcel.purchaseRow(), 31 wide). |
+| 1253 | 1 | `public double[] centreReliefState()` | The centre's dry ground by relief and its shallow sea (ET1, spec-earth2-terrain 3.3), RELIEF_AREAS km2 in the order RELIEF_FLAT to RELIEF_SHALLOW: DataSave's landCentreRelief, a key of its own beside landCentre (a wid... |
+| 1256 | 5 | `public double[][] holdingsReliefState()` | The purchases' relief, a record each in the order they were made (LandParcel.reliefRow(), RELIEF_AREAS wide): landHoldingsRelief, parallel to holdingsState(). |
+| 1263 | 13 | `public double[][] partFieldsState()` | The fields held in part, a record each: {kind, cell, index, then each owned site's index}. |
+| 1278 | 1 | `public double[][] convertedState()` | A converted city's purchase history (convertedHistory()), or null. |
+| 1288 | 4 | `public static CityLand restore(long seed, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, double[]...` | A city's land as saved (format 32): its centre's record (CENTRE_FIELDS wide), its blocks, its holdings, its part fields and its history. |
+| 1294 | 3 | `static boolean hasSavedCentre(double[] centre)` | Whether the saved centre has the shape restore() can read (HA1). |
+| 1299 | 4 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...on the world a key names (0.7.115): since 0.7.121 an Earth city's, its save's kind, spot and data (Founding.getWorldKey()). |
+| 1310 | 42 | `public static CityLand restore(World.Key key, double[] centre, double[][] rects, double[][] holdings, double[][] partRows, doub...` | ...with the ground by relief a save kept beside them (ET1, spec-earth2-terrain 3.3; DataSave's landCentreRelief and landHoldingsRelief): the centre's RELIEF_AREAS figures, and a row of them for each row of `holdings`,... |
+| 1354 | 6 | `public CityLand copy()` | A copy, field for field: restore() of its own records and its old world's holdings - what the map's draft is drawn on (Game.MapDraft). |
+| 1362 | 7 | `public boolean same(CityLand o)` | Whether two cities' land is the same, field for field. |
+| 1370 | 5 | `private static double[][] deepCopy(double[][] rows)` |  |
 
