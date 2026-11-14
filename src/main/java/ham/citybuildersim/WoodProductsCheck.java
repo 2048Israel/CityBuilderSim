@@ -27,7 +27,7 @@ import java.util.Locale;
  *
  * WHAT THIS HAS TO PROVE:
  *
- *   1. THE SECTOR ON THE REGISTRY: Wood Products the twenty-fourth and last
+ *   1. THE SECTOR ON THE REGISTRY: Wood Products the twenty-fourth, followed by Gold Mining
  *      key, after Forestry; a ProcessingSector making lumber, residues,
  *      panels, pulp, paper and pellets of sawlogs, pulpwood, residues, pulp
  *      and fuel oil, Iron & Steel's group; residues and pulp captive, lumber
@@ -134,8 +134,8 @@ public class WoodProductsCheck {
         out.println("--- 1. the sector on the registry: Wood Products after Forestry, a works on the logs, its goods priced ---");
         String[] keys = Sectors.KEYS;
         int at = java.util.Arrays.asList(keys).indexOf(Sectors.WOOD_PRODUCTS);
-        assertTrue("Sectors.KEYS has Wood Products after Forestry, the twenty-fourth and last (Jerus's Q21: iron, coal, stone, copper, wood)",
-                at == 23 && keys[at - 1].equals(Sectors.FORESTRY) && keys.length == at + 1);
+        assertTrue("Sectors.KEYS has Wood Products after Forestry, the twenty-fourth, followed by Gold Mining (Jerus's Q21: iron, coal, stone, copper, wood)",
+                at == 23 && keys[at - 1].equals(Sectors.FORESTRY) && keys[at + 1].equals(Sectors.GOLD_MINING));
         Sectors s = new Sectors(new BuildingManager(), new Markets());
         WoodProducts wp = s.woodProducts();
         assertTrue("...a processing sector found by its saved name, Iron & Steel's group, making lumber, residues, panels, pulp, paper and"

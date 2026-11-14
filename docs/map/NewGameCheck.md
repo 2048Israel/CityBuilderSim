@@ -1,6 +1,6 @@
 # NewGameCheck.java - 1,430 lines · 18 methods · 5 constants · harnesses
 
-`ham/citybuildersim/NewGameCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/NewGameCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Does "Start New Game" actually start a new game?
 > 

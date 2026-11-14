@@ -1,6 +1,6 @@
 # PartnersCheck.java - 838 lines · 18 methods · 3 constants · harnesses
 
-`ham/citybuildersim/PartnersCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PartnersCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md 8,
 > boards 2 and 3, 9, D29): each good's curve at the city's site (WorldMarket.Curve), the partners table and a nation's page (PartnersView), and the

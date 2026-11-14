@@ -310,7 +310,8 @@ public final class GoodsMarket {
      * railway charges at home, not what the band holds.
      */
     public double bandFreight() {
-        if (good == Good.GOLD && hasWorldPrices()) return (worldImportNow() - worldExportNow()) / 4;
+        if (good == Good.GOLD && hasWorldPrices()) return (worldImportNow() - worldExportNow())
+                * (Good.GOLD_FREIGHT_SHARE / (2 * (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)));
         double lorry = good.baseFreight();
         if (!hasWorldPrices() || !good.importable() || !good.exportable()) return lorry;
         double literal = good.worldImportPrice() - good.worldExportPrice(), world = worldImportNow() - worldExportNow();

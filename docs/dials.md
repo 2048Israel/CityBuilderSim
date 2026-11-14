@@ -1,10 +1,10 @@
 # The dials
 
-Generated 2026-11-13 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,927 constants in 562 files.**
+**5,928 constants in 562 files.**
 
-## model (2836 constants)
+## model (2837 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1281,7 +1281,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1067 | `EconomyManager.NRRP_FULL_BELOW` | `350 * PriceLevel.FACTOR` | ...in full for a unit worth up to this, in founding thousands: $350,000. |
 | 1069 | `EconomyManager.NRRP_NONE_FROM` | `450 * PriceLevel.FACTOR` | ...and none for a unit worth this or more: $450,000. |
 | 1534 | `EconomyManager.BUDGET_NOISE` | `1e-12` | The share of its terms (what the settle leaves it, what it could raise) under which a purchase budget is arithmetic noise and reads nothing (est.: a double carries sixteen digits, and a budget is t... |
-| 2614 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 2618 | `EconomyManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### Education.java ([map](map/Education.md))
 
@@ -2486,11 +2486,11 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 83 | `NationalAccounts.HISTORY_MONTHS` | `120` | How many months of GDP the rolling history keeps - ten years - and the most a load seeds it with (seedHistory()). |
-| 231 | `NationalAccounts.HELD` | `{ Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL, Good.LPG, Good.N...` | The goods the fifth term measures, in the order the save keeps their units (slots 15 on, EconomyManager.getNationalAccountsState()): a new one goes on the end. |
-| 238 | `NationalAccounts.HELD_BEFORE_FUEL` | `3` | ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. |
-| 241 | `NationalAccounts.HELD_WITH_FUEL` | `4` | ...and how many a save from 0.7.62 to 0.7.75 carries: the three and FUEL, which FuelSplit makes PETROL and DIESEL. |
-| 244 | `NationalAccounts.NOT_HELD` | `Good.CARS` | ...and the one good a sector holds that no term measures, and why: see EVERY OTHER GOOD A SECTOR HOLDS. |
-| 1191 | `NationalAccounts.GOVERNMENT_SLOTS_WITH_GRANTS` | `20` | The slots a block carries once EI and the grants are on it (2026-09-11): the grant bill is saved[19]. |
+| 233 | `NationalAccounts.HELD` | `{ Good.CROPS, Good.VANS, Good.ROLLING_STOCK, Good.PETROL, Good.DIESEL, Good.LPG, Good.N...` | The goods the fifth term measures, in the order the save keeps their units (slots 15 on, EconomyManager.getNationalAccountsState()): a new one goes on the end. |
+| 240 | `NationalAccounts.HELD_BEFORE_FUEL` | `3` | ...and how many of them a save from 0.7.58 to 0.7.61 carries: the three before FUEL, which such a city held none of. |
+| 243 | `NationalAccounts.HELD_WITH_FUEL` | `4` | ...and how many a save from 0.7.62 to 0.7.75 carries: the three and FUEL, which FuelSplit makes PETROL and DIESEL. |
+| 246 | `NationalAccounts.NOT_HELD` | `Good.CARS` | ...and the one good a sector holds that no term measures, and why: see EVERY OTHER GOOD A SECTOR HOLDS. |
+| 1210 | `NationalAccounts.GOVERNMENT_SLOTS_WITH_GRANTS` | `20` | The slots a block carries once EI and the grants are on it (2026-09-11): the grant bill is saved[19]. |
 
 ### Nations.java ([map](map/Nations.md))
 
@@ -2770,6 +2770,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 29 | `PriceLevel.FIRST_PUBLISHED_YEAR` | `1913` | The first year the BLS published the index; the years before it are Rees's index joined at it (est.). |
 | 32 | `PriceLevel.US_CPI` | `{ 8.333, 8.333, 8.667, 9.000, 9.000, 9.000, 9.000, 9.333, 9.000, 9.000, 9.333, 9.333, 9...` | The US CPI-U a year, 1900 to 2025, 1982-84 = 100 (the class's sources). |
 | 52 | `PriceLevel.FACTOR` | `factor()` | Every nominal anchor's multiplier, the US CPI of the calendar's first year over its 2025: 8.333 / 321.943 = 0.02588, 1/38.6 (call 1). |
+| 55 | `PriceLevel.HISTORICAL_FACTOR` | `usCpi(CityCalendar.EPOCH_YEAR) / usCpi(LAST_YEAR)` | The calendar's actual US CPI ratio, independent of a counterfactual price-level override. |
 
 ### QuayCrane.java ([map](map/QuayCrane.md))
 
@@ -4561,9 +4562,9 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2527 | `GovernmentScreen.PENSIONS_INFO` | `"It is pay-as-you-go: this month's workers pay this month's pensioners, so " + "the gap...` | P33: pay-as-you-go. |
 | 2613 | `GovernmentScreen.LAYERS_INFO` | `"What GDP is made of over the years, as City History draws it in layers: " + "consumpti...` | The layers' caption's (i). |
 | 2691 | `GovernmentScreen.STOCK_INFO` | `"Stock built up is output that has been made and not yet sold, so it counts " + "the mo...` | P34: stock built up. |
-| 2701 | `GovernmentScreen.GOVERNMENT_INFO` | `"Services with no market price, valued at cost: the utilities' staff, " + "care, the sc...` | P35, rewritten (B5): what G is, as the model counts it. |
-| 2739 | `GovernmentScreen.MOM_INFO` | `"Month-on-month annualised is one month multiplied up - compounded, so a city " + "grow...` | P37, on the strip's month on month. |
-| 2744 | `GovernmentScreen.YOY_INFO` | `"This month's output against the same month a year ago, in today's money - " + "nominal...` | P36's point, on the strip's year on year: nominal, where the header's tile is real. |
+| 2705 | `GovernmentScreen.GOVERNMENT_INFO` | `"Services with no market price, valued at cost: the utilities' staff, " + "care, the sc...` | P35, rewritten (B5): what G is, as the model counts it. |
+| 2743 | `GovernmentScreen.MOM_INFO` | `"Month-on-month annualised is one month multiplied up - compounded, so a city " + "grow...` | P37, on the strip's month on month. |
+| 2748 | `GovernmentScreen.YOY_INFO` | `"This month's output against the same month a year ago, in today's money - " + "nominal...` | P36's point, on the strip's year on year: nominal, where the header's tile is real. |
 
 ### HistoryScreen.java ([map](map/HistoryScreen.md))
 

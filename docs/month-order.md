@@ -1,6 +1,6 @@
 # The order the month runs in
 
-Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level statements of each method below, in order, with the comment above each and where each call goes. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-14 by `ham.citybuildersim.tools.MonthOrder` - the top-level statements of each method below, in order, with the comment above each and where each call goes. Do not edit; regenerate with `Regenerate maps.bat`.
 
 `Game.nextMonth()` is what the clock and the button call; it does the bookkeeping either side of `SimulationEngine.simulateMonth()`, which is the spine. Read the two together. A statement shown as `if (...) {` or `for (...) {` is a whole block; open the source at that line for its body.
 
@@ -95,7 +95,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 63. **L13454** `startOfMonthUpdate();` → [Game.startOfMonthUpdate](map/Game.md) (L14115)
 64. **L13455** `simulationEngine.simulateMonth(this);` → [SimulationEngine.simulateMonth](map/SimulationEngine.md) (L32)
 65. **L13456** `finalUpdateEconomy();` → [Game.finalUpdateEconomy](map/Game.md) (L14731)
-66. **L13457** `economyManager.setPreviousGdp(historySave);` → [EconomyManager.setPreviousGdp](map/EconomyManager.md) (L2486)
+66. **L13457** `economyManager.setPreviousGdp(historySave);` → [EconomyManager.setPreviousGdp](map/EconomyManager.md) (L2490)
 67. **L13458** `priceTheDebtMarket();` → [Game.priceTheDebtMarket](map/Game.md) (L14638)
 68. **L13462** `if (settleProbeForTest != null) settleProbeForTest.accept(false);`  
    _The paper sold between the presses settles to its holders: the households first, before the month's coupon (0.7.1)._
@@ -187,7 +187,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 125. **L13817** `hotMoney.setMonth(month);` → [CapitalFlows.setMonth](map/CapitalFlows.md) (L748)
 126. **L13820** `hotMoney.setDoubt(foreign.getDoubtShare());` → [CapitalFlows.setDoubt](map/CapitalFlows.md) (L651), [ForeignAccounts.getDoubtShare](map/ForeignAccounts.md) (L1741)  
    _The hot money takes the break chance of itself home under a peg (XR2): the share the last reprice left, 0 under every other regime._
-127. **L13821** `hotMoney.takeMonth(` → [CapitalFlows.takeMonth](map/CapitalFlows.md) (L380), [Bank.depositRate](map/Bank.md) (L3338), [DebtManager.getRate](map/DebtManager.md) (L1413), [DebtManager.worldRate](map/DebtManager.md) (L866), [DebtManager.countryPremium](map/DebtManager.md) (L1192), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2480), [ForeignAccounts.getReserves](map/ForeignAccounts.md) (L2665), [Game.yearlyDepreciation](map/Game.md) (L16319), [Bank.isInsolvent](map/Bank.md) (L1808), [DebtManager.getMonthsSinceForeignDefault](map/DebtManager.md) (L1351)
+127. **L13821** `hotMoney.takeMonth(` → [CapitalFlows.takeMonth](map/CapitalFlows.md) (L380), [Bank.depositRate](map/Bank.md) (L3338), [DebtManager.getRate](map/DebtManager.md) (L1413), [DebtManager.worldRate](map/DebtManager.md) (L866), [DebtManager.countryPremium](map/DebtManager.md) (L1192), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2484), [ForeignAccounts.getReserves](map/ForeignAccounts.md) (L2665), [Game.yearlyDepreciation](map/Game.md) (L16319), [Bank.isInsolvent](map/Bank.md) (L1808), [DebtManager.getMonthsSinceForeignDefault](map/DebtManager.md) (L1351)
 128. **L13843** `double hotMoved = hotMoney.getStock() - hotBefore;` → [CapitalFlows.getStock](map/CapitalFlows.md) (L634)  
    _THE MONEY MOVES FOR REAL, and now it moves where the audit can see it._
 129. **L13844** `if (hotMoved > 0)      bank.receiveHotMoney(hotMoved);` → [Bank.receiveHotMoney](map/Bank.md) (L1684)
@@ -198,7 +198,7 @@ Generated 2026-11-13 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 133. **L13850** `lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);` → [MoneyAudit.strike](map/MoneyAudit.md) (L519)
 134. **L13853** `ownersWipedAbroadThisMonth = 0;`  
    _Declared (0.7.14): the valuation a resolution wiped off the world's shares is a month's, whether the month's or a press's before it._
-135. **L13863** `foreign.takeMonth(lastMoneyAudit, economyManager.getMonthGdp());` → [ForeignAccounts.takeMonth](map/ForeignAccounts.md) (L2516), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2480)  
+135. **L13863** `foreign.takeMonth(lastMoneyAudit, economyManager.getMonthGdp());` → [ForeignAccounts.takeMonth](map/ForeignAccounts.md) (L2516), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2484)  
    _...AND THE SAME MONTH, READ AS A BALANCE OF PAYMENTS._
 136. **L13895** `foreign.setParity(priceIndex.getParityLevel(), world.getPriceLevel(),` → [ForeignAccounts.setParity](map/ForeignAccounts.md) (L246), [PriceIndex.getParityLevel](map/PriceIndex.md) (L512), [WorldEconomy.getPriceLevel](map/WorldEconomy.md) (L315), [PriceIndex.inflation](map/PriceIndex.md) (L549), [WorldEconomy.realisedInflation](map/WorldEconomy.md) (L362)  
    _THE CAPPED LEVEL, not the index (XR1, star 2: "Basket, rent capped")._

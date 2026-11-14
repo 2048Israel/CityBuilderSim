@@ -88,7 +88,7 @@ public final class GoldMiningCheck {
                 && t.site().resource() == Resource.GOLD && t.site().sites() == 1 && t.getSince() == 1900);
         close("nameplate gold is ore milled times the reference grade, in ounces", t.makes(Good.GOLD),
                 GoldMining.ORE_PER_MONTH * Deposit.GOLD_REFERENCE_GRADE / GoldPrice.GRAMS_PER_TROY_OUNCE);
-        assertTrue("cyanide chemicals and diesel are ore-throughput inputs", t.uses(Good.ACID) > 0 && t.uses(Good.DIESEL) > 0);
+        assertTrue("the mill reagent and diesel are ore-throughput inputs", t.uses(Good.ACID) > 0 && t.uses(Good.DIESEL) > 0);
         assertTrue("old rows stay permanent, including Engineering Research Lab at 148",
                 b.getTemplate(148).getName().equals("Engineering Research Lab"));
     }
@@ -142,7 +142,7 @@ public final class GoldMiningCheck {
         close("the ground gave up exactly the ounces produced", g.getLandManager().getExtracted(Resource.GOLD) - before,
                 o.produced + o.exportBound);
         Sector.Split chemicals = mine.statement().bought.get(Good.ACID);
-        assertTrue("the mill paid for imported cyanide chemicals", chemicals != null && chemicals.abroad > 0);
+        assertTrue("the mill paid for its imported reagent (ACID stand-in)", chemicals != null && chemicals.abroad > 0);
         GoodsMarket gold = g.getEconomyManager().getMarkets().get(Good.GOLD);
         close("the export band's nominal gold price follows GoldPrice and the spot rate",
                 gold.exportPrice(), g.goldUsdPerOunce(WorldMoneys.monthIndex(g.getMonth()))

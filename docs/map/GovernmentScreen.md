@@ -1,6 +1,6 @@
-# GovernmentScreen.java - 2,784 lines · 120 methods · 42 constants · interface
+# GovernmentScreen.java - 2,788 lines · 120 methods · 42 constants · interface
 
-`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The government tab: where the city's money came from and went, the road
 > from what it EARNED through the budget's SURPLUS to what the cash BANKED,
@@ -97,9 +97,9 @@
 | 2527 | `GovernmentScreen.PENSIONS_INFO` | `"It is pay-as-you-go: this month's workers pay this month's pensioners, so " ...` | P33: pay-as-you-go. |
 | 2613 | `GovernmentScreen.LAYERS_INFO` | `"What GDP is made of over the years, as City History draws it in layers: " + ...` | The layers' caption's (i). |
 | 2691 | `GovernmentScreen.STOCK_INFO` | `"Stock built up is output that has been made and not yet sold, so it counts "...` | P34: stock built up. |
-| 2701 | `GovernmentScreen.GOVERNMENT_INFO` | `"Services with no market price, valued at cost: the utilities' staff, " + "ca...` | P35, rewritten (B5): what G is, as the model counts it. |
-| 2739 | `GovernmentScreen.MOM_INFO` | `"Month-on-month annualised is one month multiplied up - compounded, so a city...` | P37, on the strip's month on month. |
-| 2744 | `GovernmentScreen.YOY_INFO` | `"This month's output against the same month a year ago, in today's money - " ...` | P36's point, on the strip's year on year: nominal, where the header's tile is real. |
+| 2705 | `GovernmentScreen.GOVERNMENT_INFO` | `"Services with no market price, valued at cost: the utilities' staff, " + "ca...` | P35, rewritten (B5): what G is, as the model counts it. |
+| 2743 | `GovernmentScreen.MOM_INFO` | `"Month-on-month annualised is one month multiplied up - compounded, so a city...` | P37, on the strip's month on month. |
+| 2748 | `GovernmentScreen.YOY_INFO` | `"This month's output against the same month a year ago, in today's money - " ...` | P36's point, on the strip's year on year: nominal, where the header's tile is real. |
 
 ## Fields (state)
 
@@ -117,7 +117,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 2740 | **type** `final class GovernmentScreen` | The government tab: where the city's money came from and went, the road from what it EARNED through the budget's SURPLUS to what the cash BANKED, who pays every line and where each is decided, what the city owes and h... |
+| 45 | 2744 | **type** `final class GovernmentScreen` | The government tab: where the city's money came from and went, the road from what it EARNED through the budget's SURPLUS to what the cash BANKED, who pays every line and where each is decided, what the city owes and h... |
 | 50 | 1 | `GovernmentScreen(UserInterface ui)` |  |
 | 56 | 3 | `void forget()` | Every node is made new at the next draw: another city opened (UserInterface.anotherCity()). |
 
@@ -323,7 +323,7 @@
 | 2518 | 7 | `static VBox serviceLine(String name, double bill, double fees, double net)` | One service: its fees against its bill as a bar, and its words. |
 | 2539 | 18 | `VBox pensionsCard(EconomyManager em, List<CityNeeds.Need> all)` | PENSIONS: contributions against what the pensions cost as a bar, the seniors and what each is paid, and what came out of general revenue - with a chip in NEEDS YOU's PENSIONS colour only while NEEDS YOU lists it (B11:... |
 
-### THE OUTPUT (0.7.31) (lines 2558-2784)
+### THE OUTPUT (0.7.31) (lines 2558-2788)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -332,9 +332,9 @@
 | 2663 | 6 | `static String realGrowthWords(int recorded, double grew)` | The header GDP tile's real growth, in its words (UserInterface's tile), without its verdict colour - that is the tile's. |
 | 2671 | 12 | `static VBox partCard(String name, String colour, String amount, String info, Node...lines)` | One of the four parts' cards: its name, its figure, and its lines. |
 | 2684 | 5 | `VBox consumptionCard(NationalAccounts na)` |  |
-| 2694 | 5 | `VBox investmentCard(NationalAccounts na)` |  |
-| 2705 | 4 | `VBox governmentCard(NationalAccounts na)` |  |
-| 2717 | 20 | `VBox tradeCard(NationalAccounts na)` | NET EXPORTS: what was sold abroad against what was bought, as two bars on one scale - exports in the business violet, imports in its darker step in three parts - with the parts named for what they are (B5: "Steel expo... |
-| 2749 | 26 | `HBox growthStrip(NationalAccounts na)` | The growth strip: five readings, no verdict tone (B4: MoM and YoY were coloured on thresholds of the screen's own). |
-| 2777 | 7 | `static void withInfo(VBox cell, String info)` | A limit cell's note with an (i) after it. |
+| 2694 | 9 | `VBox investmentCard(NationalAccounts na)` |  |
+| 2709 | 4 | `VBox governmentCard(NationalAccounts na)` |  |
+| 2721 | 20 | `VBox tradeCard(NationalAccounts na)` | NET EXPORTS: what was sold abroad against what was bought, as two bars on one scale - exports in the business violet, imports in its darker step in three parts - with the parts named for what they are (B5: "Steel expo... |
+| 2753 | 26 | `HBox growthStrip(NationalAccounts na)` | The growth strip: five readings, no verdict tone (B4: MoM and YoY were coloured on thresholds of the screen's own). |
+| 2781 | 7 | `static void withInfo(VBox cell, String info)` | A limit cell's note with an (i) after it. |
 

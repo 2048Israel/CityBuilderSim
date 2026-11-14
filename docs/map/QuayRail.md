@@ -1,6 +1,6 @@
 # QuayRail.java - 148 lines · 10 methods · 5 constants · model
 
-`ham/citybuildersim/QuayRail.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/QuayRail.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Which terminals on the harbour's quay the railway reaches (HB2, 2026-11-09), and the plots of track between their boxes: pure, from
 > the shore and the quay spurs the railway laid, with no toolkit.

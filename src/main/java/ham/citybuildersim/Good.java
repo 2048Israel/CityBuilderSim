@@ -1115,9 +1115,15 @@ public enum Good {
     TRUCKS("Trucks", "truck", 215.0, Double.NaN, 13.4375, true, Pricing.BAND, false),
 
     /** Fine gold, a stockable troy ounce. GoldPrice supplies the month's nominal US$ band (GD4). */
-    GOLD("Gold", "troy ounce", GoldPrice.PAR_1900 * 1.005 / (1000 * PriceLevel.HISTORICAL_FACTOR),
-            GoldPrice.PAR_1900 * .995 / (1000 * PriceLevel.HISTORICAL_FACTOR),
-            GoldPrice.PAR_1900 * .0025 / (1000 * PriceLevel.HISTORICAL_FACTOR), true, Pricing.BAND, false);
+    GOLD("Gold", "troy ounce", GoldPrice.PAR_1900 * (1 + (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / (1000 * PriceLevel.HISTORICAL_FACTOR),
+            GoldPrice.PAR_1900 * (1 - (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / (1000 * PriceLevel.HISTORICAL_FACTOR),
+            GoldPrice.PAR_1900 * Good.GOLD_FREIGHT_SHARE / (1000 * PriceLevel.HISTORICAL_FACTOR), true, Pricing.BAND, false);
+
+    /** Bullion freight each way as a share of its nominal price (GD4, estimate). */
+    public static final double GOLD_FREIGHT_SHARE = .0025;
+
+    /** The bullion dealer's margin each way as a share of its nominal price (GD4, estimate). */
+    public static final double GOLD_MARGIN_SHARE = .0025;
 
     /** How a good's price is struck. */
     public enum Pricing {

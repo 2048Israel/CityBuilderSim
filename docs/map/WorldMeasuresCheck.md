@@ -1,6 +1,6 @@
 # WorldMeasuresCheck.java - 663 lines · 25 methods · 47 constants · harnesses
 
-`ham/citybuildersim/WorldMeasuresCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorldMeasuresCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The Rankings' real-world file held to what it promises (batch LB1; the
 > project's spec-leaderboards.md 6-8): WorldMeasures' reading of

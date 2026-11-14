@@ -1,6 +1,6 @@
 # LandDrawing.java - 308 lines · 29 methods · 5 constants · model
 
-`ham/citybuildersim/LandDrawing.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandDrawing.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Counts plotted ground and redraws a city's centre to a requested area.
 > 

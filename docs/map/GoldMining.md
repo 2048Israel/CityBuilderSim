@@ -1,6 +1,6 @@
-# GoldMining.java - 132 lines · 12 methods · 2 constants · sectors
+# GoldMining.java - 158 lines · 15 methods · 2 constants · sectors
 
-`ham/citybuildersim/sectors/GoldMining.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/GoldMining.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Gold mines and their mills recover fine ounces at a geology-dependent grade.
 > 
@@ -8,7 +8,7 @@
 > ore throughput costs the same as its grade falls. Under Gold the mint
 > buys the output with new money and keeps the metal in the vault.
 
-**Uses:** [Good](Good.md) (16), [ForeignAccounts](ForeignAccounts.md) (4), [Sectors](Sectors.md) (2), [Resource](Resource.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [GoodsMarket](GoodsMarket.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
+**Uses:** [Good](Good.md) (17), [ForeignAccounts](ForeignAccounts.md) (5), [Sectors](Sectors.md) (2), [Resource](Resource.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [GoodsMarket](GoodsMarket.md) (2), [ExtractionSector](ExtractionSector.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 **Used by (3):** [BuildingDataCheck](BuildingDataCheck.md), [GoldMiningCheck](GoldMiningCheck.md), [Sectors](Sectors.md)
 
@@ -29,17 +29,20 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 121 | **type** `public final class GoldMining extends ExtractionSector` | Gold mines and their mills recover fine ounces at a geology-dependent grade. |
-| 23 | 8 | `public GoldMining()` |  |
-| 34 | 4 | `protected double madeAtRate(Good g)` | Fixed ore throughput, recovered at the fields' declining grades. |
-| 41 | 3 | `public double getPlannedOutput(Good g)` | Bullion is offered straight from the mill to its buyer. |
-| 47 | 5 | `public double getExportBoundOutput(Good g)` | The mint takes the offer at M. |
-| 55 | 4 | `public double getCostPerUnit(Good g)` | Ore-based costs divided by the ounces that ore actually recovers. |
-| 62 | 4 | `public double getMarginalCostPerUnit(Good g)` | The grade also decides whether another tonne of ore is worth milling. |
-| 69 | 10 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | The plan's revenue follows the next field's grade, with ore costs held. |
-| 82 | 14 | `protected void sellDirectOutput(Good g, GoodsMarket market, double units)` | A mint purchase is a domestic receipt funded by new base money. |
-| 99 | 8 | `protected void beforeBank()` | Settles the accepted offer in the same audit window as its sale reaches cash. |
-| 110 | 5 | `protected void saveExtras(java.util.Map<String, Double> extras)` | An accepted offer survives the gap between production and the next strike. |
-| 117 | 5 | `protected void restoreExtras(java.util.Map<String, Double> extras)` |  |
-| 125 | 7 | `public void produceStock(Good g, GoodsMarket market)` | Deplete precisely what was made, once, after the input-order machinery ran. |
+| 12 | 147 | **type** `public final class GoldMining extends ExtractionSector` | Gold mines and their mills recover fine ounces at a geology-dependent grade. |
+| 23 | 9 | `public GoldMining()` |  |
+| 35 | 10 | `public java.util.List<Line> ownLines(Game game)` | The deposits and the buyer of the mill's fine ounces. |
+| 48 | 4 | `protected double madeAtRate(Good g)` | Fixed ore throughput, recovered at the fields' declining grades. |
+| 55 | 3 | `public double getPlannedOutput(Good g)` | Bullion is offered straight from the mill to its buyer. |
+| 61 | 5 | `public double getExportBoundOutput(Good g)` | The mint takes the offer at M. |
+| 69 | 4 | `public double getCostPerUnit(Good g)` | Ore-based costs divided by the ounces that ore actually recovers. |
+| 76 | 4 | `public double getMarginalCostPerUnit(Good g)` | The grade also decides whether another tonne of ore is worth milling. |
+| 83 | 9 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | The plan's revenue follows the next field's grade, with ore costs held. |
+| 95 | 14 | `protected void sellDirectOutput(Good g, GoodsMarket market, double units)` | A mint purchase is a domestic receipt funded by new base money. |
+| 112 | 8 | `protected void beforeBank()` | Settles the accepted offer in the same audit window as its sale reaches cash. |
+| 123 | 5 | `protected void saveExtras(java.util.Map<String, Double> extras)` | An accepted offer survives the gap between production and the next strike. |
+| 130 | 5 | `protected void restoreExtras(java.util.Map<String, Double> extras)` |  |
+| 138 | 4 | `protected void redenominateExtras(double scale)` | A change of currency unit changes the accepted payment and keeps its fine ounces. |
+| 144 | 4 | `protected void resetExtras()` |  |
+| 151 | 7 | `public void produceStock(Good g, GoodsMarket market)` | Deplete precisely what was made, once, after the input-order machinery ran. |
 

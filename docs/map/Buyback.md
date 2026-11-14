@@ -1,6 +1,6 @@
 # Buyback.java - 432 lines · 28 methods · 1 constants · model
 
-`ham/citybuildersim/Buyback.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Buyback.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The city's paper bought back in a reverse auction: every holder offers what
 > it holds in slices, each at the price where its own buying rule would stop

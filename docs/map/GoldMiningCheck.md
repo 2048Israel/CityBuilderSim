@@ -1,6 +1,6 @@
-# GoldMiningCheck.java - 212 lines · 12 methods · 2 constants · harnesses
+# GoldMiningCheck.java - 268 lines · 12 methods · 2 constants · harnesses
 
-`ham/citybuildersim/GoldMiningCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoldMiningCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > Gold Mining from geological fields through the mill to exports and the mint.
 > 
@@ -16,7 +16,7 @@
 > 6. Depletion, vault and mint issuance survive their saved state round trips.
 > 7. A real city's months exercise the mechanic with a closing money audit.
 
-**Uses:** [Resource](Resource.md) (24), [Good](Good.md) (12), [Game](Game.md) (10), [GoldMining](GoldMining.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [Sectors](Sectors.md) (6), [Geology](Geology.md) (6), [Deposit](Deposit.md) (6), [BuildingManager](BuildingManager.md) (4), [GameVersion](GameVersion.md) (4), [Sector](Sector.md) (3), [LandManager](LandManager.md) (2), [GoldPrice](GoldPrice.md) (2), [MoneyAudit](MoneyAudit.md) (2), [CentralBank](CentralBank.md) (2), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [Markets](Markets.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [GoodsMarket](GoodsMarket.md) (1), [WorldMoneys](WorldMoneys.md) (1), [SectorState](SectorState.md) (1), [CityLand](CityLand.md) (1)
+**Uses:** [Resource](Resource.md) (26), [Good](Good.md) (17), [Game](Game.md) (14), [GoldMining](GoldMining.md) (9), [ForeignAccounts](ForeignAccounts.md) (8), [Sectors](Sectors.md) (6), [Geology](Geology.md) (6), [Deposit](Deposit.md) (6), [BuildingManager](BuildingManager.md) (4), [GoldPrice](GoldPrice.md) (4), [GameVersion](GameVersion.md) (4), [Markets](Markets.md) (3), [Sector](Sector.md) (3), [MoneyAudit](MoneyAudit.md) (3), [GameFiles](GameFiles.md) (2), [LandManager](LandManager.md) (2), [NationalAccounts](NationalAccounts.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [GoodsMarket](GoodsMarket.md) (2), [DataSave](DataSave.md) (2), [CentralBank](CentralBank.md) (2), [Founding](Founding.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [WorldMoneys](WorldMoneys.md) (1), [SectorState](SectorState.md) (1), [CityLand](CityLand.md) (1)
 
 ## Constants
 
@@ -35,17 +35,17 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 191 | **type** `public final class GoldMiningCheck` | Gold Mining from geological fields through the mill to exports and the mint. |
+| 22 | 247 | **type** `public final class GoldMiningCheck` | Gold Mining from geological fields through the mill to exports and the mint. |
 | 27 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 32 | 5 | `static void close(String label, double actual, double expected)` |  |
 | 38 | 5 | `static void quietly(Runnable work)` |  |
 | 44 | 16 | `static Game town(String label)` |  |
-| 61 | 17 | `static void registry()` |  |
-| 79 | 14 | `static void row()` |  |
-| 94 | 28 | `static void grades()` |  |
-| 123 | 20 | `static Game exported()` |  |
-| 144 | 25 | `static void minted(Game g)` |  |
-| 170 | 17 | `static void saved(Game g)` |  |
-| 188 | 12 | `static void played(Game g)` |  |
-| 201 | 11 | `public static void main(String[] args)` |  |
+| 61 | 19 | `static void registry()` |  |
+| 81 | 14 | `static void row()` |  |
+| 96 | 35 | `static void grades()` |  |
+| 132 | 20 | `static Game exported()` |  |
+| 153 | 33 | `static void minted(Game g)` |  |
+| 187 | 48 | `static void saved(Game g) throws Exception` |  |
+| 236 | 20 | `static void played(Game g)` |  |
+| 257 | 11 | `public static void main(String[] args) throws Exception` |  |
 

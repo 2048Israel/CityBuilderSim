@@ -1,6 +1,6 @@
 # InputTimeline.java - 378 lines · 32 methods · 3 constants · model
 
-`ham/citybuildersim/InputTimeline.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InputTimeline.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > A recording's input logs read as one timeline (TR2, 2026-11-09): which sitting holds each recorded month, the segments those
 > make, where Follow can start for a month, and the mouse, the screen, the window and the map the player had at any moment of

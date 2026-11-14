@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-13 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**198 harness files, 23,711 labelled assertions.** AllChecks runs 198 of them.
+**198 harness files, 23,728 labelled assertions.** AllChecks runs 198 of them.
 
 ## Which harnesses read which class
 
@@ -82,7 +82,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Credits](map/Credits.md) | CreditsCheck |
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, LongPlaytest, ScaleCheck |
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, MoneySignCheck, MoneyWordsCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
-| [DataSave](map/DataSave.md) | EarthTerrainCheck, FittingCheck, LandmassCheck, MapCheck, MoneySignCheck, PopulationCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
+| [DataSave](map/DataSave.md) | EarthTerrainCheck, FittingCheck, GoldMiningCheck, LandmassCheck, MapCheck, MoneySignCheck, PopulationCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, HoldersCheck, HousingCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MortgageCheck, OwnerCheck, PartnersCheck, PegAnchorCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, BuybackCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck |
@@ -225,7 +225,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Mortgage](map/Mortgage.md) | BooksCheck, BuildCardCheck, CreditCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
 | [Names](map/Names.md) | StaleCheck |
-| [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperMiningCheck, CopperRefiningCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, DiscoveryCheck, EducationCheck, FloatLinkCheck, FundCheck, GdpCheck, HealthCheck, HistoryCheck, HouseholdCheck, KeptCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, QuarryingCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, ScaleCheck, SlopeCheck, TreasuryCheck, WoodProductsCheck |
+| [NationalAccounts](map/NationalAccounts.md) | AutoBuildCheck, CopperMiningCheck, CopperRefiningCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, DiscoveryCheck, EducationCheck, FloatLinkCheck, FundCheck, GdpCheck, GoldMiningCheck, HealthCheck, HistoryCheck, HouseholdCheck, KeptCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, QuarryingCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, ScaleCheck, SlopeCheck, TreasuryCheck, WoodProductsCheck |
 | [Nations](map/Nations.md) | CurrencyRegimeCheck, DenominationCheck, FittingCheck, GlobeCheck, GoldPriceCheck, GoldStandardCheck, InterestAbroadCheck, LandNationsCheck, LongPlaytest, NationsCheck, NewGameCheck, PartnersCheck, PriceLevelCheck, RankingsCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMoneysCheck |
 | [NationsMap](map/NationsMap.md) | GlobeCheck, MapCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck |
 | [Notice](map/Notice.md) | AuctionCheck, AutoBuildCheck, BankCheck, CausesOfDeathCheck, ConstructionControlCheck, DiscoveryCheck, GoldStandardCheck, InboxCheck, KeptCheck, LandmassCheck, LongPlaytest, PlaytestFixCheck, PolicyDatesCheck, PrizeCheck, SaveSlotCheck |
@@ -2391,7 +2391,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L308 ...a market building on exactly one, in one group (
   - L310 ...and every card and group has a name
   - L311 every card has a unit above zero, or reads \"adds nothing\"
-  - L322 Industry is fourteen groups by owning sector - Coal Mining's \"Coal\" since 0.7.126, Quarrying's \"Stone\" and Cement &
+  - L322 Industry groups follow owning sectors, including Gold Mining - Coal Mining's \"Coal\" since 0.7.126, Quarrying's \"Stone\" and Cement &
   - L334 ...the Coal group is Coal Mining's four, in the catalogue's order (0.7.126):
   - L344 ...the Stone group is Quarrying's three and the Cement group Cement & Concrete's three, in the catalogue's order
   - L355 ...the Copper group is Copper Mining's three and Copper Refining's four, in the catalogue's order, and the Wire & Cable
@@ -2540,75 +2540,75 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1728 ...and with less old steel arising past the yards standing than one more takes, its sector's feed gate
   - L1734 a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare
   - L1759 every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at
-  - L1768 a Copper Smelter's acid goes to Copper Mining's leach plants, its take theirs at nameplate; its anode to its
-  - L1773 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
-  - L1794 each of the nine industries' pages says who here buys each good it makes, or that it ships
-  - L1807 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
-  - L1810 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
-  - L1817 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
-  - L1844 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
-  - L1853 an offer on the
-  - L1868 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
-  - L1874 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
-  - L1876 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
-  - L1881 Build's payback on the magnetite offer is its by-type earnings
-- **L1913 13. a berth's payback, the owner and the depot's line (FR4)**
-  - L1960 A SEA TERMINAL'S CARD HAS A PAYBACK AND NO OTHER BUILDING'S - the Strategic Reserve's, the Tank Farm's and a
-  - L1967 fixture: no cargo of any kind has crossed the boundary (a new city), the dues dial at its default
-  - L1977 A KIND WITH NO CARGO READS NO PAYBACK: NO_CARGO, no years, no tonnes carried and no dues, for every terminal
-  - L1978 ...and not a NaN or an infinity in any other figure the card prints (the years alone are NaN, the sentinel for none)
-  - L1979 ...the price is the one the Build button charges
-  - L1984 fixture: the city buys an offer that runs out to the sea
-  - L1990 AT A BERTH'S WORTH_A_BERTH OF TONNES: the Bulk Berth's card PAYS BACK, and the Bulk Terminal's is SHORT of tonnes
-  - L1992 ...and the card says what the advice does (portTerminal() orders the Bulk Berth, not the Terminal)
-  - L1994 ...it carries the tonnes uncovered, all of them, a month
-  - L1995 ...at the advice's uncovered tonnes
-  - L1996 ...the tonnes the advice waits for are WORTH_A_BERTH over the dial of its month
-  - L1997 ...its dues are the tonnes it carries at the rate struck a tonne
-  - L1998 ...its years are its price over a year's dues less its upkeep
-  - L1999 ...a payback of years above nothing
-  - L2000 ...the shortfall's figures: the Terminal's tonnes needed are the Berth's scaled by their months, its years NaN
-  - L2004 A HAIR UNDER IT: the Bulk Berth is SHORT too, and the card agrees with the advice
-  - L2009 AT THE TERMINAL'S WORTH_A_BERTH: both cards pay back, each judged alone, as portTerminal() asks them with the other
-  - L2011 ...the Bulk Berth carries its whole month (the tonnes uncovered are more)
-  - L2012 ...MORE TONNES CARRIED, FEWER YEARS: the Berth at its full month pays back in fewer years than at 60% of it
-  - L2018 fixture: half the threshold is no berth's worth at the default dial
-  - L2021 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth pays back, and the card agrees with the advice
-  - L2026 THE DIAL AT 0 - NO DUES, NO PAYBACK: NO_DUES for every terminal however many tonnes, no NaN but the years
-  - L2037 A BERTH WHOSE UPKEEP IS MORE THAN ITS DUES is UPKEEP, no years - the break-even does not see its upkeep, the card does
-  - L2047 THE DUES RATE IS THE PORT DUES' OWN: PortDivision.duesRateOf() with the berth standing is the rate the card struck for
-  - L2051 ONE BERTH STANDING FOR TONNES THAT FILL HALF OF IT: COVERED for the Berth and the Terminal - cargo crosses, none is
-  - L2073 THE RAIL AND DEPOT CARDS ARE OWNED BY FREIGHT - the owner the card names, its investors' line's and the slot the
-  - L2081 ...and Build's source no longer says \"Owned by the rail sector\" (the card's owner line reads the owner's key)
-  - L2084 could not read Build's source:
-  - L2092 only the Truck Depot has the line: a Rail Spur, a House and the Strategic Reserve have none
-  - L2096 fixture: no Truck Depot stands or is on site, and the margin is a fraction of a depot's room
-  - L2099 the line's trucks are Haulage's
-  - L2100 ...its depots' room
-  - L2101 ...the trucks past the room, on the street
-  - L2102 ...what it waits for is DEPOT_ORDER_MARGIN of the depot's room
-  - L2103 ...and it would build one exactly when Haulage would order this depot (depotToOrder())
-  - L2108 with the fleet raised past the margin and no depot standing, every truck is on the street
-  - L2109 ...and the line says Freight would build one exactly when the order's own test does, and here that test says yes
-  - L2114 with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet
-- **L2153 14. the landlords' card: the mortgage lender's test, the last gate of a landlord's home (I13-L)**
-  - L2178 ...so a Bakery's door to the lender's test is closed
-  - L2192 fixture: the landlords' owners are not asked for the down payment, and a House costs more than its down payment
-  - L2203 fixture: from a till of twice its down payment a House needs a lender, which reads a rent too small for the payment
-  - L2208 THE LENDER REFUSES IT ON ITS RENT: the card's first gate is the lender's, the last, and the INTEREST gate is none
-  - L2211 ...with the cover the rent gives the payment and the cover the lender asks, the test itself beside them
-  - L2216 ...in the lender's words, with what it lends, the payment and the cover against what it asks
-  - L2223 THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \"
-  - L2226 ...and no House is ordered
-  - L2232 fixture: a till of half the down payment leaves the landlord short of the down payment, and the lender reads no cover
-  - L2235 SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment
-  - L2240 ...in the lender's words: what it wants of its own and what it would put in
-  - L2245 ...and the order holds for it, in the same line: \"
-  - L2252 fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment
-  - L2254 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
-  - L2267 ...so the card fails it at the lender's gate, the cover now the rate's
-  - L2271 ...and the order is declined in the cover the card read, at the dearer rate: \"
-  - L2282 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
+  - L1768 a Copper Smelter's acid goes to copper's leach plants and gold's mill at nameplate; its anode to its
+  - L1775 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
+  - L1796 each of the ten industries' pages says who here buys each good it makes, or that it ships
+  - L1809 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
+  - L1812 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
+  - L1819 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
+  - L1846 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
+  - L1855 an offer on the
+  - L1870 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
+  - L1876 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
+  - L1878 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
+  - L1883 Build's payback on the magnetite offer is its by-type earnings
+- **L1915 13. a berth's payback, the owner and the depot's line (FR4)**
+  - L1962 A SEA TERMINAL'S CARD HAS A PAYBACK AND NO OTHER BUILDING'S - the Strategic Reserve's, the Tank Farm's and a
+  - L1969 fixture: no cargo of any kind has crossed the boundary (a new city), the dues dial at its default
+  - L1979 A KIND WITH NO CARGO READS NO PAYBACK: NO_CARGO, no years, no tonnes carried and no dues, for every terminal
+  - L1980 ...and not a NaN or an infinity in any other figure the card prints (the years alone are NaN, the sentinel for none)
+  - L1981 ...the price is the one the Build button charges
+  - L1986 fixture: the city buys an offer that runs out to the sea
+  - L1992 AT A BERTH'S WORTH_A_BERTH OF TONNES: the Bulk Berth's card PAYS BACK, and the Bulk Terminal's is SHORT of tonnes
+  - L1994 ...and the card says what the advice does (portTerminal() orders the Bulk Berth, not the Terminal)
+  - L1996 ...it carries the tonnes uncovered, all of them, a month
+  - L1997 ...at the advice's uncovered tonnes
+  - L1998 ...the tonnes the advice waits for are WORTH_A_BERTH over the dial of its month
+  - L1999 ...its dues are the tonnes it carries at the rate struck a tonne
+  - L2000 ...its years are its price over a year's dues less its upkeep
+  - L2001 ...a payback of years above nothing
+  - L2002 ...the shortfall's figures: the Terminal's tonnes needed are the Berth's scaled by their months, its years NaN
+  - L2006 A HAIR UNDER IT: the Bulk Berth is SHORT too, and the card agrees with the advice
+  - L2011 AT THE TERMINAL'S WORTH_A_BERTH: both cards pay back, each judged alone, as portTerminal() asks them with the other
+  - L2013 ...the Bulk Berth carries its whole month (the tonnes uncovered are more)
+  - L2014 ...MORE TONNES CARRIED, FEWER YEARS: the Berth at its full month pays back in fewer years than at 60% of it
+  - L2020 fixture: half the threshold is no berth's worth at the default dial
+  - L2023 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth pays back, and the card agrees with the advice
+  - L2028 THE DIAL AT 0 - NO DUES, NO PAYBACK: NO_DUES for every terminal however many tonnes, no NaN but the years
+  - L2039 A BERTH WHOSE UPKEEP IS MORE THAN ITS DUES is UPKEEP, no years - the break-even does not see its upkeep, the card does
+  - L2049 THE DUES RATE IS THE PORT DUES' OWN: PortDivision.duesRateOf() with the berth standing is the rate the card struck for
+  - L2053 ONE BERTH STANDING FOR TONNES THAT FILL HALF OF IT: COVERED for the Berth and the Terminal - cargo crosses, none is
+  - L2075 THE RAIL AND DEPOT CARDS ARE OWNED BY FREIGHT - the owner the card names, its investors' line's and the slot the
+  - L2083 ...and Build's source no longer says \"Owned by the rail sector\" (the card's owner line reads the owner's key)
+  - L2086 could not read Build's source:
+  - L2094 only the Truck Depot has the line: a Rail Spur, a House and the Strategic Reserve have none
+  - L2098 fixture: no Truck Depot stands or is on site, and the margin is a fraction of a depot's room
+  - L2101 the line's trucks are Haulage's
+  - L2102 ...its depots' room
+  - L2103 ...the trucks past the room, on the street
+  - L2104 ...what it waits for is DEPOT_ORDER_MARGIN of the depot's room
+  - L2105 ...and it would build one exactly when Haulage would order this depot (depotToOrder())
+  - L2110 with the fleet raised past the margin and no depot standing, every truck is on the street
+  - L2111 ...and the line says Freight would build one exactly when the order's own test does, and here that test says yes
+  - L2116 with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet
+- **L2155 14. the landlords' card: the mortgage lender's test, the last gate of a landlord's home (I13-L)**
+  - L2180 ...so a Bakery's door to the lender's test is closed
+  - L2194 fixture: the landlords' owners are not asked for the down payment, and a House costs more than its down payment
+  - L2205 fixture: from a till of twice its down payment a House needs a lender, which reads a rent too small for the payment
+  - L2210 THE LENDER REFUSES IT ON ITS RENT: the card's first gate is the lender's, the last, and the INTEREST gate is none
+  - L2213 ...with the cover the rent gives the payment and the cover the lender asks, the test itself beside them
+  - L2218 ...in the lender's words, with what it lends, the payment and the cover against what it asks
+  - L2225 THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \"
+  - L2228 ...and no House is ordered
+  - L2234 fixture: a till of half the down payment leaves the landlord short of the down payment, and the lender reads no cover
+  - L2237 SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment
+  - L2242 ...in the lender's words: what it wants of its own and what it would put in
+  - L2247 ...and the order holds for it, in the same line: \"
+  - L2254 fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment
+  - L2256 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
+  - L2269 ...so the card fails it at the lender's gate, the cover now the rate's
+  - L2273 ...and the order is declined in the cover the card read, at the dearer rate: \"
+  - L2284 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
 
 ## BuildMenuCheck.java - 0 labelled assertions
 
@@ -11275,45 +11275,45 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L610 every good a sector holds is in the accounts**
   - L626 every good a sector holds is in an inventory term, or named as left out
   - L633 HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131),
-  - L646 ...and Iron & Steel, which keeps a yard of coke, is counted by it
-  - L648 ...and Cement & Concrete, which keeps a silo of cement, is counted by it (0.7.131)
-  - L651 ...and Copper Mining and Copper Refining, which keep yards of cathode, are counted by it (0.7.133)
-  - L656 ...and Wood Products, which keeps yards of lumber, panels, pulp, paper and pellets, is counted by it (0.7.140)
-- **L671 a city whose railway buys its fleet abroad**
-  - L709 fixture: the railway bought its fleet abroad
-  - L712 fixture: more than the town makes in a month, so with nothing against it the month reads negative
-  - L713 the fleet's import is matched by the stock it went into, to within its wear and the price's move
-  - L715 ...so the month it lands is not negative output
-  - L716 ...and the identity holds in it
-- **L732 a city whose copper refinery goes with its yard full**
-  - L779 fixture: the refinery went with cathode in its yard, and the yard was written off
-  - L781 the strike kept the units its rows wrote off
-  - L782 the accounts were handed the units written off
-  - L783 fixture: the yard is worth more than the town makes in a month, so booked as a fall in stock the month reads negative
-  - L785 ...so the month the works goes is not negative output
-  - L786 ...and the identity holds in it
-  - L790 fixture: saved in the month the yard was written off
-  - L791 a city loaded from that save hands its accounts the same units
-  - L792 ...and strikes the same GDP
-- **L825 a works forecasts its inputs on the current band (GDP1)**
-- **L886 imported feed held as output before a later export (GDP1)**
-- **L971 a city whose bakeries and materials plants go with their sheds full (0.7.136)**
-  - L1061 fixture: the bakeries went with food in their warehouses, and it was written off
-  - L1063 fixture: ...and the plants with materials in their sheds, written off alike
-  - L1067 the strike kept the food its rows wrote off, good by good
-  - L1068 ...and the materials
-  - L1069 ...and the pieces written off by hand
-  - L1070 the accounts were handed the food written off, at its fixed weights
-  - L1071 ...and the materials, in units
-  - L1072 ...and the luxuries, in pieces
-  - L1073 fixture: the sheds are worth more than the town makes in a month, so booked as a fall in stock the month reads negative
-  - L1075 ...so the month the works go is not negative output
-  - L1076 ...and the identity holds in it
-  - L1080 fixture: saved in the month the sheds were written off
-  - L1081 a city loaded from that save hands its accounts the same food
-  - L1082 ...the same materials
-  - L1083 ...the same luxuries
-  - L1084 ...and strikes the same GDP
+  - L647 ...and Iron & Steel, which keeps a yard of coke, is counted by it
+  - L649 ...and Cement & Concrete, which keeps a silo of cement, is counted by it (0.7.131)
+  - L652 ...and Copper Mining and Copper Refining, which keep yards of cathode, are counted by it (0.7.133)
+  - L657 ...and Wood Products, which keeps yards of lumber, panels, pulp, paper and pellets, is counted by it (0.7.140)
+- **L672 a city whose railway buys its fleet abroad**
+  - L710 fixture: the railway bought its fleet abroad
+  - L713 fixture: more than the town makes in a month, so with nothing against it the month reads negative
+  - L714 the fleet's import is matched by the stock it went into, to within its wear and the price's move
+  - L716 ...so the month it lands is not negative output
+  - L717 ...and the identity holds in it
+- **L733 a city whose copper refinery goes with its yard full**
+  - L780 fixture: the refinery went with cathode in its yard, and the yard was written off
+  - L782 the strike kept the units its rows wrote off
+  - L783 the accounts were handed the units written off
+  - L784 fixture: the yard is worth more than the town makes in a month, so booked as a fall in stock the month reads negative
+  - L786 ...so the month the works goes is not negative output
+  - L787 ...and the identity holds in it
+  - L791 fixture: saved in the month the yard was written off
+  - L792 a city loaded from that save hands its accounts the same units
+  - L793 ...and strikes the same GDP
+- **L826 a works forecasts its inputs on the current band (GDP1)**
+- **L887 imported feed held as output before a later export (GDP1)**
+- **L972 a city whose bakeries and materials plants go with their sheds full (0.7.136)**
+  - L1062 fixture: the bakeries went with food in their warehouses, and it was written off
+  - L1064 fixture: ...and the plants with materials in their sheds, written off alike
+  - L1068 the strike kept the food its rows wrote off, good by good
+  - L1069 ...and the materials
+  - L1070 ...and the pieces written off by hand
+  - L1071 the accounts were handed the food written off, at its fixed weights
+  - L1072 ...and the materials, in units
+  - L1073 ...and the luxuries, in pieces
+  - L1074 fixture: the sheds are worth more than the town makes in a month, so booked as a fall in stock the month reads negative
+  - L1076 ...so the month the works go is not negative output
+  - L1077 ...and the identity holds in it
+  - L1081 fixture: saved in the month the sheds were written off
+  - L1082 a city loaded from that save hands its accounts the same food
+  - L1083 ...the same materials
+  - L1084 ...the same luxuries
+  - L1085 ...and strikes the same GDP
 
 ## GlobeCheck.java - 137 labelled assertions
 
@@ -11490,7 +11490,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3440 a partner under MIN_LANE has no arrow (299 sold; 150 and 149.99 bought), one at MIN_LANE (300 bought) has; no stand-in place, no trade, or a partner on the s...
 - **L3447 13. the city's trade as lanes: the full file's nodes**
 
-## GoldMiningCheck.java - 32 labelled assertions
+## GoldMiningCheck.java - 49 labelled assertions
 
 > Gold Mining from geological fields through the mill to exports and the mint.
 > 
@@ -11511,40 +11511,57 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L68 Gold Mining is an extraction sector making fine stockable troy ounces
   - L71 an ounce's freight mass is its fine-gold mass
   - L76 gold's class weights follow the USGS geological models in the brief
-- **L80 2. the mine and mill row**
-  - L84 the next permanent id is Gold Mine & Mill, one gold site, available in 1900
-  - L87 nameplate gold is ore milled times the reference grade, in ounces
-  - L89 cyanide chemicals and diesel are ore-throughput inputs
-  - L90 old rows stay permanent, including Engineering Research Lab at 148
-- **L95 3. geology and the worked field**
-  - L106 one hundred field redraws have the same grades
-  - L107 shield gold is richer than basin placer gold
-  - L114 the same ore throughput recovers fewer ounces as its field is worked
-  - L117 a production forecast leaves saved depletion alone
-  - L119 a worked-out field recovers nothing
-  - L120 depletion advanced from the fixture's initial state
-- **L124 4. a mill sells its gold abroad**
-  - L129 the played mill made and exported gold
-  - L133 the ground gave up exactly the ounces produced
-  - L136 the mill paid for imported cyanide chemicals
-  - L138 the export band's nominal gold price follows GoldPrice and the spot rate
-- **L145 5. the mint makes reserves at home**
-  - L155 Gold stayed in force and the mint took fine ounces
-  - L157 the mint paid M for all the ounces offered
-  - L162 the settled fine ounces enter the vault
-  - L163 the mint's purchase is a domestic receipt
-  - L164 the mint's metal was kept off the export ledger
-  - L165 a mint purchase uses no treasury reserve-purchase flow
-  - L167 the actual mint month closes MoneyAudit
-- **L171 6. the saved state carries depletion, vault and mint payment**
-  - L174 the saved month's domestic mint payment survives restore
-  - L175 the lifetime mint payment survives restore
-  - L178 the unsettled mint offer survives sector restore
-  - L182 the vault's minted ounces survive restore
-  - L183 the resource row is widened and old shapes are refused
-- **L189 7. the mint operates through real months**
-  - L197 the mechanic fired in the played run (
-  - L198 all twenty-four money audits close
+  - L77 stockable fine gold has a national-accounts inventory term
+- **L82 2. the mine and mill row**
+  - L86 the next permanent id is Gold Mine & Mill, one gold site, available in 1900
+  - L89 nameplate gold is ore milled times the reference grade, in ounces
+  - L91 the mill reagent and diesel are ore-throughput inputs
+  - L92 old rows stay permanent, including Engineering Research Lab at 148
+- **L97 3. geology and the worked field**
+  - L108 one hundred field redraws have the same grades
+  - L109 shield gold is richer than basin placer gold
+  - L119 the same ore throughput recovers fewer ounces as its field is worked
+  - L122 a production forecast leaves saved depletion alone
+  - L125 the rich 1900 mine pays while the same mill on worked-down grade loses
+  - L128 a worked-out field recovers nothing
+  - L129 depletion advanced from the fixture's initial state
+- **L133 4. a mill sells its gold abroad**
+  - L138 the played mill made and exported gold
+  - L142 the ground gave up exactly the ounces produced
+  - L145 the mill paid for its imported reagent (ACID stand-in)
+  - L147 the export band's nominal gold price follows GoldPrice and the spot rate
+- **L154 5. the mint makes reserves at home**
+  - L161 the accepted offer is valued at M
+  - L165 Gold stayed in force and the mint took fine ounces
+  - L167 the mint paid M for all the ounces offered
+  - L172 the settled fine ounces enter the vault
+  - L173 the mint's purchase is a domestic receipt
+  - L174 the mint's metal was kept off the export ledger
+  - L175 a mint purchase uses no treasury reserve-purchase flow
+  - L177 the actual mint month closes MoneyAudit
+  - L179 the mint's new gold is acquired as valuables in investment
+  - L181 investment includes construction, stock and the new valuables
+  - L183 the mint month's GDP identity closes
+- **L188 6. the saved state carries depletion, vault and mint payment**
+  - L191 the mint's acquired valuables survive the national-accounts save
+  - L204 the no-world-market load path keeps gold's post-1933 import quote
+  - L205 the no-world-market load path keeps gold's post-1933 export quote
+  - L209 gold's saved spot quote survives restore separately from ordinary goods
+  - L212 ordinary goods retain the handed exchange factor
+  - L215 the saved month's domestic mint payment survives restore
+  - L216 the lifetime mint payment survives restore
+  - L219 the unsettled mint offer survives sector restore
+  - L224 a currency reform scales the mint's accepted payment
+  - L225 a currency reform keeps the fine ounces
+  - L227 reset clears an accepted mint offer
+  - L230 the vault's minted ounces survive restore
+  - L231 the resource row is widened and old shapes are refused
+- **L237 7. the mint operates through real months**
+  - L245 the mechanic fired in the played run (
+  - L246 all twenty-four money audits close
+  - L250 leaving Gold still pays the already accepted offer
+  - L252 the transition's money audit closes
+  - L254 after that settlement Float makes no mint payment
 
 ## GoldPriceCheck.java - 65 labelled assertions
 
@@ -25295,7 +25312,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L351 the offers' sellers survived, a row for each offer, to the bit (WN5)
   - L352 ...and the tally, every nation's area and dollars
   - L360 ...and the offers restored from them are the offers written, sellers and all (LandParcel.same())
-  - L363 an offer's record is not wider for its sellers (a wider row is passed over by every save before): 29 as ever
+  - L363 an offer's record is not wider for its sellers (a wider row is passed over by every save before): GD4's widened resource row
   - L367 ...and a row of sellers of the wrong shape, or with a figure that is not a number or a seller that is no nation's number, reads as none
   - L373 ...and a save without the keys restores every offer the host's whole, as every save before WN5 is
   - L375 ...and no lanes, which only a format-31 save is read for (0.7.67)
@@ -25892,7 +25909,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3593 ...and every sector's till
   - L3594 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
   - L3600 the save carries the ground by relief in keys of its own, a row for each holding and each offer standing (ET1)
-  - L3605 ...and no row of the land's own is wider for it: the centre 24, a holding 31, an offer 29
+  - L3605 ...and no row of the land's own is wider for it: GD4's centre 26, a holding 33, an offer 31
   - L3609 ...read back, the relief is the city's: its centre's, each holding's and each offer's, to the bit
   - L3616 the Earth city's save carries who sells each offer, a row for each, where the world file names the sellers - and no key where it does not (WN5)
   - L3626 ...and reloaded the Earth city stands the same offers, sellers and all, and the same nations sell its ground

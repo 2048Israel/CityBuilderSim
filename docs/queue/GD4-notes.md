@@ -133,3 +133,38 @@ multiplier is exactly one. The price-level twin's premise stays intact.
 Catalogue checks now cover the added industry's group and reagent demand,
 the tenth extraction/processing page, and the mandated wider save records.
 These extensions preserve the checks' original behaviors for existing rows.
+
+## KeptCheck's Government Overview finding
+
+★ File the narrow 40-of-384 allocation assertion to queued KS1-UI, as the
+orchestrator directed after identifying the nodes. Unchanged main 97eaa608
+passes this Government Overview section. Its targeted Kept run reaches the
+later research sections before its harness timeout, with the already known
+KF63 line. This is a control of the relevant prefix, not a green full run.
+
+The GD4 prefix's page signatures remain equal. Temporary diagnostic copies
+under target/gd4-trace-source record every new node when the Overview creates
+40, preserving the actual KeptCheck prefix and stopping after that section.
+Their log is target/checks/gd4-kept-nodes.log. The forty nodes are
+
+- 11 for Principal repaid in the cash bridge.
+- 11 for Raised by issuing paper in the cash bridge.
+- 11 for Today's dials, not the month's in the earned-to-budget bridge.
+- One past-bar Region for Paid out.
+- One Sales tax ring Arc and five nodes in its ring key.
+
+All are rows and graphics main already draws. Gold supplies none of these
+nodes. The Government Overview, bridge and budget methods, Pieces and Kept
+are unchanged. The later Output-card addition only displays mint investment
+when nonzero. The new path exposes old scopes being recreated when those
+ordinary fiscal rows return. Preserve the 10% ceiling for KS1-UI's repair.
+
+The first full pick also identified existing catalogue assertions that assumed
+Wood Products was the final key, only copper mines bought ACID, and bullion
+shared ordinary goods' freight fraction. Those premises now include the
+appended sector and gold's explicitly specified band. The old goods' delivered
+prices and freight expectations remain asserted.
+
+Focused current-model checks now pass GoldMiningCheck, GdpCheck, BuildCardCheck,
+PriceLevelCheck and SaveFileCheck. The price-level twin reports no nominal
+mismatches after the bullion funnel repair.

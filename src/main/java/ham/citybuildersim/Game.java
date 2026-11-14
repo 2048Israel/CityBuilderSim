@@ -14174,7 +14174,8 @@ public class Game {
         if (Double.isFinite(gold) && gold > 0) {
             GoodsMarket bullion = economyManager.getMarkets().get(Good.GOLD);
             bullion.setExchangeRate(foreign.getRate());
-            bullion.setWorldPrices(gold * 1.005 / 1000, gold * .995 / 1000);
+            bullion.setWorldPrices(gold * (1 + (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / 1000,
+                    gold * (1 - (Good.GOLD_FREIGHT_SHARE + Good.GOLD_MARGIN_SHARE)) / 1000);
         }
 
         /*

@@ -1,6 +1,6 @@
-# DepositMarks.java - 163 lines · 12 methods · 6 constants · model
+# DepositMarks.java - 164 lines · 12 methods · 6 constants · model
 
-`ham/citybuildersim/DepositMarks.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DepositMarks.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The deposits the land office's map marks when it is zoomed far out: which to find for a view, which of them to draw, and the mark each is
 > drawn with - what ui/MapView draws its icons by and MapCheck holds, without the toolkit.
@@ -10,7 +10,7 @@
 > (MapView.deposits()); and at FAR - an L2 view holding more than MapFrame.NEAR_TILES_MOST tiles, which at the expanded map's size is a
 > 2 km scale bar of 70 to 75 px or less, a plot a pixel or less - nothing at all. A player scouting round his city, the very zoom at which
 > he looks for iron or oil, saw no deposit until he zoomed in a notch. So at FAR the map draws one small icon a deposit at its centre
-> plot, in the resource's colour with its mark in it (Fe, O, St, C, Cu, U): a few dozen to a few hundred draws, never the tiles' shading.
+> plot, in the resource's colour with its mark in it (Fe, O, St, C, Cu, U, Au): a few dozen to a few hundred draws, never the tiles' shading.
 > Finding the deposits asks the world for every cell the view touches, so it is done for a box twice the view (Search) and again only when
 > the view leaves it, the scale halves or doubles, or the land changes - a drag or a wheel notch costs the thinning alone; and the
 > thinning keeps one icon in each ICON_PX square, the one with the most sites, so a far zoom-out never piles thousands of icons on
@@ -38,28 +38,28 @@
 
 | line | field | says |
 |---:|---|---|
-| 128 | `private boolean have` |  |
-| 129 | `private double x0, y0, x1, y1, scale` |  |
-| 130 | `private long key` |  |
-| 131 | `private List<Deposit> found` |  |
-| 132 | `private int searches` |  |
+| 129 | `private boolean have` |  |
+| 130 | `private double x0, y0, x1, y1, scale` |  |
+| 131 | `private long key` |  |
+| 132 | `private List<Deposit> found` |  |
+| 133 | `private int searches` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 138 | **type** `public final class DepositMarks` | The deposits the land office's map marks when it is zoomed far out: which to find for a view, which of them to draw, and the mark each is drawn with - what ui/MapView draws its icons by and MapCheck holds, without the... |
+| 26 | 139 | **type** `public final class DepositMarks` | The deposits the land office's map marks when it is zoomed far out: which to find for a view, which of them to draw, and the mark each is drawn with - what ui/MapView draws its icons by and MapCheck holds, without the... |
 | 46 | 1 | `private DepositMarks()` |  |
-| 49 | 11 | `public static String mark(Resource r)` | The mark a resource's icon carries: Iron "Fe", Oil "O", Stone "St", Coal "C", Copper "Cu", Uranium "U"; empty for forest, which has no fields. |
-| 62 | 5 | `public static boolean darkInk(Resource r)` | Whether the mark is written dark (the light colours: stone, uranium, copper) rather than white (iron, oil, coal): by the luminance of Resource.colour(). |
-| 69 | 3 | `public static boolean tooWide(double x0, double y0, double x1, double y1)` | Whether a box of plots is wider than ICON_CELLS_MOST cells either way. |
-| 74 | 3 | `public static boolean tooWide(MapFrame f)` | ...and whether the view is: the plots it holds across and down, as a box. |
-| 83 | 4 | `public static List<Deposit> inBox(CityLand land, double x0, double y0, double x1, double y1)` | Every field of every resource that lies in fields (inFields()) whose centre is in a box of plots, as the city sees them (LandMap.fieldsIn()), resource by resource in Resource's order, at most DEPOSITS_MOST of each; em... |
-| 88 | 8 | `private static List<Deposit> find(CityLand land, double x0, double y0, double x1, double y1)` |  |
-| 98 | 4 | `public static long squareOf(Deposit d, MapFrame f)` | The thinning's square a deposit's centre falls in on a view's scale, ICON_PX pixels across, on the ground (see the class's note): one number a square. |
-| 108 | 13 | `public static List<Deposit> thin(List<Deposit> found, MapFrame f)` | The deposits to draw in a view, from those found: each mapped to the screen through the frame, those whose icon is wholly off the screen left out, and in each square (squareOf()) the one with the most sites kept - on ... |
-| 127 | 36 | **type** `public static final class Search` | The deposits found for a view, kept: a search is made for a box SEARCH_TIMES the view's size and made again only when the view leaves that box, its scale is more than RESCALE_MOST times or under 1/RESCALE_MOST of the ... |
-| 135 | 18 | `public List<Deposit> forView(CityLand land, long key, MapFrame f)` _(in DepositMarks.Search)_ | The deposits in the view's box and about it, found afresh only when the view or the land has moved off the last search; empty past ICON_CELLS_MOST cells (nothing is searched). |
-| 155 | 1 | `public int searches()` _(in DepositMarks.Search)_ | How many searches it has made. |
-| 158 | 4 | `public void forget()` _(in DepositMarks.Search)_ | Forgets the last search (a new game, a replay): the next view searches. |
+| 49 | 12 | `public static String mark(Resource r)` | The mark a resource's icon carries: Iron "Fe", Oil "O", Stone "St", Coal "C", Copper "Cu", Uranium "U", Gold "Au"; empty for forest, which has no fields. |
+| 63 | 5 | `public static boolean darkInk(Resource r)` | Whether the mark is written dark (the light colours: stone, uranium, copper) rather than white (iron, oil, coal): by the luminance of Resource.colour(). |
+| 70 | 3 | `public static boolean tooWide(double x0, double y0, double x1, double y1)` | Whether a box of plots is wider than ICON_CELLS_MOST cells either way. |
+| 75 | 3 | `public static boolean tooWide(MapFrame f)` | ...and whether the view is: the plots it holds across and down, as a box. |
+| 84 | 4 | `public static List<Deposit> inBox(CityLand land, double x0, double y0, double x1, double y1)` | Every field of every resource that lies in fields (inFields()) whose centre is in a box of plots, as the city sees them (LandMap.fieldsIn()), resource by resource in Resource's order, at most DEPOSITS_MOST of each; em... |
+| 89 | 8 | `private static List<Deposit> find(CityLand land, double x0, double y0, double x1, double y1)` |  |
+| 99 | 4 | `public static long squareOf(Deposit d, MapFrame f)` | The thinning's square a deposit's centre falls in on a view's scale, ICON_PX pixels across, on the ground (see the class's note): one number a square. |
+| 109 | 13 | `public static List<Deposit> thin(List<Deposit> found, MapFrame f)` | The deposits to draw in a view, from those found: each mapped to the screen through the frame, those whose icon is wholly off the screen left out, and in each square (squareOf()) the one with the most sites kept - on ... |
+| 128 | 36 | **type** `public static final class Search` | The deposits found for a view, kept: a search is made for a box SEARCH_TIMES the view's size and made again only when the view leaves that box, its scale is more than RESCALE_MOST times or under 1/RESCALE_MOST of the ... |
+| 136 | 18 | `public List<Deposit> forView(CityLand land, long key, MapFrame f)` _(in DepositMarks.Search)_ | The deposits in the view's box and about it, found afresh only when the view or the land has moved off the last search; empty past ICON_CELLS_MOST cells (nothing is searched). |
+| 156 | 1 | `public int searches()` _(in DepositMarks.Search)_ | How many searches it has made. |
+| 159 | 4 | `public void forget()` _(in DepositMarks.Search)_ | Forgets the last search (a new game, a replay): the next view searches. |
 

@@ -182,14 +182,14 @@ public class CopperRefiningCheck {
             makers.put(g, m);
         }
         report("the buyers (spec 2.12): concentrate the smelters', cathode the mines' leach plants' and the refineries', the rod mills'"
-                        + " own; acid the smelters' to the leach plants; scrap the scrap refineries'; rod to the wire works; wire and cable to"
+                        + " own; acid the smelters' to the leach plants and gold mill; scrap the scrap refineries'; rod to the wire works; wire and cable to"
                         + " nobody here - it ships until the construction upgrade",
                 makers.get(Good.COPPER_CONC).equals(java.util.List.of(Sectors.COPPER_MINING))
                         && users.get(Good.COPPER_CONC).equals(java.util.List.of(Sectors.COPPER_REFINING))
                         && makers.get(Good.COPPER).equals(java.util.List.of(Sectors.COPPER_MINING, Sectors.COPPER_REFINING))
                         && users.get(Good.COPPER).equals(java.util.List.of(Sectors.COPPER_REFINING))
                         && makers.get(Good.ACID).equals(java.util.List.of(Sectors.COPPER_REFINING))
-                        && users.get(Good.ACID).equals(java.util.List.of(Sectors.COPPER_MINING))
+                        && users.get(Good.ACID).equals(java.util.List.of(Sectors.COPPER_MINING, Sectors.GOLD_MINING))
                         && makers.get(Good.COPPER_SCRAP).isEmpty() && users.get(Good.COPPER_SCRAP).equals(java.util.List.of(Sectors.COPPER_REFINING))
                         && users.get(Good.COPPER_ROD).equals(java.util.List.of(Sectors.MANUFACTURING))
                         && makers.get(Good.WIRE_CABLE).equals(java.util.List.of(Sectors.MANUFACTURING)) && users.get(Good.WIRE_CABLE).isEmpty()

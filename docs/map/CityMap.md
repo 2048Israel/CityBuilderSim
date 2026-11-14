@@ -1,6 +1,6 @@
 # CityMap.java - 11,341 lines · 558 methods · 74 constants · model
 
-`ham/citybuildersim/CityMap.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityMap.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The city map's data: the city's buildings counted by type in each 7.68 km district of its land, placed month by month so nothing placed ever moves, each district's street plan kept for the painter with what it cannot hold carried to the next, the city's highways and railway laid on corridors across it, one drawn building for each the model has, summed up a pyramid, each built district's picture drawn with its plan for the far view (0.7.128), and written beside the save as a sidecar - what the tile painter paints the city from.
 > 
@@ -121,7 +121,7 @@
 | 168 | `CityMap.PLAN_FILL` | `0.68` | The share of a district's owned plots its buildings' boxes may take: 0.68 (CL3), a full plan's boxes over its ground on Jerus's densest districts (the CL1 study, section 5.3) - so a district is full where its plan is,... |
 | 171 | `CityMap.NO_LOG` | `new int [ 0 ]` | A district's empty log: the one array every district without records shares. |
 | 174 | `CityMap.TOUCHED_MAX` | `8` | How many types a district notes as changed between two logs (District.touch()) before the log compares them all: 8. |
-| 177 | `CityMap.SITED` | `{ Resource.IRON, Resource.OIL, Resource.COAL, Resource.STONE, Resource.COPPER...` | The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5); since 0.8.0 (batch I14) coal, stone and copper after them, every resource a works on dry ground stands on. |
+| 177 | `CityMap.SITED` | `{ Resource.IRON, Resource.OIL, Resource.COAL, Resource.STONE, Resource.COPPER...` | The resources a district counts its owned sites of, and mines and wells stand on: iron and oil (spec-land 2.5); since 0.8.0 (batch I14) coal, stone and copper after them, every resource a works on dry ground stands on... |
 | 180 | `CityMap.SLOTS` |  | The site slots (0.8.0, batch I14): each SITED resource's types of field in Resource.typesOf()'s order - iron's hematite and magnetite, oil's one, coal's thermal and coking, stone's limestone and hard rock, copper's su... |
 | 183 | `CityMap.SLOT_RESOURCE` |  | ...each slot's resource... |
 | 186 | `CityMap.SLOT_TYPE` |  | ...and its type of field. |

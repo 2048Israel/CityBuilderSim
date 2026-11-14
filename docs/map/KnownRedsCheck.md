@@ -1,6 +1,6 @@
 # KnownRedsCheck.java - 254 lines · 9 methods · 7 constants · harnesses
 
-`ham/citybuildersim/KnownRedsCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/KnownRedsCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
 > The harness for AllChecks' known reds and harness time limit.
 > 

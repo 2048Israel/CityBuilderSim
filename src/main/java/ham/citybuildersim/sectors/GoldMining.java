@@ -23,6 +23,7 @@ public final class GoldMining extends ExtractionSector {
     public GoldMining() {
         super(Sectors.GOLD_MINING, Sectors.GOLD_MINING, BuildingType.MINING, Resource.GOLD);
         makes(Good.GOLD);
+        // ACID is the existing leach-reagent stand-in for cyanide chemicals (GD4).
         uses(Good.ACID);
         uses(Good.DIESEL);
         blurb("Mines gold-bearing rock and mills it into fine gold. Richer ground yields "
