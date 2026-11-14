@@ -1695,3 +1695,61 @@ The saved promises expire and the additional orders are placed. First-unit
 quotes near a spell's start are remaining waits, while its length includes
 every completed deficient month. They are retained as information beside
 the complete timelines.
+
+## Final model service measurements on SX1 main
+
+The completed e00ac829 model default is
+target/checks/hw1-service-projection-playtest.log, exit 0. It supersedes
+the d5e18010 diagnostic and the generic-only trial above. Every default
+audit and reload passes, with zero findings over 2,404 service months.
+
+| service | below 90% months | longest below 90% | last month of longest | below 20% months | first-unit quote near spell start |
+|---|---:|---:|---:|---:|---:|
+| Power | 0 | 0 | — | 0 | — |
+| Water | 257 | 131 | 2120 | 0 | 230.0 |
+| Streets | 16 | 16 | 37 | 0 | 17.0 |
+| Through traffic | 23 | 11 | 1810 | 3 | 10.0 |
+| General care | 0 | 0 | — | 0 | — |
+| Childcare | 0 | 0 | — | 0 | — |
+| Senior care | 1 | 1 | 1776 | 0 | NaN |
+| Death care | 3 | 3 | 622 | 3 | 1.0 |
+| Elementary | 167 | 167 | 360 | 167 | 3.0 |
+| Middle school | 84 | 84 | 361 | 84 | 3.0 |
+| High school | 6 | 6 | 366 | 6 | 3.0 |
+| College | 44 | 23 | 430 | 23 | 23.0 |
+| University | 31 | 31 | 1746 | 31 | 25.0 |
+| Medical school | 90 | 90 | 1841 | 90 | 86.0 |
+| Law school | 0 | 0 | — | 0 | — |
+| Business school | 0 | 0 | — | 0 | — |
+| Institute of technology | 0 | 0 | — | 0 | — |
+| Police | 3 | 3 | 496 | 3 | 1.0 |
+| Cells | 220 | 209 | 2312 | 220 | 287.0 |
+
+Power stays at least 100% served throughout. General care has a 95.7824%
+minimum and no deficient month. Through traffic has a 0% founding
+minimum and three months below a fifth. Its longest below-90% spell
+falls from the withdrawn 175 months to eleven. Death care falls from
+29 months to three. Cells remain a 209-month build-time spell, within
+their first-unit quote of 287. Water is 131 against 230 quoted.
+School funding and remaining queue overruns are traced above.
+
+The automatic builder orders 36 wind farms and 8 coal plants. The
+withdrawn candidate ordered 7 wind and 19 coal. Their paths differ.
+The following actual-order and end-city component sums use the final
+physical monthly valuation, with filled-post costs and timed loads.
+
+```text
+power choice m420 1 Wind Farm: 20-year present value: order $6.4M + land $219,016 + running $1.2M - prevented output loss $11.7M - payroll returned $88,898 = -$4.0M. Physical relief 218.7/month; 7 posts (1 unfilled); payroll $4,956/month; opens 18.7 months.
+```
+```text
+power choice m1636 1 Coal Power Plant: 20-year present value: order $16.2B + land $1.5B + running $3.2B - prevented output loss $40.0B - payroll returned $127.6M = -$19.1B. Physical relief 5753.9/month; 68 posts (1 unfilled); payroll $4.5M/month; opens 61.9 months.
+```
+```text
+...power comparison at m2405, one Coal Power Plant: 20-year present value: order $1.2T + land $68.6B + running $198.5B - prevented output loss $0.00 - payroll returned $12.7B = $1.5T. Physical relief 0.0/month; 68 posts (0 unfilled); payroll $607.7M/month; opens 145.6 months.
+```
+```text
+...power comparison at m2405, one Wind Farm: 20-year present value: order $24.2B + land $59.7B + running $13.5B - prevented output loss $0.00 - payroll returned $1.6B = $95.9B. Physical relief 0.0/month; 7 posts (0 unfilled); payroll $62.1M/month; opens 48.1 months.
+```
+```text
+...power comparison at m2405, one Hydro Station: 20-year present value: order $24.1B + land $14.9B + running $10.5B - prevented output loss $0.00 - payroll returned $1.1B = $48.3B. Physical relief 0.0/month; 5 posts (0 unfilled); payroll $45.2M/month; opens 52.8 months.
+```

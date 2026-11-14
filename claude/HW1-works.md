@@ -22,17 +22,25 @@ promise. A real scratch save/load reproduces the same deadlines and later
 orders as its unbroken twin.
 
 The final combined default run passes every audit and reload with zero
-findings. Highways spend 24 months below 90%, with a longest spell of 13
-months against a 23-month first-unit quote. Death care has two separate
-one-month spells. Cells remain unserved for 161 months against a 167-month
-quote. Power has eight deficient months and a 67.9% minimum.
+findings. Power stays at least 100% served. General care stays above 95.7%.
+Highways spend 23 months below 90%, with a longest spell of eleven months.
+Death care has a three-month blip. Cells remain unserved for 209 months
+against a 287-month first-unit quote, and water's longest spell is 131
+months against 230 quoted.
 
-Longer spells remain in other services. Water's longest is 144 months,
-medical school 108, university 44, elementary 43 and general care 27.
-Elementary's longest includes 29 cash holds and one debt hold. The notes
-give every service's counts, quotes and order outcomes. These remaining
-service gaps are information for Jerus.
+Elementary spends 167 months below 90%, including 163 cash holds and one
+debt hold. Middle school spends 84, including 79 cash holds and one debt
+hold. An exact replay finds zero automatic orders of any service while
+those schools wait. The treasury and existing borrowing limit prevent
+funding either school. Every affected month's cash, spendable balance,
+debt and GDP is recorded beside the 240% limit in the notes.
 
-The automatic builder orders 65 wind farms and 9 coal plants. The notes
+University and medical school are ordered on their first currently-useful
+passes. Their shared construction queues overrun the opening promises,
+and expiry triggers additional orders. Their longest spells are 31 and
+90 months. The notes retain the actual timelines and every service's
+measurements.
+
+The automatic builder orders 36 wind farms and 8 coal plants. The notes
 retain actual-order component sums and end-city comparisons. Coal's build,
 fuel and pollution balance remains Jerus's. Building data was unchanged.
