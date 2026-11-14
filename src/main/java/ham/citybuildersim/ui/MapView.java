@@ -3283,14 +3283,8 @@ final class MapView {
         if (key < 0 || land.ownsPlot(x, y)) return null;
         List<String> out = new ArrayList<>();
         if (picks.blocks().contains(key)) {
-            List<Integer> ids = picks.live(g);
-            LandMap.Card c = LandMap.card(g, ids);
-            int offers = 0;
-            for (int id : ids) if (id > 0) offers++;
-            out.add(LandMap.pickedWords(offers, picks.blocks().size()));
-            out.add(LandMap.kindWords(c.km2(), c.dryKm2(), c.freshKm2(), c.seaKm2()));
-            out.add("Price " + ui.landScreen.inToggle(c.usd()));
-            out.add(CLICK_TO_DROP);
+            out.addAll(picks.groundWords(g, ui.landScreen::inToggle));
+            out.add(picks.pricing() ? "Shift-click to drop it" : CLICK_TO_DROP);
             return out;
         }
         if (!picks.pickable(g, key)) return null;

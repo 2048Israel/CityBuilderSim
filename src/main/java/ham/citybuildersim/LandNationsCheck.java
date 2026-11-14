@@ -1379,6 +1379,7 @@ public class LandNationsCheck {
                 check(where + ": a purchase while pricing rejects the old ground", bought && !market.acceptDrafts(changed));
                 market.draft(List.of());
                 picksLifecycle(c, worker, where);
+                reviewCases(c, worker, where);
                 LandMarket.DraftRequest relinked = market.requestDrafts(pickedRects(c, lat, lon, 8, 1));
                 worker.submit(relinked).get();
                 Landmasses masses = c.g.getLandManager().getLandmasses();
@@ -1432,5 +1433,89 @@ public class LandNationsCheck {
         for (Runnable completion : returned) completion.run();
         check(where + ": clearing picks while queued prevents a late card or draft from returning",
                 !picks.pricing() && picks.live(c.g).isEmpty() && c.office().getDrafts().isEmpty() && changes[0] == 1);
+    }
+
+    /** A pending pick cancelled by ordinary selection edits, and a level-changing purchase outside a retained draft. */
+    static void reviewCases(City c, ExecutorService worker, String where) throws Exception {
+        for (boolean offerInstead : new boolean[] { false, true }) {
+            List<Runnable> jobs = new ArrayList<>(), returns = new ArrayList<>();
+            LandMap.Picks picks = new LandMap.Picks(jobs::add, returns::add, () -> { });
+            int level = c.office().getLevel();
+            long key = -1;
+            outer: for (LandParcel offer : c.offers()) {
+                for (long y = offer.getY0() >> level; y <= (offer.getY1() - 1) >> level; y++) {
+                    for (long x = offer.getX0() >> level; x <= (offer.getX1() - 1) >> level; x++) {
+                        long candidate = LandMap.blockKey(x, y);
+                        if (picks.onlyBlock(c.g, candidate) && picks.pricing()) { key = candidate; break outer; }
+                    }
+                }
+            }
+            check(where + ": review premise: a picked block is still pricing", key >= 0 && picks.pricing());
+            if (key < 0) continue;
+            List<String> words = picks.groundWords(c.g, amount -> "test-money " + amount);
+            check(where + ": a pending picked block's hover says the price is coming, never zero or offers-only money",
+                    words.contains(LandMap.QUOTING) && words.stream().noneMatch(s -> s.startsWith("Price ")));
+            if (offerInstead) {
+                long[] block = LandMap.blockRect(level, key);
+                LandParcel separate = c.offers().stream().filter(p -> p.getX1() <= block[0] || p.getX0() >= block[2]
+                        || p.getY1() <= block[1] || p.getY0() >= block[3]).findFirst().orElse(null);
+                check(where + ": review premise: a separate standing offer can be picked beside the pending block", separate != null);
+                if (separate != null) {
+                    picks.add(c.g, List.of(separate.getId()));
+                    words = picks.groundWords(c.g, amount -> "test-money " + amount);
+                    check(where + ": a hover over mixed offers and pending ground still withholds the unfinished price",
+                            picks.pricing() && picks.live(c.g).stream().anyMatch(id -> id > 0)
+                                    && words.contains(LandMap.QUOTING) && words.stream().noneMatch(s -> s.startsWith("Price ")));
+                }
+            }
+            for (Runnable job : jobs) worker.submit(job).get(); // result waiting for the FX dispatch
+            if (offerInstead) picks.only(c.g, c.offers().get(0).getId());
+            else picks.toggleBlock(c.g, key);
+            String edit = offerInstead ? "selecting an offer instead" : "removing the last pending block";
+            check(where + ": " + edit + " cancels pending measurement", !picks.pricing() && picks.blocks().isEmpty());
+            for (Runnable result : returns) result.run();
+            check(where + ": " + edit + " cannot restore removed ground as a buyable draft",
+                    picks.live(c.g).stream().noneMatch(id -> id < 0) && c.office().getDrafts().isEmpty());
+            picks.clear();
+        }
+
+        CityLand copy = c.g.getCityLand().copy();
+        LandMarket market = new LandMarket();
+        market.attach(copy);
+        market.setSellers(c.sellers());
+        Landmasses masses = c.g.getLandManager().getLandmasses().forOffers();
+        market.setLandmasses(masses);
+        double owned = c.g.getLandManager().getOwnedSqFt();
+        int month = c.g.getMonth();
+        market.update(owned, 0, 1000, 1, month);
+        boolean river = where.equals("Windsor");
+        long[] rect = blockAround(c.g.getWorld(), river ? RIVER_LAT : COAST_LAT, river ? RIVER_LON : COAST_LON, 8);
+        LandMarket.DraftRequest request = market.requestDrafts(List.of(rect));
+        worker.submit(request).get();
+        check(where + ": review premise: a worker draft is accepted before the level-changing purchase", market.acceptDrafts(request));
+        long free = copy.grid().unowned(rect[0], rect[1], rect[2], rect[3]);
+        int levelBefore = copy.level();
+        long side = (1L << (levelBefore + 1)) * LandGrid.FACE_BLOCKS;
+        long x = rect[2] + side * 2, y = rect[1];
+        LandParcel purchase = market.quote(x, y, x + side, y + side);
+        copy.extend(purchase, month, 0);
+        check(where + ": review premise: a disjoint purchase raises the block level without changing the draft's free plots",
+                copy.level() > levelBefore && copy.grid().unowned(rect[0], rect[1], rect[2], rect[3]) == free);
+        // update() also lists previously unavailable standing offers at the new level. Measure its draft step alone,
+        // as the original WN5c probe did, so new standing offers' expected geometry is not attributed to these drafts.
+        java.lang.reflect.Method remeasure = LandMarket.class.getDeclaredMethod("remeasureDrafts");
+        remeasure.setAccessible(true);
+        for (int after = 0; after < 2; after++) {
+            long sellerBefore = c.sellers().plotsRead(), linkageBefore = masses.plotsRead();
+            market.syncMonth(month + after);
+            remeasure.invoke(market);
+            long sellersWalked = c.sellers().plotsRead() - sellerBefore, linkageWalked = masses.plotsRead() - linkageBefore;
+            report(where + ": a level-raising purchase then month reprices retained geometry without an FX split (pass " + after + ")",
+                    sellersWalked == 0 && linkageWalked == 0,
+                    sellersWalked + " seller plots, " + linkageWalked + " linkage plots");
+            LandParcel retained = market.getDrafts().get(0);
+            check(where + ": the level-changed draft has the current level and the synchronous quote's exact price and ground",
+                    retained.getLevel() == copy.level() && sameDraft(retained, quoteOf(market, rect)));
+        }
     }
 }

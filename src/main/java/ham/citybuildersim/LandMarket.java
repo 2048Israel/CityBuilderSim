@@ -607,6 +607,11 @@ public class LandMarket {
     /** A measured landmass split at a linked-set version: numbers only, no reference to the live landmass books. */
     private record Linkage(int version, double dry, double buildable, int largest) { }
 
+    /** Measured geometry is keyed by its plots; a level change changes the parcel's label, never these plots (WN5c review). */
+    private record DraftRect(long x0, long y0, long x1, long y1) { }
+
+    private static DraftRect draftRect(GridOffers.Rect r) { return new DraftRect(r.x0(), r.y0(), r.x1(), r.y1()); }
+
     private DraftGround readGround(GridOffers.Rect r) {
         CityLand.Ground ground = land.groundWithRelief(r.x0(), r.y0(), r.x1(), r.y1());
         double[] km2 = ground.km2();
@@ -729,12 +734,12 @@ public class LandMarket {
         for (LandParcel p : offers) if (p != null) landmasses.offerSplit(world, land, p);
         for (int i = drafts.size() - 1; i >= 0; i--) {
             LandParcel d = drafts.get(i);
-            DraftGround measured = draftGround.get(d.rect());
+            DraftGround measured = draftGround.get(draftRect(d.rect()));
             if (asynchronousDrafts) {
                 if (measured == null || !linkedAsMeasured(measured)
                         || measured.plots() != land.grid().unowned(d.getX0(), d.getY0(), d.getX1(), d.getY1())) {
                     drafts.remove(i);
-                    draftGround.remove(d.rect());
+                    draftGround.remove(draftRect(d.rect()));
                 }
             } else landmasses.offerSplit(world, land, d);
         }
@@ -1285,7 +1290,7 @@ public class LandMarket {
     private final List<LandParcel> drafts = new ArrayList<>();
 
     /** Draft geometry belongs to this office's owner thread; workers fill only their own copied office (WN5c). */
-    private final Map<GridOffers.Rect, DraftGround> draftGround = new HashMap<>();
+    private final Map<DraftRect, DraftGround> draftGround = new HashMap<>();
     private boolean asynchronousDrafts;
     private DraftRequest latestDraft;
 
@@ -1352,17 +1357,21 @@ public class LandMarket {
         // A quote has no shelf; only drafts retain their measured unowned ground. Ownership only grows, so equal
         // unowned counts prove no plot of this rectangle changed. Fields on unowned ground cannot be extracted.
         if (id == 0) return measure(r, id, month);
-        DraftGround measured = draftGround.get(r);
+        DraftRect key = draftRect(r);
+        DraftGround measured = draftGround.get(key);
         long plots = land.grid().unowned(x0, y0, x1, y1);
         if (measured == null || measured.plots() != plots) {
             measured = readGround(r);
-            draftGround.put(r, measured);
+            draftGround.put(key, measured);
+        } else if (!measured.rect().equals(r)) {
+            measured = new DraftGround(r, measured.ground(), measured.sites(), measured.amounts(), measured.parts(), measured.plots(), measured.linkage());
+            draftGround.put(key, measured);
         }
         LandParcel priced = priceGround(measured, id, month);
         if (!linkedAsMeasured(measured)) {
             Linkage link = new Linkage(landmasses == null ? -1 : landmasses.version(), priced.getUnlinkedDryKm2(),
                     priced.getUnlinkedBuildableKm2(), priced.getUnlinkedLargest());
-            draftGround.put(r, new DraftGround(r, measured.ground(), measured.sites(), measured.amounts(), measured.parts(), measured.plots(), link));
+            draftGround.put(key, new DraftGround(r, measured.ground(), measured.sites(), measured.amounts(), measured.parts(), measured.plots(), link));
         }
         return priced;
     }
@@ -1377,11 +1386,11 @@ public class LandMarket {
         for (int i = drafts.size() - 1; i >= 0; i--) {
             LandParcel d = drafts.get(i);
             long plots = land.grid().unowned(d.getX0(), d.getY0(), d.getX1(), d.getY1());
-            DraftGround measured = draftGround.get(d.rect());
+            DraftGround measured = draftGround.get(draftRect(d.rect()));
             if (plots == 0 || (asynchronousDrafts && (measured == null || measured.plots() != plots || !linkedAsMeasured(measured)))) {
                 // A purchase changed this draft: Picks notices its missing id and asks a worker for the new ground.
                 drafts.remove(i);
-                draftGround.remove(d.rect());
+                draftGround.remove(draftRect(d.rect()));
             }
             else drafts.set(i, measureDraft(d.getX0(), d.getY0(), d.getX1(), d.getY1(), d.getId()));
         }
