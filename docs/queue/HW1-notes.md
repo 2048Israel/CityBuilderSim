@@ -1,4 +1,26 @@
-# HW1 complete dry run and main UI attribution
+# HW1 ready after complete merged verification
+
+The normal launcher certifies known reds only, exit 0, in the retained-run
+rejudge at C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HW1-4TOcHIL0.
+It reuses the complete 195-harness run at cbs-gate-HW1-GjhY7lIZ.
+KeptCheck completes all its sections and exits normally in 764.6 seconds.
+Both new Finances failures reproduce exactly with main's whole UI and
+are named under KS1-UI. No assertion or production source was changed.
+
+The final 80-run model remains unchanged. M1 passes in every policy.
+The raw F1 negative-GDP finding remains recorded and passes by name
+as main's proven no-demand cathode-buffer fault, queued CPB1, under
+orchestrator 20261114-180838 and Jerus's 11-04 outside-batch rule.
+The raw score is 8/10 hard, 19/26 against 0.9.102 and 17/26 against
+0.9.98. Both failing policy seeds reproduce on whole main 0.9.102.
+
+Main is e8a468c219252ffd0c4f1424ea2efc52b4aaf565, version 0.9.103.
+The versioned dry run plans 0.9.104. The ship file points to the complete
+kept run, and its provisional marker is removed in the final ship-only
+commit. Earlier holds and incomplete runs below are historical.
+
+# Complete dry run before final certification
+
 
 The fresh merged dry run completed 195 harnesses, 190 passing, in
 2,111 seconds. KeptCheck completed every section and exited normally
@@ -3658,3 +3680,49 @@ The original run's checks.complete, checks.sha256, selection, stage
 logs, commit identities and raw harness logs remain untouched.
 The ship's gate-run marker points at this directory for the common
 judge's record-only reuse under batch.md section 5.
+
+
+## Final launcher certification and readiness
+
+The full retained run is
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HW1-GjhY7lIZ.
+Its two source identities are branch
+91419d03e3b5d4e18476080ab4b9751bf7c963b8 and main
+e8a468c219252ffd0c4f1424ea2efc52b4aaf565. Its complete raw suite,
+harness logs, stages, checks.complete and checks.sha256 remain untouched.
+
+The exact two main-UI findings are recorded at b3fabe8b. The local
+common-judge rejudge of a separate copied suite exits 3 in
+target/checks/hw1-final-gate-local-rejudge.log. This does not edit the
+kept artifacts. Only HW1-notes.md and HW1-ship.md advance after the
+complete source run.
+
+The normal launcher then certifies reuse in
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HW1-4TOcHIL0.
+Its two identities are branch
+b3fabe8b2aea3575741b6abb8e5981f393190f48 and main
+e8a468c219252ffd0c4f1424ea2efc52b4aaf565.
+The source selection stays ALL 202 with the same directly selected
+nightly tier. The common suite judge returns exit 3, known reds only,
+in one second. The launcher logs that it reused GjhY7lIZ, completes
+the normal dry-run cleanup and exits 0. Its local wrapper log is
+target/checks/hw1-final-gate-reuse.log.
+
+The complete run has 195 harnesses, 190 passing and five named reds.
+Those five are MapCheck, PlanCheck, DeathRecordCheck, LongPlaytest
+and KeptCheck, with their exact outside-batch findings and queued
+owners recorded above and in the ship file. It has eight soft timing
+assertions and four path observations. Every Kept section runs.
+No timeout, incomplete fixture or changed hard floor is accepted.
+
+The 80-run final ensemble and both baseline comparisons stay intact,
+including their raw F1 result. CPB1 and KS1-UI are the explicitly
+attributed main faults, while HW1-V retains the two previously
+accepted ground/cash comparison refinements. The model, world data,
+building balance values, assertions and main branch are unchanged
+by this final record-only certification.
+
+The notes are committed and pushed before the final ship-only
+readiness commit. The ship's gate-run marker names the complete
+GjhY7lIZ run so the publisher can reuse the certified evidence.
+No real publication is performed by HW1.
