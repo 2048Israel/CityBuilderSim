@@ -45,21 +45,25 @@ public final class BankFailureCheck {
         double[] fill = new double[11];
         Arrays.fill(fill, .2);
         wood.updateJobFillRate(fill);
+        wood.updateWages(g.getPopulationManager().getWagesPerType(), wood.postsPerTier());
         check("fixture: no city demand, export price pays the inputs, and output fits below the dump line",
                 markets.get(Good.WOOD_PELLETS).getDemand() == 0
-                && wood.getOperatingRate() > 0
+                && wood.getOperatingRate() > 0 && wood.getOperatingRate() < Sector.DUMP_THRESHOLD
                 && wood.getCapacity(Good.WOOD_PELLETS) * wood.getOperatingRate()
                         < wood.getStockCapacity(Good.WOOD_PELLETS) * Sector.DUMP_THRESHOLD
                 && markets.get(Good.WOOD_PELLETS).netExportPrice() > wood.getMarginalCostPerUnit(Good.WOOD_PELLETS));
         markets.clearMonth(sectors, null);
         double opening = wood.getStock(Good.WOOD_PELLETS);
         check("fixture: the mill made a positive first month's stock below the dump line", opening > 0
-                && opening < wood.getStockCapacity(Good.WOOD_PELLETS) * Sector.DUMP_THRESHOLD);
+                && opening < wood.getStockCapacity(Good.WOOD_PELLETS) * Sector.DUMP_THRESHOLD
+                && wood.getPayroll() > 0 && wood.pending().imports > 0);
         markets.clearMonth(sectors, null);
         check("the pellet mill sells its stock in the following month", wood.output(Good.WOOD_PELLETS).exported > 0);
         close("with no local buyers the world buys the opening stock", wood.output(Good.WOOD_PELLETS).exported, opening);
         close("the market counts the mill's shipment", wood.output(Good.WOOD_PELLETS).exported,
                 markets.get(Good.WOOD_PELLETS).getExported());
+        close("the seller books the world's invoice", wood.pending().exports,
+                opening * markets.get(Good.WOOD_PELLETS).exportPrice());
     }
 
     static void closing() throws Exception {

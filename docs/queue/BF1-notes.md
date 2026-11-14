@@ -24,9 +24,9 @@ files are kept out of this batch.
 
 ## Calls
 
-- ★ Exportable output with zero domestic demand should be made for its
-  world buyers, rather than reserving an empty domestic market's dump-line
-  buffer. The planner's export-profit premise must agree with production.
+- ★ Exportable stock left after local buyers should also reach the world's
+  buyers, using the existing net-bid/marginal-cost and dump-line rules.
+  The planner's export-profit premise must agree with actual sales.
 - ★ Sale proceeds repay the closing borrower's bank loans in rank order;
   an emptied borrower enters the existing resolution and exclusion rules.
   Remaining productive assets or work on site permit carrying the loans.
@@ -73,3 +73,15 @@ of universal survival was too strong and is not the model's rule. It is replaced
 by the bank's equity roll-forward at MoneyAudit's own tolerance, alongside the
 24-seed count and hard causal fixtures. The remaining failures are reported,
 not hidden behind a special seed or a rescue.
+
+The final low-fill mill fixture includes a wage bill and imported feed. With
+Sector and Markets replaced by the unchanged e5642145 versions (all other
+fixes left on), all its premises remain green and three sales/invoice laws
+fail; the BF1 versions pass. Logs: target/checks/bf1-stock-before.log and
+bf1-final-fixtures.log. Closing and capital refusal were independently red
+before their mends in bf1-fixtures-before.log.
+
+The first full pick's default 2,400-month LongPlaytest is green. Its economic
+trace differs from the stored SX1 gate's LongPlaytest.log beyond runtime
+(first served-works reading and the market/stock series differ), so the final
+model must run the ensemble against docs/ensemble/0.9.101.md.
