@@ -108,6 +108,11 @@ public final class BankFailureCheck {
     }
 
     static void refineryClosing() throws Exception {
+        refineryClosing(false);
+        refineryClosing(true);
+    }
+
+    static void refineryClosing(boolean maturesWhilePending) throws Exception {
         out.println("--- 7. retained oil is recoverable before a closing haircut ---");
         GameFiles files = GameFiles.scratch("bankfailure-refinery-close");
         Game g = new Game(files);
@@ -125,6 +130,12 @@ public final class BankFailureCheck {
         double face = (refinery.getInventoryValue() * BusinessDebtManager.RESTRUCTURE_TARGET + proceeds) / 2;
         credit.issueProjectLoan(refinery.key(), face, g.getMonth());
         BusinessDebt claim = credit.getLoans(refinery.key()).get(0);
+        if (maturesWhilePending) {
+            claim.remainingMonths = 1;
+            claim.monthStarted = g.getMonth() - claim.duration + 1;
+            check("fixture: the bullet matures in the invoice's pending month",
+                    claim.getMaturityMonth() == g.getMonth() + 1 && claim.getRemainingMonths() == 1);
+        }
         refinery.setCash(0);
         g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, 0);
         g.getEconomyManager().pushBalanceSheetInputs();
@@ -152,6 +163,8 @@ public final class BankFailureCheck {
         BusinessDebt restored = restoredCredit.getLoans(refinery.key()).get(0);
         check("a city save and reload retain the retirement repayment obligation", restored.isRetirementClaim());
         loaded.simulateMonths(1);
+        if (maturesWhilePending) check("the reloaded maturing claim stays marked until liquidation cash lands",
+                restored.isMatured() && restoredCredit.getLoans(refinery.key()).contains(restored));
         check("the reloaded liquidation invoice covers the carried claim before cash is banked",
                 loaded.getSectors().refining().retirementRecovery() >= restored.getOutstandingPrincipal());
         close("the reloaded claim takes no haircut while the invoice waits", restoredCredit.getWrittenOffTotal(refinery.key()), 0);
@@ -159,6 +172,9 @@ public final class BankFailureCheck {
         close("the reloaded retired bullet is repaid whole when the sale cash lands", restored.getOutstandingPrincipal(), 0);
         close("the reloaded claim never takes a later haircut", restoredCredit.getWrittenOffTotal(refinery.key()), 0);
         g.simulateMonths(1);
+        if (maturesWhilePending) check("a maturing retired claim stays on its liquidation path without refinancing",
+                claim.isMatured() && credit.getLoans(refinery.key()).contains(claim)
+                    && credit.getLentThisMonth(refinery.key()) == 0);
         check("the liquidation invoice covers the carried claim before cash is banked",
                 refinery.retirementRecovery() >= claim.getOutstandingPrincipal());
         close("the live claim takes no haircut while the invoice waits", credit.getWrittenOffTotal(refinery.key()), 0);
