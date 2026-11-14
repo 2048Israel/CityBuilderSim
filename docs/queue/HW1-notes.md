@@ -1,11 +1,22 @@
 # HW1 final common-calendar verification
 
-REV-HW1-6 accepts the guard repairs and forecast fixtures. Its helper
-ownership mend is fdc022fd. The d38638ef default completes and exposes
-a 67-month elementary funding failure. The orchestrator requires that
-cause mended before readiness. The incomplete HW1-rev6-final ensemble
-and pick are void. The ship file remains provisional. The common
-valuation calendar is being repaired, followed by fresh verification.
+The current production model is 913dd341 on merged main e5642145
+(0.9.101). REV-HW1-7 reports SHIP with no findings. The complete
+default exits 0 with zero findings and six matching reloads.
+The fixture follow-up is 72f8661f. Its two repaired harnesses pass.
+The other ten affected harnesses passed on the same production model.
+
+The full selection completed 194 harnesses, 190 passing, in 3,301 seconds
+at target/checks/hw1-calendar-final-pick.log, exit 4. Its remaining lines
+are being retried by affected harness after the payroll assertion mend. The once-only complete
+ensemble is HW1-calendar-final, against 0.9.101, with the same
+runs to be scored against 0.9.98. The ship record is provisional.
+A fresh kept launcher run is required for readiness.
+
+The final default and medical capacity replay appear under
+“Verified default on the final common-calendar model” below.
+Earlier candidates, incomplete ensembles and readiness records
+are historical and superseded.
 
 # HW1 revision 3 verification, superseded
 
@@ -2992,3 +3003,26 @@ eligible, willing student potential, including university feeder cohorts
 in the forecast, capped by standing and pending licensed-job vacancies
 and attrition. The replay measures that combined demand's growth.
 The observed series and queue timings establish the capacity comparison.
+
+
+## Final pick payroll assertion and causal control
+
+The common-calendar full pick's BuildCardCheck failure was the old full-post
+wage expectation. HW1 production commit 3a2d298f0 changed
+BuildCard.runningCost at lines 509/514 to multiply wages by job fill.
+BuildAdvice.running at line 1005 and WorksValue's paid calculation at
+line 55 use that same filled-post basis. Payroll and returned tax also
+book filled posts, as required by REV-HW1-1 finding 7.
+
+The fixture's city, card set, prices, wages, fill rates, and other assertions
+remain. The changed running-cost line now expects upkeep plus filled-post
+payroll. A separate hard premise requires paid staff-short cards, so a
+fully staffed or unpaid fixture cannot make this assertion vacuous.
+
+The complete BuildCardCheck with this mend exits 0 in
+target/checks/hw1-card-filled-kept.log. Restoring only BuildCard's former
+full-post multiplication in an ignored private class prefix exits 1 in
+target/checks/hw1-card-filled-control.log. The paid staff-short premise
+passes in both runs, and the filled-post running-cost law fails only in
+the omission control. This is an assertion adaptation to HW1's production
+change, with its physical premise retained.
