@@ -3262,7 +3262,7 @@ final class TradeScreen {
     /** A fraction as a signed per cent to three places, with a true minus: "−0.229%". */
     static String signedPct3(double v) {
         double shown = unsigned0(v * 100, 3);
-        return (shown > 0 ? "+" : shown < 0 ? "−" : "") + String.format("%.3f%%", Math.abs(shown));
+        return Formats.INSTANCE.change(shown / 100, 0, shown == 0 ? "%.3f%%" : "%+.3f%%").replace('-', '−');
     }
 
     /* ------------------------------ what the rate is doing ------------------------------ */

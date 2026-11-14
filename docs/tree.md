@@ -1056,3 +1056,6 @@ adds its line here, not in `CLAUDE.md`.
                                          run it after any change to wait.sh (GP1, 2026-10-27; RL1)
 
 `KnownReds` judges exact gate records and harness-scoped repository approvals for AllChecks, batch-check and ship (GR2).
+
+        FormatsCheck.java          SX1: ordinary percentages stay exact; large ratios and returns use one formatter,
+                                   with a compound yearly rate over an observed span or a compact multiple

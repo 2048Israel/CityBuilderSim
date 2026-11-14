@@ -1,4 +1,4 @@
-# BuildAdvice.java - 2,493 lines · 124 methods · 12 constants · model
+# BuildAdvice.java - 2,492 lines · 124 methods · 12 constants · model
 
 `ham/citybuildersim/BuildAdvice.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -58,10 +58,10 @@
 | 1503 | THE SIZE THAT FITS THE NEED (0.7.71) |
 | 1526 | A ROAD OVER ITS LIFE (0.7.70) |
 | 1762 | A BUILDING OVER ITS LIFE, FOR WHAT IT WILL SERVE (0.7.101, batch P2) |
-| 1937 | AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) |
-| 2132 | A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the |
-| 2228 | · A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) |
-| 2304 | THE ISLAND LINK (AL1, 2026-11-09) |
+| 1936 | AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) |
+| 2131 | A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the |
+| 2227 | · A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) |
+| 2303 | THE ISLAND LINK (AL1, 2026-11-09) |
 
 ## Enum constants
 
@@ -82,15 +82,15 @@
 | 1181 | `BuildAdvice.Lost.DEARER` |  |
 | 1181 | `BuildAdvice.Lost.CANNOT_CLOSE` |  |
 | 1181 | `BuildAdvice.Lost.NO_ROOM` |  |
-| 2240 | `BuildAdvice.BerthState.PAYS` |  |
-| 2240 | `BuildAdvice.BerthState.SHORT` |  |
-| 2240 | `BuildAdvice.BerthState.COVERED` |  |
-| 2240 | `BuildAdvice.BerthState.NO_DUES` |  |
-| 2240 | `BuildAdvice.BerthState.UPKEEP` |  |
-| 2240 | `BuildAdvice.BerthState.NO_CARGO` |  |
-| 2330 | `BuildAdvice.LinkKind.BRIDGE` |  |
-| 2330 | `BuildAdvice.LinkKind.PORT` |  |
-| 2330 | `BuildAdvice.LinkKind.NONE` |  |
+| 2239 | `BuildAdvice.BerthState.PAYS` |  |
+| 2239 | `BuildAdvice.BerthState.SHORT` |  |
+| 2239 | `BuildAdvice.BerthState.COVERED` |  |
+| 2239 | `BuildAdvice.BerthState.NO_DUES` |  |
+| 2239 | `BuildAdvice.BerthState.UPKEEP` |  |
+| 2239 | `BuildAdvice.BerthState.NO_CARGO` |  |
+| 2329 | `BuildAdvice.LinkKind.BRIDGE` |  |
+| 2329 | `BuildAdvice.LinkKind.PORT` |  |
+| 2329 | `BuildAdvice.LinkKind.NONE` |  |
 
 ## Constants
 
@@ -106,20 +106,20 @@
 | 1149 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
 | 1584 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
 | 1806 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
-| 2351 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link at all is asked eve... |
-| 2357 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
+| 2350 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link at all is asked eve... |
+| 2356 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 2360 | `static int linkSurveys` | How many crossings the rule has surveyed in this run (AL1): a harness reads that an island with none is not surveyed every month. |
+| 2359 | `static int linkSurveys` | How many crossings the rule has surveyed in this run (AL1): a harness reads that an island with none is not surveyed every month. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 2445 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
+| 49 | 2444 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
 | 51 | 1 | `private BuildAdvice()` |  |
 
 ### THE CATEGORIES (0.7.24) (lines 53-189)
@@ -260,7 +260,7 @@
 | 1728 | 3 | `static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Integer> site, double landLeft, double slack)` | ...at another slack past its projection (0.7.73, AutoBuilder). |
 | 1732 | 29 | `private static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Integer> site, double landLeft, double slack, b...` |  |
 
-### A BUILDING OVER ITS LIFE, FOR WHAT IT WILL SERVE (0.7.101, batch P2) (lines 1762-1936)
+### A BUILDING OVER ITS LIFE, FOR WHAT IT WILL SERVE (0.7.101, batch P2) (lines 1762-1935)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -271,55 +271,55 @@
 | 1884 | 6 | `public static boolean weighsServed(Measure m)` | Whether a measure's candidates are weighed for what they will serve over their lives (shortfall()): power, water, the roads (streets and highways) and care. |
 | 1901 | 19 | `public static double servedOverLife(Game game, Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTemplate, Integer>...` | What an order serves over its life, a month on average, in the measure's unit (0.7.101): each of its LIFE_YEARS years read at its middle month - from its opening, `p`'s months less the horizon (BusinessInvestment.lead... |
 | 1922 | 3 | `public static double perServed(double life, double served, int count, double unit)` | The figure from an order's life and what it serves (0.7.101): the life over what it will serve; with that not measured, or nothing, over what its count adds (count x unit). |
-| 1932 | 4 | `public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t, int count, ...` | A candidate's figure, the one the advice ranks by (HW1): the full cost less prevented output loss and payroll returned, per unit served over the same life (servedOverLife() from the actual opening; what its count adds... |
+| 1931 | 4 | `public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t, int count, ...` | A candidate's informational cost per physical unit relieved (HW1). |
 
-### AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) (lines 1937-2131)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1966 | 4 | **type** `public record Payback(int mines, double earns, double payment)` | An iron field weighed (0.7.101): the mines the city could staff and work on it, their profit a month, and the month's payment that repays its price - it pays back when the profit is at least the payment. |
-| 1968 | 1 | `public boolean pays()` _(in BuildAdvice.Payback)_ | Whether the mines pay the field back. |
-| 1972 | 4 | `public static Payback ironPayback(Game game, LandParcel field)` | Whether an offer holding iron would pay itself back in this city (fieldEarnings() against fieldPayment()) - since 0.7.142 by the best mine that fits each of its fields. |
-| 2002 | 1 | **type** `public record FieldMines(Deposit.FieldType type, int sites, BuildingsTemplate mine, int count)` | A field of an offer and the mines that would fill it (0.7.142): its type, its sites, a kind of mine and how many of it. |
-| 2005 | 32 | `public static List<FieldMines> fieldMines(Game game, LandParcel field)` | Each iron field an offer holds, filled with the iron mines that fit it by type and size in the plan's order (above); a field no mine fits has a row with none. |
-| 2039 | 29 | `public static double[] fieldEarnings(Game game, LandParcel field)` | What an offer's iron fields would earn the city's mines a month (0.7.142; BY THE FIELDS IT HOLDS, above): {mines, their monthly profit}, fieldEarnings()'s count on fieldMines()' mines. |
-| 2082 | 25 | `public static double[] fieldEarnings(Game game, int sites)` | What a field of `sites` iron sites would earn the city's mines a month (0.7.67, M3b; moved from LongPlaytest in 0.7.101): {mines, their monthly profit}. |
-| 2116 | 6 | `public static double fieldPayment(Game game, LandParcel field)` | The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b; moved from LongPlaytest in 0.7.101): the level payment at the rate the market quotes for that much money at that term (Debt... |
-| 2124 | 7 | `public static boolean higherWorse(Measure m)` | Which way is worse for a measure's figure. |
-
-### A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the (lines 2132-2227)
+### AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) (lines 1936-2130)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2170 | 5 | `public static List<Measure> portMeasures()` | The port measures, one a kind of cargo, in Cargo order (FR3). |
-| 2177 | 8 | `static double portUncovered(Game game, Measure m, Map<BuildingsTemplate, Integer> added)` | A port measure's uncovered tonnes a month with these buildings standing as well: the kind's carriable() less its berths standing and the berths in `added` (Ports.uncovered()). |
-| 2195 | 7 | `public static BuildingsTemplate portTerminal(Game game, Measure m, Map<BuildingsTemplate, Integer> added, java.util.Set<Buildin...` | The terminal to order for a port measure, or null (FR3): with the kind's uncovered tonnes (`added` standing too) paying back some terminal of it but those in `skip` at the port dues dial, the largest of them whose bre... |
-| 2209 | 18 | `static Suggestion portSuggestion(Game game, Measure m, double cashLeft, double landLeft, java.util.Set<BuildingsTemplate> skip)` | A port measure's card: as many of the terminal portTerminal() chose as the uncovered tonnes pay back, each counted after the ones before it, and one at least (SL1, Ports.orderCount(); it was one), or null for none (po... |
+| 1965 | 4 | **type** `public record Payback(int mines, double earns, double payment)` | An iron field weighed (0.7.101): the mines the city could staff and work on it, their profit a month, and the month's payment that repays its price - it pays back when the profit is at least the payment. |
+| 1967 | 1 | `public boolean pays()` _(in BuildAdvice.Payback)_ | Whether the mines pay the field back. |
+| 1971 | 4 | `public static Payback ironPayback(Game game, LandParcel field)` | Whether an offer holding iron would pay itself back in this city (fieldEarnings() against fieldPayment()) - since 0.7.142 by the best mine that fits each of its fields. |
+| 2001 | 1 | **type** `public record FieldMines(Deposit.FieldType type, int sites, BuildingsTemplate mine, int count)` | A field of an offer and the mines that would fill it (0.7.142): its type, its sites, a kind of mine and how many of it. |
+| 2004 | 32 | `public static List<FieldMines> fieldMines(Game game, LandParcel field)` | Each iron field an offer holds, filled with the iron mines that fit it by type and size in the plan's order (above); a field no mine fits has a row with none. |
+| 2038 | 29 | `public static double[] fieldEarnings(Game game, LandParcel field)` | What an offer's iron fields would earn the city's mines a month (0.7.142; BY THE FIELDS IT HOLDS, above): {mines, their monthly profit}, fieldEarnings()'s count on fieldMines()' mines. |
+| 2081 | 25 | `public static double[] fieldEarnings(Game game, int sites)` | What a field of `sites` iron sites would earn the city's mines a month (0.7.67, M3b; moved from LongPlaytest in 0.7.101): {mines, their monthly profit}. |
+| 2115 | 6 | `public static double fieldPayment(Game game, LandParcel field)` | The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b; moved from LongPlaytest in 0.7.101): the level payment at the rate the market quotes for that much money at that term (Debt... |
+| 2123 | 7 | `public static boolean higherWorse(Measure m)` | Which way is worse for a measure's figure. |
 
-### A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) (lines 2228-2303)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2240 | 1 | **type** `public enum BerthState` | Where a berth stands on its payback (FR4): PAYS - the dues at the dial cover its cost and more than its upkeep; SHORT - cargo of its kind crosses and no berth takes it, but not enough of it (Ports.berthPaysBack()); CO... |
-| 2254 | 10 | **type** `public record BerthPayback(BuildingsTemplate terminal, BerthState state, double carriable, double uncovered...` | One more of a terminal, weighed as the advice weighs one (FR4): the kind's carriable and uncovered tonnes a month, the tonnes a month the advice needs uncovered before the terminal pays back (needed; NaN with no dues)... |
-| 2259 | 1 | `public boolean pays()` _(in BuildAdvice.BerthPayback)_ | Whether it pays back (state PAYS). |
-| 2262 | 1 | `public double carriedAYear()` _(in BuildAdvice.BerthPayback)_ | The tonnes a year it would carry. |
-| 2277 | 26 | `public static BerthPayback berthPayback(Game game, BuildingsTemplate t)` | A sea terminal's payback, as its card says it (FR4; null for any other building). |
-
-### THE ISLAND LINK (AL1, 2026-11-09) (lines 2304-2493)
+### A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the (lines 2131-2226)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2330 | 1 | **type** `public enum LinkKind` | How a link is made: a long bridge, sea terminals, or not at all (NONE: the Link says why). |
-| 2333 | 1 | **type** `public record LinkOrder(BuildingsTemplate template, int asked, double price)` | One order of a link: the template, the landmass its order is for (a bridge's far landmass, or a terminal's `asked`: Landmasses.RULE for home, an id for an island's own shore), and its quote's total, thousands of US do... |
-| 2340 | 6 | **type** `public record Link(int landmass, String name, double sqFt, LinkKind kind, List<LinkOrder> orders, BridgeSur...` | What the city should order to link an island: the island's id, name and buildable ground (square feet), the kind, the orders (none for NONE), the crossing a bridge is surveyed over (null otherwise), the orders' total ... |
-| 2344 | 1 | `public double perSqFt()` _(in BuildAdvice.Link)_ | Its price a square foot of ground it links: the candidate's unit is the ground, not trips. |
-| 2348 | 1 | **type** `private record Found(LinkOrder order, double months)` | One terminal order found, and its months. |
-| 2354 | 1 | **type** `private record NoCrossing(int month, String why)` | A survey that found no crossing: the month it was made and its refusal in BridgeView's words. |
-| 2367 | 24 | `public static Link linkFor(Game game)` | The link the city should order for the island it most needs, or null when nothing is unlinked (checked first and alone: every generated world, and every city on one landmass, reads nothing else). |
-| 2393 | 5 | `private static int linkedTerminals(Landmasses lms)` | The sea terminals standing or on site on the landmasses the city has linked. |
-| 2399 | 54 | `private static Link linkOf(Game game, Landmasses lms, Landmasses.Row island)` |  |
-| 2454 | 10 | `private static Link portLink(Landmasses.Row island, List<Found> found)` |  |
-| 2466 | 10 | `private static BuildingsTemplate bridgeTemplate(Game game)` | The Highway Bridge where the city has an Elevated Highway standing, else the Road Bridge; null when the one wanted is not yet known (never the Rail Bridge). |
-| 2482 | 11 | `private static Found cheapestTerminal(Game game, Landmasses lms, int asked, int island)` | The cheapest sea terminal the city knows for a landmass: by the quote of one asked for `asked`, among those whose order would stand where it is asked. |
+| 2169 | 5 | `public static List<Measure> portMeasures()` | The port measures, one a kind of cargo, in Cargo order (FR3). |
+| 2176 | 8 | `static double portUncovered(Game game, Measure m, Map<BuildingsTemplate, Integer> added)` | A port measure's uncovered tonnes a month with these buildings standing as well: the kind's carriable() less its berths standing and the berths in `added` (Ports.uncovered()). |
+| 2194 | 7 | `public static BuildingsTemplate portTerminal(Game game, Measure m, Map<BuildingsTemplate, Integer> added, java.util.Set<Buildin...` | The terminal to order for a port measure, or null (FR3): with the kind's uncovered tonnes (`added` standing too) paying back some terminal of it but those in `skip` at the port dues dial, the largest of them whose bre... |
+| 2208 | 18 | `static Suggestion portSuggestion(Game game, Measure m, double cashLeft, double landLeft, java.util.Set<BuildingsTemplate> skip)` | A port measure's card: as many of the terminal portTerminal() chose as the uncovered tonnes pay back, each counted after the ones before it, and one at least (SL1, Ports.orderCount(); it was one), or null for none (po... |
+
+### A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) (lines 2227-2302)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2239 | 1 | **type** `public enum BerthState` | Where a berth stands on its payback (FR4): PAYS - the dues at the dial cover its cost and more than its upkeep; SHORT - cargo of its kind crosses and no berth takes it, but not enough of it (Ports.berthPaysBack()); CO... |
+| 2253 | 10 | **type** `public record BerthPayback(BuildingsTemplate terminal, BerthState state, double carriable, double uncovered...` | One more of a terminal, weighed as the advice weighs one (FR4): the kind's carriable and uncovered tonnes a month, the tonnes a month the advice needs uncovered before the terminal pays back (needed; NaN with no dues)... |
+| 2258 | 1 | `public boolean pays()` _(in BuildAdvice.BerthPayback)_ | Whether it pays back (state PAYS). |
+| 2261 | 1 | `public double carriedAYear()` _(in BuildAdvice.BerthPayback)_ | The tonnes a year it would carry. |
+| 2276 | 26 | `public static BerthPayback berthPayback(Game game, BuildingsTemplate t)` | A sea terminal's payback, as its card says it (FR4; null for any other building). |
+
+### THE ISLAND LINK (AL1, 2026-11-09) (lines 2303-2492)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2329 | 1 | **type** `public enum LinkKind` | How a link is made: a long bridge, sea terminals, or not at all (NONE: the Link says why). |
+| 2332 | 1 | **type** `public record LinkOrder(BuildingsTemplate template, int asked, double price)` | One order of a link: the template, the landmass its order is for (a bridge's far landmass, or a terminal's `asked`: Landmasses.RULE for home, an id for an island's own shore), and its quote's total, thousands of US do... |
+| 2339 | 6 | **type** `public record Link(int landmass, String name, double sqFt, LinkKind kind, List<LinkOrder> orders, BridgeSur...` | What the city should order to link an island: the island's id, name and buildable ground (square feet), the kind, the orders (none for NONE), the crossing a bridge is surveyed over (null otherwise), the orders' total ... |
+| 2343 | 1 | `public double perSqFt()` _(in BuildAdvice.Link)_ | Its price a square foot of ground it links: the candidate's unit is the ground, not trips. |
+| 2347 | 1 | **type** `private record Found(LinkOrder order, double months)` | One terminal order found, and its months. |
+| 2353 | 1 | **type** `private record NoCrossing(int month, String why)` | A survey that found no crossing: the month it was made and its refusal in BridgeView's words. |
+| 2366 | 24 | `public static Link linkFor(Game game)` | The link the city should order for the island it most needs, or null when nothing is unlinked (checked first and alone: every generated world, and every city on one landmass, reads nothing else). |
+| 2392 | 5 | `private static int linkedTerminals(Landmasses lms)` | The sea terminals standing or on site on the landmasses the city has linked. |
+| 2398 | 54 | `private static Link linkOf(Game game, Landmasses lms, Landmasses.Row island)` |  |
+| 2453 | 10 | `private static Link portLink(Landmasses.Row island, List<Found> found)` |  |
+| 2465 | 10 | `private static BuildingsTemplate bridgeTemplate(Game game)` | The Highway Bridge where the city has an Elevated Highway standing, else the Road Bridge; null when the one wanted is not yet known (never the Rail Bridge). |
+| 2481 | 11 | `private static Found cheapestTerminal(Game game, Landmasses lms, int asked, int island)` | The cheapest sea terminal the city knows for a landmass: by the quote of one asked for `asked`, among those whose order would stand where it is asked. |
 

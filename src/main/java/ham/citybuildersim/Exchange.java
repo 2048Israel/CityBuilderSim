@@ -124,10 +124,10 @@ import java.util.List;
  * was raised: an ask resting on the book would fill later, or never, and
  * the building would be half-financed by a sale that had not happened.
  *
- * A SHARE THAT GETS TOO DEAR IS SPLIT, a hundred for one, and one that gets
- * too cheap is consolidated, one for a hundred, so that a count of shares
- * stays a number a person can read after three centuries of buybacks and
- * offerings. Every holder's count, every resting order and the last trade
+ * A SHARE THAT GETS TOO DEAR IS SPLIT, and one that gets too cheap is
+ * consolidated, by powers of ten within a band of the average monthly wage
+ * (SX1), so a share costs comparable hours of work over centuries.
+ * Every holder's count, every resting order and the last trade
  * move by the factor; nothing anybody owns changes in value.
  */
 public class Exchange {
@@ -347,8 +347,11 @@ public class Exchange {
      */
     public static final double BOOK_LIMIT = .50;
 
-    /** A share priced at this many times its founding price is split; at one over it, consolidated. */
-    public static final double SPLIT_AT = 100;
+    /** A share costing more than this share of the city's average monthly wage splits (SX1). */
+    public static final double SPLIT_AT = .25;
+
+    /** A share costing less than this fraction of the average monthly wage consolidates (SX1). */
+    public static final double CONSOLIDATE_BELOW = .0025;
 
     /**
      * The least a share may be worth before the market treats the company as
@@ -707,6 +710,8 @@ public class Exchange {
 
     /** What the month's trading needs to know about a company that is not on the register. */
     public interface Companies {
+        /** The city's average monthly wage, in the quote's money unit; no paid jobs means no wage band yet. */
+        default double averageMonthlyWage() { return 0; }
         /** Cash in the company's till, after anything it can bring home for this. */
         double cashAvailable(int company, double wanted);
         /** ...and what is in its till now, bringing nothing home: what a resting buyback bid may still pay. */
@@ -2183,20 +2188,23 @@ public class Exchange {
        ===================================================================== */
 
     /**
-     * A split or a consolidation, by a power of ten, for any share priced a
-     * hundred times its founding price or a hundredth of it. Every count on
+     * A split or a consolidation, by a power of ten, outside the wage band.
+     * Its geometric middle is the price yardstick. Every count on
      * the register, in every household, on the desk and on the book moves by
      * the factor; every price by its inverse. Value is untouched.
      */
     private void splitWhatNeedsIt() {
+        double wage = companies == null ? 0 : companies.averageMonthlyWage();
+        if (!(wage > 0) || !Double.isFinite(wage)) return;
+        double target = wage * Math.sqrt(SPLIT_AT * CONSOLIDATE_BELOW);
         for (int c = 0; c < n; c++) {
             if (register.getShares(c) <= 0) continue;
             // A company worth nothing is not consolidated into nothing.
             if (fair[c] <= minFair) continue;
-            double ratio = price(c) / register.foundingPrice();
-            if (ratio < SPLIT_AT && ratio > 1 / SPLIT_AT) continue;
-            double k = Math.pow(10, Math.floor(Math.log10(ratio)));
-            if (!(k > 0) || k == 1) continue;
+            double quote = price(c);
+            if (quote <= wage * SPLIT_AT && quote >= wage * CONSOLIDATE_BELOW) continue;
+            double k = Math.pow(10, Math.floor(Math.log10(quote / target)));
+            if (!(k > 0) || !Double.isFinite(k) || k == 1) continue;
             register.split(c, k);
             if (households != null) households.splitShares(c, k);
             books[c].split(k);

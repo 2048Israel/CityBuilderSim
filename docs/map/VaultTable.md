@@ -11,7 +11,7 @@
 > balance in each of the eight (ForeignAccounts, THE VAULT IN EIGHT) and the page showed none of them in a place a player could read across. The card's
 > charts are History's series (the rates are HistorySave's fx&lt;code&gt;, the policy rates policy&lt;code&gt;), drawn in TimeChart as the currency page's are.
 
-**Uses:** [Palette](Palette.md) (31), [TimeChart](TimeChart.md) (14), [Kept](Kept.md) (8), [ForeignAccounts](ForeignAccounts.md) (6), [VaultView](VaultView.md) (6), [HistorySave](HistorySave.md) (6), [TradeScreen](TradeScreen.md) (5), [ChartModel](ChartModel.md) (4), [WorldMoneys](WorldMoneys.md) (3), [UserInterface](UserInterface.md) (2), [Money](Money.md) (2), [Game](Game.md) (1), [Icons](Icons.md) (1), [Pieces](Pieces.md) (1), [HistoryScreen](HistoryScreen.md) (1)
+**Uses:** [Palette](Palette.md) (31), [TimeChart](TimeChart.md) (14), [Kept](Kept.md) (8), [ForeignAccounts](ForeignAccounts.md) (6), [VaultView](VaultView.md) (6), [HistorySave](HistorySave.md) (6), [TradeScreen](TradeScreen.md) (5), [ChartModel](ChartModel.md) (4), [WorldMoneys](WorldMoneys.md) (3), [UserInterface](UserInterface.md) (2), [Money](Money.md) (2), [Game](Game.md) (1), [Icons](Icons.md) (1), [Pieces](Pieces.md) (1), [Formats](Formats.md) (1), [HistoryScreen](HistoryScreen.md) (1)
 
 **Used by (1):** [TradeScreen](TradeScreen.md)
 

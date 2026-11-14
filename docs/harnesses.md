@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**199 harness files, 23,794 labelled assertions.** AllChecks runs 199 of them.
+**200 harness files, 23,824 labelled assertions.** AllChecks runs 200 of them.
 
 ## Which harnesses read which class
 
@@ -121,7 +121,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, GoldMiningCheck, GoldStandardCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, MoneySignCheck, MoneyWordsCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
-| [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, LandCheck, MoneySignCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
+| [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, FormatsCheck, LandCheck, MoneySignCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
 | [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
 | [FoundingName](map/FoundingName.md) | NewGameCheck |
 | [FoundingScreen](map/FoundingScreen.md) | **none** |
@@ -8642,7 +8642,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L642 past that deadline the automatic path orders more power despite the pending wind
   - L643 the real loaded city and its unbroken twin place the same later automatic orders, one by one
 
-## ExchangeCheck.java - 209 labelled assertions
+## ExchangeCheck.java - 225 labelled assertions
 
 > Verifies the exchange on the order book (0.7.12 round 2): what the desk
 > posts and what it is not obliged to take, who trades with whom and at what
@@ -8658,229 +8658,247 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      traded; ShortSellingCheck holds the quote's rule): before its first
 > ...
 
-- **L252 1. the price is the quote**
-  - L263 a bank with capital posts on the book
-  - L264 fair value is the register's reckoning: book over shares
-  - L265 ...and before any trade the price is it
-  - L266 the desk bids half a spread under fair value
-  - L267 ...for the tightest of its limits: its capital (marked at the price it pays), its caps, the float
-  - L269 ...and asks nothing: it holds nothing
-  - L274 a household short of money sells into the desk's bid for what it is short
-  - L275 ...at the bid: the shares it gave up
-  - L276 THE LAST TRADE IS THE DESK'S BID, which the household sold into
-  - L277 ...the book's own last price
-  - L278 ...only the bid rests, so the price is the last trade held inside it: the more of the two
-  - L281 ...with fair value beside it, unmoved
-  - L282 the desk carries its inventory at the lower of the two
-  - L283 ...and holds what it bought
-  - L284 the register still agrees with the households
-  - L287 a month on, with nothing traded, the last trade is still the desk's bid it was
-  - L288 ...the desk asks half a spread over fair value
-  - L289 ...so a bid and an ask rest and the price is the middle of them
-  - L291 ...which is not the last trade: the desk's quotes are a half spread either side of fair value
-  - L292 ...for exactly what it holds
-- **L294 2. nobody is obliged**
-  - L304 a bank with no capital posts nothing
-  - L315 a household short of money with nobody bidding sells nothing
-  - L316 ...keeps its shares
-  - L317 ...its ask waits on the book
-  - L318 ...and it borrows what it was short
-  - L319 the price did not move: nothing traded
-  - L323 the step withdraws it and counts the seller who waited (what rests now is the step's own)
-  - L333 fixture: a small bank's desk bids for the tightest of its limits
-  - L336 fixture: ...which is less than a hundred households short of $90k each offer
-  - L340 the desk takes what its limits allow and not a share more
-  - L341 ...the household raising what it paid
-  - L342 ...and the rest of its offer waits on the book, unfilled: AN UNFILLED SALE RESTS
-- **L345 2b. the desk's caps (round 3)**
-  - L357 fixture: its capital would carry more than a quarter of its equity in the company
-  - L359 the desk bids for POSITION_LIMIT of the bank's equity in one company, at fair value
-  - L361 ...counted as the cap that bound
-  - L364 a household offering $5,000k sells only what the cap leaves
-  - L365 ...the desk holding a quarter of the equity it posted on, at fair value, no more
-  - L367 ...and the rest of the sale rests on the book
-  - L385 fixture: what the book has left is under the single-name cap
-  - L386 with $4,000k of Industry held, the desk bids for Retail only what BOOK_LIMIT leaves
-  - L388 ...counted as the cap that bound
-  - L389 ...its Industry bid none: it is at the single-name cap there
-- **L392 2c. what is over the caps, offered at fair value**
-  - L408 fixture: the desk holds more than POSITION_LIMIT of the bank's equity in one company, under BOOK_LIMIT in all
-  - L417 a desk over its position cap offers exactly the excess, at fair value
-  - L418 ...counted as the month's excess
-  - L419 ...and the rest of what it holds at fair value plus half the spread
-  - L420 nothing is asked under fair value
-  - L421 with no bid to meet it, the excess rests, on offer at fair value
-  - L422 ...and nothing of it sold
-  - L440 fixture: the company's month of buybacks is less than the desk's excess
-  - L441 the excess sells when a bid meets it: the company's buyback took it
-  - L442 ...at fair value, not under it
-  - L443 ...out of the desk's holding
-  - L444 ...into the bank's cash
-  - L445 ...and the rest of the excess still rests at fair value
-  - L456 a desk under both caps offers no excess
-  - L457 ...and asks what it holds at fair value plus half the spread
-  - L478 fixture: the book is over BOOK_LIMIT, and only Retail over POSITION_LIMIT
-  - L480 the book's excess is spread pro rata by value at fair value: Industry its sixth
-  - L482 ...Materials the same
-  - L483 a holding over both caps offers the larger of its two excesses, not the two added
-- **L486 3. the leavers**
-  - L498 fixture: twenty households leave with two thousand shares
-  - L500 ...held abroad from the moment they go
-  - L505 the leavers sell into the desk's bid, and the cash leaves with them
-  - L507 ...out of the bank's cash
-  - L508 ...onto the desk
-  - L509 ...and nothing is held abroad any more
-  - L510 the register still agrees with the households
-  - L519 with nobody bidding, an emigrant's shares rest unfilled on the book
-  - L521 ...nobody paid them
-  - L524 the next step withdraws their ask and counts it waited
-  - L526 ...and their shares stay abroad with them
-- **L528 4. the world**
-  - L534 fixture: the company is wholly foreign-owned
-  - L542 fixture: the yield at the desk's bid is under the world's hurdle
-  - L544 the world sells a share of its holding in proportion to the shortfall
-  - L546 ...to the desk
-  - L547 ...at the desk's bid, the resting price
-  - L563 fixture: fair value is the earnings (here the dividend) capitalised at the hurdle
-  - L566 the world bids for a share of the float in proportion to the excess yield
-  - L568 ...resting at the market, the last trade - not at its reservation
-  - L573 a household short of money sells into the world's bid
-  - L574 ...declared abroad, at the world's price
-  - L575 ...raising what it was short and banking the rest
-  - L576 ...the shares abroad again
-  - L582 a company with no record is not traded by the world: not sold
-  - L583 ...and not bid for
-- **L585 5. the household cells**
-  - L609 fixture: Industry returns more at the desk's ask than Retail, both over the best alternative plus the premium and the band
-  - L611 the cell takes everything asked of the best yield first
-  - L612 ...then the next best with the rest
-  - L613 ...its month's money, out of its own savings
-  - L614 ...into shares of both
-  - L615 ...the register agreeing on each
-  - L616 the desk sold nothing it did not have
-  - L635 with nothing asked, what the cell has rests as a bid on the best return
-  - L637 ...AT THE MARKET, its last trade - not at the price that returns the floor
-  - L640 ...which is higher: the reservation is the lesser of the price that returns the floor and the desk's ask
-  - L646 with the deposit rate above every yield, nobody buys
-  - L647 ...and nobody's savings moved
-  - L666 fixture: both are priced to the required return
-  - L667 fixture: ...on different share counts
-  - L669 tied names: the bid rests on the deepest
-  - L677 earnings moved by one ulp do not move where the money goes
-- **L680 6. cell to cell**
-  - L703 fixture: the rich cell's bid rests on the book; the short cell has nothing to bid with
-  - L705 fixture: ...at the market, fair value
-  - L714 the short cell sold into the rich cell's bid
-  - L715 ...the rich cell holds what it sold
-  - L716 ...at the rich cell's resting price, the last trade
-  - L717 ...sized at its own ask, the price its borrowing rate puts on the dividend
-  - L719 ...the cash between them the transfer counted
-  - L720 ...the short cell raising what it was short
-  - L721 ...and borrowing nothing
-  - L722 no pool line moved: nothing sold to or bought from the households by anybody else
-  - L725 the register still agrees with the cells
-- **L727 6b. the cells rebalance by the bond rule (round 3)**
-  - L740 fixture: the cell under its cushion holds more than its shortfall in shares
-  - L746 the cell under its cushion offers HOME_SPEED of the shortfall, at the market
-  - L748 ...the cell past its cushion takes all of it
-  - L749 ...cell to cell, the transfer counted
-  - L750 ...at the market: the price is where it was
-  - L751 ...the seller's savings up by what it was paid
-  - L752 ...and the buyer bids for the rest of OUT_SPEED of its excess
-  - L755 no pool line moved
-- **L758 7. the buyback, and the money that stays**
-  - L764 fixture: the company is in a normal year
-  - L779 it retires a month of the pace, in shares, at the desk's ask
-  - L781 ...paid from its till
-  - L782 ...to the desk, which was asking
-  - L783 ...into the bank's cash
-  - L784 ...and the shares are gone
-  - L785 ...and nothing of its bid is left to rest: it spent the month's money
-  - L796 fixture: six months of its costs with the payments are more than its till, without them far less
-  - L800 a company whose loan payments take its cushion past its till buys nothing back
-  - L802 ...bids for nothing either
-  - L803 ...and its till is untouched
-  - L822 fixture: the only ask rests past fair value plus the tolerance
-  - L826 so the money stays in the till
-  - L827 ...and the bid rests at its limit, fair value plus the tolerance
-  - L829 ...for what the month's money buys there
-  - L831 ...no holder is paid a dividend for it
-  - L832 ...not one share retired
-  - L855 fixture: nobody offers the company's shares at all
-  - L857 with nobody offering its shares, the money stays in the till
-  - L858 ...and the bid rests at its limit
-  - L859 ...for what the month's money buys there
-  - L861 ...not one share retired yet
-  - L864 fixture: a household short of money sells in the waterfall and the bid meets it
-  - L865 a household short of money sells into the resting bid, at the bid's price
-  - L867 ...paid from the company's till
-  - L868 ...the shares retired
-  - L869 ...counted as a buyback from the households
-  - L870 ...and the rest of the bid still rests
-  - L880 a company in a bad year buys nothing back
-  - L881 ...and bids for nothing
-  - L890 a company at its target buys nothing back
-- **L892 7b. the fund past its cap (RB1)**
-  - L917 fixture: the fund holds 15% of the company, over the limit, so it has an excess to offer
-  - L922 fixture: the buyback fired, and its money buys at least what the fund asks, at fair value
-  - L924 the fund sold the tenth of its excess over the limit that month, in shares
-  - L926 ...at fair value: what it was paid
-  - L927 ...ahead of the desk's ask: the desk was paid for the rest of the buyback's money alone
-  - L929 ...the desk's ask still rests above fair value, by half a spread
-  - L930 ...and the fund's share of the company is lower than the 15% it started at
-  - L955 fixture: the fund starts at exactly the limit
-  - L976 fixture: the buyback fired in every month of the run
-  - L977 fixture: a month's buyback retires less than the tenth the fund offers, or there is no fixed point
-  - L979 the buybacks lifted the fund's share past the limit
-  - L980 ...and never past L x s / (s - b), b the fastest month's buyback of the shares in issue
-- **L982 8. the split**
-  - L994 a share last traded at five hundred and twenty is split a hundred for one
-  - L995 ...the register's count by the factor
-  - L996 ...every household's count by the factor
-  - L997 ...the last trade by its inverse: the price
-  - L998 ...fair value with it
-  - L999 ...and what the households hold is worth what it was
-  - L1000 the desk's resting bid moves too: its price by the inverse
-  - L1001 ...its quantity by the factor: still the ten shares' worth it was
-  - L1002 the split factor remembers it
-  - L1003 ...so the price per FOUNDING share is what it was: the history has no cliff
-  - L1011 a share priced at a ten-thousandth is consolidated ten thousand for one
-  - L1012 ...to a hundred shares
-  - L1013 ...at a dollar
-  - L1014 ...the households still agreeing with the register
-- **L1016 9. the save**
-  - L1022 it restores
-  - L1023 ...the last trade, so the price
-  - L1024 ...fair value
-  - L1025 ...the desk's resting ask
-  - L1027 ...and its bid
-  - L1031 ...and the split factor
-  - L1032 ...closed until the bank says otherwise
-  - L1034 ...open once a bank with capital is put back
-  - L1036 ...and not for a bank without
-  - L1043 the dealer's save, four a company, still restores
-  - L1044 ...its last quote the book's last price, so where the market opens
-  - L1045 ...fair value and the split factor as they were
-  - L1046 ...and the demand it carried is no order
-  - L1049 the exchange's first-night save, three a company, still restores
-  - L1050 ...with one share then being one share now
-  - L1051 an array of the wrong length is refused whole
-- **L1053 10. a live city**
-  - L1114 the city's shares traded on the book
-  - L1115 ...and every month of it is conserved
-  - L1127 fixture: the desk sold shares to a company's buyback in some month
-  - L1128 ...and the audit closed through every month it did
-  - L1129 ...with the bank carrying the desk at the exchange's mark all along
-  - L1130 ...and every price read, on a book that has traded, is its quote: the middle, or the last trade held inside the side that stands (
-  - L1132 fixture: ...in some of them the quote was not the last trade (
-  - L1140 ...the register and the cells agreeing on every company
-  - L1141 ...and the desk never short of anything
-  - L1143 the city saves
-  - L1148 ...and loads
-  - L1164 every quote, last trade and fair value comes back
-  - L1165 ...every book with the orders resting on it
-  - L1166 ...and the desk's inventory
-  - L1167 ...at the same mark
+- **L266 8c. split-month audit rejects a no-split run and accepts an actual adjustment**
+  - L280 twelve actual exchange steps without a split count zero split months
+  - L281 the played-city split-occurrence assertion rejects that no-split run
+  - L282 the played-city split-month audit assertion rejects it too
+  - L285 the fixture's real split counts exactly one split month
+  - L286 the same occurrence and audit gates accept a real split with a closed audit
+- **L296 8b. a century of quotes stays affordable without changing anybody's value**
+  - L322 the century actually crosses both wage triggers
+  - L323 every live quote stays in the dial's wage band throughout the century
+  - L324 every adjustment preserves the households' value
+  - L325 every founding-share chart point keeps its value across the adjustment
+  - L330 a quote exactly on the wage dial does not adjust
+  - L337 with no usable paid wage the counts wait
+- **L351 1. the price is the quote**
+  - L362 a bank with capital posts on the book
+  - L363 fair value is the register's reckoning: book over shares
+  - L364 ...and before any trade the price is it
+  - L365 the desk bids half a spread under fair value
+  - L366 ...for the tightest of its limits: its capital (marked at the price it pays), its caps, the float
+  - L368 ...and asks nothing: it holds nothing
+  - L373 a household short of money sells into the desk's bid for what it is short
+  - L374 ...at the bid: the shares it gave up
+  - L375 THE LAST TRADE IS THE DESK'S BID, which the household sold into
+  - L376 ...the book's own last price
+  - L377 ...only the bid rests, so the price is the last trade held inside it: the more of the two
+  - L380 ...with fair value beside it, unmoved
+  - L381 the desk carries its inventory at the lower of the two
+  - L382 ...and holds what it bought
+  - L383 the register still agrees with the households
+  - L386 a month on, with nothing traded, the last trade is still the desk's bid it was
+  - L387 ...the desk asks half a spread over fair value
+  - L388 ...so a bid and an ask rest and the price is the middle of them
+  - L390 ...which is not the last trade: the desk's quotes are a half spread either side of fair value
+  - L391 ...for exactly what it holds
+- **L393 2. nobody is obliged**
+  - L403 a bank with no capital posts nothing
+  - L414 a household short of money with nobody bidding sells nothing
+  - L415 ...keeps its shares
+  - L416 ...its ask waits on the book
+  - L417 ...and it borrows what it was short
+  - L418 the price did not move: nothing traded
+  - L422 the step withdraws it and counts the seller who waited (what rests now is the step's own)
+  - L432 fixture: a small bank's desk bids for the tightest of its limits
+  - L435 fixture: ...which is less than a hundred households short of $90k each offer
+  - L439 the desk takes what its limits allow and not a share more
+  - L440 ...the household raising what it paid
+  - L441 ...and the rest of its offer waits on the book, unfilled: AN UNFILLED SALE RESTS
+- **L444 2b. the desk's caps (round 3)**
+  - L456 fixture: its capital would carry more than a quarter of its equity in the company
+  - L458 the desk bids for POSITION_LIMIT of the bank's equity in one company, at fair value
+  - L460 ...counted as the cap that bound
+  - L463 a household offering $5,000k sells only what the cap leaves
+  - L464 ...the desk holding a quarter of the equity it posted on, at fair value, no more
+  - L466 ...and the rest of the sale rests on the book
+  - L484 fixture: what the book has left is under the single-name cap
+  - L485 with $4,000k of Industry held, the desk bids for Retail only what BOOK_LIMIT leaves
+  - L487 ...counted as the cap that bound
+  - L488 ...its Industry bid none: it is at the single-name cap there
+- **L491 2c. what is over the caps, offered at fair value**
+  - L507 fixture: the desk holds more than POSITION_LIMIT of the bank's equity in one company, under BOOK_LIMIT in all
+  - L516 a desk over its position cap offers exactly the excess, at fair value
+  - L517 ...counted as the month's excess
+  - L518 ...and the rest of what it holds at fair value plus half the spread
+  - L519 nothing is asked under fair value
+  - L520 with no bid to meet it, the excess rests, on offer at fair value
+  - L521 ...and nothing of it sold
+  - L539 fixture: the company's month of buybacks is less than the desk's excess
+  - L540 the excess sells when a bid meets it: the company's buyback took it
+  - L541 ...at fair value, not under it
+  - L542 ...out of the desk's holding
+  - L543 ...into the bank's cash
+  - L544 ...and the rest of the excess still rests at fair value
+  - L555 a desk under both caps offers no excess
+  - L556 ...and asks what it holds at fair value plus half the spread
+  - L577 fixture: the book is over BOOK_LIMIT, and only Retail over POSITION_LIMIT
+  - L579 the book's excess is spread pro rata by value at fair value: Industry its sixth
+  - L581 ...Materials the same
+  - L582 a holding over both caps offers the larger of its two excesses, not the two added
+- **L585 3. the leavers**
+  - L597 fixture: twenty households leave with two thousand shares
+  - L599 ...held abroad from the moment they go
+  - L604 the leavers sell into the desk's bid, and the cash leaves with them
+  - L606 ...out of the bank's cash
+  - L607 ...onto the desk
+  - L608 ...and nothing is held abroad any more
+  - L609 the register still agrees with the households
+  - L618 with nobody bidding, an emigrant's shares rest unfilled on the book
+  - L620 ...nobody paid them
+  - L623 the next step withdraws their ask and counts it waited
+  - L625 ...and their shares stay abroad with them
+- **L627 4. the world**
+  - L633 fixture: the company is wholly foreign-owned
+  - L641 fixture: the yield at the desk's bid is under the world's hurdle
+  - L643 the world sells a share of its holding in proportion to the shortfall
+  - L645 ...to the desk
+  - L646 ...at the desk's bid, the resting price
+  - L662 fixture: fair value is the earnings (here the dividend) capitalised at the hurdle
+  - L665 the world bids for a share of the float in proportion to the excess yield
+  - L667 ...resting at the market, the last trade - not at its reservation
+  - L672 a household short of money sells into the world's bid
+  - L673 ...declared abroad, at the world's price
+  - L674 ...raising what it was short and banking the rest
+  - L675 ...the shares abroad again
+  - L681 a company with no record is not traded by the world: not sold
+  - L682 ...and not bid for
+- **L684 5. the household cells**
+  - L708 fixture: Industry returns more at the desk's ask than Retail, both over the best alternative plus the premium and the band
+  - L710 the cell takes everything asked of the best yield first
+  - L711 ...then the next best with the rest
+  - L712 ...its month's money, out of its own savings
+  - L713 ...into shares of both
+  - L714 ...the register agreeing on each
+  - L715 the desk sold nothing it did not have
+  - L734 with nothing asked, what the cell has rests as a bid on the best return
+  - L736 ...AT THE MARKET, its last trade - not at the price that returns the floor
+  - L739 ...which is higher: the reservation is the lesser of the price that returns the floor and the desk's ask
+  - L745 with the deposit rate above every yield, nobody buys
+  - L746 ...and nobody's savings moved
+  - L765 fixture: both are priced to the required return
+  - L766 fixture: ...on different share counts
+  - L768 tied names: the bid rests on the deepest
+  - L776 earnings moved by one ulp do not move where the money goes
+- **L779 6. cell to cell**
+  - L802 fixture: the rich cell's bid rests on the book; the short cell has nothing to bid with
+  - L804 fixture: ...at the market, fair value
+  - L813 the short cell sold into the rich cell's bid
+  - L814 ...the rich cell holds what it sold
+  - L815 ...at the rich cell's resting price, the last trade
+  - L816 ...sized at its own ask, the price its borrowing rate puts on the dividend
+  - L818 ...the cash between them the transfer counted
+  - L819 ...the short cell raising what it was short
+  - L820 ...and borrowing nothing
+  - L821 no pool line moved: nothing sold to or bought from the households by anybody else
+  - L824 the register still agrees with the cells
+- **L826 6b. the cells rebalance by the bond rule (round 3)**
+  - L839 fixture: the cell under its cushion holds more than its shortfall in shares
+  - L845 the cell under its cushion offers HOME_SPEED of the shortfall, at the market
+  - L847 ...the cell past its cushion takes all of it
+  - L848 ...cell to cell, the transfer counted
+  - L849 ...at the market: the price is where it was
+  - L850 ...the seller's savings up by what it was paid
+  - L851 ...and the buyer bids for the rest of OUT_SPEED of its excess
+  - L854 no pool line moved
+- **L857 7. the buyback, and the money that stays**
+  - L863 fixture: the company is in a normal year
+  - L878 it retires a month of the pace, in shares, at the desk's ask
+  - L880 ...paid from its till
+  - L881 ...to the desk, which was asking
+  - L882 ...into the bank's cash
+  - L883 ...and the shares are gone
+  - L884 ...and nothing of its bid is left to rest: it spent the month's money
+  - L895 fixture: six months of its costs with the payments are more than its till, without them far less
+  - L899 a company whose loan payments take its cushion past its till buys nothing back
+  - L901 ...bids for nothing either
+  - L902 ...and its till is untouched
+  - L921 fixture: the only ask rests past fair value plus the tolerance
+  - L925 so the money stays in the till
+  - L926 ...and the bid rests at its limit, fair value plus the tolerance
+  - L928 ...for what the month's money buys there
+  - L930 ...no holder is paid a dividend for it
+  - L931 ...not one share retired
+  - L954 fixture: nobody offers the company's shares at all
+  - L956 with nobody offering its shares, the money stays in the till
+  - L957 ...and the bid rests at its limit
+  - L958 ...for what the month's money buys there
+  - L960 ...not one share retired yet
+  - L963 fixture: a household short of money sells in the waterfall and the bid meets it
+  - L964 a household short of money sells into the resting bid, at the bid's price
+  - L966 ...paid from the company's till
+  - L967 ...the shares retired
+  - L968 ...counted as a buyback from the households
+  - L969 ...and the rest of the bid still rests
+  - L979 a company in a bad year buys nothing back
+  - L980 ...and bids for nothing
+  - L989 a company at its target buys nothing back
+- **L991 7b. the fund past its cap (RB1)**
+  - L1016 fixture: the fund holds 15% of the company, over the limit, so it has an excess to offer
+  - L1021 fixture: the buyback fired, and its money buys at least what the fund asks, at fair value
+  - L1023 the fund sold the tenth of its excess over the limit that month, in shares
+  - L1025 ...at fair value: what it was paid
+  - L1026 ...ahead of the desk's ask: the desk was paid for the rest of the buyback's money alone
+  - L1028 ...the desk's ask still rests above fair value, by half a spread
+  - L1029 ...and the fund's share of the company is lower than the 15% it started at
+  - L1054 fixture: the fund starts at exactly the limit
+  - L1075 fixture: the buyback fired in every month of the run
+  - L1076 fixture: a month's buyback retires less than the tenth the fund offers, or there is no fixed point
+  - L1078 the buybacks lifted the fund's share past the limit
+  - L1079 ...and never past L x s / (s - b), b the fastest month's buyback of the shares in issue
+- **L1081 8. the split**
+  - L1097 a share past the wage dial splits by the derived power of ten
+  - L1098 ...the register's count by the factor
+  - L1099 ...every household's count by the factor
+  - L1100 ...the last trade by its inverse: the price
+  - L1101 ...fair value with it
+  - L1102 ...and what the households hold is worth what it was
+  - L1103 the desk's resting bid moves too: its price by the inverse
+  - L1104 ...its quantity by the factor: still the ten shares' worth it was
+  - L1105 the split factor remembers it
+  - L1106 ...so the price per FOUNDING share is what it was: the history has no cliff
+  - L1118 a share below the wage dial consolidates by the derived power of ten
+  - L1119 ...the register shrinks by that factor
+  - L1120 ...the price rises by its inverse
+  - L1121 ...the households still agreeing with the register
+- **L1126 9. the save**
+  - L1132 it restores
+  - L1133 ...the last trade, so the price
+  - L1134 ...fair value
+  - L1135 ...the desk's resting ask
+  - L1137 ...and its bid
+  - L1141 ...and the split factor
+  - L1142 ...closed until the bank says otherwise
+  - L1144 ...open once a bank with capital is put back
+  - L1146 ...and not for a bank without
+  - L1153 the dealer's save, four a company, still restores
+  - L1154 ...its last quote the book's last price, so where the market opens
+  - L1155 ...fair value and the split factor as they were
+  - L1156 ...and the demand it carried is no order
+  - L1159 the exchange's first-night save, three a company, still restores
+  - L1160 ...with one share then being one share now
+  - L1161 an array of the wrong length is refused whole
+- **L1163 10. a live city**
+  - L1234 the city's shares traded on the book
+  - L1235 ...and every month of it is conserved
+  - L1236 the played city actually splits shares
+  - L1237 MoneyAudit closes in every month with a split
+  - L1238 the dearest and cheapest live quotes stay inside the wage band every month
+  - L1252 fixture: the desk sold shares to a company's buyback in some month
+  - L1253 ...and the audit closed through every month it did
+  - L1254 ...with the bank carrying the desk at the exchange's mark all along
+  - L1255 ...and every price read, on a book that has traded, is its quote: the middle, or the last trade held inside the side that stands (
+  - L1257 fixture: ...in some of them the quote was not the last trade (
+  - L1265 ...the register and the cells agreeing on every company
+  - L1266 ...and the desk never short of anything
+  - L1268 the city saves
+  - L1273 ...and loads
+  - L1295 every quote, last trade and fair value comes back
+  - L1296 ...every book with the orders resting on it
+  - L1297 ...and the desk's inventory
+  - L1298 a save across the played splits keeps the factors and founding-share charts
+  - L1299 ...and the register, fund and households keep the same split holdings
+  - L1300 ...at the same mark
 
 ## ExchangeRateCheck.java - 202 labelled assertions
 
@@ -10184,6 +10202,28 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L695 saved and reloaded: the crews' cut and the forest the same
   - L699 ...a month on, the two the same month: Forestry's cash and cut, the forest, the city's cash
 
+## FormatsCheck.java - 12 labelled assertions
+
+> Proves the shared readable percentage rule (SX1), without the toolkit.
+> WHY: centuries of growth printed gains with sixteen digits; cost-basis
+> returns and ratios need multiples, while an observed price span can have a CAGR.
+
+- **L18 1. ordinary percentages keep their precision and sign**
+  - L20 an ordinary percentage is unchanged:
+  - L22 an ordinary change is unchanged:
+  - L25 a missing figure is a dash
+- **L28 2. yearly growth matches the closed form over the actual months**
+  - L32 the centuries-long gain is its compound yearly rate
+  - L34 an exact doubling every year reads as 100% a year
+  - L36 a short observation is a multiple, never extrapolated to a year
+- **L39 3. ratios and cost-basis returns are different multiples**
+  - L40 a 12-fold ratio is twelve times its base
+  - L41 a gain of eleven times the cost leaves twelve times the cost
+  - L42 cost-basis gains have no invented investment date
+  - L43 trillions have a named scale
+  - L44 a huge one-year gain is still bounded in length
+  - L45 a loss past the original cost keeps its negative meaning
+
 ## Forms1900Check.java - 169 labelled assertions
 
 > The farm's horses, the factory's steam, road freight's horse and wagon and the homes' lamp oil and coal, as forms a share of a sector or of the homes runs.
@@ -10970,98 +11010,98 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L379 ...the face is what the fund was paid
   - L380 the ledger's proceeds are the counters' sales and principal
 - **L387 4. a split at SPLIT_AT and a currency reform**
-  - L404 fixture: a lot
-  - L408 fixture: the share split at SPLIT_AT, by a power of ten
-  - L409 a split leaves the lot's cost where it was
-  - L410 ...the register's count goes up by the factor
-  - L411 ...and the average a share falls by it
-  - L414 ...and a row says so
-  - L423 fixture: the currency reformed,
-  - L426 a reform scales the lot's cost
-  - L427 ...what it realized and what it was bought for
-  - L431 ...and every row's money
-  - L432 ...and not the shares it holds
-- **L438 5. through a save, and an older save's ledger seeded**
-  - L464 every lot comes back exactly: its cost, what it realized and paid, and since when
-  - L472 ...every row, an order still on the book among them
-  - L473 ...the hand's order on the book, and the month tracking began
-  - L480 an older save's fund has no ledger, and waits to have one seeded
-  - L484 ...seeded at the load's month
-  - L485 ...each market lot at its market value then, flagged so
-  - L487 ...with the dividends paid before it apart
-  - L488 ...and one row says what happened
-  - L492 a save from before the fund itself waits for a ledger too, which it seeds from nothing
-  - L526 fixture: somebody other than the city holds the bank's shares
-  - L535 fixture: the month resolved the failed bank for its shares
-  - L547 fixture: a city that resolved its bank, sold some of the rescue book and holds bank shares on its market book too
-  - L556 fixture: the save carries the ledger inside the fund
-  - L561 fixture: the save read, its ledger taken out and written as an older save (
-  - L566 a save with a rescue book and no ledger is seeded at its load: tracking from that month, one row to say so
-  - L571 fixture: its rescue book is worth something other than what the city paid for it
-  - L573 ...its rescue lot is there
-  - L574 ...its rescue lot costed at what the city paid for the shares it still holds, exactly, not at their market value
-  - L576 ...and not tagged as counted at market value, its cost dated from the rescue
-  - L578 ...what the hand's sales of it brought, as the city that tracked it all along has it
-  - L580 ...the cost those sales took out: what the rescue paid, less what is left of it
-  - L582 ...and the gain they realized
-  - L583 ...its dividends since the rescue, the rescue book's own
-  - L594 its market lots, the bank's among them, at their market value at the load, each tagged with the month
-  - L597 ...the bank's market lot with the dividends before it apart from the rescue book's
-  - L600 ...and the row counts every holding, the rescue lot among them
-- **L624 6. the identity over a played run, and 7. since it began, by kind**
-  - L654 fixture: the rule bought something over the run
-  - L655 realized + the change in unrealized = the change in value + proceeds - purchases - rescues, every month
-  - L657 ...and the ledger's purchases and proceeds are the fund's own counters'
-  - L658 the whole run, end to end, the same
-  - L662 fixture: a company the fund holds, to lend
-  - L665 ...the fee is the fund's income this month and its life's
-  - L669 since it began, the gain by kind adds up to the fund's: worth + taken out - put in
-  - L671 ...whose put in is the pay-ins, the rescues and the preferred
-  - L677 ...because its cash is what came in less what went out, to the cent
-  - L683 every holding of a city founded with the ledger has a cost, none counted at market value
-- **L689 8. the hand: its cap, its cash held from the rule, its order on the record**
-  - L699 a buy waiting for the step holds its money from the rule
-  - L700 ...which bids with the rest
-  - L701 ...and a second order can take no more than the rest
-  - L704 fixture: the order was posted at the step and rests on the book
-  - L707 the hand's buy is posted no further than the room under the 10% cap the rule keeps
-  - L709 ...and what it still holds of the cash is its units still to fill at its price
-  - L713 ...and the rule's bid on the same book rests on no more than what the hand leaves
-  - L717 the order is a row from the step that posted it, open while it rests
-  - L720 the next step closes it: off the book and off the cash
-  - L721 ...its row says what it filled and what lapsed
-  - L727 fixture: a buy far past the cap is queued at the free cash
-  - L737 a buy in a company the fund already holds 10% of is not posted, and its row says why
-  - L852 fixture: the rule bids for the company at the step - resting, or taken at the desk's ask - and both orders were posted beside it
-  - L859 fixture: each order fits the room the market book alone leaves, and with the rule's bid they come to more than 10%
-  - L861 the rule's bid makes way for the orders waiting: it rests on no more than the room they leave
-  - L863 ...and both orders are posted whole
-  - L865 ...so the fund's market book and every bid of its on the book come to no more than the cap
-  - L867 fixture: every bid of the fund's on the book filled - the rule's and both orders'
-  - L868 ...and the fund holds no more than the cap of the company: nothing for the rule to ask back at fair value
-  - L884 fixture: two orders for 6% of the company each, both posted
-  - L887 ...together past the room the market book leaves
-  - L888 orders past the room on their own leave the rule's bid nothing in the company
-  - L890 ...and the step posts the first whole and the second only to the room the first leaves
-  - L893 ...so the market book and every bid of the fund's come to the cap and no more
-  - L895 fixture: both orders filled
-  - L896 ...and the fund holds the cap of the company and no more
-  - L911 fixture: a fund whose rule bids for the whole room in the company
-  - L915 the ticket offers an order the room all the same: the rule's bid makes way for it
-  - L925 fixture: two orders placed after it, for 4% of the company each or two-fifths of the room left
-  - L927 ...everything the fund could hold of it, every buy filled, the rule's as far as it may, is still the cap
-  - L932 a seller hitting the rule's bid fills it no further than the room the two orders leave
-  - L938 at the step both orders post, and the market book and every bid of the fund's come to no more than the cap
-  - L941 fixture: every bid filled
-  - L942 ...and the fund holds no more than the cap of the company
-  - L966 fixture: the fund holds some of the company, the rule bids for more, an order of the hand's waits, and room is left
-  - L969 ...the ticket quotes a buy
-  - L970 the ticket's room is the cap less what the fund holds and the order waiting
-  - L972 ...the model's own reckoning, which the step trims the order with and the rule's bid fills by
-  - L974 ...and a ticket for the whole cap is capped at it, and says so
-  - L976 ...the market book against the cap after: every one of them filled, the cap itself
-  - L978 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
-  - L980 ...and the rule's bid makes way for as much of the order as it would otherwise take
+  - L407 fixture: a lot
+  - L411 fixture: the wage trigger split by the derived power of ten
+  - L412 a split leaves the lot's cost where it was
+  - L413 ...the register's count goes up by the factor
+  - L414 ...and the average a share falls by it
+  - L417 ...and a row says so
+  - L426 fixture: the currency reformed,
+  - L429 a reform scales the lot's cost
+  - L430 ...what it realized and what it was bought for
+  - L434 ...and every row's money
+  - L435 ...and not the shares it holds
+- **L441 5. through a save, and an older save's ledger seeded**
+  - L467 every lot comes back exactly: its cost, what it realized and paid, and since when
+  - L475 ...every row, an order still on the book among them
+  - L476 ...the hand's order on the book, and the month tracking began
+  - L483 an older save's fund has no ledger, and waits to have one seeded
+  - L487 ...seeded at the load's month
+  - L488 ...each market lot at its market value then, flagged so
+  - L490 ...with the dividends paid before it apart
+  - L491 ...and one row says what happened
+  - L495 a save from before the fund itself waits for a ledger too, which it seeds from nothing
+  - L529 fixture: somebody other than the city holds the bank's shares
+  - L538 fixture: the month resolved the failed bank for its shares
+  - L550 fixture: a city that resolved its bank, sold some of the rescue book and holds bank shares on its market book too
+  - L559 fixture: the save carries the ledger inside the fund
+  - L564 fixture: the save read, its ledger taken out and written as an older save (
+  - L569 a save with a rescue book and no ledger is seeded at its load: tracking from that month, one row to say so
+  - L574 fixture: its rescue book is worth something other than what the city paid for it
+  - L576 ...its rescue lot is there
+  - L577 ...its rescue lot costed at what the city paid for the shares it still holds, exactly, not at their market value
+  - L579 ...and not tagged as counted at market value, its cost dated from the rescue
+  - L581 ...what the hand's sales of it brought, as the city that tracked it all along has it
+  - L583 ...the cost those sales took out: what the rescue paid, less what is left of it
+  - L585 ...and the gain they realized
+  - L586 ...its dividends since the rescue, the rescue book's own
+  - L597 its market lots, the bank's among them, at their market value at the load, each tagged with the month
+  - L600 ...the bank's market lot with the dividends before it apart from the rescue book's
+  - L603 ...and the row counts every holding, the rescue lot among them
+- **L627 6. the identity over a played run, and 7. since it began, by kind**
+  - L657 fixture: the rule bought something over the run
+  - L658 realized + the change in unrealized = the change in value + proceeds - purchases - rescues, every month
+  - L660 ...and the ledger's purchases and proceeds are the fund's own counters'
+  - L661 the whole run, end to end, the same
+  - L665 fixture: a company the fund holds, to lend
+  - L668 ...the fee is the fund's income this month and its life's
+  - L672 since it began, the gain by kind adds up to the fund's: worth + taken out - put in
+  - L674 ...whose put in is the pay-ins, the rescues and the preferred
+  - L680 ...because its cash is what came in less what went out, to the cent
+  - L686 every holding of a city founded with the ledger has a cost, none counted at market value
+- **L692 8. the hand: its cap, its cash held from the rule, its order on the record**
+  - L702 a buy waiting for the step holds its money from the rule
+  - L703 ...which bids with the rest
+  - L704 ...and a second order can take no more than the rest
+  - L707 fixture: the order was posted at the step and rests on the book
+  - L710 the hand's buy is posted no further than the room under the 10% cap the rule keeps
+  - L712 ...and what it still holds of the cash is its units still to fill at its price
+  - L716 ...and the rule's bid on the same book rests on no more than what the hand leaves
+  - L720 the order is a row from the step that posted it, open while it rests
+  - L723 the next step closes it: off the book and off the cash
+  - L724 ...its row says what it filled and what lapsed
+  - L730 fixture: a buy far past the cap is queued at the free cash
+  - L740 a buy in a company the fund already holds 10% of is not posted, and its row says why
+  - L855 fixture: the rule bids for the company at the step - resting, or taken at the desk's ask - and both orders were posted beside it
+  - L862 fixture: each order fits the room the market book alone leaves, and with the rule's bid they come to more than 10%
+  - L864 the rule's bid makes way for the orders waiting: it rests on no more than the room they leave
+  - L866 ...and both orders are posted whole
+  - L868 ...so the fund's market book and every bid of its on the book come to no more than the cap
+  - L870 fixture: every bid of the fund's on the book filled - the rule's and both orders'
+  - L871 ...and the fund holds no more than the cap of the company: nothing for the rule to ask back at fair value
+  - L887 fixture: two orders for 6% of the company each, both posted
+  - L890 ...together past the room the market book leaves
+  - L891 orders past the room on their own leave the rule's bid nothing in the company
+  - L893 ...and the step posts the first whole and the second only to the room the first leaves
+  - L896 ...so the market book and every bid of the fund's come to the cap and no more
+  - L898 fixture: both orders filled
+  - L899 ...and the fund holds the cap of the company and no more
+  - L914 fixture: a fund whose rule bids for the whole room in the company
+  - L918 the ticket offers an order the room all the same: the rule's bid makes way for it
+  - L928 fixture: two orders placed after it, for 4% of the company each or two-fifths of the room left
+  - L930 ...everything the fund could hold of it, every buy filled, the rule's as far as it may, is still the cap
+  - L935 a seller hitting the rule's bid fills it no further than the room the two orders leave
+  - L941 at the step both orders post, and the market book and every bid of the fund's come to no more than the cap
+  - L944 fixture: every bid filled
+  - L945 ...and the fund holds no more than the cap of the company
+  - L968 fixture: the fund holds some of the company, the rule bids for more, an order of the hand's waits, and room is left
+  - L971 ...the ticket quotes a buy
+  - L972 the ticket's room is the cap less what the fund holds and the order waiting
+  - L974 ...the model's own reckoning, which the step trims the order with and the rule's bid fills by
+  - L976 ...and a ticket for the whole cap is capped at it, and says so
+  - L978 ...the market book against the cap after: every one of them filled, the cap itself
+  - L980 ...the fund's other buys on it counted apart, the order waiting and the rule's bid, as a share of the company
+  - L982 ...and the rule's bid makes way for as much of the order as it would otherwise take
 
 ## GatewayCheck.java - 133 labelled assertions
 
@@ -26589,7 +26629,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1265 Construction's struck materials are the row as it stood at the strike, and cross a save
   - L1276 ...and a save from before them loads them as not counted, not as nothing
 
-## ShortSellingCheck.java - 212 labelled assertions
+## ShortSellingCheck.java - 214 labelled assertions
 
 > Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that
 > causes it, not on a city that happens to show it.
@@ -26694,130 +26734,132 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L441 ...and the holdings are the shares in issue
   - L446 fixture: 40 shares short before the company's shares are all retired
   - L449 a company with no shares left while the world is short of it: the short is closed, its collateral and its lenders with it
-  - L459 fixture: a print at 10,000 times fair value makes the step split the shares
-  - L460 a split moves the shares short by the factor, as every share count
-  - L461 ...and the shares lent by the fund
-  - L462 ...the collateral, which is money, stays
-  - L463 ...and the holdings still add to the shares in issue plus what is short
-  - L522 fixture: a company valued on its record, paying a dividend, whose shares the households hold
-  - L544 fixture: the fund holds some of
-  - L580 a month the company paid its dividend with a short open: the short paid
-  - L593 every month of the city's with the short open passes the audit: worst residual
-  - L595 ...the dividend was paid on the short, and the audit names its line
-  - L596 ...and the lending fee reached the fund's cash and the cells' savings: $
-  - L601 the households' fee is a line of the audit, income from the world (rounded to the cent a month)
-  - L602 ...paired with its debit, the money banked, the same size
-  - L603 ...and the fund's line is the fund's part
-  - L604 ...the current account's receipts hold both fees every month
-  - L605 the fund's own counter for the month is what the exchange says it was paid, every month
-  - L606 ...and its life's is all of them
-  - L609 ...and the ledger has its rows, a LENDING_FEE a month, which add to it
-  - L610 ...the fund's page files them under income, with its dividends and coupons
-  - L612 ...its income last month holds the fee beside its dividends and coupons
-  - L615 ...and the company shares' income, since it began, holds it too:
-  - L631 4. the lender is paid: the dividend on every share it holds, the short's on what is short, and the lending fee on the quote
-  - L640 fixture: the desk holds the 100 shares the world is short of, and the holdings are the shares in issue plus 100
-  - L644 with nothing short the cell is paid the company's dividend on every share it holds
-  - L646 ...and with 100 short, the same: the company's dividend per share on its shares in issue
-  - L647 ...the lender kept the shares it lent, so was paid on all of them
-  - L649 the fund is paid the same either way
-  - L650 ...and the world on its own long
-  - L651 the short pays the dividend per share on the shares it is short
-  - L652 ...the desk, which holds them, is paid it
-  - L653 ...every holder was paid, the company's dividend and the short's together
-  - L656 ...and with nothing short the short paid nothing
-  - L668 fixture: the short is
-  - L670 fixture: the quote moved at the step, so the fee's price is the one the book stood at before it
-  - L673 the world pays the lenders LENDING_FEE a year of the shares lent at the quote before the step, a twelfth a month
-  - L675 ...the fund's part pro rata to what it holds of what can be lent
-  - L676 ...and the cells', the rest
-  - L677 ...the fund's cash rose by its part
-  - L679 ...a cell's savings by its part, per household, pro rata to what it holds
-  - L680 ...the other cell the same per share it holds
-  - L682 ...as investment income, which it plans on
-  - L683 ...and not as a dividend, which is a company's: it paid nothing
-  - L684 ...counted over the city's life
-  - L692 fixture: 200 short of 250 that can be lent:
-  - L695 hard to borrow, the fee a year is LENDING_FEE plus HARD_TO_BORROW_FEE of the way from HARD_TO_BORROW to all lent
-  - L697 ...which is more a share lent than at the general rate (
-  - L699 the rate at HARD_TO_BORROW is the general rate
-  - L700 ...at all of it lent, the general rate and the whole of HARD_TO_BORROW_FEE
-  - L701 ...halfway between, half of it
-  - L702 ...and no more past all of it lent
-  - L703 ...the dial's own reading of the fixtures
-  - L708 5. a margin call makes the short cover, at the most it can pay; a recall covers what the lenders can no longer lend
-  - L720 fixture: short 50, with INITIAL_MARGIN times the sale held, and the call line over the price it sold at, under the break price
-  - L731 control: a print between the ask it sold at and the call line (
-  - L735 ...so no margin call: none counted, nothing bid by the short, and it asks to sell more at its band
-  - L742 a print at
-  - L748 the next step counts the margin call
-  - L750 ...the short bid for all it is short at the most it can pay, and the holders sold into the bid at once: it has covered all of it
-  - L752 ...every share at the quote it bid at, the market, and not the break price (the collateral over the shares): a buy-in at the market is the squeeze
-  - L754 ...which is under the break price, so the account kept some of its collateral's worth
-  - L755 ...so it is short nothing, holds no collateral and has nothing resting, and the holders hold
-  - L759 ...and the holdings are the shares in issue again
-  - L774 fixture: 60 short, and the lenders hold
-  - L776 fixture: the quote is fair value, so no margin call
-  - L779 the next step counts the recall, and no margin call
-  - L781 ...the short bids for what is short over what can be lent
-  - L783 ...at the market, fair value here, and not at the break price
-  - L784 ...which is under the break price, the collateral over the shares
-  - L785 ...and a bid at value is no bid over it, so no holder sold into it at the step: nothing covered yet
-  - L789 ...a holder selling at the market covers it: the fund's hand sold
-  - L791 ...at fair value, the bid's price
-  - L792 ...it is short
-  - L813 ...the collateral held against them
-  - L814 ...the shares the cells lend
-  - L815 ...the shares the fund lends
-  - L816 ...the month's lending fee the cells were paid
-  - L817 ...and the fund
-  - L818 ...what the short has paid at the dividends over the city's life
-  - L820 ...shares sold short and what they fetched over the city's life
-  - L822 ...shares covered and what that cost
-  - L824 ...asks posted, company-months a short stood open, margin calls and recalls
-  - L827 ...the lending fees paid over the city's life
-  - L828 ...the quote of
-  - L831 ...and every company's shorts, collateral, lenders, fees and dividends added up, the same
-  - L835 6. a save in the middle of a short: the shorts, their lenders, their fees and the dividends paid on them come back, and the month after is the same
-  - L848 fixture: the short stands, lent by the cells and the fund, charged a fee this month, and has been paid a dividend on
-  - L851 ...with its life counted: sold short, asks posted, months open and the fees paid
-  - L868 saved to slot 10 of the scratch folder and loaded into a second game
-  - L884 fixture: the state carries a short before the fields are taken out of it
-  - L889 a state without the shorts' fields still restores
-  - L890 ...with nothing short, lent or charged, and nothing counted
-  - L971 8. the lending fee on the lenders' books, and the review's four edges (LF1)
-  - L980 fixture: the fund lent shares to the short and was paid for them: $
-  - L981 the fund's income for the month counts the fee, to the cent it was paid
-  - L982 ...and its life's
-  - L988 the ledger has one LENDING_FEE row for the month
-  - L989 ...of the money it was paid
-  - L992 ...and the company's market lot has it as income
-  - L993 the fund's page files the row under income
-  - L1008 fixture: 60 short, and the lenders hold 50 between them, the fund all of it
-  - L1011 the step lends what the lenders hold and no more: 50 of the 60
-  - L1013 ...and the fee is charged on those 50, all lent so the top of the rate
-  - L1014 ...which is not the fee on all 60, shares the lenders had sold
-  - L1015 ...the fund's, which holds them all
-  - L1016 ...and the cells', which hold none, nothing
-  - L1017 ...and the step recalls the 10 the lenders do not hold
-  - L1031 fixture: the town holds
-  - L1036 told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short
-  - L1038 ...as the one-argument form, which knows of no short, caps them at the shares in issue
-  - L1044 fixture: 40 short, held by the desk, and the register is whole
-  - L1048 the short is closed
-  - L1049 ...and what it sold goes with the company: nobody holds a share of it
-  - L1050 ...the desk's 40 among them
-  - L1053 ...and the fund's lot is closed in its ledger, the shares it held gone
-  - L1055 a listing of the company later holds the founders' shares alone: the holdings are the shares in issue
-  - L1065 fixture: fair value is minFair now, and the quote is over the short's collateral
-  - L1067 a short open at a company under minFair is still margin-called when its account is under water
-  - L1072 fixture: the same quote, no short open, and over the band above minFair
-  - L1073 ...opens no new short at a company under minFair
-  - L1078 7. how often, in a real run:
-  - L1089 every month passed the audit: worst residual $
-  - L1090 every company's holdings were the shares in issue plus what the world was short, every month: worst drift
-  - L1095 ...and with them off the world posted no ask and sold nothing short, as the switch says
-  - L1097 ...and that city passed the audit and kept its register whole too
+  - L464 fixture: the print at 10,000 times fair value crosses the wage dial
+  - L466 the wage-triggered split is the derived power of ten
+  - L467 fixture: the print actually split the shares
+  - L468 a split moves the shares short by the factor, as every share count
+  - L469 ...and the shares lent by the fund
+  - L470 ...the collateral, which is money, stays
+  - L471 ...and the holdings still add to the shares in issue plus what is short
+  - L530 fixture: a company valued on its record, paying a dividend, whose shares the households hold
+  - L552 fixture: the fund holds some of
+  - L588 a month the company paid its dividend with a short open: the short paid
+  - L601 every month of the city's with the short open passes the audit: worst residual
+  - L603 ...the dividend was paid on the short, and the audit names its line
+  - L604 ...and the lending fee reached the fund's cash and the cells' savings: $
+  - L609 the households' fee is a line of the audit, income from the world (rounded to the cent a month)
+  - L610 ...paired with its debit, the money banked, the same size
+  - L611 ...and the fund's line is the fund's part
+  - L612 ...the current account's receipts hold both fees every month
+  - L613 the fund's own counter for the month is what the exchange says it was paid, every month
+  - L614 ...and its life's is all of them
+  - L617 ...and the ledger has its rows, a LENDING_FEE a month, which add to it
+  - L618 ...the fund's page files them under income, with its dividends and coupons
+  - L620 ...its income last month holds the fee beside its dividends and coupons
+  - L623 ...and the company shares' income, since it began, holds it too:
+  - L639 4. the lender is paid: the dividend on every share it holds, the short's on what is short, and the lending fee on the quote
+  - L648 fixture: the desk holds the 100 shares the world is short of, and the holdings are the shares in issue plus 100
+  - L652 with nothing short the cell is paid the company's dividend on every share it holds
+  - L654 ...and with 100 short, the same: the company's dividend per share on its shares in issue
+  - L655 ...the lender kept the shares it lent, so was paid on all of them
+  - L657 the fund is paid the same either way
+  - L658 ...and the world on its own long
+  - L659 the short pays the dividend per share on the shares it is short
+  - L660 ...the desk, which holds them, is paid it
+  - L661 ...every holder was paid, the company's dividend and the short's together
+  - L664 ...and with nothing short the short paid nothing
+  - L676 fixture: the short is
+  - L678 fixture: the quote moved at the step, so the fee's price is the one the book stood at before it
+  - L681 the world pays the lenders LENDING_FEE a year of the shares lent at the quote before the step, a twelfth a month
+  - L683 ...the fund's part pro rata to what it holds of what can be lent
+  - L684 ...and the cells', the rest
+  - L685 ...the fund's cash rose by its part
+  - L687 ...a cell's savings by its part, per household, pro rata to what it holds
+  - L688 ...the other cell the same per share it holds
+  - L690 ...as investment income, which it plans on
+  - L691 ...and not as a dividend, which is a company's: it paid nothing
+  - L692 ...counted over the city's life
+  - L700 fixture: 200 short of 250 that can be lent:
+  - L703 hard to borrow, the fee a year is LENDING_FEE plus HARD_TO_BORROW_FEE of the way from HARD_TO_BORROW to all lent
+  - L705 ...which is more a share lent than at the general rate (
+  - L707 the rate at HARD_TO_BORROW is the general rate
+  - L708 ...at all of it lent, the general rate and the whole of HARD_TO_BORROW_FEE
+  - L709 ...halfway between, half of it
+  - L710 ...and no more past all of it lent
+  - L711 ...the dial's own reading of the fixtures
+  - L716 5. a margin call makes the short cover, at the most it can pay; a recall covers what the lenders can no longer lend
+  - L728 fixture: short 50, with INITIAL_MARGIN times the sale held, and the call line over the price it sold at, under the break price
+  - L739 control: a print between the ask it sold at and the call line (
+  - L743 ...so no margin call: none counted, nothing bid by the short, and it asks to sell more at its band
+  - L750 a print at
+  - L756 the next step counts the margin call
+  - L758 ...the short bid for all it is short at the most it can pay, and the holders sold into the bid at once: it has covered all of it
+  - L760 ...every share at the quote it bid at, the market, and not the break price (the collateral over the shares): a buy-in at the market is the squeeze
+  - L762 ...which is under the break price, so the account kept some of its collateral's worth
+  - L763 ...so it is short nothing, holds no collateral and has nothing resting, and the holders hold
+  - L767 ...and the holdings are the shares in issue again
+  - L782 fixture: 60 short, and the lenders hold
+  - L784 fixture: the quote is fair value, so no margin call
+  - L787 the next step counts the recall, and no margin call
+  - L789 ...the short bids for what is short over what can be lent
+  - L791 ...at the market, fair value here, and not at the break price
+  - L792 ...which is under the break price, the collateral over the shares
+  - L793 ...and a bid at value is no bid over it, so no holder sold into it at the step: nothing covered yet
+  - L797 ...a holder selling at the market covers it: the fund's hand sold
+  - L799 ...at fair value, the bid's price
+  - L800 ...it is short
+  - L821 ...the collateral held against them
+  - L822 ...the shares the cells lend
+  - L823 ...the shares the fund lends
+  - L824 ...the month's lending fee the cells were paid
+  - L825 ...and the fund
+  - L826 ...what the short has paid at the dividends over the city's life
+  - L828 ...shares sold short and what they fetched over the city's life
+  - L830 ...shares covered and what that cost
+  - L832 ...asks posted, company-months a short stood open, margin calls and recalls
+  - L835 ...the lending fees paid over the city's life
+  - L836 ...the quote of
+  - L839 ...and every company's shorts, collateral, lenders, fees and dividends added up, the same
+  - L843 6. a save in the middle of a short: the shorts, their lenders, their fees and the dividends paid on them come back, and the month after is the same
+  - L856 fixture: the short stands, lent by the cells and the fund, charged a fee this month, and has been paid a dividend on
+  - L859 ...with its life counted: sold short, asks posted, months open and the fees paid
+  - L876 saved to slot 10 of the scratch folder and loaded into a second game
+  - L892 fixture: the state carries a short before the fields are taken out of it
+  - L897 a state without the shorts' fields still restores
+  - L898 ...with nothing short, lent or charged, and nothing counted
+  - L979 8. the lending fee on the lenders' books, and the review's four edges (LF1)
+  - L988 fixture: the fund lent shares to the short and was paid for them: $
+  - L989 the fund's income for the month counts the fee, to the cent it was paid
+  - L990 ...and its life's
+  - L996 the ledger has one LENDING_FEE row for the month
+  - L997 ...of the money it was paid
+  - L1000 ...and the company's market lot has it as income
+  - L1001 the fund's page files the row under income
+  - L1016 fixture: 60 short, and the lenders hold 50 between them, the fund all of it
+  - L1019 the step lends what the lenders hold and no more: 50 of the 60
+  - L1021 ...and the fee is charged on those 50, all lent so the top of the rate
+  - L1022 ...which is not the fee on all 60, shares the lenders had sold
+  - L1023 ...the fund's, which holds them all
+  - L1024 ...and the cells', which hold none, nothing
+  - L1025 ...and the step recalls the 10 the lenders do not hold
+  - L1039 fixture: the town holds
+  - L1044 told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short
+  - L1046 ...as the one-argument form, which knows of no short, caps them at the shares in issue
+  - L1052 fixture: 40 short, held by the desk, and the register is whole
+  - L1056 the short is closed
+  - L1057 ...and what it sold goes with the company: nobody holds a share of it
+  - L1058 ...the desk's 40 among them
+  - L1061 ...and the fund's lot is closed in its ledger, the shares it held gone
+  - L1063 a listing of the company later holds the founders' shares alone: the holdings are the shares in issue
+  - L1073 fixture: fair value is minFair now, and the quote is over the short's collateral
+  - L1075 a short open at a company under minFair is still margin-called when its account is under water
+  - L1080 fixture: the same quote, no short open, and over the band above minFair
+  - L1081 ...opens no new short at a company under minFair
+  - L1086 7. how often, in a real run:
+  - L1097 every month passed the audit: worst residual $
+  - L1098 every company's holdings were the shares in issue plus what the world was short, every month: worst drift
+  - L1103 ...and with them off the world posted no ask and sold nothing short, as the switch says
+  - L1105 ...and that city passed the audit and kept its register whole too
 
 ## SicknessCheck.java - 55 labelled assertions
 

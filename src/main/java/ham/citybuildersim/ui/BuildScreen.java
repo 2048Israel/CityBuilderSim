@@ -2974,7 +2974,7 @@ final class BuildScreen {
     }
 
     /** A share as a whole per cent; a dash for one that is not a number (a network with nothing supplying it). */
-    static String pct(double share) { return Double.isFinite(share) ? String.format("%.0f%%", share * 100) : "—"; }
+    static String pct(double share) { return Formats.INSTANCE.percentage(share, "%.0f%%"); }
 
     /** A served gauge's words after its figure (0.7.41), the same on every screen: "served, short", "served, tight", "served, enough" - or "served" alone where no line judges it (transit). */
     static String servedWords(CityNeeds.Served s) {
@@ -3412,7 +3412,7 @@ final class BuildScreen {
     }
 
     /** A share as a percentage to one place: .0135 reads "1.4%" (the card's growth line puts its own "+"). */
-    static String pct1(double share) { return Double.isFinite(share) ? String.format("%.1f%%", share * 100) : "—"; }
+    static String pct1(double share) { return Formats.INSTANCE.percentage(share, "%.1f%%"); }
 
     /**
      * A suggestion's button (0.7.34): a card's words for its count, off the
