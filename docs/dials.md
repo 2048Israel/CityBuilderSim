@@ -7751,7 +7751,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 116 | `ScaleCheck.MONTHS_AT_SIZE` | `3` | Months the copy plays before it is saved. |
 | 119 | `ScaleCheck.FIXTURE_MONTHS` | `120` | The founded city's age, in months, when it is saved and copied. |
 | 122 | `ScaleCheck.FREE_PEOPLE` | `{ 5e9, 1e10 }` | Jerus's two plans, in people: the copies whose sectors are free (section 6). |
-| 125 | `ScaleCheck.FREE_FIXTURE_MONTHS` | `172` | The month ownTown() is copied at; its growth, ground, rents and orders are observed (PO1). |
+| 125 | `ScaleCheck.FREE_FIXTURE_MONTHS` | `225` | QB1's quoted-borrowing town at month 225: growing, ground free, affordable rents and million-building interest decisions; the same copy laws as before. |
 | 128 | `ScaleCheck.FREE_MONTHS` | `6` | Months each free copy plays, every one timed. |
 | 131 | `ScaleCheck.RELATIVE_RESIDUAL` | `1e-10` | The most the audit's residual may be of what moved, at any size: five orders of magnitude inside MoneyCheck's 1e-4. |
 | 141 | `ScaleCheck.MONTH_MEDIAN_MS` | `1500` | The longest a free copy's median month may take, in milliseconds. |

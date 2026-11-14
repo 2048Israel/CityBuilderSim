@@ -44,3 +44,37 @@ longer needed; preserve this explicit shortage and its stronger recovery law.
 OrderSearchCheck's existing month-500 fixture and complete harness pass with
 the switch on; retain it, since re-picking a qualifying fixture adds no
 coverage. The initial focused logs are retained under `target/checks/`.
+
+## The older brief against today's main
+
+★ Keep CentralBankCheck's seed-7 shape (43 houses, four founding months),
+OrderSearchCheck's month-500 copy, PlanCheck and HomeRailCheck unchanged.
+The requested re-picks were conditional on the switch moving their premises;
+only ScaleCheck needs one on HW1 main. The initial focused run exits 4 with
+exactly ScaleCheck's two assertion reds and their count/exit lines; all five
+other harnesses pass. Log: `target/checks/qb1-moved.txt`.
+
+CentralBankCheck's probe has 18,529 people at m600; very strict/Standard/very
+loose inflation over the horizon is 4.641%/5.120%/6.670%. Its preview, rule
+identities, strict-policy set and every assertion pass. The deliberate world
+price fall still causes both sides of the loose rule (13 months under target
+in the first 24). No premise is loosened to choose this city.
+
+PlanCheck's played fixture plans eight districts in four samples through m121;
+its every-30-month law and avenues law both pass (312 avenue plots in 11
+open cells). The complete harness passes, including its drawn-city law.
+No new planner failure is present to fix or transfer to PX1, BF1-M or DM3-R.
+
+HomeRailCheck passes in full. Its real run plays 1,255 months: a station stands
+498 months from m698; the yard 227 from m999; positive home share 135 months
+from m699, 517,183 home tonnes, billed 38,919k and burning 2,481,008 litres.
+Zero months have a home share without room, or a quay share without a yard,
+at the haul or month's end. FR8's existing check uses room at the haul as
+well as month-end because later distress retirement can remove the station.
+That recorded timing fault from the older brief is already repaired on main;
+the quoted path now satisfies the unmodified law. Freight and every planner
+and map class are untouched by QB1. None of WN5d's reserved files changed.
+
+Fast check: exit 0, compile/maps/tree green, no firm stale findings.
+Initial focused run: only the two now-repicked ScaleCheck laws red; one
+soft PlanCheck timing, one AutoBuildCheck played-path observation.
