@@ -374,3 +374,7 @@ target/checks/bf1-gate-release.txt. The ship file names this directory for
 reuse. After this kept run only these notes and BF1-ship.md advance; source,
 generated indexes and the final 272bef8f ensemble baseline stay unchanged.
 The provisional marker is removed last and the ship file is pushed last.
+
+## REV-BF1-1: readiness withdrawn
+
+The review mail was missed before 502afa0b was marked ready. Readiness is withdrawn. The three findings require model changes, so the previous pick, ensemble and gate describe the previous model only. The bank bond allowance, approximate order-book ordering and real-series relative comparison will each receive a failing-before assertion and a repair before all three release checks are rerun.

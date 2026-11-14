@@ -1,5 +1,4 @@
-<!-- gate-run: /c/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-BF1/target/bf1-gate-release -->
-
+<!-- readiness: provisional -->
 ## changelog
 ### {next} — BF1, The hands-off bank fails on the sawmills — 2026-11-14, ready, see docs/queue/BF1-notes.md
 Processing mills sell their stored output to the world after local buyers.
