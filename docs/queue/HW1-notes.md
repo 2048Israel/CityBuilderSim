@@ -3203,3 +3203,25 @@ is identical. The branch remains on main e5642145 after a fresh fetch.
 The final ensemble and default therefore describe the model to be gated.
 The project write-up now includes the final ensemble's informational
 changes and the two accepted HW1-V comparison refinements.
+
+
+## Merge of BF1 before the fresh dry run
+
+Orchestrator 20261114-161051 required merging BF1 after its 0.9.102
+publication. Merge 75bf8209 brings origin/main 1e5dffa8 into HW1.
+Game merges without source conflicts. Its changes retain the new project
+capital budgets, retirement repayments and loan-book settlement beside
+HW1's completion promises and order explanations.
+
+Generated-map conflicts took main's inputs and were regenerated from
+the combined source by batch-check --fast, exit 0, in
+target/checks/hw1-bf1-fast.log. The known-reds conflict preserves the
+existing GD4 40/384 Government transfer to KS1-Gov and every new BF1
+entry. No model assertion is softened.
+
+BF1 changes bank capital room and business-credit settlement. HW1's
+financing quotes use the government's normal bond quote, and actual
+orders retain the normal issue path. BankFailureCheck is included in
+the affected regression run to check this combined boundary.
+The combined default is compared with the verified common-calendar
+candidate to determine the final-model ensemble evidence.
