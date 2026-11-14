@@ -94,7 +94,7 @@ zoned ground is carried as usable across subsequent linked works, and
 rounded bond proceeds above the funding gap are discarded from the
 future-plan cash projection.
 
-## Final verification and hold
+## Final verification and attributed finding
 
 The final combined-model ensemble finishes all eighty runs.
 M1 passes in every policy. F1 fails in AUTO2 and ZERO_SLACK, each with
@@ -104,8 +104,14 @@ zero in both 0.9.102 and 0.9.98. The other three policies pass F1.
 The hard score is 8/10. The overall score is 19/26 against 0.9.102 and
 17/26 against 0.9.98. Both failing policies share seed 3's months
 735, 739 and 749, and seed 9's twelve months during 1514–1537, before
-ZERO_SLACK switches policy. The economic cause remains untraced.
+ZERO_SLACK switches policy. The cause is the zero-demand cathode buffer rule inherited from Sector.
 
-EI1 holds shipping on this F1 failure. The provisional ship file has
-been withdrawn, and no fresh launcher run is started. The batch notes
-retain every changed verdict and each criterion beside both baselines.
+Whole main 0.9.102 reproduces both negative totals on the same copied
+pre-month states. A reduced real-refinery fixture also reproduces it.
+With zero local demand, the planner fills its cathode yard while anode
+costs more than cathode earns. CPB1 queues the repair with those cases.
+
+The orchestrator directs passing this outside-batch finding by name under
+Jerus's 11-04 rule. The raw F1 scores and GDP finding remain hard.
+The final production model and ensemble are retained, and the complete
+coordinated launcher run remains required.

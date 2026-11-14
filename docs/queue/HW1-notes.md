@@ -1,4 +1,20 @@
-# HW1 held at the final combined ensemble
+# HW1 final verification after GDP attribution
+
+The production model is unchanged. Main 0.9.103 is merged.
+The 80-run ensemble retains its raw 8/10 hard score, with M1 passing and
+the negative-monthly-GDP F1 finding in AUTO2 and ZERO_SLACK.
+The cause is main 0.9.102's stock planner, reproduced on whole-main code
+at both same pre-month states and in a reduced real-market fixture.
+CPB1 queues that repair. Orchestrator 20261114-180838 explicitly directs
+passing this outside-batch red by name under Jerus's 11-04 rule.
+No GDP assertion or ensemble score has been changed.
+
+The provisional ship file is being restored with CPB1 and its evidence.
+A fresh complete dry run still requires the orchestrator go.
+The earlier hold below is superseded by the completed attribution.
+
+# Earlier F1 hold before attribution
+
 
 All eighty final-model runs finish. M1 passes in every policy.
 F1 fails for AUTO2 and ZERO_SLACK, each 2/16 runs with negative monthly
@@ -3505,3 +3521,58 @@ All service spells, plant choices, financing observations and affected
 harness outcomes remain in the combined-default sections above. The
 next shipping attempt requires resolving the F1 stop with its findings
 preserved, then a final-model ensemble and complete coordinated dry run.
+
+
+## Negative GDP traced to main's no-demand cathode buffer
+
+The bounded AUTO2 and ZERO_SLACK reproductions for seed 3 end at
+m735 and for seed 9 at m1514. All four retain the original negative
+GDP readings, -9183.227497958 and -12961.079479420.
+The first negative component is NX, dominated by Copper Refining's
+imported feed. Consumption, investment and government remain positive.
+
+Sector.getPlannedOutput at 2577–2587 fills 0.8 of the cathode yard when
+local demand is zero. That branch has no feed-spread check.
+forecastOrder at 3011–3018 includes the buffer in its order share,
+inputToMake at 3158–3162 applies that share, and bid at 2736–2737
+orders the anode. Markets 173 runs the order planner, 382–384 imports
+the missing feed and 208 makes stock. ProcessingSector's asset planner
+and SpreadPlanner's earnings gate judge capital investment, so they
+do not stop this monthly inherited buffer rule. The existing-stock
+sales/dump rule is separate.
+
+EconomyManager 2282 gathers the struck imports. NationalAccounts 617
+prices the cathode stock delta, 648 books raw imports and 689 sums GDP.
+In seed 3 anode costs 3.033784105 while cathode earns 2.694686929.
+In seed 9 those are 8.596353592 and 8.216458133. Both have zero
+local cathode demand. The negative processing spread is filled into
+stock and later dumped instead of stopping the unnecessary input order.
+
+The complete independently compiled main 0.9.102 source, 1e5dffa8,
+replays the same copied pre-m734 and pre-m1513 saves as the HW1 model.
+Both models produce identical C/I/G/NX and negative GDP on each
+loaded state, -9183.460216829 and -12994.955525359. The loaded states
+have small government/import differences from uninterrupted play,
+recorded separately from the exact uninterrupted reproductions.
+Logs are target/checks/hw1-gdp-replay-{main0102,hw1}-{3,9}.log.
+The original states, both models and all component logs remain in
+target/hw1-gdp. The seven relevant source files have no diff against
+main 0.9.102. No HW1 production source caused this input rule.
+
+A reduced actual-market probe on whole-main code confirms the cause
+without a growing city. One real Electrolytic Refinery, zero local
+demand and an empty yard, cathode prices 10/9 and anode 11/10 cause
+planOrders share 1, 9750 units of anode bid, 9700 cathode planned
+and no export-bound output. Normal market clearing and account
+booking give imports 107264.328309080, inventory 87300 and
+GDP -19964.328309080. The premise is checked hard in the probe.
+Its log is target/checks/hw1-gdp-buffer-main0102.log.
+
+CPB1 is accepted as an unused name by tools/batch-id.sh, exit 0 in
+target/checks/hw1-gdp-batch-id.log. docs/queue/CPB1.md contains the
+source chain, four bounded replays, two whole-main same-state proofs,
+the reduced fixture and hard done conditions. Per orchestrator
+20261114-180838, the F1 finding passes by name with CPB1 queued.
+The raw final ensemble scores remain FAIL, and the negative GDP
+finding remains hard. Production is unchanged, so the orchestrator
+directs retaining this final-model ensemble without another rerun.
