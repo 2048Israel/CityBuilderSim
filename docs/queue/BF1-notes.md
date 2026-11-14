@@ -454,3 +454,36 @@ only the old mortgage guard fails the above-target leverage refusal.
 The strengthened normal fixture passes. Logs:
 bf1-rev2-refreshed-fixture.txt, bf1-rev2-floor-control.txt and
 bf1-rev2-guard-control.txt under target/checks.
+
+## REV-BF1-3 — follow the claim through banked cash
+
+The prior fixture stopped at the invoice; the extended live-city fixture
+fails on the old model when the loan survives and takes a later haircut
+(bf1-rev3-before.txt). No pick or ensemble was running when this arrived.
+The earlier named run completed six harnesses, exit 0, but is superseded.
+
+★ A last-plant closure marks each surviving bank loan as a retirement
+claim. The marker is saved on BusinessDebt: DataSave's instrument JSON
+writes it, and Game's subtype Gson load reads it. The fixture saves and
+reloads the whole scratch city between closure and liquidation. Old
+unmarked loans remain ordinary loans, so no format bump or conversion is
+needed; SAVE_FORMAT and VERSION are unchanged.
+
+★ Each credit asset refresh values the retired oil and its pending sale
+invoices at net realizable proceeds. The saved loan marker preserves the
+closed-claim judgment until cash is banked. Positive cash repays marked
+claims, in the existing seniority order, at credit settlement before
+new borrowing or another default judgment can reuse it. The monthly
+closed-borrower cache can clear without losing the saved obligation.
+
+The real month sequence matters: stock is liquidated at the bottom of
+one month, and its invoice is banked in the following month. The fixture
+therefore follows both months, live and reloaded, asserting that the
+invoice covers the surviving claim while it waits, that the bullet is
+then repaid in full, and that neither turn substitutes a haircut for
+repayment. It starts after founding prices have been struck; its loan is
+midway between RESTRUCTURE_TARGET of the current inventory and net export
+proceeds, and funds the waiting interest separately. All premises are
+explicit. The after fixture passes; removing only the cash repayment
+call fails both repayment/haircut pairs (bf1-rev3-no-pay-control.txt).
+Logs are under target/checks; only GameFiles.scratch slot 10 is used.

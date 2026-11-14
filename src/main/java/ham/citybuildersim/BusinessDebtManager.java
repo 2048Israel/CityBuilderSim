@@ -784,16 +784,37 @@ public class BusinessDebtManager {
 
     /** Liquid inventory can carry its claim at realizable proceeds until the regular sale settles. */
     public double settleRetirement(String sector, double available, boolean empty, double recoverable) {
-        if (empty) closedRecovery.put(sector, Math.max(0, recoverable));
+        if (empty) {
+            closedRecovery.put(sector, Math.max(0, recoverable));
+            for (BusinessDebt loan : loans) if (loan.getSector().equals(sector)) loan.markRetirementClaim();
+        }
+        double paid = repayLoanClaims(sector, available, false);
+        if (empty && getPrincipal(sector) > 0) closedBorrowers.add(sector);
+        return paid;
+    }
+
+    /** Current realizable inventory and unbanked invoices, refreshed alongside the borrower's assets. */
+    public void setRetirementRecovery(String sector, double value) {
+        closedRecovery.put(sector, Math.max(0, value));
+    }
+
+    /** Cash from the retired inventory repays its marked claims before the next default judgment. */
+    public double settleRetiringLoans(String sector, double available) {
+        return repayLoanClaims(sector, available, true);
+    }
+
+    private double repayLoanClaims(String sector, double available, boolean retiredOnly) {
         double left = Math.max(0, available), paid = 0;
         for (boolean interim : new boolean[] { true, false }) {
             double owed = 0;
             for (BusinessDebt loan : loans) if (loan.getSector().equals(sector)
+                    && (!retiredOnly || loan.isRetirementClaim())
                     && (loan instanceof InterimLoan) == interim) owed += loan.getOutstandingPrincipal();
             double take = Math.min(left, owed);
             if (!(take > 0)) continue;
             double keep = Math.max(0, 1 - take / owed);
             for (BusinessDebt loan : loans) if (loan.getSector().equals(sector)
+                    && (!retiredOnly || loan.isRetirementClaim())
                     && (loan instanceof InterimLoan) == interim) {
                 double part = loan.getOutstandingPrincipal() * (1 - keep);
                 loan.writeDown(keep);
@@ -806,7 +827,6 @@ public class BusinessDebtManager {
         loans.removeIf(loan -> loan.getSector().equals(sector) && !(loan.getOutstandingPrincipal() > 0));
         repaidThisMonth += paid;
         repaidBySector.merge(sector, paid, Double::sum);
-        if (empty && getPrincipal(sector) > 0) closedBorrowers.add(sector);
         return paid;
     }
 
@@ -3365,6 +3385,8 @@ public class BusinessDebtManager {
     public double restructureInsolventSectors() {
 
         double total = 0;
+        for (BusinessDebt loan : loans) if (loan.isRetirementClaim() && loan.getOutstandingPrincipal() > 0)
+            closedBorrowers.add(loan.getSector());
         for (String sector : SECTORS) {
             writtenOffThisMonth.put(sector, 0.0);
         }

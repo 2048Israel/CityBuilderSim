@@ -697,6 +697,7 @@ public class EconomyManager {
                     sheet.getTotalAssets() - sheet.getTradePayables() + getForeignAssets(s.key())
                             + getBondAssets(s.key()));
             businessDebtManager.setCash(s.key(), s.getCash());
+            businessDebtManager.setRetirementRecovery(s.key(), s.retirementRecovery());
         }
     }
 
@@ -1475,6 +1476,8 @@ public class EconomyManager {
                 }
                 cash = s.getCash() - matured;
             }
+            // Liquidation cash pays the retired claim before a new loan or a default slice can reuse it.
+            if (cash > 0) cash = Math.max(0, cash - businessDebtManager.settleRetiringLoans(s.key(), cash));
             double loss = Math.max(-s.getNetIncome(), 0);
             double lent = businessDebtManager.coverShortfall(s.key(), cash, loss, month);
             // ...less the loan's fee, which the bank keeps back (0.7.7);

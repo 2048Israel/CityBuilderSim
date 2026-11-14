@@ -109,7 +109,11 @@ public final class BankFailureCheck {
 
     static void refineryClosing() throws Exception {
         out.println("--- 7. retained oil is recoverable before a closing haircut ---");
-        Game g = town("bankfailure-refinery-close");
+        GameFiles files = GameFiles.scratch("bankfailure-refinery-close");
+        Game g = new Game(files);
+        g.newGame(Founding.defaults().withPath(Nations.Path.RANDOM, 4));
+        g.setRescueMode(TreasuryFund.RescueMode.BUTTON);
+        g.simulateMonths(2);
         g.setCashForTest(0);
         var refinery = g.getSectors().refining();
         var plant = g.getBuildingManager().getTemplateByName("Oil Refinery");
@@ -118,7 +122,8 @@ public final class BankFailureCheck {
         refinery.setStock(Good.DIESEL, litres);
         double proceeds = litres * g.getMarkets().get(Good.DIESEL).netExportPrice();
         var credit = g.getEconomyManager().getBusinessDebtManager();
-        credit.issueProjectLoan(refinery.key(), proceeds * .95, g.getMonth());
+        double face = (refinery.getInventoryValue() * BusinessDebtManager.RESTRUCTURE_TARGET + proceeds) / 2;
+        credit.issueProjectLoan(refinery.key(), face, g.getMonth());
         BusinessDebt claim = credit.getLoans(refinery.key()).get(0);
         refinery.setCash(0);
         g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, 0);
@@ -138,8 +143,27 @@ public final class BankFailureCheck {
         g.getEconomyManager().settleInsolvency();
         close("closing keeps a claim fully recoverable from retained oil", credit.getPrincipal(refinery.key()), owed);
         close("recoverable oil causes no creditor loss at closure", credit.getWrittenOffThisMonth(refinery.key()), 0);
+        // Keep the waiting interest funded; the retained oil must repay principal.
+        refinery.setCash(claim.getMonthlyInterestExpense() * 2);
+        g.saveGame(10, "BF1 retired oil");
+        Game loaded = new Game(files);
+        loaded.loadGameSave(10);
+        BusinessDebtManager restoredCredit = loaded.getEconomyManager().getBusinessDebtManager();
+        BusinessDebt restored = restoredCredit.getLoans(refinery.key()).get(0);
+        check("a city save and reload retain the retirement repayment obligation", restored.isRetirementClaim());
+        loaded.simulateMonths(1);
+        check("the reloaded liquidation invoice covers the carried claim before cash is banked",
+                loaded.getSectors().refining().retirementRecovery() >= restored.getOutstandingPrincipal());
+        close("the reloaded claim takes no haircut while the invoice waits", restoredCredit.getWrittenOffTotal(refinery.key()), 0);
+        loaded.simulateMonths(1);
+        close("the reloaded retired bullet is repaid whole when the sale cash lands", restored.getOutstandingPrincipal(), 0);
+        close("the reloaded claim never takes a later haircut", restoredCredit.getWrittenOffTotal(refinery.key()), 0);
         g.simulateMonths(1);
-        close("the next month's banked oil proceeds repay the retired bullet in full", claim.getOutstandingPrincipal(), 0);
+        check("the liquidation invoice covers the carried claim before cash is banked",
+                refinery.retirementRecovery() >= claim.getOutstandingPrincipal());
+        close("the live claim takes no haircut while the invoice waits", credit.getWrittenOffTotal(refinery.key()), 0);
+        g.simulateMonths(1);
+        close("banked oil proceeds repay the retired bullet in full", claim.getOutstandingPrincipal(), 0);
         close("no later haircut substitutes for that retirement repayment", credit.getWrittenOffTotal(refinery.key()), 0);
         close("the regular liquidation line still empties the retired tanks", refinery.getStock(Good.DIESEL), 0);
 

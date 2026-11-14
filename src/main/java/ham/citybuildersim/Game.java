@@ -21418,6 +21418,7 @@ public class Game {
             // Load business loans. Same shape as the government debts above, in
             // its own array so the two hierarchies never have to be told apart
             // by type string alone.
+            // Gson restores retirementClaim on every subtype: liquidation repayment survives a save (BF1).
             JsonArray businessArray = loaded.getBusinessDebt();
             List<BusinessDebt> loadedLoans = new ArrayList<>();
 

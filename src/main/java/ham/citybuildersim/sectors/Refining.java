@@ -585,8 +585,13 @@ public final class Refining extends Sector {
     @Override
     public double retirementRecovery() {
         double value = 0;
-        for (Good g : PRODUCTS) if (g.exportable() && markets != null && markets.get(g) != null)
-            value += getStock(g) * markets.get(g).netExportPrice();
+        for (Good g : PRODUCTS) if (g.exportable() && markets != null && markets.get(g) != null) {
+            GoodsMarket market = markets.get(g);
+            value += getStock(g) * market.netExportPrice();
+            Sector.Split sold = pending().sold.get(g);
+            if (sold != null) value += sold.atHome + (market.exportPrice() > 0
+                    ? sold.abroad * market.netExportPrice() / market.exportPrice() : 0);
+        }
         return Math.max(0, value);
     }
 
