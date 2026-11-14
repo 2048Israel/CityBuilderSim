@@ -4,7 +4,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 563 files, 616,608 lines, 26,875 methods, 5,932 constants. `GameVersion.VERSION` is "0.9.100", `SAVE_FORMAT` 52.
+**The tree:** 563 files, 616,616 lines, 26,875 methods, 5,932 constants. `GameVersion.VERSION` is "0.9.100", `SAVE_FORMAT` 52.
 
 ## model (260 files)
 
@@ -540,7 +540,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ScaleCheck.java](ScaleCheck.md) | 1,938 | 59 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 1 |
 | [SectorFlowCheck.java](SectorFlowCheck.md) | 308 | 11 | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held t... | 0 |
 | [SectorStatementCheck.java](SectorStatementCheck.md) | 1,288 | 28 | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every mon... | 3 |
-| [ShortSellingCheck.java](ShortSellingCheck.md) | 1,100 | 46 | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, ... | 0 |
+| [ShortSellingCheck.java](ShortSellingCheck.md) | 1,108 | 46 | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, ... | 0 |
 | [SicknessCheck.java](SicknessCheck.md) | 322 | 5 | The long sick: who stays sick, and who it kills. | 0 |
 | [SkipReportCheck.java](SkipReportCheck.md) | 323 | 5 | Verifies the fast-forward summary. | 0 |
 | [SlopeCheck.java](SlopeCheck.md) | 918 | 32 | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill gro... | 1 |

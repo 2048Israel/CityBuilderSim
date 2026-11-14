@@ -96,3 +96,38 @@ remains informational FAIL (long inflation spells). Only M1 and F1 are ship
 stops, as the brief directs. The committed baseline retains every policy's
 reading beside its predecessor, including unchanged informational verdicts.
 Logs and CSVs: target/ensemble/SX1/; no main baseline was rerun.
+
+## Final validation record
+
+- The final source is frozen: the full pick and fresh-clone gate use separate
+  class directories, with no rebuild into either while its suite runs.
+- The first launcher run (failed, not reusable) is retained at /tmp/cbs-gate-SX1-3y0dHtPu.
+  It merged batch commit b6ae5b0c40dd03866587ed9fbf29236408d1960b onto main
+  ef5cfe589277dd14e1a970ddb78212e82b571ee9. It exited 1 because ShortSellingCheck still used the old trigger; the repair and rerun are below.
+- The picker selected ALL (199 registered harnesses, using the repository's
+  gate tier and directly selected nightly checks). Its money/UI-wide review
+  flags were reviewed: FundScreen changes only strings; UserInterface changes
+  only GDP/inflation headline strings, with no threads, callbacks, timer or
+  node lifecycle changes.
+- Both KeptCheck runs finished with the sole, existing KF63 assertion:
+  “a month's redraw after each choice hands back nine in ten of the page's
+  nodes, or more”. No KeptCheck assertion is relaxed or re-filed.
+
+
+## The full gate's finding and repair
+
+The first clean full pick exited 4 and its fresh-clone gate exited 1. The only
+NEW lines were ShortSellingCheck's split fixture and its two dependent share
+count assertions. Its MarketCheck.City reuses ExchangeCheck.Firms, whose wage
+was unspecified (zero), so no wage-triggered split could occur. This is SX1's
+fixture to re-derive, not an unrelated red to name away.
+
+The 10,000-times-fair print is retained. The fixture now explicitly places its
+initial fair quote at the wage band's midpoint, asserts that the original
+print crosses the wage dial, and asserts the exact power-of-ten factor derived
+from the dials. The original exact short-share, fund-lending, collateral and
+register-identity laws remain. This repairs only a harness: no simulation or
+formatting code changed, so the completed final-model ensemble remains valid.
+- The repaired ShortSellingCheck passed alone (batch-check exit 0), including
+  the exact factor, both scaled share counts, unchanged collateral and the
+  whole register identity. Compile, regenerated maps and Stale also passed.

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**199 harness files, 23,750 labelled assertions.** AllChecks runs 199 of them.
+**199 harness files, 23,752 labelled assertions.** AllChecks runs 199 of them.
 
 ## Which harnesses read which class
 
@@ -26532,7 +26532,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1265 Construction's struck materials are the row as it stood at the strike, and cross a save
   - L1276 ...and a save from before them loads them as not counted, not as nothing
 
-## ShortSellingCheck.java - 212 labelled assertions
+## ShortSellingCheck.java - 214 labelled assertions
 
 > Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that
 > causes it, not on a city that happens to show it.
@@ -26637,130 +26637,132 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L441 ...and the holdings are the shares in issue
   - L446 fixture: 40 shares short before the company's shares are all retired
   - L449 a company with no shares left while the world is short of it: the short is closed, its collateral and its lenders with it
-  - L459 fixture: a print at 10,000 times fair value makes the step split the shares
-  - L460 a split moves the shares short by the factor, as every share count
-  - L461 ...and the shares lent by the fund
-  - L462 ...the collateral, which is money, stays
-  - L463 ...and the holdings still add to the shares in issue plus what is short
-  - L522 fixture: a company valued on its record, paying a dividend, whose shares the households hold
-  - L544 fixture: the fund holds some of
-  - L580 a month the company paid its dividend with a short open: the short paid
-  - L593 every month of the city's with the short open passes the audit: worst residual
-  - L595 ...the dividend was paid on the short, and the audit names its line
-  - L596 ...and the lending fee reached the fund's cash and the cells' savings: $
-  - L601 the households' fee is a line of the audit, income from the world (rounded to the cent a month)
-  - L602 ...paired with its debit, the money banked, the same size
-  - L603 ...and the fund's line is the fund's part
-  - L604 ...the current account's receipts hold both fees every month
-  - L605 the fund's own counter for the month is what the exchange says it was paid, every month
-  - L606 ...and its life's is all of them
-  - L609 ...and the ledger has its rows, a LENDING_FEE a month, which add to it
-  - L610 ...the fund's page files them under income, with its dividends and coupons
-  - L612 ...its income last month holds the fee beside its dividends and coupons
-  - L615 ...and the company shares' income, since it began, holds it too:
-  - L631 4. the lender is paid: the dividend on every share it holds, the short's on what is short, and the lending fee on the quote
-  - L640 fixture: the desk holds the 100 shares the world is short of, and the holdings are the shares in issue plus 100
-  - L644 with nothing short the cell is paid the company's dividend on every share it holds
-  - L646 ...and with 100 short, the same: the company's dividend per share on its shares in issue
-  - L647 ...the lender kept the shares it lent, so was paid on all of them
-  - L649 the fund is paid the same either way
-  - L650 ...and the world on its own long
-  - L651 the short pays the dividend per share on the shares it is short
-  - L652 ...the desk, which holds them, is paid it
-  - L653 ...every holder was paid, the company's dividend and the short's together
-  - L656 ...and with nothing short the short paid nothing
-  - L668 fixture: the short is
-  - L670 fixture: the quote moved at the step, so the fee's price is the one the book stood at before it
-  - L673 the world pays the lenders LENDING_FEE a year of the shares lent at the quote before the step, a twelfth a month
-  - L675 ...the fund's part pro rata to what it holds of what can be lent
-  - L676 ...and the cells', the rest
-  - L677 ...the fund's cash rose by its part
-  - L679 ...a cell's savings by its part, per household, pro rata to what it holds
-  - L680 ...the other cell the same per share it holds
-  - L682 ...as investment income, which it plans on
-  - L683 ...and not as a dividend, which is a company's: it paid nothing
-  - L684 ...counted over the city's life
-  - L692 fixture: 200 short of 250 that can be lent:
-  - L695 hard to borrow, the fee a year is LENDING_FEE plus HARD_TO_BORROW_FEE of the way from HARD_TO_BORROW to all lent
-  - L697 ...which is more a share lent than at the general rate (
-  - L699 the rate at HARD_TO_BORROW is the general rate
-  - L700 ...at all of it lent, the general rate and the whole of HARD_TO_BORROW_FEE
-  - L701 ...halfway between, half of it
-  - L702 ...and no more past all of it lent
-  - L703 ...the dial's own reading of the fixtures
-  - L708 5. a margin call makes the short cover, at the most it can pay; a recall covers what the lenders can no longer lend
-  - L720 fixture: short 50, with INITIAL_MARGIN times the sale held, and the call line over the price it sold at, under the break price
-  - L731 control: a print between the ask it sold at and the call line (
-  - L735 ...so no margin call: none counted, nothing bid by the short, and it asks to sell more at its band
-  - L742 a print at
-  - L748 the next step counts the margin call
-  - L750 ...the short bid for all it is short at the most it can pay, and the holders sold into the bid at once: it has covered all of it
-  - L752 ...every share at the quote it bid at, the market, and not the break price (the collateral over the shares): a buy-in at the market is the squeeze
-  - L754 ...which is under the break price, so the account kept some of its collateral's worth
-  - L755 ...so it is short nothing, holds no collateral and has nothing resting, and the holders hold
-  - L759 ...and the holdings are the shares in issue again
-  - L774 fixture: 60 short, and the lenders hold
-  - L776 fixture: the quote is fair value, so no margin call
-  - L779 the next step counts the recall, and no margin call
-  - L781 ...the short bids for what is short over what can be lent
-  - L783 ...at the market, fair value here, and not at the break price
-  - L784 ...which is under the break price, the collateral over the shares
-  - L785 ...and a bid at value is no bid over it, so no holder sold into it at the step: nothing covered yet
-  - L789 ...a holder selling at the market covers it: the fund's hand sold
-  - L791 ...at fair value, the bid's price
-  - L792 ...it is short
-  - L813 ...the collateral held against them
-  - L814 ...the shares the cells lend
-  - L815 ...the shares the fund lends
-  - L816 ...the month's lending fee the cells were paid
-  - L817 ...and the fund
-  - L818 ...what the short has paid at the dividends over the city's life
-  - L820 ...shares sold short and what they fetched over the city's life
-  - L822 ...shares covered and what that cost
-  - L824 ...asks posted, company-months a short stood open, margin calls and recalls
-  - L827 ...the lending fees paid over the city's life
-  - L828 ...the quote of
-  - L831 ...and every company's shorts, collateral, lenders, fees and dividends added up, the same
-  - L835 6. a save in the middle of a short: the shorts, their lenders, their fees and the dividends paid on them come back, and the month after is the same
-  - L848 fixture: the short stands, lent by the cells and the fund, charged a fee this month, and has been paid a dividend on
-  - L851 ...with its life counted: sold short, asks posted, months open and the fees paid
-  - L868 saved to slot 10 of the scratch folder and loaded into a second game
-  - L884 fixture: the state carries a short before the fields are taken out of it
-  - L889 a state without the shorts' fields still restores
-  - L890 ...with nothing short, lent or charged, and nothing counted
-  - L971 8. the lending fee on the lenders' books, and the review's four edges (LF1)
-  - L980 fixture: the fund lent shares to the short and was paid for them: $
-  - L981 the fund's income for the month counts the fee, to the cent it was paid
-  - L982 ...and its life's
-  - L988 the ledger has one LENDING_FEE row for the month
-  - L989 ...of the money it was paid
-  - L992 ...and the company's market lot has it as income
-  - L993 the fund's page files the row under income
-  - L1008 fixture: 60 short, and the lenders hold 50 between them, the fund all of it
-  - L1011 the step lends what the lenders hold and no more: 50 of the 60
-  - L1013 ...and the fee is charged on those 50, all lent so the top of the rate
-  - L1014 ...which is not the fee on all 60, shares the lenders had sold
-  - L1015 ...the fund's, which holds them all
-  - L1016 ...and the cells', which hold none, nothing
-  - L1017 ...and the step recalls the 10 the lenders do not hold
-  - L1031 fixture: the town holds
-  - L1036 told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short
-  - L1038 ...as the one-argument form, which knows of no short, caps them at the shares in issue
-  - L1044 fixture: 40 short, held by the desk, and the register is whole
-  - L1048 the short is closed
-  - L1049 ...and what it sold goes with the company: nobody holds a share of it
-  - L1050 ...the desk's 40 among them
-  - L1053 ...and the fund's lot is closed in its ledger, the shares it held gone
-  - L1055 a listing of the company later holds the founders' shares alone: the holdings are the shares in issue
-  - L1065 fixture: fair value is minFair now, and the quote is over the short's collateral
-  - L1067 a short open at a company under minFair is still margin-called when its account is under water
-  - L1072 fixture: the same quote, no short open, and over the band above minFair
-  - L1073 ...opens no new short at a company under minFair
-  - L1078 7. how often, in a real run:
-  - L1089 every month passed the audit: worst residual $
-  - L1090 every company's holdings were the shares in issue plus what the world was short, every month: worst drift
-  - L1095 ...and with them off the world posted no ask and sold nothing short, as the switch says
-  - L1097 ...and that city passed the audit and kept its register whole too
+  - L464 fixture: the print at 10,000 times fair value crosses the wage dial
+  - L466 the wage-triggered split is the derived power of ten
+  - L467 fixture: the print actually split the shares
+  - L468 a split moves the shares short by the factor, as every share count
+  - L469 ...and the shares lent by the fund
+  - L470 ...the collateral, which is money, stays
+  - L471 ...and the holdings still add to the shares in issue plus what is short
+  - L530 fixture: a company valued on its record, paying a dividend, whose shares the households hold
+  - L552 fixture: the fund holds some of
+  - L588 a month the company paid its dividend with a short open: the short paid
+  - L601 every month of the city's with the short open passes the audit: worst residual
+  - L603 ...the dividend was paid on the short, and the audit names its line
+  - L604 ...and the lending fee reached the fund's cash and the cells' savings: $
+  - L609 the households' fee is a line of the audit, income from the world (rounded to the cent a month)
+  - L610 ...paired with its debit, the money banked, the same size
+  - L611 ...and the fund's line is the fund's part
+  - L612 ...the current account's receipts hold both fees every month
+  - L613 the fund's own counter for the month is what the exchange says it was paid, every month
+  - L614 ...and its life's is all of them
+  - L617 ...and the ledger has its rows, a LENDING_FEE a month, which add to it
+  - L618 ...the fund's page files them under income, with its dividends and coupons
+  - L620 ...its income last month holds the fee beside its dividends and coupons
+  - L623 ...and the company shares' income, since it began, holds it too:
+  - L639 4. the lender is paid: the dividend on every share it holds, the short's on what is short, and the lending fee on the quote
+  - L648 fixture: the desk holds the 100 shares the world is short of, and the holdings are the shares in issue plus 100
+  - L652 with nothing short the cell is paid the company's dividend on every share it holds
+  - L654 ...and with 100 short, the same: the company's dividend per share on its shares in issue
+  - L655 ...the lender kept the shares it lent, so was paid on all of them
+  - L657 the fund is paid the same either way
+  - L658 ...and the world on its own long
+  - L659 the short pays the dividend per share on the shares it is short
+  - L660 ...the desk, which holds them, is paid it
+  - L661 ...every holder was paid, the company's dividend and the short's together
+  - L664 ...and with nothing short the short paid nothing
+  - L676 fixture: the short is
+  - L678 fixture: the quote moved at the step, so the fee's price is the one the book stood at before it
+  - L681 the world pays the lenders LENDING_FEE a year of the shares lent at the quote before the step, a twelfth a month
+  - L683 ...the fund's part pro rata to what it holds of what can be lent
+  - L684 ...and the cells', the rest
+  - L685 ...the fund's cash rose by its part
+  - L687 ...a cell's savings by its part, per household, pro rata to what it holds
+  - L688 ...the other cell the same per share it holds
+  - L690 ...as investment income, which it plans on
+  - L691 ...and not as a dividend, which is a company's: it paid nothing
+  - L692 ...counted over the city's life
+  - L700 fixture: 200 short of 250 that can be lent:
+  - L703 hard to borrow, the fee a year is LENDING_FEE plus HARD_TO_BORROW_FEE of the way from HARD_TO_BORROW to all lent
+  - L705 ...which is more a share lent than at the general rate (
+  - L707 the rate at HARD_TO_BORROW is the general rate
+  - L708 ...at all of it lent, the general rate and the whole of HARD_TO_BORROW_FEE
+  - L709 ...halfway between, half of it
+  - L710 ...and no more past all of it lent
+  - L711 ...the dial's own reading of the fixtures
+  - L716 5. a margin call makes the short cover, at the most it can pay; a recall covers what the lenders can no longer lend
+  - L728 fixture: short 50, with INITIAL_MARGIN times the sale held, and the call line over the price it sold at, under the break price
+  - L739 control: a print between the ask it sold at and the call line (
+  - L743 ...so no margin call: none counted, nothing bid by the short, and it asks to sell more at its band
+  - L750 a print at
+  - L756 the next step counts the margin call
+  - L758 ...the short bid for all it is short at the most it can pay, and the holders sold into the bid at once: it has covered all of it
+  - L760 ...every share at the quote it bid at, the market, and not the break price (the collateral over the shares): a buy-in at the market is the squeeze
+  - L762 ...which is under the break price, so the account kept some of its collateral's worth
+  - L763 ...so it is short nothing, holds no collateral and has nothing resting, and the holders hold
+  - L767 ...and the holdings are the shares in issue again
+  - L782 fixture: 60 short, and the lenders hold
+  - L784 fixture: the quote is fair value, so no margin call
+  - L787 the next step counts the recall, and no margin call
+  - L789 ...the short bids for what is short over what can be lent
+  - L791 ...at the market, fair value here, and not at the break price
+  - L792 ...which is under the break price, the collateral over the shares
+  - L793 ...and a bid at value is no bid over it, so no holder sold into it at the step: nothing covered yet
+  - L797 ...a holder selling at the market covers it: the fund's hand sold
+  - L799 ...at fair value, the bid's price
+  - L800 ...it is short
+  - L821 ...the collateral held against them
+  - L822 ...the shares the cells lend
+  - L823 ...the shares the fund lends
+  - L824 ...the month's lending fee the cells were paid
+  - L825 ...and the fund
+  - L826 ...what the short has paid at the dividends over the city's life
+  - L828 ...shares sold short and what they fetched over the city's life
+  - L830 ...shares covered and what that cost
+  - L832 ...asks posted, company-months a short stood open, margin calls and recalls
+  - L835 ...the lending fees paid over the city's life
+  - L836 ...the quote of
+  - L839 ...and every company's shorts, collateral, lenders, fees and dividends added up, the same
+  - L843 6. a save in the middle of a short: the shorts, their lenders, their fees and the dividends paid on them come back, and the month after is the same
+  - L856 fixture: the short stands, lent by the cells and the fund, charged a fee this month, and has been paid a dividend on
+  - L859 ...with its life counted: sold short, asks posted, months open and the fees paid
+  - L876 saved to slot 10 of the scratch folder and loaded into a second game
+  - L892 fixture: the state carries a short before the fields are taken out of it
+  - L897 a state without the shorts' fields still restores
+  - L898 ...with nothing short, lent or charged, and nothing counted
+  - L979 8. the lending fee on the lenders' books, and the review's four edges (LF1)
+  - L988 fixture: the fund lent shares to the short and was paid for them: $
+  - L989 the fund's income for the month counts the fee, to the cent it was paid
+  - L990 ...and its life's
+  - L996 the ledger has one LENDING_FEE row for the month
+  - L997 ...of the money it was paid
+  - L1000 ...and the company's market lot has it as income
+  - L1001 the fund's page files the row under income
+  - L1016 fixture: 60 short, and the lenders hold 50 between them, the fund all of it
+  - L1019 the step lends what the lenders hold and no more: 50 of the 60
+  - L1021 ...and the fee is charged on those 50, all lent so the top of the rate
+  - L1022 ...which is not the fee on all 60, shares the lenders had sold
+  - L1023 ...the fund's, which holds them all
+  - L1024 ...and the cells', which hold none, nothing
+  - L1025 ...and the step recalls the 10 the lenders do not hold
+  - L1039 fixture: the town holds
+  - L1044 told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short
+  - L1046 ...as the one-argument form, which knows of no short, caps them at the shares in issue
+  - L1052 fixture: 40 short, held by the desk, and the register is whole
+  - L1056 the short is closed
+  - L1057 ...and what it sold goes with the company: nobody holds a share of it
+  - L1058 ...the desk's 40 among them
+  - L1061 ...and the fund's lot is closed in its ledger, the shares it held gone
+  - L1063 a listing of the company later holds the founders' shares alone: the holdings are the shares in issue
+  - L1073 fixture: fair value is minFair now, and the quote is over the short's collateral
+  - L1075 a short open at a company under minFair is still margin-called when its account is under water
+  - L1080 fixture: the same quote, no short open, and over the band above minFair
+  - L1081 ...opens no new short at a company under minFair
+  - L1086 7. how often, in a real run:
+  - L1097 every month passed the audit: worst residual $
+  - L1098 every company's holdings were the shares in issue plus what the world was short, every month: worst drift
+  - L1103 ...and with them off the world posted no ask and sold nothing short, as the switch says
+  - L1105 ...and that city passed the audit and kept its register whole too
 
 ## SicknessCheck.java - 55 labelled assertions
 

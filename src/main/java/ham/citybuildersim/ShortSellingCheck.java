@@ -451,12 +451,20 @@ public class ShortSellingCheck {
 
         // A split moves the shares short by the factor and leaves the money.
         Bench split = standard();
+        // SX1: this fixture's fair quote starts at the wage band's middle.
+        split.city.firms.wage = split.fair / Math.sqrt(Exchange.SPLIT_AT * Exchange.CONSOLIDATE_BELOW);
         split.open(Exchange.DESK, split.shortAsk(), 40);
         double collateralSplit = split.ex.shortCollateral(INDUSTRY), lentSplit = split.ex.lentByFund(INDUSTRY);
         split.print(10_000 * split.fair);
         split.ex.splitForCheck();
         double k = split.ex.getSplit(INDUSTRY);
-        assertTrue("fixture: a print at 10,000 times fair value makes the step split the shares", k > 1);
+        double high = 10_000 * split.fair;
+        double expectedSplit = Math.pow(10, Math.floor(Math.log10(high
+                / (split.city.firms.wage * Math.sqrt(Exchange.SPLIT_AT * Exchange.CONSOLIDATE_BELOW)))));
+        assertTrue("fixture: the print at 10,000 times fair value crosses the wage dial",
+                high > Exchange.SPLIT_AT * split.city.firms.wage);
+        close("the wage-triggered split is the derived power of ten", k, expectedSplit, 1e-12);
+        assertTrue("fixture: the print actually split the shares", k > 1);
         close("a split moves the shares short by the factor, as every share count", split.shortShares(), 40 * k, 1e-9 * k);
         close("...and the shares lent by the fund", split.ex.lentByFund(INDUSTRY), lentSplit * k, 1e-9 * k);
         close("...the collateral, which is money, stays", split.ex.shortCollateral(INDUSTRY), collateralSplit, 1e-9);
