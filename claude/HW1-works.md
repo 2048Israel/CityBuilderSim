@@ -127,3 +127,23 @@ Those component values and the plant mix are recorded for Jerus.
 
 The full pick, monetary ensemble against 0.9.101 and 0.9.98, and kept
 launcher verdict are recorded in docs/queue/HW1-notes.md and the ship file.
+
+
+## Final monetary ensemble
+
+All eighty runs finish. Money audits and findings pass in every policy,
+ten hard criteria of ten. Against 0.9.101, H2 becomes vacuous and the
+final-population T2 verdict fails for ZERO_HOT, SHOCK and HIGH.
+The same changes appear against 0.9.98, alongside AUTO2 A1 changing
+from pass to fail and A3 from fail to pass. Under EI1 these criteria
+are information for Jerus.
+
+The final populations' medians are 2,683,236 for AUTO2, 1,847,724 for
+ZERO_SLACK, 6,882 for ZERO_HOT, 41,284 for SHOCK and 27,234 for HIGH.
+Every criterion and its two baseline readings are in the batch notes.
+
+Two comparison refinements remain queued as HW1-V. A purchased
+steep or zoned parcel is carried as usable across subsequent linked
+works, and rounded bond proceeds above the funding gap are discarded
+from the future-plan cash projection. The queued brief records their
+scope and hard done conditions.

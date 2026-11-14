@@ -3192,3 +3192,14 @@ The earlier docs/ensemble/HW1.md candidate is replaced by this final
 common-calendar baseline. All earlier incomplete ensembles and their
 readiness records remain superseded. The fresh dry run is awaiting the
 orchestrator go requested after this ensemble completed.
+
+
+### Snapshot identity before the coordinated dry run
+
+A SHA-256 comparison of every compiled class in the final ensemble's
+immutable snapshot against current target/classes differs only in
+BuildCardCheck.class and BuildCardCheck$2.class. Every production class
+is identical. The branch remains on main e5642145 after a fresh fetch.
+The final ensemble and default therefore describe the model to be gated.
+The project write-up now includes the final ensemble's informational
+changes and the two accepted HW1-V comparison refinements.
