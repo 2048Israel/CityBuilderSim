@@ -1,0 +1,16 @@
+<!-- readiness: provisional -->
+## changelog
+### {next} — HW1, The auto city builds its works when they are needed — 2026-11-14, ready, see docs/queue/HW1-notes.md
+Essential works, including highways, all warranted schools, police and cells, target full useful service without their own payback veto or twelve-month cap. Whole plans price order, land, filled-post running, physical output loss prevented and returned payroll taxes over twenty years. The cards and automatic orders share the reserve and full-service sizing rule. Orders start ahead by their complete construction lead; saved pending deadlines expire and faster work advances the first completion. Power coming later cannot erase an earlier loss. Health benefits respect all sickness causes and its cap. The hard funded, recovered-service, monthly-link, eligibility and actual-order fixtures are retained. Final service spells, plant choices and ensemble verdicts are recorded in the notes.
+
+## queued
+| DM3-R | Repair the unchanged map renderer's paved-surface loss and joinable disconnected component on HW1's played-city path, plus the post-verdict JavaFX shutdown diagnostic; preserve the hard drawing laws | [cause and done condition](docs/queue/HW1-notes.md#map-renderer-follow-up-dm3-r) |
+| KS1-Gov | Retain the Government Overview's transient cash-flow and bridge rows so its eventful monthly allocation stays within the existing tenth-of-first-draw floor | [cause and done condition](docs/queue/HW1-notes.md#government-allocation-follow-up-ks1-gov) |
+
+## known-reds
+MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it | DM3-R | 2026-11-13 | Main's unchanged map classes reproduce a joinable disconnected component on HW1's played-city input; see the isolated main-map replay in HW1 notes
+MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for | DM3-R | 2026-11-13 | Main's unchanged map classes reproduce 50.5 of 52 paved plots despite the district plan accounting for all 52; painter or seam accounting, traced in HW1 notes
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 47 of 378; | KS1-Gov | 2026-11-14 | Unchanged main Government and pooling code recreates transient arrears, paper-issued and principal-repaid rows at m2364; prefix diagnostic reproduces the exact 47/378 failure, retained as a hard law
+MapCheck | Exception in thread "Thread-1" java.lang.NullPointerException | DM3-R | 2026-11-14 | Post-verdict diagnostic immediately after the three drawing failures, with no stack emitted; unchanged MapCheck exits with a live JavaFX toolkit, see HW1 attribution notes
+
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 40 of 384 | KS1-Gov | 2026-11-14 | GD4 reaches returning Principal repaid, Raised by issuing paper, Today's dials, Paid out and Sales tax graphics. All 40 nodes are existing fiscal rows, verified by temporary Kept instrumentation. Main 97eaa608 passes this section, GD4 signatures stay equal, and the Overview/Pieces/Kept code is unchanged. See GD4-notes.md. Transferred to the same Government retention fix as HW1, one fault and one queued fix.
