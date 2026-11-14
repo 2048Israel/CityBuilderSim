@@ -569,3 +569,29 @@ with equal signatures. An unchanged normal prefix through Trade reproduces
 the Bonds bounds failure but not the Partners pixel failure
 (bf1-kept-review-prefix.txt). Focused UI diagnosis is in progress; no
 release verdict or ensemble is taken from the red ALL run.
+
+The natural copy is now printed before controlled cases: 14 interest
+decisions, all nine large Retail orders whole, five Manufacturing orders
+of one building refused. At m502, 5,677 stores cost 1,099,890 before carry
+1.5829 against 1,551,777 cash and 12,739,571 project room. Monthly profit
+per unit is 5.956, so the whole order carries. At m508, 2,235 stores cost
+445,712 before carry 1.5394, covered by 869,342 cash even with zero new
+project room. These orders provide no natural interior size boundary.
+
+This is the changed model's order composition/finances, not a search
+error. A same-input 24-month ablation giving the copy infinite project
+room still makes exactly the same 14 decisions and zero deep trims.
+The new ceiling is not clipping these measured decisions. BF1's earlier
+economic path produced this profitable Retail expansion and one-building
+Manufacturing refusals, unlike main's old marginal orders. The natural
+zero stays printed as information, separately from controlled searches;
+the numerical laws stay hard. Logs: bf1-search-cause-copy.txt and
+bf1-search-cause-unlimited.txt under target/checks.
+
+Main UI controls reproduce both Kept reds exactly: main FinancesScreen
+and Pieces ahead of BF1's model, with FundScreen/PartnersPage unchanged.
+Bonds has the same 1466/1454 bounds and Partners the same 62 pixels at
+m3169. BF1's FinancesScreen repair is not their cause. Per the 13:11
+orchestrator mail, the ship file queues BF1-K and records these unrelated
+parts. No UI source or pixel tolerance changes. BF1-kept.md records the
+causes, coordinates, frozen inputs and triangle prototype.
