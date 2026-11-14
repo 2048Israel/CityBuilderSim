@@ -772,3 +772,48 @@ The earlier requirement to stop for lost T2 PASS rows was explicitly
 superseded by Jerus's completion approval and EI1. Log:
 target/checks/hw1-final-ensemble.log; full score with every baseline
 figure beside the final figure: target/ensemble/HW1-final/score.md.
+
+Jerus's explicit balance call on resumption includes the coal plant's
+**162-month build quote**, its fuel and its pollution. These are retained
+as his balance decisions; HW1 does not shorten that lead or edit
+buildings.json to force a preferred plant mix. Actual quotes vary with
+the city's builders and queue, as the recorded automatic orders show.
+
+## Government allocation follow-up KS1-Gov
+
+★ Retain the hard allocation law and queue this untouched screen's
+transient-row retention separately. HW1 does not change GovernmentScreen,
+Kept, KeptBench or KeptCheck: their complete diff from main 97eaa608 is
+empty. All Government correctness and unchanged-redraw laws still pass.
+
+The full pick reaches the Government Overview at m2343. Its first draw
+makes 378 nodes; over 25 months it hands back 375 on average, makes none
+in one month, and creates 47 at the most, exceeding the unchanged
+tenth-of-first-draw floor (37.8). This is the only KeptCheck failure.
+
+A diagnostic copy in target/hw1-kept-prefix/KeptCheck.java runs the exact
+original fixture prefix, stopping after the Overview's 25-month loop
+instead of rerunning the full red harness. It records node identities
+before each monthly draw and prints the new labels when the floor is
+crossed. target/checks/hw1-kept-prefix.log reproduces the exact 47/378
+failure at **m2364**: new labels include Arrears paid down (in the list
+and bridge), Raised by issuing paper, Principal repaid and Everything
+else. At m2365, **39** new nodes include Land sold, Central bank
+remittance and Advanced by the central bank (printed). The unchanged
+draw immediately after each creates zero nodes. The diagnostic's
+controlled exit 0 is not a passed allocation law.
+
+GovernmentScreen.overviewPage's eventful lists and bridgeCard/bridgeSteps
+draw these optional rows in scopes. They leave when absent, then create
+new nodes when present again; simultaneous returning flow rows exceed
+the old 17-of-320 example in KeptCheck's comment. This is rendering
+allocation on changed financial content, not a new physical valuation
+or money-book entry. No allocation floor is weakened or made observed.
+
+KS1-Gov's done condition: retain or reuse the transient Overview list and
+bridge row nodes across these m2364/m2365 transitions (or a causal small
+fixture with the same transitions), preserving truthful disappearance,
+the same page as a fresh draw and zero nodes on an unchanged draw.
+Keep the existing 90% retention and tenth-of-first-draw creation laws,
+then run the causal fixture and KeptCheck. The ship entry is narrowly
+scoped to this exact 47-of-378 line, not other pages' allocation limits.
