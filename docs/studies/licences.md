@@ -113,6 +113,14 @@ Gold's price a year 1971-2025, the sources' figures as printed (55 lines); `Gold
 | the Gold Standard Act 1900, the Gold Reserve Act and Proclamation 2072 of 1934 | US federal law, public domain | (the statutes) | yes | none |
 | the World Bank's monthly gold price (the Pink Sheet) | CC BY 4.0 on its face, but the series is the LBMA's fix to May 2025 and a vendor's spot after | the world file's table above (catalogue entry 0038238) | **not shipped** | only `GoldPrice.SIGMA`, the 4.749% a month measured from it, ships, as a dial |
 
+### Gold mining calibration (GD4, 2026-11-13)
+
+| source | licence | read at | commercial | attribution it asks |
+|---|---|---|---|---|
+| USGS Mineral Commodity Summaries 2026, gold production and reserves | public domain, associated data CC0 1.0 | https://pubs.usgs.gov/periodicals/mcs2026/mcs2026.pdf and https://www.usgs.gov/data/mineral-commodity-summaries-2026-data-release | yes | none required, credited in tools/world/ATTRIBUTION.txt |
+| USGS Mineral Commodity Summaries 2025, copper production and reserves | public domain, a US government work | https://pubs.usgs.gov/periodicals/mcs2025/mcs2025.pdf | yes | none required, credited as above |
+| Cox and Singer, USGS Bulletin 1693, Mineral Deposit Models (1986), USGS-authored gold setting descriptions | public domain, a US government work | https://pubs.usgs.gov/bul/1693/report.pdf | yes | none required, credited as above |
+
 ### Not data, but shipped
 
 | what | licence | commercial | what it asks |

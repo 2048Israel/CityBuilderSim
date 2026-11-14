@@ -14169,6 +14169,13 @@ public class Game {
         economyManager.strikeExchangeRate(foreign.getRate(), world.getPriceLevel());
         // ...AND THE WORLD'S BAND BEHIND IT (WN3): the January solve when the year has turned, then every good's floor and ceiling from last month's trade; before any market clears.
         strikeTheWorldMarket();
+        // Bullion's nominal US$ path and spot exchange already include the dollar's price path (GD4).
+        double gold = goldUsdPerOunce(WorldMoneys.monthIndex(month));
+        if (Double.isFinite(gold) && gold > 0) {
+            GoodsMarket bullion = economyManager.getMarkets().get(Good.GOLD);
+            bullion.setExchangeRate(foreign.getRate());
+            bullion.setWorldPrices(gold * 1.005 / 1000, gold * .995 / 1000);
+        }
 
         /*
          * ...and wages start chasing what the basket now costs.

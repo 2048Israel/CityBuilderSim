@@ -203,7 +203,7 @@ public final class GoodsMarket {
     public double getRailCharge() { return railCharge; }
 
     /** The railway's charge on one unit, in city money. Exactly zero with no railway. */
-    public double domesticFreight() { return good.baseFreight() * railCharge * exchangeRate; }
+    public double domesticFreight() { return (good == Good.GOLD ? bandFreight() : good.baseFreight()) * railCharge * exchangeRate; }
 
     /** What the freight on one unit has moved by, in the world's money. Exactly zero at rest. */
     public double freightChange() {
@@ -310,6 +310,7 @@ public final class GoodsMarket {
      * railway charges at home, not what the band holds.
      */
     public double bandFreight() {
+        if (good == Good.GOLD && hasWorldPrices()) return (worldImportNow() - worldExportNow()) / 4;
         double lorry = good.baseFreight();
         if (!hasWorldPrices() || !good.importable() || !good.exportable()) return lorry;
         double literal = good.worldImportPrice() - good.worldExportPrice(), world = worldImportNow() - worldExportNow();

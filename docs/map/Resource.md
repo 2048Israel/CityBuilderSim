@@ -1,8 +1,8 @@
-# Resource.java - 218 lines · 13 methods · 1 constants · model
+# Resource.java - 226 lines · 13 methods · 1 constants · model
 
 `ham/citybuildersim/Resource.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
-> The seven things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields lie, how big a site is, what a site holds, its colour on the map, the good it becomes and what the ground under it sells for.
+> The eight things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields lie, how big a site is, what a site holds, its colour on the map, the good it becomes and what the ground under it sells for.
 > 
 > WHY THIS EXISTS (0.7.56, batch J1a; the project's spec-land.md 2.1). Until
 > now the only thing under the city was iron, and it was a number on a parcel
@@ -35,15 +35,15 @@
 > coal's since 0.7.126, stone's quarries since 0.7.131, copper's mines and
 > leach plants since 0.7.133.
 
-**Uses:** [Deposit](Deposit.md) (14), [Good](Good.md) (12), [LandManager](LandManager.md) (4)
+**Uses:** [Deposit](Deposit.md) (14), [Good](Good.md) (13), [LandManager](LandManager.md) (4), [GoldPrice](GoldPrice.md) (1)
 
-**Used by (74):** [AutoBuildCheck](AutoBuildCheck.md), [BridgeMapCheck](BridgeMapCheck.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingVisual](BuildingVisual.md), [BuildingsTemplate](BuildingsTemplate.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMining](CopperMining.md), [CopperMiningCheck](CopperMiningCheck.md), [Deposit](Deposit.md), [DepositMarks](DepositMarks.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [ExtractionSector](ExtractionSector.md), [Forestry](Forestry.md), [ForestryCheck](ForestryCheck.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [Geology](Geology.md), [HaulageCheck](HaulageCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandDrawing](LandDrawing.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandParcel](LandParcel.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OreView](OreView.md), [PlanCheck](PlanCheck.md), [PolicyPreview](PolicyPreview.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SlopeCheck](SlopeCheck.md), [TileRaster](TileRaster.md), [WellCheck](WellCheck.md), [World](World.md), [WorldCheck](WorldCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (76):** [AutoBuildCheck](AutoBuildCheck.md), [BridgeMapCheck](BridgeMapCheck.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingVisual](BuildingVisual.md), [BuildingsTemplate](BuildingsTemplate.md), [CityLand](CityLand.md), [CityMap](CityMap.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMining](CopperMining.md), [CopperMiningCheck](CopperMiningCheck.md), [Deposit](Deposit.md), [DepositMarks](DepositMarks.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrain](EarthTerrain.md), [EarthTerrainCheck](EarthTerrainCheck.md), [ExtractionSector](ExtractionSector.md), [Forestry](Forestry.md), [ForestryCheck](ForestryCheck.md), [FoundingScreen](FoundingScreen.md), [Game](Game.md), [Geology](Geology.md), [GoldMining](GoldMining.md), [GoldMiningCheck](GoldMiningCheck.md), [HaulageCheck](HaulageCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandDrawing](LandDrawing.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandParcel](LandParcel.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [MaterialsCheck](MaterialsCheck.md), [Mining](Mining.md), [MiningCheck](MiningCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OreView](OreView.md), [PlanCheck](PlanCheck.md), [PolicyPreview](PolicyPreview.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RailDrawCheck](RailDrawCheck.md), [ReadPathCheck](ReadPathCheck.md), [RefineryCheck](RefineryCheck.md), [RefineryViewCheck](RefineryViewCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SlopeCheck](SlopeCheck.md), [TileRaster](TileRaster.md), [WellCheck](WellCheck.md), [World](World.md), [WorldCheck](WorldCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 170 | ITS FIELDS' TYPES (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) |
+| 178 | ITS FIELDS' TYPES (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) |
 
 ## Enum constants
 
@@ -56,47 +56,48 @@
 | 102 | `Resource.COPPER` | Copper: 0.0005 fields a km2, a site 0.5 km2, 300,000 t of metal a site - 120 Mt of ore a km2 at 0.5%. |
 | 105 | `Resource.URANIUM` | Uranium: 0.0002 fields a km2, a site 0.1 km2, 200 t a site - 1 Mt of ore a km2 at 0.2%. |
 | 120 | `Resource.FOREST` | Standing timber: the terrain's forest class, 31% of land (FAO 2020), World.FOREST_M3_PER_KM2 a square kilometre. |
+| 127 | `Resource.GOLD` | Gold, in fine troy ounces: a field per 500 km2 and 10.696 tonnes a site (GD4, spec-gold-money 4.4, estimates). |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 181 | `Resource.NO_TYPES` | `java.util.List.of(Deposit.FieldType.NONE), IRON_TYPES = java.util.List.of(Dep...` | Each resource's field types as typesOf() hands them out: NONE alone, or the two of iron, coal, copper and stone, the commoner first. |
+| 189 | `Resource.NO_TYPES` | `java.util.List.of(Deposit.FieldType.NONE), IRON_TYPES = java.util.List.of(Dep...` | Each resource's field types as typesOf() hands them out: NONE alone, or the two of iron, coal, copper and stone, the commoner first. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 122 | `private final String label` |  |
-| 123 | `private final String unit` |  |
-| 124 | `private final double fieldsPerKm2` |  |
-| 125 | `private final double siteKm2` |  |
-| 126 | `private final double amountPerSite` |  |
-| 127 | `private final int colour` |  |
-| 128 | `private final Good good` |  |
-| 129 | `private final double inGroundShare` |  |
+| 130 | `private final String label` |  |
+| 131 | `private final String unit` |  |
+| 132 | `private final double fieldsPerKm2` |  |
+| 133 | `private final double siteKm2` |  |
+| 134 | `private final double amountPerSite` |  |
+| 135 | `private final int colour` |  |
+| 136 | `private final Good good` |  |
+| 137 | `private final double inGroundShare` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 182 | **type** `public enum Resource` | The seven things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields lie, how big a site is, what a site holds, its colour on the map, the ... |
-| 131 | 11 | `Resource(String label, String unit, double fieldsPerKm2, double siteKm2, double amountPerSite, int colour, Good good, double in...` |  |
-| 144 | 1 | `public String label()` | Its name, as the map's legend and the land office will write it. |
-| 147 | 1 | `public String unit()` | What its amount is counted in: "tonne", or forest's "cubic metre". |
-| 150 | 1 | `public double fieldsPerKm2()` | Fields a square kilometre of land: the mean of each world cell's Poisson count, over its land - on the real Earth, since 0.7.117, over its field land (World.fieldKm2(): its land x its provinces' weight and Z, oil's wi... |
-| 153 | 1 | `public double siteKm2()` | The ground one site takes, in square kilometres: what one mine or well stands on. |
-| 156 | 1 | `public double amountPerSite()` | What one site holds, in its unit, before the cell's richness. |
-| 159 | 1 | `public int colour()` | Its colour on the map, as 0xRRGGBB - the mockup's (city-map.html). |
-| 162 | 1 | `public Good good()` | The good it is sold as, or null while no industry makes it. |
-| 165 | 1 | `public double inGroundShare()` | What the ground over a tonne sells for, as a share of the good's world export price; zero while it has no good. |
-| 168 | 1 | `public boolean inFields()` | Whether it lies in fields (everything but forest, which is terrain). |
+| 37 | 190 | **type** `public enum Resource` | The eight things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields lie, how big a site is, what a site holds, its colour on the map, the ... |
+| 139 | 11 | `Resource(String label, String unit, double fieldsPerKm2, double siteKm2, double amountPerSite, int colour, Good good, double in...` |  |
+| 152 | 1 | `public String label()` | Its name, as the map's legend and the land office will write it. |
+| 155 | 1 | `public String unit()` | What its amount is counted in: "tonne", or forest's "cubic metre". |
+| 158 | 1 | `public double fieldsPerKm2()` | Fields a square kilometre of land: the mean of each world cell's Poisson count, over its land - on the real Earth, since 0.7.117, over its field land (World.fieldKm2(): its land x its provinces' weight and Z, oil's wi... |
+| 161 | 1 | `public double siteKm2()` | The ground one site takes, in square kilometres: what one mine or well stands on. |
+| 164 | 1 | `public double amountPerSite()` | What one site holds, in its unit, before the cell's richness. |
+| 167 | 1 | `public int colour()` | Its colour on the map, as 0xRRGGBB - the mockup's (city-map.html). |
+| 170 | 1 | `public Good good()` | The good it is sold as, or null while no industry makes it. |
+| 173 | 1 | `public double inGroundShare()` | What the ground over a tonne sells for, as a share of the good's world export price; zero while it has no good. |
+| 176 | 1 | `public boolean inFields()` | Whether it lies in fields (everything but forest, which is terrain). |
 
-### ITS FIELDS' TYPES (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) (lines 170-218)
+### ITS FIELDS' TYPES (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) (lines 178-226)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 188 | 9 | `public java.util.List<Deposit.FieldType> typesOf()` | The types of its fields, the commoner first: two for iron, coal, copper and stone; NONE alone for the rest. |
-| 199 | 1 | `public boolean hasTypes()` | Whether its fields come in more than one type: iron, coal, copper and stone. |
-| 213 | 5 | `public Good goodOf(Deposit.FieldType type)` | The good a field of a type becomes when it is dug (0.7.110): null for a type that is not one of its own; for ANY (null) or one of its own, its good() for now - IRON for both iron types, THERMAL_COAL for both coals sin... |
+| 196 | 9 | `public java.util.List<Deposit.FieldType> typesOf()` | The types of its fields, the commoner first: two for iron, coal, copper and stone; NONE alone for the rest. |
+| 207 | 1 | `public boolean hasTypes()` | Whether its fields come in more than one type: iron, coal, copper and stone. |
+| 221 | 5 | `public Good goodOf(Deposit.FieldType type)` | The good a field of a type becomes when it is dug (0.7.110): null for a type that is not one of its own; for ANY (null) or one of its own, its good() for now - IRON for both iron types, THERMAL_COAL for both coals sin... |
 

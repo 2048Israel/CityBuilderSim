@@ -23,7 +23,7 @@
 
 **Uses:** [Nations](Nations.md) (18), [PriceLevel](PriceLevel.md) (2), [WorldMoneys](WorldMoneys.md) (1)
 
-**Used by (7):** [Game](Game.md), [GoldPriceCheck](GoldPriceCheck.md), [GoldStandardCheck](GoldStandardCheck.md), [Inbox](Inbox.md), [PegAnchorCheck](PegAnchorCheck.md), [PolicyScreen](PolicyScreen.md), [VaultMoneysCheck](VaultMoneysCheck.md)
+**Used by (11):** [BuildingManager](BuildingManager.md), [Game](Game.md), [GoldMiningCheck](GoldMiningCheck.md), [GoldPriceCheck](GoldPriceCheck.md), [GoldStandardCheck](GoldStandardCheck.md), [Good](Good.md), [Inbox](Inbox.md), [PegAnchorCheck](PegAnchorCheck.md), [PolicyScreen](PolicyScreen.md), [Resource](Resource.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
 ## Sections
 

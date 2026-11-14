@@ -74,7 +74,10 @@ adds its line here, not in `CLAUDE.md`.
                                    Forestry's logs bought before the world's) - each new sector held
                                    by its own check: CoalMiningCheck, QuarryingCheck and
                                    CementConcreteCheck, CopperMiningCheck and CopperRefiningCheck,
-                                   ForestryCheck and WoodProductsCheck;
+                                   ForestryCheck and WoodProductsCheck; GD4 adds GoldMining,
+                                   the twenty-fifth, on ExtractionSector, with gold fields by geology,
+                                   declining recovered grades, and the mint buying under Gold;
+                                   GoldMiningCheck holds its exports, mint and money audit;
                                    Mining.java is the shape to copy for a mine (on ExtractionSector
                                    since 0.7.112), CementConcrete.java the shortest of all (0.7.131,
                                    on ProcessingSector) and Materials.java the shortest on Sector;

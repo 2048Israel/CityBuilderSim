@@ -1,7 +1,7 @@
 package ham.citybuildersim;
 
 /**
- * The seven things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields lie, how big a site is, what a site holds, its colour on the map, the good it becomes and what the ground under it sells for.
+ * The eight things that lie in the world's ground: iron ore, oil, stone, coal, copper, uranium and standing timber, each with how thickly its fields lie, how big a site is, what a site holds, its colour on the map, the good it becomes and what the ground under it sells for.
  *
  * WHY THIS EXISTS (0.7.56, batch J1a; the project's spec-land.md 2.1). Until
  * now the only thing under the city was iron, and it was a number on a parcel
@@ -117,7 +117,15 @@ public enum Resource {
      * offer's forest is in its price, and LandMarket.bareGround() leaves it
      * out (spec 2.4: or every forested offer would read as a deposit).
      */
-    FOREST("Forest", "cubic metre", 0, 0, 0, 0x527C45, Good.PULPWOOD, .02);
+    FOREST("Forest", "cubic metre", 0, 0, 0, 0x527C45, Good.PULPWOOD, .02),
+
+    /**
+     * Gold, in fine troy ounces: a field per 500 km2 and 10.696 tonnes a site
+     * (GD4, spec-gold-money 4.4, estimates). Geology weights its fields.
+     * The ground sells at one percent of bullion's price, as copper does.
+     */
+    GOLD("Gold", "troy ounce", .002, .1,
+            10_695_652.173913 / GoldPrice.GRAMS_PER_TROY_OUNCE, 0xD9AF37, Good.GOLD, .01);
 
     private final String label;
     private final String unit;

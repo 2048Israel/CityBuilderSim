@@ -8264,7 +8264,7 @@ public final class GameVersion {
      *     It is refused, naming the build that still opens it. No conversion
      *     is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 51;
+    public static final int SAVE_FORMAT = 52;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8313,7 +8313,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 51;
+    public static final int OLDEST_LOADABLE_FORMAT = 52;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

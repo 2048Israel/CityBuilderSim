@@ -1265,6 +1265,38 @@ public class LandManager {
         return Math.max(0, land().totalAmount(r) - extracted[r.ordinal()]);
     }
 
+    /**
+     * Gold recovered at fixed ore throughput, expressed as ounces at
+     * GOLD_REFERENCE_GRADE (GD4). Walks acquisition-order pieces and saved
+     * depletion. Grade falls linearly with gold worked. Integrating over ore
+     * keeps the result independent of the length of a production step.
+     * Pure, so forecasts and the dig read the same ground.
+     */
+    public double goldOutput(double referenceOunces) {
+        if (!(referenceOunces > 0)) return 0;
+        double skip = getExtracted(Resource.GOLD), made = 0, budget = referenceOunces;
+        double decline = 1 - Deposit.GOLD_LAST_GRADE_SHARE;
+        for (CityLand.Piece piece : land().typedPieces(Resource.GOLD)) {
+            double amount = piece.amount();
+            if (!(amount > 0)) continue;
+            double used = Math.min(skip, amount);
+            skip -= used;
+            if (used >= amount) continue;
+            double grade = piece.field() == null ? Deposit.GOLD_REFERENCE_GRADE : piece.field().goldGrade();
+            if (!(grade > 0)) continue;
+            double factor = grade / Deposit.GOLD_REFERENCE_GRADE;
+            double start = 1 - decline * used / amount;
+            double needed = amount / (decline * factor)
+                    * Math.log(start / Deposit.GOLD_LAST_GRADE_SHARE);
+            double ore = Math.min(budget, needed);
+            made += Math.min(amount - used,
+                    amount * start / decline * -Math.expm1(-decline * factor * ore / amount));
+            budget -= ore;
+            if (!(budget > 0)) break;
+        }
+        return Math.min(made, getRemaining(Resource.GOLD));
+    }
+
     /** What the world holds of it, as stored when the city was founded or converted: W. */
     public double getWorldTotal(Resource r)  { land(); return worldTotals[r.ordinal()]; }
 

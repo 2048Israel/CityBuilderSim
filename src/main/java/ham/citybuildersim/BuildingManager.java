@@ -4966,7 +4966,27 @@ public class BuildingManager {
                 .setJobs(JobType.UNIV_LAW, 50)
                 .setJobs(JobType.UNIV_POLICY, 50)
                 .setId(151));
-        //add more buildings; next Building ID is 62
+        /* ---------------- GOLD MINE AND MILL (GD4, next permanent id after R4) ---------------- */
+        templates.add(new BuildingsTemplate("Gold Mine & Mill", BuildingType.MINING)
+                .setSector("Gold Mining")
+                .setCashCost(123082)
+                .setConstructionPoints(61541)
+                .setConstructionMaterials(2051)
+                .makes(Good.GOLD, 300000 / GoldPrice.GRAMS_PER_TROY_OUNCE)
+                .uses(Good.ACID, 30)
+                .uses(Good.DIESEL, 90000)
+                .setElectricityConsumption(5500)
+                .setWaterConsumption(476)
+                .setConsumables(1720)
+                .setLandSqFt(1076391)
+                .setRoadLoad(40)
+                .setJobs(JobType.NO_DIPLOMA, 90)
+                .setJobs(JobType.DIPLOMA, 24)
+                .setJobs(JobType.COLLEGE_ENGINEERING, 6)
+                .setSite(Resource.GOLD, Deposit.FieldType.NONE, 1, 1)
+                .setSince(1900)
+                .setId(152));
+        //add more buildings; next Building ID is 153
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 
