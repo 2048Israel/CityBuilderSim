@@ -66,6 +66,8 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (110), [InfrastructureManager](InfrastructureManager.md) (45), [Game](Game.md) (44), [BuildingsTemplate](BuildingsTemplate.md) (39), [CityNeeds](CityNeeds.md) (31), [LongPlaytest](LongPlaytest.md) (14), [ConstructionControl](ConstructionControl.md) (11), [BuildCard](BuildCard.md) (10), [BuildingType](BuildingType.md) (9), [BuildingManager](BuildingManager.md) (7), [GameFiles](GameFiles.md) (4), [LandManager](LandManager.md) (4), [BuildAdviceCheck](BuildAdviceCheck.md) (4), [Founding](Founding.md) (3), [MoneyAudit](MoneyAudit.md) (2), [Sector](Sector.md) (2), [LandMarket](LandMarket.md) (2), [EconomyManager](EconomyManager.md) (2), [Good](Good.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [TempDirs](TempDirs.md) (1), [RealEstate](RealEstate.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
+**Used by (1):** [WorksFinanceCheck](WorksFinanceCheck.md)
+
 ## Sections
 
 | line | section |

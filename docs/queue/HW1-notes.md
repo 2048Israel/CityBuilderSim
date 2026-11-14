@@ -1,4 +1,4 @@
-# HW1 common-calendar verification in progress
+# HW1 final common-calendar verification
 
 REV-HW1-6 accepts the guard repairs and forecast fixtures. Its helper
 ownership mend is fdc022fd. The d38638ef default completes and exposes
@@ -2853,3 +2853,142 @@ premise is caused again, with the required order explicitly given.
 The final production model remains 913dd341. These are fixture
 repairs under the accepted common-date rule. Fresh affected
 harnesses and the full pick follow.
+
+## Verified default on the final common-calendar model
+
+The production model is 913dd341. The fixture follow-up is 72f8661f.
+Both are on merged main e5642145, version 0.9.101. The full immutable
+default log is target/checks/hw1-calendar-default-final.log. It exits
+0, with zero findings, every monthly audit closed, and six matching
+reloads. Automatic works are measured during 2,401 months. All nineteen
+services are fully served at m2400.
+
+| Service | Months below 90% | Months below 20% | Longest below 90% | Months of longest | First quoted lead near its start |
+|---|---:|---:|---:|---|---:|
+| Power | 0 | 0 | 0 | — | — |
+| Water | 87 | 0 | 40 | 1748–1787 | 43.0 |
+| Streets | 13 | 0 | 13 | 19–31 | 23.0 |
+| Through traffic | 52 | 35 | 23 | 1753–1775 | 24.0 |
+| General care | 0 | 0 | 0 | — | — |
+| Childcare | 2 | 0 | 2 | 408–409 | 2.0 |
+| Senior care | 0 | 0 | 0 | — | — |
+| Death care | 2 | 2 | 2 | 571–572 | 1.0 |
+| Elementary | 7 | 7 | 7 | 256–262 | 6.0 |
+| Middle school | 6 | 6 | 6 | 265–270 | 6.0 |
+| High school | 3 | 3 | 3 | 291–293 | 2.0 |
+| College | 29 | 19 | 19 | 372–390 | 21.0 |
+| University | 79 | 59 | 59 | 1895–1953 | 54.0 |
+| Medical school | 190 | 140 | 190 | 1948–2137 | 135.0 |
+| Law school | 0 | 0 | 0 | — | — |
+| Business school | 0 | 0 | 0 | — | — |
+| Institute of technology | 0 | 0 | 0 | — | — |
+| Police | 46 | 30 | 30 | 457–486 | 36.0 |
+| Cells | 70 | 70 | 51 | 2117–2167 | 96.0 |
+
+Power's minimum is 95.96%, general care's 98.72%, childcare's 88.97%
+and senior care's 90.03%. The useful-demand threshold is applied to
+every reading. Through traffic denotes highways. Below-threshold
+services contribute a full useful-service reading. The quote is the
+first-unit completion near the start of the longest spell.
+
+Highways' longest 23-month spell is inside its 24-month quote, with
+21 pending passes and two orders. Death care has two months against
+one quoted. Streets' thirteen months are the founding spell, inside
+23 quoted. Elementary's seven-month spell starts at m256, when it first
+qualifies. The school is ordered that same pass from cash and reaches
+90% at m263. There are zero funding holds in that spell. Its six-month
+near-start quote and the seventh counted month straddle the monthly
+eligibility/completion sampling boundary.
+
+The former m42 financed rail freeze is removed. The final path has no
+automatic order at m42 or m84. At m84 cash is -0.15480217, debt
+772.31536239 and debt/GDP 66.778123%. At m194 cash is 23.20542545,
+debt 953.26414511 and debt/GDP 28.558839%. At m357 cash is
+5917.85602171, debt 5381.12747018 and debt/GDP 58.128956%.
+Raw money is nominal local thousands.
+
+The archived unchanged-main replay is
+target/checks/hw1-main-funding2.log. Main's debt/GDP is 50.02078%
+at m194 and 24.50519% at m357. It first reaches elementary 90% at
+m261 and has 67 low months m194–260. HW1 has seven low months in the
+common m194–357 interval and first 90% at m263. Eligibility, the
+240% default limit and building balance are Jerus's existing inputs.
+
+★ The later debt level is a call for Jerus. The common-calendar mend
+removes a valuation-driven large early loan and restores immediate
+funding of the qualified elementary need. Capital orders, future
+service demand, wages and coupons still determine the later stock.
+The financial levels are reported alongside service recovery.
+
+### Jail completion and useful demand
+
+The first Jail is ordered at m1957. The next pass quotes 167 months
+with saved due m2123. Its first actionable low spell lasts nineteen
+months. Demand falls below the useful threshold during m1976–2116.
+When it returns above the threshold at m2117 the first pending quote
+near that renewed spell is 96 months. The saved date expires and
+the real builder orders a second Jail at m2124. Service recovers at
+m2168. The renewed low spell is 51 months, inside that near-start quote.
+The full order-to-opening interval includes the below-threshold period.
+This scope is recorded with the actionable-service counts.
+
+### Medical school's first unit and later required capacity
+
+The read-only replay is target/checks/hw1-calendar-medical.log over
+the same immutable production classes. It ends at m2145 with exit 0.
+
+At m1948 demand is 161.5482. The builder orders one Medical School,
+whose staffed pending capacity is about 400. Its actual quote is
+134.9998 months and its saved due m2083. The first opens at m2088,
+after 140 months. It supplies 397.0693 against demand 892.0470,
+which has grown more than fivefold. Two schools at m2116 supply
+787.6942 against 987.5448. The third opens m2138 and supplies
+1187.0518 against 1052.1092, ending the 190-month spell.
+
+There are seven real automatic orders during the spell, 182 pending
+passes, one eligibility transition and zero money holds. Additional
+orders occur m2042, 2056, 2061, 2084, 2089 and 2116. The builder
+does act at m2084 after the original date expires.
+
+The quote competes with urgent current work and private queue/output
+changes. At m1980, 157 Paved Roads for physically unserved streets
+move the medical first quote from 160.9796 to 183.0644 months.
+At m1982, 151 further roads move it from 177.4567 to 197.7914.
+Both orders are current-shortage work, to which the approved priority
+rule applies. Other quote changes happen between automatic passes.
+The later growth in qualification demand requires three operating
+schools before 90% is reached, beyond the first unit's capacity.
+
+★ The five-month first-unit slip and the qualification-demand/capacity
+growth are calls for Jerus. The reserve guard and the current-shortage
+priority both operate as specified. The quoted initial single unit
+cannot describe the date when the subsequent required units are ready.
+
+### Final power mix and complete component records
+
+The final automatic mix is 147 Wind Farms and thirteen Coal Power
+Plants, with 41 actual ordered-plan component quotes. Every quote is
+retained in target/checks/hw1-calendar-default-final.log and
+target/checks/hw1-calendar-metrics.json. The default's paid plan
+comparisons use the same component sum as the cards.
+
+At m2405 the surplus one-unit quotes are shown below. All have zero
+physical relief and zero prevented-output credit.
+
+| One unit | Order | Land | Running PV | Payroll returned PV | Net PV | Quoted opening |
+|---|---:|---:|---:|---:|---:|---:|
+| Coal Power Plant | 535.7B | 45.8B | 25.2B | 1.3B | 605.5B | 171.8 months |
+| Wind Farm | 11.2B | 39.9B | 3.8B | 418.9M | 54.6B | 49.3 months |
+| Hydro Station | 11.0B | 10.0B | 3.0B | 295.8M | 23.6B | 55.4 months |
+
+These end-city one-unit surplus values accompany the complete growing
+service plans that rank actual orders. The coal founding quote of
+162 months and its fuel/pollution treatment remain recorded as
+Jerus's balance calls. Utility books currently charge zero for those
+coal fuel and plant-emission components.
+
+Medical demand is the combined CityNeeds.wanted measure. It takes the
+eligible, willing student potential, including university feeder cohorts
+in the forecast, capped by standing and pending licensed-job vacancies
+and attrition. The replay measures that combined demand's growth.
+The observed series and queue timings establish the capacity comparison.

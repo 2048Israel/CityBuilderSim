@@ -1,10 +1,18 @@
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — HW1, The auto city builds its works when they are needed — 2026-11-14, ready, see docs/queue/HW1-notes.md
-Essential works, including highways, all warranted schools, police and cells, target full useful service without their own payback veto or twelve-month cap. Whole maintained-service plans price initial and later works, land, actual financing, filled-post running, physical output loss prevented and returned payroll taxes over twenty years. Fleet fares and traffic wear include the existing road stock. Parcel cash, vault top-ups and remaining quoted bond maturities determine financing. Current shortages rank by preventable output loss, and monetary holds preserve funding ahead of lower-priority proposals. The cards and automatic orders share the reserve and full-service sizing rule, with funding reasons retained across reloads and cleared when automation is switched off. Orders start ahead by their complete construction lead; saved pending deadlines expire and faster work advances the first completion. Power coming later cannot erase an earlier loss, and ordered industrial loads enter the projection at commissioning. Health benefits respect all sickness causes and its cap. The hard funded, recovered-service, monthly-link, eligibility and actual-order fixtures are retained. Final service spells, plant choices and ensemble verdicts are recorded in the notes.
+Essential works target full useful service plus the player's reserve, without their payback veto or twelve-
+month cap. Cards and automatic orders share counts, opening projections and twenty-year maintained-service
+values on one calendar. Plans include initial and later works, actual-use owned ground, parcel cash, quoted
+financing, filled- post running, physical output losses prevented and returned payroll taxes. Road wear and
+capped sickness enter the sum. Current losses rank shortages and protect funding. Prospective crew quotes
+preserve an unserved essential's saved completion through reserve orders, including newly promoted builders-
+first depots. Expired promises trigger fresh work, and faster alternatives advance recovery. Hard laws for
+funded asks, service recovery, monthly links, eligibility and actual orders remain. Notes record final service
+spells, plant choices and ensemble verdicts.
 
 ## queued
-| HW1-V | Refine carried purchased steep/zoned ground and retain rounded bond cash above the funding gap in future plan cash, WorksValue.java:134/183/219 and AdviceValueOracle.java:213/40/83, REV-HW1-4 findings 3 and 4 | [brief](docs/queue/HW1-V.md) |
+| HW1-V | Refine carried purchased steep/zoned ground and retain rounded bond cash above the funding gap in future plan cash, WorksValue.java:135/184/222 and AdviceValueOracle.java:216/40/86, REV-HW1-4 findings 3 and 4 | [brief](docs/queue/HW1-V.md) |
 | DM3-R | Repair the unchanged map renderer's paved-surface loss and joinable disconnected component on HW1's played-city path, plus the post-verdict JavaFX shutdown diagnostic; preserve the hard drawing laws | [cause and done condition](docs/queue/HW1-notes.md#map-renderer-follow-up-dm3-r) |
 | KS1-Gov | Retain the Government Overview's transient cash-flow and bridge rows so its eventful monthly allocation stays within the existing tenth-of-first-draw floor | [cause and done condition](docs/queue/HW1-notes.md#government-allocation-follow-up-ks1-gov) |
 

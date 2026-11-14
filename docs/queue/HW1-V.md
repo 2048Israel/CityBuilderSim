@@ -8,10 +8,10 @@ comparison refinements assigned to a follow-up.
   a projected works sequence. WorksValue.GroundPlan.take currently
   adds their entire linked dry area to reusable ground, and
   AdviceValueOracle.Ground.use mirrors it. Relevant HW1 source is
-  WorksValue.java:134 and AdviceValueOracle.java:213.
+  WorksValue.java:135 and AdviceValueOracle.java:216.
 - Retain actual quoted bond proceeds above the funding gap as cash
   available to later projected additions. Current cash updates at
-  WorksValue.java:183 and :219 and AdviceValueOracle.java:40 and :83
+  WorksValue.java:184 and :222 and AdviceValueOracle.java:40 and :86
   discard the rounded excess.
 
 Done means independent hard fixtures purchase parcels with usable
