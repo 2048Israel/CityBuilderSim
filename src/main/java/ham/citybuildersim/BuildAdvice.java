@@ -1360,7 +1360,7 @@ public final class BuildAdvice {
             // road's was its cost over its life a trip from 0.7.70, a living
             // care building's its order over the places the need lacks from
             // 0.7.71, and the rest their price a unit with their ground.)
-            WorksValue.Value value = WorksValue.of(game, m, onSite(game, m), t, found[0], landLeft);
+            WorksValue.Value value = WorksValue.of(game, m, onSite(game, m), t, found[0], landLeft, cashLeft);
             double per = value.perUsed();
             // Automatic building can buy land: its full price ranks it, rather than a free-land veto (HW1).
             weighed.add(new Weighed(t, closes ? 0 : 1, per, unit, found[0], closes, fits, p,
@@ -1368,7 +1368,7 @@ public final class BuildAdvice {
                     false, value));
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
-        Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack, maintain) : null;
+        Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack, maintain, cashLeft) : null;
         if (paving != null) weighed.add(paving);
         if (weighed.isEmpty()) return null;
         /*
@@ -1448,7 +1448,7 @@ public final class BuildAdvice {
     }
 
     /** Count full staffed service for automatic essential works; other advice retains its own figure (HW1). */
-    private static int[] count(Game game, Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTemplate, Integer> step,
+    static int[] count(Game game, Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTemplate, Integer> step,
                                Ahead p, int most, boolean maintain) {
         if (most < 1) return new int[] {0, 0};
         Ahead at = p == null ? NOW : p;
@@ -1613,19 +1613,38 @@ public final class BuildAdvice {
      * on quiet streets a gravel road's are, to the bit.
      */
     public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Integer> site, boolean added) {
+        double utilisation = roads(game, added ? plus(site, t, 1) : site).getUtilisation();
+        double riders = roads(game, plus(site, t, 1)).getTransitRiders() - roads(game, site).getTransitRiders();
+        return runningCostAt(game, t, utilisation) - riders * game.getEconomyManager().getTaxPolicy().monthlyFare();
+    }
+
+    private static double runningCostAt(Game game, BuildingsTemplate t, double streetUtilisation) {
         BuildingManager bm = game.getBuildingManager();
         EconomyManager econ = game.getEconomyManager();
         double materials = Math.max(0, bm.getConstructionMaterialPrice());
-        double share = ConstructionControl.paves(t)
-                ? t.gravelRepairsAt(roads(game, added ? plus(site, t, 1) : site).getUtilisation())
-                : t.repairsPerYear();
+        double share = ConstructionControl.paves(t) ? t.gravelRepairsAt(streetUtilisation) : t.repairsPerYear();
         double repairs = econ.withBuildersTax(bm.nonMaterialCost(t) + t.getConstructionMaterials() * materials)
                 * share / 12;
         double utilities = t.getElectricityConsumption() * econ.getPricePerWatt()
                 + t.getWaterConsumption() * econ.getPricePerWaterUnit();
-        double riders = roads(game, plus(site, t, 1)).getTransitRiders() - roads(game, site).getTransitRiders();
-        double fares = riders * econ.getTaxPolicy().monthlyFare();
-        return repairs + utilities + BuildCard.runningCost(game, t) - fares;
+        return repairs + utilities + BuildCard.runningCost(game, t);
+    }
+
+    /** The complete stock change's bill, with its actual traffic wear and one shared pool of fare-paying riders. */
+    static double runningChange(Game game, Map<BuildingsTemplate, Integer> before,
+                                Map<BuildingsTemplate, Integer> after, Ahead at) {
+        InfrastructureManager r0 = roads(game, before, at.scale()), r1 = roads(game, after, at.scale());
+        Map<BuildingsTemplate, Integer> change = new LinkedHashMap<>(after);
+        for (Map.Entry<BuildingsTemplate, Integer> e : before.entrySet())
+            change.merge(e.getKey(), -e.getValue(), Integer::sum);
+        double cost = 0;
+        for (Map.Entry<BuildingsTemplate, Integer> e : change.entrySet()) {
+            int n = e.getValue();
+            if (n != 0) cost += n * runningCostAt(game, e.getKey(),
+                    n > 0 ? r1.getUtilisation() : r0.getUtilisation());
+        }
+        double riders = r1.getTransitRiders() - r0.getTransitRiders();
+        return cost - riders * game.getEconomyManager().getTaxPolicy().monthlyFare();
     }
 
     /**
@@ -1644,6 +1663,7 @@ public final class BuildAdvice {
 
     /** ...the real rate it is struck at, a year: the debt market's for LIFE_MONTHS less expected inflation (BusinessInvestment.realTestRate()). */
     public static double lifeRate(Game game) {
+        game.priceTheDebtMarket();
         return game.getBusinessInvestment().realTestRate(game.getDebtManager().quoteRate(0, LIFE_MONTHS));
     }
 
@@ -1728,11 +1748,11 @@ public final class BuildAdvice {
 
     /** ...at another slack past its projection (0.7.73, AutoBuilder). */
     static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Integer> site, double landLeft, double slack) {
-        return weighPaving(game, m, site, landLeft, slack, true);
+        return weighPaving(game, m, site, landLeft, slack, true, game.getCash());
     }
 
     private static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Integer> site,
-            double landLeft, double slack, boolean maintain) {
+            double landLeft, double slack, boolean maintain, double cashLeft) {
         int most = game.paveable();
         Map<BuildingsTemplate, Integer> step = pavingStep(game);
         if (most < 1 || step.isEmpty()) return null;
@@ -1755,7 +1775,7 @@ public final class BuildAdvice {
         boolean closes = found[1] == 1;
         // Its figure since 0.7.101 as every candidate's (A BUILDING OVER ITS LIFE): the pavings' order over its
         // life for each trip it will take off; pavingLifetime() over pavingUnit() until then.
-        WorksValue.Value value = WorksValue.paving(game, m, site, found[0], landLeft);
+        WorksValue.Value value = WorksValue.paving(game, m, site, found[0], landLeft, cashLeft);
         double per = value.perUsed();
         BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
         return new Weighed(to, closes ? 0 : 1, per, unit, found[0], closes, true, p, lead, true, value);

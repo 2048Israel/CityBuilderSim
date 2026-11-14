@@ -12,16 +12,21 @@ public final class WorksValue {
     private WorksValue() { }
 
     /** Present values in local thousands; jobs and payroll are shown separately from their tax return. */
-    public record Value(double capital, double land, double running, double avoided, double payroll,
-                        double payrollReturned, double jobs, double unfilled, double lead, double used) {
-        public double cost() { return capital + land + running; }
+    public record Value(double capital, double land, double futureCapital, int futureUnits, double financing,
+                        double running, double avoided, double payroll, double payrollReturned,
+                        double jobs, double unfilled, double lead, double used) {
+        public double cost() { return capital + land + futureCapital + financing + running; }
         public double net() { return cost() - avoided - payrollReturned; }
         /** Informational cost per physical unit relieved; reserve-only work has no such denominator. */
         public double perUsed() { return used > 0 ? net() / used : Double.POSITIVE_INFINITY; }
         public String words() {
-            return String.format("%d-year present value: order %s + land %s + running %s - prevented output loss %s"
-                            + " - payroll returned %s = %s. Physical relief %.1f/month; %.0f posts (%.0f unfilled); payroll %s/month; opens %.1f months.",
+            return String.format("%d-year maintained-service present value: order %s + land %s"
+                            + " + %d later works and land %s + new financing %s + running %s"
+                            + " - prevented output loss %s - payroll returned %s = %s."
+                            + " Physical relief %.1f/month; initial %.0f posts (%.0f unfilled);"
+                            + " initial payroll %s/month; opens %.1f months.",
                     BuildAdvice.LIFE_MONTHS / 12, DecisionLog.money(capital), DecisionLog.money(land),
+                    futureUnits, DecisionLog.money(futureCapital), DecisionLog.money(financing),
                     DecisionLog.money(running), DecisionLog.money(avoided), DecisionLog.money(payrollReturned),
                     DecisionLog.money(net()), used, jobs, unfilled, DecisionLog.money(payroll), lead);
         }
@@ -29,10 +34,17 @@ public final class WorksValue {
 
     public static Value of(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
                            BuildingsTemplate t, int count, double landLeft) {
+        return of(g, m, site, t, count, landLeft, g.getCash());
+    }
+
+    /** The same comparison after earlier cards have used some of the treasury. */
+    public static Value of(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
+                           BuildingsTemplate t, int count, double landLeft, double cashLeft) {
+        if (count <= 0) return new Value(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         Game.BuildQuote q = g.quoteBuild(t, count);
         double lead = Double.isFinite(q.months) ? Math.max(0, q.months) : 0;
-        double delay = Math.pow(1 + Math.max(0, BuildAdvice.lifeRate(g)) / 12, -lead);
-        double factor = BuildAdvice.lifeFactor(g) * delay;
+        double factor = BuildAdvice.lifeFactor(g)
+                * Math.pow(1 + Math.max(0, BuildAdvice.lifeRate(g)) / 12, -lead);
         double jobs = 0, payroll = 0, returned = 0;
         PopulationManager people = g.getPopulationManager();
         double[] wages = people.getWagesPerType(), fill = people.getJobFillRate();
@@ -44,43 +56,69 @@ public final class WorksValue {
             returned += paid * g.getEconomyManager().getTaxPolicy().payslipShare(WageBand.of(job));
         }
         Map<BuildingsTemplate, Integer> order = Map.of(t, count);
-        Relief relief = relief(g, m, site, order, lead);
-        return new Value(q.total, BuildAdvice.landValue(g, t.getLandSqFt() * (double) count, landLeft),
-                count * BuildAdvice.running(g, t, site) * factor, relief.avoided(), payroll, returned * factor,
+        double footprint = t.getLandSqFt() * (double) count;
+        double groundCash = Math.max(0, footprint - landLeft) * g.getLandManager().getOfficePricePerSqFt();
+        Maintenance maintenance = new Maintenance(t, count, landLeft, cashLeft, q.total + groundCash);
+        Relief relief = relief(g, m, site, order, lead, maintenance);
+        return new Value(q.total, BuildAdvice.landValue(g, footprint, landLeft), relief.futureCapital(),
+                relief.futureUnits(), relief.financing(), relief.running(),
+                relief.avoided(), payroll, returned * factor + returned / count * relief.futureMonths(),
                 jobs, count * BuildAdvice.unfilledPosts(t, fill), lead, relief.used());
     }
 
     /** A paving is the whole replacement plan, including the ground freed and running-cost difference. */
     public static Value paving(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site, int count, double landLeft) {
+        return paving(g, m, site, count, landLeft, g.getCash());
+    }
+
+    public static Value paving(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
+                               int count, double landLeft, double cashLeft) {
+        if (count <= 0) return new Value(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         Game.BuildQuote q = g.quotePave(count);
-        BuildingsTemplate from = g.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM);
         BuildingsTemplate to = g.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
         double lead = Double.isFinite(q.months) ? Math.max(0, q.months) : 0;
-        double factor = BuildAdvice.lifeFactor(g) * Math.pow(1 + Math.max(0, BuildAdvice.lifeRate(g)) / 12, -lead);
-        Relief relief = relief(g, m, site, BuildAdvice.times(Map.of(), BuildAdvice.pavingStep(g), count), lead);
+        Maintenance maintenance = new Maintenance(to, count, landLeft, cashLeft, q.total);
+        Relief relief = relief(g, m, site, BuildAdvice.times(Map.of(), BuildAdvice.pavingStep(g), count), lead, maintenance);
         return new Value(q.total, -BuildAdvice.landValue(g, BuildAdvice.pavingFrees(g) * count, landLeft),
-                count * (BuildAdvice.running(g, to, site) - BuildAdvice.running(g, from, site, false)) * factor,
+                relief.futureCapital(), relief.futureUnits(), relief.financing(), relief.running(),
                 relief.avoided(), 0, 0, 0, 0, lead, relief.used());
     }
 
-    private record Relief(double used, double avoided) { }
+    /** Later works are priced in the comparison and ordered by later monthly passes. */
+    private record Maintenance(BuildingsTemplate template, int count, double landLeft,
+                               double cashLeft, double initialCashCost) { }
+
+    private record Relief(double used, double avoided, double futureCapital, int futureUnits,
+                          double futureMonths, double financing, double running) { }
+
+    private record Financing(double monthlyCoupon, double issueCost,
+                             double couponPerCash, double issuePerCash) { }
+
+    private static Financing financing(Game g, double gap) {
+        double fallback = Math.max(0, g.getDebtManager().quoteRate(0, Game.BUILD_BOND_YEARS * 12)) / 12;
+        DebtQuote q = AutoBuilder.bondQuote(g, gap, g.getAutoBuilder().getCap());
+        if (q == null || !(q.cashReceived() > 0)) return new Financing(gap * fallback, 0, fallback, 0);
+        double spread = q.faceValue() - q.cashReceived();
+        double scale = Math.max(1, gap / q.cashReceived());
+        return new Financing(q.monthlyInterest() * scale, spread * scale, q.monthlyInterest() / q.cashReceived(),
+                spread / q.cashReceived());
+    }
+
+    private static double annuity(double monthlyRate, double months) {
+        if (!(months > 0)) return 0;
+        return Math.abs(monthlyRate) > 1e-12 ? (1 - Math.pow(1 + monthlyRate, -months)) / monthlyRate : months;
+    }
 
     /** Power at monthly resolution and other services at yearly midpoints, with the same real rate and long city trend. */
     public static double avoided(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
                                  Map<BuildingsTemplate, Integer> order, double lead) {
-        return relief(g, m, site, order, lead).avoided();
+        return relief(g, m, site, order, lead, null).avoided();
     }
 
     /** Demand is physical: the reserve dial sizes orders but cannot create lost output. */
     private static Relief relief(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
-                                 Map<BuildingsTemplate, Integer> order, double lead) {
-        Map<Sector, double[]> traffic = new LinkedHashMap<>();
-        if (BuildAdvice.roadKind(m) || m.kind() == BuildAdvice.Kind.TRANSIT) for (Sector sector : g.getSectors().all()) {
-            double[] mix = new double[Traffic.values().length];
-            for (Traffic stream : Traffic.values()) mix[stream.ordinal()] = g.getBuildingManager()
-                    .totalBySector(sector.key(), t -> t.loadOf(stream));
-            traffic.put(sector, mix);
-        }
+                                 Map<BuildingsTemplate, Integer> order, double lead, Maintenance maintenance) {
+        Map<Sector, double[]> traffic = traffic(g, m);
         double rate = Math.max(0, BuildAdvice.lifeRate(g)) / 12, result = 0, used = 0, weights = 0;
         boolean power = m.kind() == BuildAdvice.Kind.POWER;
         Map<BuildingsTemplate, PendingWork> schedule = power ? completionSchedule(g, site) : Map.of();
@@ -91,7 +129,25 @@ public final class WorksValue {
             double valueAdded = Math.max(0, book.revenue - book.inputs - book.electricity - book.water);
             if (sector.getEnergyRatio() > 0) powerPotential += valueAdded / sector.getEnergyRatio();
         }
-        Map<BuildingsTemplate, Integer> previousReady = null;
+        double horizon = lead + BuildAdvice.LIFE_MONTHS;
+        double futureCapital = 0, futureMonths = 0, financingCost = 0, runningCost = 0;
+        int futureUnits = 0;
+        double futureLead = 0, initialFootprint = 0, cashForLater = 0;
+        double expectedInflation = Math.max(-.99, g.getBusinessInvestment().getExpectedInflation());
+        double couponDiscount = (1 + rate) * (1 + expectedInflation / 12) - 1;
+        Financing funding = new Financing(0, 0, 0, 0);
+        if (maintenance != null) {
+            double cash = g.getAutoBuilder().spendableForMeasure(g, m) - (g.getCash() - maintenance.cashLeft());
+            funding = financing(g, Math.max(0, maintenance.initialCashCost() - cash));
+            cashForLater = Math.max(0, cash - maintenance.initialCashCost());
+            financingCost = funding.issueCost() + funding.monthlyCoupon()
+                    * annuity(couponDiscount, Math.min(horizon, Game.BUILD_BOND_YEARS * 12));
+            futureLead = g.quoteBuild(maintenance.template(), 1).months;
+            if (!Double.isFinite(futureLead)) futureLead = 0;
+            for (Map.Entry<BuildingsTemplate, Integer> e : order.entrySet())
+                initialFootprint += e.getValue() * (double) e.getKey().getLandSqFt();
+        }
+        Map<BuildingsTemplate, Integer> previousReady = null, previousWith = null;
         double[] powerBefore = null, powerAfter = null;
         double basePowerDemand = g.getServicesManager().getUtilitiesHandler().getConsumption();
         int interval = power ? 1 : 12;
@@ -100,15 +156,46 @@ public final class WorksValue {
             BuildAdvice.Ahead at = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), 0);
             Map<BuildingsTemplate, Integer> ready = power ? completedAt(g, schedule, months) : site;
             Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(ready, order);
+            if (maintenance != null) {
+                BuildingsTemplate t = maintenance.template();
+                with = BuildAdvice.plus(with, Map.of(t, futureUnits));
+                BuildAdvice.Ahead target = new BuildAdvice.Ahead(months, at.k(), g.getAutoBuilder().getSlack());
+                if (!BuildAdvice.maintained(g, m, with, target)) {
+                    int most = t.isHydro() ? Math.max(0, g.hydroSlotsFree(t) - maintenance.count() - futureUnits)
+                            : BuildAdvice.MOST;
+                    int[] extra = BuildAdvice.count(g, m, with, Map.of(t, 1), target, most, true);
+                    if (extra[0] > 0) {
+                        double cashCost = g.quoteBuild(t, extra[0]).total;
+                        double area = t.getLandSqFt() * (double) extra[0];
+                        double landLeft = Math.max(0, maintenance.landLeft() - initialFootprint
+                                - futureUnits * (double) t.getLandSqFt());
+                        double land = BuildAdvice.landValue(g, area, landLeft);
+                        double paidAt = Math.max(0, months - futureLead);
+                        double discount = Math.pow(1 + rate, -paidAt);
+                        futureCapital += (cashCost + land) * discount;
+                        double cashNeeded = cashCost + Math.max(0, area - landLeft)
+                                * g.getLandManager().getOfficePricePerSqFt();
+                        double financed = Math.max(0, cashNeeded - cashForLater);
+                        cashForLater = Math.max(0, cashForLater - cashNeeded);
+                        financingCost += financed * (funding.issuePerCash() + funding.couponPerCash()
+                                * annuity(couponDiscount, Math.min(horizon - paidAt, Game.BUILD_BOND_YEARS * 12))) * discount;
+                        futureUnits += extra[0];
+                        with = BuildAdvice.plus(with, Map.of(t, extra[0]));
+                    }
+                }
+            }
             double weight = 0;
             for (int j = 1; j <= interval; j++) weight += Math.pow(1 + rate, -(lead + start + j));
+            futureMonths += weight * futureUnits;
+            if (maintenance != null) runningCost += weight * BuildAdvice.runningChange(g, ready, with, at);
             double[] before, after;
             if (power) {
-                // Capacity and the works' own draw stay fixed until another unit opens.
-                if (!ready.equals(previousReady)) {
+                // Reuse the physical components until a pending or planned unit changes them.
+                if (!ready.equals(previousReady) || !with.equals(previousWith)) {
                     powerBefore = BuildAdvice.supplyDemand(g, m, ready, BuildAdvice.NOW);
                     powerAfter = BuildAdvice.supplyDemand(g, m, with, BuildAdvice.NOW);
                     previousReady = ready;
+                    previousWith = with;
                 }
                 double demand = basePowerDemand * at.scale() + pendingPowerLoad(g, loads, months);
                 before = new double[] {powerBefore[0], demand + (powerBefore[1] - basePowerDemand)};
@@ -122,7 +209,8 @@ public final class WorksValue {
             used += weight * Math.max(0, Math.max(0, before[1] - before[0]) - Math.max(0, after[1] - after[0]));
             weights += weight;
         }
-        return new Relief(weights > 0 ? used / weights : 0, Math.max(0, result));
+        return new Relief(weights > 0 ? used / weights : 0, Math.max(0, result), futureCapital,
+                futureUnits, futureMonths, financingCost, runningCost);
     }
 
     /** Electrical draw of already ordered non-power works that their present queue opens by this date. */
@@ -200,6 +288,30 @@ public final class WorksValue {
 
     private static double cover(double[] sd) {
         return sd[1] > 0 ? Math.max(0, Math.min(1, sd[0] / sd[1])) : 1;
+    }
+
+    private static Map<Sector, double[]> traffic(Game g, BuildAdvice.Measure m) {
+        Map<Sector, double[]> traffic = new LinkedHashMap<>();
+        if (BuildAdvice.roadKind(m) || m.kind() == BuildAdvice.Kind.TRANSIT) for (Sector sector : g.getSectors().all()) {
+            double[] mix = new double[Traffic.values().length];
+            for (Traffic stream : Traffic.values()) mix[stream.ordinal()] = g.getBuildingManager()
+                    .totalBySector(sector.key(), t -> t.loadOf(stream));
+            traffic.put(sector, mix);
+        }
+        return traffic;
+    }
+
+    /** The current monthly output loss that a fully serving available work could relieve. */
+    static double shortageLoss(Game g, BuildAdvice.Measure m) {
+        double loss = 0;
+        Map<Sector, double[]> traffic = traffic(g, m);
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
+            if (!m.serves(t) || !(BuildAdvice.built(g, m, t) > 0)) continue;
+            int[] n = BuildAdvice.count(g, m, Map.of(), Map.of(t, 1), BuildAdvice.NOW, BuildAdvice.MOST, true);
+            if (n[0] > 0)
+                loss = Math.max(loss, outputRestored(g, m, Map.of(), Map.of(t, n[0]), BuildAdvice.NOW, traffic));
+        }
+        return loss;
     }
 
     /** Only effects that the simulation actually charges: utility rationing, traffic and absence. */

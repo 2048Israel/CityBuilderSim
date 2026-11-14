@@ -2004,3 +2004,121 @@ future staged capital and financing, plus across-service need/loss
 priority. The actual order remains sized to its opening requirement.
 Eligibility and building balance data stay as authored. No ensemble or
 fresh gate has started on this reviewed candidate.
+
+## Funding and complete-plan mend after the 06:47 instruction
+
+The rail regression was caused by this batch. The early comparison priced
+one small street order against one rail order, then credited twenty years
+of rail relief against a city that never built another street. It omitted
+new borrowing costs and repeatedly credited the same fare pool to every
+additional transit unit.
+
+★ Compare maintained service across the twenty-year horizon. Each candidate
+includes later units of that type required by the unchanged reserve rule,
+their quotes, opportunity land, actual purchased land and their financing.
+Actual orders still buy the capacity required at their opening. Later monthly
+passes place later additions. Quotes for future additions use today's terms
+and the existing life trend, so these are comparable projections.
+
+★ Charge new financing from the actual capped bond quote, including issue
+spread and coupon costs. A short quote prices the full required financing
+at its observed terms, while the existing automatic payment tests still
+enforce the debt limit before placing an order. Future cash requirements
+use available cash first. Coupon cash flows are discounted with expected
+inflation included in the nominal discount rate.
+
+★ Rank currently missing essential service by its actual preventable output
+loss, then its missing share. Reserve expansion follows current shortages.
+A cash or debt hold on the highest current shortage protects funds from
+lower-priority proposals. Lower-priority conditional asks release their
+earmarked proceeds when a higher current shortage needs the cash. The debt
+and raised cash remain booked.
+
+Whole-fleet running costs use each fleet's actual traffic wear and its total
+incremental rider pool. Additional transit units share that pool. Wages
+continue to use filled posts. Eligibility and buildings.json were untouched.
+
+### Hard fixture adaptations for the funding rule
+
+- EssentialWorksCheck's limited-power-cash and 35%-reserve parity fixtures now
+  explicitly serve streets first. Their original power and cash premises
+  remain hard. The new loss priority otherwise correctly spends their cash
+  on the incidental street shortage before reaching power.
+- AuctionCheck section 10 retains real sold-bond proceeds and outstanding
+  debt. It divides the existing funded street reservation between street
+  and general care through the supported saved OpenAsk state. This causes
+  the legacy two-funded-ask premise without creating cash or debt. The
+  original hard funded-care withdrawal and retained-money assertions remain.
+- BuildAdviceCheck staffing alternatives and land-price figures now use the
+  cash and land left by earlier cards. Their hard least-plan and exact stored
+  figure laws remain. Financing depends on this residual treasury.
+- BuildAdviceCheck's Paved-at-every-price path changes to a hard minimum
+  complete maintained-service plan at each original land price. Street
+  access, no free ground, feasible service and Paved's least-ground premise
+  remain. Relieved traffic changes gravel repairs during the sequence.
+
+The exact stored-figure law caught a query-order fault. A bond quote refreshes
+the debt market's GDP, tax and cash inputs. Earlier candidates could therefore
+use a stale discount rate before a later candidate requested financing.
+BuildAdvice.lifeRate now refreshes those derived market inputs through the
+existing Game method before reading the curve. This places no orders and
+moves no cash or debt. Diagnostic logs are
+target/checks/hw1-advice-finance-diag2.log and
+target/checks/hw1-advice-finance-diag3.log.
+
+Focused checks before the market-input mend passed the new staging, financing,
+fleet running, current-loss ranking, protected funding, limited-power and
+card/automatic parity fixtures. RoadCheck's focused advice/offered sections
+and AuctionCheck section 10 passed. The three advice-prefix reds were kept
+hard and diagnosed above. Full verification follows the completed mend.
+
+### Causal controls and exact early replay
+
+The five isolated omitted-mend controls each exited 1 while their fixture
+premises passed. The kept model passes all five sections.
+
+| Omitted mend | Hard law that failed | Log under target/checks |
+|---|---|---|
+| Later staged additions | Future units and capital included | hw1-finance-control-staging.log |
+| New borrowing charges | Issue and coupon costs included | hw1-finance-control-financing.log |
+| Monetary-loss ranking | Higher-loss streets precede power and use the cash | hw1-finance-control-ranking.log |
+| Protected essential funding | School hold preserves funds and card labels the care hold | hw1-finance-control-protection.log |
+| Whole-fleet running | Shared fares counted once and relieved-traffic wear used | hw1-finance-control-running.log |
+
+A sixth control removes the market-input refresh alone. The unchanged equal
+posts/prices and land-price premises pass, while both hard least-plan and
+bit-exact stored-value assertions fail. Its log is
+target/checks/hw1-finance-control-market.log. The kept advice prefix exits 0
+in target/checks/hw1-finance-advice-fixed.log.
+
+The revised model's exact default rhythm through m363 is recorded in
+target/checks/hw1-finance-funding-final.log, using only a LongPlaytest
+diagnostic hook over the immutable compiled production model. It places
+no order at m84, with cash −$5.91k and debt $1,495.86k, 49.72% of GDP.
+Elementary is ordered at m182 and m184, and first reaches 90% at m185.
+Its longest eligible spell below 90% through m363 is three months,
+m182–184. In the original comparison window m194–357 it is never below
+90%, while main is below 90% for 67 consecutive months, m194–260.
+
+| Same pre-pass month | Revised HW1 debt, thousands | HW1 debt/GDP | Main debt, thousands | Main debt/GDP |
+|---|---:|---:|---:|---:|
+| 194 | 5,495.06 | 74.14% | 2,937.46 | 50.02% |
+| 357 | 28,944.75 | 173.17% | 7,941.02 | 24.51% |
+
+The larger later HW1 debt remains information for Jerus. The m363 run has
+zero money or finding failures. It orders no rail line through m363.
+The full default run and final ensemble will give the complete horizon.
+
+The first six-harness verification found two further harness assumptions.
+AutoBuildCheck's decades reader dereferenced every held building, although
+a protected-funding hold names a measure and has no proposed building.
+Its hard reason test now requires an earlier essential operating shortage,
+an actual monetary hold or partial order, and no payable alternative for
+that earlier service. Other held-building tests retain their original law.
+
+IslandLinkCheck's monthly shortage hook changed only total traffic.
+A pending transit line switches the network to its traffic-stream inputs,
+so this did not cause the claimed shortage. The hook now sets goods traffic
+in the breakdown as well as the total, after cutting ground. All later
+passes remain actual monthly passes, and the hard cue, duplicate-link and
+eventual-linking assertions remain.

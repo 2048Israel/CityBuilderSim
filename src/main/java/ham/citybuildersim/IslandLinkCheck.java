@@ -146,12 +146,16 @@ public class IslandLinkCheck {
     static int[] laterGroundShortPasses(LandmassCheck.City c, java.util.function.BooleanSupplier holds) {
         c.g.autoBuildProbeForTest = after -> {
             if (after) return;
+            cutGround(c);
             var roads = c.g.getInfrastructureManager();
             double pendingCapacity = BuildAdvice.roads(c.g,
                     BuildAdvice.onSite(c.g, BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS))).getStreetCapacity();
             double one = LandmassCheck.tpl(c, "Paved Road").getCapacity();
-            roads.setLoad(2 * Math.max(pendingCapacity, one));
-            cutGround(c);
+            double load = 2 * Math.max(pendingCapacity, one);
+            double[] streams = new double[Traffic.values().length];
+            streams[Traffic.GOODS.ordinal()] = load;
+            roads.setLoad(load);
+            roads.setBreakdown(streams);
         };
         try { return lowPasses(c, CUE_PASSES, holds); }
         finally { c.g.autoBuildProbeForTest = null; }

@@ -14639,7 +14639,7 @@ public class Game {
      * four have to be current before updateInterest() or any quote, which is
      * why this is one call rather than four scattered ones.
      */
-    private void priceTheDebtMarket(){
+    void priceTheDebtMarket(){
         debtManager.setGDP(economyManager.getMonthGdp());
         debtManager.setTaxRevenue(economyManager.getTaxIncome());
         debtManager.setCashPosition(cash);

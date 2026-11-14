@@ -1625,9 +1625,37 @@ public class AuctionCheck {
         BuildAdvice.Measure care = null;
         for (BuildAdvice.Measure k : AutoBuilder.remit(c, CityNeeds.measure(c, CityNeeds.PLAIN))) if (k.label().equals("General care")) care = k;
         final BuildAdvice.Measure general = care;
+        BuildingsTemplate centre = c.getBuildingManager().getTemplateByName("Community Health Centre");
+        // A save from before ranked funding can contain two funded asks. The first pass above really sold the paper.
+        // Split those actual proceeds between the two reservations, preserving every dollar and all outstanding debt.
+        double reservedC = cb.askedRaised(), cashC = c.getCash(), principalC = c.getDebtManager().getAllPrincipal();
+        AutoBuilder.State legacy = cb.toState();
+        AutoBuilder.OpenAsk streetReservation = legacy.asks.stream()
+                .filter(k -> k.measure().equals(streets.label())).findFirst().orElse(null);
+        if (streetReservation != null && general != null) {
+            for (AutoBuilder.OpenAsk old : new java.util.ArrayList<>(legacy.asks)) if (old.measure().equals(general.label())) {
+                streetReservation.raised += old.raised;
+                legacy.asks.remove(old);
+            }
+            AutoBuilder.OpenAsk fundedCare = new AutoBuilder.OpenAsk();
+            fundedCare.measure = general.label();
+            fundedCare.building = centre.getName();
+            fundedCare.templateId = centre.getId();
+            fundedCare.count = 1;
+            fundedCare.cost = c.quoteBuild(centre, 1).total;
+            fundedCare.raised = streetReservation.raised / 2;
+            fundedCare.toRaise = Math.max(0, fundedCare.cost - fundedCare.raised);
+            fundedCare.month = streetReservation.month;
+            streetReservation.raised -= fundedCare.raised;
+            streetReservation.toRaise = Math.max(0, streetReservation.cost - streetReservation.raised);
+            legacy.asks.add(fundedCare);
+            cb.restore(legacy);
+        }
+        assertTrue("fixture: the saved street and care reservations share actual sold proceeds without changing cash or debt",
+                streetReservation != null && reservedC > 0 && Math.abs(cb.askedRaised() - reservedC) < 1e-9
+                        && c.getCash() == cashC && c.getDebtManager().getAllPrincipal() == principalC);
         AutoBuilder.OpenAsk careAsk = general == null ? null : cb.askFor(general);
         double raisedC = careAsk == null ? 0 : careAsk.raised();
-        BuildingsTemplate centre = c.getBuildingManager().getTemplateByName("Community Health Centre");
         c.setCashForTest(Founding.WEALTHY_CASH);
         quietly(() -> c.buildStack(centre, 20, true));
         double[] snapC = new double[5];

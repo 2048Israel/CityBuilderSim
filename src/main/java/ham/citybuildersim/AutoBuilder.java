@@ -426,6 +426,11 @@ public final class AutoBuilder {
 
     /** ...as the advice's card says it: HELD_BACK and the inbox's words (paybackWords()); null where it did not hold it back. */
     public String heldBackWords(BuildAdvice.Suggestion s) {
+        if (s == null) return null;
+        for (Step step : steps) if (step.measure().equals(s.measure()) && step.outcome() == Outcome.HELD
+                && step.building() == null && (step.cut() == Cut.CASH || step.cut() == Cut.DEBT))
+            return s.measure().label() + ": automatic building keeps funding for an unmet essential service.";
+
         Payback p = heldForPayback(s);
         return p == null ? null : HELD_BACK + paybackWords(p);
     }
@@ -527,7 +532,7 @@ public final class AutoBuilder {
         return inRemit(t) || Ports.isPort(t);
     }
 
-    /** Every measure the pass keeps this month, in its order: NEEDS YOU's listed ones first, in its order, then the rest in the rings' order - and last (FR3) the berths of each kind of cargo, which NEEDS YOU has no row for. */
+    /** Current essential shortages by preventable output loss and missing share, then reserve expansion and other works. NEEDS YOU and ring order break ties. */
     public static List<BuildAdvice.Measure> remit(Game game, List<CityNeeds.Need> all) {
         List<BuildAdvice.Measure> rings = new ArrayList<>();
         for (BuildAdvice.Category c : BuildAdvice.categories()) {
@@ -544,7 +549,45 @@ public final class AutoBuilder {
         }
         for (BuildAdvice.Measure m : rings) if (!out.contains(m) && kept(game, m, all)) out.add(m);
         for (BuildAdvice.Measure m : BuildAdvice.portMeasures()) if (!out.contains(m) && kept(game, m, all)) out.add(m);
+        Map<BuildAdvice.Measure, Priority> priorities = new LinkedHashMap<>();
+        for (BuildAdvice.Measure m : out) priorities.put(m, priority(game, m));
+        out.sort(java.util.Comparator.comparingInt((BuildAdvice.Measure m) -> priorities.get(m).order())
+                .thenComparingDouble(m -> -priorities.get(m).loss())
+                .thenComparingDouble(m -> -priorities.get(m).missing()));
         return out;
+    }
+
+    private record Priority(int order, double loss, double missing) { }
+
+    /** Operating shortages precede reserve expansion, with the model's preventable loss first inside that group. */
+    private static Priority priority(Game game, BuildAdvice.Measure m) {
+        if (!essential(m)) return new Priority(2, 0, 0);
+        double[] sd = BuildAdvice.supplyDemand(game, m, Map.of());
+        double missing = BuildAdvice.warranted(game, m) && sd[1] > 0
+                ? Math.max(0, 1 - sd[0] / sd[1]) : 0;
+        return missing > 0 ? new Priority(0, WorksValue.shortageLoss(game, m), missing) : new Priority(1, 0, 0);
+    }
+
+    /** The smallest available useful step, including the actual ground offers it would buy. */
+    private static double firstCost(Game game, BuildAdvice.Measure m) {
+        double least = Double.POSITIVE_INFINITY;
+        double[] before = BuildAdvice.supplyDemand(game, m, Map.of());
+        double share = before[1] > 0 ? before[0] / before[1] : 1;
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
+            if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
+            double[] after = BuildAdvice.supplyDemand(game, m, Map.of(t, 1));
+            if (!(after[1] > 0) || after[0] / after[1] <= share + 1e-12) continue;
+            Ground ground = groundFor(game, t, 1);
+            Game.BuildQuote quote = game.quoteBuild(t, 1);
+            if (ground != null && Double.isFinite(quote.months))
+                least = Math.min(least, quote.total + ground.cash());
+        }
+        if (m.kind() == BuildAdvice.Kind.ROADS && game.paveable() > 0) {
+            Game.BuildQuote quote = game.quotePave(1);
+            if (Double.isFinite(quote.months)) least = Math.min(least, quote.total);
+        }
+        return least;
     }
 
     /** The spare margin's demand: today's, padded by the slack, no projection. */
@@ -723,6 +766,10 @@ public final class AutoBuilder {
      * order it is, whose own raised money is in the cash and counts; null is
      * an order of the builder's own, which leaves every ask's money alone.
      */
+    double spendableForMeasure(Game game, BuildAdvice.Measure m) {
+        return spendableFor(game, askFor(m));
+    }
+
     double spendableFor(Game game, OpenAsk own) {
         double free = overReserve(game);
         if (!(free > 0) || asks.isEmpty()) return free;
@@ -1184,10 +1231,58 @@ public final class AutoBuilder {
             List<CityNeeds.Need> all = CityNeeds.measure(game, CityNeeds.PLAIN);
             List<BuildAdvice.Measure> kept = remit(game, all);
             for (BuildAdvice.Measure m : kept) rememberPending(game, m, false);
-            // Every open ask is offered again first, before the pass ranks anything new (D30); a measure that has
-            // one is not stepped: its order waits for its money.
-            for (OpenAsk a : new ArrayList<>(asks)) reoffer(game, all, kept, a);
-            for (BuildAdvice.Measure m : kept) if (askFor(m) == null) step(game, all, m);
+            // Invalid asks are withdrawn first. Lower-priority asks can release cash for an unfunded current shortage.
+            for (OpenAsk a : new ArrayList<>(asks)) {
+                BuildAdvice.Measure measure = kept.stream().filter(m -> askFor(m) == a).findFirst().orElse(null);
+                if (measure == null || cardFor(game, all, measure, a) == null)
+                    reoffer(game, all, kept, a);
+            }
+            BuildAdvice.Measure unfunded = null;
+            boolean heldProceeds = asks.stream().anyMatch(a -> held(game, a) > 0);
+            if (heldProceeds) for (BuildAdvice.Measure m : kept) {
+                if (priority(game, m).order() != 0) continue;
+                BuildAdvice.Suggestion needed = BuildAdvice.suggestFor(game, rowFor(all, m), m, game.getCash(),
+                        game.getLandManager().getAvailableSqFt());
+                if (needed == null) continue;
+                double first = firstCost(game, m);
+                OpenAsk own = askFor(m);
+                double earmarked = own == null ? 0 : held(game, own);
+                if (Double.isFinite(first) && !canPay(game, Math.max(0, Math.max(first, needed.price()) - earmarked))) {
+                    unfunded = m;
+                    break;
+                }
+            }
+            if (unfunded != null) for (int i = kept.indexOf(unfunded) + 1; i < kept.size(); i++) {
+                OpenAsk a = askFor(kept.get(i));
+                if (a != null && held(game, a) > 0)
+                    withdrawAsk(a, "Cash is needed for " + unfunded.label() + ", which currently lacks service.",
+                            game.getDecisions());
+            }
+            BuildAdvice.Measure protectedWork = null;
+            Cut protectedCut = Cut.CASH;
+            for (BuildAdvice.Measure m : kept) {
+                Priority need = priority(game, m);
+                if (protectedWork != null) {
+                    BuildAdvice.Suggestion expansion = BuildAdvice.suggestFor(game, rowFor(all, m), m, game.getCash(),
+                            game.getLandManager().getAvailableSqFt());
+                    if (expansion != null || askFor(m) != null) {
+                        steps.add(new Step(m, Outcome.HELD, null, 0, 0, protectedCut, 0, 0));
+                        held.add(m.label() + ": cash and borrowing room are kept for " + protectedWork.label()
+                                + ", which currently lacks service.");
+                        continue;
+                    }
+                }
+                OpenAsk a = askFor(m);
+                if (a != null) reoffer(game, all, kept, a);
+                if (askFor(m) == null) step(game, all, m);
+                Step result = steps.isEmpty() ? null : steps.get(steps.size() - 1);
+                if (protectedWork == null && need.order() == 0 && result != null && result.measure().equals(m)
+                        && (result.outcome() == Outcome.HELD || result.ordered() < result.wanted())
+                        && (result.cut() == Cut.CASH || result.cut() == Cut.DEBT)) {
+                    protectedWork = m;
+                    protectedCut = result.cut();
+                }
+            }
             // The ground running short while ground the city owns lies on a landmass nothing links (AL1): every order above is placed already.
             if (groundShort) link(game);
         } finally {
@@ -2200,7 +2295,7 @@ public final class AutoBuilder {
     }
 
     /**
-     * An open ask, each month before the pass ranks anything new (D30): still
+     * An open ask, in the month's need-ranked pass (D30): still
      * the advice's order? then its cost as priced now, what is raised and the
      * spendable cash against it; covered, the order is placed (nothing more
      * borrowed); not, the bond is offered again at the cap for what is still

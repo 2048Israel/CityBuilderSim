@@ -637,6 +637,19 @@ public class AutoBuildCheck {
      * one of (noneOtherPays()): the pass walks the ranking before it holds.
      */
     static boolean holdIsTrue(Game g, AutoBuilder ab, AutoBuilder.Step s) {
+        if (s.building() == null) {
+            if (s.cut() != AutoBuilder.Cut.CASH && s.cut() != AutoBuilder.Cut.DEBT) return false;
+            for (AutoBuilder.Step earlier : ab.steps()) {
+                if (earlier == s) break;
+                if (earlier.building() == null || !AutoBuilder.essential(earlier.measure())) continue;
+                double[] sd = BuildAdvice.supplyDemand(g, earlier.measure(), Map.of());
+                boolean shortNow = BuildAdvice.warranted(g, earlier.measure()) && sd[1] > sd[0];
+                boolean moneyHold = (earlier.cut() == AutoBuilder.Cut.CASH || earlier.cut() == AutoBuilder.Cut.DEBT)
+                        && (earlier.outcome() == AutoBuilder.Outcome.HELD || earlier.ordered() < earlier.wanted());
+                if (shortNow && moneyHold && noneOtherPays(g, ab, earlier.measure())) return true;
+            }
+            return false;
+        }
         boolean own = heldBuildingIsTrue(g, ab, s);
         if (!own) return false;
         boolean money = s.cut() == AutoBuilder.Cut.DEBT || s.cut() == AutoBuilder.Cut.CASH || s.cut() == AutoBuilder.Cut.GROUND

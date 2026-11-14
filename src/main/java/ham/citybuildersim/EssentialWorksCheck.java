@@ -179,9 +179,24 @@ public final class EssentialWorksCheck {
 
     }
 
+    static void serveStreets(Game g) {
+        BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        BuildingsTemplate paved = g.getBuildingManager().getTemplateByName("Paved Road");
+        int[] n = BuildAdvice.count(g, streets, Map.of(), Map.of(paved, 1),
+                g.getAutoBuilder().target(), BuildAdvice.MOST, true);
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        if (n[0] > 0) quietly(() -> g.buildStack(paved, n[0], true));
+        g.getServicesManager().updateInfrastructure();
+        check("fixture: streets already serve their full demand before the power allocation",
+                BuildAdvice.maintained(g, streets, Map.of(), BuildAdvice.NOW));
+    }
+
     static void scarceCash(Path root) {
         out.println("--- an unaffordable full power order takes the cash-funded step that can raise service ---");
         Game g = town(root, "scarce-cash");
+        serveStreets(g);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         u.setWattsConsumption(u.getProduction() * 4);
@@ -328,6 +343,159 @@ public final class EssentialWorksCheck {
                 order != null && order.ordered() > 0);
     }
 
+    static void stagedCosts(Path root) {
+        out.println("--- maintained service prices later works and their borrowing ---");
+        Game g = town(root, "staged-costs");
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        var history = g.getHistorySave();
+        long people = g.getPopulationManager().getPopulation();
+        history.getPopulation().clear();
+        history.getMonth().clear();
+        history.getPopulation().add(people / 2);
+        history.getPopulation().add(people);
+        history.getMonth().add(0);
+        history.getMonth().add(g.getMonth());
+        BuildingsTemplate clinic = g.getBuildingManager().getTemplateByName("Walk-in Clinic");
+        BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+        g.setCashForTest(0);
+        double debt = AutoBuilder.debt(g);
+        double rate = g.getDebtManager().quoteRate(0, Game.BUILD_BOND_YEARS * 12);
+        WorksValue.Value borrowed = WorksValue.of(g, care, Map.of(), clinic, 1,
+                g.getLandManager().getAvailableSqFt());
+        check("fixture: the funded service has a positive growth trend, paid posts and positive borrowing terms",
+                BuildAdvice.lifeTrend(g, BuildAdvice.LIFE_MONTHS) > 1 && rate > 0 && borrowed.payroll() > 0);
+        check("the comparison includes the future service additions and their capital",
+                borrowed.futureUnits() > 0 && borrowed.futureCapital() > 0);
+        check("the comparison includes the new debt's issue and coupon costs", borrowed.financing() > 0);
+        g.setCashForTest(1e14);
+        double cash = g.getCash();
+        WorksValue.Value funded = WorksValue.of(g, care, Map.of(), clinic, 1,
+                g.getLandManager().getAvailableSqFt());
+        check("cash that covers the complete sequence has no new financing charge", funded.financing() == 0);
+        check("valuation places no order and moves no cash or debt",
+                g.getCash() == cash && AutoBuilder.debt(g) == debt && g.getAutoBuilder().getOrders() == 0);
+    }
+
+    static void completeRunning(Path root) {
+        out.println("--- complete fleets charge their actual traffic wear and shared fares ---");
+        Game g = town(root, "complete-running");
+        BuildingsTemplate rail = g.getBuildingManager().getTemplateByName("Light Rail Line");
+        double fare = g.getEconomyManager().getTaxPolicy().monthlyFare();
+        double base = BuildAdvice.roads(g, Map.of()).getTransitRiders();
+        double one = BuildAdvice.roads(g, Map.of(rail, 1)).getTransitRiders() - base;
+        double two = BuildAdvice.roads(g, Map.of(rail, 2)).getTransitRiders() - base;
+        check("fixture: two lines share the same riders and the fare is positive",
+                fare > 0 && one > 0 && two < 2 * one);
+        double gross = BuildAdvice.running(g, rail, Map.of()) + one * fare;
+        double actual = BuildAdvice.runningChange(g, Map.of(), Map.of(rail, 2), BuildAdvice.NOW);
+        double expected = 2 * gross - two * fare;
+        check("two lines collect the full network's fares once",
+                Math.abs(actual - expected) < 1e-9 * Math.max(1, Math.abs(expected))
+                        && actual > 2 * BuildAdvice.running(g, rail, Map.of()));
+        BuildingsTemplate gravel = g.getBuildingManager().getTemplateByName("Gravel Road");
+        double single = BuildAdvice.running(g, gravel, Map.of());
+        double complete = BuildAdvice.runningChange(g, Map.of(), Map.of(gravel, 2), BuildAdvice.NOW);
+        check("the whole two-road order pays wear at its own relieved traffic",
+                complete < 2 * single);
+    }
+
+    static void currentLossPriority(Path root) {
+        out.println("--- the higher monetary service loss gets the scarce cash first ---");
+        Game g = town(root, "current-loss-priority");
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
+        utilities.setWattsConsumption(utilities.getProduction() * 4);
+        double roadLoss = WorksValue.shortageLoss(g, streets), powerLoss = WorksValue.shortageLoss(g, power);
+        double[] road = BuildAdvice.supplyDemand(g, streets, Map.of());
+        double[] watts = BuildAdvice.supplyDemand(g, power, Map.of());
+        BuildingsTemplate wind = g.getBuildingManager().getTemplateByName("Wind Farm");
+        g.setCashForTest(AutoBuilder.reserve(g) + g.quoteBuild(wind, 1).total * 1.01);
+        check("fixture: streets lose more output although power has the greater missing share",
+                roadLoss > powerLoss && powerLoss > 0 && road[0] / road[1] > watts[0] / watts[1]
+                        && !g.getAutoBuilder().within(g));
+        var remit = AutoBuilder.remit(g, CityNeeds.measure(g, CityNeeds.PLAIN));
+        check("the monetary loss puts streets before power in the actual remit",
+                remit.indexOf(streets) >= 0 && remit.indexOf(streets) < remit.indexOf(power));
+        g.getAutoBuilder().setOn(true, null);
+        quietly(() -> g.getAutoBuilder().pass(g));
+        AutoBuilder.Step roadOrder = step(g, streets), powerOrder = step(g, power);
+        check("the higher-loss street work uses the cash first and power waits for funding",
+                roadOrder != null && roadOrder.ordered() > 0 && powerOrder != null
+                        && powerOrder.ordered() == 0 && powerOrder.cut() == AutoBuilder.Cut.CASH);
+    }
+
+    static void fundingPriority(Path root, boolean spareCare) {
+        out.println(spareCare ? "--- an unfunded school keeps its funding before spare care ---"
+                : "--- current service loss ranks simultaneous essential needs ---");
+        Game g = town(root, spareCare ? "protected-school" : "ranked-school");
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
+        long people = g.getPopulationManager().getPopulation();
+        g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(people, people));
+        BuildingManager bm = g.getBuildingManager();
+        BuildAdvice.Measure school = BuildAdvice.Measure.school(EducationType.ELEMENTARY);
+        BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            int n = bm.getQuantity(t.getId());
+            if (n > 0 && (school.serves(t) || care.serves(t))) quietly(() -> bm.retire(t, n));
+        }
+        BuildingsTemplate clinic = bm.getTemplateByName("Walk-in Clinic");
+        if (spareCare) {
+            double[] base = BuildAdvice.supplyDemand(g, care, Map.of());
+            double unit = clinic.getCapacity() * BuildAdvice.staffing(clinic,
+                    g.getPopulationManager().getJobFillRate());
+            int n = Math.max(0, (int) Math.ceil((base[1] - base[0]) / unit));
+            if (n > 0) quietly(() -> g.buildStack(clinic, n, true));
+        } else {
+            double share = BuildAdvice.cover(g, care, Map.of());
+            g.getHealth().advanceMonth(share, 1, 0, 1, 1, 1, 1);
+            g.getEconomyManager().setHealthRatio(g.getHealth().getWorkRatio());
+        }
+        UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
+        utilities.setWattsConsumption(utilities.getProduction() * .5);
+        g.getInfrastructureManager().setLoad(0);
+        g.getInfrastructureManager().setBreakdown(new double[Traffic.values().length]);
+        BuildingsTemplate elementary = bm.getTemplateByName("Elementary School");
+        double schoolCost = g.quoteBuild(elementary, 1).total;
+        BuildAdvice.Suggestion careCard = BuildAdvice.suggestFor(g, null, care, g.getCash(),
+                g.getLandManager().getAvailableSqFt());
+        double careCost = careCard == null ? Double.POSITIVE_INFINITY : careCard.price();
+        double available = spareCare ? (schoolCost + careCost) / 2 : schoolCost + careCost * .25;
+        g.setCashForTest(AutoBuilder.reserve(g) + available);
+        AutoBuilder ab = g.getAutoBuilder();
+        ab.setDebtLimit(0, null);
+        ab.setCashAnyway(true, null);
+        check("fixture: the school is useful and entirely unserved, and the care plan is cheaper",
+                BuildAdvice.warranted(g, school) && BuildAdvice.supplyDemand(g, school, Map.of())[0] == 0
+                        && careCard != null && careCost > 0 && careCost < schoolCost);
+        check("fixture: current care is on the intended side of full service",
+                BuildAdvice.maintained(g, care, Map.of(), BuildAdvice.NOW) == spareCare
+                        && (spareCare || WorksValue.shortageLoss(g, care) == 0));
+        check("fixture: the available cash funds care, with the intended school funding gap",
+                ab.canPay(g, careCost) && ab.canPay(g, schoolCost) != spareCare);
+        ab.setOn(true, null);
+        quietly(() -> ab.pass(g));
+        AutoBuilder.Step order = step(g, school);
+        if (spareCare) {
+            AutoBuilder.Step heldCare = step(g, care);
+            check("the school remains a hard cash or debt hold and the spare-care order preserves its funds",
+                    order != null && order.outcome() == AutoBuilder.Outcome.HELD
+                            && heldCare != null && heldCare.ordered() == 0
+                            && heldCare.outcome() == AutoBuilder.Outcome.HELD && heldCare.building() == null);
+            check("the same care card labels the automatic funding hold", ab.heldBackWords(careCard) != null);
+        } else {
+            check("the fully unserved school is ordered before the partly served capped-care work",
+                    order != null && order.ordered() > 0);
+        }
+    }
+
     static void filledPostCosts(Path root) {
         out.println("--- staff-short works pay only the posts filled in the utility books ---");
         Game g = town(root, "filled-post-costs");
@@ -401,6 +569,7 @@ public final class EssentialWorksCheck {
     static void adviceParity(Path root) {
         out.println("--- the Build advice and automatic order use the same plan ---");
         Game g = town(root, "advice-parity");
+        serveStreets(g);
         AutoBuilder ab = g.getAutoBuilder();
         ab.setSlack(.35, null);
         g.setCashForTest(1e14);
@@ -755,6 +924,11 @@ public final class EssentialWorksCheck {
         professionalDemand(root);
         pendingIndustrialLoad(root);
         interimCare(root);
+        stagedCosts(root);
+        completeRunning(root);
+        currentLossPriority(root);
+        fundingPriority(root, false);
+        fundingPriority(root, true);
         filledPostCosts(root);
         cappedCare(root);
         adviceParity(root);

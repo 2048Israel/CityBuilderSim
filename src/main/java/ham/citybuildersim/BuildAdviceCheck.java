@@ -797,8 +797,14 @@ public class BuildAdviceCheck {
         catalogue.add(fewer);
         List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
         BuildAdvice.Suggestion general = null;
+        double cashForGeneral = g.getCash(), landForGeneral = g.getLandManager().getAvailableSqFt();
         for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g, all)) {
-            if (s.measure().kind() == BuildAdvice.Kind.CARE && s.measure().care() == CareType.GENERAL) general = s;
+            if (s.measure().kind() == BuildAdvice.Kind.CARE && s.measure().care() == CareType.GENERAL) {
+                general = s;
+                break;
+            }
+            cashForGeneral = Math.max(0, cashForGeneral - s.price());
+            landForGeneral = Math.max(0, landForGeneral - s.landSqFt());
         }
         BuildAdvice.Measure gm = BuildAdvice.Measure.care(CareType.GENERAL);
         out.printf("      fewer: staffing %.4f, a unit %.1f; more: staffing %.4f, a unit %.1f%n",
@@ -812,10 +818,10 @@ public class BuildAdviceCheck {
             if (!gm.serves(candidate)) continue;
             Set<BuildingsTemplate> skip = new HashSet<>(catalogue);
             skip.remove(candidate);
-            BuildAdvice.Suggestion alternative = BuildAdvice.suggestFor(g, null, gm, g.getCash(),
-                    g.getLandManager().getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip, true);
+            BuildAdvice.Suggestion alternative = BuildAdvice.suggestFor(g, null, gm, cashForGeneral,
+                    landForGeneral, g.getAutoBuilder().getSlack(), skip, true);
             if (alternative != null && alternative.closes())
-                least = Math.min(least, valueFigure(g, alternative, g.getLandManager().getAvailableSqFt())[0]);
+                least = Math.min(least, valueFigure(g, alternative, landForGeneral, cashForGeneral)[0]);
         }
         assertTrue("...and its whole plan costs no more than any alternative, including either staffing mix",
                 general != null && general.closes() && Double.isFinite(least)
@@ -907,13 +913,15 @@ public class BuildAdviceCheck {
             // The offers' records, each one's dollar price scaled (since 0.7.57 the offers, forty until 0.7.66; the parcels' listing until then).
             market.restoreOffers(scaledOffers(base, factors[f]), nextId);
             double landLeft = g.getLandManager().getAvailableSqFt();
+            double cashLeft = g.getCash();
             StringBuilder said = new StringBuilder();
             for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) {
                 cards++;
                 BuildingsTemplate t = s.template();
                 // Every card's since 0.7.101: its order over its life for what it will serve, recomputed here.
-                double per = lifeFigure(g, s, landLeft);
-                perBits &= bitsEqual(s.planValue(), planFigure(g, s, landLeft));
+                double[] value = valueFigure(g, s, landLeft, cashLeft);
+                double per = value[1] > 0 ? value[0] / value[1] : Double.POSITIVE_INFINITY;
+                perBits &= bitsEqual(s.planValue(), value[0]);
                 perBits &= bitsEqual(s.pricePerUnit(), per);
                 leftBits &= bitsEqual(s.landValue(), BuildAdvice.landValue(g, s.landSqFt(), landLeft))
                         && bitsEqual(s.landShort(), Math.max(0, s.landSqFt() - landLeft));
@@ -922,6 +930,7 @@ public class BuildAdviceCheck {
                 said.append(String.format(" [%s: %,d x %s, %,.3f a unit it will serve over its life]", s.need().label(), s.count(),
                         t.getName(), s.pricePerUnit()));
                 landLeft = Math.max(0, landLeft - s.landSqFt());
+                cashLeft = Math.max(0, cashLeft - s.price());
             }
             out.printf("      the land office at x%s: %s a sq ft;%s%n", factors[f],
                     Formats.INSTANCE.amount(g.getLandManager().getOfficePricePerSqFt()), said);
@@ -948,16 +957,27 @@ public class BuildAdviceCheck {
          * busy streets the paved road is the least at nothing too (RoadCheck 2 holds the quiet side, where gravel wins).
          * It asks now that the streets' card be the least over its life of the streets that keep the road ahead, the ground
          * at nothing, at ten times and at a thousand times the land office's price a square foot - each recomputed here from the
-         * quote, the running and the ground a trip - and that the Paved Road be the leanest in ground.
+         * complete maintained-service plan, including later additions, financing and actual traffic wear -
+         * and that the Paved Road be the leanest in ground. HW1 prices the relief of traffic as roads are
+         * added, so the old single-road Paved-at-every-price path is no longer required.
          */
         BuildingsTemplate highway = template(g, "Elevated Highway"), lean = template(g, "Paved Road");
-        double life = BuildAdvice.lifeFactor(g);
-        double office = land.getOfficePricePerSqFt();
+
         double[] at = {0, 10, 1000};
         String[] cheapest = new String[at.length], card = new String[at.length];
         boolean thriftiest = BuildAdvice.unit(g, m, highway) == 0;
         double leanGround = lean.getLandSqFt() / BuildAdvice.unit(g, m, lean);
         for (int f = 0; f < at.length; f++) {
+            market.restoreOffers(scaledOffers(base, at[f]), nextId);
+            double streetCash = g.getCash(), streetLand = land.getAvailableSqFt();
+            for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) {
+                if (s.measure().kind() == BuildAdvice.Kind.ROADS) {
+                    card[f] = s.template().getName();
+                    break;
+                }
+                streetCash = Math.max(0, streetCash - s.price());
+                streetLand = Math.max(0, streetLand - s.landSqFt());
+            }
             double least = Double.POSITIVE_INFINITY;
             for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
                 if (t.getCategory() != BuildingType.INFRASTRUCTURE || t.isHighway()) continue;
@@ -968,11 +988,15 @@ public class BuildAdviceCheck {
                 if (BuildAdvice.count(g, m, site, t, BuildAdvice.opening(g, g.quoteBuild(t, today[0]).months))[1] != 1) continue;
                 double ga = t.getLandSqFt() / u;
                 if (f == 0) thriftiest &= t == lean || ga > leanGround;
-                double per = (g.quoteBuild(t, 1).total + BuildAdvice.running(g, t, site) * life) / u + ga * at[f] * office;
-                if (per < least) { least = per; cheapest[f] = t.getName(); }
+                Set<BuildingsTemplate> skip = new HashSet<>(g.getBuildingManager().getTemplates());
+                skip.remove(t);
+                BuildAdvice.Suggestion candidate = BuildAdvice.suggestFor(g, null, m, streetCash, streetLand,
+                        g.getAutoBuilder().getSlack(), skip, true);
+                if (candidate != null && candidate.closes() && candidate.planValue() < least) {
+                    least = candidate.planValue();
+                    cheapest[f] = t.getName();
+                }
             }
-            market.restoreOffers(scaledOffers(base, at[f]), nextId);
-            for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) if (s.measure().kind() == BuildAdvice.Kind.ROADS) card[f] = s.template().getName();
         }
         market.restoreOffers(base, nextId);
         land.setOwnedSqFt(owned);
@@ -982,9 +1006,8 @@ public class BuildAdviceCheck {
                 + " Road needs the least ground a trip", thriftiest);
         boolean agrees = true;
         for (int f = 0; f < at.length; f++) agrees &= card[f] != null && card[f].equals(cheapest[f]);
-        assertTrue("the streets' card is the cheapest to build over its life at every price of ground, recomputed here from the quote,"
-                + " the running and the ground a trip: the Paved Road on these busy streets (" + card[0] + ", " + card[1] + ", "
-                + card[2] + ")", agrees && "Paved Road".equals(card[0]) && "Paved Road".equals(card[2]));
+        assertTrue("the streets' card has the least complete maintained-service plan at every price of ground"
+                + " (" + card[0] + ", " + card[1] + ", " + card[2] + ")", agrees);
     }
 
     /**
@@ -1009,40 +1032,15 @@ public class BuildAdviceCheck {
 
     /** Recompute the invoice, delayed running, actual payroll return and physical relief; no reserve is lost work. */
     static double[] valueFigure(Game g, BuildAdvice.Suggestion s, double landLeft) {
-        BuildAdvice.Measure m = s.measure();
-        BuildingsTemplate t = s.template();
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
-        int n = s.count();
-        Map<BuildingsTemplate, Integer> order = s.paving() ? BuildAdvice.times(Map.of(), BuildAdvice.pavingStep(g), n) : Map.of(t,n);
-        Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(site, order);
-        Game.BuildQuote q = s.paving() ? g.quotePave(n) : g.quoteBuild(t,n);
-        double lead = Double.isFinite(q.months) ? Math.max(0,q.months) : 0;
-        double i = Math.max(0,BuildAdvice.lifeRate(g))/12;
-        double factor = BuildAdvice.lifeFactor(g)*Math.pow(1+i,-lead);
-        double land, running, returned=0;
-        if (s.paving()) {
-            BuildingsTemplate from=template(g,ConstructionControl.PAVE_FROM), to=template(g,ConstructionControl.PAVE_TO);
-            land=-BuildAdvice.landValue(g,BuildAdvice.pavingFrees(g)*n,landLeft);
-            running=n*(BuildAdvice.running(g,to,site)-BuildAdvice.running(g,from,site,false))*factor;
-        } else {
-            land=BuildAdvice.landValue(g,t.getLandSqFt()*(double)n,landLeft);
-            running=n*BuildAdvice.running(g,t,site)*factor;
-            double[] wages=g.getPopulationManager().getWagesPerType(), fill=g.getPopulationManager().getJobFillRate();
-            for(JobType job:JobType.values()) returned+=n*(double)t.getJobs(job)*wages[job.ordinal()]*fill[job.ordinal()]
-                    *g.getEconomyManager().getTaxPolicy().payslipShare(WageBand.of(job));
-        }
-        double net=q.total+land+running-WorksValue.avoided(g,m,site,order,lead)-returned*factor;
-        double served=0,weights=0;
-        for(int year=0;year<BuildAdvice.LIFE_MONTHS/12;year++) {
-            double w=0;
-            for(int j=1;j<=12;j++)w+=Math.pow(1+i,-(lead+year*12+j));
-            double months=lead+year*12+6;
-            BuildAdvice.Ahead at=new BuildAdvice.Ahead(months,BuildAdvice.lifeTrend(g,months),0);
-            double[] before=BuildAdvice.supplyDemand(g,m,site,at), after=BuildAdvice.supplyDemand(g,m,with,at);
-            served+=w*Math.max(0,Math.max(0,before[1]-before[0])-Math.max(0,after[1]-after[0]));
-            weights+=w;
-        }
-        return new double[]{net,weights>0?served/weights:0};
+        return valueFigure(g, s, landLeft, g.getCash());
+    }
+
+    static double[] valueFigure(Game g, BuildAdvice.Suggestion s, double landLeft, double cashLeft) {
+        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, s.measure());
+        WorksValue.Value value = s.paving()
+                ? WorksValue.paving(g, s.measure(), site, s.count(), landLeft, cashLeft)
+                : WorksValue.of(g, s.measure(), site, s.template(), s.count(), landLeft, cashLeft);
+        return new double[] {value.net(), value.used()};
     }
 
     /** The offers' records with each one's dollar price times f (LandParcel.offerRow(): the price second from the end). */
