@@ -70,6 +70,30 @@ public final class EssentialWorksCheck {
                         && g.getLandManager().getOwnedSqFt() > owned) && AutoBuilder.debt(g) == debt && ab.getBonds() == 0);
     }
 
+    /** Give unrelated essential services their operating capacity before isolating an ahead-of-need order. */
+    static void serveOtherEssentials(Game g, BuildAdvice.Measure except) {
+        BuildingManager bm = g.getBuildingManager();
+        for (int pass = 0; pass < 3; pass++) {
+            for (BuildAdvice.Measure m : AutoBuilder.remit(g, CityNeeds.measure(g, CityNeeds.PLAIN))) {
+                if (m.equals(except) || !AutoBuilder.essential(m)
+                        || BuildAdvice.maintained(g, m, Map.of(), BuildAdvice.NOW)) continue;
+                for (BuildingsTemplate t : bm.getTemplates()) {
+                    if (!m.serves(t) || !(BuildAdvice.unit(g, m, t) > 0) || t.isHydro()) continue;
+                    int count = BuildAdvice.count(g, m, Map.of(), Map.of(t, 1),
+                            BuildAdvice.NOW, BuildAdvice.MOST, true)[0];
+                    if (count > 0) quietly(() -> g.buildStack(t, count, true));
+                    break;
+                }
+            }
+            g.getServicesManager().updateServices();
+            g.getServicesManager().updateInfrastructure();
+        }
+        check("fixture: unrelated essential services already have their operating capacity",
+                AutoBuilder.remit(g, CityNeeds.measure(g, CityNeeds.PLAIN)).stream()
+                        .filter(m -> !m.equals(except) && AutoBuilder.essential(m))
+                        .allMatch(m -> BuildAdvice.maintained(g, m, Map.of(), BuildAdvice.NOW)));
+    }
+
     static void anticipateHighway(Path root) {
         out.println("--- a growing highway is ordered before its construction lead consumes the reserve ---");
         Game g = town(root, "highway-ahead");
@@ -77,6 +101,7 @@ public final class EssentialWorksCheck {
         BuildingsTemplate highway = g.getBuildingManager().getTemplateByName("Elevated Highway");
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
+        serveOtherEssentials(g, HIGHWAYS);
         // Growing population history and homes for the people it predicts.
         quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("House"), 1000, true));
         var history = g.getHistorySave().getPopulation();
@@ -94,6 +119,11 @@ public final class EssentialWorksCheck {
         double loadForOne = BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of())[1];
         double capacity = BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of())[0];
         roads.setLoad(1000 * capacity / loadForOne / ((shortGrowth + longGrowth) / 2));
+        // The forecast order has no unrelated unserved street whose construction promise would take precedence.
+        roads.setBuiltCapacity(roads.getStreetLoad() * 1.05
+                + highway.getCapacity() * 2 - InfrastructureManager.BASE_CAPACITY);
+        check("fixture: operating streets carry the calibrated highway forecast's traffic",
+                BuildAdvice.maintained(g, BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS), Map.of(), BuildAdvice.NOW));
         out.printf("lead %.2f short growth %.3f long growth %.3f sd %s%n", lead, shortGrowth, longGrowth, java.util.Arrays.toString(BuildAdvice.supplyDemand(g, HIGHWAYS, Map.of())));
         boolean current = BuildAdvice.maintained(g, HIGHWAYS, Map.of(), BuildAdvice.opening(g, 0, ab.getSlack()));
         boolean atOpening = BuildAdvice.maintained(g, HIGHWAYS, Map.of(), BuildAdvice.opening(g, lead, ab.getSlack()));
@@ -108,6 +138,7 @@ public final class EssentialWorksCheck {
         ab.setOn(true, null);
         quietly(() -> ab.pass(g));
         AutoBuilder.Step order = step(g, HIGHWAYS);
+        out.println("      highway order " + order + ", held " + (card == null ? "none" : ab.heldBackWords(card)));
         check("the card and automatic path both order a highway before the six-month reserve is used",
                 card != null && order != null && order.ordered() > 0
                         && order.building().equals(card.template().getName()));
@@ -270,6 +301,7 @@ public final class EssentialWorksCheck {
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
                 + 1_000 * LandManager.SQ_FT_PER_KM2);
+        serveOtherEssentials(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER));
         g.getHistorySave().getPopulation().clear();
         g.getHistorySave().getMonth().clear();
         BuildingManager bm = g.getBuildingManager();
@@ -666,6 +698,7 @@ public final class EssentialWorksCheck {
         AutoBuilder ab = g.getAutoBuilder();
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
+        serveOtherEssentials(g, power);
         quietly(() -> g.buildStack(coal, 1, false));
         var people = g.getHistorySave().getPopulation();
         var months = g.getHistorySave().getMonth();

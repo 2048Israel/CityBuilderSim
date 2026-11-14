@@ -2533,3 +2533,30 @@ xargs PID 5400, created at the run's 10:11 start, was identified by
 its exact HW1-rev3-final path and terminated with its process tree.
 Remaining JVMs carrying that exact owned run path were ended by
 their process IDs. Every CSV of that run remains void.
+
+### Forecast fixtures under the construction promise
+
+The first REV-HW1-4 named run exits 4. Ten harnesses pass, while
+EssentialWorksCheck has three hard actual-order failures. Forecast
+highway, paid-industrial-load and interim-wind cities also start with
+unrelated unserved essentials. The new guard correctly preserves those
+newly ordered essentials' promises, so that setup no longer isolates
+the earlier forecasting finding.
+
+Each original forecasting premise and actual-order assertion is
+retained verbatim. The fixtures now build unrelated operating essential
+capacity before creating their forecast condition, and assert that
+capacity. The highway fixture also gives operating streets enough
+capacity for the deliberately calibrated traffic. Its original today/
+six-month-covered, quoted-opening-short premise still passes. The mill
+still opens within six months while current power has its reserve. The
+coal still covers the horizon, opens after wind, and leaves an earlier
+forecast shortage despite sufficient physical power now.
+
+hw1-rev4-forecast-focus3.log exits 0. Omission controls retain every
+fixture premise. Restoring the short-horizon automatic skip makes the
+highway's actual-order assertion fail. Omitting the faster-pending-work
+rule makes the earlier-wind actual-order assertion fail. Omitting pending
+electrical draw is tested separately on the mill fixture. Logs are
+target/checks/hw1-rev4-control-forecast-highway.log, -wind.log and -mill.log.
+These are three isolated forecasting laws with hard actual orders.
