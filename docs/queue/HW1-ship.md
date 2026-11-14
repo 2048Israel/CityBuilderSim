@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HW1-GjhY7lIZ -->
 ## changelog
 ### {next} — HW1, The auto city builds its works when they are needed — 2026-11-14, ready, see docs/queue/HW1-notes.md
