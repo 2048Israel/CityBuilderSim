@@ -61,8 +61,8 @@ counting a second episode. A partial retirement carries the unpaid balance.
 
 Bank.projectHeadroom supplies a finite shared growth budget using the existing
 headroom, capitalTarget and leverageTarget. Defaults beyond their sector's
-allowance reduce it before replacements can be financed. The loan and mortgage
-growth doors both read it; working-capital lines retain their existing rule.
+allowance reduce it before replacements can be financed. Uninsured projects
+read it; insured mortgages and working-capital lines retain their own rules.
 No save format change: the closure handoff is consumed within the turn, the
 growth allowance is struck at the desk's existing monthly reprice, and the
 repayment/save records already carry these flows.
@@ -172,3 +172,55 @@ afterward, and still rejects an out-of-band quantity and one extra person
 at a trillion people. Exact population/workforce/home/store counts remain
 exact; the full-run cutoff, history, growth and save checks are retained.
 Logs: target/checks/bf1-band-before.log and bf1-band-after.log.
+
+## Money review
+
+Retirement debits the actual sector till, reduces instrument principal and
+records REPAID in the existing ledger; the bank receives that repayment at
+its monthly settle. It does not book repayment as capital spending or as a
+creditor write-off. Interim seniority and mortgage-repaid flows are retained.
+The emptied borrower's remaining loss uses the existing backstop, including
+bondholders, insurance and exclusion accounting. Early inventory write-off
+uses the existing output loss flow, which production adds to rather than
+overwrites. Growth room is a commitment limit, not a money movement; pending
+net lending is deducted before the post-default budget is used. Export
+invoices use Trade.WORLD and the existing market booking, not a direct till
+credit. Order fills still settle at the resting price. No save field or
+save-format change is needed for these within-turn handoffs.
+
+On final source f00e0496, PriceLevelCheck passes the full horizons: default
+60/60, built 120/120, played 120/120 and town 120/120. None of these cities is
+trimmed by the nudge guard. The final ALL pick and final-model ensemble are
+running from this source. The focused denomination and order-book checks,
+including all 2,880 BankFailureCheck monthly audits, passed before this pick.
+
+## Corrections from the f00e0496 full run
+
+The first final-model ensemble exposed an own regression: households with no
+home in AUTO2 seeds 7, 10 and 13 (and the same pre-switch ZERO_SLACK paths).
+M1 stayed green. The new budget had also reached insured mortgages, contrary
+to Bank.RISK_INSURED_MORTGAGE = 0 and the mortgage desk's explicit exemption
+while the risk-based rule binds. ★ Preserve that exemption; the leverage rule
+still rations insured mortgages through capitalRoom as before. A caused
+fixture with no uninsured project budget fails the insured loan before this
+correction and passes after it; switching on leverage rationing still refuses
+that identical loan. Logs: bf1-insurance-before.log and bf1-insurance-after.log.
+The obsolete ensemble was stopped through its run-folder/PID stop command.
+Its F1 failures are not waived. A full seed-10 replay is checking the correction.
+
+BankCheck's top-up capital entered cash, not the reserve sheet read immediately
+after it. Let one press lodge it before the unchanged 100x premise is read.
+The identical financial fixture then has 170x reserves and passes all laws;
+bf1-bank-press-final.log exits 0.
+
+KeptCheck 64 finds an optional 'reopened' phrase retaining a numeric label's
+alignment and 134-pixel width, where the fresh phrase is 44 pixels wide.
+FinancesScreen.lineCell now gives its terms their own scope so an added phrase
+cannot borrow the next numeric cell's label. The unchanged fresh/kept equality
+failed twice before the correction; an identical prefix replay checks it after.
+
+The corrected AUTO2 seed 10 completes all 2,400 months with no finding and
+no money-audit miss (bf1-insurance-seed10.csv/.log). The corrected 24-city
+BankFailureCheck count also passes every audit and bank equity bridge
+(bf1-insurance-count.log). Seeds 7 and 13 are being replayed before the final
+ensemble snapshot. The model changes here stop short of HW1's named files.

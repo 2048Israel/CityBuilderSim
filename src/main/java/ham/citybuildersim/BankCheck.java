@@ -3643,6 +3643,8 @@ public class BankCheck {
             if (bank.sheet(Bank.Sheet.RESERVES) < 100 * bank.getBook()) {
                 bank.injectCapital(0, 200 * bank.getBook() - bank.sheet(Bank.Sheet.RESERVES));
                 eaClosed.set(eaClosed.size() - 1, bank.earningAssets());
+                // The injection enters cash; only a press lodges it in reserves.
+                playRecordingEarningAssets(city, 1, eaClosed);
             }
 
             // The issue's case: reserves that dwarf the book.

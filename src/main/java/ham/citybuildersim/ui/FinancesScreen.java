@@ -3476,13 +3476,17 @@ final class FinancesScreen {
             parts.add("call from " + CityCalendar.formatShort(bond.getFirstCallMonth()));
         }
         // A phrase at a time, so the line wraps between phrases and never inside one.
-        javafx.scene.layout.FlowPane sub = Kept.flow(0, 0);
-        for (int i = 0; i < parts.size(); i++) {
-            Label part = Kept.label(parts.get(i) + (i < parts.size() - 1 ? " · " : ""));
-            part.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            part.setMinWidth(Region.USE_PREF_SIZE);
-            sub.getChildren().add(part);
-        }
+        // BF1: optional terms must not borrow a numeric cell's retained label.
+        javafx.scene.layout.FlowPane sub = Kept.scope("line-terms", () -> {
+            javafx.scene.layout.FlowPane terms = Kept.flow(0, 0);
+            for (int i = 0; i < parts.size(); i++) {
+                Label part = Kept.label(parts.get(i) + (i < parts.size() - 1 ? " · " : ""));
+                part.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
+                part.setMinWidth(Region.USE_PREF_SIZE);
+                terms.getChildren().add(part);
+            }
+            return terms;
+        });
         return Kept.column(2, top, sub);
     }
 

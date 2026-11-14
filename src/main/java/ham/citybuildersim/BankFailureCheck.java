@@ -136,6 +136,19 @@ public final class BankFailureCheck {
         check("another sector cannot spend the same capital again", !shared.canFundProject(Sectors.MANUFACTURING, room * .5));
         g.getBank().writeOffSector(sector, g.getBank().equity() + g.getBank().getSectorAllowance(sector));
         close("uncovered defaults reach the growth desk before the bank's month-end settle", g.getBank().projectHeadroom(), 0);
+
+        BusinessDebtManager insured = new BusinessDebtManager();
+        insured.setAssets(Sectors.REAL_ESTATE, request);
+        insured.setProjectBudget(0);
+        insured.setCapitalRule(0, true, false);
+        double shortfall = request * Mortgage.MORTGAGE_MAX_LOAN_TO_COST / 2;
+        check("fixture: insured mortgages carry the model's zero risk weight", Bank.RISK_INSURED_MORTGAGE == 0);
+        check("the uninsured project budget does not ration a zero-risk insured mortgage",
+                insured.canFundMortgage(Sectors.REAL_ESTATE, shortfall, request));
+        insured.setCapitalRule(0, true, true);
+        check("the leverage rule still rations that same insured mortgage",
+                !insured.canFundMortgage(Sectors.REAL_ESTATE, shortfall, request)
+                && BusinessDebtManager.MORTGAGE_CAPITAL.equals(insured.getMortgageRefusal()));
     }
 
     static void shares() {

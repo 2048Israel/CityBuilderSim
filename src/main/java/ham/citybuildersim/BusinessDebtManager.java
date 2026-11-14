@@ -2140,7 +2140,7 @@ public class BusinessDebtManager {
             mortgageRefusal = MORTGAGE_PAST_DEFAULT_POINT;
             return false;
         }
-        if (principal > projectRoom() || (insuredRationed && principal > capitalRoom(sector))) {
+        if (insuredRationed && principal > capitalRoom(sector)) {
             mortgageRefusal = MORTGAGE_CAPITAL;
             refusedForCapital.add(sector);
             refusedMortgageForCapital.add(sector);
@@ -2474,7 +2474,7 @@ public class BusinessDebtManager {
 
     private double capitalGrowth = Double.POSITIVE_INFINITY;
     private boolean keepGoingOnly;
-    /** The whole bank's growth allowance, shared by every project this turn (BF1). */
+    /** The bank's uninsured project allowance, shared this turn; insured mortgages keep their own rule (BF1). */
     private double projectBudget = Double.POSITIVE_INFINITY, projectBudgetLent;
 
     /** Struck before lending, and again after defaults, net of lending still awaiting the bank's settle. */
