@@ -16,7 +16,6 @@ spells, plant choices and ensemble verdicts.
 | DM3-R | Repair the unchanged map renderer's road-surface loss, six ordinary buildings beyond REACH and joinable disconnected component on HW1's played-city path, plus the post-verdict JavaFX shutdown diagnostic; preserve the hard drawing laws | [cause and done condition](docs/queue/HW1-notes.md#map-renderer-follow-up-dm3-r) |
 | KS1-Gov | Retain the Government Overview's transient cash-flow and bridge rows so its eventful monthly allocation stays within the existing tenth-of-first-draw floor | [cause and done condition](docs/queue/HW1-notes.md#government-allocation-follow-up-ks1-gov) |
 
-| KS1-rest | Complete the unchanged Kept snapshot harness within its existing 1,740-second limit on the final HW1 city under normal suite heap and soft timing | [trace and done condition](docs/queue/HW1-notes.md#correct-heap-kept-retry-and-ks1-rest-attribution) |
 
 ## known-reds
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it | DM3-R | 2026-11-13 | Main's unchanged map classes reproduce a joinable disconnected component on HW1's played-city input; see the isolated main-map replay in HW1 notes
@@ -28,5 +27,3 @@ KeptCheck | no month makes more than a tenth of the nodes the first draw made (t
 
 MapCheck | ...every building within REACH plots of a street, but those packed at the city's edge and the mines on their sites | DM3-R | 2026-11-14 | Current main's byte-identical CityMap, DistrictPlan, StreetCurves and TilePainter reproduce six ordinary buildings beyond four street plots, with all 715 buildings drawn, on the final HW1 played city. Main-prefix replay in HW1 notes retains the hard reach law and its exclusions.
 
-KeptCheck | FAIL: timed out after 1740 s | KS1-rest | 2026-11-14 | Normal 2048MiB soft-timed affected retry advances through JavaFX snapshots to section95 before the fixed limit. Main, FX and D3D thread dump and unchanged-main source comparison are retained in HW1 notes. Orchestrator assigns this loaded-PC timeout class to KS1-rest.
-KeptCheck | exit 1 | KS1-rest | 2026-11-14 | The same normal-heap Kept retry is killed at its 1740-second limit before its footer. Its completed hard checks have only the already-recorded Finances retention failure. This row covers the killed process exit alongside the specific timeout row, with the trace in HW1 notes.

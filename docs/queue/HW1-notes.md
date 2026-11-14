@@ -3104,3 +3104,20 @@ queued fixes. The undersized direct diagnostic's OOM is excluded.
 BuildCardCheck exit-0 and MapCheck known-only affected retries. The fresh
 launcher will judge the complete final merge with these traced registry
 rows and the corrected payroll law.
+
+
+### Timeout classification withdrawn
+
+Orchestrator's urgent correction 20261114-151630-454 supersedes its
+14:18 instruction and the KS1-rest classification immediately above.
+The killed Kept process leaves sections 95–100 unrun. Its timeout and
+exit cannot establish completion, so both ship known-red rows and their
+queued row were removed. The rejudge's exit 3 was only a consequence of
+that now-withdrawn classification. It supplies no acceptance evidence.
+
+The decisive fresh dry run must finish all Kept sections. After the
+once-only ensemble ends, HW1 will send “HW1 dry run?” and wait for the
+orchestrator's go, so the run has the lower machine load it requires.
+BF1's isolated Kept run completed all 100 sections on this PC at lower
+load, per that mail. The normal retry logs and thread dump above remain
+diagnostic evidence of the incomplete run.
