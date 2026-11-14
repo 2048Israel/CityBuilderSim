@@ -396,8 +396,11 @@ public class FundLedgerCheck {
         String cell = Exchange.CELL + holder(g, c).key();
         ex.tradeForCheck(c, cell, OrderBook.Side.SELL, 2, 40);
         ex.tradeForCheck(c, Exchange.FUND_HAND, OrderBook.Side.BUY, 2, 40);
-        // ...and a trade past SPLIT_AT times the founding price, so the step's split takes it.
-        double high = 1.5 * Exchange.SPLIT_AT * reg.foundingPrice();
+        // ...and a trade past the wage dial, so the step's split takes it.
+        double wage = g.getPopulationManager().getAverageWage();
+        double high = 1.5 * Exchange.SPLIT_AT * wage;
+        double expectedSplit = Math.pow(10, Math.floor(Math.log10(
+                high / (wage * Math.sqrt(Exchange.SPLIT_AT * Exchange.CONSOLIDATE_BELOW)))));
         ex.tradeForCheck(c, cell, OrderBook.Side.SELL, high, 1);
         ex.tradeForCheck(c, Exchange.FUND_HAND, OrderBook.Side.BUY, high, 1);
         FundLedger.Lot lot = f.getLedger().lot(FundLedger.shareKey(Equity.COMPANIES[c]));
@@ -405,7 +408,7 @@ public class FundLedgerCheck {
         double acb = lot.acb(), units = reg.getCityMarketShares(c), avg = acb / units;
         ex.splitForCheck();
         double k = ex.getSplit(c);
-        check("fixture: the share split at SPLIT_AT, by a power of ten", k >= Exchange.SPLIT_AT && Math.abs(Math.log10(k) - Math.round(Math.log10(k))) < 1e-9);
+        close("fixture: the wage trigger split by the derived power of ten", k, expectedSplit, 1e-12);
         close("a split leaves the lot's cost where it was", lot.acb(), acb, 0);
         close("...the register's count goes up by the factor", reg.getCityMarketShares(c), units * k, 1e-9 * units * k);
         close("...and the average a share falls by it", lot.acb() / reg.getCityMarketShares(c), avg / k, 1e-12 * avg);
@@ -947,8 +950,7 @@ public class FundLedgerCheck {
         TreasuryFund ft = t.getFund();
         Equity rt = t.getEquity();
         Exchange xt = t.getExchange();
-        // ...what it holds first: 300 shares where the cap is the 9,370 of this company with a split behind it, and the same part of the cap where it
-        // is not (EM2: the quote under SPLIT_AT's 100 times the founding price is no print to split on, and the company has 937 shares, not 93,700).
+        // ...what it holds first: the same part of the cap whether the wage band has split the company or not.
         double heldFirst = Math.min(300, .032 * TreasuryFund.OWNERSHIP_LIMIT * rt.getShares(c));
         ft.receive(heldFirst * xt.fair(c));
         xt.bookOf(c).withdrawAll();
