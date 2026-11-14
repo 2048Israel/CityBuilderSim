@@ -107,6 +107,37 @@ public final class BankFailureCheck {
         check("a partial retirement alone does not ban a continuing borrower", !carrying.isBorrowingBlocked(wood.key()));
     }
 
+    static void refineryClosing() throws Exception {
+        out.println("--- 7. retained oil is recoverable before a closing haircut ---");
+        Game g = town("bankfailure-refinery-close");
+        g.setCashForTest(0);
+        var refinery = g.getSectors().refining();
+        var plant = g.getBuildingManager().getTemplateByName("Oil Refinery");
+        g.getBuildingManager().addStack(plant, 1, true);
+        double litres = refinery.getStockCapacity(Good.DIESEL);
+        refinery.setStock(Good.DIESEL, litres);
+        double proceeds = litres * g.getMarkets().get(Good.DIESEL).netExportPrice();
+        var credit = g.getEconomyManager().getBusinessDebtManager();
+        credit.issueProjectLoan(refinery.key(), proceeds * .95, g.getMonth());
+        refinery.setCash(0);
+        g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, 0);
+        g.getEconomyManager().pushBalanceSheetInputs();
+        Method investor = Game.class.getDeclaredMethod("sectorInvestor", String.class);
+        investor.setAccessible(true);
+        Method retire = Game.class.getDeclaredMethod("retire", BusinessInvestment.Decision.class, Investor.class, boolean.class);
+        retire.setAccessible(true);
+        retire.invoke(g, new BusinessInvestment.Decision(refinery.key(), plant, 1, "BF1 oil fixture", true),
+                investor.invoke(g, refinery.key()), true);
+        g.getEconomyManager().pushBalanceSheetInputs();
+        double owed = credit.getPrincipal(refinery.key());
+        check("fixture: retained oil covers the loan but the ordinary asset haircut would not",
+                refinery.getStock(Good.DIESEL) > 0 && owed > credit.getAssets(refinery.key()) * BusinessDebtManager.RESTRUCTURE_TARGET
+                && proceeds >= owed);
+        g.getEconomyManager().settleInsolvency();
+        close("closing keeps a claim fully recoverable from retained oil", credit.getPrincipal(refinery.key()), owed);
+        close("recoverable oil causes no creditor loss at closure", credit.getWrittenOffThisMonth(refinery.key()), 0);
+    }
+
     static void credit() throws Exception {
         out.println("--- 3. a new project cannot spend capital the bank does not have ---");
         Game g = town("bankfailure-capital");
@@ -201,6 +232,20 @@ public final class BankFailureCheck {
         check("fixture: insured mortgages carry the model's zero risk weight", Bank.RISK_INSURED_MORTGAGE == 0);
         check("the uninsured project budget does not ration a zero-risk insured mortgage",
                 insured.canFundMortgage(Sectors.REAL_ESTATE, shortfall, request));
+        Bank leverage = new Bank();
+        leverage.refresh(1, deposits, 0, 0, 0, 0);
+        leverage.setCash(deposits);
+        BusinessDebtManager above = new BusinessDebtManager();
+        above.setAssets(Sectors.REAL_ESTATE, deposits * 1000);
+        above.setProjectBudget(leverage);
+        above.setCapitalRule(leverage.lendingGrowthLimit(), leverage.lendsOnlyToKeepBorrowersGoing(), leverage.leverageBinds());
+        double leverageRoom = leverage.equity() / leverage.leverageTarget() - leverage.exposure();
+        check("fixture: leverage binds above target while the old growth rule is infinite",
+                leverage.leverageBinds() && leverage.equity() > leverage.targetEquity()
+                    && Double.isInfinite(above.getCapitalGrowth()) && leverageRoom > 0);
+        check("an insured mortgage cannot exceed finite leverage room above target",
+                !above.canFundMortgage(Sectors.REAL_ESTATE, leverageRoom * 2, deposits * 1000)
+                    && BusinessDebtManager.MORTGAGE_CAPITAL.equals(above.getMortgageRefusal()));
         insured.setCapitalRule(0, true, true);
         check("the leverage rule still rations that same insured mortgage",
                 !insured.canFundMortgage(Sectors.REAL_ESTATE, shortfall, request)
@@ -334,7 +379,7 @@ public final class BankFailureCheck {
     public static void main(String[] args) throws Exception {
         System.setOut(quiet);
         try {
-            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); credit(); shares(); rounding(); bondDust(); }
+            if (!Arrays.asList(args).contains("--count")) { mill(); closing(); refineryClosing(); credit(); shares(); rounding(); bondDust(); }
             if (!Arrays.asList(args).contains("--fixtures")) seeds();
         } finally { System.setOut(out); }
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
