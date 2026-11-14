@@ -160,3 +160,9 @@ formatting code changed, so the completed final-model ensemble remains valid.
   indexes when reusing the run (tools/gate-reuse.sh). The local generated
   copy was restored to HEAD, honoring the explicit post-gate records-only
   rule while retaining the correct index for publication.
+- The record-only branch advance was dry-run again and exited 0, explicitly
+  reusing /tmp/cbs-gate-SX1-x0V9WEWg and rejudging its three known red harnesses.
+  This replay is kept at /tmp/cbs-gate-SX1-0gB2BKln/ship.log; it was of branch
+  bdeaa29e22b0001a2a249c4cffbdfcb63d514a44 and main
+  ef5cfe589277dd14e1a970ddb78212e82b571ee9. It confirms the final records,
+  reusable evidence and publisher-owned generated indexes remain valid.
