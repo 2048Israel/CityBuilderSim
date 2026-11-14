@@ -1,9 +1,18 @@
-# HW1 current verification
+# HW1 revision 4 in progress
+
+REV-HW1-4 requires three additional repairs before final verification.
+The earlier full default and causal results identify model 3b252292.
+The pick started at 09:54 and ensemble HW1-rev3-final are incomplete
+and invalidated. The ship file remains provisional. A new final pick,
+ensemble and kept dry run follow the mends.
+
+# HW1 revision 3 verification, superseded
 
 The current production model is 3b252292 on merged main e5642145
 (0.9.101). All eight affected harnesses and all eight causal controls
-pass. Its full default run exits 0 with zero findings. The full pick and
-once-only final ensemble are running. The ship record is provisional.
+passed. Its full default exited 0 with zero findings. The incomplete
+pick and ensemble were invalidated by REV-HW1-4. These results identify
+that earlier model only.
 
 The current service table and financial comparison appear under
 “Verified default on the REV-HW1-3 model” below. Earlier readiness, gate,
@@ -2389,3 +2398,138 @@ real passes. Chronological components are retained individually.
 - power choice m1987 5 Coal Power Plant: 20-year maintained-service present value: order $159.1B + land $9.2B + 0 later works and land $0.00 + new financing $252.7B + running $354.6M - prevented output loss $0.00 - payroll returned $11.0M = $421.3B. Physical relief 0.0/month; initial 340 posts (39 unfilled); initial payroll $25.3M/month; opens 538.6 months.
 - power choice m1989 3 Coal Power Plant: 20-year maintained-service present value: order $97.3B + land $2.3B + 0 later works and land $0.00 + new financing $114.4B + running $185.4M - prevented output loss $0.00 - payroll returned $5.8M = $214.1B. Physical relief 0.0/month; initial 204 posts (23 unfilled); initial payroll $15.5M/month; opens 536.2 months.
 - power choice m1992 32 Wind Farm: 20-year maintained-service present value: order $22.4B + land $23.0B + 0 later works and land $0.00 + new financing $35.9B + running $1.2B - prevented output loss $0.00 - payroll returned $101.6M = $82.4B. Physical relief 0.0/month; initial 224 posts (12 unfilled); initial payroll $18.8M/month; opens 154.1 months.
+
+## REV-HW1-4 and the stopped provisional runs
+
+The review is 20261114-100716-543-orchestrator-57cb, followed by urgent
+20261114-101336-942-orchestrator-16a3. It was read after the provisional
+ensemble started. That run is void. The run's own Windows PID/path stop
+tool ended its fourteen matching processes. The incomplete pick was
+stopped by verified script PID 25988, created at 09:54:33, and its own
+descendants. Both logs remain as historical incomplete runs.
+
+Required mends are an already fully raised ask's actual permission to
+borrow, the initial ground appropriate to the order's real land use,
+and oracle power sizing independent of production pending-load logic.
+Each receives a causal regression fixture. The jail's 163-month spell
+is being replayed on immutable 3b252292 to identify whether later
+automatic orders postponed its first completion.
+
+## HW1-V projection refinements
+
+The orchestrator explicitly assigns review findings 3 and 4 to HW1-V.
+Purchased parcels can include steep or zoned ground that the present
+valuation carries forward as generally reusable. The current relevant
+code is WorksValue.java around its GroundPlan.take parcel loop and
+AdviceValueOracle.java around Ground.use. Rounded bond cash above an
+order's funding gap is also discarded from projected remaining cash,
+at WorksValue.java:183 and :219 and AdviceValueOracle.java:40 and :83.
+These affect comparison precision. Actual purchases, financing and
+money books use the real order path. The queued brief gives both
+conditions and their hard fixture requirements.
+
+## REV-HW1-4 repairs and construction promise, 2026-11-14
+
+The orchestrator's 20261114-100716-543-orchestrator-57cb requires
+findings 1, 2 and 5 to be repaired. Findings 3 and 4 are assigned to
+HW1-V, with a queued ship row and docs/queue/HW1-V.md. They concern
+reusing purchased steep/zoned ground in a projection and retaining
+rounded bond proceeds above a projected funding gap.
+
+★ An existing ask's affordability now respects its still-to-raise
+permission as well as its spendable held cash. A fully raised ask
+cannot invent a new sale to make its funding look sufficient. The
+funding pre-pass quotes that ask's actual current count, build and
+ground, and releases lower-priority earmarks when it cannot pay.
+The funded-withdrawal premises remain hard. The new fully raised
+fixture causes both cash shortage and otherwise available gap credit,
+then verifies the higher-loss actual order, lower reservation release
+and unchanged amount raised on the original ask.
+
+★ Plan land availability now uses the actual order's land-use class.
+The building-only residual is adjusted by the difference between the
+order's usable owned ground and BUILDING ground. RUN highways and
+WORKS hydro therefore use owned ground that their actual groundFor
+order can use. The card's land shortage and plan land value follow
+the same rule. Both new fixtures have insufficient BUILDING room,
+enough actual-use owned ground, groundFor equal to NONE and no
+later additions. Financing must equal the independently calculated
+build-only invoice financing.
+
+★ AdviceValueOracle now independently schedules pending electrical
+loads and sizes power additions with independently reconstructed
+pooled utility posts, fill, nameplate and consumption. Its power
+path reaches no WorksValue helper through BuildAdvice sizing.
+A paid mini-mill opens soon and draws more than a wind farm can
+supply, while an actual operating shortage causes a wind proposal.
+
+The late Jail is the automatic builder's overrun. Read-only replay
+of 3b252292 is target/checks/hw1-rev4-jail-diag.log. The first Jail
+ordered at m1938 has saved due m2035. Coal, childcare and senior
+reserve additions in that same pass already push its first quote
+to 97.7668 months. At m1939, highways physically supply 160650
+against demand 145138.71, cash is 272.6M and debt 36% of GDP.
+Wind, eight highways and school reserve orders move the Jail quote
+from 95.4127 to 97.0153 months. This is construction allocation,
+with no money hold. The second Jail order at m2036 is after the
+original promise, and service finally recovers at m2101.
+
+The orchestrator explicitly accepts the guard in
+20261114-105015-393-orchestrator-84eb.
+★ An automatic reserve order is held, or reduced to the largest
+safe count, when the construction model's prospective queue quote
+would move an unserved essential's first completion past its saved
+due. Urgent current service remains ranked by prevented output loss.
+The guard walks alternative candidates after a zero-count limit.
+BuildingManager exposes a pure prospective unit-completion quote
+using the same normal, priority, rush, death-care and builders-first
+calculation as the actual queue. Manual order and rush choices still
+enter that calculation. The card explains the preserved service,
+saves and reloads that reason, and clears it when automation is off.
+
+The new full and partial reserve fixtures each cause a currently
+unserved but fully covered pending care plan and physically served
+streets whose reserve proposal would miss that care's saved due.
+The full fixture leaves no headroom. The partial fixture allows
+one road and rejects the complete reserve count. Both invoke the
+real automatic pass and check the actual resulting care completion.
+The initial served-city setup had no reserve proposal, and the first
+traffic adjustment overstated physical demand through the car factor.
+Those failed fixture premises were corrected by setting the final
+capacity from the road model's own effective street load. The hard
+premise and promise assertions remain unchanged.
+
+AutoBuildCheck's BUILDERS explanation law now accepts either zero
+site output or a real prospective one-unit delay of a currently
+unserved essential past its saved due. It continues rejecting a
+construction hold on an urgent current shortage. This is the only
+old-rule assertion extended for the new guard.
+
+### REV-HW1-4 causal controls
+
+The immutable compiled snapshot is
+target/hw1-sendback1/rev4-model-classes. No mutant changed the working
+source or the final model. All fixture premises pass in each mutant.
+
+| Omitted mend | Log under target/checks | Result |
+|---|---|---|
+| Existing ask's still-to-raise permission | hw1-rev4-control-raised.log | Exit 1, higher-loss order, release and raised-amount checks fail |
+| Actual-use initial ground | hw1-rev4-control-ground.log | Exit 1, highway and hydro build-only financing both fail |
+| Public pending-load calculation forced to zero | hw1-rev4-control-oracle.log | Exit 1, independent complete power-plan value fails |
+| Construction promise guard | hw1-rev4-control-crew.log | Exit 1, full and partial actual completion and card/reload explanations fail |
+| Prospective priority queue omits the additional order | hw1-rev4-control-queue.log | Exit 1, actual priority, rush and builders-first completion comparisons fail |
+
+The old 3b252292 oracle with the same zero-pending-load fault passes,
+exit 0, in hw1-rev4-control-old-oracle.log. This demonstrates the
+shared faulty path found by review. The independent oracle fails it.
+The kept full/partial fixtures pass in hw1-rev4-crew-focus.log.
+The first focused combined run's two failed premises are historical
+setup diagnostics, superseded by those passing caused fixtures.
+
+The first stop of the invalidated ensemble ended its JVMs but left
+its xargs parent alive because Git Bash converted the stop tool's
+path environment. A later inspection found new children. The own
+xargs PID 5400, created at the run's 10:11 start, was identified by
+its exact HW1-rev3-final path and terminated with its process tree.
+Remaining JVMs carrying that exact owned run path were ended by
+their process IDs. Every CSV of that run remains void.

@@ -1179,6 +1179,13 @@ public final class BuildAdvice {
         return free * Math.min(land.getPricePerSqFt(), office) + Math.max(0, sqFt - Math.max(0, landLeft)) * office;
     }
 
+    /** Ground remaining for this order's actual land use after earlier cards' footprints. */
+    static double availableGround(Game game, BuildingsTemplate t, double buildingGroundLeft) {
+        LandManager land = game.getLandManager();
+        return Math.max(0, buildingGroundLeft
+                + (land.freeForAnyone(Game.groundUse(t)) - land.getAvailableSqFt()));
+    }
+
     /** Why the next plan lost: greater whole-life net cost, or it cannot close the need (HW1). NO_ROOM remains for historical callers. */
     public enum Lost { DEARER, CANNOT_CLOSE, NO_ROOM }
 
@@ -1354,7 +1361,7 @@ public final class BuildAdvice {
                 found = new int[] {1, 1};
             }
             boolean closes = found[1] == 1;
-            boolean fits = t.getLandSqFt() * (double) found[0] <= landLeft;
+            boolean fits = game.landNeededFor(t, found[0]) <= availableGround(game, t, landLeft);
             // Every candidate's figure since 0.7.101: its order over its life
             // for each unit it will serve - see A BUILDING OVER ITS LIFE. (A
             // road's was its cost over its life a trip from 0.7.70, a living
@@ -1410,7 +1417,8 @@ public final class BuildAdvice {
         double sq = best.t().getLandSqFt() * (double) n;
         return new Suggestion(need, m, best.t(), n, q.total, before, whenOnSite, after, atOpening,
                 best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
-                sq, landValue(game, sq, landLeft), Math.max(0, sq - Math.max(0, landLeft)),
+                sq, best.value().land(),
+                Math.max(0, game.landNeededFor(best.t(), n) - availableGround(game, best.t(), landLeft)),
                 next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
                 credit ? q.total - Math.max(0, cashLeft) : 0, false, best.value(), next == null ? null : next.value());
     }

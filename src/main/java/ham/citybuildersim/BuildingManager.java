@@ -6413,6 +6413,34 @@ public class BuildingManager {
         return wait == Double.MAX_VALUE ? Double.NaN : wait;
     }
 
+    /** Completion of currently pending units after one additional city order, with its full preparation points. */
+    public double siteUnitMonthsAfter(BuildingsTemplate t, int units, double siteOutput,
+                                      BuildingsTemplate additional, int quantity, double additionalPoints) {
+        if (additional == null || quantity <= 0) return siteUnitMonths(t, units, siteOutput);
+        BuildingsStacks stack = t == null ? null : getStack(t);
+        if (stack == null || stack.getUnderConstruction() <= 0 || units <= 0) return 0;
+        if (!(siteOutput > 0)) return Double.NaN;
+        int on = stack.getUnderConstruction();
+        double firstPoints = Math.min(units, on) * (double) t.getConstructionPoints() - stack.getConstructionProgress();
+        if (additional == t) firstPoints += additionalPoints - quantity * (double) t.getConstructionPoints();
+        firstPoints = Math.max(0, firstPoints);
+        if (!(firstPoints > 0)) return 0;
+        long after = (long) on + (additional == t ? quantity : 0);
+        double[] mine = {weightOf(t, after), firstPoints};
+        String key = ConstructionControl.keyOf(t);
+        double wait;
+        if (firstOn(additional, quantity))
+            wait = firstWait(key, mine, false, false, siteOutput, additional, quantity, additionalPoints);
+        else if (handOn(key) || unburiedNow() > 0 && servesTheDead(additional))
+            wait = handWait(key, mine, false, siteOutput, additional, quantity, additionalPoints);
+        else {
+            double totalWeight = 0;
+            for (double[] site : quotedSites(additional, quantity, additionalPoints).values()) totalWeight += site[0];
+            wait = mine[0] > 0 ? firstPoints * totalWeight / (siteOutput * mine[0]) : Double.NaN;
+        }
+        return wait == Double.MAX_VALUE ? Double.NaN : wait;
+    }
+
     /**
      * Months n buildings of t would take if the city ordered them now: with
      * no order set and no rush on t's site, waitFor() exactly - the quote's
@@ -6543,7 +6571,7 @@ public class BuildingManager {
      * waits for the death care's points at the city's pace, then by the rule.
      * NaN when its pace is nothing; MAX_VALUE past a hundred years.
      */
-    private double handWait(String key, double[] mine, boolean isNew, double siteOutput) {
+    private java.util.Map<String, double[]> quotedSites(BuildingsTemplate additional, int quantity, double points) {
         java.util.Map<String, double[]> by = new java.util.LinkedHashMap<>();
         for (BuildingsStacks s : stacks) {
             int on = s.getUnderConstruction();
@@ -6554,6 +6582,23 @@ public class BuildingManager {
         for (ConstructionControl.Demolition site : control.demolitions()) {
             by.put(site.key(), new double[] { site.owed() > 0 ? demolitionWeight(site) : 0, site.owed() });
         }
+        if (additional != null && quantity > 0) {
+            String extraKey = ConstructionControl.keyOf(additional);
+            BuildingsStacks stack = getStack(additional);
+            int on = stack == null ? 0 : Math.max(0, stack.getUnderConstruction());
+            double owed = by.containsKey(extraKey) ? by.get(extraKey)[1] : 0;
+            by.put(extraKey, new double[] {weightOf(additional, (long) on + quantity), owed + Math.max(0, points)});
+        }
+        return by;
+    }
+
+    private double handWait(String key, double[] mine, boolean isNew, double siteOutput) {
+        return handWait(key, mine, isNew, siteOutput, null, 0, 0);
+    }
+
+    private double handWait(String key, double[] mine, boolean isNew, double siteOutput,
+                            BuildingsTemplate additional, int quantity, double points) {
+        java.util.Map<String, double[]> by = quotedSites(additional, quantity, points);
         if (mine != null) by.put(key, mine);
         double[] me = by.get(key);
         if (me == null || !(me[1] > 0)) return 0;
@@ -6561,6 +6606,8 @@ public class BuildingManager {
         for (double[] v : by.values()) total += v[0];
         java.util.List<String> city = citySiteKeys();
         if (isNew && !city.contains(key)) city.add(key);
+        if (additional != null && quantity > 0 && !city.contains(ConstructionControl.keyOf(additional)))
+            city.add(ConstructionControl.keyOf(additional));
         // While the dead wait, the city's death care heads its order (0.7.129).
         java.util.List<String> dead = deathCareAmong(city);
         double months;
@@ -6635,20 +6682,19 @@ public class BuildingManager {
      * factor. NaN when its pace is nothing; MAX_VALUE past a hundred years.
      */
     private double firstWait(String key, double[] mine, boolean isNew, boolean cityOrder, double siteOutput) {
+        return firstWait(key, mine, isNew, cityOrder, siteOutput, null, 0, 0);
+    }
+
+    private double firstWait(String key, double[] mine, boolean isNew, boolean cityOrder, double siteOutput,
+                             BuildingsTemplate additional, int quantity, double points) {
         if (!(siteOutput > 0)) return Double.NaN;
-        java.util.Map<String, double[]> by = new java.util.LinkedHashMap<>();
+        java.util.Map<String, double[]> by = quotedSites(additional, quantity, points);
         java.util.Set<String> group = new java.util.HashSet<>();
-        for (BuildingsStacks s : stacks) {
-            int on = s.getUnderConstruction();
-            if (on <= 0) continue;
-            double o = Math.max(0, on * (double) s.getBuilding().getConstructionPoints() - s.getConstructionProgress());
-            String k = ConstructionControl.keyOf(s.getBuilding());
-            by.put(k, new double[] { weightOf(s.getBuilding(), on), o });
-            if (goesFirst(s.getBuilding(), 0)) group.add(k);
-        }
-        for (ConstructionControl.Demolition site : control.demolitions()) {
-            by.put(site.key(), new double[] { site.owed() > 0 ? demolitionWeight(site) : 0, site.owed() });
-        }
+        for (BuildingsStacks stack : stacks)
+            if (stack.getUnderConstruction() > 0 && goesFirst(stack.getBuilding(), 0))
+                group.add(ConstructionControl.keyOf(stack.getBuilding()));
+        if (additional != null && quantity > 0 && goesFirst(additional, quantity))
+            group.add(ConstructionControl.keyOf(additional));
         if (mine != null) {
             by.put(key, mine);
             // ...a depot among them when the city could staff all of it: its
@@ -6664,6 +6710,8 @@ public class BuildingManager {
         if (me == null || !(me[1] > 0)) return 0;
         java.util.List<String> city = citySiteKeys();
         if (isNew && cityOrder && !city.contains(key)) city.add(key);
+        if (additional != null && quantity > 0 && !city.contains(ConstructionControl.keyOf(additional)))
+            city.add(ConstructionControl.keyOf(additional));
         group.addAll(deathCareAmong(city));
         double groupWeight = 0, groupOwed = 0, restWeight = 0;
         for (java.util.Map.Entry<String, double[]> e : by.entrySet()) {

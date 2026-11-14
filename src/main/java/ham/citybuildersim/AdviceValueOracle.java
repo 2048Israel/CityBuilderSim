@@ -28,8 +28,10 @@ final class AdviceValueOracle {
         double nominal = (1 + monthly)
                 * (1 + Math.max(-.99, g.getBusinessInvestment().getExpectedInflation()) / 12) - 1;
         double footprint = s.landSqFt();
-        double initialLand = s.paving() ? -BuildAdvice.landValue(g, -footprint, land)
-                : BuildAdvice.landValue(g, footprint, land);
+        double usableLand = Math.max(0, land + (g.getLandManager().freeForAnyone(Game.groundUse(t))
+                - g.getLandManager().getAvailableSqFt()));
+        double initialLand = s.paving() ? -BuildAdvice.landValue(g, -footprint, usableLand)
+                : BuildAdvice.landValue(g, footprint, usableLand);
         Ground ground = new Ground(g, t, land);
         double invoice = quote.total + ground.use(s.paving() ? footprint : g.landNeededFor(t, s.count()));
         double available = g.getAutoBuilder().spendableForMeasure(g, measure) - (g.getCash() - treasury);
@@ -64,14 +66,14 @@ final class AdviceValueOracle {
             BuildAdvice.Ahead future = new BuildAdvice.Ahead(date, BuildAdvice.lifeTrend(g, date), 0);
             Map<BuildingsTemplate, Integer> base = power ? ready(g, site, date) : site;
             Map<BuildingsTemplate, Integer> planned = BuildAdvice.plus(BuildAdvice.plus(base, order), Map.of(t, additions));
-            if (!BuildAdvice.maintained(g, measure, planned,
-                    new BuildAdvice.Ahead(date, future.k(), g.getAutoBuilder().getSlack()))) {
+            BuildAdvice.Ahead target = new BuildAdvice.Ahead(date, future.k(), g.getAutoBuilder().getSlack());
+            if (!maintained(g, measure, planned, target, loads)) {
                 int limit = t.isHydro() ? Math.max(0, g.hydroSlotsFree(t) - s.count() - additions) : BuildAdvice.MOST;
-                int extra = BuildAdvice.count(g, measure, planned, Map.of(t, 1),
-                        new BuildAdvice.Ahead(date, future.k(), g.getAutoBuilder().getSlack()), limit, true)[0];
+                int extra = power ? powerCount(g, planned, t, target, limit, loads)
+                        : BuildAdvice.count(g, measure, planned, Map.of(t, 1), target, limit, true)[0];
                 if (extra > 0) {
                     double build = g.quoteBuild(t, extra).total;
-                    double free = Math.max(0, land - footprint - additions * (double) t.getLandSqFt());
+                    double free = Math.max(0, usableLand - footprint - additions * (double) t.getLandSqFt());
                     double paidDate = Math.max(0, date - nextLead);
                     double discount = Math.pow(1 + monthly, -paidDate);
                     capitalLater += (build + BuildAdvice.landValue(g, t.getLandSqFt() * (double) extra, free)) * discount;
@@ -88,8 +90,10 @@ final class AdviceValueOracle {
                 weight += Math.pow(1 + monthly, -(opening + start + month));
             unitMonths += weight * additions;
             operating += weight * running(g, base, planned, future);
-            double[] before = BuildAdvice.supplyDemand(g, measure, base, power ? BuildAdvice.NOW : future);
-            double[] after = BuildAdvice.supplyDemand(g, measure, planned, power ? BuildAdvice.NOW : future);
+            double[] before = power ? powerService(g, base, BuildAdvice.NOW, loads)
+                    : BuildAdvice.supplyDemand(g, measure, base, future);
+            double[] after = power ? powerService(g, planned, BuildAdvice.NOW, loads)
+                    : BuildAdvice.supplyDemand(g, measure, planned, future);
             if (power) {
                 double present = g.getServicesManager().getUtilitiesHandler().getConsumption();
                 double pendingLoad = 0;
@@ -106,6 +110,67 @@ final class AdviceValueOracle {
         double payrollReturned = returned + perUnitReturned * unitMonths;
         double cost = quote.total + initialLand + capitalLater + financing + operating;
         return new double[] {cost - Math.max(0, saved) - payrollReturned, weights > 0 ? units / weights : 0};
+    }
+
+    private static boolean maintained(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> stock,
+                                      BuildAdvice.Ahead at, Map<BuildingsTemplate, Integer> loads) {
+        if (m.kind() != BuildAdvice.Kind.POWER) return BuildAdvice.maintained(g, m, stock, at);
+        double smallest = Double.POSITIVE_INFINITY;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates())
+            if (t.getCategory() == BuildingType.ELECTRICITY && t.getProduction1() > 0)
+                smallest = Math.min(smallest, t.getProduction1());
+        double current = g.getServicesManager().getUtilitiesHandler().getConsumption();
+        if (!(current > 0) || Double.isFinite(smallest) && current < BuildAdvice.FIRST_WORK_SHARE * smallest) return true;
+        double[] sd = powerService(g, stock, at, loads);
+        return !(sd[1] > 0) || sd[0] >= sd[1];
+    }
+
+    private static int powerCount(Game g, Map<BuildingsTemplate, Integer> stock, BuildingsTemplate t,
+                                  BuildAdvice.Ahead at, int limit, Map<BuildingsTemplate, Integer> loads) {
+        double[] before = powerService(g, stock, at, loads);
+        double previous = before[0] - before[1];
+        int count = 0;
+        while (count < limit) {
+            Map<BuildingsTemplate, Integer> next = BuildAdvice.plus(stock, Map.of(t, count + 1));
+            if (maintained(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), next, at, loads)) return count + 1;
+            double[] sd = powerService(g, next, at, loads);
+            double margin = sd[0] - sd[1];
+            if (!(margin > previous + 1e-12)) break;
+            count++;
+            previous = margin;
+        }
+        return count;
+    }
+
+    /** Independent utility pooling and pending electrical draw, including the demand used by sizing. */
+    private static double[] powerService(Game g, Map<BuildingsTemplate, Integer> stock,
+                                         BuildAdvice.Ahead at, Map<BuildingsTemplate, Integer> loads) {
+        UtilitiesHandler utility = g.getServicesManager().getUtilitiesHandler();
+        long[] powerJobs = g.getBuildingManager().getJobArrayPerCategory(BuildingType.ELECTRICITY);
+        long[] waterJobs = g.getBuildingManager().getJobArrayPerCategory(BuildingType.WATER);
+        double posts = 0;
+        for (int i = 0; i < powerJobs.length; i++) posts += powerJobs[i] + waterJobs[i];
+        double filled = utility.getAverageUtilityFill() * posts;
+        double nameplate = utility.getBaseProduction();
+        double demand = utility.getConsumption() * at.scale();
+        if (at.months() > 0) for (Map.Entry<BuildingsTemplate, Integer> e : ready(g, loads, at.months()).entrySet())
+            demand += e.getValue() * (double) e.getKey().getElectricityConsumption();
+        double[] fill = g.getPopulationManager().getJobFillRate();
+        for (Map.Entry<BuildingsTemplate, Integer> e : stock.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            int count = e.getValue();
+            if (t.getCategory() == BuildingType.ELECTRICITY) nameplate += count * t.getProduction1();
+            demand += count * t.getElectricityConsumption();
+            if (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER)
+                for (JobType job : JobType.values()) if (t.getJobs(job) != 0) {
+                    posts += (double) count * t.getJobs(job);
+                    filled += (double) count * t.getJobs(job) * (job.ordinal() < fill.length ? fill[job.ordinal()] : 1);
+                }
+        }
+        double average = posts > 0 ? filled / posts : 1;
+        double supply = average == 0 ? 10000 : nameplate * average;
+        double ratio = supply > 0 ? demand / supply : Double.POSITIVE_INFINITY;
+        return new double[] {ratio > 0 ? demand / ratio : 0, demand};
     }
 
     private static double credit(Game g, double gap, double discount, double months) {
@@ -132,7 +197,8 @@ final class AdviceValueOracle {
         double free, paid;
         Ground(Game g, BuildingsTemplate t, double free) {
             game = g;
-            this.free = Math.min(Math.max(0, free), Math.max(0, g.getLandManager().freeForAnyone(Game.groundUse(t))));
+            this.free = Math.max(0, free + (g.getLandManager().freeForAnyone(Game.groundUse(t))
+                    - g.getLandManager().getAvailableSqFt()));
         }
         double use(double area) {
             double shortage = area - free, cash = 0;

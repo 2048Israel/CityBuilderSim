@@ -730,7 +730,31 @@ public class AutoBuildCheck {
                         && !ab.payback(g, s.measure(), card, 1).paysBack();
             }
             case BUILDERS:
-                return t != null && Double.isNaN(g.quoteBuild(t, 1).months);
+                if (t == null) return false;
+                if (Double.isNaN(g.quoteBuild(t, 1).months)) return true;
+                if (AutoBuilder.essential(s.measure())
+                        && !BuildAdvice.maintained(g, s.measure(), Map.of(), BuildAdvice.NOW)) return false;
+                Game.BuildQuote quote = s.building().equals(ConstructionControl.PAVE_FROM + ", paved")
+                        ? g.quotePave(1) : g.quoteBuild(t, 1);
+                double points = t.getConstructionPoints() + quote.prepPoints + quote.worksPoints
+                        + quote.bridgePoints + quote.deepWaterPoints;
+                double output = g.getBuildingOutputAtEveryPost();
+                for (BuildAdvice.Measure current : AutoBuilder.remit(g, CityNeeds.measure(g, CityNeeds.PLAIN))) {
+                    if (!AutoBuilder.essential(current)
+                            || BuildAdvice.maintained(g, current, Map.of(), BuildAdvice.NOW)) continue;
+                    Double due = ab.toState().pendingUntil.get(current.label());
+                    if (due == null) continue;
+                    double before = Double.POSITIVE_INFINITY, after = Double.POSITIVE_INFINITY;
+                    for (BuildingsTemplate site : BuildAdvice.onSite(g, current).keySet()) {
+                        double old = g.getBuildingManager().siteUnitMonths(site, 1, output);
+                        double proposed = g.getBuildingManager().siteUnitMonthsAfter(site, 1, output, t, 1, points);
+                        if (Double.isFinite(old)) before = Math.min(before, old);
+                        if (Double.isFinite(proposed)) after = Math.min(after, proposed);
+                    }
+                    if (Double.isFinite(before) && after > before + 1e-9
+                            && g.getMonth() + Math.ceil(after - 1e-9) > due) return true;
+                }
+                return false;
             case DEBT: {
                 if (t == null) return false;
                 // Over the limit (0.7.81), the toggle off: it builds nothing, whatever the cash.

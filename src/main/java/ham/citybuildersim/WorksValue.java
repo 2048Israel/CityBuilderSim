@@ -58,10 +58,11 @@ public final class WorksValue {
         Map<BuildingsTemplate, Integer> order = Map.of(t, count);
         double footprint = t.getLandSqFt() * (double) count;
         GroundPlan ground = new GroundPlan(g, t, landLeft);
+        double usableGround = ground.free;
         double groundCash = ground.take(g.landNeededFor(t, count));
-        Maintenance maintenance = new Maintenance(t, count, landLeft, cashLeft, q.total + groundCash, ground);
+        Maintenance maintenance = new Maintenance(t, count, usableGround, cashLeft, q.total + groundCash, ground);
         Relief relief = relief(g, m, site, order, lead, maintenance);
-        return new Value(q.total, BuildAdvice.landValue(g, footprint, landLeft), relief.futureCapital(),
+        return new Value(q.total, BuildAdvice.landValue(g, footprint, usableGround), relief.futureCapital(),
                 relief.futureUnits(), relief.financing(), relief.running(),
                 relief.avoided(), payroll, returned * factor + returned / count * relief.futureMonths(),
                 jobs, count * BuildAdvice.unfilledPosts(t, fill), lead, relief.used());
@@ -116,8 +117,7 @@ public final class WorksValue {
 
         GroundPlan(Game game, BuildingsTemplate template, double available) {
             this.game = game;
-            free = Math.min(Math.max(0, available),
-                    Math.max(0, game.getLandManager().freeForAnyone(Game.groundUse(template))));
+            free = BuildAdvice.availableGround(game, template, available);
         }
 
         double take(double area) {
