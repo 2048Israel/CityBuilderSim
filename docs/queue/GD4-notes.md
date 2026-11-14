@@ -74,3 +74,18 @@ weights are estimates drawn from these settings. [USGS Bulletin 1693](https://pu
 - The initial EarthTerrainCheck measured gold Z at 0.60963879. Its provisional
   constant was then replaced by 0.6096. Its full final verdict is pending.
 - The final pick, ensemble and retained gate provenance are pending.
+
+The first full pick found Gold's missing far-map symbol in MapCheck's existing
+resource-mark assertion. DepositMarks now supplies Au. The same run found a
+Government Overview node-allocation ceiling in KeptCheck section 68. Its
+classification is pending a targeted run on unchanged main 97eaa608.
+
+Review found that bullion's spot exchange quote must survive a reload,
+separately from ordinary goods' lagged, inflation-adjusted quote. Markets.State
+now carries that gold quote and GoldMiningCheck tests the restore, including
+leaving ordinary goods at their handed exchange factor. The accepted mint
+offer is also checked at M and through a change from Gold to Float.
+
+An early ensemble attempt at 8a3d1887 was stopped using its own run label
+after these save-quote and map findings. Its partial output is superseded.
+The final model will receive a fresh 80-run ensemble.

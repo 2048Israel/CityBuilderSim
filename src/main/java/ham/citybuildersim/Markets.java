@@ -556,6 +556,8 @@ public final class Markets {
          * good's literal, so a city with no world market writes neither key, and a save without them reads the literals.
          */
         public Double worldImport, worldExport;
+        /** Gold's spot D$ quote, separate from ordinary goods' lagged, inflation-adjusted rate (GD4). */
+        public Double goldExchangeRate;
     }
 
     public List<State> toState() {
@@ -563,6 +565,7 @@ public final class Markets {
         for (GoodsMarket m : markets.values()) {
             State s = new State();
             s.good = m.good().name();
+            if (m.good() == Good.GOLD) s.goldExchangeRate = m.getExchangeRate();
             s.price = m.getLocalPrice();
             s.flow = m.getSupplyFlow();
             s.stock = m.getSupplyStock();
@@ -595,6 +598,9 @@ public final class Markets {
             m.restoreTakenHistory(s.taken);
             // The band (WN3): put back as it was struck, never recomputed, so a city loaded between two presses draws at the prices the one saved would.
             m.setWorldPrices(s.worldImport == null ? Double.NaN : s.worldImport, s.worldExport == null ? Double.NaN : s.worldExport);
+            if (g == Good.GOLD && s.goldExchangeRate != null && Double.isFinite(s.goldExchangeRate) && s.goldExchangeRate > 0) {
+                m.setExchangeRate(s.goldExchangeRate);
+            }
         }
     }
 

@@ -149,6 +149,7 @@ public final class GoldMiningCheck {
         quietly(() -> g.simulateMonths(1));
         SectorState offer = g.getSectors().goldMining().toState();
         double ounces = offer.extras.get("mintOunces"), payment = offer.extras.get("mintPayment");
+        close("the accepted offer is valued at M", payment, ounces * fa.getMintPrice() / 1000);
         quietly(() -> g.simulateMonths(1));
         GoldMining mine = g.getSectors().goldMining();
         Sector.Output o = mine.outputRow(Good.GOLD);
@@ -169,6 +170,13 @@ public final class GoldMiningCheck {
 
     static void saved(Game g) {
         out.println("--- 6. the saved state carries depletion, vault and mint payment ---");
+        Markets markets = new Markets();
+        markets.setExchangeRate(123);
+        markets.restore(g.getEconomyManager().getMarkets().toState());
+        close("gold's saved spot quote survives restore separately from ordinary goods",
+                markets.get(Good.GOLD).getExchangeRate(),
+                g.getEconomyManager().getMarkets().get(Good.GOLD).getExchangeRate());
+        close("ordinary goods retain the handed exchange factor", markets.get(Good.ACID).getExchangeRate(), 123);
         CentralBank cb = new CentralBank();
         cb.restore(g.getCentralBank().toSaveArray());
         close("the saved month's domestic mint payment survives restore", cb.getGoldMinted(), g.getCentralBank().getGoldMinted());
@@ -196,6 +204,14 @@ public final class GoldMiningCheck {
         }
         assertTrue("the mechanic fired in the played run (" + minted + " mint months)", minted > 0);
         assertTrue("all twenty-four money audits close", audits == 24);
+        double owed = g.getSectors().goldMining().toState().extras.get("mintPayment");
+        g.getForeignAccounts().setRegime(ForeignAccounts.Regime.FLOAT);
+        quietly(() -> g.simulateMonths(1));
+        close("leaving Gold still pays the already accepted offer", g.getCentralBank().getGoldMinted(), owed);
+        MoneyAudit.Result a = g.getLastMoneyAudit();
+        assertTrue("the transition's money audit closes", a != null && a.relative() < 1e-4);
+        quietly(() -> g.simulateMonths(1));
+        close("after that settlement Float makes no mint payment", g.getCentralBank().getGoldMinted(), 0);
     }
 
     public static void main(String[] args) {
