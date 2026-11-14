@@ -1979,3 +1979,28 @@ clamped to 100%. Cash is nominal local thousands. Both debt limits are 240%.
 | 355 | 80.75 | 8,765.21 | 260.13% | 26.72% | 0 | 0 | 0.0% | 100.0% |
 | 356 | 121.59 | 9,226.91 | 243.11% | 25.55% | 0 | 0 | 0.0% | 100.0% |
 | 357 | 203.13 | 9,898.30 | 223.32% | 24.51% | 0 | 0 | 0.0% | 100.0% |
+
+## Provisional spending regression review at 06:47
+
+The orchestrator requires a model mend for the early rail spending and
+future essential funding, before the ensemble. The incomplete ALL run in
+target/checks/hw1-service-final-pick.log was stopped by its verified script
+PID 25640 and descendants. It supplies no final suite verdict.
+
+The bounded exact m84 choice probe is target/checks/hw1-rail-choice.log.
+Operating street capacity is 6,400 against load 4,993, or 128% served,
+cash is −$17.21k, debt $1,445.57k and annual GDP $2,901.74k. The rail plan
+opens in 5.5 months and projects demand 11.5 months out. Its comparison
+claims $26.7M prevented output over twenty years against $2.8M order and
+$4.3M running, making net value −$19.6M.
+
+A paved-road-only card can wait for its shorter lead, so it offers nothing
+yet. The long-horizon comparison prices only each present order against
+twenty years with no further capacity additions. That overvalues the
+large rail alternative against a sequence of later cheap streets.
+Financing interest is also absent from the displayed cost components.
+These faults require complete maintained-service comparisons, including
+future staged capital and financing, plus across-service need/loss
+priority. The actual order remains sized to its opening requirement.
+Eligibility and building balance data stay as authored. No ensemble or
+fresh gate has started on this reviewed candidate.
