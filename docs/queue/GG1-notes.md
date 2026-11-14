@@ -1,8 +1,8 @@
 # GG1 — The new gate's gaps
 
 Built from main b27168e2 after reading HA1, PO1 and EI1's runner, publisher,
-nightly and workflow changes. No model, save, resource, harness or version code
-changes. The default playtest trace is unchanged by construction, so no ensemble.
+nightly and workflow changes. No Java source or game resources
+changed. The default playtest trace is unchanged by construction, so no ensemble.
 No known-reds entry on this base names GG1.
 
 ## Built and calls
@@ -31,12 +31,12 @@ No known-reds entry on this base names GG1.
 
 ## Verification
 
-- `./batch-check.sh --fast`: exit 0; compiled, maps regenerated, Stale clear,
-  LF retained. Named script regression checks and the full pick follow.
+- `./batch-check.sh --fast`: exit 0; compiled, maps regenerated, 0 firm Stale findings,
+  LF retained. Final results are below.
 - Self-test cases cover every numbered gap, with negative controls for still
   retired reds, revoked registry cover and unrelated source advancement.
 - Main-control comparison uses the expanded self-test against b27168e2;
-  results and final line accounting are recorded before readiness.
+  all seven groups fail there; final results and line accounting are below.
 
 ## Process accounting
 
@@ -46,3 +46,20 @@ The offsets are duplicated script-header examples and WC1's superseded
 predecessor/slice instructions; executable legacy predecessor checks remain.
 `sh -n` passed for every changed shell script; all tracked changes retain LF.
 `tools/wait-selftest.sh`: exit 0, 24/24 passed.
+
+## Final builder checks
+
+- ALL pick: exit 3, 182 harnesses in 1055 seconds: 180 passed; PlanCheck
+  (PX1's two comb-junction lines) and DeathRecordCheck (OX1's orphan line)
+  were known reds only. Maps regenerated; Stale had 0 firm findings.
+  Logs: `target/checks/gg1-pick.txt`, `target/checks/suite.txt`.
+- Publisher regression summary:
+  `selftest: 156 of 156 passed`. Log: `target/checks/gg1-ship-selftest.txt`.
+- Unchanged-main control at b27168e2: `selftest: 141 of 156 passed`.
+  Every numbered GG1 group fails on that control and passes on GG1. The
+  changed Ready-flow assertion also fails there because provisional versioned
+  records are published early. Log: `target/checks/gg1-main-selftest.txt`.
+- A new local branch at main's tip remains available to the ID helper;
+  `PD1` is refused. No GG1 exemption or new unrelated red was filed.
+- `git diff --check` and shell syntax checks passed. No Java source, game
+  resources or publisher-owned records were changed by this batch.
