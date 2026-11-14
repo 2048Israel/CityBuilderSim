@@ -1,8 +1,8 @@
-# HW1 â€” The auto city builds its works when they are needed
+# HW1 — The auto city builds its works when they are needed
 
 **Completion resumed with Jerus's approval. Final verification is in progress.**
 The earlier held candidate below is retained as history; the resumed model
-and final verification are recorded under “Resumed to completion”.
+and final verification are recorded under the resumed-completion section.
 
 Jerus's rule: essential works never wait for their own payback. On
 2026-11-13 about 16:15 he raised the done condition: "with automatic building
@@ -21,12 +21,12 @@ can be held by their own payback. Essential orders also face the old
 twelve-month cap: streets and highways share their site map, so either
 kind on site can make the other wait indefinitely.
 
-â˜… Automatic essential works use the full staffed supply/demand target with
+★ Automatic essential works use the full staffed supply/demand target with
 the player's slack. Manual advice retains its listing thresholds. Schools
 are eligible at the thirty-percent useful-demand threshold, including the professional schools.
 Roads, all schools, police and cells join power, water and care as essential.
 
-â˜… Essential orders are no longer capped to twelve months of builder output.
+★ Essential orders are no longer capped to twelve months of builder output.
 They are sized ahead of their projected opening and paid through the normal
 cash/debt/land path. If the full order is unaffordable it is reduced; if even
 one cannot be paid for, the ranking tries other buildings. No work is bought
@@ -49,20 +49,20 @@ technically in a city of 100 poeple they will show 0% coverage, even tho its
 not needed", then gave the threshold: "like for example if college has 500
 seats, then it 150 people wanting it, it may be realy worth it".
 
-â˜… The first useful demand is 30% of the smallest building's nameplate,
+★ The first useful demand is 30% of the smallest building's nameplate,
 including every higher school and any other oversized essential work.
 The same warranted() predicate governs the automatic target, suggestions
 and the playtest's service shares. Higher-school NEEDS YOU listing uses
 30% too. Below it the service has no actionable shortage.
 
-â˜… WorksValue compares twenty years (the existing LIFE_MONTHS), at the real
+★ WorksValue compares twenty years (the existing LIFE_MONTHS), at the real
 debt rate and the city's own twenty-year population trend. Annual midpoints
 value demand after opening; benefits and running are discounted for actual
 construction delay. Power's count now plans twenty years ahead, rather
 than the short business planning window. Automatic advice prices land
 instead of preferring any count that happens to fit free land.
 
-â˜… Prevented output is a marginal estimate on each sector's booked value
+★ Prevented output is a marginal estimate on each sector's booked value
 added (revenue less inputs, power and water), divided by its observed
 affected factor. The candidate changes only that factor; the other
 shortages remain. No output is invented for a zero observed factor.
@@ -74,7 +74,7 @@ unburied sickness penalty. Theft is an internal transfer, not newly
 created city output. No speculative multiplier prices school qualifications
 or the mortality benefits of childcare/senior care.
 
-â˜… Payroll stays a running cost. The model's staffed wages and payslip tax/
+★ Payroll stays a running cost. The model's staffed wages and payslip tax/
 contribution rates return part of that payroll to the treasury; only that
 return is credited, rather than counting the whole wage bill twice as a
 benefit. Posts, unfilled posts and monthly payroll accompany the sum.
@@ -264,7 +264,7 @@ The extra diagnostic at target/checks/hw1-diagnostic.log uses the identical
 It completed with exit 0. Its service counters and 116/8 plant-order counts
 match the final playtest. No balance data changed.
 
-Highways' longest spell is m1313â€“m1557, 245 months: 223 AHEAD/NONE and
+Highways' longest spell is m1313–m1557, 245 months: 223 AHEAD/NONE and
 twenty-two ORDERED/NONE. There is NO ground or cash hold in this spell.
 The minimum spendable cash is 539,177.505k and linked ground is never
 over-allocated. This is construction and continuing demand growth: the
@@ -273,10 +273,10 @@ Earlier completed capacity, an earlier small work bridging a long project,
 or sufficient construction throughput would close it. Merely removing the
 old twelve-month hold does not close this gap.
 
-Death care's longest spell is m2010â€“m2118, 109 months: 106 HELD/GROUND,
+Death care's longest spell is m2010–m2118, 109 months: 106 HELD/GROUND,
 two ORDERED/GROUND and one AHEAD/NONE. There is NO cash hold, and no linked
 ground over-allocation. The exact refusal says "no bare ground on offer
-to buy for it"; only 123â€“326 mÂ² are free, against 2,790 mÂ² for one
+to buy for it"; only 123–326 m² are free, against 2,790 m² for one
 Crematorium. Minimum spendable cash is 172,000,418.942k.
 This is the bare-ground-only purchasing rule, rather than AW2's allocated
 land load issue. A sufficient buildable offer available to that rule, or a
@@ -284,7 +284,7 @@ policy allowing another buildable parcel when no bare one exists, plus
 the actual funeral work, would close it. The two reduced orders do not
 erase the 106 months that were refused.
 
-Cells' longest spell is m1606â€“m1775, 170 months: 169 AHEAD/NONE and one
+Cells' longest spell is m1606–m1775, 170 months: 169 AHEAD/NONE and one
 ORDERED/NONE. There is NO ground or cash hold; linked ground is never
 over-allocated and minimum spendable cash is 1,355,760.017k.
 It is pending prison capacity counted as available by the target. The
@@ -354,7 +354,7 @@ health charge to include. These omissions and the catalogue's relative
 capital/work figures are balance questions for Jerus; this batch changes
 none of buildings.json.
 
-â˜… The diagnostic also exposes a valuation error, not a balance decision:
+★ The diagnostic also exposes a valuation error, not a balance decision:
 prevented-output credit uses demand padded by slack. At the final state
 each one-plant calculation relieves ZERO physical shortage over the
 twenty-year projection, yet all claim prevented output against the reserve.
@@ -398,11 +398,11 @@ A lasting gap below means at least 1% below baseline for twelve consecutive
 monthly observations. SHOCK and HIGH are the SAME path through m600.
 Their gap starts well before either policy intervention.
 
-| policy / seed | lasting gap starts | baseline â†’ HW1 population then | baseline â†’ HW1 final population | final month |
+| policy / seed | lasting gap starts | baseline → HW1 population then | baseline → HW1 final population | final month |
 |---|---:|---:|---:|---:|
-| ZERO_HOT / 2 | m78 | 1,827 â†’ 1,797 | 10,863 â†’ 6,655 | 402 |
-| SHOCK / 5 | m426 | 7,296 â†’ 7,165 | 72,122 â†’ 28,816 | 840 |
-| HIGH / 5 | m426 | 7,296 â†’ 7,165 | 32,096 â†’ 19,878 | 720 |
+| ZERO_HOT / 2 | m78 | 1,827 → 1,797 | 10,863 → 6,655 | 402 |
+| SHOCK / 5 | m426 | 7,296 → 7,165 | 72,122 → 28,816 | 840 |
+| HIGH / 5 | m426 | 7,296 → 7,165 | 32,096 → 19,878 | 720 |
 
 ZERO_HOT seed 2 is ahead at m66 (1,756 against 1,503), then loses people.
 At m77 its net migration is -25.197 against baseline +19.257; at m78
@@ -449,7 +449,7 @@ not just a different price level.
 
 Through m426, the CPI-adjusted accounts show what the money went to:
 
-| recorded flows m2â€“m426, k after division by each month's CPI | baseline | HW1 |
+| recorded flows m2–m426, k after division by each month's CPI | baseline | HW1 |
 |---|---:|---:|
 | capital | 16,367.797 | 13,766.131 |
 | land | 956.237 | 7,060.727 |
@@ -500,7 +500,7 @@ but ends at 1,672,787 against 1,465,948. Across all seeds its median is
 policies end at m402, m720 and m840 while these missed-growth and policy
 interactions still matter. That does not excuse their failed T2 criteria.
 
-â˜… These matched traces establish the account and migration paths, not a
+★ These matched traces establish the account and migration paths, not a
 unique attribution to one changed line. The batch changes demand
 eligibility, order size/timing, staffing bills, land purchases and ranking
 together, and GovernmentPlayer responds to the changed balance sheet.
@@ -565,7 +565,7 @@ provisional marker. Main at 97eaa608 merged; only generated indexes
 conflicted, resolved to main then regenerated. The required initial
 --fast passed with zero firm Stale findings (hw1-resume-fast.log).
 
-â˜… Keep the slack in sizing, remove it entirely from the valuation API.
+★ Keep the slack in sizing, remove it entirely from the valuation API.
 Physical relief and avoided output use demand without reserve. Rank the
 whole candidate order's net present value, not a negative per-unit density.
 Store that value on the suggestion for its card; no second margin-dependent
@@ -574,8 +574,9 @@ Jerus's calls; buildings.json is unchanged.
 
 ## Assertion adaptations on the resumed model
 
-No fixture's city, buildings, land prices, debt pin, river slots or
-demographic bands were moved to admit the rule. The targeted run
+The original towns, building balances, land prices, river slots and
+demographic bands are retained. Cash-cover twins fund the expanded remit
+as detailed below; debt-law fixtures keep their limits. The targeted run
 hw1-resume-targeted2.log passes all seven selected/dependent harnesses,
 exit 0; zero firm Stale findings.
 

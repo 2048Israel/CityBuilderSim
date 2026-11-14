@@ -1,21 +1,24 @@
 # HW1 — works ordered for the service they provide
 
-This is an unshipped candidate. The records and all measurements are in
-docs/queue/HW1-notes.md. The branch carries no ship file.
+Essential works now target their full warranted service plus the player's
+reserve margin. Highways, streets, every warranted school, police and cells
+join power, water and care. An essential work does not face its own payback
+veto or the twelve-month order cap. It still needs actual cash or permitted
+debt, and buys available bare ground before placing its order. Jerus's
+first useful demand is 30% of the smallest work's nameplate.
 
-The automatic builder now targets all warranted service plus its slack,
-including highways, schools and police, without an essential work's own
-payback veto or the old twelve-month order cap. Jerus's useful-demand
-threshold is thirty percent of the smallest work. The valuation compares
-twenty years of order, land and running costs with prevented output losses;
-the Build card exposes the same sum.
+The comparison prices a whole plan over twenty years: its order, replacement
+land and running costs, less the physical output loss its service prevents
+and the payroll taxes returned. Reserve headroom sizes the order and earns
+no prevented-loss credit. The Build card uses that same physical valuation
+and labels its sizing reserve; automatic plans display their actual
+components. Coal's long lead, fuel and pollution remain Jerus's balance
+calls; no building data was changed.
 
-The default run passes its money checks and reaches full service at m2400,
-but retains long shortages while work is on site or land is unavailable.
-It also orders more wind farms. These remaining issues prevent calling the
-candidate complete against Jerus's stronger requirement. The monetary
-ensemble scored 21/26 against 0.9.98's 24/26, losing the ZERO_HOT, SHOCK
-and HIGH population criteria. The candidate is held for Jerus. Its
-valuation also confuses the reserve target with physical lost output.
-The notes include matched account and migration paths; no criterion or
-balance figure was changed to admit this branch.
+The corrected default run orders 19 coal plants and 7 wind farms. Highways
+spend 297 months below 90% service, with a longest spell of 175 months;
+death care spends 31, longest 29; cells spend 59, longest 56. Highway and
+cell spells mostly wait for work already on site, while death care mostly
+waits for bare ground. These are information for Jerus under EI1, alongside
+the ensemble's nonblocking criteria. The full measurements, fixture
+adaptations and verification are in docs/queue/HW1-notes.md.
