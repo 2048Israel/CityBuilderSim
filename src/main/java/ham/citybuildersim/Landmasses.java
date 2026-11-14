@@ -189,6 +189,16 @@ public final class Landmasses {
         linkedSet.add(0);
     }
 
+    /** Owner-thread snapshot for a draft worker's offerSplit: private caches, no live books, ports, joins or stock (WN5c). */
+    Landmasses forOffers() {
+        Landmasses copy = new Landmasses();
+        copy.home = home;
+        copy.active = active;
+        copy.version = version;
+        copy.linkedSet = new TreeSet<>(linkedSet);
+        return copy;
+    }
+
     /** Back to a bare one (LandManager.reset(): a new city): nothing counted, nothing unlinked. */
     void reset() {
         books.clear();

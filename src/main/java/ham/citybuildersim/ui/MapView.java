@@ -415,8 +415,18 @@ final class MapView {
 
     /* ----------------------------- buying from the map (0.7.137, batch M6) ----------------------------- */
 
-    /** The offers picked on the expanded map, in the order picked (LandMap.Picks): the view's alone, dropped on a load and a collapse - and, since MS1, not on a month: each is keyed to its ground and lost only when the city bought it or nothing offers it, the head saying so (headNote). */
-    private final LandMap.Picks picks = new LandMap.Picks();
+    /** Pick measurements have their own queue: a slow hover cannot hold the clicked block behind it (WN5c). */
+    private static final ExecutorService DRAFTS = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "land-drafts");
+        t.setDaemon(true);
+        t.setPriority(Thread.MIN_PRIORITY);
+        return t;
+    });
+    /** The picks belong to this view; only the FX dispatcher installs measured ground and changes the card (WN5c). */
+    private final LandMap.Picks picks = new LandMap.Picks(DRAFTS, Platform::runLater, () -> {
+        showBuyCard();
+        requestDraw();
+    });
     /** The card in the pane (the land office's: LandScreen.mapCardNode(), mapReceiptNode()) and what it was drawn for - null for a receipt. */
     private VBox buyBox;
     private String cardFor;
@@ -3273,14 +3283,8 @@ final class MapView {
         if (key < 0 || land.ownsPlot(x, y)) return null;
         List<String> out = new ArrayList<>();
         if (picks.blocks().contains(key)) {
-            List<Integer> ids = picks.live(g);
-            LandMap.Card c = LandMap.card(g, ids);
-            int offers = 0;
-            for (int id : ids) if (id > 0) offers++;
-            out.add(LandMap.pickedWords(offers, picks.blocks().size()));
-            out.add(LandMap.kindWords(c.km2(), c.dryKm2(), c.freshKm2(), c.seaKm2()));
-            out.add("Price " + ui.landScreen.inToggle(c.usd()));
-            out.add(CLICK_TO_DROP);
+            out.addAll(picks.groundWords(g, ui.landScreen::inToggle));
+            out.add(picks.pricing() ? "Shift-click to drop it" : CLICK_TO_DROP);
             return out;
         }
         if (!picks.pickable(g, key)) return null;
@@ -3911,6 +3915,16 @@ final class MapView {
     private void showBuyCard() {
         if (buyBox == null) return;
         List<Integer> ids = picks.live(ui.game);
+        if (picks.pricing()) {
+            receiptShown = false;
+            cardFor = cardKey(ids);
+            hideNationCard();
+            rings = List.of();
+            buyBox.getChildren().setAll(ui.landScreen.mapPricingNode(LandMap.groundTitle(picks.blocks().size()), this));
+            buyBox.setVisible(true);
+            layoutBuyCard();
+            return;
+        }
         LandScreen.MapCard m = ids.isEmpty() ? null : ui.landScreen.mapCard(ids);
         if (m == null) {
             hideBuyCard();
@@ -3946,7 +3960,7 @@ final class MapView {
     /** What the card was drawn from: the picks, the toggle, the cash and the vault, the month and the listing. */
     private String cardKey(List<Integer> ids) {
         Game g = ui.game;
-        return ids + "|" + g.isLandPaidFromVault() + "|" + g.getCash() + "|" + g.getForeignAccounts().getReservesUsd() + "|"
+        return ids + "|" + picks.pricing() + "|" + g.isLandPaidFromVault() + "|" + g.getCash() + "|" + g.getForeignAccounts().getReservesUsd() + "|"
                 + g.getMonth() + "|" + g.getLandManager().getMarket().getNextOfferId();
     }
 
@@ -4197,6 +4211,7 @@ final class MapView {
         }
         if (k == KeyCode.ENTER && !receiptShown) {
             List<Integer> ids = picks.live(ui.game);
+            if (picks.pricing()) return true;
             LandScreen.MapCard m = ids.isEmpty() ? null : ui.landScreen.mapCard(ids);
             if (m == null) return false;
             ui.landScreen.mapCardPress(m, this);

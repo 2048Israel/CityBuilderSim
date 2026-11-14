@@ -2521,6 +2521,15 @@ final class LandScreen {
         return box;
     }
 
+    /** The picked-ground card while a worker measures it: the ordinary frame and close button, no purchase yet (WN5c). */
+    VBox mapPricingNode(String title, MapView map) {
+        VBox box = mapCardFrame(title, map);
+        Label coming = Kept.label(LandMap.QUOTING);
+        coming.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
+        box.getChildren().add(coming);
+        return box;
+    }
+
     /** The card's frame: its width and padding, a title line with a close at its right. */
     private VBox mapCardFrame(String title, MapView map) {
         Label name = Kept.label(title);
