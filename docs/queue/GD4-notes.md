@@ -8,7 +8,7 @@ EarthTerrainCheck 13 measures Z_GOLD at 0.60963879, stored to four places as
 0.6096. Existing Earth and world files supply all required inputs.
 
 ★ The permanent mine id is 152. Main's R4 already owns ids 148–151 for research
-labs. The orchestrator confirmed 152 through cbs-bus on 2026-11-13. No ids move.
+labs. The orchestrator confirmed 152 through cbs-bus on 2026-11-13.
 
 ★ Keep the brief's field density of one per 500 km² and calibrate the site to
 the gold/copper flow ratio. The proposed 25 t/site gives 126.2 kg/km² at 2.524
@@ -43,9 +43,7 @@ payable if the player leaves Gold between production and settlement. Monthly
 and lifetime payments persist in CentralBank's existing saved array.
 
 SAVE_FORMAT and OLDEST_LOADABLE_FORMAT both rise from 51 to 52 because CityLand
-rows widen. Older saves are refused cleanly. There is no conversion code.
-
-HW1-owned files, including LongPlaytest, remain outside this diff.
+rows widen. Older saves are refused cleanly. 
 
 ## Research
 
@@ -140,7 +138,7 @@ These extensions preserve the checks' original behaviors for existing rows.
 orchestrator directed after identifying the nodes. Unchanged main 97eaa608
 passes this Government Overview section. Its targeted Kept run reaches the
 later research sections before its harness timeout, with the already known
-KF63 line. This is a control of the relevant prefix, not a green full run.
+KF63 line. The control covers the relevant prefix.
 
 The GD4 prefix's page signatures remain equal. Temporary diagnostic copies
 under target/gd4-trace-source record every new node when the Overview creates
@@ -153,8 +151,7 @@ Their log is target/checks/gd4-kept-nodes.log. The forty nodes are
 - One past-bar Region for Paid out.
 - One Sales tax ring Arc and five nodes in its ring key.
 
-All are rows and graphics main already draws. Gold supplies none of these
-nodes. The Government Overview, bridge and budget methods, Pieces and Kept
+All are rows and graphics main already draws. The Government Overview, bridge and budget methods, Pieces and Kept
 are unchanged. The later Output-card addition only displays mint investment
 when nonzero. The new path exposes old scopes being recreated when those
 ordinary fiscal rows return. Preserve the 10% ceiling for KS1-UI's repair.
@@ -168,3 +165,33 @@ prices and freight expectations remain asserted.
 Focused current-model checks now pass GoldMiningCheck, GdpCheck, BuildCardCheck,
 PriceLevelCheck and SaveFileCheck. The price-level twin reports no nominal
 mismatches after the bullion funnel repair.
+
+## Changed assertions for the delta review
+
+| Check and assertion | Main's form | GD4's form | Reason |
+|---|---|---|---|
+| BuildingDataCheck, buildings on sites | 16 | 17, with the Gold Mine & Mill's one ANY gold site and dig of one | The appended building stands on gold. |
+| BuildingDataCheck, the generic site shape | Oil's one-site shape after the typed minerals | Gold gets an explicit id/resource/ANY/one-site/one-dig branch, then the existing oil test | Distinguish the new resource's catalogue contract. |
+| BuildingDataCheck, consumable buyers | The set of 41 existing ids | The same set plus GoldMining.MINE_AND_MILL, 42 | The mill buys its fixed-throughput consumables. |
+| BuildingDataCheck, historical years | Existing id/year map | The same map plus id 152 at 1900 | Gold mining and milling are available at founding. |
+| BuildCardCheck, Industry groups | Existing ordered group list | That list with Gold Mining appended | The new sector's building has its own group. |
+| BuildCardCheck, smelter-acid outlets | One buyer, Copper Mining, at its input nameplate | Two buyers, Copper Mining then Gold Mining, each at its input nameplate | The approved reagent stand-in creates the second buyer. |
+| BuildCardCheck, chain-page coverage | Nine extraction/processing pages with all goods' buyer lines | Ten pages with the same per-good buyer-line assertions | GoldMining is the added extraction page. |
+| CopperRefiningCheck, acid users | Copper Mining | Copper Mining and Gold Mining | The new mill uses ACID. Other maker/user sets retain their entries. |
+| WoodProductsCheck, registry position | Index 23 after Forestry and the final key | Index 23 after Forestry, followed by Gold Mining | Append the twenty-fifth sector. GoldMiningCheck separately requires 25 keys and Gold Mining last. |
+| GdpCheck, HELD's existing tail | Twelve trailing goods from CRUDE through TRUCKS, with their stockability checks | Those twelve retain their order, followed by GOLD and its stockability check | Append the new stockable commodity. The every-held-good coverage assertion stays as written. |
+| TradeCostCheck, delivered-price table | Every pre-GD4 traded good's founding literal, bit-for-bit | The same rows plus gold's founding quote from the statute and declared freight/margin shares | Extend the exhaustive commodity table. Existing rows keep their exact-price comparison. |
+| TradeCostCheck, freight fraction | Every pre-GD4 two-sided band has freight at 75% of its half-wedge | The existing bands retain 75%; GOLD uses the ratio of its declared freight to freight plus dealer margin, 50% | The brief specifies gold freight and margin at 0.25% each side. The original 1.5%-of-half-wedge tolerance is unchanged. |
+| SaveFileCheck, seller rows | OFFER_FIELDS equals 29, round trip and seller-sidecar assertions | OFFER_FIELDS equals 31, with the same round trip and seller-sidecar assertions | The eighth resource adds a site count and amount. |
+| SaveFileCheck, relief sidecars | Centre 24, holding 31, offer 29, with the same lengths in their arrays | Centre 26, holding 33, offer 31, with the same array checks | The resource row widens in the mandated format break. Relief keeps its parallel arrays. |
+| EarthTerrainCheck 13 | The six existing Z values and historical replays | Those assertions plus measured gold Z within Z_ROUNDING | The new geology weight needs normalization on the PC's full file. |
+| GoldMiningCheck | Absent | New seven-section harness with production, contracts, GDP, money, saved state and regime-transition assertions | The new mechanic's required harness. |
+
+PriceLevelCheck, the same-band reload assertion, the money-audit tolerance,
+the Government Overview's allocation ceiling and the remaining harness
+fixtures keep their premises and tolerances.
+
+The mine plan's displayed quantity now uses Resource.unit() in its existing
+format string, so gold reads in troy ounces. Existing tonne resources retain
+their wording. This is a display-text correction over the ensemble's
+cd3c3abd arithmetic model.
