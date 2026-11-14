@@ -3,9 +3,17 @@
 Built from main e5642145 (SX1, 0.9.101), on batch/BF1. HW1's named
 files are kept out of this batch.
 
-Readiness of 502afa0b is withdrawn for REV-BF1-1. The results on model
-272bef8f below are superseded; they are retained as history only. The three
-review findings and fresh verification are recorded at the end.
+Readiness remains provisional while the reviewed model completes its
+ensemble and fresh-clone gate. All five review findings have causal
+fixtures and mends; the last economic change is 85fb890a. Its hands-off
+count is 1/24 failures, against 5/24 on current SX1 (LD2's historical 8/24),
+with all 2,880 monthly MoneyAudits and bank equity bridges closed.
+
+The earlier readiness of 502afa0b was withdrawn. Results on 272bef8f and
+its ensemble below are superseded history. Later review and verification
+sections record each replacement. Ordinary insured mortgages retain zero
+risk weight but finite leverage; liquidation claims persist in the existing
+instrument save JSON and repay when proceeds enter cash.
 
 ## Evidence before the mends
 
@@ -608,3 +616,16 @@ No timeout exception is filed. The complete pick and fresh-clone gate
 still must finish before readiness. The one final-economic-model
 ensemble is run next while the host is busy; the test sequence then
 returns to the full pick and gate under lower contention.
+
+
+## Reviewed model: standalone Kept completion
+
+The orchestrator's 14:24 instruction replaces the planned repeated whole
+ALL with KeptCheck alone, then the final ensemble and the decisive fresh
+dry-run suite. KeptCheck on d13d7cb8 completes all 100 sections with exit 3:
+only the two main-UI findings queued as BF1-K fail. No timeout, numerical
+band or node-retention exception is introduced. The prior loaded-host
+timeout remains evidence, not a waiver. Standalone logs are retained in
+target/bf1-reviewed-kept (bf1-kept-reviewed-alone.txt and KeptCheck.log).
+The suite wrapper regenerates maps with no changed generated documents;
+Stale remains 0 firm, 185 soft.
