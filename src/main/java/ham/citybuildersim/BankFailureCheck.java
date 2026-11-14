@@ -119,6 +119,7 @@ public final class BankFailureCheck {
         double proceeds = litres * g.getMarkets().get(Good.DIESEL).netExportPrice();
         var credit = g.getEconomyManager().getBusinessDebtManager();
         credit.issueProjectLoan(refinery.key(), proceeds * .95, g.getMonth());
+        BusinessDebt claim = credit.getLoans(refinery.key()).get(0);
         refinery.setCash(0);
         g.getEconomyManager().setSectorCash(Sectors.CONSTRUCTION, 0);
         g.getEconomyManager().pushBalanceSheetInputs();
@@ -137,10 +138,10 @@ public final class BankFailureCheck {
         g.getEconomyManager().settleInsolvency();
         close("closing keeps a claim fully recoverable from retained oil", credit.getPrincipal(refinery.key()), owed);
         close("recoverable oil causes no creditor loss at closure", credit.getWrittenOffThisMonth(refinery.key()), 0);
-        double already = refinery.pending().exports;
-        refinery.produceStock(Good.DIESEL, g.getMarkets().get(Good.DIESEL));
+        g.simulateMonths(1);
+        close("the next month's banked oil proceeds repay the retired bullet in full", claim.getOutstandingPrincipal(), 0);
+        close("no later haircut substitutes for that retirement repayment", credit.getWrittenOffTotal(refinery.key()), 0);
         close("the regular liquidation line still empties the retired tanks", refinery.getStock(Good.DIESEL), 0);
-        check("the realized export invoice covers the carried claim", refinery.pending().exports - already >= owed);
 
     }
 
