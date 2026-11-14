@@ -1,30 +1,38 @@
 # HW1 — works ordered for the service they provide
 
-Essential works now target their full warranted service plus the player's
-reserve margin. Highways, streets, every warranted school, police and cells
-join power, water and care. An essential work does not face its own payback
-veto or the twelve-month order cap. It still needs actual cash or permitted
-debt, and buys available bare ground before placing its order. Jerus's
-first useful demand is 30% of the smallest work's nameplate.
+Essential works target full warranted service plus the player's reserve.
+Highways, streets, every warranted school, police and cells join power,
+water and care. Essential orders bypass their own payback veto and the
+twelve-month order cap. Actual cash, permitted borrowing and available
+ground still fund each order. A professional school becomes useful at
+30% of the smallest school's nameplate demand.
 
-The comparison prices a whole plan over twenty years: its order, replacement
-land and running costs, less the physical output loss its service prevents
-and the payroll taxes returned. Reserve headroom sizes the order and earns
-no prevented-loss credit. The Build card uses that same physical valuation
-and labels its sizing reserve; automatic plans display their actual
-components. Coal's long lead, fuel and pollution remain Jerus's balance
-calls; no building data was changed.
+The card and automatic order share full-service sizing, the player's
+reserve and whole-plan valuation. The comparison covers twenty years of
+order, land and filled-post running costs, with physical output losses
+prevented and returned payroll taxes deducted. Reserve headroom earns no
+lost-output credit. Care benefits follow the model's sickness cap and all
+its other causes. Power is valued monthly, including short opportunities
+before a slow pending plant opens. Priority work keeps its full queue delay.
 
-The corrected default run orders 19 coal plants and 7 wind farms. Highways
-spend 297 months below 90% service, with a longest spell of 175 months;
-death care spends 31, longest 29; cells spend 59, longest 56. Highway and
-cell spells mostly wait for work already on site, while death care mostly
-waits for bare ground. These are information for Jerus under EI1, alongside
-the ensemble's nonblocking criteria. The full measurements, fixture
-adaptations and verification are in docs/queue/HW1-notes.md.
+Orders start ahead by their complete construction lead. A saved first-unit
+completion promise limits how long pending capacity can cover an operating
+shortage. Expiry triggers another order, and faster work advances that
+promise. A real scratch save/load reproduces the same deadlines and later
+orders as its unbroken twin.
 
-The final 80-city ensemble passes all ten M1/F1 shipping criteria, with
-zero failed or unread money audits and zero findings. Its information score
-is 20/26 against 0.9.98's 24/26: AUTO2 inflation A1 and ZERO_HOT, SHOCK
-and HIGH population T2 change from PASS to FAIL. Those remain visible in
-the committed ensemble record under Jerus's EI1 decision.
+The final combined default run passes every audit and reload with zero
+findings. Highways spend 24 months below 90%, with a longest spell of 13
+months against a 23-month first-unit quote. Death care has two separate
+one-month spells. Cells remain unserved for 161 months against a 167-month
+quote. Power has eight deficient months and a 67.9% minimum.
+
+Longer spells remain in other services. Water's longest is 144 months,
+medical school 108, university 44, elementary 43 and general care 27.
+Elementary's longest includes 29 cash holds and one debt hold. The notes
+give every service's counts, quotes and order outcomes. These remaining
+service gaps are information for Jerus.
+
+The automatic builder orders 65 wind farms and 9 coal plants. The notes
+retain actual-order component sums and end-city comparisons. Coal's build,
+fuel and pollution balance remains Jerus's. Building data was unchanged.

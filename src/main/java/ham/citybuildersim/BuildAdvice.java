@@ -1924,10 +1924,9 @@ public final class BuildAdvice {
     }
 
     /**
-     * A candidate's figure, the one the advice ranks by (HW1): the full
-     * cost less prevented output loss and payroll returned, per unit served
-     * over the same life (servedOverLife() from the actual opening;
-     * what its count adds where the measure is not weighed so).
+     * A candidate's informational cost per physical unit relieved (HW1).
+     * The full plan's net present value ranks the advice. Reserve-only
+     * capacity has no physical-relief denominator.
      */
     public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t,
                                        int count, double unit, Ahead p, double landLeft) {

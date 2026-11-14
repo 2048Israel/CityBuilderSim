@@ -1268,3 +1268,90 @@ The overview guard's production run, hw1-rev2-overview-named.log, exits 0.
 The isolated ff2a8ac4 BuildAdvice shadow fails only the new empty-row-list
 assertion while the funded exact-order/value parity still passes. Its log
 is hw1-rev2-overview-mutant.log, expected exit 1.
+
+The final source wording pass also replaces a retained payback tooltip's
+old per-unit ranking description with the actual whole-plan ranking, and
+corrects lifePerServed's informational-method comment. These are wording
+changes. The final pick's compiled model is d5e18010, and the fresh-clone
+gate will compile and check this wording with the final records.
+
+## Combined diagnostic default after both reviews
+
+This supersedes the withdrawn readiness and every preliminary trial above.
+The d5e18010 model includes GD4 main ef5cfe58. Its immutable default log
+is target/checks/hw1-rev2-final-default.log, copied from the final pick.
+All 2,404 service months had automatic building enabled. The default and
+its audit/reload fixtures pass, with no LongPlaytest findings.
+
+| service | below 90% months | longest below 90% | last month of longest | below 20% months | first-unit quote near spell start |
+|---|---:|---:|---:|---:|---:|
+| Power | 8 | 8 | 1569 | 0 | 19.0 |
+| Water | 172 | 144 | 1925 | 0 | 227.0 |
+| Streets | 52 | 39 | 58 | 0 | 38.0 |
+| Through traffic | 24 | 13 | 1598 | 7 | 23.0 |
+| General care | 29 | 27 | 1658 | 0 | 22.0 |
+| Childcare | 0 | 0 | — | 0 | — |
+| Senior care | 17 | 10 | 903 | 0 | NaN |
+| Death care | 2 | 1 | 715 | 1 | NaN |
+| Elementary | 61 | 43 | 367 | 61 | 12.0 |
+| Middle school | 13 | 13 | 370 | 13 | 15.0 |
+| High school | 22 | 22 | 391 | 22 | 25.0 |
+| College | 26 | 26 | 436 | 26 | 29.0 |
+| University | 51 | 44 | 1621 | 44 | 28.0 |
+| Medical school | 108 | 108 | 1743 | 59 | 57.0 |
+| Law school | 0 | 0 | — | 0 | — |
+| Business school | 0 | 0 | — | 0 | — |
+| Institute of technology | 0 | 0 | — | 0 | — |
+| Police | 4 | 4 | 616 | 4 | 3.0 |
+| Cells | 161 | 161 | 2054 | 161 | 167.0 |
+
+Quotes are months to the first completed unit, measured near the spell
+start. NaN means no finite first-unit quotation was recorded there.
+The minimum physical service is 67.9202% for power and 0% for through
+traffic. Highway longest is now 13 months, against 23 quoted. Death care
+has two deficient months in separate one-month spells. Cells remain
+unserved for 161 months, against a 167-month first-unit quote.
+
+The longest-spell outcome counts, preserved exactly from the run, are
+
+```text
+...pass outcomes during that longest spell: {Streets={AHEAD/NONE=36, ORDERED/NONE=2, ORDERED/DEBT=1}, Elementary={not offered=1, HELD/CASH=29, HELD/DEBT=1, ORDERED/NONE=1, AHEAD/NONE=11}, Middle school={not offered=1, ORDERED/NONE=1, AHEAD/NONE=11}, High school={not offered=1, ORDERED/NONE=1, AHEAD/NONE=20}, College={not offered=1, ORDERED/NONE=1, AHEAD/NONE=24}, Police={AHEAD/NONE=3, ORDERED/NONE=1}, Through traffic={AHEAD/NONE=12, ORDERED/NONE=1}, Death care={AHEAD/NONE=1}, Senior care={AHEAD/NONE=1, HELD/CASH=9}, Water={AHEAD/NONE=141, ORDERED/NONE=3}, Power={AHEAD/NONE=4, ORDERED/NONE=4}, University={not offered=1, ORDERED/NONE=2, AHEAD/NONE=41}, General care={AHEAD/NONE=25, ORDERED/NONE=2}, Medical school={not offered=1, ORDERED/NONE=8, AHEAD/NONE=99}, Cells={AHEAD/NONE=160, ORDERED/NONE=1}}
+```
+
+The automatic orders include 65 Wind Farms and 9 Coal Power Plants.
+The withdrawn candidate had 7 wind and 19 coal. Those counts describe
+different simulated paths. The final horizon uses timed commissioning
+and physical monthly relief, filled-post wages, capped health effects
+and the shared reserve sizing rule. No balance data was changed.
+
+Representative actual-order component sums from this final run are
+
+```text
+power choice m589 1 Wind Farm: 20-year present value: order $8.0M + land $4.3M + running $2.7M - prevented output loss $234.3M - payroll returned $226,387 = -$219.4M. Physical relief 1733.9/month; 7 posts (0 unfilled); payroll $8,491/month; opens 12.1 months.
+```
+```text
+power choice m1563 1 Coal Power Plant: 20-year present value: order $6.3B + land $867.5M + running $1.0B - prevented output loss $138.9B - payroll returned $30.7M = -$130.8B. Physical relief 108878.2/month; 68 posts (2 unfilled); payroll $1.3M/month; opens 16.6 months.
+```
+```text
+power choice m1566 1 Coal Power Plant: 20-year present value: order $6.9B + land $1.0B + running $957.1M - prevented output loss $0.00 - payroll returned $29.2M = $8.8B. Physical relief 0.0/month; 68 posts (1 unfilled); payroll $1.3M/month; opens 39.0 months.
+```
+```text
+...power comparison at m2405, one Coal Power Plant: 20-year present value: order $108.3B + land $13.8B + running $20.7B - prevented output loss $7.9B - payroll returned $944.9M = $134.0B. Physical relief 100.0/month; 68 posts (0 unfilled); payroll $36.2M/month; opens 40.7 months.
+```
+```text
+...power comparison at m2405, one Wind Farm: 20-year present value: order $2.3B + land $12.0B + running $1.0B - prevented output loss $0.00 - payroll returned $102.1M = $15.2B. Physical relief 0.0/month; 7 posts (0 unfilled); payroll $3.7M/month; opens 10.6 months.
+```
+```text
+...power comparison at m2405, one Hydro Station: 20-year present value: order $2.2B + land $3.0B + running $801.5M - prevented output loss $0.00 - payroll returned $73.6M = $5.9B. Physical relief 0.0/month; 5 posts (0 unfilled); payroll $2.7M/month; opens 14.6 months.
+```
+
+## Additional service timing review and SX1 merge
+
+The 05:43 instruction requires a timing trace for medical school,
+university, general care and elementary before the ensemble. Power's
+minimum also needs its cause. The default above supplies the diagnostic
+path. The incomplete ALL run in hw1-rev2-final-pick2.log was stopped by
+its own verified script process 33148 and descendants after its launcher
+shell was ended. Its default is retained, and it supplies no final suite
+verdict. No ensemble has started on the reviewed model. SX1 main e5642145
+will be merged before the replacement final pick and ensemble.

@@ -3317,9 +3317,8 @@ final class BuildScreen {
                 heldRow.setAlignment(Pos.TOP_LEFT);
                 heldRow.setStyle("-fx-padding: 3 0 0 0;");
                 Kept.tip(heldRow, "Essential works are ordered when needed. Other works count the output losses they"
-                        + " prevent in their payback. The advice ranks by the net cost per "
-                        + BuildCard.perWords(s.measure()) + "; the order is still yours to place, and the inbox has the same"
-                        + " line.", 1000);
+                        + " prevent in their payback. The advice ranks whole plans by net present value."
+                        + " The order is still yours to place, and the inbox has the same line.", 1000);
                 return heldRow;
             }));
         }
