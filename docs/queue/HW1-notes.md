@@ -1,6 +1,7 @@
 # HW1 — The auto city builds its works when they are needed
 
-**Completion resumed with Jerus's approval. Final verification is in progress.**
+**READY. Jerus-approved completion passes the final-model M1/F1 criteria
+and the fresh-clone merge dry run (exit 0; suite known reds only).**
 The earlier held candidate below is retained as history; the resumed model
 and final verification are recorded under the resumed-completion section.
 
@@ -825,8 +826,8 @@ The final --pick selected ALL 198. AllChecks ran 191 harnesses in
 already-known DeathRecordCheck). The eight initially NEW lines are
 MapCheck's two traced raster laws, its exit/count and a post-verdict
 exception, plus KeptCheck's traced allocation line and its exit/count.
-No automatic-building, advice, road, funding, save or model-law red
-remains. Eight timing lines are soft; ten path lines are observations.
+No NEW red in HW1's automatic-building, advice, road, funding, save or
+changed model laws remains. Eight timing lines are soft; ten path lines are observations.
 Stale has zero firm findings. Log: target/checks/hw1-resume-pick.log.
 
 The extra MapCheck line is exactly:
@@ -856,3 +857,33 @@ retained the old NEW tags and rejected their changed counts; the
 documented CBS_REJUDGE mode is required when the registry changes.
 The raw pick's exit 4 is retained in its log; this common-judge result
 is the final verdict on that exact completed run.
+
+## Fresh-clone dry run — passed
+
+Run: sh tools/gate.sh HW1 --dry-run.
+Directory: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HW1-i4QT6Xez
+(Git Bash: /tmp/cbs-gate-HW1-i4QT6Xez).
+Tested branch: 4d66f1ac7bf4cb629a3987c07d03304b4b795f01.
+Tested main: 97eaa608246941c14d40df13386154f5f0bed89f.
+The launcher merged the branch in its fresh clone, selected ALL 198,
+and materialized provisional version 0.9.100. The branch keeps the
+publisher-owned files unchanged. Ship log: that directory's ship.log;
+launcher log: target/checks/hw1-final-gate.log.
+
+**Launcher exit 0**, 2026-11-14 01:12:52 local. The check stage took
+3,265 seconds and returned **exit 3, known red only**. Its 191 harnesses
+ran in 3,159 seconds: 188 passed, three failed, exactly DeathRecordCheck,
+KeptCheck and MapCheck. There are no NEW hard red lines. Stale has zero
+firm findings (186 soft); 17 timing lines are soft, ten path lines are
+observations, and three starts waited for the memory ceiling.
+The gate's retained checks are in that directory's checks/ folder;
+checks/suite.txt has the complete verdict. The final gate log confirms
+the tree was restored and refs.before equals refs.after. No real merge,
+tag or push of main occurred.
+
+The run retains branch.commit, main.commit, checks.complete and
+checks.sha256 for reuse. The ship file names this exact directory.
+After the tested revision only HW1-notes.md and HW1-ship.md advance.
+The notes are pushed first; removing the provisional marker is the
+final ship-only readiness commit, pushed last. The publisher-owned
+files and all implementation files remain as tested.
