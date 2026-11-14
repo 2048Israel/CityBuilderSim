@@ -742,3 +742,33 @@ accounts for and why the owned-ground route leaves one street piece
 unjoined; fix both without weakening MapCheck's kind-by-kind surface
 tolerance or connectivity law. Rerun the causal fixture and MapCheck,
 including its existing seam, curve, edge and network fixtures.
+
+## Final resumed ensemble against 0.9.98
+
+The once-only final-model run is target/ensemble/HW1-final, snapshot
+d9137605, 80/80 cities complete, no missing or short runs, 20.1 minutes.
+The model has not changed since that snapshot; later source changes are
+harness adaptations only. docs/ensemble/HW1.md now contains THIS run's
+baseline, with the publisher's next-version token, replacing the held
+candidate's earlier file. The old run remains in target/ensemble/HW1.
+
+Official score: **20/26** versus baseline **24/26**.
+Official ship verdict under EI1: **PASS, 10/10 hard M1/F1 criteria**.
+All five policies have zero failed or unread money audits and zero
+LongPlaytest findings. Every other changed verdict is information:
+
+| policy / criterion | 0.9.98 | final HW1 | threshold | verdict change |
+|---|---|---|---|---|
+| AUTO2 A1 inflation | median 2.79%, 15/16 in band | median 2.91%, 11/16 in band | median 2% ±1%, at least 12/16 in band | PASS → FAIL (info) |
+| ZERO_HOT T2 final population | 10,574 | 7,810 | at least 7,930.50 | PASS → FAIL (info) |
+| SHOCK T2 final population | 103,965 | 32,098 | at least 77,973.75 | PASS → FAIL (info) |
+| HIGH T2 final population | 55,503 | 26,698 | at least 41,627.25 | PASS → FAIL (info) |
+
+No other verdict changed. AUTO2 final population median is 1,977,750
+versus 1,538,083; 15/16 AUTO2 cities reach 40,000 versus 16/16, still
+passing T1's baseline-minus-two threshold. A2 and A3 remain FAIL as on
+0.9.98. These readings are not changed or hidden to admit the branch.
+The earlier requirement to stop for lost T2 PASS rows was explicitly
+superseded by Jerus's completion approval and EI1. Log:
+target/checks/hw1-final-ensemble.log; full score with every baseline
+figure beside the final figure: target/ensemble/HW1-final/score.md.

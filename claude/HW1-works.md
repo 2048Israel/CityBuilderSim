@@ -22,3 +22,9 @@ cell spells mostly wait for work already on site, while death care mostly
 waits for bare ground. These are information for Jerus under EI1, alongside
 the ensemble's nonblocking criteria. The full measurements, fixture
 adaptations and verification are in docs/queue/HW1-notes.md.
+
+The final 80-city ensemble passes all ten M1/F1 shipping criteria, with
+zero failed or unread money audits and zero findings. Its information score
+is 20/26 against 0.9.98's 24/26: AUTO2 inflation A1 and ZERO_HOT, SHOCK
+and HIGH population T2 change from PASS to FAIL. Those remain visible in
+the committed ensemble record under Jerus's EI1 decision.
