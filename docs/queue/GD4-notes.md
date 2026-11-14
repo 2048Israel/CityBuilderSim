@@ -72,7 +72,7 @@ weights are estimates drawn from these settings. [USGS Bulletin 1693](https://pu
 - EarthTerrainCheck's full-file gold normalization passes at 0.60963879,
   against the stored 0.6096. Its timing result appears below.
 - The final 80-run ensemble passes all M1/F1 criteria, with the score below.
-  The full pick and retained gate provenance follow when complete.
+  The completed full pick is recorded below. Retained gate provenance follows.
 
 The first full pick found Gold's missing far-map symbol in MapCheck's existing
 resource-mark assertion. DepositMarks now supplies Au. The same run found a
@@ -268,3 +268,20 @@ assertions and seven observations. GoldMiningCheck and BuildingDataCheck pass.
 The focused CopperMiningCheck and WoodProductsCheck rerun passes both
 harnesses with exit 0 in target/checks/gd4-held-order.txt. The regenerated
 indexes contain Markdown's intentional two-space hard line endings.
+
+## Final full pick
+
+The corrected full pick completed at 2026-11-14 02:37 with exit 3.
+The picker selects ALL, 198 harnesses. The suite reports 196 run in 1859 s,
+193 passed and three known-red harnesses, PlanCheck, KeptCheck and
+DeathRecordCheck. target/checks/new-reds.txt is empty. The PX1 plan lines
+and OX1 orphan line already have queued fixes. The scoped Government
+allocation row is filed in this batch's ship file under KS1-UI as reviewed
+above. There are twelve soft timing assertions and seven observations.
+Maps regenerated without a diff, Stale has zero firm findings and 185 soft,
+and the tree has no uncommitted change. The kept local summary is
+target/checks/gd4-ready-pick.txt, with suite.txt, used-reds.txt and per-harness
+logs beside it. No Earth or world data file was baked or replaced.
+
+Main remains 97eaa608246941c14d40df13386154f5f0bed89f. The next step is the
+fresh-clone versioned dry run from this pushed provisional branch.
