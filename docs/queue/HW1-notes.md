@@ -1,10 +1,10 @@
-# HW1 revision 5 in progress
+# HW1 final verification in progress
 
-REV-HW1-5 requires three guard repairs before final verification.
-The earlier full default and causal results identify model 3b252292.
-The incomplete rev3 and rev4 picks, defaults and ensembles are void.
-The ship file remains provisional. A new final pick, default, ensemble
-and kept dry run follow the mends.
+REV-HW1-6 accepts the three guard repairs and forecast fixture change.
+The production model is d38638ef on main e5642145, with the final default
+running on its immutable compiled snapshot. The two older incomplete
+ensembles are void. The ship file remains provisional. The final pick,
+once-only complete ensemble and kept dry run follow the harness mend.
 
 # HW1 revision 3 verification, superseded
 
@@ -2638,3 +2638,27 @@ suggestion's closes flag against the full-service predicate at its
 actual count and opening projection. No count, slot or shortage premise
 changes. The aligned harness in hw1-rev5-hydro-aligned.log exits 0.
 Restoring the old predicate is precisely the retained exit-1 control.
+
+## REV-HW1-6, prerequisite assertions belong to their caller
+
+The urgent 20261114-121012-651-orchestrator-5083 accepts all three
+REV-HW1-5 mends and the forecast fixtures. It finds that the shared
+serveOtherEssentials assertion increments EssentialWorksCheck.fails
+when WorksFinanceCheck calls it, while WorksFinanceCheck's own exit
+does not see that counter.
+
+The helper now returns its operating-capacity predicate. All three
+EssentialWorksCheck callers and both WorksFinanceCheck callers assert
+that result with the same hard label through their own check method.
+Every premise remains hard, and its failure contributes directly to
+the harness process's own exit. This is a harness-only repair.
+The final production default on d38638ef continues as instructed.
+
+The prior pick uses the old compiled helper and is stopped at its
+owned root PID 44924, created 12:09:36, after checking its identity.
+The fresh two-harness run and full pick compile the final helper API.
+A source-isolated negative control forces only that helper's returned
+predicate to false and runs the real WorksFinanceCheck.main. Its log
+is target/checks/hw1-rev6-control-prerequisite.log. The kept affected
+harnesses run through batch-check in hw1-rev6-named.log. Results are
+recorded at completion below.

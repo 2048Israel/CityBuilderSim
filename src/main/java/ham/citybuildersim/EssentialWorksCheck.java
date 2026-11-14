@@ -71,7 +71,7 @@ public final class EssentialWorksCheck {
     }
 
     /** Give unrelated essential services their operating capacity before isolating an ahead-of-need order. */
-    static void serveOtherEssentials(Game g, BuildAdvice.Measure except) {
+    static boolean serveOtherEssentials(Game g, BuildAdvice.Measure except) {
         BuildingManager bm = g.getBuildingManager();
         for (int pass = 0; pass < 3; pass++) {
             for (BuildAdvice.Measure m : AutoBuilder.remit(g, CityNeeds.measure(g, CityNeeds.PLAIN))) {
@@ -88,10 +88,9 @@ public final class EssentialWorksCheck {
             g.getServicesManager().updateServices();
             g.getServicesManager().updateInfrastructure();
         }
-        check("fixture: unrelated essential services already have their operating capacity",
-                AutoBuilder.remit(g, CityNeeds.measure(g, CityNeeds.PLAIN)).stream()
-                        .filter(m -> !m.equals(except) && AutoBuilder.essential(m))
-                        .allMatch(m -> BuildAdvice.maintained(g, m, Map.of(), BuildAdvice.NOW)));
+        return AutoBuilder.remit(g, CityNeeds.measure(g, CityNeeds.PLAIN)).stream()
+                .filter(m -> !m.equals(except) && AutoBuilder.essential(m))
+                .allMatch(m -> BuildAdvice.maintained(g, m, Map.of(), BuildAdvice.NOW));
     }
 
     static void anticipateHighway(Path root) {
@@ -101,7 +100,8 @@ public final class EssentialWorksCheck {
         BuildingsTemplate highway = g.getBuildingManager().getTemplateByName("Elevated Highway");
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
-        serveOtherEssentials(g, HIGHWAYS);
+        check("fixture: unrelated essential services already have their operating capacity",
+                serveOtherEssentials(g, HIGHWAYS));
         // Growing population history and homes for the people it predicts.
         quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("House"), 1000, true));
         var history = g.getHistorySave().getPopulation();
@@ -301,7 +301,8 @@ public final class EssentialWorksCheck {
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
                 + 1_000 * LandManager.SQ_FT_PER_KM2);
-        serveOtherEssentials(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER));
+        check("fixture: unrelated essential services already have their operating capacity",
+                serveOtherEssentials(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)));
         g.getHistorySave().getPopulation().clear();
         g.getHistorySave().getMonth().clear();
         BuildingManager bm = g.getBuildingManager();
@@ -698,7 +699,8 @@ public final class EssentialWorksCheck {
         AutoBuilder ab = g.getAutoBuilder();
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
-        serveOtherEssentials(g, power);
+        check("fixture: unrelated essential services already have their operating capacity",
+                serveOtherEssentials(g, power));
         quietly(() -> g.buildStack(coal, 1, false));
         var people = g.getHistorySave().getPopulation();
         var months = g.getHistorySave().getMonth();

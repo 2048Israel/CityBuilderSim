@@ -449,7 +449,8 @@ public final class WorksFinanceCheck {
         bm.setBuildersFirstForTest(false);
         bm.setUnburied(() -> 0);
         BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
-        EssentialWorksCheck.serveOtherEssentials(g, care);
+        check("fixture: unrelated essential services already have their operating capacity",
+                EssentialWorksCheck.serveOtherEssentials(g, care));
         g.getHistorySave().getPopulation().clear();
         g.getHistorySave().getMonth().clear();
         long people = g.getPopulationManager().getPopulation();
@@ -511,7 +512,8 @@ public final class WorksFinanceCheck {
         BuildingsTemplate wind = bm.getTemplateByName("Wind Farm");
         BuildAdvice.Measure through = BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
-        EssentialWorksCheck.serveOtherEssentials(g, through);
+        check("fixture: unrelated essential services already have their operating capacity",
+                EssentialWorksCheck.serveOtherEssentials(g, through));
         EssentialWorksCheck.quietly(() -> {
             g.buildStack(highway, 1, false);
             g.buildStack(street, 1, false);
