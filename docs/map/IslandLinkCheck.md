@@ -1,4 +1,4 @@
-# IslandLinkCheck.java - 765 lines · 25 methods · 8 constants · harnesses
+# IslandLinkCheck.java - 774 lines · 25 methods · 8 constants · harnesses
 
 `ham/citybuildersim/IslandLinkCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -48,7 +48,7 @@
 > 
 > Every premise is asserted before what rests on it.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (79), [LandmassCheck](LandmassCheck.md) (67), [Landmasses](Landmasses.md) (34), [BridgeCheck](BridgeCheck.md) (34), [LongPlaytest](LongPlaytest.md) (29), [AutoBuilder](AutoBuilder.md) (28), [Game](Game.md) (27), [Bridges](Bridges.md) (14), [World](World.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (13), [BridgeSurvey](BridgeSurvey.md) (4), [Founding](Founding.md) (3), [EarthCheck](EarthCheck.md) (3), [BridgeView](BridgeView.md) (3), [Timing](Timing.md) (2), [Ports](Ports.md) (2), [EarthData](EarthData.md) (2), [BuildingType](BuildingType.md) (2), [GameFiles](GameFiles.md) (2), [ChildcareCheck](ChildcareCheck.md) (2), [EarthTerrain](EarthTerrain.md) (1), [TempDirs](TempDirs.md) (1), [AutoBuildCheck](AutoBuildCheck.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (79), [LandmassCheck](LandmassCheck.md) (64), [Landmasses](Landmasses.md) (34), [BridgeCheck](BridgeCheck.md) (34), [AutoBuilder](AutoBuilder.md) (29), [LongPlaytest](LongPlaytest.md) (29), [Game](Game.md) (27), [Bridges](Bridges.md) (15), [World](World.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (13), [BridgeSurvey](BridgeSurvey.md) (4), [Founding](Founding.md) (3), [EarthCheck](EarthCheck.md) (3), [BridgeView](BridgeView.md) (3), [Timing](Timing.md) (2), [Ports](Ports.md) (2), [EarthData](EarthData.md) (2), [BuildingType](BuildingType.md) (2), [GameFiles](GameFiles.md) (2), [ChildcareCheck](ChildcareCheck.md) (2), [EarthTerrain](EarthTerrain.md) (1), [TempDirs](TempDirs.md) (1), [AutoBuildCheck](AutoBuildCheck.md) (1)
 
 ## Sections
 
@@ -59,11 +59,11 @@
 | 303 | 2. THE RULE, DEEP SEA |
 | 369 | 3. NO LINK, OR NOTHING TO LINK |
 | 433 | 4. THE AUTO-BUILDER, A CROSSING |
-| 513 | 5. THE AUTO-BUILDER, DEEP SEA |
-| 560 | 6. THE MONEY |
-| 608 | 7. THE BRIDGE STANDS AND LINKS |
-| 645 | 8. THE TEST PLAYER LINKS AS THE AUTO-BUILDER DOES |
-| 694 | 9. COUNTED IN A PLAYED RUN |
+| 516 | 5. THE AUTO-BUILDER, DEEP SEA |
+| 565 | 6. THE MONEY |
+| 617 | 7. THE BRIDGE STANDS AND LINKS |
+| 654 | 8. THE TEST PLAYER LINKS AS THE AUTO-BUILDER DOES |
+| 703 | 9. COUNTED IN A PLAYED RUN |
 
 ## Constants
 
@@ -90,7 +90,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 709 | **type** `public class IslandLinkCheck` | The island link checked (AL1, 2026-11-09; docs/queue/AL1.md): the rule that says what the city should order to link an island it owns ground on, the automatic builder that orders it once its orders lack ground, and th... |
+| 57 | 718 | **type** `public class IslandLinkCheck` | The island link checked (AL1, 2026-11-09; docs/queue/AL1.md): the rule that says what the city should order to link an island it owns ground on, the automatic builder that orders it once its orders lack ground, and th... |
 | 77 | 4 | `static void check(String label, boolean ok)` |  |
 | 82 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 88 | 1 | `static boolean near(double a, double b)` | Two figures are one within a part in a billion. |
@@ -132,39 +132,39 @@
 |---:|---:|---|---|
 | 373 | 59 | `static void noLink(LandmassCheck.Fixtures f, BridgeCheck.Island isle, BridgeCheck.Island dry, Path root)` |  |
 
-### 4. THE AUTO-BUILDER, A CROSSING (lines 433-512)
+### 4. THE AUTO-BUILDER, A CROSSING (lines 433-515)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 441 | 71 | `static void autoBuilderOnACrossing(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
+| 441 | 74 | `static void autoBuilderOnACrossing(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
 
-### 5. THE AUTO-BUILDER, DEEP SEA (lines 513-559)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 517 | 42 | `static void autoBuilderOnDeepSea(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
-
-### 6. THE MONEY (lines 560-607)
+### 5. THE AUTO-BUILDER, DEEP SEA (lines 516-564)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 564 | 43 | `static void theMoney(BridgeCheck.Island isle)` |  |
+| 520 | 44 | `static void autoBuilderOnDeepSea(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
 
-### 7. THE BRIDGE STANDS AND LINKS (lines 608-644)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 612 | 32 | `static void theBridgeStands(BridgeCheck.Island isle)` |  |
-
-### 8. THE TEST PLAYER LINKS AS THE AUTO-BUILDER DOES (lines 645-693)
+### 6. THE MONEY (lines 565-616)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 649 | 44 | `static void testPlayer(LandmassCheck.Fixtures f, BridgeCheck.Island isle, BridgeCheck.Island dry)` |  |
+| 569 | 47 | `static void theMoney(BridgeCheck.Island isle)` |  |
 
-### 9. COUNTED IN A PLAYED RUN (lines 694-765)
+### 7. THE BRIDGE STANDS AND LINKS (lines 617-653)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 698 | 67 | `static void playedRun(LandmassCheck.Fixtures f, Path root)` |  |
+| 621 | 32 | `static void theBridgeStands(BridgeCheck.Island isle)` |  |
+
+### 8. THE TEST PLAYER LINKS AS THE AUTO-BUILDER DOES (lines 654-702)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 658 | 44 | `static void testPlayer(LandmassCheck.Fixtures f, BridgeCheck.Island isle, BridgeCheck.Island dry)` |  |
+
+### 9. COUNTED IN A PLAYED RUN (lines 703-774)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 707 | 67 | `static void playedRun(LandmassCheck.Fixtures f, Path root)` |  |
 

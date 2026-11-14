@@ -474,9 +474,12 @@ public class IslandLinkCheck {
                 String.format("linked free %,.1f sq ft, the island's %,.0f; %s", c.lm.getAvailableSqFt(), c.lm.getUnlinkedFreeSqFt(), words(want)));
         long orders1 = ab.getOrders(), buildings1 = ab.getBuildings();
         double spent1 = ab.getSpent();
-        month(c);
+        // HW1: warranted first works need 30% useful demand. Keep ground cut until
+        // an order actually meets it, rather than assuming the first month does.
+        int[] firstCue = lowPasses(c, CUE_PASSES, () -> true);
+        check("premise: an order met the linked-ground shortage", firstCue[1] >= CUE_PASSES);
         AutoBuilder.LinkStep step = ab.linkSteps().size() == 1 ? ab.linkSteps().get(0) : null;
-        report("one pass: groundShort() is set and the pass orders one link, ORDERED, a bridge for the island",
+        report("the first pass meeting the ground shortage: groundShort() is set and the pass orders one link, ORDERED, a bridge for the island",
                 ab.groundShort() && step != null && step.outcome() == AutoBuilder.Outcome.ORDERED && step.kind() == BuildAdvice.LinkKind.BRIDGE && step.landmass() == island
                         && step.building().contains(road.getName()) && step.line().contains(lms.name(island)) && step.cost() > 0,
                 step == null ? "no link step (" + ab.linkSteps().size() + ")" : step.line());
@@ -501,11 +504,11 @@ public class IslandLinkCheck {
         check("...the step's line is the pass's sentence for the order, and the rule asked again says every link is under way: null",
                 step != null && step.line().startsWith("Automatic building:") && BuildAdvice.linkFor(g) == null);
 
-        // The next passes, the ground still low.
-        int[] low = lowPasses(c, CUE_PASSES, () -> bridges.size() == 1 && (LandmassCheck.standing(c, road) >= 1 || !lms.linked(island)));
-        report("the next passes, the ground cut low before each, until one met an order short of ground (the cue): no link step, no second bridge, and the island unlinked while the first is on site",
-                low[1] >= CUE_PASSES && low[2] == 0 && low[3] == 0 && linkOrdersNothing(c),
-                String.format("%d months, %d with the cue, %d link steps; bridges %d, on site %d, standing %d", low[0], low[1], low[2], bridges.size(), LandmassCheck.onSite(c, road), LandmassCheck.standing(c, road)));
+        // HW1's first full order can cover the village for the whole cue window.
+        // Cause the pass's link call while the first bridge is still on site.
+        check("the pass's last line asked twice with ground cut and the bridge on site orders no second link",
+                bridges.count(Bridges.ON_SITE) == 1 && !lms.linked(island)
+                        && linkOrdersNothing(c) && linkOrdersNothing(c) && bridges.size() == 1);
         bridged = c;
         bridgedIsland = island;
     }
@@ -529,9 +532,12 @@ public class IslandLinkCheck {
         report("premise: the linked free ground is cut to nothing, no terminal anywhere, and the rule is a port: the island's terminal and one at home",
                 c.lm.getAvailableSqFt() < 1 && AutoBuilder.overFull(g) == 0 && want != null && want.kind() == BuildAdvice.LinkKind.PORT && want.orders().size() == 2 && lms.portsAt(island) == 0 && lms.portsAt(home) == 0,
                 words(want));
-        month(c);
+        // HW1: warranted first works need 30% useful demand. Keep ground cut until
+        // an order actually meets it, rather than assuming the first month does.
+        int[] firstCue = lowPasses(c, CUE_PASSES, () -> true);
+        check("premise: an order met the linked-ground shortage", firstCue[1] >= CUE_PASSES);
         AutoBuilder.LinkStep step = ab.linkSteps().size() == 1 ? ab.linkSteps().get(0) : null;
-        report("one pass: groundShort() is set and the pass orders the link, ORDERED, a port for the island",
+        report("the first pass meeting the ground shortage: groundShort() is set and the pass orders the link, ORDERED, a port for the island",
                 ab.groundShort() && step != null && step.outcome() == AutoBuilder.Outcome.ORDERED && step.kind() == BuildAdvice.LinkKind.PORT && step.landmass() == island && step.cost() > 0
                         && step.building().contains(want.orders().get(0).template().getName()) && step.building().contains(want.orders().get(1).template().getName()),
                 step == null ? "no link step (" + ab.linkSteps().size() + ")" : step.line());
@@ -545,10 +551,9 @@ public class IslandLinkCheck {
         int linkEntries = 0;
         for (AutoBuilder.Entry e : ab.log()) if (e.month() == month && e.measure().equals(LINKS_LABEL)) linkEntries++;
         check("...the log has an entry for each of the two orders", linkEntries == 2);
-        int[] low = lowPasses(c, CUE_PASSES, () -> lms.portsAt(island) == 1 && lms.portsAt(home) == 1);
-        report("the next passes, the ground cut low before each, until one met an order short of ground (the cue): no link step, no more terminals than the two",
-                low[1] >= CUE_PASSES && low[2] == 0 && low[3] == 0 && !lms.linked(island) && linkOrdersNothing(c),
-                String.format("%d months, %d with the cue, %d link steps; month %d", low[0], low[1], low[2], g.getMonth()));
+        check("the pass's last line asked twice with ground cut and both terminals on site orders no more",
+                !lms.linked(island) && linkOrdersNothing(c) && linkOrdersNothing(c)
+                        && lms.portsAt(island) == 1 && lms.portsAt(home) == 1);
         boolean linked = LandmassCheck.until(c, () -> lms.linked(island), LandmassCheck.TERMINAL_MONTHS);
         report("the terminals stand after some months and the island is linked, nothing unlinked, each landmass holding its own", linked && !lms.anyUnlinked() && lms.portsOn(island)[t0.berthCargo().ordinal()] + lms.portsOn(island)[t1.berthCargo().ordinal()] >= 1
                         && lms.portsAt(home) >= 1, "month " + g.getMonth());
@@ -578,14 +583,18 @@ public class IslandLinkCheck {
                 ab.getDebtLimit() == 0 && AutoBuilder.spendable(g) <= 0 && want != null && want.price() > AutoBuilder.spendable(g) && c.lm.getAvailableSqFt() < 1,
                 String.format("spendable $%,.0fk, the link $%,.0fk", AutoBuilder.spendable(g), want == null ? 0 : want.price()));
         int[] paper = new int[2];
-        g.autoBuildProbeForTest = after -> paper[after ? 1 : 0] = g.getDebtManager().getDebt().size();
+        g.autoBuildProbeForTest = after -> {
+            paper[after ? 1 : 0] = g.getDebtManager().getDebt().size();
+            if (!after) g.setCashForTest(AutoBuilder.reserve(g));
+        };
         long orders0 = ab.getOrders();
         int offers0 = ab.getLandOffers(), bonds0 = ab.getBonds();
         double owned0 = c.lm.getOwnedSqFt(), borrowed0 = ab.getBorrowed();
-        month(c);
+        int[] firstCue = lowPasses(c, CUE_PASSES, () -> true);
+        check("premise: an order met the linked-ground shortage with the cash at the reserve", firstCue[1] >= CUE_PASSES);
         g.autoBuildProbeForTest = null;
         AutoBuilder.LinkStep step = ab.linkSteps().size() == 1 ? ab.linkSteps().get(0) : null;
-        report("one pass: groundShort() is set, the link is HELD, and the line is in held() naming the island and the limit",
+        report("the first pass meeting the ground shortage: groundShort() is set, the link is HELD, and the line is in held() naming the island and the limit",
                 ab.groundShort() && step != null && step.outcome() == AutoBuilder.Outcome.HELD && step.kind() == BuildAdvice.LinkKind.BRIDGE && step.landmass() == island
                         && ab.held().contains(step.line()) && step.line().startsWith("Island links:") && step.line().contains(lms.name(island)) && step.line().contains("debt limit is 0%"),
                 step == null ? "no link step (" + ab.linkSteps().size() + ")" : step.line());
