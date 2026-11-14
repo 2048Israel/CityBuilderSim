@@ -1,15 +1,15 @@
-# gate of Merge batch/PO1: the path lines as nightly observations (Jerus, 2026-11-12, harness audit second round: "Nightly observations"): about 470 fixture lines in 29 harnesses that only hope the played city reaches their condition go through a soft/hard helper beside `Timing`; at the gate a miss prints OBSERVED and skips the laws that stand on it, never fails; the nightly reports each miss with its merge range; their known-reds entries go. After HA1 (same files), 0.9.99
+# gate of Merge batch/GG1: the new gate's gaps (Jerus, 2026-11-13: "sure queue and do the gate gaps"): a versioned dry run needs its ship file first; a batch cannot move its own known-reds entry and batch-check does not apply the veto; reuse refuses a branch that changed known-reds.txt; a batch with no queue row takes its merge title from its last commit; {next} left in source; records with a lost encoding. After PO1 (same scripts), 0.9.99
 # date: 2026-11-13
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 196 harnesses run in 1887s: 193 passed, 3 failed
+# suite: 182 harnesses run in 1037s: 180 passed, 2 failed
 PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (328 plots in 11 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
-KeptCheck | exit 1
-KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | 1 FAILED
+KeptCheck | exit 1
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | 1 FAILED

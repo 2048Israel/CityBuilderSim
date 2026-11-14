@@ -21,7 +21,7 @@ git merge-base --is-ancestor "$OLD_BRANCH" "$BRANCH_COMMIT" || exit 1
 ID=$(sed 's#^refs/heads/batch/##' "$RUN/branch")
 ADVANCED=$(git log --format= --name-only --no-renames --diff-merges=first-parent "$OLD_BRANCH..$BRANCH_COMMIT") || exit 1
 printf '%s\n' "$ADVANCED" | awk -v n="docs/queue/$ID-notes.md" -v s="docs/queue/$ID-ship.md" '
-    NF && $0 != n && $0 != s { bad = 1 } END { exit bad }' || exit 1
+    NF && $0 != n && $0 != s && $0 != "docs/notes/known-reds.txt" { bad = 1 } END { exit bad }' || exit 1
 [ "$(cat "$RUN/selection")" = "$SELECTION" ] || exit 1
 [ "$(cat "$RUN/origin")" = "$(git remote get-url origin)" ] || exit 1
 OLD=$(cat "$RUN/main.commit")

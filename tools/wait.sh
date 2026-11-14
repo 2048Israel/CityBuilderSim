@@ -1,66 +1,10 @@
 #!/bin/sh
-# ---------------------------------------------------------------------------
-#  Waiting without ending a turn: until a batch's row leaves the queue on
-#  origin/main, until a batch branch on origin has its ship file, or until a
-#  line turns up in a file. Prints exactly one line on every ending, so the
-#  session that waits is woken once and reads one line.
-#  Read-only apart from fetching origin's main and batch branches. POSIX sh.
-#
-#      sh tools/wait.sh --row ID... [--for MIN]       until none of the ids has a
-#                                  row in the Queued table of origin/main's
-#                                  QUEUE.md (origin's main fetched every 2 minutes);
-#                                  or, for a branch built on one of them (RL1), until
-#                                  that one is ready again with commits HEAD lacks
-#      sh tools/wait.sh --ship [--skip ID...] [--for MIN]   until an unmerged batch/ branch on
-#                                  origin has its docs/queue/<id>-ship.md ("ready to ship"),
-#                                  less the ids skipped and those built on an unmerged
-#                                  batch (tools/carries.sh: waiting, not ready); one that
-#                                  has it already ends it at once (fetched every 2
-#                                  minutes, as --row)
-#      sh tools/wait.sh --line FILE ERE [--for MIN]   until a line of FILE matches the
-#                                  extended regex ERE (looked for every 10 seconds;
-#                                  a carriage return at a line's end is ignored)
-#
-#  Without --for it waits for ever: right for a background command
-#  (run_in_background), whose exit wakes the session. A foreground caller
-#  passes --for 9 in a Bash call whose timeout is raised to 600000 ms (the
-#  tool's most: its default, 2 minutes, moves the call to the background with
-#  no line). --for 0 looks once.
-#  An id that is not queued, or a line already in the file, ends it at once.
-#  --row never starts a fetch with less than 75 seconds left before its --for
-#  deadline - it gives up there, with the last state it saw - and cuts each
-#  fetch off at 45 seconds (where `timeout` exists), so a --for 9 call has said
-#  its line by about 8.5 minutes. A --for of 1 or 0 is one look.
-#  The pauses (120 and 10 seconds) can be shortened for a test: CBS_WAIT_ROW_SECS,
-#  CBS_WAIT_LINE_SECS; so can the 75 and 45: CBS_WAIT_MARGIN, CBS_WAIT_FETCH_SECS.
-#
-#  The ending, the one line and the exit status:
-#      wait      done - ID is out of the Queued table of origin/main (3a9f01c2, 14:02)   0
-#      wait      done - ID ready again with commits HEAD lacks: git merge origin/batch/<id> (14:02)   0
-#      wait      done - ready to ship: ID ID (./ship.sh batch/<id>; origin/main 3a9f01c2, 14:02)   0
-#      wait      gave up after 7 min - still queued: ID (origin/main 3a9f01c2)            3
-#      wait      gave up after 7 min - no batch branch ready to ship (origin/main 3a9f01c2)   3
-#      wait      origin unreachable 6 fetches running: <the line git said>                4
-#                (or "wait      origin/main has no QUEUE.md", also 4)
-#      usage: sh tools/wait.sh ...                                                       2
-#  After --row says done, the waiting session merges origin/main at once
-#  (`git merge origin/main`; a batch cut from its predecessor's tip has commits,
-#  so not --ff-only), or the other line's branch, `git merge origin/batch/ID`: its
-#  worktree was cut when the session started, hours before, and work built on that
-#  base conflicts at the ship in the very files the lane shares. A done line that
-#  finds HEAD without origin/main says so after its time: "; HEAD lacks origin/main:
-#  merge it first". Then it waits again for the same ids.
-#  --ship is the orchestrator's (GP1): one background wait that ends when a branch is ready,
-#  so a gate starts within minutes of the ship file and not at the next hourly check-in
-#  (docs/batch.md, The day). A branch counts while its tip is not in origin/main's history
-#  and carries docs/queue/<its id>-ship.md; a merged one, a deleted one and a push that
-#  is not a ship file do not. A branch the orchestrator holds with its ship file on (a gate
-#  stopped for Jerus's word) is named in --skip, or the wait ends at once every time.
-#
-#  WHY (BP1, 2026-10-24; GP1, RL1): a hand-written until-loop with no deadline looped for
-#  ever while a fetch kept failing; the rest is docs/notes/batch-history.md, "The scripts'
-#  headers" (moved in GT1). tools/wait-selftest.sh tries it.
-# ---------------------------------------------------------------------------
+# --row ID... waits for queue removal (or a legacy predecessor mended); --ship for readiness.
+# --line FILE ERE waits for output. --for MIN bounds any wait; 0 looks once.
+# Ship records marked <!-- readiness: provisional --> do not count (GG1).
+# Exit 0 done, 3 deadline, 4 six failed fetches/unreadable queue, 2 usage.
+# CBS_WAIT_ROW_SECS/LINE_SECS shorten polling; MARGIN/FETCH_SECS bound fetches.
+# WHY (GP1, RL1): hand loops hung on failed fetches; wait-selftest.sh covers the endings.
 
 usage() { echo "usage: sh tools/wait.sh --row ID... [--for MIN] | --ship [--skip ID...] [--for MIN] | --line FILE ERE [--for MIN]" >&2; exit 2; }
 
@@ -133,6 +77,7 @@ ships() {
         id=${b#refs/remotes/origin/batch/}
         git merge-base --is-ancestor "$b" origin/main && continue
         git cat-file -e "$b:docs/queue/$id-ship.md" 2>/dev/null || continue
+        git show "$b:docs/queue/$id-ship.md" | grep -q -x '<!-- readiness: provisional -->' && continue
         if [ "$1" = ready ]; then
             case " $SKIP " in *" $id "*) continue ;; esac
             [ -z "$(sh "$CARRIES" "$b")" ] && printf ' %s' "$id"

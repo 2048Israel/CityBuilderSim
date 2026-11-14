@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### GG1 — The new gate's gaps — 2026-11-13, ready, no tag (process), see docs/queue/GG1-notes.md
+
+Versioned dry runs read provisional records without advertising readiness.
+The builder and gate share retirement and explicit transfer of known reds,
+and registry-only changes can reuse a kept run with a fresh judgment.
+Missing queue titles come from the changelog heading; added source version
+tokens, lost heading separators and reused batch IDs stop publication.
+The batch guide records the contract; self-tests cover all seven gaps.
+
 ### PO1 — The path lines as nightly observations — 2026-11-13, ready, no tag (process), see docs/queue/PO1-notes.md
 Played-path premises in 29 harnesses report OBSERVED and skip their dependent
 laws. Reached laws retain their correctness verdicts, and shared helpers keep

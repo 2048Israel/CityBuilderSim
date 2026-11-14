@@ -101,6 +101,7 @@ EOF
 cp "$SRC/ship.sh" "$TA/main/ship.sh"; chmod +x "$TA/main/ship.sh" "$TA/main/batch-check.sh"
 mkdir -p "$TA/main/tools"; cp "$SRC/tools/gate-report.sh" "$SRC/tools/carries.sh" "$SRC/tools/pick.sh" "$SRC/tools/gate-reuse.sh" "$SRC/tools/gate.sh" "$SRC/tools/gate-process.ps1" "$TA/main/tools/"   # the gate's arithmetic (TM3), and the test of an unmerged predecessor (RL1): files under test
 cp "$SRC/tools/gate-record.awk" "$TA/main/tools/"
+for helper in known-reds batch-id; do [ ! -f "$SRC/tools/$helper.sh" ] || cp "$SRC/tools/$helper.sh" "$TA/main/tools/"; done
 cp "$SRC/src/main/java/ham/citybuildersim/KnownReds.java" "$TA/main/src/main/java/ham/citybuildersim/"
 printf '\nMapCheck | stub known | FIX | 2026-11-12 | fixture\n' >> "$TA/main/docs/notes/known-reds.txt"
 IDS="TST TS2 NS GV GG GN GX GH GQ GC GE GB DOC TM ER NC NC2 OS SH PP PS PR PT"; FAKE=""
@@ -121,7 +122,7 @@ mk() { W fetch -q origin; W checkout -q -B "$1" origin/main; }
 fin() { W add -A && W commit -q -m "$1" && W push -q -f origin "$2"; }
 shipf() { cat > "$TA/work/docs/queue/$1-ship.md" <<EOF
 ## changelog
-### {next} - $1, the throwaway $1 - 2026-10-25, ready, see docs/queue/$1-notes.md
+### {next} — $1, the throwaway $1 — 2026-10-25, ready, see docs/queue/$1-notes.md
 
 $1's paragraph; its number is {next}.
 
@@ -141,12 +142,12 @@ mk batch/NS; jv NS Land; fin NS batch/NS                                 # a bat
 mk batch/GV; shipf GV; setv 0.7.77; fin GV batch/GV
 mk batch/GG; shipf GG; mkdir -p "$TA/work/docs/notes"; echo "# mine" > "$TA/work/docs/notes/gate.txt"; fin GG batch/GG
 mk batch/GN; shipf GN; jv GN Markets; fin GN batch/GN
-mk batch/GX; printf '## changelog\n### 9.9.9 - GX\n\np.\n' > "$TA/work/docs/queue/GX-ship.md"; jv GX Markets; fin GX batch/GX
+mk batch/GX; printf '## changelog\n### 9.9.9 — GX\n\np.\n' > "$TA/work/docs/queue/GX-ship.md"; jv GX Markets; fin GX batch/GX
 mk batch/GH; shipf GH; sed -i 's/^## pending/## Pending/' "$TA/work/docs/queue/GH-ship.md"; fin GH batch/GH
 mk batch/GQ; shipf GQ; echo "<!-- GQ -->" >> "$TA/work/QUEUE.md"; fin GQ batch/GQ
 mk batch/GC; shipf GC; echo "<!-- GC -->" >> "$TA/work/docs/notes/changelog.md"; fin GC batch/GC
 mk batch/GE; shipf GE; echo "# x" > "$TA/work/docs/ensemble/9.9.9.md"; fin GE batch/GE
-mk batch/GB; printf '## changelog\n### 9.9.9 - GB\n\np.\n' > "$TA/work/docs/queue/GB-ship.md"; echo "# x" > "$TA/work/docs/ensemble/GB.md"; jv GB Markets; fin GB batch/GB
+mk batch/GB; printf '## changelog\n### 9.9.9 — GB\n\np.\n' > "$TA/work/docs/queue/GB-ship.md"; echo "# x" > "$TA/work/docs/ensemble/GB.md"; jv GB Markets; fin GB batch/GB
 mk batch/DOC; shipf DOC; notes DOC; fin DOC batch/DOC
 for pair in RED:Zoning RC:Rollover FM:Zoning FW:Zoning; do b=${pair%%:*}; mk batch/$b; shipf $b; notes $b; jv $b ${pair##*:}; fin $b batch/$b; done
 mk batch/CQ; shipf CQ; jv CQ SimulationEngine; fin CQ batch/CQ
@@ -154,7 +155,7 @@ mk batch/CQ; shipf CQ; jv CQ SimulationEngine; fin CQ batch/CQ
 mk batch/TM; notes TM; jv TM Bank
 cat > "$TA/work/docs/queue/TM-ship.md" <<'EOF'
 ## changelog
-### {next} - TM, the throwaway TM - 2026-10-25, ready, see docs/queue/TM-notes.md
+### {next} — TM, the throwaway TM — 2026-10-25, ready, see docs/queue/TM-notes.md
 
 TM's paragraph; its number is {next}.
 
@@ -170,22 +171,22 @@ TM's paragraph; its number is {next}.
 EOF
 fin TM batch/TM
 mk batch/ER; notes ER; jv ER Markets   # a pending row with no id
-printf '## changelog\n### {next} - ER\n\np.\n\n## pending\n| | a row with an empty first cell ({next}) | w | b |\n' > "$TA/work/docs/queue/ER-ship.md"; fin ER batch/ER
+printf '## changelog\n### {next} — ER\n\np.\n\n## pending\n| | a row with an empty first cell ({next}) | w | b |\n' > "$TA/work/docs/queue/ER-ship.md"; fin ER batch/ER
 mk batch/NC; notes NC; jv NC Markets   # {next} in a pending row only, the changelog heading mistyped
-printf '## pending\n| NC-C | NC leaves a call ({next}) | w | b |\n\n##changelog\n### {next} - NC\n\np.\n' > "$TA/work/docs/queue/NC-ship.md"; fin NC batch/NC
+printf '## pending\n| NC-C | NC leaves a call ({next}) | w | b |\n\n##changelog\n### {next} — NC\n\np.\n' > "$TA/work/docs/queue/NC-ship.md"; fin NC batch/NC
 mk batch/NC2; notes NC2; jv NC2 Markets   # {next} in a pending row only, the changelog block headed with a number
-printf '## changelog\n### 9.9.9 - NC2\n\np.\n\n## pending\n| NC2-C | NC2 leaves a call ({next}) | w | b |\n' > "$TA/work/docs/queue/NC2-ship.md"; fin NC2 batch/NC2
+printf '## changelog\n### 9.9.9 — NC2\n\np.\n\n## pending\n| NC2-C | NC2 leaves a call ({next}) | w | b |\n' > "$TA/work/docs/queue/NC2-ship.md"; fin NC2 batch/NC2
 mk batch/SH; shipf SH; notes SH; sed -i '3i echo "ZZ-the-branchs-ship.sh-ran"' "$TA/work/ship.sh"; fin SH batch/SH   # a branch that changes ship.sh itself (TM3 did)
-mk batch/OS; shipf OS; notes OS; jv OS Markets; printf '## changelog\n### {next} - ZZ\n\np.\n' > "$TA/work/docs/queue/ZZ-ship.md"; fin OS batch/OS   # another id's ship file
-mk docs/pass-t; printf '## changelog\n### docs pass - a pass\n\np.\n' > "$TA/work/docs/queue/docs-pass-ship.md"; fin DPT docs/pass-t   # a docs pass's, misnamed
-mk docs/pass-ok; printf '## changelog\n### docs pass - a pass\n\np.\n' > "$TA/work/docs/queue/docs-pass-ok-ship.md"; fin DPO docs/pass-ok   # and named by its branch
+mk batch/OS; shipf OS; notes OS; jv OS Markets; printf '## changelog\n### {next} — ZZ\n\np.\n' > "$TA/work/docs/queue/ZZ-ship.md"; fin OS batch/OS   # another id's ship file
+mk docs/pass-t; printf '## changelog\n### docs pass — a pass — 2026-11-13\n\np.\n' > "$TA/work/docs/queue/docs-pass-ship.md"; fin DPT docs/pass-t   # a docs pass's, misnamed
+mk docs/pass-ok; printf '## changelog\n### docs pass — a pass — 2026-11-13\n\np.\n' > "$TA/work/docs/queue/docs-pass-ok-ship.md"; fin DPO docs/pass-ok   # and named by its branch
 mk chatgpt/vt; jv CGV Land; setv "$VOLD"; fin CGV chatgpt/vt           # a branch that moves VERSION
 mk chatgpt/ok; jv CGO Land; fin CGO chatgpt/ok                         # one that leaves it
 # RL1: PS is cut from PP's tip (ready), PT from PR's (sent back: no ship file on its tip); both have a ship file of their own
-mk batch/PP; printf '## changelog\n### PP - a predecessor - 2026-10-27, no tag\n\np.\n' > "$TA/work/docs/queue/PP-ship.md"; jv PP Markets; fin PP batch/PP
+mk batch/PP; printf '## changelog\n### PP — a predecessor — 2026-10-27, no tag\n\np.\n' > "$TA/work/docs/queue/PP-ship.md"; jv PP Markets; fin PP batch/PP
 mk batch/PR; jv PR Markets; fin PR batch/PR
 for pair in PP:PS PR:PT; do
-    W checkout -q -B "batch/${pair##*:}" "origin/batch/${pair%%:*}"; printf '## changelog\n### %s - a successor - 2026-10-27, no tag\n\np.\n' "${pair##*:}" > "$TA/work/docs/queue/${pair##*:}-ship.md"
+    W checkout -q -B "batch/${pair##*:}" "origin/batch/${pair%%:*}"; printf '## changelog\n### %s — a successor — 2026-10-27, no tag\n\np.\n' "${pair##*:}" > "$TA/work/docs/queue/${pair##*:}-ship.md"
     jv "${pair##*:}" Zoning; fin "${pair##*:}" "batch/${pair##*:}"
 done
 W checkout -q -B scratch origin/main
@@ -229,11 +230,11 @@ LABEL="ship TST ($V1) and the generated docs it regenerates"; STUB_TOUCHMAPS=1 S
 ok sh -c "[ $RC = 0 ] && grep -q -F \"pushed main and $V1\" $TA/out.txt"
 LABEL="TST: VERSION set to $V1"; ok sh -c "grep -q 'VERSION = \"$V1\"' $TA/main/$GVF"
 LABEL="TST: tag $V1 on origin"; ok sh -c "git -C $TA/origin.git rev-parse -q --verify refs/tags/$V1"
-LABEL="TST: block on top of the changelog, one blank line each side"; ok sh -c "awk '/^---\$/ { d=1; next } d && NF { print; exit }' $TA/main/docs/notes/changelog.md | grep -q -F '### $V1 - TST'"
+LABEL="TST: block on top of the changelog, one blank line each side"; ok sh -c "awk '/^---\$/ { d=1; next } d && NF { print; exit }' $TA/main/docs/notes/changelog.md | grep -q -F '### $V1 — TST'"
 LABEL="TST: Pending row at the top of the table"; ok sh -c "awk '/^## Pending/ {p=1} p && /^\\|---/ { getline; print; exit }' $TA/main/QUEUE.md | grep -q -F '| TST-C |'"
 LABEL="TST: Queued row out, its follow-up row in"; ok sh -c "! grep -q '^| TST |' $TA/main/QUEUE.md && grep -q '^| TST-N |' $TA/main/QUEUE.md"
 LABEL="TST: baseline renamed to $V1.md, first line set, ship file gone"; ok sh -c "head -1 $TA/main/docs/ensemble/$V1.md | grep -q -F '# Ensemble baseline: $V1' && [ ! -e $TA/main/docs/ensemble/TST.md ] && [ ! -e $TA/main/docs/queue/TST-ship.md ]"
-LABEL="TST: a stray {next} left in another file, with a note"; ok sh -c "grep -q -F '{next}' $TA/main/docs/queue/TSTX.md && grep -q -F 'docs/queue/TSTX.md' $TA/out.txt"
+LABEL="TST: an unrelated document keeps its literal {next}"; ok grep -q -F '{next}' "$TA/main/docs/queue/TSTX.md"
 LABEL="TST: gate.txt written, earth-2.bin not named"; ok sh -c "grep -q '^# earth-2.bin: not named' $TA/main/docs/notes/gate.txt"
 LABEL="ship TS2 ($V2): generated docs in conflict, the branch's side"; STUB_TOUCHMAPS=1 run batch/TS2
 ok sh -c "[ $RC = 0 ] && grep -q -F 'generated docs in conflict' $TA/out.txt && grep -q -F \"pushed main and $V2\" $TA/out.txt"
@@ -450,7 +451,7 @@ LABEL="naming a stopped run's red permits reuse and publication"; ok sh -c "[ $R
 LABEL="reuse restores the generated indexes produced by the kept checks"; ok test "$(grep -c '^// regenerated' "$TA/main/docs/dials.md")" = "$((GEN_BEFORE + 1))"
 for b in FDOC FSC; do
     mk batch/$b
-    printf '## changelog\n### %s - fixture, no tag (process)\n\nFixture.\n' "$b" > "$TA/work/docs/queue/$b-ship.md"
+    printf '## changelog\n### %s — fixture — 2026-11-13, no tag (process)\n\nFixture.\n' "$b" > "$TA/work/docs/queue/$b-ship.md"
     [ "$b" != FSC ] || printf '#!/bin/sh\n# fixture\n' > "$TA/work/tools/zz-reuse.sh"
     fin "$b" batch/$b
     CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/kept-$b" sh "$SRC/tools/gate.sh" "$b" --dry-run --no-tag > "$TA/kept-$b.out" 2>&1
@@ -458,13 +459,82 @@ for b in FDOC FSC; do
     LABEL="$b zero-harness gate reuses its completed fast run"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && git -C $TA/main log -1 --format=%B | grep -q 'reused $TA/kept-$b'"
 done
 
-# The builder runs before its own notes and readiness marker are committed.
-mk batch/RQ; jv RQ SimulationEngine; fin RQ-source batch/RQ
-CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/ready-kept" sh "$SRC/tools/gate.sh" RQ --dry-run --no-tag > "$TA/ready-kept.out" 2>&1
+# GG1.1: the provisional versioned ship is available to a dry run, but is not ready.
+mk batch/RQ; jv RQ SimulationEngine; shipf RQ
+printf '\n<!-- readiness: provisional -->\n' >> "$TA/work/docs/queue/RQ-ship.md"; fin RQ-source batch/RQ
+( cd "$TA/main" && sh "$SRC/tools/wait.sh" --ship --skip RED SH GN NS GV GG GX GH GQ GC GE GB TM ER NC NC2 OS PS PT PR RF HF AR FM FW CQ --for 0 ) > "$TA/provisional-wait.out" 2>&1
+LABEL="GG1.1 provisional ship does not wake the waiter"; ok sh -c "! grep -q 'ready to ship:.*RQ' $TA/provisional-wait.out"
+( cd "$TA/main" && sh "$SRC/tools/day.sh" ) > "$TA/provisional-day.out" 2>&1
+LABEL="GG1.1 day does not advertise provisional records as ready"; ok sh -c "! grep -q '^ready     RQ ' $TA/provisional-day.out"
+run batch/RQ
+LABEL="GG1.1 provisional records cannot publish"; ok stopped provisional
+CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/ready-kept" sh "$SRC/tools/gate.sh" RQ --dry-run > "$TA/ready-kept.out" 2>&1; LRC=$?
+SEALED_VERSION=$(sed -n 's/.*version=//p' "$TA/ready-kept/selection")
+LABEL="GG1.1 provisional versioned dry run seals the right version"; ok sh -c "[ $LRC = 0 ] && test -n '$SEALED_VERSION' && grep -q 'tag $SEALED_VERSION' $TA/ready-kept/ship.log"
 printf '# RQ notes\n' > "$TA/work/docs/queue/RQ-notes.md"; fin RQ-notes batch/RQ
-printf '<!-- gate-run: %s -->\n## changelog\n### RQ - ready, no tag (process)\n\nReady fixture.\n' "$TA/ready-kept" > "$TA/work/docs/queue/RQ-ship.md"; fin RQ-ready batch/RQ
-: > "$STUB_LOG"; run --no-tag batch/RQ
+sed -i '/^<!-- readiness: provisional -->$/d' "$TA/work/docs/queue/RQ-ship.md"
+printf '\n<!-- gate-run: %s -->\n' "$TA/ready-kept" >> "$TA/work/docs/queue/RQ-ship.md"; fin RQ-ready batch/RQ
+: > "$STUB_LOG"; run batch/RQ
 LABEL="Ready flow reuses the dry run after notes and ship commits are pushed"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && git -C $TA/main log -1 --format=%B | grep -q 'reused $TA/ready-kept'"
+
+# GG1.2: actual builder entry point, exact cover and ship-file transfer share the gate verdict.
+mk batch/MOVE; shipf MOVE; jv MOVE KnownRedsCheck
+printf '\nZzCheck | transfer fixture | MOVE | 2026-11-13 | old cause\n' >> "$TA/work/docs/notes/known-reds.txt"
+printf '\nZzCheck | transfer fixture FAIL\n' >> "$TA/work/docs/notes/gate.txt"
+# This exact record is main evidence, not a batch edit.
+cp "$TA/work/docs/notes/gate.txt" "$TA/main/docs/notes/gate.txt"; S git add docs/notes/gate.txt; S git commit -q -m transfer-exact; S git push -q origin main
+W checkout -- docs/notes/gate.txt
+W fetch -q origin; W merge -q --no-edit origin/main
+cp "$SRC/batch-check.sh" "$TA/work/builder-check.sh"
+mkdir -p "$TA/builder"
+printf 'ZzCheck  FAILED - exit 1 (0.1s)\n    transfer fixture FAIL\n    1 FAILED\n1 harnesses run in 1s: 0 passed, 1 failed\n' > "$TA/builder/suite.txt"
+( cd "$TA/work" && sh builder-check.sh --judge "$TA/builder/suite.txt" ) > "$TA/builder.out" 2>&1; BRC=$?
+LABEL="GG1.2 builder retires its own red despite exact cover"; ok test "$BRC" = 4
+printf '\n## known-reds\nZzCheck | transfer fixture | NEXTFIX | 2026-11-13 | unrelated fixture traced to NEXTFIX\n' >> "$TA/work/docs/queue/MOVE-ship.md"
+( cd "$TA/work" && sh builder-check.sh --judge "$TA/builder/suite.txt" ) > "$TA/builder.out" 2>&1; BRC=$?
+LABEL="GG1.2 builder accepts its explicit cause-bearing transfer"; ok test "$BRC" = 3
+rm "$TA/work/builder-check.sh"; fin MOVE batch/MOVE
+STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | transfer fixture FAIL;ZzCheck | 1 FAILED' run --dry-run batch/MOVE
+LABEL="GG1.2 gate accepts the same transfer"; ok rc_is 0
+# Without the ship row, retirement still vetoes another broad part.
+W checkout -q batch/MOVE; sed -i '/^ZzCheck | transfer fixture | NEXTFIX/d' "$TA/work/docs/queue/MOVE-ship.md"
+printf '\nZzCheck | transfer | OTHER | 2026-11-13 | broad cover\n' >> "$TA/work/docs/notes/known-reds.txt"; fin MOVE-veto batch/MOVE
+STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | transfer fixture FAIL;ZzCheck | 1 FAILED' run --dry-run batch/MOVE
+LABEL="GG1.2 an untransferred retirement still vetoes broader cover"; ok stopped 'NEW red'
+
+# GG1.3: branch registry-only advancement rejudges, including rejecting a revoked approval.
+mk batch/REG; shipf REG; jv REG KnownRedsCheck; fin REG batch/REG
+STUB_EXIT=4 STUB_REDS='ZzCheck | exit 1;ZzCheck | registry fixture FAIL;ZzCheck | 1 FAILED' CBS_GATE_MAIN="$TA/main" CBS_GATE_DIRECTORY="$TA/registry-kept" sh "$SRC/tools/gate.sh" REG --dry-run > "$TA/registry-kept.out" 2>&1
+printf '\nZzCheck | registry fixture | REGFIX | 2026-11-13 | traced fixture\n' >> "$TA/work/docs/notes/known-reds.txt"; fin REG-named batch/REG
+: > "$STUB_LOG"; run --dry-run --reuse "$TA/registry-kept" batch/REG
+LABEL="GG1.3 branch registry advancement reuses and rejudges a stopped run"; ok sh -c "[ $RC = 0 ] && test ! -s $STUB_LOG && grep -q 'reused $TA/registry-kept' $TA/out.txt"
+sed -i '/^ZzCheck | registry fixture | REGFIX/d' "$TA/work/docs/notes/known-reds.txt"; fin REG-revoked batch/REG
+: > "$STUB_LOG"; run --dry-run --reuse "$TA/registry-kept" batch/REG
+LABEL="GG1.3 revoking the new cover stops without rerunning"; ok sh -c "[ $RC = 1 ] && test ! -s $STUB_LOG && grep -q 'NEW red' $TA/out.txt"
+
+mk batch/TITLE; shipf TITLE; fin 'docs: readiness bookkeeping' batch/TITLE
+run --dry-run batch/TITLE
+LABEL="GG1.4 absent queue row uses the changelog title"; ok sh -c "[ $RC = 0 ] && grep -q 'Merge batch/TITLE: the throwaway TITLE,' $TA/out.txt"
+mk batch/TOKEN; shipf TOKEN; jv 'TOKEN {next}' KnownRedsCheck; fin TOKEN batch/TOKEN
+run --dry-run batch/TOKEN
+LABEL="GG1.5 source tokens stop the gate"; ok stopped '{next} remains in added source'
+mk batch/BYTES; shipf BYTES; sed -i 's/ — / ? /g' "$TA/work/docs/queue/BYTES-ship.md"; fin BYTES batch/BYTES
+run --dry-run batch/BYTES
+LABEL="GG1.6 lost record encoding stops the gate"; ok stopped 'UTF-8 em-dash'
+
+# GG1.7: independent changelog and merged-branch evidence, with exact ID boundaries.
+mk batch/USED; shipf USED; fin USED batch/USED
+printf '\n### USED — fixture — 2026-11-13, no tag (process)\n' >> "$TA/main/docs/notes/changelog.md"
+S git add docs/notes/changelog.md; S git commit -q -m used-id; S git push -q origin main
+run --dry-run batch/USED
+LABEL="GG1.7 changelog alone refuses a reused ID"; ok stopped 'already used'
+mk batch/MERGED; jv MERGED KnownRedsCheck; fin MERGED batch/MERGED
+S git fetch -q origin; S git merge -q --no-ff -m 'Merge batch/MERGED: fixture with no changelog' origin/batch/MERGED; S git push -q origin main
+mk batch/MERGED; shipf MERGED; fin MERGED-again batch/MERGED
+run --dry-run batch/MERGED
+LABEL="GG1.7 merged history refuses an advanced reused branch"; ok stopped 'already used'
+( cd "$TA/main" && sh tools/batch-id.sh USED2 main ) > "$TA/id.out" 2>&1; IRC=$?
+LABEL="GG1.7 a longer unused ID remains available"; ok test "$IRC" = 0
 
 kill "$FIXTURE_GUARD" 2>/dev/null || :; wait "$FIXTURE_GUARD" 2>/dev/null || :
 echo "selftest: $((N - FAILS)) of $N passed"
