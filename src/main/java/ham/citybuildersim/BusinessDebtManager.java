@@ -1427,6 +1427,8 @@ public class BusinessDebtManager {
             // Refinancing its maturity here would turn that claim into an ordinary new loan.
             if (!(loan instanceof Mortgage) && loan.isRetirementClaim()) {
                 if (!loan.isMatured()) loan.processMonth();
+                if (loan.isMatured() && loan.getOutstandingPrincipal() == 0
+                        && loan.getMonthlyInterestExpense() == 0) iterator.remove();
                 continue;
             }
             loan.processMonth();

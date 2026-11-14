@@ -518,3 +518,33 @@ The fixture asserts that the maturing claim stays registered and marked,
 does not draw replacement credit, takes no haircut while the invoice
 waits, and is fully repaid from banked cash. Both live and whole-city
 save/reload cases pass (bf1-rev4-after.txt).
+
+Final source 29064793: the required four named checks pass, exit 0
+(bf1-rev4-named.txt). The mature-claim mend changes the count to **1/24**,
+with 2,880 closed audits, 210 pellet-sale months and 476 split/consolidation
+events. The ALL run independently reproduces that count. My first bus
+message incorrectly carried forward b889's 0/24; it was corrected before
+readiness.
+
+The remaining case is seed 14 at game month 120. The final-source trace,
+bf1-final-seed14.txt, shows Manufacturing closing with assets and debt
+both ending at zero, a 340.7879 creditor loss, and bank equity moving from
+520.52 to -43.92; the next turn reaches -256.81 after Industry/Freight
+losses. Wood Products has zero assets, debt and creditor loss there.
+The bank's equity roll-forward residual stays around 1e-12. This is
+asset/credit and desk risk, not the unsold-pellet/repeated replacement-loan
+fault. ★ Count remaining failures as outcomes, rather than promising that
+a risk-taking bank can never fail; the caused laws and model constants
+remain hard. Current SX1 was 5/24 and LD2's historical report was 8/24.
+
+## REV-BF1-5 — remove the written-off claim
+
+Stopped the 29064793 pick at verified BF1 JDK PID 33436, parent 13544.
+No ensemble had started. A marked bullet with one month left is written
+down to zero, with zero interest and no cash available for a later sweep.
+Before the mend it remains in the loan list and Loans running after
+maturity: two failed assertions (bf1-rev5-before.txt). At maturity the
+liquidation path now removes a claim whose principal and interest are
+both zero. The same fixture passes, while the positive maturing-claim
+save/reload fixture still retains its real claim until repayment
+(bf1-rev5-after.txt). No counter or tolerance is changed.
