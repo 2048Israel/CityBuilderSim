@@ -1192,7 +1192,7 @@ public final class BuildAdvice {
      *                    before it leave
      * @param onSite      units on site that already serve the measure
      * @param unit        what one serves at today's staffing
-     * @param pricePerUnit the figure it was ranked by (lifePerServed(), since
+     * @param pricePerUnit informational net cost per physical unit relieved (since HW1 it does not rank the plan; before
      *                    0.7.101): its order over its life, its ground at
      *                    landValue() on the land the ones before leave, for
      *                    each unit it will serve over that life
@@ -1219,7 +1219,10 @@ public final class BuildAdvice {
                              double unit, double pricePerUnit, Ahead ahead, double lead,
                              double landSqFt, double landValue, double landShort,
                              BuildingsTemplate runnerUp, double runnerUpPer, Lost runnerUpLost, double credit,
-                             boolean paving) { }
+                             boolean paving, WorksValue.Value value, WorksValue.Value runnerUpValue) {
+        /** The complete plan's comparable net present value, separate from its informational unit cost. */
+        public double planValue() { return value == null ? price : value.net(); }
+    }
 
     /** The rule, on this city now. */
     public static List<Suggestion> suggest(Game game) {
@@ -1265,7 +1268,7 @@ public final class BuildAdvice {
 
     /** One building weighed for a need: its count at its projection, and where it ranks - or, paving, gravel roads paved (0.7.70). */
     private record Weighed(BuildingsTemplate t, int tier, double per, double unit, int count,
-                           boolean closes, boolean fits, Ahead ahead, double lead, boolean paving) { }
+                           boolean closes, boolean fits, Ahead ahead, double lead, boolean paving, WorksValue.Value value) { }
 
     /** One need's suggestion, or null when what is on site already keeps it ahead or no building can help. */
     static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft) {
@@ -1331,7 +1334,7 @@ public final class BuildAdvice {
             Ahead p = opening(game, lead, slack);
             // Power is a twenty-year capacity choice, not a plant fitted to the next three years (HW1).
             if (m.kind() == Kind.POWER) {
-                double months = lead + LIFE_MONTHS;
+                double months = (Double.isFinite(lead) ? Math.max(0, lead) : 0) + LIFE_MONTHS;
                 p = new Ahead(months, lifeTrend(game, months), slack);
             }
             int[] found = count(game, m, site, one, p, most, maintain);
@@ -1343,11 +1346,12 @@ public final class BuildAdvice {
             // road's was its cost over its life a trip from 0.7.70, a living
             // care building's its order over the places the need lacks from
             // 0.7.71, and the rest their price a unit with their ground.)
-            double per = lifePerServed(game, m, site, t, found[0], unit, p, landLeft);
+            WorksValue.Value value = WorksValue.of(game, m, site, t, found[0], landLeft);
+            double per = value.perUsed();
             // Automatic building can buy land: its full price ranks it, rather than a free-land veto (HW1).
-            weighed.add(new Weighed(t, (closes ? 0 : 2) + (!maintain && !fits ? 1 : 0), per, unit, found[0], closes, fits, p,
+            weighed.add(new Weighed(t, closes ? 0 : 1, per, unit, found[0], closes, fits, p,
                     game.quoteBuild(t, found[0]).months,
-                    false));
+                    false, value));
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
         Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack) : null;
@@ -1355,19 +1359,17 @@ public final class BuildAdvice {
         if (weighed.isEmpty()) return null;
         /*
          * JUDGEMENTS, in this order: one that can keep the need ahead beats
-         * one that cannot, at any price; of those, one whose whole count
-         * fits the ground the cards before leave beats one the order would be
-         * refused for (Game.buildStack()'s NO_LAND); then the least over its
-         * life for each unit it will serve (0.7.101). Land can be bought from the refusal's own
-         * page; a building that cannot close a gap never will. A tie keeps
+         * one that cannot; within that tier the whole plan's net present
+         * value wins (HW1). Land's cost is included; needing to buy it does
+         * not override the sum. A tie keeps
          * the catalogue's order (the sort is stable).
          */
-        weighed.sort(java.util.Comparator.comparingInt(Weighed::tier).thenComparingDouble(Weighed::per));
+        weighed.sort(java.util.Comparator.comparingInt(Weighed::tier).thenComparingDouble(w -> w.value().net()));
         Weighed best = weighed.get(0);
         Weighed next = weighed.size() > 1 ? weighed.get(1) : null;
         Lost lost = next == null ? null
                 : next.closes() != best.closes() ? Lost.CANNOT_CLOSE
-                : next.fits() != best.fits() ? Lost.NO_ROOM : Lost.DEARER;
+                : Lost.DEARER;
 
         int n = best.count();
         if (best.paving()) {
@@ -1382,7 +1384,7 @@ public final class BuildAdvice {
                     best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
                     -freed, -landValue(game, freed, landLeft), 0,
                     next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
-                    credit ? q.total - Math.max(0, cashLeft) : 0, true);
+                    credit ? q.total - Math.max(0, cashLeft) : 0, true, best.value(), next == null ? null : next.value());
         }
         Game.BuildQuote q = game.quoteBuild(best.t(), n);
         boolean credit = q.total > cashLeft;
@@ -1393,7 +1395,7 @@ public final class BuildAdvice {
                 best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
                 sq, landValue(game, sq, landLeft), Math.max(0, sq - Math.max(0, landLeft)),
                 next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
-                credit ? q.total - Math.max(0, cashLeft) : 0, false);
+                credit ? q.total - Math.max(0, cashLeft) : 0, false, best.value(), next == null ? null : next.value());
     }
 
     /**
@@ -1723,12 +1725,10 @@ public final class BuildAdvice {
         boolean closes = found[1] == 1;
         // Its figure since 0.7.101 as every candidate's (A BUILDING OVER ITS LIFE): the pavings' order over its
         // life for each trip it will take off; pavingLifetime() over pavingUnit() until then.
-        double served = servedOverLife(game, m, site, times(new LinkedHashMap<>(), step, found[0]), p);
-        double life = pavingOrderLife(game, found[0], landLeft, site);
-        life -= WorksValue.avoided(game, m, site, times(new LinkedHashMap<>(), step, found[0]), lead, slack);
-        double per = perServed(life, served, found[0], unit);
+        WorksValue.Value value = WorksValue.paving(game, m, site, found[0], landLeft);
+        double per = value.perUsed();
         BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
-        return new Weighed(to, closes ? 0 : 2, per, unit, found[0], closes, true, p, lead, true);
+        return new Weighed(to, closes ? 0 : 1, per, unit, found[0], closes, true, p, lead, true, value);
     }
 
     /* =====================================================================
@@ -1903,9 +1903,7 @@ public final class BuildAdvice {
      */
     public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Integer> site, BuildingsTemplate t,
                                        int count, double unit, Ahead p, double landLeft) {
-        Ahead fromOpening = opening(game, game.quoteBuild(t, count).months, p.slack());
-        double served = servedOverLife(game, m, site, plus(new LinkedHashMap<>(), t, count), fromOpening);
-        return perServed(WorksValue.of(game, m, site, t, count, landLeft, p).net(), served, count, unit);
+        return WorksValue.of(game, m, site, t, count, landLeft).perUsed();
     }
 
     /* =====================================================================
@@ -2196,7 +2194,7 @@ public final class BuildAdvice {
                 after, portTerminal(game, m, order, java.util.Collections.emptySet()) == null, credit, units(site),
                 unit, unit > 0 ? q.total / (unit * n) : Double.NaN, NOW, q.months, sq, landValue(game, sq, landLeft),
                 Math.max(0, sq - Math.max(0, landLeft)), null, Double.NaN, null,
-                credit ? q.total - Math.max(0, cashLeft) : 0, false);
+                credit ? q.total - Math.max(0, cashLeft) : 0, false, null, null);
     }
 
     /* ----- A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) ----- */

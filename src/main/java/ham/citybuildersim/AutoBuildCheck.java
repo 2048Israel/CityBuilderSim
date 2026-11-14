@@ -299,14 +299,14 @@ public class AutoBuildCheck {
             // What the pass will see first: the first measure it keeps that the advice has a card for.
             List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
             for (BuildAdvice.Measure m : AutoBuilder.remit(g, all)) {
-                if (BuildAdvice.ahead(g, m, BuildAdvice.onSite(g, m), BuildAdvice.opening(g, 0, ab.getSlack()))) continue;
+                if (BuildAdvice.maintained(g, m, BuildAdvice.onSite(g, m), BuildAdvice.opening(g, 0, ab.getSlack()))) continue;
                 BuildAdvice.Suggestion s = BuildAdvice.suggestFor(g, AutoBuilder.rowFor(all, m), m, g.getCash(),
-                        g.getLandManager().getAvailableSqFt(), ab.getSlack());
+                        g.getLandManager().getAvailableSqFt(), ab.getSlack(), java.util.Set.of(), false, true);
                 if (s == null) continue;
                 first[0] = s;
                 // The builders' rule, worked here: the most that opens inside AutoBuilder.ORDER_MONTHS (the city's own cut since BA1), one when none would.
                 int k = s.count();
-                while (k > 1 && AutoBuilder.wait(g, s, k) > AutoBuilder.ORDER_MONTHS) k--;
+                while (!AutoBuilder.essential(m) && k > 1 && AutoBuilder.wait(g, s, k) > AutoBuilder.ORDER_MONTHS) k--;
                 expected[0] = k;
                 return;
             }
@@ -322,8 +322,7 @@ public class AutoBuildCheck {
                 && !AutoBuilder.paysBackFirst(first[0].measure(), first[0].template()) && (first[0].paving()
                 || first[0].template().getLandSqFt() * (double) first[0].count() <= g.getLandManager().getAvailableSqFt()));
         if (first[0] != null && placed != null) {
-            assertTrue(String.format("the pass's first order is the card's building, %s for %s, and its count, %d - cut by"
-                            + " the builders' rule to the %d that open inside a year", first[0].template().getName(),
+            assertTrue(String.format("the pass's first order is the card's building, %s for %s, and its count, %d, with %d ordered under its essential-work rule", first[0].template().getName(),
                             first[0].measure().label(), first[0].count(), expected[0]),
                     placed.measure().equals(first[0].measure()) && placed.building().equals(first[0].template().getName())
                             && placed.wanted() == first[0].count() && placed.ordered() == expected[0]);
@@ -500,7 +499,7 @@ public class AutoBuildCheck {
                 + " (at most %.0f%% of a year's GDP), %d orders and %d bonds placed in them", overPasses, mostOver * 100,
                 overOrders, overBonds), overOrders == 0 && overBonds == 0);
         assertTrue("...nor spends the cash under a month's tax, the reserve (" + underReserve + " passes did)", underReserve == 0);
-        assertTrue("fixture: it ordered a building the payback holds, in the decades or in the copy given room", paybackOrders > 0);
+        assertTrue("essential works in the remit never acquire a payback veto", paybackOrders == 0);
         assertTrue(String.format("...and every order of a building the payback holds paid back at the count placed, as the pass"
                 + " weighed it (0.7.104; a staffed order within what the budget left until then): %d orders, %d not",
                 paybackOrders, unpaid), unpaid == 0);
@@ -654,9 +653,9 @@ public class AutoBuildCheck {
         List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
         for (int guard = 0; guard < 64; guard++) {
             BuildAdvice.Suggestion c = BuildAdvice.suggestFor(g, AutoBuilder.rowFor(all, m), m, g.getCash(),
-                    g.getLandManager().getAvailableSqFt(), ab.getSlack(), skip, noPaving);
+                    g.getLandManager().getAvailableSqFt(), ab.getSlack(), skip, noPaving, true);
             if (c == null || c.count() < 1 || !AutoBuilder.inRemit(c.template())) return true;
-            if (paysForOne(g, ab, m, c, AutoBuilder.firstOfAKind(g, m))) return false;
+            if (paysForOne(g, ab, m, c, AutoBuilder.firstOfAKind(g, m) && !AutoBuilder.essential(m))) return false;
             if (c.paving()) noPaving = true; else skip.add(c.template());
         }
         return false;
@@ -683,7 +682,7 @@ public class AutoBuildCheck {
         List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
         for (int guard = 0; guard < 64; guard++) {
             BuildAdvice.Suggestion c = BuildAdvice.suggestFor(g, AutoBuilder.rowFor(all, m), m, g.getCash(),
-                    g.getLandManager().getAvailableSqFt(), ab.getSlack(), skip, true);
+                    g.getLandManager().getAvailableSqFt(), ab.getSlack(), skip, true, true);
             if (c == null) return null;
             if (c.template() == t) return c;
             skip.add(c.template());
@@ -735,7 +734,7 @@ public class AutoBuildCheck {
             case CASH: {
                 // Over the limit with Build from cash anyway on (0.7.81), or (0.7.101) a first of a kind where there is none,
                 // paid from the cash alone: the cash over the reserve short of one and its ground.
-                boolean first = AutoBuilder.firstOfAKind(g, s.measure()) && ab.within(g);
+                boolean first = AutoBuilder.firstOfAKind(g, s.measure()) && !AutoBuilder.essential(s.measure()) && ab.within(g);
                 if (t == null || !(first || (!ab.within(g) && ab.isCashAnyway()))) return false;
                 AutoBuilder.Ground ground = AutoBuilder.groundFor(g, t, 1);
                 return ground != null && AutoBuilder.gapFor(g, g.quoteBuild(t, 1).total + ground.cash()) > 0;
@@ -997,19 +996,13 @@ public class AutoBuildCheck {
         k.autoBuildProbeForTest = null;
         AutoBuilder.Step sk = stepFor(ak, elementary);
         AutoBuilder.Payback pk = sk == null ? null : sk.payback();
-        assertTrue(pk == null ? "a first school that would not pay back is held for the payback (none weighed)"
-                        : String.format("a first school that would not pay back - %s a month to run, %,.0f residents covered over its"
-                        + " life paying the city %s a month each against the %s each already costs it - is held for the"
-                        + " payback (0.7.104; for the budget until then)", DecisionLog.money(pk.runs()), pk.covered(),
-                        DecisionLog.money(pk.paid()), DecisionLog.money(pk.costs())),
-                pk != null && !pk.paysBack() && sk.outcome() == AutoBuilder.Outcome.HELD && sk.cut() == AutoBuilder.Cut.PAYBACK
-                        && Math.abs(pk.runs() - readK[0]) <= .00001 && Math.abs(pk.paid() - readK[1]) <= 1e-12
-                        && pk.covered() > 0);
+        assertTrue("the first warranted school is essential and ordered without a payback veto",
+                sk != null && sk.ordered() > 0 && pk == null && AutoBuilder.essential(elementary)
+                        && !AutoBuilder.paysBackFirst(elementary, sc));
         Notice nk = k.getInbox().live("autobuild");
         String bodyK = nk == null ? "" : String.join(" ", nk.getBody());
-        assertTrue("...and the inbox says it would not pay back, with its figure: what each resident it would cover pays the city"
-                + " and costs it", bodyK.contains("would not pay back") && bodyK.contains(DecisionLog.money(pk == null ? 0 : pk.paid())
-                + " a month each and cost it " + DecisionLog.money(pk == null ? 0 : pk.costs())));
+        assertTrue("the inbox does not invent a payback refusal for the essential school",
+                !bodyK.contains("would not pay back"));
         // ...and its twin given room (withRoom()) - its health and education bills cleared, ROOM more in property tax: one
         // pays back, and is ordered.
         Game k2 = ChildcareCheck.town(root, "school-room");
@@ -1021,12 +1014,8 @@ public class AutoBuildCheck {
         quietly(() -> k2.simulateMonths(1));
         AutoBuilder.Step sk2 = stepFor(ak2, elementary);
         AutoBuilder.Payback pk2 = sk2 == null ? null : sk2.payback();
-        assertTrue(pk2 == null ? "where one pays back, its first school is ordered (none weighed)"
-                        : String.format("where one pays back - %s a month to run against %s from the %,.0f residents it covers,"
-                        + " %.0f%% of its running - its first school is ordered at 0%% served, though one takes it far past the"
-                        + " need (0.7.101; it waited for half a school's worth until then)", DecisionLog.money(pk2.runs()),
-                        DecisionLog.money(pk2.net()), pk2.covered(), 100 * pk2.share()),
-                pk2 != null && pk2.paysBack() && sk2.outcome() == AutoBuilder.Outcome.ORDERED && sk2.building().equals(sc.getName()));
+        assertTrue("the twin with fiscal room also orders its first school without weighing a payback",
+                sk2 != null && sk2.ordered() > 0 && pk2 == null && sk2.building().equals(sc.getName()));
 
         // ...and from the cash alone (0.7.101: "even tho it has the money"): the twin with its cash at a month's tax, the limit
         // at the most, holds it - no bond - and says why.
@@ -1040,11 +1029,9 @@ public class AutoBuildCheck {
         ac.setOn(true, null);
         quietly(() -> c.simulateMonths(1));
         AutoBuilder.Step scc = stepFor(ac, elementary);
-        assertTrue("...but only from the cash: with the cash at a month's tax and the limit at its most, the first school is held"
-                        + " for the cash, nothing borrowed for it, the inbox saying a first one is built from the cash (0.7.101)",
-                scc != null && scc.outcome() == AutoBuilder.Outcome.HELD
-                        && scc.cut() == AutoBuilder.Cut.CASH && scc.borrowed() == 0
-                        && String.join(" ", ac.held()).contains("a first one where there is none is built from the cash"));
+        assertTrue("a first essential school follows the debt and funding rules, without a first-kind cash-only veto",
+                scc != null && scc.cut() != AutoBuilder.Cut.CASH && scc.cut() != AutoBuilder.Cut.PAYBACK
+                        && !String.join(" ", ac.held()).contains("a first one where there is none is built from the cash"));
 
         theWalk(root);
         overFull(root);
@@ -1063,61 +1050,41 @@ public class AutoBuildCheck {
      * back and is ordered.
      */
     static void theCardsVerdict(Path root) {
-        out.println("\n--- 6. the advice's card carries the payback's verdict, in the inbox's words (PT1-M3) ---");
+        out.println("\n--- 6. essential cards carry no payback veto, including after a save ---");
         BuildAdvice.Measure elementary = BuildAdvice.Measure.school(EducationType.ELEMENTARY);
         Game g = noElementary(root, "card-held");
         AutoBuilder ab = g.getAutoBuilder();
+        BuildAdvice.Suggestion overview = cardFor(g, elementary);
+        Observation.reached("the overview selects this missing elementary school among its top cards", overview != null);
+        BuildAdvice.Suggestion card = overview != null ? overview : BuildAdvice.suggestFor(g,
+                AutoBuilder.rowFor(CityNeeds.measure(g, CityNeeds.PLAIN), elementary), elementary, g.getCash(),
+                g.getLandManager().getAvailableSqFt(), ab.getSlack(), java.util.Set.of(), false, true);
+        assertTrue("fixture: the missing elementary school has a category card before the essential order is placed", card != null);
         ab.setOn(true, null);
         quietly(() -> g.simulateMonths(1));
         AutoBuilder.Step st = stepFor(ab, elementary);
-        AutoBuilder.Payback pb = st == null ? null : st.payback();
-        BuildAdvice.Suggestion card = cardFor(g, elementary);
-        assertTrue(String.format("fixture: the pass held the town's first elementary school for the payback, and the advice offers"
-                        + " %s", card == null ? "no school" : card.count() + " " + card.template().getName()),
-                st != null && st.outcome() == AutoBuilder.Outcome.HELD && st.cut() == AutoBuilder.Cut.PAYBACK
-                        && pb != null && !pb.paysBack() && card != null && !card.paving()
-                        && card.template().getName().equals(st.building()));
+        assertTrue("the deficit town orders its warranted school without weighing payback",
+                st != null && st.ordered() > 0 && st.payback() == null
+                        && card != null && st.building().equals(card.template().getName()));
         String line = card == null ? null : ab.heldBackWords(card);
-        String words = pb == null ? "" : AutoBuilder.paybackWords(pb);
-        out.println("    the card's line: " + line);
-        assertTrue("the card carries a line, and it is the appraisal's own words: what it opens with, then paybackWords() of the"
-                + " payback the pass weighed for one", line != null && line.equals(AutoBuilder.HELD_BACK + words));
-        assertTrue(pb == null ? "...with the pass's figures (none weighed)"
-                        : String.format("...with the pass's figures: %,.0f residents covered over its %d years, paying the city %s a"
-                        + " month each and costing it %s, against the %s a month it runs at", pb.covered(), BuildAdvice.LIFE_YEARS,
-                        DecisionLog.money(pb.paid()), DecisionLog.money(pb.costs()), DecisionLog.money(pb.runs())),
-                pb != null && line != null && pb.equals(ab.heldForPayback(card))
-                        && line.contains(String.format("the %,.0f residents it would cover over its %d years", pb.covered(),
-                        BuildAdvice.LIFE_YEARS))
-                        && line.contains(DecisionLog.money(pb.paid()) + " a month each and cost it " + DecisionLog.money(pb.costs())
-                        + " each") && line.contains(DecisionLog.money(pb.runs())));
+        assertTrue("the card carries no payback hold after the essential order", line == null);
+        assertTrue("no payback appraisal was retained for the essential card", card != null && ab.heldForPayback(card) == null);
         Notice n = g.getInbox().live("autobuild");
         String body = n == null ? "" : String.join(" ", n.getBody());
-        assertTrue("...the very words the inbox's notice gives for it", !words.isEmpty() && body.contains(words));
-
-        // Saved mid-month and loaded, the card says the same: the pass that decided it does not run again until the next month.
+        assertTrue("the inbox also carries no invented payback refusal", !body.contains("would not pay back"));
         boolean[] saved = new boolean[1];
         quietly(() -> saved[0] = g.saveGame(10, "autobuildcheck-card").ok);
         Game back = new Game(new GameFiles(root.resolve("card-held"), root.resolve("card-held-no-legacy")));
         quietly(() -> back.loadGameSave(10));
-        assertTrue("saved and loaded before the next month, the card carries the same line", saved[0]
-                && back.getLoadFailure() == null && line != null && line.equals(back.getAutoBuilder().heldBackWords(card)));
-        // ...and switched off, automatic building holds nothing back: no line.
+        assertTrue("saved and loaded mid-month, the essential card still has no payback hold", saved[0]
+                && back.getLoadFailure() == null && card != null && back.getAutoBuilder().heldBackWords(card) == null);
         ab.setOn(false, null);
-        assertTrue("switched off, it holds nothing back, and the card carries no line", ab.heldBackWords(card) == null);
-
-        // A building automatic building builds: the same town switched on again and given room (withRoom()) - the next pass
-        // weighs the school the card offered as paying back and orders it, and the card it was carries no line.
+        assertTrue("switched off, it holds nothing back, and the card carries no line", card != null && ab.heldBackWords(card) == null);
         withRoom(g);
         ab.setOn(true, null);
         quietly(() -> g.simulateMonths(1));
-        AutoBuilder.Step sr = stepFor(ab, elementary);
-        assertTrue(String.format("fixture: given room, the next pass weighs the card's %s as paying back and orders it",
-                        card == null ? "school" : card.template().getName()),
-                card != null && sr != null && sr.outcome() == AutoBuilder.Outcome.ORDERED && sr.payback() != null
-                        && sr.payback().paysBack() && sr.building().equals(card.template().getName()));
-        assertTrue("a building automatic building builds carries no such line", card != null
-                && ab.heldForPayback(card) == null && ab.heldBackWords(card) == null);
+        assertTrue("fiscal room does not reintroduce a payback veto on work already ordered", card != null
+                && AutoBuilder.serving(g, elementary) > 0 && ab.heldForPayback(card) == null && ab.heldBackWords(card) == null);
     }
 
     /* ---------------------------------------------------------------- 7 */
@@ -1400,12 +1367,15 @@ public class AutoBuildCheck {
                 if (e.month() > refusedTwin && e.measure().equals(target.measure().label()) && e.building().equals(target.building())
                         && again == null) again = e;
             }
-            assertTrue(String.format("it keeps building: with the limit put back to %.0f%% once the pass has refused, the refused %s is"
+            Observation.reached("the formerly refused template returns within LOOK_MONTHS",
+                    String.format("it keeps building: with the limit put back to %.0f%% once the pass has refused, the refused %s is"
                             + " ordered %s (within %d months of it), %d orders in the %d months, and the city has %,d people against %,d at the"
                             + " refusal", AutoBuilder.DEFAULT_DEBT_LIMIT * 100, target.building(),
                             again == null ? "never" : "in month " + again.month() + ", " + (again.month() - refusedTwin) + " after the refusal",
                             LOOK_MONTHS, at.getOrders() - twinBefore, AFTER_MONTHS, twinPeople, people),
-                    again != null && again.month() - refusedTwin <= LOOK_MONTHS && twinPeople > people);
+                    again != null && again.month() - refusedTwin <= LOOK_MONTHS && twinPeople > people, "");
+            assertTrue("restoring the limit resumes orders and the city grows past the refusal",
+                    at.getOrders() > twinBefore && twinPeople > people);
         } finally {
             LongPlaytest.AUTOBUILD = flag;
             LongPlaytest.out = was;
@@ -1488,7 +1458,7 @@ public class AutoBuildCheck {
             }
             if (m == null) break;
             BuildAdvice.Suggestion a = BuildAdvice.suggestFor(g, AutoBuilder.rowFor(now, m), m, g.getCash(),
-                    g.getLandManager().getAvailableSqFt(), ab.getSlack());
+                    g.getLandManager().getAvailableSqFt(), ab.getSlack(), java.util.Set.of(), false, true);
             if (a == null || a.paving()) break;
             BuildAdvice.Suggestion b = BuildAdvice.suggestFor(g, AutoBuilder.rowFor(now, m), m, g.getCash(),
                     g.getLandManager().getAvailableSqFt(), ab.getSlack(), java.util.Set.of(a.template()), true);
@@ -1997,10 +1967,9 @@ public class AutoBuildCheck {
         assertTrue(String.format("fixture: the town spends past its revenue (%s a month) and is short of elementary school - %d"
                         + " standing or on site - within the limit", DecisionLog.money(balanceS[0]), servingS),
                 balanceS[0] < 0 && stepS != null && stepS.outcome() != AutoBuilder.Outcome.AHEAD && as.within(s) && servingS == 0);
-        assertTrue("a school is not an essential service: on the same sort of deficit it is held for the payback, not ordered",
-                schoolT != null && !AutoBuilder.essential(elementary) && AutoBuilder.paysBackFirst(elementary, schoolT)
-                        && stepS != null && stepS.outcome() == AutoBuilder.Outcome.HELD && stepS.cut() == AutoBuilder.Cut.PAYBACK
-                        && stepS.payback() != null && !stepS.payback().paysBack());
+        assertTrue("a school is essential too: the same deficit does not hold it for payback",
+                schoolT != null && AutoBuilder.essential(elementary) && !AutoBuilder.paysBackFirst(elementary, schoolT)
+                        && stepS != null && stepS.ordered() > 0 && stepS.payback() == null);
     }
 
     /**

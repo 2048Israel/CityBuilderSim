@@ -1,4 +1,4 @@
-# RoadCheck.java - 1,210 lines · 35 methods · 2 constants · harnesses
+# RoadCheck.java - 1,209 lines · 35 methods · 2 constants · harnesses
 
 `ham/citybuildersim/RoadCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      ground between the two roads as each opens; the money audit closes.
 > ... (36 more lines in the source)
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (113), [InfrastructureManager](InfrastructureManager.md) (45), [Game](Game.md) (44), [BuildingsTemplate](BuildingsTemplate.md) (40), [CityNeeds](CityNeeds.md) (31), [LongPlaytest](LongPlaytest.md) (14), [ConstructionControl](ConstructionControl.md) (11), [BuildCard](BuildCard.md) (10), [BuildingType](BuildingType.md) (9), [BuildingManager](BuildingManager.md) (7), [GameFiles](GameFiles.md) (4), [LandManager](LandManager.md) (4), [BuildAdviceCheck](BuildAdviceCheck.md) (4), [Founding](Founding.md) (3), [MoneyAudit](MoneyAudit.md) (2), [Sector](Sector.md) (2), [LandMarket](LandMarket.md) (2), [EconomyManager](EconomyManager.md) (2), [Good](Good.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [TempDirs](TempDirs.md) (1), [RealEstate](RealEstate.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (110), [InfrastructureManager](InfrastructureManager.md) (45), [Game](Game.md) (44), [BuildingsTemplate](BuildingsTemplate.md) (39), [CityNeeds](CityNeeds.md) (31), [LongPlaytest](LongPlaytest.md) (14), [ConstructionControl](ConstructionControl.md) (11), [BuildCard](BuildCard.md) (10), [BuildingType](BuildingType.md) (9), [BuildingManager](BuildingManager.md) (7), [GameFiles](GameFiles.md) (4), [LandManager](LandManager.md) (4), [BuildAdviceCheck](BuildAdviceCheck.md) (4), [Founding](Founding.md) (3), [MoneyAudit](MoneyAudit.md) (2), [Sector](Sector.md) (2), [LandMarket](LandMarket.md) (2), [EconomyManager](EconomyManager.md) (2), [Good](Good.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [TempDirs](TempDirs.md) (1), [RealEstate](RealEstate.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 ## Sections
 
@@ -80,9 +80,9 @@
 | 739 | 7. SAVE AND LOAD |
 | 803 | 8. OFFERED |
 | 873 | 9. THE TEST PLAYER |
-| 988 | 10. THE THROUGH TRIPS, WITH NO HIGHWAY |
-| 1090 | 11. A LARGE CITY'S NEEDS YOU LISTS BOTH |
-| 1169 | 12. A HIGHWAY GIVES NO ACCESS |
+| 987 | 10. THE THROUGH TRIPS, WITH NO HIGHWAY |
+| 1089 | 11. A LARGE CITY'S NEEDS YOU LISTS BOTH |
+| 1168 | 12. A HIGHWAY GIVES NO ACCESS |
 
 ## Constants
 
@@ -104,7 +104,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 115 | 1096 | **type** `public class RoadCheck` | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to their own arithmetic in a played city. |
+| 115 | 1095 | **type** `public class RoadCheck` | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to their own arithmetic in a played city. |
 | 121 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 126 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 131 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -177,32 +177,32 @@
 | 806 | 5 | `static java.util.Set<BuildingsTemplate> everyRoadAndLine(Game g)` | Every road and line in the Infrastructure category (Roads & transit until FR4): what the advice's paving-only ranking leaves out, as automatic building walks past roads the ground cannot hold. |
 | 820 | 52 | `static void offered(Path root)` | FR7 2.2 (Jerus's star 5, 2026-10-18) retired the premise of the old section 8: that paving beats a new Paved Road only past a CROSSOVER OF THE LAND PRICE above today's. |
 
-### 9. THE TEST PLAYER (lines 873-987)
+### 9. THE TEST PLAYER (lines 873-986)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 875 | 77 | `static void player(Path root)` |  |
-| 954 | 6 | `static BuildAdvice.Suggestion roadCard(Game g)` | The advice's card for the road, the transit lines left out of its ranking as the player leaves them: BuildAdvice.suggestFor() at its own slack, the cash and the free ground as they stand. |
-| 962 | 4 | `static int standingAndOnSite(Game g, BuildingsTemplate t)` | A building's count standing and on site. |
-| 971 | 16 | `static boolean firstRoad(Game g, double[][] base, double f, String want)` | The test player's first road move at the land office's prices x f, against the advice's ranking recomputed: the least of the three roads over its life a trip, and the paving where it beats a new Paved Road and is less. |
+| 875 | 79 | `static void player(Path root)` |  |
+| 956 | 6 | `static BuildAdvice.Suggestion roadCard(Game g)` | The advice's card for the road, the transit lines left out of its ranking as the player leaves them: BuildAdvice.suggestFor() at its own slack, the cash and the free ground as they stand. |
+| 964 | 4 | `static int standingAndOnSite(Game g, BuildingsTemplate t)` | A building's count standing and on site. |
+| 973 | 13 | `static boolean firstRoad(Game g, double[][] base, double f, String want)` | The test player's first road move at the land office's prices x f, against the advice's ranking recomputed: the least of the three roads over its life a trip, and the paving where it beats a new Paved Road and is less. |
 
-### 10. THE THROUGH TRIPS, WITH NO HIGHWAY (lines 988-1089)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 991 | 1 | `static double areaOf(double halves)` | A built-up area, in square feet, whose through share is the dials' halfway: THROUGH_HALF_AREA_KM2 times `halves`. |
-| 1003 | 84 | `static void throughStrain()` | FR7 2.1 (Jerus's star 4, 2026-10-18): a city with no highway carries its through trips on the streets, and strains them. |
-| 1088 | 1 | `static boolean bitsEqual(double a, double b)` |  |
-
-### 11. A LARGE CITY'S NEEDS YOU LISTS BOTH (lines 1090-1168)
+### 10. THE THROUGH TRIPS, WITH NO HIGHWAY (lines 987-1088)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1100 | 68 | `static void bothNeeds(Path root)` | FR7 2.1: the streets and the highways are two needs, each its own measure and line on NEEDS YOU, and in a large city both come up. |
+| 990 | 1 | `static double areaOf(double halves)` | A built-up area, in square feet, whose through share is the dials' halfway: THROUGH_HALF_AREA_KM2 times `halves`. |
+| 1002 | 84 | `static void throughStrain()` | FR7 2.1 (Jerus's star 4, 2026-10-18): a city with no highway carries its through trips on the streets, and strains them. |
+| 1087 | 1 | `static boolean bitsEqual(double a, double b)` |  |
 
-### 12. A HIGHWAY GIVES NO ACCESS (lines 1169-1210)
+### 11. A LARGE CITY'S NEEDS YOU LISTS BOTH (lines 1089-1167)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1176 | 34 | `static void noAccess(Path root)` | FR7 2.1: a highway is a carriageway nothing fronts, so its capacity is not the streets'. |
+| 1099 | 68 | `static void bothNeeds(Path root)` | FR7 2.1: the streets and the highways are two needs, each its own measure and line on NEEDS YOU, and in a large city both come up. |
+
+### 12. A HIGHWAY GIVES NO ACCESS (lines 1168-1209)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1175 | 34 | `static void noAccess(Path root)` | FR7 2.1: a highway is a carriageway nothing fronts, so its capacity is not the streets'. |
 

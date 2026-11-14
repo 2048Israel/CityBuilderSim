@@ -927,7 +927,7 @@ public final class AutoBuilder {
         }
     }
 
-    /** Whether the payback holds an order of t for measure m (0.7.104): a building the treasury runs (staffedBuilding()) for a service that is not essential (essential()) - a school, a police station, a prison, a transit line. */
+    /** Whether a staffed non-essential work must pay back; the essential floor takes precedence (HW1). */
     public static boolean paysBackFirst(BuildAdvice.Measure m, BuildingsTemplate t) {
         return staffedBuilding(t) && !essential(m);
     }
@@ -1108,7 +1108,7 @@ public final class AutoBuilder {
         double covered = coveredOverLife(game, m, BuildAdvice.onSite(game, m),
                 BuildAdvice.plus(new LinkedHashMap<>(), t, n), s.ahead());
         WorksValue.Value value = WorksValue.of(game, m, BuildAdvice.onSite(game, m), t, n,
-                game.getLandManager().getAvailableSqFt(), s.ahead());
+                game.getLandManager().getAvailableSqFt());
         return new Payback(runs, covered, paid(game), costs(game, m), value.avoided() / BuildAdvice.lifeFactor(game));
     }
 
@@ -1336,7 +1336,7 @@ public final class AutoBuilder {
                           Cut cut, Ground ground, Refused first, Payback weighed, OpenAsk from) {
         if (m.kind() == BuildAdvice.Kind.POWER) powerValues.add(n + " " + name + ": "
                 + WorksValue.of(game, m, BuildAdvice.onSite(game, m), s.template(), n,
-                game.getLandManager().getAvailableSqFt(), s.ahead()).words());
+                game.getLandManager().getAvailableSqFt()).words());
         String before = reading(game, m, new LinkedHashMap<>());
         double cost = total(game, s, n);
         double landShort = s.paving() ? 0 : Math.max(0, lacks(game, s.template(), n));

@@ -13,20 +13,22 @@ public final class WorksValue {
 
     /** Present values in local thousands; jobs and payroll are shown separately from their tax return. */
     public record Value(double capital, double land, double running, double avoided, double payroll,
-                        double payrollReturned, double jobs, double unfilled, double lead) {
+                        double payrollReturned, double jobs, double unfilled, double lead, double used) {
         public double cost() { return capital + land + running; }
         public double net() { return cost() - avoided - payrollReturned; }
+        /** Informational cost per physical unit relieved; reserve-only work has no such denominator. */
+        public double perUsed() { return used > 0 ? net() / used : Double.POSITIVE_INFINITY; }
         public String words() {
             return String.format("%d-year present value: order %s + land %s + running %s - prevented output loss %s"
-                            + " - payroll returned %s = %s. %.0f posts (%.0f unfilled); payroll %s/month; opens %.1f months.",
+                            + " - payroll returned %s = %s. Physical relief %.1f/month; %.0f posts (%.0f unfilled); payroll %s/month; opens %.1f months.",
                     BuildAdvice.LIFE_MONTHS / 12, DecisionLog.money(capital), DecisionLog.money(land),
                     DecisionLog.money(running), DecisionLog.money(avoided), DecisionLog.money(payrollReturned),
-                    DecisionLog.money(net()), jobs, unfilled, DecisionLog.money(payroll), lead);
+                    DecisionLog.money(net()), used, jobs, unfilled, DecisionLog.money(payroll), lead);
         }
     }
 
     public static Value of(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
-                           BuildingsTemplate t, int count, double landLeft, BuildAdvice.Ahead p) {
+                           BuildingsTemplate t, int count, double landLeft) {
         Game.BuildQuote q = g.quoteBuild(t, count);
         double lead = Double.isFinite(q.months) ? Math.max(0, q.months) : 0;
         double delay = Math.pow(1 + Math.max(0, BuildAdvice.lifeRate(g)) / 12, -lead);
@@ -42,15 +44,36 @@ public final class WorksValue {
             returned += paid * g.getEconomyManager().getTaxPolicy().payslipShare(WageBand.of(job));
         }
         Map<BuildingsTemplate, Integer> order = Map.of(t, count);
-        double avoided = avoided(g, m, site, order, lead, p.slack());
+        Relief relief = relief(g, m, site, order, lead);
         return new Value(q.total, BuildAdvice.landValue(g, t.getLandSqFt() * (double) count, landLeft),
-                count * BuildAdvice.running(g, t, site) * factor, avoided, payroll, returned * factor,
-                jobs, count * BuildAdvice.unfilledPosts(t, fill), lead);
+                count * BuildAdvice.running(g, t, site) * factor, relief.avoided(), payroll, returned * factor,
+                jobs, count * BuildAdvice.unfilledPosts(t, fill), lead, relief.used());
     }
+
+    /** A paving is the whole replacement plan, including the ground freed and running-cost difference. */
+    public static Value paving(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site, int count, double landLeft) {
+        Game.BuildQuote q = g.quotePave(count);
+        BuildingsTemplate from = g.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_FROM);
+        BuildingsTemplate to = g.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
+        double lead = Double.isFinite(q.months) ? Math.max(0, q.months) : 0;
+        double factor = BuildAdvice.lifeFactor(g) * Math.pow(1 + Math.max(0, BuildAdvice.lifeRate(g)) / 12, -lead);
+        Relief relief = relief(g, m, site, BuildAdvice.times(Map.of(), BuildAdvice.pavingStep(g), count), lead);
+        return new Value(q.total, -BuildAdvice.landValue(g, BuildAdvice.pavingFrees(g) * count, landLeft),
+                count * (BuildAdvice.running(g, to, site) - BuildAdvice.running(g, from, site, false)) * factor,
+                relief.avoided(), 0, 0, 0, 0, lead, relief.used());
+    }
+
+    private record Relief(double used, double avoided) { }
 
     /** Twenty yearly midpoints, the same real rate and long city trend as the service comparison. */
     public static double avoided(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
-                                 Map<BuildingsTemplate, Integer> order, double lead, double slack) {
+                                 Map<BuildingsTemplate, Integer> order, double lead) {
+        return relief(g, m, site, order, lead).avoided();
+    }
+
+    /** Demand is physical: the reserve dial sizes orders but cannot create lost output. */
+    private static Relief relief(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
+                                 Map<BuildingsTemplate, Integer> order, double lead) {
         Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(site, order);
         Map<Sector, double[]> traffic = new LinkedHashMap<>();
         if (BuildAdvice.roadKind(m) || m.kind() == BuildAdvice.Kind.TRANSIT) for (Sector sector : g.getSectors().all()) {
@@ -59,15 +82,18 @@ public final class WorksValue {
                     .totalBySector(sector.key(), t -> t.loadOf(stream));
             traffic.put(sector, mix);
         }
-        double rate = Math.max(0, BuildAdvice.lifeRate(g)) / 12, result = 0;
+        double rate = Math.max(0, BuildAdvice.lifeRate(g)) / 12, result = 0, used = 0, weights = 0;
         for (int year = 0; year < BuildAdvice.LIFE_YEARS; year++) {
             double months = lead + year * 12 + 6;
-            BuildAdvice.Ahead at = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), slack);
+            BuildAdvice.Ahead at = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), 0);
             double weight = 0;
             for (int j = 1; j <= 12; j++) weight += Math.pow(1 + rate, -(lead + year * 12 + j));
             result += weight * outputRestored(g, m, site, with, at, traffic);
+            double[] before = BuildAdvice.supplyDemand(g, m, site, at), after = BuildAdvice.supplyDemand(g, m, with, at);
+            used += weight * Math.max(0, Math.max(0, before[1] - before[0]) - Math.max(0, after[1] - after[0]));
+            weights += weight;
         }
-        return Math.max(0, result);
+        return new Relief(weights > 0 ? used / weights : 0, Math.max(0, result));
     }
 
     static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added, BuildAdvice.Ahead at) {

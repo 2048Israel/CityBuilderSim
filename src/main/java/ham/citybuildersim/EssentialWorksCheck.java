@@ -112,14 +112,13 @@ public final class EssentialWorksCheck {
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         u.setWattsConsumption(u.getProduction() * 2);
         for (Sector sector : g.getSectors().all()) sector.setEnergyRatio(.5);
-        BuildAdvice.Ahead now = BuildAdvice.NOW;
         double[] sd = BuildAdvice.supplyDemand(g, power, Map.of());
         check("fixture: the grid is rationing and the city's books contain output to restore",
                 sd[0] > 0 && sd[1] > sd[0] && g.getSectors().all().stream()
                         .anyMatch(s -> s.statement().revenue > s.statement().inputs));
-        WorksValue.Value value = WorksValue.of(g, power, Map.of(), coal, 1, g.getLandManager().getAvailableSqFt(), now);
+        WorksValue.Value value = WorksValue.of(g, power, Map.of(), coal, 1, g.getLandManager().getAvailableSqFt());
         check("a plant that relieves rationing prevents a positive output loss", value.avoided() > 0);
-        double already = WorksValue.avoided(g, power, Map.of(coal, 1000), Map.of(coal, 1), 0, 0);
+        double already = WorksValue.avoided(g, power, Map.of(coal, 1000), Map.of(coal, 1), 0);
         check("a plant beyond all the horizon's demand claims no prevented rationing loss", already == 0);
         BuildAdvice.Measure law = BuildAdvice.Measure.school(EducationType.LAW);
         if (!BuildAdvice.warranted(g, law)) check("a small town's unwarranted professional school is not a shortage",
@@ -127,6 +126,18 @@ public final class EssentialWorksCheck {
         check("the card exposes the same component sum, including land, prevented output and payroll",
                 BuildCard.worksValue(g, coal, power).words().contains("prevented output loss")
                         && value.land() > 0 && value.payroll() > 0 && value.jobs() > 0);
+        // A physical surplus below the reserve target caused the original false credit.
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
+        u.setWattsConsumption(u.getProduction() / 1.05);
+        for (Sector sector : g.getSectors().all()) sector.setEnergyRatio(1);
+        double[] surplus = BuildAdvice.supplyDemand(g, power, Map.of());
+        check("fixture: physical power is sufficient, fifteen-percent reserve is not, and the projection has no growth",
+                surplus[0] >= surplus[1] && surplus[0] < surplus[1] * 1.15 && BuildAdvice.lifeTrend(g, BuildAdvice.LIFE_MONTHS) == 1);
+        WorksValue.Value reserve = WorksValue.of(g, power, Map.of(), coal, 1, g.getLandManager().getAvailableSqFt());
+        check("a reserve-only plant claims zero physical relief and zero prevented output", reserve.used() == 0 && reserve.avoided() == 0);
+        check("the one-plant card and automatic valuation have the same sum", Double.doubleToLongBits(reserve.net())
+                == Double.doubleToLongBits(BuildCard.worksValue(g, coal, power).net()));
     }
 
     static void scarceCash(Path root) {

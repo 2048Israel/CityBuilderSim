@@ -1,4 +1,4 @@
-# ChildcareCheck.java - 567 lines · 20 methods · 4 constants · harnesses
+# ChildcareCheck.java - 548 lines · 20 methods · 4 constants · harnesses
 
 `ham/citybuildersim/ChildcareCheck.java` - generated 2026-11-13 by CodeMap; line numbers are as of that run.
 
@@ -62,7 +62,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (52), [CareType](CareType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (23), [Game](Game.md) (22), [CityNeeds](CityNeeds.md) (15), [AgeBand](AgeBand.md) (12), [GameFiles](GameFiles.md) (7), [JobType](JobType.md) (6), [BuildingManager](BuildingManager.md) (6), [BuildingVisual](BuildingVisual.md) (6), [PopulationCohorts](PopulationCohorts.md) (6), [LongPlaytest](LongPlaytest.md) (5), [BuildingType](BuildingType.md) (4), [Health](Health.md) (4), [Founding](Founding.md) (3), [BuildCard](BuildCard.md) (3), [Healthcare](Healthcare.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [Sector](Sector.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (41), [CareType](CareType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (22), [Game](Game.md) (22), [CityNeeds](CityNeeds.md) (15), [AgeBand](AgeBand.md) (12), [GameFiles](GameFiles.md) (7), [JobType](JobType.md) (6), [BuildingManager](BuildingManager.md) (6), [BuildingVisual](BuildingVisual.md) (6), [PopulationCohorts](PopulationCohorts.md) (6), [LongPlaytest](LongPlaytest.md) (5), [BuildingType](BuildingType.md) (4), [Health](Health.md) (4), [Founding](Founding.md) (3), [BuildCard](BuildCard.md) (3), [Healthcare](Healthcare.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [WorksValue](WorksValue.md) (2), [Sector](Sector.md) (1), [TempDirs](TempDirs.md) (1)
 
 **Used by (6):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -70,12 +70,12 @@
 
 | line | section |
 |---:|---|
-| 256 | · 1 |
-| 305 | · 2 |
-| 390 | · 3 |
-| 441 | · 4 |
-| 481 | · 5 |
-| 498 | · 6 |
+| 238 | · 1 |
+| 287 | · 2 |
+| 371 | · 3 |
+| 422 | · 4 |
+| 462 | · 5 |
+| 479 | · 6 |
 
 ## Constants
 
@@ -98,7 +98,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 492 | **type** `public class ChildcareCheck` | Childcare resized (0.7.71, batch N2): the three childcare centres, the build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS THE NEED), a city's old daycares kept as their ids' new centres, and the t... |
+| 76 | 473 | **type** `public class ChildcareCheck` | Childcare resized (0.7.71, batch N2): the three childcare centres, the build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS THE NEED), a city's old daycares kept as their ids' new centres, and the t... |
 | 94 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 99 | 5 | `static void bits(String label, double actual, double expected)` |  |
 | 105 | 5 | `static void quietly(Runnable r)` |  |
@@ -110,44 +110,44 @@
 | 192 | 3 | `static CityNeeds.Need need(Game g)` |  |
 | 196 | 5 | `static BuildAdvice.Suggestion advice(Game g)` |  |
 | 203 | 4 | `static double lacks(Game g, BuildAdvice.Ahead p)` | The places the need lacks at a suggestion's own projection: its demand less what is on site. |
-| 209 | 1 | **type** `record Weighed(BuildingsTemplate t, int count, BuildAdvice.Ahead p, double per)` | One centre weighed as suggestFor() weighs it: its count at the demand it opens to, and its figure. |
-| 211 | 27 | `static Weighed weigh(Game g, BuildingsTemplate t)` |  |
-| 239 | 16 | `public static void main(String[] args) throws Exception` |  |
+| 209 | 1 | **type** `record Weighed(BuildingsTemplate t, int count, BuildAdvice.Ahead p, double per, double net)` | One centre weighed as suggestFor() weighs it: its count at the demand it opens to, and its figure. |
+| 211 | 9 | `static Weighed weigh(Game g, BuildingsTemplate t)` |  |
+| 221 | 16 | `public static void main(String[] args) throws Exception` |  |
 
-### 1 (lines 256-304)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 258 | 46 | `static void threeCentres(Path root)` |  |
-
-### 2 (lines 305-389)
+### 1 (lines 238-286)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 307 | 66 | `static void sizeThatFits(Path root)` |  |
-| 375 | 14 | `static void theLeast(Game g, BuildAdvice.Suggestion s, String when)` | The suggestion is the centre whose order over its life over the places it will fill is the least (0.7.101; its order over the places lacking until then), each recomputed here, to the bit. |
+| 240 | 46 | `static void threeCentres(Path root)` |  |
 
-### 3 (lines 390-440)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 392 | 48 | `static void keepTheirType(Path root) throws Exception` |  |
-
-### 4 (lines 441-480)
+### 2 (lines 287-370)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 443 | 37 | `static void thePlayer(Path root)` |  |
+| 289 | 66 | `static void sizeThatFits(Path root)` |  |
+| 357 | 13 | `static void theLeast(Game g, BuildAdvice.Suggestion s, String when)` | The suggestion is the centre whose order over its life over the places it will fill is the least (0.7.101; its order over the places lacking until then), each recomputed here, to the bit. |
 
-### 5 (lines 481-497)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 483 | 14 | `static void theMap(Path root)` |  |
-
-### 6 (lines 498-567)
+### 3 (lines 371-421)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 500 | 67 | `static void realDemand(Path root)` |  |
+| 373 | 48 | `static void keepTheirType(Path root) throws Exception` |  |
+
+### 4 (lines 422-461)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 424 | 37 | `static void thePlayer(Path root)` |  |
+
+### 5 (lines 462-478)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 464 | 14 | `static void theMap(Path root)` |  |
+
+### 6 (lines 479-548)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 481 | 67 | `static void realDemand(Path root)` |  |
 

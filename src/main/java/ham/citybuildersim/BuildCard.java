@@ -520,7 +520,7 @@ public final class BuildCard {
         BuildAdvice.Measure on = m != null && m.serves(t) ? m : cityMeasure(t);
         if (on == null) return null;
         return WorksValue.of(game, on, BuildAdvice.onSite(game, on), t, 1,
-                game.getLandManager().getAvailableSqFt(), BuildAdvice.opening(game, game.quoteBuild(t, 1).months));
+                game.getLandManager().getAvailableSqFt());
     }
 
     /** The sector whose money and staffing test a market building is judged by: its owner, or retail for the bank's branch (planBank() asks retail). */

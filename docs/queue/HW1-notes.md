@@ -569,3 +569,66 @@ whole candidate order's net present value, not a negative per-unit density.
 Store that value on the suggestion for its card; no second margin-dependent
 recalculation. Coal's construction balance, fuel and pollution remain
 Jerus's calls; buildings.json is unchanged.
+
+## Assertion adaptations on the resumed model
+
+No fixture's city, buildings, land prices, debt pin, river slots or
+demographic bands were moved to admit the rule. The targeted run
+hw1-resume-targeted2.log passes all seven selected/dependent harnesses,
+exit 0; zero firm Stale findings.
+
+The former AutoBuildCheck failures were adapted by assertion identity:
+
+| former line / section | final law or observation | reason |
+|---|---|---|
+| first order equals card cut to twelve months (2) | same automatic-target card and full essential count | HW1 removes that cap for essentials; helper now uses maintained() and the automatic target |
+| fixture ordered payback-held work (3) | essential remit has zero payback-vetoed orders | every kept staffed measure is now essential |
+| first school held for payback (5) | the same missing warranted school is ordered, no payback weighed | essential floor supersedes the old revenue test |
+| inbox explains that school's payback refusal (5) | no invented payback refusal | no refusal was made |
+| fiscal-room twin weighs a paying school (5) | the same twin orders without weighing payback | both deficits and room obey the essential rule |
+| first school held cash-only (5) | ordinary permitted-debt funding, no first-kind cash-only veto | essential first orders follow the common funding rule |
+| overview offers held school (6) | overview selection is an Observation; the category's same school card stays a hard premise | the unchanged town selects other top-three needs; its school is still orderable |
+| card carries held-payback text (6) | no payback text on the fulfilled essential card | the old disagreement was removed |
+| card repeats payback figures (6) | no appraisal retained for this essential order | no payback was weighed |
+| inbox repeats those figures (6) | inbox contains no invented payback refusal | no refusal exists |
+| saved/loaded card repeats hold (6) | save/load preserves absence of the hold | the order still runs through the same scratch-save path |
+| room makes next pass order the school (6) | room does not add a veto to the work already on site | it was correctly ordered on the first pass |
+| building it orders has no hold line (6) | same law, with the pre-order category card retained | the post-order advice no longer needs to offer an already covered school |
+| school is non-essential on a deficit (8) | school is essential and ordered without payback on that same deficit | Jerus extended the essential floor |
+
+AutoBuildCheck's independent hand-written funding/ranking helpers now
+use the same full-service target and first-kind exception as production.
+The former FW4 requirement that the PARTICULAR refused template return
+within six months is a path observation; it returns in eleven on this
+model while sixteen other orders occur. A hard law still requires that
+restoring the limit resumes orders and the city grows. It is not a waiver
+of the debt or funding arithmetic.
+
+BuildAdviceCheck's three lines now assert (1) at most MAX_SUGGESTIONS
+warranted orders, rather than exactly three regardless of eligibility;
+(2) every omitted need is covered on site, cannot be helped, or falls below
+the useful-demand threshold, including the remaining list when fewer than
+three are offered; (3) exact whole-plan net value AND informational cost per
+physical unit. Its arithmetic recomputes invoice, land, delayed running,
+payroll tax return and physical relief independently of the suggestion's
+stored fields, at the model's constants.
+
+RoadCheck keeps the busy/quiet traffic and all land-price fixtures. Raw
+paved-versus-gravel lifetime expense remains checked. The selected card is
+now the least net WHOLE plan; transit may answer a street need. Paving's
+informational figure uses physical relief and delayed net value. The test
+player must execute the chosen paving OR chosen new-build action and its
+exact count; it no longer must choose the pre-HW1 paved/paving names.
+The per-candidate comparison checks total plan value within the same
+closing tier, not negative value divided by units.
+
+The additional ChildcareCheck reds were the same obsolete density
+ranking: its fixed small/medium/large demand cities now compare whole-plan
+net present value, and retain the separate physical-unit figure check.
+HydroCheck exposed a real sizing bug: a NaN quoted lead (no builders)
+propagated into the new twenty-year horizon and erased valid advice.
+The horizon now treats a stalled lead as zero, as opening() already did.
+The two-slot fixture still orders no more than two and reports its gap;
+the hundred-slot fixture keeps its slots and checks the count and honest
+closing flag at the NEW long horizon, which need not be closable in a
+hundred stations. No hydro staffing or river premise was changed.

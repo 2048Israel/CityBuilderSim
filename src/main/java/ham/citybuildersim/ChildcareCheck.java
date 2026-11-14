@@ -206,7 +206,7 @@ public class ChildcareCheck {
     }
 
     /** One centre weighed as suggestFor() weighs it: its count at the demand it opens to, and its figure. */
-    record Weighed(BuildingsTemplate t, int count, BuildAdvice.Ahead p, double per) { }
+    record Weighed(BuildingsTemplate t, int count, BuildAdvice.Ahead p, double per, double net) { }
 
     static Weighed weigh(Game g, BuildingsTemplate t) {
         Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, CHILDCARE);
@@ -214,26 +214,8 @@ public class ChildcareCheck {
         int[] today = BuildAdvice.count(g, CHILDCARE, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
         BuildAdvice.Ahead p = BuildAdvice.opening(g, g.quoteBuild(t, Math.max(1, today[0])).months);
         int n = BuildAdvice.count(g, CHILDCARE, site, t, p)[0];
-        // The figure recomputed here (0.7.101, BuildAdvice, A BUILDING OVER ITS LIFE): the order over its life - its quote,
-        // its ground and LIFE_MONTHS of running at the life's rate - over the places it fills a month on average over that
-        // life, each year read at its middle month on the city's own trend, the places lacking without it less with it.
-        double life = g.quoteBuild(t, n).total + BuildAdvice.landValue(g, t.getLandSqFt() * (double) n, landLeft)
-                + n * BuildAdvice.running(g, t, site) * BuildAdvice.lifeFactor(g);
-        Map<BuildingsTemplate, Integer> with = new java.util.LinkedHashMap<>(site);
-        with.merge(t, n, Integer::sum);
-        double i = BuildAdvice.lifeRate(g) / 12, filled = 0, weights = 0;
-        for (int y = 0; y < BuildAdvice.LIFE_MONTHS / 12; y++) {
-            double w = 0;
-            for (int j = 12 * y + 1; j <= 12 * y + 12; j++) w += i > 0 ? Math.pow(1 + i, -j) : 1;
-            double months = BusinessInvestment.leadFor(p.months()) + 12 * y + 6;   // from its opening: the months less the horizon they plan past it (BA1)
-            BuildAdvice.Ahead a = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), p.slack());
-            double[] without = BuildAdvice.supplyDemand(g, CHILDCARE, site, a), within = BuildAdvice.supplyDemand(g, CHILDCARE, with, a);
-            filled += w * Math.max(0, Math.max(0, without[1] - without[0]) - Math.max(0, within[1] - within[0]));
-            weights += w;
-        }
-        double avg = weights > 0 ? filled / weights : 0;
-        double per = avg > 0 ? life / avg : life / (n * BuildAdvice.unit(g, CHILDCARE, t));
-        return new Weighed(t, n, p, per);
+        WorksValue.Value value = WorksValue.of(g, CHILDCARE, site, t, n, landLeft);
+        return new Weighed(t, n, p, value.perUsed(), value.net());
     }
 
     public static void main(String[] args) throws Exception {
@@ -378,11 +360,10 @@ public class ChildcareCheck {
         for (int id : new int[] { SMALL, CENTRE, LARGE }) {
             Weighed w = weigh(g, byId(g, id));
             said.append(String.format(" [%s: %d, %,.4f a place filled over its life]", w.t().getName(), w.count(), w.per()));
-            if (best == null || w.per() < best.per()) best = w;
+            if (best == null || w.net() < best.net()) best = w;
         }
         out.printf("     %s:%s%n", when, said);
-        assertTrue("the card is the centre whose order over its life - quote, ground and running - over the places it will fill"
-                + " over that life is the least of the three (0.7.101; its quote and ground over the places lacking until then) ("
+        assertTrue("the centre's whole plan has the least net present value, including running, land and physical losses ("
                 + when + ")", best != null && s.template() == best.t() && s.count() == best.count());
         if (best != null && s.template() == best.t()) bits("...its figure is that, recomputed here, to the bit", s.pricePerUnit(), best.per());
     }

@@ -407,7 +407,7 @@ public class BuildAdviceCheck {
         assertTrue("fixture: NEEDS YOU lists more than three needs a city-built building answers (" + cityBuilt + ")",
                 cityBuilt > 3);
         assertTrue("fixture: and something on site answers one of them", onSiteAnswers(g, biting));
-        assertTrue("the advice is three suggestions", advice.size() == BuildAdvice.MAX_SUGGESTIONS);
+        assertTrue("the advice has at most MAX_SUGGESTIONS warranted orders", !advice.isEmpty() && advice.size() <= BuildAdvice.MAX_SUGGESTIONS);
         int last = -1;
         boolean inOrder = true, listed = true, built = true;
         Set<CityNeeds.Need> seen = new HashSet<>();
@@ -424,7 +424,7 @@ public class BuildAdviceCheck {
         assertTrue("...in NEEDS YOU's order, reds first", inOrder);
         assertTrue("...one per need", seen.size() == advice.size());
         boolean passedFairly = true;
-        for (int i = 0; i < last; i++) {
+        for (int i = 0; i < (advice.size() < BuildAdvice.MAX_SUGGESTIONS ? biting.size() : last); i++) {
             CityNeeds.Need n = biting.get(i);
             if (!n.cityBuilds() || seen.contains(n)) continue;
             BuildAdvice.Measure m = BuildAdvice.measureOf(n);
@@ -436,9 +436,9 @@ public class BuildAdviceCheck {
                 if (cand && BuildAdvice.unit(g, m, t) > 0) noneHelps = false;
             }
             out.printf("      passed over %s: on site closes it %s, no building helps %s%n", n.label(), onSiteCloses, noneHelps);
-            passedFairly &= onSiteCloses || noneHelps;
+            passedFairly &= onSiteCloses || noneHelps || !BuildAdvice.warranted(g, m);
         }
-        assertTrue("a need passed over before the last taken is one on site answers, or none can help", passedFairly);
+        assertTrue("a passed-over need is answered on site, no building helps, or its demand is below the useful-work threshold", passedFairly);
     }
 
     /** Whether any biting city-built need has something on site that serves it. */
@@ -901,6 +901,7 @@ public class BuildAdviceCheck {
                 BuildingsTemplate t = s.template();
                 // Every card's since 0.7.101: its order over its life for what it will serve, recomputed here.
                 double per = lifeFigure(g, s, landLeft);
+                perBits &= bitsEqual(s.planValue(), planFigure(g, s, landLeft));
                 perBits &= bitsEqual(s.pricePerUnit(), per);
                 leftBits &= bitsEqual(s.landValue(), BuildAdvice.landValue(g, s.landSqFt(), landLeft))
                         && bitsEqual(s.landShort(), Math.max(0, s.landSqFt() - landLeft));
@@ -915,9 +916,7 @@ public class BuildAdviceCheck {
         }
         market.restoreOffers(base, nextId);
         assertTrue("fixture: cards at nothing, as the listing stands and at ten times", cards > 0);
-        assertTrue("every card's figure is its order over its life - its quote for the count, its ground at landValue() and"
-                + " lifeFactor() months of running() each - over what it will serve over that life (power, water, the roads and"
-                + " care) or what its count adds (the rest) (0.7.101) - to the bit", perBits);
+        assertTrue("every card retains the whole plan's net value and its cost per physical unit, recomputed to the bit", perBits);
         assertTrue("...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit",
                 leftBits);
 
@@ -990,38 +989,48 @@ public class BuildAdviceCheck {
      * serves none of it, over the count times what one serves.
      */
     static double lifeFigure(Game g, BuildAdvice.Suggestion s, double landLeft) {
+        double[] figure = valueFigure(g, s, landLeft);
+        return figure[1] > 0 ? figure[0] / figure[1] : Double.POSITIVE_INFINITY;
+    }
+
+    static double planFigure(Game g, BuildAdvice.Suggestion s, double landLeft) { return valueFigure(g, s, landLeft)[0]; }
+
+    /** Recompute the invoice, delayed running, actual payroll return and physical relief; no reserve is lost work. */
+    static double[] valueFigure(Game g, BuildAdvice.Suggestion s, double landLeft) {
         BuildAdvice.Measure m = s.measure();
         BuildingsTemplate t = s.template();
         Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
         int n = s.count();
-        double factor = BuildAdvice.lifeFactor(g);
-        double life;
-        Map<BuildingsTemplate, Integer> with = new java.util.LinkedHashMap<>(site);
+        Map<BuildingsTemplate, Integer> order = s.paving() ? BuildAdvice.times(Map.of(), BuildAdvice.pavingStep(g), n) : Map.of(t,n);
+        Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(site, order);
+        Game.BuildQuote q = s.paving() ? g.quotePave(n) : g.quoteBuild(t,n);
+        double lead = Double.isFinite(q.months) ? Math.max(0,q.months) : 0;
+        double i = Math.max(0,BuildAdvice.lifeRate(g))/12;
+        double factor = BuildAdvice.lifeFactor(g)*Math.pow(1+i,-lead);
+        double land, running, returned=0;
         if (s.paving()) {
-            BuildingsTemplate from = template(g, ConstructionControl.PAVE_FROM), to = template(g, ConstructionControl.PAVE_TO);
-            // FR7 2.2: the gravel road it replaces stands, so it is repaired at the traffic on the streets as they are (not with one more added).
-            life = g.quotePave(n).total - BuildAdvice.landValue(g, BuildAdvice.pavingFrees(g) * (double) n, landLeft)
-                    + n * (BuildAdvice.running(g, to, site) - BuildAdvice.running(g, from, site, false)) * factor;
-            with.merge(to, n, Integer::sum);
-            with.merge(from, -n, Integer::sum);
+            BuildingsTemplate from=template(g,ConstructionControl.PAVE_FROM), to=template(g,ConstructionControl.PAVE_TO);
+            land=-BuildAdvice.landValue(g,BuildAdvice.pavingFrees(g)*n,landLeft);
+            running=n*(BuildAdvice.running(g,to,site)-BuildAdvice.running(g,from,site,false))*factor;
         } else {
-            life = g.quoteBuild(t, n).total + BuildAdvice.landValue(g, t.getLandSqFt() * (double) n, landLeft)
-                    + n * BuildAdvice.running(g, t, site) * factor;
-            with.merge(t, n, Integer::sum);
+            land=BuildAdvice.landValue(g,t.getLandSqFt()*(double)n,landLeft);
+            running=n*BuildAdvice.running(g,t,site)*factor;
+            double[] wages=g.getPopulationManager().getWagesPerType(), fill=g.getPopulationManager().getJobFillRate();
+            for(JobType job:JobType.values()) returned+=n*(double)t.getJobs(job)*wages[job.ordinal()]*fill[job.ordinal()]
+                    *g.getEconomyManager().getTaxPolicy().payslipShare(WageBand.of(job));
         }
-        if (!BuildAdvice.weighsServed(m)) return life / (n * s.unit());
-        double i = BuildAdvice.lifeRate(g) / 12, served = 0, weights = 0;
-        for (int y = 0; y < BuildAdvice.LIFE_MONTHS / 12; y++) {
-            double w = 0;
-            for (int j = 12 * y + 1; j <= 12 * y + 12; j++) w += i > 0 ? Math.pow(1 + i, -j) : 1;
-            double months = BusinessInvestment.leadFor(s.ahead().months()) + 12 * y + 6;   // from its opening: the months less the horizon they plan past it (BA1; horizonFor() grows with the lead)
-            BuildAdvice.Ahead a = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), s.ahead().slack());
-            served += w * Math.max(0, Math.max(0, BuildAdvice.shortfall(g, m, site, a))
-                    - Math.max(0, BuildAdvice.shortfall(g, m, with, a)));
-            weights += w;
+        double net=q.total+land+running-WorksValue.avoided(g,m,site,order,lead)-returned*factor;
+        double served=0,weights=0;
+        for(int year=0;year<BuildAdvice.LIFE_MONTHS/12;year++) {
+            double w=0;
+            for(int j=1;j<=12;j++)w+=Math.pow(1+i,-(lead+year*12+j));
+            double months=lead+year*12+6;
+            BuildAdvice.Ahead at=new BuildAdvice.Ahead(months,BuildAdvice.lifeTrend(g,months),0);
+            double[] before=BuildAdvice.supplyDemand(g,m,site,at), after=BuildAdvice.supplyDemand(g,m,with,at);
+            served+=w*Math.max(0,Math.max(0,before[1]-before[0])-Math.max(0,after[1]-after[0]));
+            weights+=w;
         }
-        double avg = weights > 0 ? served / weights : 0;
-        return avg > 0 ? life / avg : life / (n * s.unit());
+        return new double[]{net,weights>0?served/weights:0};
     }
 
     /** The offers' records with each one's dollar price times f (LandParcel.offerRow(): the price second from the end). */
