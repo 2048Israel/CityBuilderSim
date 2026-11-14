@@ -803,7 +803,7 @@ remittance and Advanced by the central bank (printed). The unchanged
 draw immediately after each creates zero nodes. The diagnostic's
 controlled exit 0 is not a passed allocation law.
 
-GovernmentScreen.overviewPage's eventful lists and bridgeCard/bridgeSteps
+GovernmentScreen.overviewPage's eventful lists and bridgeCard and its treasury steps
 draw these optional rows in scopes. They leave when absent, then create
 new nodes when present again; simultaneous returning flow rows exceed
 the old 17-of-320 example in KeptCheck's comment. This is rendering
@@ -817,3 +817,42 @@ the same page as a fresh draw and zero nodes on an unchanged draw.
 Keep the existing 90% retention and tenth-of-first-draw creation laws,
 then run the causal fixture and KeptCheck. The ship entry is narrowly
 scoped to this exact 47-of-378 line, not other pages' allocation limits.
+
+## Final pick and the post-verdict diagnostic
+
+The final --pick selected ALL 198. AllChecks ran 191 harnesses in
+3,183 seconds: 188 passed, three failed (MapCheck, KeptCheck and the
+already-known DeathRecordCheck). The eight initially NEW lines are
+MapCheck's two traced raster laws, its exit/count and a post-verdict
+exception, plus KeptCheck's traced allocation line and its exit/count.
+No automatic-building, advice, road, funding, save or model-law red
+remains. Eight timing lines are soft; ten path lines are observations.
+Stale has zero firm findings. Log: target/checks/hw1-resume-pick.log.
+
+The extra MapCheck line is exactly:
+Exception in thread "Thread-1" java.lang.NullPointerException.
+It is printed AFTER “3 FAILED”, with no stack frames, after JavaFX
+startup and the final canvas snapshot. MapCheck.main ends by
+System.exit(fails == 0 ? 0 : 1), with no Platform.exit; all of that source
+and the renderer are identical to main. It is a post-verdict toolkit
+shutdown diagnostic; its precise internal cause cannot be proved from
+the truncated line. It does not originate in an HW1 model stack.
+DM3-R also owns investigating this diagnostic and making that harness
+exit cleanly after its JavaFX work. Its ship entry matches only this
+exception line in MapCheck, not arbitrary exceptions or other harnesses.
+
+★ Restore only the 566 generated files whose complete contents differ
+from the already committed regenerated indexes solely by the overnight
+generated-date stamp. The source maps, dials and assertion index bodies
+are identical; their semantic updates were already committed. This keeps
+an unrelated midnight timestamp sweep out of HW1. No generator or
+index content is changed.
+
+The saved run was rejudged against the traced ship entries with
+CBS_REJUDGE=1 ./batch-check.sh --judge target/checks/suite.txt:
+**exit 3, known red only in three harnesses**. Log:
+target/checks/hw1-final-rejudge.log. The first --judge call deliberately
+retained the old NEW tags and rejected their changed counts; the
+documented CBS_REJUDGE mode is required when the registry changes.
+The raw pick's exit 4 is retained in its log; this common-judge result
+is the final verdict on that exact completed run.
