@@ -3,11 +3,9 @@
 Built from main e5642145 (SX1, 0.9.101), on batch/BF1. HW1's named
 files are kept out of this batch.
 
-Final model 272bef8f counts **0/24 bank failures**, against unchanged SX1's
-5/24 and LD2's historical 8/24. All 2,880 MoneyAudits and every bank equity
-bridge close. Pellet exports occur in 176 city-months; 532 split/consolidation
-events are counted. The full pick, final ensemble and fresh-clone gate
-have passed under the batch rules. The kept run and identities are below.
+Readiness of 502afa0b is withdrawn for REV-BF1-1. The results on model
+272bef8f below are superseded; they are retained as history only. The three
+review findings and fresh verification are recorded at the end.
 
 ## Evidence before the mends
 
@@ -167,17 +165,12 @@ Its numeric identities now also use MoneyAudit's own floor-zero tolerance.
 The exploratory 3273cbab ensemble snapshot was stopped by its own run
 folder/PIDs; a new final-model label will supersede it.
 
-The two remaining Truck misses are about 2.5e-10 of a truck, just over
-1e-9 of that month's small fleet gap. PO1's stableMonths already compares
-real quantities against their running size, while theTwin used the current
-residual alone; nominal series already used the running scale in both.
-★ Align theTwin's real-series scale with its nudge guard and the documented
-same-band rule. TWIN_REAL_TOLERANCE remains 1e-9. A synthetic 205-series
-experiment fails before this correction, accepts only the in-band residual
-afterward, and still rejects an out-of-band quantity and one extra person
-at a trillion people. Exact population/workforce/home/store counts remain
-exact; the full-run cutoff, history, growth and save checks are retained.
-Logs: target/checks/bf1-band-before.log and bf1-band-after.log.
+The two remaining Truck misses were about 2.5e-10 of a truck, just over
+1e-9 of that month's small fleet gap. The attempted historical-peak
+comparison was rejected in REV-BF1-1: despite keeping the literal tolerance,
+it widened the effective real-series band. That decision is withdrawn.
+The real law is restored to the current value, and the synthetic [100, 1]
+fixture must reject 5e-8 at its second point.
 
 ## Money review
 
@@ -378,3 +371,16 @@ The provisional marker is removed last and the ship file is pushed last.
 ## REV-BF1-1: readiness withdrawn
 
 The review mail was missed before 502afa0b was marked ready. Readiness is withdrawn. The three findings require model changes, so the previous pick, ensemble and gate describe the previous model only. The bank bond allowance, approximate order-book ordering and real-series relative comparison will each receive a failing-before assertion and a repair before all three release checks are rerun.
+
+REV-BF1-1 failing-before evidence: target/checks/bf1-review-before-bank.txt
+has two capital failures with a positive actual bond purchase (73,767.70)
+and room wrongly unchanged at 98,357.11. The fixture funds a bank with a
+substantial loan book so that underwriting fees cannot conceal the capital
+used. The order book counterexample fails submit and depth on both sides
+(four assertions). The isolated comparison fixture fails its required
+rejection of the 5e-8 discrepancy after a peak. Their after logs show the
+repairs pass. ★ Keep approximate FIFO priority and scan past a noncrossing
+order, because numerical equivalence bands overlap and are not transitive.
+★ Both bond issue bids and secondary settlement use the same live room as
+project loans; pending loans are subtracted before their bank settle, while
+immediate bond/carry/securities claims are read from the bank's books.

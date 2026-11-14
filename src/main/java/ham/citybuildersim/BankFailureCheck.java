@@ -139,8 +139,9 @@ public final class BankFailureCheck {
         BusinessDebtManager claims = bonds.getEconomyManager().getBusinessDebtManager();
         Bank bank = bonds.getBank();
         double deposits = 1e6 * PriceLevel.FACTOR;
-        bank.refresh(1, deposits, 0, 0, 0, 0);
-        bank.setCash(deposits * 1.1);
+        bank.setForeignDeposits(0);
+        bank.refresh(1, deposits, 0, deposits, 0, 0);
+        bank.setCash(deposits * .5);
         claims.setProjectBudget(bank.projectHeadroom());
         double before = claims.projectRoom();
         claims.setAssets(sector, request * 100);
@@ -158,6 +159,17 @@ public final class BankFailureCheck {
                     + MoneyAudit.tolerance(0, before));
         check("a later project cannot reuse the capital spent on corporate bonds",
                 !claims.canFundProject(Sectors.MANUFACTURING, (before + Math.max(0, remaining)) / 2));
+        double afterBond = claims.projectRoom();
+        claims.setAssets(Sectors.MANUFACTURING, before * 100);
+        claims.issueProjectLoan(Sectors.MANUFACTURING, afterBond * .9, bonds.getMonth());
+        double forBonds = claims.projectRoom(), held = market.faceHeldByBank();
+        market.issue(new BusinessDebtManager.Plan(sector, face, face, 1, 1,
+                0, 1, 1, market.issueCost(face), 1, request * 100, face, face), bonds.getMonth());
+        double laterBuy = market.faceHeldByBank() - held;
+        check("fixture: a pending loan leaves positive but smaller room for a second bond",
+                forBonds > 0 && forBonds < afterBond && laterBuy > 0);
+        check("a later bond purchase cannot reuse a pending loan's capital",
+                laterBuy <= forBonds + MoneyAudit.tolerance(0, before));
         g.getBank().writeOffSector(sector, g.getBank().equity() + g.getBank().getSectorAllowance(sector));
         close("uncovered defaults reach the growth desk before the bank's month-end settle", g.getBank().projectHeadroom(), 0);
 

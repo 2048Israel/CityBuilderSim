@@ -3800,7 +3800,7 @@ public class Game {
 
         // BF1: the loss just booked must reach the growth desk before it
         // finances replacements. Above-target lending is still finite.
-        restructured.setProjectBudget(bank.projectHeadroom());
+        restructured.setProjectBudget(bank);
 
         /*
          * EVERY SECTOR IN THE REGISTRY'S ORDER, each asked its own question.
@@ -14274,7 +14274,7 @@ public class Game {
         // is short of like any loan (BusinessDebtManager, THE LANDLORDS'
         // MORTGAGES).
         economyManager.getBusinessDebtManager().setCapitalRule(growth, keepGoingOnly, bank.leverageBinds());
-        economyManager.getBusinessDebtManager().setProjectBudget(bank.projectHeadroom());
+        economyManager.getBusinessDebtManager().setProjectBudget(bank);
         householdBalance.setCapitalRule(growth, keepGoingOnly);
         // ...and every business's spread sits on the bank's prime (0.7.7; the
         // city's rate until then), on the dial as it stands this month - and

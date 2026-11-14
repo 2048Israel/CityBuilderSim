@@ -227,7 +227,7 @@ public class OrderBook implements Cloneable {
         while (order.quantity > dust && it.hasNext()) {
             Order resting = it.next();
             boolean crosses = side == Side.BUY ? meets(order.price, resting.price) : meets(resting.price, order.price);
-            if (!crosses) break;                        // the rest are worse still
+            if (!crosses) continue;                     // rounding bands overlap: a later order may cross
             if (resting.who.equals(order.who)) continue; // no trade with oneself
 
             double price0 = resting.price;
@@ -371,7 +371,7 @@ public class OrderBook implements Cloneable {
         double total = 0;
         for (Order o : side == Side.BUY ? bids : asks) {
             boolean better = side == Side.BUY ? meets(o.price, price) : meets(price, o.price);
-            if (!better) break;
+            if (!better) continue; // FIFO within a rounding band is not strict price order
             total += o.quantity;
         }
         return total;

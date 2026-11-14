@@ -2476,6 +2476,7 @@ public class BusinessDebtManager {
     private boolean keepGoingOnly;
     /** The bank's uninsured project allowance, shared this turn; insured mortgages keep their own rule (BF1). */
     private double projectBudget = Double.POSITIVE_INFINITY, projectBudgetLent;
+    private Bank projectBank;
 
     /** Struck before lending, and again after defaults, net of lending still awaiting the bank's settle. */
     public void setProjectBudget(double room) {
@@ -2483,9 +2484,18 @@ public class BusinessDebtManager {
         projectBudgetLent = lentThisMonth;
     }
 
-    /** New borrowing consumes the shared allowance; a refusal consumes none. */
+    /** Read immediate bank claims too: bonds, securities and carry settle before loans do. */
+    public void setProjectBudget(Bank bank) {
+        projectBank = bank;
+        setProjectBudget(bank.projectHeadroom());
+    }
+
+    /** New borrowing and claims already on the bank's books consume one allowance. */
     public double projectRoom() {
-        return Math.max(0, projectBudget - Math.max(0, lentThisMonth - projectBudgetLent));
+        double room = projectBudget - Math.max(0, lentThisMonth - projectBudgetLent);
+        if (projectBank != null) room = Math.min(room, projectBank.projectHeadroom()
+                - Math.max(0, lentThisMonth - repaidThisMonth));
+        return Math.max(0, room);
     }
     private final Map<String, Double> principalAtRule = new LinkedHashMap<>();
     /** Sectors whose project the capital rule refused this month, so the investor can say so. */
@@ -3569,6 +3579,7 @@ public class BusinessDebtManager {
         closedBorrowers.clear();
         projectBudget = Double.POSITIVE_INFINITY;
         projectBudgetLent = 0;
+        projectBank = null;
         for (String sector : SECTORS) {
             maturedPrincipal.put(sector, 0.0);
             writtenOffThisMonth.put(sector, 0.0);

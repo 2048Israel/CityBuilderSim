@@ -652,7 +652,7 @@ public class PriceLevelCheck {
                     double allowed = .5 * grid * (1 / plain.factor + 1) * (1 + 1e-9) + TWIN_NOMINAL_TOLERANCE * Math.max(Math.abs(x), Math.abs(y));
                     g = Double.isNaN(x) != Double.isNaN(y) ? Double.POSITIVE_INFINITY : (Double.isNaN(x) ? 0 : Math.abs(x - y) / allowed);
                     if (g <= 1) g = 0;
-                } else if (!recorded && scale > 0 && !Double.isNaN(x) && !Double.isNaN(y)) g = Math.abs(x - y) / scale;
+                } else if (nominal && !recorded && scale > 0 && !Double.isNaN(x) && !Double.isNaN(y)) g = Math.abs(x - y) / scale;
                 else g = gap(x, y);
                 if (g > worst) { worst = g; at = m; }
             }
