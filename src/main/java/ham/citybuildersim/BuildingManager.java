@@ -6160,6 +6160,11 @@ public class BuildingManager {
      * at their month for the sites with every post offered). Never anything else.
      */
     public boolean goesFirst(BuildingsTemplate t, int extra) {
+        return goesFirst(t, extra, null);
+    }
+
+    /** The same eligibility and starvation test on a quoted queue, before first-unit progress replaces full-site points. */
+    private boolean goesFirst(BuildingsTemplate t, int extra, java.util.Map<String, double[]> projected) {
         if (!buildersFirstOn || !addsToTheBuilders(t)) return false;
         BuildingsStacks s = getStack(t);
         int n = Math.max(0, extra) + (s == null ? 0 : Math.max(0, s.getUnderConstruction()));
@@ -6167,7 +6172,15 @@ public class BuildingManager {
         if (buildersCouldStaff != null && !buildersCouldStaff.test(t, n)) return false;
         if (sitesAtEveryPost == null) return true;
         double sites = sitesAtEveryPost.getAsDouble();
-        return !(sites > 0) || ruleWait(t, Math.max(0, extra), 0, sites) > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
+        if (!(sites > 0)) return true;
+        if (projected == null)
+            return ruleWait(t, Math.max(0, extra), 0, sites) > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
+        double[] mine = projected.get(ConstructionControl.keyOf(t));
+        if (mine == null || !(mine[0] > 0)) return false;
+        double others = 0;
+        for (double[] site : projected.values()) if (site != mine) others += site[0];
+        double wait = mine[1] * (others + mine[0]) / (sites * mine[0]);
+        return wait > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING;
     }
 
     /** The builders' own sites served first, in the stacks' order: every stack that adds to their capacity with buildings on site, whoever paid for them, while the city could staff them (goesFirst()). */
@@ -6429,13 +6442,14 @@ public class BuildingManager {
         double[] mine = {weightOf(t, after), firstPoints};
         String key = ConstructionControl.keyOf(t);
         double wait;
-        if (firstOn(additional, quantity))
+        java.util.Map<String, double[]> projected = quotedSites(additional, quantity, additionalPoints);
+        if (!buildersFirstAfter(projected, additional, quantity).isEmpty())
             wait = firstWait(key, mine, false, false, siteOutput, additional, quantity, additionalPoints);
         else if (handOn(key) || unburiedNow() > 0 && servesTheDead(additional))
             wait = handWait(key, mine, false, siteOutput, additional, quantity, additionalPoints);
         else {
             double totalWeight = 0;
-            for (double[] site : quotedSites(additional, quantity, additionalPoints).values()) totalWeight += site[0];
+            for (double[] site : projected.values()) totalWeight += site[0];
             wait = mine[0] > 0 ? firstPoints * totalWeight / (siteOutput * mine[0]) : Double.NaN;
         }
         return wait == Double.MAX_VALUE ? Double.NaN : wait;
@@ -6558,19 +6572,7 @@ public class BuildingManager {
         return (aheadOwed + owedPoints) * (others + mine) / (siteOutput * mine);
     }
 
-    /**
-     * THE HAND'S ARITHMETIC: every site on site, its crew's weight and its
-     * points owed - `key`'s replaced by `mine` when it is given, and added at
-     * the bottom of the city's order when it is a new site of the city's -
-     * then the key's months by the rule held steady, or, a city site while an
-     * order is set, everything ahead of it in the order and itself over the
-     * city's share; a rushed site at each coming month's overtime factor.
-     * While the dead wait (0.7.129) the city's death care heads the order -
-     * a death-care site is timed as the order times its top, with or
-     * without the player's - and with no order set, any other city site
-     * waits for the death care's points at the city's pace, then by the rule.
-     * NaN when its pace is nothing; MAX_VALUE past a hundred years.
-     */
+    /** Full pending crew weights and points after one quoted additional city order. */
     private java.util.Map<String, double[]> quotedSites(BuildingsTemplate additional, int quantity, double points) {
         java.util.Map<String, double[]> by = new java.util.LinkedHashMap<>();
         for (BuildingsStacks s : stacks) {
@@ -6592,6 +6594,19 @@ public class BuildingManager {
         return by;
     }
 
+    /**
+     * THE HAND'S ARITHMETIC: every site on site, its crew's weight and its
+     * points owed - `key`'s replaced by `mine` when it is given, and added at
+     * the bottom of the city's order when it is a new site of the city's -
+     * then the key's months by the rule held steady, or, a city site while an
+     * order is set, everything ahead of it in the order and itself over the
+     * city's share; a rushed site at each coming month's overtime factor.
+     * While the dead wait (0.7.129) the city's death care heads the order -
+     * a death-care site is timed as the order times its top, with or
+     * without the player's - and with no order set, any other city site
+     * waits for the death care's points at the city's pace, then by the rule.
+     * NaN when its pace is nothing; MAX_VALUE past a hundred years.
+     */
     private double handWait(String key, double[] mine, boolean isNew, double siteOutput) {
         return handWait(key, mine, isNew, siteOutput, null, 0, 0);
     }
@@ -6659,6 +6674,18 @@ public class BuildingManager {
         return quantity > 0 && goesFirst(t, quantity);
     }
 
+    /** Builders promoted by the complete prospective queue, including depots starved only by the additional reserve. */
+    private java.util.Set<String> buildersFirstAfter(java.util.Map<String, double[]> projected,
+                                                    BuildingsTemplate additional, int quantity) {
+        java.util.Set<String> group = new java.util.HashSet<>();
+        for (String key : projected.keySet()) {
+            int id = ConstructionControl.templateIdOf(key);
+            BuildingsTemplate t = id < 0 ? null : getTemplate(id);
+            if (goesFirst(t, t == additional ? quantity : 0, projected)) group.add(key);
+        }
+        return group;
+    }
+
     /** t's site with n more of it owing `owed` more points on it: {its crew's weight, its points owed}. */
     private double[] withMore(BuildingsTemplate t, int n, double owed) {
         BuildingsStacks s = getStack(t);
@@ -6689,22 +6716,23 @@ public class BuildingManager {
                              BuildingsTemplate additional, int quantity, double points) {
         if (!(siteOutput > 0)) return Double.NaN;
         java.util.Map<String, double[]> by = quotedSites(additional, quantity, points);
-        java.util.Set<String> group = new java.util.HashSet<>();
-        for (BuildingsStacks stack : stacks)
+        boolean prospective = additional != null && quantity > 0;
+        java.util.Set<String> group = prospective ? buildersFirstAfter(by, additional, quantity) : new java.util.HashSet<>();
+        if (!prospective) for (BuildingsStacks stack : stacks)
             if (stack.getUnderConstruction() > 0 && goesFirst(stack.getBuilding(), 0))
                 group.add(ConstructionControl.keyOf(stack.getBuilding()));
-        if (additional != null && quantity > 0 && goesFirst(additional, quantity))
-            group.add(ConstructionControl.keyOf(additional));
         if (mine != null) {
             by.put(key, mine);
-            // ...a depot among them when the city could staff all of it: its
-            // buildings, read back off its crew's weight (weightOf()).
-            int id = ConstructionControl.templateIdOf(key);
-            BuildingsTemplate t = id < 0 ? null : getTemplate(id);
-            BuildingsStacks st = t == null ? null : getStack(t);
-            int n = t == null ? 0 : (int) Math.round(mine[0] / Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT));
-            group.remove(key);
-            if (goesFirst(t, n - (st == null ? 0 : Math.max(0, st.getUnderConstruction())))) group.add(key);
+            if (!prospective) {
+                // ...a depot among them when the city could staff all of it: its
+                // buildings, read back off its crew's weight (weightOf()).
+                int id = ConstructionControl.templateIdOf(key);
+                BuildingsTemplate t = id < 0 ? null : getTemplate(id);
+                BuildingsStacks st = t == null ? null : getStack(t);
+                int n = t == null ? 0 : (int) Math.round(mine[0] / Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT));
+                group.remove(key);
+                if (goesFirst(t, n - (st == null ? 0 : Math.max(0, st.getUnderConstruction())))) group.add(key);
+            }
         }
         double[] me = by.get(key);
         if (me == null || !(me[1] > 0)) return 0;

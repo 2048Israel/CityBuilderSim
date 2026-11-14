@@ -423,6 +423,236 @@ public final class WorksFinanceCheck {
         }
     }
 
+    static Game reserveTown(Path root, String name) {
+        BuildAdviceCheck.quiet = EssentialWorksCheck.quiet;
+        Game g = BuildAdviceCheck.servedCity(root, name);
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
+        long people = g.getPopulationManager().getPopulation();
+        g.getBusinessInvestment().restorePopulationHistory(List.of(people, people));
+        g.getBuildingManager().setBuildersFirstForTest(false);
+        g.getBuildingManager().setUnburied(() -> 0);
+        return g;
+    }
+
+    static void pavingHold(Path root) {
+        out.println("--- the hard construction-hold reader resolves the actual paving template ---");
+        RoadCheck.quiet = EssentialWorksCheck.quiet;
+        Game g = RoadCheck.town(root, "paving-hold");
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        BuildingManager bm = g.getBuildingManager();
+        bm.setBuildersFirstForTest(false);
+        bm.setUnburied(() -> 0);
+        BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+        EssentialWorksCheck.serveOtherEssentials(g, care);
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
+        long people = g.getPopulationManager().getPopulation();
+        g.getBusinessInvestment().restorePopulationHistory(List.of(people, people));
+        BuildingsTemplate centre = bm.getTemplateByName("Community Health Centre");
+        int required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1),
+                g.getAutoBuilder().target(), BuildAdvice.MOST, true)[0];
+        EssentialWorksCheck.quietly(() -> g.buildStack(centre, required, false));
+        RoadCheck.scale(g, RoadCheck.noGroundFree(g), 1);
+        InfrastructureManager roads = g.getInfrastructureManager();
+        roads.setBuiltCapacity(roads.getStreetLoad() * 1.01
+                + roads.getHighwayCapacity() - InfrastructureManager.BASE_CAPACITY);
+        AutoBuilder auto = g.getAutoBuilder();
+        BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        BuildAdvice.Suggestion paving = BuildAdvice.suggestFor(g, null, streets, g.getCash(),
+                0, auto.getSlack(), RoadCheck.everyRoadAndLine(g), false);
+        out.printf("      paving %s, available %d, quote %.9f, unit %.9f, cheaper %b%n",
+                paving == null ? "none" : paving.count(), g.paveable(), g.quotePave(1).months,
+                BuildAdvice.pavingUnit(g, Map.of()), BuildAdvice.pavingBeatsPaved(g, 0, Map.of()));
+        check("fixture: physically served streets have a real paving reserve proposal with positive site output",
+                paving != null && paving.paving() && paving.count() > 0 && g.paveable() >= paving.count()
+                        && BuildAdvice.maintained(g, streets, Map.of(), BuildAdvice.NOW)
+                        && Double.isFinite(g.quotePave(1).months) && g.quotePave(1).months > 0);
+        if (paving == null) return;
+        double output = g.getBuildingOutputAtEveryPost();
+        BuildingsStacks site = bm.getStack(centre);
+        double initial = bm.siteUnitMonths(centre, 1, output);
+        site.setConstructionProgress(centre.getConstructionPoints()
+                - (centre.getConstructionPoints() - site.getConstructionProgress()) * .99 / initial);
+        double afterOne = bm.siteUnitMonthsAfter(centre, 1, output, paving.template(), 1,
+                addedPoints(g.quotePave(1), paving.template(), 1));
+        check("fixture: even one paving would move unserved care past its one-month saved promise",
+                required > 0 && !BuildAdvice.maintained(g, care, Map.of(), BuildAdvice.NOW)
+                        && BuildAdvice.maintained(g, care, Map.of(centre, required), BuildAdvice.NOW)
+                        && initial > 1 && afterOne > 1);
+        AutoBuilder.State state = auto.toState();
+        state.on = true;
+        state.pendingUntil.put(care.label(), g.getMonth() + 1.0);
+        AutoBuilder.OpenAsk ask = ask(paving, g.getMonth(), 0);
+        ask.templateId = -1;
+        state.asks = new ArrayList<>(List.of(ask));
+        auto.restore(state);
+        EssentialWorksCheck.quietly(() -> auto.pass(g));
+        AutoBuilder.Step step = EssentialWorksCheck.step(g, streets);
+        out.println("      paving step " + step);
+        check("the real automatic ask path records a paving construction hold",
+                step != null && step.cut() == AutoBuilder.Cut.BUILDERS && step.ordered() == 0
+                        && step.building().equals(ConstructionControl.PAVE_FROM + ", paved"));
+        check("the hard hold-reason reader accepts the actual paving construction hold",
+                step != null && AutoBuildCheck.heldBuildingIsTrue(g, auto, step));
+    }
+
+    static void highwayPromise(Path root) {
+        out.println("--- an early street cannot cover a later highway's saved promise ---");
+        Game g = reserveTown(root, "highway-promise");
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate highway = bm.getTemplateByName("Elevated Highway");
+        BuildingsTemplate street = bm.getTemplateByName("Paved Road");
+        BuildingsTemplate wind = bm.getTemplateByName("Wind Farm");
+        BuildAdvice.Measure through = BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS);
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        EssentialWorksCheck.serveOtherEssentials(g, through);
+        EssentialWorksCheck.quietly(() -> {
+            g.buildStack(highway, 1, false);
+            g.buildStack(street, 1, false);
+        });
+        InfrastructureManager roads = g.getInfrastructureManager();
+        roads.setThrough(0, LandManager.SQ_FT_PER_KM2 * 100, 0);
+        roads.setLoad(BuildAdvice.highwayFlow(g) * .5);
+        roads.setBuiltCapacity(roads.getStreetLoad() * 2);
+        UtilitiesHandler utility = g.getServicesManager().getUtilitiesHandler();
+        utility.setWattsConsumption(utility.getProduction() / 1.05);
+        List<BuildingsTemplate> catalogue = new ArrayList<>(bm.getTemplates());
+        bm.getTemplates().removeIf(t -> t.getCategory() == BuildingType.ELECTRICITY && t != wind);
+        try {
+            AutoBuilder auto = g.getAutoBuilder();
+            BuildAdvice.Suggestion reserve = BuildAdvice.suggestFor(g, null, power, g.getCash(),
+                    g.getLandManager().getAvailableSqFt());
+            check("fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic",
+                    BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW) && reserve != null
+                            && !BuildAdvice.maintained(g, through, Map.of(), BuildAdvice.NOW)
+                            && BuildAdvice.maintained(g, through, Map.of(highway, 1), auto.target()));
+            if (reserve == null) return;
+            double output = g.getBuildingOutputAtEveryPost();
+            BuildingsStacks h = bm.getStack(highway), r = bm.getStack(street);
+            double hQuote = bm.siteUnitMonths(highway, 1, output);
+            h.setConstructionProgress(highway.getConstructionPoints()
+                    - (highway.getConstructionPoints() - h.getConstructionProgress()) * .99 / hQuote);
+            double rQuote = bm.siteUnitMonths(street, 1, output);
+            r.setConstructionProgress(street.getConstructionPoints()
+                    - (street.getConstructionPoints() - r.getConstructionProgress()) * .01 / rQuote);
+            double points = addedPoints(g.quoteBuild(wind, 1), wind, 1);
+            double streetAfter = bm.siteUnitMonthsAfter(street, 1, output, wind, 1, points);
+            double highwayAfter = bm.siteUnitMonthsAfter(highway, 1, output, wind, 1, points);
+            AutoBuilder.State state = auto.toState();
+            state.on = true;
+            double due = g.getMonth() + BuildAdvice.firstCompletion(g, through, BuildAdvice.onSite(g, through));
+            state.pendingUntil.put(through.label(), due);
+            auto.restore(state);
+            check("fixture: the shared road-site map includes an early street, but even one reserve wind would postpone the highway beyond its own due",
+                    BuildAdvice.onSite(g, through).containsKey(street)
+                            && bm.siteUnitMonths(street, 1, output) < bm.siteUnitMonths(highway, 1, output)
+                            && g.getMonth() + Math.ceil(streetAfter) <= due
+                            && g.getMonth() + Math.ceil(highwayAfter - 1e-9) > due);
+            EssentialWorksCheck.quietly(() -> auto.pass(g));
+            AutoBuilder.Step step = EssentialWorksCheck.step(g, power);
+            check("the actual reserve order preserves the highway-only completion promise",
+                    step != null && step.ordered() == 0 && step.cut() == AutoBuilder.Cut.BUILDERS
+                            && g.getMonth() + Math.ceil(bm.siteUnitMonths(highway, 1, output) - 1e-9) <= due);
+        } finally {
+            bm.getTemplates().clear();
+            bm.getTemplates().addAll(catalogue);
+        }
+    }
+
+    static void promotedDepot(Path root) {
+        out.println("--- a reserve order can promote a previously unstarved depot ---");
+        Game g = reserveTown(root, "promoted-depot");
+        BuildingManager bm = g.getBuildingManager();
+        BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+        BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        BuildingsTemplate centre = bm.getTemplateByName("Community Health Centre");
+        BuildingsTemplate depot = bm.getTemplateByName("Construction Depot");
+        BuildingsTemplate road = bm.getTemplateByName("Paved Road");
+        for (BuildingsTemplate t : bm.getTemplates()) if (care.serves(t) && bm.getQuantity(t.getId()) > 0)
+            EssentialWorksCheck.quietly(() -> bm.retire(t, bm.getQuantity(t.getId())));
+        int required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1),
+                g.getAutoBuilder().target(), BuildAdvice.MOST, true)[0];
+        EssentialWorksCheck.quietly(() -> {
+            g.buildStack(centre, required, false);
+            g.buildStack(depot, 1, false);
+        });
+        InfrastructureManager roads = g.getInfrastructureManager();
+        roads.setModes(0, 0);
+        roads.setThrough(0, g.getLandManager().getAllocatedSqFt(), 0);
+        roads.setBuiltCapacity(20.0 * road.getCapacity());
+        roads.setLoad(roads.getStreetCapacity() / 1.01);
+        double[] traffic = new double[Traffic.values().length];
+        traffic[Traffic.GOODS.ordinal()] = roads.getLoad();
+        roads.setBreakdown(traffic);
+        roads.setBuiltCapacity(roads.getStreetLoad() * 1.01 - InfrastructureManager.BASE_CAPACITY);
+        List<BuildingsTemplate> catalogue = new ArrayList<>(bm.getTemplates());
+        bm.getTemplates().removeIf(t -> t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway() && t != road);
+        try {
+            AutoBuilder auto = g.getAutoBuilder();
+            auto.setSlack(.50, null);
+            BuildAdvice.Suggestion reserve = BuildAdvice.suggestFor(g, null, streets, g.getCash(),
+                    g.getLandManager().getAvailableSqFt());
+            check("fixture: physically served streets have a multi-road reserve plan while pending care covers its operating shortage",
+                    reserve != null && reserve.count() > 1
+                            && BuildAdvice.maintained(g, streets, Map.of(), BuildAdvice.NOW)
+                            && !BuildAdvice.maintained(g, care, Map.of(), BuildAdvice.NOW)
+                            && BuildAdvice.maintained(g, care, Map.of(centre, required), BuildAdvice.NOW));
+            if (reserve == null) return;
+            double output = g.getBuildingOutputAtEveryPost();
+            BuildingsStacks depotSite = bm.getStack(depot);
+            double depotOwed = Math.min(depot.getConstructionPoints() * .5, output * 5);
+            depotSite.setConstructionProgress(depot.getConstructionPoints() - depotOwed);
+            double total = 0;
+            for (BuildingsStacks site : bm.getStacksUnderConstruction())
+                total += BuildingManager.weightOf(site.getBuilding(), site.getUnderConstruction());
+            double weight = BuildingManager.weightOf(depot, 1);
+            double extra = BuildingManager.weightOf(road, reserve.count());
+            double sites = depotOwed * (total + extra * .5)
+                    / (BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING * weight);
+            bm.setSitesAtEveryPost(() -> sites);
+            bm.setBuildersCouldStaff((t, n) -> true);
+            bm.setBuildersFirstForTest(true);
+            BuildingsStacks careSite = bm.getStack(centre);
+            double initial = bm.siteUnitMonths(centre, 1, output);
+            double goal = .9 * total / (total + extra);
+            careSite.setConstructionProgress(centre.getConstructionPoints()
+                    - (centre.getConstructionPoints() - careSite.getConstructionProgress()) * goal / initial);
+            double before = bm.siteUnitMonths(centre, 1, output);
+            double naiveAfter = before * (total + extra) / total;
+            double depotAfter = depotOwed * (total + extra) / (sites * weight);
+            AutoBuilder.State state = auto.toState();
+            state.on = true;
+            double due = g.getMonth() + Math.ceil(before);
+            state.pendingUntil.put(care.label(), due);
+            auto.restore(state);
+            check("fixture: the reserve promotes a staffable depot past the model's builders-first threshold even though ordinary crew sharing would keep care inside its due",
+                    !bm.goesFirst(depot, 0) && depotAfter > BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING
+                            && before > 0 && before < 1 && naiveAfter < 1 && depotOwed / output > 1);
+            EssentialWorksCheck.quietly(() -> auto.pass(g));
+            AutoBuilder.Step step = EssentialWorksCheck.step(g, streets);
+            check("the actual reserve pass trims the promoted-depot delay and preserves care's completion",
+                    step != null && step.ordered() < reserve.count() && step.cut() == AutoBuilder.Cut.BUILDERS
+                            && g.getMonth() + Math.ceil(bm.siteUnitMonths(centre, 1, output) - 1e-9) <= due);
+            // Complete the original reserve counterfactual only after checking the real guarded pass.
+            int remaining = Math.max(0, reserve.count() - (step == null ? 0 : step.ordered()));
+            double predicted = bm.siteUnitMonthsAfter(centre, 1, output, road, remaining,
+                    addedPoints(g.quoteBuild(road, remaining), road, remaining));
+            EssentialWorksCheck.quietly(() -> g.buildStack(road, remaining, false));
+            double actual = bm.siteUnitMonths(centre, 1, output);
+            check("the full reserve actually promotes the depot and its prospective quote matches the changed queue",
+                    bm.goesFirst(depot, 0) && actual > 1 && close(predicted, actual));
+        } finally {
+            bm.getTemplates().clear();
+            bm.getTemplates().addAll(catalogue);
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("worksfinancecheck");
@@ -434,6 +664,9 @@ public final class WorksFinanceCheck {
         prospectiveQueue(root);
         crewPromise(root, false);
         crewPromise(root, true);
+        pavingHold(root);
+        highwayPromise(root);
+        promotedDepot(root);
         parcelCash(root, false);
         parcelCash(root, true);
         remainingCoupons(root);

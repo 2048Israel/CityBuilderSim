@@ -717,7 +717,7 @@ public class AutoBuildCheck {
         if (paving && s.cut() == AutoBuilder.Cut.CASH) {
             return !ab.within(g) && ab.isCashAnyway() && AutoBuilder.gapFor(g, g.quotePave(1).total) > 0;
         }
-        BuildingsTemplate t = g.getBuildingManager().getTemplateByName(s.building());
+        BuildingsTemplate t = g.getBuildingManager().getTemplateByName(paving ? ConstructionControl.PAVE_TO : s.building());
         switch (s.cut()) {
             case GROUND:
                 // No ground free for one, and (0.7.77) no bare ground on offer to buy for it - or (0.7.101) the city over its ground.
@@ -731,11 +731,10 @@ public class AutoBuildCheck {
             }
             case BUILDERS:
                 if (t == null) return false;
-                if (Double.isNaN(g.quoteBuild(t, 1).months)) return true;
+                Game.BuildQuote quote = paving ? g.quotePave(1) : g.quoteBuild(t, 1);
+                if (Double.isNaN(quote.months)) return true;
                 if (AutoBuilder.essential(s.measure())
                         && !BuildAdvice.maintained(g, s.measure(), Map.of(), BuildAdvice.NOW)) return false;
-                Game.BuildQuote quote = s.building().equals(ConstructionControl.PAVE_FROM + ", paved")
-                        ? g.quotePave(1) : g.quoteBuild(t, 1);
                 double points = t.getConstructionPoints() + quote.prepPoints + quote.worksPoints
                         + quote.bridgePoints + quote.deepWaterPoints;
                 double output = g.getBuildingOutputAtEveryPost();
@@ -746,6 +745,7 @@ public class AutoBuildCheck {
                     if (due == null) continue;
                     double before = Double.POSITIVE_INFINITY, after = Double.POSITIVE_INFINITY;
                     for (BuildingsTemplate site : BuildAdvice.onSite(g, current).keySet()) {
+                        if (current.kind() == BuildAdvice.Kind.HIGHWAYS && !current.serves(site)) continue;
                         double old = g.getBuildingManager().siteUnitMonths(site, 1, output);
                         double proposed = g.getBuildingManager().siteUnitMonthsAfter(site, 1, output, t, 1, points);
                         if (Double.isFinite(old)) before = Math.min(before, old);

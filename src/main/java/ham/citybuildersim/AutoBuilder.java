@@ -1359,7 +1359,8 @@ public final class AutoBuilder {
             }
             double before = Double.POSITIVE_INFINITY, after = Double.POSITIVE_INFINITY;
             for (Map.Entry<BuildingsTemplate, Integer> site : BuildAdvice.onSite(game, current).entrySet()) {
-                if (site.getValue() <= 0) continue;
+                if (site.getValue() <= 0 || current.kind() == BuildAdvice.Kind.HIGHWAYS
+                        && !current.serves(site.getKey())) continue;
                 double old = manager.siteUnitMonths(site.getKey(), 1, output);
                 double proposed = manager.siteUnitMonthsAfter(site.getKey(), 1, output, additional, count, points);
                 if (Double.isFinite(old)) before = Math.min(before, old);

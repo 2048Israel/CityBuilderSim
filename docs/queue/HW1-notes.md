@@ -1,10 +1,10 @@
-# HW1 revision 4 in progress
+# HW1 revision 5 in progress
 
-REV-HW1-4 requires three additional repairs before final verification.
+REV-HW1-5 requires three guard repairs before final verification.
 The earlier full default and causal results identify model 3b252292.
-The pick started at 09:54 and ensemble HW1-rev3-final are incomplete
-and invalidated. The ship file remains provisional. A new final pick,
-ensemble and kept dry run follow the mends.
+The incomplete rev3 and rev4 picks, defaults and ensembles are void.
+The ship file remains provisional. A new final pick, default, ensemble
+and kept dry run follow the mends.
 
 # HW1 revision 3 verification, superseded
 
@@ -2560,3 +2560,65 @@ rule makes the earlier-wind actual-order assertion fail. Omitting pending
 electrical draw is tested separately on the mill fixture. Logs are
 target/checks/hw1-rev4-control-forecast-highway.log, -wind.log and -mill.log.
 These are three isolated forecasting laws with hard actual orders.
+
+## REV-HW1-5, the prospective queue's priority and highway scope
+
+The urgent 20261114-114614-461-orchestrator-8655 review accepts
+REV-HW1-4 mends 1, 2 and 5. It finds three guard faults. The pick
+on 31fa4ee6, default on the rev4 snapshot and HW1-rev4-final ensemble
+were stopped and invalidated. The exact owned process roots were
+43696 for the pick, 16040 for the default and 23164 for the ensemble's
+xargs. Their identities and start times were checked before ending
+their trees, followed by the ensemble's exact-path own remnants.
+
+★ The prospective construction quote now evaluates builders-first
+starvation on the complete proposed queue. It applies the existing
+staffability and BACKLOG_MONTHS_BEFORE_EXPANDING threshold to each
+depot's full pending points and prospective crew share. The first-unit
+progress substitution happens after that group is chosen. A reserve
+can therefore promote an existing depot, and the guard prices the
+new priority before allowing the reserve.
+
+★ Highway completion minima now apply the same highway-only filter
+as the saved BuildAdvice.firstCompletion quote. Streets and transit
+remain in the shared road what-if map, and cannot stand in for an
+actual pending highway's completion. The hard hold-reason reader
+uses the same highway scope.
+
+AutoBuildCheck resolves the paving hold's named operation to
+ConstructionControl.PAVE_TO before checking for a missing template.
+It uses the actual pave quote for the construction-output condition.
+The BUILDERS law and all its hard assertions remain.
+
+WorksFinanceCheck adds three caused fixtures. A physically served
+street reserve independently pushes a staffable pending depot over
+the model's priority threshold while ordinary sharing would keep
+unserved care inside its saved due. The real automatic pass must
+trim it and preserve care. Placing the remaining original reserve
+after that assertion proves the depot is actually promoted, with
+the prospective quote equal to the changed queue.
+
+The highway fixture has both an early street and a later highway in
+the shared pending map. One reserve wind keeps the street inside
+the due but postpones the actual highway beyond it. Current power
+is physically served, the pending highway covers current unserved
+through traffic, and the actual reserve order must be held.
+
+The paving fixture borrows RoadCheck's real busy-gravel city. It
+supplies unrelated operating essentials and quotes a genuine paving
+reserve on physically served streets. A pending care work is due in
+one month. Even one paving postpones it. A retained real paving ask
+goes through the automatic reoffer path, records a BUILDERS hold,
+and must pass the existing hard hold-reason reader. Earlier attempts
+using an oversized low-use gravel stock or zero-output ask did not
+cause that complete premise. They were discarded, preserving the
+actual positive-output promise-hold premise and law.
+
+The kept focused promotion, highway and paving checks pass, as do
+the original four prospective priority modes and full/partial
+promise checks. Logs are target/checks/hw1-rev5-focus-promote.log,
+-highway.log, -paving7.log and -old.log. The three omission controls
+are target/checks/hw1-rev5-control-promote.log, -highway.log and
+-paving.log. Each keeps every fixture premise and must fail its
+mended hard assertion. The source snapshot used for the controls is
+target/hw1-sendback1/rev5-model-classes.
