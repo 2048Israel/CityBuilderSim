@@ -3,11 +3,18 @@
 Built from main e5642145 (SX1, 0.9.101), on batch/BF1. HW1's named
 files are kept out of this batch.
 
-Readiness remains provisional while the reviewed model completes its
-fresh-clone gate. Its final ensemble passes both hard criteria. All five review findings have causal
-fixtures and mends; the last economic change is 85fb890a. Its hands-off
-count is 1/24 failures, against 5/24 on current SX1 (LD2's historical 8/24),
-with all 2,880 monthly MoneyAudits and bank equity bridges closed.
+The reviewed model passes the fresh-clone dry run: gate exit 0, full
+suite exit 3, 189/194 pass and five known-red harnesses. KeptCheck finishes
+all sections without timeout. The final ensemble passes M1 and F1, 10/10
+hard criteria, and scores 21/26 against SX1's 24/26; the three changed
+informational verdicts are recorded below.
+
+All five review findings have causal fixtures and mends; the last economic
+change is 85fb890a. The hands-off count is 1/24 failures, against 5/24 on
+current SX1 (LD2's historical 8/24), with all 2,880 monthly MoneyAudits and
+bank equity bridges closed. The remaining seed 14 failure is explained
+Manufacturing/Industry/Freight credit and mark loss, with no Wood Products
+debt or loss at its bank failure; its trace is retained below.
 
 The earlier readiness of 502afa0b was withdrawn. Results on 272bef8f and
 its ensemble below are superseded history. Later review and verification
@@ -663,3 +670,32 @@ target/ensemble/BF1-R5-d1eaff/{snapshot.txt,score.md,baseline.md}.
 The 15:16 orchestrator instruction serializes the two builders' fresh
 dry runs. At ensemble completion BF1 sent 'BF1 dry run?' and waits for
 the go before launching. Main fetched here is still e5642145.
+
+
+## Kept fresh-clone gate and readiness
+
+The orchestrator gave the exclusive dry-run go at 15:31 on main e5642145.
+The fresh launcher completed at 16:06:48 with exit 0. Its full suite has
+194 harnesses in 1,933 s: 189 pass, five known-red only; the wrapper exits
+3 and the complete stage takes 2,011 s. The known harnesses are MapCheck,
+PlanCheck, KeptCheck, DeathRecordCheck and LongPlaytest. KeptCheck takes
+1,041 s, completes all sections including 100, and has exactly the two
+BF1-K UI findings; no timeout. LongPlaytest's no-FAIL exit is the recorded
+CL6 line. No new red or unnamed line remains. There are 15 soft timing
+readings and seven observed path readings; Stale is 0 firm, 185 soft.
+
+Kept run directory:
+C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-BF1/target/bf1-gate-reviewed
+
+- Branch checked: 07650f59c869fd304753a6f2ac1e4ac234cceb59.
+- Main checked: e56421457c98e0c5d115ebdbd9e701dcdd7a4fc6.
+- Evidence: ship.log, checks/suite.txt, checks/reds.txt, checks.complete,
+  checks.sha256 and exit. The complete SHA-256 manifest verifies, exit 0;
+  verification output is target/checks/bf1-reviewed-seal.txt.
+- The gate's own BankFailureCheck repeats 1/24, 2,880 audits, 210 pellet
+  sale months and 476 splits/consolidations, all assertions green.
+
+After this kept run only these notes and BF1-ship.md advance. The ship
+file names the retained run and drops its provisional marker last.
+No HW1-protected file, version constant, main queue, changelog or gate
+record is edited on this branch. Publication remains the orchestrator's.
