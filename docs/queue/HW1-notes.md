@@ -2220,3 +2220,32 @@ The first omitted-mend control attempt overlapped Maven clearing
 target/classes. A missing-class failure invalidated that attempt. Controls
 are rerun against the immutable rev3-model-classes snapshot after compile.
 No missing-class exit is counted as a causal regression result.
+
+### REV-HW1-3 causal verification passed
+
+Every control below exits 1 with all fixture premises passing. The kept
+model exits 0 on each same section. Logs are under target/checks.
+
+| Omitted mend | Hard failure | Control log |
+|---|---|---|
+| Ask-aware availability | Higher-loss order missing and lower reservation retained | hw1-rev3-control-reservation.log |
+| Actual parcel/vault cash | Financing differs from the actual purchase amount | hw1-rev3-control-parcel.log |
+| Remaining maturity | Initial financing includes coupons past maturity | hw1-rev3-control-remaining.log |
+| Later capped quotes | Complete-plan value differs from independent cash flows | hw1-rev3-control-later.log |
+| Existing gravel wear | Existing-stock repair change omitted | hw1-rev3-control-wear.log |
+| Saved funding reason | Actual loaded card loses the reason | hw1-rev3-control-reload.log |
+| Clearing funding reason off | Re-enabling before a pass revives a stale reason | hw1-rev3-control-off.log |
+| Independent oracle | Deliberately wrong initial capital fails exact value and least-plan laws | hw1-rev3-control-oracle.log |
+
+The corresponding kept logs are hw1-rev3-kept-<name>.log. The deliberate
+one-unit capital error passes the old factory-against-factory helper,
+exit 0 in hw1-rev3-control-self.log, and fails the independent oracle.
+This specifically demonstrates the repaired oracle's ability to detect
+a production arithmetic error.
+
+The affected-harness run exits 0 in
+target/checks/hw1-rev3-named-final.log. Its eight harnesses all pass,
+with zero firm Stale findings and 186 soft. The production model is
+3b252292. Its new full default run is in progress over an immutable
+class snapshot, with a read-only monthly financial hook. The earlier
+e142 default and incomplete pick remain superseded.

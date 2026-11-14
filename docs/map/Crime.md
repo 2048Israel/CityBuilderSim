@@ -66,7 +66,7 @@
 
 **Uses:** [PopulationCohorts](PopulationCohorts.md) (1), [AgeBand](AgeBand.md) (1)
 
-**Used by (20):** [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CityMeasures](CityMeasures.md), [CityNeeds](CityNeeds.md), [CrimeCheck](CrimeCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [PeopleScreen](PeopleScreen.md), [SafetyType](SafetyType.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [Unemployment](Unemployment.md), [WorksValue](WorksValue.md)
+**Used by (21):** [AdviceValueOracle](AdviceValueOracle.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [CityMeasures](CityMeasures.md), [CityNeeds](CityNeeds.md), [CrimeCheck](CrimeCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Game](Game.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [Offending](Offending.md), [PeopleScreen](PeopleScreen.md), [SafetyType](SafetyType.md), [ScaleCheck](ScaleCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [Unemployment](Unemployment.md), [WorksValue](WorksValue.md)
 
 ## Sections
 

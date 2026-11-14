@@ -66,6 +66,8 @@
 
 **Uses:** [Auction](Auction.md) (130), [Game](Game.md) (55), [AutoBuilder](AutoBuilder.md) (50), [PriceLevel](PriceLevel.md) (31), [LongPlaytest](LongPlaytest.md) (25), [DebtQuote](DebtQuote.md) (21), [CapSetting](CapSetting.md) (13), [BuildAdvice](BuildAdvice.md) (12), [OutwardInvestment](OutwardInvestment.md) (11), [Debt](Debt.md) (11), [LongTermBond](LongTermBond.md) (8), [TimeSkipReport](TimeSkipReport.md) (8), [CapitalFlows](CapitalFlows.md) (7), [HouseholdBalance](HouseholdBalance.md) (6), [ChildcareCheck](ChildcareCheck.md) (5), [DebtManager](DebtManager.md) (5), [Observation](Observation.md) (5), [MediumTermBond](MediumTermBond.md) (5), [Notice](Notice.md) (5), [CityNeeds](CityNeeds.md) (5), [YieldCurve](YieldCurve.md) (4), [GameFiles](GameFiles.md) (4), [Founding](Founding.md) (4), [ShortTermTBill](ShortTermTBill.md) (4), [Rollover](Rollover.md) (4), [Bank](Bank.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [MoneyAudit](MoneyAudit.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (2), [AuctionTally](AuctionTally.md) (2)... and 3 more
 
+**Used by (1):** [WorksFinanceCheck](WorksFinanceCheck.md)
+
 ## Sections
 
 | line | section |
