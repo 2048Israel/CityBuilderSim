@@ -299,15 +299,18 @@ final class FundScreen {
     /** ...signed: "+14.4%". */
     static String signedPct(double share) {
         if (!Double.isFinite(share)) return "—";
-        return Formats.INSTANCE.change(share, 0, "%+,.1f%%").replace('-', '−');
+        return Formats.INSTANCE.change(share == 0 ? 0 : share, 0, "%+,.1f%%").replace('-', '−');
     }
 
     /** A move in ink with its arrow: "▲ +4.3%", or "unchanged" when it rounds to none - never a verdict's colour. */
-    static String move(double share) {
+    static String move(double share) { return move(share, 0); }
+
+    /** An observed move over its actual span; the common formatter chooses its readable unit. */
+    static String move(double share, int months) {
         if (!Double.isFinite(share)) return null;
         if (Math.abs(share) < 0.0005) return "unchanged";
         String arrow = share > 0 ? "▲ " : share < 0 ? "▼ " : "";
-        return arrow + signedPct(share);
+        return arrow + Formats.INSTANCE.change(share, months, "%+,.1f%%").replace('-', '−');
     }
 
     /** The time a bond has left: "3y 5m left", "5 months left", "a month left", "falls due this month". */
@@ -1682,9 +1685,7 @@ final class FundScreen {
         while (i0 < i1 && !(series[i0] > 0)) i0++;
         double a = series[i0], b = series[i1];
         if (!(a > 0) || !(b > 0) || i1 <= i0) return null;
-        double gain = b / a - 1;
-        String m = Math.abs(gain) <= Formats.LARGE_PERCENT ? move(gain)
-                : (gain > 0 ? "▲ " : "▼ ") + Formats.INSTANCE.change(gain, axis.get(i1) - axis.get(i0), "%+,.1f%%");
+        String m = move(b / a - 1, axis.get(i1) - axis.get(i0));
         return m == null ? null : m + (wholeRange(window) ? " over " + rangeName(window.range())
                 : " from " + month(axis.get(i0)) + " to " + month(axis.get(i1)));
     }

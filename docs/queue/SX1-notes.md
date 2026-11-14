@@ -21,8 +21,15 @@
   keep their existing precision, grouping and signs.
 - No save schema changes: the existing split factor, holdings and ledger
   already save every state changed here. No migration or format bump needed.
-- HW1's source and fixture files remain untouched. Game has only the three-line
-  wage getter in its exchange adapter; no month-order changes.
+- ★ The only HW1 overlap is two one-line helper bodies in ui/BuildScreen:
+  pct and pct1 delegate to Formats. Infrastructure and Services delegate to
+  that helper too, so leaving it would leave three screens outside the common
+  rule. No builder planning, advice, cards or fixtures changed; the orchestrator
+  was notified over cbs-bus before the hunk. Game has only the three-line wage
+  getter in its exchange adapter; no month-order changes.
+- The same formatter also covers the debt closing gain, fiscal ratios, sector
+  margins, people ratios, policy/FX changes and GDP growth. The screen helpers
+  keep their old precision; none owns a separate size threshold.
 
 ## Checks so far
 
@@ -41,3 +48,9 @@
 - FormatsCheck checks unchanged percentages through the dial, the closed-form
   yearly rate, short spans, ratios versus gains, named trillions, extreme
   values, missing values and losses beyond cost.
+
+- Visual QA: rendered the actual FundScreen.windowMove and Pieces.pnl outputs
+  into a 612-pixel JavaFX card and inspected target/sx1-preview/readable-percent.png.
+  The long chart reads about 5.0% a year; both large position returns fit as
+  multiples; the ordinary +12.3% gain keeps its former form. The target-only
+  preview also asserts the chart uses a yearly rate and the positions use no %.

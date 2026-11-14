@@ -960,7 +960,7 @@ final class FinancesScreen {
         if (nothing) return new Gain(d(0), "", Palette.TEXT_BODY);
         double p = Math.abs(share) * 100;
         String pct = !Double.isFinite(share) || p < 0.005 ? ""
-                : String.format(p >= 0.05 ? "%s%,.1f%%" : "%s%.2f%%", share < 0 ? "−" : "+", p);
+                : Formats.INSTANCE.change(share, 0, p >= 0.05 ? "%+,.1f%%" : "%+.2f%%").replace('-', '−');
         return new Gain(signedD(gain), pct, gain > 0 ? Palette.GOOD : Palette.BAD);
     }
 
