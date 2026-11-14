@@ -1128,3 +1128,25 @@ immutable class snapshots.
 
 GD4 arrived on main at ef5cfe58, 0.9.100, at 03:18.
 The implementation is being merged before the final pick and ensemble.
+
+### Combined-model verification starts
+
+Merged origin/main ef5cfe58 as 9c822096. Only generated indexes conflicted.
+They were regenerated from the combined source. Both EssentialWorksCheck
+and GoldMiningCheck remain registered. The merged --fast run is exit 0,
+target/checks/hw1-sb1-merged-fast.log.
+
+Transferred GD4's exact KeptCheck Government part containing 40 of 384
+from KS1-UI to KS1-Gov, with its recorded cause and the same-part ship row.
+The older 47-of-378 path is assigned to that same queued fix. Other
+KS1-UI faults keep their own entries.
+
+The final interim-power fixture retains two distinct hard conditions in
+the same city. Constant physical demand is short and pending coal covers
+the whole horizon, so any positive wind benefit comes before coal opens.
+Then controlled growth starts from current operating coverage, requiring
+an early actual wind order and its earlier saved deadline. The current
+model passes and the old model fails both the constant-demand benefit
+and early-order laws. Logs are hw1-sb1-final-interim.log and
+hw1-sb1-final-interim-before.log. The full pick now runs on this combined
+model. The once-only ensemble will follow the completed pick.

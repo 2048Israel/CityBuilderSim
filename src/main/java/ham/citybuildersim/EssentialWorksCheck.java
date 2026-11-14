@@ -368,24 +368,31 @@ public final class EssentialWorksCheck {
         var people = g.getHistorySave().getPopulation();
         var months = g.getHistorySave().getMonth();
         people.clear(); months.clear();
+        g.getBusinessInvestment().restorePopulationHistory(java.util.List.of());
+        UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
+        utilities.setWattsConsumption(utilities.getProduction() * 1.1);
+        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, power);
+        double first = Math.ceil(g.onSiteMonths(coal));
+        double windLead = g.quoteBuild(wind, 1).months;
+        check("fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind",
+                !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
+                        && BuildAdvice.maintained(g, power, site, BuildAdvice.NOW)
+                        && Double.isFinite(first) && windLead < first);
+        WorksValue.Value value = WorksValue.of(g, power, site, wind, 1, g.getLandManager().getAvailableSqFt());
+        check("wind prevents positive physical output loss before the pending coal opens", value.used() > 0 && value.avoided() > 0);
         long pop = g.getPopulationManager().getPopulation();
         for (int i = 0; i <= 12; i++) {
             people.add(Math.round(pop * (.8 + .2 * i / 12)));
             months.add(g.getMonth() - 12 + i);
         }
         g.getBusinessInvestment().restorePopulationHistory(people);
-        UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * .8);
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, power);
-        double first = Math.ceil(g.onSiteMonths(coal));
-        double windLead = g.quoteBuild(wind, 1).months;
         check("fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner",
                 BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
                         && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.opening(g, windLead, ab.getSlack()))
                         && BuildAdvice.maintained(g, power, site, BuildAdvice.NOW)
                         && Double.isFinite(first) && windLead < first);
-        WorksValue.Value value = WorksValue.of(g, power, site, wind, 1, g.getLandManager().getAvailableSqFt());
-        check("wind prevents positive physical output loss before the pending coal opens", value.used() > 0 && value.avoided() > 0);
+
         ab.setOn(true, null);
         quietly(() -> ab.pass(g));
         AutoBuilder.Step order = step(g, power);
