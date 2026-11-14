@@ -170,6 +170,26 @@ public final class BankFailureCheck {
                 forBonds > 0 && forBonds < afterBond && laterBuy > 0);
         check("a later bond purchase cannot reuse a pending loan's capital",
                 laterBuy <= forBonds + MoneyAudit.tolerance(0, before));
+        Bank settledBank = new Bank();
+        settledBank.refresh(1, deposits, 0, deposits, 0, 0);
+        settledBank.setCash(deposits * .5);
+        BusinessDebtManager settling = new BusinessDebtManager();
+        settling.setAssets(Sectors.MANUFACTURING, deposits * 100);
+        settling.setProjectBudget(settledBank);
+        double openingRoom = settling.projectRoom(), loan = openingRoom * .25;
+        settling.issueProjectLoan(Sectors.MANUFACTURING, loan, 1);
+        settledBank.lend(loan);
+        settledBank.refresh(1, deposits, 0, deposits + loan, 0, 0);
+        double beforeSettle = settling.projectRoom();
+        settling.projectLoansSettled();
+        double settledRoom = settling.projectRoom();
+        check("fixture: the settled loan leaves positive capital room on the bank's books",
+                loan > 0 && settledBank.projectHeadroom() > 0);
+        check("settlement does not subtract the same loans from the live book twice",
+                settledRoom > beforeSettle && settledRoom <= settledBank.projectHeadroom()
+                    + MoneyAudit.tolerance(0, openingRoom));
+        close("new debt after settlement still consumes room once",
+                issueAfterSettlement(settling, settledRoom, 1), settledRoom * .75);
         g.getBank().writeOffSector(sector, g.getBank().equity() + g.getBank().getSectorAllowance(sector));
         close("uncovered defaults reach the growth desk before the bank's month-end settle", g.getBank().projectHeadroom(), 0);
 
@@ -185,6 +205,11 @@ public final class BankFailureCheck {
         check("the leverage rule still rations that same insured mortgage",
                 !insured.canFundMortgage(Sectors.REAL_ESTATE, shortfall, request)
                 && BusinessDebtManager.MORTGAGE_CAPITAL.equals(insured.getMortgageRefusal()));
+    }
+
+    static double issueAfterSettlement(BusinessDebtManager claims, double room, int month) {
+        claims.issueProjectLoan(Sectors.MANUFACTURING, room * .25, month);
+        return claims.projectRoom();
     }
 
     static void shares() {

@@ -13538,6 +13538,7 @@ public class Game {
         bank.takeBondCoupons(bondMarket.getCouponsDueToBank());
 
         refreshBank();
+        lender.projectLoansSettled();
         // ...and what it sets aside against it, now every loan and write-off
         // of the month is on the books (0.7.8). See provideForLosses().
         provideForLosses();

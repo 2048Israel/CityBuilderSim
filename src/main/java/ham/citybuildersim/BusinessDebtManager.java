@@ -807,6 +807,7 @@ public class BusinessDebtManager {
         shortfallPlans.clear();
         lentThisMonth = 0;
         repaidThisMonth = 0;
+        projectSettledLent = projectSettledRepaid = 0;
         lentBySector.clear();
         repaidBySector.clear();
         feesThisMonth = 0;
@@ -2477,10 +2478,11 @@ public class BusinessDebtManager {
     /** The bank's uninsured project allowance, shared this turn; insured mortgages keep their own rule (BF1). */
     private double projectBudget = Double.POSITIVE_INFINITY, projectBudgetLent;
     private Bank projectBank;
+    private double projectSettledLent, projectSettledRepaid;
 
     /** Struck before lending, and again after defaults, net of lending still awaiting the bank's settle. */
     public void setProjectBudget(double room) {
-        projectBudget = Math.max(0, room - Math.max(0, lentThisMonth - repaidThisMonth));
+        projectBudget = Math.max(0, room - pendingProjectLoans());
         projectBudgetLent = lentThisMonth;
     }
 
@@ -2493,10 +2495,19 @@ public class BusinessDebtManager {
     /** New borrowing and claims already on the bank's books consume one allowance. */
     public double projectRoom() {
         double room = projectBudget - Math.max(0, lentThisMonth - projectBudgetLent);
-        if (projectBank != null) room = Math.min(room, projectBank.projectHeadroom()
-                - Math.max(0, lentThisMonth - repaidThisMonth));
+        if (projectBank != null) room = Math.min(room, projectBank.projectHeadroom() - pendingProjectLoans());
         return Math.max(0, room);
     }
+    private double pendingProjectLoans() {
+        return Math.max(0, (lentThisMonth - projectSettledLent) - (repaidThisMonth - projectSettledRepaid));
+    }
+
+    /** The bank has refreshed its loan book: these claims are now counted there, not pending too. */
+    public void projectLoansSettled() {
+        projectSettledLent = lentThisMonth;
+        projectSettledRepaid = repaidThisMonth;
+    }
+
     private final Map<String, Double> principalAtRule = new LinkedHashMap<>();
     /** Sectors whose project the capital rule refused this month, so the investor can say so. */
     private final java.util.Set<String> refusedForCapital = new java.util.HashSet<>();
@@ -3580,6 +3591,7 @@ public class BusinessDebtManager {
         projectBudget = Double.POSITIVE_INFINITY;
         projectBudgetLent = 0;
         projectBank = null;
+        projectSettledLent = projectSettledRepaid = 0;
         for (String sector : SECTORS) {
             maturedPrincipal.put(sector, 0.0);
             writtenOffThisMonth.put(sector, 0.0);
@@ -3658,6 +3670,8 @@ public class BusinessDebtManager {
         repaidThisMonth *= scale;
         projectBudget *= scale;
         projectBudgetLent *= scale;
+        projectSettledLent *= scale;
+        projectSettledRepaid *= scale;
         lentBySector.replaceAll((k, v) -> v * scale);
         repaidBySector.replaceAll((k, v) -> v * scale);
         for (BusinessDebt loan : loans) {

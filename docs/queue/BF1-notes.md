@@ -384,3 +384,34 @@ order, because numerical equivalence bands overlap and are not transitive.
 ★ Both bond issue bids and secondary settlement use the same live room as
 project loans; pending loans are subtracted before their bank settle, while
 immediate bond/carry/securities claims are read from the bank's books.
+
+The Truck cause is now isolated rather than excused by the comparison.
+The f00e classes reproduce both m113 Truck lines at a 1.00459965935e-9
+pointwise relative gap with the restored comparison. Changing only
+f00e's incorrect uninsured-budget restriction on insured mortgages to
+the 7e29 exemption makes both lines pass all 120 months: worst
+1.01515966488e-11 at m94, identical to the final model. That is the
+model repair which had already removed the Truck failures; keeping the
+historical-peak comparison after it was unnecessary and wrong.
+The insured-mortgage fixture in BankFailureCheck causes zero-risk lending
+with zero uninsured room and retains the leverage refusal control.
+Logs: bf1-review-truck-f00e.txt, bf1-review-truck-insured-only.txt and
+bf1-review-truck-120.txt, all under target/checks. The isolated old
+BondMarket control also fails the added reverse pending-loan/bond law
+(bf1-review-before-bond-bid.txt), while the final fixture passes.
+The complete restored-law PriceLevelCheck exits 0. Its existing nudge
+guard reaches 60/120/116/120 months; the direct Truck control above checks
+all 120 played months without that cutoff. No comparison tolerance,
+quantity floor, nominal grid rule or count equality is widened.
+
+★ The live allowance stops treating loans as pending immediately after
+Game refreshes the bank's settled loan book. Otherwise secondary bond
+orders would subtract loans already in that book a second time.
+A separate fixture leaves positive room after a loan settles and proves
+that it is counted once, with later credit still charged once. A no-op
+settlement mutation fails that assertion (bf1-review-settled-control.txt);
+the final fixture passes (bf1-review-settled-fixture.txt). Its counters
+reset with the audit month and scale with redenomination; they are
+within-turn state. The e632 pick was stopped at verified BF1 AllChecks
+parent PID 2972 before this model correction; it supplies no release
+verdict. No review-run ensemble had started.
