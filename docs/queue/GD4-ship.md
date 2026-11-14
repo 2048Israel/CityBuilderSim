@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GD4-kxrndQvc -->
 ## changelog
 ### {next} — GD4, Gold mines by geology — 2026-11-14, ready, see docs/queue/GD4-notes.md
