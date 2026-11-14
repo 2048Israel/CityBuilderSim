@@ -107,6 +107,9 @@ public final class GoldMiningCheck {
         assertTrue("shield gold is richer than basin placer gold", shield > basin);
         Game g = town("goldminingcheck-grade");
         LandManager land = g.getLandManager();
+        GoldMining mine = g.getSectors().goldMining();
+        BuildingsTemplate mill = g.getBuildingManager().getTemplate(GoldMining.MINE_AND_MILL);
+        double richProfit = mine.estimatedMonthlyProfit(mill, g.getBusinessInvestment());
         double throughput = 1000, first = land.goldOutput(throughput);
         double before = land.getExtracted(Resource.GOLD);
         land.extract(Resource.GOLD, land.getRemaining(Resource.GOLD) * .5);
@@ -115,6 +118,10 @@ public final class GoldMiningCheck {
         double pure = land.getExtracted(Resource.GOLD);
         land.goldOutput(throughput);
         close("a production forecast leaves saved depletion alone", land.getExtracted(Resource.GOLD), pure);
+        land.extract(Resource.GOLD, land.getRemaining(Resource.GOLD) * .98);
+        double poorProfit = mine.estimatedMonthlyProfit(mill, g.getBusinessInvestment());
+        assertTrue("the rich 1900 mine pays while the same mill on worked-down grade loses",
+                richProfit > 0 && poorProfit < 0);
         land.extract(Resource.GOLD, land.getRemaining(Resource.GOLD));
         close("a worked-out field recovers nothing", land.goldOutput(throughput), 0);
         assertTrue("depletion advanced from the fixture's initial state", pure > before);

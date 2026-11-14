@@ -70,11 +70,10 @@ public final class GoldMining extends ExtractionSector {
         double profit = super.estimatedMonthlyProfit(t, plans);
         if (t == null || game == null || markets == null) return profit;
         double reference = t.makes(Good.GOLD) * BusinessInvestment.operatingRateOf(getOperatingRate());
-        double price = markets.get(Good.GOLD).netExportPrice();
-        if (game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD) {
-            price = game.getForeignAccounts().getMintPrice() / 1000;
-        }
-        return profit + (game.getLandManager().goldOutput(reference) - reference) * price;
+        double abroad = markets.get(Good.GOLD).netExportPrice();
+        double price = game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD
+                ? game.getForeignAccounts().getMintPrice() / 1000 : abroad;
+        return profit + game.getLandManager().goldOutput(reference) * price - reference * abroad;
     }
 
     /** A mint purchase is a domestic receipt funded by new base money. */

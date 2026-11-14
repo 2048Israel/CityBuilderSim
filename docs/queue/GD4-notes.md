@@ -93,3 +93,8 @@ The final model will receive a fresh 80-run ensemble.
 ★ The mint's accepted payment also follows currency redenomination, while its
 fine ounces keep their unit. The sector's standard reset hook clears an old
 offer. Both paths have dedicated assertions beside the saved-offer check.
+
+The gold plan values the entire recovered offer at the mint price under Gold,
+including the saved dealer-wedge difference on the reference output. A rich
+1900 field's projected return and the same mill's loss at a worked-down grade
+are checked directly against the planner.
