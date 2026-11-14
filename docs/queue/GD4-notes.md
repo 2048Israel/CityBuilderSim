@@ -72,7 +72,7 @@ weights are estimates drawn from these settings. [USGS Bulletin 1693](https://pu
 - EarthTerrainCheck's full-file gold normalization passes at 0.60963879,
   against the stored 0.6096. Its timing result appears below.
 - The final 80-run ensemble passes all M1/F1 criteria, with the score below.
-  The completed full pick is recorded below. Retained gate provenance follows.
+  The completed full pick and retained gate provenance are recorded below.
 
 The first full pick found Gold's missing far-map symbol in MapCheck's existing
 resource-mark assertion. DepositMarks now supplies Au. The same run found a
@@ -245,9 +245,8 @@ superseded that order at 01:30 (mail
 GD4 now gates first on unchanged main 97eaa608, so the completed ensemble
 applies to the model being gated.
 
-Finish the current full pick, push its records and generated indexes,
-and run the versioned dry run. Record the retained directory and both commit
-identities before readiness. Keep the narrow Government Overview row under
+That order was followed. The full pick and versioned dry run are green,
+with their records below. The narrow Government Overview row is filed under
 KS1-UI. The ship file's provisional marker is removed last after the gate.
 
 ## Full-pick HELD ordering review
@@ -283,5 +282,32 @@ and the tree has no uncommitted change. The kept local summary is
 target/checks/gd4-ready-pick.txt, with suite.txt, used-reds.txt and per-harness
 logs beside it. No Earth or world data file was baked or replaced.
 
-Main remains 97eaa608246941c14d40df13386154f5f0bed89f. The next step is the
-fresh-clone versioned dry run from this pushed provisional branch.
+The fresh-clone versioned dry run below used main
+97eaa608246941c14d40df13386154f5f0bed89f and the pushed provisional branch.
+
+## Retained versioned dry run
+
+sh tools/gate.sh GD4 --dry-run completed at 2026-11-14 03:12 with exit 0.
+The merge's suite exits 3, with 196 harnesses run in 1889 s, 193 passing and
+only the three recorded known-red harnesses. The complete check stage takes
+1960 s. There are zero new red lines, ten soft timing assertions and seven
+observations. Stale reports zero firm findings and 185 soft. BuildingDataCheck
+and GoldMiningCheck pass in the fresh clone. The publisher selected 0.9.100
+for its simulated versioned merge.
+
+The retained launcher directory is
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-GD4-kxrndQvc
+(Git Bash /tmp/cbs-gate-GD4-kxrndQvc). Its two checked identities are
+branch e23956abfcb8ee03f711d592f6f5486a791f1214 and
+main 97eaa608246941c14d40df13386154f5f0bed89f. ship.log, checks/suite.txt,
+checks/used-reds.txt and each harness log are retained there. checks.complete
+and checks.sha256 seal the run for reuse. target/checks/gd4-gate.txt holds
+the local launcher summary. The ship file names this directory for the gate.
+
+The dry run's generated merge title inherits id 148 from main's QUEUE row.
+The actual permanent building id is 152, as the orchestrator approved and
+the catalogue, dedicated checks and changelog state. The publisher can use
+that actual id in its merge title.
+
+After this retained run, only GD4's notes and ship record advance. The final
+ship-record commit drops the provisional marker and is pushed last.
