@@ -17762,63 +17762,63 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L3440 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3495 AND EVERYTHING THAT IS A PURCHASE.**
 - **L3841 AND THE BEST OF THEM WINS.**
-- **L6413 founding: a few months at a time, by hand**
-- **L6510 then the real rhythm**
-- **L6643 the report**
-- **L6666 ==**
-- **L6763 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L8044 what the advisor tried, and what happened**
-- **L8050 findings**
-- **L8068 HA1 money audit fixtures**
-- **L8515 1. a city that prospers**
-  - L8537 a founding city conserves money to within 0.01% of what moved
-- **L8556 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
-  - L8577 an industrial city conserves money to within 0.01% of what moved
-  - L8579 ...and it really did carry passengers, so the fare was really charged
-  - L8596 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
-- **L8605 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
-- **L8615 land bought out of the vault: nothing moves the audit cannot see**
-  - L8625 fixture: the vault paid for a parcel and the treasury's cash did not move
-  - L8629 a city that paid for land out of the vault conserves money
-  - L8631 ...and nothing moved a pool after any month's audit
-- **L8634 2. a city under stress**
-  - L8661 a stressed city conserves money to within 0.01% of what moved
-  - L8692 fixture: retail went under whole, and was restructured
-  - L8694 a restructure moves no cash the audit cannot see
-- **L8697 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
-- **L8715 a city paying over the world: the money that arrives is audited**
-  - L8736 fixture: the rate actually brought money in
-  - L8738 ...and the audit saw it cross the border
-  - L8741 a city conserves money with hot money flowing
-  - L8744 ...and nothing moved after the audit struck
-- **L8746 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
-- **L8760 a works making its own power and buying consumables abroad: still nothing leaks**
-  - L8786 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
-  - L8789 ...and bought consumables abroad, inside their imports
-  - L8791 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
-  - L8793 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
-- **L8797 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
-- **L8809 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
-  - L8845 fixture: the yard bought old steel from the households and from a sector
-  - L8847 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
-  - L8849 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L8853 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
-- **L8857 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
-- **L8868 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
-  - L8897 fixture: the refinery bought old copper from the households and from a sector
-  - L8899 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
-  - L8901 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
-- **L8906 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
-- **L8935 the city's paper on its books: the amortisation is no money, and the audit closes**
-  - L8961 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
-  - L9007 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
-  - L9008 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
-  - L9010 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
-  - L9012 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
-  - L9014 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
-  - L9016 ...and nothing moved a pool after any month's audit struck
-  - L9017 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
-  - L9019 ...and it is the cash coupons the budget calls its cash interest
+- **L6411 founding: a few months at a time, by hand**
+- **L6508 then the real rhythm**
+- **L6641 the report**
+- **L6664 ==**
+- **L6761 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L8042 what the advisor tried, and what happened**
+- **L8048 findings**
+- **L8066 HA1 money audit fixtures**
+- **L8513 1. a city that prospers**
+  - L8535 a founding city conserves money to within 0.01% of what moved
+- **L8554 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
+  - L8575 an industrial city conserves money to within 0.01% of what moved
+  - L8577 ...and it really did carry passengers, so the fare was really charged
+  - L8594 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
+- **L8603 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
+- **L8613 land bought out of the vault: nothing moves the audit cannot see**
+  - L8623 fixture: the vault paid for a parcel and the treasury's cash did not move
+  - L8627 a city that paid for land out of the vault conserves money
+  - L8629 ...and nothing moved a pool after any month's audit
+- **L8632 2. a city under stress**
+  - L8659 a stressed city conserves money to within 0.01% of what moved
+  - L8690 fixture: retail went under whole, and was restructured
+  - L8692 a restructure moves no cash the audit cannot see
+- **L8695 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
+- **L8713 a city paying over the world: the money that arrives is audited**
+  - L8734 fixture: the rate actually brought money in
+  - L8736 ...and the audit saw it cross the border
+  - L8739 a city conserves money with hot money flowing
+  - L8742 ...and nothing moved after the audit struck
+- **L8744 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
+- **L8758 a works making its own power and buying consumables abroad: still nothing leaks**
+  - L8784 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
+  - L8787 ...and bought consumables abroad, inside their imports
+  - L8789 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
+  - L8791 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
+- **L8795 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
+- **L8807 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
+  - L8843 fixture: the yard bought old steel from the households and from a sector
+  - L8845 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
+  - L8847 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L8851 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
+- **L8855 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
+- **L8866 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
+  - L8895 fixture: the refinery bought old copper from the households and from a sector
+  - L8897 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
+  - L8899 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
+- **L8904 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
+- **L8933 the city's paper on its books: the amortisation is no money, and the audit closes**
+  - L8959 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
+  - L9005 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
+  - L9006 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
+  - L9008 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
+  - L9010 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
+  - L9012 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
+  - L9014 ...and nothing moved a pool after any month's audit struck
+  - L9015 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
+  - L9017 ...and it is the cash coupons the budget calls its cash interest
 
 ## MainLineCheck.java - 160 labelled assertions
 
