@@ -571,8 +571,8 @@ the Bonds bounds failure but not the Partners pixel failure
 release verdict or ensemble is taken from the red ALL run.
 
 The natural copy is now printed before controlled cases: 14 interest
-decisions, all nine large Retail orders whole, five Manufacturing orders
-of one building refused. At m502, 5,677 stores cost 1,099,890 before carry
+decisions: seven large Retail orders and two one-building Manufacturing
+orders pass whole; five one-building Manufacturing orders are refused. At m502, 5,677 stores cost 1,099,890 before carry
 1.5829 against 1,551,777 cash and 12,739,571 project room. Monthly profit
 per unit is 5.956, so the whole order carries. At m508, 2,235 stores cost
 445,712 before carry 1.5394, covered by 869,342 cash even with zero new
@@ -595,3 +595,16 @@ m3169. BF1's FinancesScreen repair is not their cause. Per the 13:11
 orchestrator mail, the ship file queues BF1-K and records these unrelated
 parts. No UI source or pixel tolerance changes. BF1-kept.md records the
 causes, coordinates, frozen inputs and triangle prototype.
+
+The 4eebee8a full pick runs 194 harnesses in 2,635 s: 189 pass;
+MapCheck, PlanCheck, DeathRecordCheck and LongPlaytest are known reds.
+The sole new failure is KeptCheck's 1,740-second process deadline,
+stopping at Policy section 76, while the host also runs HW1's suite and
+five ensemble JVMs. The same 85fb economic/UI code completed KeptCheck
+in the prior full run; its two functional differences are reproduced
+with main UI and filed above. Timeout evidence is copied under
+target/bf1-pick-timeout; launcher log bf1-final-pick-4eeb.txt.
+No timeout exception is filed. The complete pick and fresh-clone gate
+still must finish before readiness. The one final-economic-model
+ensemble is run next while the host is busy; the test sequence then
+returns to the full pick and gate under lower contention.

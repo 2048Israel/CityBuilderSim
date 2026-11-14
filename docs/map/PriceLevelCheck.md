@@ -171,7 +171,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 537 | 30 | `static void comparisonBands()` | BF1: a small residual uses its flows' scale, as the nudge guard does; a real miss and a one-person miss still fail. |
+| 537 | 30 | `static void comparisonBands()` | BF1: real comparisons keep their pointwise relative law after a series falls from its peak. |
 | 569 | 13 | `static void observedTwin(Child plain, Child today, int months, String flag) throws Exception` | Compare every law up to the first same-level nudge that changes the city's path. |
 | 584 | 23 | `static int stableMonths(Child base, Child nudged, int months)` | The month before a nudge changes a live series beyond the existing comparison tolerance. |
 | 608 | 84 | `static void theTwin(Child plain, Child today, int monthsRun)` |  |

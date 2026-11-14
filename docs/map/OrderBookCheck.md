@@ -1,4 +1,4 @@
-# OrderBookCheck.java - 333 lines · 17 methods · 0 constants · harnesses
+# OrderBookCheck.java - 353 lines · 18 methods · 0 constants · harnesses
 
 `ham/citybuildersim/OrderBookCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -33,21 +33,21 @@
 > and the shares' since 0.7.12 round 2 ExchangeCheck's.
 > Every fixture causes its condition.
 
-**Uses:** [OrderBook](OrderBook.md) (115), [PriceLevel](PriceLevel.md) (1), [MoneyAudit](MoneyAudit.md) (1)
+**Uses:** [OrderBook](OrderBook.md) (126), [MoneyAudit](MoneyAudit.md) (3), [PriceLevel](PriceLevel.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 105 | 1. PRICE-TIME |
-| 170 | 2. RESTING PRICE |
-| 187 | 3. NOBODY OBLIGED |
-| 209 | 4. PARTIAL FILLS |
-| 230 | 5. NO SELF-TRADE |
-| 245 | 6. CLEARING LIMITS |
-| 266 | 7. THE RECORD |
-| 291 | 8. A CURRENCY REFORM |
-| 309 | 9. SAVE AND LOAD |
+| 106 | 1. PRICE-TIME |
+| 190 | 2. RESTING PRICE |
+| 207 | 3. NOBODY OBLIGED |
+| 229 | 4. PARTIAL FILLS |
+| 250 | 5. NO SELF-TRADE |
+| 265 | 6. CLEARING LIMITS |
+| 286 | 7. THE RECORD |
+| 311 | 8. A CURRENCY REFORM |
+| 329 | 9. SAVE AND LOAD |
 
 ## Fields (state)
 
@@ -62,7 +62,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 42 | 292 | **type** `public class OrderBookCheck` | The limit-order book (0.7.12), on its own: the rules any instrument trades by, proved on a book that knows nothing about what it trades. |
+| 42 | 312 | **type** `public class OrderBookCheck` | The limit-order book (0.7.12), on its own: the rules any instrument trades by, proved on a book that knows nothing about what it trades. |
 | 47 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 52 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 59 | 22 | **type** `static final class Ledger implements OrderBook.Clearing` | A clearing with cash and holdings per participant: each buyer pays out of its cash, each seller delivers out of its holding. |
@@ -70,60 +70,61 @@
 | 69 | 3 | `public double capacity(String who, OrderBook.Side side, double price)` _(in OrderBookCheck.Ledger)_ |  |
 | 73 | 7 | `public void settle(String buyer, String seller, double quantity, double price)` _(in OrderBookCheck.Ledger)_ |  |
 | 83 | 5 | `static Ledger rich(String...who)` | Everybody able to settle anything. |
-| 89 | 15 | `public static void main(String[] args)` |  |
+| 89 | 16 | `public static void main(String[] args)` |  |
 
-### 1. PRICE-TIME (lines 105-169)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 107 | 32 | `static void floatingPrices()` |  |
-| 140 | 29 | `static void priceTime()` |  |
-
-### 2. RESTING PRICE (lines 170-186)
+### 1. PRICE-TIME (lines 106-189)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 172 | 14 | `static void restingPrice()` |  |
+| 108 | 32 | `static void floatingPrices()` |  |
+| 141 | 18 | `static void staggeredBand()` |  |
+| 160 | 29 | `static void priceTime()` |  |
 
-### 3. NOBODY OBLIGED (lines 187-208)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 189 | 19 | `static void nobodyObliged()` |  |
-
-### 4. PARTIAL FILLS (lines 209-229)
+### 2. RESTING PRICE (lines 190-206)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 211 | 18 | `static void partialFills()` |  |
+| 192 | 14 | `static void restingPrice()` |  |
 
-### 5. NO SELF-TRADE (lines 230-244)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 232 | 12 | `static void noSelfTrade()` |  |
-
-### 6. CLEARING LIMITS (lines 245-265)
+### 3. NOBODY OBLIGED (lines 207-228)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 247 | 18 | `static void clearingLimits()` |  |
+| 209 | 19 | `static void nobodyObliged()` |  |
 
-### 7. THE RECORD (lines 266-290)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 268 | 22 | `static void theRecord()` |  |
-
-### 8. A CURRENCY REFORM (lines 291-308)
+### 4. PARTIAL FILLS (lines 229-249)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 293 | 15 | `static void currencyReform()` |  |
+| 231 | 18 | `static void partialFills()` |  |
 
-### 9. SAVE AND LOAD (lines 309-333)
+### 5. NO SELF-TRADE (lines 250-264)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 311 | 22 | `static void saveAndLoad()` |  |
+| 252 | 12 | `static void noSelfTrade()` |  |
+
+### 6. CLEARING LIMITS (lines 265-285)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 267 | 18 | `static void clearingLimits()` |  |
+
+### 7. THE RECORD (lines 286-310)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 288 | 22 | `static void theRecord()` |  |
+
+### 8. A CURRENCY REFORM (lines 311-328)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 313 | 15 | `static void currencyReform()` |  |
+
+### 9. SAVE AND LOAD (lines 329-353)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 331 | 22 | `static void saveAndLoad()` |  |
 

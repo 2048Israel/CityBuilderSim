@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**200 harness files, 23,808 labelled assertions.** AllChecks runs 200 of them.
+**200 harness files, 23,842 labelled assertions.** AllChecks runs 200 of them.
 
 ## Which harnesses read which class
 
@@ -41,7 +41,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck, ZoningViewCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [BusinessDebt](map/BusinessDebt.md) | BankCheck, CreditCheck, LongPlaytest, MortgageCheck |
+| [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FittingCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BankFailureCheck, BondCheck, CreditCheck, MortgageCheck |
@@ -98,7 +98,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandNationsCheck, LandmassCheck, MapCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, GdpCheck, GovernmentViewCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, GdpCheck, GovernmentViewCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
 | [Equipment](map/Equipment.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
@@ -1508,7 +1508,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L4507 the rates' flags carry the central bank's and the bank's decisions and nothing else
   - L4509 ...a month with both one flag holding both
 
-## BankFailureCheck.java - 37 labelled assertions
+## BankFailureCheck.java - 68 labelled assertions
 
 > The hands-off bank's failures, caused separately and counted across Random cities.
 > WHY. BF1 follows LD2's sawmill loans: a warehouse with no buyers, an empty
@@ -1534,31 +1534,64 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L105 repayment reaches the bank's cash settlement
   - L106 repayment is recorded separately from creditor losses
   - L107 a partial retirement alone does not ban a continuing borrower
-- **L111 3. a new project cannot spend capital the bank does not have**
-  - L122 fixture: the bank stands above target and the requested project exceeds its capital headroom
-  - L125 new project credit is refused at the bank's own capital limit
-  - L132 fixture: an affordable project is still lent
-  - L135 one sector's commitment consumes the shared room
-  - L136 another sector cannot spend the same capital again
-  - L138 uncovered defaults reach the growth desk before the bank's month-end settle
-  - L145 fixture: insured mortgages carry the model's zero risk weight
-  - L146 the uninsured project budget does not ration a zero-risk insured mortgage
-  - L149 the leverage rule still rations that same insured mortgage
-- **L155 4. a consolidation changes the unit, preserving every holder's value**
-- **L185 5. a repayment's rounding does not draw a loss buffer**
-  - L200 fixture: no liquid foreign assets or bonds can cover the shortfall
-  - L205 fixture: a shortfall would draw a positive loss buffer
-  - L206 fixture:
-  - L210 rounding borrows no loss buffer
-  - L211 the repaid borrower's till is empty
-  - L213 a real shortfall still draws the working-capital line and its loss buffer
-- **L220 5b. a bond's face floor is money at the founding price level**
-  - L230 a face above the same real dust trades at unit
-  - L233 a face below the same real dust is ignored at unit
-- **L238 6. 24 default Random cities, button unpressed, every one of 120 months audited**
-  - L266 MoneyAudit closes in every month of every seed at its own tolerance
-  - L269 every bank's equity movement is explained by its books, including failures
-  - L270 pellet mills actually sell in played cities
+- **L116 7. retained oil is recoverable before a closing haircut**
+  - L136 fixture: the bullet matures in the invoice's pending month
+  - L151 fixture: retained oil covers the loan but the ordinary asset haircut would not
+  - L155 closing keeps a claim fully recoverable from retained oil
+  - L156 recoverable oil causes no creditor loss at closure
+  - L164 a city save and reload retain the retirement repayment obligation
+  - L166 the reloaded maturing claim stays marked until liquidation cash lands
+  - L168 the reloaded liquidation invoice covers the carried claim before cash is banked
+  - L170 the reloaded claim takes no haircut while the invoice waits
+  - L172 the reloaded retired bullet is repaid whole when the sale cash lands
+  - L173 the reloaded claim never takes a later haircut
+  - L175 a maturing retired claim stays on its liquidation path without refinancing
+  - L178 the liquidation invoice covers the carried claim before cash is banked
+  - L180 the live claim takes no haircut while the invoice waits
+  - L182 banked oil proceeds repay the retired bullet in full
+  - L183 no later haircut substitutes for that retirement repayment
+  - L184 the regular liquidation line still empties the retired tanks
+- **L189 8. a written-off retired bullet leaves the loan book at maturity**
+  - L196 fixture: the marked claim has no principal or interest and no cash to sweep it
+  - L200 a written-off retired claim leaves the loan list at maturity
+  - L201 Loans running no longer counts the written-off retired claim
+- **L205 3. a new project cannot spend capital the bank does not have**
+  - L216 fixture: the bank stands above target and the requested project exceeds its capital headroom
+  - L219 new project credit is refused at the bank's own capital limit
+  - L226 fixture: an affordable project is still lent
+  - L229 one sector's commitment consumes the shared room
+  - L230 another sector cannot spend the same capital again
+  - L247 fixture: the bank actually buys the corporate issue
+  - L251 corporate bonds and pending loans share the bank's remaining capital
+  - L254 a later project cannot reuse the capital spent on corporate bonds
+  - L263 fixture: a pending loan leaves positive but smaller room for a second bond
+  - L265 a later bond purchase cannot reuse a pending loan's capital
+  - L281 fixture: the settled loan leaves positive capital room on the bank's books
+  - L283 settlement does not subtract the same loans from the live book twice
+  - L303 a bond can use capital left after loan settlement without a second loan deduction
+  - L306 new debt after settlement still consumes room once
+  - L309 uncovered defaults reach the growth desk before the bank's month-end settle
+  - L316 fixture: insured mortgages carry the model's zero risk weight
+  - L317 the uninsured project budget does not ration a zero-risk insured mortgage
+  - L327 fixture: leverage binds above target while the old growth rule is infinite
+  - L330 an insured mortgage cannot exceed finite leverage room above target
+  - L334 a zero-risk insured mortgage still uses available leverage room despite zero uninsured room
+  - L337 the leverage rule still rations that same insured mortgage
+- **L348 4. a consolidation changes the unit, preserving every holder's value**
+- **L378 5. a repayment's rounding does not draw a loss buffer**
+  - L393 fixture: no liquid foreign assets or bonds can cover the shortfall
+  - L398 fixture: a shortfall would draw a positive loss buffer
+  - L399 fixture:
+  - L403 rounding borrows no loss buffer
+  - L404 the repaid borrower's till is empty
+  - L406 a real shortfall still draws the working-capital line and its loss buffer
+- **L413 5b. a bond's face floor is money at the founding price level**
+  - L423 a face above the same real dust trades at unit
+  - L426 a face below the same real dust is ignored at unit
+- **L431 6. 24 default Random cities, button unpressed, every one of 120 months audited**
+  - L459 MoneyAudit closes in every month of every seed at its own tolerance
+  - L462 every bank's equity movement is explained by its books, including failures
+  - L463 pellet mills actually sell in played cities
 
 ## BasketYearCheck.java - 109 labelled assertions
 
@@ -20249,7 +20282,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L681 ...and a twin that never read it ends its months the same: the treasury, the wells' crude, the refiners' products
   - L688 ...and reading it makes no production row (asked of a sector that buys no product)
 
-## OrderBookCheck.java - 64 labelled assertions
+## OrderBookCheck.java - 66 labelled assertions
 
 > The limit-order book (0.7.12), on its own: the rules any instrument trades
 > by, proved on a book that knows nothing about what it trades.
@@ -20265,82 +20298,85 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   4. PARTIAL FILLS: an order fills as far as the other side reaches and
 > ...
 
-- **L108 10. floating prices meet at the model's rounding allowance**
-  - L120 a one-step price difference crosses with either side resting, unit
-  - L122 the resting price still settles
-  - L128 a price gap past the model's allowance stays unfilled, unit
-  - L133 a roundoff price improvement keeps arrival priority, unit
-  - L135 depth uses the same price comparison
-  - L136 the same numerical price is one depth level
-- **L141 1. price-time priority: the best price first, and at one price the first to come**
-  - L149 fixture: four bids resting, nobody selling
-  - L150 the bids stand best first: 1.02 (B), 1.02 (C), 1.01 (D), 1.00 (A)
-  - L154 a sell of 12 at 0.95 takes B's 5, then C's 5, then 2 of D's - in that order
-  - L157 ...B's first, whole
-  - L158 ...D's last, as far as the sell reached
-  - L159 ...and A's bid at 1.00, the worst, is untouched
-  - L166 the other way up: a buy takes the lowest ask first, and at one price the earlier (B, then C)
-- **L173 2. a trade is at the resting order's price, whichever side arrives**
-  - L178 a buy at 1.20 meeting a resting ask at 1.05 trades at 1.05
-  - L179 ...and the buyer paid 1.05 a unit, not its limit
-  - L183 a sell at 0.90 meeting a resting bid at 0.98 trades at 0.98
-  - L184 the last price is that trade's
-- **L190 3. nobody is obliged to trade: an order with nobody across rests, and the close counts who waited**
-  - L194 a sell with no buyer makes no trade
-  - L195 ...and rests, unfilled
-  - L197 a buy under the ask makes no trade either
-  - L198 ...and rests beside it: the book does not close the gap
-  - L199 ...the spread stands
-  - L200 before any trade there is no last price
-  - L203 the close withdraws every order
-  - L204 ...and counts both sellers as having waited
-  - L205 ...with what they still had to sell
-  - L206 ...and the buyer too
-- **L212 4. partial fills**
-  - L218 a buy of 4 against a resting 10 fills 4
-  - L219 ...and the 6 left of it stay
-  - L220 ...at the head of the book, where it was
-  - L222 a buy of 15 against what is left, 11, fills 11
-  - L223 ...and rests the other 4 at its own limit
-  - L224 ...on a book with no asks left
-  - L225 the month filled 15 of the 15 posted to sell
-  - L227 no seller waited: both filled whole
-- **L233 5. no trade with oneself**
-  - L239 A's buy passes over A's own ask and takes B's
-  - L240 ...at B's price
-  - L241 ...and A's ask keeps its place at the head
-- **L248 6. what the clearing can settle: a buyer short of cash, a seller short of the thing**
-  - L253 a buyer with $3 for 8 at $1 fills 3
-  - L254 ...and nothing of it rests: it cannot pay for more
-  - L255 ...the seller's 7 still rest
-  - L259 a resting seller that holds 2 of the 6 it asked for delivers 2
-  - L260 ...and the buyer's other 4 rest at its limit
-  - L261 ...where the seller's ask, trimmed to nothing, is gone
-  - L262 every trade the book reported settled
-  - L263 ...and no participant holds less than nothing
-- **L269 7. the record: posted, filled, volume, turnover, the last price, the depth**
-  - L276 posted to buy: 4 + 6 + 5
-  - L277 posted to sell: 7
-  - L278 filled: 7, all at 0.99
-  - L279 ...its turnover 7 x 0.99
-  - L280 two trades, in the month they were made
-  - L282 the depth by level: 3 left at 0.99 (one order), 5 at 0.97
-  - L285 ...and the depth at or better than 0.97 is all of it
-  - L287 a new month opens a new record, and the orders and the last price stand
-- **L294 8. a currency reform: quantities for an instrument counted in money, prices for one that is not**
-  - L300 a bond's bid: its face a hundredth
-  - L301 ...and its price a unit of face unchanged
-  - L305 a share's bid: its price a hundredth
-  - L306 ...and still three shares
-- **L312 9. save and load: the resting orders, their order and the last price**
-  - L321 it comes back under its own instrument
-  - L322 ...with the same bids, best first
-  - L324 ...the same ask
-  - L325 ...and the same last price
-  - L327 an order posted after the reload queues behind the saved ones at its price
-  - L330 a book saved with nothing on it loads empty, with no last price
+- **L109 10. floating prices meet at the model's rounding allowance**
+  - L121 a one-step price difference crosses with either side resting, unit
+  - L123 the resting price still settles
+  - L129 a price gap past the model's allowance stays unfilled, unit
+  - L134 a roundoff price improvement keeps arrival priority, unit
+  - L136 depth uses the same price comparison
+  - L137 the same numerical price is one depth level
+- **L142 11. a rounding band cannot hide a later crossing order**
+  - L150 depth finds the later crossing order on
+  - L154 the later crossing order trades on
+- **L161 1. price-time priority: the best price first, and at one price the first to come**
+  - L169 fixture: four bids resting, nobody selling
+  - L170 the bids stand best first: 1.02 (B), 1.02 (C), 1.01 (D), 1.00 (A)
+  - L174 a sell of 12 at 0.95 takes B's 5, then C's 5, then 2 of D's - in that order
+  - L177 ...B's first, whole
+  - L178 ...D's last, as far as the sell reached
+  - L179 ...and A's bid at 1.00, the worst, is untouched
+  - L186 the other way up: a buy takes the lowest ask first, and at one price the earlier (B, then C)
+- **L193 2. a trade is at the resting order's price, whichever side arrives**
+  - L198 a buy at 1.20 meeting a resting ask at 1.05 trades at 1.05
+  - L199 ...and the buyer paid 1.05 a unit, not its limit
+  - L203 a sell at 0.90 meeting a resting bid at 0.98 trades at 0.98
+  - L204 the last price is that trade's
+- **L210 3. nobody is obliged to trade: an order with nobody across rests, and the close counts who waited**
+  - L214 a sell with no buyer makes no trade
+  - L215 ...and rests, unfilled
+  - L217 a buy under the ask makes no trade either
+  - L218 ...and rests beside it: the book does not close the gap
+  - L219 ...the spread stands
+  - L220 before any trade there is no last price
+  - L223 the close withdraws every order
+  - L224 ...and counts both sellers as having waited
+  - L225 ...with what they still had to sell
+  - L226 ...and the buyer too
+- **L232 4. partial fills**
+  - L238 a buy of 4 against a resting 10 fills 4
+  - L239 ...and the 6 left of it stay
+  - L240 ...at the head of the book, where it was
+  - L242 a buy of 15 against what is left, 11, fills 11
+  - L243 ...and rests the other 4 at its own limit
+  - L244 ...on a book with no asks left
+  - L245 the month filled 15 of the 15 posted to sell
+  - L247 no seller waited: both filled whole
+- **L253 5. no trade with oneself**
+  - L259 A's buy passes over A's own ask and takes B's
+  - L260 ...at B's price
+  - L261 ...and A's ask keeps its place at the head
+- **L268 6. what the clearing can settle: a buyer short of cash, a seller short of the thing**
+  - L273 a buyer with $3 for 8 at $1 fills 3
+  - L274 ...and nothing of it rests: it cannot pay for more
+  - L275 ...the seller's 7 still rest
+  - L279 a resting seller that holds 2 of the 6 it asked for delivers 2
+  - L280 ...and the buyer's other 4 rest at its limit
+  - L281 ...where the seller's ask, trimmed to nothing, is gone
+  - L282 every trade the book reported settled
+  - L283 ...and no participant holds less than nothing
+- **L289 7. the record: posted, filled, volume, turnover, the last price, the depth**
+  - L296 posted to buy: 4 + 6 + 5
+  - L297 posted to sell: 7
+  - L298 filled: 7, all at 0.99
+  - L299 ...its turnover 7 x 0.99
+  - L300 two trades, in the month they were made
+  - L302 the depth by level: 3 left at 0.99 (one order), 5 at 0.97
+  - L305 ...and the depth at or better than 0.97 is all of it
+  - L307 a new month opens a new record, and the orders and the last price stand
+- **L314 8. a currency reform: quantities for an instrument counted in money, prices for one that is not**
+  - L320 a bond's bid: its face a hundredth
+  - L321 ...and its price a unit of face unchanged
+  - L325 a share's bid: its price a hundredth
+  - L326 ...and still three shares
+- **L332 9. save and load: the resting orders, their order and the last price**
+  - L341 it comes back under its own instrument
+  - L342 ...with the same bids, best first
+  - L344 ...the same ask
+  - L345 ...and the same last price
+  - L347 an order posted after the reload queues behind the saved ones at its price
+  - L350 a book saved with nothing on it loads empty, with no last price
 
-## OrderSearchCheck.java - 44 labelled assertions
+## OrderSearchCheck.java - 45 labelled assertions
 
 > The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1).
 > 
@@ -20365,46 +20401,47 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L233 the long run
 - **L235 2. the same city, a thousand times over**
   - L248 the copy loads
-  - L259 the copy
-  - L260 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
-  - L262 the copy
-  - L266 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
-  - L281 the twin loads, at the copy's month
-  - L294 the twin
-  - L295 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
-  - L297 fixture: ...some by more than the counted slices, so the search found them
-  - L298 the twin
-  - L299 fixture: ...and the twin's too
-- **L410 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
-  - L443 on a test that holds on a run from one, the search finds the countdown's slice every time
-  - L444 ...and never asks more than deskCallsMost() times
-  - L468 fixture: some were decided inside the counted slices, and some below them
-  - L470 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
-  - L471 ...and below them it finds a slice that passes with the next one up failing
-- **L477 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
-  - L530 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
-  - L533 fixture: the carry decides some order on the grid - the same order with no wait is another answer
-  - L534 every order on the grid is the count's: its size, what trimmed it and the facts for one, under each carry
-  - L535 ...reading fewer costs than the count
-  - L592 fixture: the city has Convenience Stores
-  - L625 fixture: the sweep caused windows - the countdown trims into a slice past the till's while the till's slices fail
-  - L626 every order of the sweep is the countdown's: its slice, its \"at prime\" and its rate at the whole order
-  - L627 ...and none asks the bond desk more than Game.deskCallsMost() times
-  - L646 fixture: the doubling and halving alone miss some of the windows, so the first slice that borrows finds them
-  - L647 the search finds the window's last slice, the countdown's, in every one
-  - L648 ...within deskCallsMost() asks
-  - L664 on a test that holds on a run from one the first slice that borrows changes nothing, and asks within deskCallsMost()
-- **L678 6. orderSize() is the gap and the plots, the countdown's first cover, and reads no wait (BA1)**
-  - L701 fixture: the city has room for some building, and not the same room for all of them
-  - L732 fixture: the grid reaches the plots, the floor, and sizes in between
-  - L733 every size on the grid is the countdown's first cover of the gap, at least one, at most the plots
-  - L734 a shortfall that needs 600 of a building is 600 of them (or the plots, where fewer hold them): no wait cuts it
-  - L737 a gap past the int range is the plots, not a wrapped order
-  - L738 ...and a building with no capacity to count is one (or none where there is no ground)
-  - L740 a building the city has no ground for is none, whatever the gap
-  - L851 every trim and refusal in
-  - L852 every mortgage in
-  - L853 no order in
+  - L259 the copy's natural orders
+  - L265 the copy including controlled cash boundaries
+  - L266 fixture: the copy judged orders of more than Game.COUNTDOWN_SLICES on their interest, and decided some
+  - L268 the copy
+  - L272 fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling
+  - L287 the twin loads, at the copy's month
+  - L300 the twin
+  - L301 fixture: the twin trimmed orders of more than Game.COUNTDOWN_SLICES on their interest
+  - L303 fixture: ...some by more than the counted slices, so the search found them
+  - L304 the twin
+  - L305 fixture: ...and the twin's too
+- **L416 3. Game.largestSlice() on its own: the countdown's answer, within deskCallsMost() asks**
+  - L449 on a test that holds on a run from one, the search finds the countdown's slice every time
+  - L450 ...and never asks more than deskCallsMost() times
+  - L474 fixture: some were decided inside the counted slices, and some below them
+  - L476 where the countdown stops inside Game.COUNTDOWN_SLICES, the search stops where it does
+  - L477 ...and below them it finds a slice that passes with the next one up failing
+- **L483 4. Mortgage.decide() against its count, on a grid of tills, incomes, rates and costs**
+  - L536 fixture: the grid trims, holds for the down payment, declines, and runs past the yard
+  - L539 fixture: the carry decides some order on the grid - the same order with no wait is another answer
+  - L540 every order on the grid is the count's: its size, what trimmed it and the facts for one, under each carry
+  - L541 ...reading fewer costs than the count
+  - L598 fixture: the city has Convenience Stores
+  - L631 fixture: the sweep caused windows - the countdown trims into a slice past the till's while the till's slices fail
+  - L632 every order of the sweep is the countdown's: its slice, its \"at prime\" and its rate at the whole order
+  - L633 ...and none asks the bond desk more than Game.deskCallsMost() times
+  - L652 fixture: the doubling and halving alone miss some of the windows, so the first slice that borrows finds them
+  - L653 the search finds the window's last slice, the countdown's, in every one
+  - L654 ...within deskCallsMost() asks
+  - L670 on a test that holds on a run from one the first slice that borrows changes nothing, and asks within deskCallsMost()
+- **L684 6. orderSize() is the gap and the plots, the countdown's first cover, and reads no wait (BA1)**
+  - L707 fixture: the city has room for some building, and not the same room for all of them
+  - L738 fixture: the grid reaches the plots, the floor, and sizes in between
+  - L739 every size on the grid is the countdown's first cover of the gap, at least one, at most the plots
+  - L740 a shortfall that needs 600 of a building is 600 of them (or the plots, where fewer hold them): no wait cuts it
+  - L743 a gap past the int range is the plots, not a wrapped order
+  - L744 ...and a building with no capacity to count is one (or none where there is no ground)
+  - L746 a building the city has no ground for is none, whatever the gap
+  - L857 every trim and refusal in
+  - L858 every mortgage in
+  - L859 no order in
 
 ## OutsideCheck.java - 104 labelled assertions
 
@@ -22422,7 +22459,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L461 the founding game dollar is BRIDGE real ones; the factor makes the 2025 literals 1/BRIDGE-th of that again (1900 -> 2015 -> 2025)
   - L543 r.
   - L544 r.
-  - L563 real residuals use the same running scale as the nudge guard
+  - L563 a real difference above the current value's relative band is rejected after a peak
   - L564 a real difference outside the unchanged band is rejected
   - L565 a one-person difference is rejected even in a trillion-person city
   - L570 ...and the city really lived (more people at the end than the start)
