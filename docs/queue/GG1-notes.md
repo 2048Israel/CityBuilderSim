@@ -37,3 +37,12 @@ No known-reds entry on this base names GG1.
   retired reds, revoked registry cover and unrelated source advancement.
 - Main-control comparison uses the expanded self-test against b27168e2;
   results and final line accounting are recorded before readiness.
+
+## Process accounting
+
+`git diff --numstat origin/main` over all nine changed process files, excluding
+GG1-notes.md and GG1-ship.md: **190 added, 181 removed** (net +9).
+The offsets are duplicated script-header examples and WC1's superseded
+predecessor/slice instructions; executable legacy predecessor checks remain.
+`sh -n` passed for every changed shell script; all tracked changes retain LF.
+`tools/wait-selftest.sh`: exit 0, 24/24 passed.
