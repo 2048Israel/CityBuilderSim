@@ -58,7 +58,7 @@
 
 **Uses:** [Good](Good.md) (11), [ProcessingSector](ProcessingSector.md) (1), [Game](Game.md) (1), [BuildCard](BuildCard.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1)
 
-**Used by (6):** [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [GdpCheck](GdpCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (7):** [BankFailureCheck](BankFailureCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [GdpCheck](GdpCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [Sectors](Sectors.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Constants
 

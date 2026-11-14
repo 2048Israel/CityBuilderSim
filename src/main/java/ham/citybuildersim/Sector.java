@@ -3202,6 +3202,28 @@ public abstract class Sector {
         }
     }
 
+    /** A processor's wholesale shed can ship after local fills (BF1); other sectors keep their own selling rules. */
+    public void shipUnsoldStock(Good g, GoodsMarket market) { }
+
+    /**
+     * Losing a warehouse loses the stock it cannot hold before any sale or
+     * credit reading can use it (BF1). Keep the existing write-off flow for
+     * the next accounts strike; subsequent production may lose more.
+     */
+    public void writeOffUnhousedStock() {
+        for (Good g : makes) {
+            if (!g.stockable()) continue;
+            double held = getStock(g), room = getStockCapacity(g);
+            if (held > room) {
+                output(g).writtenOff += held - room;
+                stock.put(g, room);
+            }
+        }
+    }
+
+    /** Liquid stock carried after the last plant closes: a recovery floor at realizable proceeds, otherwise zero. */
+    public double retirementRecovery() { return 0; }
+
     /**
      * Runs the month's production of a stockable good into the warehouse,
      * after the market has taken what it wanted from last month's stock.
@@ -3246,7 +3268,7 @@ public abstract class Sector {
         double held = getStock(g) + planned + rest;
         double room = getStockCapacity(g);
         double capped = Math.min(held, room);
-        o.writtenOff = Math.max(0, held - capped);
+        o.writtenOff += Math.max(0, held - capped);
         stock.put(g, capped);
 
         if (direct > 0 && g.exportable() && market != null) {
@@ -3260,7 +3282,7 @@ public abstract class Sector {
     }
 
     /** Units of a good taken out of stock by a local sale or an export from the shed. */
-    void takeFromStock(Good g, double units) {
+    protected void takeFromStock(Good g, double units) {
         if (!g.stockable()) return;
         stock.put(g, Math.max(0, getStock(g) - units));
     }

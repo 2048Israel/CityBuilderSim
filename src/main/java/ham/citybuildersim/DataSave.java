@@ -2878,6 +2878,7 @@ public class DataSave implements Cloneable {
         return debts;
     }
 
+    /** All instrument fields, including BF1 retirementClaim, go out and back through the loan JSON. */
     public void setBusinessDebt(List<BusinessDebt> loans) {
         this.businessDebts = LOANS_GSON.toJsonTree(loans).getAsJsonArray();
     }

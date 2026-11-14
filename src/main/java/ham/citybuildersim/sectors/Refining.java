@@ -577,6 +577,25 @@ public final class Refining extends Sector {
         return all > 0 ? tankage * one.of(g) / all : 0;
     }
 
+    /** Oil does not spoil: produceStock liquidates tanks before they go (O1), rather than discarding them early (BF1). */
+    @Override
+    public void writeOffUnhousedStock() { }
+
+    /** Nonspoiling oil left for O1's liquidation line covers debt at its net export proceeds before any haircut. */
+    @Override
+    public double retirementRecovery() {
+        double value = 0;
+        for (Good g : PRODUCTS) if (g.exportable() && markets != null && markets.get(g) != null) {
+            GoodsMarket market = markets.get(g);
+            value += getStock(g) * market.netExportPrice();
+            Sector.Split sold = pending().sold.get(g);
+            if (sold != null) value += sold.atHome + (market.exportPrice() > 0
+                    ? sold.abroad * market.netExportPrice() / market.exportPrice() : 0);
+        }
+        return Math.max(0, value);
+    }
+
+
     /**
      * The month's production into the tanks - after shipping, from the tanks,
      * whatever of a product they no longer have room for (0.7.76, ★ O1).

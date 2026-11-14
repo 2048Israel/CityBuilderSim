@@ -22,7 +22,7 @@
 
 **Uses:** [BusinessDebt](BusinessDebt.md) (1)
 
-**Used by (7):** [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [CreditCheck](CreditCheck.md), [Game](Game.md), [InterimLoan](InterimLoan.md), [MortgageCheck](MortgageCheck.md)
+**Used by (8):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BondCheck](BondCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [CreditCheck](CreditCheck.md), [Game](Game.md), [InterimLoan](InterimLoan.md), [MortgageCheck](MortgageCheck.md)
 
 ## Fields (state)
 

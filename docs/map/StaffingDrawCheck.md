@@ -1,4 +1,4 @@
-# StaffingDrawCheck.java - 1,086 lines · 50 methods · 16 constants · harnesses
+# StaffingDrawCheck.java - 1,094 lines · 50 methods · 16 constants · harnesses
 
 `ham/citybuildersim/StaffingDrawCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -51,10 +51,10 @@
 | 553 | 4. the Shared Services Centre in a town without its bands is still refused |
 | 665 | 5. the hold's words name both counts |
 | 698 | 6. a loaded city's gate is its twin's |
-| 805 | 7. how often the draw opens an order in a played city |
-| 853 | 8. the gap's positive part: only what the order makes positive is drawn |
-| 928 | 9. within the room: no more than the doors last month left free |
-| 981 | 10. the brake and the pull rule turn the draw down as they turn arrivals |
+| 813 | 7. how often the draw opens an order in a played city |
+| 861 | 8. the gap's positive part: only what the order makes positive is drawn |
+| 936 | 9. within the room: no more than the doors last month left free |
+| 989 | 10. the brake and the pull rule turn the draw down as they turn arrivals |
 
 ## Constants
 
@@ -75,7 +75,7 @@
 | 87 | `StaffingDrawCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
 | 88 | `StaffingDrawCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
 | 89 | `StaffingDrawCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
-| 856 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
+| 864 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
 
 ## Fields (state)
 
@@ -94,7 +94,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 1039 | **type** `public class StaffingDrawCheck` | The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff Sector.MIN_STAFFABLE_TO_ORDER of its posts, and since GW1 that count is the spare workers and the w... |
+| 48 | 1047 | **type** `public class StaffingDrawCheck` | The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff Sector.MIN_STAFFABLE_TO_ORDER of its posts, and since GW1 that count is the spare workers and the w... |
 
 ### the helpers (lines 98-399)
 
@@ -171,34 +171,34 @@
 |---:|---:|---|---|
 | 667 | 30 | `static void sectionFive(Path root)` |  |
 
-### 6. a loaded city's gate is its twin's (lines 698-804)
+### 6. a loaded city's gate is its twin's (lines 698-812)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 700 | 104 | `static void sectionSix(Path root)` |  |
+| 700 | 112 | `static void sectionSix(Path root)` |  |
 
-### 7. how often the draw opens an order in a played city (lines 805-852)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 807 | 45 | `static void sectionSeven(Path root)` |  |
-
-### 8. the gap's positive part: only what the order makes positive is drawn (lines 853-927)
+### 7. how often the draw opens an order in a played city (lines 813-860)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 858 | 69 | `static void sectionEight(Path root)` |  |
+| 815 | 45 | `static void sectionSeven(Path root)` |  |
 
-### 9. within the room: no more than the doors last month left free (lines 928-980)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 930 | 50 | `static void sectionNine(Path root)` |  |
-
-### 10. the brake and the pull rule turn the draw down as they turn arrivals (lines 981-1086)
+### 8. the gap's positive part: only what the order makes positive is drawn (lines 861-935)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 984 | 3 | `static double unbraked(Game g, BuildingsTemplate t)` | The workers the village's draw would bring before the brake: the order's uncapped people, within the room, in this village's workers. |
-| 988 | 98 | `static void sectionTen(Path root, long workers)` |  |
+| 866 | 69 | `static void sectionEight(Path root)` |  |
+
+### 9. within the room: no more than the doors last month left free (lines 936-988)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 938 | 50 | `static void sectionNine(Path root)` |  |
+
+### 10. the brake and the pull rule turn the draw down as they turn arrivals (lines 989-1094)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 992 | 3 | `static double unbraked(Game g, BuildingsTemplate t)` | The workers the village's draw would bring before the brake: the order's uncapped people, within the room, in this village's workers. |
+| 996 | 98 | `static void sectionTen(Path root, long workers)` |  |
 

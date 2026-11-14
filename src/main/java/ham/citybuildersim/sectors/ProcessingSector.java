@@ -6,6 +6,8 @@ import ham.citybuildersim.BusinessInvestment;
 import ham.citybuildersim.Currency;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
+import ham.citybuildersim.GoodsMarket;
+import ham.citybuildersim.Trade;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Traffic;
 
@@ -101,6 +103,23 @@ public abstract class ProcessingSector extends Sector {
 
     /** Its spread planner (a check or a probe sets its money gate for the counterfactual). */
     public SpreadPlanner planner() { return planner; }
+
+    /**
+     * The planner's world buyers also buy from its wholesale shed (BF1).
+     * Local orders clear first; unsold stock follows the same marginal-cost
+     * and dump-line rule at the net export bid. Previously a lightly staffed
+     * pellet mill filled its shed for months with no sale at all.
+     */
+    @Override
+    public void shipUnsoldStock(Good g, GoodsMarket market) {
+        if (!g.stockable() || !g.exportable()) return;
+        double held = getStock(g);
+        double units = market.netExportPrice() >= getMarginalCostPerUnit(g)
+                ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
+        if (!(units > 0)) return;
+        bookSale(market.record(key(), Trade.WORLD, units, market.exportPrice()));
+        takeFromStock(g, units);
+    }
 
     /* ----- captive use (Sector, CAPTIVE USE) ----- */
 

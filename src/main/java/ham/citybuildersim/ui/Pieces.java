@@ -4879,10 +4879,13 @@ public final class Pieces {
         }
         HBox named = Kept.row(6, name);
         named.setAlignment(Pos.CENTER_LEFT);
-        if (r.tag() != null) {
-            named.getChildren().add(Kept.scope("tag",
-                    () -> chip(r.tag(), r.tagColour() == null ? Palette.TEXT_MUTED : r.tagColour())));
-        }
+        // BF1: a borrower's default tag can alternate every month. Keep its
+        // label while absent, so returning news does not allocate it again.
+        Label status = Kept.scope("tag", () -> chip(r.tag() == null ? "" : r.tag(),
+                r.tagColour() == null ? Palette.TEXT_MUTED : r.tagColour()));
+        status.setVisible(r.tag() != null);
+        status.setManaged(r.tag() != null);
+        named.getChildren().add(status);
         double nw = Math.max(80, nameWidth - indent);
         named.setMinWidth(nw);
         named.setPrefWidth(nw);

@@ -1059,3 +1059,7 @@ adds its line here, not in `CLAUDE.md`.
 
         FormatsCheck.java          SX1: ordinary percentages stay exact; large ratios and returns use one formatter,
                                    with a compound yearly rate over an observed span or a compact multiple
+
+BF1: BankFailureCheck causes the hands-off bank's mill-sales, closing-debt and
+new-credit failures, distinguishes consolidations from missing shares, and
+audits 24 default Random cities for 120 months apiece.

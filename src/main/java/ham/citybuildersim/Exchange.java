@@ -361,9 +361,9 @@ public class Exchange {
      * DenominationCheck's long section, a seven per cent gap on one month's
      * dealing, 2026-09-12.
      */
-    public static final double MIN_FAIR = 1e-9;
+    public static final double MIN_FAIR = PriceLevel.atFounding(1e-9);
 
-    /** The same floor in today's money. See MIN_FAIR. */
+    /** The founding-money floor in the current unit. See MIN_FAIR. */
     private double minFair = MIN_FAIR;
 
     /* =======================================================================

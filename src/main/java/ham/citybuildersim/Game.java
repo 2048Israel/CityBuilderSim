@@ -3798,6 +3798,10 @@ public class Game {
             }
         }
 
+        // BF1: the loss just booked must reach the growth desk before it
+        // finances replacements. Above-target lending is still finite.
+        restructured.setProjectBudget(bank);
+
         /*
          * EVERY SECTOR IN THE REGISTRY'S ORDER, each asked its own question.
          *
@@ -6543,6 +6547,8 @@ public class Game {
         if (scrapped <= 0) {
             return 0;
         }
+        Sector closing = getSectors().byKey(decision.sector);
+        if (closing != null) closing.writeOffUnhousedStock();
         // ...its steel to the city's old steel, its owner's to sell (0.7.123; OldMetal).
         oldMetal.demolished(decision.template, scrapped, decision.sector);
 
@@ -6561,6 +6567,16 @@ public class Game {
         }
 
         double material = sellMaterialToTheBuilders(decision, scrapped, seller, distress);
+
+        // BF1: selling the collateral also settles its financing. Carry debt
+        // against the remaining plant; an emptied borrower resolves this turn.
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        boolean empty = !(buildingManager.getBuildingsValueBySector(decision.sector) > 0);
+        double available = Math.max(0, seller.getCash());
+        if (!empty) available = Math.min(available, proceeds + material);
+        double repaid = credit.settleRetirement(decision.sector, available, empty,
+                closing == null ? 0 : closing.retirementRecovery());
+        economyManager.setSectorCash(decision.sector, seller.getCash() - repaid);
 
         lastInvestment.put(decision.sector,
                 String.format("Sold %,d %s - %s%s%s",
@@ -13523,6 +13539,7 @@ public class Game {
         bank.takeBondCoupons(bondMarket.getCouponsDueToBank());
 
         refreshBank();
+        lender.projectLoansSettled();
         // ...and what it sets aside against it, now every loan and write-off
         // of the month is on the books (0.7.8). See provideForLosses().
         provideForLosses();
@@ -14259,6 +14276,7 @@ public class Game {
         // is short of like any loan (BusinessDebtManager, THE LANDLORDS'
         // MORTGAGES).
         economyManager.getBusinessDebtManager().setCapitalRule(growth, keepGoingOnly, bank.leverageBinds());
+        economyManager.getBusinessDebtManager().setProjectBudget(bank);
         householdBalance.setCapitalRule(growth, keepGoingOnly);
         // ...and every business's spread sits on the bank's prime (0.7.7; the
         // city's rate until then), on the dial as it stands this month - and
@@ -19792,7 +19810,7 @@ public class Game {
 
     /** What calling this piece costs: its outstanding principal, 100 per 100 (CallTree.CALL_PRICE), paid to every holder, the central bank's too. */
     public double callCost(Debt debt) {
-        return debt == null ? 0 : debt.getOustandingPrincipal() * CallTree.CALL_PRICE / 100;
+        return debt == null ? 0 : debt.getOustandingPrincipal() * (CallTree.CALL_PRICE / 100);
     }
 
     /**
@@ -21400,6 +21418,7 @@ public class Game {
             // Load business loans. Same shape as the government debts above, in
             // its own array so the two hierarchies never have to be told apart
             // by type string alone.
+            // Gson restores retirementClaim on every subtype: liquidation repayment survives a save (BF1).
             JsonArray businessArray = loaded.getBusinessDebt();
             List<BusinessDebt> loadedLoans = new ArrayList<>();
 

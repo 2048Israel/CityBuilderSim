@@ -322,12 +322,13 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
        reform does not move, so OrderBook.DUST stays a literal there.
        ===================================================================== */
 
-    /** OrderBook.DUST of face, in today's money. See above. */
-    private double dust = OrderBook.DUST;
+    /** OrderBook.DUST of face is money, seeded at founding prices (BF1). */
+    static final double FACE_DUST = PriceLevel.atFounding(OrderBook.DUST);
+    private double dust = FACE_DUST;
 
     /** Re-seeds the dust at a given unit, and every open book's with it. See Denomination. */
     public void seedConstants(double unit) {
-        dust = OrderBook.DUST / (unit > 0 ? unit : 1);
+        dust = FACE_DUST / (unit > 0 ? unit : 1);
         for (OrderBook book : books.values()) book.setDust(dust);
     }
 
@@ -658,8 +659,15 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 double perDollar = bank.capitalPerDollar(Bank.RISK_BUSINESS, issuer);
                 room = perDollar > 0 ? Math.max(0, bank.spareCapital()) / perDollar : 0;
             }
-            this.bankRoom = room;
+            this.bankRoom = Math.min(room, bankClaimRoom());
         }
+    }
+
+    /** The same capital allowance as project loans, including loans awaiting settlement. */
+    private double bankClaimRoom() {
+        BusinessDebtManager c = credit();
+        return Math.min(bank == null ? 0 : bank.projectHeadroom(),
+                c == null ? Double.POSITIVE_INFINITY : c.projectRoom());
     }
 
     /** Every participant's bid for one new issue of this size, offered at this size, as a function of its coupon. */
@@ -1219,7 +1227,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 double perDollar = bank.capitalPerDollar(Bank.RISK_BUSINESS, b.issuer);
                 if (!(perDollar > 0)) continue;
                 double p = b.priceAt(bankYield(b.issuer, n, 0, 0, 0), month);
-                double q = Math.min(b.face - b.bank, spare / perDollar);
+                double q = Math.min(b.face - b.bank, Math.min(spare / perDollar, bankClaimRoom() / p));
                 if (!(q > dust) || !(p > 0)) continue;
                 submit(b, BANK, OrderBook.Side.BUY, p, q, month);
                 spare -= q * perDollar;
@@ -1600,7 +1608,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         @Override public double capacity(String who, OrderBook.Side side, double price) {
             if (side == OrderBook.Side.BUY) {
                 if (WORLD.equals(who)) return Double.POSITIVE_INFINITY;
-                if (BANK.equals(who)) return bankBuys() ? Double.POSITIVE_INFINITY : 0;
+                if (BANK.equals(who)) return bankBuys() ? bankClaimRoom() / price : 0;
                 // The city's fund (0.7.14): what its cash buys - the rule's, less what
                 // the hand's buys hold of it (0.7.39, TreasuryFund.handReserve()).
                 if (FUND.equals(who)) return fund == null ? 0 : fund.cashForTheRule() / price;

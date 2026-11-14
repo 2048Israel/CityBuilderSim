@@ -619,7 +619,9 @@ public class CurrencyRegimeCheck {
      * read, and none of the 40 seeds met section 3's twin. The town is now pegged as soon as it is in the band, which on this path is at once
      * (month 36), and the search over seeds finds the seed whose break is the doubt's. (GW1: not on its path; the month is found by climbMonth().)
      */
-    static final int CLIMB_LOOK_MONTHS = 120;
+    // BF1: the first full in-band window is later than the old search cap.
+    // Keep searching for the same gain-branch premise; stop at its first hold.
+    static final int CLIMB_LOOK_MONTHS = 600;
 
     /** A trading town on the default founding as the peg fixtures need it (see PEG_DEPOTS), played its 36 months and its vault deepened: ready to be pegged. */
     static Game pegTown(String label) {

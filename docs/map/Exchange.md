@@ -64,9 +64,9 @@
 >     pace; bought, they are cancelled, and sold, issued.
 > ... (65 more lines in the source)
 
-**Uses:** [OrderBook](OrderBook.md) (78), [Equity](Equity.md) (66), [TreasuryFund](TreasuryFund.md) (16), [Household](Household.md) (16), [HouseholdBalance](HouseholdBalance.md) (9), [Bank](Bank.md) (8), [OutwardInvestment](OutwardInvestment.md) (5), [OwnerHousehold](OwnerHousehold.md) (5), [BondMarket](BondMarket.md) (3), [PriceLevel](PriceLevel.md) (1), [FundLedger](FundLedger.md) (1), [SaveCopy](SaveCopy.md) (1)
+**Uses:** [OrderBook](OrderBook.md) (78), [Equity](Equity.md) (66), [TreasuryFund](TreasuryFund.md) (16), [Household](Household.md) (16), [HouseholdBalance](HouseholdBalance.md) (9), [Bank](Bank.md) (8), [OutwardInvestment](OutwardInvestment.md) (5), [OwnerHousehold](OwnerHousehold.md) (5), [BondMarket](BondMarket.md) (3), [PriceLevel](PriceLevel.md) (2), [FundLedger](FundLedger.md) (1), [SaveCopy](SaveCopy.md) (1)
 
-**Used by (26):** [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [DataSave](DataSave.md), [Equity](Equity.md), [ExchangeCheck](ExchangeCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PrizeCheck](PrizeCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
+**Used by (27):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [DataSave](DataSave.md), [Equity](Equity.md), [ExchangeCheck](ExchangeCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PrizeCheck](PrizeCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
 
 ## Sections
 
@@ -124,7 +124,7 @@
 | 348 | `Exchange.BOOK_LIMIT` | `.50` | ...and in all companies' together: the book's aggregate limit. |
 | 351 | `Exchange.SPLIT_AT` | `.25` | A share costing more than this share of the city's average monthly wage splits (SX1). |
 | 354 | `Exchange.CONSOLIDATE_BELOW` | `.0025` | A share costing less than this fraction of the average monthly wage consolidates (SX1). |
-| 364 | `Exchange.MIN_FAIR` | `1e-9` | The least a share may be worth before the market treats the company as worthless. |
+| 364 | `Exchange.MIN_FAIR` | `PriceLevel.atFounding(1e-9)` | The least a share may be worth before the market treats the company as worthless. |
 | 382 | `Exchange.MIN_DEALER_EQUITY` | `1.0 * PriceLevel.FACTOR` | The least equity a bank's desk needs to post a market, founding thousands: a thousand dollars, Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1). |
 | 402 | `Exchange.DESK` | `"bank"` | The bank's trading desk. |
 | 404 | `Exchange.WORLD` | `"world"` | The world's investors. |
@@ -142,7 +142,7 @@
 
 | line | field | says |
 |---:|---|---|
-| 367 | `private double minFair` | The same floor in today's money. |
+| 367 | `private double minFair` | The founding-money floor in the current unit. |
 | 385 | `private double minDealerEquity` | The same floor in today's money. |
 | 422 | `private final int n` |  |
 | 423 | `private OrderBook[] books` |  |
