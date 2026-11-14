@@ -3798,6 +3798,10 @@ public class Game {
             }
         }
 
+        // BF1: the loss just booked must reach the growth desk before it
+        // finances replacements. Above-target lending is still finite.
+        restructured.setProjectBudget(bank.projectHeadroom());
+
         /*
          * EVERY SECTOR IN THE REGISTRY'S ORDER, each asked its own question.
          *
@@ -6561,6 +6565,15 @@ public class Game {
         }
 
         double material = sellMaterialToTheBuilders(decision, scrapped, seller, distress);
+
+        // BF1: selling the collateral also settles its financing. Carry debt
+        // against the remaining plant; an emptied borrower resolves this turn.
+        BusinessDebtManager credit = economyManager.getBusinessDebtManager();
+        boolean empty = !(buildingManager.getBuildingsValueBySector(decision.sector) > 0);
+        double available = Math.max(0, seller.getCash());
+        if (!empty) available = Math.min(available, proceeds + material);
+        double repaid = credit.settleRetirement(decision.sector, available, empty);
+        economyManager.setSectorCash(decision.sector, seller.getCash() - repaid);
 
         lastInvestment.put(decision.sector,
                 String.format("Sold %,d %s - %s%s%s",
@@ -14259,6 +14272,7 @@ public class Game {
         // is short of like any loan (BusinessDebtManager, THE LANDLORDS'
         // MORTGAGES).
         economyManager.getBusinessDebtManager().setCapitalRule(growth, keepGoingOnly, bank.leverageBinds());
+        economyManager.getBusinessDebtManager().setProjectBudget(bank.projectHeadroom());
         householdBalance.setCapitalRule(growth, keepGoingOnly);
         // ...and every business's spread sits on the bank's prime (0.7.7; the
         // city's rate until then), on the dial as it stands this month - and

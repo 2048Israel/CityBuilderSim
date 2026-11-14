@@ -390,6 +390,8 @@ public final class Markets {
 
         // the makers' unsold flow, to the world or to nobody
         for (Sector s : makers) s.shipUnsoldFlow(g, m);
+        // BF1: the world also buys what remains in a maker's shed.
+        for (Sector s : makers) s.shipUnsoldStock(g, m);
         // ...and the city's release past what the buyers took STAYS IN ITS TANKS (0.7.103, batch P4; Jerus's
         // A8, 2026-10-10): it shipped at the export price as the wells' unsold crude does from 0.7.85 (star O8-4).
         // A reserve is the city's to hold for a shock, so only what the buyers here take leaves it.

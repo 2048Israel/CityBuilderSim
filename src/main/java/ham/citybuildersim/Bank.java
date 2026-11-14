@@ -5554,6 +5554,23 @@ public class Bank {
         return room;
     }
 
+    /**
+     * Growth commitments fit the target even above it (BF1). Defaults are
+     * known before the month's loan book settles: remove the losses not
+     * covered by that borrower's existing allowance from the capital room.
+     * Working-capital lines remain commitments already made.
+     */
+    public double projectHeadroom() {
+        if (branches <= 0) return Double.POSITIVE_INFINITY;
+        double loss = Math.max(0, householdWrittenOff - householdAllowance);
+        for (java.util.Map.Entry<String, Double> e : writtenOffBySector.entrySet()) {
+            loss += Math.max(0, e.getValue() - getSectorAllowance(e.getKey()));
+        }
+        return Math.max(0, Math.min(headroom(), Math.min(
+                (equity() - loss) / capitalTarget() - getWeightedBook(),
+                (equity() - loss) / leverageTarget() - exposure())));
+    }
+
     public void setCash(double value) { this.cash = value; }
 
     public void reset() {

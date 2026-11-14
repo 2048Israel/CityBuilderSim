@@ -3203,6 +3203,23 @@ public abstract class Sector {
     }
 
     /**
+     * Stock offered at home also has the world's buyers (BF1). Previously
+     * only surplus off the production line could export: a lightly staffed
+     * mill filled its shed for months without selling a single pellet.
+     * Local orders clear first; the remaining stock follows the same
+     * marginal-cost and dump-line rule as the home offer, at the net bid.
+     */
+    public void shipUnsoldStock(Good g, GoodsMarket market) {
+        if (!g.stockable() || !g.exportable()) return;
+        double held = getStock(g);
+        double units = market.netExportPrice() >= getMarginalCostPerUnit(g)
+                ? held : Math.max(0, held - getStockCapacity(g) * DUMP_THRESHOLD);
+        if (!(units > 0)) return;
+        bookSale(market.record(key, Trade.WORLD, units, market.exportPrice()));
+        takeFromStock(g, units);
+    }
+
+    /**
      * Runs the month's production of a stockable good into the warehouse,
      * after the market has taken what it wanted from last month's stock.
      *

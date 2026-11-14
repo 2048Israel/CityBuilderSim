@@ -40,3 +40,36 @@ files are kept out of this batch.
 
 Work in progress. Pre-mend logs are target/checks/bf1-fixtures-before.log,
 bf1-count-before.log, bf1-before-seeds.log and bf1-ld2-shares.log.
+
+## Implementation review
+
+The final sales path keeps the existing stock target: Markets clears local
+orders, then Sector.shipUnsoldStock sells the shed's remainder to the world
+at its net-bid marginal-cost/dump-line rule. The following production fills
+the shed again. This fixes the missing buyer, rather than removing inventories;
+WoodProductsCheck's positive-yard premise passes unchanged. The revised mill
+fixture explicitly makes a first month's stock and asks for its second-month
+export; it checks the same deadlock without assuming zero stock or immediate
+sales from newly produced stock.
+
+settleRetirement pays cash against interim claims first, then ordinary bank
+claims pro rata; repayments enter the existing cash settlement and debt
+roll-forward. If no plant or work on site remains, the refreshed borrower
+goes through the existing backstop even if its only assets were sale cash.
+A closure inside an existing default episode resolves the remainder without
+counting a second episode. A partial retirement carries the unpaid balance.
+
+Bank.projectHeadroom supplies a finite shared growth budget using the existing
+headroom, capitalTarget and leverageTarget. Defaults beyond their sector's
+allowance reduce it before replacements can be financed. The loan and mortgage
+growth doors both read it; working-capital lines retain their existing rule.
+No save format change: the closure handoff is consumed within the turn, the
+growth allowance is struck at the desk's existing monthly reprice, and the
+repayment/save records already carry these flows.
+
+★ Failure frequency is an observation, as the brief requests; a bank taking
+real credit losses is not guaranteed survival. An initial exploratory assertion
+of universal survival was too strong and is not the model's rule. It is replaced
+by the bank's equity roll-forward at MoneyAudit's own tolerance, alongside the
+24-seed count and hard causal fixtures. The remaining failures are reported,
+not hidden behind a special seed or a rescue.
