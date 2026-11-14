@@ -20,7 +20,7 @@ Validation and fixture attribution are in progress.
 ★ ScaleCheck's own-town copy moves from month 172 to month 225. The old
 borrowing rule passes at 172 (`target/checks/qb1-scale-main-rule.log`).
 With quotes on, the savings and deposit misses are both 0.0355, over the
-unchanged 0.016 and 0.026 floors (`target/checks/ScaleCheck.log`, initial run).
+unchanged 0.016 and 0.026 floors (`target/checks/qb1-moved.txt`, initial run).
 The temporary scan used the same town, foreign-rate pin, death hold, scale
 copies, free sectors and held-sector tracking as the harness. Months
 168–176, 180, 190, 200, 210, 160, 150, 165 and 155 did not qualify.
@@ -78,3 +78,28 @@ and map class are untouched by QB1. None of WN5d's reserved files changed.
 Fast check: exit 0, compile/maps/tree green, no firm stale findings.
 Initial focused run: only the two now-repicked ScaleCheck laws red; one
 soft PlanCheck timing, one AutoBuildCheck played-path observation.
+
+## Full default trace beside main
+
+The CC1-S brief's month-33 divergence predates HW1 and the intervening model
+changes. On today's main, two complete default runs reach m2404 with all
+eight CSVs **byte-identical** (bank, bonds, borrow, build, house, labour,
+month and population): `target/qb1-main-*.csv` uses
+`-Dplaytest.quotedBorrowing=false`, the otherwise unchanged main rule;
+`target/qb1-final-*.csv` uses the new default. There are 2,404 monthly rows
+and 43 borrowing rows each. `cmp` returns 0 for each of the eight pairs.
+`target/checks/qb1-trace-comparison.json` retains the row comparison.
+
+Both full reports exit 1 solely for the already registered DM3-R movement:
+m2388–2389, district (-1,-1), 12 of 4,301 boxes move. Both pass all money
+audit fixtures and every reload. Reports are
+`target/checks/qb1-trace-{main,final}.log`. No new default finding is filed.
+The ensemble is nevertheless run once because QB1's explicit brief requires
+it, and the own-town harness trace does change.
+
+Final named check `./batch-check.sh ScaleCheck ForeignDebtCheck`: exit 0,
+both complete harnesses green, maps regenerated, no firm stale findings.
+The source diff was reviewed as a stranger's; no relaxed assertions or
+unrelated source edits. Orchestrator read the complete source diff through
+`a32e4873` and reported no findings (cbs-bus, 2026-11-14 19:28 Halifax).
+No source changes after that commit.
