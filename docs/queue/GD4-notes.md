@@ -69,14 +69,15 @@ weights are estimates drawn from these settings. [USGS Bulletin 1693](https://pu
   exercises exports, reagent purchases, exact depletion, deterministic geology
   grades, saved mint offers, vault ounces and issuance. The mint is reached in
   24 played months, with all 24 money audits closing.
-- The initial EarthTerrainCheck measured gold Z at 0.60963879. Its provisional
-  constant was then replaced by 0.6096. Its full final verdict is pending.
-- The final pick, ensemble and retained gate provenance are pending.
+- EarthTerrainCheck's full-file gold normalization passes at 0.60963879,
+  against the stored 0.6096. Its timing result appears below.
+- The final 80-run ensemble passes all M1/F1 criteria, with the score below.
+  The full pick and retained gate provenance follow when complete.
 
 The first full pick found Gold's missing far-map symbol in MapCheck's existing
 resource-mark assertion. DepositMarks now supplies Au. The same run found a
 Government Overview node-allocation ceiling in KeptCheck section 68. Its
-classification is pending a targeted run on unchanged main 97eaa608.
+targeted main control and allocation trace are recorded below.
 
 Review found that bullion's spot exchange quote must survive a reload,
 separately from ordinary goods' lagged, inflation-adjusted quote. Markets.State
@@ -86,7 +87,7 @@ offer is also checked at M and through a change from Gold to Float.
 
 An early ensemble attempt at 8a3d1887 was stopped using its own run label
 after these save-quote and map findings. Its partial output is superseded.
-The final model will receive a fresh 80-run ensemble.
+The completed GD4-verified ensemble below supersedes that attempt.
 
 ★ The mint's accepted payment also follows currency redenomination, while its
 fine ounces keep their unit. The sector's standard reset hook clears an old
@@ -218,7 +219,7 @@ with eight resources measured 362 ms first and 311 ms again, alongside the
 study's 370–450 ms. Three ensemble JVMs and the checks share this PC during
 the final run. Timing remains informational for the nightly judge.
 
-## Final ensemble
+## Ensemble before HW1
 
 GD4-verified completed all 80 runs on the cd3c3abd arithmetic model in
 59.6 minutes, using three JVMs. It scored 24/26, alongside 0.9.98's 24/26.
@@ -230,3 +231,40 @@ docs/ensemble/GD4.md, ready for the publisher's version name.
 
 The earlier partial snapshots at 8a3d1887 and 3ef0676d were stopped during
 review and superseded by this complete run.
+
+The unchanged informational misses are AUTO2 A2, the longest high-inflation
+spell at 31 months (range 12–44), and AUTO2 A3, whose deflation-spell range
+reaches 12 months. Both retain their baseline verdicts. The hard result is
+PASS for all five policies.
+
+## Verification order
+
+The orchestrator initially scheduled HW1 first at 2026-11-14 01:20, then
+superseded that order at 01:30 (mail
+20261114-013014-651-orchestrator-8f5a). HW1 is repairing review findings.
+GD4 now gates first on unchanged main 97eaa608, so the completed ensemble
+applies to the model being gated.
+
+Finish the current full pick, push its records and generated indexes,
+and run the versioned dry run. Record the retained directory and both commit
+identities before readiness. Keep the narrow Government Overview row under
+KS1-UI. The ship file's provisional marker is removed last after the gate.
+
+## Full-pick HELD ordering review
+
+The 198-harness serial pick completed at 2026-11-14 02:03 with exit 4.
+Its only new assertions were the two historical HELD-tail contracts in
+CopperMiningCheck and WoodProductsCheck. Gold follows trucks in HELD.
+Copper's exact terminal length rises from cathode + 7 to cathode + 8,
+with trucks penultimate and gold last. Wood's tail positions shift by one
+and explicitly assert gold after trucks. All pre-existing held slots retain
+their order and every earlier goods assertion remains. This changes checks
+and their descriptions only. The cd3c3abd arithmetic model and its completed
+ensemble remain applicable. A new full pick verifies the corrected contracts.
+The first complete result is target/checks/gd4-final-pick.txt. Its other
+functional findings are recorded known reds, with thirteen soft timing
+assertions and seven observations. GoldMiningCheck and BuildingDataCheck pass.
+
+The focused CopperMiningCheck and WoodProductsCheck rerun passes both
+harnesses with exit 0 in target/checks/gd4-held-order.txt. The regenerated
+indexes contain Markdown's intentional two-space hard line endings.

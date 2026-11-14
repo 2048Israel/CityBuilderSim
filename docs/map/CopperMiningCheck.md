@@ -24,7 +24,7 @@
 >      field's good concentrate and an oxide field's cathode, 1/100 of
 >      cathode's export price in the ground; copper's seven goods at the
 >      study's 4.2 prices, freight three eighths of each wedge, cathode the
->      one stockable good, on NationalAccounts.HELD's end.
+>      one stockable copper good, after cement in NationalAccounts.HELD.
 > 
 >   2. THE THREE ROWS ARE THE STUDY'S (ids 121 to 123, at parity): cost,
 >      posts, draw, what each makes, its site (type, sites and dig), ground,
@@ -60,7 +60,7 @@
 > nearest the default site (oxide the rarer type), its sulphide ground by
 > fiat (the first type), the buildings placed by hand.
 
-**Uses:** [Good](Good.md) (61), [CopperMining](CopperMining.md) (31), [World](World.md) (14), [Deposit](Deposit.md) (13), [Sectors](Sectors.md) (11), [BuildingManager](BuildingManager.md) (10), [Game](Game.md) (8), [Traffic](Traffic.md) (7), [Ports](Ports.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [LandManager](LandManager.md) (7), [PriceLevelCheck](PriceLevelCheck.md) (5), [Equity](Equity.md) (5), [CityLand](CityLand.md) (5), [LandCheck](LandCheck.md) (5), [MoneyAudit](MoneyAudit.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Resource](Resource.md) (3), [Sector](Sector.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1)... and 5 more
+**Uses:** [Good](Good.md) (62), [CopperMining](CopperMining.md) (31), [World](World.md) (14), [Deposit](Deposit.md) (13), [Sectors](Sectors.md) (11), [BuildingManager](BuildingManager.md) (10), [Game](Game.md) (8), [Traffic](Traffic.md) (7), [Ports](Ports.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [LandManager](LandManager.md) (7), [PriceLevelCheck](PriceLevelCheck.md) (5), [Equity](Equity.md) (5), [CityLand](CityLand.md) (5), [LandCheck](LandCheck.md) (5), [MoneyAudit](MoneyAudit.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Resource](Resource.md) (3), [Sector](Sector.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [Founding](Founding.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [Markets](Markets.md) (1), [ExtractionSector](ExtractionSector.md) (1), [Bank](Bank.md) (1)... and 5 more
 
 **Used by (2):** [CopperRefiningCheck](CopperRefiningCheck.md), [IndustryViewCheck](IndustryViewCheck.md)
 

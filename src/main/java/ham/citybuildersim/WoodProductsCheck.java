@@ -34,7 +34,7 @@ import java.util.Locale;
  *      its planning good; what is as long as the keys grew with them; the six
  *      goods at the study's 5.3 prices, freight three eighths of each wedge,
  *      lumber, panels and residues by the cubic metre at their tonnes, the
- *      five stockable on HELD's end; the buyers (spec 2.12) - the logs, the
+ *      five stockable after copper on HELD; the buyers (spec 2.12) - the logs, the
  *      residues and the pulp its own, the fuel oil the paper mill's, the rest
  *      nobody's here, shipped.
  *
@@ -171,13 +171,12 @@ public class WoodProductsCheck {
                         + " metre at 0.5, 0.62 and 0.9 t, the rest by the tonne; all but the residues stockable",
                 prices, got.toString().trim());
         int n = NationalAccounts.HELD.length;
-        // ...and since FR2 (2026-10-18) the trucks after them, HELD's last: the five keep their places, one from the end.
-        assertTrue("...the five stockable on HELD's end in Good's order, after copper's cathode and before FR2's trucks, so a save's"
-                        + " held slots keep their places",
-                n >= 7 && NationalAccounts.HELD[n - 7] == Good.COPPER && NationalAccounts.HELD[n - 6] == Good.LUMBER
-                        && NationalAccounts.HELD[n - 5] == Good.PANELS && NationalAccounts.HELD[n - 4] == Good.PULP
-                        && NationalAccounts.HELD[n - 3] == Good.PAPER && NationalAccounts.HELD[n - 2] == Good.WOOD_PELLETS
-                        && NationalAccounts.HELD[n - 1] == Good.TRUCKS);
+        // The five retain their slots after copper, followed by FR2's trucks and GD4's gold.
+        assertTrue("...the five stockable follow copper's cathode in Good's order, before trucks and gold, preserving the held slots",
+                n >= 8 && NationalAccounts.HELD[n - 8] == Good.COPPER && NationalAccounts.HELD[n - 7] == Good.LUMBER
+                        && NationalAccounts.HELD[n - 6] == Good.PANELS && NationalAccounts.HELD[n - 5] == Good.PULP
+                        && NationalAccounts.HELD[n - 4] == Good.PAPER && NationalAccounts.HELD[n - 3] == Good.WOOD_PELLETS
+                        && NationalAccounts.HELD[n - 2] == Good.TRUCKS && NationalAccounts.HELD[n - 1] == Good.GOLD);
         assertTrue("...lumber, panels and paper by the goods stream and, by sea, in containers; residues, pulp and pellets by the bulk"
                         + " stream - chips and pellets dry bulk, pulp's bales general cargo",
                 Good.LUMBER.traffic() == Traffic.GOODS && Good.PANELS.traffic() == Traffic.GOODS && Good.PAPER.traffic() == Traffic.GOODS

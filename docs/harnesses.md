@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**198 harness files, 23,728 labelled assertions.** AllChecks runs 198 of them.
+**198 harness files, 23,727 labelled assertions.** AllChecks runs 198 of them.
 
 ## Which harnesses read which class
 
@@ -142,7 +142,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GlobeFrame](map/GlobeFrame.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GoldMining](map/GoldMining.md) | BuildingDataCheck, GoldMiningCheck |
-| [GoldPrice](map/GoldPrice.md) | GoldMiningCheck, GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, VaultMoneysCheck |
+| [GoldPrice](map/GoldPrice.md) | GoldMiningCheck, GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, TradeCostCheck, VaultMoneysCheck |
 | [Good](map/Good.md) | AgricultureCheck, BankCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GdpCheck, GoldMiningCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentPlayer](map/GovernmentPlayer.md) | GovernmentPlayerCheck, LongPlaytest |
@@ -5207,7 +5207,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L159 ...so an offer's copper is in its price: a site's 300,000 t of metal at US$100 a tonne, US$30M (to the US$5k rounding)
   - L171 copper's seven goods at the study's 4.2 prices - scrap's import end and wire's export end widened (its 1.2) - freight
   - L173 ...wire and cable and rod by the GOODS stream, the other five BULK (spec 2.3); by sea acid a tanker's, concentrate and
-  - L185 ...and cathode joins NationalAccounts.HELD after cement, its end until wood's five (0.7.140) and then trucks (FR2) followed it
+  - L185 ...cathode follows cement on NationalAccounts.HELD, then wood's five, trucks and gold in their permanent order
 - **L228 2. the three rows at parity: the study's 4.3, and its 4.4 table's four cases to its rounding**
   - L245 the
   - L257 ...its ground the copper sites it takes, 0.5 km2 each, its road load its tonnes out
@@ -27542,7 +27542,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L412 ...and every part of the whole the live city's
   - L414 no figure of the loaded band is NaN or infinite
 
-## TradeCostCheck.java - 30 labelled assertions
+## TradeCostCheck.java - 29 labelled assertions
 
 > The wedge between what the world charges and what it pays, and what it is
 > made of.
@@ -27558,45 +27558,44 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L178 not one delivered price moved**
-  - L188 ...and every good the world trades is in that table
-- **L191 and the wedge adds up**
-  - L211 ...and freight is three quarters of the half-wedge
-- **L216 and nothing unshippable is charged for shipping**
-- **L239 the traffic split (2026-09-16)**
-  - L266 every building's three loads add to its road load, to the bit
-  - L268 ...and there were buildings to check
-  - L292 a shop's freight is GOODS, not BULK - a van at a back door
-- **L303 and the network's total did not move**
-  - L335 the network's total is the sweep it has always been, to the bit
-  - L340 ...and the breakdown accounts for all of it
-  - L343 ...and a real city is mostly people, not ore
-- **L350 the modes (2026-09-16)**
-  - L386 ...and costs more per unit moved than the rung below
-- **L393 and the road can be halved and never deleted**
-  - L420 a city with neither is asking for exactly what it always asked for
-  - L424 fixture: and it really is jammed
-  - L429 no more than
-  - L435 ...so the road still carries every crate and every tonne
-  - L444 a city that builds transit and not streets gets less of it
-  - L450 ...and a city with no streets at all gets less again
-  - L459 ore on a grade-separated road costs the network less
-  - L462 ...and a commuter costs what a commuter always cost
-  - L465 ...so a highway helps bulk more than it helps goods
-  - L474 with the best of everything the road still carries a third and more
-- **L483 and two businesses on the same road do not have the same problem**
-  - L491 a jammed city with good transit keeps its offices working
-  - L505 ...but a lorry in a jam is in a jam, whatever the city built
-  - L508 ...so the mill beats the road only by as much as its payroll rides
-  - L514 ...and a sector with nothing standing reads the city, not a clean road
-- **L518 the fare (2026-09-16)**
-  - L526 free transit carries everyone the ceiling allows
-  - L539 ...and at the default fare every car-less commuter in reach still rides
-  - L545 ...and at the ceiling fare they still do
-  - L565 a dearer fare takes more money and puts more cars on the road
-  - L594 a month of riding costs a commuter a share of a wage somebody would recognise
-  - L602 a currency reform divides the fare like every other price
-  - L606 ...and nobody changes their mind about the bus because of it
+- **L182 not one delivered price moved**
+  - L192 ...and every good the world trades is in that table
+- **L195 and the wedge adds up**
+- **L223 and nothing unshippable is charged for shipping**
+- **L246 the traffic split (2026-09-16)**
+  - L273 every building's three loads add to its road load, to the bit
+  - L275 ...and there were buildings to check
+  - L299 a shop's freight is GOODS, not BULK - a van at a back door
+- **L310 and the network's total did not move**
+  - L342 the network's total is the sweep it has always been, to the bit
+  - L347 ...and the breakdown accounts for all of it
+  - L350 ...and a real city is mostly people, not ore
+- **L357 the modes (2026-09-16)**
+  - L393 ...and costs more per unit moved than the rung below
+- **L400 and the road can be halved and never deleted**
+  - L427 a city with neither is asking for exactly what it always asked for
+  - L431 fixture: and it really is jammed
+  - L436 no more than
+  - L442 ...so the road still carries every crate and every tonne
+  - L451 a city that builds transit and not streets gets less of it
+  - L457 ...and a city with no streets at all gets less again
+  - L466 ore on a grade-separated road costs the network less
+  - L469 ...and a commuter costs what a commuter always cost
+  - L472 ...so a highway helps bulk more than it helps goods
+  - L481 with the best of everything the road still carries a third and more
+- **L490 and two businesses on the same road do not have the same problem**
+  - L498 a jammed city with good transit keeps its offices working
+  - L512 ...but a lorry in a jam is in a jam, whatever the city built
+  - L515 ...so the mill beats the road only by as much as its payroll rides
+  - L521 ...and a sector with nothing standing reads the city, not a clean road
+- **L525 the fare (2026-09-16)**
+  - L533 free transit carries everyone the ceiling allows
+  - L546 ...and at the default fare every car-less commuter in reach still rides
+  - L552 ...and at the ceiling fare they still do
+  - L572 a dearer fare takes more money and puts more cars on the road
+  - L601 a month of riding costs a commuter a share of a wage somebody would recognise
+  - L609 a currency reform divides the fare like every other price
+  - L613 ...and nobody changes their mind about the bus because of it
 
 ## TreasuryCheck.java - 233 labelled assertions
 
@@ -29030,12 +29029,12 @@ _(this harness does not label its checks through a helper - it prints its findin
 > ...
 
 - **L134 1. the sector on the registry: Wood Products after Forestry, a works on the logs, its goods priced**
-  - L137 Sectors.KEYS has Wood Products after Forestry, the twenty-fourth and last (Jerus's Q21: iron, coal, stone, copper, wood)
-  - L141 ...a processing sector found by its saved name, Iron & Steel's group, making lumber, residues, panels, pulp, paper and
-  - L149 ...residues and pulp captive - made and used inside it - and nothing else
-  - L152 Equity's companies are the keys and then the bank; the households' share block a slot a company; the audit's pools a
-  - L169 the six goods at the study's 5.3 prices, freight three eighths of each wedge; lumber, panels and residues by the cubic
-  - L174 ...the five stockable on HELD's end in Good's order, after copper's cathode and before FR2's trucks, so a save's
+  - L137 Sectors.KEYS has Wood Products after Forestry, the twenty-fourth, followed by Gold Mining (Jerus's Q21: iron, coal, stone, copper, wood)
+  - L142 ...a processing sector found by its saved name, Iron & Steel's group, making lumber, residues, panels, pulp, paper and
+  - L150 ...residues and pulp captive - made and used inside it - and nothing else
+  - L153 Equity's companies are the keys and then the bank; the households' share block a slot a company; the audit's pools a
+  - L170 the six goods at the study's 5.3 prices, freight three eighths of each wedge; lumber, panels and residues by the cubic
+  - L175 ...the five stockable follow copper's cathode in Good's order, before trucks and gold, preserving the held slots
   - L180 ...lumber, panels and paper by the goods stream and, by sea, in containers; residues, pulp and pellets by the bulk
   - L200 the buyers (spec 2.12): Forestry's logs Wood Products'; residues and pulp its own; fuel oil the paper mill's, its first
 - **L274 2. the six rows at parity: the study's 5.4 and 5.6, and its 5.5 table's four cases to its rounding**

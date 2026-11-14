@@ -31,7 +31,7 @@ import java.util.Locale;
  *      field's good concentrate and an oxide field's cathode, 1/100 of
  *      cathode's export price in the ground; copper's seven goods at the
  *      study's 4.2 prices, freight three eighths of each wedge, cathode the
- *      one stockable good, on NationalAccounts.HELD's end.
+ *      one stockable copper good, after cement in NationalAccounts.HELD.
  *
  *   2. THE THREE ROWS ARE THE STUDY'S (ids 121 to 123, at parity): cost,
  *      posts, draw, what each makes, its site (type, sites and dig), ground,
@@ -180,11 +180,11 @@ public class CopperMiningCheck {
                         && Good.ANODE.cargo() == Ports.Cargo.GENERAL && Good.COPPER.cargo() == Ports.Cargo.GENERAL
                         && Good.COPPER_ROD.cargo() == Ports.Cargo.CONTAINER && Good.WIRE_CABLE.cargo() == Ports.Cargo.CONTAINER);
         Good[] held = NationalAccounts.HELD;
-        // ...wood's five after it since 0.7.140 (batch I10), and trucks, the last, since FR2.
+        // Wood's five, FR2's trucks and GD4's gold follow cathode in their permanent order.
         int cathode = java.util.Arrays.asList(held).indexOf(Good.COPPER);
-        assertTrue("...and cathode joins NationalAccounts.HELD after cement, its end until wood's five (0.7.140) and then trucks (FR2) followed it",
-                cathode > 0 && held[cathode - 1] == Good.CEMENT && held[cathode + 1] == Good.LUMBER && held.length == cathode + 7
-                        && held[held.length - 1] == Good.TRUCKS);
+        assertTrue("...cathode follows cement on NationalAccounts.HELD, then wood's five, trucks and gold in their permanent order",
+                cathode > 0 && held[cathode - 1] == Good.CEMENT && held[cathode + 1] == Good.LUMBER && held.length == cathode + 8
+                        && held[held.length - 2] == Good.TRUCKS && held[held.length - 1] == Good.GOLD);
     }
 
     /* ============================ 2. the three rows against the study ============================ */

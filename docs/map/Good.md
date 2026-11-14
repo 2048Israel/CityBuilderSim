@@ -1,4 +1,4 @@
-# Good.java - 1,441 lines · 26 methods · 0 constants · model
+# Good.java - 1,447 lines · 26 methods · 2 constants · model
 
 `ham/citybuildersim/Good.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -72,7 +72,7 @@
 
 | line | section |
 |---:|---|
-| 1264 | WHAT IT TAKES TO CARRY ONE (2026-09-16) |
+| 1270 | WHAT IT TAKES TO CARRY ONE (2026-09-16) |
 
 ## Enum constants
 
@@ -147,62 +147,69 @@
 | 1095 | `Good.WOOD_PELLETS` | Wood pellets, by the tonne: the Wood Pellet Mill's, of residues. |
 | 1115 | `Good.TRUCKS` | A heavy truck - tractor and semitrailer, 25 t a load - by the unit: the Heavy Truck Plant's; Freight's Haulage division's fleet. |
 | 1118 | `Good.GOLD` | Fine gold, a stockable troy ounce. |
-| 1125 | `Good.Pricing.BAND` | Clears in GoodsMarket between the export floor and the import ceiling. |
-| 1127 | `Good.Pricing.SELLER` | The selling sector strikes it; the market only records the sale. |
+| 1131 | `Good.Pricing.BAND` | Clears in GoodsMarket between the export floor and the import ceiling. |
+| 1133 | `Good.Pricing.SELLER` | The selling sector strikes it; the market only records the sale. |
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 1123 | `Good.GOLD_FREIGHT_SHARE` | `.0025` | Bullion freight each way as a share of its nominal price (GD4, estimate). |
+| 1126 | `Good.GOLD_MARGIN_SHARE` | `.0025` | The bullion dealer's margin each way as a share of its nominal price (GD4, estimate). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 1130 | `private final String label` |  |
-| 1131 | `private final String unit` |  |
-| 1132 | `private final double worldImportPrice` |  |
-| 1133 | `private final double worldExportPrice` |  |
-| 1134 | `private final double baseFreight` |  |
-| 1136 | `private final double todaysImportPrice` | The three prices as the table writes them, world thousands a unit at today's (2025's) level, before PriceLevel.FACTOR (PriceLevelCheck). |
-| 1137 | `private final double todaysExportPrice` |  |
-| 1138 | `private final double todaysBaseFreight` |  |
-| 1139 | `private final boolean stockable` |  |
-| 1140 | `private final Pricing pricing` |  |
-| 1141 | `private final boolean taxExempt` |  |
-| 1144 | `private final double litresPerTonne` | Litres to the tonne for a good counted in litres (0.7.76), NaN for every other. |
-| 1147 | `private final double tonnesPerCubicMetre` | Tonnes to the cubic metre for a good counted in cubic metres (0.7.138, batch I9; spec-materials 2.3): green roundwood's 0.9; NaN for every other. |
+| 1136 | `private final String label` |  |
+| 1137 | `private final String unit` |  |
+| 1138 | `private final double worldImportPrice` |  |
+| 1139 | `private final double worldExportPrice` |  |
+| 1140 | `private final double baseFreight` |  |
+| 1142 | `private final double todaysImportPrice` | The three prices as the table writes them, world thousands a unit at today's (2025's) level, before PriceLevel.FACTOR (PriceLevelCheck). |
+| 1143 | `private final double todaysExportPrice` |  |
+| 1144 | `private final double todaysBaseFreight` |  |
+| 1145 | `private final boolean stockable` |  |
+| 1146 | `private final Pricing pricing` |  |
+| 1147 | `private final boolean taxExempt` |  |
+| 1150 | `private final double litresPerTonne` | Litres to the tonne for a good counted in litres (0.7.76), NaN for every other. |
+| 1153 | `private final double tonnesPerCubicMetre` | Tonnes to the cubic metre for a good counted in cubic metres (0.7.138, batch I9; spec-materials 2.3): green roundwood's 0.9; NaN for every other. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 114 | 1328 | **type** `public enum Good` | A thing that can be made, bought, held, imported and exported. |
-| 1123 | 6 | **type** `public enum Pricing` | How a good's price is struck. |
-| 1149 | 4 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
-| 1154 | 4 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
-| 1159 | 20 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
-| 1181 | 1 | `public double todaysImportPrice()` | The import ceiling as the table writes it, at today's price level (before PriceLevel.FACTOR); NaN where the world sells none. |
-| 1184 | 1 | `public double todaysExportPrice()` | The export floor as the table writes it, at today's price level (before PriceLevel.FACTOR); NaN where the world buys none. |
-| 1187 | 1 | `public double todaysBaseFreight()` | The base freight as the table writes it, at today's price level (before PriceLevel.FACTOR). |
-| 1190 | 1 | `public double litresPerTonne()` | Litres to the tonne (0.7.76): what a litre of this weighs, inverted; NaN for a good not counted in litres. |
-| 1193 | 1 | `public double tonnesPerCubicMetre()` | Tonnes to the cubic metre (0.7.138): what a cubic metre of this weighs; NaN for a good not counted in cubic metres. |
-| 1195 | 1 | `public String label()` |  |
-| 1196 | 1 | `public String unit()` |  |
-| 1206 | 1 | `public double worldImportPrice()` | What the world charges for one DELIVERED HERE, in ITS money. |
-| 1209 | 1 | `public double worldExportPrice()` | What the world pays for one DELIVERED THERE, in ITS money. |
-| 1220 | 1 | `public double baseFreight()` | What it costs to move one unit between the city and the world, in the world's money - three quarters of the wedge on every good that has both ends, and zero for the things nobody ships. |
-| 1229 | 1 | `public double worldBuyPrice()` | The world's own ask, before anything is moved - the import price less the freight in it. |
-| 1240 | 1 | `public double worldSellPrice()` | The world's own bid, before anything is moved - the export price with the freight added back. |
-| 1242 | 1 | `public boolean importable()` |  |
-| 1243 | 1 | `public boolean exportable()` |  |
-| 1244 | 1 | `public boolean stockable()` |  |
-| 1245 | 1 | `public Pricing pricing()` |  |
-| 1248 | 1 | `public boolean taxExempt()` | True for a supply the sales tax never touches. |
-| 1259 | 1 | `public int planningMonths()` | How many months of the city's take a maker averages before it plans a plant against it. |
-| 1262 | 1 | `public boolean traded()` | Clears in the band on scarcity, as opposed to being priced by its seller. |
+| 114 | 1334 | **type** `public enum Good` | A thing that can be made, bought, held, imported and exported. |
+| 1129 | 6 | **type** `public enum Pricing` | How a good's price is struck. |
+| 1155 | 4 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
+| 1160 | 4 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
+| 1165 | 20 | `Good(String label, String unit, double worldImportPrice, double worldExportPrice, double baseFreight, boolean stockable, Pricin...` |  |
+| 1187 | 1 | `public double todaysImportPrice()` | The import ceiling as the table writes it, at today's price level (before PriceLevel.FACTOR); NaN where the world sells none. |
+| 1190 | 1 | `public double todaysExportPrice()` | The export floor as the table writes it, at today's price level (before PriceLevel.FACTOR); NaN where the world buys none. |
+| 1193 | 1 | `public double todaysBaseFreight()` | The base freight as the table writes it, at today's price level (before PriceLevel.FACTOR). |
+| 1196 | 1 | `public double litresPerTonne()` | Litres to the tonne (0.7.76): what a litre of this weighs, inverted; NaN for a good not counted in litres. |
+| 1199 | 1 | `public double tonnesPerCubicMetre()` | Tonnes to the cubic metre (0.7.138): what a cubic metre of this weighs; NaN for a good not counted in cubic metres. |
+| 1201 | 1 | `public String label()` |  |
+| 1202 | 1 | `public String unit()` |  |
+| 1212 | 1 | `public double worldImportPrice()` | What the world charges for one DELIVERED HERE, in ITS money. |
+| 1215 | 1 | `public double worldExportPrice()` | What the world pays for one DELIVERED THERE, in ITS money. |
+| 1226 | 1 | `public double baseFreight()` | What it costs to move one unit between the city and the world, in the world's money - three quarters of the wedge on every good that has both ends, and zero for the things nobody ships. |
+| 1235 | 1 | `public double worldBuyPrice()` | The world's own ask, before anything is moved - the import price less the freight in it. |
+| 1246 | 1 | `public double worldSellPrice()` | The world's own bid, before anything is moved - the export price with the freight added back. |
+| 1248 | 1 | `public boolean importable()` |  |
+| 1249 | 1 | `public boolean exportable()` |  |
+| 1250 | 1 | `public boolean stockable()` |  |
+| 1251 | 1 | `public Pricing pricing()` |  |
+| 1254 | 1 | `public boolean taxExempt()` | True for a supply the sales tax never touches. |
+| 1265 | 1 | `public int planningMonths()` | How many months of the city's take a maker averages before it plans a plant against it. |
+| 1268 | 1 | `public boolean traded()` | Clears in the band on scarcity, as opposed to being priced by its seller. |
 
-### WHAT IT TAKES TO CARRY ONE (2026-09-16) (lines 1264-1441)
+### WHAT IT TAKES TO CARRY ONE (2026-09-16) (lines 1270-1447)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1290 | 35 | `public double tonnesPerUnit()` | One unit, in tonnes. |
-| 1342 | 40 | `public Traffic traffic()` | Which stream of traffic a tonne of this joins, or null for the things that never take up road at all. |
-| 1404 | 30 | `public Ports.Cargo cargo()` | What kind of ship carries it, and so which terminal's berth (0.7.86, batch O9; docs/studies/spec-oil.md 2.1, Ports.Cargo), or null for the things that never cross the boundary as freight. |
-| 1436 | 5 | `public static Good byName(String name)` | The good with this saved name, or null - a save from a build without it loses that line, not the load. |
+| 1296 | 35 | `public double tonnesPerUnit()` | One unit, in tonnes. |
+| 1348 | 40 | `public Traffic traffic()` | Which stream of traffic a tonne of this joins, or null for the things that never take up road at all. |
+| 1410 | 30 | `public Ports.Cargo cargo()` | What kind of ship carries it, and so which terminal's berth (0.7.86, batch O9; docs/studies/spec-oil.md 2.1, Ports.Cargo), or null for the things that never cross the boundary as freight. |
+| 1442 | 5 | `public static Good byName(String name)` | The good with this saved name, or null - a save from a build without it loses that line, not the load. |
 
