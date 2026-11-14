@@ -178,7 +178,7 @@ mismatches after the bullion funnel repair.
 | BuildCardCheck, smelter-acid outlets | One buyer, Copper Mining, at its input nameplate | Two buyers, Copper Mining then Gold Mining, each at its input nameplate | The approved reagent stand-in creates the second buyer. |
 | BuildCardCheck, chain-page coverage | Nine extraction/processing pages with all goods' buyer lines | Ten pages with the same per-good buyer-line assertions | GoldMining is the added extraction page. |
 | CopperRefiningCheck, acid users | Copper Mining | Copper Mining and Gold Mining | The new mill uses ACID. Other maker/user sets retain their entries. |
-| WoodProductsCheck, registry position | Index 23 after Forestry and the final key | Index 23 after Forestry, followed by Gold Mining | Append the twenty-fifth sector. GoldMiningCheck separately requires 25 keys and Gold Mining last. |
+| WoodProductsCheck, registry position | Index 23 after Forestry and the final key | Index 23 after Forestry, followed by Gold Mining, with keys.length == at + 2 | Append the twenty-fifth sector. GoldMiningCheck separately requires 25 keys and Gold Mining last. |
 | GdpCheck, HELD's existing tail | Twelve trailing goods from CRUDE through TRUCKS, with their stockability checks | Those twelve retain their order, followed by GOLD and its stockability check | Append the new stockable commodity. The every-held-good coverage assertion stays as written. |
 | TradeCostCheck, delivered-price table | Every pre-GD4 traded good's founding literal, bit-for-bit | The same rows plus gold's founding quote from the statute and declared freight/margin shares | Extend the exhaustive commodity table. Existing rows keep their exact-price comparison. |
 | TradeCostCheck, freight fraction | Every pre-GD4 two-sided band has freight at 75% of its half-wedge | The existing bands retain 75%; GOLD uses the ratio of its declared freight to freight plus dealer margin, 50% | The brief specifies gold freight and margin at 0.25% each side. The original 1.5%-of-half-wedge tolerance is unchanged. |
@@ -195,3 +195,8 @@ The mine plan's displayed quantity now uses Resource.unit() in its existing
 format string, so gold reads in troy ounces. Existing tonne resources retain
 their wording. This is a display-text correction over the ensemble's
 cd3c3abd arithmetic model.
+
+REV-GD4-2 retains WoodProductsCheck's exact terminal-count assertion by
+extending it from at + 1 to at + 2 alongside the appended GOLD key. The
+Changed assertions table was committed in 47d5be25 and includes that condition.
+The ensemble's arithmetic model remains cd3c3abd.

@@ -135,7 +135,8 @@ public class WoodProductsCheck {
         String[] keys = Sectors.KEYS;
         int at = java.util.Arrays.asList(keys).indexOf(Sectors.WOOD_PRODUCTS);
         assertTrue("Sectors.KEYS has Wood Products after Forestry, the twenty-fourth, followed by Gold Mining (Jerus's Q21: iron, coal, stone, copper, wood)",
-                at == 23 && keys[at - 1].equals(Sectors.FORESTRY) && keys[at + 1].equals(Sectors.GOLD_MINING));
+                at == 23 && keys[at - 1].equals(Sectors.FORESTRY)
+                        && keys[at + 1].equals(Sectors.GOLD_MINING) && keys.length == at + 2);
         Sectors s = new Sectors(new BuildingManager(), new Markets());
         WoodProducts wp = s.woodProducts();
         assertTrue("...a processing sector found by its saved name, Iron & Steel's group, making lumber, residues, panels, pulp, paper and"
