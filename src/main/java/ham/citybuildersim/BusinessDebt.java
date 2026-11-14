@@ -39,6 +39,13 @@ public abstract class BusinessDebt {
 
     protected String type;
 
+    /** A last-plant closure earmarks its surviving loan for repayment from liquidation cash (BF1); saved with the instrument. */
+    protected boolean retirementClaim;
+
+    public void markRetirementClaim() { retirementClaim = true; }
+
+    public boolean isRetirementClaim() { return retirementClaim; }
+
     /** Advances the clock by one month. Must not move any cash. */
     public abstract void processMonth();
 

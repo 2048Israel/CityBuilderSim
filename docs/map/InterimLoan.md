@@ -26,7 +26,7 @@
 
 **Uses:** [BusinessLoan](BusinessLoan.md) (1)
 
-**Used by (4):** [BusinessDebtManager](BusinessDebtManager.md), [CreditCheck](CreditCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
+**Used by (5):** [BankFailureCheck](BankFailureCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [CreditCheck](CreditCheck.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md)
 
 ## Constants
 

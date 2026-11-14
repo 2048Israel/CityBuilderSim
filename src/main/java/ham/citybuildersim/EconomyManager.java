@@ -697,6 +697,7 @@ public class EconomyManager {
                     sheet.getTotalAssets() - sheet.getTradePayables() + getForeignAssets(s.key())
                             + getBondAssets(s.key()));
             businessDebtManager.setCash(s.key(), s.getCash());
+            businessDebtManager.setRetirementRecovery(s.key(), s.retirementRecovery());
         }
     }
 
@@ -1463,6 +1464,10 @@ public class EconomyManager {
             double matured = businessDebtManager.takeMaturedPrincipal(s.key());
             businessDebtManager.setMonthObligations(s.key(), monthObligations(s, matured));
             double cash = s.getCash() - matured;
+            // BF1: a subtraction's rounding is not a cash shortfall. A hair
+            // below zero otherwise draws BUFFER_MONTHS of losses, while the
+            // same books in another money unit draw nothing.
+            if (cash < 0 && -cash <= MoneyAudit.tolerance(0, businessDebtManager.getMonthObligations(s.key()))) cash = 0;
             if (cash < 0) {
                 double need = -cash;
                 if (outward != null) need -= outward.recall(s.key(), need, this);
@@ -1471,6 +1476,8 @@ public class EconomyManager {
                 }
                 cash = s.getCash() - matured;
             }
+            // Liquidation cash pays the retired claim before a new loan or a default slice can reuse it.
+            if (cash > 0) cash = Math.max(0, cash - businessDebtManager.settleRetiringLoans(s.key(), cash));
             double loss = Math.max(-s.getNetIncome(), 0);
             double lent = businessDebtManager.coverShortfall(s.key(), cash, loss, month);
             // ...less the loan's fee, which the bank keeps back (0.7.7);

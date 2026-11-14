@@ -56,7 +56,7 @@
 > when the spread has gone, when it borrows, or when it needs the money - by
 > the rule that sends the dollars home. See THE CITY'S PAPER.
 
-**Uses:** [EconomyManager](EconomyManager.md) (13), [Sectors](Sectors.md) (11), [ForeignAccounts](ForeignAccounts.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (2), [Sector](Sector.md) (1)
+**Uses:** [EconomyManager](EconomyManager.md) (13), [Sectors](Sectors.md) (11), [ForeignAccounts](ForeignAccounts.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (2), [PriceLevel](PriceLevel.md) (1), [Sector](Sector.md) (1)
 
 **Used by (16):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [EconomyManager](EconomyManager.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [TradeScreen](TradeScreen.md)
 
@@ -83,13 +83,13 @@
 | 85 | `OutwardInvestment.MAX_SHARE` | `.9` | Never more than this. |
 | 92 | `OutwardInvestment.OUT_SPEED` | `.04` | How much of the gap to its target moves abroad in a month. |
 | 95 | `OutwardInvestment.HOME_SPEED` | `.10` | ...and how much comes home in a month, which is faster, because it is needed. |
-| 119 | `OutwardInvestment.MIN_MOVE` | `1e-9` |  |
+| 119 | `OutwardInvestment.MIN_MOVE` | `PriceLevel.atFounding(1e-9)` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 122 | `private double minMove` | The same floor in today's money. |
+| 122 | `private double minMove` | The founding-money floor in the current unit. |
 | 132 | `private final Map<String, Double> usd` | Held abroad, per sector, in the dollars it is held in. |
 | 135 | `private final Map<String, Double> moved` | This month's move, per sector, in local money: positive went abroad, negative came home. |
 | 138 | `private final Map<String, Double> recalled` | Brought home on demand earlier this month, per sector, in local money. |

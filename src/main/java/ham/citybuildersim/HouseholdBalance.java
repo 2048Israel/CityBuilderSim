@@ -3137,9 +3137,9 @@ public class HouseholdBalance {
        reform does not move dollars - see Household.redenominate(), whose note
        says so - so 1e-15 there is scale-invariant and stays a literal.
        ===================================================================== */
-    public static final double MIN_MOVE = 1e-12;
+    public static final double MIN_MOVE = PriceLevel.atFounding(1e-12);
 
-    /** The same floor in today's money. See MIN_MOVE. */
+    /** The founding-money floor in the current unit. See MIN_MOVE. */
     private double minMove = MIN_MOVE;
 
     /** Re-seeds the floor at a given unit. See Denomination. */

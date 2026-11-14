@@ -1,4 +1,4 @@
-# Pieces.java - 6,664 lines · 302 methods · 33 constants · interface
+# Pieces.java - 6,667 lines · 302 methods · 33 constants · interface
 
 `ham/citybuildersim/ui/Pieces.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -85,27 +85,27 @@
 | 4400 | THE PIECES THE FINANCES SCREEN ADDED (0.7.32) |
 | 4733 | THE PIECES THE BANK SCREEN ADDED (0.7.33) |
 | 4782 | · a ladder of rates |
-| 4918 | · two bars on one scale |
-| 4954 | · a status banner |
-| 4981 | THE BUTTON THAT ASKS TO BE PRESSED (0.7.34) |
-| 5244 | THE PIECES THE TRADE SCREEN ADDED (0.7.35) |
-| 5339 | · a band track |
-| 5499 | · a gauge card |
-| 5557 | · mirrored bars |
-| 5902 | · diverging bars |
-| 6143 | THE PIECES THE POLICY SCREEN ADDED (0.7.36) |
-| 6333 | THE PIECES CITY HISTORY ADDED (0.7.37) |
-| 6505 | THE PIECES THE FUND ADDED (0.7.39) |
-| 6602 | WHO GOES WITHOUT (0.7.45) |
+| 4921 | · two bars on one scale |
+| 4957 | · a status banner |
+| 4984 | THE BUTTON THAT ASKS TO BE PRESSED (0.7.34) |
+| 5247 | THE PIECES THE TRADE SCREEN ADDED (0.7.35) |
+| 5342 | · a band track |
+| 5502 | · a gauge card |
+| 5560 | · mirrored bars |
+| 5905 | · diverging bars |
+| 6146 | THE PIECES THE POLICY SCREEN ADDED (0.7.36) |
+| 6336 | THE PIECES CITY HISTORY ADDED (0.7.37) |
+| 6508 | THE PIECES THE FUND ADDED (0.7.39) |
+| 6605 | WHO GOES WITHOUT (0.7.45) |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 5016 | `Pieces.Look.GO` |  |
-| 5016 | `Pieces.Look.CHOOSE` |  |
-| 5016 | `Pieces.Look.CREDIT` |  |
-| 5016 | `Pieces.Look.HELD` |  |
+| 5019 | `Pieces.Look.GO` |  |
+| 5019 | `Pieces.Look.CHOOSE` |  |
+| 5019 | `Pieces.Look.CREDIT` |  |
+| 5019 | `Pieces.Look.HELD` |  |
 
 ## Constants
 
@@ -135,15 +135,15 @@
 | 4463 | `Pieces.Columns.TOP` | `34, FOOT = 30, GAP = 8` | The room over the plot for a tag and a figure, under it for a label and its second line, and the gap between columns. |
 | 4752 | `Pieces.BAND_SCALE` | `1.6` | How far past the top of its band a ratio's bar runs, as a multiple of the top: the band sits in the left of it, so a ratio well over its band reads as full (BankScreen's capital band's since 0.7.9). |
 | 4816 | `Pieces.RUNG_ROW` | `30, RUNG_BAND = 12` | A rung's least height, and its bar's band. |
-| 5025 | `Pieces.ACTION_TALL` | `40` | An action button's height on a card, where it is the thing the card is for. |
-| 5028 | `Pieces.ACTION_INLINE` | `32` | ...beside a heading, where it shares a row with words: Build's "Build all three", the land office's "Buy the next 5". |
-| 5031 | `Pieces.DOOR_TALL` | `30` | A door pill's height. |
-| 5234 | `Pieces.DOOR_ACCENT` | `"pieces.doorAccent"` | The key under which a door pill carries its accent, for the listeners added once to read. |
-| 5612 | `Pieces.MirrorRows.ROW` | `28, BAR = 12, ICON = 18, GAP = 8` | A row's least height, its bar's thickness, an icon's size and the gaps between the columns. |
-| 5954 | `Pieces.DivergingBars.ROW` | `30, BAR = 12` | A row's least height and its bar's thickness. |
-| 6442 | `Pieces.RangeBar.TRACK` | `6, DOT = 10, TICK_W = 5, TICK_H = 14, PAD = 6` | The track's height, the dot's size, the tick's width and height, and the room either end so the dot is never cut. |
-| 6560 | `Pieces.TYPED` | `"pieces.typed"` | The key under which a search box carries the consumer of what is typed in it, for the listener added once to call. |
-| 6620 | `Pieces.HUNGER_INFO` | `"The measure is struck at the top of the month on the last sale: what each " ...` | The (i): when the measure is struck, and what each half means. |
+| 5028 | `Pieces.ACTION_TALL` | `40` | An action button's height on a card, where it is the thing the card is for. |
+| 5031 | `Pieces.ACTION_INLINE` | `32` | ...beside a heading, where it shares a row with words: Build's "Build all three", the land office's "Buy the next 5". |
+| 5034 | `Pieces.DOOR_TALL` | `30` | A door pill's height. |
+| 5237 | `Pieces.DOOR_ACCENT` | `"pieces.doorAccent"` | The key under which a door pill carries its accent, for the listeners added once to read. |
+| 5615 | `Pieces.MirrorRows.ROW` | `28, BAR = 12, ICON = 18, GAP = 8` | A row's least height, its bar's thickness, an icon's size and the gaps between the columns. |
+| 5957 | `Pieces.DivergingBars.ROW` | `30, BAR = 12` | A row's least height and its bar's thickness. |
+| 6445 | `Pieces.RangeBar.TRACK` | `6, DOT = 10, TICK_W = 5, TICK_H = 14, PAD = 6` | The track's height, the dot's size, the tick's width and height, and the room either end so the dot is never cut. |
+| 6563 | `Pieces.TYPED` | `"pieces.typed"` | The key under which a search box carries the consumer of what is typed in it, for the listener added once to call. |
+| 6623 | `Pieces.HUNGER_INFO` | `"The measure is struck at the top of the month on the last sale: what each " ...` | The (i): when the measure is struck, and what each half means. |
 
 ## Fields (state)
 
@@ -216,53 +216,53 @@
 | 4470 | `private final List<Region> hits` |  |
 | 4472 | `private final List<javafx.scene.shape.Shape[]> breaks` | A broken column's break (0.7.34): the gap, in the card's ground, and its two slashes; null for a whole column. |
 | 4474 | `private Object[] built` | The figures its parts were built from, by content: set() builds them again only when these move. |
-| 5048 | `private String svg, accent` |  |
-| 5049 | `private double tall` |  |
-| 5050 | `private final HBox row` |  |
-| 5051 | `private final Label main` |  |
-| 5053 | `private Label sub` | The line under the words, or null while the button has none (see show()). |
-| 5054 | `private final VBox words` |  |
-| 5055 | `private Press press` |  |
-| 5056 | `private Runnable go` |  |
-| 5364 | `private double at, band` |  |
-| 5365 | `private double[] edges` |  |
-| 5366 | `private List<Tick> ticks` |  |
-| 5367 | `private boolean muted` |  |
-| 5369 | `private String shape, laidOut` | What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. |
-| 5370 | `private final List<Region> bands` |  |
-| 5371 | `private final List<Label> names` |  |
-| 5372 | `private final Region mark` |  |
-| 5595 | `private List<Mirror> rows` |  |
-| 5596 | `private double scale, nameWidth, netWidth` |  |
-| 5597 | `private String leftColour, rightColour, leftHeadWords, rightHeadWords` |  |
-| 5598 | `private final List<javafx.scene.Node> icons` |  |
-| 5599 | `private final List<Label> names` |  |
-| 5601 | `private final List<Region> leftBars` |  |
-| 5603 | `private final Region axis` |  |
-| 5604 | `private Label leftHead, rightHead` |  |
-| 5605 | `private Region leftSwatch, rightSwatch` |  |
-| 5607 | `private String shape, laidOut` | What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. |
-| 5609 | `private final javafx.beans.property.DoubleProperty grown` | How far the bars have grown out of the axis, 0 to 1 (grow()). |
-| 5941 | `private List<Force> rows` |  |
-| 5942 | `private double scale` |  |
-| 5943 | `private String leftWordsText, rightWordsText` |  |
-| 5944 | `private final List<VBox> names` |  |
-| 5945 | `private final List<Label> nameLabels` |  |
-| 5947 | `private final List<Region> bars` |  |
-| 5948 | `private final Region axis` |  |
-| 5949 | `private Label leftWords, rightWords` |  |
-| 5951 | `private String shape, laidOut` | What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. |
-| 6354 | `public Label name, figure, change` | The line's name, its figure now, and its move over the window. |
-| 6355 | `private javafx.collections.ObservableList<javafx.scene.Node> stage` |  |
-| 6443 | `private double lo, hi, first, last` |  |
-| 6444 | `private final Region track` |  |
-| 6446 | `private final javafx.beans.property.DoubleProperty at` | Where the dot is drawn, as a share of the track: the end's own, or on its way there (slideFrom()). |
+| 5051 | `private String svg, accent` |  |
+| 5052 | `private double tall` |  |
+| 5053 | `private final HBox row` |  |
+| 5054 | `private final Label main` |  |
+| 5056 | `private Label sub` | The line under the words, or null while the button has none (see show()). |
+| 5057 | `private final VBox words` |  |
+| 5058 | `private Press press` |  |
+| 5059 | `private Runnable go` |  |
+| 5367 | `private double at, band` |  |
+| 5368 | `private double[] edges` |  |
+| 5369 | `private List<Tick> ticks` |  |
+| 5370 | `private boolean muted` |  |
+| 5372 | `private String shape, laidOut` | What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. |
+| 5373 | `private final List<Region> bands` |  |
+| 5374 | `private final List<Label> names` |  |
+| 5375 | `private final Region mark` |  |
+| 5598 | `private List<Mirror> rows` |  |
+| 5599 | `private double scale, nameWidth, netWidth` |  |
+| 5600 | `private String leftColour, rightColour, leftHeadWords, rightHeadWords` |  |
+| 5601 | `private final List<javafx.scene.Node> icons` |  |
+| 5602 | `private final List<Label> names` |  |
+| 5604 | `private final List<Region> leftBars` |  |
+| 5606 | `private final Region axis` |  |
+| 5607 | `private Label leftHead, rightHead` |  |
+| 5608 | `private Region leftSwatch, rightSwatch` |  |
+| 5610 | `private String shape, laidOut` | What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. |
+| 5612 | `private final javafx.beans.property.DoubleProperty grown` | How far the bars have grown out of the axis, 0 to 1 (grow()). |
+| 5944 | `private List<Force> rows` |  |
+| 5945 | `private double scale` |  |
+| 5946 | `private String leftWordsText, rightWordsText` |  |
+| 5947 | `private final List<VBox> names` |  |
+| 5948 | `private final List<Label> nameLabels` |  |
+| 5950 | `private final List<Region> bars` |  |
+| 5951 | `private final Region axis` |  |
+| 5952 | `private Label leftWords, rightWords` |  |
+| 5954 | `private String shape, laidOut` | What the parts were made for at the last set() (see shapeOf()), and what the layout read (see layoutKey()): null before the first. |
+| 6357 | `public Label name, figure, change` | The line's name, its figure now, and its move over the window. |
+| 6358 | `private javafx.collections.ObservableList<javafx.scene.Node> stage` |  |
+| 6446 | `private double lo, hi, first, last` |  |
+| 6447 | `private final Region track` |  |
+| 6449 | `private final javafx.beans.property.DoubleProperty at` | Where the dot is drawn, as a share of the track: the end's own, or on its way there (slideFrom()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 62 | 6603 | **type** `public final class Pieces` | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals bar, a stacked bar, a limit cell - and, under the divider half way down,... |
+| 62 | 6606 | **type** `public final class Pieces` | The small pieces of text and layout every screen is made from: a sentence, an alert, a sub-heading, a grid and its cells, a chip strip, a vitals bar, a stacked bar, a limit cell - and, under the divider half way down,... |
 | 65 | 3 | `public static VBox limitCell(String label, String value, String note, String tone)` | One figure in the constraints bar: what it is, what it reads, what it means. |
 
 ### A FIGURE THAT GOES WHERE IT IS DECIDED. (lines 69-426)
@@ -614,7 +614,7 @@
 |---:|---:|---|---|
 | 4763 | 18 | `public static SegmentBar bandBar(double value, double min, double target, double top, String tone, double width, double band, b...` | A ratio in its band (0.7.33): a bar of `value` in `tone` on a scale of BAND_SCALE times the top, pinned at the end past it, with ticks at the minimum and the top in the muted grey and at the target in the heading ink ... |
 
-### a ladder of rates (lines 4782-4917)
+### a ladder of rates (lines 4782-4920)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -629,168 +629,168 @@
 | 4812 | 1 | `public Rung under()` _(in Pieces.Rung)_ | ...set under the rung before it. |
 | 4828 | 17 | `public static VBox rateLadder(List<Rung> rungs, double scale, double nameWidth, double rateWidth, double stepWidth)` | A ladder of rates drawn in their parts (0.7.33): a row a rung - its icon, its name (in the accent with "›" when it is a door: a click opens where the rate is decided; in its own tone when it has one, a door or not), i... |
 | 4847 | 6 | `private static Label captionRung(Rung r)` | A caption rung: a sub-heading across the rows. |
-| 4855 | 62 | `private static HBox rungRow(Rung r, double scale, double nameWidth, double rateWidth, double stepWidth)` | One rung's row: its icon, its name (and tag), its bar, its rate, its step and its (i). |
+| 4855 | 65 | `private static HBox rungRow(Rung r, double scale, double nameWidth, double rateWidth, double stepWidth)` | One rung's row: its icon, its name (and tag), its bar, its rate, its step and its (i). |
 
-### two bars on one scale (lines 4918-4953)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4927 | 26 | `public static VBox balanceBars(String topWords, List<Segment> top, List<Tick> topTicks, String underWords, List<Segment> under,...` | Two bars on one scale (0.7.33): `top` and `under`, each a segment bar on `scale` with its own ticks, and each with its words in a column `labelWidth` wide at its left, which wrap and are never cut - the Bank's balance... |
-
-### a status banner (lines 4954-4980)
+### two bars on one scale (lines 4921-4956)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4963 | 17 | `public static HBox statusBanner(String word, String tone, String sentence, String svg)` | A status banner (0.7.33): a state's icon in a square tinted in its colour, its word as a chip, and the model's own sentence for it, whole and wrapping - on the raised ground with a 3 px edge at the left in the same co... |
+| 4930 | 26 | `public static VBox balanceBars(String topWords, List<Segment> top, List<Tick> topTicks, String underWords, List<Segment> under,...` | Two bars on one scale (0.7.33): `top` and `under`, each a segment bar on `scale` with its own ticks, and each with its words in a column `labelWidth` wide at its left, which wrap and are never cut - the Bank's balance... |
 
-### THE BUTTON THAT ASKS TO BE PRESSED (0.7.34) (lines 4981-5243)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5016 | 1 | **type** `public enum Look` | How an action button looks: GO filled, ready; CHOOSE outlined, nothing chosen yet; CREDIT outlined, it goes ahead on a loan; HELD neutral, it cannot go ahead as it stands. |
-| 5019 | 4 | **type** `public record Press(Look look, String main, String sub)` | What an action button says: its look, its words, and a smaller line under them (null: none). |
-| 5021 | 1 | `public String words()` _(in Pieces.Press)_ | Both lines as one, for a probe and the reader's accessible text. |
-| 5034 | 6 | `public static ActionButton actionButton(String svg, String accent, double tall, Press press, Runnable go)` | An action button: a Press in its look, and what a press does. |
-| 5047 | 139 | **type** `public static final class ActionButton extends javafx.scene.layout.StackPane` | The action button (0.7.34): a region the height of `tall` or what its words need, as wide as its parent gives it, its words wrapping inside it; show() changes what it says in place - a card's stepper reprices it witho... |
-| 5058 | 27 | `ActionButton(String svg, String accent, double tall, Press press, Runnable go)` _(in Pieces.ActionButton)_ |  |
-| 5091 | 11 | `void retell(String svg, String accent, double tall, Press press, Runnable go)` _(in Pieces.ActionButton)_ | A kept button (KP1) handed back for another draw: told what it is for and what a press does, and said again. |
-| 5104 | 24 | `public ActionButton show(Press p)` _(in Pieces.ActionButton)_ | Says a new Press, restyled in place. |
-| 5130 | 1 | `public Press press()` _(in Pieces.ActionButton)_ | What it says now. |
-| 5133 | 1 | `public void onPress(Runnable go)` _(in Pieces.ActionButton)_ | What a press does from now on. |
-| 5135 | 38 | `private void dress()` _(in Pieces.ActionButton)_ |  |
-| 5174 | 3 | `protected double computeMinHeight(double width)` _(in Pieces.ActionButton)_ |  |
-| 5178 | 3 | `protected double computePrefHeight(double width)` _(in Pieces.ActionButton)_ |  |
-| 5182 | 3 | `protected double computeMaxHeight(double width)` _(in Pieces.ActionButton)_ |  |
-| 5188 | 5 | `static String mix(String a, String b, double t)` | Two colours mixed, `t` of the way from `a` to `b`, as "#rrggbb". |
-| 5202 | 30 | `public static HBox doorPill(String text, String svg, String accent, Runnable go)` | A door as a pill (0.7.34): a way to Build or the land office - "Build for it", "Build · Roads & transit", "Land office" - outlined in the area's colour, its icon, its words whole and an arrow; tinted a little deeper u... |
-| 5237 | 6 | `private static void dressDoor(HBox pill)` | A door pill's style: its accent, tinted a little deeper under the pointer and deeper again pressed. |
-
-### THE PIECES THE TRADE SCREEN ADDED (0.7.35) (lines 5244-5338)
+### a status banner (lines 4957-4983)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5277 | 61 | `public static VBox bandMeter(String label, String reading, double at, double[] edges, String[] tones, String note, boolean muted)` | A meter with named bands and the city's mark on it (TradeScreen's THE THREE QUIET GAUGES until 0.7.35, moved unchanged; the gauge cards draw the same bands with bandTrack()). |
+| 4966 | 17 | `public static HBox statusBanner(String word, String tone, String sentence, String svg)` | A status banner (0.7.33): a state's icon in a square tinted in its colour, its word as a chip, and the model's own sentence for it, whole and wrapping - on the raised ground with a 3 px edge at the left in the same co... |
 
-### a band track (lines 5339-5498)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5349 | 7 | `public static BandTrack bandTrack(double at, double[] edges, String[] tones, List<Tick> ticks, double width, double band, boole...` | A meter's bands at any width (0.7.35): the bands laid end to end in their tones, faint, each `edges[i]` the right-hand end of band i in a 0-to-1 space; the city's mark at `at` (0 to 1), standing proud of the band, or ... |
-| 5363 | 135 | **type** `public static final class BandTrack extends javafx.scene.layout.Pane` | The track bandTrack() draws: a Pane that lays its bands, ticks and mark out at whatever width it is given. |
-| 5375 | 3 | `BandTrack()` _(in Pieces.BandTrack)_ | The mark, made once in its life; the bands and ticks come with set(). |
-| 5380 | 38 | `void set(double at, double[] edges, String[] tones, List<Tick> ticks, double width, double band, boolean muted)` _(in Pieces.BandTrack)_ | What the track draws now; see bandTrack() for what each is. |
-| 5424 | 5 | `private String shapeOf()` _(in Pieces.BandTrack)_ | What the parts depend on: how many bands, how many ticks and which of them are named. |
-| 5431 | 7 | `private String layoutKey()` _(in Pieces.BandTrack)_ | Every figure the layout reads, in one string: laid out again only when it differs. |
-| 5440 | 22 | `private void build()` _(in Pieces.BandTrack)_ | The parts made afresh, in the order they are drawn (the mark over them all). |
-| 5463 | 4 | `private boolean named()` _(in Pieces.BandTrack)_ |  |
-| 5469 | 1 | `private double tall()` _(in Pieces.BandTrack)_ | The band, the mark standing 4 px proud of it each way, and a line of names under it when a tick has one. |
-| 5471 | 26 | `protected void layoutChildren()` _(in Pieces.BandTrack)_ |  |
-
-### a gauge card (lines 5499-5556)
+### THE BUTTON THAT ASKS TO BE PRESSED (0.7.34) (lines 4984-5246)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5509 | 47 | `public static VBox gaugeCard(String svg, String colour, String title, String info, String reading, String readingTone, String c...` | A gauge as a card (0.7.35): its icon in a tinted square, its title and an (i) holding `info`; the reading in mono 22 beside its verdict as a chip in `chipTone` (no chip when `chip` is null); the bands with the city's ... |
+| 5019 | 1 | **type** `public enum Look` | How an action button looks: GO filled, ready; CHOOSE outlined, nothing chosen yet; CREDIT outlined, it goes ahead on a loan; HELD neutral, it cannot go ahead as it stands. |
+| 5022 | 4 | **type** `public record Press(Look look, String main, String sub)` | What an action button says: its look, its words, and a smaller line under them (null: none). |
+| 5024 | 1 | `public String words()` _(in Pieces.Press)_ | Both lines as one, for a probe and the reader's accessible text. |
+| 5037 | 6 | `public static ActionButton actionButton(String svg, String accent, double tall, Press press, Runnable go)` | An action button: a Press in its look, and what a press does. |
+| 5050 | 139 | **type** `public static final class ActionButton extends javafx.scene.layout.StackPane` | The action button (0.7.34): a region the height of `tall` or what its words need, as wide as its parent gives it, its words wrapping inside it; show() changes what it says in place - a card's stepper reprices it witho... |
+| 5061 | 27 | `ActionButton(String svg, String accent, double tall, Press press, Runnable go)` _(in Pieces.ActionButton)_ |  |
+| 5094 | 11 | `void retell(String svg, String accent, double tall, Press press, Runnable go)` _(in Pieces.ActionButton)_ | A kept button (KP1) handed back for another draw: told what it is for and what a press does, and said again. |
+| 5107 | 24 | `public ActionButton show(Press p)` _(in Pieces.ActionButton)_ | Says a new Press, restyled in place. |
+| 5133 | 1 | `public Press press()` _(in Pieces.ActionButton)_ | What it says now. |
+| 5136 | 1 | `public void onPress(Runnable go)` _(in Pieces.ActionButton)_ | What a press does from now on. |
+| 5138 | 38 | `private void dress()` _(in Pieces.ActionButton)_ |  |
+| 5177 | 3 | `protected double computeMinHeight(double width)` _(in Pieces.ActionButton)_ |  |
+| 5181 | 3 | `protected double computePrefHeight(double width)` _(in Pieces.ActionButton)_ |  |
+| 5185 | 3 | `protected double computeMaxHeight(double width)` _(in Pieces.ActionButton)_ |  |
+| 5191 | 5 | `static String mix(String a, String b, double t)` | Two colours mixed, `t` of the way from `a` to `b`, as "#rrggbb". |
+| 5205 | 30 | `public static HBox doorPill(String text, String svg, String accent, Runnable go)` | A door as a pill (0.7.34): a way to Build or the land office - "Build for it", "Build · Roads & transit", "Land office" - outlined in the area's colour, its icon, its words whole and an arrow; tinted a little deeper u... |
+| 5240 | 6 | `private static void dressDoor(HBox pill)` | A door pill's style: its accent, tinted a little deeper under the pointer and deeper again pressed. |
 
-### mirrored bars (lines 5557-5901)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5567 | 2 | **type** `public record Mirror(String svg, String name, double left, double right, String leftFigure, String rightFig...` | One row of mirrorRows() (0.7.35): its icon (null: none) and its name, which wraps and is never cut; what goes left of the axis and what goes right, in the rows' one unit, each with its figure as written (null: the sid... |
-| 5580 | 7 | `public static MirrorRows mirrorRows(List<Mirror> rows, double scale, String leftColour, String rightColour, String leftHead, St...` | Mirrored bars (0.7.35): a row each, its icon and name at the left, then a lane either side of a centre axis - `left` growing leftward from it in `leftColour`, `right` rightward in `rightColour`, both on `scale` (0 or ... |
-| 5594 | 307 | **type** `public static final class MirrorRows extends javafx.scene.layout.Pane` | The rows mirrorRows() draws: a Pane that lays them out at whatever width it is given. |
-| 5615 | 7 | `MirrorRows()` _(in Pieces.MirrorRows)_ | The axis and the picture's size, made once in its life; the rows come with set(). |
-| 5624 | 25 | `void set(List<Mirror> rows, double scale, String leftColour, String rightColour, String leftHead, String rightHead, double name...` _(in Pieces.MirrorRows)_ | What the picture draws now; see mirrorRows() for what each is. |
-| 5655 | 8 | `private String shapeOf()` _(in Pieces.MirrorRows)_ | What the parts depend on: whether each head is there, and per row its icon and which of its three figures say anything. |
-| 5665 | 9 | `private String layoutKey()` _(in Pieces.MirrorRows)_ | Every figure and word the layout reads, in one string: laid out again only when it differs. |
-| 5675 | 1 | `private static double finite(double v)` _(in Pieces.MirrorRows)_ |  |
-| 5678 | 1 | `public Region row(int i)` _(in Pieces.MirrorRows)_ | Row i's ground - the node its click is handed, to anchor a popover - or null past the rows. |
-| 5681 | 43 | `private void build()` _(in Pieces.MirrorRows)_ | The parts made afresh: the grounds behind, then the axis, the heads and each row's icon, name, bars and figures. |
-| 5725 | 11 | `private Label head()` _(in Pieces.MirrorRows)_ |  |
-| 5737 | 6 | `private Label figure(List<javafx.scene.Node> into)` _(in Pieces.MirrorRows)_ |  |
-| 5748 | 56 | `private void fill()` _(in Pieces.MirrorRows)_ | What the parts say and do now: their words, styles, tooltips and clicks, each set and never added to, and on both sides of every condition (a kept ground may have had a tooltip or a click last month). |
-| 5806 | 7 | `public void grow(double millis)` _(in Pieces.MirrorRows)_ | The bars grow out of the axis over `millis` - a month landing on the page. |
-| 5819 | 5 | `public void stand()` _(in Pieces.MirrorRows)_ | The bars standing at their lengths (KP6): a growth still running from the last draw stopped and the bars full, for a draw that does not grow them - a month that lands past the clock speed the figures can follow (UserI... |
-| 5825 | 1 | `private double headRoom()` _(in Pieces.MirrorRows)_ |  |
-| 5828 | 1 | `private double nameRoom()` _(in Pieces.MirrorRows)_ | The name column's own width: what is left of it after the icon. |
-| 5830 | 3 | `private double rowHeight(int i)` _(in Pieces.MirrorRows)_ |  |
-| 5834 | 1 | `public javafx.geometry.Orientation getContentBias()` _(in Pieces.MirrorRows)_ |  |
-| 5836 | 5 | `protected double computePrefHeight(double width)` _(in Pieces.MirrorRows)_ |  |
-| 5842 | 1 | `protected double computeMinHeight(double width)` _(in Pieces.MirrorRows)_ |  |
-| 5844 | 56 | `protected void layoutChildren()` _(in Pieces.MirrorRows)_ |  |
-
-### diverging bars (lines 5902-6142)
+### THE PIECES THE TRADE SCREEN ADDED (0.7.35) (lines 5247-5341)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5912 | 1 | **type** `public record Force(String name, double value, boolean total, boolean ghost, String info, String line)` | One row of divergingBars() (0.7.35): its name; its value, signed - below nothing drawn left of the centre line, above it right; a TOTAL row is the model's own sum, drawn in the stronger colour; a GHOST row is outlined... |
-| 5925 | 8 | `public static DivergingBars divergingBars(List<Force> rows, double scale, double nameWidth, double figureWidth, String colour, ...` | Diverging bars (0.7.35): a row each - its name with its (i) and line in a column `nameWidth` wide, a lane split by a centre line, the bar from the line to the value on a scale of plus or minus `scale` (one past it sto... |
-| 5940 | 202 | **type** `public static final class DivergingBars extends javafx.scene.layout.Pane` | The rows divergingBars() draws: a Pane that lays them out at whatever width it is given. |
-| 5957 | 6 | `DivergingBars()` _(in Pieces.DivergingBars)_ | The axis and the picture's size, made once in its life; the rows come with set(). |
-| 5965 | 21 | `void set(List<Force> rows, double scale, double nameWidth, double figureWidth, String colour, String totalColour, String leftWo...` _(in Pieces.DivergingBars)_ | What the picture draws now; see divergingBars() for what each is. |
-| 5991 | 5 | `private String shapeOf()` _(in Pieces.DivergingBars)_ | What the parts depend on: whether each direction is named, and per row its (i)'s sentence and whether it has a line under its name. |
-| 5998 | 6 | `private String layoutKey()` _(in Pieces.DivergingBars)_ | Every figure and word the layout reads, in one string: laid out again only when it differs. |
-| 6006 | 48 | `private void build()` _(in Pieces.DivergingBars)_ | The parts made afresh, in the order they are drawn. |
-| 6055 | 5 | `private Label wordsLabel()` _(in Pieces.DivergingBars)_ |  |
-| 6062 | 31 | `private void fill(String colour, String totalColour, java.util.function.DoubleFunction<String> fmt)` _(in Pieces.DivergingBars)_ | What the parts say now: their words and styles, each set and never added to. |
-| 6094 | 1 | `private double headRoom()` _(in Pieces.DivergingBars)_ |  |
-| 6096 | 1 | `private double rowHeight(int i)` _(in Pieces.DivergingBars)_ |  |
-| 6098 | 5 | `protected double computePrefHeight(double width)` _(in Pieces.DivergingBars)_ |  |
-| 6104 | 1 | `protected double computeMinHeight(double width)` _(in Pieces.DivergingBars)_ |  |
-| 6106 | 35 | `protected void layoutChildren()` _(in Pieces.DivergingBars)_ |  |
+| 5280 | 61 | `public static VBox bandMeter(String label, String reading, double at, double[] edges, String[] tones, String note, boolean muted)` | A meter with named bands and the city's mark on it (TradeScreen's THE THREE QUIET GAUGES until 0.7.35, moved unchanged; the gauge cards draw the same bands with bandTrack()). |
 
-### THE PIECES THE POLICY SCREEN ADDED (0.7.36) (lines 6143-6332)
+### a band track (lines 5342-5501)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6166 | 26 | **type** `public record Effect(String label, double before, double after, java.util.function.DoubleFunction<String> f...` | One effect of a move (0.7.36): its words; the figure before and after, written by `fmt`; the move written by `delta` (null: no chip); the bars' colour; the move's VERDICT colour when the after crosses a line the model... |
-| 6170 | 3 | `public static Effect of(String label, double before, double after, java.util.function.DoubleFunction<String> fmt)` _(in Pieces.Effect)_ | An effect in money's blue with no chip, no verdict and its own scale. |
-| 6173 | 3 | `public Effect delta(java.util.function.DoubleFunction<String> d)` _(in Pieces.Effect)_ |  |
-| 6176 | 1 | `public Effect colour(String c)` _(in Pieces.Effect)_ |  |
-| 6177 | 1 | `public Effect verdict(String v)` _(in Pieces.Effect)_ |  |
-| 6178 | 1 | `public Effect scale(double s)` _(in Pieces.Effect)_ |  |
-| 6179 | 1 | `public Effect info(String i)` _(in Pieces.Effect)_ |  |
-| 6181 | 4 | `public boolean moved()` _(in Pieces.Effect)_ | Whether the move shows: the two figures are written differently, or the move's chip says something (a $52k move on a $5.1M budget). |
-| 6186 | 5 | `public String words()` _(in Pieces.Effect)_ | The row in words, for a probe: "Profit tax $23.3M -> $24.8M (+$1.5M)". |
-| 6201 | 61 | `public static VBox beforeAfter(Effect e, double width)` | An effect as a row (0.7.36): its words at the left, wrapping and never cut, with its (i); at the right the figure before and, once something has moved it, an arrow and the after in the accent and the move as a chip; u... |
-| 6264 | 22 | `public static HBox stagedChip(String text, Runnable remove)` | A staged change as a chip in the tray (0.7.36): its words in the accent, and a × that takes it back out of the set. |
-| 6295 | 37 | `public static HBox stagedTray(List<? extends javafx.scene.Node> chips, Effect budget, javafx.scene.Node apply, javafx.scene.Nod...` | The staged tray (0.7.36): what a page has staged, as chips that each come out with their ×, THE BUDGET before and after the set (`budget`, null: none), and the page's Apply and Discard - on the raised ground with an a... |
+| 5352 | 7 | `public static BandTrack bandTrack(double at, double[] edges, String[] tones, List<Tick> ticks, double width, double band, boole...` | A meter's bands at any width (0.7.35): the bands laid end to end in their tones, faint, each `edges[i]` the right-hand end of band i in a 0-to-1 space; the city's mark at `at` (0 to 1), standing proud of the band, or ... |
+| 5366 | 135 | **type** `public static final class BandTrack extends javafx.scene.layout.Pane` | The track bandTrack() draws: a Pane that lays its bands, ticks and mark out at whatever width it is given. |
+| 5378 | 3 | `BandTrack()` _(in Pieces.BandTrack)_ | The mark, made once in its life; the bands and ticks come with set(). |
+| 5383 | 38 | `void set(double at, double[] edges, String[] tones, List<Tick> ticks, double width, double band, boolean muted)` _(in Pieces.BandTrack)_ | What the track draws now; see bandTrack() for what each is. |
+| 5427 | 5 | `private String shapeOf()` _(in Pieces.BandTrack)_ | What the parts depend on: how many bands, how many ticks and which of them are named. |
+| 5434 | 7 | `private String layoutKey()` _(in Pieces.BandTrack)_ | Every figure the layout reads, in one string: laid out again only when it differs. |
+| 5443 | 22 | `private void build()` _(in Pieces.BandTrack)_ | The parts made afresh, in the order they are drawn (the mark over them all). |
+| 5466 | 4 | `private boolean named()` _(in Pieces.BandTrack)_ |  |
+| 5472 | 1 | `private double tall()` _(in Pieces.BandTrack)_ | The band, the mark standing 4 px proud of it each way, and a line of names under it when a tick has one. |
+| 5474 | 26 | `protected void layoutChildren()` _(in Pieces.BandTrack)_ |  |
 
-### THE PIECES CITY HISTORY ADDED (0.7.37) (lines 6333-6504)
+### a gauge card (lines 5502-5559)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6352 | 23 | **type** `public static final class CardHead extends HBox implements Kept.Staging` | A chart card's head (0.7.37): its parts, so a month landing can count the figure up and a click can open the line. |
-| 6357 | 3 | `CardHead()` _(in Pieces.CardHead)_ |  |
-| 6361 | 3 | `public javafx.collections.ObservableList<javafx.scene.Node> getChildren()` _(in Pieces.CardHead)_ |  |
-| 6365 | 3 | `public void stage()` _(in Pieces.CardHead)_ |  |
-| 6369 | 5 | `public void commit()` _(in Pieces.CardHead)_ |  |
-| 6383 | 35 | `public static CardHead chartCardHead(String name, String figure, String change, Runnable open, javafx.scene.Node...right)` | A chart card's head (0.7.37): `name` in the label grey, `figure` in Plex Mono 17, `change` beside it in the body's ink - never a verdict's colour: a line rising is not good news by rising - then a gap and whatever `ri... |
-| 6429 | 5 | `public static RangeBar rangeBar(double lo, double hi, double first, double last, String colour, double width)` | A range bar (0.7.37): where a line ended in its own range over a window. |
-| 6440 | 64 | **type** `public static final class RangeBar extends javafx.scene.layout.Pane` | The bar rangeBar() draws: a Pane that lays its track, its tick and its dot out at whatever width it is given. |
-| 6448 | 9 | `RangeBar()` _(in Pieces.RangeBar)_ |  |
-| 6459 | 17 | `public void set(double lo, double hi, double first, double last, String colour, double width)` _(in Pieces.RangeBar)_ | Told this month's figures: a slide still running is for the figures before them, so it stops and the dot goes to where the line ends. |
-| 6478 | 1 | `public boolean flat()` _(in Pieces.RangeBar)_ | Whether the line never moved over the window: one dot, no tick. |
-| 6481 | 4 | `public double share(double v)` _(in Pieces.RangeBar)_ | Where a value sits on the track, 0 at the low and 1 at the high; a flat line's one value in the middle. |
-| 6487 | 9 | `public void slideFrom(double was, double millis)` _(in Pieces.RangeBar)_ | The dot slides to where it ends from `was` (a share of the track) over `millis` - a month landing on the page. |
-| 6497 | 6 | `protected void layoutChildren()` _(in Pieces.RangeBar)_ |  |
+| 5512 | 47 | `public static VBox gaugeCard(String svg, String colour, String title, String info, String reading, String readingTone, String c...` | A gauge as a card (0.7.35): its icon in a tinted square, its title and an (i) holding `info`; the reading in mono 22 beside its verdict as a chip in `chipTone` (no chip when `chip` is null); the bands with the city's ... |
 
-### THE PIECES THE FUND ADDED (0.7.39) (lines 6505-6601)
+### mirrored bars (lines 5560-5904)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6527 | 31 | `public static javafx.scene.control.TextField searchBox(String text, String prompt, double width, Consumer<String> typed, Runnab...` | A search box (0.7.39): `text` in it, `prompt` when empty, `width` wide; `typed` on every key, `entered` on Enter. |
-| 6563 | 1 | **type** `public record Pnl(String text, String tone)` | A gain or a loss in words and its colour: "▲ +D$149.6M (+420.2%)" green, "▼ −D$5,141 (−87.0%)" red, "▲ +D$368 (+0.2%)" and "D$0" in the body's ink. |
-| 6571 | 15 | `public static Pnl pnl(String sym, double amount, double share)` | P&L (0.7.39, the spec's D7): `amount` in the city's money with its mark `sym`, signed, with an arrow, and `share` of the cost after it as a percentage (NaN: none). |
-| 6588 | 4 | `public static String tidyMoney(String shown)` | Money.money()'s words at a unit's edge in the next unit's: "$1000k" is "$1.0M", "$1000.0M" "$1.0B", "$1000.0B" "$1.0T" (0.7.39) - none of which Money writes since 0.7.40 (tightMoney()), so it changes nothing now. |
-| 6594 | 7 | `public static Label pnlLabel(String sym, double amount, double share, double size)` | ...as a figure that is never cut, at a size. |
+| 5570 | 2 | **type** `public record Mirror(String svg, String name, double left, double right, String leftFigure, String rightFig...` | One row of mirrorRows() (0.7.35): its icon (null: none) and its name, which wraps and is never cut; what goes left of the axis and what goes right, in the rows' one unit, each with its figure as written (null: the sid... |
+| 5583 | 7 | `public static MirrorRows mirrorRows(List<Mirror> rows, double scale, String leftColour, String rightColour, String leftHead, St...` | Mirrored bars (0.7.35): a row each, its icon and name at the left, then a lane either side of a centre axis - `left` growing leftward from it in `leftColour`, `right` rightward in `rightColour`, both on `scale` (0 or ... |
+| 5597 | 307 | **type** `public static final class MirrorRows extends javafx.scene.layout.Pane` | The rows mirrorRows() draws: a Pane that lays them out at whatever width it is given. |
+| 5618 | 7 | `MirrorRows()` _(in Pieces.MirrorRows)_ | The axis and the picture's size, made once in its life; the rows come with set(). |
+| 5627 | 25 | `void set(List<Mirror> rows, double scale, String leftColour, String rightColour, String leftHead, String rightHead, double name...` _(in Pieces.MirrorRows)_ | What the picture draws now; see mirrorRows() for what each is. |
+| 5658 | 8 | `private String shapeOf()` _(in Pieces.MirrorRows)_ | What the parts depend on: whether each head is there, and per row its icon and which of its three figures say anything. |
+| 5668 | 9 | `private String layoutKey()` _(in Pieces.MirrorRows)_ | Every figure and word the layout reads, in one string: laid out again only when it differs. |
+| 5678 | 1 | `private static double finite(double v)` _(in Pieces.MirrorRows)_ |  |
+| 5681 | 1 | `public Region row(int i)` _(in Pieces.MirrorRows)_ | Row i's ground - the node its click is handed, to anchor a popover - or null past the rows. |
+| 5684 | 43 | `private void build()` _(in Pieces.MirrorRows)_ | The parts made afresh: the grounds behind, then the axis, the heads and each row's icon, name, bars and figures. |
+| 5728 | 11 | `private Label head()` _(in Pieces.MirrorRows)_ |  |
+| 5740 | 6 | `private Label figure(List<javafx.scene.Node> into)` _(in Pieces.MirrorRows)_ |  |
+| 5751 | 56 | `private void fill()` _(in Pieces.MirrorRows)_ | What the parts say and do now: their words, styles, tooltips and clicks, each set and never added to, and on both sides of every condition (a kept ground may have had a tooltip or a click last month). |
+| 5809 | 7 | `public void grow(double millis)` _(in Pieces.MirrorRows)_ | The bars grow out of the axis over `millis` - a month landing on the page. |
+| 5822 | 5 | `public void stand()` _(in Pieces.MirrorRows)_ | The bars standing at their lengths (KP6): a growth still running from the last draw stopped and the bars full, for a draw that does not grow them - a month that lands past the clock speed the figures can follow (UserI... |
+| 5828 | 1 | `private double headRoom()` _(in Pieces.MirrorRows)_ |  |
+| 5831 | 1 | `private double nameRoom()` _(in Pieces.MirrorRows)_ | The name column's own width: what is left of it after the icon. |
+| 5833 | 3 | `private double rowHeight(int i)` _(in Pieces.MirrorRows)_ |  |
+| 5837 | 1 | `public javafx.geometry.Orientation getContentBias()` _(in Pieces.MirrorRows)_ |  |
+| 5839 | 5 | `protected double computePrefHeight(double width)` _(in Pieces.MirrorRows)_ |  |
+| 5845 | 1 | `protected double computeMinHeight(double width)` _(in Pieces.MirrorRows)_ |  |
+| 5847 | 56 | `protected void layoutChildren()` _(in Pieces.MirrorRows)_ |  |
 
-### WHO GOES WITHOUT (0.7.45) (lines 6602-6664)
+### diverging bars (lines 5905-6145)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6616 | 2 | **type** `public record Hunger(double rate, double pricedOut, double shortOfStock, String figure, String pricedOutWor...` | WHO GOES WITHOUT's words (pure: the probe reads them): the figure, each half's key, whether the shelves are the larger half, the sentence and the (i). |
-| 6626 | 9 | `public static Hunger hunger(Game g)` |  |
-| 6637 | 6 | `public static String smallShare(double share)` | A share of the people, to one place, two under a tenth of a point: "26.8%", "0.04%", "none". |
-| 6645 | 19 | `public static VBox whoGoesWithout(Game g, Runnable shops)` | WHO GOES WITHOUT as a card: the figure, the two halves on a bar of the whole city, the sentence, and a door to the shops when they are the larger half. |
+| 5915 | 1 | **type** `public record Force(String name, double value, boolean total, boolean ghost, String info, String line)` | One row of divergingBars() (0.7.35): its name; its value, signed - below nothing drawn left of the centre line, above it right; a TOTAL row is the model's own sum, drawn in the stronger colour; a GHOST row is outlined... |
+| 5928 | 8 | `public static DivergingBars divergingBars(List<Force> rows, double scale, double nameWidth, double figureWidth, String colour, ...` | Diverging bars (0.7.35): a row each - its name with its (i) and line in a column `nameWidth` wide, a lane split by a centre line, the bar from the line to the value on a scale of plus or minus `scale` (one past it sto... |
+| 5943 | 202 | **type** `public static final class DivergingBars extends javafx.scene.layout.Pane` | The rows divergingBars() draws: a Pane that lays them out at whatever width it is given. |
+| 5960 | 6 | `DivergingBars()` _(in Pieces.DivergingBars)_ | The axis and the picture's size, made once in its life; the rows come with set(). |
+| 5968 | 21 | `void set(List<Force> rows, double scale, double nameWidth, double figureWidth, String colour, String totalColour, String leftWo...` _(in Pieces.DivergingBars)_ | What the picture draws now; see divergingBars() for what each is. |
+| 5994 | 5 | `private String shapeOf()` _(in Pieces.DivergingBars)_ | What the parts depend on: whether each direction is named, and per row its (i)'s sentence and whether it has a line under its name. |
+| 6001 | 6 | `private String layoutKey()` _(in Pieces.DivergingBars)_ | Every figure and word the layout reads, in one string: laid out again only when it differs. |
+| 6009 | 48 | `private void build()` _(in Pieces.DivergingBars)_ | The parts made afresh, in the order they are drawn. |
+| 6058 | 5 | `private Label wordsLabel()` _(in Pieces.DivergingBars)_ |  |
+| 6065 | 31 | `private void fill(String colour, String totalColour, java.util.function.DoubleFunction<String> fmt)` _(in Pieces.DivergingBars)_ | What the parts say now: their words and styles, each set and never added to. |
+| 6097 | 1 | `private double headRoom()` _(in Pieces.DivergingBars)_ |  |
+| 6099 | 1 | `private double rowHeight(int i)` _(in Pieces.DivergingBars)_ |  |
+| 6101 | 5 | `protected double computePrefHeight(double width)` _(in Pieces.DivergingBars)_ |  |
+| 6107 | 1 | `protected double computeMinHeight(double width)` _(in Pieces.DivergingBars)_ |  |
+| 6109 | 35 | `protected void layoutChildren()` _(in Pieces.DivergingBars)_ |  |
+
+### THE PIECES THE POLICY SCREEN ADDED (0.7.36) (lines 6146-6335)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6169 | 26 | **type** `public record Effect(String label, double before, double after, java.util.function.DoubleFunction<String> f...` | One effect of a move (0.7.36): its words; the figure before and after, written by `fmt`; the move written by `delta` (null: no chip); the bars' colour; the move's VERDICT colour when the after crosses a line the model... |
+| 6173 | 3 | `public static Effect of(String label, double before, double after, java.util.function.DoubleFunction<String> fmt)` _(in Pieces.Effect)_ | An effect in money's blue with no chip, no verdict and its own scale. |
+| 6176 | 3 | `public Effect delta(java.util.function.DoubleFunction<String> d)` _(in Pieces.Effect)_ |  |
+| 6179 | 1 | `public Effect colour(String c)` _(in Pieces.Effect)_ |  |
+| 6180 | 1 | `public Effect verdict(String v)` _(in Pieces.Effect)_ |  |
+| 6181 | 1 | `public Effect scale(double s)` _(in Pieces.Effect)_ |  |
+| 6182 | 1 | `public Effect info(String i)` _(in Pieces.Effect)_ |  |
+| 6184 | 4 | `public boolean moved()` _(in Pieces.Effect)_ | Whether the move shows: the two figures are written differently, or the move's chip says something (a $52k move on a $5.1M budget). |
+| 6189 | 5 | `public String words()` _(in Pieces.Effect)_ | The row in words, for a probe: "Profit tax $23.3M -> $24.8M (+$1.5M)". |
+| 6204 | 61 | `public static VBox beforeAfter(Effect e, double width)` | An effect as a row (0.7.36): its words at the left, wrapping and never cut, with its (i); at the right the figure before and, once something has moved it, an arrow and the after in the accent and the move as a chip; u... |
+| 6267 | 22 | `public static HBox stagedChip(String text, Runnable remove)` | A staged change as a chip in the tray (0.7.36): its words in the accent, and a × that takes it back out of the set. |
+| 6298 | 37 | `public static HBox stagedTray(List<? extends javafx.scene.Node> chips, Effect budget, javafx.scene.Node apply, javafx.scene.Nod...` | The staged tray (0.7.36): what a page has staged, as chips that each come out with their ×, THE BUDGET before and after the set (`budget`, null: none), and the page's Apply and Discard - on the raised ground with an a... |
+
+### THE PIECES CITY HISTORY ADDED (0.7.37) (lines 6336-6507)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6355 | 23 | **type** `public static final class CardHead extends HBox implements Kept.Staging` | A chart card's head (0.7.37): its parts, so a month landing can count the figure up and a click can open the line. |
+| 6360 | 3 | `CardHead()` _(in Pieces.CardHead)_ |  |
+| 6364 | 3 | `public javafx.collections.ObservableList<javafx.scene.Node> getChildren()` _(in Pieces.CardHead)_ |  |
+| 6368 | 3 | `public void stage()` _(in Pieces.CardHead)_ |  |
+| 6372 | 5 | `public void commit()` _(in Pieces.CardHead)_ |  |
+| 6386 | 35 | `public static CardHead chartCardHead(String name, String figure, String change, Runnable open, javafx.scene.Node...right)` | A chart card's head (0.7.37): `name` in the label grey, `figure` in Plex Mono 17, `change` beside it in the body's ink - never a verdict's colour: a line rising is not good news by rising - then a gap and whatever `ri... |
+| 6432 | 5 | `public static RangeBar rangeBar(double lo, double hi, double first, double last, String colour, double width)` | A range bar (0.7.37): where a line ended in its own range over a window. |
+| 6443 | 64 | **type** `public static final class RangeBar extends javafx.scene.layout.Pane` | The bar rangeBar() draws: a Pane that lays its track, its tick and its dot out at whatever width it is given. |
+| 6451 | 9 | `RangeBar()` _(in Pieces.RangeBar)_ |  |
+| 6462 | 17 | `public void set(double lo, double hi, double first, double last, String colour, double width)` _(in Pieces.RangeBar)_ | Told this month's figures: a slide still running is for the figures before them, so it stops and the dot goes to where the line ends. |
+| 6481 | 1 | `public boolean flat()` _(in Pieces.RangeBar)_ | Whether the line never moved over the window: one dot, no tick. |
+| 6484 | 4 | `public double share(double v)` _(in Pieces.RangeBar)_ | Where a value sits on the track, 0 at the low and 1 at the high; a flat line's one value in the middle. |
+| 6490 | 9 | `public void slideFrom(double was, double millis)` _(in Pieces.RangeBar)_ | The dot slides to where it ends from `was` (a share of the track) over `millis` - a month landing on the page. |
+| 6500 | 6 | `protected void layoutChildren()` _(in Pieces.RangeBar)_ |  |
+
+### THE PIECES THE FUND ADDED (0.7.39) (lines 6508-6604)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6530 | 31 | `public static javafx.scene.control.TextField searchBox(String text, String prompt, double width, Consumer<String> typed, Runnab...` | A search box (0.7.39): `text` in it, `prompt` when empty, `width` wide; `typed` on every key, `entered` on Enter. |
+| 6566 | 1 | **type** `public record Pnl(String text, String tone)` | A gain or a loss in words and its colour: "▲ +D$149.6M (+420.2%)" green, "▼ −D$5,141 (−87.0%)" red, "▲ +D$368 (+0.2%)" and "D$0" in the body's ink. |
+| 6574 | 15 | `public static Pnl pnl(String sym, double amount, double share)` | P&L (0.7.39, the spec's D7): `amount` in the city's money with its mark `sym`, signed, with an arrow, and `share` of the cost after it as a percentage (NaN: none). |
+| 6591 | 4 | `public static String tidyMoney(String shown)` | Money.money()'s words at a unit's edge in the next unit's: "$1000k" is "$1.0M", "$1000.0M" "$1.0B", "$1000.0B" "$1.0T" (0.7.39) - none of which Money writes since 0.7.40 (tightMoney()), so it changes nothing now. |
+| 6597 | 7 | `public static Label pnlLabel(String sym, double amount, double share, double size)` | ...as a figure that is never cut, at a size. |
+
+### WHO GOES WITHOUT (0.7.45) (lines 6605-6667)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6619 | 2 | **type** `public record Hunger(double rate, double pricedOut, double shortOfStock, String figure, String pricedOutWor...` | WHO GOES WITHOUT's words (pure: the probe reads them): the figure, each half's key, whether the shelves are the larger half, the sentence and the (i). |
+| 6629 | 9 | `public static Hunger hunger(Game g)` |  |
+| 6640 | 6 | `public static String smallShare(double share)` | A share of the people, to one place, two under a tenth of a point: "26.8%", "0.04%", "none". |
+| 6648 | 19 | `public static VBox whoGoesWithout(Game g, Runnable shops)` | WHO GOES WITHOUT as a card: the figure, the two halves on a bar of the whole city, the sentence, and a door to the shops when they are the larger half. |
 

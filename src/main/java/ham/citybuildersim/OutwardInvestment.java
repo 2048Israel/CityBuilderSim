@@ -116,9 +116,9 @@ public class OutwardInvestment {
        targetShare tests, and it put three sectors on the wrong side of the
        sweep within five months of the reform.
        ======================================================================= */
-    public static final double MIN_MOVE = 1e-9;
+    public static final double MIN_MOVE = PriceLevel.atFounding(1e-9);
 
-    /** The same floor in today's money. See MIN_MOVE. */
+    /** The founding-money floor in the current unit. See MIN_MOVE. */
     private double minMove = MIN_MOVE;
 
     /** Re-seeds the floor at a given unit. See Denomination. */

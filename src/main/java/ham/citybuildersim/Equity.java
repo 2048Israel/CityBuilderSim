@@ -128,6 +128,9 @@ public class Equity {
     /** A founding share: a thousand dollars, in the game's thousands, at today's prices. Priced at the founding's level (times PriceLevel.FACTOR, EP1). */
     public static final double FOUNDING_PRICE = 1.0 * PriceLevel.FACTOR;
 
+    /** An offering's money tail, at founding prices and reseeded with the founding quote (BF1). */
+    static final double OFFER_DUST = PriceLevel.atFounding(1e-9);
+
     /**
      * The same price in TODAY's money, after any currency reform.
      *
@@ -520,7 +523,7 @@ public class Equity {
          * bought on prospects; a company with twelve months of losses is not.
          */
         double abroad = 0;
-        if (left > 1e-9) {
+        if (left > OFFER_DUST * foundingPrice / FOUNDING_PRICE) {
             boolean founding = l.months < RECORD_MONTHS;
             double equityAfter = Math.max(0, bookEquity) + home + left;
             double yield = equityAfter > 0 ? PAYOUT * Math.max(0, l.trailingIncome()) / equityAfter : 0;

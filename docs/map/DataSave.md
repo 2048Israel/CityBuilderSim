@@ -1,4 +1,4 @@
-# DataSave.java - 2,921 lines · 449 methods · 1 constants · model
+# DataSave.java - 2,922 lines · 449 methods · 1 constants · model
 
 `ham/citybuildersim/DataSave.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -296,7 +296,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 2910 | **type** `public class DataSave implements Cloneable` |  |
+| 12 | 2911 | **type** `public class DataSave implements Cloneable` |  |
 | 304 | 1 | `public void setSectors(java.util.List<SectorState> s)` |  |
 | 305 | 1 | `public java.util.List<SectorState> getSectors()` |  |
 | 306 | 1 | `public void setMarkets(java.util.List<Markets.State> m)` |  |
@@ -511,7 +511,7 @@
 | 1532 | 1 | `public int getIronDeposits()` | An older save's pool of iron sites, 0 when it carries none: kept only as an obsolete save key. |
 | 1534 | 1 | `public double getIronReserveTonnes()` | ...and its tonnes. |
 
-### policy (lines 1537-2921)
+### policy (lines 1537-2922)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -763,15 +763,15 @@
 | 2869 | 3 | `public int getBuildingQuantity(int index)` |  |
 | 2873 | 3 | `public int getBuildingsLength()` |  |
 | 2877 | 3 | `public JsonArray getDebt()` |  |
-| 2881 | 3 | `public void setBusinessDebt(List<BusinessDebt> loans)` |  |
-| 2885 | 3 | `public JsonArray getBusinessDebt()` |  |
-| 2889 | 3 | `public int getProgressLength()` |  |
-| 2893 | 3 | `public double getProgress(int index)` |  |
-| 2897 | 3 | `public int getConstructionMaterials()` |  |
-| 2901 | 3 | `public long getPopulation()` |  |
-| 2904 | 3 | `public boolean getReports()` |  |
-| 2907 | 3 | `public java.util.List<Notice> getNotices()` |  |
-| 2910 | 3 | `public boolean getGraphs()` |  |
-| 2914 | 3 | `public String getRecordingId()` | The recording's id, or null in a city never recorded and in a save from before TR1. |
-| 2918 | 3 | `public boolean isRecording()` | Whether the city was recording when it was saved; false in a save from before TR1. |
+| 2882 | 3 | `public void setBusinessDebt(List<BusinessDebt> loans)` | All instrument fields, including BF1 retirementClaim, go out and back through the loan JSON. |
+| 2886 | 3 | `public JsonArray getBusinessDebt()` |  |
+| 2890 | 3 | `public int getProgressLength()` |  |
+| 2894 | 3 | `public double getProgress(int index)` |  |
+| 2898 | 3 | `public int getConstructionMaterials()` |  |
+| 2902 | 3 | `public long getPopulation()` |  |
+| 2905 | 3 | `public boolean getReports()` |  |
+| 2908 | 3 | `public java.util.List<Notice> getNotices()` |  |
+| 2911 | 3 | `public boolean getGraphs()` |  |
+| 2915 | 3 | `public String getRecordingId()` | The recording's id, or null in a city never recorded and in a save from before TR1. |
+| 2919 | 3 | `public boolean isRecording()` | Whether the city was recording when it was saved; false in a save from before TR1. |
 

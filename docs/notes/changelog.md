@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.102 — BF1, The hands-off bank fails on the sawmills — 2026-11-14, ready, see docs/queue/BF1-notes.md
+Processing mills sell stored output to the world after local buyers.
+Retirement repays loans and resolves debt left on an empty borrower;
+perishable stock leaves the books, while retained oil covers its claim
+at net export proceeds before a haircut. Projects and bank bond purchases
+share capital room, with pending loans counted once when they settle.
+Insured mortgages keep their zero risk weight and finite leverage limit.
+Order books find crossings across overlapping rounding bands; money floors
+follow the unit. BankFailureCheck causes the faults and audits all 120
+months of 24 hands-off Random cities. The apparent share loss was a
+consolidation; SX1's wage-based split rule and the real-series law stay.
+
 ### 0.9.101 — SX1, The exchange's prices readable — 2026-11-14, ready, see docs/queue/SX1-notes.md
 Shares now split above a quarter of the average monthly wage and consolidate
 below a four-hundredth, with every holding, order and fund cost moving together

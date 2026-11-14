@@ -1,4 +1,4 @@
-# BusinessDebt.java - 93 lines · 12 methods · 0 constants · model
+# BusinessDebt.java - 100 lines · 14 methods · 0 constants · model
 
 `ham/citybuildersim/BusinessDebt.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -24,7 +24,7 @@
 > Mortgage, the insured, amortizing loan a landlord buys a residential
 > building with.
 
-**Used by (9):** [BankCheck](BankCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessLoan](BusinessLoan.md), [CreditCheck](CreditCheck.md), [DataSave](DataSave.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [Mortgage](Mortgage.md), [MortgageCheck](MortgageCheck.md)
+**Used by (10):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessLoan](BusinessLoan.md), [CreditCheck](CreditCheck.md), [DataSave](DataSave.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [Mortgage](Mortgage.md), [MortgageCheck](MortgageCheck.md)
 
 ## Fields (state)
 
@@ -38,22 +38,25 @@
 | 35 | `protected int monthStarted` |  |
 | 38 | `protected double annualRate` | Fixed at issue. |
 | 40 | `protected String type` |  |
+| 43 | `protected boolean retirementClaim` | A last-plant closure earmarks its surviving loan for repayment from liquidation cash (BF1); saved with the instrument. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 68 | **type** `public abstract class BusinessDebt` | Base class for private-sector borrowing. |
-| 43 | 1 | `public abstract void processMonth()` | Advances the clock by one month. |
-| 55 | 5 | `public void writeDown(double scale)` | Cuts this loan down in a restructuring - the lender takes the loss. |
-| 61 | 1 | `public abstract double getMonthlyInterestExpense()` |  |
-| 63 | 1 | `public abstract double getOutstandingPrincipal()` |  |
-| 65 | 1 | `public abstract int getMaturityMonth()` |  |
-| 67 | 1 | `public abstract boolean isMatured()` |  |
-| 69 | 1 | `public abstract String getType()` |  |
-| 71 | 3 | `public String getSector()` |  |
-| 75 | 3 | `public double getAnnualRate()` |  |
-| 79 | 3 | `public double getFaceValue()` |  |
-| 83 | 3 | `public int getRemainingMonths()` |  |
-| 88 | 4 | `public void redenominate(double scale)` | The loan in the new unit. |
+| 26 | 75 | **type** `public abstract class BusinessDebt` | Base class for private-sector borrowing. |
+| 45 | 1 | `public void markRetirementClaim()` |  |
+| 47 | 1 | `public boolean isRetirementClaim()` |  |
+| 50 | 1 | `public abstract void processMonth()` | Advances the clock by one month. |
+| 62 | 5 | `public void writeDown(double scale)` | Cuts this loan down in a restructuring - the lender takes the loss. |
+| 68 | 1 | `public abstract double getMonthlyInterestExpense()` |  |
+| 70 | 1 | `public abstract double getOutstandingPrincipal()` |  |
+| 72 | 1 | `public abstract int getMaturityMonth()` |  |
+| 74 | 1 | `public abstract boolean isMatured()` |  |
+| 76 | 1 | `public abstract String getType()` |  |
+| 78 | 3 | `public String getSector()` |  |
+| 82 | 3 | `public double getAnnualRate()` |  |
+| 86 | 3 | `public double getFaceValue()` |  |
+| 90 | 3 | `public int getRemainingMonths()` |  |
+| 95 | 4 | `public void redenominate(double scale)` | The loan in the new unit. |
 
