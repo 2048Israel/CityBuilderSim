@@ -66,3 +66,33 @@
   cost basis or currency unit was added. The split settlement remains intact;
   only its dimensionless trigger and normalization yardstick changed.
 - There are no known-reds registry entries naming SX1 in this checkout.
+- The first exploratory full pick was discarded: a subsequent UI compile
+  replaced target/classes while it was running, and KeptCheck failed to load
+  a class and left its FX thread alive. I identified the SX1 JVMs by jcmd's
+  user.dir and their native parent IDs, stopped only that owned check tree,
+  and queued a clean final pick with the source/classes frozen. This run is
+  not validation evidence and none of its interrupted lines is re-filed as
+  a known red. The ensemble copies its own classes at startup and was unaffected.
+
+## Final-model ensemble
+
+The split months and units change the exchange trace, so the 80-run ensemble
+was run once, on the final simulation model (classes snapshot addd636c; later
+commits only route UI strings and update records/indexes). It completed all
+80/80 runs in 20.3 minutes against docs/ensemble/0.9.100.md. The baseline is
+committed as docs/ensemble/SX1.md for the publisher to version.
+
+| Reading | SX1 | Baseline 0.9.100 |
+|---|---|---|
+| scored criteria | 24/26 | 24/26 |
+| hard verdict | PASS, 10/10 | PASS |
+| M1, all five policies | zero failed/unread audit months | zero |
+| F1, all five policies | zero findings in every group of 16 runs | zero |
+| AUTO2 A1, info | FAIL, 11/16 in band; median 2.89%, range 2.49–3.36% | PASS; median 2.79%, range 2.46–3.59% |
+| AUTO2 A3, info | PASS; deflation spells 0 [0–7] months; final/peak population 100% [97.17–100%] | FAIL; spells 0 [0–12]; population 100% [98.09–100%] |
+
+These are the only changed verdicts: A1 PASS→FAIL and A3 FAIL→PASS. A2
+remains informational FAIL (long inflation spells). Only M1 and F1 are ship
+stops, as the brief directs. The committed baseline retains every policy's
+reading beside its predecessor, including unchanged informational verdicts.
+Logs and CSVs: target/ensemble/SX1/; no main baseline was rerun.
