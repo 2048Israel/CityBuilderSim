@@ -1,15 +1,16 @@
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — BF1, The hands-off bank fails on the sawmills — 2026-11-14, ready, see docs/queue/BF1-notes.md
-Processing mills sell their stored output to the world after local buyers.
-Retirement repays loans from the proceeds and resolves debt left on an empty
-borrower; lost warehouse stock leaves the books before credit is judged.
-Uninsured projects share finite capital room after defaults; insured mortgages
-keep their zero-risk exemption and leverage rule. Equal
-floating prices trade consistently and bond face floors follow the money unit.
-BankFailureCheck causes the faults, audits all 120 months of 24 hands-off
-Random cities and checks the desk's and world's split-adjusted share value.
-The historical apparent share loss was a consolidation; SX1's wage rule stays.
+Processing mills sell stored output to the world after local buyers.
+Retirement repays loans and resolves debt left on an empty borrower;
+perishable stock leaves the books, while retained oil covers its claim
+at net export proceeds before a haircut. Projects and bank bond purchases
+share capital room, with pending loans counted once when they settle.
+Insured mortgages keep their zero risk weight and finite leverage limit.
+Order books find crossings across overlapping rounding bands; money floors
+follow the unit. BankFailureCheck causes the faults and audits all 120
+months of 24 hands-off Random cities. The apparent share loss was a
+consolidation; SX1's wage-based split rule and the real-series law stay.
 
 ## queued
 | BF1-M | A connected district plan leaves two joined-by-owned-ground street components in the drawn raster; cause the covered crossing/curve and mend MapCheck 8 without moving buildings or relaxing network rules | [BF1 map finding](docs/queue/BF1-map.md) |

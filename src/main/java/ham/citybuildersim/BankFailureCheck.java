@@ -129,6 +129,7 @@ public final class BankFailureCheck {
         retire.invoke(g, new BusinessInvestment.Decision(refinery.key(), plant, 1, "BF1 oil fixture", true),
                 investor.invoke(g, refinery.key()), true);
         g.getEconomyManager().pushBalanceSheetInputs();
+        g.getEconomyManager().refreshCreditAssets();
         double owed = credit.getPrincipal(refinery.key());
         check("fixture: retained oil covers the loan but the ordinary asset haircut would not",
                 refinery.getStock(Good.DIESEL) > 0 && owed > credit.getAssets(refinery.key()) * BusinessDebtManager.RESTRUCTURE_TARGET

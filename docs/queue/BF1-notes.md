@@ -445,3 +445,12 @@ Its three requested cases are now caused in BankFailureCheck.
 The before fixture has three failures with all premises green;
 bf1-rev2-before.txt and bf1-rev2-after.txt are under target/checks.
 Records from the earlier picks and ensembles remain superseded.
+
+The refinery premise explicitly refreshes credit assets after demolition,
+so its comparison with RESTRUCTURE_TARGET is against the retained-stock
+balance sheet. Independent current-source mutations confirm the causes:
+removing only the oil recovery floor fails both creditor laws; restoring
+only the old mortgage guard fails the above-target leverage refusal.
+The strengthened normal fixture passes. Logs:
+bf1-rev2-refreshed-fixture.txt, bf1-rev2-floor-control.txt and
+bf1-rev2-guard-control.txt under target/checks.
