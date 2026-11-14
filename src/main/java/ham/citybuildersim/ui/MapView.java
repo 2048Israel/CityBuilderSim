@@ -701,6 +701,7 @@ final class MapView {
 
     private void tick() {
         if (canvas.getScene() == null || ui.game == null) {
+            hoverQuotes.leave();
             pump.stop();
             running = false;
             return;
@@ -5098,6 +5099,7 @@ final class MapView {
 
     /** Esc, the button, or another screen: the canvas back in the office, and the office drawn again when asked - the card's picks dropped (0.7.137), and its purchase forgotten unless the funding page has it (B5). */
     void collapse(boolean redraw) {
+        hoverQuotes.leave();
         if (!expanded) return;
         expanded = false;
         ui.panKeysTo(null);

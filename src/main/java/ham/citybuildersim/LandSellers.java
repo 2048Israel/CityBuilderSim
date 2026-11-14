@@ -444,6 +444,7 @@ public final class LandSellers {
         double[] ll = new double[2];
         for (long ty = Math.floorDiv(y0, t); ty <= Math.floorDiv(y1 - 1, t); ty++) {
             for (long tx = Math.floorDiv(x0, t); tx <= Math.floorDiv(x1 - 1, t); tx++) {
+                CityLand.checkInterrupted();
                 int cov = grid.cover(5, tx, ty);
                 if (cov == LandGrid.ALL) continue;
                 long px0 = tx * t, py0 = ty * t;
@@ -460,6 +461,7 @@ public final class LandSellers {
                 else Arrays.fill(owned, false);
                 plotsRead.add((long) t * t);
                 for (long y = cy0; y < cy1; y++) {
+                    CityLand.checkInterrupted();
                     for (long x = cx0; x < cx1; x++) {
                         int at = (int) ((y - py0) * t + (x - px0));
                         if (owned[at]) continue;

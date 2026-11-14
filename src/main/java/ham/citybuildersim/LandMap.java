@@ -1581,18 +1581,28 @@ public final class LandMap {
         private final java.util.function.Consumer<Runnable> dispatcher;
         private final Runnable changed;
         private final java.util.function.LongSupplier clock;
-        private final java.util.Map<Key, Answer> answers = new java.util.LinkedHashMap<>(32, 0.75f, true) {
-            @Override protected boolean removeEldestEntry(java.util.Map.Entry<Key, Answer> e) { return size() > KEPT; }
+        private final java.util.Map<Long, Answer> answers = new java.util.LinkedHashMap<>(32, 0.75f, true) {
+            @Override protected boolean removeEldestEntry(java.util.Map.Entry<Long, Answer> e) { return size() > KEPT; }
         };
-        private final java.util.Set<Key> asked = new java.util.HashSet<>();
-        private volatile Key wanted;
+        private long wanted = -1;
+        private Request pending;
         private Scope scope;
         private LandMarket.Quoter quoter;
         private int quoterMonth = Integer.MIN_VALUE;
+        private int seenMonth = Integer.MIN_VALUE;
 
         private record Scope(Game game, LandMarket market, CityLand land, LandGrid grid, long owned, int level, LandSellers sellers) { }
-        private record Key(long block, int month) { }
-        private record Answer(LandParcel parcel, int month, boolean failed, long failedAt) { }
+        private record Answer(LandParcel parcel, int month, boolean failed, long failedAt, int attemptedIn) { }
+
+        /** Only cancellation crosses threads. The task carries no mutable live office state to the worker. */
+        private static final class Request {
+            final long block;
+            final Scope scope;
+            volatile boolean cancelled;
+            java.util.concurrent.FutureTask<Void> task;
+
+            Request(long block, Scope scope) { this.block = block; this.scope = scope; }
+        }
 
         public Quotes(java.util.function.Supplier<Game> game, java.util.concurrent.Executor worker,
                       java.util.function.Consumer<Runnable> dispatcher, Runnable changed) {
@@ -1614,67 +1624,117 @@ public final class LandMap {
             LandMarket office = g == null ? null : g.getLandManager().getMarket();
             Scope now = land == null ? null : new Scope(g, office, land, land.grid(), land.grid().ownedPlots(), office.getLevel(), office.getSellers());
             if (java.util.Objects.equals(scope, now)) return;
+            boolean hovered = wanted >= 0;
             leave();
             scope = now;
             answers.clear();
-            asked.clear();
             quoter = null;
+            if (hovered) changed.run();
         }
 
         /** The current hover's lines, including its action. A successful empty measurement returns no card. */
         public List<String> words(long block, java.util.function.DoubleFunction<String> money) {
             sync();
             if (scope == null) return null;
-            Key key = new Key(block, game.get().getMonth());
-            wanted = key;
-            if (!answers.containsKey(key) && !asked.contains(key)) {
-                if (quoter == null || quoterMonth != key.month()) {
+            int month = game.get().getMonth();
+            if (wanted != block) cancel();
+            wanted = block;
+            Answer answer = answers.get(block);
+            boolean due = answer == null || (answer.failed()
+                    ? answer.attemptedIn() != month || clock.getAsLong() - answer.failedAt() >= java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(RETRY_MS)
+                    : answer.month() != month);
+            if (due && pending == null) {
+                if (quoter == null || quoterMonth != month) {
                     quoter = scope.market().quoter();
-                    quoterMonth = key.month();
+                    quoterMonth = month;
                 }
                 if (quoter == null) return null;
-                ask(key, quoter, scope);
+                ask(block, quoter);
             }
-            Answer answer = answers.get(key);
             List<String> lines = new ArrayList<>();
             lines.add(ONE_BLOCK);
             if (answer == null) lines.add(QUOTING);
-            else if (answer.parcel() == null) return null;
-            else {
+            else if (answer.parcel() != null) {
                 LandParcel p = answer.parcel();
                 lines.add(kindWords(p.getKm2(), p.getKm2(CityLand.DRY), p.getKm2(CityLand.FRESH), p.getKm2(CityLand.SEA)));
-                lines.add("Price " + money.apply(p.getPriceUsd()));
+                String age = answer.month() == month ? "" : answer.month() == month - 1 ? " · Last month" : " · Earlier";
+                lines.add("Price " + money.apply(p.getPriceUsd()) + age);
             }
+            else if (!answer.failed()) return null;
+            if (answer != null && answer.failed()) lines.add(FAILED);
             lines.add(CLICK_TO_PICK);
             return List.copyOf(lines);
         }
 
         LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect) { return use.measure(rect); }
 
-        private void ask(Key key, LandMarket.Quoter use, Scope requested) {
-            asked.add(key);
-            worker.execute(() -> {
-                boolean keep = key.equals(wanted);
+        private void ask(long block, LandMarket.Quoter use) {
+            Request request = new Request(block, scope);
+            long[] rect = blockRect(scope.level(), block);
+            pending = request;
+            request.task = new java.util.concurrent.FutureTask<>(() -> {
                 LandMarket.MeasuredQuote got = null;
-                if (keep) {
-                    try { got = measure(use, blockRect(requested.level(), key.block())); }
-                    catch (RuntimeException e) { System.out.println("A block's price could not be worked out: " + e); }
+                boolean failed = false;
+                try {
+                    if (!request.cancelled) got = measure(use, rect);
+                } catch (java.util.concurrent.CancellationException e) {
+                    // A superseded quote yields its worker at the next row or tile.
+                    failed = !request.cancelled;
+                } catch (RuntimeException | Error e) {
+                    failed = true;
+                    System.out.println("A block's price could not be worked out: " + e);
+                } finally {
+                    LandMarket.MeasuredQuote result = got;
+                    boolean failure = failed;
+                    dispatcher.accept(() -> finish(request, result, failure));
                 }
-                LandMarket.MeasuredQuote result = got;
-                dispatcher.accept(() -> {
-                    sync();
-                    asked.remove(key);
-                    if (keep && requested.equals(scope)) answers.put(key, new Answer(scope.market().priceQuote(result), key.month(), false, 0));
-                    if (key.equals(wanted)) changed.run();
-                });
+                return null;
             });
+            try { worker.execute(request.task); }
+            catch (RuntimeException e) { finish(request, null, true); }
+        }
+
+        private void finish(Request request, LandMarket.MeasuredQuote measured, boolean failed) {
+            sync();
+            if (pending != request || request.cancelled || !request.scope.equals(scope)) return;
+            pending = null;
+            int month = game.get().getMonth();
+            Answer old = answers.get(request.block);
+            LandParcel priced = null;
+            try { if (!failed) priced = scope.market().priceQuote(measured); }
+            catch (RuntimeException | Error e) {
+                failed = true;
+                System.out.println("A block's price could not be worked out: " + e);
+            }
+            if (failed) answers.put(request.block, new Answer(old == null ? null : old.parcel(), old == null ? month : old.month(), true, clock.getAsLong(), month));
+            else answers.put(request.block, new Answer(priced, month, false, 0, month));
+            if (request.block == wanted) changed.run();
+        }
+
+        private void cancel() {
+            if (pending == null) return;
+            pending.cancelled = true;
+            pending.task.cancel(true);
+            pending = null;
         }
 
         /** The pointer left quoteable ground. */
-        public void leave() { wanted = null; }
+        public void leave() { cancel(); wanted = -1; }
 
         /** Owner-thread clock work, called by the map's frame. */
-        public boolean tick() { sync(); return false; }
+        public boolean tick() {
+            sync();
+            if (scope == null) return false;
+            int month = game.get().getMonth();
+            if (seenMonth != month) {
+                seenMonth = month;
+                if (wanted >= 0) changed.run();
+            }
+            Answer answer = answers.get(wanted);
+            boolean retry = pending == null && answer != null && answer.failed();
+            if (retry && clock.getAsLong() - answer.failedAt() >= java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(RETRY_MS)) changed.run();
+            return retry;
+        }
     }
 
     /**
