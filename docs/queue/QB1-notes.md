@@ -103,3 +103,24 @@ The source diff was reviewed as a stranger's; no relaxed assertions or
 unrelated source edits. Orchestrator read the complete source diff through
 `a32e4873` and reported no findings (cbs-bus, 2026-11-14 19:28 Halifax).
 No source changes after that commit.
+
+## Why the full ensemble is still required
+
+★ The default city is unchanged, but the ensemble is not. Orchestrator's
+2026-11-14 19:48 instruction allowed stopping only if one completed seed
+under every policy had identical scorer figures and verdicts to HW1's kept
+0.9.104-model run. AUTO2 seed 2 already fails that identity test: both have
+2,399 CSV rows, equal through m1055, then at m1056 FX is 3.41398193 on QB1
+against 3.42566130 on HW1 and treasury debt 182563.836 against 182657.215.
+Population, prices and inflation part in m1057. So all 80 must finish.
+Comparison: `target/checks/qb1-ensemble-comparison.json`; main's kept run:
+`../codex-HW1/target/ensemble/HW1-bf1-final`, snapshot `a0efd26d`.
+
+The final-model run is `target/ensemble/QB1`, immutable snapshot `35690378`;
+all source remains the reviewed `a32e4873`. Three workers were used while
+the suite and attribution replay shared this PC. The dispatcher was briefly
+paused to start the missing-policy identity proof, then resumed as soon as
+AUTO2's difference was established. The extra partial ZERO_SLACK seed 2
+proof process was stopped by its own PIDs; its `NO DONE` progress line is
+that interrupted proof, and the ordinary runner will replace its partial
+CSV in the single completed 80-run set. No completed run is discarded.
