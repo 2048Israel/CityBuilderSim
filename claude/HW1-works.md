@@ -33,7 +33,11 @@ debt hold. Middle school spends 84, including 79 cash holds and one debt
 hold. An exact replay finds zero automatic orders of any service while
 those schools wait. The treasury and existing borrowing limit prevent
 funding either school. Every affected month's cash, spendable balance,
-debt and GDP is recorded beside the 240% limit in the notes.
+debt and GDP is recorded beside the 240% limit in the notes. Main's same
+months are recorded alongside. HW1 spends $6.545 million on automatic
+works before month 194, including a $2.792 million street-relief rail line,
+against main's $4.049 million. Its earlier works contribute to the squeeze.
+Main reaches 90% elementary service at month 261, and HW1 at month 361.
 
 University and medical school are ordered on their first currently-useful
 passes. Their shared construction queues overrun the opening promises,
