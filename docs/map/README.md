@@ -4,7 +4,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 565 files, 617,961 lines, 26,938 methods, 5,943 constants. `GameVersion.VERSION` is "0.9.101", `SAVE_FORMAT` 52.
+**The tree:** 565 files, 618,405 lines, 26,955 methods, 5,943 constants. `GameVersion.VERSION` is "0.9.101", `SAVE_FORMAT` 52.
 
 ## model (261 files)
 
@@ -14,7 +14,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ArrivalMix.java](ArrivalMix.md) | 169 | 8 | What the world's movers hold by year: the skill mix a month's arrivals are drawn from, in a city founded the 1900 way. | 7 |
 | [Auction.java](Auction.md) | 460 | 28 | The city's paper sold at auction: the bidders, each by its own rule in the game, and the one yield that clears them. | 27 |
 | [AuctionTally.java](AuctionTally.md) | 145 | 11 | The city's auctions counted: how many sales the treasury has booked, what they sold and what they asked, how often the stop sat more than a point o... | 4 |
-| [AutoBuilder.java](AutoBuilder.md) | 2,452 | 157 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 19 |
+| [AutoBuilder.java](AutoBuilder.md) | 2,547 | 160 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 20 |
 | [BalanceSheet.java](BalanceSheet.md) | 201 | 30 | A simple balance sheet for one business in the city. | 6 |
 | [Bank.java](Bank.md) | 6,713 | 455 | The city's commercial bank: every loan in it, and every default. | 65 |
 | [BoatSchedule.java](BoatSchedule.md) | 1,068 | 62 | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7... | 21 |
@@ -25,7 +25,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BridgeView.java](BridgeView.md) | 98 | 11 | What the build card says of a long bridge's crossing: the refusal of a survey in its own words, and the pieces of the line a surveyed crossing gets. | 8 |
 | [BridgeWorks.java](BridgeWorks.md) | 126 | 7 | What a long bridge's span costs, in US dollars a metre by kind and by the depth of the water it crosses, and the construction points those dollars ... | 12 |
 | [Bridges.java](Bridges.md) | 321 | 31 | The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the landmass at each end, its... | 10 |
-| [BuildAdvice.java](BuildAdvice.md) | 2,494 | 124 | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure befor... | 35 |
+| [BuildAdvice.java](BuildAdvice.md) | 2,514 | 126 | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure befor... | 35 |
 | [BuildCard.java](BuildCard.md) | 1,915 | 92 | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 143 of them since FR3, the Bulk Berth): what it gives the city ... | 35 |
 | [BuildLog.java](BuildLog.md) | 162 | 10 | What the city has gained, and when. | 5 |
 | [BuildersShort.java](BuildersShort.md) | 145 | 10 | The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a premium that rises with the months... | 6 |
@@ -59,7 +59,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CityRuns.java](CityRuns.md) | 5,150 | 259 | The city's highways and railway as runs on corridors: each laid month by month from its hub's lines out, straight by preference, never moved, with ... | 21 |
 | [CityShore.java](CityShore.md) | 655 | 42 | The city's works on its shore as the map draws them: each sea terminal's box on owned dry ground at the water with its quay run straight out over o... | 18 |
 | [ClockPace.java](ClockPace.md) | 311 | 19 | The clock's pace (UP2): how much of each frame the months may take, how often the screen is redrawn and what the redraw cost, and what speed the ci... | 4 |
-| [ConstructionControl.java](ConstructionControl.md) | 911 | 66 | The player's hand on the construction queue (0.7.22): the order the city's own sites are served in, the sites it has put on overtime, the orders it... | 26 |
+| [ConstructionControl.java](ConstructionControl.md) | 911 | 66 | The player's hand on the construction queue (0.7.22): the order the city's own sites are served in, the sites it has put on overtime, the orders it... | 25 |
 | [Consumption.java](Consumption.md) | 763 | 35 | What a household eats, and what changes it. | 8 |
 | [CorporateBond.java](CorporateBond.md) | 248 | 29 | A corporate bond: a sector's debt to investors, issued at par through bookbuilding, paying a fixed coupon every month and its whole face at the end. | 15 |
 | [Credits.java](Credits.md) | 100 | 7 | The Credits page's sections: the Earth data's attribution, the nations' attribution and the fonts' notice with its licence, each read from the jar ... | 2 |
@@ -68,7 +68,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [DataSave.java](DataSave.md) | 2,921 | 449 | sections: land and ore, the shedding warning... | 14 |
 | [Debt.java](Debt.md) | 1,432 | 116 | One piece of city paper. | 45 |
 | [DebtManager.java](DebtManager.md) | 3,505 | 280 | The city's borrowing: every bond, note and dollar bond the treasury owes, the market that prices the next one, and the policy rate every price of m... | 53 |
-| [DebtQuote.java](DebtQuote.md) | 308 | 12 | What a loan would cost, worked out BEFORE the player agrees to it. | 25 |
+| [DebtQuote.java](DebtQuote.md) | 308 | 12 | What a loan would cost, worked out BEFORE the player agrees to it. | 26 |
 | [DecisionLog.java](DecisionLog.md) | 213 | 24 | What the player decided, and when: every change of a policy and every spend at scale, one short line each, at the month it was made (0.7.23). | 43 |
 | [DemolitionLog.java](DemolitionLog.md) | 142 | 10 | What the city has lost, and when. | 7 |
 | [Denomination.java](Denomination.md) | 199 | 12 | The currency's unit, and the power to lop zeros off it. | 5 |
@@ -244,7 +244,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Trade.java](Trade.md) | 40 | 4 | One fill: somebody sold somebody some units of a good at a price. | 33 |
 | [TradeBand.java](TradeBand.md) | 253 | 21 | The freight band of what the city trades, split into its legs, as the Trade tab draws it (batch FR4; docs/studies/spec-freight-and-infrastructure.m... | 2 |
 | [TradeLanes.java](TradeLanes.md) | 907 | 74 | The city's trade as routes on the Earth's map, without the toolkit: one lane from the city toward each partner, the lanes that go the same way shar... | 11 |
-| [Traffic.java](Traffic.md) | 60 | 3 | The three things that move, which used to be one number. | 36 |
+| [Traffic.java](Traffic.md) | 60 | 3 | The three things that move, which used to be one number. | 37 |
 | [TrainSchedule.java](TrainSchedule.md) | 710 | 54 | The month's trains, as a pure function of time: which trains the city's railed tonnes make, when each reaches its yard, and where each one is at an... | 15 |
 | [TrainShapes.java](TrainShapes.md) | 92 | 6 | How the map draws a train: each vehicle's body and its load's mark as points in plots about where it is and the way it heads, and their colours by ... | 3 |
 | [TreasuryFund.java](TreasuryFund.md) | 1,240 | 163 | The city's fund: the government's holding of its own city's companies and their bonds, bought on the order book by a rule and by the player's hand,... | 41 |
@@ -260,7 +260,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [WageLadder.java](WageLadder.md) | 145 | 10 | The wage ladder a city is founded on: today's (PayTier's) or 1901's (the census's). | 7 |
 | [WantedPosts.java](WantedPosts.md) | 222 | 19 | The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of them the labour market prices as i... | 10 |
 | [WorkingHousehold.java](WorkingHousehold.md) | 50 | 7 | A household with an earner in it, at one pay tier. | 5 |
-| [WorksValue.java](WorksValue.md) | 261 | 17 | A work's discounted cost and the output its service prevents losing (HW1). | 7 |
+| [WorksValue.java](WorksValue.md) | 373 | 23 | A work's discounted cost and the output its service prevents losing (HW1). | 7 |
 | [World.java](World.md) | 2,162 | 120 | The world a city is founded on: a flat square the size of the Earth with its sea, lakes, forest and beaches, the founding site with its lake and ri... | 110 |
 | [WorldData.java](WorldData.md) | 1,192 | 109 | The reader of world-1.bin, the nations' world as data: the 196 nations and the areas no nation holds, their borders (an owner a 15" cell, and the l... | 33 |
 | [WorldEconomy.java](WorldEconomy.md) | 550 | 27 | The rest of the world, which has its own inflation and did not use to: the in-game US dollar's price level, which is the US's own path where the ci... | 14 |
@@ -372,8 +372,8 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AgricultureCheck.java](AgricultureCheck.md) | 463 | 7 | The ground under the loaf. | 0 |
 | [AllChecks.java](AllChecks.md) | 490 | 21 | Runs every harness, one JVM each, and says which failed. | 5 |
 | [ArrivalMixCheck.java](ArrivalMixCheck.md) | 375 | 21 | The skill mix of the arrivals by year (R0d slice 2): the year's mix in a city founded the 1900 way, and WageBand's ceilings in every other city. | 0 |
-| [AuctionCheck.java](AuctionCheck.md) | 1,713 | 43 | The city's paper sold at auction: one clearing yield, and what it costs. | 0 |
-| [AutoBuildCheck.java](AutoBuildCheck.md) | 2,006 | 46 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 1 |
+| [AuctionCheck.java](AuctionCheck.md) | 1,741 | 43 | The city's paper sold at auction: one clearing yield, and what it costs. | 0 |
+| [AutoBuildCheck.java](AutoBuildCheck.md) | 2,019 | 46 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 1 |
 | [BankCheck.java](BankCheck.md) | 4,501 | 24 | The commercial bank, and the families it discharges. | 1 |
 | [BasketYearCheck.java](BasketYearCheck.md) | 775 | 36 | The household's basket by year (R0e slice 1): the year's basket in a city founded the 1900 way, today's in every other. | 0 |
 | [BondCheck.java](BondCheck.md) | 1,714 | 43 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
@@ -381,7 +381,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BrandingCheck.java](BrandingCheck.md) | 219 | 5 | The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it should, the store's title art is drawn to the start sc... | 0 |
 | [BridgeCheck.java](BridgeCheck.md) | 971 | 39 | The long bridges checked (ET6, 2026-10-26; docs/queue/ET6-notes.md): the survey of a crossing on grids of its own making and on the Earth, what a s... | 2 |
 | [BridgeMapCheck.java](BridgeMapCheck.md) | 1,015 | 51 | A long bridge that stands is laid by the runs, kept clear by the plans and drawn with its deck (ET6; docs/studies/spec-earth2-terrain.md 6.5 and 6.6). | 0 |
-| [BuildAdviceCheck.java](BuildAdviceCheck.md) | 1,531 | 49 | The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS YOU's list, to the quote, and to the model's own figures, in a played city -... | 2 |
+| [BuildAdviceCheck.java](BuildAdviceCheck.md) | 1,529 | 50 | The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS YOU's list, to the quote, and to the model's own figures, in a played city -... | 2 |
 | [BuildCardCheck.java](BuildCardCheck.md) | 2,293 | 41 | The build card (0.7.25): BuildCard's figures for every building in buildings.json (143 since FR3, the Bulk Berth) held to the model's own reads - t... | 0 |
 | [BuildMenuCheck.java](BuildMenuCheck.md) | 288 | 2 | Verifies that every building in the game can describe itself. | 0 |
 | [BuildersFirstCheck.java](BuildersFirstCheck.md) | 683 | 17 | The builders' own depots first (0.7.130, batch T1-C): the rule that serves a depot on site the crews' rule would starve - keep there past the month... | 1 |
@@ -429,7 +429,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EnsembleCheck.java](EnsembleCheck.md) | 509 | 24 | The inflation ensemble is in the tree and still runs: its driver compiles against this tree, its two halves name the same policies, and the stored ... | 0 |
 | [EquipmentCheck.java](EquipmentCheck.md) | 1,161 | 46 | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would ea... | 8 |
 | [EquityCheck.java](EquityCheck.md) | 386 | 5 | Verifies the share register: who buys, at what price, what they are paid, and that a month with owners in it still adds up. | 0 |
-| [EssentialWorksCheck.java](EssentialWorksCheck.md) | 770 | 23 | Essential works ordered for their unmet service, including their ground (HW1). | 0 |
+| [EssentialWorksCheck.java](EssentialWorksCheck.md) | 944 | 28 | Essential works ordered for their unmet service, including their ground (HW1). | 0 |
 | [ExchangeCheck.java](ExchangeCheck.md) | 1,305 | 33 | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what ... | 4 |
 | [ExchangeRateCheck.java](ExchangeRateCheck.md) | 1,449 | 48 | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third,... | 2 |
 | [ExpectationsCheck.java](ExpectationsCheck.md) | 563 | 21 | Proves the anchor (Expectations, 0.7.42): credibility won on target and lost to a miss nobody leans against, expected inflation and its floor, the ... | 0 |
@@ -470,7 +470,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [InterestAbroadCheck.java](InterestAbroadCheck.md) | 1,185 | 39 | The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8, J... | 2 |
 | [InterventionCheck.java](InterventionCheck.md) | 548 | 14 | Proves a purchase or sale of dollars moves the D$ a BOUNDED amount (XI1, 2026-11-06): linear up to INTERVENTION_LINEAR of a year's GDP, exactly as ... | 0 |
 | [InvestCheck.java](InvestCheck.md) | 2,073 | 20 | Verifies the private investment engine: forecasting, the demand tests, and the brake. | 0 |
-| [IslandLinkCheck.java](IslandLinkCheck.md) | 792 | 26 | The island link checked (AL1, 2026-11-09; docs/queue/AL1.md): the rule that says what the city should order to link an island it owns ground on, th... | 0 |
+| [IslandLinkCheck.java](IslandLinkCheck.md) | 796 | 26 | The island link checked (AL1, 2026-11-09; docs/queue/AL1.md): the rule that says what the city should order to link an island it owns ground on, th... | 0 |
 | [IslandNetCheck.java](IslandNetCheck.md) | 834 | 32 | A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5). | 3 |
 | [IslandRailCheck.java](IslandRailCheck.md) | 946 | 45 | The railway has a piece of its own on each piece of the city's ground the water parts, its track dealt by built weight and its yards on the islands... | 1 |
 | [JunctionCheck.java](JunctionCheck.md) | 2,367 | 94 | Proves that the junctions and interchanges of spec-freight 4.6 are drawn by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19). | 5 |

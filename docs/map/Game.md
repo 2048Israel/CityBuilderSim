@@ -1489,7 +1489,7 @@
 | 14587 | 16 | `public String getCreditRating()` |  |
 | 14605 | 11 | `public String getCreditOutlook()` | What the rating means, in one line, for the screen. |
 | 14628 | 3 | `private void pushCostOfFundsToTheDebtMarket()` | Hands the debt market what money costs the bank, from the one struck figure - the floor under the city's paper. |
-| 14642 | 7 | `private void priceTheDebtMarket()` | Hands the debt market everything it prices against. |
+| 14642 | 7 | `void priceTheDebtMarket()` | Hands the debt market everything it prices against. |
 | 14660 | 5 | `void strikeTheCurve()` | THE CURVE'S EXPECTATIONS (CD1, spec-city-debt section 3.1): the inflation the rule reads - the year's, or the target before there is one - and the inflation the city expects to settle at, handed to the debt market, wh... |
 | 14680 | 54 | `private void strikeGovernmentBooks()` | The government's books, struck once, at the bottom of the month. |
 | 14735 | 108 | `private void finalUpdateEconomy()` |  |

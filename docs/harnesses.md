@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**200 harness files, 23,831 labelled assertions.** AllChecks runs 200 of them.
+**200 harness files, 23,850 labelled assertions.** AllChecks runs 200 of them.
 
 ## Which harnesses read which class
 
@@ -73,7 +73,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, IndustryViewCheck, LandCheck |
 | [CodeMap](map/CodeMap.md) | **none** |
 | [Construction](map/Construction.md) | BankCheck, BuildersFirstCheck, ConstructionControlCheck, ConstructionTrapCheck, FittingCheck, FoundingYardCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, ReloadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SlopeCheck, WantedPostsCheck |
-| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildAdviceCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DeathCareFirstCheck, EssentialWorksCheck, LandmassCheck, LongPlaytest, RoadCheck, SaveSlotCheck |
+| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DeathCareFirstCheck, EssentialWorksCheck, LandmassCheck, LongPlaytest, RoadCheck, SaveSlotCheck |
 | [ConstructionScreen](map/ConstructionScreen.md) | **none** |
 | [Consumption](map/Consumption.md) | BasketYearCheck, ConsumptionCheck, ForeignCheck, PriceLevelCheck |
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck |
@@ -341,7 +341,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [TradeBand](map/TradeBand.md) | TradeBandCheck |
 | [TradeLanes](map/TradeLanes.md) | DenominationCheck, GlobeCheck, PartnerCallsCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck |
 | [TradeScreen](map/TradeScreen.md) | **none** |
-| [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, EssentialWorksCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WoodProductsCheck |
+| [Traffic](map/Traffic.md) | CarCheck, CopperMiningCheck, EssentialWorksCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LongPlaytest, MaterialsCheck, OilCheck, PortCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, SaveFileCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WoodProductsCheck |
 | [TrainSchedule](map/TrainSchedule.md) | GatewayCheck, MainLineCheck, MapCheck, PartnerCallsCheck, RailCheck, RailDrawCheck, ReadPathCheck, TruckRouteCheck |
 | [TrainShapes](map/TrainShapes.md) | ReadPathCheck |
 | [TreasuryFund](map/TreasuryFund.md) | AuctionCheck, AutoBuildCheck, CentralBankCheck, ChartCheck, CopperRefiningCheck, ExchangeCheck, ExchangeRateCheck, FundCheck, FundLedgerCheck, GovernmentPlayerCheck, HomeRailCheck, LandmassCheck, LongPlaytest, MapCheck, OrderSearchCheck, OwnerCheck, PlanCheck, PolicyPreviewCheck, PriceLevelCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, TreasuryCheck |
@@ -512,7 +512,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L370 a city founded the default way holds no mix in any of its 24 months
   - L371 ...and the same village founded the default way draws a smaller share of its arrivals without a diploma
 
-## AuctionCheck.java - 296 labelled assertions
+## AuctionCheck.java - 297 labelled assertions
 
 > The city's paper sold at auction: one clearing yield, and what it costs.
 > 
@@ -825,16 +825,17 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1605 next month, drawn again, the paper already raised is not sold twice: new sales cover only the repriced cost
   - L1611 ...and the inbox says the month's bills drew the money and that nothing more is borrowed for it
   - L1618 the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt
-  - L1642 fixture: the town had a funded ask open for its general care, and then twenty Health Centres stand:
-  - L1649 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
-  - L1657 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
-  - L1665 funded withdrawal retains every dollar: cash changes only by new sales less placed orders
-  - L1667 funded withdrawal retains every bond: principal changes only by newly sold face
-  - L1679 fixture: the debt limit is under what the city owes
-  - L1680 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
-  - L1693 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
-  - L1704 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
-  - L1709 ...and its headlines say automatic building came up short at its cap, and how many times it sold
+  - L1654 fixture: the saved street and care reservations share actual sold proceeds without changing cash or debt
+  - L1670 fixture: the town had a funded ask open for its general care, and then twenty Health Centres stand:
+  - L1677 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
+  - L1685 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
+  - L1693 funded withdrawal retains every dollar: cash changes only by new sales less placed orders
+  - L1695 funded withdrawal retains every bond: principal changes only by newly sold face
+  - L1707 fixture: the debt limit is under what the city owes
+  - L1708 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
+  - L1721 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
+  - L1732 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
+  - L1737 ...and its headlines say automatic building came up short at its cap, and how many times it sold
 
 ## AutoBuildCheck.java - 66 labelled assertions
 
@@ -876,57 +877,57 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L493 ...and bare ground only: no field bought for its ore (
   - L501 ...nor spends the cash under a month's tax, the reserve (
   - L502 essential works in the remit never acquire a payback veto
-- **L750 4. a saved city plays on as the one it was saved from**
-  - L754 fixture: the decades' city, auto-build on, saved
-  - L764 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
-  - L769 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
-  - L771 ...the debt it reads the limit against (0.7.81)
-  - L772 ...and the year of GDP it sets the debt against
-  - L829 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
-  - L858 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
-- **L897 5. what holds it back, caused**
-  - L914 fixture: the town short of road, its cash at a month's tax
-  - L916 a debt limit of 0%: it holds and borrows nothing
-  - L970 a first police station is a service it keeps where there is none, however far past the need one goes
-  - L999 the first warranted school is essential and ordered without a payback veto
-  - L1004 the inbox does not invent a payback refusal for the essential school
-  - L1017 the twin with fiscal room also orders its first school without weighing a payback
-  - L1032 a first essential school follows the debt and funding rules, without a first-kind cash-only veto
-- **L1053 6. essential cards carry no payback veto, including after a save**
-  - L1062 fixture: the missing elementary school has a category card before the essential order is placed
-  - L1066 the deficit town orders its warranted school without weighing payback
-  - L1070 the card carries no payback hold after the essential order
-  - L1071 no payback appraisal was retained for the essential card
-  - L1074 the inbox also carries no invented payback refusal
-  - L1079 saved and loaded mid-month, the essential card still has no payback hold
-  - L1082 switched off, it holds nothing back, and the card carries no line
-  - L1086 fiscal room does not reintroduce a payback veto on work already ordered
-- **L1230 7. a young city refused for a small sum keeps building (FW4)**
-  - L1290 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
-  - L1293 fixture: the first refused order is for the young city's own general-care shortage
-  - L1375 the formerly refused general-care service itself gains operating capacity, and the city grows
-  - L1484 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
-  - L1507 ...and its log says the first was more than the money would pay for
-  - L1543 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
-  - L1548 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
-  - L1581 fixture: the town short of a service, with no ground free
-  - L1596 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
-  - L1602 ...its log's order carries the ground: its square feet, price and places
-  - L1621 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
-  - L1622 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
-  - L1645 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
-  - L1679 over the limit it buys no ground and places nothing, and borrows nothing
-  - L1719 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
-  - L1721 it buys none of them - no field for its ore - and holds the order for want of ground
-  - L1724 ...and the inbox says so, naming the land office
-  - L1727 ...settled the month it is switched off
-  - L1799 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
-  - L1853 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
-  - L1878 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
-  - L1883 ...and the inbox says the city is over the limit, and names Build from cash anyway
-  - L1914 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
-- **L1931 8. care of every kind is essential, on a deficit (CC1-S)**
-  - L1972 a school is essential too: the same deficit does not hold it for payback
+- **L763 4. a saved city plays on as the one it was saved from**
+  - L767 fixture: the decades' city, auto-build on, saved
+  - L777 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
+  - L782 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
+  - L784 ...the debt it reads the limit against (0.7.81)
+  - L785 ...and the year of GDP it sets the debt against
+  - L842 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
+  - L871 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
+- **L910 5. what holds it back, caused**
+  - L927 fixture: the town short of road, its cash at a month's tax
+  - L929 a debt limit of 0%: it holds and borrows nothing
+  - L983 a first police station is a service it keeps where there is none, however far past the need one goes
+  - L1012 the first warranted school is essential and ordered without a payback veto
+  - L1017 the inbox does not invent a payback refusal for the essential school
+  - L1030 the twin with fiscal room also orders its first school without weighing a payback
+  - L1045 a first essential school follows the debt and funding rules, without a first-kind cash-only veto
+- **L1066 6. essential cards carry no payback veto, including after a save**
+  - L1075 fixture: the missing elementary school has a category card before the essential order is placed
+  - L1079 the deficit town orders its warranted school without weighing payback
+  - L1083 the card carries no payback hold after the essential order
+  - L1084 no payback appraisal was retained for the essential card
+  - L1087 the inbox also carries no invented payback refusal
+  - L1092 saved and loaded mid-month, the essential card still has no payback hold
+  - L1095 switched off, it holds nothing back, and the card carries no line
+  - L1099 fiscal room does not reintroduce a payback veto on work already ordered
+- **L1243 7. a young city refused for a small sum keeps building (FW4)**
+  - L1303 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
+  - L1306 fixture: the first refused order is for the young city's own general-care shortage
+  - L1388 the formerly refused general-care service itself gains operating capacity, and the city grows
+  - L1497 fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one
+  - L1520 ...and its log says the first was more than the money would pay for
+  - L1556 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
+  - L1561 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
+  - L1594 fixture: the town short of a service, with no ground free
+  - L1609 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
+  - L1615 ...its log's order carries the ground: its square feet, price and places
+  - L1634 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
+  - L1635 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
+  - L1658 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
+  - L1692 over the limit it buys no ground and places nothing, and borrows nothing
+  - L1732 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
+  - L1734 it buys none of them - no field for its ore - and holds the order for want of ground
+  - L1737 ...and the inbox says so, naming the land office
+  - L1740 ...settled the month it is switched off
+  - L1812 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
+  - L1866 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
+  - L1891 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
+  - L1896 ...and the inbox says the city is over the limit, and names Build from cash anyway
+  - L1927 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
+- **L1944 8. care of every kind is essential, on a deficit (CC1-S)**
+  - L1985 a school is essential too: the same deficit does not hold it for payback
 
 ## BankCheck.java - 524 labelled assertions
 
@@ -2308,77 +2309,77 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 - **L764 5. the staffing weighting: short of a job, the building with fewer of those posts**
   - L791 fixture: the two have the same posts in all
   - L792 fixture: and the same price
-  - L807 the one with fewer of the short posts serves more at today's staffing
-  - L809 general care is suggested
-  - L820 ...and its whole plan costs no more than any alternative, including either staffing mix
-- **L850 6. nothing needed, nothing suggested**
-  - L861 fixture: NEEDS YOU lists no need a city-built building answers
-  - L862 ...and the advice suggests nothing
-  - L930 fixture: cards at nothing, as the listing stands and at ten times
-  - L931 every card retains the whole plan's net value and its cost per physical unit, recomputed to the bit
-  - L932 ...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit
-  - L981 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
-  - L985 the streets' card is the cheapest to build over its life at every price of ground, recomputed here from the quote,
-  - L1099 fixture: the slack and projection add buildings to a listed or fallback card in the same city
-  - L1129 fixture: with no university and its fees paid, more would come than a first one wants
-  - L1130 fixture: ...and its graduates' posts would not fill one
-  - L1132 no UNIVERSITY row
-  - L1133 ...and no university card
-  - L1145 fixture: the offices' posts bring the hires to a first university's
-  - L1147 ...and the UNIVERSITY row is there
-  - L1149 fixture: the rows above held a school with seats and one with none
-  - L1163 fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university
-  - L1166 no university row there
-  - L1167 ...and no university card
-- **L1251 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
-  - L1265 fixture: the rising history is a trend the businesses read
-  - L1303 the run is the cards' orders in their order, two of one building added together
-  - L1307 fixture: the short city has the ground for every card
-  - L1308 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
-  - L1321 fixture: the run placed in turn in a twin
-  - L1322 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
-  - L1334 fixture: with the ground for the first card alone, a card after it is short of land
-  - L1335 fixture: ...and no two cards are one building, so the run's orders are the cards
-  - L1336 ...and the run stops at the first short card, for land
-- **L1354 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
-  - L1377 fixture: the fee turned away half of those the beds could take
-  - L1382 fixture: NEEDS YOU has its row
-  - L1384 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
-  - L1385 ...and reads them served over its people
-  - L1387 ...lower than the beds alone read
-  - L1389 ...the share the month itself applies with the beds short: their cover times the share who could pay
-  - L1391 BUILD'S RING READS THE SAME
-  - L1396 AN ORDER'S AFTER: its staffed places added, the month's priced out held
-  - L1402 NOBODY PRICED OUT, THE BEDS, AS BEFORE
-- **L1418 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
-  - L1431 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
-  - L1434 fixture: no berth stands or is on site, and the dues dial is at its default
-  - L1440 fixture: the city owns no sea
-  - L1441 fixture: the uncovered dry bulk is the tonnes told
-  - L1443 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
-  - L1448 fixture: the city buys an offer that runs out to the sea
-  - L1454 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
-  - L1456 ...its card reads the uncovered tonnes now
-  - L1457 ...and the tonnes left with the berth standing
-  - L1458 ...at the price the Build button charges
-  - L1461 JUST UNDER IT: no berth is advised
-  - L1464 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
-  - L1468 ...a hair under it, the Bulk Berth again
-  - L1470 ...with the Bulk Terminal passed over, the Bulk Berth
-  - L1476 fixture: half the threshold is no berth's worth at the default dial
-  - L1479 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
-  - L1481 ...a hair under half, none
-  - L1484 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
-  - L1487 ...and back at the default the same tonnes advise the Bulk Terminal
-  - L1492 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
-  - L1494 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
-  - L1496 ...at the price the Build button charges for the three
-  - L1497 ...the tonnes left with the three standing, none
-  - L1498 ...the order closes the measure and its ground is the three terminals'
-  - L1506 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
-  - L1510 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
-  - L1513 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
-  - L1517 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
+  - L813 the one with fewer of the short posts serves more at today's staffing
+  - L815 general care is suggested
+  - L826 ...and its whole plan costs no more than any alternative, including either staffing mix
+- **L856 6. nothing needed, nothing suggested**
+  - L867 fixture: NEEDS YOU lists no need a city-built building answers
+  - L868 ...and the advice suggests nothing
+  - L939 fixture: cards at nothing, as the listing stands and at ten times
+  - L940 every card retains the whole plan's net value and its cost per physical unit, recomputed to the bit
+  - L941 ...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit
+  - L1005 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
+  - L1009 the streets' card has the least complete maintained-service plan at every price of ground
+  - L1097 fixture: the slack and projection add buildings to a listed or fallback card in the same city
+  - L1127 fixture: with no university and its fees paid, more would come than a first one wants
+  - L1128 fixture: ...and its graduates' posts would not fill one
+  - L1130 no UNIVERSITY row
+  - L1131 ...and no university card
+  - L1143 fixture: the offices' posts bring the hires to a first university's
+  - L1145 ...and the UNIVERSITY row is there
+  - L1147 fixture: the rows above held a school with seats and one with none
+  - L1161 fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university
+  - L1164 no university row there
+  - L1165 ...and no university card
+- **L1249 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
+  - L1263 fixture: the rising history is a trend the businesses read
+  - L1301 the run is the cards' orders in their order, two of one building added together
+  - L1305 fixture: the short city has the ground for every card
+  - L1306 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
+  - L1319 fixture: the run placed in turn in a twin
+  - L1320 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
+  - L1332 fixture: with the ground for the first card alone, a card after it is short of land
+  - L1333 fixture: ...and no two cards are one building, so the run's orders are the cards
+  - L1334 ...and the run stops at the first short card, for land
+- **L1352 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
+  - L1375 fixture: the fee turned away half of those the beds could take
+  - L1380 fixture: NEEDS YOU has its row
+  - L1382 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
+  - L1383 ...and reads them served over its people
+  - L1385 ...lower than the beds alone read
+  - L1387 ...the share the month itself applies with the beds short: their cover times the share who could pay
+  - L1389 BUILD'S RING READS THE SAME
+  - L1394 AN ORDER'S AFTER: its staffed places added, the month's priced out held
+  - L1400 NOBODY PRICED OUT, THE BEDS, AS BEFORE
+- **L1416 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
+  - L1429 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
+  - L1432 fixture: no berth stands or is on site, and the dues dial is at its default
+  - L1438 fixture: the city owns no sea
+  - L1439 fixture: the uncovered dry bulk is the tonnes told
+  - L1441 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
+  - L1446 fixture: the city buys an offer that runs out to the sea
+  - L1452 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
+  - L1454 ...its card reads the uncovered tonnes now
+  - L1455 ...and the tonnes left with the berth standing
+  - L1456 ...at the price the Build button charges
+  - L1459 JUST UNDER IT: no berth is advised
+  - L1462 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
+  - L1466 ...a hair under it, the Bulk Berth again
+  - L1468 ...with the Bulk Terminal passed over, the Bulk Berth
+  - L1474 fixture: half the threshold is no berth's worth at the default dial
+  - L1477 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
+  - L1479 ...a hair under half, none
+  - L1482 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
+  - L1485 ...and back at the default the same tonnes advise the Bulk Terminal
+  - L1490 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
+  - L1492 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
+  - L1494 ...at the price the Build button charges for the three
+  - L1495 ...the tonnes left with the three standing, none
+  - L1496 ...the order closes the measure and its ground is the three terminals'
+  - L1504 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
+  - L1508 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
+  - L1511 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
+  - L1515 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
 
 ## BuildCardCheck.java - 209 labelled assertions
 
@@ -8564,7 +8565,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L372 ...and every month of it is conserved
   - L381 ...with the register and the households agreeing on every company
 
-## EssentialWorksCheck.java - 62 labelled assertions
+## EssentialWorksCheck.java - 80 labelled assertions
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools
@@ -8587,69 +8588,90 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L166 the card exposes the same component sum, including land, prevented output and payroll
   - L175 fixture: physical power is sufficient, fifteen-percent reserve is not, and the projection has no growth
   - L178 a reserve-only plant claims zero physical relief and zero prevented output
-- **L183 an unaffordable full power order takes the cash-funded step that can raise service**
-  - L195 fixture has a plant that can raise power service
-  - L206 the affordable step orders one
-- **L212 professional eligibility on both sides of the useful-demand threshold**
-  - L234 fixture: eligible graduates will study and the city's doctor vacancies exceed one school's threshold
-  - L239 below thirty percent the professional school is unwarranted and omitted
-  - L246 above thirty percent, with no school, the professional service is warranted and not maintained
-- **L253 a known industrial opening needs its power ahead**
-  - L270 fixture: a paid mill opens within the planning horizon while current power has its reserve
-  - L277 the forecast adds the mill's physical electrical draw only once it opens
-  - L282 the power card anticipates the ordered industrial load before it is operating
-  - L287 the automatic path orders power before that industrial completion
-- **L292 a slow hospital cannot hold faster care**
-  - L316 fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier
-  - L322 the care card offers an earlier useful order while the hospital is pending
-  - L327 the automatic path places that service's interim order
-- **L332 staff-short works pay only the posts filled in the utility books**
-  - L342 fixture: the plant has paid staff and unfilled posts
-  - L344 the card's running bill charges upkeep and filled-post payroll
-  - L351 the plan's running cost and payroll use the same filled-post basis
-- **L357 care prevents only the sickness the model can reduce**
-  - L371 fixture: only founding care remains short of the city, and the order restores full coverage
-  - L378 fixture: sickness is capped before and after the care improvement
-  - L381 care that leaves sickness capped claims zero prevented output
-  - L385 fixture: uncapped care comparison has the same other causes and no outbreak
-  - L397 uncapped care's credit equals the model's sickness reduction, including its unhoused cause
-- **L402 the Build advice and automatic order use the same plan**
-  - L413 overview cards require the NEEDS YOU row their screen reads
-  - L418 fixture: the power card leads the automatic remit and its full order is fundable
-  - L423 the power plan is sized to its whole order's actual opening and planning horizon
-  - L430 the card uses the player's automatic reserve and full-service target
-  - L432 the automatic path orders the card's exact building and count
-  - L434 the automatic path records the exact whole-plan valuation displayed by the card
-- **L440 pending coal does not hide an earlier forecast power loss**
-  - L458 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
-  - L463 wind prevents positive physical output loss before the pending coal opens
-  - L471 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
-  - L480 the automatic path orders earlier wind before the forecast shortage becomes physical
-  - L488 the faster wind brings the saved first-completion deadline forward from the coal quote
-- **L493 pending fresh water at its cap cannot be called a closing plan**
-  - L513 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
-  - L520 the fresh-only path offers no zero-help order
-  - L523 the normal water card chooses desalination and its count closes the demand
-- **L529 priority work waits in front of the first pending plant**
-  - L557 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
-  - L560 the first coal quote retains the entire earlier priority delay
-  - L563 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
-- **L568 power delivered for fewer than six months still prevents lost work**
-  - L592 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
-  - L598 the sub-six-month service window has positive relief and avoided output loss
-- **L603 paving is sized to the final order's own opening**
-  - L634 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
-  - L638 the paving quote and projection both use the final count's complete opening
-- **L644 pending capacity keeps its deadline through a real mid-construction save and load**
-  - L659 fixture: operating power is short, pending wind covers it, and the first completion is quoted within three years
-  - L666 pending capacity covers the shortage before its quoted deadline
-  - L672 the unbroken city reaches the mid-construction save month
-  - L706 the mid-construction scratch save loaded through DataSave with its original pending date
-  - L716 both scratch timelines advance every compared month
-  - L719 fixture: later priority work kept operating power short throughout the original deadline
-  - L720 monthly passes respect the original pending deadline before it expires
-  - L721 past that deadline the automatic path orders more power despite the pending wind
-  - L722 the real loaded city and its unbroken twin place the same later automatic orders, one by one
+  - L192 fixture: streets already serve their full demand before the power allocation
+- **L197 an unaffordable full power order takes the cash-funded step that can raise service**
+  - L210 fixture has a plant that can raise power service
+  - L221 the affordable step orders one
+- **L227 professional eligibility on both sides of the useful-demand threshold**
+  - L249 fixture: eligible graduates will study and the city's doctor vacancies exceed one school's threshold
+  - L254 below thirty percent the professional school is unwarranted and omitted
+  - L261 above thirty percent, with no school, the professional service is warranted and not maintained
+- **L268 a known industrial opening needs its power ahead**
+  - L285 fixture: a paid mill opens within the planning horizon while current power has its reserve
+  - L292 the forecast adds the mill's physical electrical draw only once it opens
+  - L297 the power card anticipates the ordered industrial load before it is operating
+  - L302 the automatic path orders power before that industrial completion
+- **L307 a slow hospital cannot hold faster care**
+  - L331 fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier
+  - L337 the care card offers an earlier useful order while the hospital is pending
+  - L342 the automatic path places that service's interim order
+- **L347 maintained service prices later works and their borrowing**
+  - L366 fixture: the funded service has a positive growth trend, paid posts and positive borrowing terms
+  - L368 the comparison includes the future service additions and their capital
+  - L370 the comparison includes the new debt's issue and coupon costs
+  - L375 cash that covers the complete sequence has no new financing charge
+  - L376 valuation places no order and moves no cash or debt
+- **L381 complete fleets charge their actual traffic wear and shared fares**
+  - L388 fixture: two lines share the same riders and the fare is positive
+  - L393 two lines collect the full network's fares once
+  - L399 the whole two-road order pays wear at its own relieved traffic
+- **L404 the higher monetary service loss gets the scarce cash first**
+  - L417 fixture: streets lose more output although power has the greater missing share
+  - L421 the monetary loss puts streets before power in the actual remit
+  - L426 the higher-loss street work uses the cash first and power waits for funding
+  - L475 fixture: the school is useful and entirely unserved, and the care plan is cheaper
+  - L478 fixture: current care is on the intended side of full service
+  - L481 fixture: the available cash funds care, with the intended school funding gap
+  - L488 the school remains a hard cash or debt hold and the spare-care order preserves its funds
+  - L492 the same care card labels the automatic funding hold
+  - L494 the fully unserved school is ordered before the partly served capped-care work
+- **L500 staff-short works pay only the posts filled in the utility books**
+  - L510 fixture: the plant has paid staff and unfilled posts
+  - L512 the card's running bill charges upkeep and filled-post payroll
+  - L519 the plan's running cost and payroll use the same filled-post basis
+- **L525 care prevents only the sickness the model can reduce**
+  - L539 fixture: only founding care remains short of the city, and the order restores full coverage
+  - L546 fixture: sickness is capped before and after the care improvement
+  - L549 care that leaves sickness capped claims zero prevented output
+  - L553 fixture: uncapped care comparison has the same other causes and no outbreak
+  - L565 uncapped care's credit equals the model's sickness reduction, including its unhoused cause
+- **L570 the Build advice and automatic order use the same plan**
+  - L582 overview cards require the NEEDS YOU row their screen reads
+  - L587 fixture: the power card leads the automatic remit and its full order is fundable
+  - L592 the power plan is sized to its whole order's actual opening and planning horizon
+  - L599 the card uses the player's automatic reserve and full-service target
+  - L601 the automatic path orders the card's exact building and count
+  - L603 the automatic path records the exact whole-plan valuation displayed by the card
+- **L609 pending coal does not hide an earlier forecast power loss**
+  - L627 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
+  - L632 wind prevents positive physical output loss before the pending coal opens
+  - L640 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
+  - L649 the automatic path orders earlier wind before the forecast shortage becomes physical
+  - L657 the faster wind brings the saved first-completion deadline forward from the coal quote
+- **L662 pending fresh water at its cap cannot be called a closing plan**
+  - L682 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
+  - L689 the fresh-only path offers no zero-help order
+  - L692 the normal water card chooses desalination and its count closes the demand
+- **L698 priority work waits in front of the first pending plant**
+  - L726 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
+  - L729 the first coal quote retains the entire earlier priority delay
+  - L732 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
+- **L737 power delivered for fewer than six months still prevents lost work**
+  - L761 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
+  - L767 the sub-six-month service window has positive relief and avoided output loss
+- **L772 paving is sized to the final order's own opening**
+  - L803 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
+  - L807 the paving quote and projection both use the final count's complete opening
+- **L813 pending capacity keeps its deadline through a real mid-construction save and load**
+  - L828 fixture: operating power is short, pending wind covers it, and the first completion is quoted within three years
+  - L835 pending capacity covers the shortage before its quoted deadline
+  - L841 the unbroken city reaches the mid-construction save month
+  - L875 the mid-construction scratch save loaded through DataSave with its original pending date
+  - L885 both scratch timelines advance every compared month
+  - L888 fixture: later priority work kept operating power short throughout the original deadline
+  - L889 monthly passes respect the original pending deadline before it expires
+  - L890 past that deadline the automatic path orders more power despite the pending wind
+  - L891 the real loaded city and its unbroken twin place the same later automatic orders, one by one
 
 ## ExchangeCheck.java - 225 labelled assertions
 
@@ -14918,76 +14940,76 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L235 the fixture**
-  - L237 EarthCheck's fixture is beside the classes (
-  - L246 the island square with shore, the one with none and home's coast were found (LandmassCheck's fixtures)
-- **L271 1. the rule, a crossing allowed: the Road Bridge, the Highway Bridge where a highway stands, priced as the card prices it**
-  - L279 premise: the city knows the Road Bridge, the Highway Bridge and the Elevated Highway this month; it owns the island, unlinked, with no bridge, no highway and...
-  - L286 with a shallow channel of 14 plots between them the rule is a BRIDGE toward the island: one order, the Road Bridge (no highway stands), for the island
-  - L291 ...its price is the quote of one Road Bridge with the island picked, and its months that quote's
-  - L292 ...its ground is the island row's buildable ground, and the price a square foot is the price over it
-  - L295 the card's pick of the bridge's far landmass is as the rule found it: none before, none after
-  - L298 ...and with the pick set to another value (home) it is home after, and the rule's answer is the same
-  - L303 an island with a crossing is not remembered: three asks in a month are three surveys
-  - L308 an Elevated Highway built at once: a highway stands
-  - L311 the rule is then the Highway Bridge, one order for the island, priced as the quote of one with the island picked
-  - L315 ...and the pick is still none
-- **L323 2. the rule, deep sea: the cheapest terminal on the island's shore, and one at home where no linked ground has one**
-  - L332 premise: the survey of the island's channel finds deep water (45 m), the city owns shore on the island and at home, and no terminal stands or is on site anyw...
-  - L338 the rule is a PORT: two orders, the island's own first and then one at home (the rule's landmass), no survey in the answer
-  - L343 ...the island's order is a known terminal that stands on the island and fits its room, at its quote, and none that fits is cheaper (every port template's quo...
-  - L348 ...the home order is a known terminal that stands where the rule puts it, at its quote, and none is cheaper
-  - L351 ...the price is the two orders' sum and the months the longer one's, the island's ground the row's buildable ground
-  - L358 with a terminal standing at home (ordered at once) the rule is the island's order alone: a port shared where one already serves
-  - L372 with a terminal on the island and none at home the rule is the home order alone, the cheapest that stands at home
-  - L380 with the home terminal ordered too (on site) every link is under way: the rule is null, and the island stays unlinked until both stand
-- **L389 3. no link possible and nothing to link: NONE in words, null where there is nothing, and a survey that found no crossing remembered**
-  - L398 premise: the island square owned has no shore (the city owns none on it), the survey finds deep water, and the city is not on one landmass
-  - L405 the rule is NONE: no orders, no survey in it, no price, and the words give the bridge's refusal and the port's, naming the island
-  - L417 a survey that found no crossing stands NO_CROSSING_MONTHS (
-  - L421 ...and at the month it ends it is surveyed again
-  - L427 an island with shore where home owns none (a terminal on the island would link nothing without one beside it): NONE, in words naming home
-  - L435 a city whose ground is all at home: the rule is null, and no plot was read
-  - L445 a generated world is one landmass: the rule is null, no plot was read and no survey asked
-- **L457 4. the auto-builder, ground low caused, an island across shallow water: one bridge ordered, none ordered twice, none where there is room**
-  - L472 a city with room (the island owned and unlinked, a crossing allowed):
-  - L487 premise: the linked free ground is cut to nothing, the island has free ground that is no room, and the rule is the Road Bridge for it
-  - L495 premise: an order met the linked-ground shortage
-  - L497 the first pass meeting the ground shortage: groundShort() is set and the pass orders one link, ORDERED, a bridge for the island
-  - L501 ...a bridge is on site toward the island (Bridges.buildingTo), none stands, and the island is unlinked while it is
-  - L515 ...the log has its entry (the island links' label, the Road Bridge, one, the island named in the why) and the totals count it with the pass's other orders
-  - L519 ...the step's line is the pass's sentence for the order, and the rule asked again says every link is under way: null
-  - L524 later monthly ground-short passes order no second bridge while the first is pending
-- **L537 5. the auto-builder, ground low caused, an island across deep water: the terminals ordered, once, and the island linked when both stand**
-  - L548 premise: the linked free ground is cut to nothing, no terminal anywhere, and the rule is a port: the island's terminal and one at home
-  - L554 premise: an order met the linked-ground shortage
-  - L556 the first pass meeting the ground shortage: groundShort() is set and the pass orders the link, ORDERED, a port for the island
-  - L563 ...a terminal is on site on the island and one at home, none stands, and the island is unlinked
-  - L569 ...the log has an entry for each of the two orders
-  - L571 later monthly ground-short passes order no more terminals while the first link is pending
-  - L576 the terminals stand after some months and the island is linked, nothing unlinked, each landmass holding its own
-  - L579 the passes after, the ground cut low (the village orders only when it needs something, so the cue may not come): no link step, and the rule is null
-- **L588 6. the money: a debt limit of 0 and the cash at the reserve hold the link, with the limit's words, and nothing is bought or borrowed**
-  - L600 premise: the debt limit is 0, the cash is the reserve - the link's price is far past what is spendable - and the ground is cut low
-  - L612 premise: an order met the linked-ground shortage with the cash at the reserve
-  - L615 the first pass meeting the ground shortage: groundShort() is set, the link is HELD, and the line is in held() naming the island and the limit
-  - L619 ...nothing is ordered, no ground bought, no bond sold, nothing borrowed, and no bridge placed
-  - L631 ...asked again with the cash at the reserve once more it is held again, one more HELD step and no order - it asks again, it does not give up
-- **L640 7. the bridge stands and links: the island linked, its free ground room, and the next pass with ground low orders nothing more**
-  - L642 section 4's city was played
-  - L659 the bridge the auto-builder ordered stands after some months, and the island stayed unlinked every month it was on site
-  - L661 the month it stood the island was linked: the linked set moved once, nothing is unlinked, the island's ground is the linked ground and is room (the linked fr...
-  - L665 the rule is null: nothing is unlinked
-  - L668 the passes after, the ground cut low (the cue may not come): no link step, no more bridges
-- **L677 8. the test player links as the auto-builder does: the same rule, the same templates, the same landmass, counted**
-  - L687 premise: the used share is over the test player's line (groundAheadUtilisation) and the island is owned and unlinked
-  - L693 on the crossing it orders the bridge the rule gives, toward the landmass the rule gives, and counts it
-  - L706 on deep sea it orders the terminals the rule gives, one on the island and one at home, and counts two
-  - L717 where the rule is NONE it orders nothing and counts the link held
-  - L733 premise: the city owns the island square, unlinked, home's coast too, and the strait between is the fixture's own (no seam handed to the survey)
-  - L770 ...at most one link order for an island while one is under way, and every order was for an island unlinked when it was ordered
-  - L771 ...the island is linked by the end (the terminals stand on both sides), and nothing is unlinked
-  - L788 a generated world, the town with its ground cut to what it uses,
+- **L239 the fixture**
+  - L241 EarthCheck's fixture is beside the classes (
+  - L250 the island square with shore, the one with none and home's coast were found (LandmassCheck's fixtures)
+- **L275 1. the rule, a crossing allowed: the Road Bridge, the Highway Bridge where a highway stands, priced as the card prices it**
+  - L283 premise: the city knows the Road Bridge, the Highway Bridge and the Elevated Highway this month; it owns the island, unlinked, with no bridge, no highway and...
+  - L290 with a shallow channel of 14 plots between them the rule is a BRIDGE toward the island: one order, the Road Bridge (no highway stands), for the island
+  - L295 ...its price is the quote of one Road Bridge with the island picked, and its months that quote's
+  - L296 ...its ground is the island row's buildable ground, and the price a square foot is the price over it
+  - L299 the card's pick of the bridge's far landmass is as the rule found it: none before, none after
+  - L302 ...and with the pick set to another value (home) it is home after, and the rule's answer is the same
+  - L307 an island with a crossing is not remembered: three asks in a month are three surveys
+  - L312 an Elevated Highway built at once: a highway stands
+  - L315 the rule is then the Highway Bridge, one order for the island, priced as the quote of one with the island picked
+  - L319 ...and the pick is still none
+- **L327 2. the rule, deep sea: the cheapest terminal on the island's shore, and one at home where no linked ground has one**
+  - L336 premise: the survey of the island's channel finds deep water (45 m), the city owns shore on the island and at home, and no terminal stands or is on site anyw...
+  - L342 the rule is a PORT: two orders, the island's own first and then one at home (the rule's landmass), no survey in the answer
+  - L347 ...the island's order is a known terminal that stands on the island and fits its room, at its quote, and none that fits is cheaper (every port template's quo...
+  - L352 ...the home order is a known terminal that stands where the rule puts it, at its quote, and none is cheaper
+  - L355 ...the price is the two orders' sum and the months the longer one's, the island's ground the row's buildable ground
+  - L362 with a terminal standing at home (ordered at once) the rule is the island's order alone: a port shared where one already serves
+  - L376 with a terminal on the island and none at home the rule is the home order alone, the cheapest that stands at home
+  - L384 with the home terminal ordered too (on site) every link is under way: the rule is null, and the island stays unlinked until both stand
+- **L393 3. no link possible and nothing to link: NONE in words, null where there is nothing, and a survey that found no crossing remembered**
+  - L402 premise: the island square owned has no shore (the city owns none on it), the survey finds deep water, and the city is not on one landmass
+  - L409 the rule is NONE: no orders, no survey in it, no price, and the words give the bridge's refusal and the port's, naming the island
+  - L421 a survey that found no crossing stands NO_CROSSING_MONTHS (
+  - L425 ...and at the month it ends it is surveyed again
+  - L431 an island with shore where home owns none (a terminal on the island would link nothing without one beside it): NONE, in words naming home
+  - L439 a city whose ground is all at home: the rule is null, and no plot was read
+  - L449 a generated world is one landmass: the rule is null, no plot was read and no survey asked
+- **L461 4. the auto-builder, ground low caused, an island across shallow water: one bridge ordered, none ordered twice, none where there is room**
+  - L476 a city with room (the island owned and unlinked, a crossing allowed):
+  - L491 premise: the linked free ground is cut to nothing, the island has free ground that is no room, and the rule is the Road Bridge for it
+  - L499 premise: an order met the linked-ground shortage
+  - L501 the first pass meeting the ground shortage: groundShort() is set and the pass orders one link, ORDERED, a bridge for the island
+  - L505 ...a bridge is on site toward the island (Bridges.buildingTo), none stands, and the island is unlinked while it is
+  - L519 ...the log has its entry (the island links' label, the Road Bridge, one, the island named in the why) and the totals count it with the pass's other orders
+  - L523 ...the step's line is the pass's sentence for the order, and the rule asked again says every link is under way: null
+  - L528 later monthly ground-short passes order no second bridge while the first is pending
+- **L541 5. the auto-builder, ground low caused, an island across deep water: the terminals ordered, once, and the island linked when both stand**
+  - L552 premise: the linked free ground is cut to nothing, no terminal anywhere, and the rule is a port: the island's terminal and one at home
+  - L558 premise: an order met the linked-ground shortage
+  - L560 the first pass meeting the ground shortage: groundShort() is set and the pass orders the link, ORDERED, a port for the island
+  - L567 ...a terminal is on site on the island and one at home, none stands, and the island is unlinked
+  - L573 ...the log has an entry for each of the two orders
+  - L575 later monthly ground-short passes order no more terminals while the first link is pending
+  - L580 the terminals stand after some months and the island is linked, nothing unlinked, each landmass holding its own
+  - L583 the passes after, the ground cut low (the village orders only when it needs something, so the cue may not come): no link step, and the rule is null
+- **L592 6. the money: a debt limit of 0 and the cash at the reserve hold the link, with the limit's words, and nothing is bought or borrowed**
+  - L604 premise: the debt limit is 0, the cash is the reserve - the link's price is far past what is spendable - and the ground is cut low
+  - L616 premise: an order met the linked-ground shortage with the cash at the reserve
+  - L619 the first pass meeting the ground shortage: groundShort() is set, the link is HELD, and the line is in held() naming the island and the limit
+  - L623 ...nothing is ordered, no ground bought, no bond sold, nothing borrowed, and no bridge placed
+  - L635 ...asked again with the cash at the reserve once more it is held again, one more HELD step and no order - it asks again, it does not give up
+- **L644 7. the bridge stands and links: the island linked, its free ground room, and the next pass with ground low orders nothing more**
+  - L646 section 4's city was played
+  - L663 the bridge the auto-builder ordered stands after some months, and the island stayed unlinked every month it was on site
+  - L665 the month it stood the island was linked: the linked set moved once, nothing is unlinked, the island's ground is the linked ground and is room (the linked fr...
+  - L669 the rule is null: nothing is unlinked
+  - L672 the passes after, the ground cut low (the cue may not come): no link step, no more bridges
+- **L681 8. the test player links as the auto-builder does: the same rule, the same templates, the same landmass, counted**
+  - L691 premise: the used share is over the test player's line (groundAheadUtilisation) and the island is owned and unlinked
+  - L697 on the crossing it orders the bridge the rule gives, toward the landmass the rule gives, and counts it
+  - L710 on deep sea it orders the terminals the rule gives, one on the island and one at home, and counts two
+  - L721 where the rule is NONE it orders nothing and counts the link held
+  - L737 premise: the city owns the island square, unlinked, home's coast too, and the strait between is the fixture's own (no seam handed to the survey)
+  - L774 ...at most one link order for an island while one is under way, and every order was for an island unlinked when it was ordered
+  - L775 ...the island is linked by the end (the terminals stand on both sides), and nothing is unlinked
+  - L792 a generated world, the town with its ground cut to what it uses,
 
 ## IslandNetCheck.java - 93 labelled assertions
 

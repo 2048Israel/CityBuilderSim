@@ -1,4 +1,4 @@
-# IslandLinkCheck.java - 792 lines · 26 methods · 8 constants · harnesses
+# IslandLinkCheck.java - 796 lines · 26 methods · 8 constants · harnesses
 
 `ham/citybuildersim/IslandLinkCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -48,22 +48,22 @@
 > 
 > Every premise is asserted before what rests on it.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (83), [LandmassCheck](LandmassCheck.md) (67), [Landmasses](Landmasses.md) (34), [BridgeCheck](BridgeCheck.md) (34), [AutoBuilder](AutoBuilder.md) (29), [LongPlaytest](LongPlaytest.md) (29), [Game](Game.md) (27), [Bridges](Bridges.md) (14), [World](World.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (13), [BridgeSurvey](BridgeSurvey.md) (4), [Founding](Founding.md) (3), [EarthCheck](EarthCheck.md) (3), [BridgeView](BridgeView.md) (3), [Timing](Timing.md) (2), [Ports](Ports.md) (2), [EarthData](EarthData.md) (2), [BuildingType](BuildingType.md) (2), [GameFiles](GameFiles.md) (2), [ChildcareCheck](ChildcareCheck.md) (2), [EarthTerrain](EarthTerrain.md) (1), [TempDirs](TempDirs.md) (1), [AutoBuildCheck](AutoBuildCheck.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (83), [LandmassCheck](LandmassCheck.md) (67), [Landmasses](Landmasses.md) (34), [BridgeCheck](BridgeCheck.md) (34), [AutoBuilder](AutoBuilder.md) (29), [LongPlaytest](LongPlaytest.md) (29), [Game](Game.md) (27), [Bridges](Bridges.md) (14), [World](World.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (13), [BridgeSurvey](BridgeSurvey.md) (4), [Founding](Founding.md) (3), [EarthCheck](EarthCheck.md) (3), [BridgeView](BridgeView.md) (3), [Timing](Timing.md) (2), [Traffic](Traffic.md) (2), [Ports](Ports.md) (2), [EarthData](EarthData.md) (2), [BuildingType](BuildingType.md) (2), [GameFiles](GameFiles.md) (2), [ChildcareCheck](ChildcareCheck.md) (2), [EarthTerrain](EarthTerrain.md) (1), [TempDirs](TempDirs.md) (1), [AutoBuildCheck](AutoBuildCheck.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 229 | MAIN |
-| 266 | 1. THE RULE, A CROSSING ALLOWED |
-| 318 | 2. THE RULE, DEEP SEA |
-| 384 | 3. NO LINK, OR NOTHING TO LINK |
-| 448 | 4. THE AUTO-BUILDER, A CROSSING |
-| 532 | 5. THE AUTO-BUILDER, DEEP SEA |
-| 583 | 6. THE MONEY |
-| 635 | 7. THE BRIDGE STANDS AND LINKS |
-| 672 | 8. THE TEST PLAYER LINKS AS THE AUTO-BUILDER DOES |
-| 721 | 9. COUNTED IN A PLAYED RUN |
+| 233 | MAIN |
+| 270 | 1. THE RULE, A CROSSING ALLOWED |
+| 322 | 2. THE RULE, DEEP SEA |
+| 388 | 3. NO LINK, OR NOTHING TO LINK |
+| 452 | 4. THE AUTO-BUILDER, A CROSSING |
+| 536 | 5. THE AUTO-BUILDER, DEEP SEA |
+| 587 | 6. THE MONEY |
+| 639 | 7. THE BRIDGE STANDS AND LINKS |
+| 676 | 8. THE TEST PLAYER LINKS AS THE AUTO-BUILDER DOES |
+| 725 | 9. COUNTED IN A PLAYED RUN |
 
 ## Constants
 
@@ -83,14 +83,14 @@
 | line | field | says |
 |---:|---|---|
 | 59 | `static int fails` |  |
-| 453 | `static LandmassCheck.City bridged` | The city section 4 played and section 7 stands the bridge of. |
-| 454 | `static int bridgedIsland` |  |
+| 457 | `static LandmassCheck.City bridged` | The city section 4 played and section 7 stands the bridge of. |
+| 458 | `static int bridgedIsland` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 736 | **type** `public class IslandLinkCheck` | The island link checked (AL1, 2026-11-09; docs/queue/AL1.md): the rule that says what the city should order to link an island it owns ground on, the automatic builder that orders it once its orders lack ground, and th... |
+| 57 | 740 | **type** `public class IslandLinkCheck` | The island link checked (AL1, 2026-11-09; docs/queue/AL1.md): the rule that says what the city should order to link an island it owns ground on, the automatic builder that orders it once its orders lack ground, and th... |
 | 77 | 4 | `static void check(String label, boolean ok)` |  |
 | 82 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 88 | 1 | `static boolean near(double a, double b)` | Two figures are one within a part in a billion. |
@@ -99,73 +99,73 @@
 | 100 | 3 | `static void cutGround(LandmassCheck.City c)` | The condition "the linked free ground is low": the ground the buildings stand on set to what the city owns on linked landmasses (and the island terminals' ground, which is the island's room, not the linked pool's), th... |
 | 114 | 12 | `static boolean linkOrdersNothing(LandmassCheck.City c)` | The pass's last line called by hand with the ground cut low: link(), asked of the city as it stands (a pass sets the cue only when it places an order, which the village does in a few months of a hundred) - whether it ... |
 | 131 | 13 | `static int[] lowPasses(LandmassCheck.City c, int passes, java.util.function.BooleanSupplier holds)` | Months played, the ground cut low before each, until `passes` of them met an order short of ground (groundShort()), at most CUE_MONTHS: the months played, the passes that met it, the link steps seen in them and the mo... |
-| 146 | 13 | `static int[] laterGroundShortPasses(LandmassCheck.City c, java.util.function.BooleanSupplier holds)` | Later monthly passes with an actual new street shortage while the first link is pending. |
-| 160 | 3 | `static void autoBuilderOn(LandmassCheck.City c)` |  |
-| 165 | 4 | `static void putBack(Game g, BuildingsTemplate t, int pick)` | The card's pick of a bridge's far landmass put back as it was. |
-| 170 | 4 | `static Landmasses.Row rowOf(Landmasses lms, int id)` |  |
-| 176 | 9 | `static Game.BuildQuote bridgeQuote(Game g, BuildingsTemplate t, int island)` | The quote of one bridge with the island picked, the pick put back. |
-| 187 | 1 | **type** `record Terminals(int known, int fitting, boolean cheaper, double cheapest)` | What the sea terminals the city knows come to for a landmass asked: how many are port templates the city knows, how many would stand there, and whether one of those is cheaper than a price. |
-| 193 | 18 | `static Terminals terminals(Game g, int asked, boolean onIsland, double price)` | Every known port template, quoted for `asked`: those that stand where it is asked (an island's own shore, fitting its room; the rule's landmass for RULE) and the cheapest of them, and whether any is cheaper than `pric... |
-| 213 | 7 | `static boolean terminalOrder(Game g, BuildAdvice.LinkOrder o, int asked)` | Whether the order's template is a known sea terminal that would stand where `asked` says, and the order's price is the quote of one. |
-| 222 | 6 | `static String words(BuildAdvice.Link l)` | The orders of a link by template name, "Bulk Berth on Island 2, Bulk Berth on linked ground". |
+| 146 | 17 | `static int[] laterGroundShortPasses(LandmassCheck.City c, java.util.function.BooleanSupplier holds)` | Later monthly passes with an actual new street shortage while the first link is pending. |
+| 164 | 3 | `static void autoBuilderOn(LandmassCheck.City c)` |  |
+| 169 | 4 | `static void putBack(Game g, BuildingsTemplate t, int pick)` | The card's pick of a bridge's far landmass put back as it was. |
+| 174 | 4 | `static Landmasses.Row rowOf(Landmasses lms, int id)` |  |
+| 180 | 9 | `static Game.BuildQuote bridgeQuote(Game g, BuildingsTemplate t, int island)` | The quote of one bridge with the island picked, the pick put back. |
+| 191 | 1 | **type** `record Terminals(int known, int fitting, boolean cheaper, double cheapest)` | What the sea terminals the city knows come to for a landmass asked: how many are port templates the city knows, how many would stand there, and whether one of those is cheaper than a price. |
+| 197 | 18 | `static Terminals terminals(Game g, int asked, boolean onIsland, double price)` | Every known port template, quoted for `asked`: those that stand where it is asked (an island's own shore, fitting its room; the rule's landmass for RULE) and the cheapest of them, and whether any is cheaper than `pric... |
+| 217 | 7 | `static boolean terminalOrder(Game g, BuildAdvice.LinkOrder o, int asked)` | Whether the order's template is a known sea terminal that would stand where `asked` says, and the order's price is the quote of one. |
+| 226 | 6 | `static String words(BuildAdvice.Link l)` | The orders of a link by template name, "Bulk Berth on Island 2, Bulk Berth on linked ground". |
 
-### MAIN (lines 229-265)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 233 | 32 | `public static void main(String[] args) throws Exception` |  |
-
-### 1. THE RULE, A CROSSING ALLOWED (lines 266-317)
+### MAIN (lines 233-269)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 270 | 47 | `static void ruleWithACrossing(BridgeCheck.Island isle)` |  |
+| 237 | 32 | `public static void main(String[] args) throws Exception` |  |
 
-### 2. THE RULE, DEEP SEA (lines 318-383)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 322 | 61 | `static void ruleOnDeepSea(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
-
-### 3. NO LINK, OR NOTHING TO LINK (lines 384-447)
+### 1. THE RULE, A CROSSING ALLOWED (lines 270-321)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 388 | 59 | `static void noLink(LandmassCheck.Fixtures f, BridgeCheck.Island isle, BridgeCheck.Island dry, Path root)` |  |
+| 274 | 47 | `static void ruleWithACrossing(BridgeCheck.Island isle)` |  |
 
-### 4. THE AUTO-BUILDER, A CROSSING (lines 448-531)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 456 | 75 | `static void autoBuilderOnACrossing(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
-
-### 5. THE AUTO-BUILDER, DEEP SEA (lines 532-582)
+### 2. THE RULE, DEEP SEA (lines 322-387)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 536 | 46 | `static void autoBuilderOnDeepSea(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
+| 326 | 61 | `static void ruleOnDeepSea(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
 
-### 6. THE MONEY (lines 583-634)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 587 | 47 | `static void theMoney(BridgeCheck.Island isle)` |  |
-
-### 7. THE BRIDGE STANDS AND LINKS (lines 635-671)
+### 3. NO LINK, OR NOTHING TO LINK (lines 388-451)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 639 | 32 | `static void theBridgeStands(BridgeCheck.Island isle)` |  |
+| 392 | 59 | `static void noLink(LandmassCheck.Fixtures f, BridgeCheck.Island isle, BridgeCheck.Island dry, Path root)` |  |
 
-### 8. THE TEST PLAYER LINKS AS THE AUTO-BUILDER DOES (lines 672-720)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 676 | 44 | `static void testPlayer(LandmassCheck.Fixtures f, BridgeCheck.Island isle, BridgeCheck.Island dry)` |  |
-
-### 9. COUNTED IN A PLAYED RUN (lines 721-792)
+### 4. THE AUTO-BUILDER, A CROSSING (lines 452-535)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 725 | 67 | `static void playedRun(LandmassCheck.Fixtures f, Path root)` |  |
+| 460 | 75 | `static void autoBuilderOnACrossing(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
+
+### 5. THE AUTO-BUILDER, DEEP SEA (lines 536-586)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 540 | 46 | `static void autoBuilderOnDeepSea(LandmassCheck.Fixtures f, BridgeCheck.Island isle)` |  |
+
+### 6. THE MONEY (lines 587-638)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 591 | 47 | `static void theMoney(BridgeCheck.Island isle)` |  |
+
+### 7. THE BRIDGE STANDS AND LINKS (lines 639-675)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 643 | 32 | `static void theBridgeStands(BridgeCheck.Island isle)` |  |
+
+### 8. THE TEST PLAYER LINKS AS THE AUTO-BUILDER DOES (lines 676-724)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 680 | 44 | `static void testPlayer(LandmassCheck.Fixtures f, BridgeCheck.Island isle, BridgeCheck.Island dry)` |  |
+
+### 9. COUNTED IN A PLAYED RUN (lines 725-796)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 729 | 67 | `static void playedRun(LandmassCheck.Fixtures f, Path root)` |  |
 

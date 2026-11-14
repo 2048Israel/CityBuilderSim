@@ -2122,3 +2122,19 @@ so this did not cause the claimed shortage. The hook now sets goods traffic
 in the breakdown as well as the total, after cutting ground. All later
 passes remain actual monthly passes, and the hard cue, duplicate-link and
 eventual-linking assertions remain.
+
+The market-input fast check exits 0 with zero firm Stale findings.
+The first finance six-harness run kept EssentialWorksCheck,
+BuildAdviceCheck, RoadCheck and AuctionCheck green. After the hard
+reason-reader and traffic-stream fixture repairs, AutoBuildCheck and
+IslandLinkCheck both pass in target/checks/hw1-finance-monthly-verify.log,
+exit 0. That run retains the already documented single AutoBuildCheck
+path observation. Stale has zero firm and 186 soft findings.
+
+The focused crossing replay passes a real later ground-short month with
+one cue and zero duplicate link steps. The original bridge then stands
+at m254 after 249 further months. The omitted traffic-stream setup in
+target/checks/hw1-link-finance-fixed.log fails the monthly cue and
+completion laws, while its original owned-island, first-bridge and
+initial-link premises pass. The kept replay is
+target/checks/hw1-link-finance-fixed2.log.
