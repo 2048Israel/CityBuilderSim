@@ -309,9 +309,6 @@ final class MapView {
         return t;
     });
 
-    /** How many blocks' quotes the hover keeps, the latest asked: 16 - a pointer that comes back to a block shows its price at once. */
-    static final int QUOTES_KEPT = 16;
-
     private final UserInterface ui;
     private final Picker picker;
     private final Runnable onClose;
@@ -550,6 +547,10 @@ final class MapView {
 
     MapView(UserInterface ui, Picker picker, Runnable onClose) {
         this.ui = ui;
+        hoverQuotes = new LandMap.Quotes(() -> ui.game, QUOTES, Platform::runLater, () -> {
+            if (pointerAt != null) hoverAt = pointerAt;
+            requestDraw();
+        });
         this.picker = picker;
         this.onClose = onClose;
         hatch = hatchPattern();
@@ -641,6 +642,7 @@ final class MapView {
 
     private void reset() {
         resetGlobePicture();
+        hoverQuotes.leave();
         shownMap = null;
         tiles = null;
         draft = null;
@@ -705,6 +707,7 @@ final class MapView {
         }
         long deadline = System.nanoTime() + (long) ((ui.replayOn() ? REPLAY_FRAME_MS : FRAME_MS) * 1e6);      // (TR1) a replay computes no month
         boolean more = keepUp();
+        more |= hoverQuotes.tick();
         more |= keys();
         boolean camera = replayCamera();     // (TR1) the replay's glide, fly and smooth hand
         // The head's money and the card caught up with the city (0.7.137): a month, a purchase, the toggle.
@@ -3288,79 +3291,14 @@ final class MapView {
             return out;
         }
         if (!picks.pickable(g, key)) return null;
-        // The office measures the block as it would an offer of it - its ground, fields and price - once for the pointer's stay over it,
-        // away from the screen's thread (WN5b): a block quoted before is shown at once, else the card says so and the quote is asked of QUOTES.
-        String quoteKey = key + "|" + level + "|" + shapesFor + "|" + g.getMonth() + "|" + System.identityHashCode(market);
-        quoteWanted = quoteKey;
-        if (!quotes.containsKey(quoteKey)) {
-            if (!quotesAsked.contains(quoteKey)) {
-                String quoterKey = System.identityHashCode(market) + "|" + level + "|" + shapesFor + "|" + g.getMonth();
-                if (!quoterKey.equals(quoterFor)) {
-                    quoter = market.quoter();       // the land copied here, on the screen's thread: one copy for the month and the city's ground, not one a block
-                    quoterFor = quoterKey;
-                }
-                if (quoter == null) return null;
-                askQuote(quoter, quoteKey, LandMap.blockRect(level, key));
-            }
-            out.add(LandMap.ONE_BLOCK);
-            out.add(LandMap.QUOTING);
-            out.add(LandMap.CLICK_TO_PICK);
-            return out;
-        }
-        LandParcel q = quotes.get(quoteKey);
-        if (q == null) return null;
-        out.add(LandMap.ONE_BLOCK);
-        out.add(LandMap.kindWords(q.getKm2(), q.getKm2(CityLand.DRY), q.getKm2(CityLand.FRESH), q.getKm2(CityLand.SEA)));
-        out.add("Price " + ui.landScreen.inToggle(q.getPriceUsd()));
-        out.add(LandMap.CLICK_TO_PICK);
-        return out;
+        quoteUsed = true;
+        return hoverQuotes.words(key, ui.landScreen::inToggle);
     }
 
-    /* ----- the hover's quote, away from the screen's thread (WN5b, 2026-11-02) ----- */
+    /* ----- the hover's quote lifecycle (WN5d) ----- */
 
-    /** The block the hover wants quoted now: its key (block, level, ground, month and office), or "" while the pointer is over none. QUOTES' queue reads it from its own thread, and drops the quote of a block the pointer has left unread. */
-    private volatile String quoteWanted = "";
-
-    /** The quotes the hover has had (LandMarket.quote(), a null for a block with none), by key, the latest asked kept (QUOTES_KEPT): the screen's thread's. */
-    private final Map<String, LandParcel> quotes = new LinkedHashMap<>(32, 0.75f, true) {
-        @Override protected boolean removeEldestEntry(Map.Entry<String, LandParcel> eldest) { return size() > QUOTES_KEPT; }
-    };
-
-    /** The quotes on QUOTES' queue or running and not back: a block asked once, not again for each frame the pointer stays on it. The screen's thread's. */
-    private final Set<String> quotesAsked = new HashSet<>();
-
-    /** The office as it stood (LandMarket.quoter()) for the office, level, ground and month in quoterFor, and what it was made for; null where the office has none. */
-    private LandMarket.Quoter quoter;
-    private String quoterFor = "";
-
-    /**
-     * Asks QUOTES for a block's quote, `r` the block's {x0, y0, x1, y1}. A block still queued when the pointer has left it is dropped unread
-     * (askNodes()'s rule), its key forgotten so a pointer that comes back asks again. What comes back is kept on the screen's thread, a failure
-     * or nothing as a null so it is not asked again, and when the pointer is still on the block the hover is asked for the next frame.
-     */
-    private void askQuote(LandMarket.Quoter use, String quoteKey, long[] r) {
-        quotesAsked.add(quoteKey);
-        QUOTES.submit(() -> {
-            boolean wanted = quoteKey.equals(quoteWanted);
-            LandParcel got = null;
-            if (wanted) {
-                try {
-                    got = use.quote(r[0], r[1], r[2], r[3]);
-                } catch (RuntimeException e) {
-                    System.out.println("A block's price could not be worked out: " + e);
-                }
-            }
-            final LandParcel result = got;
-            Platform.runLater(() -> {
-                quotesAsked.remove(quoteKey);
-                if (wanted) quotes.put(quoteKey, result);
-                if (quoteKey.equals(quoteWanted) && pointerAt != null) {
-                    hoverAt = pointerAt;
-                    requestDraw();
-                }
-            });
-        });
-    }
+    private final LandMap.Quotes hoverQuotes;
+    private boolean quoteUsed;
 
     /** The ground lines in the hover card where "Not the city's" stood (after its first line when the card has not that line), their last line, the blue one, at the card's foot. */
     private static void groundInto(List<String> lines, List<String> ground) {
@@ -3459,7 +3397,7 @@ final class MapView {
         canvas.setOnMouseExited(e -> {
             hoverAt = null;
             pointerAt = null;
-            quoteWanted = "";       // (WN5b) the pointer has left the map: a quote still queued is dropped
+            hoverQuotes.leave();
             showIf(readout, false);
             if (card != null) card.setVisible(false);
             if (overSide >= 0) {
@@ -3474,6 +3412,7 @@ final class MapView {
             }
             // A second button pressed over the first starts the press again as its own: only its release ends it.
             pressed = true;
+            hoverQuotes.leave();
             pointerAt = null;       // a press pans or boxes: no boat is named under it (WN7)
             pressButton = e.getButton();
             pressX = lastX = boxX = e.getX();
@@ -3689,7 +3628,12 @@ final class MapView {
 
     /** What the pointer is over: the offer it lights, and the words - one line on the small map, a card on the expanded one. */
     private void hover(double sx, double sy) {
-        quoteWanted = "";       // (WN5b) wanted again below where the pointer is over a block that may be picked: a quote queued for one it has left is dropped
+        quoteUsed = false;
+        try { hoverHere(sx, sy); }
+        finally { if (!quoteUsed) hoverQuotes.leave(); }
+    }
+
+    private void hoverHere(double sx, double sy) {
         if (onGlobe()) {
             globeHover(sx, sy);
             return;

@@ -237,6 +237,7 @@ public class LandNationsCheck {
                 theWords(file, windsor, windsorFounded, detroitQuote);
                 theHover(file, windsor, strait);
                 thePicks(windsor, strait);
+                hoverLifecycle();
             }
         }
         finish(started);
@@ -1263,7 +1264,7 @@ public class LandNationsCheck {
         } else {
             String src = Files.readString(view, StandardCharsets.UTF_8);
             check("the map's hover quotes through a quoter on its own thread, never the office's quote() on the screen's thread",
-                    !src.contains("market.quote(") && src.contains(".quoter()") && src.contains("QUOTES.submit("));
+                    !src.contains("market.quote(") && src.contains("new LandMap.Quotes(") && src.contains("QUOTES, Platform::runLater"));
         }
     }
     /* =====================================================================
@@ -1517,5 +1518,163 @@ public class LandNationsCheck {
             check(where + ": the level-changed draft has the current level and the synchronous quote's exact price and ground",
                     retained.getLevel() == copy.level() && sameDraft(retained, quoteOf(market, rect)));
         }
+    }
+    /* =====================================================================
+       14. A HOVER ACROSS MONTHS, POINTER MOVES AND FAILED WORK
+       ===================================================================== */
+
+    /** A worker held until the fixture releases it, and an owner dispatcher drained explicitly. */
+    static final class HoverFixture implements AutoCloseable {
+        final City city = new City("hover-lifecycle", onEarth(WINDSOR_LAT, WINDSOR_LON));
+        final List<Runnable> jobs = new ArrayList<>(), returns = new ArrayList<>();
+        final ExecutorService worker = Executors.newSingleThreadExecutor();
+        final long[] now = { 1 };
+        final LandMap.Quotes quotes;
+        final long block;
+        int fault;
+
+        HoverFixture(int fault) {
+            this.fault = fault;
+            LandParcel offer = city.offers().get(0);
+            block = LandMap.blockAt(city.office().getLevel(), offer.getX0(), offer.getY0());
+            quotes = new LandMap.Quotes(() -> city.g, jobs::add, returns::add, () -> { }, () -> now[0]) {
+                @Override LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect) {
+                    int fail = HoverFixture.this.fault;
+                    HoverFixture.this.fault = 0;
+                    if (fail == 1) throw new IllegalStateException("fixture quote failure");
+                    if (fail == 2) throw new AssertionError("fixture quote Error");
+                    if (fail == 3) return null;
+                    return super.measure(use, rect);
+                }
+            };
+        }
+
+        List<String> words() { return quotes.words(block, usd -> Double.toString(usd)); }
+
+        void work() throws Exception {
+            Runnable job = jobs.remove(0);
+            try { worker.submit(job).get(); }
+            catch (java.util.concurrent.ExecutionException e) {
+                if (!(e.getCause() instanceof AssertionError)) throw e;
+            }
+        }
+
+        void handBack() {
+            List<Runnable> ready = List.copyOf(returns);
+            returns.clear();
+            ready.forEach(Runnable::run);
+        }
+
+        @Override public void close() { quotes.leave(); worker.shutdownNow(); }
+    }
+
+    static boolean hasPrice(List<String> words) { return words != null && words.stream().anyMatch(s -> s.startsWith("Price ")); }
+
+    static void hoverLifecycle() throws Exception {
+        out.println("\n--- 14. the hover keeps a price across months, yields to a newer block, and retries failures ---");
+        try (HoverFixture f = new HoverFixture(0)) {
+            check("a first hover queues a worker and shows the pricing line", f.words().contains(LandMap.QUOTING) && f.jobs.size() == 1);
+            f.work();
+            f.city.months(2);
+            f.words();
+            f.handBack();
+            List<String> words = f.words();
+            long[] rect = LandMap.blockRect(f.city.office().getLevel(), f.block);
+            LandParcel current = quoteOf(f.city.office().quoter(), rect);
+            check("a quote held through two played months becomes visible at the current month's exact price",
+                    hasPrice(words) && words.contains("Price " + current.getPriceUsd()));
+            while (!f.jobs.isEmpty()) { f.work(); f.handBack(); }
+            List<String> before = f.words();
+            f.city.months(1);
+            List<String> after = f.words();
+            check("while a new month's measurement is queued the block keeps its last price, labelled Last month",
+                    hasPrice(before) && hasPrice(after) && after.stream().anyMatch(s -> s.endsWith(" · Last month")));
+        }
+        for (int fault : new int[] { 1, 2 }) {
+            try (HoverFixture f = new HoverFixture(fault)) {
+                f.words();
+                f.work();
+                f.handBack();
+                List<String> words = f.words();
+                String kind = fault == 1 ? "RuntimeException" : "Error";
+                check(kind + " hands its request back and shows the failure line", words != null && words.contains(LandMap.Quotes.FAILED));
+                check(kind + " waits before retrying the same month", f.jobs.isEmpty());
+                f.now[0] += java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(LandMap.Quotes.RETRY_MS);
+                f.quotes.tick();
+                f.words();
+                boolean retry = f.jobs.size() == 1;
+                check(kind + " releases its asked key so the same block is retried after RETRY_MS", retry);
+                if (retry) { f.work(); f.handBack(); }
+                check(kind + " retry recovers a visible price in the same month", hasPrice(f.words()));
+            }
+        }
+        try (HoverFixture f = new HoverFixture(3)) {
+            f.words(); f.work(); f.handBack();
+            check("a successful empty quote keeps its none result for the month", f.words() == null && f.jobs.isEmpty());
+        }
+        hoverQueueWait();
+        hoverCountPriority();
+    }
+
+    static void hoverQueueWait() throws Exception {
+        City city = new City("hover-queue", onEarth(WINDSOR_LAT, WINDSOR_LON));
+        ExecutorService worker = Executors.newSingleThreadExecutor();
+        java.util.concurrent.CountDownLatch started = new java.util.concurrent.CountDownLatch(1), next = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.ConcurrentLinkedQueue<Runnable> returns = new java.util.concurrent.ConcurrentLinkedQueue<>();
+        long first = LandMap.blockAt(city.office().getLevel(), city.offers().get(0).getX0(), city.offers().get(0).getY0());
+        long second = first + 1;
+        LandMap.Quotes quotes = new LandMap.Quotes(() -> city.g, worker, returns::add, () -> { }) {
+            int calls;
+            @Override LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect) {
+                if (calls++ == 0) {
+                    started.countDown();
+                    try { new java.util.concurrent.CountDownLatch(1).await(400, java.util.concurrent.TimeUnit.MILLISECONDS); }
+                    catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new java.util.concurrent.CancellationException(); }
+                } else next.countDown();
+                return super.measure(use, rect);
+            }
+        };
+        try {
+            quotes.words(first, Double::toString);
+            check("queue premise: the old block is already measuring", started.await(5, java.util.concurrent.TimeUnit.SECONDS));
+            long start = System.nanoTime();
+            quotes.words(second, Double::toString);
+            boolean began = next.await(5, java.util.concurrent.TimeUnit.SECONDS);
+            double ms = (System.nanoTime() - start) / 1e6;
+            String label = "a newer hover starts within eight frames after cancelling a running unwanted quote";
+            boolean ok = began && Timing.within(ms, LandMarket.QUOTER_MS * 8);
+            if (!ok) fails++;
+            out.printf("%-118s %s  %.2f ms%n", label, Timing.verdict(ok, label), ms);
+        } finally { quotes.leave(); worker.shutdownNow(); worker.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS); }
+    }
+
+    static void hoverCountPriority() throws Exception {
+        java.util.stream.IntStream.range(0, Runtime.getRuntime().availableProcessors() * 4).parallel().forEach(i -> {
+            try { Thread.sleep(5); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        });
+        City city = new City("hover-priority", onEarth(WINDSOR_LAT, WINDSOR_LON));
+        CityLand copy = city.g.getCityLand().copy();
+        long[] rect = blockAround(city.g.getWorld(), RIVER_LAT, RIVER_LON, 12);
+        long tiles = ((rect[2] - rect[0]) / World.TILE) * ((rect[3] - rect[1]) / World.TILE);
+        check("priority premise: a level-12 quote crosses the parallel tile threshold", tiles >= CityLand.PARALLEL_TILES);
+        ExecutorService worker = Executors.newSingleThreadExecutor(r -> {
+            Thread t = new Thread(r, "hover-count-fixture"); t.setDaemon(true); t.setPriority(Thread.MIN_PRIORITY); return t;
+        });
+        Set<String> readers = new HashSet<>(), normal = new HashSet<>();
+        try {
+            java.util.concurrent.Future<long[]> counting = worker.submit(() -> copy.unownedCounts(rect[0], rect[1], rect[2], rect[3]));
+            while (!counting.isDone()) {
+                for (Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+                    boolean row = Arrays.stream(e.getValue()).anyMatch(s -> s.getClassName().equals(CityLand.class.getName()) && s.getMethodName().equals("rowClasses"));
+                    if (row) {
+                        readers.add(e.getKey().getName());
+                        if (e.getKey().getPriority() > Thread.MIN_PRIORITY) normal.add(e.getKey().getName());
+                    }
+                }
+            }
+            long sum = Arrays.stream(counting.get(), 0, World.CLASSES).sum();
+            check("the parallel count really walked rows and counted the block's unowned plots", !readers.isEmpty() && sum == copy.grid().unowned(rect[0], rect[1], rect[2], rect[3]));
+            report("every row of a low-priority quote runs at low priority", normal.isEmpty(), "readers " + readers + ", normal-priority " + normal);
+        } finally { worker.shutdownNow(); }
     }
 }

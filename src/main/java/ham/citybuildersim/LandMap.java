@@ -1562,6 +1562,121 @@ public final class LandMap {
      * page issue the same paper.
      * --------------------------------------------------------------------------------------------------- */
 
+    /* ----- the hover's asynchronous quotes (WN5d) ----- */
+
+    /**
+     * The hover's quote lifecycle, with the worker and owner dispatcher supplied by the screen.
+     * WHY: these transitions need fixtures that can hold a worker across a month or a pointer move.
+     * All collections and live game reads belong to the owner thread. The worker reads only its copied quoter.
+     */
+    public static class Quotes {
+        /** The latest blocks whose prices the pointer keeps. */
+        public static final int KEPT = 16;
+        /** Milliseconds before a failed measurement may be asked again. */
+        public static final long RETRY_MS = 2_000;
+        /** The failure line stays distinct from a successful empty quote. */
+        public static final String FAILED = "Price could not be worked out";
+        private final java.util.function.Supplier<Game> game;
+        private final java.util.concurrent.Executor worker;
+        private final java.util.function.Consumer<Runnable> dispatcher;
+        private final Runnable changed;
+        private final java.util.function.LongSupplier clock;
+        private final java.util.Map<Key, Answer> answers = new java.util.LinkedHashMap<>(32, 0.75f, true) {
+            @Override protected boolean removeEldestEntry(java.util.Map.Entry<Key, Answer> e) { return size() > KEPT; }
+        };
+        private final java.util.Set<Key> asked = new java.util.HashSet<>();
+        private volatile Key wanted;
+        private Scope scope;
+        private LandMarket.Quoter quoter;
+        private int quoterMonth = Integer.MIN_VALUE;
+
+        private record Scope(Game game, LandMarket market, CityLand land, LandGrid grid, long owned, int level, LandSellers sellers) { }
+        private record Key(long block, int month) { }
+        private record Answer(LandParcel parcel, int month, boolean failed, long failedAt) { }
+
+        public Quotes(java.util.function.Supplier<Game> game, java.util.concurrent.Executor worker,
+                      java.util.function.Consumer<Runnable> dispatcher, Runnable changed) {
+            this(game, worker, dispatcher, changed, System::nanoTime);
+        }
+
+        Quotes(java.util.function.Supplier<Game> game, java.util.concurrent.Executor worker,
+               java.util.function.Consumer<Runnable> dispatcher, Runnable changed, java.util.function.LongSupplier clock) {
+            this.game = game;
+            this.worker = worker;
+            this.dispatcher = dispatcher;
+            this.changed = changed;
+            this.clock = clock;
+        }
+
+        private void sync() {
+            Game g = game.get();
+            CityLand land = g == null ? null : g.getCityLand();
+            LandMarket office = g == null ? null : g.getLandManager().getMarket();
+            Scope now = land == null ? null : new Scope(g, office, land, land.grid(), land.grid().ownedPlots(), office.getLevel(), office.getSellers());
+            if (java.util.Objects.equals(scope, now)) return;
+            leave();
+            scope = now;
+            answers.clear();
+            asked.clear();
+            quoter = null;
+        }
+
+        /** The current hover's lines, including its action. A successful empty measurement returns no card. */
+        public List<String> words(long block, java.util.function.DoubleFunction<String> money) {
+            sync();
+            if (scope == null) return null;
+            Key key = new Key(block, game.get().getMonth());
+            wanted = key;
+            if (!answers.containsKey(key) && !asked.contains(key)) {
+                if (quoter == null || quoterMonth != key.month()) {
+                    quoter = scope.market().quoter();
+                    quoterMonth = key.month();
+                }
+                if (quoter == null) return null;
+                ask(key, quoter, scope);
+            }
+            Answer answer = answers.get(key);
+            List<String> lines = new ArrayList<>();
+            lines.add(ONE_BLOCK);
+            if (answer == null) lines.add(QUOTING);
+            else if (answer.parcel() == null) return null;
+            else {
+                LandParcel p = answer.parcel();
+                lines.add(kindWords(p.getKm2(), p.getKm2(CityLand.DRY), p.getKm2(CityLand.FRESH), p.getKm2(CityLand.SEA)));
+                lines.add("Price " + money.apply(p.getPriceUsd()));
+            }
+            lines.add(CLICK_TO_PICK);
+            return List.copyOf(lines);
+        }
+
+        LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect) { return use.measure(rect); }
+
+        private void ask(Key key, LandMarket.Quoter use, Scope requested) {
+            asked.add(key);
+            worker.execute(() -> {
+                boolean keep = key.equals(wanted);
+                LandMarket.MeasuredQuote got = null;
+                if (keep) {
+                    try { got = measure(use, blockRect(requested.level(), key.block())); }
+                    catch (RuntimeException e) { System.out.println("A block's price could not be worked out: " + e); }
+                }
+                LandMarket.MeasuredQuote result = got;
+                dispatcher.accept(() -> {
+                    sync();
+                    asked.remove(key);
+                    if (keep && requested.equals(scope)) answers.put(key, new Answer(scope.market().priceQuote(result), key.month(), false, 0));
+                    if (key.equals(wanted)) changed.run();
+                });
+            });
+        }
+
+        /** The pointer left quoteable ground. */
+        public void leave() { wanted = null; }
+
+        /** Owner-thread clock work, called by the map's frame. */
+        public boolean tick() { sync(); return false; }
+    }
+
     /**
      * The ground picked on the expanded map: offers, in the order picked (B1 a click
      * takes one, B3 shift adds or drops one, B7 a box or Ctrl+A adds what it
