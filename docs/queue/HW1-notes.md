@@ -1164,3 +1164,88 @@ than the yearly sample, converged paving order sizing, and a real scratch
 save/load with an unbroken twin compared order by order. Each needs its
 own causal regression before the replacement pick and once-only final
 ensemble. The ship file remains marked provisional.
+
+### REV-HW1-2 mends and isolated controls
+
+All five cases now reach their premises and pass. The named verification
+is target/checks/hw1-rev2-named.log, exit 0, six harnesses. Stale reports
+zero firm findings and 186 soft. AutoBuildCheck's two existing path
+observations remain outside these hard assertions.
+
+1. A zero count is seeded with one candidate only when its second result
+   says the target was already satisfied. A {0,0} no-help result is
+   discarded. The water fixture starts below the fresh-water cap with
+   pending plants that exhaust it. Additional fresh capacity cannot reduce
+   the shortage, including its own water draw and the pooled utility staff
+   effect. The fresh-only card must be absent and the normal card must
+   choose a closing desalination plan.
+2. BuildingManager.siteUnitMonths keeps the existing crew weight and asks
+   its first-group, priority and overtime quotation machinery for the
+   points through the requested unit. An earlier site's whole wait stays
+   in front. AutoBuilder's first-completion quote and WorksValue's pending
+   power use that same unit quotation. Ordinary unit spacing is cached
+   within an evaluation. Rushed unit completion uses the quotation itself.
+   The fixture puts enough priority roads before twenty coal plants that
+   even the whole yard cannot finish those roads inside the valued
+   horizon. The first coal quote must include that delay, and coal must
+   erase none of the earlier wind benefit within that horizon.
+3. ★ Power benefits use monthly samples across the same twenty-year
+   horizon. Current sector output potential and supply components are
+   reused within that one evaluation while pending capacity is unchanged.
+   An explicitly caused one-to-six-month wind opportunity must have
+   positive physical relief and avoided loss.
+4. Paving repeats its count against the final whole-order quote, using
+   the shared full-service target on the normal card path. Its twenty
+   gravel roads have coherent goods traffic and available construction
+   output. The projected count must grow, and its quoted opening and
+   demand projection must match that final count.
+5. The test saves the live city midway through construction, copies its
+   complete scratch directory into an independent scratch directory,
+   then loads through Game.loadGameSave and DataSave. It compares the
+   exact saved deadline and every later automatic order's month, service,
+   building, wanted count, placed count and cut against the unbroken run.
+   The replay retains ChildcareCheck.town's deliberately unsaved sector
+   holds. Both paths use ordinary floating rates. The original and loaded
+   traces match, including the twenty-five-wind order after expiry.
+
+The replay is run from the frozen checkpoint after the unbroken run.
+The first implementation reused AutoBuildCheck.loaded, whose fixture
+pins an external exchange rate, and omitted the town's unsaved sector
+holds. That produced twenty-five wind on one path and twenty-six on the
+other. Direct load and reinstating the same holds preserve this
+fixture's premises. No production save/load change was needed for the
+deadline field.
+
+The initial paving setup had inconsistent raw traffic and stream
+breakdown, and too many gravel roads for the construction output.
+The replacement has twenty existing roads, coherent goods traffic and
+thirty depots, with the same growing-order premise checked hard.
+The initial water setup compared gross supply despite the plant's own
+water use and staff-pool effects. It now asserts the unchanged-or-worse
+physical shortage, with utility staffing refreshed from the actual
+standing stock before applying the cap.
+
+A diagnostic printf used a floating formatter for an integer construction
+output. It threw in the before-month hook, so the diagnostic replay did
+not advance and its unbounded loop produced a large partial log.
+That diagnostic process tree, rooted at PID 31992, was stopped. The
+invalid log retains only its first 8 KiB and an explanation. The actual
+test has bounded month loops and hard advance checks. Independent
+scratch journals also keep the two replays' recordings distinct.
+
+Each missing-mend control is an ignored source/class shadow. Its premise
+passes and its hard result fails, with all other model changes retained.
+
+| control log under target/checks | omitted mend | hard failures |
+|---|---|---|
+| hw1-rev2-water-mutant.log | accept {0,0} as a closing one-unit plan | fresh-only offer and normal desalination choice |
+| hw1-rev2-queue-mutant.log | scale the whole site wait by target points | first coal wait and earlier wind's benefit |
+| hw1-rev2-short-mutant.log | annual power midpoint | sub-six-month relief and loss credit |
+| hw1-rev2-paving-mutant.log | stop after the preliminary paving quote | final-count opening and projection |
+| hw1-rev2-reload-mutant.log | ignore pendingUntil during restore | saved deadline and later order-by-order equality |
+
+Every control exits 1. The final production prefixes pass. The real
+reload log is hw1-rev2-reload-true-twin.log. The cap, queue, short-window
+and paving cases are also included in the green named run. No assertion
+was converted into an observation for these mends. No building balance
+data was edited.

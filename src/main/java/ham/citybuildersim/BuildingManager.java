@@ -6390,6 +6390,30 @@ public class BuildingManager {
     }
 
     /**
+     * The quoted opening of the nth unit already on a site. Earlier priority
+     * work keeps its whole wait, and this site's existing crew weight stays
+     * with it. Reads the same first-group, priority and overtime arithmetic
+     * as siteMonths(), with only the target's points changed (HW1).
+     */
+    public double siteUnitMonths(BuildingsTemplate t, int units, double siteOutput) {
+        BuildingsStacks s = t == null ? null : getStack(t);
+        if (s == null || s.getUnderConstruction() <= 0 || units <= 0) return 0;
+        if (!(siteOutput > 0)) return Double.NaN;
+        int on = s.getUnderConstruction();
+        double owed = Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress());
+        double points = Math.max(0, Math.min(units, on) * (double) t.getConstructionPoints()
+                - s.getConstructionProgress());
+        if (!(points > 0) || !(owed > 0)) return 0;
+        String key = ConstructionControl.keyOf(t);
+        double[] mine = {weightOf(t, on), points};
+        double wait;
+        if (firstOn(null, 0)) wait = firstWait(key, mine, false, false, siteOutput);
+        else if (handOn(key)) wait = handWait(key, mine, false, siteOutput);
+        else wait = waitWith(t, 0, 0, siteOutput) * points / owed;
+        return wait == Double.MAX_VALUE ? Double.NaN : wait;
+    }
+
+    /**
      * Months n buildings of t would take if the city ordered them now: with
      * no order set and no rush on t's site, waitFor() exactly - the quote's
      * wait since 0.7.17; otherwise as the hand times it, the order joining

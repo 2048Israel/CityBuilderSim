@@ -400,10 +400,7 @@ public final class EssentialWorksCheck {
                 order != null && order.ordered() > 0 && order.building().equals(wind.getName()));
         BuildingsStacks pendingWind = g.getBuildingManager().getStack(wind);
         if (pendingWind == null || pendingWind.getUnderConstruction() <= 0) return;
-        double owed = pendingWind.getUnderConstruction() * (double) wind.getConstructionPoints()
-                - pendingWind.getConstructionProgress();
-        double windFirst = Math.ceil(g.onSiteMonths(wind)
-                * Math.max(0, wind.getConstructionPoints() - pendingWind.getConstructionProgress()) / owed);
+        double windFirst = Math.ceil(g.getBuildingManager().siteUnitMonths(wind, 1, g.getBuildingOutputAtEveryPost()));
         var state = new com.google.gson.Gson().toJsonTree(ab.toState()).getAsJsonObject();
         var dates = state.has("pendingUntil") ? state.getAsJsonObject("pendingUntil") : null;
         double due = dates != null && dates.has(power.label()) ? dates.get(power.label()).getAsDouble() : Double.POSITIVE_INFINITY;
@@ -411,8 +408,159 @@ public final class EssentialWorksCheck {
                 due <= g.getMonth() + windFirst && due < g.getMonth() + first);
     }
 
-    static void overduePending(Path root) {
-        out.println("--- pending capacity has a fixed completion deadline across monthly passes and a reload ---");
+    static void waterAtCap(Path root) {
+        out.println("--- pending fresh water at its cap cannot be called a closing plan ---");
+        Game g = town(root, "water-at-cap");
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate fresh = bm.getTemplateByName("Water Treatment Plant");
+        BuildingsTemplate desal = bm.getTemplateByName("Desalination Plant");
+        BuildAdvice.Measure water = BuildAdvice.Measure.of(BuildAdvice.Kind.WATER);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
+        quietly(() -> g.buildStack(bm.getTemplateByName("Wind Farm"), 20, true));
+        g.getServicesManager().updateJobFillRate(g.getPopulationManager().getJobFillRate());
+        g.getServicesManager().updateServiceWages(g.getPopulationManager().getWagesPerType());
+        g.getServicesManager().updateServices();
+        u.setFreshCap(u.getFreshNameplate() * u.getAverageUtilityFill() * 1.25);
+        quietly(() -> g.buildStack(fresh, 2, false));
+        u.setBuildingWaterDraw(u.getFreshCap() * 2 + u.getBaseWaterProduction());
+        u.updateWaterRatio();
+        var site = BuildAdvice.onSite(g, water);
+        double[] before = BuildAdvice.supplyDemand(g, water, site);
+        double[] after = BuildAdvice.supplyDemand(g, water, BuildAdvice.plus(site, fresh, 1));
+        check("fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage",
+                before[0] < before[1] && after[0] - after[1] <= before[0] - before[1]
+                        && BuildAdvice.unit(g, water, fresh) > 0);
+        var skip = new java.util.HashSet<>(bm.getTemplates());
+        skip.remove(fresh);
+        BuildAdvice.Suggestion useless = BuildAdvice.suggestFor(g, null, water, g.getCash(),
+                g.getLandManager().getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip, true);
+        check("the fresh-only path offers no zero-help order", useless == null);
+        BuildAdvice.Suggestion useful = BuildAdvice.suggestFor(g, null, water, g.getCash(),
+                g.getLandManager().getAvailableSqFt());
+        check("the normal water card chooses desalination and its count closes the demand",
+                useful != null && useful.template() == desal && useful.closes()
+                        && BuildAdvice.maintained(g, water, BuildAdvice.plus(site, desal, useful.count()), useful.ahead()));
+    }
+
+    static void queuedPower(Path root) {
+        out.println("--- priority work waits in front of the first pending plant ---");
+        Game g = town(root, "queued-power");
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate coal = bm.getTemplateByName("Coal Power Plant");
+        BuildingsTemplate wind = bm.getTemplateByName("Wind Farm");
+        BuildingsTemplate road = bm.getTemplateByName("Paved Road");
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
+        quietly(() -> g.buildStack(bm.getTemplateByName("Construction Depot"), 8, true));
+        int roads = (int) Math.ceil(g.getBuildingOutputAtEveryPost() * (BuildAdvice.LIFE_MONTHS + 100)
+                / road.getConstructionPoints());
+        quietly(() -> {
+            g.buildStack(wind, 1, false);
+            g.buildStack(road, roads, false);
+            g.buildStack(coal, 20, false);
+        });
+        bm.getControl().setOrder(java.util.List.of(ConstructionControl.keyOf(wind),
+                ConstructionControl.keyOf(road), ConstructionControl.keyOf(coal)));
+        g.getBusinessInvestment().restorePopulationHistory(java.util.List.of());
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        u.setWattsConsumption(u.getProduction() * 2);
+        BuildingsStacks roadSite = bm.getStack(road);
+        double ahead = (roadSite.getUnderConstruction() * (double) road.getConstructionPoints()
+                - roadSite.getConstructionProgress()) / g.getBuildingOutputAtEveryPost();
+        double lead = g.quoteBuild(wind, 1).months;
+        check("fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal",
+                Double.isFinite(ahead) && lead > 0 && lead + BuildAdvice.LIFE_MONTHS < ahead);
+        double first = BuildAdvice.firstCompletion(g, power, Map.of(coal, 20));
+        check("the first coal quote retains the entire earlier priority delay", first >= ahead);
+        double actual = WorksValue.avoided(g, power, BuildAdvice.onSite(g, power), Map.of(wind, 1), lead);
+        double withoutCoal = WorksValue.avoided(g, power, Map.of(wind, 1), Map.of(wind, 1), lead);
+        check("coal that cannot open inside the horizon erases none of the earlier wind's physical benefit",
+                withoutCoal > 0 && Math.abs(actual - withoutCoal) < 1e-9 * Math.max(1, withoutCoal));
+    }
+
+    static void shortPowerBenefit(Path root) {
+        out.println("--- power delivered for fewer than six months still prevents lost work ---");
+        Game g = town(root, "short-power-benefit");
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate coal = bm.getTemplateByName("Coal Power Plant");
+        BuildingsTemplate wind = bm.getTemplateByName("Wind Farm");
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        g.setCashForTest(1e14);
+        quietly(() -> g.buildStack(coal, 1, false));
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
+        g.getBusinessInvestment().restorePopulationHistory(java.util.List.of());
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        u.setWattsConsumption(u.getProduction() * 1.1);
+        BuildingsStacks site = bm.getStack(coal);
+        double lo = 0, hi = coal.getConstructionPoints();
+        for (int i = 0; i < 60; i++) {
+            double mid = (lo + hi) / 2;
+            site.setConstructionProgress(mid);
+            double gap = g.onSiteMonths(coal) - g.quoteBuild(wind, 1).months;
+            if (gap > 3) lo = mid; else hi = mid;
+        }
+        site.setConstructionProgress((lo + hi) / 2);
+        double lead = g.quoteBuild(wind, 1).months;
+        double gap = g.onSiteMonths(coal) - lead;
+        check("fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier",
+                gap > 1 && gap < 6 && lead > 0 && Double.isFinite(lead)
+                        && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
+                        && BuildAdvice.maintained(g, power, Map.of(coal, 1), BuildAdvice.NOW));
+        WorksValue.Value value = WorksValue.of(g, power, Map.of(coal, 1), wind, 1,
+                g.getLandManager().getAvailableSqFt());
+        check("the sub-six-month service window has positive relief and avoided output loss",
+                value.used() > 0 && value.avoided() > 0);
+    }
+
+    static void pavingLead(Path root) {
+        out.println("--- paving is sized to the final order's own opening ---");
+        Game g = town(root, "paving-lead");
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate gravel = bm.getTemplateByName("Gravel Road");
+        BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
+        quietly(() -> {
+            g.buildStack(gravel, 20, true);
+            g.buildStack(bm.getTemplateByName("House"), 1000, true);
+            g.buildStack(bm.getTemplateByName("Construction Depot"), 30, true);
+        });
+        g.getServicesManager().updateInfrastructure();
+        InfrastructureManager roads = g.getInfrastructureManager();
+        double load = roads.getStreetCapacity() * .9;
+        roads.setLoad(load);
+        double[] traffic = new double[Traffic.values().length];
+        traffic[Traffic.GOODS.ordinal()] = load;
+        roads.setBreakdown(traffic);
+        var history = new java.util.ArrayList<Long>();
+        long pop = g.getPopulationManager().getPopulation();
+        for (int i = 0; i < 12; i++) history.add(Math.round(pop * (.7 + .3 * i / 11)));
+        g.getBusinessInvestment().restorePopulationHistory(history);
+        var site = BuildAdvice.onSite(g, streets);
+        var step = BuildAdvice.pavingStep(g);
+        double slack = g.getAutoBuilder().getSlack();
+        int today = 0;
+        while (today < g.paveable() && !BuildAdvice.maintained(g, streets,
+                BuildAdvice.times(site, step, today), new BuildAdvice.Ahead(0, 1, slack))) today++;
+        var skip = new java.util.HashSet<>(bm.getTemplates());
+        BuildAdvice.Suggestion plan = BuildAdvice.suggestFor(g, null, streets, g.getCash(), 0, slack, skip, false);
+        check("fixture: paving is worth offering and the growing city needs more than its unprojected paving count",
+                today > 0 && plan != null && plan.count() > today);
+        if (plan == null) return;
+        double finalLead = g.quotePave(plan.count()).months;
+        check("the paving quote and projection both use the final count's complete opening",
+                Math.abs(plan.lead() - finalLead) < 1e-9
+                        && Math.abs(plan.ahead().months() - BuildAdvice.opening(g, finalLead, slack).months()) < 1e-9);
+    }
+
+    static void overduePending(Path root) throws Exception {
+        out.println("--- pending capacity keeps its deadline through a real mid-construction save and load ---");
         Game g = town(root, "overdue-pending");
         AutoBuilder ab = g.getAutoBuilder();
         BuildingManager bm = g.getBuildingManager();
@@ -425,10 +573,7 @@ public final class EssentialWorksCheck {
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * 1.2);
-        BuildingsStacks site = bm.getStack(wind);
-        double owed = site.getUnderConstruction() * (double) wind.getConstructionPoints() - site.getConstructionProgress();
-        double first = Math.ceil(g.onSiteMonths(wind)
-                * Math.max(0, wind.getConstructionPoints() - site.getConstructionProgress()) / owed);
+        double first = Math.ceil(bm.siteUnitMonths(wind, 1, g.getBuildingOutputAtEveryPost()));
         int began = g.getMonth();
         check("fixture: operating power is short, pending wind covers it, and the first completion is quoted within three years",
                 !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
@@ -439,33 +584,81 @@ public final class EssentialWorksCheck {
         quietly(() -> ab.pass(g));
         check("pending capacity covers the shortage before its quoted deadline",
                 step(g, power) != null && step(g, power).outcome() == AutoBuilder.Outcome.AHEAD);
-        String saved = new com.google.gson.Gson().toJson(ab.toState());
-        check("the fixed pending deadline is part of the saved automatic-builder state", saved.contains("pendingUntil"));
-        // A real later order and the player's priority delay the already quoted wind site.
         quietly(() -> g.buildStack(road, 10_000, false));
         bm.getControl().setOrder(java.util.List.of(ConstructionControl.keyOf(road), ConstructionControl.keyOf(wind)));
-        boolean[] early = {false}, late = {false}, stayedShort = {true};
-        g.autoBuildProbeForTest = after -> {
-            if (!after) utilities.setWattsConsumption(utilities.getProduction() * 1.2);
-            else {
-                AutoBuilder.Step order = step(g, power);
-                stayedShort[0] &= !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW);
-                if (order != null && order.ordered() > 0) {
-                    if (g.getMonth() <= began + first) early[0] = true;
-                    else late[0] = true;
-                }
-            }
-        };
         int reloadAt = began + Math.max(1, (int) first / 2);
-        while (g.getMonth() <= began + first + 1) {
-            quietly(() -> g.simulateMonths(1));
-            if (g.getMonth() == reloadAt)
-                ab.restore(new com.google.gson.Gson().fromJson(saved, AutoBuilder.State.class));
+        quietly(() -> g.simulateMonths(reloadAt - g.getMonth()));
+        check("the unbroken city reaches the mid-construction save month", g.getMonth() == reloadAt);
+        if (g.getMonth() != reloadAt) return;
+        boolean[] saved = {false};
+        quietly(() -> saved[0] = g.saveGame(10, "HW1 pending deadline twin").ok);
+        GameFiles copied = new GameFiles(root.resolve("overdue-loaded"), root.resolve("overdue-loaded-no-legacy"));
+        try (var paths = java.nio.file.Files.walk(g.getGameFiles().getDirectory())) {
+            for (Path from : paths.toList()) {
+                Path to = copied.getDirectory().resolve(g.getGameFiles().getDirectory().relativize(from));
+                if (java.nio.file.Files.isDirectory(from)) java.nio.file.Files.createDirectories(to);
+                else java.nio.file.Files.copy(from, to, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
         }
+        Double savedDeadline = ab.toState().pendingUntil.get(power.label());
+        var originalOrders = new java.util.ArrayList<String>();
+        var loadedOrders = new java.util.ArrayList<String>();
+        boolean[] early = {false}, late = {false}, stayedShort = {true};
+        installPendingProbe(g, power, began, first, originalOrders, early, late, stayedShort);
+        boolean advanced = true;
+        int remaining = began + (int) first + 2 - g.getMonth();
+        for (int i = 0; i < remaining; i++) {
+            int month = g.getMonth();
+            quietly(() -> g.simulateMonths(1));
+            if (g.getMonth() != month + 1) { advanced = false; break; }
+        }
+        // Replay the frozen checkpoint in its own files after the unbroken run.
+        // AutoBuildCheck.loaded() pins an external rate for its own fixture.
+        // Both cities here keep the ordinary floating-rate path.
+        Game loaded = new Game(copied);
+        if (g.isOnLiterals()) loaded.playOnLiterals();
+        quietly(() -> loaded.loadGameSave(10));
+        // ChildcareCheck.town's sector holds are deliberately unsaved fixture controls.
+        for (Sector sector : g.getSectors().all())
+            if (g.getBusinessInvestment().isHeld(sector.key()))
+                loaded.getBusinessInvestment().holdSector(sector.key());
+        check("the mid-construction scratch save loaded through DataSave with its original pending date",
+                saved[0] && loaded.getLoadFailure() == null && loaded.getMonth() == reloadAt
+                        && savedDeadline != null
+                        && savedDeadline.equals(loaded.getAutoBuilder().toState().pendingUntil.get(power.label())));
+        installPendingProbe(loaded, power, began, first, loadedOrders, new boolean[1], new boolean[1], new boolean[] {true});
+        for (int i = 0; i < remaining; i++) {
+            int month = loaded.getMonth();
+            quietly(() -> loaded.simulateMonths(1));
+            if (loaded.getMonth() != month + 1) { advanced = false; break; }
+        }
+        check("both scratch timelines advance every compared month", advanced && loaded.getMonth() == g.getMonth());
         g.autoBuildProbeForTest = null;
+        loaded.autoBuildProbeForTest = null;
         check("fixture: later priority work kept operating power short throughout the original deadline", stayedShort[0]);
         check("monthly passes respect the original pending deadline before it expires", !early[0]);
-        check("past that deadline the automatic path orders more power despite the pending wind, including after reload", late[0]);
+        check("past that deadline the automatic path orders more power despite the pending wind", late[0]);
+        check("the real loaded city and its unbroken twin place the same later automatic orders, one by one",
+                !originalOrders.isEmpty() && originalOrders.equals(loadedOrders));
+    }
+
+    static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first,
+            java.util.List<String> orders, boolean[] early, boolean[] late, boolean[] stayedShort) {
+        g.autoBuildProbeForTest = after -> {
+            if (!after) {
+                UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+                u.setWattsConsumption(u.getProduction() * 1.2);
+                return;
+            }
+            stayedShort[0] &= !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW);
+            for (AutoBuilder.Step order : g.getAutoBuilder().steps()) if (order.ordered() > 0) {
+                orders.add(g.getMonth() + "|" + order.measure().label() + "|" + order.building() + "|" + order.wanted()
+                        + "|" + order.ordered() + "|" + order.cut());
+                if (!order.measure().equals(power)) continue;
+                if (g.getMonth() <= began + first) early[0] = true;
+                else late[0] = true;
+            }
+        };
     }
 
     public static void main(String[] args) throws Exception {
@@ -482,6 +675,10 @@ public final class EssentialWorksCheck {
         adviceParity(root);
         overduePending(root);
         interimPower(root);
+        waterAtCap(root);
+        queuedPower(root);
+        shortPowerBenefit(root);
+        pavingLead(root);
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

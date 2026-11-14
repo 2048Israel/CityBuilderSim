@@ -65,7 +65,7 @@ public final class WorksValue {
 
     private record Relief(double used, double avoided) { }
 
-    /** Twenty yearly midpoints, the same real rate and long city trend as the service comparison. */
+    /** Power at monthly resolution and other services at yearly midpoints, with the same real rate and long city trend. */
     public static double avoided(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
                                  Map<BuildingsTemplate, Integer> order, double lead) {
         return relief(g, m, site, order, lead).avoided();
@@ -82,43 +82,100 @@ public final class WorksValue {
             traffic.put(sector, mix);
         }
         double rate = Math.max(0, BuildAdvice.lifeRate(g)) / 12, result = 0, used = 0, weights = 0;
-        for (int year = 0; year < BuildAdvice.LIFE_YEARS; year++) {
-            double months = lead + year * 12 + 6;
+        boolean power = m.kind() == BuildAdvice.Kind.POWER;
+        Map<BuildingsTemplate, PendingPower> schedule = power ? powerSchedule(g, site) : Map.of();
+        double powerPotential = 0;
+        if (power) for (Sector sector : g.getSectors().all()) {
+            Sector.Statement book = sector.statement();
+            double valueAdded = Math.max(0, book.revenue - book.inputs - book.electricity - book.water);
+            if (sector.getEnergyRatio() > 0) powerPotential += valueAdded / sector.getEnergyRatio();
+        }
+        Map<BuildingsTemplate, Integer> previousReady = null;
+        double[] powerBefore = null, powerAfter = null;
+        double basePowerDemand = g.getServicesManager().getUtilitiesHandler().getConsumption();
+        int interval = power ? 1 : 12;
+        for (int start = 0; start < BuildAdvice.LIFE_MONTHS; start += interval) {
+            double months = lead + start + interval / 2.0;
             BuildAdvice.Ahead at = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), 0);
-            Map<BuildingsTemplate, Integer> ready = m.kind() == BuildAdvice.Kind.POWER ? powerOnSiteAt(g, site, months) : site;
+            Map<BuildingsTemplate, Integer> ready = power ? powerOnSiteAt(g, schedule, months) : site;
             Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(ready, order);
             double weight = 0;
-            for (int j = 1; j <= 12; j++) weight += Math.pow(1 + rate, -(lead + year * 12 + j));
-            result += weight * outputRestored(g, m, ready, with, at, traffic);
-            double[] before = BuildAdvice.supplyDemand(g, m, ready, at), after = BuildAdvice.supplyDemand(g, m, with, at);
+            for (int j = 1; j <= interval; j++) weight += Math.pow(1 + rate, -(lead + start + j));
+            double[] before, after;
+            if (power) {
+                // Capacity and the works' own draw stay fixed until another unit opens.
+                if (!ready.equals(previousReady)) {
+                    powerBefore = BuildAdvice.supplyDemand(g, m, ready, BuildAdvice.NOW);
+                    powerAfter = BuildAdvice.supplyDemand(g, m, with, BuildAdvice.NOW);
+                    previousReady = ready;
+                }
+                double demand = basePowerDemand * at.scale();
+                before = new double[] {powerBefore[0], demand + (powerBefore[1] - basePowerDemand)};
+                after = new double[] {powerAfter[0], demand + (powerAfter[1] - basePowerDemand)};
+                result += weight * powerPotential * Math.max(0, cover(after) - cover(before));
+            } else {
+                before = BuildAdvice.supplyDemand(g, m, ready, at);
+                after = BuildAdvice.supplyDemand(g, m, with, at);
+                result += weight * outputRestored(g, m, ready, with, at, traffic);
+            }
             used += weight * Math.max(0, Math.max(0, before[1] - before[0]) - Math.max(0, after[1] - after[0]));
             weights += weight;
         }
         return new Relief(weights > 0 ? used / weights : 0, Math.max(0, result));
     }
 
-    /** Pending power contributes only after its construction output can finish it, including preparation. */
-    private static Map<BuildingsTemplate, Integer> powerOnSiteAt(Game g,
-            Map<BuildingsTemplate, Integer> site, double months) {
-        Map<BuildingsTemplate, Integer> ready = new LinkedHashMap<>();
+    private record PendingPower(int units, double first, double interval, boolean rushed) { }
+
+    /** The same queue-aware unit quotes the automatic completion deadline reads. */
+    private static Map<BuildingsTemplate, PendingPower> powerSchedule(Game g,
+            Map<BuildingsTemplate, Integer> site) {
+        Map<BuildingsTemplate, PendingPower> schedule = new LinkedHashMap<>();
+        BuildingManager bm = g.getBuildingManager();
+        double output = g.getBuildingOutputAtEveryPost();
         for (Map.Entry<BuildingsTemplate, Integer> e : site.entrySet()) {
             BuildingsTemplate t = e.getKey();
-            BuildingsStacks stack = g.getBuildingManager().getStack(t);
-            if (stack == null || stack.getUnderConstruction() <= 0) {
-                ready.put(t, e.getValue());
-                continue;
+            double first = bm.siteUnitMonths(t, 1, output);
+            double second = e.getValue() > 1 ? bm.siteUnitMonths(t, 2, output) : first;
+            schedule.put(t, new PendingPower(e.getValue(), first, second - first,
+                    bm.getControl().isRushed(ConstructionControl.keyOf(t))));
+        }
+        return schedule;
+    }
+
+    /** Quote-completed units at this date. Priority delay precedes the first unit in full. */
+    private static Map<BuildingsTemplate, Integer> powerOnSiteAt(Game g,
+            Map<BuildingsTemplate, PendingPower> schedule, double months) {
+        Map<BuildingsTemplate, Integer> ready = new LinkedHashMap<>();
+        for (Map.Entry<BuildingsTemplate, PendingPower> e : schedule.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            PendingPower p = e.getValue();
+            int finished = 0;
+            if (p.units() <= 0) finished = p.units();
+            else if (Double.isFinite(p.first()) && months >= p.first()) {
+                if (p.units() == 1) finished = 1;
+                else if (!p.rushed() && p.interval() > 0)
+                    finished = (int) Math.min(p.units(), 1 + Math.floor((months - p.first()) / p.interval()));
+                else {
+                    int lo = 0, hi = p.units() + 1;
+                    while (hi - lo > 1) {
+                        int mid = lo + (hi - lo) / 2;
+                        double quote = g.getBuildingManager().siteUnitMonths(t, mid, g.getBuildingOutputAtEveryPost());
+                        if (Double.isFinite(quote) && quote <= months) lo = mid;
+                        else hi = mid;
+                    }
+                    finished = lo;
+                }
             }
-            double wait = g.onSiteMonths(t);
-            double owed = stack.getUnderConstruction() * (double) t.getConstructionPoints() - stack.getConstructionProgress();
-            double progress = stack.getConstructionProgress() + (Double.isFinite(wait) && wait > 0 ? owed * months / wait : 0);
-            int finished = (int) Math.max(0, Math.min(e.getValue(), Math.floor(progress / t.getConstructionPoints())));
-            if (finished > 0) ready.put(t, finished);
+            if (finished != 0) ready.put(t, finished);
         }
         return ready;
     }
 
     static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added, BuildAdvice.Ahead at) {
-        double[] sd = BuildAdvice.supplyDemand(g, m, added, at);
+        return cover(BuildAdvice.supplyDemand(g, m, added, at));
+    }
+
+    private static double cover(double[] sd) {
         return sd[1] > 0 ? Math.max(0, Math.min(1, sd[0] / sd[1])) : 1;
     }
 

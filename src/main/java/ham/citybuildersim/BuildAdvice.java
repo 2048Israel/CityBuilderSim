@@ -518,10 +518,8 @@ public final class BuildAdvice {
             if (e.getValue() <= 0 || m.kind() == Kind.HIGHWAYS && !t.isHighway()) continue;
             BuildingsStacks stack = game.getBuildingManager().getStack(t);
             if (stack == null || stack.getUnderConstruction() <= 0) continue;
-            double owed = stack.getUnderConstruction() * (double) t.getConstructionPoints() - stack.getConstructionProgress();
-            double one = Math.max(0, t.getConstructionPoints() - stack.getConstructionProgress());
-            double lead = game.onSiteMonths(t);
-            if (owed > 0 && Double.isFinite(lead)) first = Math.min(first, Math.ceil(lead * one / owed));
+            double lead = game.getBuildingManager().siteUnitMonths(t, 1, game.getBuildingOutputAtEveryPost());
+            if (Double.isFinite(lead)) first = Math.min(first, Math.ceil(lead));
         }
         return first;
     }
@@ -1349,7 +1347,7 @@ public final class BuildAdvice {
                 n = found[0];
             }
             if (found[0] <= 0) {
-                if (!full) continue;
+                if (!full || found[1] != 1) continue;
                 found = new int[] {1, 1};
             }
             boolean closes = found[1] == 1;
@@ -1367,7 +1365,7 @@ public final class BuildAdvice {
                     false, value));
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
-        Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack) : null;
+        Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack, maintain) : null;
         if (paving != null) weighed.add(paving);
         if (weighed.isEmpty()) return null;
         /*
@@ -1727,16 +1725,29 @@ public final class BuildAdvice {
 
     /** ...at another slack past its projection (0.7.73, AutoBuilder). */
     static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Integer> site, double landLeft, double slack) {
+        return weighPaving(game, m, site, landLeft, slack, true);
+    }
+
+    private static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Integer> site,
+            double landLeft, double slack, boolean maintain) {
         int most = game.paveable();
         Map<BuildingsTemplate, Integer> step = pavingStep(game);
         if (most < 1 || step.isEmpty()) return null;
         double unit = pavingUnit(game, site);
         if (!(unit > 0) || !pavingBeatsPaved(game, landLeft, site)) return null;
-        int[] today = count(game, m, site, step, new Ahead(0, 1, slack), most);
+        int[] today = count(game, m, site, step, new Ahead(0, 1, slack), most, maintain);
         if (today[0] <= 0) return null;
-        double lead = game.quotePave(today[0]).months;
-        Ahead p = opening(game, lead, slack);
-        int[] found = count(game, m, site, step, p, most);
+        int n = today[0];
+        double lead;
+        Ahead p;
+        int[] found;
+        while (true) {
+            lead = game.quotePave(n).months;
+            p = opening(game, lead, slack);
+            found = count(game, m, site, step, p, most, maintain);
+            if (found[0] <= n) break;
+            n = found[0];
+        }
         if (found[0] <= 0) return null;
         boolean closes = found[1] == 1;
         // Its figure since 0.7.101 as every candidate's (A BUILDING OVER ITS LIFE): the pavings' order over its
