@@ -1130,14 +1130,14 @@ public final class AutoBuilder {
         Double due = pendingUntil.get(m.label());
         boolean shortAhead = !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, 0, slack));
         if (shortAhead && due != null && game.getMonth() > due) return Map.of();
-        // A slow plant cannot stand in for power a faster work can deliver sooner.
-        if (m.kind() == BuildAdvice.Kind.POWER && BuildAdvice.units(site) > 0) {
+        // A slow site cannot cover service that faster work can deliver sooner.
+        if (essential(m) && BuildAdvice.units(site) > 0) {
             double first = BuildAdvice.firstCompletion(game, m, site);
             for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
                 if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
                 double lead = game.quoteBuild(t, 1).months;
-                if (Double.isFinite(lead) && lead < first
+                if (Double.isFinite(lead) && Math.ceil(lead) < first
                         && !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, lead, slack)))
                     return Map.of();
             }

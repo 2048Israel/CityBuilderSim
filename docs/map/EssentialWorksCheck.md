@@ -1,4 +1,4 @@
-# EssentialWorksCheck.java - 687 lines · 21 methods · 3 constants · harnesses
+# EssentialWorksCheck.java - 770 lines · 23 methods · 3 constants · harnesses
 
 `ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -8,7 +8,7 @@
 > Fixtures cause short highways with and without ground, a street on site,
 > a partial power order from scarce cash, and schools that cannot pay their upkeep.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (136), [AutoBuilder](AutoBuilder.md) (34), [BuildingsTemplate](BuildingsTemplate.md) (27), [Game](Game.md) (23), [WorksValue](WorksValue.md) (15), [LandManager](LandManager.md) (9), [CityNeeds](CityNeeds.md) (9), [UtilitiesHandler](UtilitiesHandler.md) (9), [Health](Health.md) (8), [BuildingManager](BuildingManager.md) (7), [Sector](Sector.md) (5), [CareType](CareType.md) (5), [ConstructionControl](ConstructionControl.md) (5), [ChildcareCheck](ChildcareCheck.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [EducationType](EducationType.md) (3), [JobType](JobType.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [BuildCard](BuildCard.md) (2), [PopulationManager](PopulationManager.md) (2), [WageBand](WageBand.md) (2), [Traffic](Traffic.md) (2), [GameFiles](GameFiles.md) (2), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1), [Education](Education.md) (1), [Healthcare](Healthcare.md) (1), [Statement](Statement.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (161), [AutoBuilder](AutoBuilder.md) (36), [BuildingsTemplate](BuildingsTemplate.md) (32), [Game](Game.md) (25), [WorksValue](WorksValue.md) (16), [LandManager](LandManager.md) (11), [UtilitiesHandler](UtilitiesHandler.md) (10), [CityNeeds](CityNeeds.md) (9), [BuildingManager](BuildingManager.md) (9), [Health](Health.md) (8), [CareType](CareType.md) (6), [Sector](Sector.md) (5), [ConstructionControl](ConstructionControl.md) (5), [BuildingsStacks](BuildingsStacks.md) (4), [ChildcareCheck](ChildcareCheck.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [EducationType](EducationType.md) (3), [JobType](JobType.md) (3), [BuildCard](BuildCard.md) (2), [PopulationManager](PopulationManager.md) (2), [WageBand](WageBand.md) (2), [Traffic](Traffic.md) (2), [GameFiles](GameFiles.md) (2), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1), [Education](Education.md) (1), [Healthcare](Healthcare.md) (1), [Statement](Statement.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [TempDirs](TempDirs.md) (1)
 
 ## Constants
 
@@ -28,7 +28,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 16 | 672 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
+| 16 | 755 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
 | 22 | 4 | `static void check(String label, boolean ok)` |  |
 | 27 | 5 | `static void quietly(Runnable run)` |  |
 | 33 | 9 | `static Game town(Path root, String name)` |  |
@@ -39,15 +39,17 @@
 | 150 | 31 | `static void lostOutput(Path root)` |  |
 | 182 | 28 | `static void scarceCash(Path root)` |  |
 | 211 | 40 | `static void professionalDemand(Path root)` |  |
-| 252 | 24 | `static void filledPostCosts(Path root)` |  |
-| 277 | 44 | `static void cappedCare(Path root)` |  |
-| 322 | 37 | `static void adviceParity(Path root)` |  |
-| 360 | 52 | `static void interimPower(Path root)` |  |
-| 413 | 35 | `static void waterAtCap(Path root)` |  |
-| 449 | 38 | `static void queuedPower(Path root)` |  |
-| 488 | 34 | `static void shortPowerBenefit(Path root)` |  |
-| 523 | 40 | `static void pavingLead(Path root)` |  |
-| 564 | 82 | `static void overduePending(Path root) throws Exception` |  |
-| 647 | 18 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, java.util.List<String> orders, bool...` |  |
-| 666 | 21 | `public static void main(String[] args) throws Exception` |  |
+| 252 | 38 | `static void pendingIndustrialLoad(Path root)` |  |
+| 291 | 39 | `static void interimCare(Path root)` |  |
+| 331 | 24 | `static void filledPostCosts(Path root)` |  |
+| 356 | 44 | `static void cappedCare(Path root)` |  |
+| 401 | 37 | `static void adviceParity(Path root)` |  |
+| 439 | 52 | `static void interimPower(Path root)` |  |
+| 492 | 35 | `static void waterAtCap(Path root)` |  |
+| 528 | 38 | `static void queuedPower(Path root)` |  |
+| 567 | 34 | `static void shortPowerBenefit(Path root)` |  |
+| 602 | 40 | `static void pavingLead(Path root)` |  |
+| 643 | 82 | `static void overduePending(Path root) throws Exception` |  |
+| 726 | 20 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, java.util.List<String> orders, bool...` |  |
+| 747 | 23 | `public static void main(String[] args) throws Exception` |  |
 

@@ -570,7 +570,8 @@ public final class BuildAdvice {
                 double base = power ? u.getBaseProduction() : u.getBaseWaterProduction();
                 // ...and water's two parts, the fresh held to the city's limit (0.7.59).
                 double fresh = u.getFreshNameplate(), desal = u.getDesalNameplate();
-                double demand = k * (power ? u.getConsumption() : u.getWaterConsumption());
+                double demand = k * (power ? u.getConsumption() : u.getWaterConsumption())
+                        + (power ? WorksValue.pendingPowerLoad(game, p.months()) : 0);
                 for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
                     BuildingsTemplate t = e.getKey();
                     int n = e.getValue();
@@ -663,7 +664,8 @@ public final class BuildAdvice {
             case POWER: case WATER: {
                 double load = figure(game, m, added, p);
                 UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
-                double demand = k * (m.kind() == Kind.POWER ? u.getConsumption() : u.getWaterConsumption());
+                double demand = k * (m.kind() == Kind.POWER ? u.getConsumption() : u.getWaterConsumption())
+                        + (m.kind() == Kind.POWER ? WorksValue.pendingPowerLoad(game, p.months()) : 0);
                 for (Map.Entry<BuildingsTemplate, Integer> e : added.entrySet()) {
                     demand += e.getValue() * (m.kind() == Kind.POWER
                             ? e.getKey().getElectricityConsumption() : e.getKey().getWaterConsumption());

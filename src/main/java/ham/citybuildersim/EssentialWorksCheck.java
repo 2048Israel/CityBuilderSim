@@ -249,6 +249,85 @@ public final class EssentialWorksCheck {
                         && !BuildAdvice.maintained(g, m, Map.of(), g.getAutoBuilder().target()));
     }
 
+    static void pendingIndustrialLoad(Path root) {
+        out.println("--- a known industrial opening needs its power ahead ---");
+        Game g = town(root, "pending-industrial-load");
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate mill = bm.getTemplateByName("Large Mini-Mill");
+        quietly(() -> g.buildStack(mill, 1, false));
+        BuildingsStacks stack = bm.getStack(mill);
+        stack.setConstructionProgress(Math.max(0, mill.getConstructionPoints()
+                - g.getBuildingOutputAtEveryPost() * .25));
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
+        utilities.setWattsConsumption(utilities.getProduction() * .8);
+        double first = bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost());
+        check("fixture: a paid mill opens within the planning horizon while current power has its reserve",
+                stack.getUnderConstruction() == 1 && first > 0 && first < BuildAdvice.HORIZON
+                        && BuildAdvice.maintained(g, power, Map.of(), g.getAutoBuilder().target()));
+        BuildAdvice.Ahead before = new BuildAdvice.Ahead(first * .5, 1, 0);
+        BuildAdvice.Ahead after = new BuildAdvice.Ahead(first + .01, 1, 0);
+        double early = BuildAdvice.supplyDemand(g, power, Map.of(), before)[1];
+        double late = BuildAdvice.supplyDemand(g, power, Map.of(), after)[1];
+        check("the forecast adds the mill's physical electrical draw only once it opens",
+                Math.abs(late - early - mill.getElectricityConsumption()) < 1e-8
+                        && WorksValue.pendingPowerLoad(g, before.months()) == 0);
+        BuildAdvice.Suggestion card = BuildAdvice.suggestFor(g, null, power, g.getCash(),
+                g.getLandManager().getAvailableSqFt());
+        check("the power card anticipates the ordered industrial load before it is operating",
+                card != null && card.count() > 0);
+        g.getAutoBuilder().setOn(true, null);
+        quietly(() -> g.getAutoBuilder().pass(g));
+        AutoBuilder.Step order = step(g, power);
+        check("the automatic path orders power before that industrial completion",
+                order != null && order.ordered() > 0 && stack.getUnderConstruction() == 1);
+    }
+
+    static void interimCare(Path root) {
+        out.println("--- a slow hospital cannot hold faster care ---");
+        Game g = town(root, "interim-care");
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
+        BuildingManager bm = g.getBuildingManager();
+        BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            int n = bm.getQuantity(t.getId());
+            if (care.serves(t) && n > 0) quietly(() -> bm.retire(t, n));
+        }
+        BuildingsTemplate clinic = bm.getTemplateByName("Walk-in Clinic");
+        double demand = BuildAdvice.supplyDemand(g, care, Map.of())[1];
+        double staffed = clinic.getCapacity() * BuildAdvice.staffing(clinic,
+                g.getPopulationManager().getJobFillRate());
+        double base = BuildAdvice.supplyDemand(g, care, Map.of())[0];
+        int standing = Math.max(0, (int) Math.ceil((demand - base) / staffed) - 1);
+        if (standing > 0) quietly(() -> g.buildStack(clinic, standing, true));
+        BuildingsTemplate hospital = bm.getTemplateByName("General Hospital");
+        quietly(() -> g.buildStack(hospital, 1, false));
+        Map<BuildingsTemplate, Integer> raw = BuildAdvice.onSite(g, care);
+        double first = BuildAdvice.firstCompletion(g, care, raw);
+        check("fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier",
+                !BuildAdvice.maintained(g, care, Map.of(), BuildAdvice.NOW)
+                        && BuildAdvice.maintained(g, care, raw, g.getAutoBuilder().target())
+                        && Math.ceil(g.quoteBuild(clinic, 1).months) < first);
+        BuildAdvice.Suggestion card = BuildAdvice.suggestFor(g, null, care, g.getCash(),
+                g.getLandManager().getAvailableSqFt());
+        check("the care card offers an earlier useful order while the hospital is pending",
+                card != null && Math.ceil(card.lead()) < first);
+        g.getAutoBuilder().setOn(true, null);
+        quietly(() -> g.getAutoBuilder().pass(g));
+        AutoBuilder.Step order = step(g, care);
+        check("the automatic path places that service's interim order",
+                order != null && order.ordered() > 0);
+    }
+
     static void filledPostCosts(Path root) {
         out.println("--- staff-short works pay only the posts filled in the utility books ---");
         Game g = town(root, "filled-post-costs");
@@ -650,6 +729,8 @@ public final class EssentialWorksCheck {
             if (!after) {
                 UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
                 u.setWattsConsumption(u.getProduction() * 1.2);
+                long people = g.getPopulationManager().getPopulation();
+                g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(people, people));
                 return;
             }
             stayedShort[0] &= !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW);
@@ -672,6 +753,8 @@ public final class EssentialWorksCheck {
         lostOutput(root);
         scarceCash(root);
         professionalDemand(root);
+        pendingIndustrialLoad(root);
+        interimCare(root);
         filledPostCosts(root);
         cappedCare(root);
         adviceParity(root);

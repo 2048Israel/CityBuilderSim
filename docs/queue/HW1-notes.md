@@ -1355,3 +1355,96 @@ its own verified script process 33148 and descendants after its launcher
 shell was ended. Its default is retained, and it supplies no final suite
 verdict. No ensemble has started on the reviewed model. SX1 main e5642145
 will be merged before the replacement final pick and ensemble.
+
+### Timing investigation requested at 05:43
+
+The bounded read-only replay is target/checks/hw1-service-timing.log.
+It runs the immutable d5e18010 classes and stops at m1761. PRE is before
+the automatic pass, POST follows the completed month. Saved deadlines,
+operating supply/demand, pending quantities and actual order steps are
+printed. Its exit 0 means the diagnostic reached its bound.
+
+* Elementary first becomes useful at m325. Passes m325–353 hold for cash,
+  m354 holds for debt, and m355 funds one school. It opens at m368.
+  The 43-month deficient spell includes the 29 cash and one debt holds.
+* University is useful at m1578 and ordered on that pass. Its fixed
+  completion promise is m1608. The changing shared queue pushes its live
+  quote beyond that date. At expiry, pass m1609 orders a second university
+  and the first opens at m1622. There is no funding hold in this spell.
+* Medical school is useful at m1636 and ordered on that pass. The fixed
+  promise is m1694. Additional funded orders occur at m1651, m1663, m1676,
+  m1693, m1696, m1720 and m1725. The first school opens at m1696 and its
+  staffed places cover about 43% of demand. Full service follows later
+  units. Every expired promise triggers another order. There is no cash,
+  debt or ground hold in that spell.
+* General care orders a hospital at m1585 while operating coverage is
+  119%, with a promise of m1650. Coverage falls below 90% at m1632.
+  Pending hospital capacity then suppresses faster clinics until expiry.
+  This is an automatic planning fault.
+* The power trough is m1562. Demand rises from 110,926 W to 188,193 W
+  while supply moves from 128,895 W to 127,821 W. An exact inventory replay,
+  target/checks/hw1-service-load.log, identifies the first Large Mini-Mill
+  opening with 77,000 W of new draw. Smaller openings account for the rest.
+  The population-only power forecast misses that known pending step.
+
+### Further model mends and fixture premises
+
+★ The earlier-work check applies to every essential service. A pending
+hospital can no longer suppress a clinic that opens in an earlier month.
+Both quotation comparisons use completion months, preventing a fraction
+of a month from falsely claiming an earlier monthly service result.
+
+★ The power projection includes electrical demand from already ordered
+non-power works at their quoted commissioning dates. WorksValue reuses its
+queue-aware completion schedule for these loads. The count and valuation
+paths use the same physical demand. The power valuation caches the schedule
+within its own evaluation. Current physical service remains read from the
+utility books.
+
+Current useful-demand eligibility is retained while the combined replay
+is checked. The school trace orders on each first currently-useful pass.
+Its delays include shifting construction shares and insufficient staffed
+places after the first unit opens. The generic faster-service mend also
+changes that queue, so the new default must supply the final measurements.
+
+The first generic-only shadow run is
+target/checks/hw1-all-service-lead-playtest.log, exit 0 and zero findings.
+It has zero general-care and power deficient months, but longer funding
+and highway spells on its changed path. It is a diagnostic trial, before
+the completion-month comparison and pending-load mend.
+
+The new care fixture initially forgot the model's base care capacity.
+Subtracting that base when choosing its standing clinics causes the
+original intended operating shortage. Its hard premise now verifies the
+shortage, sufficient pending hospital and an earlier available clinic.
+The old power-only guard fails both the offered-card and actual care-order
+laws while this premise passes.
+
+The deadline replay forces a fixed operating power shortage before each
+pass. With the new model, unrelated service growth could create a larger
+future requirement at the priority-delayed 90,000-month construction quote,
+so an additional order before the first deadline was legitimate. Its
+controlled-load premise now also fixes the BusinessInvestment forecast to
+the current population before every pass on both twins. The real monthly
+passes, priority stall, full save/load, saved deadline, hard no-early-order
+law, own-service late order and complete later-order comparison remain.
+No rate pin or save-field substitution is used.
+
+The corrected six-harness run is
+target/checks/hw1-service-mends-named2.log, exit 0 with zero firm Stale
+findings and 186 soft. The earlier named log has two fixture failures
+described above and is superseded. The combined default uses an immutable
+classes snapshot at target/hw1-sendback1/service-model-classes.
+
+The final isolated controls retain every other mend and pass their caused
+premises. Each deliberately exits 1.
+
+| log under target/checks | omitted mend | hard failures |
+|---|---|---|
+| hw1-service-care-mutant.log | earlier work only for power | offered interim care and actual own-service order |
+| hw1-service-load-mutant.log | pending non-power electrical loads | timed physical demand, anticipatory card and actual power order |
+| hw1-service-reload-mutant.log | restoring the saved pending date | exact restored date and later order-by-order equality |
+
+The production named run passes the same three cases. The unchanged hard
+no-early-order, past-deadline-order and continuous-shortage assertions also
+pass with the fixed-load replay premise.

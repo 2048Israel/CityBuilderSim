@@ -1,4 +1,4 @@
-# WorksValue.java - 238 lines · 14 methods · 0 constants · model
+# WorksValue.java - 261 lines · 17 methods · 0 constants · model
 
 `ham/citybuildersim/WorksValue.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -6,7 +6,7 @@
 > WHY. A plant's cheap used kW hid its land and a shortage's lost work. These
 > are comparisons at today's prices, never entries in the city's money books.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (44), [BuildingsTemplate](BuildingsTemplate.md) (27), [Game](Game.md) (10), [DecisionLog](DecisionLog.md) (7), [Sector](Sector.md) (7), [Health](Health.md) (5), [Crime](Crime.md) (4), [ConstructionControl](ConstructionControl.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [Statement](Statement.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (44), [BuildingsTemplate](BuildingsTemplate.md) (33), [Game](Game.md) (13), [DecisionLog](DecisionLog.md) (7), [Sector](Sector.md) (7), [Health](Health.md) (5), [Crime](Crime.md) (4), [ConstructionControl](ConstructionControl.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [Statement](Statement.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [BuildingType](BuildingType.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
 
 **Used by (7):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md)
 
@@ -14,7 +14,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 228 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
+| 11 | 251 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
 | 12 | 1 | `private WorksValue()` |  |
 | 15 | 14 | **type** `public record Value(double capital, double land, double running, double avoided, double payroll, double pay...` | Present values in local thousands; jobs and payroll are shown separately from their tax return. |
 | 17 | 1 | `public double cost()` _(in WorksValue.Value)_ |  |
@@ -25,11 +25,14 @@
 | 54 | 11 | `public static Value paving(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site, int count, double landLeft)` | A paving is the whole replacement plan, including the ground freed and running-cost difference. |
 | 66 | 1 | **type** `private record Relief(double used, double avoided)` |  |
 | 69 | 4 | `public static double avoided(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTemplate, Intege...` | Power at monthly resolution and other services at yearly midpoints, with the same real rate and long city trend. |
-| 75 | 51 | `private static Relief relief(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTemplate, Intege...` | Demand is physical: the reserve dial sizes orders but cannot create lost output. |
-| 127 | 1 | **type** `private record PendingPower(int units, double first, double interval, boolean rushed)` |  |
-| 130 | 14 | `private static Map<BuildingsTemplate, PendingPower> powerSchedule(Game g, Map<BuildingsTemplate, Integer> site)` | The same queue-aware unit quotes the automatic completion deadline reads. |
-| 146 | 27 | `private static Map<BuildingsTemplate, Integer> powerOnSiteAt(Game g, Map<BuildingsTemplate, PendingPower> schedule, double months)` | Quote-completed units at this date. |
-| 174 | 3 | `static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added, BuildAdvice.Ahead at)` |  |
-| 178 | 3 | `private static double cover(double[] sd)` |  |
-| 183 | 55 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> before, Map<BuildingsTemplate, Inte...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
+| 75 | 52 | `private static Relief relief(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTemplate, Intege...` | Demand is physical: the reserve dial sizes orders but cannot create lost output. |
+| 129 | 3 | `public static double pendingPowerLoad(Game g, double months)` | Electrical draw of already ordered non-power works that their present queue opens by this date. |
+| 133 | 9 | `private static Map<BuildingsTemplate, Integer> pendingLoads(Game g)` |  |
+| 143 | 6 | `private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months)` |  |
+| 150 | 1 | **type** `private record PendingWork(int units, double first, double interval, boolean rushed)` |  |
+| 153 | 14 | `private static Map<BuildingsTemplate, PendingWork> completionSchedule(Game g, Map<BuildingsTemplate, Integer> site)` | The same queue-aware unit quotes the automatic completion deadline reads. |
+| 169 | 27 | `private static Map<BuildingsTemplate, Integer> completedAt(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months)` | Quote-completed units at this date. |
+| 197 | 3 | `static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added, BuildAdvice.Ahead at)` |  |
+| 201 | 3 | `private static double cover(double[] sd)` |  |
+| 206 | 55 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> before, Map<BuildingsTemplate, Inte...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
 

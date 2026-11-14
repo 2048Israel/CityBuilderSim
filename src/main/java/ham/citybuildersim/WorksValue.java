@@ -83,7 +83,8 @@ public final class WorksValue {
         }
         double rate = Math.max(0, BuildAdvice.lifeRate(g)) / 12, result = 0, used = 0, weights = 0;
         boolean power = m.kind() == BuildAdvice.Kind.POWER;
-        Map<BuildingsTemplate, PendingPower> schedule = power ? powerSchedule(g, site) : Map.of();
+        Map<BuildingsTemplate, PendingWork> schedule = power ? completionSchedule(g, site) : Map.of();
+        Map<BuildingsTemplate, PendingWork> loads = power ? completionSchedule(g, pendingLoads(g)) : Map.of();
         double powerPotential = 0;
         if (power) for (Sector sector : g.getSectors().all()) {
             Sector.Statement book = sector.statement();
@@ -97,7 +98,7 @@ public final class WorksValue {
         for (int start = 0; start < BuildAdvice.LIFE_MONTHS; start += interval) {
             double months = lead + start + interval / 2.0;
             BuildAdvice.Ahead at = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), 0);
-            Map<BuildingsTemplate, Integer> ready = power ? powerOnSiteAt(g, schedule, months) : site;
+            Map<BuildingsTemplate, Integer> ready = power ? completedAt(g, schedule, months) : site;
             Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(ready, order);
             double weight = 0;
             for (int j = 1; j <= interval; j++) weight += Math.pow(1 + rate, -(lead + start + j));
@@ -109,7 +110,7 @@ public final class WorksValue {
                     powerAfter = BuildAdvice.supplyDemand(g, m, with, BuildAdvice.NOW);
                     previousReady = ready;
                 }
-                double demand = basePowerDemand * at.scale();
+                double demand = basePowerDemand * at.scale() + pendingPowerLoad(g, loads, months);
                 before = new double[] {powerBefore[0], demand + (powerBefore[1] - basePowerDemand)};
                 after = new double[] {powerAfter[0], demand + (powerAfter[1] - basePowerDemand)};
                 result += weight * powerPotential * Math.max(0, cover(after) - cover(before));
@@ -124,31 +125,53 @@ public final class WorksValue {
         return new Relief(weights > 0 ? used / weights : 0, Math.max(0, result));
     }
 
-    private record PendingPower(int units, double first, double interval, boolean rushed) { }
+    /** Electrical draw of already ordered non-power works that their present queue opens by this date. */
+    public static double pendingPowerLoad(Game g, double months) {
+        return months > 0 ? pendingPowerLoad(g, completionSchedule(g, pendingLoads(g)), months) : 0;
+    }
+
+    private static Map<BuildingsTemplate, Integer> pendingLoads(Game g) {
+        Map<BuildingsTemplate, Integer> loads = new LinkedHashMap<>();
+        for (BuildingsStacks stack : g.getBuildingManager().getStacksUnderConstruction()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getCategory() != BuildingType.ELECTRICITY && t.getElectricityConsumption() > 0)
+                loads.put(t, stack.getUnderConstruction());
+        }
+        return loads;
+    }
+
+    private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months) {
+        double load = 0;
+        for (Map.Entry<BuildingsTemplate, Integer> e : completedAt(g, schedule, months).entrySet())
+            load += e.getValue() * (double) e.getKey().getElectricityConsumption();
+        return load;
+    }
+
+    private record PendingWork(int units, double first, double interval, boolean rushed) { }
 
     /** The same queue-aware unit quotes the automatic completion deadline reads. */
-    private static Map<BuildingsTemplate, PendingPower> powerSchedule(Game g,
+    private static Map<BuildingsTemplate, PendingWork> completionSchedule(Game g,
             Map<BuildingsTemplate, Integer> site) {
-        Map<BuildingsTemplate, PendingPower> schedule = new LinkedHashMap<>();
+        Map<BuildingsTemplate, PendingWork> schedule = new LinkedHashMap<>();
         BuildingManager bm = g.getBuildingManager();
         double output = g.getBuildingOutputAtEveryPost();
         for (Map.Entry<BuildingsTemplate, Integer> e : site.entrySet()) {
             BuildingsTemplate t = e.getKey();
             double first = bm.siteUnitMonths(t, 1, output);
             double second = e.getValue() > 1 ? bm.siteUnitMonths(t, 2, output) : first;
-            schedule.put(t, new PendingPower(e.getValue(), first, second - first,
+            schedule.put(t, new PendingWork(e.getValue(), first, second - first,
                     bm.getControl().isRushed(ConstructionControl.keyOf(t))));
         }
         return schedule;
     }
 
     /** Quote-completed units at this date. Priority delay precedes the first unit in full. */
-    private static Map<BuildingsTemplate, Integer> powerOnSiteAt(Game g,
-            Map<BuildingsTemplate, PendingPower> schedule, double months) {
+    private static Map<BuildingsTemplate, Integer> completedAt(Game g,
+            Map<BuildingsTemplate, PendingWork> schedule, double months) {
         Map<BuildingsTemplate, Integer> ready = new LinkedHashMap<>();
-        for (Map.Entry<BuildingsTemplate, PendingPower> e : schedule.entrySet()) {
+        for (Map.Entry<BuildingsTemplate, PendingWork> e : schedule.entrySet()) {
             BuildingsTemplate t = e.getKey();
-            PendingPower p = e.getValue();
+            PendingWork p = e.getValue();
             int finished = 0;
             if (p.units() <= 0) finished = p.units();
             else if (Double.isFinite(p.first()) && months >= p.first()) {
