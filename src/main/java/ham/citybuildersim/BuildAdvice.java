@@ -1643,6 +1643,14 @@ public final class BuildAdvice {
             if (n != 0) cost += n * runningCostAt(game, e.getKey(),
                     n > 0 ? r1.getUtilisation() : r0.getUtilisation());
         }
+        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            if (!ConstructionControl.paves(t)) continue;
+            int existing = game.getBuildingManager().getQuantity(t.getId()) + before.getOrDefault(t, 0);
+            if (after.getOrDefault(t, 0) < before.getOrDefault(t, 0))
+                existing += after.getOrDefault(t, 0) - before.getOrDefault(t, 0);
+            cost += existing * (runningCostAt(game, t, r1.getUtilisation())
+                    - runningCostAt(game, t, r0.getUtilisation()));
+        }
         double riders = r1.getTransitRiders() - r0.getTransitRiders();
         return cost - riders * game.getEconomyManager().getTaxPolicy().monthlyFare();
     }

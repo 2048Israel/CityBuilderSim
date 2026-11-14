@@ -249,6 +249,7 @@ public final class AutoBuilder {
             for (OpenAsk a : new ArrayList<>(asks)) withdrawAsk(a, "automatic building was turned off", null);
             held.clear();
             paybackHolds.clear();
+            fundingHolds.clear();
             bought.clear();
             asked.clear();
         }
@@ -408,6 +409,9 @@ public final class AutoBuilder {
     /** The last pass's payback holds (PT1-M3), in the order it weighed them. */
     private final List<PaybackHold> paybackHolds = new ArrayList<>();
 
+    /** Last-pass funding reasons shown on cards, saved and cleared with automation's switch. */
+    private final Map<String, String> fundingHolds = new LinkedHashMap<>();
+
     /** What the advice card's line opens with (PT1-M3); the inbox's words for the payback follow. */
     public static final String HELD_BACK = "Automatic building holds it back; ";
 
@@ -426,10 +430,9 @@ public final class AutoBuilder {
 
     /** ...as the advice's card says it: HELD_BACK and the inbox's words (paybackWords()); null where it did not hold it back. */
     public String heldBackWords(BuildAdvice.Suggestion s) {
-        if (s == null) return null;
-        for (Step step : steps) if (step.measure().equals(s.measure()) && step.outcome() == Outcome.HELD
-                && step.building() == null && (step.cut() == Cut.CASH || step.cut() == Cut.DEBT))
-            return s.measure().label() + ": automatic building keeps funding for an unmet essential service.";
+        if (!on || s == null) return null;
+        String funding = fundingHolds.get(s.measure().label());
+        if (funding != null) return s.measure().label() + ": automatic building keeps funding for " + funding + ".";
 
         Payback p = heldForPayback(s);
         return p == null ? null : HELD_BACK + paybackWords(p);
@@ -795,7 +798,11 @@ public final class AutoBuilder {
 
     /** Whether `total` is paid for: at or under the limit, by the cash and past it a bond that keeps the debt within it; over it, by the cash alone with cashAnyway on, and otherwise not at all (0.7.81). */
     boolean canPay(Game game, double total) {
-        double gap = gapFor(game, total);
+        return canPay(game, total, null);
+    }
+
+    private boolean canPay(Game game, double total, OpenAsk own) {
+        double gap = total - spendableFor(game, own);
         if (!within(game)) return cashAnyway && !(gap > 0);
         if (!(gap > 0)) return true;
         if (!(debtLimit > 0)) return false;
@@ -1216,6 +1223,7 @@ public final class AutoBuilder {
         if (!on) return;
         held.clear();
         paybackHolds.clear();
+        fundingHolds.clear();
         bought.clear();
         asked.clear();
         steps.clear();
@@ -1241,13 +1249,14 @@ public final class AutoBuilder {
             boolean heldProceeds = asks.stream().anyMatch(a -> held(game, a) > 0);
             if (heldProceeds) for (BuildAdvice.Measure m : kept) {
                 if (priority(game, m).order() != 0) continue;
-                BuildAdvice.Suggestion needed = BuildAdvice.suggestFor(game, rowFor(all, m), m, game.getCash(),
-                        game.getLandManager().getAvailableSqFt());
+                OpenAsk own = askFor(m);
+                BuildAdvice.Suggestion needed = own == null
+                        ? BuildAdvice.suggestFor(game, rowFor(all, m), m, game.getCash(),
+                                game.getLandManager().getAvailableSqFt())
+                        : cardFor(game, all, m, own);
                 if (needed == null) continue;
                 double first = firstCost(game, m);
-                OpenAsk own = askFor(m);
-                double earmarked = own == null ? 0 : held(game, own);
-                if (Double.isFinite(first) && !canPay(game, Math.max(0, Math.max(first, needed.price()) - earmarked))) {
+                if (Double.isFinite(first) && !canPay(game, Math.max(first, needed.price()), own)) {
                     unfunded = m;
                     break;
                 }
@@ -1267,6 +1276,7 @@ public final class AutoBuilder {
                             game.getLandManager().getAvailableSqFt());
                     if (expansion != null || askFor(m) != null) {
                         steps.add(new Step(m, Outcome.HELD, null, 0, 0, protectedCut, 0, 0));
+                        fundingHolds.put(m.label(), protectedWork.label());
                         held.add(m.label() + ": cash and borrowing room are kept for " + protectedWork.label()
                                 + ", which currently lacks service.");
                         continue;
@@ -1819,8 +1829,14 @@ public final class AutoBuilder {
         double lack = lacks(game, t, n);
         if (!(lack > 0)) return Ground.NONE;
         if (overFull(game) > 0) return null;
+        return groundFor(game, lack, Set.of());
+    }
+
+    /** The same whole-parcel selection for a projected shortage, omitting already bought offers. */
+    static Ground groundFor(Game game, double lack, Set<Integer> alreadyTaken) {
+        if (!(lack > 0)) return Ground.NONE;
         List<LandParcel> picks = new ArrayList<>();
-        Set<Integer> taken = new HashSet<>();
+        Set<Integer> taken = new HashSet<>(alreadyTaken);
         double got = 0;
         while (lack - got > 0) {
             LandParcel o = shortcutOffer(game, lack - got, taken);
@@ -1829,7 +1845,7 @@ public final class AutoBuilder {
             taken.add(o.getId());
             got += linkedSqFt(o);
         }
-        List<Integer> ids = new ArrayList<>(taken);
+        List<Integer> ids = picks.stream().map(LandParcel::getId).toList();
         double cash = game.isLandPaidFromVault() ? game.landTopUpLocal(ids) : game.landPriceLocal(ids);
         return new Ground(List.copyOf(picks), cash, picks.size() == 1 && linkedSqFt(picks.get(0)) >= lack);
     }
@@ -2422,12 +2438,15 @@ public final class AutoBuilder {
         public List<PaybackHold> paybackHolds;
         /** Original first-completion dates for pending capacity, by service label (HW1). */
         public Map<String, Double> pendingUntil;
+        /** Last-pass essential funding reasons for the advice cards. */
+        public Map<String, String> fundingHolds;
     }
 
     public State toState() {
         State s = new State();
         s.on = on;
         s.pendingUntil = new LinkedHashMap<>(pendingUntil);
+        s.fundingHolds = new LinkedHashMap<>(fundingHolds);
         s.slack = slack;
         s.debtToGdp = debtLimit;
         s.cashAnyway = cashAnyway;
@@ -2486,6 +2505,7 @@ public final class AutoBuilder {
         log.clear();
         held.clear();
         paybackHolds.clear();
+        fundingHolds.clear();
         bought.clear();
         asked.clear();
         asks.clear();
@@ -2508,6 +2528,8 @@ public final class AutoBuilder {
                 pendingUntil.put(e.getKey(), e.getValue());
         }
         on = s.on;
+        if (on && s.fundingHolds != null) for (Map.Entry<String, String> e : s.fundingHolds.entrySet())
+            if (e.getKey() != null && e.getValue() != null) fundingHolds.put(e.getKey(), e.getValue());
         slack = onSteps(s.slack, SLACK_MOST);
         // ...the old default, 60% (0.7.81 to 0.7.100), as the new one (star P2-5); any other limit stands, on the new steps.
         debtLimit = s.debtToGdp == null || Math.abs(s.debtToGdp - OLD_DEFAULT_DEBT_LIMIT) < 1e-9 ? DEFAULT_DEBT_LIMIT

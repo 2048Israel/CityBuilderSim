@@ -1036,11 +1036,7 @@ public class BuildAdviceCheck {
     }
 
     static double[] valueFigure(Game g, BuildAdvice.Suggestion s, double landLeft, double cashLeft) {
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, s.measure());
-        WorksValue.Value value = s.paving()
-                ? WorksValue.paving(g, s.measure(), site, s.count(), landLeft, cashLeft)
-                : WorksValue.of(g, s.measure(), site, s.template(), s.count(), landLeft, cashLeft);
-        return new double[] {value.net(), value.used()};
+        return AdviceValueOracle.value(g, s, landLeft, cashLeft);
     }
 
     /** The offers' records with each one's dollar price times f (LandParcel.offerRow(): the price second from the end). */

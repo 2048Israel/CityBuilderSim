@@ -57,8 +57,9 @@ public final class WorksValue {
         }
         Map<BuildingsTemplate, Integer> order = Map.of(t, count);
         double footprint = t.getLandSqFt() * (double) count;
-        double groundCash = Math.max(0, footprint - landLeft) * g.getLandManager().getOfficePricePerSqFt();
-        Maintenance maintenance = new Maintenance(t, count, landLeft, cashLeft, q.total + groundCash);
+        GroundPlan ground = new GroundPlan(g, t, landLeft);
+        double groundCash = ground.take(g.landNeededFor(t, count));
+        Maintenance maintenance = new Maintenance(t, count, landLeft, cashLeft, q.total + groundCash, ground);
         Relief relief = relief(g, m, site, order, lead, maintenance);
         return new Value(q.total, BuildAdvice.landValue(g, footprint, landLeft), relief.futureCapital(),
                 relief.futureUnits(), relief.financing(), relief.running(),
@@ -77,7 +78,9 @@ public final class WorksValue {
         Game.BuildQuote q = g.quotePave(count);
         BuildingsTemplate to = g.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
         double lead = Double.isFinite(q.months) ? Math.max(0, q.months) : 0;
-        Maintenance maintenance = new Maintenance(to, count, landLeft, cashLeft, q.total);
+        GroundPlan ground = new GroundPlan(g, to, landLeft);
+        ground.take(-BuildAdvice.pavingFrees(g) * count);
+        Maintenance maintenance = new Maintenance(to, count, landLeft, cashLeft, q.total, ground);
         Relief relief = relief(g, m, site, BuildAdvice.times(Map.of(), BuildAdvice.pavingStep(g), count), lead, maintenance);
         return new Value(q.total, -BuildAdvice.landValue(g, BuildAdvice.pavingFrees(g) * count, landLeft),
                 relief.futureCapital(), relief.futureUnits(), relief.financing(), relief.running(),
@@ -86,22 +89,59 @@ public final class WorksValue {
 
     /** Later works are priced in the comparison and ordered by later monthly passes. */
     private record Maintenance(BuildingsTemplate template, int count, double landLeft,
-                               double cashLeft, double initialCashCost) { }
+                               double cashLeft, double initialCashCost, GroundPlan ground) { }
 
     private record Relief(double used, double avoided, double futureCapital, int futureUnits,
                           double futureMonths, double financing, double running) { }
 
-    private record Financing(double monthlyCoupon, double issueCost,
-                             double couponPerCash, double issuePerCash) { }
+    private record Financing(double monthlyCoupon, double issueCost, int months) { }
 
     private static Financing financing(Game g, double gap) {
-        double fallback = Math.max(0, g.getDebtManager().quoteRate(0, Game.BUILD_BOND_YEARS * 12)) / 12;
+        if (!(gap > 0)) return new Financing(0, 0, 0);
         DebtQuote q = AutoBuilder.bondQuote(g, gap, g.getAutoBuilder().getCap());
-        if (q == null || !(q.cashReceived() > 0)) return new Financing(gap * fallback, 0, fallback, 0);
-        double spread = q.faceValue() - q.cashReceived();
+        if (q == null || !(q.cashReceived() > 0)) {
+            double rate = Math.max(0, g.getDebtManager().quoteRate(0, Game.BUILD_BOND_YEARS * 12)) / 12;
+            return new Financing(gap * rate, 0, Game.BUILD_BOND_YEARS * 12);
+        }
+        int months = q.auction() == null ? q.duration() * 12 : q.auction().ask().months();
         double scale = Math.max(1, gap / q.cashReceived());
-        return new Financing(q.monthlyInterest() * scale, spread * scale, q.monthlyInterest() / q.cashReceived(),
-                spread / q.cashReceived());
+        return new Financing(q.monthlyInterest() * scale, (q.faceValue() - q.cashReceived()) * scale, months);
+    }
+
+    /** Whole parcels retain their unused ground, and the foreign vault pays only once across the sequence. */
+    private static final class GroundPlan {
+        private final Game game;
+        private final java.util.Set<Integer> bought = new java.util.LinkedHashSet<>();
+        private double free, paid;
+
+        GroundPlan(Game game, BuildingsTemplate template, double available) {
+            this.game = game;
+            free = Math.min(Math.max(0, available),
+                    Math.max(0, game.getLandManager().freeForAnyone(Game.groundUse(template))));
+        }
+
+        double take(double area) {
+            double cash = 0, lack = area - free;
+            if (lack > 0) {
+                AutoBuilder.Ground ground = AutoBuilder.groundFor(game, lack, bought);
+                if (ground == null) {
+                    // No offered parcel can be bought now. Future unavailable ground uses the office's estimate.
+                    cash = lack * game.getLandManager().getOfficePricePerSqFt();
+                    free += lack;
+                } else {
+                    for (LandParcel parcel : ground.offers()) {
+                        bought.add(parcel.getId());
+                        free += parcel.getSizeSqFt() - parcel.getUnlinkedDryKm2() * LandManager.SQ_FT_PER_KM2;
+                    }
+                    java.util.List<Integer> ids = new java.util.ArrayList<>(bought);
+                    double total = game.isLandPaidFromVault() ? game.landTopUpLocal(ids) : game.landPriceLocal(ids);
+                    cash = total - paid;
+                    paid = total;
+                }
+            }
+            free -= area;
+            return cash;
+        }
     }
 
     private static double annuity(double monthlyRate, double months) {
@@ -135,13 +175,14 @@ public final class WorksValue {
         double futureLead = 0, initialFootprint = 0, cashForLater = 0;
         double expectedInflation = Math.max(-.99, g.getBusinessInvestment().getExpectedInflation());
         double couponDiscount = (1 + rate) * (1 + expectedInflation / 12) - 1;
-        Financing funding = new Financing(0, 0, 0, 0);
+        Map<Double, Financing> creditQuotes = new java.util.HashMap<>();
         if (maintenance != null) {
             double cash = g.getAutoBuilder().spendableForMeasure(g, m) - (g.getCash() - maintenance.cashLeft());
-            funding = financing(g, Math.max(0, maintenance.initialCashCost() - cash));
+            double gap = Math.max(0, maintenance.initialCashCost() - cash);
+            Financing funding = creditQuotes.computeIfAbsent(gap, amount -> financing(g, amount));
             cashForLater = Math.max(0, cash - maintenance.initialCashCost());
             financingCost = funding.issueCost() + funding.monthlyCoupon()
-                    * annuity(couponDiscount, Math.min(horizon, Game.BUILD_BOND_YEARS * 12));
+                    * annuity(couponDiscount, Math.min(horizon, funding.months()));
             futureLead = g.quoteBuild(maintenance.template(), 1).months;
             if (!Double.isFinite(futureLead)) futureLead = 0;
             for (Map.Entry<BuildingsTemplate, Integer> e : order.entrySet())
@@ -173,12 +214,12 @@ public final class WorksValue {
                         double paidAt = Math.max(0, months - futureLead);
                         double discount = Math.pow(1 + rate, -paidAt);
                         futureCapital += (cashCost + land) * discount;
-                        double cashNeeded = cashCost + Math.max(0, area - landLeft)
-                                * g.getLandManager().getOfficePricePerSqFt();
+                        double cashNeeded = cashCost + maintenance.ground().take(g.landNeededFor(t, extra[0]));
                         double financed = Math.max(0, cashNeeded - cashForLater);
                         cashForLater = Math.max(0, cashForLater - cashNeeded);
-                        financingCost += financed * (funding.issuePerCash() + funding.couponPerCash()
-                                * annuity(couponDiscount, Math.min(horizon - paidAt, Game.BUILD_BOND_YEARS * 12))) * discount;
+                        Financing funding = creditQuotes.computeIfAbsent(financed, amount -> financing(g, amount));
+                        financingCost += (funding.issueCost() + funding.monthlyCoupon()
+                                * annuity(couponDiscount, Math.min(horizon - paidAt, funding.months()))) * discount;
                         futureUnits += extra[0];
                         with = BuildAdvice.plus(with, Map.of(t, extra[0]));
                     }

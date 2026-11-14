@@ -389,15 +389,46 @@ public final class EssentialWorksCheck {
                 fare > 0 && one > 0 && two < 2 * one);
         double gross = BuildAdvice.running(g, rail, Map.of()) + one * fare;
         double actual = BuildAdvice.runningChange(g, Map.of(), Map.of(rail, 2), BuildAdvice.NOW);
-        double expected = 2 * gross - two * fare;
+        double expected = 2 * gross - two * fare + existingWear(g, Map.of(rail, 2));
         check("two lines collect the full network's fares once",
                 Math.abs(actual - expected) < 1e-9 * Math.max(1, Math.abs(expected))
-                        && actual > 2 * BuildAdvice.running(g, rail, Map.of()));
+                        && actual - existingWear(g, Map.of(rail, 2))
+                                > 2 * BuildAdvice.running(g, rail, Map.of()));
         BuildingsTemplate gravel = g.getBuildingManager().getTemplateByName("Gravel Road");
         double single = BuildAdvice.running(g, gravel, Map.of());
         double complete = BuildAdvice.runningChange(g, Map.of(), Map.of(gravel, 2), BuildAdvice.NOW);
         check("the whole two-road order pays wear at its own relieved traffic",
                 complete < 2 * single);
+        BuildingsTemplate paved = g.getBuildingManager().getTemplateByName("Paved Road");
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
+                + 1_000 * LandManager.SQ_FT_PER_KM2);
+        quietly(() -> g.buildStack(gravel, 4, true));
+        g.getServicesManager().updateInfrastructure();
+        double load = g.getInfrastructureManager().getStreetCapacity()
+                * InfrastructureManager.GRAVEL_QUIET_UTILISATION * 3;
+        double[] streams = new double[Traffic.values().length];
+        streams[Traffic.GOODS.ordinal()] = load;
+        g.getInfrastructureManager().setLoad(load);
+        g.getInfrastructureManager().setBreakdown(streams);
+        double savedWear = existingWear(g, Map.of(paved, 1));
+        check("fixture: existing gravel roads cost less to repair with the new paved road",
+                g.getBuildingManager().getQuantity(gravel.getId()) > 0 && savedWear < 0);
+        double pavedCost = BuildAdvice.running(g, paved, Map.of());
+        double changed = BuildAdvice.runningChange(g, Map.of(), Map.of(paved, 1), BuildAdvice.NOW);
+        check("the new work includes the changed repair bill of the existing gravel stock",
+                Math.abs(changed - (pavedCost + savedWear)) < 1e-9 * Math.max(1, Math.abs(changed)));
+    }
+
+    static double existingWear(Game g, Map<BuildingsTemplate, Integer> order) {
+        BuildingsTemplate gravel = g.getBuildingManager().getTemplateByName("Gravel Road");
+        double materials = Math.max(0, g.getBuildingManager().getConstructionMaterialPrice());
+        double basis = g.getEconomyManager().withBuildersTax(g.getBuildingManager().nonMaterialCost(gravel)
+                + gravel.getConstructionMaterials() * materials) / 12;
+        double before = BuildAdvice.roads(g, Map.of()).getUtilisation();
+        double after = BuildAdvice.roads(g, order).getUtilisation();
+        return g.getBuildingManager().getQuantity(gravel.getId()) * basis
+                * (gravel.gravelRepairsAt(after) - gravel.gravelRepairsAt(before));
     }
 
     static void currentLossPriority(Path root) {
@@ -428,7 +459,7 @@ public final class EssentialWorksCheck {
                         && powerOrder.ordered() == 0 && powerOrder.cut() == AutoBuilder.Cut.CASH);
     }
 
-    static void fundingPriority(Path root, boolean spareCare) {
+    static void fundingPriority(Path root, boolean spareCare) throws Exception {
         out.println(spareCare ? "--- an unfunded school keeps its funding before spare care ---"
                 : "--- current service loss ranks simultaneous essential needs ---");
         Game g = town(root, spareCare ? "protected-school" : "ranked-school");
@@ -490,6 +521,27 @@ public final class EssentialWorksCheck {
                             && heldCare != null && heldCare.ordered() == 0
                             && heldCare.outcome() == AutoBuilder.Outcome.HELD && heldCare.building() == null);
             check("the same care card labels the automatic funding hold", ab.heldBackWords(careCard) != null);
+            String words = ab.heldBackWords(careCard);
+            boolean[] saved = {false};
+            quietly(() -> saved[0] = g.saveGame(10, "HW1 funding reason reload").ok);
+            Game loaded = new Game(g.getGameFiles());
+            quietly(() -> loaded.loadGameSave(10));
+            BuildAdvice.Suggestion loadedCard = BuildAdvice.suggestFor(loaded, null, care, loaded.getCash(),
+                    loaded.getLandManager().getAvailableSqFt());
+            check("a real scratch save and load keeps the same funding reason on the care card",
+                    saved[0] && loaded.getMonth() == g.getMonth() && loaded.getAutoBuilder().isOn()
+                            && loadedCard != null && words != null
+                            && words.equals(loaded.getAutoBuilder().heldBackWords(loadedCard)));
+            loaded.getAutoBuilder().setOn(false, null);
+            ab.setOn(false, null);
+            check("switching automatic building off clears the funding hold on both cards",
+                    ab.heldBackWords(careCard) == null && loaded.getAutoBuilder().heldBackWords(loadedCard) == null);
+            ab.setOn(true, null);
+            loaded.getAutoBuilder().setOn(true, null);
+            check("switching it back on before a new pass restores no stale funding hold",
+                    ab.heldBackWords(careCard) == null && loaded.getAutoBuilder().heldBackWords(loadedCard) == null);
+
+
         } else {
             check("the fully unserved school is ordered before the partly served capped-care work",
                     order != null && order.ordered() > 0);

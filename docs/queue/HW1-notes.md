@@ -2138,3 +2138,85 @@ target/checks/hw1-link-finance-fixed.log fails the monthly cue and
 completion laws, while its original owned-island, first-bridge and
 initial-link premises pass. The kept replay is
 target/checks/hw1-link-finance-fixed2.log.
+
+## REV-HW1-3 at 09:23, provisional model under repair
+
+The orchestrator's review of e142e4b7 found seven further faults. The
+incomplete ALL pick in target/checks/hw1-finance-final-pick.log was stopped
+by its verified script PID 29536, created at 09:14:09, and descendants.
+It supplies no final verdict. No ensemble has started.
+
+The superseded model's full default log,
+target/checks/hw1-finance-default-final.log, exits 0 with zero findings.
+Highway/death/cell longest lows are 27/3/100 months against first quotes
+35/4/111, and its plant mix is 35 wind and 7 coal. Streets have a 76-month
+cash hold. These are historical candidate measurements and will be
+replaced after this review's model mends.
+
+The seven accepted repairs are ask-aware cash availability without double
+subtraction, actual whole-parcel and foreign-vault purchase cash, remaining
+quoted benchmark maturity, actual capped financing quotes for each later
+addition, changed repair costs of existing gravel roads, saved funding
+reasons cleared when automation is off, and an independent arithmetic
+oracle in the advice checks. Each requires its own causal regression check.
+
+### Seven mends implemented
+
+1. The funding pre-pass now tests the actual existing ask's current price
+   against ask-aware spendable cash. The common canPay implementation takes
+   the ask as an argument. Unreserved cash is counted once. The new
+   WorksFinanceCheck causes the 100-free, 40-lower-reserved, 90-higher-cost
+   proportions with a real empty capped auction. The bank has no risk room,
+   household/firm deposit alternatives exceed the cap and the foreign
+   bidders are in a saved sudden-stop state.
+2. Whole-parcel selection is shared with the order path. The value's ground
+   projection retains unused bought ground and excludes already selected
+   offers. Its cumulative parcel bill uses the actual vault top-up rule, so
+   foreign reserves are spent once across the projected sequence. The
+   independent fixtures exercise both local-cash and funded-vault purchases.
+   ★ When no offered parcel covers future ground, its valuation uses the
+   office estimate. The actual order path still refuses unavailable ground.
+3. Financing reads the quoted auction's remaining months, including a
+   reopened benchmark's maturity. The fixture pays twelve real coupons
+   from a twenty-year benchmark, then verifies the 228-month quote and the
+   independently discounted charge.
+4. Each later addition's financing reads a capped quote for its own required
+   cash. ★ Equal amounts within one unchanged-city valuation reuse the
+   identical quote. No quote survives a valuation call. All future prices
+   and financing terms are projections at today's market inputs.
+5. Whole-network running also charges the changed repair bill of retained
+   gravel roads. The existing shared-fare assertion includes that separate
+   wear change. A new hard fixture stands four gravel roads and puts their
+   traffic above the model's quiet threshold before a paved-road addition.
+   Its independent repair sum must match the value.
+6. Funding reasons are saved in AutoBuilder.State as an independently copied
+   map. Turning automation off clears them. The hard fixture performs a
+   real scratch save/load, compares the card's reason after reload, switches
+   both builders off, then back on before another pass. Both cards must
+   stay clear until a new pass makes a new hold.
+7. BuildAdviceCheck.valueFigure now calls the fixture-only
+   AdviceValueOracle, which reads quotes, stocks, traffic and health inputs
+   and independently sums staged costs, coupon schedules, running,
+   physical relief and payroll returns. It never reads WorksValue's result
+   or calls its factories. The original bit-exact comparison remains.
+   The oracle counts pending units from their individual queue quotes.
+   The separate component fixtures retain independent monetary arithmetic.
+
+Focused advice, road and funded-auction sections pass. The new whole-parcel,
+vault, remaining-maturity and later-capped-quote checks pass. The dedicated
+reservation fixture initially exposed that a cap is floored at fair, so a
+zero-yield cap alone still sells paper. Its explicit no-bidder conditions
+now cause the intended empty auction. This corrects the fixture while
+retaining the original stated cash proportions.
+
+The kept finance-focused run exits 0 in
+target/checks/hw1-rev3-finance-focus3.log. Its capped gap quote raises zero,
+the higher-loss street order is placed, the lower funded reservation is
+released, and debt is unchanged. The new existing-stock wear and actual
+save/load card tests pass in target/checks/hw1-rev3-focus-essential2.log.
+Advice, road and funded-auction prefixes also pass.
+
+The first omitted-mend control attempt overlapped Maven clearing
+target/classes. A missing-class failure invalidated that attempt. Controls
+are rerun against the immutable rev3-model-classes snapshot after compile.
+No missing-class exit is counted as a causal regression result.
