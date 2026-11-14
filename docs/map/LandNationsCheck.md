@@ -1,4 +1,4 @@
-# LandNationsCheck.java - 1,436 lines · 54 methods · 8 constants · harnesses
+# LandNationsCheck.java - 1,521 lines · 55 methods · 8 constants · harnesses
 
 `ham/citybuildersim/LandNationsCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -53,7 +53,7 @@
 > Every premise is asserted before what rests on it. Without the world file (-Dcbs.world) nothing here runs; without the Earth's data (-Dcbs.earth)
 > sections 1 to 4 run and 5 to 13 say so and are skipped. Sections 12 and 13 hold frame budgets through Timing.within (TimingCheck owns the mechanism).
 
-**Uses:** [LandParcel](LandParcel.md) (116), [LandFactors](LandFactors.md) (33), [WorldData](WorldData.md) (26), [LandMarket](LandMarket.md) (23), [LandSellers](LandSellers.md) (22), [Nations](Nations.md) (21), [LandSellersView](LandSellersView.md) (18), [Game](Game.md) (12), [Founding](Founding.md) (11), [CityLand](CityLand.md) (11), [World](World.md) (11), [LandMap](LandMap.md) (9), [GameFiles](GameFiles.md) (8), [CityCalendar](CityCalendar.md) (6), [Resource](Resource.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [Timing](Timing.md) (4), [EarthData](EarthData.md) (3), [EarthSite](EarthSite.md) (2), [EarthProj](EarthProj.md) (2), [LandTable](LandTable.md) (1), [LandManager](LandManager.md) (1), [Landmasses](Landmasses.md) (1)
+**Uses:** [LandParcel](LandParcel.md) (120), [LandFactors](LandFactors.md) (33), [LandMarket](LandMarket.md) (27), [WorldData](WorldData.md) (26), [LandSellers](LandSellers.md) (22), [Nations](Nations.md) (21), [LandSellersView](LandSellersView.md) (18), [LandMap](LandMap.md) (15), [Game](Game.md) (12), [CityLand](CityLand.md) (12), [Founding](Founding.md) (11), [World](World.md) (11), [GameFiles](GameFiles.md) (8), [CityCalendar](CityCalendar.md) (6), [Resource](Resource.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [Timing](Timing.md) (4), [EarthData](EarthData.md) (3), [EarthSite](EarthSite.md) (2), [EarthProj](EarthProj.md) (2), [Landmasses](Landmasses.md) (2), [LandTable](LandTable.md) (1), [LandManager](LandManager.md) (1), [LandGrid](LandGrid.md) (1)
 
 **Used by (1):** [PartnersCheck](PartnersCheck.md)
 
@@ -115,7 +115,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 82 | 1355 | **type** `public class LandNationsCheck` | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and how it moves, the seller of every plot of a real-Earth world and the... |
+| 82 | 1440 | **type** `public class LandNationsCheck` | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and how it moves, the seller of every plot of a real-Earth world and the... |
 | 102 | 4 | `static void check(String label, boolean ok)` |  |
 | 107 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 112 | 5 | `static void quietly(Runnable r)` |  |
@@ -240,7 +240,7 @@
 | 1147 | 16 | `static List<LandParcel> quotedElsewhere(LandMarket.Quoter quoter, List<long[]> blocks) throws Exception` | The quotes of blocks asked of a quoter on a thread of its own, in the order given; the thread is stopped after. |
 | 1164 | 105 | `static void theHover(WorldData file, City windsor, City strait) throws Exception` |  |
 
-### 13. PICKED GROUND MEASURED AWAY, PRICED IN THE CURRENT MONTH (lines 1269-1436)
+### 13. PICKED GROUND MEASURED AWAY, PRICED IN THE CURRENT MONTH (lines 1269-1521)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -248,6 +248,7 @@
 | 1285 | 5 | `static void reprice(City c, int month)` |  |
 | 1291 | 5 | `static void frameTime(String label, double ms)` |  |
 | 1297 | 6 | `static boolean sameDraft(LandParcel a, LandParcel b)` |  |
-| 1304 | 96 | `static void thePicks(City windsor, City strait) throws Exception` |  |
-| 1402 | 34 | `static void picksLifecycle(City c, ExecutorService worker, String where) throws Exception` | Exercise the screen's Picks path with a held worker queue and an owner-only completion queue. |
+| 1304 | 97 | `static void thePicks(City windsor, City strait) throws Exception` |  |
+| 1403 | 34 | `static void picksLifecycle(City c, ExecutorService worker, String where) throws Exception` | Exercise the screen's Picks path with a held worker queue and an owner-only completion queue. |
+| 1439 | 82 | `static void reviewCases(City c, ExecutorService worker, String where) throws Exception` | A pending pick cancelled by ordinary selection edits, and a level-changing purchase outside a retained draft. |
 

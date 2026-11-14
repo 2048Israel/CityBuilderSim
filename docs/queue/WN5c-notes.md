@@ -26,7 +26,7 @@ The pending card was rendered using its actual LandScreen drawing code, JavaFX a
 
 The first 29-harness pick began before the landmass acceptance fix and was superseded and stopped through its verified own process-tree root PID 24732; it is not readiness evidence. Final --pick selects 36 harnesses. The final selection and fresh-clone gate will compile the final source. No scripts, runner machinery or standing rules were changed, so process one-in/one-out does not apply.
 
-## Final selected checks and trace
+## Selected checks and trace before review mends
 
 Final ./batch-check.sh --pick: exit 3, target/wn5c-final-pick.txt and target/checks/. Selection 36; AllChecks ran 39 (substring filters also select their matching harnesses), 37 passed, two known reds only: MapCheck's three existing drawing/network/junction assertions, and LongPlaytest's existing exit 1 with no FAIL line (its log ends All checks passed). No NEW red. Thirteen timing assertions were soft (EarthTerrainCheck 2, SaveSlotCheck 1, MapCheck 10); two MapCheck played-path premises were informational OBSERVED. Compile and regenerated maps passed; Stale 0 firm.
 
@@ -43,3 +43,11 @@ The independent review found three cases on dafdd84c. Each now has a LandNations
 3. The hover now uses Picks.groundWords(), shared by the screen and check. Pending ground says QUOTING and gives no incomplete area or zero/offers-only price. The action line omits Enter buys until the price exists. A fixture with both a selected standing offer and a pending block holds the same rule.
 
 The level probe initially counted update()'s listing of newly available standing offers too (1,024 Windsor / 2,048 Strait plots), outside the retained-draft path. Its final assertion invokes remeasureDrafts(), the exact step in scope, after syncMonth; this preserves the level-raising purchase premise and isolates the required work rather than changing a budget. Against the unmended LandMarket from 6f0e7ca2 it still fails twice (22,528 / 65,536 seller plots); the mended model walks zero at purchase and the next month (target/wn5c-review-old-market.txt versus target/wn5c-review-after.txt).
+
+The orchestrator clarified the KeptCheck requirement at 2026-11-14 17:01 (bus 20261114-170105-653-orchestrator-d72f): use the normal gate route and automatic selection; the all-sections requirement applies where that selection runs KeptCheck. If it remains nightly, that rule stands. No manual harness list or process change is used. REV-WN5c-2 is reviewing the three mends before the dry-run go.
+
+REV-WN5c-2 reviewed dafdd84c..9f0aff3a and returned SHIP, no findings, at 2026-11-14 17:04 (bus 20261114-170427-967-orchestrator-d13d). The orchestrator gave the normal-route dry-run go on main 1e5dffa8 conditional on a green mended pick and provisional push; after it only notes and ship file may change.
+
+## Mended selected check
+
+Final mended ./batch-check.sh --pick: exit 3, target/wn5c-mended-pick.txt; 39 harnesses run in 699s: 37 passed, 2 failed. Selection 36; the same MapCheck and LongPlaytest known reds only, no NEW red. Thirteen timing assertions SOFT and two MapCheck OBSERVED, informational as before. Compile, maps and Stale (0 firm) passed. The complete default model output again matches retained main BF1 after only execution metadata is normalized, SHA-256 d4d393198dee767afd9895698e97d413651d6aa803db17eea585459cf09dc6ad. No trace move and no ensemble.
