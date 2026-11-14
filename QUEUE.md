@@ -28,7 +28,6 @@ stuff".
 
 | batch | what | brief |
 |---|---|---|
-| HW1 | The auto city builds its works when they are needed (Jerus, 2026-11-13: "just build highways when it is needed"): highways 1.86% served at m2400 and under a fifth in 2,037 of 2,404 months, streets 37%, police 56%, payback holds on schools and police; the auto-builder orders an essential work when its share is under target, from cash and buying its land, never held on payback | [HW1](docs/queue/HW1.md) |
 | WD1 | The world file's makers: FAOSTAT, USGS and EIA downloaded, their output figures in `tools/world/` where the fallback estimate stands now, and a re-bake after LC3's (WN0-M; Jerus, 2026-10-31: "Take all (Recommended)") | [WD1](docs/queue/WD1.md) |
 | QB1 | The test player borrows at the quoted rate: `-Dplaytest.quotedBorrowing` on by default, so it stops taking a 20-year dollar bond at 18.45% for its first bakeries when home lends at 3%; the fixtures it moves re-picked, PlanCheck's and HomeRailCheck's breaks found, AutoBuildCheck 7's shortage re-caused, the ensemble; after MF2 (CC1-S-B; Jerus, 2026-10-31: "Take all (Recommended)") | [CC1-S notes §7](docs/queue/CC1-S-notes.md) |
 | EP1b | The world from 1900: world-1.bin rebuilt from 1900 (people and output replayed, the moneys before the euro on gold and Bretton Woods, the nations under their 1900 ruler, the eight banks' real rates), one re-bake with LC3's and WD1's, a new file and release (his); WorldData's stand-in century retired where the file reaches (EP1's calls 5-9; Jerus, 2026-10-30) | [EP1b](docs/queue/EP1b.md) |
@@ -120,6 +119,10 @@ stuff".
 | KF63 | Cause stable holding/review coverage in KeptCheck 63 while preserving its hard 90% monthly retention floor and kept/fresh equality. | [PO1 notes](docs/queue/PO1-notes.md#kf63) |
 | BF1-K | Repair retained empty Fund Search glyph bounds and Partners CurveChart buyer-entry triangles, preserving kept/fresh comparisons and pixel band | [BF1 kept UI findings](docs/queue/BF1-kept.md) |
 | BF1-M | A connected district plan leaves two joined-by-owned-ground street components in the drawn raster; cause the covered crossing/curve and mend MapCheck 8 without moving buildings or relaxing network rules | [BF1 map finding](docs/queue/BF1-map.md) |
+| HW1-V | Refine carried purchased steep/zoned ground and retain rounded bond cash above the funding gap in future plan cash, WorksValue.java:135/184/222 and AdviceValueOracle.java:216/40/86, REV-HW1-4 findings 3 and 4 | [brief](docs/queue/HW1-V.md) |
+| DM3-R | Repair the unchanged map renderer's road-surface loss, six ordinary buildings beyond REACH on HW1's played-city path, the m2389 standing-box movement and the post-verdict JavaFX shutdown diagnostic while preserving the hard drawing laws | [cause and done condition](docs/queue/HW1-notes.md#map-renderer-follow-up-dm3-r) |
+| KS1-Gov | Retain the Government Overview's transient cash-flow and bridge rows so its eventful monthly allocation stays within the existing tenth-of-first-draw floor | [cause and done condition](docs/queue/HW1-notes.md#government-allocation-follow-up-ks1-gov) |
+| CPB1 | Stop the zero-demand cathode buffer buying anode at a negative feed spread; main 0.9.102 reproduces the two F1 seed paths and a reduced real-market fixture, so the finding passes by name per orchestrator 20261114-180838 | [cause, replays and hard fixture](docs/queue/CPB1.md) |
 
 ## Pending
 

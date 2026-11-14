@@ -1,4 +1,4 @@
-# LandNationsCheck.java - 1,828 lines · 67 methods · 8 constants · harnesses
+# LandNationsCheck.java - 1,833 lines · 67 methods · 8 constants · harnesses
 
 `ham/citybuildersim/LandNationsCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -55,7 +55,7 @@
 > Every premise is asserted before what rests on it. Without the world file (-Dcbs.world) nothing here runs; without the Earth's data (-Dcbs.earth)
 > sections 1 to 4 run and 5 to 14 say so and are skipped. Sections 12 to 14 hold frame budgets through Timing.within (TimingCheck owns the mechanism).
 
-**Uses:** [LandParcel](LandParcel.md) (124), [LandMap](LandMap.md) (39), [LandMarket](LandMarket.md) (37), [LandFactors](LandFactors.md) (33), [WorldData](WorldData.md) (26), [LandSellers](LandSellers.md) (22), [Nations](Nations.md) (21), [LandSellersView](LandSellersView.md) (18), [CityLand](CityLand.md) (15), [World](World.md) (14), [Game](Game.md) (12), [Founding](Founding.md) (11), [Timing](Timing.md) (11), [GameFiles](GameFiles.md) (8), [CityCalendar](CityCalendar.md) (6), [Resource](Resource.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [EarthData](EarthData.md) (3), [EarthSite](EarthSite.md) (2), [EarthProj](EarthProj.md) (2), [Landmasses](Landmasses.md) (2), [LandGrid](LandGrid.md) (2), [MapFrame](MapFrame.md) (2), [LandTable](LandTable.md) (1), [LandManager](LandManager.md) (1)
+**Uses:** [LandParcel](LandParcel.md) (124), [LandMap](LandMap.md) (39), [LandMarket](LandMarket.md) (37), [LandFactors](LandFactors.md) (33), [WorldData](WorldData.md) (26), [LandSellers](LandSellers.md) (22), [Nations](Nations.md) (21), [LandSellersView](LandSellersView.md) (18), [CityLand](CityLand.md) (17), [World](World.md) (14), [Game](Game.md) (12), [Founding](Founding.md) (11), [Timing](Timing.md) (11), [GameFiles](GameFiles.md) (8), [CityCalendar](CityCalendar.md) (6), [Resource](Resource.md) (4), [ForeignAccounts](ForeignAccounts.md) (4), [EarthData](EarthData.md) (3), [EarthSite](EarthSite.md) (2), [EarthProj](EarthProj.md) (2), [Landmasses](Landmasses.md) (2), [LandGrid](LandGrid.md) (2), [MapFrame](MapFrame.md) (2), [LandTable](LandTable.md) (1), [LandManager](LandManager.md) (1)
 
 **Used by (1):** [PartnersCheck](PartnersCheck.md)
 
@@ -121,13 +121,13 @@
 | 1535 | `final long block` |  |
 | 1536 | `int fault` |  |
 | 1537 | `int changes` |  |
-| 1808 | `static long frameChecksum` |  |
+| 1813 | `static long frameChecksum` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 84 | 1745 | **type** `public class LandNationsCheck` | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and how it moves, the seller of every plot of a real-Earth world and the... |
+| 84 | 1750 | **type** `public class LandNationsCheck` | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and how it moves, the seller of every plot of a real-Earth world and the... |
 | 104 | 4 | `static void check(String label, boolean ok)` |  |
 | 109 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 114 | 5 | `static void quietly(Runnable r)` |  |
@@ -264,7 +264,7 @@
 | 1406 | 34 | `static void picksLifecycle(City c, ExecutorService worker, String where) throws Exception` | Exercise the screen's Picks path with a held worker queue and an owner-only completion queue. |
 | 1442 | 82 | `static void reviewCases(City c, ExecutorService worker, String where) throws Exception` | A pending pick cancelled by ordinary selection edits, and a level-changing purchase outside a retained draft. |
 
-### 14. A HOVER ACROSS MONTHS, POINTER MOVES AND FAILED WORK (lines 1524-1828)
+### 14. A HOVER ACROSS MONTHS, POINTER MOVES AND FAILED WORK (lines 1524-1833)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -279,6 +279,6 @@
 | 1672 | 18 | `static void hoverAdoption() throws Exception` |  |
 | 1691 | 37 | `static void hoverRealCancellation() throws Exception` |  |
 | 1729 | 31 | `static void hoverQueueWait() throws Exception` |  |
-| 1761 | 46 | `static void hoverCountPriority() throws Exception` |  |
-| 1811 | 17 | `static double hoverFrameMs(City city)` | The frame's transform, block lines and hover hit-tests, timed equally with and without a count out. |
+| 1761 | 51 | `static void hoverCountPriority() throws Exception` |  |
+| 1816 | 17 | `static double hoverFrameMs(City city)` | The frame's transform, block lines and hover hit-tests, timed equally with and without a count out. |
 

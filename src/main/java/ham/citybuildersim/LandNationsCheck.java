@@ -1771,26 +1771,19 @@ public class LandNationsCheck {
             Thread t = new Thread(r, "hover-count-fixture"); t.setDaemon(true); t.setPriority(Thread.MIN_PRIORITY); return t;
         });
         Set<String> readers = new HashSet<>(), normal = new HashSet<>();
+        java.util.concurrent.atomic.AtomicBoolean sampled = new java.util.concurrent.atomic.AtomicBoolean();
         try {
             double idleMs = hoverFrameMs(city);
-            java.util.concurrent.CountDownLatch counted = new java.util.concurrent.CountDownLatch(1);
             java.util.concurrent.Future<long[]> counting = worker.submit(() -> {
-                long[] last = null;
-                for (int i = 0; i < 16; i++) {
+                long[] last;
+                do {
                     last = copy.unownedCounts(rect[0], rect[1], rect[2], rect[3]);
-                    counted.countDown();
-                }
+                } while (!sampled.get());
                 return last;
             });
-            boolean active = counted.await(10, java.util.concurrent.TimeUnit.SECONDS) && !counting.isDone();
-            double busyMs = hoverFrameMs(city);
-            active &= !counting.isDone();
-            check("frame premise: the level-12 count is out while the map's owner-thread geometry is timed", active && frameChecksum != 0);
-            String label = "the map frame's geometry stays within one frame with a low-priority quote out";
-            boolean framed = Timing.within(busyMs, LandMarket.QUOTER_MS) && Timing.within(Math.max(0, busyMs - idleMs), LandMarket.QUOTER_MS / 4);
-            if (!framed) fails++;
-            out.printf("%-118s %s  idle %.3f ms, with quote %.3f ms%n", label, Timing.verdict(framed, label), idleMs, busyMs);
-            while (!counting.isDone()) {
+            // Observe actual row work before timing. Counting continues until the owner releases it, so a
+            // cold first count and a descheduled sampler cannot turn either premise into an empty observation.
+            while (readers.size() < CityLand.QUOTE_COUNT_WORKERS && !counting.isDone()) {
                 for (Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
                     boolean row = Arrays.stream(e.getValue()).anyMatch(s -> s.getClassName().equals(CityLand.class.getName()) && s.getMethodName().equals("rowClasses"));
                     if (row) {
@@ -1798,11 +1791,23 @@ public class LandNationsCheck {
                         if (e.getKey().getPriority() > Thread.MIN_PRIORITY) normal.add(e.getKey().getName());
                     }
                 }
+                if (readers.size() < CityLand.QUOTE_COUNT_WORKERS) Thread.sleep(1);
             }
+            boolean active = !readers.isEmpty() && !counting.isDone();
+            double busyMs = hoverFrameMs(city);
+            active &= !counting.isDone();
+            check("frame premise: the level-12 count is out while the map's owner-thread geometry is timed", active && frameChecksum != 0);
+            String label = "the map frame's geometry stays within one frame with a low-priority quote out";
+            boolean framed = Timing.within(busyMs, LandMarket.QUOTER_MS) && Timing.within(Math.max(0, busyMs - idleMs), LandMarket.QUOTER_MS / 4);
+            if (!framed) fails++;
+            out.printf("%-118s %s  idle %.3f ms, with quote %.3f ms%n", label, Timing.verdict(framed, label), idleMs, busyMs);
+            sampled.set(true);
             long sum = Arrays.stream(counting.get(), 0, World.CLASSES).sum();
-            check("the parallel count really walked rows and counted the block's unowned plots", !readers.isEmpty() && sum == copy.grid().unowned(rect[0], rect[1], rect[2], rect[3]));
+            long expected = copy.grid().unowned(rect[0], rect[1], rect[2], rect[3]);
+            report("the parallel count really walked rows and counted the block's unowned plots", !readers.isEmpty() && sum == expected,
+                    readers.size() + " readers, " + sum + " plots against " + expected);
             report("every row of a low-priority quote runs at low priority", normal.isEmpty(), "readers " + readers + ", normal-priority " + normal);
-        } finally { worker.shutdownNow(); }
+        } finally { sampled.set(true); worker.shutdownNow(); }
     }
 
     static long frameChecksum;

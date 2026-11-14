@@ -49,7 +49,7 @@ import java.util.Set;
  *      bar 2 is land per unit, the posts the city likely cannot fill per
  *      10,000 served, or the share of an office's posts it could not staff;
  *      value added is the market's prices on what one makes and uses; the
- *      running cost is the upkeep and the posts at today's wages.
+ *      running cost is the upkeep and the filled posts at today's wages.
  *   3. THE TAGS: only the strict best on a bar, only in a group of two or
  *      more, and never in a group of one.
  *   4. THE NOTES: each group's note reads the sector's own figures.
@@ -474,6 +474,7 @@ public class BuildCardCheck {
         double[] fill = g.getPopulationManager().getJobFillRate();
         double[] wages = g.getPopulationManager().getWagesPerType();
         int cards = 0, makers = 0, offices = 0, labs = 0, cityCards = 0, landBars = 0, roadCards = 0, conversion = 0, washers = 0;
+        int staffShortCards = 0;
         boolean hero = true, bar1 = true, bar2 = true, va = true, run = true, sticker = true, head = true;
         for (BuildCard.Group gr : allGroups(g)) {
             for (BuildCard.Figures f : gr.cards()) {
@@ -606,11 +607,17 @@ public class BuildCardCheck {
                         : f.bar2Kind() == (f.kind() == BuildCard.Kind.OFFICE ? BuildCard.Bar2.UNSTAFFABLE : BuildCard.Bar2.LAND);
                 if (!kindOk) { bar2 = false; out.println("      bar 2 kind: " + t.getName()); }
 
-                // What one costs to run: the upkeep and the posts at today's wages.
-                double bill = t.getUpkeep();
+                // The monthly bill uses the same filled-post basis as payroll.
+                double bill = t.getUpkeep(), fullPayroll = 0, paidPayroll = 0;
                 for (JobType job : JobType.values()) {
-                    if (t.getJobs(job) > 0 && wages != null && job.ordinal() < wages.length) bill += t.getJobs(job) * wages[job.ordinal()];
+                    if (t.getJobs(job) > 0 && wages != null && job.ordinal() < wages.length) {
+                        double full = t.getJobs(job) * wages[job.ordinal()];
+                        fullPayroll += full;
+                        paidPayroll += full * fill[job.ordinal()];
+                    }
                 }
+                bill += paidPayroll;
+                if (paidPayroll > 0 && paidPayroll < fullPayroll) staffShortCards++;
                 if (Math.abs(f.running() - bill) > 1e-9 * Math.max(1, bill)) { run = false; out.println("      runs: " + t.getName()); }
             }
         }
@@ -630,7 +637,8 @@ public class BuildCardCheck {
                 + " over the trips it takes off the road (0.7.70; " + roadCards + " road cards)", bar1 && roadCards > 0);
         assertTrue("bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100"
                 + " on an office's, and unfilled posts per 10,000 served on the other city cards'", bar2 && landBars > 0);
-        assertTrue("the running cost is the upkeep and the posts at today's wages", run);
+        assertTrue("fixture: the cards include paid staff-short works", staffShortCards > 0);
+        assertTrue("the running cost is the upkeep and filled posts at today's wages", run);
     }
 
     static int onSite(BuildingManager bm, BuildingsTemplate t) {

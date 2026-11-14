@@ -1,22 +1,23 @@
-# gate of Merge batch/WN5c: a picked block priced off the screen's thread: a click that picks a block (`LandMarket.draft()`) and the month's `remeasureDrafts()` still split each picked block by seller on the FX thread (45-76 ms a block at level 8 near a coast, seconds at 11-12). Measure a click and a month with picks first; move them as WN5b moved the hover (`LandMarket.quoter()`) only if either can take more than a frame (found by WN5b, ★2), 0.9.103
+# gate of Merge batch/HW1: the auto city builds its works when they are needed (Jerus, 2026-11-13: "just build highways when it is needed"): highways 1.86% served at m2400 and under a fifth in 2,037 of 2,404 months, streets 37%, police 56%, payback holds on schools and police; the auto-builder orders an essential work when its share is under target, from cash and buying its land, never held on payback, 0.9.104
 # date: 2026-11-14
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 189 harnesses run in 1541s: 185 passed, 4 failed
+# suite: 195 harnesses run in 2111s: 190 passed, 5 failed
 MapCheck | exit 1
 MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | ...no two + junctions of drawn street nearer than JUNCTION_APART plots, either way: about eight houses' length apart FAIL
-MapCheck | 3 FAILED
+MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
+MapCheck | 4 FAILED
 PlanCheck | exit 1
 PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
 PlanCheck | 1 FAILED
+KeptCheck | exit 2
+KeptCheck | The position, Your rate: the redraw and the next equal a page built new  FAIL
+KeptCheck | the Columns on Borrow at home, asking for a sixth of the cash: each month's redraw hands back nine in ten of the pictures it had, or more (7 of 10) FAIL
+KeptCheck | 2 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | 1 FAILED
 LongPlaytest | exit 1
 LongPlaytest | (no FAIL line)
-KeptCheck | exit 2
-KeptCheck | Search "#3200" on the Bonds chip: the redraw and the next equal a page built new FAIL
-KeptCheck | the kept page and the new page are the same picture at 3 months, to SHADE_LEVELS (2) FAIL
-KeptCheck | 2 FAILED

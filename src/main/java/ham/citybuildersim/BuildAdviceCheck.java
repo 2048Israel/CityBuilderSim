@@ -63,7 +63,7 @@ import java.util.Set;
  *      past which the road that needs the least ground a trip is the
  *      cheapest with it, that road.
  *   8. SLACK BUILT: a served card is at 100% of its demand projected and
- *      SLACK past it, and its count is never fewer than the old rule's.
+ *      SLACK past it, and one fewer does not cover that projected demand.
  *   9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE: a college or university row
  *      wants no more than would come and no more than would be hired, and a
  *      first school half the smallest; a city with students and no posts
@@ -407,7 +407,7 @@ public class BuildAdviceCheck {
         assertTrue("fixture: NEEDS YOU lists more than three needs a city-built building answers (" + cityBuilt + ")",
                 cityBuilt > 3);
         assertTrue("fixture: and something on site answers one of them", onSiteAnswers(g, biting));
-        assertTrue("the advice is three suggestions", advice.size() == BuildAdvice.MAX_SUGGESTIONS);
+        assertTrue("the advice has at most MAX_SUGGESTIONS warranted orders", !advice.isEmpty() && advice.size() <= BuildAdvice.MAX_SUGGESTIONS);
         int last = -1;
         boolean inOrder = true, listed = true, built = true;
         Set<CityNeeds.Need> seen = new HashSet<>();
@@ -424,7 +424,7 @@ public class BuildAdviceCheck {
         assertTrue("...in NEEDS YOU's order, reds first", inOrder);
         assertTrue("...one per need", seen.size() == advice.size());
         boolean passedFairly = true;
-        for (int i = 0; i < last; i++) {
+        for (int i = 0; i < (advice.size() < BuildAdvice.MAX_SUGGESTIONS ? biting.size() : last); i++) {
             CityNeeds.Need n = biting.get(i);
             if (!n.cityBuilds() || seen.contains(n)) continue;
             BuildAdvice.Measure m = BuildAdvice.measureOf(n);
@@ -436,9 +436,9 @@ public class BuildAdviceCheck {
                 if (cand && BuildAdvice.unit(g, m, t) > 0) noneHelps = false;
             }
             out.printf("      passed over %s: on site closes it %s, no building helps %s%n", n.label(), onSiteCloses, noneHelps);
-            passedFairly &= onSiteCloses || noneHelps;
+            passedFairly &= onSiteCloses || noneHelps || !BuildAdvice.warranted(g, m);
         }
-        assertTrue("a need passed over before the last taken is one on site answers, or none can help", passedFairly);
+        assertTrue("a passed-over need is answered on site, no building helps, or its demand is below the useful-work threshold", passedFairly);
     }
 
     /** Whether any biting city-built need has something on site that serves it. */
@@ -464,9 +464,9 @@ public class BuildAdviceCheck {
             String what = s.need().label() + ", " + s.template().getName();
             assertTrue(what + ": not on credit - the Wealthy city's cash covers its quote", !s.needsCredit() && s.credit() == 0);
             assertTrue(what + ": the count keeps it ahead at its projection",
-                    s.closes() && BuildAdvice.ahead(g, m, BuildAdvice.plus(site, s.template(), s.count()), s.ahead()));
+                    s.closes() && BuildAdvice.maintained(g, m, BuildAdvice.plus(site, s.template(), s.count()), s.ahead()));
             assertTrue(what + ": ...and one fewer does not",
-                    !BuildAdvice.ahead(g, m, BuildAdvice.plus(site, s.template(), s.count() - 1), s.ahead()));
+                    !BuildAdvice.maintained(g, m, BuildAdvice.plus(site, s.template(), s.count() - 1), s.ahead()));
             bits(what + ": the price is Game.quoteBuild() for the count", s.price(), g.quoteBuild(s.template(), s.count()).total);
             bits(what + ": before is the figure NEEDS YOU read", s.before(), s.need().value());
             assertTrue(what + ": it fits the land the cards before leave, or no building that closes it does",
@@ -758,7 +758,7 @@ public class BuildAdviceCheck {
     /**
      * Two clinics alike in everything - price, capacity, land, posts in all -
      * but how many of the scarcest of the clinic's own posts they need: the
-     * advice takes the one with fewer.
+     * fewer serve more. Filled-post payroll and whole-plan cost decide the order (HW1).
      */
     static void theStaffingWeighting(Path root) {
         out.println("\n--- 5. the staffing weighting: short of a job, the building with fewer of those posts ---");
@@ -797,8 +797,14 @@ public class BuildAdviceCheck {
         catalogue.add(fewer);
         List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
         BuildAdvice.Suggestion general = null;
+        double cashForGeneral = g.getCash(), landForGeneral = g.getLandManager().getAvailableSqFt();
         for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g, all)) {
-            if (s.measure().kind() == BuildAdvice.Kind.CARE && s.measure().care() == CareType.GENERAL) general = s;
+            if (s.measure().kind() == BuildAdvice.Kind.CARE && s.measure().care() == CareType.GENERAL) {
+                general = s;
+                break;
+            }
+            cashForGeneral = Math.max(0, cashForGeneral - s.price());
+            landForGeneral = Math.max(0, landForGeneral - s.landSqFt());
         }
         BuildAdvice.Measure gm = BuildAdvice.Measure.care(CareType.GENERAL);
         out.printf("      fewer: staffing %.4f, a unit %.1f; more: staffing %.4f, a unit %.1f%n",
@@ -807,7 +813,19 @@ public class BuildAdviceCheck {
         assertTrue("the one with fewer of the short posts serves more at today's staffing",
                 BuildAdvice.unit(g, gm, fewer) > BuildAdvice.unit(g, gm, more));
         assertTrue("general care is suggested", general != null);
-        assertTrue("...and with the clinic needing fewer of them", general != null && general.template() == fewer);
+        double least = Double.POSITIVE_INFINITY;
+        for (BuildingsTemplate candidate : catalogue) {
+            if (!gm.serves(candidate)) continue;
+            Set<BuildingsTemplate> skip = new HashSet<>(catalogue);
+            skip.remove(candidate);
+            BuildAdvice.Suggestion alternative = BuildAdvice.suggestFor(g, null, gm, cashForGeneral,
+                    landForGeneral, g.getAutoBuilder().getSlack(), skip, true);
+            if (alternative != null && alternative.closes())
+                least = Math.min(least, valueFigure(g, alternative, landForGeneral, cashForGeneral)[0]);
+        }
+        assertTrue("...and its whole plan costs no more than any alternative, including either staffing mix",
+                general != null && general.closes() && Double.isFinite(least)
+                        && Math.abs(general.value().net() - least) < 1e-9 * Math.max(1, Math.abs(least)));
         catalogue.remove(more);
         catalogue.remove(fewer);
         catalogue.add(clinic);
@@ -895,12 +913,15 @@ public class BuildAdviceCheck {
             // The offers' records, each one's dollar price scaled (since 0.7.57 the offers, forty until 0.7.66; the parcels' listing until then).
             market.restoreOffers(scaledOffers(base, factors[f]), nextId);
             double landLeft = g.getLandManager().getAvailableSqFt();
+            double cashLeft = g.getCash();
             StringBuilder said = new StringBuilder();
             for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) {
                 cards++;
                 BuildingsTemplate t = s.template();
                 // Every card's since 0.7.101: its order over its life for what it will serve, recomputed here.
-                double per = lifeFigure(g, s, landLeft);
+                double[] value = valueFigure(g, s, landLeft, cashLeft);
+                double per = value[1] > 0 ? value[0] / value[1] : Double.POSITIVE_INFINITY;
+                perBits &= bitsEqual(s.planValue(), value[0]);
                 perBits &= bitsEqual(s.pricePerUnit(), per);
                 leftBits &= bitsEqual(s.landValue(), BuildAdvice.landValue(g, s.landSqFt(), landLeft))
                         && bitsEqual(s.landShort(), Math.max(0, s.landSqFt() - landLeft));
@@ -909,15 +930,14 @@ public class BuildAdviceCheck {
                 said.append(String.format(" [%s: %,d x %s, %,.3f a unit it will serve over its life]", s.need().label(), s.count(),
                         t.getName(), s.pricePerUnit()));
                 landLeft = Math.max(0, landLeft - s.landSqFt());
+                cashLeft = Math.max(0, cashLeft - s.price());
             }
             out.printf("      the land office at x%s: %s a sq ft;%s%n", factors[f],
                     Formats.INSTANCE.amount(g.getLandManager().getOfficePricePerSqFt()), said);
         }
         market.restoreOffers(base, nextId);
         assertTrue("fixture: cards at nothing, as the listing stands and at ten times", cards > 0);
-        assertTrue("every card's figure is its order over its life - its quote for the count, its ground at landValue() and"
-                + " lifeFactor() months of running() each - over what it will serve over that life (power, water, the roads and"
-                + " care) or what its count adds (the rest) (0.7.101) - to the bit", perBits);
+        assertTrue("every card retains the whole plan's net value and its cost per physical unit, recomputed to the bit", perBits);
         assertTrue("...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit",
                 leftBits);
 
@@ -937,16 +957,27 @@ public class BuildAdviceCheck {
          * busy streets the paved road is the least at nothing too (RoadCheck 2 holds the quiet side, where gravel wins).
          * It asks now that the streets' card be the least over its life of the streets that keep the road ahead, the ground
          * at nothing, at ten times and at a thousand times the land office's price a square foot - each recomputed here from the
-         * quote, the running and the ground a trip - and that the Paved Road be the leanest in ground.
+         * complete maintained-service plan, including later additions, financing and actual traffic wear -
+         * and that the Paved Road be the leanest in ground. HW1 prices the relief of traffic as roads are
+         * added, so the old single-road Paved-at-every-price path is no longer required.
          */
         BuildingsTemplate highway = template(g, "Elevated Highway"), lean = template(g, "Paved Road");
-        double life = BuildAdvice.lifeFactor(g);
-        double office = land.getOfficePricePerSqFt();
+
         double[] at = {0, 10, 1000};
         String[] cheapest = new String[at.length], card = new String[at.length];
         boolean thriftiest = BuildAdvice.unit(g, m, highway) == 0;
         double leanGround = lean.getLandSqFt() / BuildAdvice.unit(g, m, lean);
         for (int f = 0; f < at.length; f++) {
+            market.restoreOffers(scaledOffers(base, at[f]), nextId);
+            double streetCash = g.getCash(), streetLand = land.getAvailableSqFt();
+            for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) {
+                if (s.measure().kind() == BuildAdvice.Kind.ROADS) {
+                    card[f] = s.template().getName();
+                    break;
+                }
+                streetCash = Math.max(0, streetCash - s.price());
+                streetLand = Math.max(0, streetLand - s.landSqFt());
+            }
             double least = Double.POSITIVE_INFINITY;
             for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
                 if (t.getCategory() != BuildingType.INFRASTRUCTURE || t.isHighway()) continue;
@@ -957,11 +988,15 @@ public class BuildAdviceCheck {
                 if (BuildAdvice.count(g, m, site, t, BuildAdvice.opening(g, g.quoteBuild(t, today[0]).months))[1] != 1) continue;
                 double ga = t.getLandSqFt() / u;
                 if (f == 0) thriftiest &= t == lean || ga > leanGround;
-                double per = (g.quoteBuild(t, 1).total + BuildAdvice.running(g, t, site) * life) / u + ga * at[f] * office;
-                if (per < least) { least = per; cheapest[f] = t.getName(); }
+                Set<BuildingsTemplate> skip = new HashSet<>(g.getBuildingManager().getTemplates());
+                skip.remove(t);
+                BuildAdvice.Suggestion candidate = BuildAdvice.suggestFor(g, null, m, streetCash, streetLand,
+                        g.getAutoBuilder().getSlack(), skip, true);
+                if (candidate != null && candidate.closes() && candidate.planValue() < least) {
+                    least = candidate.planValue();
+                    cheapest[f] = t.getName();
+                }
             }
-            market.restoreOffers(scaledOffers(base, at[f]), nextId);
-            for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g)) if (s.measure().kind() == BuildAdvice.Kind.ROADS) card[f] = s.template().getName();
         }
         market.restoreOffers(base, nextId);
         land.setOwnedSqFt(owned);
@@ -971,9 +1006,8 @@ public class BuildAdviceCheck {
                 + " Road needs the least ground a trip", thriftiest);
         boolean agrees = true;
         for (int f = 0; f < at.length; f++) agrees &= card[f] != null && card[f].equals(cheapest[f]);
-        assertTrue("the streets' card is the cheapest to build over its life at every price of ground, recomputed here from the quote,"
-                + " the running and the ground a trip: the Paved Road on these busy streets (" + card[0] + ", " + card[1] + ", "
-                + card[2] + ")", agrees && "Paved Road".equals(card[0]) && "Paved Road".equals(card[2]));
+        assertTrue("the streets' card has the least complete maintained-service plan at every price of ground"
+                + " (" + card[0] + ", " + card[1] + ", " + card[2] + ")", agrees);
     }
 
     /**
@@ -990,38 +1024,19 @@ public class BuildAdviceCheck {
      * serves none of it, over the count times what one serves.
      */
     static double lifeFigure(Game g, BuildAdvice.Suggestion s, double landLeft) {
-        BuildAdvice.Measure m = s.measure();
-        BuildingsTemplate t = s.template();
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
-        int n = s.count();
-        double factor = BuildAdvice.lifeFactor(g);
-        double life;
-        Map<BuildingsTemplate, Integer> with = new java.util.LinkedHashMap<>(site);
-        if (s.paving()) {
-            BuildingsTemplate from = template(g, ConstructionControl.PAVE_FROM), to = template(g, ConstructionControl.PAVE_TO);
-            // FR7 2.2: the gravel road it replaces stands, so it is repaired at the traffic on the streets as they are (not with one more added).
-            life = g.quotePave(n).total - BuildAdvice.landValue(g, BuildAdvice.pavingFrees(g) * (double) n, landLeft)
-                    + n * (BuildAdvice.running(g, to, site) - BuildAdvice.running(g, from, site, false)) * factor;
-            with.merge(to, n, Integer::sum);
-            with.merge(from, -n, Integer::sum);
-        } else {
-            life = g.quoteBuild(t, n).total + BuildAdvice.landValue(g, t.getLandSqFt() * (double) n, landLeft)
-                    + n * BuildAdvice.running(g, t, site) * factor;
-            with.merge(t, n, Integer::sum);
-        }
-        if (!BuildAdvice.weighsServed(m)) return life / (n * s.unit());
-        double i = BuildAdvice.lifeRate(g) / 12, served = 0, weights = 0;
-        for (int y = 0; y < BuildAdvice.LIFE_MONTHS / 12; y++) {
-            double w = 0;
-            for (int j = 12 * y + 1; j <= 12 * y + 12; j++) w += i > 0 ? Math.pow(1 + i, -j) : 1;
-            double months = BusinessInvestment.leadFor(s.ahead().months()) + 12 * y + 6;   // from its opening: the months less the horizon they plan past it (BA1; horizonFor() grows with the lead)
-            BuildAdvice.Ahead a = new BuildAdvice.Ahead(months, BuildAdvice.lifeTrend(g, months), s.ahead().slack());
-            served += w * Math.max(0, Math.max(0, BuildAdvice.shortfall(g, m, site, a))
-                    - Math.max(0, BuildAdvice.shortfall(g, m, with, a)));
-            weights += w;
-        }
-        double avg = weights > 0 ? served / weights : 0;
-        return avg > 0 ? life / avg : life / (n * s.unit());
+        double[] figure = valueFigure(g, s, landLeft);
+        return figure[1] > 0 ? figure[0] / figure[1] : Double.POSITIVE_INFINITY;
+    }
+
+    static double planFigure(Game g, BuildAdvice.Suggestion s, double landLeft) { return valueFigure(g, s, landLeft)[0]; }
+
+    /** Recompute the invoice, delayed running, actual payroll return and physical relief; no reserve is lost work. */
+    static double[] valueFigure(Game g, BuildAdvice.Suggestion s, double landLeft) {
+        return valueFigure(g, s, landLeft, g.getCash());
+    }
+
+    static double[] valueFigure(Game g, BuildAdvice.Suggestion s, double landLeft, double cashLeft) {
+        return AdviceValueOracle.value(g, s, landLeft, cashLeft);
     }
 
     /** The offers' records with each one's dollar price times f (LandParcel.offerRow(): the price second from the end). */
@@ -1041,17 +1056,17 @@ public class BuildAdviceCheck {
      * the schools - at 100% or more of its demand at its projection with
      * SLACK on top, not just off NEEDS YOU's list; care's and a basic
      * school's demand there exactly today's times k and 1 + SLACK; and the
-     * count never fewer than the old rule's, the least off the list today.
+     * count the least covering that projected demand with the shared reserve.
      */
     static void slackBuilt(Game g, List<BuildAdvice.Suggestion> advice) {
         out.println("\n--- 8. slack built: a served card at 100% of its demand projected and SLACK past it;"
-                + " never fewer than the old rule ---");
+                + " one fewer misses that projected demand ---");
         boolean more = false;
         for (BuildAdvice.Suggestion s : advice) {
             BuildAdvice.Measure m = s.measure();
             Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(BuildAdvice.onSite(g, m), s.template(), s.count());
             String what = s.need().label() + ", " + s.count() + " " + s.template().getName();
-            bits(what + ": sized with the businesses' headroom as its slack", s.ahead().slack(), BusinessInvestment.TARGET_HEADROOM);
+            bits(what + ": sized with the player's automatic reserve as its slack", s.ahead().slack(), g.getAutoBuilder().getSlack());
             if (BuildAdvice.isServed(m) && m.kind() != BuildAdvice.Kind.TRANSIT) {
                 double[] there = BuildAdvice.supplyDemand(g, m, with, s.ahead());
                 assertTrue(what + ": at 100% or more of its demand projected and SLACK past it ("
@@ -1061,12 +1076,30 @@ public class BuildAdviceCheck {
                     double[] now = BuildAdvice.supplyDemand(g, m, with);
                     bits(what + ": ...that demand is today's times k and 1 + SLACK", there[1], s.ahead().scale() * now[1]);
                 }
+                Map<BuildingsTemplate, Integer> oneFewer = BuildAdvice.plus(
+                        BuildAdvice.onSite(g, m), s.template(), s.count() - 1);
+                double[] shortOf = BuildAdvice.supplyDemand(g, m, oneFewer, s.ahead());
+                assertTrue(what + ": one fewer misses the full projected demand and shared reserve",
+                        CityNeeds.servedShare(shortOf[0], shortOf[1]) < 1);
             }
             int old = BuildAdvice.count(g, m, BuildAdvice.onSite(g, m), s.template())[0];
-            assertTrue(what + ": never fewer than the old rule's count (" + old + ")", s.count() >= old);
+            if (!BuildAdvice.isServed(m) || m.kind() == BuildAdvice.Kind.TRANSIT) {
+                assertTrue(what + ": never fewer than the old rule's count (" + old + ")", s.count() >= old);
+            }
+            out.println("      " + what + ": the former listing-threshold count was " + old);
             more |= s.count() > old;
         }
-        assertTrue("fixture: the slack and the projection add buildings to at least one card", more);
+        // Whole-plan ranking can select a larger unit whose rounding absorbs the margin.
+        // The same city's walk-in-only fallback card still exposes the added buildings.
+        BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+        BuildingsTemplate clinic = template(g, "Walk-in Clinic");
+        Set<BuildingsTemplate> skip = new HashSet<>(g.getBuildingManager().getTemplates());
+        skip.remove(clinic);
+        BuildAdvice.Suggestion fallback = BuildAdvice.suggestFor(g, null, care, g.getCash(),
+                g.getLandManager().getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip, true);
+        int oldFallback = BuildAdvice.count(g, care, BuildAdvice.onSite(g, care), clinic)[0];
+        assertTrue("fixture: the slack and projection add buildings to a listed or fallback card in the same city",
+                more || fallback != null && fallback.count() > oldFallback);
     }
 
     /* ============================ 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE ============================ */
