@@ -3221,6 +3221,9 @@ public abstract class Sector {
         }
     }
 
+    /** Liquid stock carried after the last plant closes: a recovery floor at realizable proceeds, otherwise zero. */
+    public double retirementRecovery() { return 0; }
+
     /**
      * Runs the month's production of a stockable good into the warehouse,
      * after the market has taken what it wanted from last month's stock.

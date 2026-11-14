@@ -415,3 +415,33 @@ reset with the audit month and scale with redenomination; they are
 within-turn state. The e632 pick was stopped at verified BF1 AllChecks
 parent PID 2972 before this model correction; it supplies no release
 verdict. No review-run ensemble had started.
+
+## REV-BF1-2
+
+Received during validation of 8148417b; its ALL process was stopped by
+verified BF1 parent PID 29832 (JDK child 20068). No ensemble had started.
+The review confirmed the OrderBook and pointwise PriceLevel repairs.
+Its three requested cases are now caused in BankFailureCheck.
+
+- The settlement fixture now actually buys a bond from the capital left
+  after the bank's loan-book refresh. A current-source no-op settlement
+  mutation fails both the room law and this purchase law (two failures in
+  bf1-rev2-settlement-control.txt).
+- A bank above target, with leverage binding and infinite old monthly
+  growth, accepts an over-large insured mortgage before the mend. ★ Insured
+  mortgages retain their zero risk weight but read finite exposure room
+  while leverage binds, net of all pending loans. An affordable insured
+  mortgage remains allowed even with zero uninsured room. Forecast losses
+  apply before the book settles; settled books are read once afterward.
+- A last Oil Refinery's retained diesel covers its loan, but the 60% asset
+  target would not. Before the mend the creditor loses money. ★ Carry that
+  claim against liquid inventory at net export proceeds, a floor before
+  applying any asset haircut, until O1's existing liquidation line sells
+  it. The fixture also runs that line and verifies the export invoice
+  covers the carried claim. Whole-borrower closure is judged once; its
+  surviving claim does not take another firms' default slice in the same
+  month. Perishable stock still receives no such floor.
+
+The before fixture has three failures with all premises green;
+bf1-rev2-before.txt and bf1-rev2-after.txt are under target/checks.
+Records from the earlier picks and ensembles remain superseded.

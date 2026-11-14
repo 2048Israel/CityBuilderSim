@@ -6574,7 +6574,8 @@ public class Game {
         boolean empty = !(buildingManager.getBuildingsValueBySector(decision.sector) > 0);
         double available = Math.max(0, seller.getCash());
         if (!empty) available = Math.min(available, proceeds + material);
-        double repaid = credit.settleRetirement(decision.sector, available, empty);
+        double repaid = credit.settleRetirement(decision.sector, available, empty,
+                closing == null ? 0 : closing.retirementRecovery());
         economyManager.setSectorCash(decision.sector, seller.getCash() - repaid);
 
         lastInvestment.put(decision.sector,

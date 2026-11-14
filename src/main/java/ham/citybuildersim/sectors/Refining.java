@@ -581,6 +581,16 @@ public final class Refining extends Sector {
     @Override
     public void writeOffUnhousedStock() { }
 
+    /** Nonspoiling oil left for O1's liquidation line covers debt at its net export proceeds before any haircut. */
+    @Override
+    public double retirementRecovery() {
+        double value = 0;
+        for (Good g : PRODUCTS) if (g.exportable() && markets != null && markets.get(g) != null)
+            value += getStock(g) * markets.get(g).netExportPrice();
+        return Math.max(0, value);
+    }
+
+
     /**
      * The month's production into the tanks - after shipping, from the tanks,
      * whatever of a product they no longer have room for (0.7.76, ★ O1).

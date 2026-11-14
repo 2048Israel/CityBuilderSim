@@ -136,6 +136,11 @@ public final class BankFailureCheck {
         g.getEconomyManager().settleInsolvency();
         close("closing keeps a claim fully recoverable from retained oil", credit.getPrincipal(refinery.key()), owed);
         close("recoverable oil causes no creditor loss at closure", credit.getWrittenOffThisMonth(refinery.key()), 0);
+        double already = refinery.pending().exports;
+        refinery.produceStock(Good.DIESEL, g.getMarkets().get(Good.DIESEL));
+        close("the regular liquidation line still empties the retired tanks", refinery.getStock(Good.DIESEL), 0);
+        check("the realized export invoice covers the carried claim", refinery.pending().exports - already >= owed);
+
     }
 
     static void credit() throws Exception {
@@ -204,7 +209,8 @@ public final class BankFailureCheck {
         Bank settledBank = new Bank();
         settledBank.refresh(1, deposits, 0, deposits, 0, 0);
         settledBank.setCash(deposits * .5);
-        BusinessDebtManager settling = new BusinessDebtManager();
+        EconomyManager settledEconomy = new EconomyManager(bonds.getBuildingManager());
+        BusinessDebtManager settling = settledEconomy.getBusinessDebtManager();
         settling.setAssets(Sectors.MANUFACTURING, deposits * 100);
         settling.setProjectBudget(settledBank);
         double openingRoom = settling.projectRoom(), loan = openingRoom * .25;
@@ -219,8 +225,28 @@ public final class BankFailureCheck {
         check("settlement does not subtract the same loans from the live book twice",
                 settledRoom > beforeSettle && settledRoom <= settledBank.projectHeadroom()
                     + MoneyAudit.tolerance(0, openingRoom));
+        settling.setAssets(sector, deposits * 1000);
+        BondMarket settledBonds = new BondMarket();
+        settledBonds.attach(new BondMarket.Readings() {
+            public int month() { return 1; }
+            public double curve(int months) { return .04; }
+            public double policyRate() { return .04; }
+            public double depositRate() { return .02; }
+            public double worldRate() { return .04; }
+            public double countryPremium() { return 0; }
+            public double monthlyGdp() { return 0; }
+            public double localPerUsd() { return 1; }
+            public boolean worldRunning() { return false; }
+            public double unit() { return 1; }
+        }, null, settledBank, settledEconomy, null);
+        double faceAfter = .9 * Math.min(openingRoom * .75, settledBank.projectHeadroom());
+        settledBonds.issue(new BusinessDebtManager.Plan(sector, faceAfter, faceAfter, 1, 1,
+                0, 1, 1, settledBonds.issueCost(faceAfter), 1, deposits * 1000, faceAfter, faceAfter), 1);
+        close("a bond can use capital left after loan settlement without a second loan deduction",
+                settledBonds.faceHeldByBank(), faceAfter);
+        double afterPurchase = settling.projectRoom();
         close("new debt after settlement still consumes room once",
-                issueAfterSettlement(settling, settledRoom, 1), settledRoom * .75);
+                issueAfterSettlement(settling, afterPurchase, 1), afterPurchase * .75);
         g.getBank().writeOffSector(sector, g.getBank().equity() + g.getBank().getSectorAllowance(sector));
         close("uncovered defaults reach the growth desk before the bank's month-end settle", g.getBank().projectHeadroom(), 0);
 
@@ -246,6 +272,9 @@ public final class BankFailureCheck {
         check("an insured mortgage cannot exceed finite leverage room above target",
                 !above.canFundMortgage(Sectors.REAL_ESTATE, leverageRoom * 2, deposits * 1000)
                     && BusinessDebtManager.MORTGAGE_CAPITAL.equals(above.getMortgageRefusal()));
+        above.setProjectBudget(0);
+        check("a zero-risk insured mortgage still uses available leverage room despite zero uninsured room",
+                above.canFundMortgage(Sectors.REAL_ESTATE, leverageRoom * .25, deposits * 1000));
         insured.setCapitalRule(0, true, true);
         check("the leverage rule still rations that same insured mortgage",
                 !insured.canFundMortgage(Sectors.REAL_ESTATE, shortfall, request)
