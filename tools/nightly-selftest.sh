@@ -121,6 +121,8 @@ TIER_JUDGE_LOG=$TEST/tier-judge-command; export TIER_JUDGE_LOG TIER_JUDGE_EXIT
 CBS_KNOWN_REDS=wrong-caller-record; CBS_REJUDGE=; export CBS_KNOWN_REDS CBS_REJUDGE
 CASE='the nightly runs its tier on the fetched main tip'; nightly_tier "$TEST/tier-green"
 ok grep -q 'AllChecks -f --nightly' "$TEST/tier-command"
+CASE='observation tier leaves clocks to the serial timing run'
+ok grep -q -- '-Dcbs.timing=soft -Dcbs.observations=hard' "$TEST/tier-command"
 ok grep -q -- '--judge' "$TIER_JUDGE_LOG"
 ok test "$(cat "$TEST/tier-green")" = "$FULL"
 TIER_EXIT=5; TIER_JUDGE_EXIT=3
@@ -138,4 +140,34 @@ TIER_JUDGE_EXIT=1
 CASE='an incomplete judged run also preserves the last green'
 if nightly_tier "$TEST/tier-green"; then exit 1; else ok test "$?" = 1; fi
 ok test "$(cat "$TEST/tier-green")" = "$TIER_BASE"
+# PO1: a reached premise, then five merges that move its path; a miss stays informational.
+ORIG=$ROOT
+HISTORY=$TEST/observations
+printf 'ObservationCheck\tplayed premise\tREACHED\n' > "$CLONE/observations.tsv"
+FULL=$TIER_BASE
+CASE='a reached observation records its own last-held commit'; nightly_observations "$HISTORY" > "$TEST/observed-held"
+ok grep -q "$FULL" "$HISTORY/held.tsv"
+FULL=$(git rev-parse HEAD)
+printf 'ObservationCheck\tplayed premise\tMISSED\nObservationCheck\tplayed premise\tREACHED\nObservationCheck\tother premise\tREACHED\n' > "$CLONE/observations.tsv"
+CASE='a miss returns zero and reports the last-held merge range'; nightly_observations "$HISTORY" > "$TEST/observed-miss"
+ok grep -q "merges since last held $TIER_BASE..$FULL" "$TEST/observed-miss"
+for n in 1 2 3 4 5; do ok grep -q "Merge batch/ST$n:" "$TEST/observed-miss"; done
+CASE='a miss in one sample wins, and another line advances independently'
+ok grep -q "played premise.*$TIER_BASE" "$HISTORY/held.tsv"
+ok grep -q "other premise.*$FULL" "$HISTORY/held.tsv"
+printf 'ObservationCheck\tnew premise\tMISSED\n' > "$CLONE/observations.tsv"
+CASE='a first miss says that no last hold exists'; nightly_observations "$HISTORY" > "$TEST/observed-first"
+ok grep -q 'no earlier held reading' "$TEST/observed-first"
+printf 'ObservationCheck\tplayed premise\tREACHED\n' > "$CLONE/observations.tsv"
+CASE='a later hold advances just that line'; nightly_observations "$HISTORY" > "$TEST/observed-again"
+ok grep -q "played premise.*$FULL" "$HISTORY/held.tsv"
+: > "$CLONE/observations.tsv"
+CASE='an absent reading record is incomplete'
+if nightly_observations "$HISTORY" > "$TEST/observed-empty"; then exit 1; else ok test "$?" = 1; fi
+COLD=$TEST/cold-observations
+mkdir "$COLD"; printf 'stale\tpartial\told\n' > "$COLD/held.new"
+printf 'ObservationCheck\tcold premise\tMISSED\n' > "$CLONE/observations.tsv"
+CASE='a cold all-miss night clears an interrupted state write'
+nightly_observations "$COLD" > "$TEST/observed-cold"
+ok test ! -s "$COLD/held.tsv"
 echo 'nightly selftest OK'

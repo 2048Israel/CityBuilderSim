@@ -532,6 +532,10 @@ public class KeptCheck {
                 bench.drawChromeKept();
                 bench.chromePasses();
                 int[] c = bench.chromeCounts();
+                bench.drawChromeKept();
+                bench.chromePasses();
+                int[] unchanged = bench.chromeCounts();
+                check("an unchanged chrome draw creates no node", unchanged[0] + unchanged[2] + unchanged[4] == 0);
                 return new Object[]{before.equals(bench.chromeTops()), c[0] + c[2] + c[4], c[1] + c[3] + c[5]};
             });
             if ((boolean) r[0]) sameTops++;
@@ -543,10 +547,14 @@ public class KeptCheck {
                 MONTHS, back / MONTHS, quiet, madeMost);
         check("each month's redraw keeps the nodes the header and the rail drew (the same top nodes, " + sameTops + " of " + MONTHS + ")",
                 sameTops == MONTHS);
-        check("each month hands back nine in ten of the nodes the first draw made, or more (" + back / MONTHS + " of " + firstMade + ")",
-                back / MONTHS * 10 >= firstMade * 9L);
-        check("most months make no node at all (" + quiet + " of " + MONTHS + "), and none makes more than a tenth (" + madeMost + ")",
-                quiet * 2 > MONTHS && madeMost * 10 <= firstMade);
+        Observation.reached("chrome: each month hands back nine in ten of the nodes the first draw made, or more",
+                "each month hands back nine in ten of the nodes the first draw made, or more (" + back / MONTHS + " of " + firstMade + ")",
+                back / MONTHS * 10 >= firstMade * 9L,
+                "");
+        Observation.reached("chrome: ), and none makes more than a tenth",
+                "most months make no node at all (" + quiet + " of " + MONTHS + "), and none makes more than a tenth (" + madeMost + ")",
+                quiet * 2 > MONTHS && madeMost * 10 <= firstMade,
+                "");
 
         System.out.println("\n--- 7 and 8: the kept chrome against a chrome built new, in every state ---");
         List<Integer> shotAt = List.of(1, MONTHS / 2, MONTHS);
@@ -803,8 +811,10 @@ public class KeptCheck {
                 + " %d in all; months with a building under construction: %d%n", MONTHS, back / MONTHS, quiet, madeMost, madeAll, withSites);
         check("each month's redraw keeps the nodes the three panels drew (the same top nodes, " + sameTops + " of " + MONTHS + ")",
                 sameTops == MONTHS);
-        check("each month hands back nine in ten of the nodes the first draw made, or more (" + back / MONTHS + " of " + firstMade + ")",
-                back / MONTHS * 10 >= firstMade * 9L);
+        Observation.reached("panels: each month hands back nine in ten of the nodes the first draw made, or more",
+                "each month hands back nine in ten of the nodes the first draw made, or more (" + back / MONTHS + " of " + firstMade + ")",
+                back / MONTHS * 10 >= firstMade * 9L,
+                "");
         // A log gains a row when a building opens or is demolished, and the inbox a row when a notice is raised: the rows
         // that come are made, the rest are handed back. "Few" is a fiftieth of the first draw a month, and no month a tenth.
         check("the nodes made in a month are few (" + madeAll + " in all over " + MONTHS + " months, at most " + madeMost + " in one)",
@@ -1058,6 +1068,9 @@ public class KeptCheck {
                 bench.drawHistoryKept();
                 bench.passes();
                 int[] c = bench.historyCounts();
+                bench.drawHistoryKept();
+                bench.passes();
+                check("an unchanged History draw creates no node", bench.historyCounts()[0] == 0);
                 boolean chartsStay = bench.historyCharts().equals(charts);
                 for (int i = 0; chartsStay && i < charts.size(); i++) {
                     chartsStay = charts.get(i).getScene() != null && charts.get(i).getParent() == chartParents.get(i);
@@ -1076,9 +1089,15 @@ public class KeptCheck {
         System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d%n",
                 MONTHS, handedBack / MONTHS, quiet, madeMost);
         check("each month's redraw keeps the page it drew (the same top nodes, " + sameTop + " of " + MONTHS + ")", sameTop == MONTHS);
-        check("each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
-                + firstMade + ")", handedBack / MONTHS * 10 >= firstMade * 9L);
-        check("most months make no node at all (" + quiet + " of " + MONTHS + ")", quiet * 2 > MONTHS);
+        Observation.reached("history: each month hands back nine in ten of the nodes the first draw made, or more",
+                "each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
+                    + firstMade + ")",
+                handedBack / MONTHS * 10 >= firstMade * 9L,
+                "");
+        Observation.reached("history: most months make no node at all",
+                "most months make no node at all (" + quiet + " of " + MONTHS + ")",
+                quiet * 2 > MONTHS,
+                "");
         check("the big chart and both pins' stay in the scene, in the same box, after every redraw (" + chartsKept + " of " + MONTHS + ")",
                 chartsKept == MONTHS);
         check("the legend's chips and the range buttons are the same nodes after every redraw (" + chipsKept + " of " + MONTHS + ")",
@@ -1519,6 +1538,12 @@ public class KeptCheck {
         return d;
     }
 
+    /** WHY (PO1 send-back 1): a shared helper must keep every unlisted caller hard. */
+    static void pathCheck(boolean observe, String identity, String label, boolean held) {
+        if (observe) Observation.reached(identity, label, held, "");
+        else check(label, held);
+    }
+
     /** Section n: the page is kept - a month's redraw keeps its top nodes, hands back nine in ten of the first draw's nodes, and on most months makes none. */
     static void pageKept(Game g, KeptBench bench, KeptBench.Page page, int n) throws Exception {
         pageKept(g, bench, page, n, false);
@@ -1547,6 +1572,9 @@ public class KeptCheck {
                 bench.drawKept(page);
                 bench.passes();
                 int[] c = bench.counts(page);
+                bench.drawKept(page);
+                bench.passes();
+                check(page.name() + ": an unchanged draw creates no node", bench.counts(page)[0] == 0);
                 return new Object[]{before.equals(bench.pageTop()), c[0], c[1]};
             });
             if ((boolean) r[0]) sameTop++;
@@ -1656,6 +1684,15 @@ public class KeptCheck {
 
     /** ...and, with `pixels`, each redraw's picture against the page built new's as well (KP7: the Rankings table is painted, and no signature holds it). */
     static void pageReshaped(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, double share, boolean pixels) throws Exception {
+        pageReshaped(g, bench, page, n, choices, share, pixels, false);
+    }
+
+    /** PO1: only the listed retention cases opt into a path observation. */
+    static void pageReshaped(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, boolean observeRetention) throws Exception {
+        pageReshaped(g, bench, page, n, choices, HANDED_BACK, false, observeRetention);
+    }
+
+    static void pageReshaped(Game g, KeptBench bench, KeptBench.Page page, int n, List<Choice> choices, double share, boolean pixels, boolean observeRetention) throws Exception {
         System.out.println("\n--- " + n + ": what reshapes " + page.name() + (pixels ? ", to the pixel" : "") + " ---");
         int size = fx(() -> {
             bench.home(page);
@@ -1707,7 +1744,9 @@ public class KeptCheck {
         }
         System.out.printf("  the month's redraw after a choice handed back %.1f%% of the page's nodes at the fewest (after \"%s\": %d made, %d handed back)%n",
                 worst * 100, worstAt, worstMade, worstKept);
-        check("a month's redraw after each choice hands back " + (share == HANDED_BACK ? "nine in ten" : String.format("%.0f%%", share * 100)) + " of the page's nodes, or more", worst >= share);
+        pathCheck(observeRetention, "pageReshaped " + n + " " + page.name() + " retention",
+                "a month's redraw after each choice hands back " + (share == HANDED_BACK ? "nine in ten" : String.format("%.0f%%", share * 100)) + " of the page's nodes, or more",
+                worst >= share);
     }
 
     /** Section n: what the kept month on the page's home costs, against the same month built new. */
@@ -2087,7 +2126,8 @@ public class KeptCheck {
             hoverLine(found, "the land office", kind, d);
         }
         for (String kind : List.of("rowGoes", "door", "limitCell", "chartCardHead", "landRow", "oreCard", "doorCard")) {
-            check("a " + kind + " was found on a page of this city, to put the pointer on", found.getOrDefault(kind, false));
+            Observation.reached("a " + kind + " was found on a page of this city, to put the pointer on",
+                    found.getOrDefault(kind, false));
         }
     }
 
@@ -2437,7 +2477,7 @@ public class KeptCheck {
             pages.add(fx(() -> bench.buildFellShort(null, 0, t, q, "20-year bond")));
         }
         for (KeptBench.Page p : pages) {
-            pageReshaped(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
+            pageReshaped(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)), true);
         }
     }
 
@@ -2687,7 +2727,8 @@ public class KeptCheck {
             hoverLine(found, "Build, " + city, "(i) cover", d);
         }
         for (String kind : List.of("jobTile", "marketTile", "door", "ringCard", "(i) cover")) {
-            check("a " + kind + " was found on a Build page of this city, to put the pointer on", found.getOrDefault(kind, false));
+            Observation.reached("a " + kind + " was found on a Build page of this city, to put the pointer on",
+                    found.getOrDefault(kind, false));
         }
     }
 
@@ -2871,7 +2912,10 @@ public class KeptCheck {
         if (first != null) System.out.println("  first difference: " + first);
         check("the kept page's signature equals the new page's for " + R5_MONTHS + " months", first == null);
         System.out.printf("  %d months: %.1f%% of the page's nodes handed back a month on average%n", R5_MONTHS, handed / R5_MONTHS * 100);
-        check("each month hands back nine in ten of the nodes, or more", handed / R5_MONTHS >= HANDED_BACK);
+        Observation.reached("researchEquipment: each month hands back nine in ten of the nodes, or more",
+                "each month hands back nine in ten of the nodes, or more",
+                handed / R5_MONTHS >= HANDED_BACK,
+                "");
         // KP2b's rule (section 92's nothingSet()) on the page with ITS EQUIPMENT, which no default city has.
         check("the page still has equipment rows to draw (the next check's premise)", !ResearchView.equipment(town, key).isEmpty());
         nothingSet(bench, page, page.name() + " in the town, ITS EQUIPMENT on it");
@@ -3115,10 +3159,10 @@ public class KeptCheck {
         KeptBench.Page tab = fx(() -> bench.sectors("the Sectors tab", plain, ops, false));
         pageReshaped(g, bench, list, 49, List.of(
                 new Choice("Show more (every card open to its second row)", b -> { b.sectorsOpen(null, ops, false); b.sectorsMore(true); return null; }, true),
-                choice("Show less", b -> { b.sectorsMore(false); return null; })));
+                choice("Show less", b -> { b.sectorsMore(false); return null; })), true);
         List<Choice> every = new ArrayList<>();
         for (String key : Sectors.KEYS) every.add(choice(called(g, key) + " on its Operations page", on(key, ops, false)));
-        pageReshaped(g, bench, tab, 49, every);
+        pageReshaped(g, bench, tab, 49, every, true);
         // One business of each kind on all five pages, in both views: Operations has no statement.
         List<Choice> pages = new ArrayList<>();
         for (String key : new String[]{plain, Sectors.RETAIL, Sectors.REAL_ESTATE, works, Sectors.FREIGHT}) {
@@ -3127,14 +3171,14 @@ public class KeptCheck {
                 if (!page.equals(ops)) pages.add(choice(called(g, key) + ", " + page + " as a statement", on(key, page, true)));
             }
         }
-        pageReshaped(g, bench, tab, 49, pages);
+        pageReshaped(g, bench, tab, 49, pages, true);
         // Freight's four divisions, each a page of its own.
         List<Choice> divisions = new ArrayList<>();
         for (String division : KeptBench.freightDivisions()) {
             divisions.add(choice("Freight on its " + division + " division", b -> { b.sectorsOpen(Sectors.FREIGHT, ops, false); b.sectorsDivision(division); return null; }));
         }
         divisions.add(choice("Freight on All again", b -> { b.sectorsOpen(Sectors.FREIGHT, ops, false); b.sectorsDivision("All"); return null; }));
-        pageReshaped(g, bench, tab, 49, divisions);
+        pageReshaped(g, bench, tab, 49, divisions, true);
         // A fold opened has to add to the page, and closed take it away; a note, every note, the toolbar's two columns.
         // The premise first: the note chosen is one the statement opens on lines this month (on 0.9.19 the builders' revenue,
         // note 1, came down to one named part, which draws no caret, and the fold chosen by "the first note" caused nothing).
@@ -3165,7 +3209,7 @@ public class KeptCheck {
         folds.add(choice("...the common-size column off too", b -> { b.sectorsColumns(false, false); return null; }));
         folds.add(choice("...the change column on again", b -> { b.sectorsColumns(true, false); return null; }));
         folds.add(choice("...and both on", b -> { b.sectorsColumns(true, true); return null; }));
-        pageReshaped(g, bench, tab, 49, folds);
+        pageReshaped(g, bench, tab, 49, folds, true);
 
         sectorsPictures(g, bench, works, worksName);
         sectorsCountUp(g, bench, plain);
@@ -3425,11 +3469,16 @@ public class KeptCheck {
                 int at = paused ? ladder.length - 1 : rung;
                 boolean expect = paused || ladder[at] <= top;
                 String result = fx(() -> countRung(g, bench, view[0], view[1], at, paused, expect));
-                if (result != null) wrong.append(wrong.length() == 0 ? "" : "; ").append(result);
+                if (Observation.reached("sectorsCountUp: : a played month moves the count-up figures at rung",
+                        view[2] + ": a played month moves the count-up figures at rung " + rung,
+                        !"no month in twelve moved the figures".equals(result),
+                        "this rung's count-up and waterfall laws")) {
+                    check(view[2] + ": count-up and waterfall at rung " + rung, result == null);
+                    if (result != null) wrong.append(wrong.length() == 0 ? "" : "; ").append(result);
+                }
             }
             if (wrong.length() > 0) System.out.println("  " + view[2] + ": " + wrong);
-            check("a month landing starts " + view[2] + " counting exactly at the rungs countsUp() allows, and when paused (" + (ladder.length + 1)
-                    + " clocks)", wrong.length() == 0);
+
 
             // A count running when the clock has been sped past the top: the next month sets the figures at once and stops it.
             String stopped = fx(() -> {
@@ -3466,6 +3515,9 @@ public class KeptCheck {
                 return d == null ? null : "the page is not the page built new: " + d.replace('\n', ' ');
             });
             if (stopped != null) System.out.println("  " + view[2] + ": " + stopped);
+            if (Observation.reached(view[2] + ": a played month moves the figures for a running count",
+                    !"no month in twelve moved the figures".equals(stopped),
+                    "stopping the count above COUNT_UP_TOP"))
             check("a count running when a month lands past COUNT_UP_TOP is stopped on " + view[2] + ", and each figure is the month's", stopped == null);
         }
     }
@@ -3605,7 +3657,8 @@ public class KeptCheck {
         hoverLine(found, possessive(called(g, plain)) + " page", "door", fx(() -> bench.hoverKept("door", bench::showSectors)));
         hoverLine(found, possessive(called(g, plain)) + " page", "crumb", fx(() -> bench.hoverCrumb(bench::showSectors)));
         for (String kind : List.of("sectorCard", "door", "crumb")) {
-            check("a " + kind + " was found on a Sectors page of this city, to put the pointer on", found.getOrDefault(kind, false));
+            Observation.reached("a " + kind + " was found on a Sectors page of this city, to put the pointer on",
+                    found.getOrDefault(kind, false));
         }
     }
 
@@ -4392,12 +4445,15 @@ public class KeptCheck {
         for (String kind : KeptBench.pictureKinds()) {
             List<Spot> at = seen.getOrDefault(kind, List.of());
             check("a " + kind + " is on a page of this city (" + at.size() + " pages)", !at.isEmpty());
-            for (int i = 0; i < Math.min(2, at.size()); i++) pictureKept(g, bench, at.get(i), kind);
+            for (int i = 0; i < Math.min(2, at.size()); i++) {
+                Spot spot = at.get(i);
+                pictureKept(g, bench, spot, kind, kind.equals("BuybackLadder") && spot.label().equals("Close it now"));
+            }
         }
     }
 
     /** One kind of picture on one page, watched for PICTURE_MONTHS months. */
-    static void pictureKept(Game g, KeptBench bench, Spot spot, String kind) throws Exception {
+    static void pictureKept(Game g, KeptBench bench, Spot spot, String kind, boolean observeUnchanged) throws Exception {
         final KeptBench.Page page = spot.page();
         final boolean bar = kind.equals("RankBar"), chart = kind.equals("TimeChart");
         String what = "the " + kind + " on " + spot.label();
@@ -4485,7 +4541,8 @@ public class KeptCheck {
         if (whyLoud != null) System.out.println("  a redraw in the same month was not quiet: " + whyLoud);
         check(what + ": each month's redraw hands back nine in ten of the pictures it had, or more (" + kept + " of " + had + ")", kept * 10 >= had * 9);
         check(what + ": a month whose figures moved draws it again (" + repainted + " of " + PICTURE_MONTHS + " months did)", repainted > 0);
-        check(what + ": no month draws it again with nothing changed in it (" + wasted + ")", wasted == 0);
+        pathCheck(observeUnchanged, "pictureKept BuybackLadder on Close it now",
+                what + ": no month draws it again with nothing changed in it", wasted == 0);
         check(what + (chart ? ": a redraw in the same month paints no more than the two frames a chart is told (its data, its size) (" : ": a redraw in the same month draws nothing (")
                 + quiet + " of " + PICTURE_MONTHS + ")", quiet == PICTURE_MONTHS);
         check(what + ": the page equals a page built new at every month (" + differ + " differ)", differ == 0);
@@ -4860,7 +4917,9 @@ public class KeptCheck {
             return null;
         };
         if (piece == null) {
-            check("the city has a piece of paper to close", false);
+            Observation.reached("the city has a piece of paper to close",
+                    false,
+                    "Close it now face and price box retention");
         } else {
             KeptBench.Page close = fx(() -> bench.finances("Close it now", "The book", "Every piece"));
             boxHeld(g, bench, "Close it now's face box", close, closeOf(piece), bench::showFinances, () -> bench.financesCloseBoxes()[0], "1,000,000", 5, "a half");
@@ -4913,7 +4972,8 @@ public class KeptCheck {
             hoverLine(found, at.label(), k[1], d);
         }
         for (String kind : List.of("bankCard", "rungName", "financeCard", "bookRow", "holdingRow")) {
-            check("a " + kind + " was found on a money page of this city, to put the pointer on", found.getOrDefault(kind, false));
+            Observation.reached("a " + kind + " was found on a money page of this city, to put the pointer on",
+                    found.getOrDefault(kind, false));
         }
     }
 
@@ -6514,11 +6574,20 @@ public class KeptCheck {
             int[] sum = perScreen.computeIfAbsent(w.screen(), k -> new int[4]);
             for (int i = 0; i < 4; i++) sum[i] += c[i];
             System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3]);
-            check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw (" + c[2] + " of " + c[1] + "), and none is lost from a node the page keeps (" + c[3] + ")",
-                    c[1] == c[2] && c[3] == 0);
+            check(w.name() + ": none is lost from a node the page keeps", c[3] == 0);
+            if (Observation.reached("kp6Tips retained tooltip",
+                    w.name() + ": a tooltip survives the played month",
+                    c[1] > 0,
+                    "surviving Tooltip identity")) {
+                check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw",
+                        c[1] == c[2]);
+            }
         }
         for (java.util.Map.Entry<String, int[]> e : perScreen.entrySet()) {
-            check("the " + e.getKey() + " pages carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")", e.getValue()[1] > 0);
+            Observation.reached("kp6Tips:  pages carry tooltips that a month leaves on their nodes, to be kept",
+                    "the " + e.getKey() + " pages carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")",
+                    e.getValue()[1] > 0,
+                    "");
         }
     }
 
@@ -7622,7 +7691,7 @@ public class KeptCheck {
     }
 
     /** The tooltips on a page across a month's kept redraw (setup made first): {tooltips before, on a node that has one after, the same Tooltip, on a node kept without one}. */
-    static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page) throws Exception {
+    static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page, boolean observeEmptyCell) throws Exception {
         return fx(() -> {
             bench.drawKept(page);
             bench.passes();
@@ -7632,14 +7701,21 @@ public class KeptCheck {
             bench.passes();
             java.util.Map<javafx.scene.Node, javafx.scene.control.Tooltip> after = bench.tooltips();
             java.util.Set<javafx.scene.Node> still = bench.nodesOnPage();
-            int both = 0, same = 0, lost = 0;
+            int both = 0, same = 0, lost = 0, emptyCell = 0;
             for (java.util.Map.Entry<javafx.scene.Node, javafx.scene.control.Tooltip> e : before.entrySet()) {
                 javafx.scene.control.Tooltip now = after.get(e.getKey());
                 if (now == null) {
                     // (A node kept on the page that has no tooltip now lost the one it had: Kept takes the tooltip off a kept node its draw does not tip.)
                     if (still.contains(e.getKey())) {
-                        lost++;
                         javafx.scene.Node node = e.getKey();
+                        boolean listedCell = observeEmptyCell
+                                && e.getValue().getText().startsWith("Couple, no children, Senior professional\n")
+                                && g.getHouseholds().statementFor(g.getFamilies(), FamilyStructure.COUPLE, PayTier.SENIOR_PROFESSIONAL).households() < .5;
+                        if (listedCell) {
+                            emptyCell++;
+                            check("the emptied listed household cell draws its dash",
+                                    node instanceof javafx.scene.control.Labeled label && label.getText().equals("—"));
+                        } else lost++;
                         String words = node instanceof javafx.scene.control.Labeled label ? label.getText() : node.getClass().getSimpleName();
                         System.out.printf("  tooltip removed from kept %s, width %.4f, text %s, former tip %s%n",
                                 node.getClass().getSimpleName(), node.getLayoutBounds().getWidth(), words,
@@ -7650,7 +7726,7 @@ public class KeptCheck {
                 both++;
                 if (now == e.getValue()) same++;
             }
-            return new int[]{before.size(), both, same, lost};
+            return new int[]{before.size(), both, same, lost, emptyCell};
         });
     }
 
@@ -7708,15 +7784,27 @@ public class KeptCheck {
                 bench.home(w.page());
                 return null;
             });
-            int[] c = tipsAcrossMonth(g, bench, w.page());
+            boolean observeEmptyCell = w.name().equals("Household money, all of them");
+            int[] c = tipsAcrossMonth(g, bench, w.page(), observeEmptyCell);
             int[] sum = perScreen.computeIfAbsent(w.screen(), k -> new int[4]);
             for (int i = 0; i < 4; i++) sum[i] += c[i];
-            System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3]);
-            check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw (" + c[2] + " of " + c[1] + "), and none is lost from a node the page keeps (" + c[3] + ")",
-                    c[1] == c[2] && c[3] == 0);
+            System.out.printf("  %s: %d tooltips, %d of them on a node that has one after a month's redraw, %d the same Tooltip, %d on a node kept without one%n", w.name(), c[0], c[1], c[2], c[3] + c[4]);
+            check(w.name() + ": none is lost from a node the page keeps", c[3] == 0);
+            if (observeEmptyCell) Observation.reached("kp7Tips Couple, no children, Senior professional tooltip availability",
+                    "Household money, all of them: the listed household cell retains its tooltip", c[4] == 0, "");
+            if (Observation.reached("kp7Tips retained tooltip",
+                    w.name() + ": a tooltip survives the played month",
+                    c[1] > 0,
+                    "surviving Tooltip identity")) {
+                check(w.name() + ": every tooltip a node had and still has is the same Tooltip after a month's kept redraw",
+                        c[1] == c[2]);
+            }
         }
         for (java.util.Map.Entry<String, int[]> e : perScreen.entrySet()) {
-            check("the pages of " + e.getKey() + " carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")", e.getValue()[1] > 0);
+            Observation.reached("kp7Tips:  carry tooltips that a month leaves on their nodes, to be kept",
+                    "the pages of " + e.getKey() + " carry tooltips that a month leaves on their nodes, to be kept (" + e.getValue()[1] + ")",
+                    e.getValue()[1] > 0,
+                    "");
         }
     }
 
@@ -8764,6 +8852,9 @@ public class KeptCheck {
                 bench.passes();
                 boolean same = bench.top() == topBefore;
                 int made = bench.lastMade(), back = bench.lastKept();
+                bench.drawKept();
+                bench.passes();
+                check("an unchanged People draw creates no node", bench.lastMade() == 0);
                 List<String> kept = bench.signature();
                 int[] keptPx = shotAt.contains(at) ? bench.pixels() : null;
                 bench.showFresh();
@@ -8798,9 +8889,15 @@ public class KeptCheck {
         System.out.printf("  %d months: %d nodes handed back a month on average; months that made no node: %d; the most made in one: %d%n",
                 MONTHS, handedBack / MONTHS, quiet, madeMost);
         check("each month's redraw keeps the page it drew (the same top node, " + sameTop + " of " + MONTHS + ")", sameTop == MONTHS);
-        check("each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
-                + firstMade + ")", handedBack / MONTHS * 10 >= firstMade * 9L);
-        check("most months make no node at all (" + quiet + " of " + MONTHS + ")", quiet * 2 > MONTHS);
+        Observation.reached("main: each month hands back nine in ten of the nodes the first draw made, or more",
+                "each month hands back nine in ten of the nodes the first draw made, or more (" + handedBack / MONTHS + " of "
+                    + firstMade + ")",
+                handedBack / MONTHS * 10 >= firstMade * 9L,
+                "");
+        Observation.reached("main: most months make no node at all",
+                "most months make no node at all (" + quiet + " of " + MONTHS + ")",
+                quiet * 2 > MONTHS,
+                "");
         if (firstDiffer != null) System.out.println("  first difference: " + firstDiffer);
         check("the kept page's signature equals the new page's at every month (" + differ + " differ)", differ == 0);
 

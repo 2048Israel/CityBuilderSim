@@ -104,8 +104,11 @@ timing_search() {  # first-parent merges, binary search against the preceding qu
 }
 nightly_tier() {
     green=${1:-$HOME/.cbs-nightly-tier-green}
-    java -Xmx2048m -Xms64m -Dcbs.timing=hard -Dstdout.encoding=UTF-8 \
-        -cp "target/classes$SEP$(cat target/classpath.txt)" ham.citybuildersim.AllChecks -f --nightly > "$CLONE/tier.log" 2>&1 || :
+    : > "$CLONE/observations.tsv"
+    # PO1 review: observations run together, while --timing keeps clocks in its serial paired runs.
+    java -Xmx2048m -Xms64m -Dcbs.timing=soft -Dcbs.observations=hard \
+        -Dcbs.observations.tsv="$CLONE/observations.tsv" -Dstdout.encoding=UTF-8 \
+        -cp "target/classes$SEP$(cat target/classpath.txt)" ham.citybuildersim.AllChecks -f --nightly --observations > "$CLONE/tier.log" 2>&1 || :
     cat "$CLONE/tier.log" >> "$LOG"
     tiercode=0
     CBS_KNOWN_REDS= CBS_REJUDGE=rejudge ./batch-check.sh --judge "$CLONE/tier.log" >> "$LOG" 2>&1 || tiercode=$?
@@ -126,6 +129,32 @@ nightly_tier() {
     fi
     [ "$tiercode" = 3 ] && tiercode=0
     return "$tiercode"
+}
+
+# PO1: retain every line's last hold, even across incomplete or red nights.
+nightly_observations() {
+    OBSERVATIONS='observations incomplete'
+    history=${1:-$HOME/.cbs-observations}
+    mkdir -p "$history" || return 1
+    [ -s "$CLONE/observations.tsv" ] || { echo 'observations incomplete: no readings'; return 1; }
+    touch "$history/held.tsv" || return 1
+    : > "$history/held.new" || return 1
+    awk -v commit="$FULL" -v state="$history/held.new" -f "$ORIG/tools/observations.awk" \
+        "$history/held.tsv" "$CLONE/observations.tsv" > "$history/misses.tsv" || return 1
+    [ -f "$history/held.new" ] || : > "$history/held.new"
+    mv "$history/held.new" "$history/held.tsv" || return 1
+    tab=$(printf '\t')
+    while IFS="$tab" read -r harness label last; do
+        if [ "$last" != - ] && git merge-base --is-ancestor "$last" "$FULL"; then
+            echo "OBSERVED $harness | $label | merges since last held $last..$FULL"
+            git log --first-parent --merges --format='%h %s' "$last..$FULL"
+        else
+            echo "OBSERVED $harness | $label | no earlier held reading on this ancestry; merge range unavailable through $FULL"
+            git log -1 --format='%h %s' "$FULL"
+        fi
+    done < "$history/misses.tsv"
+    OBSERVATIONS="observations: $(wc -l < "$history/misses.tsv" | tr -d ' ') miss(es); $history/misses.tsv"
+    echo "$OBSERVATIONS"
 }
 
 nightly_timing() {  # optional record root for the no-JVM fixture

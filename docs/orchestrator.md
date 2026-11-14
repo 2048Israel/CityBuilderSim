@@ -94,8 +94,10 @@ batch it is built on):
    the notes, and the review line of `sh tools/pick.sh origin/main
    origin/batch/<id>`. Check that the batch did what its brief asked, the
    playtest's trace and, when it moved, the ensemble's score against the last
-   baseline. A process batch's notes give its line count (one in, one out,
-   `CLAUDE.md`).
+   baseline. Only M1 (money audit) and F1 (findings) are ship stops. All other
+   criteria remain scored information, beside the baseline with changed verdicts
+   called out (EI1, HW1's T2 stop). A process batch's notes give its line count
+   (one in, one out, `CLAUDE.md`).
 2. **A stranger's review only where money, saves or threading change** (BP1
    item 5; a review costs 190k-260k tokens): the bank, bonds, the treasury and
    funds; `DataSave`, `HistorySave`, the load path, `SAVE_FORMAT`; threads and

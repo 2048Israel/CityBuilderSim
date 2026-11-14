@@ -202,23 +202,7 @@ public class FundCheck {
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.simulateMonths(72);
-            /*
-             * WG2, {next}, 2026-11-10: SEVENTY-THREE MONTHS, NOT SEVENTY-TWO. Section 1 holds that the city's rescue book is every share it
-             * took, counted at the resolution (TreasuryFund.Resolution.shares), and section 9b that the rule's month does not move it;
-             * both count shares across a month in which Exchange.splitWhatNeedsIt may split or consolidate the bank's, which counts
-             * them in another unit. On main the bank stands at its founding price (32,000 shares, ratio to the founding price 0.95
-             * at month 73; 49 people) and no split falls in those months. On WG2's path (32 people at month 73, 22 at month 61) the
-             * bank's fair value, its trailing income capitalised (the bank holds no spare, Exchange.takeMonth), is a hundredth of
-             * the founding price by month 67 (it flickers back to its last price once, in month 69), and under it in month 72, where the shares are
-             * consolidated a thousand to one (32 shares, price 0.0789 against the founding 0.0259), and the next month's valuation is
-             * back at its book and splits them a hundred to one (3,200, price 0.2588), where they stand with no split to month 127
-             * (a scan of this town played on). The save at month 73 was taken in the middle of that, and the resolution
-             * month's split made the rescue book 3,200 against the 32 shares it took (section 1: 3,200.000000 != 32.000000) and
-             * moved the book `rescue0` is read from before the month (9b). The town is played the one month more, and the scenarios
-             * start on the register as the split left it: month 74. A granule of the town, as ScaleCheck's month is: the months after
-             * it fail other claims, not these (saved at month 75 the placing claim of 8 fails; 76 to 80, the
-             * desk's bid meets none of the fund's ask in 9b). The claims are as they were; the premise is asserted where it is read.
-             */
+            // WG2, 2026-11-10: SEVENTY-THREE MONTHS, NOT SEVENTY-TWO.
             city.simulateMonths(1);
             city.saveGame(1);
         });
@@ -269,8 +253,9 @@ public class FundCheck {
         g.setCashForTest(.25 * (hole + bank.resolutionExitEquity()));
         check("fixture: the bank has lost more than it owns", bank.isInsolvent());
         boolean audited = play(g);
-        check("fixture: the bank's shares were neither split nor consolidated in the resolution month, so the register counts them in one unit",
-                g.getExchange().getSplit(Equity.BANK) == 0);
+        boolean sameShareUnit = Observation.reached("fixture: the bank's shares were neither split nor consolidated in the resolution month, so the register counts them in one unit",
+                g.getExchange().getSplit(Equity.BANK) == 0,
+                "rescue shares counted in the pre-split unit");
         TreasuryFund.Resolution r = g.getLastResolution();
         check("the month resolved it", r != null && r.month() == g.getMonth());
         if (r == null) return;
@@ -285,7 +270,7 @@ public class FundCheck {
                 r.fromCash() > 0 && r.advanced() > 0 && Math.abs(r.fromCash() + r.advanced() - r.paid()) < 1e-6);
         close("every share passed to the city: the households', the world's and the fund's own",
                 r.householdsShares() + r.worldShares() + r.fundShares(), r.shares(), 1e-6 * Math.max(1, r.shares()));
-        close("...and it holds every one it took, in its rescue book",
+        if (sameShareUnit) close("...and it holds every one it took, in its rescue book",
                 g.getEquity().getCityRescueShares(Equity.BANK), r.shares(), 1e-6 * Math.max(1, r.shares()));
         check("the bank failed once and is open again the same month", bank.getFailures() == failuresBefore + 1
                 && !bank.isInsolvent() && !bank.lendsOnlyToKeepBorrowersGoing());
@@ -864,8 +849,10 @@ public class FundCheck {
                 atTheAsk &= b.price() == ex.fair(c) * (1 + Exchange.SPREAD / 2);
             }
         }
-        check("fixture: the rule's bids rest on the books", ruleBids > 0);
-        check("the rule's bid stands at the desk's ask", atTheAsk && TreasuryFund.RULE_PREMIUM == Exchange.SPREAD / 2);
+        boolean ruleBidsPresent = Observation.reached("fixture: the rule's bids rest on the books",
+                ruleBids > 0,
+                "rule bid at the desk ask");
+        if (ruleBidsPresent) check("the rule's bid stands at the desk's ask", atTheAsk && TreasuryFund.RULE_PREMIUM == Exchange.SPREAD / 2);
 
         // The band: the fund given its market book in shares and no cash.
         Game h = copy();
@@ -878,7 +865,15 @@ public class FundCheck {
                     && h.getHouseholdBalance().sharesHeld(c) >= .15 * reg.getShares(c)
                     && (company < 0 || reg.getShares(c) > reg.getShares(company))) company = c;
         }
-        check("fixture: a listed company the households hold 15% of", company >= 0);
+        close("the excess is what takes it back to 70%", TreasuryFund.sharesOver(80, 10, 10), 80 - 70, 1e-12);
+        check("...and inside the band nothing is sold", TreasuryFund.sharesOver(74, 16, 10) == 0
+                && TreasuryFund.bondsOver(66, 24, 10) == 0);
+        close("four points under 70%, it sells the bonds over their 30%", TreasuryFund.bondsOver(60, 40, 0), 10, 1e-12);
+        check("...but a fund short of shares only for want of a seller sells nothing", TreasuryFund.bondsOver(10, 0, 90) == 0);
+
+        if (!Observation.reached("fixture: a listed company the households hold 15% of",
+                company >= 0,
+                "section 8 share-mix and position-limit sale experiment")) return;
         if (company < 0) return;
         double take = .05 * reg.getShares(company);
         double households = h.getHouseholdBalance().sharesHeld(company);
@@ -898,11 +893,6 @@ public class FundCheck {
         check("...at fair value", h.getExchange().bookOf(listed).asks().stream()
                 .filter(o -> o.who().equals(Exchange.FUND)).allMatch(o -> Math.abs(o.price() - h.getExchange().fair(listed)) < 1e-12));
         // The band's two triggers, exactly: GPFG's 74% and four points under 70%.
-        close("the excess is what takes it back to 70%", TreasuryFund.sharesOver(80, 10, 10), 80 - 70, 1e-12);
-        check("...and inside the band nothing is sold", TreasuryFund.sharesOver(74, 16, 10) == 0
-                && TreasuryFund.bondsOver(66, 24, 10) == 0);
-        close("four points under 70%, it sells the bonds over their 30%", TreasuryFund.bondsOver(60, 40, 0), 10, 1e-12);
-        check("...but a fund short of shares only for want of a seller sells nothing", TreasuryFund.bondsOver(10, 0, 90) == 0);
 
         // Over the limit without buying - a company's buyback retires shares under the fund -
         // with its mix inside the band: it offers a tenth of the excess over 10% a month

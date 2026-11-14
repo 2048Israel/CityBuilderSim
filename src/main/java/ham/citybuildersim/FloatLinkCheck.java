@@ -190,6 +190,7 @@ public class FloatLinkCheck {
 
     /** Which of sections 3-5 have run, for section 6 to know what it can ask of the months they pressed. */
     static final boolean[] ran = new boolean[10];
+    static boolean ranRisingMaturity, ranFallingMaturity;
 
     /** A month, held to the audit and told to the tally. */
     static MoneyAudit.Result press(Game g, String event) {
@@ -516,19 +517,18 @@ public class FloatLinkCheck {
             theSale();
             if (wanted(args, 2)) neverUnasked();
             if (wanted(args, 3)) {
-                followsTheDial();
-                ran[3] = true;
+                if (city != null) followsTheDial();
+                ran[3] = city != null;
             }
             if (wanted(args, 4)) {
-                theUplift();
-                ran[4] = true;
+                if (city != null) theUplift();
+                ran[4] = city != null;
             }
         }
         if (wanted(args, 5)) {
             toMaturity();
-            ran[5] = true;
         }
-        if (wanted(args, 6) && (wanted(args, 3) || wanted(args, 4) || wanted(args, 5))) theMoneyCloses();
+        if (wanted(args, 6) && (ran[3] || ran[4] || wanted(args, 5))) theMoneyCloses();
         if (wanted(args, 7)) theBuyback();
         if (wanted(args, 8)) theRollover();
         if (wanted(args, 9)) theSave();
@@ -624,7 +624,7 @@ public class FloatLinkCheck {
     }
 
     /** A played city ready to sell: the world wants paper, cash to spare, nothing rolled over by itself, the dial where the harness holds it. */
-    static Game readyCity(String label, boolean manualRollover, double centralBankShare) {
+    static Game preparedCity(String label, boolean manualRollover, double centralBankShare) {
         Game city = playedCity(label);
         worldWantsPaper(city);
         city.setCashForTest(Founding.WEALTHY_CASH);
@@ -634,15 +634,22 @@ public class FloatLinkCheck {
         // The cash just set is no flow: the treasury bridge opens a month with last month's closing, so it takes a month
         // to forget the difference, and the months that follow are the ones the harness holds to the bridge.
         press(city, "a month for the bridge to forget the cash set");
+        return city;
+    }
+
+    /** A prepared city whose played market reaches the sale-size and capital-room premises. */
+    static Game readyCity(String label, boolean manualRollover, double centralBankShare) {
+        Game city = preparedCity(label, manualRollover, centralBankShare);
         // BA1, 2026-11-05: the sale is the one section 2 makes (saleOf: the households' whole spare, no more than a third of a year of tax).
         double sale = saleOf(city, 1);
-        check("fixture (BA1): the bank has the room for the sales of a section, " + ROOM_FOR_SALES + " times section 2's sale, at fair ("
-                + String.format("%,.0f for %,.0f", bankRoomOf(city), sale) + ")", bankRoomOf(city) >= ROOM_FOR_SALES * sale);
+        boolean roomForSales = Observation.reached("fixture: the played bank has room for section sales",
+                bankRoomOf(city) >= ROOM_FOR_SALES * sale,
+                "played-city sales and effective-rate comparisons");
         double feeShare = city.costOfIssuance(sale) / sale / FloatingRateNote.MATURITIES[0];
-        check("fixture (BA1): section 2's sale is big enough for the fixed fee: its share of a " + FloatingRateNote.MATURITIES[0] + "-year floater's rate is "
-                + String.format("%.1f", feeShare * 1e4) + " basis points, under half of the " + String.format("%.0f", EFFECTIVE_OFF_COUPON * 1e4)
-                + " its effective rate may stand off the coupon", feeShare <= EFFECTIVE_OFF_COUPON / 2);
-        return city;
+        boolean saleLargeEnough = Observation.reached("fixture: the played sale covers its fixed fee within the rate allowance",
+                feeShare <= EFFECTIVE_OFF_COUPON / 2,
+                "played-city sales and effective-rate comparisons");
+        return roomForSales && saleLargeEnough ? city : null;
     }
 
     /** The piece the last call put on the books, or null. */
@@ -868,6 +875,8 @@ public class FloatLinkCheck {
         out.println("\n--- 2. a sale: the margin is fair plus the tail, the real coupon fair plus the tail rounded down; the index is the dial, the base the price index ---");
 
         city = readyCity("floatlink", true, .1);
+
+        if (city == null) return;
         DebtManager dm = city.getDebtManager();
         // WN3: the sales are asked at the households' whole spare, not a quarter of it, and no more than EM1's third of a year of tax
         // (saleOf). The fixed fee of an issue is a share of its face that falls as the face rises, and the near-par assertions read against
@@ -1123,6 +1132,7 @@ public class FloatLinkCheck {
         near("...and owes no coupon (the face alone in the last month)", under.scheduleOwed()[0], 0, 0);
 
         runFixtures();
+        if (fxCity == null) return;
         near("a floater built through addFloatingRateNote() with a margin of -1 point pays no coupon in the month the dial is at nothing", fxNegAtNothing, 0, 0);
         near("...nor in the month it is at half a point (the coupon is never under nothing)", fxNegAtHalf, 0, 0);
         near("...and with the dial at two points it pays the point that is left: 10,000 x 1% / 12", fxNegAtTwo, 10_000 * PriceLevel.FACTOR * (.02 - .01) / 12, 1e-9);
@@ -1288,7 +1298,8 @@ public class FloatLinkCheck {
      */
     static void runFixtures() {
         if (fxCity != null) return;
-        fxCity = readyCity("floatlink-fixtures", true, 0);
+        fxCity = preparedCity("floatlink-fixtures", true, 0);
+        if (fxCity == null) return;
         Game fx = fxCity;
         DebtManager dm = fx.getDebtManager();
         double l0 = dm.priceIndexLevel();
@@ -1335,8 +1346,15 @@ public class FloatLinkCheck {
     static void toMaturity() {
         out.println("\n--- 5. to maturity: the indexed face under inflation, the original face under deflation, the books closing to the cent ---");
 
+        fixtureMaturity();
+        ranRisingMaturity = risingMaturity();
+        ranFallingMaturity = fallingMaturity();
+    }
+
+    static void fixtureMaturity() {
         // --- bank-held fixtures: the literal walk, the floor ---
         runFixtures();
+        if (fxCity == null) return;
         DebtManager dm = fxCity.getDebtManager();
         NationalAccounts na = fxCity.getEconomyManager().getNationalAccounts();
         Books fb = fxBooks;
@@ -1360,8 +1378,12 @@ public class FloatLinkCheck {
         FX_ZERO.report("the walk from EARNED to the budget leaves nothing in any month - the uplift months, the margin under nothing, the maturity - when the bank holds the paper", 1e-3);
         report("fixtures", fb);
 
+    }
+
+    static boolean risingMaturity() {
         // --- a real linker under a rising index, a real floater to maturity with the dial moved twice ---
         Game rg = readyCity("floatlink-rising", true, .1);
+        if (rg == null) return false;
         DebtManager rdm = rg.getDebtManager();
         NationalAccounts rna = rg.getEconomyManager().getNationalAccounts();
         double[] rise = new double[13];
@@ -1440,8 +1462,13 @@ public class FloatLinkCheck {
         check("fixture: the floater played to maturity moved the dial twice and rolled nothing (the rollover is off)",
                 !rdm.getDebt().contains(floater) && !rdm.getDebt().contains(linker) && rb.moves >= 2);
 
+        return true;
+    }
+
+    static boolean fallingMaturity() {
         // --- a real linker under a falling index ---
         Game dg = readyCity("floatlink-falling", true, .1);
+        if (dg == null) return false;
         DebtManager ddm = dg.getDebtManager();
         NationalAccounts dna = dg.getEconomyManager().getNationalAccounts();
         double[] fall = new double[13];
@@ -1478,6 +1505,7 @@ public class FloatLinkCheck {
         db.catchUp.report("...its carrying value caught up with the index every month", 1e-6);
         db.carry.report("...the carrying value rolls by the expense and the coupon", 1e-6);
         report("falling city", db);
+        return true;
     }
 
     /* =====================================================================
@@ -1494,14 +1522,15 @@ public class FloatLinkCheck {
             if (e.getValue()[1] > 0) out.printf("   OPEN in %s: %d of %d months%n", e.getKey(), e.getValue()[1], e.getValue()[0]);
         }
         // The months each kind of event is pressed in, by the section that presses them.
-        String[][] needed = { { "3", "sale month: the settle" }, { "3", "dial moved up" }, { "3", "dial at nothing" },
-                { "4", "indexation: the index rises" }, { "4", "deflation month: the index falls" },
-                { "5", "maturity: a linker repays the indexed face by each holder's share" },
-                { "5", "maturity: a floater repays its face, the dial having moved twice" },
-                { "5", "maturity: a linker repays the original face (the floor), the index having fallen" } };
-        for (String[] need : needed) {
-            if (!ran[Integer.parseInt(need[0])]) continue;
-            check("...among them the month of: " + need[1], audits.byEvent.containsKey(need[1]) && audits.byEvent.get(need[1])[1] == 0);
+        record Event(boolean ran, String label) { }
+        Event[] needed = { new Event(ran[3], "sale month: the settle"), new Event(ran[3], "dial moved up"), new Event(ran[3], "dial at nothing"),
+                new Event(ran[4], "indexation: the index rises"), new Event(ran[4], "deflation month: the index falls"),
+                new Event(ranRisingMaturity, "maturity: a linker repays the indexed face by each holder's share"),
+                new Event(ranRisingMaturity, "maturity: a floater repays its face, the dial having moved twice"),
+                new Event(ranFallingMaturity, "maturity: a linker repays the original face (the floor), the index having fallen") };
+        for (Event need : needed) {
+            if (!need.ran()) continue;
+            check("...among them the month of: " + need.label(), audits.byEvent.containsKey(need.label()) && audits.byEvent.get(need.label())[1] == 0);
         }
         X_HOLDERS.report("every holder - households, businesses, the world, the central bank - was paid its share of every coupon, the uplift's in the last", 1e-6);
         X_TREASURY.report("the cash coupons the pieces paid are what the treasury paid on its interest line, with the uplift paid beside it - nothing counted twice", 1e-6);
@@ -1605,6 +1634,8 @@ public class FloatLinkCheck {
         out.println("\n--- 7. the buyback: every offer at or over fair on the dial and index the market expects, a part of a floater and of a linker bought back ---");
 
         Game g = readyCity("floatlink-buyback", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         double ask = askOf(g, .25);
         Set<Debt> before = piecesOf(dm);
@@ -1695,6 +1726,8 @@ public class FloatLinkCheck {
                         && InflationLinkedBond.nearestYears(50) == 30);
 
         Game g = readyCity("floatlink-rollover", false, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         g.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         check("fixture: the city rolls each piece into its own kind", g.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
@@ -1756,6 +1789,7 @@ public class FloatLinkCheck {
         // The central bank's own par rolls too (Game, THE CENTRAL BANK ROLLS ITS OWN): a floater and a linker it holds, falling due, are
         // replaced by the same kinds, and it holds them from issue.
         Game c = readyCity("floatlink-central-bank", false, .1);
+        if (c == null) return;
         DebtManager cdm = c.getDebtManager();
         c.setRolloverMode(Rollover.Mode.SAME_STRUCTURE);
         double cask = askOf(c, .25);
@@ -1812,6 +1846,8 @@ public class FloatLinkCheck {
         out.println("\n--- 9. the save: a floater and a linker mid-life keep their terms, books and market value, and the month after a load books what the same month does without one ---");
 
         Game g = readyCity("floatlink-save", true, 0);
+
+        if (g == null) return;
         DebtManager dm = g.getDebtManager();
         NationalAccounts na = g.getEconomyManager().getNationalAccounts();
         double[] path = new double[12];

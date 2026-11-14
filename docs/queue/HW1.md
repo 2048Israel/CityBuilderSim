@@ -80,3 +80,14 @@ Jerus's later instructions through lanekeeper, the same afternoon:
   every pollution/health cost the model actually charges. His card showed
   79 wind farms and 12.8 km², sized only 37 months out. Report plant choices
   and sums before and after. Coal must win whenever its full sum wins.
+
+## Resume decision, 2026-11-13
+
+Jerus, about 21:30, asked "Finish HW1: fix its reserve error and adapt its
+assertions?": "yes" (lanekeeper message 20261113-224240-448-lanekeeper-e6f6).
+Merge current main, repair physical lost-output valuation and whole-plan
+comparison, make cards agree, adapt the changed-rule assertions without
+moving their fixtures, and retain shortage/plant information. Do not change
+buildings.json. EI1 now makes only M1 and F1 ensemble ship stops; all other
+criteria remain information. Run the final ensemble against 0.9.98, then
+the provisional-record dry run under GG1, and finish ready.

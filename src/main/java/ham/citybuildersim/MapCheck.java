@@ -1361,7 +1361,9 @@ public class MapCheck {
         check("bought ground inside the cells already open is built on about as the cells opened after the purchase are (S3, first block): " + on3[1] + " of " + on3[0] + " in the open cells against "
                 + on3[3] + " of " + on3[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: " + off3[1] + " of " + off3[0] + " against " + off3[3] + " of " + off3[2],
                 openShareHolds(on3) && !openShareHolds(off3));
-        if (open4) {
+        if (Observation.reached("fixture: the second bought block has open and newly occupied closed cells",
+                open4,
+                "second-block FX9 share")) {
             check("...the same for the second block (S4): " + on4[1] + " of " + on4[0] + " in the open cells against " + on4[3] + " of " + on4[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: "
                     + off4[1] + " of " + off4[0] + " against " + off4[3] + " of " + off4[2], on4[2] > 0 && openShareHolds(on4) && !openShareHolds(off4));
         }
@@ -10199,7 +10201,7 @@ public class MapCheck {
         out.printf("      %d boxes at %.2f px a plot: %d as every plot under them says, %d taking an offer, %d several; %d of %d offers taken by"
                 + " some and %d missed by others; a box in one free plot of each takes it alone for %d%n", BOXES, f.scale(), boxesExact,
                 boxesTaking, boxesSeveral, takenBy.size(), listing.size(), missedBy.size(), alone);
-        check("fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others",
+        Observation.reached("fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others",
                 boxesTaking > 0 && boxesSeveral > 0 && takenBy.size() == listing.size() && missedBy.size() == listing.size());
         check("a box takes exactly the offers whose free ground it meets - every plot under it tried - in the order given",
                 boxesExact == BOXES);
@@ -10334,6 +10336,7 @@ public class MapCheck {
         LandMap.Card shortCard = LandMap.card(g, three);
         DebtQuote bond = shortCard.bond(), note = shortCard.note();
         DebtQuote again = g.quoteLongBondForCash(g.landCashGap(three), Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE);
+        DebtQuote noteAgain = g.quoteTBill(g.landCashGap(three), Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE);
         boolean bondRight = bond != null && bond.equals(again) && bond.duration() == Game.BUILD_BOND_YEARS && bond.requested() == shortCard.gap()
                 && Math.abs(bond.faceValue() / Game.BUILD_BOND_GRANULE - Math.rint(bond.faceValue() / Game.BUILD_BOND_GRANULE)) < 1e-9
                 && bond.cashReceived() >= shortCard.gap();
@@ -10351,9 +10354,13 @@ public class MapCheck {
                 bond == null ? 0 : bond.cashReceived(), note == null ? "none" : String.valueOf(note.duration()), boughtShort);
         check("fixture: three offers the treasury is short of", shortCard.funding() && shortCard.gap() > 0
                 && sameFigure(shortCard.gap(), shortCard.local() - shortCard.before()));
-        check("short, the card's bond is the funding page's first: the " + Game.BUILD_BOND_YEARS + "-year term for the gap, its face on the granule,"
+        boolean fundingCovered = Observation.reached("fixture: the played market covers the land card's bond and note",
+                !again.isEmpty() && again.cashReceived() >= shortCard.gap()
+                    && !noteAgain.isEmpty() && noteAgain.cashReceived() >= shortCard.gap(),
+                "card bond and note equivalence, issued bond purchases");
+        if (fundingCovered) check("short, the card's bond is the funding page's first: the " + Game.BUILD_BOND_YEARS + "-year term for the gap, its face on the granule,"
                 + " its cash covering it - and the note beside it", bondRight && noteRight);
-        check("...and issued, the card's bond buys them all", boughtShort == three.size());
+        if (fundingCovered) check("...and issued, the card's bond buys them all", boughtShort == three.size());
 
         // Short from the vault: the dollar bond and note for the vault's gap, or none while the window abroad is shut.
         g.setLandPaidFromVault(true);
@@ -13938,12 +13945,7 @@ public class MapCheck {
         CityMap far = CityMap.canonical(copy, r -> copy.amountsInOrder(r), city.getMapTypes(), counts);
         Redraw pl = new Redraw("the played city", far, counts, GROW_PER_MILLE, false, false, false, false);
         pl.month(SETTLE, -1, false);
-        // WN3 (after EM1): the played city's first month of growth moved the stamp's view. Two of its four districts, (0,-1) and (-1,-1), held no
-        // building at the settle; one more building of each type put 191 and 612 cells in them, the built-up box the frame is drawn from grew from
-        // 224 x 144 to 264 x 192 plots and the stamp from 5 plots a pixel to 6 - where the city before the merge held its view through all 8 months.
-        // A view that moves is drawn anew, every layer with it: not the land layer's purchase-only redraw this section is about. The fixture grows
-        // the city (GROW months, not judged) until a month leaves the view as it was, and the months before and after the purchase are the ones
-        // judged from there, as many as before.
+        // WN3 (after EM1): the played city's first month of growth moved the stamp's view.
         int warm = 0;
         while (warm < PLAYED_WARM_MAX) {
             RedrawMonth w = pl.month(GROW, -2 - warm++, false);

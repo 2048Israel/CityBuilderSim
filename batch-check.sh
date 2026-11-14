@@ -78,7 +78,8 @@ record_reds() {
         cat "$CBS_KNOWN_REDS"
     else
         recorded_reds
-        [ ! -f docs/notes/known-reds.txt ] || cat docs/notes/known-reds.txt
+        ID=$(git branch --show-current); ID=${ID#batch/}; ID=$(printf '%s' "$ID" | tr '/' '-')
+        sh tools/known-reds.sh "$ID" "docs/queue/$ID-ship.md" || return 1
     fi
 }
 suite_verdict() {
@@ -93,7 +94,7 @@ finish() { [ "$FAILED" = 0 ] || exit 1; exit "$SUITE_EXIT"; }
 # --- --judge LOG: the verdict on a saved log, nothing built, nothing run, no lock (FW7) ---
 if [ "$JUDGE" = 1 ]; then
     [ -z "$CBS_KNOWN_REDS" ] || KNOWN_FROM="$CBS_KNOWN_REDS"
-    record_reds > "$OUT/known-reds.txt"
+    record_reds > "$OUT/known-reds.txt" || exit 1
     suite_verdict
     finish
 fi
@@ -159,12 +160,13 @@ if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ] && [ "$#" = 0 ]; then
 fi
 if [ "$FAST" = 0 ] && [ "$RUNSUITE" = 1 ]; then
     touch "$OUT/.started"   # the logs this run writes are newer; an earlier run's are not read
-    record_reds > "$OUT/known-reds.txt"   # AllChecks tags its red lines against it (FW7); UTF-8 so a non-ASCII label reads the same to Java and to awk
+    record_reds > "$OUT/known-reds.txt" || exit 1   # Same retirements and transfers as the gate (GG1).
     rm -f "$OUT/timing.tsv"   # the figures of this run alone (TM3)
     # -Xms64m: the runner holds little; its default initial heap was 616 MB of commit (SP1)
     java -Xms64m $TIMED -Dcbs.timing.tsv="$OUT/timing.tsv" -Dcbs.knownReds="$OUT/known-reds.txt" -Dstdout.encoding=UTF-8 -cp "$CP" ham.citybuildersim.AllChecks -f "$@" 2>&1 | quiet | tr -d '\r' > "$SUITE"
     suite_verdict
     grep ' SOFT, not counted ' "$SUITE" | sed 's/^/timing    /'
+    grep ' OBSERVED, not counted: ' "$SUITE" | sed 's/^/observed  /'
     grep '^memory: ' "$SUITE" | sed 's/^memory: /memory    /'   # the starts the commit charge held (SP1)
     # what did not run here: the Earth harnesses' full-file sections, BuildMenuCheck without JavaFX
     find "$OUT" -name 'Earth*Check.log' -newer "$OUT/.started" -exec grep -l '^earth-2.bin not named' {} + 2>/dev/null | grep -q . \

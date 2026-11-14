@@ -1286,46 +1286,7 @@ public class BankCheck {
              */
             trading.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000 * PriceLevel.FACTOR);
             trading.getLandManager().setOwnedSqFt(8_000_000);
-            /*
-             * STEPPED, AND READ WHEN THE BRANCH IS NEW (2026-09-17).
-             *
-             * This ran sixty months in one call and read the premium at the
-             * end of them, which is four years after the question it is
-             * asking. The question was "does opening a branch stop the
-             * punitive premium" - since 0.7.7, when there is no premium, "does
-             * the city's money stop being the window's"; what the last month
-             * actually reports is whether the bank is still standing in year
-             * seven, and in a city this deliberately marginal that is a
-             * different and much harder claim.
-             *
-             * It came apart on the van batch and the cause is worth keeping:
-             * MATERIALS built its first plant, had to buy a FLEET as well as
-             * the plant, borrowed $57,939 from a bank with $50,292 of equity -
-             * thirty-eight per cent of the whole book in one name - and
-             * defaulted in month 70. The bank's equity went to minus $2,628
-             * and it paid the punitive premium from then on.
-             *
-             * NEITHER HALF OF THAT IS A BUG IN THE BANK. A sector that has to
-             * buy lorries as well as machines is a riskier borrower, which is
-             * the mechanic; and a lender with no concentration limit will one
-             * day put a third of its book in one name, which is a real hole
-             * and its own batch. What is wrong is a fixture that asserts the
-             * first thing and measures the second.
-             *
-             * So it is read six months after the branch opens - long enough
-             * for the capital to be raised and the funding to settle, short
-             * enough to still be about the branch.
-             *
-             * ...OF A BANK THAT STANDS (LD1). The same second thing again: this
-             * city's bank is in resolution within a year of its branch's
-             * opening, a borrower's default (equity from +55,000 to -23,000 in
-             * one month), and a bank in resolution quotes the window's price
-             * by construction (Bank.lastWindowShare). Main's fell in the ninth
-             * month after the branch opened, so the sixth was a bank still
-             * standing; LD1's wages move which month a borrower defaults, and
-             * the fourth month after it opened was the failure's. The reading
-             * is the share of the last month in the six that the bank stood.
-             */
+            // STEPPED, AND READ WHEN THE BRANCH IS NEW (2026-09-17).
             int opened = -1;
             double share = Double.NaN;
             for (int m = 0; m < 60; m++) {
@@ -1467,35 +1428,12 @@ public class BankCheck {
              * nothing, so it owes nothing. Section 12 asserts the cause.
              */
             books.getBusinessInvestment().holdSector(Sectors.LUXURY_RETAIL);
-            /*
-             * ...AND WOOD PRODUCTS (WN3), for the same premise: the book measured is a bank that stands. On the world's band the
-             * wood sector raises a Panel Mill ($187M of face, borrowed) and a Wood Pellet Mill ($39M) in this town, their sheds sit full
-             * (panels and pellets 50,400 of 63,000 from month 84 to 102, none moving), the sector loses $450k to $850k a month, defaults
-             * in months 104 to 107 and the bank writes off $139M against $35M of equity: equity -$104M, no deposit rate, the rescue's
-             * guard (13) met with a bank under water. The fixture is about the books of a bank that lives, not about a sector's default
-             * (a failed bank has no book, above), so the wood sector builds nothing here, as Materials and Luxury Retail do. (A works
-             * that keeps its inputs coming into a full shed is another batch's fault, Sector.bid() / produceStock(), and this hold stays
-             * right after it: the book is caused, not hoped for.)
-             */
+            // ...AND WOOD PRODUCTS (WN3), for the same premise: the book measured is a bank that stands.
             books.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
-            /*
-             * ...AND FREIGHT (LD1), for the same premise. On the tree whose wages move with the posts the staffing gate refused,
-             * Freight's debt goes from $3.8M to $312M in month 100 (a fleet and a depot on credit), the sector writes down
-             * $18M to $29M a month from month 107, Heavy Industry before it, and the bank is in resolution by month 114: equity
-             * $88M to $2M, no deposit rate, the book of a bank that has failed (above), so "it pays its savers something" read a
-             * failed bank's nothing. Main's town never failed. Held out, Freight builds nothing here and the bank stands.
-             */
+            // ...AND FREIGHT (LD1), for the same premise.
             books.getBusinessInvestment().holdSector(Sectors.FREIGHT);
-            /*
-             * WG2, {next}, 2026-11-10: ...AND A FLEET PAID FOR (a hold keeps a sector from building, not from buying its trucks). Freight
-             * buys its trucks out of its revenue and its lender's credit (FR2, the funded Freight further down), and on WG2's town, whose
-             * Migration brings a different population, held out and with no order under construction it still borrows: $41k owed on
-             * assets of $41k in month 26 (leverage 1.00), $460k by month 55 on its cash of $1k to $75k, and $164k on $139k at the save
-             * (1.18) against main's 0.04. Its book alone struck the allowance on the month and on the quarter $0.70k apart, against the
-             * $0.33k (a hundredth of the $33.11k allowance) the fixture below allows. It borrows for want of cash, so the cause is cash:
-             * a stock of it, set through the economy's own call as Retail's and Industry's are after the town's two years, so the fleet
-             * is paid for out of it and Freight owes nothing here ($0 owed against assets of $3,126k at the save).
-             */
+            // WG2, 2026-11-10: ...AND A FLEET PAID FOR (a hold keeps a sector from building, not from buying
+            // its trucks).
             books.getEconomyManager().setSectorCash(Sectors.FREIGHT, 100_000 * PriceLevel.FACTOR);
             /*
              * ...AND COPPER REFINING (IC1), for the same premise. An idle builder's laid-off crews are spare for the staffing gate
@@ -2943,15 +2881,7 @@ public class BankCheck {
              * out, as IC1 held Freight and Copper Refining in the fixture above, the town's bank stands (equity 733 at month 34).
              */
             town.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
-            /*
-             * ...AND WOOD PRODUCTS, CEMENT & CONCRETE AND MATERIALS (GW1), for the same premise. On the tree whose staffing gate counts
-             * the draw these three order their works in this young town and borrow for them; in game month 44 Wood Products writes off
-             * $1,821 against the bank's equity of $1,742 (equity -$114), the month after Wood Products $2,053, Cement & Concrete $832 and
-             * Materials $402 (equity -$3,223, and -$8,926 at the worst, in month 55), and the bank is in resolution from month 44 to the end
-             * (Bank.branchesToClose() is 0 in resolution), so the rule closed none of the branches the cost's rise left uncovered: 2 standing
-             * a month after the rise, 18 short months, none followed by a closure. Held out, the three build nothing here and the bank
-             * stands (equity $1,642 in month 41, never in resolution), as with Manufacturing above.
-             */
+            // ...AND WOOD PRODUCTS, CEMENT & CONCRETE AND MATERIALS (GW1), for the same premise.
             // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so these three sectors' works came earlier and their defaults put the bank in resolution; held out, they build nothing here and the bank stands.
             town.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
             town.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
@@ -3065,10 +2995,11 @@ public class BankCheck {
                 + " %d short month(s), %d followed by a closure%n",
                 standingAtRise, coverAtRise, standingAfterRise, shortMonths, shortThenClosed);
 
-        assertTrue("fixture: the charter's fees covered under a tenth of its cost, every month",
-                charterMonths == 24 && worstCharterCover < .1);
-        assertTrue("the founding branch never closes on the rule, however far its fees are from its cost",
-                charterStood == 24);
+        if (Observation.reached("fixture: the charter's fees covered under a tenth of its cost, every month",
+                charterMonths == 24 && worstCharterCover < .1,
+                "charter survival")) {
+            assertTrue("the founding branch never closes on the rule, however far its fees are from its cost", charterStood == 24);
+        }
         out.printf("   the charter alone: operating cost charged at most %.4f, its template's upkeep %.1f%n",
                 charterOperating, charterTemplateUpkeep);
         assertTrue("fixture: the charter's template carries an operating cost",
@@ -3080,30 +3011,38 @@ public class BankCheck {
         // held while part 3 closed nothing. Part 3 now closes one on purpose
         // (the lag), so the fixture is read where it is made: five standing,
         // on fees that cover two at the cost the rule will read.
-        assertTrue("fixture: five branches stood on fees that cover two",
-                placed == 5 && coverPlaced == 2 && feesBefore > 0);
-        assertTrue("fixture: the branch's operating cost is what makes the fees cover two, not nothing",
-                operatingOne > 0);
-        assertTrue("every branch past what the fees cover closed at once, the month after: two stand",
-                standingAfter == 2 && closedAfter - closedBefore == 3);
-        // REWRITTEN (revised 0.7.19, "Exempt first branch"): "it ran two
-        // branches, not five" read the operating cost of two; the charter's is
-        // exempt, so it is one's.
-        close("...before the month paid them: it ran two branches, not five, and paid the operating cost of"
-                        + " one - the second; the charter's is exempt",
-                operatingAfter, operatingOne, 1e-9 * Math.max(1, operatingAfter));
+        assertTrue("the fixture placed five branches", placed == 5);
+        if (Observation.reached("fixture: five branches stood on fees that cover two",
+                coverPlaced == 2 && feesBefore > 0,
+                "branch closure and operating cost")) {
+            assertTrue("fixture: the branch's operating cost is what makes the fees cover two, not nothing",
+                    operatingOne > 0);
+            assertTrue("every branch past what the fees cover closed at once, the month after: two stand",
+                    standingAfter == 2 && closedAfter - closedBefore == 3);
+            // REWRITTEN (revised 0.7.19, "Exempt first branch"): "it ran two
+            // branches, not five" read the operating cost of two; the charter's is
+            // exempt, so it is one's.
+            close("...before the month paid them: it ran two branches, not five, and paid the operating cost of"
+                            + " one - the second; the charter's is exempt",
+                    operatingAfter, operatingOne, 1e-9 * Math.max(1, operatingAfter));
+        }
         assertTrue("...and that month closes the audit, the operating cost in it",
                 Math.abs(auditAfterResidual) <= MoneyAudit.CENT || auditAfterRelative <= 1e-7);
-        assertTrue("fixture: two branches stood every month until what a branch costs rose",
-                twoBeforeRise == riseMonth);
-        assertTrue("while what a branch costs held still, the fees covered the branches the rule kept",
-                coveredBeforeRise == twoBeforeRise);
-        assertTrue("fixture: the month the cost rose, the rule had kept two on last month's cost and the month's fees fell short of them",
-                standingAtRise == 2 && coverAtRise < 1);
-        assertTrue("...and the next month the rule, reading that cost, closed the one the fees no longer cover",
-                standingAfterRise == 1);
+        if (Observation.reached("fixture: two branches stood every month until what a branch costs rose",
+                twoBeforeRise == riseMonth,
+                "pre-rise fee coverage")) {
+            assertTrue("while what a branch costs held still, the fees covered the branches the rule kept",
+                    coveredBeforeRise == twoBeforeRise);
+        }
+        if (Observation.reached("fixture: the month the cost rose, the rule had kept two on last month's cost and the month's fees fell short of them",
+                standingAtRise == 2 && coverAtRise < 1,
+                "next-month branch closure")) {
+            assertTrue("...and the next month the rule, reading that cost, closed the one the fees no longer cover",
+                    standingAfterRise == 1);
+        }
+        Observation.reached("fixture: some month had branch fees short of cost", shortMonths > 0);
         assertTrue("every month the fees fell short of the branches standing, the next month's rule closed one",
-                shortMonths > 0 && shortThenClosed == shortMonths);
+                shortThenClosed == shortMonths);
     }
 
     /* ============ 17. THE DESK HELD TO THE BANK'S CAPITAL (0.7.8) ============

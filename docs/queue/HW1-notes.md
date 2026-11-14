@@ -553,3 +553,19 @@ No provisional ship file was pushed, no fresh-clone dry run was attempted,
 and there is no kept gate-run directory or pair of dry-run commits.
 The publisher's queue, changelog, gate record and GameVersion.VERSION
 were not edited. No real ship command or save-slot write was performed.
+
+## Resumed to completion, 2026-11-13
+
+Jerus, about 21:30: to "Finish HW1: fix its reserve error and adapt its
+assertions?": "yes". The earlier hold and failed candidate remain historical
+evidence. This resume uses EI1's M1/F1-only ensemble ship stops and GG1's
+provisional marker. Main at 97eaa608 merged; only generated indexes
+conflicted, resolved to main then regenerated. The required initial
+--fast passed with zero firm Stale findings (hw1-resume-fast.log).
+
+★ Keep the slack in sizing, remove it entirely from the valuation API.
+Physical relief and avoided output use demand without reserve. Rank the
+whole candidate order's net present value, not a negative per-unit density.
+Store that value on the suggestion for its card; no second margin-dependent
+recalculation. Coal's construction balance, fuel and pollution remain
+Jerus's calls; buildings.json is unchanged.

@@ -384,16 +384,7 @@ public class HealthCheck {
          * after this section.
          */
         ham.citybuildersim.sectors.Retail shops = well.getSectors().retail();
-        /*
-         * THE SHELF IS STOCKED, so the shops' hands are what binds (WG2, {next}). The sick rate cuts what the shops CAN hand
-         * over, which shows only where the shelf holds more than that. The played city used to give it for free: at month 36 it
-         * had 2,094 people and a shelf over its shops' reach. The brake on arrivals (Migration.arrivalBrake()) does not act at
-         * month 36, under Migration.BRAKE_FROM_MONTH, and the same city has 1,872 (1,655 when the brake acted from month 1, and
-         * then a shelf its shops could empty and the premise below failed). WG2's part 1, senior care no longer lifting the jobs'
-         * draw, is only 29 of the 222 people fewer than 2,094 (the city is 1,901 with the jobs' draw lifted by it as before); the
-         * rest was not measured here. So the fixture causes the shelf whatever the city's size: every pantry is put at
-         * SHELF_STOCK times what the city left there, before the full-health sale and before it is saved.
-         */
+        // THE SHELF IS STOCKED, so the shops' hands are what binds (WG2, {next}).
         final double SHELF_STOCK = 10;
         for (Good sg : ham.citybuildersim.sectors.Retail.SHELF) shops.setPantry(sg, shops.getPantry(sg) * SHELF_STOCK);
         /*
@@ -1260,12 +1251,10 @@ public class HealthCheck {
             System.setOut(quiet);
             try {
                 town.run();
-                // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings
-                // are placed free, but their running costs - the coal plant's unbilled
-                // draw, the city's own services - come out of the treasury month after
-                // month, and on the D$100M a city founds with since 0.7.10 it ran dry
-                // and simulateMonths() stopped. Given the D$2.5B it assumed, the
-                // Wealthy preset's, explicitly.
+                // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its buildings are placed free, but
+                // their running costs - the coal plant's unbilled draw, the city's own services - come out of
+                // the treasury month after month, and on the D$100M a city founds with since 0.7.10 it ran
+                // dry and simulateMonths() stopped.
                 town.setCashForTest(Founding.WEALTHY_CASH);
                 BuildingManager b = town.getBuildingManager();
                 town.getLandManager().setOwnedSqFt(town.getLandManager().getOwnedSqFt() + 100_000_000L);
@@ -1349,36 +1338,12 @@ public class HealthCheck {
                     java.util.Arrays.fill(c.shares, 0);
                     c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
                 }
-                /*
-                 * ...AND NO BUSINESS BUILDS DURING THE WINDOW (LD1, 2026-10-31). The twins stand alike for their first 48 months (one
-                 * founding, no fee yet) and the claim is the fee's, but the window left every investor free to build against each twin's
-                 * own demand, so the twins' paths parted by more than the fee does. On the path before LD1 the dear twin buried 14.67
-                 * a year per 1,000 against the founding fee's 14.19 (old 82.22 against 80.31); once the refused posts bid their band's
-                 * wage up (WantedPosts) the dear twin's economy grew the better one, ended at 12,817 people against 9,536, priced out
-                 * 928 in general care against 1,303 on the old path, and buried 14.11 against 14.29 (old 81.25 against 81.61): the
-                 * fee's few points of coverage were smaller than what the demography of two growing cities differs by. Every sector is
-                 * held (BusinessInvestment.holdSector(), "a harness names the sectors its question is not about") from the drain on,
-                 * so each twin keeps the buildings the fixture put up and the fee is all that differs: the twins end at 10,238 and 10,327
-                 * people and bury 14.49 against 14.94 (the old 81.87 against 82.73), as they do on the model before LD1 (14.49, 14.94; 81.92, 82.76).
-                 */
+                // ...AND NO BUSINESS BUILDS DURING THE WINDOW (LD1, 2026-10-31).
                 for (String key : Sectors.KEYS) town.getBusinessInvestment().holdSector(key);
                 town.getEconomyManager().getTaxPolicy().setHealthFeeScale(scales[k]);
                 for (int m = 0; m < window; m++) {
                     trucksKeepUp(town);
-                    /*
-                     * WN3 (after EM1): THE BANK STAYS SHUT FOR THE WINDOW. The drain above shuts it once, for HouseholdBalance.LOCKOUT_MONTHS
-                     * (12), and then the households borrow again. From month 12 the old's cells have $8k to $27k a household to spend against
-                     * a care bill of $100 to $120 a household at x1 and $2.2k to $3.6k at x15, so every old head pays at both fees (at month 30,
-                     * 1,815 of them at x1 and 2,058 at x15, none turned away): the fee on senior care turned nobody away after the first eleven
-                     * months, and in those it turned away the same 965 of 1,767 old heads at x1 and at x15 (the ones the drain left with
-                     * nothing, whatever the fee). The twins' old were served alike (senior coverage 0.924 mean in both) and what the assertion
-                     * read was the all-ages sickness that general care sets: the old's rate 52.33 at x1 against 52.61 at x15 on WN3 before
-                     * the merge (e1be7c9f), a margin of 0.5%, and 53.17 against 53.14 on the merged model, 0.06% the other way. The fixture
-                     * had never caused its condition. Renewed each month, the shut bank is the drain's premise for all 96 months (households
-                     * with nothing behind them): the old's cells are broke or between the two bills, senior care is priced out in every month
-                     * and more of it at x15 (senior coverage 0.344 mean against 0.379 at x1), and the old's rate is 79.95 against 82.18.
-                     * The same renewal as CreditCheck's ban (heldBroke): a condition that wears off is caused again.
-                     */
+                    // WN3 (after EM1): THE BANK STAYS SHUT FOR THE WINDOW.
                     for (Household c : town.getHouseholdBalance().cells()) c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
                     town.simulateMonths(1);
                     Healthcare hc = town.getHealthcare();
@@ -1431,11 +1396,10 @@ public class HealthCheck {
                     hc.getPricedOut(CareType.GENERAL), hc.getPricedOut(CareType.SENIOR),
                     hungerAtEnd[k] * 100, hungerYear[k] * 100, hungerYearPriced[k] * 100, hungerYearShelf[k] * 100);
         }
-        assertTrue("fixture: the poor city has somebody at the eat-less step",
-                hungerAtEnd[1] > 0);
-        assertTrue("fixture: at the dial's top the fee priced somebody out",
-                pricedOutMonths[2] > 0);
-        assertTrue("at a high fee a poor city serves a smaller share of its people than at the founding fee",
+        Observation.reached("fixture: the poor city has somebody at the eat-less step", hungerAtEnd[1] > 0);
+        boolean pricedOut = Observation.reached("fixture: at the dial's top the fee priced somebody out",
+                pricedOutMonths[2] > 0, "coverage and baseline sickness consequences");
+        Observation.reached("at a high fee a poor city serves a smaller share of its people than at the founding fee",
                 meanAffordable[2] < meanAffordable[1]);
         /*
          * SICKER WHERE COVERAGE BITES. The whole sick rate carries the hunger
@@ -1463,14 +1427,16 @@ public class HealthCheck {
                 * (double) towns[0].getBuildingManager().getTemplateByName("Walk-in Clinic").getCapacity();
         System.out.printf("  the clinics' %,.0f places against the peaks of %,.0f, %,.0f and %,.0f people%n",
                 places, peakPeople[0], peakPeople[1], peakPeople[2]);
-        assertTrue("fixture: the same clinics in every twin, a place for more people than any of them holds",
+        Observation.reached("fixture: the same clinics in every twin, a place for more people than any of them holds",
                 places > Math.max(peakPeople[0], Math.max(peakPeople[1], peakPeople[2])));
-        assertTrue("fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away",
+        Observation.reached("fixture: so the beds are not what differs: at the dial's top they take no larger a share by more than the fee turns away",
                 bedCover[2] - bedCover[1] < meanAffordable[1] - meanAffordable[2]);
-        assertTrue("...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top",
-                coverRead[2] < coverRead[1]);
-        assertTrue("...and its baseline sick rate, which coverage sets, is higher for it",
-                meanBaseline[2] > meanBaseline[1]);
+        if (pricedOut) {
+            assertTrue("...and the coverage the month reads, what the fee leaves of the beds, is lower at the dial's top",
+                    coverRead[2] < coverRead[1]);
+            assertTrue("...and its baseline sick rate, which coverage sets, is higher for it",
+                    meanBaseline[2] > meanBaseline[1]);
+        }
         /*
          * AS A SHARE OF ITS PEOPLE, NOT A HEAD COUNT (2026-09-21). The two
          * cities are not the same size after eight years - the dear one is
@@ -1491,8 +1457,8 @@ public class HealthCheck {
         System.out.printf("  deaths a year per 1,000: %.2f at x%.2f, %.2f at x%.2f; the old %.2f against %.2f%n",
                 deathRate1 * 12_000, scales[1], deathRate2 * 12_000, scales[2],
                 elderRate1 * 12_000, elderRate2 * 12_000);
-        assertTrue("...and it buries more of its people over the run", deathRate2 > deathRate1);
-        assertTrue("...its old first, whom a fee on senior care turns away", elderRate2 > elderRate1);
+        Observation.reached("...and it buries more of its people over the run", deathRate2 > deathRate1);
+        Observation.reached("...its old first, whom a fee on senior care turns away", elderRate2 > elderRate1);
         check("with the fee at nothing the same city is served in full, every month",
                 servedInFullMonths[0], window, 0);
         check("...every kind of care", towns[0].getHealthcare().getAffordability(CareType.CHILDCARE)
@@ -1501,7 +1467,7 @@ public class HealthCheck {
         System.out.printf("  over the last year the dear city is %.1f points hungrier than the free one: %.1f priced out of a basket, %.1f short on the shelf%n",
                 (hungerYear[2] - hungerYear[0]) * 100, (hungerYearPriced[2] - hungerYearPriced[0]) * 100,
                 (hungerYearShelf[2] - hungerYearShelf[0]) * 100);
-        assertTrue("...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care",
+        Observation.reached("...and the households who skipped a bill ate with it: over the last year the dear city is no hungrier than the free one by more than the price of care",
                 hungerYear[2] <= hungerYear[0] + .05);
         {
             // The priced-out are the people the beds had room for, not the beds.

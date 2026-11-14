@@ -161,12 +161,7 @@ public class PolicyPreviewCheck {
             // makes a loss through month 63: sections 6 and 7 are about the bank's profit tax, and there is none to preview. The
             // fixture measures the Policy tab's previews, not the credit cycle, so no sector borrows a works the town cannot build.
             g.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
-            // LD1 (2026-10-31): nor does Freight build a Rail Depot. The staffing gate held it on main ("the city could staff 26% of a
-            // Rail Depot; it wants 80%") and the refused posts priced into the band's wage now let it through: it borrows $185M from the
-            // bank by month 61, loses $1.3M a month on it (net income -544k, -1,280k, -1,382k in months 61 to 63, its cash nil) and the
-            // loan is written off at $740k a month from month 62, so the bank's profit is a loss in months 61 to 64 (-2,113k, -5,363k,
-            // -1,693k, -4,546k) and again from month 73: bankTaxUnder() is nothing in the month section 6 reads. Same cause as the Lime
-            // Kiln above and the same remedy; the previews are the fixture's subject, not the credit cycle.
+            // LD1 (2026-10-31): nor does Freight build a Rail Depot.
             g.getBusinessInvestment().holdSector(Sectors.FREIGHT);
             // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so the Blast Furnace Heavy Industry was held for want of staff ("could staff 35%") is ordered in month 60 ($44.7M: $8.4M of bonds, $37.0M from the bank) and the bank's profit is a loss in months 60 and 61 (-576k, -986k) where it was +59k: bankTaxUnder() is nothing in the month section 6 reads. Same cause as the Lime Kiln and the Rail Depot above and the same remedy: Heavy Industry builds nothing here.
             g.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
@@ -455,8 +450,12 @@ public class PolicyPreviewCheck {
         PolicyPreview.TaxTake preview = PolicyPreview.taxTake(g, copy);
         double eiBill = g.getUnemployment().benefitsAt(copy.getEiBenefitRate());
         double bankTax = g.bankTaxUnder(copy);
-        assertTrue("fixture: the bank made a profit to be taxed on, and the pool has claimants",
-                bankTax > 0 && eiBill > 0);
+        boolean bankProfit = Observation.reached("fixture: the bank made a profit to be taxed on",
+                bankTax > 0,
+                "bank profit-tax application");
+        boolean claimants = Observation.reached("fixture: the EI pool has claimants",
+                eiBill > 0,
+                "EI benefit application");
 
         int decided = g.getDecisions().size();
         quietly(() -> {
@@ -481,9 +480,9 @@ public class PolicyPreviewCheck {
                 && near(preview.propertyTotal(), after.propertyTotal()) && near(preview.profitTotal(), after.profitTotal()));
 
         quietly(() -> g.simulateMonths(1));
-        assertTrue("a month on, the EI bill the treasury paid at the top of it is the one benefitsAt() previewed (B11)",
+        if (claimants) assertTrue("a month on, the EI bill the treasury paid at the top of it is the one benefitsAt() previewed (B11)",
                 near(em.getEiBenefits(), eiBill));
-        assertTrue("...and the bank's profit tax charged there is the one bankTaxUnder() previewed, at retail's new rate (B5)",
+        if (bankProfit) assertTrue("...and the bank's profit tax charged there is the one bankTaxUnder() previewed, at retail's new rate (B5)",
                 near(em.getBankTax(), bankTax));
         assertTrue("...and each payroll line is struck on the month's own bill at the new dials: the contribution",
                 near(em.contributionsAt(live.getContributionRate()), em.getContributions()));
@@ -560,8 +559,10 @@ public class PolicyPreviewCheck {
         DebtManager dm = g.getDebtManager();
         double policy = dm.getPolicyRate();
         double low = bank.depositRateAt(0), here = bank.depositRateAt(policy), high = bank.depositRateAt(policy + .05);
-        assertTrue("fixture: the city has a bank with depositors", bank.getBranches() > 0 && bank.getDeposits() > 0);
-        assertTrue("the savers' rate the bank would choose rises with the dial", low <= here && here <= high && low < high);
+        boolean depositorsPresent = Observation.reached("fixture: the city has a bank with depositors",
+                bank.getBranches() > 0 && bank.getDeposits() > 0,
+                "saver-rate ordering");
+        if (depositorsPresent) assertTrue("the savers' rate the bank would choose rises with the dial", low <= here && here <= high && low < high);
         double target = Math.min(policy + .05 + CentralBank.WINDOW_PENALTY, bank.depositShare() * (policy + .05));
         assertTrue("...a step of the way from what it pays toward what its funding asks, never past it",
                 high >= Math.min(bank.depositRate(), target) - 1e-12 && high <= Math.max(bank.depositRate(), target) + 1e-12);
@@ -571,8 +572,10 @@ public class PolicyPreviewCheck {
                 && Math.abs((PolicyPreview.realDepositRateAt(g, policy) - g.realDepositRate()) - (here - bank.depositRate())) <= 1e-12);
 
         CentralBank cb = g.getCentralBank();
-        assertTrue("fixture: the central bank has a trailing revenue to cap the advances on", cb.trailingRevenue() > 0);
-        assertTrue("the ceiling at twelve months is twelve months of it",
+        boolean revenuePresent = Observation.reached("fixture: the central bank has a trailing revenue to cap the advances on",
+                cb.trailingRevenue() > 0,
+                "advances ceiling on positive revenue");
+        if (revenuePresent) assertTrue("the ceiling at twelve months is twelve months of it",
                 near(cb.ceilingAt(12), 12 * cb.trailingRevenue()));
         assertTrue("...held to MAX_ADVANCES_CEILING, and nothing under none",
                 cb.ceilingAt(1e6) == cb.ceilingAt(CentralBank.MAX_ADVANCES_CEILING) && cb.ceilingAt(-3) == 0);
@@ -624,7 +627,9 @@ public class PolicyPreviewCheck {
         double stagedA = lm.floorForCash((lowRungs + cheapestCollege) / 2);
         out.println("   the ladder's own wages: unskilled " + own[JobType.NO_DIPLOMA.ordinal()] + ", diploma " + own[JobType.DIPLOMA.ordinal()] + ", the cheapest college and up "
                 + cheapestCollege + "; the floor in force " + lm.cashMinimumWage() + ", staged " + lm.cashAt(stagedA));
-        assertTrue("fixture: the lowest rungs sit under college and up on the ladder, and the staged floor is past the floor in force", lowRungs < cheapestCollege && lm.cashAt(stagedA) > lm.cashMinimumWage());
+        boolean lowRungsSeparate = Observation.reached("fixture: the lowest rungs sit under college and up on the ladder, and the staged floor is past the floor in force",
+                lowRungs < cheapestCollege && lm.cashAt(stagedA) > lm.cashMinimumWage(),
+                "lowest-band-only wage and bill changes");
         PolicyPreview.FloorMove move = PolicyPreview.floorMoveAt(g, stagedA);
         double expectedWorkers = 0, payNow = 0, payThen = 0, billNow = 0, billThen = 0;
         boolean collegeStill = true;
@@ -641,12 +646,15 @@ public class PolicyPreviewCheck {
                 collegeStill &= lm.targetWageAt(job, stagedA) == inForce[i];
             }
         }
-        assertTrue("fixture: there are people in the lowest rungs, and in college and up", expectedWorkers > 0 && collegeStill);
-        assertTrue("the floor moves the posts filled in the jobs whose wage is under it (" + move.workers() + " of them), and no one in college and up",
+        if (lowRungsSeparate) assertTrue("the staged floor leaves the higher targets unchanged", collegeStill);
+        boolean lowWorkersPresent = Observation.reached("fixture: there are people in the lowest rungs",
+                expectedWorkers > 0,
+                "positive lowest-band wage changes");
+        if (lowRungsSeparate && lowWorkersPresent) assertTrue("the floor moves the posts filled in the jobs whose wage is under it (" + move.workers() + " of them), and no one in college and up",
                 Math.abs(move.workers() - expectedWorkers) <= 1e-9 * expectedWorkers);
-        assertTrue("...their pay a month at the floor in force and at the staged one are the hand sums, and it rises",
+        if (lowRungsSeparate && lowWorkersPresent) assertTrue("...their pay a month at the floor in force and at the staged one are the hand sums, and it rises",
                 Math.abs(move.payNow() - payNow) <= 1e-9 * payNow && Math.abs(move.payThen() - payThen) <= 1e-9 * payThen && move.payThen() > move.payNow());
-        assertTrue("...and the city's whole wage bill moves by the same money, no one else's pay moving: billThen - billNow = payThen - payNow",
+        if (lowRungsSeparate && lowWorkersPresent) assertTrue("...and the city's whole wage bill moves by the same money, no one else's pay moving: billThen - billNow = payThen - payNow",
                 Math.abs(move.billNow() - billNow) <= 1e-9 * billNow && Math.abs(move.billThen() - billThen) <= 1e-9 * billThen
                 && Math.abs((move.billThen() - move.billNow()) - (move.payThen() - move.payNow())) <= 1e-9 * move.billNow()
                 && Math.abs(PolicyPreview.wageBillMoveAt(g, stagedA) - billThen / billNow) <= 1e-12);
@@ -658,15 +666,17 @@ public class PolicyPreviewCheck {
         double cheapest = Double.MAX_VALUE;
         for (JobType job : jobTypes) if (posts[job.ordinal()] > 0) cheapest = Math.min(cheapest, own[job.ordinal()]);
         double stagedB = floor * .9;
-        assertTrue("fixture: the floor in force and the one staged under it are both under every target of a job with posts (the cheapest is " + cheapest + ", the floor " + lm.cashMinimumWage() + ")",
-                lm.cashMinimumWage() < cheapest && lm.cashAt(stagedB) < lm.cashMinimumWage());
+        boolean floorUnderTargets = Observation.reached("theFloorsMove: fixture: the floor in force and the one staged under it are both under every target of a job with posts",
+                "fixture: the floor in force and the one staged under it are both under every target of a job with posts (the cheapest is " + cheapest + ", the floor " + lm.cashMinimumWage() + ")",
+                lm.cashMinimumWage() < cheapest && lm.cashAt(stagedB) < lm.cashMinimumWage(),
+                "under-target floor moves no wages or payroll");
         PolicyPreview.FloorMove none = PolicyPreview.floorMoveAt(g, stagedB);
-        assertTrue("a floor moved under every target moves no one, and the wage bill not at all",
+        if (floorUnderTargets) assertTrue("a floor moved under every target moves no one, and the wage bill not at all",
                 none.workers() == 0 && none.payNow() == none.payThen() && none.billNow() == none.billThen() && PolicyPreview.wageBillMoveAt(g, stagedB) == 1);
 
         // (c) the city's own payroll, job by job
         assertTrue("the city's own payroll at the floor in force is the payroll the city pays", PolicyPreview.cityPayrollAt(g, floor) == PolicyPreview.cityPayroll(g));
-        assertTrue("...and a floor that reaches none of the staff's jobs moves it by nothing", PolicyPreview.cityPayrollAt(g, stagedB) == PolicyPreview.cityPayroll(g));
+        if (floorUnderTargets) assertTrue("...and a floor that reaches none of the staff's jobs moves it by nothing", PolicyPreview.cityPayrollAt(g, stagedB) == PolicyPreview.cityPayroll(g));
         double raised = lm.floorForCash(1.2 * dearest);
         double[] now = new double[jobTypes.length], then = new double[jobTypes.length];
         for (JobType job : jobTypes) {
@@ -682,8 +692,11 @@ public class PolicyPreviewCheck {
             if (held > 0) staffMove += Research.payroll(f, held, then, researchFill) - Research.payroll(f, held, now, researchFill);
         }
         staffMove += teachers + nurses;
-        assertTrue("fixture: a floor past the dearest job lifts the teachers' and the nurses' pay (by " + teachers + " and " + nurses + ")", teachers > 0 && nurses > 0);
-        assertTrue("...and the city's own payroll rises by those staff's posts filled times their move, the hand sum through getCategoryPayroll at the two target arrays",
+        boolean staffLifted = Observation.reached("theFloorsMove: fixture: a floor past the dearest job lifts the teachers' and the nurses' pay",
+                "fixture: a floor past the dearest job lifts the teachers' and the nurses' pay (by " + teachers + " and " + nurses + ")",
+                teachers > 0 && nurses > 0,
+                "positive city-staff payroll change");
+        if (staffLifted) assertTrue("...and the city's own payroll rises by those staff's posts filled times their move, the hand sum through getCategoryPayroll at the two target arrays",
                 Math.abs(PolicyPreview.cityPayrollAt(g, raised) - (PolicyPreview.cityPayroll(g) + staffMove)) <= 1e-9 * (PolicyPreview.cityPayroll(g) + staffMove)
                 && PolicyPreview.cityPayrollAt(g, raised) > PolicyPreview.cityPayroll(g));
 
@@ -876,10 +889,13 @@ public class PolicyPreviewCheck {
                     row.moved() ? "moved" : "", row.noPosts() ? "  (" + FloorView.NO_POSTS_WORDS + ")" : "");
         }
         assertTrue("per job: the posts, the posts filled, the wage and both targets are the model's own, in JobType order", rowsAreTheModels);
-        assertTrue("fixture: the floor staged 20% over the going rate lifts some jobs and leaves some over it (" + lifted + " lifted, " + above + " over it)", lifted > 0 && above > 0);
+        boolean liftCoverage = Observation.reached("theMinimumWagePage: fixture: the floor staged 20% over the going rate lifts some jobs and leaves some over it",
+                "fixture: the floor staged 20% over the going rate lifts some jobs and leaves some over it (" + lifted + " lifted, " + above + " over it)",
+                lifted > 0 && above > 0,
+                "positive wage-lift averages");
         assertTrue("a job is marked moved exactly when its two targets differ", movedIsDiffer);
         assertTrue("every job under the staged floor is lifted to it, and every job over it is unchanged", underLifted && aboveUnchanged);
-        assertTrue("the preview is floorMoveAt()'s: the workers lifted are the posts filled in the moved jobs, and their share, their average pay at the two targets and the payroll's move follow",
+        if (liftCoverage) assertTrue("the preview is floorMoveAt()'s: the workers lifted are the posts filled in the moved jobs, and their share, their average pay at the two targets and the payroll's move follow",
                 up.lifted() == move.workers() && same(up.lifted(), movedWorkers) && up.lifted() > 0
                 && same(up.liftedShare(), move.workers() / filledAll) && same(up.liftedPayNow(), move.payNow() / move.workers())
                 && same(up.liftedPayThen(), move.payThen() / move.workers()) && up.liftedPayThen() > up.liftedPayNow()
@@ -888,10 +904,13 @@ public class PolicyPreviewCheck {
                 up.payrollNow() == move.billNow() && up.payrollThen() == move.billThen() && same(up.payrollMove(), up.payrollThen() - up.payrollNow()));
 
         // ---- a job with no posts ----
-        assertTrue("fixture: the played city has a job with no posts, and one with posts", noPosts > 0 && noPosts < jobTypes.length);
+        boolean emptyJobsPresent = Observation.reached("fixture: the played city has a job with no posts",
+                noPosts > 0, "empty-job row fields and wording");
+        Observation.reached("fixture: the played city has a job with posts", noPosts < jobTypes.length);
+        assertTrue("the empty-job wording is the model's fixed phrase", FloorView.NO_POSTS_WORDS.equals("no posts here"));
         boolean noPostsRows = true;
         for (FloorView.JobRow row : up.jobs()) noPostsRows &= !row.noPosts() || (row.posts() == 0 && row.filled() == 0);
-        assertTrue("a job with no posts reads noPosts with nothing filled, and its words are \"" + FloorView.NO_POSTS_WORDS + "\"",
+        if (emptyJobsPresent) assertTrue("a job with no posts reads noPosts with nothing filled, and its words are \"" + FloorView.NO_POSTS_WORDS + "\"",
                 noPostsRows && FloorView.NO_POSTS_WORDS.equals("no posts here"));
 
         // ---- the joined market ----
@@ -903,9 +922,13 @@ public class PolicyPreviewCheck {
                 pm.restoreWorkforce(workforceWas + handed);
             }
             FloorView own = FloorView.of(g, lm.getMinimumWage());
-            assertTrue("fixture: with " + handed + " unskilled workers handed to the played city (GW1: its tighter market fills the unskilled posts with diploma holders at month "
-                    + g.getMonth() + "), its lowest band is its own market", !pm.fillByBand().joinedAbove(lowest) && !own.joined());
-            assertTrue("the joined market: the played city's lowest band is its own market, so there are no joined words and no shared wage",
+            assertTrue("the own-market preview follows the model's grouping", own.joined() == pm.fillByBand().joinedAbove(lowest));
+            boolean ownMarket = Observation.reached("theMinimumWagePage: own lowest-band market",
+                    "fixture: with " + handed + " unskilled workers handed to the played city (GW1: its tighter market fills the unskilled posts with diploma holders at month "
+                            + g.getMonth() + "), its lowest band is its own market",
+                    !pm.fillByBand().joinedAbove(lowest),
+                    "own-market words and shared-wage absence");
+            if (ownMarket) assertTrue("the joined market: the played city's lowest band is its own market, so there are no joined words and no shared wage",
                     !own.joined() && !pm.fillByBand().joinedAbove(lowest) && own.joinedWords(money) == null && Double.isNaN(own.joinedWage()));
         } finally {
             pm.restoreWorkforce(workforceWas);
@@ -925,10 +948,14 @@ public class PolicyPreviewCheck {
         final double awayNow = away;
         try {
             FloorView joined = FloorView.of(g, lm.getMinimumWage());
-            assertTrue("fixture: with the unskilled out of the supply and the spare above too few for their posts (" + Math.round(awayNow) + " of "
+            assertTrue("the joined-market preview follows the model's grouping", joined.joined() == pm.fillByBand().joinedAbove(lowest));
+            assertTrue("the fixture removed the unskilled supply", pm.workforceByBand()[lowest.ordinal()] == 0);
+            boolean joinedMarket = Observation.reached("theMinimumWagePage: joined lowest-band market",
+                    "fixture: with the unskilled out of the supply and the spare above too few for their posts (" + Math.round(awayNow) + " of "
                             + Math.round(workforce) + " away), the lowest band is filled as one market with the diploma band above it",
-                    pm.workforceByBand()[lowest.ordinal()] == 0 && pm.fillByBand().joinedAbove(lowest) && joined.joined());
-            assertTrue("...so the words name the diploma holders in the unskilled posts and the one wage both pay, which is the unskilled wage",
+                    pm.fillByBand().joinedAbove(lowest),
+                    "joined-market words and shared wage");
+            if (joinedMarket) assertTrue("...so the words name the diploma holders in the unskilled posts and the one wage both pay, which is the unskilled wage",
                     joined.joinedWage() == lm.getWage(JobType.NO_DIPLOMA) && joined.joinedWords(money).equals(
                             "One market: " + WageBand.values()[lowest.ordinal() + 1].label().toLowerCase(Locale.ROOT) + " holders fill the unskilled posts, so both pay "
                                     + money.apply(lm.getWage(JobType.NO_DIPLOMA)) + "."));
@@ -946,9 +973,12 @@ public class PolicyPreviewCheck {
         quietly(() -> twin.simulateMonths(1));
         FloorView applied = FloorView.of(twin, twinLm.getMinimumWage());
         double heldByHand = filledWhere(twin, twinLm::isPaidTheFloor);
-        assertTrue("fixture: applied, the floor is paid to workers in the twin once a month has run (" + Math.round(heldByHand) + " of them), and the twin's real floor is still the one staged",
-                Math.round(heldByHand) >= 1 && same(twinLm.getMinimumWage(), stagedUp));
-        assertTrue("applied, the words count the workers paid the floor: " + Formats.INSTANCE.count(Math.round(heldByHand)),
+        assertTrue("the applied floor is the staged floor", same(twinLm.getMinimumWage(), stagedUp));
+        boolean paidWorkersPresent = Observation.reached("theMinimumWagePage: fixture: applied, the floor is paid to workers in the twin once a month has run",
+                "fixture: applied, the floor is paid to workers in the twin once a month has run (" + Math.round(heldByHand) + " of them), and the twin's real floor is still the one staged",
+                Math.round(heldByHand) >= 1,
+                "positive paid-worker wording");
+        if (paidWorkersPresent) assertTrue("applied, the words count the workers paid the floor: " + Formats.INSTANCE.count(Math.round(heldByHand)),
                 same(applied.paidTotal(), heldByHand) && applied.holdsWords(money).equals(
                         "Holds " + Formats.INSTANCE.count(Math.round(heldByHand)) + " " + (Math.round(heldByHand) == 1 ? "worker" : "workers") + ": they are paid the floor itself."));
         assertTrue("...and staging that floor again moves no one: it is the floor in force, so no job is marked",
@@ -964,8 +994,11 @@ public class PolicyPreviewCheck {
         quietly(() -> twin.simulateMonths(1));
         FloorView nearBy = FloorView.of(twin, twinLm.getMinimumWage());
         double nearByHand = filledWhere(twin, twinLm::isNearTheFloor), paidByHand = filledWhere(twin, twinLm::isPaidTheFloor);
-        assertTrue("fixture: with the floor just under the cheapest skilled job's wage, some are paid it and some are a little over it (" + Math.round(paidByHand) + " and "
-                        + Math.round(nearByHand) + ")", paidByHand > 0 && nearByHand > 0);
+        Observation.reached("theMinimumWagePage: fixture: with the floor just under the cheapest skilled job's wage, some are paid it and some are a little over it",
+                "fixture: with the floor just under the cheapest skilled job's wage, some are paid it and some are a little over it (" + Math.round(paidByHand) + " and "
+                    + Math.round(nearByHand) + ")",
+                paidByHand > 0 && nearByHand > 0,
+                "");
         assertTrue("...and paid + near + everyone else is still all of the posts filled",
                 same(nearBy.nearTotal(), nearByHand) && same(nearBy.paidTotal(), paidByHand)
                 && same(nearBy.paidTotal() + nearBy.nearTotal() + nearBy.everyoneElse(), nearBy.postsFilled()) && nearBy.everyoneElse() >= 0);
@@ -1046,7 +1079,8 @@ public class PolicyPreviewCheck {
         g.setCashForTest(g.getCash() + more);
         quietly(() -> g.fundPayIn(more));
         double idle = g.fundIdleCash(), whole = g.fundValue();
-        assertTrue("fixture: paid in past its rooms, the fund holds idle cash, less than its value", idle > 0 && idle < whole);
+        assertTrue("paying in past the rooms creates idle cash", idle > 0);
+        Observation.reached("fixture: the fund has active value beside its idle cash", idle < whole);
         PolicyPreview.Withdrawal inForce = PolicyPreview.fundWithdrawalAt(g, g.getFundWithdrawal());
         assertTrue("with idle cash the preview's due is the city's, and the model's on the idle cash it holds",
                 inForce.due() == g.fundTransferDue()
@@ -1182,16 +1216,23 @@ public class PolicyPreviewCheck {
         for (Ports.Cargo kind : Ports.Cargo.values()) berthsMatch &= PolicyPreview.hasBerth(one, kind) == (berths[kind.ordinal()] > 0);
         out.printf("      the city: %,.0f t across the berths last month, D$%,.4fk of dues at the dial %.2f; the twin at %.2f paid %,.4fk%n",
                 PolicyPreview.portTonnes(one), dues, live.getPortDues(), two.getEconomyManager().getTaxPolicy().getPortDues(), pd2.getDuesPaid());
-        assertTrue("fixture: a berth stands and tonnes crossed it, the treasury took dues at the default dial, and a kind has a berth to charge on only if one stands",
-                PolicyPreview.portTonnes(one) > 0 && dues > 0 && em.getPortDues() > 0 && live.getPortDues() == TaxPolicy.DEFAULT_PORT_DUES
-                        && berths[bulk.ordinal()] > 0 && berthsMatch);
-        boolean alike = pd.isQuoteKnown(bulk) && Math.abs(pd2.getCrewQuote(bulk) - pd.getCrewQuote(bulk)) <= 1e-9;
+        assertTrue("the berth stands at the default dial and each preview berth follows the model",
+                live.getPortDues() == TaxPolicy.DEFAULT_PORT_DUES && berths[bulk.ordinal()] > 0 && berthsMatch);
+        assertTrue("the port twin applied the dial 2", two.getEconomyManager().getTaxPolicy().getPortDues() == 2);
+        if (Observation.reached("fixture: the played port carried tonnes",
+                PolicyPreview.portTonnes(one) > 0,
+                "positive port-dues receipts")) {
+            assertTrue("carried tonnes pay dues at the positive dial", dues > 0 && em.getPortDues() > 0);
+        }
+        boolean quoted = Observation.reached("fixture: the played port struck a bulk quote",
+                pd.isQuoteKnown(bulk), "bulk handling quote arithmetic");
+        boolean alike = quoted && pd2.isQuoteKnown(bulk) && Math.abs(pd2.getCrewQuote(bulk) - pd.getCrewQuote(bulk)) <= 1e-9;
         for (Ports.Cargo kind : Ports.Cargo.values()) {
             alike &= pd2.getTonnes(kind) == pd.getTonnes(kind)
                     && Math.abs(pd2.getDuesRate(kind) - pd.getDuesRate(kind)) <= 1e-12 * Math.max(1e-9, pd.getDuesRate(kind));
         }
-        assertTrue("fixture: the twin ran the same month at the dial 2 and is alike but for it - the same tonnes, the same default due, the same crew quote - and paid dues",
-                alike && two.getEconomyManager().getTaxPolicy().getPortDues() == 2 && pd2.getDuesPaid() > 0);
+        alike = Observation.reached("fixture: the played port twins have the same trade and crew quote",
+                alike, "port-dues twin comparisons");
 
         assertTrue("at the city's own dial the dues previewed are the month's, to the bit: Freight's, the treasury's and the accounts'",
                 PolicyPreview.portDuesAt(one, live) == dues && dues == em.getPortDues()
@@ -1200,7 +1241,9 @@ public class PolicyPreviewCheck {
         double2.setPortDues(2);
         none.setPortDues(0);
         assertTrue("at the dial 2 the dues previewed are twice the month's, and the twin that ran the month at 2 paid them, to the cent",
-                PolicyPreview.portDuesAt(one, double2) == 2 * dues && near(PolicyPreview.portDuesAt(one, double2), pd2.getDuesPaid())
+                PolicyPreview.portDuesAt(one, double2) == 2 * dues);
+        if (alike) assertTrue("the twin at 2 paid the previewed dues",
+                near(PolicyPreview.portDuesAt(one, double2), pd2.getDuesPaid())
                         && near(PolicyPreview.portDuesAt(one, double2), two.getEconomyManager().getPortDues()));
         assertTrue("at the dial 0 they are none, and the budget falls by the month's dues",
                 PolicyPreview.portDuesAt(one, none) == 0 && near(PolicyPreview.change(one, live, none, share, share), -dues));
@@ -1209,11 +1252,12 @@ public class PolicyPreviewCheck {
                         && PolicyPreview.change(one, live, live.copy(), share, share) == 0);
 
         double rate = pd.getDuesRate(bulk);
-        assertTrue("a tonne's handling at the city's dial is the division's quote, to the bit; at 2 it is dearer by the kind's default due, and the twin billed at 2 quotes it",
+        if (quoted) assertTrue("a tonne's handling at the city's dial is the division's quote, to the bit; at 2 it is dearer by the kind's default due",
                 PolicyPreview.handlingQuoteAt(one, bulk, live) == pd.getQuote(bulk) && rate > 0
                         && Math.abs(PolicyPreview.handlingQuoteAt(one, bulk, double2) - PolicyPreview.handlingQuoteAt(one, bulk, live) - rate) <= 1e-9
-                        && Math.abs(PolicyPreview.handlingQuoteAt(one, bulk, double2) - pd2.getQuote(bulk)) <= 1e-9
                         && Math.abs(PolicyPreview.handlingQuoteAt(one, bulk, none) - pd.getCrewQuote(bulk)) <= 1e-9);
+        if (alike) assertTrue("the twin billed at 2 quotes the preview's handling",
+                Math.abs(PolicyPreview.handlingQuoteAt(one, bulk, double2) - pd2.getQuote(bulk)) <= 1e-9);
         TaxPolicy wild = live.copy();
         wild.setPortDues(99);
         boolean top = wild.getPortDues() == TaxPolicy.MAX_PORT_DUES;

@@ -52,7 +52,7 @@ public class AllChecks {
         "HouseholdCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck", "ReloadCheck",
         "SaveSlotCheck", "ScaleCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ChartFitCheck", "ToastCheck", "MoneyWordsCheck", "ClockCheck",
-        "ConsumptionCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "CausesOfDeathCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "QuayRailCheck", "QuayCraneCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
+        "ConsumptionCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "CausesOfDeathCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "QuayRailCheck", "QuayCraneCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "ObservationCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
         "IslandNetCheck", "IslandRailCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "RecipeCheck", "ResearchCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck",
         "ReplayCheck", "StaffingDrawCheck", "OwnerCheck",
         "GovernmentViewCheck", "GovernmentPlayerCheck"
@@ -119,7 +119,7 @@ public class AllChecks {
     static final String NEW_TAG = "[NEW]   ";
 
     public static void main(String[] args) throws Exception {
-        boolean quiet = false, failuresOnly = false, timingOnly = false, gate = false, nightly = false;
+        boolean quiet = false, failuresOnly = false, timingOnly = false, gate = false, nightly = false, observations = false;
         List<String> only = new ArrayList<>();
         for (String a : args) {
             if (a.equals("-q")) quiet = true;
@@ -127,6 +127,7 @@ public class AllChecks {
             else if (a.equals("--timing")) timingOnly = true;
             else if (a.equals("--gate")) gate = true;
             else if (a.equals("--nightly")) nightly = true;
+            else if (a.equals("--observations")) observations = true;
             else only.add(a.toLowerCase());
         }
         boolean logged = quiet || failuresOnly;   // both keep each harness's output in LOGS, so a verdict can be read from it
@@ -138,14 +139,15 @@ public class AllChecks {
         String classpath = System.getProperty("java.class.path");
         boolean haveFx = classpath.toLowerCase().contains("javafx");
 
-        int failed = 0, ran = 0, soft = 0;
+        int failed = 0, ran = 0, soft = 0, observed = 0;
         List<String> times = new ArrayList<>();   // "seconds<TAB>name<TAB>exit", for TIMES
-        List<String> softIn = new ArrayList<>();
+        List<String> softIn = new ArrayList<>(), observedIn = new ArrayList<>();
         List<String> knownOnly = new ArrayList<>(), newRed = new ArrayList<>();
         long started = System.currentTimeMillis();
         List<String> picked = new ArrayList<>(), order = new ArrayList<>();   // asked for, in HARNESSES order; and what starts, in the order it starts
         for (String name : HARNESSES) {
-            if (!selected(name, timingOnly, gate, nightly, only)) continue;
+            if (observations && !Observation.HARNESSES.contains(name) && (!nightly || !NIGHTLY.contains(name))) continue;
+            if (!selected(name, timingOnly, gate, nightly && !observations, only)) continue;
             picked.add(name);
             if (haveFx || !(name.equals("BuildMenuCheck") || name.equals("KeptCheck") || name.equals("ChartFitCheck") || name.equals("ToastCheck") || name.equals("MoneyWordsCheck"))) order.add(name);
         }
@@ -196,6 +198,10 @@ public class AllChecks {
             if (logged) {
                 int n = softLines(log);
                 if (n > 0) { soft += n; softIn.add(name + " " + n); }
+                List<String> readings = observationLines(log);
+                int misses = (int) readings.stream().filter(line -> line.startsWith("OBSERVED - ")).count();
+                if (misses > 0) { observed += misses; observedIn.add(name + " " + misses); }
+                for (String line : readings) System.out.println(name + " " + line);
             }
             if (code == 0) {
                 if (!failuresOnly) System.out.println(header(name, code, seconds));
@@ -227,6 +233,8 @@ public class AllChecks {
         if (held.get() > 0) System.out.printf("memory: %d start(s) held until the commit charge fell under %d%% (AllChecks.COMMIT_PCT)%n", held.get(), COMMIT_PCT);
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
                 soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
+        if (observed > 0) System.out.printf("%d path assertion%s OBSERVED, not counted: %s%n",
+                observed, observed == 1 ? "" : "s", String.join(", ", observedIn));
         if (logged && failed > 0) {
             System.out.println(againstLine(record, known, knownOnly, newRed));
             System.out.println("Whole output of each: " + LOGS + File.separator + "NAME.log");
@@ -424,11 +432,23 @@ public class AllChecks {
      */
     static List<String> command(String java, String classpath, String name, boolean logged) {
         List<String> c = new ArrayList<>(List.of(java, "-Xmx" + HEAP_MB + "m", "-Xms" + HEAP_START_MB + "m"));
+        Observation.forwardTo(c);
+        c.add("-D" + Observation.HARNESS_PROPERTY + "=" + name);
         if (Timing.forwarded() != null) c.add(Timing.forwarded());
         if (Timing.forwardedTsv() != null) c.add(Timing.forwardedTsv());   // TM3: the file the figures go to
         if (logged) c.addAll(List.of("-Dstdout.encoding=UTF-8", "-Dstderr.encoding=UTF-8"));
         c.addAll(List.of("-cp", classpath, "ham.citybuildersim." + name));
         return c;
+    }
+
+    /** PO1: legacy console bytes are replaced, as in softLines and failingLines. */
+    static List<String> observationLines(Path log) {
+        try {
+            return new String(Files.readAllBytes(log), StandardCharsets.UTF_8).lines()
+                    .filter(line -> line.startsWith("OBSERVED - ") || line.startsWith("SKIPPED - ")).toList();
+        } catch (IOException e) {
+            return List.of();
+        }
     }
 
     /** How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. */

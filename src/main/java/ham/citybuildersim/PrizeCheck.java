@@ -1530,33 +1530,38 @@ public class PrizeCheck {
                 a.getMonth() == b.getMonth() && a.getMonth() == c.getMonth() && Arrays.equals(w, b.getPopulationManager().getWagesPerType()) && a.foundedUnfitted() && b.foundedUnfitted() && !c.foundedUnfitted()
                         && a.getSectors().businessServices().getCash() == b.getSectors().businessServices().getCash() && labsInAll(a) == 0 && labsInAll(b) == 0 && labsInAll(c) == 0 && ra.prizesForSave().isEmpty());
         double prize = justWantsALab(a, F);
-        check("fixture: a prize exists at which the model wants a lab here next month: the least cover of the open problems that does (" + prize + ")", !Double.isNaN(prize));
-        ra.setPrize(F, prize);
-        boolean atPrize = ra.labsWanted(F, m, w) >= 1;
-        ra.setPrize(F, Math.nextDown(prize));
-        boolean hairUnder = ra.labsWanted(F, m, w) == 0;
-        check("...and it wants one at that prize and none a hair under it", atPrize && hairUnder);
-        ra.setPrize(F, prize);
-        rb.setPrize(F, Math.nextDown(prize));
-        rc.setPrize(F, prize);
-        check("fixture: the default-way village's model would want a lab at the same prize (its research is empty: it has not run)", rc.labsWanted(F, m, c.getPopulationManager().getWagesPerType().clone()) >= 1);
-        Entry target = ra.labTarget(F, m, w);
-        double cost = a.getBusinessInvestment().getCostOf(lab, 1), stake = ra.labStake(F, m, w);
-        check("fixture: the lab has a target, a cost and a stake above nothing", target != null && cost > 0 && stake > 0);
+        if (Observation.reached("sectionTwelve: fixture: a prize exists at which the model wants a lab here next month: the least cover of the open problems that does",
+                "fixture: a prize exists at which the model wants a lab here next month: the least cover of the open problems that does (" + prize + ")",
+                !Double.isNaN(prize),
+                "section 12 investor lab ordering, target, stake and staffing")) {
+            ra.setPrize(F, prize);
+            boolean atPrize = ra.labsWanted(F, m, w) >= 1;
+            ra.setPrize(F, Math.nextDown(prize));
+            boolean hairUnder = ra.labsWanted(F, m, w) == 0;
+            check("...and it wants one at that prize and none a hair under it", atPrize && hairUnder);
+            ra.setPrize(F, prize);
+            rb.setPrize(F, Math.nextDown(prize));
+            rc.setPrize(F, prize);
+            check("fixture: the default-way village's model would want a lab at the same prize (its research is empty: it has not run)", rc.labsWanted(F, m, c.getPopulationManager().getWagesPerType().clone()) >= 1);
+            Entry target = ra.labTarget(F, m, w);
+            double cost = a.getBusinessInvestment().getCostOf(lab, 1), stake = ra.labStake(F, m, w);
+            check("fixture: the lab has a target, a cost and a stake above nothing", target != null && cost > 0 && stake > 0);
 
-        playHanded(a, 1);
-        playHanded(b, 1);
-        playHanded(c, 1);
-        check("within a month of play a lab is ordered: one is on site, none standing yet, and the month's word under " + Game.LABS_SLOT + " names it and the problem its purse pays for",
-                a.labsOnSite(F) == 1 && a.labsStanding(F) == 0 && a.getLastInvestment(Game.LABS_SLOT).equals(String.format("Built %s - the purse pays for %s", lab.getName(), target.name())), labsOf(a) + " | " + a.getLastInvestment(Game.LABS_SLOT));
-        double raised = a.getEconomyManager().getEquityRaised(BS) - b.getEconomyManager().getEquityRaised(BS);
-        check("...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (" + raised + " of " + (cost + stake) + ")",
-                raised > 0 && raised <= cost + stake + 1e-6);
-        near("...and no loan: Business Services borrowed this month what its twin did", a.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS), b.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS),
-                1e-9 * Math.max(1, b.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS)));
-        check("with the prize a hair under, none is ordered: nothing on site, and nothing said", labsInAll(b) == 0 && b.getLastInvestment(Game.LABS_SLOT).isEmpty(), labsOf(b) + " | " + b.getLastInvestment(Game.LABS_SLOT));
-        check("a village founded the default way with the same prize orders none and says nothing", labsInAll(c) == 0 && c.getLastInvestment(Game.LABS_SLOT).isEmpty(), labsOf(c));
-        check("...and the lab is in no other field, and no other village ordered one", labsInAll(a) == 1 && a.labsOnSite(Field.MEDICINE) + a.labsOnSite(Field.BUSINESS) + a.labsOnSite(Field.LAW) == 0);
+            playHanded(a, 1);
+            playHanded(b, 1);
+            playHanded(c, 1);
+            check("within a month of play a lab is ordered: one is on site, none standing yet, and the month's word under " + Game.LABS_SLOT + " names it and the problem its purse pays for",
+                    a.labsOnSite(F) == 1 && a.labsStanding(F) == 0 && a.getLastInvestment(Game.LABS_SLOT).equals(String.format("Built %s - the purse pays for %s", lab.getName(), target.name())), labsOf(a) + " | " + a.getLastInvestment(Game.LABS_SLOT));
+            double raised = a.getEconomyManager().getEquityRaised(BS) - b.getEconomyManager().getEquityRaised(BS);
+            check("...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (" + raised + " of " + (cost + stake) + ")",
+                    raised > 0 && raised <= cost + stake + 1e-6);
+            near("...and no loan: Business Services borrowed this month what its twin did", a.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS), b.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS),
+                    1e-9 * Math.max(1, b.getEconomyManager().getBusinessDebtManager().getLentThisMonth(BS)));
+            check("with the prize a hair under, none is ordered: nothing on site, and nothing said", labsInAll(b) == 0 && b.getLastInvestment(Game.LABS_SLOT).isEmpty(), labsOf(b) + " | " + b.getLastInvestment(Game.LABS_SLOT));
+            check("a village founded the default way with the same prize orders none and says nothing", labsInAll(c) == 0 && c.getLastInvestment(Game.LABS_SLOT).isEmpty(), labsOf(c));
+            check("...and the lab is in no other field, and no other village ordered one", labsInAll(a) == 1 && a.labsOnSite(Field.MEDICINE) + a.labsOnSite(Field.BUSINESS) + a.labsOnSite(Field.LAW) == 0);
+
+        }
 
         // At most one a field a month: medicine's second lab is wanted at once with the first.
         Game d = labCity("prize-order-med", true, Field.MEDICINE, 2);
@@ -1954,13 +1959,15 @@ public class PrizeCheck {
                     && books.equity() - (g.getEquity().getTargetEquityShare(company) + Exchange.OVER_TARGET) * books.totalAssets() > books.totalAssets() * Exchange.MIN_EXCESS;
             if (buyer) { qualified++; if (firstBuyer == null) firstBuyer = "month " + g.getMonth(); }
         }
-        check("fixture: the investors ordered a lab, and put up money for it as equity (" + String.format("%,.0f", raised) + " raised over the " + months + " months), which a stake of "
-                + String.format("%,.0f", stakeAtOrder) + " carries to the target's find; the lab is on site or standing and the stake is still needed in " + withStake + " of them",
-                labsInAll(g) == 1 && raised > 0 && stakeAtOrder > 0 && withStake >= 12, labsOf(g));
-        check("the Exchange's buyback spent nothing of it in any of the " + months + " months: Business Services bought none of its shares back (" + bought + ")", bought == 0, String.valueOf(bought));
-        check("...because it never qualified to bid: a record that is bad (" + regime + " at the end) and equity far under its target, in no month of the " + months + " a buyer in the Exchange's own rule" + (firstBuyer == null ? "" : ", the first " + firstBuyer),
+        boolean labOrdered = Observation.reached("section 20: the played village orders and funds a lab",
+                "fixture: the investors ordered a lab, and put up money for it as equity (" + String.format("%,.0f", raised) + " raised over the " + months + " months), which a stake of "
+                    + String.format("%,.0f", stakeAtOrder) + " carries to the target's find; the lab is on site or standing and the stake is still needed in " + withStake + " of them",
+                labsInAll(g) == 1 && raised > 0 && stakeAtOrder > 0 && withStake >= 12,
+                "section 20 recorded lab stake");
+        if (labOrdered) check("the Exchange's buyback spent nothing of it in any of the " + months + " months: Business Services bought none of its shares back (" + bought + ")", bought == 0, String.valueOf(bought));
+        if (labOrdered) check("...because it never qualified to bid: a record that is bad (" + regime + " at the end) and equity far under its target, in no month of the " + months + " a buyer in the Exchange's own rule" + (firstBuyer == null ? "" : ", the first " + firstBuyer),
                 qualified == 0, qualified + " months");
-        check("...and its till (at most " + String.format("%,.0f", tillMost) + ") never stood above the six months of costs it keeps (at least " + String.format("%,.0f", cushionLeast) + "), so there was no money for a buyback to take past the cushion even had it qualified",
+        if (labOrdered) check("...and its till (at most " + String.format("%,.0f", tillMost) + ") never stood above the six months of costs it keeps (at least " + String.format("%,.0f", cushionLeast) + "), so there was no money for a buyback to take past the cushion even had it qualified",
                 pastCushion == 0, pastCushion + " months");
     }
 }

@@ -673,15 +673,7 @@ public class CentralBankCheck {
         /* ================= 7. the autopilot ================= */
         out.println("\n--- 7. the rule moves the dial, and the player's hand stops it ---");
 
-        /*
-         * WG2, {next}, 2026-11-10: A YEAR OF PRICES, PLAYED FOR. The rule reads the price index's year (PriceIndex.hasRate(): thirteen
-         * readings after the basket is struck, which waits for SETTLING_MONTHS (24) months in which the city spent on groceries and
-         * on rent). On main the town shops from month 31 and has its year at month 73, before this section; on WG2's path (the
-         * homes' draw lifts only the homes, Migration.homesPull) the town's first shopping month is 62 and the year comes at month
-         * 100 (a scan of the town played on, 37 months to wait from the first shopping month, 27 at month 73). Here the city is
-         * played, month by month under the same identities as every other (play()), until the index has its year, and the
-         * section starts from there. The claims are as they were.
-         */
+        // WG2, 2026-11-10: A YEAR OF PRICES, PLAYED FOR.
         int waited = 0;
         while (!city.getPriceIndex().hasRate() && waited < 60) {
             play(city);
@@ -1779,7 +1771,9 @@ public class CentralBankCheck {
         final int soldIn = city.getMonth();
         quietly(() -> city.handleMediumBondLogic(400 * PriceLevel.FACTOR, 2, 100 * PriceLevel.FACTOR));
         Debt serial = fixtureSerial(city, soldIn);
-        assertTrue("fixture: the treasury sold a small two-year serial", serial != null);
+        if (!Observation.reached("fixture: the treasury sold a small two-year serial",
+                serial != null,
+                "section 20 surplus waterfall, roll and save laws")) return;
         play(city);
         double dial = .5;
         city.getCentralBank().setTargetShare(dial);
@@ -1791,9 +1785,12 @@ public class CentralBankCheck {
                 - city.fundReservation();
         out.printf("   m%d: the slice $%,.1fk, the central bank's par in it $%,.1fk; last year's surplus unused $%,.1fk%n",
                 city.getMonth(), slice, itsPar, unused);
-        assertTrue("fixture: the central bank at its dial holds part of the slice",
-                itsPar > 0 && itsPar < slice && city.centralBankOverItsDial() == 0);
-        assertTrue("fixture: last year's surplus, unused, is more than all of the slice", unused >= slice);
+        if (!Observation.reached("fixture: the central bank at its dial holds part of the slice",
+                itsPar > 0 && itsPar < slice && city.centralBankOverItsDial() == 0,
+                "section 20 surplus waterfall, roll and save laws")) return;
+        if (!Observation.reached("fixture: last year's surplus, unused, is more than all of the slice",
+                unused >= slice,
+                "section 20 surplus waterfall, roll and save laws")) return;
         quietly(() -> city.saveGame(ROLL_SLOT, "at the press before the slice"));
 
         /* ---- a surplus the size of the slice pays it all ---- */
@@ -2219,10 +2216,16 @@ public class CentralBankCheck {
         }
         LongPlaytest.cleanUp(cityFiles.getDirectory().getParent());
         assertTrue("fixture: each city of the set is at its branch, on the rule, at Standard and the default target", eachAtBranch);
-        assertTrue(String.format("very strict holds prices lower than Standard over the horizon, at the median of the %d cities"
-                + " (%+.3f points a year)", shapes, median(gaps) * 100), median(gaps) < 0);
-        assertTrue(String.format("...and in at least STRICT_SHARE of them, %d of %d (%d hold)", strictNeed(shapes), shapes, held),
-                held >= strictNeed(shapes));
+        Observation.reached("strict policy median across cities",
+                String.format("very strict holds prices lower than Standard over the horizon, at the median of the %d cities (%+.3f points a year)",
+                    shapes, median(gaps) * 100),
+                median(gaps) < 0,
+                "");
+        Observation.reached("strict policy share across cities",
+                String.format("...and in at least STRICT_SHARE of them, %d of %d (%d hold)",
+                    strictNeed(shapes), shapes, held),
+                held >= strictNeed(shapes),
+                "");
         assertTrue("STRICT_SHARE is over a half, so a set that holds the share holds the median too", STRICT_SHARE > .5);
         // The line itself, from both sides: the twelve gaps each made very strict's cheaper, then reversed by hand one at a
         // time in the list's order (very strict dearer there by what it was cheaper - the city's two inflations swapped).
@@ -2271,10 +2274,11 @@ public class CentralBankCheck {
         double fullMiss = Expectations.TOLERANCE + Expectations.MISS_SCALE;
         for (int i : new int[] { 0, 2 }) {
             assertTrue(ends[i].words + ": the dial never reaches its stop", topRate[i] < DebtManager.MAX_POLICY_RATE);
-            assertTrue("...and its last year is within a full miss of the target, no spiral",
+            Observation.reached("...and its last year is within a full miss of the target, no spiral",
                     Math.abs(lastYear[i] - target) <= fullMiss);
         }
-        assertTrue("very loose costs trust, through the lean measured against holding the target", trust[2] < trust[1]);
+        Observation.reached("very loose costs trust, through the lean measured against holding the target",
+                trust[2] < trust[1]);
 
         /* ---- the dial is a decision, and the save carries it ---- */
         Game strict = twins[0];

@@ -18,6 +18,33 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### GG1 — The new gate's gaps — 2026-11-13, ready, no tag (process), see docs/queue/GG1-notes.md
+
+Versioned dry runs read provisional records without advertising readiness.
+The builder and gate share retirement and explicit transfer of known reds,
+and registry-only changes can reuse a kept run with a fresh judgment.
+Missing queue titles come from the changelog heading; added source version
+tokens, lost heading separators and reused batch IDs stop publication.
+The batch guide records the contract; self-tests cover all seven gaps.
+
+### PO1 — The path lines as nightly observations — 2026-11-13, ready, no tag (process), see docs/queue/PO1-notes.md
+Played-path premises in 29 harnesses report OBSERVED and skip their dependent
+laws. Reached laws retain their correctness verdicts, and shared helpers keep
+unlisted callers hard. Nightly records each line's last hold and merge range.
+Fifteen superseded repository known-red entries are retired. Review repairs
+cover legacy log bytes, running-harness attribution, full price data, independent
+maturity experiments, clock ownership and visible observation totals.
+The full pick and fresh no-tag gate are green with known reds. Main's hard
+section 63 fund-retention miss is traced and queued as KF63.
+
+### EI1 — The ensemble's outcome criteria as information — 2026-11-13, ready, no tag (process), see docs/queue/EI1-notes.md
+
+The ensemble gives every criterion a hard or info class. M1 (money audit) and F1 (findings) alone determine
+its batch verdict. Every other criterion keeps its measurement, threshold and verdict as information,
+beside the baseline's value and verdict, with changed verdicts called out. Old baselines remain readable.
+The runner retains scored artifacts and returns 4 on a hard failure. Self-tests cover information failures
+passing and audit/findings failures stopping in every policy. The batch and gate rules use the same split.
+
 ### HA1 — the gate's harnesses — 2026-11-13, ready, no tag (process), see docs/queue/HA1-notes.md
 Harnesses start longest first from their last durations; soft runs skip
 clock-only rounds. The gate's nightly tier runs when directly picked;

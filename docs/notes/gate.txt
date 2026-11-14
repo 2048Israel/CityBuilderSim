@@ -1,29 +1,15 @@
-# gate of Merge batch/HA1: the gate's harnesses (Jerus, 2026-11-12, on the harness audit): the suite started longest first by the last `times.tsv` (38 -> 31 min, replaces CB1-L), soft timed sections skipped, SaveSlotCheck's CLOCK_MS re-measured on the gate box; KeptCheck and 14 heavy harnesses with no catch of their own to a nightly tier the gate runs only when the pick names them (-> ~18 min); MoneyCheck, ConservationCheck, SectorBooksCheck, TruckCheck and RestructureCheck 5b-5d merged; ConversionCheck dropped with the unreachable conversion code, 0.9.99
+# gate of Merge batch/GG1: the new gate's gaps (Jerus, 2026-11-13: "sure queue and do the gate gaps"): a versioned dry run needs its ship file first; a batch cannot move its own known-reds entry and batch-check does not apply the veto; reuse refuses a branch that changed known-reds.txt; a batch with no queue row takes its merge title from its last commit; {next} left in source; records with a lost encoding. After PO1 (same scripts), 0.9.99
 # date: 2026-11-13
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 194 harnesses run in 1662s: 187 passed, 7 failed
-MonetaryCheck | exit 1
-MonetaryCheck | ...and a month's delay in the hand moves them less than the allowance FAIL
-MonetaryCheck | 1 FAILED
-CentralBankCheck | exit 1
-CentralBankCheck | ...and in at least STRICT_SHARE of them, 9 of 12 (7 hold)          FAIL
-CentralBankCheck | 1 FAILED
-HealthCheck | exit 1
-HealthCheck | ...its old first, whom a fee on senior care turns away FAIL
-HealthCheck | 1 FAILED
-MapCheck | exit 1
-MapCheck | fixture: the boxes take offers, several at once, and every offer is taken by some and missed by others FAIL
-MapCheck | 1 FAILED
+# suite: 182 harnesses run in 1037s: 180 passed, 2 failed
 PlanCheck | exit 1
 PlanCheck | at every 30th month every district's plan keeps every check                    FAIL
 PlanCheck | ...the avenues were laid in the played city (328 plots in 11 open cells over the samples), every check holding with them FAIL
 PlanCheck | 2 FAILED
-KeptCheck | exit 3
-KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | the city has a piece of paper to close                                   FAIL
-KeptCheck | a bookRow was found on a money page of this city, to put the pointer on  FAIL
-KeptCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | 1 FAILED
+KeptCheck | exit 1
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | 1 FAILED
