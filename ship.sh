@@ -133,6 +133,7 @@ CHANGED=$(git diff --name-only --no-renames "main...$REF")   # what the branch i
 ID="${BRANCH#batch/}"; ISBATCH=0
 if [ "$ID" != "$BRANCH" ]; then ISBATCH=1; else ID=$(printf '%s' "$BRANCH" | tr '/' '-'); fi   # another branch's "/" only for its ship file's name
 SHIPF="docs/queue/$ID-ship.md"
+[ "$ISBATCH" = 0 ] || sh tools/batch-id.sh "$ID" main || die "batch ID $ID was already used"
 
 # 3. the last version tag is main's version
 LAST=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
@@ -185,6 +186,7 @@ if [ "$NEW" = 1 ]; then
     [ -z "$RECORDS" ] || die "$BRANCH edits $RECORDS: records go in the ship file $SHIPF (docs/batch.md)"
     BADH=$(grep '^## ' "$T/ship-on-branch" | grep -v -x -E '## (changelog|pending|queued|known-reds)' | head -3 | tr '\n' ' ')
     [ -z "$BADH" ] || die "$SHIPF has a heading ship.sh does not know: $BADH- use changelog, pending, queued or known-reds"
+    [ "$DRY" = 1 ] || ! grep -q -x '<!-- readiness: provisional -->' "$T/ship-on-branch" || die "$SHIPF is provisional: finish its dry run before readiness"
     if [ "$WANT" = 0 ] && git cat-file -e "$REF:docs/ensemble/$ID.md" 2>/dev/null; then
         die "docs/ensemble/$ID.md is a baseline and $SHIPF has no {next} to name it by"
     fi
@@ -199,6 +201,8 @@ if [ "$NEW" = 1 ]; then
     elif [ "$ISBATCH" = 1 ] && [ "$NOTAG" = 0 ]; then
         die "$SHIPF has no {next}: write {next} in its changelog heading, or ship it --no-tag"
     fi
+    HEADING=$(sect changelog "$T/ship-on-branch" | awk 'NF { print; exit }')
+    printf '%s\n' "$HEADING" | grep -q -E '^### .+ — .+ — .+' || die "$SHIPF changelog heading needs two UTF-8 em-dash separators ( — ); write records through Git Bash"
 else   # no ship file, --no-tag (step 4): the merge carries main's version, and one that moves it leaves main untagged and stops every later ship (step 3)
     [ "$VCHG" = 0 ] || die "$BRANCH changes GameVersion's VERSION line and --no-tag was given: main's VERSION would stay untagged and stop every later ship; leave VERSION as main has it"
 fi
@@ -217,6 +221,7 @@ fi
 
 # the merge's title: QUEUE.md's row on main (before the records take it out), or -m
 [ -n "$TITLE" ] || TITLE=$(queued main | awk '{ print tolower(substr($0, 1, 1)) substr($0, 2) }')
+[ -n "$TITLE" ] || [ "$NEW" = 0 ] || TITLE=$(printf '%s\n' "$HEADING" | awk -F ' — ' -v id="$ID" '{ t = $2; sub("^" id ", *", "", t); print t }')
 [ -n "$TITLE" ] || TITLE=$(git log -1 --format=%s "$REF")
 
 # 7. the merge, not yet committed
@@ -247,6 +252,9 @@ if ! git merge --no-ff --no-commit -q "$REF" >/dev/null 2>&1; then
     fi
 fi
 say "merged $AHEAD commit(s) of $BRANCH, uncommitted"
+# WHY (GG1, BS1): record substitution never reaches source assertion labels.
+git diff -U0 "$HEAD0" -- src | grep '^+' | grep -v '^+++' | grep -q -F '{next}' &&
+    die "{next} remains in added source; use the batch ID in source labels"
 
 # Select the actual merge before publisher-generated VERSION and records can widen it.
 PICKED=$(sh tools/pick.sh "$HEAD0" 2> "$T/pick.txt") || die "the pick failed: $(cat "$T/pick.txt")"
@@ -304,13 +312,6 @@ records() {
     GONE=$(cat "$T/gone")
     git add -- docs/notes/changelog.md QUEUE.md
     git rm -q -f -- "$SHIPF" || die "cannot delete $SHIPF"
-    if [ "$WANT" = 1 ]; then   # a {next} left in another file the branch changed: said, not filled
-        printf '%s\n' "$CHANGED" | grep -v -x -F "$SHIPF" > "$T/changed"
-        if [ -s "$T/changed" ]; then
-            STRAY=$(xargs git --literal-pathspecs grep -l -F '{next}' -- < "$T/changed" 2>/dev/null | head -3 | tr '\n' ' ')
-            [ -z "$STRAY" ] || say "note: {next} also in $STRAY- not a record file, left as written"
-        fi
-    fi
 }
 if [ "$NEW" = 1 ]; then
     records
@@ -326,22 +327,13 @@ fi
 
 # GR2: file new unrelated reds, then remove this batch's own exemptions before judgment.
 REDPARTS=docs/notes/known-reds.txt
-: > "$T/removed"
 if [ "$NEW" = 1 ]; then
-    sect known-reds "$T/ship-on-branch" | sed '/^#/d; /^[[:space:]]*$/d' > "$T/new-parts"
-    if [ -s "$T/new-parts" ]; then
-        awk -F ' [|] ' 'NF != 5 || $1 !~ /^[A-Za-z0-9_]+$/ || $2 == "" || $3 !~ /^[A-Za-z0-9_-]+$/ || $4 !~ /^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$/ || $5 == "" { exit 1 }' "$T/new-parts" \
-            || die "$SHIPF has a malformed known-reds row"
-        cat "$T/new-parts" >> "$REDPARTS"
-    fi
     [ -n "$REUSE" ] || REUSE=$(sed -n 's/^<!-- gate-run: \(.*\) -->$/\1/p' "$T/ship-on-branch" | head -1)
 fi
-if [ -f "$REDPARTS" ]; then
-    awk -F ' [|] ' -v id="$ID" '$3 == id { print "! " $0 }' "$REDPARTS" > "$T/removed"
-    awk -F ' [|] ' -v id="$ID" '/^#/ || $3 != id' "$REDPARTS" > "$T/parts"
-    cat "$T/parts" > "$REDPARTS"
-    git add -- "$REDPARTS"
-fi
+sh tools/known-reds.sh "$ID" "$T/ship-on-branch" > "$T/parts" || die "$SHIPF has a malformed known-reds row"
+sed -n '/^! /p' "$T/parts" > "$T/removed"
+sed '/^! /d' "$T/parts" > "$REDPARTS"
+git add -- "$REDPARTS"
 
 # the version this merge carries: NEXT, or what the tree reads
 if [ "$WANT" = 1 ]; then V=$NEXT; else V=$(sed -n 's/^ *public static final String VERSION = "\([^"]*\)";.*/\1/p' "$GV" | head -1); fi
@@ -415,7 +407,7 @@ selftests() {
     [ "${CBS_SELFTEST:-}" != 1 ] || return 0
     printf '%s\n' "$CHANGED" | while IFS= read -r file; do
         case "$file" in
-            ship.sh|tools/gate*.sh|tools/gate-process.ps1|tools/gate-record.awk) echo tools/ship-selftest.sh ;;
+            ship.sh|batch-check.sh|tools/gate*.sh|tools/gate-process.ps1|tools/gate-record.awk|tools/known-reds.sh|tools/batch-id.sh) echo tools/ship-selftest.sh ;;
             *-selftest.sh) echo "$file" ;;
             *.sh) testfile="${file%.sh}-selftest.sh"; [ ! -f "$testfile" ] || echo "$testfile" ;;
         esac
