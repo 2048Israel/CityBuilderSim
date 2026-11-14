@@ -5,7 +5,10 @@ ID=${1:-}; MAIN=${2:-origin/main}
 case "$ID" in ''|*[!A-Za-z0-9_-]*) echo 'batch-id: invalid ID' >&2; exit 2 ;; esac
 git rev-parse --verify "$MAIN^{commit}" >/dev/null 2>&1 || exit 2
 for REF in "refs/remotes/origin/batch/$ID" "refs/heads/batch/$ID"; do
-    if git rev-parse --verify "$REF^{commit}" >/dev/null 2>&1 && git merge-base --is-ancestor "$REF" "$MAIN"; then
+    TIP=$(git rev-parse --verify "$REF^{commit}" 2>/dev/null) || continue
+    # A just-created local branch may still point at main's spine, before its first commit.
+    [ "$REF" != "refs/heads/batch/$ID" ] || ! git rev-list --first-parent "$MAIN" | grep -q -x "$TIP" || continue
+    if git merge-base --is-ancestor "$REF" "$MAIN"; then
         echo "batch-id: $ID already has a merged batch branch; choose a new ID" >&2; exit 1
     fi
 done

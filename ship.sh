@@ -133,7 +133,6 @@ CHANGED=$(git diff --name-only --no-renames "main...$REF")   # what the branch i
 ID="${BRANCH#batch/}"; ISBATCH=0
 if [ "$ID" != "$BRANCH" ]; then ISBATCH=1; else ID=$(printf '%s' "$BRANCH" | tr '/' '-'); fi   # another branch's "/" only for its ship file's name
 SHIPF="docs/queue/$ID-ship.md"
-[ "$ISBATCH" = 0 ] || sh tools/batch-id.sh "$ID" main || die "batch ID $ID was already used"
 
 # 3. the last version tag is main's version
 LAST=$(git tag -l | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1)
@@ -252,6 +251,7 @@ if ! git merge --no-ff --no-commit -q "$REF" >/dev/null 2>&1; then
     fi
 fi
 say "merged $AHEAD commit(s) of $BRANCH, uncommitted"
+[ "$ISBATCH" = 0 ] || sh tools/batch-id.sh "$ID" main || die "batch ID $ID was already used"
 # WHY (GG1, BS1): record substitution never reaches source assertion labels.
 git diff -U0 "$HEAD0" -- src | grep '^+' | grep -v '^+++' | grep -q -F '{next}' &&
     die "{next} remains in added source; use the batch ID in source labels"

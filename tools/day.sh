@@ -1,43 +1,8 @@
 #!/bin/sh
-# ---------------------------------------------------------------------------
-#  The orchestrator's morning in one call: where main stands, what is queued,
-#  and every batch branch on origin with what it waits for. Read-only apart
-#  from the fetch it starts with. POSIX sh and awk; no JVM.
-#
-#      sh tools/day.sh            the whole picture, about 15 lines
-#      sh tools/day.sh --due      only the branches that need the orchestrator
-#                                 (ready to ship, or stuck; "nightly due" once a day from 01:00
-#                                 to 07:00, until tools/nightly.sh has run): nothing printed and
-#                                 exit 1 when none does - the hourly check-in's
-#                                 probe, "nothing printed: end the turn"
-#
-#  The lines, in this order:
-#      main      0.8.41 = the last version tag; merged 3 h ago: Merge batch/ET1 ...
-#      reds      MapCheck 2, EarthCheck 1 - gate of 2026-10-24, docs/notes/gate.txt
-#      nightly   <tools/nightly.sh's last verdict>; log $HOME/.cbs-nightly.log, or "none yet: sh tools/nightly.sh" (GT1)
-#      queue     14 queued, next: HY1 ET2 ET3 ET4
-#      pending   18: ET1-C PT1-M4-C ...
-#      ready     ID - ./ship.sh batch/ID  (its docs/queue/ID-ship.md is on the
-#                branch), and "BUT conflicts with main in ..." when git merge-tree
-#                predicts any, generated docs aside (ship.sh takes the branch's
-#                side of those); "conflicts not predicted" where git is too old
-#      waiting   ID - its ship file is pushed, but it is built on P, which is not on main
-#                yet (tools/carries.sh, RL1): gate P first, then ID takes main
-#      stuck    ID - queued, no commit for 30 h
-#      working   ID - queued, last commit 3 h ago
-#      off-queue unmerged and not queued, one line for all: ID (age), ...
-#      tidy      N merged batch branches still on origin
-#  A fetch that fails is said in one line at the top ("origin as last fetched").
-#  main's reds are the harness names of docs/notes/gate.txt's non-# lines, each
-#  with its count of failing lines (a bare "exit N" line counts one). A VERSION
-#  that is not the last tag is said on the main line: ship.sh stops on it.
-#
-#  Exit status: 0 the picture was printed (--due: something is due); 1 --due and
-#  nothing is due; 2 not a git checkout, or no origin/main here.
-#
-#  WHY (BP1, 2026-10-24; RL1): a fresh orchestrator began each day with about ten calls;
-#  the rest is docs/notes/batch-history.md, "The scripts' headers" (moved in GT1).
-# ---------------------------------------------------------------------------
+# Read-only morning report (--due: ready/stuck/nightly due, exit 1 if none).
+# WHY (BP1, GG1): one report replaces hand probes; provisional ship records are working.
+# Main/version/reds/nightly/queue, branch state and predicted conflicts; fetch failures are shown.
+# tools/carries.sh keeps legacy predecessor branches waiting. No JVM.
 
 usage() { echo "usage: sh tools/day.sh [--due]" >&2; exit 2; }
 DUE=0
@@ -97,7 +62,8 @@ for b in $(git for-each-ref --format='%(refname)' 'refs/remotes/origin/batch/*')
     if git merge-base --is-ancestor "$b" "$M"; then MERGED=$((MERGED + 1)); continue; fi
     t=$(git log -1 --format=%ct "$b")
     age=$(ago "$t")
-    if git cat-file -e "$b:docs/queue/$id-ship.md" 2>/dev/null; then
+    if git show "$b:docs/queue/$id-ship.md" 2>/dev/null > /dev/null &&
+        ! git show "$b:docs/queue/$id-ship.md" | grep -q -x '<!-- readiness: provisional -->'; then
         pred=$(sh "$CARRIES" "$b" | tr '\n' ' ')
         if [ -z "$pred" ]; then READY="${READY}ready     $id - ./ship.sh batch/$id (last commit $age ago)$(mtnote "$b")$NL"
         else WAIT="${WAIT}waiting   $id - ship file pushed, built on ${pred% }, not on main yet: gate that first$NL"; fi

@@ -9,8 +9,9 @@ naming its incident; the longer story and the lessons cited by letter (a-f)
 are `docs/notes/batch-history.md`. Split by reader in BM1 (2026-10-28).
 
 Each batch runs in a worktree of the orchestrator's clone, on a branch of its
-own (`batch/<id>`) from `main`, or, as a lane's next batch, from its
-predecessor's tip (7). Batches check side by side (TM1). Every run but
+own (`batch/<id>`) from `main`. Fetch first and run `sh tools/batch-id.sh ID`
+before creating it: changelog or merged-branch evidence refuses a used ID.
+WHY (GG1, PD1): pushing a reused merged branch fast-forwarded it. Batches check side by side (TM1). Every run but
 `batch-check.sh --timing` times soft. Speed is judged nightly on main by
 `tools/nightly.sh`, with machine-local figures and paired confirmation (GR1,
 the gate's rounds took 33.7 hours without identifying a faulty batch).
@@ -27,14 +28,8 @@ under `batch-check.sh`'s lock) go one at a time.
    gate in `docs/notes/gate.txt`). While building: `./batch-check.sh --fast`,
    and named harnesses (`./batch-check.sh <names>`) as the work needs.
 3. Change the model first, the save second, the screen last; a harness for the
-   mechanic before the screen, which is checked by eye. The coding goes to
-   Sonnet in **fewer, larger slices** (BP1 item 6), each one a brief can pin
-   down and about 80 steps long, started as `subagent_type: "slice"` (CX1,
-   `docs/deepseek.md`); the diff is reviewed as a stranger's
-   **without re-reading what the brief sent Sonnet to read**. A **small fix
-   batch** - no money, saves or threading, a few hundred lines - runs on
-   Sonnet as the whole session, Opus at the gate only (BP1 item 7). Commit
-   small and often.
+   mechanic before the screen, which is checked by eye. Codex builds whole
+   batches (Jerus, WC1); review the diff as a stranger's. Commit small and often.
 4. At the end, `./batch-check.sh --pick` compiles, runs the selected harnesses,
    regenerates maps, checks Stale and the tree. Exit 0 is green, 3 only known
    reds, 4 NEW reds, 1 a build or incomplete-check failure, 2 usage.
@@ -43,8 +38,10 @@ under `batch-check.sh`'s lock) go one at a time.
    judge. A shared class over `CBS_PICK_FANOUT` selects `ALL`; changed harnesses
    select their users and TimingCheck. WHY (GR2, WG2) the builder missed reds
    in shared fixtures and 16 harnesses until the gate.
-   When the pick is `ALL`, push the branch and run
-   `sh tools/gate.sh ID --dry-run` in its fresh clone before readiness.
+   When the pick is `ALL`, push the branch with a provisional ship file (5),
+   then run `sh tools/gate.sh ID --dry-run` (`--no-tag` for process batches)
+   in its fresh clone before readiness. A publisher change also tests its
+   branch publisher with `--branch-gate --dry-run`.
    Keep its run directory and both commit identities in the notes. Other picks
    are ready on exit 0 or 3. Run changed scripts' self-tests as well.
 5. **The records go in `docs/queue/ID-ship.md`**, separate from `ID-notes.md`.
@@ -68,15 +65,27 @@ under `batch-check.sh`'s lock) go one at a time.
    Pending and queued sections contain rows only when needed. Trace each NEW
    red unrelated to the batch in its notes and name its queued fix. The gate
    files these entries and removes entries whose fix is the batch being judged,
-   including their cover in the exact record. WHY (GR2) a fix must face its red.
+   including their cover in the exact record. A ship row with the same harness
+   and part may transfer its own entry to another queued fix; state the cause.
+   `batch-check.sh` applies both rules too. WHY (GG1, KS1/DM2): the builder
+   saw green where the gate vetoed the re-filed red.
    A kept launcher run is named by `<!-- gate-run: RUN_DIRECTORY -->` above
    the sections. The gate rejudges it against current known reds when branch,
-   main and selection qualify (`docs/orchestrator.md`, The gate).
-   Push the ship file last, once ready. A returned batch removes and pushes it
-   first, then restores it last after repair. WHY (BM1) `day.sh` reads it as
-   ready every hour. A process batch's heading uses its ID and `no tag
-   (process)` with the date; a versioned batch uses `{next}`. The publisher
-   fills that token in its three record files and names its ensemble baseline.
+   main and selection qualify. After a kept run, only its notes, ship file and
+   `docs/notes/known-reds.txt` may advance; the new registry is rejudged (GG1).
+   Before the dry run, push the ship file with `<!-- readiness: provisional -->`.
+   It supplies the version and records, while day/wait and real publication
+   exclude it. Remove that line and push the ship file last when ready; put
+   it back and push first on a return. WHY (GG1, BS1/DM2): versioned dry runs
+   need records before readiness. Marker-free existing ship files stay ready.
+   Write records as UTF-8 through Git Bash. Headings require two ` — `
+   separators; a process batch uses `### ID — title — date, ready, no tag
+   (process), see docs/queue/ID-notes.md`, a versioned one the example above.
+   Without a queue row the heading supplies the title. WHY (GG1, HA1/GDP1):
+   lost bytes and bookkeeping commit titles reached the record.
+   `{next}` is filled only in the three record files and the ensemble's name;
+   added source containing it is refused. WHY (GG1, BS1): assertion labels
+   shipped with a literal version token. Existing main comments are left alone.
 6. **The ensemble only when the trace moves** (EN1, Jerus 2026-10-20): a batch
    whose default playtest's trace is byte-identical to main's but for its
    run-time line skips the 80-run ensemble and its notes say so; one whose
@@ -98,21 +107,6 @@ under `batch-check.sh`'s lock) go one at a time.
    sh tools/wait.sh --line target/checks/run.txt '^exit [0-9]' --for 9                                                       # in the foreground, Bash timeout 600000
    ```
 
-   **A lane's next batch is built on its predecessor** (RL1): `git fetch origin
-   && git checkout -b batch/<id> origin/batch/PRED`, once PRED's ship file is on
-   origin; that ship file stays as it is. `--pick` diffs against PRED's tip
-   (`tools/carries.sh` names the unmerged batch a tree is built on). The
-   session waits in one background `sh tools/wait.sh --row PRED`, which ends
-   when PRED's row has left origin's `QUEUE.md` or PRED is ready again after a
-   gate sent it back. PRED landed: `git fetch -q origin && git merge
-   origin/main` at once (a conflict in the generated docs: main's side, `--pick`
-   regenerates them). PRED mended: `git merge origin/batch/PRED`, carry on and
-   wait again; ask only if the fix removes something this batch uses. **The
-   ship file is pushed last, and only once PRED is on main and merged in**:
-   until then `day.sh` calls the branch waiting, `wait.sh --ship` leaves it out
-   and `ship.sh` stops it (it would ship PRED ungated). A NEW red under
-   `--pick` while PRED is unmerged may be one Jerus approves at PRED's gate:
-   merge main and run again before mending it.
 8. The report is "ready, see the ship file", then any calls with recommendations
    and the exit and red lines if needed. Ready means the pick passed, or for
    `ALL` the launcher's full dry run of the merge passed, and the ship file
