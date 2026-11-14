@@ -2259,6 +2259,16 @@ public class LongPlaytest {
     static int worksMonths, worksOffMonths, worksDebtIdleMonths, worksLowMonths;
     static final Map<String, Integer> worksLow = new LinkedHashMap<>();
     static final Map<String, Double> worksMin = new LinkedHashMap<>();
+    static final Map<String, Integer> worksReasons = new LinkedHashMap<>();
+    static final Map<String, Integer> worksPowerOrders = new LinkedHashMap<>();
+    static final Map<String, Integer> worksLowLater = new LinkedHashMap<>();
+    /** Jerus's HW1 bar: near full service, with the length and cause of every dip visible. */
+    static final double WORKS_NEAR = .90;
+    static final Map<String, Integer> worksUnder90 = new LinkedHashMap<>(), worksSpell = new LinkedHashMap<>(),
+            worksLongest = new LinkedHashMap<>(), worksLongestEnd = new LinkedHashMap<>(), worksShortReasons = new LinkedHashMap<>();
+    static final Map<String, Double> worksSpellLead = new LinkedHashMap<>(), worksLongestLead = new LinkedHashMap<>();
+    static final Map<String, Map<String, Integer>> worksSpellReasons = new LinkedHashMap<>(),
+            worksLongestReasons = new LinkedHashMap<>();
 
     /** Staffed supply over today's demand, capped at full service, with no demand fully served. */
     static Map<String, Double> worksShares(Game g) {
@@ -2267,9 +2277,10 @@ public class LongPlaytest {
                 BuildAdvice.EDUCATION, BuildAdvice.SAFETY)) {
             for (BuildAdvice.Measure m : BuildAdvice.measuresOf(category)) {
                 switch (m.kind()) {
-                    case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case SCHOOL: case POLICE:
+                    case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case PLOTS: case SCHOOL: case POLICE: case CELLS:
                         double[] sd = BuildAdvice.supplyDemand(g, m, Map.of());
-                        shares.put(m.label(), sd[1] > 0 ? Math.max(0, Math.min(1, sd[0] / sd[1])) : 1);
+                        shares.put(m.label(), !BuildAdvice.warranted(g, m) || !(sd[1] > 0)
+                                ? 1 : Math.max(0, Math.min(1, sd[0] / sd[1])));
                         break;
                     default: break;
                 }
@@ -2283,12 +2294,51 @@ public class LongPlaytest {
         worksMonths++;
         if (!on) worksOffMonths++;
         if (on && over && g.getAutoBuilder().getOrders() == ordersBefore) worksDebtIdleMonths++;
+        for (AutoBuilder.Step s : g.getAutoBuilder().steps()) {
+            if (s.measure().kind() == BuildAdvice.Kind.POWER && s.ordered() > 0)
+                worksPowerOrders.merge(s.building(), s.ordered(), Integer::sum);
+            if (s.measure().kind() == BuildAdvice.Kind.HIGHWAYS || s.measure().kind() == BuildAdvice.Kind.ROADS
+                    || s.measure().kind() == BuildAdvice.Kind.POLICE) {
+                worksReasons.merge(s.measure().label() + " " + s.outcome() + "/" + s.cut(), 1, Integer::sum);
+                if (out != null && g.getMonth() % 120 == 0) out.printf("  works decision m%d %s%n", g.getMonth(), s);
+            }
+        }
+        if (out != null) for (String value : g.getAutoBuilder().powerValues())
+            out.printf("  power choice m%d %s%n", g.getMonth(), value);
         boolean low = false;
         Map<String, Double> shares = worksShares(g);
         for (Map.Entry<String, Double> e : shares.entrySet()) {
+            worksUnder90.putIfAbsent(e.getKey(), 0);
+            worksLow.putIfAbsent(e.getKey(), 0);
+            int spell = e.getValue() < WORKS_NEAR ? worksSpell.getOrDefault(e.getKey(), 0) + 1 : 0;
+            worksSpell.put(e.getKey(), spell);
+            if (spell == 0) {
+                worksSpellLead.remove(e.getKey());
+                worksSpellReasons.remove(e.getKey());
+            }
+            if (spell > 0) {
+                worksUnder90.merge(e.getKey(), 1, Integer::sum);
+                AutoBuilder.Step step = g.getAutoBuilder().steps().stream()
+                        .filter(s -> s.measure().label().equals(e.getKey())).findFirst().orElse(null);
+                String reason = step == null ? "not offered" : step.outcome() + "/" + step.cut();
+                worksShortReasons.merge(e.getKey() + " " + reason, 1, Integer::sum);
+                worksSpellReasons.computeIfAbsent(e.getKey(), key -> new LinkedHashMap<>())
+                        .merge(reason, 1, Integer::sum);
+                if (step != null && !worksSpellLead.containsKey(e.getKey())) {
+                    double first = BuildAdvice.firstCompletion(g, step.measure(), BuildAdvice.onSite(g, step.measure()));
+                    if (Double.isFinite(first)) worksSpellLead.put(e.getKey(), first);
+                }
+            }
+            if (spell > worksLongest.getOrDefault(e.getKey(), 0)) {
+                worksLongest.put(e.getKey(), spell);
+                worksLongestEnd.put(e.getKey(), g.getMonth());
+                worksLongestReasons.put(e.getKey(), new LinkedHashMap<>(worksSpellReasons.get(e.getKey())));
+                worksLongestLead.put(e.getKey(), worksSpellLead.getOrDefault(e.getKey(), Double.NaN));
+            }
             worksMin.merge(e.getKey(), e.getValue(), Math::min);
             if (e.getValue() < WORKS_LOW) {
                 worksLow.merge(e.getKey(), 1, Integer::sum);
+                if (g.getMonth() > HELD_AFTER) worksLowLater.merge(e.getKey(), 1, Integer::sum);
                 low = true;
             }
         }
@@ -7780,6 +7830,20 @@ public class LongPlaytest {
         out.printf("  essential works: %d months, automatic building off %d, no order while on and over debt limit %d,"
                 + " any service under a fifth served %d%n", worksMonths, worksOffMonths, worksDebtIdleMonths, worksLowMonths);
         out.printf("  ...months under a fifth served %s; minimum served %s%n", worksLow, worksMin);
+        out.printf("  ...months under a fifth after founding m%d: %s%n", HELD_AFTER, worksLowLater);
+        out.printf("  ...essential works decisions: %s%n", worksReasons);
+        out.printf("  ...months under 90%% served: %s%n", worksUnder90);
+        out.printf("  ...longest spell under 90%%: %s%n", worksLongest);
+        out.printf("  ...last month of that longest spell: %s%n", worksLongestEnd);
+        out.printf("  ...pass outcomes during that longest spell: %s%n", worksLongestReasons);
+        out.printf("  ...first work's quoted lead near the start of that spell: %s%n", worksLongestLead);
+        out.printf("  ...under 90%% by pass outcome/cut: %s%n", worksShortReasons);
+        out.printf("  ...automatic power buildings ordered: %s%n", worksPowerOrders);
+        BuildAdvice.Measure powerMeasure = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        for (BuildingsTemplate plant : g.getBuildingManager().getTemplates()) if (powerMeasure.serves(plant)) {
+            out.printf("  ...power comparison at m%d, one %s: %s%n", g.getMonth(), plant.getName(),
+                    BuildCard.worksValue(g, plant, powerMeasure).words());
+        }
         if (AUTOBUILD) {
             AutoBuilder ab = g.getAutoBuilder();
             out.printf("  ...automatic building (0.7.73, N4, -Dplaytest.autobuild): %,d order(s), %,d building(s), $%,.0fk"

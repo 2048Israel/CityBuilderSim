@@ -503,16 +503,25 @@ public final class BuildCard {
                 BuildAdvice.pavingBeatsPaved(game, free, site));
     }
 
-    /** What one costs to keep a month, which is not what it costs to buy: its upkeep and its posts at today's wages (PopulationManager.getWagesPerType()). */
+    /** What one costs to keep a month: upkeep and filled posts at today's wages, as the utility and government books pay them. */
     public static double runningCost(Game game, BuildingsTemplate t) {
         double[] wages = game.getPopulationManager().getWagesPerType();
+        double[] fill = game.getPopulationManager().getJobFillRate();
         double bill = 0;
         for (JobType job : JobType.values()) {
             int n = t.getJobs(job);
             if (n == 0) continue;
-            if (wages != null && job.ordinal() < wages.length) bill += n * wages[job.ordinal()];
+            if (wages != null && job.ordinal() < wages.length) bill += n * wages[job.ordinal()] * fill[job.ordinal()];
         }
         return t.getUpkeep() + bill;
+    }
+
+    /** The same full-horizon sum the advice uses, exposed to every city work's card (HW1). */
+    public static WorksValue.Value worksValue(Game game, BuildingsTemplate t, BuildAdvice.Measure m) {
+        BuildAdvice.Measure on = m != null && m.serves(t) ? m : cityMeasure(t);
+        if (on == null) return null;
+        return WorksValue.of(game, on, BuildAdvice.onSite(game, on), t, 1,
+                game.getLandManager().getAvailableSqFt());
     }
 
     /** The sector whose money and staffing test a market building is judged by: its owner, or retail for the bank's branch (planBank() asks retail). */

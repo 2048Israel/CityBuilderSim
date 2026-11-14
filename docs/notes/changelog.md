@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.104 — HW1, The auto city builds its works when they are needed — 2026-11-14, ready, see docs/queue/HW1-notes.md
+Essential works target full useful service plus the player's reserve, without their payback veto or twelve-
+month cap. Cards and automatic orders share counts, opening projections and twenty-year maintained-service
+values on one calendar. Plans include initial and later works, actual-use owned ground, parcel cash, quoted
+financing, filled-post running, physical output losses prevented and returned payroll taxes. Road wear and
+capped sickness enter the sum. Current losses rank shortages and protect funding. Prospective crew quotes
+preserve an unserved essential's saved completion through reserve orders, including newly promoted builders-
+first depots. Expired promises trigger fresh work, and faster alternatives advance recovery. Hard laws for
+funded asks, service recovery, monthly links, eligibility and actual orders remain. Notes record final service
+spells, plant choices and ensemble verdicts.
+
 ### 0.9.103 — WN5c, A picked block priced off the screen's thread — 2026-11-14, ready, see docs/queue/WN5c-notes.md
 Picked blocks are measured on a copied land office away from the screen thread; the card says the price is coming and allows closing while it waits. Seller and landmass geometry is retained, so the month prices picks immediately at its current factors without repeating either plot walk. Results from changed ground, changed links, cancelled or superseded picks are rejected on the screen thread. LandNationsCheck measures clicks by level and 1/10/50 monthly picks at Windsor and the Strait and holds exact prices, current-month delivery and worker ownership.
 

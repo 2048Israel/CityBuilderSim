@@ -224,8 +224,7 @@ public class Health {
                              double injured) {
 
         coverage = coverageOf(generalCareCapacity, population);
-        baselineRate = WELL_SERVED_RATE
-                + (UNTREATED_RATE - WELL_SERVED_RATE) * (1 - coverage);
+        baselineRate = baselineAt(coverage);
 
         /*
          * Decay first, then roll. In that order a month that ends an outbreak
@@ -276,9 +275,7 @@ public class Health {
          */
         influenzaRate = influenzaHeldOff ? 0 : CausesOfDeath.influenzaSick(month);
 
-        sickRate = Math.min(MAX_SICK_RATE,
-                baselineRate + outbreakSeverity + unburiedRate + hungerRate + unhousedRate
-                        + injuryRate + influenzaRate);
+        sickRate = sicknessAt(baselineRate, unhousedRate, unburiedRate, injuryRate);
     }
 
     /** What the 1918 influenza is adding on top: its sick, in its months only (R0b). */
@@ -315,6 +312,23 @@ public class Health {
     }
 
     /* ---------------------------- reading it ---------------------------- */
+
+    private static double baselineAt(double coverage) {
+        return WELL_SERVED_RATE + (UNTREATED_RATE - WELL_SERVED_RATE)
+                * (1 - coverageOf(coverage, 1));
+    }
+
+    private double sicknessAt(double baseline, double unhoused, double unburied, double injured) {
+        return Math.min(MAX_SICK_RATE,
+                baseline + outbreakSeverity + unburied + hungerRate + unhoused + injured + influenzaRate);
+    }
+
+    /** Current causes at another service level. The sickness ceiling applies to their whole sum (HW1). */
+    public double workRatioAt(double coverage, double unburied, double injured) {
+        double baseline = baselineAt(coverage);
+        double unhoused = baselineRate > 0 ? unhousedRate * baseline / baselineRate : 0;
+        return 1 - sicknessAt(baseline, unhoused, unburied, injured);
+    }
 
     /** The share of the workforce that is off sick. */
     public double getSickRate() { return sickRate; }

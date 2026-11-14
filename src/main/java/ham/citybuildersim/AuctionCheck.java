@@ -1417,6 +1417,9 @@ public class AuctionCheck {
         out.println("--- 10. automatic building's own cap; the ask a short sale keeps open (D28, D30) ---");
 
         Game a = ChildcareCheck.town(root, "auction10-town");
+        // The capped-sale fixture's street candidate is a Paved Road, whose short issue and retained ask it exercises.
+        a.getBuildingManager().getTemplates().removeIf(t -> t.getCategory() == BuildingType.INFRASTRUCTURE
+                && !t.isHighway() && !t.getName().equals("Paved Road"));
         /*
          * FC1: THE BUILDERS ARE NOT SHORT, SO A QUOTE STANDS ACROSS THE PASSES. The town's four depots leave the sites a month that its
          * repairs eat away (41 of 385 at month 37, 33 of 377 at 38, none of 321 at 39): from month 39 the foreign crews take orders at
@@ -1537,7 +1540,7 @@ public class AuctionCheck {
         String log3 = month(a, true);
         AutoBuilder.OpenAsk gone = ab.askFor(streets);
         AutoBuilder.Entry placedEntry = null;
-        for (AutoBuilder.Entry e : ab.log()) if (e.measure().equals(streets.label())) placedEntry = e;
+        for (AutoBuilder.Entry e : ab.log()) if (e.measure().equals(streets.label()) && e.why().contains("waited 2 months")) placedEntry = e;
         assertTrue("the room back, the ask is covered by the sale that month and its order is placed on the same path as any other:"
                         + " one Paved Road, a site, the ask closed",
                 gone == null && placedEntry != null && placedEntry.building().equals("Paved Road") && placedEntry.count() == 1
@@ -1560,10 +1563,11 @@ public class AuctionCheck {
         int openB = bb.asks().size(), bondsB = bb.getBonds(), sitesB = siteCount(b);
         double principalB = b.getDebtManager().getAllPrincipal();
         useUpTheRoom(b);
-        b.setCashForTest(AutoBuilder.reserve(b) + costs + 1000);
+        // HW1 keeps working after an ask opens: fund the subsequent essential orders too.
+        b.setCashForTest(AutoBuilder.reserve(b) + costs + Founding.WEALTHY_CASH);
         String logB = printed(() -> b.simulateMonths(1));
         AutoBuilder.Entry placedB = null;
-        for (AutoBuilder.Entry e : bb.log()) if (e.measure().equals(streets.label())) placedB = e;
+        for (AutoBuilder.Entry e : bb.log()) if (e.measure().equals(streets.label()) && e.why().contains("waited 1 month")) placedB = e;
         assertTrue("the treasury can pay for what is left of the orders: they are placed with no sale at all - no bond, no new paper,"
                         + " nothing in the month's report - and every ask is closed",
                 bb.asks().isEmpty() && openB >= 1 && bb.getBonds() == bondsB && salesBy(b, "Automatic building") == 0
@@ -1593,21 +1597,26 @@ public class AuctionCheck {
                         + " order is placed on money that is not there",
                 pb.getOrders() == 0 && pb.log().isEmpty() && pb.asks().size() == openP);
         double principalP = p.getDebtManager().getAllPrincipal();
+        java.util.Map<AutoBuilder.OpenAsk, Double> raisedBefore = new java.util.IdentityHashMap<>();
+        for (AutoBuilder.OpenAsk k : pb.asks()) raisedBefore.put(k, k.raised());
         p.setCashForTest(AutoBuilder.reserve(p));
         printed(() -> p.simulateMonths(1));
         Notice waits = p.getInbox().live("autobuild");
-        assertTrue("next month, drawn again, the asks have raised their whole cost and the paper is not sold twice: the only sales are a"
-                        + " granule's top-up for a price that drifted up (D$" + (int) Game.BUILD_BOND_GRANULE + "k of face at most each), the orders"
-                        + " still waiting",
+        double repricedGap = 0;
+        for (AutoBuilder.OpenAsk k : pb.asks()) repricedGap += Math.max(0, k.cost() - raisedBefore.getOrDefault(k, 0.0));
+        double askedAgain = p.getAutoSalesThisMonth().stream().mapToDouble(TimeSkipReport.AutoSale::asked).sum();
+        assertTrue("next month, drawn again, the paper already raised is not sold twice: new sales cover only the repriced cost"
+                        + " less the money already raised, rounded by at most a granule per ask; the orders still wait",
                 pb.asks().size() == openP && pb.getOrders() == 0
-                        && p.getAutoSalesThisMonth().stream().allMatch(s -> s.asked() <= Game.BUILD_BOND_GRANULE + 1e-9 && !s.shortSale())
-                        && p.getDebtManager().getAllPrincipal() <= principalP + openP * Game.BUILD_BOND_GRANULE + 1e-6);
+                        && p.getAutoSalesThisMonth().stream().noneMatch(TimeSkipReport.AutoSale::shortSale)
+                        && askedAgain <= repricedGap + openP * Game.BUILD_BOND_GRANULE + 1e-6
+                        && p.getDebtManager().getAllPrincipal() <= principalP + askedAgain + 1e-6);
         assertTrue("...and the inbox says the month's bills drew the money and that nothing more is borrowed for it",
                 waits != null && String.join(" ", waits.getBody()).contains("have drawn the rest")
                         && String.join(" ", waits.getBody()).contains("nothing more is borrowed for it"));
         int bondsP = pb.getBonds();
         double principalP2 = p.getDebtManager().getAllPrincipal();
-        p.setCashForTest(AutoBuilder.reserve(p) + costsP + 1000);
+        p.setCashForTest(AutoBuilder.reserve(p) + costsP + Founding.WEALTHY_CASH);
         printed(() -> p.simulateMonths(1));
         assertTrue("the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt",
                 pb.asks().isEmpty() && pb.getOrders() >= openP && siteCount(p) >= sitesP + openP && pb.getBonds() == bondsP
@@ -1619,9 +1628,37 @@ public class AuctionCheck {
         BuildAdvice.Measure care = null;
         for (BuildAdvice.Measure k : AutoBuilder.remit(c, CityNeeds.measure(c, CityNeeds.PLAIN))) if (k.label().equals("General care")) care = k;
         final BuildAdvice.Measure general = care;
+        BuildingsTemplate centre = c.getBuildingManager().getTemplateByName("Community Health Centre");
+        // A save from before ranked funding can contain two funded asks. The first pass above really sold the paper.
+        // Split those actual proceeds between the two reservations, preserving every dollar and all outstanding debt.
+        double reservedC = cb.askedRaised(), cashC = c.getCash(), principalC = c.getDebtManager().getAllPrincipal();
+        AutoBuilder.State legacy = cb.toState();
+        AutoBuilder.OpenAsk streetReservation = legacy.asks.stream()
+                .filter(k -> k.measure().equals(streets.label())).findFirst().orElse(null);
+        if (streetReservation != null && general != null) {
+            for (AutoBuilder.OpenAsk old : new java.util.ArrayList<>(legacy.asks)) if (old.measure().equals(general.label())) {
+                streetReservation.raised += old.raised;
+                legacy.asks.remove(old);
+            }
+            AutoBuilder.OpenAsk fundedCare = new AutoBuilder.OpenAsk();
+            fundedCare.measure = general.label();
+            fundedCare.building = centre.getName();
+            fundedCare.templateId = centre.getId();
+            fundedCare.count = 1;
+            fundedCare.cost = c.quoteBuild(centre, 1).total;
+            fundedCare.raised = streetReservation.raised / 2;
+            fundedCare.toRaise = Math.max(0, fundedCare.cost - fundedCare.raised);
+            fundedCare.month = streetReservation.month;
+            streetReservation.raised -= fundedCare.raised;
+            streetReservation.toRaise = Math.max(0, streetReservation.cost - streetReservation.raised);
+            legacy.asks.add(fundedCare);
+            cb.restore(legacy);
+        }
+        assertTrue("fixture: the saved street and care reservations share actual sold proceeds without changing cash or debt",
+                streetReservation != null && reservedC > 0 && Math.abs(cb.askedRaised() - reservedC) < 1e-9
+                        && c.getCash() == cashC && c.getDebtManager().getAllPrincipal() == principalC);
         AutoBuilder.OpenAsk careAsk = general == null ? null : cb.askFor(general);
         double raisedC = careAsk == null ? 0 : careAsk.raised();
-        BuildingsTemplate centre = c.getBuildingManager().getTemplateByName("Community Health Centre");
         c.setCashForTest(Founding.WEALTHY_CASH);
         quietly(() -> c.buildStack(centre, 20, true));
         double[] snapC = new double[5];
@@ -1633,21 +1670,33 @@ public class AuctionCheck {
         String logC = month(c, false);
         c.autoBuildProbeForTest = null;
         String withdrew = String.join(" ", cb.asked());
-        assertTrue("fixture: the town had an ask open for its general care, with money raised for it, and then twenty Health Centres stand:"
+        assertTrue("fixture: the town had a funded ask open for its general care, and then twenty Health Centres stand:"
                         + " the measure is ahead of its margin without another",
                 careAsk != null && raisedC > 0 && general != null
                         && BuildAdvice.ahead(c, general, BuildAdvice.onSite(c, general), BuildAdvice.opening(c, 0, cb.getSlack())));
+        String careBuilding = careAsk == null ? "missing" : careAsk.building();
+        String cashWords = "stays in the treasury";
+        String debtWords = "cannot be unsold";
         assertTrue("an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the"
                         + " treasury - the paper is sold and cannot be unsold",
                 general != null && cb.askFor(general) == null
-                        && withdrew.contains("withdrew its ask for Community Health Centre (General care)")
-                        && withdrew.contains("stays in the treasury") && withdrew.contains("cannot be unsold")
-                        && logC.contains("withdrew its ask for Community Health Centre (General care)")
+                        && withdrew.contains("withdrew its ask for " + careBuilding + " (General care)")
+                        && withdrew.contains(cashWords) && withdrew.contains(debtWords)
+                        && logC.contains("withdrew its ask for " + careBuilding + " (General care)")
                         && c.getInbox().live("autobuild-ask") != null
-                        && String.join(" ", c.getInbox().live("autobuild-ask").getBody()).contains("cannot be unsold"));
+                        && String.join(" ", c.getInbox().live("autobuild-ask").getBody()).contains(debtWords));
         assertTrue("...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed"
                         + " (the withdrawn ask's money is the treasury's to spend now), and the city still owes every bond it sold",
                 cb.askFor(streets) != null && snapC[1] >= snapC[0] - placedIn(cb, (int) snapC[4]) - 1e-6 && snapC[3] >= snapC[2] - 1e-6);
+
+        double cashSoldC = c.getAutoSalesThisMonth().stream().filter(x -> x.by().equals("Automatic building"))
+                .mapToDouble(TimeSkipReport.AutoSale::raised).sum();
+        double faceSoldC = c.getAutoSalesThisMonth().stream().filter(x -> x.by().equals("Automatic building"))
+                .mapToDouble(TimeSkipReport.AutoSale::sold).sum();
+        close("funded withdrawal retains every dollar: cash changes only by new sales less placed orders",
+                snapC[1] - snapC[0], cashSoldC - placedIn(cb, (int) snapC[4]), 1e-8);
+        close("funded withdrawal retains every bond: principal changes only by newly sold face",
+                snapC[3] - snapC[2], faceSoldC, 1e-8);
 
         /* WITHDRAWN: the debt limit closes. */
         Game d = load(saved);

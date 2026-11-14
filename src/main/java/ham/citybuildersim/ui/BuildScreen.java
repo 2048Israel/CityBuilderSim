@@ -1609,7 +1609,11 @@ final class BuildScreen {
         // ...and what its money is struck at (0.7.45; the UI spec's 2.10), behind an (i) after its words.
         if (!money.getChildren().isEmpty() && money.getChildren().get(0) instanceof HBox head) {
             boolean road = f.kind() == BuildCard.Kind.CITY && f.bar2Kind() == BuildCard.Bar2.LAND;
-            head.getChildren().add(1, Kept.scope("info", () -> infoButton(road ? roadBarInfo() : moneyBarInfo(), false)));
+            String info = road ? roadBarInfo() : moneyBarInfo();
+            WorksValue.Value value = f.kind() == BuildCard.Kind.CITY ? BuildCard.worksValue(ui.game, f.template(), m) : null;
+            if (value != null) info += "\n" + value.words();
+            String moneyInfo = info;
+            head.getChildren().add(1, Kept.scope("info", () -> infoButton(moneyInfo, false)));
         }
         out.add(money);
         // None for a city building with no posts: its needs line says so.
@@ -3312,10 +3316,9 @@ final class BuildScreen {
                 HBox heldRow = Kept.row(5, icon(Icons.COIN, Palette.WARN, 12), held);
                 heldRow.setAlignment(Pos.TOP_LEFT);
                 heldRow.setStyle("-fx-padding: 3 0 0 0;");
-                Kept.tip(heldRow, "Automatic building orders a school, a police station, a prison or a"
-                        + " transit line only as far as it pays back over its life. The advice ranks by the cheapest per "
-                        + BuildCard.perWords(s.measure()) + "; the order is still yours to place, and the inbox has the same"
-                        + " line.", 1000);
+                Kept.tip(heldRow, "Essential works are ordered when needed. Other works count the output losses they"
+                        + " prevent in their payback. The advice ranks whole plans by net present value."
+                        + " The order is still yours to place, and the inbox has the same line.", 1000);
                 return heldRow;
             }));
         }
@@ -3388,46 +3391,18 @@ final class BuildScreen {
                 : ui.game.getBusinessInvestment().getPopulationGrowth() <= 0 ? "no growth on the trend"
                 : "people held at the homes there are";
         String sized = "Opens " + monthsWait(s.lead()) + "; sized " + formatter.format(Math.round(a.months()))
-                + " mo out: " + growth + ", " + pct(BuildAdvice.SLACK) + " to spare.";
+                + " mo out: " + growth + ", reserve target " + pct(a.slack()) + ".";
 
-        String per = BuildCard.perWords(s.measure());
-        // Every card's figure is its order over its life since 0.7.101 (BuildAdvice.lifePerServed()): its quote, its
-        // land and its running for BUILD_BOND_YEARS, a paving's with the ground it frees taken off - for power, water,
-        // the roads and care over what the city will use of it as it grows, so a building far past the need pays for
-        // what stands idle. (A road's was over its life from 0.7.70, a care building's its order over the places
-        // lacking from 0.7.71, and the rest their price a unit with their land.)
-        boolean used = BuildAdvice.weighsServed(s.measure());
-        String priced = (s.paving() ? " over its life, the ground it frees taken off" : " over its life, with its land")
-                + (used ? ", for what the city will use of it" : "");
-        // ...the card's line says the short of it, the tooltip the whole (four lines at most, 0.7.71's words probe).
-        String pricedShort = used ? " used, over its life" : " over its life";
         String land = s.paving()
                 ? "Frees " + LandManager.areaWords(-s.landSqFt()) + " ≈ " + money(-s.landValue()) + "."
                 : "Land " + LandManager.areaWords(s.landSqFt()) + " ≈ " + money(s.landValue())
                 + (s.landShort() > 0 ? " · " + LandManager.areaWords(s.landShort()) + " more than is free: buy it first" : "") + ".";
-        // HOW MANY, AND WHY (0.7.51): a big count of a small building - 133 home daycares, until 0.7.71
-        // resized them - is the cheapest per unit with its ground, at what one of them serves.
-        // ...OF THOSE IN ITS RANK. The rule ranks a building that keeps the need ahead over one that
-        // cannot, and one that fits the land left over one that does not, before the price
-        // (BuildAdvice.suggestFor()), so the card is the cheapest of those, and its own two say which:
-        // city600's 11 gravel roads, $8,200 a trip, were "the cheapest" beside 2 bus networks at $3,431
-        // that cannot keep the road ahead (the docs pass, 0.7.51; the runner-up alone cannot tell).
-        String which = s.paving() ? (s.closes() ? ", that keeps it ahead" : "")
-                : s.closes() ? (s.landShort() > 0 ? " that keeps it ahead" : " that keeps it ahead and fits the land left")
-                : s.landShort() > 0 ? "" : " that fits the land left";
-        if (!which.isEmpty() && !which.startsWith(",")) which = "," + which;
-        if (s.count() > 1) {
-            land += " " + formatter.format(s.count()) + " of them: the cheapest per " + per + pricedShort + which
-                    + ", at " + shortNumber(s.unit()) + " " + BuildCard.perPlural(s.measure()) + " each.";
-        }
-        String next = s.runnerUp() == null ? ""
-                : switch (s.runnerUpLost()) {
-                    case DEARER       -> "; next, " + s.runnerUp().getName() + " at " + money(s.runnerUpPer());
-                    case CANNOT_CLOSE -> "; " + s.runnerUp().getName() + " cannot keep it ahead";
-                    case NO_ROOM      -> "; " + s.runnerUp().getName() + " needs more land than is left";
-                };
-        String tip = "Cheapest per " + per + priced + which + ": " + money(s.pricePerUnit()) + next
-                + ". Land at the land office's " + groundPrice(ui.game.getLandManager().getOfficePricePerSqFt()) + "/m².";
+        if (s.value() != null && s.count() > 1) land += " " + formatter.format(s.count())
+                + " of them in the lowest net cost plan" + (s.closes() ? " that keeps it ahead." : " available.");
+        String next = s.runnerUpValue() == null ? "" : " Next, " + s.runnerUp().getName()
+                + ": net plan value " + money(s.runnerUpValue().net()) + ".";
+        String tip = s.value() == null ? "Order invoice " + money(s.price()) + "."
+                : s.value().words() + "\nRanked by the whole plan's net value. Reserve sizes the order; it is not lost output." + next;
         return new CardWords(does, sized, land, tip, ui.game.getAutoBuilder().heldBackWords(s));
     }
 
