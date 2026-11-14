@@ -1,4 +1,4 @@
-<!-- readiness: provisional -->
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-HW1-i4QT6Xez -->
 ## changelog
 ### {next} — HW1, The auto city builds its works when they are needed — 2026-11-14, ready, see docs/queue/HW1-notes.md
 Essential works, including highways, all warranted schools, police and cells, are ordered for their service without a payback veto or twelve-month cap. Useful demand starts at 30% of the smallest work. Whole plans compare order, land and twenty years of running against physical output loss prevented and payroll taxes returned; reserve headroom sizes work but earns no false loss credit. Build advice and automatic orders expose the same valuation. The fixtures retain funding, land and service laws under the new rule; the ensemble and remaining service spells are recorded in the notes.
