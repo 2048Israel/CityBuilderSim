@@ -6,12 +6,13 @@ default exits 0 with zero findings and six matching reloads.
 The fixture follow-up is 72f8661f. Its two repaired harnesses pass.
 The other ten affected harnesses passed on the same production model.
 
-The full selection completed 194 harnesses, 190 passing, in 3,301 seconds
-at target/checks/hw1-calendar-final-pick.log, exit 4. Its remaining lines
-are being retried by affected harness after the payroll assertion mend. The once-only complete
-ensemble is HW1-calendar-final, against 0.9.101, with the same
-runs to be scored against 0.9.98. The ship record is provisional.
-A fresh kept launcher run is required for readiness.
+The full selection completed 194 harnesses, 190 passing, in 3,301 seconds,
+exit 4. The own payroll expectation is mended and its affected retry
+passes. Map's affected retry has known reds only. Kept's normal retry
+timed out before completing every hard section and supplies no acceptance.
+The final 80-run ensemble is complete with M1 and F1 passing everywhere.
+Both 0.9.101 and the requested 0.9.98 comparisons are recorded below.
+The ship record is provisional. A fresh complete launcher run is pending.
 
 The final default and medical capacity replay appear under
 “Verified default on the final common-calendar model” below.
@@ -3121,3 +3122,73 @@ orchestrator's go, so the run has the lower machine load it requires.
 BF1's isolated Kept run completed all 100 sections on this PC at lower
 load, per that mail. The normal retry logs and thread dump above remain
 diagnostic evidence of the incomplete run.
+
+## Final common-calendar ensemble
+
+The once-only final-model ensemble HW1-calendar-final completed all 80
+runs, exit 0, in 143.7 minutes elapsed. It uses the immutable classes
+of 72f8661f, whose production model is 913dd341 on merged main e5642145.
+The snapshot timestamp is 2026-11-14T17:21Z. Later changes repair the
+BuildCardCheck expectation and records only, so the model is identical.
+No runs are missing or short. All 64 policy runs match their AUTO2 twins
+before their switches.
+
+The current-baseline report is committed as docs/ensemble/HW1.md.
+Raw CSVs, logs, progress, times, score.md, summary.json and baseline.md
+are retained in target/ensemble/HW1-calendar-final. The same 80 CSVs
+were rescored against 0.9.98 in target/checks/hw1-calendar-score-098.md
+and target/ensemble/HW1-calendar-final/summary-098.json, exit 0.
+No baseline model or final-model run was repeated for that comparison.
+
+M1 and F1 pass in every policy, ten hard criteria of ten. There are
+zero failed or unread audit months and zero runs with findings in all
+five policies. Under EI1 these are the shipping criteria. The result
+is 20 of 25 counted criteria, with H1 retired and H2 vacuous.
+
+Against 0.9.101 the informational verdict changes are H2 from PASS to
+VACUOUS, and T2 from PASS to FAIL for ZERO_HOT, SHOCK and HIGH.
+Against 0.9.98 those four changes also occur. AUTO2 A1 changes from
+PASS to FAIL and A3 from FAIL to PASS against that older baseline.
+Every other criterion retains its baseline verdict.
+
+| Criterion | Class | 0.9.98 value | 0.9.98 verdict | 0.9.101 value | 0.9.101 verdict | HW1 value | HW1 verdict |
+|---|---|---|---|---|---|---|---|
+| AUTO2/A1 | info | 2.79% [2.46% to 3.59%] | PASS | 2.89% [2.49% to 3.36%] | FAIL | 3.24% [2.63% to 4.25%] | FAIL |
+| AUTO2/A2 | info | 31 [12 to 44] | FAIL | 33 [12 to 41] | FAIL | 28 [16 to 97] | FAIL |
+| AUTO2/A3 | info | 0 [0 to 12]; 100.00% [98.09% to 100.00%] | FAIL | 0 [0 to 7]; 100.00% [97.17% to 100.00%] | PASS | 0 [0 to 4]; 100.00% [99.07% to 100.00%] | PASS |
+| ZERO_SLACK/S1 | info | 1.94% [1.00% to 4.51%] | PASS | 2.01% [0.69% to 3.90%] | PASS | 2.73% [1.45% to 4.36%] | PASS |
+| ZERO_HOT/H1 | info | 5.51% [-2.38% to 12.69%]; 3.49% [-1.25% to 6.64%]; -3.93% [-14.55% to 1.60%] | RETIRED | 5.51% [-2.38% to 12.69%]; 3.40% [-0.96% to 6.64%]; -3.93% [-14.55% to 1.60%] | RETIRED | 6.00% [-3.55% to 8.63%]; 0.54% [-2.81% to 4.69%]; -6.67% [-12.02% to 5.75%] | RETIRED |
+| ZERO_HOT/H2 | info | 0.15% [-3.56% to 3.25%] | PASS | -0.24% [-2.57% to 2.90%] | PASS | 0.19% [-2.64% to 4.12%] | VACUOUS |
+| SHOCK/K1 | info | 15.75% [12.08% to 22.96%] | PASS | 15.21% [12.80% to 19.45%] | PASS | 16.50% [12.34% to 29.90%] | PASS |
+| SHOCK/K2 | info | 1.73% [-0.37% to 4.31%]; 0.12% [-2.10% to 1.50%] | PASS | 1.70% [-1.00% to 4.31%]; 0.05% [-2.60% to 1.92%] | PASS | 1.93% [-3.29% to 5.95%]; -0.16% [-2.88% to 1.80%] | PASS |
+| HIGH/R1 | info | -3.75% [-5.14% to -1.43%] | PASS | -4.34% [-5.42% to -1.21%] | PASS | -4.64% [-7.37% to -0.39%] | PASS |
+| HIGH/R2 | info | 0.59% [-0.69% to 4.39%] | PASS | 1.64% [-1.35% to 3.84%] | PASS | 1.36% [-1.60% to 9.27%] | PASS |
+| HIGH/R3 | info | -4.54% [-7.64% to -1.04%] | PASS | -4.41% [-7.56% to -1.90%] | PASS | -4.43% [-6.95% to 1.42%] | PASS |
+| ALL/T1 | info | 16/16 (m608 [486 to 895]) | PASS | 16/16 (m594 [492 to 1,223]) | PASS | 16/16 (m760 [687 to 1,759]) | PASS |
+| AUTO2/T2 | info | 1,538,083 [1,045,160 to 1,930,257] | PASS | 1,414,984 [834,834 to 1,984,198] | PASS | 2,683,236 [352,057 to 3,348,320] | PASS |
+| AUTO2/M1 | hard | 0 (0) | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| AUTO2/F1 | hard | 0/16 [] | PASS | 0/16 [] | PASS | 0/16 [] | PASS |
+| ZERO_SLACK/T2 | info | 1,126,109 [703,694 to 1,367,813] | PASS | 1,079,928 [425,458 to 1,300,662] | PASS | 1,847,724 [176,924 to 2,298,996] | PASS |
+| ZERO_SLACK/M1 | hard | 0 (0) | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| ZERO_SLACK/F1 | hard | 0/16 [] | PASS | 0/16 [] | PASS | 0/16 [] | PASS |
+| ZERO_HOT/T2 | info | 10,574 [4,329 to 30,139] | PASS | 10,574 [3,518 to 16,706] | PASS | 6,882 [4,059 to 9,142] | FAIL |
+| ZERO_HOT/M1 | hard | 0 (0) | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| ZERO_HOT/F1 | hard | 0/16 [] | PASS | 0/16 [] | PASS | 0/16 [] | PASS |
+| SHOCK/T2 | info | 103,965 [23,437 to 162,411] | PASS | 115,870 [12,480 to 168,445] | PASS | 41,284 [24,385 to 84,289] | FAIL |
+| SHOCK/M1 | hard | 0 (0) | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| SHOCK/F1 | hard | 0/16 [] | PASS | 0/16 [] | PASS | 0/16 [] | PASS |
+| HIGH/T2 | info | 55,503 [10,659 to 118,156] | PASS | 63,992 [6,402 to 142,318] | PASS | 27,234 [18,247 to 43,616] | FAIL |
+| HIGH/M1 | hard | 0 (0) | PASS | 0 (0) | PASS | 0 (0) | PASS |
+| HIGH/F1 | hard | 0/16 [] | PASS | 0/16 [] | PASS | 0/16 [] | PASS |
+| ALL/pairing | info | 64/64 | PASS | 64/64 | PASS | 64/64 | PASS |
+
+The final-population medians are 2,683,236 AUTO2, 1,847,724 ZERO_SLACK,
+6,882 ZERO_HOT, 41,284 SHOCK and 27,234 HIGH. The short-policy T2
+failures are information for Jerus. AUTO2 A1 has 4 of 16 seeds in band,
+with 3.24% median inflation, against 11 of 16 and 2.89% in 0.9.101,
+and 15 of 16 and 2.79% in 0.9.98.
+
+The earlier docs/ensemble/HW1.md candidate is replaced by this final
+common-calendar baseline. All earlier incomplete ensembles and their
+readiness records remain superseded. The fresh dry run is awaiting the
+orchestrator go requested after this ensemble completed.
