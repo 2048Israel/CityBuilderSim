@@ -200,3 +200,33 @@ REV-GD4-2 retains WoodProductsCheck's exact terminal-count assertion by
 extending it from at + 1 to at + 2 alongside the appended GOLD key. The
 Changed assertions table was committed in 47d5be25 and includes that condition.
 The ensemble's arithmetic model remains cd3c3abd.
+
+## Visual and compute checks
+
+Rendered Government's Output page from a city with an active domestic mint
+purchase, through the normal KeptBench page and its first-draw preparation.
+The inspected image is target/checks/gd4-gold-output.png. Investment shows
+construction, stock and the new gold acquisition together. The added line
+fits its card and the four expenditure cards stay aligned. The fixture books
+41.7884607368 thousand D$ of new gold, 396.95628 thousand D$ of total
+investment and 146.37432 thousand D$ of GDP, with both identities checked.
+
+EarthTerrainCheck's final-pick full-file gold normalization is green at
+0.60963879. Its loaded-PC cells pass measured 1784 ms first and 1620 ms again,
+scored SOFT against the unchanged 1000 ms budget. The earlier focused run
+with eight resources measured 362 ms first and 311 ms again, alongside the
+study's 370–450 ms. Three ensemble JVMs and the checks share this PC during
+the final run. Timing remains informational for the nightly judge.
+
+## Final ensemble
+
+GD4-verified completed all 80 runs on the cd3c3abd arithmetic model in
+59.6 minutes, using three JVMs. It scored 24/26, alongside 0.9.98's 24/26.
+All ten hard M1/F1 criteria pass. Money-audit failures are zero and every
+policy has zero finding-bearing runs out of sixteen. There are no missing
+or short runs and no changed verdicts. The retained score and raw runs are
+under target/ensemble/GD4-verified. Its baseline is committed as
+docs/ensemble/GD4.md, ready for the publisher's version name.
+
+The earlier partial snapshots at 8a3d1887 and 3ef0676d were stopped during
+review and superseded by this complete run.
