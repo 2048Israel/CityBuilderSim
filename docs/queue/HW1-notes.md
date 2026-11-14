@@ -703,3 +703,41 @@ suggestion's stored whole-plan components; the one-work cost tooltip and
 automatic valuation use the same reserve-free function. Different counts
 may have different total costs, and the displayed reserve is the sizing
 input, not an avoided-loss credit.
+
+## Map renderer follow-up DM3-R
+
+★ Keep the two newly reached renderer laws hard and queue their mending
+separately; do not convert them to path observations. MapCheck's city and
+drawn-raster assertions are untouched. Its changed construction path exposes
+the raster discrepancy in the old painter/seam/network code.
+
+The isolated fixture target/hw1-debug/MapCause.java runs only
+MapCheck.playedCity() and its raster laws, then dumps each district's
+input and plan accounting. At m121 the model has 979 buildings, all 979
+drawn, and 52 paved-road plots. District (0,0)'s input is 52 paved plots,
+its plan accounts for all 52 and has zero leftover, joins and parted
+counts. District (0,-1) has zero road budget and does not surface its
+south seam. The raster has only 50.5 paved plots, in two street components,
+437 road plots total; the largest component has 385 plots. One other
+component has a route across the city's owned ground and is not joined.
+The first combined “draws exactly what the city has” line is already
+registered to DM3; its missing-surface cause here is different from
+DM3's earlier missing buildings.
+
+Attribution: CityMap, DistrictPlan, TilePainter, StreetCurves,
+BuildingVisual and MapCheck have zero source diff from main 97eaa608.
+For a direct check I compiled CityMap, DistrictPlan, TilePainter and
+StreetCurves FROM origin/main into target/hw1-main-map/classes and replayed
+the isolated played-city input with those classes ahead of the branch
+classes. The two failures, district budgets and raster figures match
+exactly. Logs: target/checks/hw1-map-cause.log (branch) and
+target/checks/hw1-main-map.log (map code compiled from main). This is a
+small attribution fixture, not a baseline suite. No renderer or drawing
+law is changed by HW1.
+
+DM3-R's done condition: reproduce this input or reduce it to a causal
+seam/curve fixture; find where the painter drops 1.5 plots that the plan
+accounts for and why the owned-ground route leaves one street piece
+unjoined; fix both without weakening MapCheck's kind-by-kind surface
+tolerance or connectivity law. Rerun the causal fixture and MapCheck,
+including its existing seam, curve, edge and network fixtures.
