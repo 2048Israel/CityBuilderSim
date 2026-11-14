@@ -370,7 +370,7 @@ final class PeopleScreen {
     static String shareWords(double share) {
         double p = share * 100;
         if (p > 0 && p < .5) return "under 1%";
-        return String.format("%.0f%%", p);
+        return Formats.INSTANCE.percentage(p / 100, "%.0f%%");
     }
 
     /* ---------------------------------- homes ---------------------------------- */
@@ -4095,7 +4095,7 @@ final class PeopleScreen {
     /** A stake, with enough decimals left on it to still say something. */
     static String stakePct(double share) {
         double p = share * 100;
-        if (p >= 1)   return String.format("%.1f%%", p);
+        if (p >= 1)   return Formats.INSTANCE.percentage(p / 100, "%.1f%%");
         if (p >= .1)  return String.format("%.2f%%", p);
         if (p >= .01) return String.format("%.3f%%", p);
         return String.format("%.4f%%", p);
@@ -4112,8 +4112,8 @@ final class PeopleScreen {
         if (Math.abs(whole) < 1e-9) return "—";
         double p = part / whole * 100;
         if (p > 0 && p < .05) return "under 1%";
-        if (Math.abs(p) < 10)  return String.format("%.1f%%", p);
-        return String.format("%.0f%%", p);
+        if (Math.abs(p) < 10)  return Formats.INSTANCE.percentage(p / 100, "%.1f%%");
+        return Formats.INSTANCE.percentage(p / 100, "%.0f%%");
     }
 
     /** A run of months, said the way a person would say it. */

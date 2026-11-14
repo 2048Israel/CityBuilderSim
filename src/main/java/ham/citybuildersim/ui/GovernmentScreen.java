@@ -2664,7 +2664,7 @@ final class GovernmentScreen {
         if (recorded < 12) return "real growth from the second year";
         if (Double.isNaN(grew)) return "real growth from month 24";
         if (Math.abs(grew) < .0005) return "flat, real, 12 mo";
-        return String.format("%s %.1f%% real, 12 mo", grew > 0 ? "▲" : "▼", Math.abs(grew) * 100);
+        return (grew > 0 ? "▲ " : "▼ ") + Formats.INSTANCE.change(grew, 0, "%.1f%%").replaceFirst("^-", "") + " real, 12 mo";
     }
 
     /** One of the four parts' cards: its name, its figure, and its lines. */
@@ -2760,14 +2760,14 @@ final class GovernmentScreen {
         VBox trend = Kept.scope("trend", () -> limitCell("TREND", m(na.getTrendGdp()), "a month, twelve-month average", Palette.TEXT_HEAD));
         VBox head = Kept.scope("head", () -> limitCell("PER HEAD", heads > 0 ? moneyFull(annual / heads) : "—", "a year", Palette.TEXT_HEAD));
         VBox yoy = Kept.scope("yoy", () -> {
-            VBox cell = limitCell("YEAR ON YEAR", recorded >= 13 ? minus(String.format("%+.1f%%", na.getYearOnYearGrowth() * 100))
+            VBox cell = limitCell("YEAR ON YEAR", recorded >= 13 ? minus(Formats.INSTANCE.change(na.getYearOnYearGrowth(), 0, "%+.1f%%"))
                     : "—", recorded >= 13 ? "nominal, this month on a year ago" : "needs " + (13 - recorded) + " more months",
                     Palette.TEXT_HEAD);
             withInfo(cell, YOY_INFO);
             return cell;
         });
         VBox mom = Kept.scope("mom", () -> {
-            VBox cell = limitCell("MONTH ON MONTH", minus(String.format("%+.0f%%", na.getMonthlyGrowthAnnualised() * 100)),
+            VBox cell = limitCell("MONTH ON MONTH", minus(Formats.INSTANCE.change(na.getMonthlyGrowthAnnualised(), 0, "%+.0f%%")),
                     "annualised", Palette.TEXT_HEAD);
             withInfo(cell, MOM_INFO);
             return cell;

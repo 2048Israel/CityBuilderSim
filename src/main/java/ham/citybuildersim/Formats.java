@@ -16,6 +16,9 @@ public final class Formats {
 
     public static final Formats INSTANCE = new Formats();
 
+    /** Past this absolute proportion (1,000%), show a multiple or a compound yearly change (SX1). */
+    public static final double LARGE_PERCENT = 10;
+
     private final NumberFormat whole = NumberFormat.getIntegerInstance(Locale.CANADA);
     private final NumberFormat money = NumberFormat.getNumberInstance(Locale.CANADA);
 
@@ -99,8 +102,47 @@ public final class Formats {
     }
 
     public String pct(double share) {
+        return percentage(share, "%.0f%%");
+    }
+
+    /* ---------------- readable percentages and changes (SX1) ---------------- */
+
+    /** A proportion, with the caller's ordinary precision; large ratios are multiples of the base. */
+    public String percentage(double share, String pattern) {
         if (!Double.isFinite(share)) return "—";
-        return String.format("%.0f%%", share * 100);
+        return Math.abs(share) > LARGE_PERCENT ? multiple(share) : String.format(pattern, share * 100);
+    }
+
+    /**
+     * A relative change: a multiple includes the starting value (a 1,100% gain is ×12).
+     * With at least a year's actual observations, use its compound yearly rate when
+     * that rate fits the percentage dial. Cost-basis returns with purchases along
+     * the way have no single investment span: callers pass zero and get a multiple.
+     */
+    public String change(double gain, int months, String pattern) {
+        if (!Double.isFinite(gain)) return "—";
+        if (Math.abs(gain) <= LARGE_PERCENT) return String.format(pattern, gain * 100);
+        if (gain > 0 && months >= 12) {
+            double annual = Math.expm1(Math.log1p(gain) * 12.0 / months);
+            if (Double.isFinite(annual) && annual <= LARGE_PERCENT)
+                return String.format("about %.1f%% a year", annual * 100);
+        }
+        return gain >= -1 ? multiple(1 + gain) : multiple(gain) + " of the base";
+    }
+
+    /** A dimensionless multiple with three significant figures and a named scale, never a wall of digits. */
+    private String multiple(double ratio) {
+        double a = Math.abs(ratio);
+        double scale = a >= 1e15 ? 1e15 : a >= 1e12 ? 1e12 : a >= 1e9 ? 1e9 : a >= 1e6 ? 1e6 : a >= 1e3 ? 1e3 : 1;
+        String unit = scale == 1e15 ? " quadrillion" : scale == 1e12 ? " trillion" : scale == 1e9 ? " billion"
+                : scale == 1e6 ? " million" : scale == 1e3 ? " thousand" : "";
+        if (a >= 1e18) return "×" + String.format("%.3g", ratio).replace('-', '−');
+        double shown = ratio / scale;
+        int places = Math.abs(shown) >= 100 ? 0 : Math.abs(shown) >= 10 ? 1 : 2;
+        String number = String.format("%." + places + "f", shown).replaceAll("\\.?0+$", "");
+        // Whole multiples such as 100 must keep their significant zeroes.
+        if (places == 0) number = String.format("%.0f", shown);
+        return "×" + number.replace('-', '−') + unit;
     }
 
     public String count(double n) {

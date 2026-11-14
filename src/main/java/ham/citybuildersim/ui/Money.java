@@ -88,7 +88,7 @@ public final class Money {
         return value;
     }
 
-    public static String pct2(double rate)  { return String.format("%.2f%%", unsigned0(rate * 100, 2)); }
+    public static String pct2(double rate)  { return Formats.INSTANCE.percentage(unsigned0(rate * 100, 2) / 100, "%.2f%%"); }
 
     /*
      * A RATE, A SHARE AND A SPREAD, the Bank tab's three (0.7.33; its own
@@ -107,12 +107,12 @@ public final class Money {
     public static String ratePct(double rate) {
         double shown = rate * 100;
         int places = shown != 0 && Math.abs(shown) < .1 ? 3 : 2;
-        return String.format("%." + places + "f%%", unsigned0(shown, places)).replace('-', '−');
+        return Formats.INSTANCE.percentage(unsigned0(shown, places) / 100, "%." + places + "f%%").replace('-', '−');
     }
 
     /** A share or a ratio that is not a yearly rate, to one place, grouped: "14.1%", "1,991.3%". */
     public static String share1(double share) {
-        return String.format("%,.1f%%", unsigned0(share * 100, 1)).replace('-', '−');
+        return Formats.INSTANCE.percentage(unsigned0(share * 100, 1) / 100, "%,.1f%%").replace('-', '−');
     }
 
     /** A spread between two rates, signed, to the rates' own two places: "+2.06 points", "−0.22 points", "0.00 points". */
@@ -402,7 +402,7 @@ public final class Money {
 
     /** A yearly rate to one place, with a true minus: "2.2%", "−0.5%". */
     public static String rate1(double rate) {
-        return String.format("%.1f%%", unsigned0(rate * 100, 1)).replace('-', '−');
+        return Formats.INSTANCE.percentage(unsigned0(rate * 100, 1) / 100, "%.1f%%").replace('-', '−');
     }
 
     /** How far the city believes the bank, a whole per cent (Expectations.getCredibility()): "82%" - floored, so a trust under CityNeeds.TRUST_RED never reads as half. */

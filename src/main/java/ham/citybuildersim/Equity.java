@@ -133,8 +133,8 @@ public class Equity {
      *
      * A MONEY CONSTANT THAT A REFORM NEVER RESEEDED - found 2026-09-12, and it
      * had been there since the exchange was built. FOUNDING_PRICE is the
-     * yardstick every share is measured against: Exchange.splitWhatNeedsIt() takes
-     * `mid / FOUNDING_PRICE` and splits above SPLIT_AT or consolidates below
+     * yardstick the exchange used before SX1's wage band: it took
+     * `mid / FOUNDING_PRICE` and split above 100 or consolidated below
      * one over it. Exchange.redenominate() dutifully scales mid, fair and
      * lastMid; the yardstick they are divided by stayed at 1.0. So a city that
      * lopped two zeroes woke up with every share reading a hundred times

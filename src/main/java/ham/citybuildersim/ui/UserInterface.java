@@ -2261,9 +2261,9 @@ public class UserInterface extends Application {
             gdpLine = words("flat, real, 12 mo", "flat, real", "flat");
         } else {
             String arrow = grew > 0 ? "▲" : "▼";
-            gdpLine = words(String.format("%s %.1f%% real, 12 mo", arrow, Math.abs(grew) * 100),
-                    String.format("%s %.1f%% real", arrow, Math.abs(grew) * 100),
-                    String.format("%s %.1f%%", arrow, Math.abs(grew) * 100));
+            gdpLine = words(arrow + " " + Formats.INSTANCE.change(grew, 0, "%.1f%%").replaceFirst("^-", "") + " real, 12 mo",
+                    arrow + " " + Formats.INSTANCE.change(grew, 0, "%.1f%%").replaceFirst("^-", "") + " real",
+                    arrow + " " + Formats.INSTANCE.change(grew, 0, "%.1f%%").replaceFirst("^-", ""));
             gdpTone = grew > 0 ? Palette.GOOD : Palette.BAD;
         }
         out.add(new Headline("GDP", Palette.BUSINESS, money(annualGdp(na)) + " / yr", Palette.TEXT_HEAD,
@@ -2288,7 +2288,7 @@ public class UserInterface extends Application {
         if (prices.hasRate()) {
             double inflation = prices.inflation();
             double off = inflation - target;
-            inflValue = String.format("%.1f%% / yr", unsigned0(inflation * 100, 1));
+            inflValue = Formats.INSTANCE.percentage(unsigned0(inflation * 100, 1) / 100, "%.1f%%") + " / yr";
             String side = off > 0 ? "over" : "under";
             inflLine = Math.abs(off) < .0005
                     ? words("on the " + DebtManager.targetWords(target) + " target", "on target")

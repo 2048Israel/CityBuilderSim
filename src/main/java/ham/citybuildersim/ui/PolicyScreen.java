@@ -1186,7 +1186,7 @@ final class PolicyScreen {
     static String rateMove(double d) { return points(d); }
 
     /** A percentage to none: "45%". */
-    static String pct0(double share) { return String.format("%.0f%%", unsigned0(share * 100, 0)); }
+    static String pct0(double share) { return Formats.INSTANCE.percentage(unsigned0(share * 100, 0) / 100, "%.0f%%"); }
 
     /** "x1.00". */
     static String times(double scale) { return String.format("x%.2f", scale); }
@@ -1400,7 +1400,7 @@ final class PolicyScreen {
     /** Inflation as a signed share to one place, with a true minus: "+0.2%". */
     static String signedPct1(double v) {
         double shown = unsigned0(v * 100, 1);
-        return (shown < 0 ? "−" : "+") + String.format("%.1f%%", Math.abs(shown));
+        return Formats.INSTANCE.change(shown / 100, 0, "%+.1f%%").replace('-', '−');
     }
 
     /* ------------------------------ what is biting ------------------------------ */

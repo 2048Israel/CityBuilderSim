@@ -1110,7 +1110,7 @@ final class SectorScreen {
     static String m(double thousands) { return tightMoney(toDollars(thousands)); }
 
     /** A margin to a tenth of a per cent, with no sign on one that rounds to nothing (B11). */
-    static String marginWords(double share) { return String.format("%.1f%%", unsigned0(share * 100, 1)); }
+    static String marginWords(double share) { return Formats.INSTANCE.percentage(unsigned0(share * 100, 1) / 100, "%.1f%%"); }
 
     /** A limit cell with an (i) after its label when `info` is not null. */
     static VBox kpi(String label, String value, String note, String tone, String info, String where, Runnable go) {
@@ -1992,7 +1992,7 @@ final class SectorScreen {
 
     /** A share as a ratio chip writes it: a tenth of a per cent, a dash where it means nothing. */
     static String pctWords(double share) {
-        return Double.isFinite(share) ? String.format("%.1f%%", unsigned0(share * 100, 1)) : "—";
+        return Formats.INSTANCE.percentage(unsigned0(share * 100, 1) / 100, "%.1f%%");
     }
 
     /** Times over, a dash where it means nothing. */

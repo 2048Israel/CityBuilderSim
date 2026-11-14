@@ -960,7 +960,7 @@ final class FinancesScreen {
         if (nothing) return new Gain(d(0), "", Palette.TEXT_BODY);
         double p = Math.abs(share) * 100;
         String pct = !Double.isFinite(share) || p < 0.005 ? ""
-                : String.format(p >= 0.05 ? "%s%,.1f%%" : "%s%.2f%%", share < 0 ? "−" : "+", p);
+                : Formats.INSTANCE.change(share, 0, p >= 0.05 ? "%+,.1f%%" : "%+.2f%%").replace('-', '−');
         return new Gain(signedD(gain), pct, gain > 0 ? Palette.GOOD : Palette.BAD);
     }
 
@@ -1025,16 +1025,16 @@ final class FinancesScreen {
     String perMoney(String code, double rate) { return sym() + fxRate(rate) + " per " + markOf(code).trim(); }
 
     /** A share as a whole per cent: "58%". */
-    static String pc(double share) { return String.format("%.0f%%", share * 100).replace('-', '−'); }
+    static String pc(double share) { return Formats.INSTANCE.percentage(share, "%.0f%%").replace('-', '−'); }
 
     /** ...to one place: "1.5%". */
-    static String pc1(double share) { return String.format("%.1f%%", share * 100).replace('-', '−'); }
+    static String pc1(double share) { return Formats.INSTANCE.percentage(share, "%.1f%%").replace('-', '−'); }
 
     /** Points of a rate, signed: "+0.02 pts". */
     static String pts(double rate) { return String.format("%+.2f pts", rate * 100).replace('-', '−'); }
 
     /** A yield to three places, as an auction stops: "3.602%". */
-    static String pct3(double rate) { return String.format("%.3f%%", rate * 100).replace('-', '−'); }
+    static String pct3(double rate) { return Formats.INSTANCE.percentage(rate, "%.3f%%").replace('-', '−'); }
 
     /** A tail in basis points: "28 bp". */
     static String bp(double rate) { return String.format("%.0f bp", rate * 10_000).replace('-', '−'); }

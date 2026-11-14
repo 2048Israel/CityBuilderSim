@@ -4891,6 +4891,9 @@ public class Game {
      * on the book past the step it was posted at.
      */
     private final Exchange.Companies exchangeCompanies = new Exchange.Companies() {
+            @Override public double averageMonthlyWage() {
+                return populationManager.getAverageWage();
+            }
             @Override public double cashAvailable(int company, double wanted) {
                 String sector = Equity.COMPANIES[company];
                 double till = economyManager.getSectorCash(sector);

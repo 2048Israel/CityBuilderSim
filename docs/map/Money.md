@@ -11,7 +11,7 @@
 > reference to the window. The model counts in THOUSANDS; toDollars() is the
 > one conversion and everything else calls it.
 
-**Uses:** [Currency](Currency.md) (11), [PriceLevel](PriceLevel.md) (1), [LandManager](LandManager.md) (1), [Formats](Formats.md) (1)
+**Uses:** [Currency](Currency.md) (11), [Formats](Formats.md) (5), [PriceLevel](PriceLevel.md) (1), [LandManager](LandManager.md) (1)
 
 **Used by (32):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LandClassCheck](LandClassCheck.md), [LandScreen](LandScreen.md), [MoneySignCheck](MoneySignCheck.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [ReplayGraphLayer](ReplayGraphLayer.md), [RunWorksCheck](RunWorksCheck.md), [ServicesScreen](ServicesScreen.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TradeBandCheck](TradeBandCheck.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md), [WorldData](WorldData.md), [WorldDataCheck](WorldDataCheck.md), [ZoningScreen](ZoningScreen.md)
 
