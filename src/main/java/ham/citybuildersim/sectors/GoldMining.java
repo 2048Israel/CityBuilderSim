@@ -120,6 +120,19 @@ public final class GoldMining extends ExtractionSector {
         mintPayment = extras.getOrDefault("mintPayment", 0.0);
     }
 
+    /** A change of currency unit changes the accepted payment and keeps its fine ounces. */
+    @Override
+    protected void redenominateExtras(double scale) {
+        super.redenominateExtras(scale);
+        mintPayment *= scale;
+    }
+
+    @Override
+    protected void resetExtras() {
+        super.resetExtras();
+        mintOunces = mintPayment = 0;
+    }
+
     /** Deplete precisely what was made, once, after the input-order machinery ran. */
     @Override
     public void produceStock(Good g, GoodsMarket market) {

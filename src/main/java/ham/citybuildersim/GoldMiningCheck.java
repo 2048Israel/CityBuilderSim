@@ -185,6 +185,13 @@ public final class GoldMiningCheck {
         restored.restore(g.getSectors().goldMining().toState());
         close("the unsettled mint offer survives sector restore", restored.toState().extras.get("mintPayment"),
                 g.getSectors().goldMining().toState().extras.get("mintPayment"));
+        double owed = restored.toState().extras.get("mintPayment");
+        double ounces = restored.toState().extras.get("mintOunces");
+        restored.redenominate(.001);
+        close("a currency reform scales the mint's accepted payment", restored.toState().extras.get("mintPayment"), owed * .001);
+        close("a currency reform keeps the fine ounces", restored.toState().extras.get("mintOunces"), ounces);
+        restored.reset();
+        close("reset clears an accepted mint offer", restored.toState().extras.get("mintPayment"), 0);
         ForeignAccounts fa = new ForeignAccounts();
         fa.restore(g.getForeignAccounts().toSaveArray());
         close("the vault's minted ounces survive restore", fa.toSaveArray()[149], g.getForeignAccounts().toSaveArray()[149]);

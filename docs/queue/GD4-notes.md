@@ -89,3 +89,7 @@ offer is also checked at M and through a change from Gold to Float.
 An early ensemble attempt at 8a3d1887 was stopped using its own run label
 after these save-quote and map findings. Its partial output is superseded.
 The final model will receive a fresh 80-run ensemble.
+
+★ The mint's accepted payment also follows currency redenomination, while its
+fine ounces keep their unit. The sector's standard reset hook clears an old
+offer. Both paths have dedicated assertions beside the saved-offer check.
