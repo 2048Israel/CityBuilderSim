@@ -1417,6 +1417,9 @@ public class AuctionCheck {
         out.println("--- 10. automatic building's own cap; the ask a short sale keeps open (D28, D30) ---");
 
         Game a = ChildcareCheck.town(root, "auction10-town");
+        // The capped-sale fixture's street candidate is a Paved Road, whose short issue and retained ask it exercises.
+        a.getBuildingManager().getTemplates().removeIf(t -> t.getCategory() == BuildingType.INFRASTRUCTURE
+                && !t.isHighway() && !t.getName().equals("Paved Road"));
         /*
          * FC1: THE BUILDERS ARE NOT SHORT, SO A QUOTE STANDS ACROSS THE PASSES. The town's four depots leave the sites a month that its
          * repairs eat away (41 of 385 at month 37, 33 of 377 at 38, none of 321 at 39): from month 39 the foreign crews take orders at

@@ -181,6 +181,8 @@ public final class EssentialWorksCheck {
     static void lostOutput(Path root) {
         out.println("--- prevented losses use the service the economy actually loses ---");
         Game g = town(root, "prevented-loss");
+        g.setCashForTest(1e14);
+        quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("Construction Depot"), 8, true));
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
@@ -188,7 +190,8 @@ public final class EssentialWorksCheck {
         for (Sector sector : g.getSectors().all()) sector.setEnergyRatio(.5);
         double[] sd = BuildAdvice.supplyDemand(g, power, Map.of());
         check("fixture: the grid is rationing and the city's books contain output to restore",
-                sd[0] > 0 && sd[1] > sd[0] && g.getSectors().all().stream()
+                sd[0] > 0 && sd[1] > sd[0]
+                        && g.quoteBuild(coal, 1).months < BuildAdvice.LIFE_MONTHS && g.getSectors().all().stream()
                         .anyMatch(s -> s.statement().revenue > s.statement().inputs));
         WorksValue.Value value = WorksValue.of(g, power, Map.of(), coal, 1, g.getLandManager().getAvailableSqFt());
         check("a plant that relieves rationing prevents a positive output loss", value.avoided() > 0);
@@ -696,6 +699,8 @@ public final class EssentialWorksCheck {
     static void interimPower(Path root) {
         out.println("--- pending coal does not hide an earlier forecast power loss ---");
         Game g = town(root, "interim-power");
+        g.setCashForTest(1e14);
+        quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("Construction Depot"), 8, true));
         BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
         BuildingsTemplate wind = g.getBuildingManager().getTemplateByName("Wind Farm");
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
@@ -717,7 +722,7 @@ public final class EssentialWorksCheck {
         check("fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind",
                 !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
                         && BuildAdvice.maintained(g, power, site, BuildAdvice.NOW)
-                        && Double.isFinite(first) && windLead < first);
+                        && Double.isFinite(first) && first < BuildAdvice.LIFE_MONTHS && windLead < first);
         WorksValue.Value value = WorksValue.of(g, power, site, wind, 1, g.getLandManager().getAvailableSqFt());
         check("wind prevents positive physical output loss before the pending coal opens", value.used() > 0 && value.avoided() > 0);
         long pop = g.getPopulationManager().getPopulation();
@@ -731,7 +736,7 @@ public final class EssentialWorksCheck {
                 BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
                         && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.opening(g, windLead, ab.getSlack()))
                         && BuildAdvice.maintained(g, power, site, BuildAdvice.NOW)
-                        && Double.isFinite(first) && windLead < first);
+                        && Double.isFinite(first) && first < BuildAdvice.LIFE_MONTHS && windLead < first);
 
         ab.setOn(true, null);
         quietly(() -> ab.pass(g));
@@ -826,6 +831,8 @@ public final class EssentialWorksCheck {
     static void shortPowerBenefit(Path root) {
         out.println("--- power delivered for fewer than six months still prevents lost work ---");
         Game g = town(root, "short-power-benefit");
+        g.setCashForTest(1e14);
+        quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("Construction Depot"), 8, true));
         BuildingManager bm = g.getBuildingManager();
         BuildingsTemplate coal = bm.getTemplateByName("Coal Power Plant");
         BuildingsTemplate wind = bm.getTemplateByName("Wind Farm");
@@ -850,6 +857,7 @@ public final class EssentialWorksCheck {
         double gap = g.onSiteMonths(coal) - lead;
         check("fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier",
                 gap > 1 && gap < 6 && lead > 0 && Double.isFinite(lead)
+                        && lead + gap < BuildAdvice.LIFE_MONTHS
                         && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
                         && BuildAdvice.maintained(g, power, Map.of(coal, 1), BuildAdvice.NOW));
         WorksValue.Value value = WorksValue.of(g, power, Map.of(coal, 1), wind, 1,

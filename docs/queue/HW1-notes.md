@@ -1,4 +1,4 @@
-# HW1 common-calendar valuation mend in progress
+# HW1 common-calendar verification in progress
 
 REV-HW1-6 accepts the guard repairs and forecast fixtures. Its helper
 ownership mend is fdc022fd. The d38638ef default completes and exposes
@@ -2816,3 +2816,40 @@ financing comparisons use the same common endpoint, retaining the
 whole-parcel, foreign-vault, reopened benchmark and actual-use land
 premises. The independent oracle's initial and later coupon windows
 are cut at that date too. All assertions remain hard.
+
+### Common-calendar fixture follow-up
+
+REV-HW1-7, 20261114-130120-449-orchestrator-7fd9, reports SHIP with
+no findings on fdc022fd..913dd341. The full 913dd341 default is green.
+The first twelve-harness run has ten passing harnesses and two reds,
+EssentialWorksCheck and AuctionCheck. Its log is
+target/checks/hw1-calendar-named.log, exit 4.
+
+The physical rationing fixture's coal quote is 1,621.6 months, and
+the narrow wind-window fixture's wind quote is 484.3 months. Their
+positive-relief assertions therefore describe operating windows
+outside the newly common twenty-year comparison. Each original
+physical shortage, paid pending coal and one-to-six-month gap
+premise is kept. Eight working depots bring those quoted windows
+inside the common interval, and the fixtures assert that bound.
+The interim forecast-power fixture receives the same working-yard
+capacity and retains both its forecast-shortage and actual earlier
+wind order laws. All three hard checks pass in
+hw1-calendar-repaired-clock.log. No positive-credit law is softened.
+
+AuctionCheck section 10's common-calendar winner changes to eight
+Gravel Roads. Its one-gravel quote of 190.29 sells completely, so
+it does not cause the capped short Paved Road issue its hard
+multi-pass laws require. The fixture now supplies Paved Road as
+its street candidate, retaining highways and every other category.
+The same town remains physically short of streets, the bank's
+room is exhausted, and the actual constrained one-Paved-Road
+issue sells short. Its real raised proceeds, retained cash and
+debt, reoffer, funded order, scratch reload and withdrawal laws
+all stay hard. The focused complete section exits 0 in
+hw1-calendar-repaired-auction.log. Its entire original money
+premise is caused again, with the required order explicitly given.
+
+The final production model remains 913dd341. These are fixture
+repairs under the accepted common-date rule. Fresh affected
+harnesses and the full pick follow.
