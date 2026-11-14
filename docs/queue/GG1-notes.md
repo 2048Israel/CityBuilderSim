@@ -63,3 +63,25 @@ predecessor/slice instructions; executable legacy predecessor checks remain.
   `PD1` is refused. No GG1 exemption or new unrelated red was filed.
 - `git diff --check` and shell syntax checks passed. No Java source, game
   resources or publisher-owned records were changed by this batch.
+
+## Retained fresh-clone gates
+
+Both no-tag dry runs passed. The second explicitly exercises GG1's branch
+publisher and reuses the first launcher's completed suite; its registry is
+rejudged. Main's publisher remains authoritative for the first run. These
+are launcher-produced retained runs, not working-tree suite evidence.
+
+- Run: `/c/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-GG1/target/gg1-gate-main`
+  Branch: `33c402d04499ffd81187099aed5c4b71d1dd2ca7`; main: `b27168e27a939b4b74a37c604a3075366d2cf0d1`; exit: `0`.
+  Selection: `full version=0.9.99`.
+
+- Run: `/c/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-GG1/target/gg1-gate-candidate`
+  Branch: `33c402d04499ffd81187099aed5c4b71d1dd2ca7`; main: `b27168e27a939b4b74a37c604a3075366d2cf0d1`; exit: `0`.
+  Selection: `full version=0.9.99`.
+
+The ready ship file names `/c/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-GG1/target/gg1-gate-candidate` for reuse.
+Only GG1 notes and ship records advance after these runs.
+
+Fresh gate: 182 harnesses in 1037 seconds, 180 passed and the same PX1/OX1
+known reds only. Candidate publisher: retained-suite rejudge in 2 seconds,
+no suite rerun, the same two known-red harnesses, both launcher exits 0.
