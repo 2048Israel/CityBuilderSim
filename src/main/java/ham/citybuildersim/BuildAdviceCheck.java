@@ -63,7 +63,7 @@ import java.util.Set;
  *      past which the road that needs the least ground a trip is the
  *      cheapest with it, that road.
  *   8. SLACK BUILT: a served card is at 100% of its demand projected and
- *      SLACK past it, and its count is never fewer than the old rule's.
+ *      SLACK past it, and one fewer does not cover that projected demand.
  *   9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE: a college or university row
  *      wants no more than would come and no more than would be hired, and a
  *      first school half the smallest; a city with students and no posts
@@ -1056,11 +1056,11 @@ public class BuildAdviceCheck {
      * the schools - at 100% or more of its demand at its projection with
      * SLACK on top, not just off NEEDS YOU's list; care's and a basic
      * school's demand there exactly today's times k and 1 + SLACK; and the
-     * count never fewer than the old rule's, the least off the list today.
+     * count the least covering that projected demand with the shared reserve.
      */
     static void slackBuilt(Game g, List<BuildAdvice.Suggestion> advice) {
         out.println("\n--- 8. slack built: a served card at 100% of its demand projected and SLACK past it;"
-                + " never fewer than the old rule ---");
+                + " one fewer misses that projected demand ---");
         boolean more = false;
         for (BuildAdvice.Suggestion s : advice) {
             BuildAdvice.Measure m = s.measure();
@@ -1076,9 +1076,17 @@ public class BuildAdviceCheck {
                     double[] now = BuildAdvice.supplyDemand(g, m, with);
                     bits(what + ": ...that demand is today's times k and 1 + SLACK", there[1], s.ahead().scale() * now[1]);
                 }
+                Map<BuildingsTemplate, Integer> oneFewer = BuildAdvice.plus(
+                        BuildAdvice.onSite(g, m), s.template(), s.count() - 1);
+                double[] shortOf = BuildAdvice.supplyDemand(g, m, oneFewer, s.ahead());
+                assertTrue(what + ": one fewer misses the full projected demand and shared reserve",
+                        CityNeeds.servedShare(shortOf[0], shortOf[1]) < 1);
             }
             int old = BuildAdvice.count(g, m, BuildAdvice.onSite(g, m), s.template())[0];
-            assertTrue(what + ": never fewer than the old rule's count (" + old + ")", s.count() >= old);
+            if (!BuildAdvice.isServed(m) || m.kind() == BuildAdvice.Kind.TRANSIT) {
+                assertTrue(what + ": never fewer than the old rule's count (" + old + ")", s.count() >= old);
+            }
+            out.println("      " + what + ": the former listing-threshold count was " + old);
             more |= s.count() > old;
         }
         // Whole-plan ranking can select a larger unit whose rounding absorbs the margin.

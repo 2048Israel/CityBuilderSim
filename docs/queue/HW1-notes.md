@@ -3225,3 +3225,52 @@ orders retain the normal issue path. BankFailureCheck is included in
 the affected regression run to check this combined boundary.
 The combined default is compared with the verified common-calendar
 candidate to determine the final-model ensemble evidence.
+
+
+### BF1 merge affected regressions and the street sizing assertion
+
+The affected run completed 16 harnesses, 15 passing, in 265 seconds,
+exit 4, at target/checks/hw1-bf1-affected.log. BankFailureCheck passes.
+The only new law is BuildAdviceCheck section 8's former promise that
+the count never falls below the old listing-threshold count.
+
+The fixture is unchanged. Its five Gravel Roads supply 101.79% of the
+projected physical demand including the shared 15% reserve. The former
+listing rule instead needs six because five leave utilisation 0.8532
+against InfrastructureManager.STRAINED 0.85. The new shared physical
+service rule permits utilisation up to 1/1.15 before projection. Thus
+that old count inequality is no longer a sizing law.
+
+The served-card line now requires that one fewer fails the full
+projected demand and shared reserve. The preceding hard line still
+requires that the offered count covers it. Non-served advice retains
+the original old-count inequality. The old count is printed as a
+diagnostic. No premise is moved or made soft.
+
+The complete repaired BuildAdviceCheck passes, exit 0, in
+target/checks/hw1-bf1-slack-kept.log. Omitting only the manual path's
+shared maintained-service predicate, changing the wrapper's final true
+to false, exits 1 in target/checks/hw1-bf1-slack-control.log.
+All fixture premises pass in the control. It offers seven Gravel Roads
+and fails this new one-fewer law and the existing section-3 one-fewer
+law. The control preserves the 15% reserve, so it specifically causes
+the old listing predicate to disagree with the physical-service floor.
+
+### Combined default after BF1
+
+The full combined default in target/checks/hw1-bf1-default.log finishes
+its 2,400-month model and all money fixtures. Every money fixture passes,
+and all six reloads match. It exits 1 for one layout finding at m2389.
+Twelve of district (-1,-1)'s 4,301 boxes move, including Construction
+Depots, Construction Materials Plants, Machine Works and Rod Mills.
+The finding remains hard and is retained in the report. Its renderer
+classes are unchanged from main, and the older main nightly already
+records this movement class. DM3-R's follow-up includes causing this
+retained m2388–2389 case and restoring the original no-movement law.
+The suite's existing no-FAIL exit record remains in the main registry.
+
+BF1 moves the economic trace from m9. The completed HW1-calendar-final
+ensemble and its service table above therefore identify the pre-BF1
+candidate, and their readiness evidence is superseded. The combined
+model needs its own final ensemble against 0.9.102. The original
+0.9.98 comparison will use those same new 80 CSVs.
