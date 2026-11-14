@@ -3049,3 +3049,58 @@ also requires every ordinary building in this replay to meet the existing
 REACH bound, while retaining its mines and packed-edge exclusions, alongside
 the original connectivity and surface repairs. HW1's city path exposes
 the unchanged renderer's geometric fault.
+
+
+### Affected-harness retries after the full pick
+
+The corrected BuildCardCheck passes through batch-check, exit 0, in
+target/checks/hw1-card-final-retry.log. The unchanged hard MapCheck laws
+are now all attributed, and its soft-timed retry exits 3, known reds only,
+in target/checks/hw1-map-final-retry.log. Its complete retained harness
+output is target/checks/hw1-map-final-retry-harness.log. It has four hard
+drawing failures, nine soft timing lines and one path observation.
+
+The first isolated Kept diagnostic used a 1,536 MiB heap and hard timing,
+instead of AllChecks' 2,048 MiB heap and soft timing. It exhausted its
+heap during the tooltip sections. That diagnostic cannot judge the suite.
+Its thread dump is target/checks/hw1-kept-1536-oom-threads.txt.
+Only its verified wrapper PID 32088 and child PID 41696 were ended.
+The affected-harness retry uses batch-check's normal heap and timing
+in target/checks/hw1-kept-final-retry.log.
+
+
+### Correct-heap Kept retry and KS1-rest attribution
+
+The normal batch-check retry reached the 1,740-second limit, exit 4,
+in target/checks/hw1-kept-final-retry.log. Its retained complete output
+is target/checks/hw1-kept-final-retry-harness.log. It reached Policy
+Research's Found-page checks. Its completed hard assertions have only
+the already-recorded Finances hub retention failure, with 38 new nodes
+and 129 handed back after bond 3883's book levels opened. It reports
+exit 1 and the timeout because it was ended before its final verdict.
+
+The thread dump at target/checks/hw1-kept-correct-threads-before-timeout.txt,
+about 1,515 seconds into PID 37012, shows the main thread waiting for
+KeptCheck.pageReshaped/kp7Rankings. JavaFX waits for a snapshot, while
+QuantumRenderer reads D3D pixels. The FX thread has used about 1,015 CPU
+seconds. Subsequent output advanced through rankings, saved cities,
+Policy research and section 95 before the limit. This retry therefore
+records expensive progressing snapshot work under the loaded machine.
+The earlier full pick reached its 2 FAILED footer before the same limit.
+No thread dump was captured from that earlier process, so its post-footer
+wait's specific cause remains unverified.
+
+KeptCheck.java, ui/Kept.java and ui/KeptBench.java are byte-identical to
+current main e5642145. Orchestrator's mail 20261114-141805 explicitly
+assigns the loaded Kept timeout class to KS1-rest and directs retrying
+only affected harnesses. The ship's timeout and killed-exit rows name
+that existing fix. The queued done condition is completion within the
+existing suite limit on this retained final HW1 city, with the normal
+2,048 MiB heap and soft timing. Every assertion keeps its current law.
+The saved-cities and Finances retention faults retain their own existing
+queued fixes. The undersized direct diagnostic's OOM is excluded.
+
+★ The full pick is retained as the 194-harness run, followed by the
+BuildCardCheck exit-0 and MapCheck known-only affected retries. The fresh
+launcher will judge the complete final merge with these traced registry
+rows and the corrected payroll law.

@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**201 harness files, 23,911 labelled assertions.** AllChecks runs 201 of them.
+**201 harness files, 23,912 labelled assertions.** AllChecks runs 201 of them.
 
 ## Which harnesses read which class
 
@@ -2382,7 +2382,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1507 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
   - L1511 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
 
-## BuildCardCheck.java - 209 labelled assertions
+## BuildCardCheck.java - 210 labelled assertions
 
 > The build card (0.7.25): BuildCard's figures for every building in
 > buildings.json (143 since FR3, the Bulk Berth) held to
@@ -2418,209 +2418,210 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L464 ...and Vehicles holds the Heavy Truck Plant:
   - L466 Shops is the groceries, the filling stations (0.7.83) and the bank's branches:
 - **L473 2. the hero and the bars are the model's: the quote, the land, the staffing, the markets**
-  - L619 every card's price and sticker are Game.quoteBuild(t, 1)'s
-  - L620 ...its head the count standing, what is on site and its wait, and the land free the city's own
-  - L621 the hero's figure is the template's own (capacity, coverage, rail, points, its first good, a crude unit's crude,
-  - L624 value added is what one makes less what it uses at the markets' prices, an office's at
-  - L629 bar 1 is the quote at one over the unit, to the bit, on every card but a road's, whose is its life
-  - L631 bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100
-  - L633 the running cost is the upkeep and the posts at today's wages
-- **L652 3. the tags: only the strict best on a bar, only in a group of two or more**
-  - L681 a tag is on the lowest figure of a bar, strictly below the highest, and on no other
-  - L682 a group of one has no tag and draws no track (
-- **L688 4. the notes: each group's note reads the sector's own figures**
-  - L713 homes' doors, the shops' coverage, the counters', the kitchens', the rail's and each maker
-- **L720 5. the investors' line: on site only for an investor's order; the word is the month's**
-  - L739 every market card's word is Game.getLastInvestment() under its sector, the branch's under
-  - L742 ...and the bank has a word of its own, filed under \"Bank\":
-  - L748 fixture: no department store and no grocery store on site before the orders
-  - L756 fixture: Luxury Retail's order of three department stores went on site
-  - L759 the department store reads \"Investors are building\", with the three on site and their wait
-  - L762 ...and says no \"this one:\" while they are, whatever its gate
-  - L763 the city's own two grocery stores on site are not an investors' order
-  - L765 a department store of the city's beside theirs reads \"yours among them\"
-  - L784 fixture: the town's market cards had words before the save (
-  - L785 loaded, every market card has the word it had: the words are saved (0.7.102)
-  - L787 ...while no month has run since the load (Game.hasMonthRun()), as the month's flows are not saved
-  - L791 loaded, the customers who came and the meals wanted are not counted yet, not zero (the save
-  - L796 loaded, the bank's planner sees the bank: not \"no bank\" (
-  - L799 ...and a month later they are counted:
-  - L801 ...and the month after the load files a word for the bank that is not \"no bank\":
-- **L809 6. the gates: each \"this one:\" caused by a fixture, in buildStack()'s order**
-  - L818 with no deposit, the mine's gate is the deposit, with what the city owns and has committed
-  - L826 fixture: the town has no spare
-  - L828 the engineering office's gate is the licence: what one needs and what the city has
-  - L841 fixture: more than a fifth of a shared services centre's posts are college and university ones (
-  - L845 fixture: the town could staff
-  - L847 its gate is the staffing test, in the test's own words:
-  - L855 with half a house's ground free, the house's gate is the land, with what it needs and what is free
-  - L866 another spur's gate is a loss, what the investors' estimate says it would lose:
-  - L870 ...worded as a loss, not as no feed: the spur is no refinery's unit (0.7.103)
-  - L876 an Oil Well with no oil site free: its gate is the deposit, its count the dry sites (Game.sitesFor()),
-  - L880 ...every gate's report the same, and its card's count says \"dry\" where no other building's does
-  - L890 fixture: no crude unit stands in the town
-  - L891 a Small Lube Plant with nothing to feed it: its gate says no feed where it read a loss of
-  - L895 ...and every gate's report the same
-  - L913 a market building that passes every gate - the interest on its whole cost, or a landlord's home's lender, the last -
-- **L920 7. the verdict: in buildStack()'s order, and buildStack()'s own answer**
-  - L928 no deposit: the verdict is NO_DEPOSIT, and buildStack() says NO_DEPOSIT
-  - L934 nobody licensed: NO_LICENCE, with the licences it needs, and buildStack() says NO_LICENCE
-  - L942 short of land for three houses: NO_LAND by the quote's shortfall, and buildStack() says NO_LAND
-  - L951 short of cash: BILL by the quote less the cash, and buildStack() says NEEDS_FUNDING
-  - L957 with all of it: MONTHS, the quote's own wait at today's queue
-  - L963 with neither ore nor land, the mine's verdict is the deposit, as buildStack() checks ore first
-- **L1048 8. the word's kind: none of the town's words is OTHER; every phrase, whole words, in order**
-  - L1060 every sector's word in the town has a kind, none OTHER (
-  - L1073 every example of
-  - L1075 whole words: \"more\", \"before\" and \"Convenience Store\" are not ore, \"banks\" is not a bank
-  - L1078 an order on site is BUILDING whatever the word, and the land-blocked list is LAND
-  - L1099 a sector's investors are its own market buildings' lines and its word - Retail's with the bank's branch
-  - L1103 fixture (section 5): Luxury Retail's three department stores are still on site
-  - L1111 ...so its investors read BUILDING, with what is on site of what they are building (
-  - L1118 ...and a sector with nothing on site does not:
-- **L1130 9. a run of orders: priced and checked as placing them in turn would be, and charged that**
-  - L1141 fixture: the yard holds all of the first order's material and half the second's (
-  - L1147 ...so the run's invoice is more than its orders quoted alone, which each count the same yard free
-  - L1149 the run's first order is quoted as it is alone: a run of one is its quote
-  - L1153 short of cash: the run's gap is its invoice less the cash
-  - L1155 overdrawn: the gap counts the overdraft in full, as buildFundingGap() for one order does
-  - L1157 ...and what the treasury is overdrawn by is the cash below nothing
-  - L1159 with the cash to cover it, the gap is nothing
-  - L1160 every order of it passes the checks money cannot fix: buildRunAhead() is all three, buildRunStop() SUCCESS
-  - L1172 fixture: the three orders were placed
-  - L1173 ...and what they were charged, added in turn, is the run's invoice to the bit
-  - L1179 fixture: the free ground holds either of the first two orders alone and not both (
-  - L1183 ...so the run goes one order ahead and stops at the second for ground
-  - L1191 ...and placed in turn, buildStack() places the first and says NO_LAND to the second
-  - L1200 a run whose second order is two mines, with one deposit free, goes one order ahead and stops for the deposit
-  - L1205 a run with an office nobody is licensed for stops there for licences, as buildStack() would
-  - L1208 a run whose first order is refused goes nowhere
-- **L1223 10. served: every gauge is supply over demand, and one verdict, NEEDS YOU's lines turned over (0.7.41)**
-  - L1254 a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300%
-  - L1255 ...the road's, on STRAINED and FREE_FLOW
-  - L1256 ...a school's seats, on who would come and be hired over them - and a crowd off the list but over its seats is amber
-  - L1257 ...care and the basic ladder, listed, the row's level; off the list, green only at 100% and amber under it
-  - L1258 ...and every word is the verdict's: enough only green and at 100% or more, short under 100%, tight from it
-  - L1261 general care at 90%, past GENERAL_YELLOW and off the list, is amber and short - no tick (Jerus's case)
-  - L1264 a network serving 120%, a fifth in hand, is tight: amber, though over 100%
-  - L1267 the road 180% full serves 56%: red, short
-  - L1269 nothing asked is all of it met, and nothing supplying an ask is nothing; not a number has no verdict
-  - L1273 a share just under 100% never prints as 100% (the word would say short beside it)
-  - L1306 every served NEEDS YOU row (
-  - L1328 every Build ring of power, water, the road, transit, care and the schools (
-  - L1332 ...power's ring is the grid's own figure (to 1e-9) and the road's the road's, to the bit; transit has no verdict
-  - L1338 the curve the Roads page draws against served is the road's flow at what it serves
-  - L1348 fixture: with general care at 90% off the list, NEEDS YOU lists nothing for Healthcare, and the tile shows
-- **L1369 11. the interest on its whole cost: consider()'s brake, the card's last gate**
-  - L1415 ...and consider() would build it
-  - L1428 fixture: it still earns over nothing, the same estimate, and its interest bar is over that
-  - L1431 A BAKERY THAT PAYS BUT NOT ITS INTEREST ON ITS WHOLE COST FAILS THE CARD'S INTEREST GATE, the last
-  - L1433 ...with what one would earn and what it must: PROFIT_OVER_INTEREST times a month's interest
-  - L1439 fixture: the Bakery waits for the builders, so its cost is grown over the wait (carry over 1, and the card's is the model's)
-  - L1442 ...its interest struck on its whole cost grown over the wait though the till pays it all, at the real rate the test reads
-  - L1445 ...the rate it is judged at the bakers' own, the till paying (projectRate() of nothing)
-  - L1448 ...and every gate's report the same: it pays, it fails the interest, and that is its first failure
-  - L1453 THE CARD AGREES WITH consider(): the same order of one is refused
-  - L1457 at today's prime again the card passes it and consider() builds the same order
-  - L1469 fixture: the bakers are under a borrowing ban, and their till holds half a Bakery
-  - L1471 under a ban the gate is the interest's, in consider()'s words: \"
-  - L1476 ...and consider() refuses the same order
-  - L1484 ...and the bakers' till, prime and record put back
-  - L1489 a spur that would lose money fails the interest too, behind the loss, which stays its first
-- **L1517 12. the materials' cards: where it stands, how its sector weighs it, its power, old metal, buyers, E**
-  - L1573 fixture: the catalogue's materials buildings - the nine industries' - and the rest
-  - L1576 only a materials building is one (its owner a ProcessingSector or an ExtractionSector), and only it is weighed
-  - L1578 a works is weighed as its sector's appraisal weighs it: what it earns, its whole cost with its vans, the
-  - L1580 ...a mine, a quarry and the washing plant as their plan weighs one - ExtractionSector's estimate on its cost
-  - L1582 ...a crew under E, and a planted stand not at all (Forestry plants it, nothing orders it)
-  - L1606 fixture: the town holds three iron sites by fiat, all hematite (the first type)
-  - L1610 an Iron Mine's card: one hematite site, the city's three by type, its own and those spoken for, what is left -
-  - L1615 a Large Open-Pit Mine's: twenty sites of one hematite field, which three do not hold - it does not fit
-  - L1620 ...a magnetite works on a city of hematite: none of its type, in its words:
-  - L1624 ...and how its sector weighs it: the field its feed, refused first in the same words
-  - L1632 the words name each resource by its type: hematite ore, coking coal, sulphide copper ore, limestone - and
-  - L1641 an Underground Coal Mine on a town with no coking coal says so in coal's words, read as the ground (ORE):
-  - L1654 fixture: two stone sites by fiat, limestone; a Quarry's row makes aggregate
-  - L1656 a Quarry's card: either type, and one more stands on limestone - it makes the row's tonnes of limestone,
-  - L1662 ...and where it goes is limestone's buyers
-  - L1679 fixture: a Pelletising Plant in a town that digs no ore - its feed imported - fails only the money gate
-  - L1684 its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant
-  - L1691 the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already
-  - L1710 ...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;
-  - L1717 fixture: a Scrap Yard standing in the town
-  - L1719 its card buys the city's old steel: its intake (oldMetal()), Iron & Steel's price - PAY_SHARE of scrap's
-  - L1728 ...and with less old steel arising past the yards standing than one more takes, its sector's feed gate
-  - L1734 a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare
-  - L1759 every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at
-  - L1768 a Copper Smelter's acid goes to copper's leach plants and gold's mill at nameplate; its anode to its
-  - L1775 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
-  - L1796 each of the ten industries' pages says who here buys each good it makes, or that it ships
-  - L1809 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
-  - L1812 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
-  - L1819 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
-  - L1846 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
-  - L1855 an offer on the
-  - L1870 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
-  - L1876 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
-  - L1878 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
-  - L1883 Build's payback on the magnetite offer is its by-type earnings
-- **L1915 13. a berth's payback, the owner and the depot's line (FR4)**
-  - L1962 A SEA TERMINAL'S CARD HAS A PAYBACK AND NO OTHER BUILDING'S - the Strategic Reserve's, the Tank Farm's and a
-  - L1969 fixture: no cargo of any kind has crossed the boundary (a new city), the dues dial at its default
-  - L1979 A KIND WITH NO CARGO READS NO PAYBACK: NO_CARGO, no years, no tonnes carried and no dues, for every terminal
-  - L1980 ...and not a NaN or an infinity in any other figure the card prints (the years alone are NaN, the sentinel for none)
-  - L1981 ...the price is the one the Build button charges
-  - L1986 fixture: the city buys an offer that runs out to the sea
-  - L1992 AT A BERTH'S WORTH_A_BERTH OF TONNES: the Bulk Berth's card PAYS BACK, and the Bulk Terminal's is SHORT of tonnes
-  - L1994 ...and the card says what the advice does (portTerminal() orders the Bulk Berth, not the Terminal)
-  - L1996 ...it carries the tonnes uncovered, all of them, a month
-  - L1997 ...at the advice's uncovered tonnes
-  - L1998 ...the tonnes the advice waits for are WORTH_A_BERTH over the dial of its month
-  - L1999 ...its dues are the tonnes it carries at the rate struck a tonne
-  - L2000 ...its years are its price over a year's dues less its upkeep
-  - L2001 ...a payback of years above nothing
-  - L2002 ...the shortfall's figures: the Terminal's tonnes needed are the Berth's scaled by their months, its years NaN
-  - L2006 A HAIR UNDER IT: the Bulk Berth is SHORT too, and the card agrees with the advice
-  - L2011 AT THE TERMINAL'S WORTH_A_BERTH: both cards pay back, each judged alone, as portTerminal() asks them with the other
-  - L2013 ...the Bulk Berth carries its whole month (the tonnes uncovered are more)
-  - L2014 ...MORE TONNES CARRIED, FEWER YEARS: the Berth at its full month pays back in fewer years than at 60% of it
-  - L2020 fixture: half the threshold is no berth's worth at the default dial
-  - L2023 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth pays back, and the card agrees with the advice
-  - L2028 THE DIAL AT 0 - NO DUES, NO PAYBACK: NO_DUES for every terminal however many tonnes, no NaN but the years
-  - L2039 A BERTH WHOSE UPKEEP IS MORE THAN ITS DUES is UPKEEP, no years - the break-even does not see its upkeep, the card does
-  - L2049 THE DUES RATE IS THE PORT DUES' OWN: PortDivision.duesRateOf() with the berth standing is the rate the card struck for
-  - L2053 ONE BERTH STANDING FOR TONNES THAT FILL HALF OF IT: COVERED for the Berth and the Terminal - cargo crosses, none is
-  - L2075 THE RAIL AND DEPOT CARDS ARE OWNED BY FREIGHT - the owner the card names, its investors' line's and the slot the
-  - L2083 ...and Build's source no longer says \"Owned by the rail sector\" (the card's owner line reads the owner's key)
-  - L2086 could not read Build's source:
-  - L2094 only the Truck Depot has the line: a Rail Spur, a House and the Strategic Reserve have none
-  - L2098 fixture: no Truck Depot stands or is on site, and the margin is a fraction of a depot's room
-  - L2101 the line's trucks are Haulage's
-  - L2102 ...its depots' room
-  - L2103 ...the trucks past the room, on the street
-  - L2104 ...what it waits for is DEPOT_ORDER_MARGIN of the depot's room
-  - L2105 ...and it would build one exactly when Haulage would order this depot (depotToOrder())
-  - L2110 with the fleet raised past the margin and no depot standing, every truck is on the street
-  - L2111 ...and the line says Freight would build one exactly when the order's own test does, and here that test says yes
-  - L2116 with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet
-- **L2155 14. the landlords' card: the mortgage lender's test, the last gate of a landlord's home (I13-L)**
-  - L2180 ...so a Bakery's door to the lender's test is closed
-  - L2194 fixture: the landlords' owners are not asked for the down payment, and a House costs more than its down payment
-  - L2205 fixture: from a till of twice its down payment a House needs a lender, which reads a rent too small for the payment
-  - L2210 THE LENDER REFUSES IT ON ITS RENT: the card's first gate is the lender's, the last, and the INTEREST gate is none
-  - L2213 ...with the cover the rent gives the payment and the cover the lender asks, the test itself beside them
-  - L2218 ...in the lender's words, with what it lends, the payment and the cover against what it asks
-  - L2225 THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \"
-  - L2228 ...and no House is ordered
-  - L2234 fixture: a till of half the down payment leaves the landlord short of the down payment, and the lender reads no cover
-  - L2237 SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment
-  - L2242 ...in the lender's words: what it wants of its own and what it would put in
-  - L2247 ...and the order holds for it, in the same line: \"
-  - L2254 fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment
-  - L2256 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
-  - L2269 ...so the card fails it at the lender's gate, the cover now the rate's
-  - L2273 ...and the order is declined in the cover the card read, at the dearer rate: \"
-  - L2284 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
+  - L626 every card's price and sticker are Game.quoteBuild(t, 1)'s
+  - L627 ...its head the count standing, what is on site and its wait, and the land free the city's own
+  - L628 the hero's figure is the template's own (capacity, coverage, rail, points, its first good, a crude unit's crude,
+  - L631 value added is what one makes less what it uses at the markets' prices, an office's at
+  - L636 bar 1 is the quote at one over the unit, to the bit, on every card but a road's, whose is its life
+  - L638 bar 2 is land per unit on the market's cards and per trip off on a road's, unstaffable posts of 100
+  - L640 fixture: the cards include paid staff-short works
+  - L641 the running cost is the upkeep and filled posts at today's wages
+- **L660 3. the tags: only the strict best on a bar, only in a group of two or more**
+  - L689 a tag is on the lowest figure of a bar, strictly below the highest, and on no other
+  - L690 a group of one has no tag and draws no track (
+- **L696 4. the notes: each group's note reads the sector's own figures**
+  - L721 homes' doors, the shops' coverage, the counters', the kitchens', the rail's and each maker
+- **L728 5. the investors' line: on site only for an investor's order; the word is the month's**
+  - L747 every market card's word is Game.getLastInvestment() under its sector, the branch's under
+  - L750 ...and the bank has a word of its own, filed under \"Bank\":
+  - L756 fixture: no department store and no grocery store on site before the orders
+  - L764 fixture: Luxury Retail's order of three department stores went on site
+  - L767 the department store reads \"Investors are building\", with the three on site and their wait
+  - L770 ...and says no \"this one:\" while they are, whatever its gate
+  - L771 the city's own two grocery stores on site are not an investors' order
+  - L773 a department store of the city's beside theirs reads \"yours among them\"
+  - L792 fixture: the town's market cards had words before the save (
+  - L793 loaded, every market card has the word it had: the words are saved (0.7.102)
+  - L795 ...while no month has run since the load (Game.hasMonthRun()), as the month's flows are not saved
+  - L799 loaded, the customers who came and the meals wanted are not counted yet, not zero (the save
+  - L804 loaded, the bank's planner sees the bank: not \"no bank\" (
+  - L807 ...and a month later they are counted:
+  - L809 ...and the month after the load files a word for the bank that is not \"no bank\":
+- **L817 6. the gates: each \"this one:\" caused by a fixture, in buildStack()'s order**
+  - L826 with no deposit, the mine's gate is the deposit, with what the city owns and has committed
+  - L834 fixture: the town has no spare
+  - L836 the engineering office's gate is the licence: what one needs and what the city has
+  - L849 fixture: more than a fifth of a shared services centre's posts are college and university ones (
+  - L853 fixture: the town could staff
+  - L855 its gate is the staffing test, in the test's own words:
+  - L863 with half a house's ground free, the house's gate is the land, with what it needs and what is free
+  - L874 another spur's gate is a loss, what the investors' estimate says it would lose:
+  - L878 ...worded as a loss, not as no feed: the spur is no refinery's unit (0.7.103)
+  - L884 an Oil Well with no oil site free: its gate is the deposit, its count the dry sites (Game.sitesFor()),
+  - L888 ...every gate's report the same, and its card's count says \"dry\" where no other building's does
+  - L898 fixture: no crude unit stands in the town
+  - L899 a Small Lube Plant with nothing to feed it: its gate says no feed where it read a loss of
+  - L903 ...and every gate's report the same
+  - L921 a market building that passes every gate - the interest on its whole cost, or a landlord's home's lender, the last -
+- **L928 7. the verdict: in buildStack()'s order, and buildStack()'s own answer**
+  - L936 no deposit: the verdict is NO_DEPOSIT, and buildStack() says NO_DEPOSIT
+  - L942 nobody licensed: NO_LICENCE, with the licences it needs, and buildStack() says NO_LICENCE
+  - L950 short of land for three houses: NO_LAND by the quote's shortfall, and buildStack() says NO_LAND
+  - L959 short of cash: BILL by the quote less the cash, and buildStack() says NEEDS_FUNDING
+  - L965 with all of it: MONTHS, the quote's own wait at today's queue
+  - L971 with neither ore nor land, the mine's verdict is the deposit, as buildStack() checks ore first
+- **L1056 8. the word's kind: none of the town's words is OTHER; every phrase, whole words, in order**
+  - L1068 every sector's word in the town has a kind, none OTHER (
+  - L1081 every example of
+  - L1083 whole words: \"more\", \"before\" and \"Convenience Store\" are not ore, \"banks\" is not a bank
+  - L1086 an order on site is BUILDING whatever the word, and the land-blocked list is LAND
+  - L1107 a sector's investors are its own market buildings' lines and its word - Retail's with the bank's branch
+  - L1111 fixture (section 5): Luxury Retail's three department stores are still on site
+  - L1119 ...so its investors read BUILDING, with what is on site of what they are building (
+  - L1126 ...and a sector with nothing on site does not:
+- **L1138 9. a run of orders: priced and checked as placing them in turn would be, and charged that**
+  - L1149 fixture: the yard holds all of the first order's material and half the second's (
+  - L1155 ...so the run's invoice is more than its orders quoted alone, which each count the same yard free
+  - L1157 the run's first order is quoted as it is alone: a run of one is its quote
+  - L1161 short of cash: the run's gap is its invoice less the cash
+  - L1163 overdrawn: the gap counts the overdraft in full, as buildFundingGap() for one order does
+  - L1165 ...and what the treasury is overdrawn by is the cash below nothing
+  - L1167 with the cash to cover it, the gap is nothing
+  - L1168 every order of it passes the checks money cannot fix: buildRunAhead() is all three, buildRunStop() SUCCESS
+  - L1180 fixture: the three orders were placed
+  - L1181 ...and what they were charged, added in turn, is the run's invoice to the bit
+  - L1187 fixture: the free ground holds either of the first two orders alone and not both (
+  - L1191 ...so the run goes one order ahead and stops at the second for ground
+  - L1199 ...and placed in turn, buildStack() places the first and says NO_LAND to the second
+  - L1208 a run whose second order is two mines, with one deposit free, goes one order ahead and stops for the deposit
+  - L1213 a run with an office nobody is licensed for stops there for licences, as buildStack() would
+  - L1216 a run whose first order is refused goes nowhere
+- **L1231 10. served: every gauge is supply over demand, and one verdict, NEEDS YOU's lines turned over (0.7.41)**
+  - L1262 a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300%
+  - L1263 ...the road's, on STRAINED and FREE_FLOW
+  - L1264 ...a school's seats, on who would come and be hired over them - and a crowd off the list but over its seats is amber
+  - L1265 ...care and the basic ladder, listed, the row's level; off the list, green only at 100% and amber under it
+  - L1266 ...and every word is the verdict's: enough only green and at 100% or more, short under 100%, tight from it
+  - L1269 general care at 90%, past GENERAL_YELLOW and off the list, is amber and short - no tick (Jerus's case)
+  - L1272 a network serving 120%, a fifth in hand, is tight: amber, though over 100%
+  - L1275 the road 180% full serves 56%: red, short
+  - L1277 nothing asked is all of it met, and nothing supplying an ask is nothing; not a number has no verdict
+  - L1281 a share just under 100% never prints as 100% (the word would say short beside it)
+  - L1314 every served NEEDS YOU row (
+  - L1336 every Build ring of power, water, the road, transit, care and the schools (
+  - L1340 ...power's ring is the grid's own figure (to 1e-9) and the road's the road's, to the bit; transit has no verdict
+  - L1346 the curve the Roads page draws against served is the road's flow at what it serves
+  - L1356 fixture: with general care at 90% off the list, NEEDS YOU lists nothing for Healthcare, and the tile shows
+- **L1377 11. the interest on its whole cost: consider()'s brake, the card's last gate**
+  - L1423 ...and consider() would build it
+  - L1436 fixture: it still earns over nothing, the same estimate, and its interest bar is over that
+  - L1439 A BAKERY THAT PAYS BUT NOT ITS INTEREST ON ITS WHOLE COST FAILS THE CARD'S INTEREST GATE, the last
+  - L1441 ...with what one would earn and what it must: PROFIT_OVER_INTEREST times a month's interest
+  - L1447 fixture: the Bakery waits for the builders, so its cost is grown over the wait (carry over 1, and the card's is the model's)
+  - L1450 ...its interest struck on its whole cost grown over the wait though the till pays it all, at the real rate the test reads
+  - L1453 ...the rate it is judged at the bakers' own, the till paying (projectRate() of nothing)
+  - L1456 ...and every gate's report the same: it pays, it fails the interest, and that is its first failure
+  - L1461 THE CARD AGREES WITH consider(): the same order of one is refused
+  - L1465 at today's prime again the card passes it and consider() builds the same order
+  - L1477 fixture: the bakers are under a borrowing ban, and their till holds half a Bakery
+  - L1479 under a ban the gate is the interest's, in consider()'s words: \"
+  - L1484 ...and consider() refuses the same order
+  - L1492 ...and the bakers' till, prime and record put back
+  - L1497 a spur that would lose money fails the interest too, behind the loss, which stays its first
+- **L1525 12. the materials' cards: where it stands, how its sector weighs it, its power, old metal, buyers, E**
+  - L1581 fixture: the catalogue's materials buildings - the nine industries' - and the rest
+  - L1584 only a materials building is one (its owner a ProcessingSector or an ExtractionSector), and only it is weighed
+  - L1586 a works is weighed as its sector's appraisal weighs it: what it earns, its whole cost with its vans, the
+  - L1588 ...a mine, a quarry and the washing plant as their plan weighs one - ExtractionSector's estimate on its cost
+  - L1590 ...a crew under E, and a planted stand not at all (Forestry plants it, nothing orders it)
+  - L1614 fixture: the town holds three iron sites by fiat, all hematite (the first type)
+  - L1618 an Iron Mine's card: one hematite site, the city's three by type, its own and those spoken for, what is left -
+  - L1623 a Large Open-Pit Mine's: twenty sites of one hematite field, which three do not hold - it does not fit
+  - L1628 ...a magnetite works on a city of hematite: none of its type, in its words:
+  - L1632 ...and how its sector weighs it: the field its feed, refused first in the same words
+  - L1640 the words name each resource by its type: hematite ore, coking coal, sulphide copper ore, limestone - and
+  - L1649 an Underground Coal Mine on a town with no coking coal says so in coal's words, read as the ground (ORE):
+  - L1662 fixture: two stone sites by fiat, limestone; a Quarry's row makes aggregate
+  - L1664 a Quarry's card: either type, and one more stands on limestone - it makes the row's tonnes of limestone,
+  - L1670 ...and where it goes is limestone's buyers
+  - L1687 fixture: a Pelletising Plant in a town that digs no ore - its feed imported - fails only the money gate
+  - L1692 its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant
+  - L1699 the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already
+  - L1718 ...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;
+  - L1725 fixture: a Scrap Yard standing in the town
+  - L1727 its card buys the city's old steel: its intake (oldMetal()), Iron & Steel's price - PAY_SHARE of scrap's
+  - L1736 ...and with less old steel arising past the yards standing than one more takes, its sector's feed gate
+  - L1742 a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare
+  - L1767 every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at
+  - L1776 a Copper Smelter's acid goes to copper's leach plants and gold's mill at nameplate; its anode to its
+  - L1783 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
+  - L1804 each of the ten industries' pages says who here buys each good it makes, or that it ships
+  - L1817 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
+  - L1820 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
+  - L1827 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
+  - L1854 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
+  - L1863 an offer on the
+  - L1878 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
+  - L1884 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
+  - L1886 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
+  - L1891 Build's payback on the magnetite offer is its by-type earnings
+- **L1923 13. a berth's payback, the owner and the depot's line (FR4)**
+  - L1970 A SEA TERMINAL'S CARD HAS A PAYBACK AND NO OTHER BUILDING'S - the Strategic Reserve's, the Tank Farm's and a
+  - L1977 fixture: no cargo of any kind has crossed the boundary (a new city), the dues dial at its default
+  - L1987 A KIND WITH NO CARGO READS NO PAYBACK: NO_CARGO, no years, no tonnes carried and no dues, for every terminal
+  - L1988 ...and not a NaN or an infinity in any other figure the card prints (the years alone are NaN, the sentinel for none)
+  - L1989 ...the price is the one the Build button charges
+  - L1994 fixture: the city buys an offer that runs out to the sea
+  - L2000 AT A BERTH'S WORTH_A_BERTH OF TONNES: the Bulk Berth's card PAYS BACK, and the Bulk Terminal's is SHORT of tonnes
+  - L2002 ...and the card says what the advice does (portTerminal() orders the Bulk Berth, not the Terminal)
+  - L2004 ...it carries the tonnes uncovered, all of them, a month
+  - L2005 ...at the advice's uncovered tonnes
+  - L2006 ...the tonnes the advice waits for are WORTH_A_BERTH over the dial of its month
+  - L2007 ...its dues are the tonnes it carries at the rate struck a tonne
+  - L2008 ...its years are its price over a year's dues less its upkeep
+  - L2009 ...a payback of years above nothing
+  - L2010 ...the shortfall's figures: the Terminal's tonnes needed are the Berth's scaled by their months, its years NaN
+  - L2014 A HAIR UNDER IT: the Bulk Berth is SHORT too, and the card agrees with the advice
+  - L2019 AT THE TERMINAL'S WORTH_A_BERTH: both cards pay back, each judged alone, as portTerminal() asks them with the other
+  - L2021 ...the Bulk Berth carries its whole month (the tonnes uncovered are more)
+  - L2022 ...MORE TONNES CARRIED, FEWER YEARS: the Berth at its full month pays back in fewer years than at 60% of it
+  - L2028 fixture: half the threshold is no berth's worth at the default dial
+  - L2031 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth pays back, and the card agrees with the advice
+  - L2036 THE DIAL AT 0 - NO DUES, NO PAYBACK: NO_DUES for every terminal however many tonnes, no NaN but the years
+  - L2047 A BERTH WHOSE UPKEEP IS MORE THAN ITS DUES is UPKEEP, no years - the break-even does not see its upkeep, the card does
+  - L2057 THE DUES RATE IS THE PORT DUES' OWN: PortDivision.duesRateOf() with the berth standing is the rate the card struck for
+  - L2061 ONE BERTH STANDING FOR TONNES THAT FILL HALF OF IT: COVERED for the Berth and the Terminal - cargo crosses, none is
+  - L2083 THE RAIL AND DEPOT CARDS ARE OWNED BY FREIGHT - the owner the card names, its investors' line's and the slot the
+  - L2091 ...and Build's source no longer says \"Owned by the rail sector\" (the card's owner line reads the owner's key)
+  - L2094 could not read Build's source:
+  - L2102 only the Truck Depot has the line: a Rail Spur, a House and the Strategic Reserve have none
+  - L2106 fixture: no Truck Depot stands or is on site, and the margin is a fraction of a depot's room
+  - L2109 the line's trucks are Haulage's
+  - L2110 ...its depots' room
+  - L2111 ...the trucks past the room, on the street
+  - L2112 ...what it waits for is DEPOT_ORDER_MARGIN of the depot's room
+  - L2113 ...and it would build one exactly when Haulage would order this depot (depotToOrder())
+  - L2118 with the fleet raised past the margin and no depot standing, every truck is on the street
+  - L2119 ...and the line says Freight would build one exactly when the order's own test does, and here that test says yes
+  - L2124 with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet
+- **L2163 14. the landlords' card: the mortgage lender's test, the last gate of a landlord's home (I13-L)**
+  - L2188 ...so a Bakery's door to the lender's test is closed
+  - L2202 fixture: the landlords' owners are not asked for the down payment, and a House costs more than its down payment
+  - L2213 fixture: from a till of twice its down payment a House needs a lender, which reads a rent too small for the payment
+  - L2218 THE LENDER REFUSES IT ON ITS RENT: the card's first gate is the lender's, the last, and the INTEREST gate is none
+  - L2221 ...with the cover the rent gives the payment and the cover the lender asks, the test itself beside them
+  - L2226 ...in the lender's words, with what it lends, the payment and the cover against what it asks
+  - L2233 THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \"
+  - L2236 ...and no House is ordered
+  - L2242 fixture: a till of half the down payment leaves the landlord short of the down payment, and the lender reads no cover
+  - L2245 SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment
+  - L2250 ...in the lender's words: what it wants of its own and what it would put in
+  - L2255 ...and the order holds for it, in the same line: \"
+  - L2262 fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment
+  - L2264 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
+  - L2277 ...so the card fails it at the lender's gate, the cover now the rate's
+  - L2281 ...and the order is declined in the cover the card read, at the dearer rate: \"
+  - L2292 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
 
 ## BuildMenuCheck.java - 0 labelled assertions
 
