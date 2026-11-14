@@ -120,6 +120,7 @@ Gold's price a year 1971-2025, the sources' figures as printed (55 lines); `Gold
 | USGS Mineral Commodity Summaries 2026, gold production and reserves | public domain, associated data CC0 1.0 | https://pubs.usgs.gov/periodicals/mcs2026/mcs2026.pdf and https://www.usgs.gov/data/mineral-commodity-summaries-2026-data-release | yes | none required, credited in tools/world/ATTRIBUTION.txt |
 | USGS Mineral Commodity Summaries 2025, copper production and reserves | public domain, a US government work | https://pubs.usgs.gov/periodicals/mcs2025/mcs2025.pdf | yes | none required, credited as above |
 | Cox and Singer, USGS Bulletin 1693, Mineral Deposit Models (1986), USGS-authored gold setting descriptions | public domain, a US government work | https://pubs.usgs.gov/bul/1693/report.pdf | yes | none required, credited as above |
+| BEA NIPA Handbook, chapter 8, treatment of gold in the SNA and US accounts | public domain, a US government work | https://www.bea.gov/system/files/2019-12/Chapter-8.pdf | yes | BEA credited in GD4 notes, methods only, no figures copied |
 
 ### Not data, but shipped
 

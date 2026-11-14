@@ -319,12 +319,12 @@ public class BuildCardCheck {
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.INDUSTRY, null)) industry.add(gr.title());
         for (BuildCard.Group gr : BuildCard.groups(g, BuildAdvice.SHOPS, null)) shops.add(gr.title());
         // ...the mills' and the mines' named for their sectors since 0.7.120 (batch I3, Jerus's Q2): "Steel" and "Iron" until then.
-        assertTrue("Industry is fourteen groups by owning sector - Coal Mining's \"Coal\" since 0.7.126, Quarrying's \"Stone\" and Cement &"
+        assertTrue("Industry groups follow owning sectors, including Gold Mining - Coal Mining's \"Coal\" since 0.7.126, Quarrying's \"Stone\" and Cement &"
                         + " Concrete's \"Cement\" since 0.7.131, copper's \"Copper\" since 0.7.133, Forestry's \"Wood\" since 0.7.138 - and"
                         + " oil storage (0.7.85), the ports (0.7.86) and the oil at sea's platforms and pipelines (0.7.91): " + industry,
                 industry.equals(List.of("Food mills", "Food processing", "Iron & Steel", "Fabrication & machinery", "Iron Mining", "Coal",
                         "Stone", "Cement", "Copper", "Wood", "Oil", "Oil platforms", "Oil pipelines", "Refining", "Oil storage",
-                        "Building materials", "Builders")));
+                        "Building materials", "Builders", Sectors.GOLD_MINING)));
         // ...less the ports (0.7.86) since FR4 (2026-10-19): the sea terminals and the Strategic Reserve are Infrastructure's, below.
         // ...and the Coal group (0.7.126, batch I6; spec-materials 4: "+ Coal, Copper, Stone, Wood, Cement"): Coal Mining's four.
         List<String> coal = new ArrayList<>();
@@ -1765,10 +1765,12 @@ public class BuildCardCheck {
         for (BuildCard.Outlet o : BuildCard.outlets(g, panels)) if (o.good() == Good.PANELS) board = o;
         for (BuildCard.Outlet o : BuildCard.outlets(g, saw)) if (o.good() == Good.RESIDUES) chips = o;
         CopperMining cm = g.getSectors().copperMining();
-        assertTrue("a Copper Smelter's acid goes to Copper Mining's leach plants, its take theirs at nameplate; its anode to its"
+        assertTrue("a Copper Smelter's acid goes to copper's leach plants and gold's mill at nameplate; its anode to its"
                 + " own refineries first", acid != null && acid.made() == smelter.makes(Good.ACID) && !acid.ships()
-                && acid.others().size() == 1 && acid.others().get(0).sector() == cm
+                && acid.others().size() == 2 && acid.others().get(0).sector() == cm
                 && acid.others().get(0).takes() == cm.getInputAtCapacity(Good.ACID)
+                && acid.others().get(1).sector() == g.getSectors().goldMining()
+                && acid.others().get(1).takes() == g.getSectors().goldMining().getInputAtCapacity(Good.ACID)
                 && anode != null && anode.captive() && anode.ownTakes() == g.getSectors().copperRefining().getInputAtCapacity(Good.ANODE));
         assertTrue("a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's"
                 + " residues go to its own mills first", board != null && board.ships() && chips != null && chips.captive()
@@ -1791,7 +1793,7 @@ public class BuildCardCheck {
                 i++;
             }
         }
-        assertTrue("each of the nine industries' pages says who here buys each good it makes, or that it ships", pages == 9 && lines);
+        assertTrue("each of the ten industries' pages says who here buys each good it makes, or that it ships", pages == 10 && lines);
     }
 
     /** f. E on a forest town: the card's crew rule is Forestry's, and its refusal the plan's own words. */

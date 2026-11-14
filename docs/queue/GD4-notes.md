@@ -98,3 +98,38 @@ The gold plan values the entire recovered offer at the mint price under Gold,
 including the saved dealer-wedge difference on the reference output. A rich
 1900 field's projected return and the same mill's loss at a worked-down grade
 are checked directly against the planner.
+
+## Review REV-GD4-1
+
+The orchestrator's review of 3ef0676d found that the mint's domestic purchase
+was absent from expenditure GDP, a load without WorldMarket cleared the
+independent gold band, and gold stock was absent from NationalAccounts.HELD.
+All three receive specific GoldMiningCheck assertions.
+
+★ New gold bought by the mint is an acquisition of valuables in investment
+before monetization. It has its own NationalAccounts component and saved
+slot after the held-goods baseline. HistorySave already records total
+investment, so that series includes it. Government's Output card shows the
+new component when nonzero. Imported reagents still subtract through net
+exports. The money audit and the expenditure identity both close.
+
+BEA's handbook describes the international SNA acquisition-of-valuables
+treatment alongside the United States' different net-export adjustment for
+gold. The game uses the former. This is accounting-method evidence from a
+US government publication, with no numerical data copied. [BEA NIPA Handbook,
+chapter 8](https://www.bea.gov/system/files/2019-12/Chapter-8.pdf).
+
+Gold's physical inventory is appended to HELD. Its saved bullion spot quote
+and independent GoldPrice band survive the no-world-market load path,
+including playOnLiterals. The harness invokes that load hook with a 1934
+quote so a fallback to the 1900 literal fails visibly.
+
+PriceLevelCheck also caught cancellation of its counterfactual nominal-unit
+override in the new gold good. The actual CPI ratio now has its own constant.
+Good.GOLD's literals pass through the ordinary price funnel, and Game's gold
+quotes honor the nominal-unit override. At the normal historical factor the
+multiplier is exactly one. The price-level twin's premise stays intact.
+
+Catalogue checks now cover the added industry's group and reagent demand,
+the tenth extraction/processing page, and the mandated wider save records.
+These extensions preserve the checks' original behaviors for existing rows.

@@ -123,7 +123,12 @@ public final class Markets {
 
     /** Every market back on the good's literal prices: a city with no world market, or whose market was refused. */
     public void clearWorldPrices() {
-        for (GoodsMarket m : markets.values()) m.setWorldPrices(Double.NaN, Double.NaN);
+        clearWorldPricesExcept(null);
+    }
+
+    /** Clears the world-market bands while retaining an independent quote, such as GoldPrice on load. */
+    void clearWorldPricesExcept(Good kept) {
+        for (GoodsMarket m : markets.values()) if (m.good() != kept) m.setWorldPrices(Double.NaN, Double.NaN);
     }
 
     /**

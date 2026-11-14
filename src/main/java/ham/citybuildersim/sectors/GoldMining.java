@@ -29,6 +29,19 @@ public final class GoldMining extends ExtractionSector {
                 + "more ounces from the same work. Under Gold the mint buys the metal.");
     }
 
+    /** The deposits and the buyer of the mill's fine ounces. */
+    @Override
+    public java.util.List<Line> ownLines(Game game) {
+        java.util.List<Line> lines = super.ownLines(game);
+        if (game != null && game.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD) {
+            lines.add(Line.head("Who buys it here"));
+            lines.add(Line.of(Good.GOLD.label(), "The mint at its declared par"));
+        } else {
+            lines.addAll(BuildCard.chainLines(game, this));
+        }
+        return lines;
+    }
+
     /** Fixed ore throughput, recovered at the fields' declining grades. Pure. */
     @Override
     protected double madeAtRate(Good g) {

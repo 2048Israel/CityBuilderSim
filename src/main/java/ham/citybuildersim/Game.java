@@ -1923,7 +1923,7 @@ public class Game {
     private void restoreWorldMarket(DataSave loaded) {
         WorldMarket market = ensureWorldMarket();
         if (market == null) {
-            getMarkets().clearWorldPrices();
+            getMarkets().clearWorldPricesExcept(Good.GOLD);
             return;
         }
         market.setBerth(hasBerth());
@@ -2176,7 +2176,7 @@ public class Game {
 
     /** Gold's price in a month, US$ a troy ounce (GoldPrice): the month is an index as the moneys' are, months since January of Nations.FIRST_YEAR (WorldMoneys.monthIndex). NaN with no nations or a month before the first. */
     public double goldUsdPerOunce(int month) {
-        return priceOrNaN(goldPrice(), month);
+        return priceOrNaN(goldPrice(), month) * (PriceLevel.FACTOR / PriceLevel.HISTORICAL_FACTOR);
     }
 
     /**

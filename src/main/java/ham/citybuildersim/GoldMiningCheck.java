@@ -74,6 +74,8 @@ public final class GoldMiningCheck {
         boolean same = true;
         for (Geology.Kind k : Geology.Kind.values()) same &= Geology.weight(Resource.GOLD, k) == weights[k.ordinal()];
         assertTrue("gold's class weights follow the USGS geological models in the brief", same);
+        assertTrue("stockable fine gold has a national-accounts inventory term",
+                java.util.Arrays.asList(NationalAccounts.HELD).contains(Good.GOLD));
     }
 
     static void row() {
@@ -173,10 +175,34 @@ public final class GoldMiningCheck {
         close("a mint purchase uses no treasury reserve-purchase flow", fa.getBoughtThisMonth(), 0);
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         assertTrue("the actual mint month closes MoneyAudit", audit != null && audit.relative() < 1e-4);
+        NationalAccounts na = g.getEconomyManager().getNationalAccounts();
+        close("the mint's new gold is acquired as valuables in investment", na.getInvestmentValuables(),
+                g.getCentralBank().getGoldMinted());
+        close("investment includes construction, stock and the new valuables", na.getInvestment(),
+                na.getInvestmentConstruction() + na.getInvestmentInventories() + na.getInvestmentValuables());
+        close("the mint month's GDP identity closes", na.getGdp(),
+                na.getConsumption() + na.getInvestment() + na.getGovernment() + na.getNetExports());
     }
 
-    static void saved(Game g) {
+    static void saved(Game g) throws Exception {
         out.println("--- 6. the saved state carries depletion, vault and mint payment ---");
+        Game back = town("goldminingcheck-accounts-restore");
+        back.getEconomyManager().restoreNationalAccounts(g.getEconomyManager().getNationalAccountsState());
+        close("the mint's acquired valuables survive the national-accounts save",
+                back.getEconomyManager().getNationalAccounts().getInvestmentValuables(),
+                g.getEconomyManager().getNationalAccounts().getInvestmentValuables());
+        Game literal = new Game(GameFiles.scratch("goldminingcheck-literal-restore"));
+        quietly(literal::newGame);
+        literal.playOnLiterals();
+        GoodsMarket quote = literal.getMarkets().get(Good.GOLD);
+        quote.setWorldPrices(GoldPrice.PAR_1934 * 1.005 / 1000, GoldPrice.PAR_1934 * .995 / 1000);
+        quote.setExchangeRate(.777);
+        double importPrice = quote.importPrice(), exportPrice = quote.exportPrice();
+        java.lang.reflect.Method restore = Game.class.getDeclaredMethod("restoreWorldMarket", DataSave.class);
+        restore.setAccessible(true);
+        restore.invoke(literal, new DataSave());
+        close("the no-world-market load path keeps gold's post-1933 import quote", quote.importPrice(), importPrice);
+        close("the no-world-market load path keeps gold's post-1933 export quote", quote.exportPrice(), exportPrice);
         Markets markets = new Markets();
         markets.setExchangeRate(123);
         markets.restore(g.getEconomyManager().getMarkets().toState());
@@ -228,7 +254,7 @@ public final class GoldMiningCheck {
         close("after that settlement Float makes no mint payment", g.getCentralBank().getGoldMinted(), 0);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         registry();
         row();
         grades();
