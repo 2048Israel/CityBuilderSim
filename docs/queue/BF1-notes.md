@@ -6,8 +6,8 @@ files are kept out of this batch.
 Final model 272bef8f counts **0/24 bank failures**, against unchanged SX1's
 5/24 and LD2's historical 8/24. All 2,880 MoneyAudits and every bank equity
 bridge close. Pellet exports occur in 176 city-months; 532 split/consolidation
-events are counted. Readiness remains provisional pending the final ALL
-fresh-clone gate; the full pick and final ensemble have passed.
+events are counted. The full pick, final ensemble and fresh-clone gate
+have passed under the batch rules. The kept run and identities are below.
 
 ## Evidence before the mends
 
@@ -196,8 +196,8 @@ save-format change is needed for these within-turn handoffs.
 
 On final source f00e0496, PriceLevelCheck passes the full horizons: default
 60/60, built 120/120, played 120/120 and town 120/120. None of these cities is
-trimmed by the nudge guard. The final ALL pick and final-model ensemble are
-running from this source. The focused denomination and order-book checks,
+trimmed by the nudge guard. That preflight's ALL pick and ensemble followed
+from that source; the final 272bef8f evidence below supersedes them. The focused denomination and order-book checks,
 including all 2,880 BankFailureCheck monthly audits, passed before this pick.
 
 ## Corrections from the f00e0496 full run
@@ -350,3 +350,27 @@ No scripts or checking machinery change. AllChecks' harness registration
 is one line in and one out; the remaining harness edits are domain fixtures.
 Generated maps, dials, harness index and month order are committed with the
 final baseline before the fresh-clone gate.
+
+## Kept fresh-clone dry run and readiness
+
+The required versioned dry run, sh tools/gate.sh BF1 --dry-run, exits 0.
+Its suite exits 3: 193 harnesses run in 2,230 s, 189 pass and four have only
+the documented known reds (MapCheck, PlanCheck, KeptCheck, DeathRecordCheck).
+The publisher's complete check phase takes 2,315 s. There are no unnamed
+reds; maps regenerate, Stale has zero firm findings (185 soft), and tree
+validation passes. The dry run tests version 0.9.102 and publishes nothing.
+
+Kept directory:
+/c/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-BF1/target/bf1-gate-release
+
+Its identities are:
+
+- branch: 5c4bf6d8c655994c1ff8407be6370c643c6bd9ff;
+- main: e56421457c98e0c5d115ebdbd9e701dcdd7a4fc6.
+
+The run retains ship.log, checks/suite.txt, checks.sha256, checks.complete,
+branch.commit, main.commit and the selection. The launcher's wrapper log is
+target/checks/bf1-gate-release.txt. The ship file names this directory for
+reuse. After this kept run only these notes and BF1-ship.md advance; source,
+generated indexes and the final 272bef8f ensemble baseline stay unchanged.
+The provisional marker is removed last and the ship file is pushed last.
