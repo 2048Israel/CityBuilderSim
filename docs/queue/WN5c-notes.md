@@ -24,4 +24,12 @@ Final focused LandNationsCheck (target/wn5c-final-land.txt, isolated classes): e
 
 The pending card was rendered using its actual LandScreen drawing code, JavaFX and the game theme (target/wn5c-pending-card.png, scratch WN5cVisual probe), then visually inspected: normal dark frame, title, Pricing the block... and close control, no purchase action. Keyboard Enter is ignored while pricing.
 
-The first 29-harness pick began before the landmass acceptance fix and is preliminary evidence only. The final selection and fresh-clone gate will compile the final source. No scripts, runner machinery or standing rules were changed, so process one-in/one-out does not apply.
+The first 29-harness pick began before the landmass acceptance fix and was superseded and stopped through its verified own process-tree root PID 24732; it is not readiness evidence. Final --pick selects 36 harnesses. The final selection and fresh-clone gate will compile the final source. No scripts, runner machinery or standing rules were changed, so process one-in/one-out does not apply.
+
+## Final selected checks and trace
+
+Final ./batch-check.sh --pick: exit 3, target/wn5c-final-pick.txt and target/checks/. Selection 36; AllChecks ran 39 (substring filters also select their matching harnesses), 37 passed, two known reds only: MapCheck's three existing drawing/network/junction assertions, and LongPlaytest's existing exit 1 with no FAIL line (its log ends All checks passed). No NEW red. Thirteen timing assertions were soft (EarthTerrainCheck 2, SaveSlotCheck 1, MapCheck 10); two MapCheck played-path premises were informational OBSERVED. Compile and regenerated maps passed; Stale 0 firm.
+
+The full default playtest output matches main's retained BF1 gate at /c/Users/Jerus/AppData/Local/Temp/cbs-gate-BF1-RdoINpBa/checks/LongPlaytest.log, whose head.after is exactly the fork/main 1e5dffa8918c25f06522e34c4208b87bdecf732a. Only the JDK-options environment line, two runtime figures (report heading and layout timing) and two wall-clock log prefixes differ. All model output and assertion lines are byte-identical after removing that execution metadata; normalized SHA-256 d4d393198dee767afd9895698e97d413651d6aa803db17eea585459cf09dc6ad, empty target/wn5c-trace-diff.txt. The trace did not move, so the ensemble is skipped (EN1); main was not rerun.
+
+Orchestrator arranged independent threading review REV-WN5c-1 of 1e5dffa8..dafdd84c before readiness. Its verdict and the serialized fresh-clone dry run remain pending at this provisional push.
