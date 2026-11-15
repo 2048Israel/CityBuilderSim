@@ -1,6 +1,6 @@
 # MiniMap.java - 471 lines · 20 methods · 5 constants · interface
 
-`ham/citybuildersim/ui/MiniMap.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/MiniMap.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
 > The minimap: a stamp of the city at the foot of the rail, above Menu, on screen from every tab; while the pointer is on it a preview beside it, 288 x 192; a click opens the land office's map over the window on what it shows - drawn by the model's MiniMapFrame from the district pictures, at the month's end.
 > 
@@ -33,7 +33,7 @@
 
 **Uses:** [MiniMapFrame](MiniMapFrame.md) (16), [CityMap](CityMap.md) (12), [MapView](MapView.md) (10), [Palette](Palette.md) (8), [MapTiles](MapTiles.md) (7), [Game](Game.md) (7), [UserInterface](UserInterface.md) (2), [MapFrame](MapFrame.md) (2), [TileRaster](TileRaster.md) (2), [World](World.md) (1)
 
-**Used by (1):** [UserInterface](UserInterface.md)
+**Used by (2):** [ReplayMoveProbe](ReplayMoveProbe.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

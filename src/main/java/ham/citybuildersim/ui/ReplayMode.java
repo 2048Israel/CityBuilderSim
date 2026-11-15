@@ -581,6 +581,7 @@ final class ReplayMode {
         if (!on) return false;
         viewerKey(e);
         KeyCode code = e.getCode();
+        if (camera.loading() && code != KeyCode.ESCAPE) return true;
         boolean menuUp = ui.replayGameMenuUp();
         if (code == KeyCode.ESCAPE) {
             if (menuUp) return false;
@@ -594,6 +595,10 @@ final class ReplayMode {
         }
         if (typing || menuUp || e.isControlDown() || e.isAltDown() || e.isMetaDown()) return false;
         // A loaded move waits for its click (CM1): any other key runs it, so a recording can be started first.
+        if (camera.ready() && code == KeyCode.X) {
+            camera.stillAll();
+            return true;
+        }
         if (camera.ready() && !code.isModifierKey()) {
             camera.run();
             return true;

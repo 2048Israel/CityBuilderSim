@@ -1,6 +1,6 @@
-# ReplayCamera.java - 393 lines · 47 methods · 5 constants · interface
+# ReplayCamera.java - 396 lines · 47 methods · 5 constants · interface
 
-`ham/citybuildersim/ui/ReplayCamera.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ReplayCamera.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
 > The replay's camera (TR1, 2026-10-31): the two marked views and the glide between them, the fly out to the whole Earth and back,
 > the load of a move before it runs (CM1), and the smooth hand with its drift - the state of every camera move, frame by frame. The
@@ -18,12 +18,12 @@
 > just say loading 10 seconds, then let you click to run it ... not for the normal game, only while in replaying mode."
 > 
 > <p>A move (a glide, a fly out or a fly in) is set up here and then LOADS: it goes through {@link #PLAN_HZ} views a second of its
-> own clock, {@link #planViews()} in all, which MapView paints one after another with no limit on the time, in every month the move
+> own clock, {@link #planViews()} in all, which MapView paints one after another up to MapView.LOAD_MAX_S, in every month the move
 > crosses, keeping what it painted until the move has run (MapView.loadStep()). The run shows, frame by frame, the plan's view nearest
 > its own clock, never one between two: a view between two loaded ones can need a tile or a node neither had, and a frame clock lands
 > between them nearly every frame (CM1's gate, 2026-11-04: on a busy PC a glide asked the worker 7 things and drew one frame
 > unpainted; ReplayCheck 5d counted 54 of 56 frames off the plan before this). The bar says "Loading the move... N s", then
-> "Ready - click to run"; a click on the map or any key runs it, so a screen recording can be started first, and Esc cancels at
+> "Ready - click to run"; a click on the map or a key other than Esc or X runs it, so a screen recording can be started first, and Esc cancels at
 > either point. Only a replay has this camera, so the normal game loads nothing ahead.
 > 
 > <p>Everything runs on the FX thread, from MapView's frame. Nothing here touches a node.
@@ -37,7 +37,7 @@
 | line | section |
 |---:|---|
 | 167 | · the keys and the buttons |
-| 351 | · the frame |
+| 354 | · the frame |
 
 ## Enum constants
 
@@ -81,7 +81,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 32 | 362 | **type** `final class ReplayCamera` | The replay's camera (TR1, 2026-10-31): the two marked views and the glide between them, the fly out to the whole Earth and back, the load of a move before it runs (CM1), and the smooth hand with its drift - the state ... |
+| 32 | 365 | **type** `final class ReplayCamera` | The replay's camera (TR1, 2026-10-31): the two marked views and the glide between them, the fly out to the whole Earth and back, the load of a move before it runs (CM1), and the smooth hand with its drift - the state ... |
 | 44 | 3 | **type** `record Shot(CameraPath.View view, CameraPath.Move move, boolean more)` | What a frame of the camera asks of the view: a view to take whole, or a move to ease on, or neither; and whether the frames must go on. |
 | 48 | 1 | **type** `private enum Phase` |  |
 | 71 | 4 | `ReplayCamera(ReplayMode mode, UserInterface ui)` |  |
@@ -112,7 +112,7 @@
 | 156 | 6 | `static String words(CameraPath.View v)` | The marks as the bar's tooltip says them: "month 123, ..." or "not marked". |
 | 163 | 3 | `private static String shortScale(double s)` |  |
 
-### the keys and the buttons (lines 167-350)
+### the keys and the buttons (lines 167-353)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -126,19 +126,19 @@
 | 274 | 6 | `void loadDone(int passed)` | MapView has loaded the whole move (CM1): it waits for the click. |
 | 282 | 4 | `void loadFailed(String why)` | MapView could not load the move (CM1): it is let go and the bar says why. |
 | 288 | 7 | `void run()` | The click (or a key) on a loaded move runs it (CM1); nothing from any other phase. |
-| 297 | 6 | `void stop()` | A move let go where it is (Esc, a button) - while it loads or waits for its click as in flight; the smooth hand's moves go on. |
-| 305 | 3 | `void hand()` | A hand on the mouse, the wheel or W A S D takes the camera from a move: it stops where it is. |
-| 310 | 6 | `void mapGone()` | The map closed (or another screen is up) while a move was loading, waiting or in flight. |
-| 318 | 5 | `void stillAll()` | X: every drift and move stopped, a loading or loaded move, a glide or fly with them. |
-| 324 | 4 | `private void stopMove()` |  |
-| 330 | 5 | `void driftBy(double across, double down, double zoom)` | Adds to the drift: px a second across and down (the ground's, as W A S D move it) and ln of the zoom a second. |
-| 336 | 1 | `private static double clean(double v)` |  |
-| 339 | 11 | `String driftReading()` | The drift as the bar reads it ("drift up 24 · left 48 px a second · in 6% a second"), or null when there is none. |
+| 297 | 7 | `void stop()` | A move let go where it is (Esc, a button) - while it loads or waits for its click as in flight; the smooth hand's moves go on. |
+| 306 | 3 | `void hand()` | A hand on the mouse, the wheel or W A S D takes the camera from a move: it stops where it is. |
+| 311 | 7 | `void mapGone()` | The map closed (or another screen is up) while a move was loading, waiting or in flight. |
+| 320 | 6 | `void stillAll()` | X: every drift and move stopped, a loading or loaded move, a glide or fly with them. |
+| 327 | 4 | `private void stopMove()` |  |
+| 333 | 5 | `void driftBy(double across, double down, double zoom)` | Adds to the drift: px a second across and down (the ground's, as W A S D move it) and ln of the zoom a second. |
+| 339 | 1 | `private static double clean(double v)` |  |
+| 342 | 11 | `String driftReading()` | The drift as the bar reads it ("drift up 24 · left 48 px a second · in 6% a second"), or null when there is none. |
 
-### the frame (lines 351-393)
+### the frame (lines 354-396)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 358 | 15 | `Shot frame(double dt)` | One frame (MapView.replayCamera()): {@code dt} seconds since the last. |
-| 374 | 19 | `private Shot advance(double dt)` |  |
+| 361 | 15 | `Shot frame(double dt)` | One frame (MapView.replayCamera()): {@code dt} seconds since the last. |
+| 377 | 19 | `private Shot advance(double dt)` |  |
 

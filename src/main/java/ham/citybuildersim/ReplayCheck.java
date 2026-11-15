@@ -849,6 +849,7 @@ public class ReplayCheck {
                     esc.wasLoading(), esc.taken(), esc.phaseAfter(), esc.heldAfter(), esc.pinnedAfter());
             helper("Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)",
                     esc.wasLoading() && esc.taken() && "IDLE".equals(esc.phaseAfter()) && !esc.heldAfter() && esc.pinnedAfter() == 0);
+            cm.followups().forEach((label, passed) -> helper(label, passed));
         }
 
         /* ====== 6. recording costs the month only its fill, and changes nothing in it ====== */
