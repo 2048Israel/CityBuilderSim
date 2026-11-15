@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,979 constants in 576 files.**
+**5,980 constants in 577 files.**
 
 ## model (2860 constants)
 
@@ -5700,7 +5700,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1660 constants)
+## harnesses (1661 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6175,6 +6175,12 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 109 | `DiscoveryCheck.STUDY_ROUNDING` | `0.06` | How far from the study's figure a post may be: the study's rounding to a tenth. |
 | 112 | `DiscoveryCheck.STUDY_LAG_YEARS` | `new EnumMap<>(Map.of(Field.ENGINEERING, 7, Field.MEDICINE, 9, Field.BUSINESS, 4, Field....` | research-design 1.8: how many years before history's date the science exists. |
 | 114 | `DiscoveryCheck.CAT` | `ResearchCatalog.get()` |  |
+
+### ER1Check.java ([map](map/ER1Check.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 19 | `ER1Check.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Suppresses the game's month narration while the fixture runs. |
 
 ### EarthCheck.java ([map](map/EarthCheck.md))
 

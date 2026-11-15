@@ -1,8 +1,8 @@
-# gate of Merge batch/KP2c: the kept screens' sweep, the rest (after KP2b): the writes `KeptCheck.NOT_KP2B` names and section 92 does not count (209 over its pages: `UserInterface.scrolled()`'s `new Insets(0, 0, PAGE_FOOT, 0)` on every page each draw, Services' door cards and frame padding, Infrastructure's), then out of the set; `Kept.Grid.stage` clearing a kept grid's column constraints for the page to add again (People's matrix and about 13 grids), and `Kept.handBack` enabling a greyed control for the page to grey again, each draw (a `Kept.java` rule: reset at the draw's end only what the draw did not set); `Region.setPrefSize` and `HBox.setMargin` asking for a layout when nothing changes (`Pieces.makeIcon`'s `setPrefSize(24, 24)`, about 1,450 a sweep), counted by 92; KeptCheck's heap (about 1.95 GB of 2 by section 92): what the earlier sections keep; and KP2b's gate review's two (2026-11-06): `ui/Pieces.java:251/255`'s comment promises a guard the code lacks (a kept cell not from `limitCell` that sits last is skipped on its second draw, its maker's style standing; no caller does it today: guard it or drop the claim); `ui/Kept.java:661`, a slider greyed then un-greyed in successive months while the button stays down loses its hold for the rest of that drag, so the thumb can move under the hand (the release still commits where the player let go) (KP2b's gate review, 2026-11-06), 0.9.119
+# gate of Merge batch/ER1: what holds an Earth city at Rotterdam's site at about 12 thousand people for 97 years (m618-m1778) when the default city grows sevenfold in the same months - a diagnosis only, with a fixture that holds the city there: the land in use at 99-100% by m618 and only a third of the fields; land falling to 54% and hunger at 60% by m1778; what changes at m1778-m2025, when the fields reach 100% and jobs fourfold; the fix is its own batch (AN2's ★1, recommended and taken by the orchestrator, 2026-11-07), 0.9.119
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 194 harnesses run in 2126s: 188 passed, 6 failed
+# suite: 193 harnesses run in 1834s: 188 passed, 5 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 InvestCheck | exit 1
@@ -13,15 +13,15 @@ MapCheck | at every 30th month the map draws exactly what the city has: each typ
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
 MapCheck | 3 FAILED
-KeptCheck | exit 1
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 ResearchViewCheck | exit 1
 ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 1 rows, Agriculture: 3 of 6), and the sectors' rows add up to the city's
 ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217
+KeptCheck | exit 1
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+KeptCheck | 1 FAILED
 PrizeCheck | exit 2
 PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1011.1291940951232 of 1004.6942298626966)
 PrizeCheck | FAIL ...and its till (at most 388) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
