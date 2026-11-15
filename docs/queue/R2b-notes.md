@@ -23,4 +23,9 @@ Started from main b49a6023 (0.9.111), on batch/R2b, 2026-11-15.
 - Final focused run, batch-check ResearchCheck DiscoveryCheck FittingCheck: exit 0 (50s compile), three harnesses green; ResearchCheck 207 assertions, DiscoveryCheck 285, FittingCheck all passed. Generated indexes regenerated; zero firm Stale findings. Log target/checks/R2b-focused.txt.
 - tools/pick.sh selects ALL (BuildingManager has 92 readers), so the full verdict will be the coordinated fresh-clone gate dry run, not a concurrent local full suite.
 - Main has no known-reds row assigned to R2b. No existing harness premise, known-red registry, publisher-owned file or save slot changed.
-- Final eight-file trace comparison and the retained gate directory will be recorded before readiness.
+- Final model 3398da4a versus main b49a6023: all eight complete CSVs byte-identical (month, borrow, house, pop, bank, bonds, build, labour). Final run 2,405 months in 536s, exit 1 for the same recorded DM3-R map movement at m2389; all money fixtures pass. Comparison target/checks/R2b-trace-comparison.txt; run target/checks/R2b-final-trace.log and R2b-final-*.csv. No ensemble: the default trace did not move (batch.md §6).
+
+## Gate and review
+
+- Provisional ship file pushed at 759f74ce. Final code and fixtures 3398da4a, reported as mends to the orchestrator. REV-R2b-1 reviews b49a6023..3398da4a.
+- Requested the dry-run slot at 03:16 Halifax on cbs-bus; waiting for the orchestrator go after RT2 and KD1. No local full suite or ensemble started. The kept run directory and its branch/main identities will be recorded here before readiness.
