@@ -105,3 +105,40 @@ the model records itself (`hungerPricedOut`, `basketsAsked`, `basketsHanded`).
 It does not by itself establish which price or income shock caused each
 household's loss of purchasing power. Nor does a crop self-sufficiency reading
 prove that the rest of the land is unused.
+
+The monthly traces put the longest unchanged job-capacity spell at
+**m1746–2529 inclusive: 784 months at 13,575 jobs**. In m1778–2400 inclusive,
+all 623 months have land utilisation at least 99% and zero construction
+points remaining on site. In m618–1778, 953 of 1,161 months have land use at
+least 99%, and 951 have an empty queue. These are counts of recorded states;
+the individual investor refusal counts are measured separately.
+
+The standing building stock at m2383 reconciles exactly to the saved standing
+footprint, 52,188,512 ft². Only 600,000 ft² of that is Agriculture (1.15%);
+Real Estate is 14,630,000 ft² (28.0%), and Manufacturing 6,500,000 ft² (12.5%).
+The balance is mainly city works and the other businesses. These are saved
+building quantities times the catalog's own footprints, not crop output
+converted to area. The allocated ledger is slightly greater than the standing
+footprint (the manual house retirements leave a small difference; AW2 already
+owns allocation reconciliation). Neither figure makes the fields most of the
+city's land. The recorded 264 m² free remains smaller than the named farms'
+and factories' requested plots.
+
+The price feedback is explicit in `LandMarket.update()`:
+`peoplePerKm2()` drives `crowdingPremium()` (`CROWDING_MIDPOINT`,
+`CROWDING_STEEPNESS`, `CROWDING_CEILING`), and inside land adds
+`scarcityMultiplier()`. Offers already listed retain their listed dollar
+price; `update()` fills missing places, it does not replace an unaffordable
+standing offer with a smaller one. The buyer pays that dollar quote at the
+current exchange rate. The shelves are not refusing to list; the buyer cannot
+pay the whole offers it is looking at.
+
+**Limit on the causal claim:** a `planMaker()` land refusal follows its
+forecast, staffing and positive estimated-profit tests, but precedes the
+whole financing test in `Game.consider()`. It proves a desired, positive-profit
+candidate has no plot; it does not prove a loan would pass after annexation.
+Other sectors independently say output ahead, insufficient licences, no
+deposit or an unprofitable project. `Construction.plan()` declines another
+depot when queue months are below
+`BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING`; that is a response to
+the empty queue, not proof that adding builders would make a plot available.
