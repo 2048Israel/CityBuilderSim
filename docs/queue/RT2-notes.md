@@ -151,3 +151,29 @@ RT1b/main cd7f9dca is merged after its ship at 01:54. Only generated
 harness/map-index conflicts, regenerated from the combined source. Its
 holder-ledger repair is inherited from main; RT2's own model stays unchanged.
 R0f's dry run starts next, with RT2 still idle until the orchestrator's go.
+
+## Final combined model and execution route
+
+R0f/main b49a6023 (0.9.111) is merged after the orchestrator's 02:44 go.
+AllChecks auto-merges with both MoneyDatesCheck and FoodIndustryCheck;
+conflicts are confined to generated indexes and regenerated from combined
+source. No RT2 model/fixture change since the accepted 9632e40b review.
+
+The final combined sector selection exits 0 (all three sector harnesses),
+with compile, maps and 0 firm Stale findings. The unchanged full money-fixture
+run also exits 0; m8 still causes both power and consumable flows. Logs:
+target/checks/rt2-final-sectors.txt and
+target/rt2-probes/money-merged-final.txt.
+
+The starter's explicit bus instruction 20261115-024441-229-orchestrator-880d
+is: "no separate local ALL pick: the dry run runs it". Thus the final ALL
+selection runs through the launcher's fresh clone, after the ensemble,
+rather than duplicating that run in this worktree. The heavy slot is RT2's;
+ensemble and dry run run one after the other. Before the dry run RT2 still
+sends the required "RT2 dry run?" coordination message.
+
+Known-reds re-read on b49a6023: no entry names RT2 or RT1. R0f adds only its
+existing MoneyDatesCheck whole-foreign-account twin entry, queued as R0f-S;
+leave it distinct from RT2. R0f's final eight default CSVs match its prior
+main byte for byte (R0f notes, final verification), and RT1b's do too. The
+newest stored ensemble baseline is therefore still 0.9.106.
