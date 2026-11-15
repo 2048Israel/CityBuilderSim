@@ -186,3 +186,93 @@ target/R2c-captured/playtest.log and target/R2c-captured/exit (0).
 KD1 changes no gameplay Java or packaged model resources, so this is also
 the current main 4343a815 model baseline. No ensemble was run: the default
 trace never moved. The final code is f59d577c, carried through the main merge.
+
+## Coordinated versioned dry run
+
+Orchestrator go: 20261115-070424-442-orchestrator-1fdf. Normal route:
+sh tools/gate.sh R2c --dry-run. No local ALL run was duplicated (the
+orchestrator explicitly assigned the gate's --pick as the ALL run).
+
+Retained directory: /tmp/cbs-gate-R2c-kgeGFGIP
+Branch: 6ee40b29ae72523b5d28180b50089e9d51ef7c85
+Main: 4343a81525f831df83511ccae1cd26d5ef71c478
+Launcher log: target/checks/R2c-gate-launcher.log
+Verdict and final review follow.
+
+## REV-R2c-3: standing valuation across private kinds
+
+The first dry run was stopped at the reviewer's instruction, exit 130;
+origin refs were unmoved. /tmp/cbs-gate-R2c-kgeGFGIP is diagnostic only and
+will not be reused. The third delta review accepted capture timing, pending
+save/load, accrual-month expiry, settlement/audit and default guards, but
+found the root installed-vs-additional appraisal error also affected furnaces.
+
+- ★ No installed building path calls estimatedMonthlyProfit. Processing works
+  use their standing/removal values and their existing feed/freight costs;
+  refinery units use dispatched feed; other private makers use grossStanding
+  with running, standing, own and freight costs. Extraction also refuses a
+  gain on worked-out ground.
+- ★ Actual dispatched output (including direct exports and captive output)
+  limits the standing rate. A staffed nameplate is not production. The new
+  ProcessingSector.lastEarnsAt takes that already-limited rate, retaining
+  standing price roles and costs without reapplying feed limits.
+- ★ Standing recipe deltas also use the removal price roles: output at the
+  replacement value, inputs at the value freed. Prospective appraisal remains
+  the separate additional-unit question.
+- The causing fixture has one real Machine Works buying local steel from the
+  installed patented furnace. It waits for actual local sales, positive
+  standing gain and a negative extra-furnace appraisal; it does not set trade
+  tallies by hand. A captured positive bill then pays exactly and both accounts
+  close. On the new model: standing 16453.692637449, addition -7.857775213,
+  accrued and paid 1008.313026286. The final harness currently passes 36/36.
+- On f59d577c's captured LicenceFees class, the same fixture reaches its
+  economic premise but accrues and pays zero: precisely the two new
+  assertions fail, 34 passed / 2 FAILED (R2c-standing-before.log).
+
+- ★ Orchestrator ruling 20261115-073638-682-orchestrator-d42a: standing
+  planners must net the standing royalty too; prospective appraisal stays
+  separate. BusinessInvestment now has standingRunningCostOf alongside its
+  prospective runningCostOf. ProcessingSector's standing readers use that
+  path. Production capture values the standing stack; raw valuation suppresses
+  both fee hooks to avoid recursion.
+  No RT2 quantity hook or BusinessInvestment.planRetirement method changed.
+- The net-planner assertion clears and reinstates only the captured memo for
+  a pure read and verifies standing earnings rise by exactly that fee despite
+  the additional-unit estimate remaining a loss. A later patent-status change
+  cannot cancel a bill already earned. Repeated standing reads preserve paid
+  and pending flows. The expanded harness passes 37/37.
+- On the pre-mend model (f59d577c's relevant integration classes; the read-only
+  helper addition leaves its standing read unchanged), exactly three new
+  assertions fail: positive accrual, standing-planner netting, and settlement.
+  34 passed / 3 FAILED, target/checks/R2c-standing-net-before.log.
+
+- ★ Standing readers use a saved per-template, per-building memo of the last
+  captured royalty. They never revalue empty loaded production rows or the
+  next month's mix and prices. Capture publishes one immutable map after
+  booking the exact total to the pending ledger; the memo does not pay again.
+  DataSave copies and snapshots the map, Game resets and scales it with the
+  other money, and the load restores it after the notional market rebuild,
+  beside restoreSectorBills. Older saves read an empty memo.
+- ★ Orchestrator 20261115-080557-063-orchestrator-3403 directed the existing
+  normal scratch slot-10 save/load route. No new JSON load seam remains;
+  readTheSave keeps its existing shape. Only a temporary GameFiles scratch
+  folder is written, never a player's save. Both SaveFileCheck and
+  ReadPathCheck exercise the full roundtrip between capture and the next
+  standing read, requiring exactly the same positive memo and standing net.
+  HistorySave retains accrued IP charges as well as paid IP charges.
+- The final local fixture run passes 37/37
+  (target/checks/R2c-standing-loaded2.log), including a full ordinary load.
+  The new furnace's net standing gain is 15445.379611163, gross standing gain
+  16453.692637449, extra-unit gain -7.857775213, and accrued/paid royalty
+  1008.313026286.
+
+Final standing-model focused validation: LicenceFeesCheck, SaveFileCheck,
+ReadPathCheck, ForeignCheck, RecipeCheck, EquipmentCheck, MaterialsCheck,
+SaveSlotCheck and ScaleCheck all passed, exit 0
+(target/checks/R2c-standing-final-focused.log). The one SaveSlotCheck timing
+assertion is soft under the normal soft route; no functional red appeared.
+Maps regenerated with zero firm Stale findings. The ordinary scratch-load
+comparison was then tightened from monetary tolerance to exact equality of
+standing net and memo: LicenceFeesCheck remains 37/37, exit 0
+(target/checks/R2c-exact-loaded.log). The ALL pick is reserved for the
+coordinated normal gate, not duplicated locally.

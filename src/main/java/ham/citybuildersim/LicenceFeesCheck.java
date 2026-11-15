@@ -332,7 +332,7 @@ public final class LicenceFeesCheck {
             loadedGame.loadGameSave(10);
         });
         double standingAfter = loadedGame.getSectors().heavyIndustry().lastEarns(loadedGame.getBuildingManager().getTemplate(11));
-        boolean fullLoadKept = written && near(standingBefore, standingAfter) && g.getLicenceFee(11) > 0
+        boolean fullLoadKept = written && standingBefore == standingAfter && g.getLicenceFee(11) > 0
                 && g.getLicenceFee(11) == loadedGame.getLicenceFee(11);
         if (!fullLoadKept) System.out.printf("   load standing %.12f -> %.12f; memo %.12f -> %.12f; written %s%n",
                 standingBefore, standingAfter, g.getLicenceFee(11), loadedGame.getLicenceFee(11), written);

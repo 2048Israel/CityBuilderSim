@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**204 harness files, 24,150 labelled assertions.** AllChecks runs 204 of them.
+**204 harness files, 24,154 labelled assertions.** AllChecks runs 204 of them.
 
 ## Which harnesses read which class
 
@@ -17795,7 +17795,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3330 the run played its months and found nothing: every month passed the playtest's audit,
   - L3332 the test player never builds a terminal off its home landmass (it never links an island)
 
-## LicenceFeesCheck.java - 33 labelled assertions
+## LicenceFeesCheck.java - 37 labelled assertions
 
 > Licence fees leave a running firm's money and enter this month's current account.
 > 
@@ -17824,26 +17824,31 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L149 the completed production leaves a positive pending royalty despite the new zero run
   - L160 a save between production and settlement retains that exact pending bill and the zero run
   - L165 the next strike pays the saved dispatch, with a named service import and closed money/foreign accounts
-- **L173 3. equal gross alternatives are ranked after the patent rent**
-  - L180 fixture: the furnace has positive gross monthly earnings
-  - L181 the planner's patented earnings are gross less SHARE of that gain
-  - L185 offered the patented option first at equal gross gain and cost, the spread planner prefers the unpatented option
-  - L198 fixture: both equal-gross recipes can actually run
-  - L201 the recipe selector also prefers the unpatented equal-gross option
-  - L215 fixture: the caster's enabling recipe adds positive output
-  - L216 fitting counts its gain less exactly one licence fee
-- **L221 4. standing refinery gains and default-city fitting reads (REV-R2c-1)**
-  - L237 fixture: the installed patented crackers run and consume all their spare feed
-  - L240 fixture: another cracker would lose money because the standing units already take its feed
-  - L245 the profitable standing crackers pay positive IP charges even with no spare feed for another unit
-  - L246 that installed-unit payment is the same month's service import and its audit closes
-  - L264 fixture: E1 is under patent and its oxygen recipe has a positive gain to license
-  - L268 a default city's fitting estimate during the patent term keeps the whole gross gain
-  - L269 its game-layer recipe gain also carries no royalty
-  - L271 its fitting estimate is identical before and after expiry at identical prices
-- **L318 6. the nonzero flow survives saves and reads**
-  - L319 DataSave and HistorySave JSON and the load restorers keep the paid flow
-  - L320 repeated screen and planner reads keep the paid flow and every money pool still
+- **L173 6. an installed furnace earns at home while another would lose (REV-R2c-3)**
+  - L198 fixture: the installed patented furnace really supplies local steel at a positive standing gain, while one more loses
+  - L200 the installed furnace accrues positive royalties on that standing gain despite the losing additional-unit appraisal
+  - L210 the standing planner nets a positive standing royalty while the prospective extra unit still loses
+  - L216 its saved standing-value bill is paid exactly as a service import and both accounts close
+- **L224 3. equal gross alternatives are ranked after the patent rent**
+  - L231 fixture: the furnace has positive gross monthly earnings
+  - L232 the planner's patented earnings are gross less SHARE of that gain
+  - L236 offered the patented option first at equal gross gain and cost, the spread planner prefers the unpatented option
+  - L249 fixture: both equal-gross recipes can actually run
+  - L252 the recipe selector also prefers the unpatented equal-gross option
+  - L266 fixture: the caster's enabling recipe adds positive output
+  - L267 fitting counts its gain less exactly one licence fee
+- **L272 4. standing refinery gains and default-city fitting reads (REV-R2c-1)**
+  - L288 fixture: the installed patented crackers run and consume all their spare feed
+  - L291 fixture: another cracker would lose money because the standing units already take its feed
+  - L296 the profitable standing crackers pay positive IP charges even with no spare feed for another unit
+  - L297 that installed-unit payment is the same month's service import and its audit closes
+  - L315 fixture: E1 is under patent and its oxygen recipe has a positive gain to license
+  - L319 a default city's fitting estimate during the patent term keeps the whole gross gain
+  - L320 its game-layer recipe gain also carries no royalty
+  - L322 its fitting estimate is identical before and after expiry at identical prices
+- **L411 7. the nonzero flow survives saves and reads**
+  - L412 DataSave and HistorySave JSON and the load restorers keep the paid flow
+  - L413 repeated screen and planner reads keep the paid flow and every money pool still
 
 ## LongPlaytest.java - 34 labelled assertions
 
