@@ -1824,6 +1824,28 @@ public final class Freight extends Sector {
     public double unitsOf(BuildingsTemplate t) { return t == null ? 0 : t.getRailCapacity(); }
 
     /**
+     * A track sale must leave the operating minimum above the planner's headroom
+     * too (RT2). Depots and spurs also remove handling: weighing only their track
+     * sold two of eight depots into 350,000 tonnes offered, leaving only 300,000.
+     * Limit the whole proposed quantity, not just whether one building may go.
+     */
+    @Override
+    public int limitSpareRetirement(BuildingsTemplate t, int quantity, double keepAtLeast) {
+        if (t == null) return 0;
+        double track = trackTonnes(), stations = stationTonnes(), sidings = sidingTonnes(), sets = fleet();
+        int low = 0, high = quantity;
+        while (low < high) {
+            int n = low + (high - low + 1) / 2;
+            double capacity = capacityOf(Math.max(0, track - n * t.getRailCapacity()), sets,
+                    Math.max(0, stations - n * t.getStationTonnes()),
+                    Math.max(0, sidings - (t.isSiding() ? n * t.getRailCapacity() : 0)));
+            if (capacity >= keepAtLeast) low = n;
+            else high = n - 1;
+        }
+        return low;
+    }
+
+    /**
      * A Truck Depot is never retired by the railway's measure (FR2): the
      * retirement rule weighs track against the tonnes offered it, and a depot
      * has no track to weigh. Its own measure is its trucks past its room.

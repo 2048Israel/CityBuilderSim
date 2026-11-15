@@ -627,5 +627,33 @@ public class RailDepotCheck {
             assertTrue("offered freight that needs the track with TARGET_HEADROOM prevents a sale (sets limit=" + setsLimit + ")",
                     !f.plans.planRetirement(f.fr, measure[0], measure[1], 0).build);
         }
+
+        // REV-RT2-1: a depot's handling can be needed even when its track is spare.
+        for (String kind : new String[] { "Rail Depot", "Rail Spur" }) {
+            for (int spare : new int[] { 1, 2 }) {
+                Fx f = new Fx().stand(kind, held).stand("Freight Line", held / 2);
+                if (kind.equals("Rail Spur")) f.stand("Rail Depot", held / 2);
+                BuildingsTemplate selling = f.t(kind);
+                double eachHandling = selling.getStationTonnes() + (selling.isSiding() ? selling.getRailCapacity() : 0);
+                double handling = f.fr.stationTonnes() + f.fr.sidingTonnes();
+                double demand = handling - spare * eachHandling;
+                f.offer(demand, 0);
+                double keep = demand * (1 + BusinessInvestment.TARGET_HEADROOM);
+                int gradual = Math.min((int) Math.ceil(held * BusinessInvestment.MAX_RETIREMENT_FRACTION), held);
+                int safe = Math.max(0, Math.min(gradual, (int) Math.floor((handling - keep) / eachHandling)));
+                assertTrue("fixture: " + kind + " is most held, its track is spare but its handling limits the sale (spare=" + spare + ")",
+                        f.fr.getCapacityTonnes() >= demand && f.fr.trackTonnes() > handling
+                                && f.bm.getQuantity(selling.getId()) == held && safe < gradual);
+                for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) f.plans.recordSectorResult(f.fr.key(), -1);
+                double[] measure = f.fr.retirementDemandAndCapacity(null);
+                BusinessInvestment.Decision shed = f.plans.planRetirement(f.fr, measure[0], measure[1], 0);
+                double after = Freight.capacityOf(f.fr.trackTonnes() - shed.quantity * selling.getRailCapacity(), f.fr.fleet(),
+                        f.fr.stationTonnes() - shed.quantity * selling.getStationTonnes(),
+                        f.fr.sidingTonnes() - (selling.isSiding() ? shed.quantity * selling.getRailCapacity() : 0));
+                report("the whole sale preserves operating headroom and sells only the safe quantity of " + kind + " (spare=" + spare + ")",
+                        shed.quantity == safe && shed.build == (safe > 0) && (!shed.build || shed.template == selling) && after >= keep,
+                        String.format("%d sold, %d safe; offered %,.0f, headroom %,.0f, remaining capacity %,.0f", shed.quantity, safe, demand, keep, after));
+            }
+        }
     }
 }

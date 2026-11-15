@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**203 harness files, 24,053 labelled assertions.** AllChecks runs 203 of them.
+**203 harness files, 24,055 labelled assertions.** AllChecks runs 203 of them.
 
 ## Which harnesses read which class
 
@@ -23205,7 +23205,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L693 ...and no kind rails more than crossed of it, either way
   - L696 ...and having moved boxes, its freight station is drawn a container yard (TrainSchedule.boxesByRail())
 
-## RailDepotCheck.java - 69 labelled assertions
+## RailDepotCheck.java - 71 labelled assertions
 
 > The railway's stations: the Rail Depot, and the rules that put a station
 > first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md
@@ -23311,6 +23311,8 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L616 the buildings add up to the retirement capacity in track tonnes (sets limit=
   - L622 the rule sells the most-held line and the share its constants allow (sets limit=
   - L627 offered freight that needs the track with TARGET_HEADROOM prevents a sale (sets limit=
+  - L644 fixture:
+  - L653 the whole sale preserves operating headroom and sells only the safe quantity of
 
 ## RailDrawCheck.java - 169 labelled assertions
 

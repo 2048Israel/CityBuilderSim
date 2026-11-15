@@ -1,4 +1,4 @@
-# RailDepotCheck.java - 631 lines · 15 methods · 1 constants · harnesses
+# RailDepotCheck.java - 659 lines · 15 methods · 1 constants · harnesses
 
 `ham/citybuildersim/RailDepotCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -54,7 +54,7 @@
 > only for what the stations let through. Every threshold is caused from both
 > sides, and every figure comes from the templates and the model's constants.
 
-**Uses:** [Freight](Freight.md) (37), [BusinessInvestment](BusinessInvestment.md) (36), [Traffic](Traffic.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (10), [HaulageCheck](HaulageCheck.md) (4), [BuildingManager](BuildingManager.md) (2), [Mining](Mining.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [PriceLevel](PriceLevel.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Markets](Markets.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [GameFiles](GameFiles.md) (1), [GoodsMarket](GoodsMarket.md) (1)
+**Uses:** [BusinessInvestment](BusinessInvestment.md) (40), [Freight](Freight.md) (38), [Traffic](Traffic.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (11), [HaulageCheck](HaulageCheck.md) (4), [BuildingManager](BuildingManager.md) (2), [Mining](Mining.md) (2), [Good](Good.md) (2), [JobType](JobType.md) (2), [PriceLevel](PriceLevel.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [Markets](Markets.md) (1), [Sectors](Sectors.md) (1), [BuildingType](BuildingType.md) (1), [Game](Game.md) (1), [GameFiles](GameFiles.md) (1), [GoodsMarket](GoodsMarket.md) (1)
 
 **Used by (1):** [HomeRailCheck](HomeRailCheck.md)
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 568 | **type** `public class RailDepotCheck` | The railway's stations: the Rail Depot, and the rules that put a station first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md 1.1; sectors.Freight, THE STATIONS). |
+| 64 | 596 | **type** `public class RailDepotCheck` | The railway's stations: the Rail Depot, and the rules that put a station first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md 1.1; sectors.Freight, THE STATIONS). |
 | 71 | 7 | `static void quietly(Runnable r)` |  |
 | 79 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 84 | 4 | `static void report(String label, boolean ok, String detail)` |  |
@@ -100,7 +100,7 @@
 | 94 | 5 | `static double dealtNow(Freight fr)` | The tonnes the last haul dealt the railway: this month's bulk and goods offered at the shares it set for the month to come. |
 | 101 | 3 | `static String say(BusinessInvestment.Decision d)` | What a decision says, in a few words. |
 
-### THE FIXTURE: a bare city (lines 105-631)
+### THE FIXTURE: a bare city (lines 105-659)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -113,5 +113,5 @@
 | 142 | 5 | `Fx offer(double bulk, double goods, double sets)` _(in RailDepotCheck.Fx)_ | ...with this many wagon sets, however many the track needs. |
 | 148 | 1 | `BusinessInvestment.Decision plan()` _(in RailDepotCheck.Fx)_ |  |
 | 151 | 449 | `public static void main(String[] args)` |  |
-| 602 | 29 | `static void retirement()` | The operating bottleneck must not hide spare standing track (RT2). |
+| 602 | 57 | `static void retirement()` | The operating bottleneck must not hide spare standing track (RT2). |
 

@@ -93,3 +93,43 @@ out than the homes" entries belong to CL6; "a building on the map moved"
 belongs to DM3-R. All three are inactive on RT2's path, which does not repair
 their code, so their queued fault registrations remain. CPB1's negative-GDP
 entry is also not observed in this default run; the ensemble is separate.
+
+The related-check selection exits 0: eight harnesses, including
+PriceLevelCheck, AgricultureCheck, FoodProcessingCheck, RailCheck and
+FreightViewCheck (RailCheck also selects its named borrowers by substring).
+Logs: target/checks/rt2-related.txt. No fixture or assertion moved there;
+FPK1's existing meat-price line is green on this path. Model and fixtures
+were reported for stranger review as a54e054e, now pushed with provisional
+ship records. REV-RT2-1 is reviewing c0120d77..a54e054e.
+
+## Stranger review: the railway's handling
+
+REV-RT2-1 found that track-only accounting could sell handling still needed:
+eight depots plus four lines, enough sets, 350,000 tonnes offered. The
+track-based quotient proposed two depot sales, dropping handling from
+400,000 to 300,000 tonnes. Main's bottleneck-based quotient had refused it.
+This is RT2's own fault and is mended here, not registered as a known red.
+
+★ Add a small Sector.limitSpareRetirement quantity hook, called only by
+BusinessInvestment.planRetirement after its existing most-held, spare-track
+and gradual-sale limits. Freight limits the proposed quantity so the
+prospective operating minimum of track, sets and handling still holds the
+planner's existing keepAtLeast headroom. A yes/no mayRetire predicate cannot
+cap a sale of two at one. The default hook changes no other sector; distress
+retirement keeps its existing rule. Sector and BusinessInvestment were
+reported to the orchestrator before these small shared-file hunks.
+
+RailDepotCheck section 10 now also causes the reviewer's exact template-based
+350,000-tonne case, a case allowing one of two proposed depots, and siding
+handling cases. It checks the whole sale against the remaining operating
+minimum, with demand and expected quantities from the model's constants.
+
+Review-mend verification: RailDepotCheck exits 0. The same new harness with
+a54e054e's Sector, BusinessInvestment and Freight compiled into
+target/rt2-review-before/classes exits 1, exactly four handling failures:
+it sells two depots where 0 and 1 are safe, and two spurs where 0 and 1 are
+safe. Log: target/rt2-review-before/RailDepotCheck.log.
+The no-op controls AgricultureCheck, FoodProcessingCheck, FoodIndustryCheck
+and CoalMiningCheck all exit 0 (target/checks/rt2-no-op.txt), retaining their
+asserted retirement quantities. The mended shared hook changes no additive
+sector's sale.
