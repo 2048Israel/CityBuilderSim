@@ -468,3 +468,14 @@ The main-class/input manifest is target/rt2-probe/main-proof-manifest.json.
 The orchestrator received the complete 47-line classification and asked
 for a stranger's review of fixture commit 7801e547 before the next dry run.
 The ship file stays provisional pending that review and a green full run.
+
+## Fourth stranger review and coordinated main update
+
+REV-RT2-4 is SHIP at fixture commit 7801e547. The review confirms all four
+moved fixtures retain their assertions, bounds and live conditions; the
+Treasury fixture checks the same note's window at issue and maturity.
+It accepts the ten latent red-line reproductions. The orchestrator directs
+R2c to ship first, then RT2 merges that main update, checks all eight CSVs
+against its kept trace, and requests the exclusive dry-run slot. R2c's
+eight CSVs match its main byte for byte. No local production mend follows
+the accepted review.
