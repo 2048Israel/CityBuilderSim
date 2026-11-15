@@ -162,6 +162,7 @@ public final class EquipmentFit {
      * nothing for one that is not the template's recipe piece.
      */
     private static double gainOf(Game game, BuildingsTemplate t, Equipment piece) {
+        if (!game.foundedUnfitted()) return grossGainOf(game, t, piece);
         if (piece.getEnds() == null) {
             if (!piece.getId().equals(t.recipePieceId())) return 0;
             double net = Recipes.gainOf(game, t);
@@ -181,8 +182,11 @@ public final class EquipmentFit {
         if (piece.getEnds() == null) {
             if (!piece.getId().equals(t.recipePieceId())) return 0;
             Recipes.Prices p = Recipes.pricesOf(game);
-            return Recipes.value(Recipes.best(t, true, game.getMonth(), p, game.getResearch()), p)
-                    - Recipes.value(Recipes.best(t, false, game.getMonth(), p, game.getResearch()), p);
+            Recipe fitted = game.foundedUnfitted() ? Recipes.best(t, true, game.getMonth(), p, game.getResearch())
+                    : Recipes.bestGross(t, true, game.getMonth(), p, game.getResearch());
+            Recipe without = game.foundedUnfitted() ? Recipes.best(t, false, game.getMonth(), p, game.getResearch())
+                    : Recipes.bestGross(t, false, game.getMonth(), p, game.getResearch());
+            return Recipes.value(fitted, p) - Recipes.value(without, p);
         }
         switch (piece.getEnds()) {
             case STEAM:

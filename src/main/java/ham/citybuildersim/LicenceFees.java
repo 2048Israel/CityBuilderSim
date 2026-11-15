@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.Refining;
+import ham.citybuildersim.sectors.RefineryFlow;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -63,21 +65,38 @@ public final class LicenceFees {
     // thread, so simultaneous screen reads still price their own licences.
     private static final ThreadLocal<Boolean> pricing = ThreadLocal.withInitial(() -> false);
 
-    private static double buildingFee(Game game, BuildingsTemplate t, Sector owner) {
+    private static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing) {
         if (!payable(t.getSinceText(), game.getMonth(), game.getResearch())) return 0;
         boolean nested = pricing.get();
         pricing.set(true);
         try {
-            return onGain(t.getSinceText(), game.getMonth(), game.getResearch(),
-                    owner.estimatedMonthlyProfit(t, game.getBusinessInvestment()));
+            double gain = standing && owner instanceof Refining ref && t.refineryUnit() != null
+                    ? installedUnitGain(game, t, ref) : owner.estimatedMonthlyProfit(t, game.getBusinessInvestment());
+            return onGain(t.getSinceText(), game.getMonth(), game.getResearch(), gain);
         } finally {
             pricing.set(nested);
         }
     }
 
+    /**
+     * What this installed conversion unit adds on the feed it actually takes.
+     * The flow dispatches a KIND, not individual buildings: split its run by
+     * installed feed capacity. An additional-unit estimate instead sees only
+     * spare feed, often none precisely because these units are working.
+     */
+    private static double installedUnitGain(Game game, BuildingsTemplate t, Refining ref) {
+        RefineryFlow.Kind kind = t.refineryUnit();
+        double capacity = ref.unitFeed(false)[kind.ordinal()];
+        if (!(capacity > 0)) return 0;
+        double used = ref.flow().run(kind) * t.feedPerMonth() / capacity;
+        double gross = used * RefineryFlow.spread(kind, ref.cityValues()) * ref.getOperatingRate();
+        BusinessInvestment plans = game.getBusinessInvestment();
+        return gross - plans.runningCostOf(t) - plans.standingCostOf(ref, t);
+    }
+
     /** One building with this recipe and these pieces, at its owner's run rate. */
-    private static double one(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Set<String> fitted) {
-        double bill = buildingFee(game, t, owner);
+    private static double one(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Set<String> fitted, boolean standing) {
+        double bill = buildingFee(game, t, owner, standing);
         Set<String> charged = new HashSet<>();
         charged.add(t.getSinceText());
         Recipes.Prices prices = Recipes.pricesOf(game);
@@ -104,7 +123,7 @@ public final class LicenceFees {
         }
         Recipe recipe = Recipes.best(t, t.recipePieceId() == null || fitted.contains(t.recipePieceId()),
                 game.getMonth(), Recipes.pricesOf(game), game.getResearch());
-        return one(game, t, owner, recipe, fitted);
+        return one(game, t, owner, recipe, fitted, false);
     }
 
     /**
@@ -126,7 +145,7 @@ public final class LicenceFees {
                 Recipe recipe = t.getRecipe(ids[part]);
                 Set<String> fitted = new HashSet<>();
                 if (part == 0 && t.recipePieceId() != null) fitted.add(t.recipePieceId());
-                double bill = one(game, t, owner, recipe, fitted) * count;
+                double bill = one(game, t, owner, recipe, fitted, true) * count;
                 if (bill > 0) owner.bookLicenceFee(bill);
             }
             // Other pieces have independent fitted counts.

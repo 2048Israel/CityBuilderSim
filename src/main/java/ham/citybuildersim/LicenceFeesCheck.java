@@ -2,6 +2,8 @@ package ham.citybuildersim;
 
 import com.google.gson.Gson;
 import ham.citybuildersim.sectors.SpreadPlanner;
+import ham.citybuildersim.sectors.Refining;
+import ham.citybuildersim.sectors.RefineryFlow;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
@@ -130,15 +132,16 @@ public final class LicenceFeesCheck {
         int[] noJobs = new int[JobType.values().length];
         Recipe old = new Recipe("old", "old", "1900", null, false, Map.of(Good.STEEL, 1.0), Map.of(), noJobs, 0, 0, 0, 0);
         Recipe patent = new Recipe("patent", "patent", "PE1", null, true, Map.of(Good.STEEL, 2.0), Map.of(), noJobs, 0, 0, 0, 0);
-        Recipe open = new Recipe("open", "open", "B5", null, false, Map.of(Good.STEEL, 2.0), Map.of(), noJobs, 0, 0, 0, 0);
+        Recipe open = new Recipe("open", "open", "PB2", null, false, Map.of(Good.STEEL, 2.0), Map.of(), noJobs, 0, 0, 0, 0);
         t.setRecipes(List.of(patent, old, open));
         Recipes.Prices prices = new Recipes.Prices(x -> 1, new double[noJobs.length], 0, 0, 1);
-        // B5's history is later than PE1's term: find B5 locally while PE1 is
-        // still patented, so both equal alternatives really are available.
-        Research found = new Research();
-        found.restore(null, null, null, Map.of("B5", g.getMonth()));
+        // PB2 arrives from history while PE1 is still patented. Both options
+        // are actually available without inventing an impossibly early find.
+        ResearchCheck.atMonth(g, ResearchCatalog.knownFrom("PB2"));
+        Research found = g.getResearch();
         check("fixture: both equal-gross recipes can actually run", Recipes.canRun(t, patent, true, g.getMonth(), found)
-                && Recipes.canRun(t, open, true, g.getMonth(), found) && Recipes.value(patent, prices) == Recipes.value(open, prices));
+                && Recipes.canRun(t, open, true, g.getMonth(), found) && LicenceFees.payable("PE1", g.getMonth(), found)
+                && !ResearchCatalog.get().entry("PB2").fee() && Recipes.value(patent, prices) == Recipes.value(open, prices));
         check("the recipe selector also prefers the unpatented equal-gross option",
                 Recipes.best(t, true, g.getMonth(), prices, found) == open);
 
@@ -156,6 +159,61 @@ public final class LicenceFeesCheck {
         check("fixture: the caster's enabling recipe adds positive output", added > 0);
         check("fitting counts its gain less exactly one licence fee",
                 added > 0 && near(verdict.gain(), added * (1 - LicenceFees.SHARE)));
+    }
+
+    static void reviewRegressions() throws Exception {
+        System.out.println("--- 4. standing refinery gains and default-city fitting reads (REV-R2c-1) ---");
+        Game g = town("licence-installed-refinery", true);
+        BuildingsTemplate cracker = g.getBuildingManager().getTemplateByName("Small Cracking Unit");
+        ResearchCheck.atMonth(g, ResearchCatalog.knownFrom(cracker.getSinceText()));
+        quietly(() -> {
+            g.buildStack(g.getBuildingManager().getTemplateByName("Oil Refinery"), 1, true);
+            g.buildStack(cracker, 2, true);
+            MaterialsCheck.handWorkers(g);
+            g.getBusinessInvestment().holdSector(Sectors.REFINING);
+            g.getSectors().refining().setRunShareForTest(1);
+            GoodsMarket petrol = g.getMarkets().get(Good.PETROL);
+            petrol.setWorldPrices(100 * Good.PETROL.worldImportPrice(), 100 * Good.PETROL.worldExportPrice());
+            petrol.setLocalPrice(100 * Good.PETROL.worldExportPrice() * g.getMarkets().getExchangeRate());
+        });
+        Refining ref = g.getSectors().refining();
+        RefineryFlow.Flow flow = ref.flow();
+        check("fixture: the installed patented crackers run and consume all their spare feed",
+                flow.run(RefineryFlow.Kind.CRACKER) > 0 && Refining.spareFeed(flow, RefineryFlow.Kind.CRACKER) < 1e-6
+                && LicenceFees.payable(cracker.getSinceText(), g.getMonth(), g.getResearch()));
+        check("fixture: another cracker would lose money because the standing units already take its feed",
+                ref.estimatedMonthlyProfit(cracker, g.getBusinessInvestment()) < 0);
+        quietly(() -> g.simulateMonths(1));
+        double fee = ref.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        check("the profitable standing crackers pay positive IP charges even with no spare feed for another unit", fee > 0);
+        check("that installed-unit payment is the same month's service import and its audit closes", fee > 0
+                && near(fee, audit.figure("- " + Sectors.REFINING + " IP charges"))
+                && Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved())
+                && near(g.getForeignAccounts().currentAccount(), audit.currentAccount()));
+        System.out.printf("   installed crackers paid %.9f, audit residual %.12f%n", fee, audit.residual);
+
+        Game plain = town("licence-default-fitting", false);
+        ResearchCheck.atMonth(plain, ResearchCatalog.knownFrom("E1"));
+        BuildingsTemplate steel = plain.getBuildingManager().getTemplateByName("Oxygen Steel Shop");
+        Equipment hearth = steel.getEquipment("open-hearth");
+        // Cause the oxygen recipe to save money: its earlier open hearth
+        // burns coal. At ordinary prices the present catalogue need not make
+        // this switch pay, and a zero fee could conceal the default-city bug.
+        GoodsMarket coal = plain.getMarkets().get(Good.THERMAL_COAL);
+        coal.setWorldPrices(10_000 * Good.THERMAL_COAL.worldImportPrice(), 10_000 * Good.THERMAL_COAL.worldExportPrice());
+        Recipes.Prices prices = Recipes.pricesOf(plain);
+        Recipe oxygen = steel.getRecipe("basic-oxygen"), old = steel.getRecipe("open-hearth");
+        double gross = Recipes.value(old, prices) - Recipes.value(oxygen, prices);
+        check("fixture: E1 is under patent and its oxygen recipe has a positive gain to license",
+                LicenceFees.payable("E1", plain.getMonth(), plain.getResearch())
+                && LicenceFees.recipeFee(steel, oxygen, plain.getMonth(), prices, plain.getResearch()) > 0);
+        double during = EquipmentFit.verdictForNew(plain, steel, hearth).gain();
+        check("a default city's fitting estimate during the patent term keeps the whole gross gain", near(during, gross));
+        check("its game-layer recipe gain also carries no royalty", near(Recipes.gainOf(plain, steel), gross));
+        ResearchCheck.atMonth(plain, ResearchCatalog.knownFrom("E1") + LicenceFees.TERM_MONTHS);
+        check("its fitting estimate is identical before and after expiry at identical prices",
+                near(during, EquipmentFit.verdictForNew(plain, steel, hearth).gain()));
     }
 
     /** Nonzero statement and history through the actual save objects, with no slot written. */
@@ -194,7 +252,8 @@ public final class LicenceFeesCheck {
         payment();
         exemptions();
         planners();
-        System.out.println("--- 4. the nonzero flow survives saves and reads ---");
+        reviewRegressions();
+        System.out.println("--- 5. the nonzero flow survives saves and reads ---");
         check("DataSave and HistorySave JSON and the load restorers keep the paid flow", saveChecks());
         check("repeated screen and planner reads keep the paid flow and every money pool still", readChecks());
         System.out.printf("%d passed, %d FAILED%n", passes, fails);

@@ -1303,7 +1303,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 239 | `EquipmentFit.BEST_FIRST` | `Comparator.comparingDouble(Verdict : : earningsOnCost).reversed().thenComparingInt(Verd...` | How R1b orders what pays: earnings on cost, the best first; the same earnings by template id and then piece id, so that no list order biases it. |
+| 243 | `EquipmentFit.BEST_FIRST` | `Comparator.comparingDouble(Verdict : : earningsOnCost).reversed().thenComparingInt(Verd...` | How R1b orders what pays: earnings on cost, the best first; the same earnings by template id and then piece id, so that no list order biases it. |
 
 ### Equity.java ([map](map/Equity.md))
 
@@ -2379,10 +2379,10 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 19 | `LicenceFees.SHARE` | `.25` | The world's share of the positive monthly gain from a patented entry. |
-| 21 | `LicenceFees.TERM_MONTHS` | `20 * 12` | Patent life from history's month, in months; adoption never restarts it. |
-| 23 | `LicenceFees.IP_CHARGES` | `"IP charges"` | The imported service's name on the firm's saved statement and the audit. |
-| 64 | `LicenceFees.pricing` | `ThreadLocal.withInitial(() -> false)` | A building's gain is its sector's estimate, including special outputs (refinery streams, retail service). |
+| 21 | `LicenceFees.SHARE` | `.25` | The world's share of the positive monthly gain from a patented entry. |
+| 23 | `LicenceFees.TERM_MONTHS` | `20 * 12` | Patent life from history's month, in months; adoption never restarts it. |
+| 25 | `LicenceFees.IP_CHARGES` | `"IP charges"` | The imported service's name on the firm's saved statement and the audit. |
+| 66 | `LicenceFees.pricing` | `ThreadLocal.withInitial(() -> false)` | A building's gain is its sector's estimate, including special outputs (refinery streams, retail service). |
 
 ### LongTermBond.java ([map](map/LongTermBond.md))
 

@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**204 harness files, 24,112 labelled assertions.** AllChecks runs 204 of them.
+**204 harness files, 24,120 labelled assertions.** AllChecks runs 204 of them.
 
 ## Which harnesses read which class
 
@@ -145,7 +145,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GoldMining](map/GoldMining.md) | BuildingDataCheck, GoldMiningCheck |
 | [GoldPrice](map/GoldPrice.md) | GoldMiningCheck, GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, TradeCostCheck, VaultMoneysCheck |
 | [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
-| [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GdpCheck, GoldMiningCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
+| [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GdpCheck, GoldMiningCheck, InfrastructureCheck, InvestCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentPlayer](map/GovernmentPlayer.md) | GovernmentPlayerCheck, LongPlaytest |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
 | [GovernmentView](map/GovernmentView.md) | GovernmentPlayerCheck, GovernmentViewCheck, InboxCheck |
@@ -271,9 +271,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Recipes](map/Recipes.md) | DiscoveryCheck, LicenceFeesCheck, RecipeCheck, ResearchCheck |
 | [Recording](map/Recording.md) | ReplayCheck, SaveFileCheck |
 | [Reenactor](map/Reenactor.md) | **none** |
-| [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, SaveFileCheck |
+| [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, LicenceFeesCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, SaveFileCheck |
 | [RefineryView](map/RefineryView.md) | IndustryViewCheck, KeptCheck, OilViewCheck, RefineryCheck, RefineryViewCheck |
-| [Refining](map/Refining.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, LongPlaytest, OilCheck, OilViewCheck, PortCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck |
+| [Refining](map/Refining.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, LicenceFeesCheck, LongPlaytest, OilCheck, OilViewCheck, PortCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck |
 | [ReliefRenders](map/ReliefRenders.md) | **none** |
 | [ReplayCamera](map/ReplayCamera.md) | **none** |
 | [ReplayCity](map/ReplayCity.md) | ReplayCheck |
@@ -17777,7 +17777,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3330 the run played its months and found nothing: every month passed the playtest's audit,
   - L3332 the test player never builds a terminal off its home landmass (it never links an island)
 
-## LicenceFeesCheck.java - 19 labelled assertions
+## LicenceFeesCheck.java - 27 labelled assertions
 
 > Licence fees leave a running firm's money and enter this month's current account.
 > 
@@ -17787,29 +17787,38 @@ _(this harness does not label its checks through a helper - it prints its findin
 > gross alternatives cause the planner and the recipe selector to rank net
 > gains. Nonzero flows cross JSON and the sector restore used by Game's loader.
 
-- **L64 1. a running patented entry pays an imported service in the audit's month**
-  - L66 fixture: a PE1 Electric Arc Furnace really stands in a city founded unfitted
-  - L71 the firm actually paid positive IP charges
-  - L72 the named imported service is in the same month's audit
-  - L74 its money audit closes with that payment
-  - L75 the foreign account takes exactly that audit's current account, including the service import
-  - L77 history records the paid flow
-- **L82 2. expiry, unpatented and local discoveries, and the default founding**
-  - L89 the last patent month pays and its twentieth anniversary pays nothing
-  - L96 the same running entry costs nothing when the city discovered it itself
-  - L106 the identical plant under an unpatented entry pays nothing
-  - L111 a default-founded city running the patented furnace pays nothing
-- **L115 3. equal gross alternatives are ranked after the patent rent**
-  - L122 fixture: the furnace has positive gross monthly earnings
-  - L123 the planner's patented earnings are gross less SHARE of that gain
-  - L127 offered the patented option first at equal gross gain and cost, the spread planner prefers the unpatented option
-  - L140 fixture: both equal-gross recipes can actually run
-  - L142 the recipe selector also prefers the unpatented equal-gross option
-  - L156 fixture: the caster's enabling recipe adds positive output
-  - L157 fitting counts its gain less exactly one licence fee
-- **L197 4. the nonzero flow survives saves and reads**
-  - L198 DataSave and HistorySave JSON and the load restorers keep the paid flow
-  - L199 repeated screen and planner reads keep the paid flow and every money pool still
+- **L66 1. a running patented entry pays an imported service in the audit's month**
+  - L68 fixture: a PE1 Electric Arc Furnace really stands in a city founded unfitted
+  - L73 the firm actually paid positive IP charges
+  - L74 the named imported service is in the same month's audit
+  - L76 its money audit closes with that payment
+  - L77 the foreign account takes exactly that audit's current account, including the service import
+  - L79 history records the paid flow
+- **L84 2. expiry, unpatented and local discoveries, and the default founding**
+  - L91 the last patent month pays and its twentieth anniversary pays nothing
+  - L98 the same running entry costs nothing when the city discovered it itself
+  - L108 the identical plant under an unpatented entry pays nothing
+  - L113 a default-founded city running the patented furnace pays nothing
+- **L117 3. equal gross alternatives are ranked after the patent rent**
+  - L124 fixture: the furnace has positive gross monthly earnings
+  - L125 the planner's patented earnings are gross less SHARE of that gain
+  - L129 offered the patented option first at equal gross gain and cost, the spread planner prefers the unpatented option
+  - L142 fixture: both equal-gross recipes can actually run
+  - L145 the recipe selector also prefers the unpatented equal-gross option
+  - L159 fixture: the caster's enabling recipe adds positive output
+  - L160 fitting counts its gain less exactly one licence fee
+- **L165 4. standing refinery gains and default-city fitting reads (REV-R2c-1)**
+  - L181 fixture: the installed patented crackers run and consume all their spare feed
+  - L184 fixture: another cracker would lose money because the standing units already take its feed
+  - L189 the profitable standing crackers pay positive IP charges even with no spare feed for another unit
+  - L190 that installed-unit payment is the same month's service import and its audit closes
+  - L208 fixture: E1 is under patent and its oxygen recipe has a positive gain to license
+  - L212 a default city's fitting estimate during the patent term keeps the whole gross gain
+  - L213 its game-layer recipe gain also carries no royalty
+  - L215 its fitting estimate is identical before and after expiry at identical prices
+- **L256 5. the nonzero flow survives saves and reads**
+  - L257 DataSave and HistorySave JSON and the load restorers keep the paid flow
+  - L258 repeated screen and planner reads keep the paid flow and every money pool still
 
 ## LongPlaytest.java - 34 labelled assertions
 

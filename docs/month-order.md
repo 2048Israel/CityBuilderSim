@@ -308,7 +308,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 28. **L14349** `double constructionWorkDone = construction.getRecognisedThisMonth();`
 29. **L14351** `if (construction.getFittingThisMonth() != 0) constructionWorkDone += construction.getFittingThisMonth();`  
    _...and the equipment the builders were paid to fit to standing buildings since the last strike banked its ledger (R1b): capital too, on the builders' side, once._
-30. **L14360** `LicenceFees.charge(this);   // R2c: import and firm settlement in the same audit window` → [LicenceFees.charge](map/LicenceFees.md) (L115)  
+30. **L14360** `LicenceFees.charge(this);   // R2c: import and firm settlement in the same audit window` → [LicenceFees.charge](map/LicenceFees.md) (L134)  
    _EVERY SECTOR'S STATEMENT, STRUCK AND BANKED, and the month's VAT settled from the same figures between the two halves._
 31. **L14361** `economyManager.strikeSectors();` → [EconomyManager.strikeSectors](map/EconomyManager.md) (L1227)  
    _R2c: import and firm settlement in the same audit window_

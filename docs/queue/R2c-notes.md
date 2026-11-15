@@ -63,3 +63,47 @@ round-tripped in memory, and the actual sector/history load restorers read it.
 The model charges once at startOfMonthUpdate's strike, before
 SimulationEngine's construction/demographic phase; both halves are the one
 Game.nextMonth window, with no duplicate payment in the engine.
+
+Fixture review tightened the equal-recipe offer: PB2 arrives naturally in 1916,
+inside PE1's patent term. The earlier draft restored B5 as an impossibly early
+local find; the final premise now needs no forced research history. This is
+a harness-only correction after f746d394; the money model is unchanged.
+
+## Default trace
+
+The default LongPlaytest on unchanged main d8e9c12b and the final model
+f746d394 passed. All eight CSVs compare byte-identical with cmp:
+target/R2c-main/default-*.csv and target/R2c-final/default-*.csv.
+The logs are target/R2c-main/playtest.log and
+target/R2c-final/playtest.log; both finish All checks passed. The eight main
+hashes are retained in target/checks/R2c-main-traces.sha256. No ensemble:
+the default trace did not move (batch.md section 6).
+
+## REV-R2c-1 mends
+
+The money review found P1 (standing refinery units valued as additional units
+on spare feed) and P2 (fee-netted recipe gains reached default-city fitting
+reads before the founding guard). Both are mended with causing fixtures.
+
+- ★ Standing conversion units now use the feed their installed kind actually
+  runs, at the city's stream spread and the firm's actual operating rate,
+  less running and standing costs. The model dispatches kinds rather than
+  individual units, so their feed is allocated by installed feed capacity.
+  Additional-unit appraisals remain the planners' spare-feed estimate.
+- ★ Default-city fitting returns before any fee netting. Its recipe selection
+  and game-layer recipe gain use gross values, preserving its reads during a
+  patent term as well as its monthly trace.
+
+The expanded review harness passes 27/27. On f746d394's captured
+LicenceFees/Recipes/EquipmentFit classes ahead of the final harness it reports
+22 passed, 5 FAILED (target/checks/R2c-review-before.log): both installed-unit
+payment assertions and all three default fitting/recipe assertions fail.
+The causing refinery has two patented Small Cracking Units consuming all the
+gas-oil feed, so the estimate for an additional cracker loses money; its
+standing units now pay 426.487251068 and the audit residual is 0.000000000759.
+The default fitting fixture bids coal up so E1's oxygen recipe truly saves
+money; a zero-gain licence cannot conceal the regression.
+
+RecipeCheck, EquipmentCheck and FittingCheck passed with the model mends;
+the final causing-fixture run passed LicenceFeesCheck and Stale (zero firm
+findings), regenerated maps, exit 0. Repeat default trace follows.

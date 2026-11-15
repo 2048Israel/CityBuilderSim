@@ -104,6 +104,15 @@ public final class Recipes {
 
     /** The same in a city whose research may have found a recipe's code before history's month (R3); no research (null) reads history's. */
     public static Recipe best(BuildingsTemplate t, boolean fitted, int month, Prices p, Research found) {
+        return best(t, fitted, month, p, found, true);
+    }
+
+    /** The same choice before patent rent, for a default-founded city's fitting estimates (R2c). */
+    static Recipe bestGross(BuildingsTemplate t, boolean fitted, int month, Prices p, Research found) {
+        return best(t, fitted, month, p, found, false);
+    }
+
+    private static Recipe best(BuildingsTemplate t, boolean fitted, int month, Prices p, Research found, boolean netFees) {
         Recipe dflt = t.defaultRecipe();
         List<Recipe> order = new ArrayList<>();
         order.add(dflt);
@@ -112,7 +121,7 @@ public final class Recipes {
         double most = Double.NEGATIVE_INFINITY;
         for (Recipe r : order) {
             if (!canRun(t, r, fitted, month, found)) continue;
-            double v = LicenceFees.recipeValue(t, r, month, p, found);
+            double v = netFees ? LicenceFees.recipeValue(t, r, month, p, found) : value(r, p);
             if (Double.isNaN(v)) v = Double.NEGATIVE_INFINITY;
             if (best == null || v > most) {
                 best = r;
@@ -150,6 +159,12 @@ public final class Recipes {
 
     /** The gain of the template's recipe piece at the city's prices and in the city's month (EquipmentFit.gainOf() for a piece that ends no form). */
     public static double gainOf(Game game, BuildingsTemplate t) {
+        if (!game.foundedUnfitted()) {
+            if (t.recipePieceId() == null) return 0;
+            Prices p = pricesOf(game);
+            return value(bestGross(t, true, game.getMonth(), p, game.getResearch()), p)
+                    - value(bestGross(t, false, game.getMonth(), p, game.getResearch()), p);
+        }
         return recipeGain(t, game.getMonth(), pricesOf(game), game.getResearch());
     }
 
