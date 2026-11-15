@@ -162,6 +162,7 @@ public final class EquipmentFit {
      * nothing for one that is not the template's recipe piece.
      */
     private static double gainOf(Game game, BuildingsTemplate t, Equipment piece) {
+        if (game.foundedUnfitted() && t.changeNeeds(piece.getId())) return RecipeChanges.gainOf(game, t, piece);
         if (piece.getEnds() == null) return piece.getId().equals(t.recipePieceId()) ? Recipes.gainOf(game, t) : 0;
         switch (piece.getEnds()) {
             case STEAM:

@@ -596,6 +596,48 @@ public class BuildingsTemplate {
        figures are set back to. */
     private java.util.List<Recipe> recipes;
     private String recipePieceId;
+    private java.util.List<RecipeChange> recipeChanges = java.util.List.of();
+    private double recipeProduction, recipeLand;
+    private double steamRailShare;
+    private double crackerPetrol = 0.55;
+
+    /** Independent discovery undos, in code order, anchored to the immutable default. */
+    public java.util.List<RecipeChange> getRecipeChanges() { return recipeChanges; }
+
+    /** Installs independent changes before the template first runs. */
+    public BuildingsTemplate setRecipeChanges(java.util.List<RecipeChange> changes) {
+        if (recipes == null) recipes = java.util.List.of(Recipe.topLevelOf(this));
+        recipeChanges = changes.stream().sorted(java.util.Comparator.comparing(RecipeChange::code)).toList();
+        recipeProduction = production1;
+        recipeLand = landSqFt;
+        return this;
+    }
+
+    /** Whether an independent recipe change needs this piece. */
+    public boolean changeNeeds(String piece) {
+        return recipeChanges.stream().anyMatch(c -> piece.equals(c.piece()));
+    }
+
+    /** Utility output before any undo. */
+    double recipeProduction() { return recipeProduction; }
+
+    /** Ground before any undo. */
+    double recipeLand() { return recipeLand; }
+
+    /** Share of rail engines on steam, for the actual fuel invoice. */
+    public double steamRailShare() { return steamRailShare; }
+
+    /** Petrol per litre fed to this cracking unit after the chosen process. */
+    public double crackerPetrol() { return crackerPetrol; }
+
+    /** Sets the non-goods figures of the independent changes. */
+    void runRecipeExtras(double production, double land, double steamRail, double petrol) {
+        production1 = production;
+        landSqFt = land;
+        steamRailShare = steamRail;
+        crackerPetrol = petrol;
+    }
+
     private volatile String runsFitted, runsUnfitted;
 
     /**
@@ -640,6 +682,7 @@ public class BuildingsTemplate {
 
     /** The recipe of this id, or null if the building knows none of it. */
     public Recipe getRecipe(String id) {
+        if (id != null && id.contains("~")) return RecipeChanges.decode(this, id);
         if (recipes == null) return Recipe.DEFAULT_ID.equals(id) ? Recipe.topLevelOf(this) : null;
         for (Recipe r : recipes) if (r.getId().equals(id)) return r;
         return null;
@@ -652,7 +695,7 @@ public class BuildingsTemplate {
     }
 
     /** Whether it has a choice of ways to run: a list with more than the default in it. A building with none is never touched by Recipes. */
-    public boolean hasRecipeChoice() { return recipes != null && recipes.size() > 1; }
+    public boolean hasRecipeChoice() { return !recipeChanges.isEmpty() || recipes != null && recipes.size() > 1; }
 
     /** The id of the piece of equipment its recipes need (at most one per template), or null where none does. */
     public String recipePieceId() { return recipePieceId; }
@@ -713,6 +756,12 @@ public class BuildingsTemplate {
         this.gen = r.getGen();
         this.waterConsumption = r.getWater();
         this.consumables = r.getConsumables();
+    }
+
+    /** Retains the saved process decisions when independent equipment changes live figures. */
+    void setRunningRecipeIds(String[] ids) {
+        runsFitted = ids[0];
+        runsUnfitted = ids[1];
     }
 
     /** The ids of the recipes the fitted part and the unfitted part last ran (runRecipes()), in that order; the default's where it has run none. A fresh array. */
