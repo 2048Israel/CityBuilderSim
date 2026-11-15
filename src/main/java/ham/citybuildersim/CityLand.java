@@ -1032,6 +1032,22 @@ public final class CityLand {
     /** A rectangle of this many tiles or more is counted over the machine's cores: 2,048 (about an eighth of a second's reading on one core). */
     static final int PARALLEL_TILES = 2_048;
 
+    /** Low-priority ground counts use two workers, preserving room for FX and the month (WN5d). */
+    static final int QUOTE_COUNT_WORKERS = 2;
+
+    private static final java.util.concurrent.ForkJoinPool QUOTE_COUNTS = new java.util.concurrent.ForkJoinPool(
+            QUOTE_COUNT_WORKERS, pool -> {
+                java.util.concurrent.ForkJoinWorkerThread t = java.util.concurrent.ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+                t.setName("land-quote-count-" + t.threadId());
+                t.setPriority(Thread.MIN_PRIORITY);
+                return t;
+            }, null, false);
+
+    /** A superseded background measurement stops between tiles or seller rows. */
+    static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) throw new java.util.concurrent.CancellationException();
+    }
+
     private record TileKey(World.Key world, long tx, long ty) { }
 
     private static final Map<TileKey, long[]> TILE_COUNTS = new LinkedHashMap<>(1024, 0.75f, true) {
@@ -1102,6 +1118,7 @@ public final class CityLand {
 
     /** ...and the same count with the dry ground's relief and the shallow sea after the classes (WIDE of them, ET1). */
     long[] unownedCounts(long x0, long y0, long x1, long y1) {
+        checkInterrupted();
         long[] cls = new long[WIDE];
         x0 = Math.max(0, x0);
         y0 = Math.max(0, y0);
@@ -1116,12 +1133,25 @@ public final class CityLand {
         final long fx0 = x0, fy0 = y0, fx1 = x1, fy1 = y1;
         if (tiles >= PARALLEL_TILES) {
             long[][] byRow = new long[(int) rows][];
-            java.util.stream.IntStream.range(0, (int) rows).parallel()
-                    .forEach(j -> byRow[j] = rowClasses(world, ty0 + j, tx0, tx1, fx0, fy0, fx1, fy1));
+            java.util.concurrent.atomic.AtomicBoolean stopped = new java.util.concurrent.atomic.AtomicBoolean();
+            Runnable count = () -> java.util.stream.IntStream.range(0, (int) rows).parallel()
+                    .forEach(j -> byRow[j] = rowClasses(world, ty0 + j, tx0, tx1, fx0, fy0, fx1, fy1, stopped));
+            if (Thread.currentThread().getPriority() < Thread.NORM_PRIORITY) {
+                java.util.concurrent.ForkJoinTask<?> task = QUOTE_COUNTS.submit(count);
+                try { task.get(); }
+                catch (InterruptedException e) {
+                    stopped.set(true);
+                    task.cancel(false);
+                    Thread.currentThread().interrupt();
+                    throw new java.util.concurrent.CancellationException();
+                } catch (java.util.concurrent.ExecutionException e) {
+                    throw new IllegalStateException("The ground count failed", e.getCause());
+                }
+            } else count.run();
             for (long[] r : byRow) for (int c = 0; c < WIDE; c++) cls[c] += r[c];
         } else {
             for (long ty = ty0; ty <= ty1; ty++) {
-                long[] r = rowClasses(world, ty, tx0, tx1, x0, y0, x1, y1);
+                long[] r = rowClasses(world, ty, tx0, tx1, x0, y0, x1, y1, null);
                 for (int c = 0; c < WIDE; c++) cls[c] += r[c];
             }
         }
@@ -1129,12 +1159,15 @@ public final class CityLand {
     }
 
     /** One row of tiles' unowned plots of the rectangle, by class and by relief (WIDE). */
-    private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1) {
+    private long[] rowClasses(World world, long ty, long tx0, long tx1, long x0, long y0, long x1, long y1,
+                              java.util.concurrent.atomic.AtomicBoolean stopped) {
         long[] cls = new long[WIDE];
         byte[] t = null, rel = null;
         boolean[] owned = null;
         int n = World.TILE;
         for (long tx = tx0; tx <= tx1; tx++) {
+            checkInterrupted();
+            if (stopped != null && stopped.get()) throw new java.util.concurrent.CancellationException();
             int cov = grid.cover(5, tx, ty);
             if (cov == LandGrid.ALL) continue;
             long px0 = tx * n, py0 = ty * n;
