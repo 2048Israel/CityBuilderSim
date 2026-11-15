@@ -23,6 +23,7 @@ import java.util.Map;
  *      (a) a reload mid-influenza, played on: January to March 1919 beside the unbroken city, to the bit; on the playtest's founding,
  *          for the section's stocked city drifts after any reload (queued as SR1)
  *      (b) the fixtures' hold kept across a load: a held twin loaded from September 1918 stays held to March 1920
+ *      (c) September 1918 twins with only Health's influenza held off: no delayed ring deaths beyond their economic drift (R0h)
  *
  * The 1900 city of sections 2, 4, 5 and 6 is Canada's 1901 pyramid at 100,000
  * people with no childcare (the swing at its top), general care for everybody,
@@ -760,6 +761,7 @@ public class CausesOfDeathCheck {
 
         reloadedMidInfluenzaAndPlayedOn();
         theHoldKeptAcrossALoad(g, fluRate);
+        theInfluenzaCountedOnce(g);
     }
 
     /**
@@ -800,6 +802,7 @@ public class CausesOfDeathCheck {
         if (Double.compare(sa, sb) != 0) return "Health's sick rate: " + sa + " against " + sb;
         double ia = a.getHealth().getInfluenzaRate(), ib = b.getHealth().getInfluenzaRate();
         if (Double.compare(ia, ib) != 0) return "Health's influenza rate: " + ia + " against " + ib;
+        if (!Arrays.equals(a.getSickness().getAcuteShares(), b.getSickness().getAcuteShares())) return "Sickness's acute shares";
         double[] ra = a.getSickness().getState(), rb = b.getSickness().getState();
         if (!Arrays.equals(ra, rb)) {
             for (int i = 0; i < Math.min(ra.length, rb.length); i++) {
@@ -874,6 +877,69 @@ public class CausesOfDeathCheck {
         }
         System.out.printf("   the city's own 1900 to December 1918 took %.1f seconds, and its three months on both cities %.1f%n",
                 upSeconds, (System.nanoTime() - started) / 1e9 - upSeconds);
+    }
+
+    /** R0g's September 1918 twins: only Health's influenza sick are held off, with causes on in both. */
+    static void theInfluenzaCountedOnce(Game saved) {
+        System.out.println("\n--- the influenza sick counted once: September 1918 twins (R0h) ---");
+        Game flu = new Game(saved.getGameFiles()), calm = new Game(saved.getGameFiles());
+        quietly(() -> { flu.loadGameSave(2); calm.loadGameSave(2); });
+        calm.getHealth().holdInfluenzaOff();
+        int first = CausesOfDeath.INFLUENZA_FIRST;
+        assertTrue("fixture: both twins loaded the same September 1918 city with causes on",
+                flu.getMonth() == first - 1 && calm.getMonth() == first - 1
+                && !flu.getCausesOfDeath().isHeldOff() && !calm.getCausesOfDeath().isHeldOff()
+                && Arrays.equals(flu.getSickness().getState(), calm.getSickness().getState()));
+        double[] extra = new double[CausesOfDeath.INFLUENZA_LAST - first + 2];
+        double[] drift = new double[extra.length];
+        Sickness fluChronic = new Sickness(), calmChronic = new Sickness();
+        fluChronic.restore(PopulationCohorts.saveBands(), flu.getSickness().getState());
+        calmChronic.restore(PopulationCohorts.saveBands(), calm.getSickness().getState());
+        double fluDead = 0, sick = 0;
+        boolean ran = true, held = true, visible = true, uncapped = true;
+        for (int k = 0; k < extra.length; k++) {
+            // Ring deaths read the opening cohorts and last month's ring, before the month's health inputs arrive.
+            double fluExpected = ringDeaths(flu.getSickness(), flu.getCohorts());
+            double calmExpected = ringDeaths(calm.getSickness(), calm.getCohorts());
+            drift[k] = ringDeaths(fluChronic, flu.getCohorts()) - ringDeaths(calmChronic, calm.getCohorts());
+            int[] months = new int[2];
+            quietly(() -> { months[0] = flu.simulateMonths(1); months[1] = calm.simulateMonths(1); });
+            uncapped &= Math.abs(fluExpected - flu.getSickness().getLastDeaths()) < 1e-9
+                    && Math.abs(calmExpected - calm.getSickness().getLastDeaths()) < 1e-9;
+            advanceChronic(fluChronic, flu);
+            advanceChronic(calmChronic, calm);
+            ran &= months[0] == 1 && months[1] == 1;
+            held &= calm.getHealth().getInfluenzaRate() == 0;
+            extra[k] = flu.getSickness().getLastDeaths() - calm.getSickness().getLastDeaths();
+            fluDead += flu.getCausesOfDeath().getLastDeaths(Cause.INFLUENZA);
+            sick += flu.getHealth().getInfluenzaRate();
+            visible &= Math.abs(flu.getSickness().share(AgeBand.ADULT) - flu.getHealth().getSickRate()) < 1e-12;
+            System.out.printf("   month %d: ring extra %+.6f; chronic drift %+.6f; influenza dead %.6f%n",
+                    flu.getMonth(), extra[k], drift[k], flu.getCausesOfDeath().getLastDeaths(Cause.INFLUENZA));
+        }
+        assertTrue("fixture: both twins played every month, only one had influenza sick, and its causes booked influenza dead",
+                ran && held && sick > 0 && fluDead > 0);
+        assertTrue("the epidemic remains in the visible adult sick share every month", visible);
+        assertTrue("fixture: opening cohorts times each ring rate book its dead without a competing-risk cap", uncapped);
+        for (int k = 3; k <= 6; k++) {
+            check("January-April 1919 month " + (k - 2) + ": no extra ring dead beyond the twins' own chronic drift",
+                    extra[k] - drift[k], 0, 1e-9);
+        }
+    }
+
+    /** Ring deaths on opening cohorts; the fixture checks that competing-risk caps do not reduce them. */
+    static double ringDeaths(Sickness ring, PopulationCohorts people) {
+        double[] rates = ring.deathRates();
+        double dead = 0;
+        for (AgeBand band : BANDS) dead += rates[band.ordinal()] * people.get(band);
+        return dead;
+    }
+
+    /** Replay only each twin's observed chronic inputs, retaining its own economic and care drift. */
+    static void advanceChronic(Sickness ring, Game city) {
+        Healthcare care = city.getHealthcare();
+        ring.advanceMonth(city.getHealth().getSickRateWithoutInfluenza(),
+                care.getCoverage(CareType.GENERAL), care.getCoverage(CareType.CHILDCARE), care.getCoverage(CareType.SENIOR));
     }
 
     /**
