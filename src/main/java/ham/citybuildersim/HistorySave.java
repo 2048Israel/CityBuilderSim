@@ -247,6 +247,8 @@ public class HistorySave {
     private List<Double> currentAccount = new ArrayList<>();
     private List<Double> exportsAbroad = new ArrayList<>();
     private List<Double> importsAbroad = new ArrayList<>();
+    /** Imported patent services, local money, already inside importsAbroad (R2c). */
+    private List<Double> ipCharges = new ArrayList<>();
 
     /* ------------------------ money and credit ------------------------
 
@@ -788,6 +790,7 @@ public class HistorySave {
         currentAccount.add(round2(abroad.currentAccount()));
         exportsAbroad.add(round2(abroad.getExports()));
         importsAbroad.add(round2(abroad.tradeImports()));
+        ipCharges.add(round2(LicenceFees.paid(game)));
         // ...and the world's moneys, where the city has them (WN4): the seven majors against the US dollar, the cycle and the risk-off.
         WorldMoneys moneys = game.getWorldMoneys();
         if (moneys != null) {
@@ -1235,6 +1238,7 @@ public class HistorySave {
         currentAccount = copy(loaded.currentAccount);
         exportsAbroad = copy(loaded.exportsAbroad);
         importsAbroad = copy(loaded.importsAbroad);
+        ipCharges = copy(loaded.ipCharges);
 
         priceIndex = copy(loaded.priceIndex);
         usPrices = copy(loaded.usPrices);
@@ -1842,6 +1846,7 @@ public class HistorySave {
         map.put("currentAccount", currentAccount);
         map.put("exportsAbroad", exportsAbroad);
         map.put("importsAbroad", importsAbroad);
+        map.put("ipCharges", ipCharges);
 
         map.put("priceIndex", priceIndex);
         map.put("usPrices", usPrices);
@@ -2032,7 +2037,7 @@ public class HistorySave {
          * of things, and landUse is a share -
          * none of them is money at all.
          */
-        scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad,
+        scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad, ipCharges,
                 businessDebt, businessBonds, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
                 householdSavings, bankFees,

@@ -112,7 +112,7 @@ public final class Recipes {
         double most = Double.NEGATIVE_INFINITY;
         for (Recipe r : order) {
             if (!canRun(t, r, fitted, month, found)) continue;
-            double v = value(r, p);
+            double v = LicenceFees.recipeValue(t, r, month, p, found);
             if (Double.isNaN(v)) v = Double.NEGATIVE_INFINITY;
             if (best == null || v > most) {
                 best = r;
@@ -134,7 +134,8 @@ public final class Recipes {
     /** The same in a city whose research may have found a recipe's code before history's month (R3); no research (null) reads history's. */
     public static double recipeGain(BuildingsTemplate t, int month, Prices p, Research found) {
         if (t.recipePieceId() == null) return 0;
-        return value(best(t, true, month, p, found), p) - value(best(t, false, month, p, found), p);
+        return LicenceFees.recipeValue(t, best(t, true, month, p, found), month, p, found)
+                - LicenceFees.recipeValue(t, best(t, false, month, p, found), month, p, found);
     }
 
     /* ===== THE GAME LAYER: the city's prices, read on demand ===== */

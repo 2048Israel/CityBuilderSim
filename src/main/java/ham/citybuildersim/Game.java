@@ -358,6 +358,7 @@ public class Game {
         debtManager.setTieMoneySource(() -> foreign.getRegime() == ForeignAccounts.Regime.GOLD ? "USD" : foreign.getPegAnchorCode());   // ...to its anchor's rate: the money the peg is kept in (WN4b), the US$ unless the player chose another; the gold's is always the US$ (GD3)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
+        businessInvestment.setLicenceCost(t -> LicenceFees.forNew(this, t));
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
         businessInvestment.setOrderWaitOutput(this::orderWaitOutput);   // and an order's wait is read at the month the builders and their contractor can give it (BA1)
         businessInvestment.setDeepWaterPrice((t, n, factor) -> {   // and a floating platform's deep-water works (DW1)
@@ -14356,6 +14357,7 @@ public class Game {
          * Sector.strike(). This was five hand-listed report calls and a
          * hand-written ledger.
          */
+        LicenceFees.charge(this);   // R2c: import and firm settlement in the same audit window
         economyManager.strikeSectors();
         // ...the month's draws before the strike - the railway's diesel, its trucks', bitumen ordered between the presses - back on their sellers' rows the strike just cleared (FW5, 2026-10-25).
         getMarkets().rowDrawsBeforeStrike(getSectors());

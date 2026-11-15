@@ -65,6 +65,9 @@ public class SaveFileCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        System.out.println("--- R2c: paid IP service flows cross the save objects ---");
+        assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
+
         System.out.println("--- R0f: the exhausted gold episode through DataSave and the load path ---");
         assertTrue("Canadian gold's exhausted episode and inherited interest cross JSON and the next month", MoneyDatesCheck.saveChecks());
 

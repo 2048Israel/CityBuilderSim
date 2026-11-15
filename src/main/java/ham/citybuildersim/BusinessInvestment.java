@@ -1406,8 +1406,15 @@ public class BusinessInvestment {
         return (Double.isFinite(rate) && rate > 0) ? Math.min(1, rate) : 1;
     }
 
+    private java.util.function.ToDoubleFunction<BuildingsTemplate> licenceCost = t -> 0;
+
+    /** Game supplies patent rent; a bare planner reads zero. */
+    public void setLicenceCost(java.util.function.ToDoubleFunction<BuildingsTemplate> cost) {
+        licenceCost = cost == null ? t -> 0 : cost;
+    }
+
     /**
-     * Wages, power and water for a building that does not exist yet, read
+     * Wages, power, water and patent rent for a building that does not exist yet, read
      * off the template and the current schedule rather than off a sector's
      * income statement, because the first mine in a city has no sector to read.
      */
@@ -1418,6 +1425,8 @@ public class BusinessInvestment {
             int slot = type.ordinal();
             if (slot < rates.length) payroll += t.getJobs(type) * rates[slot];
         }
+        double fee = licenceCost.applyAsDouble(t);
+        if (fee != 0) payroll += fee;
         return payroll
                 + t.getElectricityConsumption() * economyManager.getPricePerWatt()
                 + t.getWaterConsumption() * economyManager.getPricePerWaterUnit();
