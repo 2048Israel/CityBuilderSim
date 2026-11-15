@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2b-Y8tUFPu3 -->
 ## changelog
 ### {next} — R2b, Buildings on history's dates — 2026-11-15, ready, see docs/queue/R2b-notes.md
