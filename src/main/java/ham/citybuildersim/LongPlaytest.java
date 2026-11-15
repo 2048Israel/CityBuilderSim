@@ -4166,7 +4166,7 @@ public class LongPlaytest {
      * default dial it orders what it ordered, the same .60 of the berth's month.
      */
     static BuildingsTemplate terminalFor(Game g, Ports.Cargo k, double uncovered, double carriable, double dial) {
-        return Ports.payingTerminal(k, g.getBuildingManager().getTemplates(), uncovered, carriable, dial, null);
+        return Ports.payingTerminal(k, g.getBuildingManager().getKnownTemplates(), uncovered, carriable, dial, null);
     }
 
     /** The month's boats and sea tonnes, counted (the calls without their quays: the map places them, since 0.7.97 on its sea routes). */

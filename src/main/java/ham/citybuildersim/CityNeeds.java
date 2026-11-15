@@ -993,7 +993,7 @@ public final class CityNeeds {
     /** The seats of the smallest building that teaches this; 0 when none does. */
     public static double smallestSchool(Game game, EducationType type) {
         double least = Double.MAX_VALUE;
-        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+        for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             if (t.getTeaches() == type && t.getCapacity() > 0) least = Math.min(least, t.getCapacity());
         }
         return least == Double.MAX_VALUE ? 0 : least;

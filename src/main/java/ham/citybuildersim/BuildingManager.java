@@ -5077,11 +5077,29 @@ public class BuildingManager {
         return templates;
     }
 
+    /** The city's live knowledge (R2b); a standalone catalogue keeps every template available. */
+    private java.util.function.Predicate<BuildingsTemplate> templateKnown = t -> true;
+
+    /** Supplied by Game once, reading the current month and local discoveries on every query. */
+    public void setTemplateKnown(java.util.function.Predicate<BuildingsTemplate> known) {
+        templateKnown = java.util.Objects.requireNonNull(known);
+    }
+
+    /** One rule for candidate lists and orders; the complete catalogue remains available for saves and accounting. */
+    public boolean isTemplateKnown(BuildingsTemplate t) { return templateKnown.test(t); }
+
+    /** Every building the city knows how to build now, in catalogue order (R2b). */
+    public List<BuildingsTemplate> getKnownTemplates() {
+        List<BuildingsTemplate> result = new ArrayList<>();
+        for (BuildingsTemplate t : templates) if (isTemplateKnown(t)) result.add(t);
+        return result;
+    }
+
     public List<BuildingsTemplate> getTemplatesByCategory(EnumSet<BuildingType> categories) {
         List<BuildingsTemplate> result = new ArrayList<>();
 
         for (BuildingsTemplate t : templates) {
-            if (categories.contains(t.getCategory())) {
+            if (categories.contains(t.getCategory()) && isTemplateKnown(t)) {
                 result.add(t);
             }
         }
@@ -7531,10 +7549,10 @@ public class BuildingManager {
         return total;
     }
 
-    /** Every template a sector may build. */
+    /** Every template a sector may build now: unknown buildings never reach any sector's planner (R2b). */
     public List<BuildingsTemplate> getTemplatesBySector(String sector) {
         List<BuildingsTemplate> out = new ArrayList<>();
-        for (BuildingsTemplate t : templates) if (t.getSector().equals(sector)) out.add(t);
+        for (BuildingsTemplate t : templates) if (t.getSector().equals(sector) && isTemplateKnown(t)) out.add(t);
         return out;
     }
 
