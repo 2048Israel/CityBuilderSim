@@ -56,10 +56,11 @@ city. researchTown's guarantees never exclude a third sector.
 existing premise. This is a latent fixture assumption, not a filtering
 failure. Neither ResearchView nor ResearchViewCheck is changed. The
 batch brief requires demonstrating such a red on main and queuing a
-separate repair; R2b-V is that repair. It must cause the exactly-two-sector
-premise in a controlled filter fixture, retain the played town's guarantees,
-and independently hold the partition law over every actual sector in the
-played town. Do not hide Manufacturing or relax the partition law.
+separate repair; R2b-V is that repair. Per the orchestrator's decision it
+takes section 6's expected sector count from the city's own sectors and
+keeps every other law, with the known Fabrication Shop causing the third
+sector. Retain the played town's guarantees and the all-sector partition
+law. Do not hide Manufacturing or relax the partition law.
 The orchestrator accepted this attribution under the 11-04 rule at 04:12
 Halifax on cbs-bus: changing the hardcoded assertion belongs to its own batch.
 
