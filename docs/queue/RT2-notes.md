@@ -284,3 +284,20 @@ and live-classifier derived counts); none names RT2 or RT1, and they remain
 separate. The orchestrator withdraws the R2b-specific trace-delivery request.
 RT2 will still retain its final default trace with its gate for the model
 comparison and future inspection. No new ensemble starts before the go.
+
+## KD1 runner and EN2 baseline
+
+KD1/main 4343a815 is merged at 15a8adb4 before the final dry-run request.
+AllChecks auto-merges without source conflicts and keeps FoodIndustryCheck;
+only generated dials, harness and map-index conflicts are regenerated.
+The game model is unchanged: KD1 is an untagged runner/process change.
+The running ensemble still uses its sealed 392e4dcb classes/driver snapshot.
+EN2 is now available at docs/ensemble/EN2.md and is the required final scoring
+baseline, superseding the initial 0.9.106 score.
+
+The merge also updated ensemble.sh while that old launcher was active; this
+should have been deferred until the run ended. Its per-city launch delta only
+adds optional dataset arguments; the run's explicit inherited Earth/world
+options remain unchanged, and Ensemble.java's delta is comments only.
+Verify every completed CSV and dataset provenance, then rescore those same
+CSV files against EN2; no new simulated cities are needed for rescoring.
