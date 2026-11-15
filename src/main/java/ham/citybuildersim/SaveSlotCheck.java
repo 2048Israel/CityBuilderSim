@@ -797,6 +797,30 @@ public class SaveSlotCheck {
                     files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth(), before);
             assertEquals("...with its own history beside it", lastMonthOf(files.historyFile(GameFiles.AUTOSAVE_SLOT)), before);
 
+            quietly(() -> city.autosave("7f asked after the broken skip"));
+            city.awaitSaves();
+            assertEquals("an explicit autosave after the broken skip preserves every file",
+                    hashed(files.savesDirectory()), beforeClose);
+            int[] atNextMonth = { -1 }, moreCompleted = { -1 };
+            city.autoBuildProbeForTest = after -> {
+                if (!after && atNextMonth[0] == -1) {
+                    city.awaitSaves();
+                    atNextMonth[0] = files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth();
+                }
+            };
+            quietly(() -> moreCompleted[0] = city.simulateMonths(2));
+            city.autoBuildProbeForTest = null;
+            assertEquals("Simulate more preserves the return point before its first month starts", atNextMonth[0], before);
+            assertTrue("fixture: Simulate more completed both later months", moreCompleted[0] == 2);
+            assertEquals("...its end still preserves every file from before the broken skip",
+                    hashed(files.savesDirectory()), beforeClose);
+            city.useSaveClockForChecks(() -> 2 * floorNanos());
+            for (int i = 0; i < Game.AUTOSAVE_MONTHS; i++) step(city);
+            city.awaitSaves();
+            assertEquals("the periodic autosave also preserves the return point until a load",
+                    hashed(files.savesDirectory()), beforeClose);
+            city.useSaveClockForChecks(() -> 0L);
+
             // A load rebuilds the city after the broken month and restores ordinary close saves.
             quietly(() -> city.loadGameSave(GameFiles.AUTOSAVE_SLOT));
             step(city);

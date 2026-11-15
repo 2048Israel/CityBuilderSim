@@ -1128,7 +1128,7 @@ public class Game {
 
     /** Both exits keep the skip's return point when its last month stopped part-way (UP6b). */
     private void saveForExit(String reason) {
-        if (ranThrough) autosave(reason);
+        autosave(reason);
         awaitSaves();
     }
 
@@ -8424,9 +8424,9 @@ public class Game {
 
         int completed = 0;
 
-        // Set when every month has run: a skip that stopped part-way (the catch below, or an Error the
-        // finally lets through) does not autosave at its end - its city stopped inside a month.
-        ranThrough = false;
+        // Keep the last whole city's guard during the loop, so a healthy skip can still autosave
+        // completed months. The finally latches ranThrough false if this skip stops inside one.
+        boolean completedAll = false;
 
         // Snapshot before anything moves. Everything the summary shows is a diff
         // against this or a count taken month by month below - see TimeSkipReport.
@@ -8462,7 +8462,7 @@ public class Game {
                 // ...and the sales nobody pressed (CD2, D28 to D30): the rollover's and automatic building's.
                 skipReport.sampleSales(autoSalesThisMonth);
             }
-            ranThrough = true;
+            completedAll = true;
 
         } catch (RuntimeException e) {
             /*
@@ -8485,6 +8485,9 @@ public class Game {
                     + (GameLog.file() == null ? "(no log file)" : GameLog.file());
 
         } finally {
+            // Later months cannot repair the part-month left by a failed skip. Only buildWorld()
+            // (new city or load) restores this one guard, shared by every autosave path (UP6b).
+            ranThrough &= completedAll;
             graphs = previousGraphs;
             reports = previousReports;
             skipping = previousSkipping;
@@ -8503,7 +8506,7 @@ public class Game {
             // skip do. A skip that stopped part-way leaves the "before skipping" autosave as
             // the point to come back to (the catch above).
             awaitSaves();
-            if (months > 1 && ranThrough) autosave("after skipping " + months + " months");
+            if (months > 1) autosave("after skipping " + months + " months");
         }
 
         return completed;
@@ -16772,7 +16775,7 @@ public class Game {
     }
 
     /**
-     * Writes the autosave slot, if there is a city to write.
+     * Writes the autosave slot, if there is a city to write and no skip has left a partial month.
      *
      * Called on five occasions, and each covers a different way of losing a
      * city: every twelve months for the ordinary case, before a multi-month skip
@@ -16780,6 +16783,8 @@ public class Game {
      * after one so the skip's last month is on disk too (UP6), on quit, and on
      * the window's close (UP6), because the window closing is the most common
      * accident of all.
+     * After a skip fails, every path preserves the last whole autosave until a
+     * load or a new city restores the shared completion guard (UP6b).
      *
      * Failures are reported and swallowed. An autosave that cannot write must
      * not stop a month advancing or a player quitting - it is a safety net, and
@@ -16794,10 +16799,10 @@ public class Game {
         autosaveJob(reason);
     }
 
-    /** The autosave, returning the job it made (null when the city is not initialised) so the month that autosaves can hand its fill to the recording (TR2). */
+    /** The autosave, returning its job (null before a city is initialised or after a broken skip) so the month that autosaves can hand its fill to the recording (TR2). */
     private SaveWriter.Job autosaveJob(String reason) {
 
-        if (!initialized) return null;
+        if (!initialized || !ranThrough) return null;
 
         reportSaves();
 
@@ -17648,7 +17653,7 @@ public class Game {
      */
     private String skipFailure;
 
-    /** The skip's completion flag (UP6b), retained for both exits; a new or loaded city starts whole. */
+    /** The skip's completion guard (UP6b), shared by every autosave; only a new or loaded city restores it after failure. */
     private boolean ranThrough = true;
 
     public String takeSkipFailure() {
