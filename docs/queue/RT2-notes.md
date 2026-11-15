@@ -178,7 +178,7 @@ leave it distinct from RT2. R0f's final eight default CSVs match its prior
 main byte for byte (R0f notes, final verification), and RT1b's do too. The
 newest stored ensemble baseline is therefore still 0.9.106.
 
-## Final ensemble
+## First ensemble, before the goods-station floor
 
 One run on the final merged model, classes snapshot 0783d66f, label RT2:
 80/80 complete, none missing or short, 85.2 minutes with the normal five
@@ -209,3 +209,54 @@ The orchestrator's R2b request (20261115-031200-063-orchestrator-48ae) asks for
 the eight final default trace CSVs in a retained named path, in these notes
 and the ready message. The dry run will set the trace prefix within its
 documented CBS_GATE_DIRECTORY so the trace outlives this worktree.
+
+## Final-review finding: goods cannot use spare sidings
+
+The first dry run at C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-20261115-041842
+is deliberately stopped, exit 130, not a reusable kept run. Branch
+216b7e2bf7fb44ce0e0e2dee46dcdc7cd2f63ed3, main
+b49a6023c892e61e575f39c57b4d16774cf6fdd7. It was stopped by its own normal
+tools/gate.sh --stop route; origin refs stayed unmoved. Its logs remain
+diagnostic evidence, not readiness.
+
+Further review found an RT2-owned regression missed by the aggregate guard:
+nine depots (450,000 station tonnes), eight spurs (400,000 siding tonnes),
+four lines and sets for 450,000 tonnes, offered 400,000 tonnes of GOODS only.
+The guard sold three depots because aggregate handling still covered the
+offer; Freight.deal then carried only 300,000 goods tonnes. Main's unchanged
+Freight sells none and carries all 400,000. Its Freight blob is unchanged
+between original main 2853630b and b49a6023. Probe logs:
+target/rt2-probes/goods-retirement-{rt2,main}.txt.
+This is ours to mend, not a known-red transfer.
+
+★ Retain the goods share of planner headroom specifically in stations, as
+well as retaining total headroom in track, sets and aggregate handling.
+Goods offered is rTonnes - rBulkOffered, the railway's offer AFTER the
+ships' first cut; the city's own bulk is excluded from these planner figures
+already. No new saved state or change to the shared default hook.
+
+The added RailDepotCheck cases fail before this extra guard: two goods-only
+offers (400,000 and 350,000 tonnes) sell three depots where zero and one are
+safe, and lose goods headroom. A mixed 200,000 bulk / 200,000 goods control
+allows three safely because bulk can ride sidings. The same assertions check
+both the decision quantity and Freight.deal on the whole sale at headroom.
+Before log: target/rt2-goods-before/RailDepotCheck.log, four failures.
+
+The mended RailDepotCheck exits 0; compile and maps pass, Stale has zero firm
+findings (target/checks/rt2-goods-mend.txt). Its goods cases sell 0, 1 and 3
+depots respectively and Freight.deal retains both traffic kinds' headroom.
+The independent nine-depot probe now sells 0 and carries all 400,000 goods
+tonnes (target/rt2-probes/goods-retirement-mended.txt).
+The first 80-run score above is therefore intermediate, not the final model's
+baseline. Its committed artifact is removed until the mended model's new run
+replaces it; its raw data remains under target/ensemble/RT2.
+
+The orchestrator accepts the mend and requests a delta review
+(20261115-043619-864-orchestrator-fdc6).
+His explicit resource-policy revision, message
+20261115-043926-091-orchestrator-c5eb, is:
+"That constraint was mine and I've revised it on tonight's evidence: one dry
+run beside one ensemble is allowed ... never two of either at once."
+This revises the original brief's no-ensemble-beside-a-dry-run restriction.
+KD1's baseline ensemble goes first; RT2's new final-model ensemble follows it,
+then RT2's dry run. RT2's new ensemble remains on hold meanwhile.

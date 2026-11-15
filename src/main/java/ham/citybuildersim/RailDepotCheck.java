@@ -51,7 +51,8 @@ import java.util.TreeSet;
  *   10. SPARE TRACK IS COUNTED AS TRACK (RT2), even while wagon sets or
  *      stations limit operating capacity; losses sell the most-held line
  *      by the headroom and gradual-retirement constants, without cutting
- *      into the track the offered freight needs.
+ *      into the track the offered freight needs. Goods retain station room:
+ *      spare sidings cannot replace a goods yard, even when sets bind.
  *
  * The fixtures are bare cities (a catalogue, a planner, a Freight with nothing
  * else), because plan() asks for nothing a city adds except the staffing,
@@ -654,6 +655,43 @@ public class RailDepotCheck {
                         shed.quantity == safe && shed.build == (safe > 0) && (!shed.build || shed.template == selling) && after >= keep,
                         String.format("%d sold, %d safe; offered %,.0f, headroom %,.0f, remaining capacity %,.0f", shed.quantity, safe, demand, keep, after));
             }
+        }
+        goodsRetirement();
+    }
+
+    /** A siding sorts bulk only: the aggregate operating minimum alone can hide a goods shortfall. */
+    static void goodsRetirement() {
+        System.out.println("\n--- goods keep station headroom even when spare sidings hide the lost yard room ---");
+        int held = (int) Math.ceil(2 / BusinessInvestment.MAX_RETIREMENT_FRACTION);
+        Fx cat = new Fx();
+        double step = cat.t("Rail Depot").getStationTonnes();
+        double[][] offers = { { 0, held * step }, { 0, (held - 1) * step }, { held / 2 * step, held / 2 * step } };
+        for (double[] offer : offers) {
+            Fx f = new Fx().stand("Rail Depot", held + 1).stand("Rail Spur", held).stand("Freight Line", held / 2);
+            BuildingsTemplate depot = f.t("Rail Depot");
+            f.offer(offer[0], offer[1], (held + 1) * step / Freight.TONNES_PER_SET);
+            double factor = 1 + BusinessInvestment.TARGET_HEADROOM;
+            double bulkKeep = offer[0] * factor, goodsKeep = offer[1] * factor;
+            int gradual = Math.min((int) Math.ceil((held + 1) * BusinessInvestment.MAX_RETIREMENT_FRACTION), held + 1);
+            double afterGradual = Freight.capacityOf(f.fr.trackTonnes() - gradual * depot.getRailCapacity(), f.fr.fleet(),
+                    f.fr.stationTonnes() - gradual * step, f.fr.sidingTonnes());
+            assertTrue("fixture: depots are most held, sets bind, and even the whole gradual sale passes the aggregate headroom",
+                    held + 1 > held && f.fr.getCapacityTonnes() == f.fr.fleet() * Freight.TONNES_PER_SET
+                            && f.fr.getCapacityTonnes() < f.fr.stationTonnes() + f.fr.sidingTonnes()
+                            && f.fr.stationTonnes() >= goodsKeep && afterGradual >= bulkKeep + goodsKeep);
+            int safe = Math.max(0, Math.min(gradual, (int) Math.floor((f.fr.stationTonnes() - goodsKeep) / step)));
+            for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) f.plans.recordSectorResult(f.fr.key(), -1);
+            double[] measure = f.fr.retirementDemandAndCapacity(null);
+            BusinessInvestment.Decision shed = f.plans.planRetirement(f.fr, measure[0], measure[1], 0);
+            double stations = f.fr.stationTonnes() - shed.quantity * step;
+            double capacity = Freight.capacityOf(f.fr.trackTonnes() - shed.quantity * depot.getRailCapacity(), f.fr.fleet(),
+                    stations, f.fr.sidingTonnes());
+            double[] dealt = Freight.deal(capacity, stations, f.fr.sidingTonnes(), bulkKeep, goodsKeep);
+            report("only the depots spare to goods are sold, while bulk may use sidings",
+                    shed.quantity == safe && shed.build == (safe > 0) && (!shed.build || shed.template == depot),
+                    String.format("bulk %,.0f, goods %,.0f: %d sold, %d safe", offer[0], offer[1], shed.quantity, safe));
+            assertTrue("the railway still deals both kinds' headroom after the whole sale",
+                    near(dealt[0], bulkKeep, 1e-12) && near(dealt[1], goodsKeep, 1e-12));
         }
     }
 }

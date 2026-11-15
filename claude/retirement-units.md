@@ -7,7 +7,8 @@ including when preparation plants wash the coal into other outputs. The
 railway weighs offered tonnes against standing track, so a shortage of wagon
 sets or station handling does not conceal track it could sell. A depot or
 spur sale is limited by the operating capacity that would remain: the whole
-quantity must retain the planner's headroom for the offered freight.
+quantity must retain the planner's headroom for the offered freight. Goods
+retain station room specifically: bulk sidings cannot replace their yard.
 
 The loss streak, spare-capacity threshold, headroom and gradual-sale limits
 keep their existing rules. The three fixtures now cause the missing sales:
