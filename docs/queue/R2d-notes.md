@@ -371,3 +371,11 @@ retirement methods and changes no Game/Sector method.
 The merged branch's HistoricalRecipeCheck (120), EquipmentCheck and
 BuildingDataCheck all pass together; depot-check.log exits 0, with zero firm
 Stale. The original data payload and before log remain retained.
+
+After merging the final RT2 Sector/BusinessInvestment/Freight source into
+the overlay, HistoricalLicenceCheck (43), HistoricalRecipeCheck (120),
+LicenceFeesCheck (43), RailCheck and HomeRailCheck all pass serially.
+Logs: target/R2d-fee-prototype/RT2-*.log. The rail delta review artifact is
+rail-fee-review.patch, SHA256
+d997eacf48f1b21008c6c84c6c2375817f2b1a324fa2db5c7a5b922410a00a5b.
+The initial prepared-fee-review.patch (9ca4a328...) remains frozen.
