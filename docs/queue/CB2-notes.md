@@ -171,7 +171,49 @@ the combined model with R2c. No R2c source was edited by CB2.
 - Final `./batch-check.sh MonetaryCheck` on the 0.65-point allowance:
   **exit 0**, one harness pass, compile/maps and zero firm Stale findings.
   Log: `target/cb2-probe/monetary-final-check.log`.
-- Retained merge dry run follows. No ensemble:
+- Retained merge dry run below passed. No ensemble:
   only harness code changes, so the default model trace is unchanged.
 - No scripts, runner or process rules change. No known-red entry is retired,
   transferred or added; PO1 already removed the former CB2 entries.
+
+### Retained merge dry run
+
+`sh tools/gate.sh CB2 --dry-run --no-tag`: **GREEN, exit 0**. The gate ran
+13 of 205 harnesses, compile, maps and Stale (zero firm findings); all passed.
+Suite work including compilation/maps took 441 seconds. No game code in the
+diff against the merged main, no tag, and no additional ensemble or ALL run.
+
+Kept run: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CB2-20261115-110411` (Git Bash prints
+`/tmp/cbs-gate-CB2-20261115-110411`). Log: `ship.log`; kept harness logs
+and runtime table: `checks/`. The two commits actually checked, read from
+`branch.commit` and `main.commit`, are:
+
+- Branch: `b4a44331b63d8d4671c335182b7f108e2df4cae1`.
+- Main: `83f25ae798746b883b94fc2ae9dddbd7a201b320` (R2c, 0.9.114).
+
+Both changed harnesses pass. All 24 central-bank gaps remain negative and
+all 24 paired inflation readings match the RT2 measurement at the log's
+0.001-point precision. The exact diagnostic median above remains -0.505818;
+taking the median of already-rounded log gaps gives -0.5055. MonetaryCheck
+again reads noise 0.000/0.276/0.322/0.320 points with the 0.65 allowance;
+all three normal ordering laws and the one-point floor run and pass.
+
+### Runtime cost
+
+CentralBankCheck with 24 cities took **404.4 seconds** in the final gate.
+The preceding R2c gate's 12-city cache, preserved before this run from
+`~/.cbs-gate-times.tsv` (11:19), records **466.2 seconds**. The observed
+wall-time difference is **-61.8 seconds (-13.3%)**, rather than longer.
+These runs are unpaired and have different suite contention; this cannot
+establish that the larger sample is faster or quantify its added latency.
+The earlier 10:29 twelve-city cache was 584.8 seconds, illustrating that
+load difference. No speed verdict or new heavy timing run is claimed.
+
+The deterministic work increase is twelve extra founding paths to month
+600 and twenty-four extra 240-month twins: **5,760 extra post-branch city
+months**, plus those twelve founding paths. The city comparison core doubles
+from twelve to twenty-four; the rest of CentralBankCheck is unchanged.
+
+After this successful run, only these notes and the ship file advance.
+The kept-run marker is added while readiness remains provisional; removing
+the provisional marker is the last, separate commit.

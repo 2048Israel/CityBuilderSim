@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CB2-20261115-110411 -->
 ## changelog
 ### CB2 — The central bank and monetary checks re-measured — 2026-11-15, ready, no tag (harness), see docs/queue/CB2-notes.md
 CentralBankCheck measures 24 founding shapes instead of 12; all hold on
