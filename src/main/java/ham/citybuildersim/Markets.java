@@ -171,12 +171,15 @@ public final class Markets {
         for (Sector s : sectors.all()) s.buyConsumables();
         // ...and what each works will make, so what it orders is for that and no more (WN3; Sector, THE ORDER): before anything is made or bought.
         for (Sector s : sectors.all()) s.planOrders();
+        LicenceFees.Production licences = game != null && game.foundedUnfitted() ? new LicenceFees.Production(game) : null;
 
         // 1. the flow goods are made
         for (Sector s : sectors.all()) {
+            if (licences != null) licences.before(s, false);
             for (Good g : s.goodsMade()) {
                 if (!g.stockable() && g.traded()) s.produceFlow(g);
             }
+            if (licences != null) licences.made(s, false);
         }
 
         // 2. the seller-priced goods
@@ -204,15 +207,16 @@ public final class Markets {
 
         // 4. into the warehouses, for next month
         for (Sector s : sectors.all()) {
+            if (licences != null) licences.before(s, true);
             for (Good g : s.goodsMade()) {
                 if (g.stockable() && g.traded()) s.produceStock(g, markets.get(g));
             }
+            if (licences != null) licences.made(s, true);
         }
 
-        // R2c: capture the IP service bill on the production just made, before
-        // the sectors choose next month's mix/run. Its pending ledger settles
-        // at the next strike, with the same import and MoneyAudit window.
-        if (game != null) LicenceFees.charge(game);
+        // The producers already captured their bills. Only book those frozen
+        // numbers here, before the next mix/run is chosen.
+        if (licences != null) licences.finish();
 
         // 5. the month's loose ends
         for (Sector s : sectors.all()) s.endOfMonth(game);

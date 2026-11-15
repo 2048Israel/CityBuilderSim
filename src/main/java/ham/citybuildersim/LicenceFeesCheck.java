@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import ham.citybuildersim.sectors.SpreadPlanner;
 import ham.citybuildersim.sectors.Refining;
 import ham.citybuildersim.sectors.RefineryFlow;
+import ham.citybuildersim.sectors.Mining;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.List;
@@ -199,8 +200,8 @@ public final class LicenceFeesCheck {
                 reached && LicenceFees.payable("PE1", g.getMonth(), g.getResearch()));
         check("the installed furnace accrues positive royalties on that standing gain despite the losing additional-unit appraisal",
                 reached && bill > 0);
-        // A standing planner also loses the standing royalty. Removing only
-        // patent status must raise that read even though the prospective
+        // A standing planner also loses the standing royalty. Clearing only
+        // its captured memo must raise that read even though the prospective
         // appraisal already has a loss and therefore carries no royalty.
         Map<Integer, Double> captured = g.licenceFeesForSave();
         g.restoreLicenceFees(Map.of());
@@ -266,6 +267,87 @@ public final class LicenceFeesCheck {
         check("fixture: the caster's enabling recipe adds positive output", added > 0);
         check("fitting counts its gain less exactly one licence fee",
                 added > 0 && near(verdict.gain(), added * (1 - LicenceFees.SHARE)));
+    }
+
+    static void exhaustedDispatch() throws Exception {
+        System.out.println("--- 8. a patented mine's profitable final dispatch still owes its royalty (REV-R2c-4) ---");
+        Game g = town("licence-last-ore", true);
+        ResearchCheck.atMonth(g, ResearchCatalog.knownFrom("E4"));
+        LandManager land = g.getLandManager();
+        Deposit.FieldType mag = Deposit.FieldType.MAGNETITE;
+        quietly(() -> {
+            for (int n = 0; n < 300 && land.getSites(Resource.IRON, mag) == 0; n++) {
+                LandParcel offer = land.getMarket().richest(Resource.IRON);
+                if (offer == null) {
+                    Deposit field = LandCheck.nearestUnowned(g.getCityLand(), Resource.IRON);
+                    if (field == null) break;
+                    offer = MiningCheck.nearestOffer(land.getMarket(), field.x(), field.y());
+                }
+                if (offer == null) break;
+                land.buyParcel(offer.getId(), 1e12, g.getMonth());
+            }
+            g.buildStack(g.getBuildingManager().getTemplate(Mining.MAGNETITE_MINE), 1, true);
+            MaterialsCheck.handWorkers(g);
+            // Keep the owned fields fixed; another sector buying a parcel
+            // containing fresh magnetite would undo the exhausted premise.
+            for (Sector sector : g.getSectors().all()) g.getBusinessInvestment().holdSector(sector.key());
+            // Leave one tonne of concentrate in the real typed field. Dear
+            // ore makes even that last dispatch profitable after full costs.
+            land.extract(Resource.IRON, mag, Math.max(0, land.getRemaining(Resource.IRON, mag) - 3));
+            g.getMarkets().get(Good.IRON).setWorldPrices(
+                    1e9 * Good.IRON.worldImportPrice(), 1e9 * Good.IRON.worldExportPrice());
+        });
+        var firm = g.getSectors().mining();
+        BuildingsTemplate mine = g.getBuildingManager().getTemplate(Mining.MAGNETITE_MINE);
+        quietly(() -> g.simulateMonths(1));
+        Sector.Output row = firm.output(Good.IRON);
+        double made = row.produced + row.captive + row.exportBound;
+        double bill = firm.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        Map<Integer, Double> captured = g.licenceFeesForSave();
+        g.restoreLicenceFees(Map.of());
+        double rate = made / mine.makes(Good.IRON);
+        var plans = g.getBusinessInvestment();
+        double gain = ham.citybuildersim.sectors.ProcessingSector.grossStanding(mine, SpreadPlanner.values(g.getMarkets()), rate)
+                - plans.standingRunningCostOf(mine) - plans.standingCostOf(firm, mine)
+                - SpreadPlanner.ownCosts(mine, rate, g.getMarkets().getExchangeRate(), g.getEconomyManager().getPricePerWatt())
+                - firm.freightRunning(mine, rate);
+        g.restoreLicenceFees(captured);
+        boolean reached = made > 0 && firm.isWorkedOut(mine)
+                && gain > 0 && LicenceFees.payable("E4", g.getMonth(), g.getResearch());
+        check("fixture: the patented magnetite mine actually dispatches its last ore profitably and exhausts its typed field", reached);
+        check("that final positive dispatch accrues a royalty despite no ore remaining at capture", reached && bill > 0);
+        quietly(() -> {
+            // A different, unpatented type keeps the sector producing next
+            // month. Its aggregate iron row must not pay for the empty mine.
+            for (int n = 0; n < 300 && land.getSites(Resource.IRON, Deposit.FieldType.HEMATITE) == 0; n++) {
+                LandParcel offer = land.getMarket().richest(Resource.IRON);
+                if (offer == null) {
+                    Deposit field = LandCheck.nearestUnowned(g.getCityLand(), Resource.IRON);
+                    if (field == null) break;
+                    offer = MiningCheck.nearestOffer(land.getMarket(), field.x(), field.y());
+                }
+                if (offer == null) break;
+                land.buyParcel(offer.getId(), 1e12, g.getMonth());
+            }
+            g.buildStack(g.getBuildingManager().getTemplate(Mining.IRON_MINE), 1, true);
+            MaterialsCheck.handWorkers(g);
+            // Parcels bought for hematite can contain fresh magnetite too.
+            // Exhaust that new ground before the second month's condition.
+            land.extract(Resource.IRON, mag, land.getRemaining(Resource.IRON, mag));
+        });
+        quietly(() -> g.simulateMonths(1));
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        double paid = firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        check("the final dispatch's saved bill pays next month and both accounts close", reached && bill > 0
+                && near(paid, bill) && Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved())
+                && near(g.getForeignAccounts().currentAccount(), audit.currentAccount()));
+        check("unpatented hematite really produces next month without a new royalty on the exhausted magnetite works",
+                firm.output(Good.IRON).produced > 1 && firm.isWorkedOut(mine)
+                && firm.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) == 0);
+        System.out.printf("   hematite works %d, sites %d, output %.9f, pending %.9f%n",
+                g.getBuildingManager().getQuantity(Mining.IRON_MINE), land.getSites(Resource.IRON, Deposit.FieldType.HEMATITE),
+                firm.output(Good.IRON).produced, firm.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0));
+        System.out.printf("   final ore %.9f, positive gain %.9f, accrued %.9f, paid %.9f%n", made, gain, bill, paid);
     }
 
     static void reviewRegressions() throws Exception {
@@ -397,6 +479,11 @@ public final class LicenceFeesCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        if (args.length == 1 && args[0].equals("exhausted")) {
+            exhaustedDispatch();
+            System.out.printf("%d passed, %d FAILED%n", passes, fails);
+            System.exit(fails == 0 ? 0 : 1);
+        }
         if (args.length == 1 && args[0].equals("standing")) {
             standingValue();
             System.out.printf("%d passed, %d FAILED%n", passes, fails);
@@ -408,6 +495,7 @@ public final class LicenceFeesCheck {
         reviewRegressions();
         dispatchedGain();
         standingValue();
+        exhaustedDispatch();
         System.out.println("--- 7. the nonzero flow survives saves and reads ---");
         check("DataSave and HistorySave JSON and the load restorers keep the paid flow", saveChecks());
         check("repeated screen and planner reads keep the paid flow and every money pool still", readChecks());

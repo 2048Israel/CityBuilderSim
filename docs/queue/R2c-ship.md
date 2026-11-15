@@ -8,7 +8,8 @@ date. Local discoveries and unpatented entries are free. IP charges leave the
 firm's accounts as imported services in the same month's money audit and
 foreign current account. Production's bill is saved for the next strike,
 including last-term production paid after expiry; saved statements and
-monthly history retain the paid flow.
+monthly history retain paid and accrued flows. Saved per-building amounts
+keep standing planner costs identical through a load.
 Planners and fitting compare gains less the licence fee. Positive-payment,
 expiry, exemption, equal-gain ranking and nonzero save/read fixtures cover it.
 

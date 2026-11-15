@@ -276,3 +276,61 @@ comparison was then tightened from monetary tolerance to exact equality of
 standing net and memo: LicenceFeesCheck remains 37/37, exit 0
 (target/checks/R2c-exact-loaded.log). The ALL pick is reserved for the
 coordinated normal gate, not duplicated locally.
+
+## REV-R2c-4: freeze each producer's own production bill
+
+The review found that checking isWorkedOut after groundLimit read the ground
+AFTER the profitable final lift. The last magnetite dispatch therefore owed
+nothing. This is the same state-boundary class as the earlier run change.
+
+- ★ A market-pass Production record freezes each kind's whole Bill immediately
+  after its own sector's output loop. Flow kinds are captured after its flow
+  goods; stock kinds and refinery conversion units after its stock goods.
+  No other producer, clearing, endOfMonth, endOrders or next-month decision
+  intervenes. finish only books immutable owner/id/quantity/amount records
+  and publishes their memo; it rereads no economics. Pending settlement
+  remains at the next strike.
+- ★ Flow extraction uses the actual opening-to-closing typed ground lift,
+  not later ore availability or a sector-wide output supplied by another
+  field type. Static nameplate, dig and installed counts allocate that lift
+  among the works on that type. No installed gain path asks whether ground
+  is worked out, or appraises an additional building.
+- ★ Prices and trade splits are the producer boundary's values, frozen into
+  its bill at production, rather than revalued by a later clearing. Later
+  readers use the saved memo. Default cities create no Production record.
+
+State audit by kind (all current private patented catalogue paths):
+
+| Kind | Production figures and other inputs captured | Why there is no changed-state gap |
+|---|---|---|
+| E4 magnetite mines/complexes | Actual typed rock lifted between the sector's before/made hooks; site dig, same-type nameplate and counts; wages, utilities, repairs, tax, consumables and freight; standing output/input values | Hooks bracket only this sector's flow loop. Depletion is measured dispatch, never a later zero-ore veto. Hematite cannot supply magnetite's fee. |
+| E14 forestry operations | Actual forest lifted by that flow loop, divided over standing crews' combined sawlog/pulpwood nameplate; rate and standing costs/values | The cut is already made. Salvage cannot masquerade as a fresh field lift. Planting and next forest state occur after the bill is frozen. |
+| E12 leach/SX-EW and other stock extractors | Produced/export-bound/captive rows and capacity; actual operating rate; standing costs/values | madeAtRate has physically limited output to the ground. Capture follows its stock loop, before endOfMonth depletes or changes the field. No remaining-ground query determines this bill. |
+| PE1/E13 steel, E4 pelletising, PE4 cement; E1/E9 recipes/fittings | Actual produced/export-bound/captive share of capacity; standing values, wages, utilities, repairs, tax, own inputs and existing freight/off-market-feed costs; recipe and fitted counts | Captured after the producer's complete output phase. No additional-unit feed appraisal is read; no later market or next run can alter the numeric Bill. |
+| B2 contact centres and other ordinary private traded makers | Actual output share, capacity and operating rate; standing values and costs | Captured directly after flow output; later sales and clearing cannot revalue the frozen number. |
+| PE27/PE11/E7/PE25/PE23 refinery conversion units | Kind's actual dispatched feed, installed feed capacity, current flow/rate, stream spread, wages/utilities/standing costs | Captured directly after its stock loop. Crude run/mix and tanks are not struck anew until endOfMonth; no later flow() call is used for payment or standing reads. |
+
+Common inputs are month and Research catalogue/local-found status, installed
+quantities, recipes and fitted counts, wage/tariff and exchange schedules,
+policy/property costs and freight quotes. Game applies these before Markets;
+the producer loop changes none. Goods' prices and trade tallies are read
+only at that producer boundary and reduced to the numeric Bill before
+another loop can change them. There is no mutable economic frame left for
+finish or next month's strike. Public works/berths remain R2c-P.
+
+The final exhausted-field fixture dispatches one tonne of concentrate from
+the final three tonnes of magnetite rock, with independently positive
+standing gain 2206895.359928730. It accrues and pays 746450.937943978;
+MoneyAudit and the foreign current account close. A second month actually
+makes 3996.840203359 tonnes from unpatented hematite while magnetite stays
+empty, accruing no new magnetite royalty. Acquiring hematite can buy parcels
+containing new magnetite, so the fixture explicitly exhausts that new ground
+before the second month and holds quantities/land purchases fixed. This
+causes the empty-type premise instead of assuming it.
+
+On b9a75e7a's unchanged LicenceFees and Markets classes, the final fixture is
+2 passed / 2 FAILED: its profitable final dispatch occurs, but accrual and
+payment are zero (target/checks/R2c-last-ore-before-final.log). The new model
+is 41/41, exit 0 (target/checks/R2c-production-frame-final.log), including all
+prior boundaries, planners, audits and exact normal scratch save/load.
+No RT2 changed method was edited.

@@ -7,6 +7,10 @@ import ham.citybuildersim.sectors.ExtractionSector;
 import ham.citybuildersim.sectors.SpreadPlanner;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The patent rent on discoveries imported by a city founded the 1900 way.
@@ -70,14 +74,14 @@ public final class LicenceFees {
     // thread, so simultaneous screen reads still price their own licences.
     private static final ThreadLocal<Boolean> pricing = ThreadLocal.withInitial(() -> false);
 
-    private static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing) {
+    private static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing, double rate) {
         int accrualMonth = game.getMonth();
         if (!payable(t.getSinceText(), accrualMonth, game.getResearch())
                 || (standing && !game.getResearch().known(t.getSinceText(), game.getMonth()))) return 0;
         boolean nested = pricing.get();
         pricing.set(true);
         try {
-            double gain = standing ? installedBuildingGain(game, t, owner)
+            double gain = standing ? installedBuildingGain(game, t, owner, rate)
                     : owner.estimatedMonthlyProfit(t, game.getBusinessInvestment());
             return onGain(t.getSinceText(), accrualMonth, game.getResearch(), gain);
         } finally {
@@ -86,15 +90,13 @@ public final class LicenceFees {
     }
 
     /** Every installed kind uses removal/standing values, never an additional-building appraisal. */
-    private static double installedBuildingGain(Game game, BuildingsTemplate t, Sector owner) {
+    private static double installedBuildingGain(Game game, BuildingsTemplate t, Sector owner, double rate) {
         if (owner instanceof Refining ref && t.refineryUnit() != null) return installedUnitGain(game, t, ref);
-        double rate = productionRate(t, owner);
         if (!(rate > 0)) return 0;
         if (owner instanceof ProcessingSector works) return works.lastEarnsAt(t, rate);
         BusinessInvestment plans = game.getBusinessInvestment();
         SpreadPlanner.Values values = SpreadPlanner.values(game.getMarkets());
-        double gross = owner instanceof ExtractionSector mine && mine.isWorkedOut(t) ? 0
-                : ProcessingSector.grossStanding(t, values, rate);
+        double gross = ProcessingSector.grossStanding(t, values, rate);
         double freight = owner instanceof ExtractionSector mine ? mine.freightRunning(t, rate)
                 : ProcessingSector.cityLegs(t, rate, owner.legPrice());
         return gross - plans.standingRunningCostOf(t) - plans.standingCostOf(owner, t)
@@ -152,13 +154,13 @@ public final class LicenceFees {
     }
 
     /** One building with this recipe and these pieces, at its owner's run rate. */
-    private static double one(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Set<String> fitted, boolean standing) {
-        double bill = buildingFee(game, t, owner, standing);
+    private static double one(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Set<String> fitted, boolean standing, double dispatchRate) {
+        double bill = buildingFee(game, t, owner, standing, dispatchRate);
         Set<String> charged = new HashSet<>();
         charged.add(t.getSinceText());
         Recipes.Prices prices = Recipes.pricesOf(game);
         int accrualMonth = game.getMonth();
-        double rate = Math.max(0, Math.min(1, standing ? productionRate(t, owner) : owner.getOperatingRate()));
+        double rate = Math.max(0, Math.min(1, standing ? dispatchRate : owner.getOperatingRate()));
         if (recipe != null && charged.add(recipe.getSince()) && recipe.knownAt(game.getMonth(), game.getResearch())) {
             bill += standing ? standingRecipeFee(game, t, recipe, prices, rate)
                     : recipeFee(t, recipe, accrualMonth, prices, game.getResearch()) * rate;
@@ -183,7 +185,7 @@ public final class LicenceFees {
         }
         Recipe recipe = Recipes.best(t, t.recipePieceId() == null || fitted.contains(t.recipePieceId()),
                 game.getMonth(), Recipes.pricesOf(game), game.getResearch());
-        return one(game, t, owner, recipe, fitted, false);
+        return one(game, t, owner, recipe, fitted, false, 0);
     }
 
     /** The installed building's saved share of the last production's captured royalty. */
@@ -194,40 +196,100 @@ public final class LicenceFees {
     }
 
     /**
-     * Capture the production's bill before endOfMonth chooses the next run,
-     * mix or prices. The pending imported-service ledger carries it to the
-     * next strike, including a save between the two. Liability belongs to
-     * production's patent window: its last month's bill survives expiry;
-     * production after expiry accrues nothing.
-     * A shared entry (the tractor and its recipe) is paid once.
+     * One market pass's production record, confined to that pass. Each kind's
+     * whole bill is frozen immediately after its producer makes its output;
+     * finish() only books those numbers. Later clearing, depletion, run/mix
+     * choices or prices cannot revalue them. Default cities create no record.
      */
-    public static void charge(Game game) {
-        if (!game.foundedUnfitted()) return;
-        java.util.Map<Integer, Double> captured = new java.util.TreeMap<>();
-        for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) {
-            BuildingsTemplate t = stack.getBuilding();
-            Sector owner = game.getSectors().byKey(t.getSector());
-            if (owner == null || stack.getQuantity() <= 0 || !(owner.getOperatingRate() > 0)) continue;
-            double bill = stackBill(game, stack, owner);
-            if (bill > 0) {
-                captured.put(t.getId(), bill / stack.getQuantity());
-                owner.bookLicenceFee(bill);
+    static final class Production {
+        private record Ground(Resource resource, Deposit.FieldType type) { }
+        private record Bill(Sector owner, int id, int quantity, double amount) { }
+        private final Game game;
+        private final Map<Sector, List<BuildingsStacks>> owned = new HashMap<>();
+        private final Map<Ground, Double> beforeGround = new HashMap<>();
+        private final List<Bill> bills = new ArrayList<>();
+
+        Production(Game game) {
+            this.game = game;
+            for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) {
+                Sector owner = game.getSectors().byKey(stack.getBuilding().getSector());
+                if (owner != null && stack.getQuantity() > 0) owned.computeIfAbsent(owner, k -> new ArrayList<>()).add(stack);
             }
         }
-        game.restoreLicenceFees(captured);
+
+        /** A conversion unit makes streams in the refinery's stock phase. */
+        private static boolean stockPhase(BuildingsTemplate t) {
+            return t.refineryUnit() != null || t.goodsMade().keySet().stream().anyMatch(g -> g.stockable() && g.traded());
+        }
+
+        private Ground ground(ExtractionSector owner, BuildingsTemplate t) {
+            BuildingsTemplate.Site site = t.site();
+            return new Ground(owner.resource(), site != null && site.resource() == owner.resource() ? site.type() : null);
+        }
+
+        /** Flow mines/cutters remove the ground inside production. Save its opening position, never its later availability. */
+        void before(Sector owner, boolean stock) {
+            if (stock || !(owner instanceof ExtractionSector mine)) return;
+            beforeGround.clear();
+            for (BuildingsStacks stack : owned.getOrDefault(owner, List.of())) {
+                BuildingsTemplate t = stack.getBuilding();
+                if (stockPhase(t)) continue;
+                Ground key = ground(mine, t);
+                beforeGround.putIfAbsent(key, game.getLandManager().getRemaining(key.resource(), key.type()));
+            }
+        }
+
+        /** The real typed lift divided among the works that made it, including a field's last dispatch. */
+        private double flowExtractionRate(ExtractionSector owner, BuildingsTemplate t) {
+            Ground key = ground(owner, t);
+            double lifted = Math.max(0, beforeGround.getOrDefault(key, 0.0)
+                    - game.getLandManager().getRemaining(key.resource(), key.type()));
+            double askedAtNameplate = 0;
+            for (BuildingsStacks stack : owned.getOrDefault(owner, List.of())) {
+                BuildingsTemplate other = stack.getBuilding();
+                if (stockPhase(other) || !ground(owner, other).equals(key)) continue;
+                BuildingsTemplate.Site site = other.site();
+                double dig = site != null && site.resource() == owner.resource() ? site.dig() : 1;
+                for (var e : other.goodsMade().entrySet()) {
+                    if (!e.getKey().stockable() && e.getKey().traded()) askedAtNameplate += e.getValue() * stack.getQuantity() * dig;
+                }
+            }
+            return askedAtNameplate > 0 ? Math.min(owner.getOperatingRate(), lifted / askedAtNameplate) : 0;
+        }
+
+        /** Called directly after this sector's output loop; capture all money inputs before any other producer or next-month choice. */
+        void made(Sector owner, boolean stock) {
+            for (BuildingsStacks stack : owned.getOrDefault(owner, List.of())) {
+                BuildingsTemplate t = stack.getBuilding();
+                if (stockPhase(t) != stock || !(owner.getOperatingRate() > 0)) continue;
+                double rate = !stock && owner instanceof ExtractionSector mine ? flowExtractionRate(mine, t) : productionRate(t, owner);
+                double bill = stackBill(game, stack, owner, rate);
+                if (bill > 0) bills.add(new Bill(owner, t.getId(), stack.getQuantity(), bill));
+            }
+        }
+
+        /** Book immutable production bills once, into the pending imported-service ledger for the next strike. */
+        void finish() {
+            Map<Integer, Double> memo = new java.util.TreeMap<>();
+            for (Bill bill : bills) {
+                bill.owner().bookLicenceFee(bill.amount());
+                memo.put(bill.id(), bill.amount() / bill.quantity());
+            }
+            game.restoreLicenceFees(memo);
+        }
     }
 
-    private static double stackBill(Game game, BuildingsStacks stack, Sector owner) {
+    private static double stackBill(Game game, BuildingsStacks stack, Sector owner, double rate) {
         boolean nested = pricing.get();
         pricing.set(true);
         try {
-            return rawStackBill(game, stack, owner);
+            return rawStackBill(game, stack, owner, rate);
         } finally {
             pricing.set(nested);
         }
     }
 
-    private static double rawStackBill(Game game, BuildingsStacks stack, Sector owner) {
+    private static double rawStackBill(Game game, BuildingsStacks stack, Sector owner, double rate) {
         BuildingsTemplate t = stack.getBuilding();
         double total = 0;
         String[] ids = t.runningRecipeIds();
@@ -238,7 +300,7 @@ public final class LicenceFees {
             Recipe recipe = t.getRecipe(ids[part]);
             Set<String> fitted = new HashSet<>();
             if (part == 0 && t.recipePieceId() != null) fitted.add(t.recipePieceId());
-            double bill = one(game, t, owner, recipe, fitted, true) * count;
+            double bill = one(game, t, owner, recipe, fitted, true, rate) * count;
             if (bill > 0) total += bill;
         }
         // Other pieces have independent fitted counts.
@@ -249,7 +311,7 @@ public final class LicenceFees {
             int count = stack.getQuantity() - stack.getUnfitted(piece.getId());
             double bill = onGain(piece.getSince(), game.getMonth(), game.getResearch(),
                     EquipmentFit.grossGainOf(game, t, piece)) * count
-                    * Math.max(0, Math.min(1, owner.getOperatingRate()));
+                    * Math.max(0, Math.min(1, rate));
             if (bill > 0) total += bill;
         }
         return total;
