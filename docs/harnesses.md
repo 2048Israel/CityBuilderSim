@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**208 harness files, 24,383 labelled assertions.** AllChecks runs 208 of them.
+**208 harness files, 24,393 labelled assertions.** AllChecks runs 208 of them.
 
 ## Which harnesses read which class
 
@@ -123,7 +123,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, GoldMiningCheck, GoldStandardCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, FormatsCheck, LandCheck, MoneySignCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
 | [FoundingName](map/FoundingName.md) | NewGameCheck |
 | [FoundingScreen](map/FoundingScreen.md) | **none** |
 | [Freight](map/Freight.md) | BuildCardCheck, EquipmentCheck, FittingCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckRouteCheck, WorldDataCheck |
@@ -268,7 +268,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [RealDollar](map/RealDollar.md) | PriceLevelCheck, RankingsCheck, RealDollarCheck |
 | [RealEstate](map/RealEstate.md) | DiscoveryCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, PopulationCheck, ReadPathCheck, RoadCheck, StaffingDrawCheck, WageLadderCheck |
 | [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, LicenceFeesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
-| [RecipeChange](map/RecipeChange.md) | RecipeCheck |
+| [RecipeChange](map/RecipeChange.md) | PostwarRecipeCheck, RecipeCheck |
 | [RecipeChanges](map/RecipeChanges.md) | HistoricalLicenceCheck, PostwarRecipeCheck, RecipeCheck |
 | [Recipes](map/Recipes.md) | DiscoveryCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck |
 | [Recording](map/Recording.md) | ReplayCheck, SaveFileCheck |
@@ -22900,7 +22900,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2328 ...and never falls as the tonnes rise nor leaves 0 to 1; with step() the kind at its berths' month shows full
   - L2344 painting the large box's picture (a full container yard, RAIL \| OPEN_LOW \| TRAIN) takes no more than HarbourYard.PICTURE_MS (0.5 ms)
 
-## PostwarRecipeCheck.java - 23 labelled assertions
+## PostwarRecipeCheck.java - 33 labelled assertions
 
 > The postwar engineering and business discoveries run their sourced earlier
 > figures, compose in either order, retain saved decisions and leave default
@@ -22911,7 +22911,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 > compiled model and data, using this branch's source JSON as its oracle.
 
 - **L39 1. every postwar undo on its standing template crosses its own month**
-  - L81 all 28 postwar template changes were exercised
+  - L81 all 27 postwar template changes were exercised
 - **L117 3. zeolite affects catalytic cracking and leaves thermal cracking at 0.24**
   - L130 thermal before both discoveries stays at 0.24, order
   - L134 first discovery has only its process-scoped yield, order
@@ -22936,10 +22936,23 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L332 fixture: the new plant's own long kiln pays at the positive coal price
   - L334 the absent old fleet does not suppress a new plant's paying prerequisite and preheater
   - L339 a half-fitted long-kiln fleet gives the preheater only its available prerequisite share
-- **L372 2. two entries compose in either fitting or discovery order**
-  - L373 Vehicle Works
-  - L374 Steel Mini-Mill
-  - L375 Commercial Bank
+- **L378 8. every scoped pair prices its actual transition in both learning orders**
+  - L425 all ten scoped template pairs ran in both learning orders
+- **L429 9. lime uses its own sourced figures and a rotary-first cement loss earns no royalty**
+  - L443 E2's cement-only source adds no lime preheater or lime recipe change
+  - L445 Lime Kiln PE4 credits exactly its real positive transition, 5400 to3600 coal tonnes
+  - L463 fixture: the shipped rotary-first calibration rises from6160 to the exact7106.06 wet form
+  - L466 PE4's fitting gain is that real negative difference, including the activated E2 undo
+  - L470 the losing rotary-first refit is refused and the new plant appraises the same loss
+  - L481 positive real cement production in PE4's patent period pays no rent on the losing refit
+- **L487 10. an actually completed new plant leaves the losing long kiln unfitted**
+  - L503 fixture: a real new Cement Plant was ordered onto a site in the partial calibration window
+  - L507 the completed plant takes the paying rotary kiln and leaves the losing PE4 and unknown E2 off
+  - L511 that new plant runs6160 coal tonnes, avoiding the946.06-tonne increase
+- **L527 2. two entries compose in either fitting or discovery order**
+  - L528 Vehicle Works
+  - L529 Steel Mini-Mill
+  - L530 Commercial Bank
 
 ## PriceLevelCheck.java - 75 labelled assertions
 

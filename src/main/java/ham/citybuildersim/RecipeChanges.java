@@ -22,12 +22,16 @@ public final class RecipeChanges {
     /** Saved recipe decisions only; equipment remains on the stack's own counts. */
     static String choose(BuildingsTemplate t, String base, int month, Research found, Recipes.Prices p) {
         StringBuilder id = new StringBuilder(base);
+        Map<String, Double> absent = new TreeMap<>();
+        for (RecipeChange c : t.getRecipeChanges()) absent.put(c.code(), c.knownAt(month, found) ? 0.0 : 1.0);
         for (RecipeChange c : t.getRecipeChanges()) {
             if (c.piece() != null) continue;
             boolean known = c.knownAt(month, found);
-            double gross = known ? gain(t, c, p) : 0;
-            if (!known || gross - LicenceFees.onGain(c.since(), month, found, gross) < 0)
+            double gross = known ? gain(t, c, p, absent, base(t, base)) : 0;
+            if (!known || gross - LicenceFees.onGain(c.since(), month, found, gross) < 0) {
                 id.append('~').append(c.code());
+                absent.put(c.code(), 1.0);
+            }
         }
         return id.toString();
     }
@@ -161,41 +165,119 @@ public final class RecipeChanges {
         return gainOf(game, t, piece, false);
     }
 
-    /** A new building prices prerequisites among its own paying pieces. */
-    static double gainOf(Game game, BuildingsTemplate t, Equipment piece, boolean newBuilding) {
-        return t.getRecipeChanges().stream().filter(c -> piece.getId().equals(c.piece()))
-                .mapToDouble(c -> gain(t, c, Recipes.pricesOf(game)) * prerequisiteShare(game, t, c, newBuilding)).sum();
+    /** The actual process with this entry present minus the process without it. */
+    static double gainOf(Game game, BuildingsTemplate t, RecipeChange entry) {
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        return gain(t, entry, absences(game, t, false), missing -> running(game, t, missing, false),
+                recipe -> Recipes.value(recipe, prices), c -> extraValue(t, c, prices, t.feedPerMonth()));
     }
 
-    /** Independent equipment counts supply the available prerequisite fraction. */
-    private static double prerequisiteShare(Game game, BuildingsTemplate t, RecipeChange change, boolean newBuilding) {
-        if (change.after() == null) return 1;
-        RecipeChange prior = t.getRecipeChanges().stream().filter(c -> c.code().equals(change.after())).findFirst().orElseThrow();
-        if (!prior.knownAt(game.getMonth(), game.getResearch())) return 0;
-        if (prior.piece() == null) {
-            String choice = newBuilding ? choose(t, t.defaultRecipe().getId(), game.getMonth(), game.getResearch(), Recipes.pricesOf(game))
-                    : t.runningRecipeIds()[0];
-            return has(choice, prior.code()) ? 0 : 1;
+    /** Rent on the actual equipment selected for a proposed new building. */
+    static double gainForNew(Game game, BuildingsTemplate t, Equipment piece, Recipe recipe, java.util.Set<String> fitted) {
+        Map<String, Double> absent = absences(game, t, true);
+        for (RecipeChange change : t.getRecipeChanges()) {
+            if (change.piece() != null) absent.put(change.code(), fitted.contains(change.piece()) ? 0.0 : 1.0);
+            else absent.put(change.code(), has(recipe.getId(), change.code()) ? 1.0 : 0.0);
         }
-        if (newBuilding) return EquipmentFit.verdictForNew(game, t, t.getEquipment(prior.piece())).kind() == EquipmentFit.Kind.PAYS ? 1 : 0;
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        Recipe process = base(t, recipe.getId());
+        double total = 0;
+        for (RecipeChange change : t.getRecipeChanges()) if (piece.getId().equals(change.piece()))
+            total += gain(t, change, prices, absent, process);
+        return total;
+    }
+
+    /** A new building prices prerequisites among its own paying pieces. */
+    static double gainOf(Game game, BuildingsTemplate t, Equipment piece, boolean newBuilding) {
+        Map<String, Double> absent = absences(game, t, newBuilding);
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        double total = 0;
+        for (RecipeChange change : t.getRecipeChanges()) {
+            if (!piece.getId().equals(change.piece())) continue;
+            if (!newBuilding) {
+                total += gainOf(game, t, change);
+                continue;
+            }
+            Map<String, Double> context = new TreeMap<>(absent);
+            if (newBuilding && change.after() != null) {
+                RecipeChange prior = t.getRecipeChanges().stream().filter(c -> c.code().equals(change.after())).findFirst().orElseThrow();
+                if (prior.piece() != null && EquipmentFit.verdictForNew(game, t, t.getEquipment(prior.piece())).kind() != EquipmentFit.Kind.PAYS)
+                    context.put(prior.code(), 1.0);
+            }
+            total += gain(t, change, context, missing -> running(game, t, missing, newBuilding),
+                    recipe -> Recipes.value(recipe, prices), c -> extraValue(t, c, prices, t.feedPerMonth()));
+        }
+        return total;
+    }
+
+    /** The missing fractions in the actual fleet or a new building's known process. */
+    private static Map<String, Double> absences(Game game, BuildingsTemplate t, boolean newBuilding) {
         BuildingsStacks stack = game.getBuildingManager().getStack(t);
-        return stack == null || stack.getQuantity() == 0 ? 1 : 1 - (double) stack.getUnfitted(prior.piece()) / stack.getQuantity();
+        int quantity = stack == null ? 0 : stack.getQuantity();
+        int unfitted = stack == null || t.recipePieceId() == null ? 0 : Math.min(quantity, stack.getUnfitted(t.recipePieceId()));
+        String[] ids = t.runningRecipeIds();
+        if (newBuilding) {
+            String selected = Recipes.best(t, true, game.getMonth(), Recipes.pricesOf(game), game.getResearch()).getId();
+            selected = choose(t, selected, game.getMonth(), game.getResearch(), Recipes.pricesOf(game));
+            ids = new String[] {selected, selected};
+        }
+        Map<String, Double> absent = new TreeMap<>();
+        for (RecipeChange c : t.getRecipeChanges()) {
+            double missing;
+            if (!c.knownAt(game.getMonth(), game.getResearch())) missing = 1;
+            else if (c.piece() != null) missing = newBuilding || quantity == 0 ? 0
+                    : (double) Math.min(quantity, stack.getUnfitted(c.piece())) / quantity;
+            else if (newBuilding || quantity == 0) missing = has(ids[0], c.code()) ? 1 : 0;
+            else missing = ((quantity - unfitted) * (has(ids[0], c.code()) ? 1.0 : 0)
+                    + unfitted * (has(ids[1], c.code()) ? 1.0 : 0)) / quantity;
+            absent.put(c.code(), missing);
+        }
+        return absent;
+    }
+
+    /** Recompose the unrounded process mix at the counterfactual missing fractions. */
+    private static Recipe running(Game game, BuildingsTemplate t, Map<String, Double> absent, boolean newBuilding) {
+        if (newBuilding) {
+            Recipe selected = Recipes.best(t, true, game.getMonth(), Recipes.pricesOf(game), game.getResearch());
+            return compose(t, selected, absent, selected.getId());
+        }
+        BuildingsStacks stack = game.getBuildingManager().getStack(t);
+        int quantity = stack == null ? 0 : stack.getQuantity();
+        int unfitted = stack == null || t.recipePieceId() == null ? 0 : Math.min(quantity, stack.getUnfitted(t.recipePieceId()));
+        String[] ids = t.runningRecipeIds();
+        return compose(t, base(t, ids[0]), quantity - unfitted, base(t, ids[1]), unfitted, absent, ids[0]);
     }
 
     /** The benefit of removing this undo at the stated prices, without mutating a template. */
     public static double gain(BuildingsTemplate t, RecipeChange c, Recipes.Prices p) {
-        Recipe modern = t.defaultRecipe();
-        Recipe old = compose(t, modern, Map.of(c.code(), 1.0), modern.getId());
-        double gain = Recipes.value(modern, p) - Recipes.value(old, p);
-        gain -= c.production() * (t.getCategory() == BuildingType.WATER ? p.pricePerWaterUnit() : p.pricePerWatt());
-        if (c.steamRail() != 0) {
-            double litres = t.getRailCapacity() * ham.citybuildersim.sectors.Freight.FUEL_LITRES_PER_TONNE;
-            gain += c.steamRail() * litres * (RAIL_COAL_TONNES_PER_DIESEL_LITRE * p.good().applyAsDouble(Good.THERMAL_COAL)
-                    - p.good().applyAsDouble(Good.DIESEL));
-        }
-        if (c.crackerPetrol() != 0)
-            gain -= c.crackerPetrol() * t.feedPerMonth() * (p.good().applyAsDouble(Good.PETROL) - p.good().applyAsDouble(Good.FUEL_OIL));
-        return gain;
+        return gain(t, c, p, Map.of(), t.defaultRecipe());
+    }
+
+    private static double gain(BuildingsTemplate t, RecipeChange c, Recipes.Prices p, Map<String, Double> absent, Recipe base) {
+        return gain(t, c, absent, missing -> compose(t, base, missing, base.getId()),
+                recipe -> Recipes.value(recipe, p), change -> extraValue(t, change, p, t.feedPerMonth()));
+    }
+
+    /** One counterfactual for choices, fitting, appraisal and captured rent, including every scoped dependent. */
+    private static double gain(BuildingsTemplate t, RecipeChange entry, Map<String, Double> absent,
+                               java.util.function.Function<Map<String, Double>, Recipe> recipes,
+                               java.util.function.ToDoubleFunction<Recipe> value,
+                               java.util.function.ToDoubleFunction<RecipeChange> extras) {
+        Map<String, Double> without = new TreeMap<>(absent), with = new TreeMap<>(absent);
+        without.put(entry.code(), 1.0);
+        with.put(entry.code(), 0.0);
+        double result = value.applyAsDouble(recipes.apply(with)) - value.applyAsDouble(recipes.apply(without));
+        for (RecipeChange change : t.getRecipeChanges())
+            result += (share(change, with) - share(change, without)) * extras.applyAsDouble(change);
+        return result;
+    }
+
+    private static double extraValue(BuildingsTemplate t, RecipeChange c, Recipes.Prices p, double crackerFeed) {
+        double litres = t.getRailCapacity() * ham.citybuildersim.sectors.Freight.FUEL_LITRES_PER_TONNE;
+        return c.production() * (t.getCategory() == BuildingType.WATER ? p.pricePerWaterUnit() : p.pricePerWatt())
+                - c.steamRail() * litres * (RAIL_COAL_TONNES_PER_DIESEL_LITRE * p.good().applyAsDouble(Good.THERMAL_COAL)
+                        - p.good().applyAsDouble(Good.DIESEL))
+                + c.crackerPetrol() * crackerFeed * (p.good().applyAsDouble(Good.PETROL) - p.good().applyAsDouble(Good.FUEL_OIL));
     }
 
     /** Imported rent on independent recipe changes actually used by this part of a stack. */
@@ -203,46 +285,34 @@ public final class RecipeChanges {
                             boolean standing, double rate, java.util.Set<String> charged) {
         if (recipe == null || !(rate > 0)) return 0;
         Recipes.Prices prices = Recipes.pricesOf(game);
+        Map<String, Double> absent = absences(game, t, !standing);
+        for (RecipeChange c : t.getRecipeChanges()) if (c.piece() == null)
+            absent.put(c.code(), has(recipe.getId(), c.code()) ? 1.0 : 0.0);
+        Recipe process = base(t, recipe.getId());
+        var values = ham.citybuildersim.sectors.SpreadPlanner.values(game.getMarkets());
+        double feed = t.feedPerMonth();
+        Recipes.Prices extraPrices = prices;
+        if (standing && owner instanceof ham.citybuildersim.sectors.Refining ref) {
+            var kind = ham.citybuildersim.sectors.RefineryFlow.Kind.CRACKER;
+            double capacity = ref.unitFeed(false)[kind.ordinal()];
+            feed = capacity > 0 ? ref.flow().run(kind) * t.feedPerMonth() / capacity : 0;
+            double[] city = ref.cityValues();
+            extraPrices = prices.withGoods(good -> city[good.ordinal()]);
+        }
+        final double actualFeed = feed;
+        final Recipes.Prices extra = extraPrices;
         double bill = 0;
         for (RecipeChange c : t.getRecipeChanges()) {
             if (c.piece() != null || has(recipe.getId(), c.code())
                     || c.after() != null && has(recipe.getId(), c.after())
                     || !c.knownAt(game.getMonth(), game.getResearch())
                     || !LicenceFees.payable(c.since(), game.getMonth(), game.getResearch()) || !charged.add(c.since())) continue;
-            double gain;
-            if (c.crackerPetrol() != 0 && owner instanceof ham.citybuildersim.sectors.Refining ref) {
-                var kind = ham.citybuildersim.sectors.RefineryFlow.Kind.CRACKER;
-                double capacity = ref.unitFeed(false)[kind.ordinal()];
-                double used = t.feedPerMonth();
-                double priceDifference = prices.good().applyAsDouble(Good.PETROL) - prices.good().applyAsDouble(Good.FUEL_OIL);
-                if (standing) {
-                    used = capacity > 0 ? ref.flow().run(kind) * t.feedPerMonth() / capacity : 0;
-                    double[] values = ref.cityValues();
-                    priceDifference = values[Good.PETROL.ordinal()] - values[Good.FUEL_OIL.ordinal()];
-                }
-                Map<String, Double> without = new TreeMap<>();
-                for (String code : recipe.getId().split("~")) without.put(code, 1.0);
-                double current = petrol(t, without);
-                without.put(c.code(), 1.0);
-                gain = (current - petrol(t, without)) * used * priceDifference * rate;
-            } else if (standing) {
-                Recipe old = compose(t, recipe, Map.of(c.code(), 1.0), recipe.getId());
-                var values = ham.citybuildersim.sectors.SpreadPlanner.values(game.getMarkets());
-                gain = standingValue(recipe, prices, values, rate) - standingValue(old, prices, values, rate);
-            } else {
-                gain = gain(t, c, prices) * rate;
-            }
-            bill += LicenceFees.onGain(c.since(), game.getMonth(), game.getResearch(), gain);
+            double benefit = gain(t, c, absent, missing -> compose(t, process, missing, process.getId()),
+                    r -> standing ? standingValue(r, prices, values, rate) : Recipes.value(r, prices) * rate,
+                    change -> extraValue(t, change, extra, actualFeed) * rate);
+            bill += LicenceFees.onGain(c.since(), game.getMonth(), game.getResearch(), benefit);
         }
         return bill;
-    }
-
-    /** Petrol yield at the saved decisions, including a later catalyst's process scope. */
-    private static double petrol(BuildingsTemplate template, Map<String, Double> absent) {
-        double yield = .55;
-        for (RecipeChange change : template.getRecipeChanges())
-            yield += share(change, absent) * change.crackerPetrol();
-        return yield;
     }
 
     /** R2c's standing price roles: dispatched goods and consumables, fixed posts and utilities. */

@@ -5,7 +5,7 @@ No known-reds entry names R2e at the fork.
 
 ## Built and design calls
 
-28 signed changes use R2d's immutable modern anchor, saved missing-change
+27 signed changes use R2d's immutable modern anchor, saved missing-change
 flags, unfitted equipment counts and one rounding. E19/E20 open Panel Mill
 and Wood Pellet Mill. The 91-entry catalogue appends both permanent codes.
 
@@ -28,7 +28,7 @@ Each crew mapping below is an explicit estimate.
 | Entry | Earlier form, source and estimate |
 |---|---|
 | E1 | R1c/R2d already supply sourced Bessemer/open-hearth alternatives and E1's modern converter. Keep that process/price choice. |
-| E2 | Study [T32,T34], wet 7.0 vs preheater 3.0-3.6 GJ/t. Midpoint 3.3 scales modern coal. Lime tonnes proxy clinker. E2 is scoped after PE4 to preserve its calibrated 1900 total, as recorded below. |
+| E2 | Study [T32,T34], wet 7.0 vs preheater 3.0-3.6 GJ/t. Midpoint 3.3 scales modern coal. Cement templates only; the lime proxy was removed after source review. E2 is scoped after PE4 to preserve its calibrated 1900 total, as recorded below. |
 | E3 | [T21] gives water depth 30 vs 120-150 m, no comparable well-output ratio. Pending because the model lacks depth. |
 | E4/E5/E6/E7 | Existing building gates already open pellets, container terminal, desalination and hydrocrackers. [T12], [T53,T54], [T52], [T30,T31] respectively. Keep modern figures when available. |
 | E8 | [T57], also NIST publication 820148, torch-on 30% vs 90%. Unskilled assembly posts proxy welding crew, old x3 after PE13. No source partitions the plant crew. |
@@ -222,3 +222,70 @@ EquipmentCheck, LicenceFeesCheck and FittingCheck run all pass.
 PostwarRecipeCheck remains102/102, main56/98, pre-mend9/102.
 Final --fast exits0 with zero firm Stale. Source and record files are LF.
 The scope/appraisal mends add no new pending or known-red row.
+
+## Second review, real counterfactual gains
+
+REV-R2e-2 ofcec6e0c96 found that a prerequisite's isolated delta ignored
+the scoped dependent activated by fitting it. One shared counterfactual
+now composes the actual process with the entry present and absent,
+including every scoped dependent, then values the physical difference.
+Choice, fitting, new-plant appraisal and production royalties read it.
+R2c's standing price/dispatch roles stay at the valuation boundary.
+The process mix is recomposed unrounded on both sides.
+
+★ T32/T34 measure cement clinker, without a lime-kiln ratio. E2 is
+removed from Lime Kiln; its PE4 figure stays. Final count is27 undos.
+This replaces the earlier study-table lime proxy. Mail182625 accepts it.
+
+★ The rotary-first Cement Plant calibration stays for R1d to judge.
+R1c rotary fitted, PE4 absent consumes6160 t coal. PE4 present while E2
+is absent consumes3350 *7/3.3 =7106.060606 t. The real PE4 gain in that
+partial state is negative, so its refit is refused and it earns no
+royalty. Recalibrating R2d or R1c is outside this batch's accepted call.
+The ship adds one Pending row recommending PE4 be defined against the
+rotary state, so rotary-known/PE4-unknown burns the study's30% and every
+step improves; leaving the calibration is the other choice.
+
+New controls cover Lime's real before/after, every scoped template pair
+in both learning orders, the partial state's negative fitting/appraisal
+gain and zero royalty on positive production. A real new Cement Plant
+order/completion also checks which pieces it takes in that window.
+
+E2's catalogue touches now names the two cement templates. That is the
+only correction to an original89 catalogue row; the earlier exact
+original-row comparison predates this source correction. Its date, work,
+fee and codes are unchanged. The study's table named lime, but the cited
+cement-clinker sources give no lime ratio.
+
+The first counterfactual run passes170/170. cec6e0c96's exact retained
+classes/data fail13/170, including positive-production PE4 rent4686.37
+on a loss and the actually completed new plant taking the bad long kiln.
+The mended completion takes rotary, leaves PE4/E2 unfitted and runs6160
+coal, so the real new-build path avoids the946.06-tonne increase.
+
+Self-review strengthened every scoped-pair accounting fixture by first
+playing its wage market for three months and asserting both production
+crew wages positive. Zero wages must not hide a crew-gain mismatch.
+The final count and counterfactual failures below will include those
+explicit price premises.
+
+The strengthened fixtures pass190/190. Exact cec6e0c96 classes/data
+fail22/190, including every one of the ten scoped template pairs on
+actual positive wage/commodity prices. Whole main fails81/126; new
+catalogue/pair assertions are guarded only by their explicit data
+presence premises. Evidence remains in before/check.log and
+review2-before/check.log. No fixture reports success through zero crew
+prices; all20 explicit wage-price premises pass.
+
+A real new Cement Plant order completes through the ordinary month and
+fitWhatFinished path. It takes the paying rotary kiln and leaves the
+losing long kiln and unknown preheater unfitted. It runs6160 t coal,
+avoiding the946.06-tonne increase. Known pieces are judged by their real
+gain at completion. No forced-known fit rule was introduced.
+
+Final exact-source regression is green in all ten serial named harnesses
+(Postwar190, HistoricalRecipe120, HistoricalLicence80, Recipe,
+Equipment, Research207, Discovery, BuildingData, LicenceFees43, Fitting).
+The final fast rebuild exits0 with zero firm Stale. No source changes
+follow this run before the new mend review. Logs remain in
+target/R2e-evidence/focused.

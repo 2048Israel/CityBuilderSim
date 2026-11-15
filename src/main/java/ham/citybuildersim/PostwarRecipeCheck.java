@@ -78,7 +78,7 @@ public final class PostwarRecipeCheck {
                 count++;
             }
         }
-        check("all 28 postwar template changes were exercised", count == 28, "rows " + count);
+        check("all 27 postwar template changes were exercised", count == 27, "rows " + count);
     }
 
     static void pair(String name, String firstCode, String firstPiece, String secondCode, String secondPiece) throws Exception {
@@ -357,6 +357,161 @@ public final class PostwarRecipeCheck {
         }
     }
 
+    static double entryGain(Game game, BuildingsTemplate template, RecipeChange entry) throws Exception {
+        try {
+            var method = RecipeChanges.class.getDeclaredMethod("gainOf", Game.class, BuildingsTemplate.class, RecipeChange.class);
+            method.setAccessible(true);
+            return ((Number) method.invoke(null, game, template, entry)).doubleValue();
+        } catch (NoSuchMethodException before) {
+            return entry.piece() == null ? RecipeChanges.gain(template, entry, Recipes.pricesOf(game))
+                    : EquipmentFit.grossGainOf(game, template, template.getEquipment(entry.piece()));
+        }
+    }
+
+    static double actualValue(BuildingsTemplate template, Recipes.Prices prices) {
+        return Recipes.value(Recipe.topLevelOf(template), prices)
+                + template.crackerPetrol() * template.feedPerMonth()
+                * (prices.good().applyAsDouble(Good.PETROL) - prices.good().applyAsDouble(Good.FUEL_OIL));
+    }
+
+    static void everyScopedGain(JsonObject data) throws Exception {
+        out.println("--- 8. every scoped pair prices its actual transition in both learning orders ---");
+        int pairs = 0;
+        for (JsonElement item : data.getAsJsonArray("buildings")) {
+            JsonObject definition = item.getAsJsonObject();
+            if (!definition.has("recipeChanges")) continue;
+            for (JsonElement raw : definition.getAsJsonArray("recipeChanges")) {
+                JsonObject row = raw.getAsJsonObject();
+                if (!row.has("after")) continue;
+                String code = row.get("entry").getAsString(), priorCode = row.get("after").getAsString();
+                String name = definition.get("name").getAsString();
+                for (boolean childFirst : new boolean[] {false, true}) {
+                    Game game = HistoricalLicenceCheck.town("R2e-pair-gain-" + name + code + childFirst, true);
+                    BuildingsTemplate template = game.getBuildingManager().getTemplateByName(name);
+                    RecipeCheck.stand(game, template, 4, new int[1]);
+                    BuildingsStacks stack = game.getBuildingManager().getStack(template);
+                    RecipeChange child = template.getRecipeChanges().stream().filter(c -> c.code().equals(code)).findFirst().orElse(null);
+                    RecipeChange prior = template.getRecipeChanges().stream().filter(c -> c.code().equals(priorCode)).findFirst().orElse(null);
+                    check(name + "/" + code + " fixture has both scoped changes, order " + childFirst, child != null && prior != null, "");
+                    if (child == null || prior == null) continue;
+                    at(game, 1);
+                    knownExcept(game, Set.of(code, priorCode));
+                    fitted(template, stack);
+                    for (RecipeChange entry : List.of(child, prior))
+                        if (entry.piece() != null) stack.setUnfitted(entry.piece(), stack.getQuantity());
+                    priceForBothReaders(game, Good.PETROL, 4);
+                    priceForBothReaders(game, Good.FUEL_OIL, .001);
+                    run(game);
+                    check(name + "/" + code + " values real paid production crews, order " + childFirst,
+                            Recipes.pricesOf(game).wages()[JobType.NO_DIPLOMA.ordinal()] > 0
+                                    && Recipes.pricesOf(game).wages()[JobType.DIPLOMA.ordinal()] > 0, "");
+                    List<RecipeChange> order = childFirst ? List.of(child, prior) : List.of(prior, child);
+                    for (int step = 0; step < order.size(); step++) {
+                        RecipeChange learned = order.get(step);
+                        Recipes.Prices prices = Recipes.pricesOf(game);
+                        double before = actualValue(template, prices);
+                        knownExcept(game, step == 0 ? Set.of(order.get(1).code()) : Set.of());
+                        if (learned.piece() != null) stack.setUnfitted(learned.piece(), 0);
+                        run(game);
+                        double actual = actualValue(template, prices) - before;
+                        double quoted = entryGain(game, template, learned);
+                        check(name + "/" + learned.code() + " gain equals its actual before/after including scoped dependents, order " + childFirst,
+                                HistoricalLicenceCheck.near(quoted, actual), quoted + " vs " + actual);
+                    }
+                }
+                pairs++;
+            }
+        }
+        check("all ten scoped template pairs ran in both learning orders", pairs == 10, "pairs " + pairs);
+    }
+
+    static void kilnAccounting() throws Exception {
+        out.println("--- 9. lime uses its own sourced figures and a rotary-first cement loss earns no royalty ---");
+        Game game = HistoricalLicenceCheck.town("R2e-kiln-accounting", true);
+        knownExcept(game, Set.of("PE4", "E2"));
+        at(game, ResearchCatalog.knownFrom("PE4"));
+        BuildingsTemplate lime = HistoricalLicenceCheck.stand(game, "Lime Kiln", 1);
+        BuildingsStacks limeStack = game.getBuildingManager().getStack(lime);
+        limeStack.setUnfitted("long-kiln", limeStack.getQuantity());
+        run(game);
+        double before = actualValue(lime, Recipes.pricesOf(game));
+        double oldCoal = lime.uses(Good.THERMAL_COAL);
+        limeStack.setUnfitted("long-kiln", 0);
+        run(game);
+        double actual = actualValue(lime, Recipes.pricesOf(game)) - before;
+        double quoted = EquipmentFit.grossGainOf(game, lime, lime.getEquipment("long-kiln"));
+        check("E2's cement-only source adds no lime preheater or lime recipe change",
+                lime.getEquipment("preheater") == null && lime.getRecipeChanges().stream().noneMatch(c -> c.code().equals("E2")), "");
+        check("Lime Kiln PE4 credits exactly its real positive transition, 5400 to3600 coal tonnes",
+                oldCoal == 5400 && lime.uses(Good.THERMAL_COAL) == 3600 && actual > 0
+                        && HistoricalLicenceCheck.near(quoted, actual), quoted + " vs " + actual);
+
+        BuildingsTemplate cement = HistoricalLicenceCheck.stand(game, "Cement Plant", 1);
+        BuildingsStacks cementStack = game.getBuildingManager().getStack(cement);
+        cementStack.setUnfitted("long-kiln", cementStack.getQuantity());
+        cementStack.setUnfitted("preheater", cementStack.getQuantity());
+        priceForBothReaders(game, Good.THERMAL_COAL, 100);
+        priceForBothReaders(game, Good.CEMENT, 10000);
+        run(game);
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        before = actualValue(cement, prices);
+        oldCoal = cement.uses(Good.THERMAL_COAL);
+        cementStack.setUnfitted("long-kiln", 0);
+        run(game);
+        actual = actualValue(cement, prices) - before;
+        quoted = EquipmentFit.grossGainOf(game, cement, cement.getEquipment("long-kiln"));
+        check("fixture: the shipped rotary-first calibration rises from6160 to the exact7106.06 wet form",
+                oldCoal == 6160 && Math.abs(cement.uses(Good.THERMAL_COAL) - 3350 * 7 / 3.3) < 1e-9
+                        && actual < 0 && LicenceFees.payable("PE4", game.getMonth(), game.getResearch()), "coal " + cement.uses(Good.THERMAL_COAL));
+        check("PE4's fitting gain is that real negative difference, including the activated E2 undo",
+                quoted < 0 && HistoricalLicenceCheck.near(quoted, actual), quoted + " vs " + actual);
+        cementStack.setUnfitted("long-kiln", cementStack.getQuantity());
+        run(game);
+        check("the losing rotary-first refit is refused and the new plant appraises the same loss",
+                EquipmentFit.verdict(game, cementStack, cement.getEquipment("long-kiln")).kind() == EquipmentFit.Kind.NOT_YET
+                        && EquipmentFit.verdictForNew(game, cement, cement.getEquipment("long-kiln")).kind() == EquipmentFit.Kind.NOT_YET
+                        && LicenceFees.forNew(game, cement) == 0, "");
+        cementStack.setUnfitted("long-kiln", 0);
+        limeStack.setUnfitted("long-kiln", limeStack.getQuantity());
+        run(game);
+        var firm = game.getSectors().cementConcrete();
+        for (Good good : cement.goodsUsed().keySet()) firm.setPantry(good, 1e12);
+        silent(() -> game.simulateMonths(2));
+        double paid = firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        check("positive real cement production in PE4's patent period pays no rent on the losing refit",
+                firm.output(Good.CEMENT).produced > 0 && LicenceFees.payable("PE4", game.getMonth(), game.getResearch())
+                        && paid == 0, "made " + firm.output(Good.CEMENT).produced + ", fee " + paid);
+    }
+
+    static void newCementPlant() throws Exception {
+        out.println("--- 10. an actually completed new plant leaves the losing long kiln unfitted ---");
+        Game game = town("R2e-new-cement", true);
+        knownExcept(game, Set.of("PE4", "E2"));
+        at(game, ResearchCatalog.knownFrom("PE4"));
+        silent(() -> {
+            game.setCashForTest(Founding.WEALTHY_CASH * 100);
+            game.buildStack(game.getBuildingManager().getTemplateByName("Construction Depot"), 4, true);
+            MaterialsCheck.handWorkers(game);
+        });
+        BuildingsTemplate cement = game.getBuildingManager().getTemplateByName("Cement Plant");
+        priceForBothReaders(game, Good.THERMAL_COAL, 100);
+        priceForBothReaders(game, Good.CEMENT, 10000);
+        run(game);
+        Game.BuildResult[] ordered = new Game.BuildResult[1];
+        silent(() -> ordered[0] = game.buildStack(cement, 1, false));
+        BuildingsStacks stack = game.getBuildingManager().getStack(cement);
+        check("fixture: a real new Cement Plant was ordered onto a site in the partial calibration window",
+                ordered[0] == Game.BuildResult.SUCCESS && stack != null && stack.getUnderConstruction() == 1, String.valueOf(ordered[0]));
+        if (stack == null) return;
+        int opened = FittingCheck.pressUntilOpen(game, stack, 120);
+        check("the completed plant takes the paying rotary kiln and leaves the losing PE4 and unknown E2 off",
+                opened == 1 && stack.getQuantity() >= 1 && stack.getUnfitted("rotary-kiln") == 0
+                        && stack.getUnfitted("long-kiln") == stack.getQuantity()
+                        && stack.getUnfitted("preheater") == stack.getQuantity(), "opened " + opened + ", long kilns unfitted " + stack.getUnfitted("long-kiln"));
+        check("that new plant runs6160 coal tonnes, avoiding the946.06-tonne increase",
+                opened == 1 && cement.uses(Good.THERMAL_COAL) == 6160, "coal " + cement.uses(Good.THERMAL_COAL));
+    }
+
     public static void main(String[] args) throws Exception {
         fails = checks = 0;
         RecipeCheck.out = out;
@@ -379,6 +534,9 @@ public final class PostwarRecipeCheck {
         licenceCapture("E11");
         licenceCapture("PE24");
         scopedStages();
+        everyScopedGain(data);
+        kilnAccounting();
+        newCementPlant();
         out.println(fails == 0 ? "All PostwarRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

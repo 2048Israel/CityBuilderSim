@@ -33,7 +33,7 @@
     "fee": true, "feeNote": "", "work": 444, "study": "research-design 4" },
   { "code": "E2", "name": "Preheater kiln", "field": "ENGINEERING", "kind": ["equipment"], "size": "equipment",
     "year": 1953, "month": 6, "monthKnown": false, "world": "1953, Beckum",
-    "touches": "Cement Plant, Lime Kiln",
+    "touches": "Cement Plant, Large Cement Plant",
     "effect": "fuel 7.0 GJ (wet) to 3.0-3.6 GJ a tonne of clinker", "sources": ["T32", "T34"],
     "needs": [], "requires": "dry raw meal",
     "fee": true, "feeNote": "", "work": 467, "study": "research-design 4" },

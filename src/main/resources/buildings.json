@@ -4773,16 +4773,6 @@
      },
      "work": 2884,
      "lifeMonths": 300
-    },
-    {
-     "id": "preheater",
-     "name": "Preheater",
-     "since": "E2",
-     "buys": {
-      "MACHINERY": 1076.194
-     },
-     "work": 2884,
-     "lifeMonths": 300
     }
    ],
    "recipeChanges": [
@@ -4795,17 +4785,6 @@
       }
      },
      "equipment": "long-kiln"
-    },
-    {
-     "entry": "E2",
-     "source": "research-design 4 E2 [T32,T34], EPA ENERGY STAR Cement Guide 2013 table 1: wet 7.0 vs preheater 3.0-3.6 GJ/t. R2e midpoint/mapping estimate 3.3, applied to modern coal at unchanged output; lime tonnes proxy clinker. Applies only after PE4; its independent 1900 coal figure is preserved when the long kiln is absent. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
-     "without": {
-      "uses": {
-       "THERMAL_COAL": 4036.363636363636
-      }
-     },
-     "equipment": "preheater",
-     "after": "PE4"
     }
    ]
   },

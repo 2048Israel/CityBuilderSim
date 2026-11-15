@@ -169,7 +169,7 @@ public final class LicenceFees {
         for (Equipment piece : t.getEquipment()) {
             if (!fitted.contains(piece.getId()) || !charged.add(piece.getSince()) || !piece.knownAt(game.getMonth(), game.getResearch())
                     || !payable(piece.getSince(), game.getMonth(), game.getResearch())) continue;
-            double gain = !standing && t.changeNeeds(piece.getId()) ? RecipeChanges.gainOf(game, t, piece, true)
+            double gain = !standing && t.changeNeeds(piece.getId()) ? RecipeChanges.gainForNew(game, t, piece, recipe, fitted)
                     : EquipmentFit.grossGainOf(game, t, piece);
             bill += onGain(piece.getSince(), accrualMonth, game.getResearch(), gain) * rate;
         }
