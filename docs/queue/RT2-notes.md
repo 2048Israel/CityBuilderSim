@@ -267,3 +267,20 @@ cases require exactly 0, 1 and 3 safe sales without weakening checks.
 The orchestrator declares the model final at 2cb4a7b1; RT2's new ensemble
 follows KD1's baseline (estimated 85 minutes from 04:40), with a go to follow.
 No heavy RT2 job runs during this hold.
+
+## R2b main update before the new ensemble
+
+R2b/main d8e9c12b (0.9.112) is merged on the orchestrator's 05:30 instruction.
+Own model remains the reviewed 2cb4a7b1. LongPlaytest auto-merges with the
+m8 power fixture intact; only generated indexes conflict and are regenerated.
+Its three-sector selection exits 0, with compile/maps and zero firm Stale
+findings; the unchanged whole money-fixture run also exits 0 and still causes
+both m8 flows. Logs: target/checks/rt2-r2b-sectors.txt and
+target/rt2-probes/money-r2b-final.txt.
+
+R2b's notes certify all eight default traces byte-identical to b49a6023.
+Its added ResearchViewCheck entries belong to R2b-V and R2b-J (filter premise
+and live-classifier derived counts); none names RT2 or RT1, and they remain
+separate. The orchestrator withdraws the R2b-specific trace-delivery request.
+RT2 will still retain its final default trace with its gate for the model
+comparison and future inspection. No new ensemble starts before the go.
