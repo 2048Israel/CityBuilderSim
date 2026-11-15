@@ -112,8 +112,7 @@ The final fast check passed with zero firm Stale findings. Maps were
 regenerated. Default trace unchanged by FP1, whose production changes are
 FundScreen and pure FundView getters. The model and month paths match
 main a309bf7f. No ensemble was run, as directed for this screen batch.
-The retained normal-route merge dry run follows, with cbs.parallel=1
-to keep one JVM-heavy harness at a time.
+The retained normal-route merge dry run uses the gate's default three workers.
 
 REV-FP1-1 returned SHIP on code/fixtures commit 52ba03d2, relayed by the
 orchestrator at 12:07 on 2026-11-15. The pushed provisional ship commit is
@@ -125,3 +124,10 @@ The orchestrator gave go at 12:25 after UP6b shipped. Main ade96cfb
 generated harness and README indexes and were resolved by regeneration.
 The merged fast check passed. The review approved FP1's own code at
 52ba03d2, and this merge adds the shipped UP6b changes.
+
+The first retained run, /tmp/cbs-gate-FP1-47pPzzsa, was stopped with
+tools/gate.sh --stop after compile. I had applied cbs.parallel=1 to the
+gate from the building-only restriction. The orchestrator requested the
+normal default and that override was removed. The run exited 130 with
+origin refs unmoved. Its owned native process tree was captured before
+stopping, and every captured owned PID was confirmed gone before relaunch.
