@@ -1545,18 +1545,20 @@ final class FundScreen {
                     : "Nothing matches \"" + query.trim() + "\".")));
             return;
         }
-        // Kept (KP5): a row is a scope keyed by the security it shows, a section's head by the section, and what the list says only
-        // sometimes is a scope of its own.
+        // FP1 keeps a result row in its place when the market changes its securities. Every field and click target is set again.
+        // Section heads and the lines said only sometimes have scopes of their own.
         String section = null;
         boolean anyBond = all.stream().anyMatch(h -> FundView.BOND.equals(h.kind()));
         int shown = Math.min(searchRows, all.size());
-        for (Found f : found(g, all.subList(0, shown))) {
+        List<Found> visible = found(g, all.subList(0, shown));
+        for (int row = 0; row < visible.size(); row++) {
+            Found f = visible.get(row);
             if (f.section() != null && !f.section().equals(section)) {
                 section = f.section();
                 final String head = section;
                 results.getChildren().add(Kept.scope("section:" + head, () -> groupHead(head)));
             }
-            results.getChildren().add(Kept.scope("found:" + f.key(), () -> foundRow(g, f)));
+            results.getChildren().add(Kept.scope("found:" + row, () -> foundRow(g, f)));
         }
         if (query.isBlank() && !anyBond && ("All".equals(filter) || "Bonds".equals(filter))) {
             results.getChildren().add(Kept.scope("noBonds", () -> groupHead(FundView.BONDS_SECTION)));

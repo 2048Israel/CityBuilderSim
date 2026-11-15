@@ -131,3 +131,41 @@ gate from the building-only restriction. The orchestrator requested the
 normal default and that override was removed. The run exited 130 with
 origin refs unmoved. Its owned native process tree was captured before
 stopping, and every captured owned PID was confirmed gone before relaunch.
+
+## The normal run's Search retention finding
+
+The retained default-worker run C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FP1-9NqHkkGn
+was of branch 4eca91edbccdf71cb114452be312437eab47ba5c and main
+ade96cfbd2ed1074b834dbfb0bf0a93f329f841b. It completed at 13:12 on
+2026-11-15, gate exit 0 and suite exit 3, with no unnamed lines.
+The suite's recorded reds were DeathRecordCheck, InvestCheck, KeptCheck,
+MapCheck, MoneyDatesCheck and ResearchViewCheck.
+
+FP1 was held despite that verdict. Search's first forty results changed
+members over a month, making 144 nodes and retaining 660, or 82.1%.
+Its fields and pictures matched new. KF63's broad retention-line cover
+classified the new failure as known. The other new paging/year checks
+passed. No cover was moved or added. The attempted stop found the run
+already complete, and its native ship process was confirmed gone.
+
+★ Search rows now keep their visible positions. Their words, marks,
+sparklines, colours and click targets are set from the current security
+on every draw. A changing result set keeps the row nodes while the result
+order remains FundView's. The 90% law stays hard.
+
+A new fixture replaces listed shares with bonds at the same row positions,
+checks the common row identities, compares all fields against a page built
+new, and clicks a reused row to prove it opens the current bond. It checks
+that the model stayed in the same month. It adds no simulated months and
+leaves the existing holding/ticket fixtures in place.
+
+The focused Fund replay passed every assertion after this mend, including
+the forced replacement, refreshed fields and current click target.
+The merged fast check passed with zero firm Stale findings.
+The replay is target/fp1/positions-pages.log. Its concurrent-PC costs were
+Search 26.9 ms kept / 80.0 new and Activity 56.4 / 95.0.
+
+★ KEPT_FUND_MS stays 92 from the five Activity readings above. Activity's
+code and the model's month path are unchanged by this Search-only mend.
+The replacement fixture advances no month. Search remains lighter than
+Activity in the post-mend replay.

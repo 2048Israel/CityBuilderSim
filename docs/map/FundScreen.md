@@ -1,4 +1,4 @@
-# FundScreen.java - 2,655 lines · 104 methods · 25 constants · interface
+# FundScreen.java - 2,657 lines · 104 methods · 25 constants · interface
 
 `ham/citybuildersim/ui/FundScreen.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -55,19 +55,19 @@
 | 1061 | · · since it began, by kind; closed |
 | 1066 | · · the doors |
 | 1483 | SEARCH - what can the fund buy, and what is it doing? |
-| 1634 | A SECURITY - what is it, what has it done, and what do we have in it? |
-| 1645 | · · the left: its head, its chart, its facts, its book, its record |
-| 1684 | · · the right: your position, and the ticket |
-| 1943 | · the ticket |
-| 1976 | · · buy or sell; by amount or by quantity |
-| 1995 | · · the figure and its steps |
-| 2036 | · · the price |
-| 2039 | · · the quote |
-| 2047 | · · the action |
-| 2060 | · · this security's orders: waiting, and on the book |
-| 2204 | ACTIVITY - what has the fund done, and what was done to it? |
-| 2318 | RULES & CASH - how does it run, and how do I move money? |
-| 2395 | · THE WITHDRAWAL (0.7.48, C2) |
+| 1636 | A SECURITY - what is it, what has it done, and what do we have in it? |
+| 1647 | · · the left: its head, its chart, its facts, its book, its record |
+| 1686 | · · the right: your position, and the ticket |
+| 1945 | · the ticket |
+| 1978 | · · buy or sell; by amount or by quantity |
+| 1997 | · · the figure and its steps |
+| 2038 | · · the price |
+| 2041 | · · the quote |
+| 2049 | · · the action |
+| 2062 | · · this security's orders: waiting, and on the book |
+| 2206 | ACTIVITY - what has the fund done, and what was done to it? |
+| 2320 | RULES & CASH - how does it run, and how do I move money? |
+| 2397 | · THE WITHDRAWAL (0.7.48, C2) |
 
 ## Constants
 
@@ -92,12 +92,12 @@
 | 1375 | `FundScreen.KINDS_INFO` | `"Each kind of holding since the fund began: what the city put into it(bought ...` | SINCE IT BEGAN, BY KIND's (i). |
 | 1488 | `FundScreen.FILTERS` | `{ "All", "Shares", "Bonds", "Held" }` | Search's chips. |
 | 1491 | `FundScreen.SEARCH_INFO` | `"Every company listed on the exchange, every business's bond still outstandin...` | Search's (i): the spec's D1. |
-| 1957 | `FundScreen.TICKET_INFO` | `"An order goes on the book at the next month's step, after every other partic...` | THE ORDER TICKET's (i). |
-| 2209 | `FundScreen.GROUPS` | `{ "All", FundView.TRADES, FundView.INCOME, FundView.MONEY, FundView.EVENTS }` | Activity's chips: every row, or one group of them (FundView.groupOf()). |
-| 2398 | `FundScreen.WITHDRAWAL_LADDER` | `520` | The withdrawal's ladder: the card runs the page's width, the dial at the left and what it would do beside it. |
-| 2416 | `FundScreen.WITHDRAWAL_CAVEAT` | `"next month's on the fund as it stands - its prices and what the book takes w...` | The withdrawal's caveat, under what it would do. |
-| 2418 | `FundScreen.WITHDRAWAL_CAVEAT_INFO` | `"Next month's withdrawal is struck on what the fund is worth at the top of " ...` | ...and the sentence behind it, its (i). |
-| 2541 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "...` | The rescue book's (i). |
+| 1959 | `FundScreen.TICKET_INFO` | `"An order goes on the book at the next month's step, after every other partic...` | THE ORDER TICKET's (i). |
+| 2211 | `FundScreen.GROUPS` | `{ "All", FundView.TRADES, FundView.INCOME, FundView.MONEY, FundView.EVENTS }` | Activity's chips: every row, or one group of them (FundView.groupOf()). |
+| 2400 | `FundScreen.WITHDRAWAL_LADDER` | `520` | The withdrawal's ladder: the card runs the page's width, the dial at the left and what it would do beside it. |
+| 2418 | `FundScreen.WITHDRAWAL_CAVEAT` | `"next month's on the fund as it stands - its prices and what the book takes w...` | The withdrawal's caveat, under what it would do. |
+| 2420 | `FundScreen.WITHDRAWAL_CAVEAT_INFO` | `"Next month's withdrawal is struck on what the fund is worth at the top of " ...` | ...and the sentence behind it, its (i). |
+| 2543 | `FundScreen.RESCUE_BOOK_INFO` | `"What the city holds from rescuing its bank: the shares it took when it " + "...` | The rescue book's (i). |
 
 ## Fields (state)
 
@@ -134,7 +134,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 2583 | **type** `final class FundScreen` | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with its average cost and P&L - a Search of the shares and bonds it can buy, ... |
+| 73 | 2585 | **type** `final class FundScreen` | The city's fund on the Finances tab, as a brokerage (0.7.39): its Portfolio - what it is worth, what it has made and on what, every holding with its average cost and P&L - a Search of the shares and bonds it can buy, ... |
 | 79 | 4 | `FundScreen(UserInterface ui, FinancesScreen fin)` |  |
 
 ### THE PAGES (lines 84-123)
@@ -252,80 +252,80 @@
 | 1432 | 34 | `VBox closedCard(Game g)` |  |
 | 1467 | 15 | `HBox closedRow(Closed c)` |  |
 
-### SEARCH - what can the fund buy, and what is it doing? (lines 1483-1633)
+### SEARCH - what can the fund buy, and what is it doing? (lines 1483-1635)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1497 | 38 | `void searchPage(VBox page)` |  |
-| 1537 | 35 | `void fillResults(Game g, VBox results)` | The results, refilled in place as the box is typed in (a redraw would lose the next key). |
-| 1573 | 47 | `HBox foundRow(Game g, Found f)` |  |
-| 1621 | 6 | `static Region spacer(double w)` |  |
-| 1629 | 4 | `static List<Integer> months(Game g, int n)` | The last `n` months of the history's axis, for a sparkline of n points. |
+| 1537 | 37 | `void fillResults(Game g, VBox results)` | The results, refilled in place as the box is typed in (a redraw would lose the next key). |
+| 1575 | 47 | `HBox foundRow(Game g, Found f)` |  |
+| 1623 | 6 | `static Region spacer(double w)` |  |
+| 1631 | 4 | `static List<Integer> months(Game g, int n)` | The last `n` months of the history's axis, for a sparkline of n points. |
 
-### A SECURITY - what is it, what has it done, and what do we have in it? (lines 1634-1942)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1638 | 64 | `void securityPage(VBox page)` |  |
-| 1704 | 11 | `static String windowMove(double[] series, List<Integer> axis, ChartModel window)` | The move over a chart's window, in ink: "▲ 4.3% over 10Y". |
-| 1717 | 21 | `TimeChart priceChart(Game g, int c)` | A company's price a share today, its fair value, and the fund's average cost, on City History's chart. |
-| 1740 | 23 | `VBox cashFlowCard(Game g, CorporateBond b)` | A bond's chart is what it still pays (the spec's D9): a column a calendar year, its coupons and its face, the fund's part solid. |
-| 1765 | 35 | `GridPane factsGrid(Game g, String key, List<String[]> facts)` | KEY STATS: eight tiles, four across; the market book against the cap as a bullet bar. |
-| 1802 | 38 | `Node bookCard(Game g, String key)` | THE BOOK: today's depth, asks over bids, a row a price level, each with what rests there. |
-| 1841 | 28 | `Node depthRow(Game g, OrderBook.Level l, boolean bid, double most, boolean bond)` |  |
-| 1871 | 14 | `VBox recordCard(Game g, String key)` | This security's own record: its newest SECURITY_ROWS lines. |
-| 1887 | 20 | `VBox positionCard(Game g, String key)` | YOUR POSITION. |
-| 1915 | 16 | `static HBox narrowLine(String label, String value, String tone)` | A line in the security page's right column, 412 at the 1,389 window: its words at the left and its figure at the right, both wrapping rather than cut - FinancesScreen.cardLine()'s figure is never cut, and a long quote... |
-| 1933 | 9 | `VBox stakeCard(Game g)` | The city's stake in its bank as a ring, with a door to the Bank tab's owners (the rescue book's card's, here too). |
-
-### the ticket (lines 1943-2203)
+### A SECURITY - what is it, what has it done, and what do we have in it? (lines 1636-1944)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1946 | 9 | `void resetTicket(String key)` | A new security's ticket: buy, by amount, nothing chosen, at fair value. |
-| 1970 | 95 | `VBox ticketCard(Game g, String key)` |  |
-| 2067 | 20 | `Node priceChips(Game g, String key, boolean bond)` | The price chips: fair value (the rule's ask; a bond's value, the rule's), the best bid, the best ask, the last trade, and a step of 1% of fair either way. |
-| 2089 | 13 | `static Map<String, String> priceChoices(Game g, String key)` | The price chips' words and the kind each picks: fair value (the rule's ask; a bond's value, the rule's price both ways) first, then the best bid, the best ask and the last trade where the book has them. |
-| 2104 | 7 | `static String[] ticketFigure(Game g, Ticket t, boolean bond, boolean byAmount, double amount)` | The ticket's figure in words, and the other unit it comes to: "D$1.0M" and "≈ 9.87 shares". |
-| 2113 | 15 | `void press(Game g, String key, Ticket t)` | The action button's press: review, then place. |
-| 2130 | 13 | `static void place(Game g, String key, boolean buy, Ticket t)` | Places the ticket's order through Game's own calls - what the reviewed press does (the probe's path too): a buy of the quote's money, a sale of its units, at the ticket's price (0 is fair value). |
-| 2145 | 27 | `VBox waitingFor(Game g, String key)` | The player's orders for one security - or all, with `key` null: waiting for the step, each with Cancel, and on the book, filled so far. |
-| 2173 | 5 | `static Label captionLine(String text)` |  |
-| 2179 | 9 | `HBox orderRow(String words, String act, Runnable go)` |  |
-| 2190 | 13 | `static String orderWords(Game g, TreasuryFund.HandOrder o, boolean posted)` | An order of the player's, in words: "Buy D$4.0M of Construction at fair value", or posted, "...: 0 of 39.47 filled". |
+| 1640 | 64 | `void securityPage(VBox page)` |  |
+| 1706 | 11 | `static String windowMove(double[] series, List<Integer> axis, ChartModel window)` | The move over a chart's window, in ink: "▲ 4.3% over 10Y". |
+| 1719 | 21 | `TimeChart priceChart(Game g, int c)` | A company's price a share today, its fair value, and the fund's average cost, on City History's chart. |
+| 1742 | 23 | `VBox cashFlowCard(Game g, CorporateBond b)` | A bond's chart is what it still pays (the spec's D9): a column a calendar year, its coupons and its face, the fund's part solid. |
+| 1767 | 35 | `GridPane factsGrid(Game g, String key, List<String[]> facts)` | KEY STATS: eight tiles, four across; the market book against the cap as a bullet bar. |
+| 1804 | 38 | `Node bookCard(Game g, String key)` | THE BOOK: today's depth, asks over bids, a row a price level, each with what rests there. |
+| 1843 | 28 | `Node depthRow(Game g, OrderBook.Level l, boolean bid, double most, boolean bond)` |  |
+| 1873 | 14 | `VBox recordCard(Game g, String key)` | This security's own record: its newest SECURITY_ROWS lines. |
+| 1889 | 20 | `VBox positionCard(Game g, String key)` | YOUR POSITION. |
+| 1917 | 16 | `static HBox narrowLine(String label, String value, String tone)` | A line in the security page's right column, 412 at the 1,389 window: its words at the left and its figure at the right, both wrapping rather than cut - FinancesScreen.cardLine()'s figure is never cut, and a long quote... |
+| 1935 | 9 | `VBox stakeCard(Game g)` | The city's stake in its bank as a ring, with a door to the Bank tab's owners (the rescue book's card's, here too). |
 
-### ACTIVITY - what has the fund done, and what was done to it? (lines 2204-2317)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2211 | 48 | `void activityPage(VBox page)` |  |
-| 2261 | 24 | `VBox activityRows(Game g, List<Act> rows)` | The months on show, with the rule's trades still opening to their lots. |
-| 2287 | 30 | `HBox actRow(Game g, Act a, boolean dated, String extra)` | One line of the record: what, by whom, units, money, realized, and "›" to its security; a grouped line opens. |
-
-### RULES & CASH - how does it run, and how do I move money? (lines 2318-2394)
+### the ticket (lines 1945-2205)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2326 | 22 | `void rulesPage(VBox page)` |  |
-| 2350 | 6 | `static String dialInfo()` | The dial's (i). |
-| 2358 | 36 | `VBox dialCard(Game g)` | THE DIAL: its share of the year's surplus, the steps, and what it reads against. |
+| 1948 | 9 | `void resetTicket(String key)` | A new security's ticket: buy, by amount, nothing chosen, at fair value. |
+| 1972 | 95 | `VBox ticketCard(Game g, String key)` |  |
+| 2069 | 20 | `Node priceChips(Game g, String key, boolean bond)` | The price chips: fair value (the rule's ask; a bond's value, the rule's), the best bid, the best ask, the last trade, and a step of 1% of fair either way. |
+| 2091 | 13 | `static Map<String, String> priceChoices(Game g, String key)` | The price chips' words and the kind each picks: fair value (the rule's ask; a bond's value, the rule's price both ways) first, then the best bid, the best ask and the last trade where the book has them. |
+| 2106 | 7 | `static String[] ticketFigure(Game g, Ticket t, boolean bond, boolean byAmount, double amount)` | The ticket's figure in words, and the other unit it comes to: "D$1.0M" and "≈ 9.87 shares". |
+| 2115 | 15 | `void press(Game g, String key, Ticket t)` | The action button's press: review, then place. |
+| 2132 | 13 | `static void place(Game g, String key, boolean buy, Ticket t)` | Places the ticket's order through Game's own calls - what the reviewed press does (the probe's path too): a buy of the quote's money, a sale of its units, at the ticket's price (0 is fair value). |
+| 2147 | 27 | `VBox waitingFor(Game g, String key)` | The player's orders for one security - or all, with `key` null: waiting for the step, each with Cancel, and on the book, filled so far. |
+| 2175 | 5 | `static Label captionLine(String text)` |  |
+| 2181 | 9 | `HBox orderRow(String words, String act, Runnable go)` |  |
+| 2192 | 13 | `static String orderWords(Game g, TreasuryFund.HandOrder o, boolean posted)` | An order of the player's, in words: "Buy D$4.0M of Construction at fair value", or posted, "...: 0 of 39.47 filled". |
 
-### THE WITHDRAWAL (0.7.48, C2) (lines 2395-2655)
+### ACTIVITY - what has the fund done, and what was done to it? (lines 2206-2319)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2401 | 13 | `static String withdrawalInfo()` | The withdrawal's (i). |
-| 2428 | 12 | `static String withdrawalWords(double rate)` | The withdrawal's status line (pure: the probe reads it): nothing at 0, Norway's rule at the default, and otherwise the year it makes - twelve times the rate, the rule's own arithmetic - and how soon, earning nothing, ... |
-| 2442 | 3 | `static String withdrawalShare(double rate)` | The withdrawal in a few words, as the page's head reads it: "0.25% of its worth a month". |
-| 2454 | 14 | `static java.util.function.DoubleFunction<List<Pieces.Effect>> withdrawalEffects(Game g)` | What the withdrawal would do at any value of its thumb (pure: the probe reads them), each PolicyPreview.fundWithdrawalAt() against the dial in force: next month's to the treasury, what its cash pays of it, the rest - ... |
-| 2470 | 13 | `VBox withdrawalCard(Game g)` | THE WITHDRAWAL (0.7.48, C2): the dial on a Levers card, as the fare's on Infrastructure - its reading, its status, the ladder, what it would do, and its Apply once staged. |
-| 2485 | 10 | `static String transferInfo(TreasuryFund fund)` | The transfer's (i): the withdrawal dial in force, read. |
-| 2497 | 42 | `VBox transferCard(Game g)` | TO THE TREASURY: last month's, paid and not, this year's, next month's, and what came in. |
-| 2546 | 15 | `VBox rescueBookCard(Game g)` | THE RESCUE BOOK: the city's stake in its bank as a ring, the book's lines, and the preferred's terms (0.7.39). |
-| 2563 | 15 | `static List<String> rescueTerms(Game g)` | The preferred's terms and its warrants', a line each (0.7.39). |
-| 2580 | 31 | `VBox moveCard(Game g)` | PAY IN, DRAW OUT: the amount and its steps (FinancesScreen.fundAsk), and the two moves. |
-| 2613 | 5 | `static Press payInPress(Game g, double ask)` | PAY IN's press: choose, nothing in the treasury, or what it would move. |
-| 2620 | 5 | `static Press drawOutPress(Game g, double ask)` | DRAW OUT's press: only the fund's free cash - not what the player's buys hold - can be drawn. |
-| 2627 | 12 | `static String capRule()` | THE RULE's sentence on the cap. |
-| 2641 | 14 | `VBox ruleCard(Game g)` | THE RULE: the shares against the aim, the cap in words, and the treasury's rescue setting. |
+| 2213 | 48 | `void activityPage(VBox page)` |  |
+| 2263 | 24 | `VBox activityRows(Game g, List<Act> rows)` | The months on show, with the rule's trades still opening to their lots. |
+| 2289 | 30 | `HBox actRow(Game g, Act a, boolean dated, String extra)` | One line of the record: what, by whom, units, money, realized, and "›" to its security; a grouped line opens. |
+
+### RULES & CASH - how does it run, and how do I move money? (lines 2320-2396)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2328 | 22 | `void rulesPage(VBox page)` |  |
+| 2352 | 6 | `static String dialInfo()` | The dial's (i). |
+| 2360 | 36 | `VBox dialCard(Game g)` | THE DIAL: its share of the year's surplus, the steps, and what it reads against. |
+
+### THE WITHDRAWAL (0.7.48, C2) (lines 2397-2657)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2403 | 13 | `static String withdrawalInfo()` | The withdrawal's (i). |
+| 2430 | 12 | `static String withdrawalWords(double rate)` | The withdrawal's status line (pure: the probe reads it): nothing at 0, Norway's rule at the default, and otherwise the year it makes - twelve times the rate, the rule's own arithmetic - and how soon, earning nothing, ... |
+| 2444 | 3 | `static String withdrawalShare(double rate)` | The withdrawal in a few words, as the page's head reads it: "0.25% of its worth a month". |
+| 2456 | 14 | `static java.util.function.DoubleFunction<List<Pieces.Effect>> withdrawalEffects(Game g)` | What the withdrawal would do at any value of its thumb (pure: the probe reads them), each PolicyPreview.fundWithdrawalAt() against the dial in force: next month's to the treasury, what its cash pays of it, the rest - ... |
+| 2472 | 13 | `VBox withdrawalCard(Game g)` | THE WITHDRAWAL (0.7.48, C2): the dial on a Levers card, as the fare's on Infrastructure - its reading, its status, the ladder, what it would do, and its Apply once staged. |
+| 2487 | 10 | `static String transferInfo(TreasuryFund fund)` | The transfer's (i): the withdrawal dial in force, read. |
+| 2499 | 42 | `VBox transferCard(Game g)` | TO THE TREASURY: last month's, paid and not, this year's, next month's, and what came in. |
+| 2548 | 15 | `VBox rescueBookCard(Game g)` | THE RESCUE BOOK: the city's stake in its bank as a ring, the book's lines, and the preferred's terms (0.7.39). |
+| 2565 | 15 | `static List<String> rescueTerms(Game g)` | The preferred's terms and its warrants', a line each (0.7.39). |
+| 2582 | 31 | `VBox moveCard(Game g)` | PAY IN, DRAW OUT: the amount and its steps (FinancesScreen.fundAsk), and the two moves. |
+| 2615 | 5 | `static Press payInPress(Game g, double ask)` | PAY IN's press: choose, nothing in the treasury, or what it would move. |
+| 2622 | 5 | `static Press drawOutPress(Game g, double ask)` | DRAW OUT's press: only the fund's free cash - not what the player's buys hold - can be drawn. |
+| 2629 | 12 | `static String capRule()` | THE RULE's sentence on the cap. |
+| 2643 | 14 | `VBox ruleCard(Game g)` | THE RULE: the shares against the aim, the cap in words, and the treasury's rescue setting. |
 

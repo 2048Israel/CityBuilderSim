@@ -5,6 +5,7 @@
 ### {next} — FP1, The fund's long lists a page at a time — 2026-11-15, ready, see docs/queue/FP1-notes.md
 The fund's Search shows forty results at first, with Show more adding forty
 and stating how many remain. Typing or choosing a chip starts it again.
+Search keeps its row nodes when the first page changes securities.
 Activity keeps its latest twelve months open and each earlier calendar year
 behind a fold, with its recorded month count and net realized gains plus
 income supplied by FundView. KeptCheck exercises paging, year folds and

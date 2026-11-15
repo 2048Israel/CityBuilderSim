@@ -4481,6 +4481,38 @@ public class KeptCheck {
         }));
         pageReshaped(g, bench, tab, 63, choices);
         fx(() -> {
+            int month = g.getMonth();
+            bench.fundPage("Search");
+            bench.fundSearch("", "Shares");
+            bench.drawKept(tab);
+            List<javafx.scene.layout.HBox> shares = fundResultRows(bench);
+            List<FundView.Hit> shareHits = FundView.search(g, "", "Shares");
+            check("the replacement fixture has listed shares on show", !shares.isEmpty() && !shareHits.isEmpty());
+            check("the replacement fixture presses the Bonds chip", bench.pressChip("Bonds"));
+            List<javafx.scene.layout.HBox> bonds = fundResultRows(bench);
+            List<FundView.Hit> bondHits = FundView.search(g, "", "Bonds");
+            check("the same row positions now show different securities", !shares.isEmpty() && !shareHits.isEmpty()
+                    && !bonds.isEmpty() && !bondHits.isEmpty()
+                    && !shareHits.get(0).key().equals(bondHits.get(0).key()));
+            int commonRows = Math.min(shares.size(), bonds.size());
+            boolean sameRows = commonRows > 0;
+            for (int row = 0; row < commonRows; row++) {
+                sameRows &= shares.get(row) == bonds.get(row);
+            }
+            check("replacing shares with bonds keeps every common row node", sameRows);
+            check("the replaced rows' fields equal a page built new", againstNew(bench, tab, true) == null);
+            if (!bonds.isEmpty() && !bondHits.isEmpty()) {
+                bonds.get(0).fireEvent(new javafx.scene.input.MouseEvent(javafx.scene.input.MouseEvent.MOUSE_CLICKED,
+                        5, 5, 5, 5, javafx.scene.input.MouseButton.PRIMARY, 1,
+                        false, false, false, false, true, false, false, false, false, true, null));
+                check("a reused row opens its current bond", has(bench.signature(), label(bondHits.get(0).name()))
+                        && bench.nodesOnPage().stream().noneMatch(n -> n instanceof javafx.scene.control.TextField box
+                        && "Search shares and bonds".equals(box.getPromptText())));
+            }
+            check("the replacement fixture leaves the model in the same month", g.getMonth() == month);
+            return null;
+        });
+        fx(() -> {
             bench.fundPage("Activity");
             bench.fundActivity("All", fundDial("ACTIVITY_MONTHS"));
             bench.fundFoldsClosed();
