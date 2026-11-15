@@ -658,3 +658,18 @@ source changes follow the 025601b7 default trace, so its eight identical
 CSVs remain the final-model comparison. The provisional ship marker stays.
 The orchestrator will review this harness delta; the replacement gate slot
 follows FP1 and XR7, after merging whatever main has reached then.
+
+
+The orchestrator read 73d4f89b and accepted the harness delta in mail
+20261115-143658-615-orchestrator-40b0: the tractor is absent before its
+find and required by its own row after, the binder comes from the
+catalogue, and the retention floors are unchanged. The replacement slot
+follows FP1's and XR7's dry runs, with current main merged first.
+
+Mail 20261115-144809-330-orchestrator-52e6 accepts capturing the eight
+default CSVs during R2d's replacement gate via the standard playtest.trace
+property. Only LongPlaytest.main opens those writers; no other harness
+calls it, and shared helpers guard unopened streams. The normal route,
+default workers and the gate's own selection stay unchanged. If XR7 has
+shipped, compare against its latest retained main prefix, since XR7 itself
+changes the world's pegs and default trace; no main rerun is needed.
