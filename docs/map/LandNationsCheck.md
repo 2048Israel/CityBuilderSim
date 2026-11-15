@@ -1,4 +1,4 @@
-# LandNationsCheck.java - 1,833 lines · 67 methods · 8 constants · harnesses
+# LandNationsCheck.java - 1,842 lines · 67 methods · 8 constants · harnesses
 
 `ham/citybuildersim/LandNationsCheck.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -121,13 +121,13 @@
 | 1535 | `final long block` |  |
 | 1536 | `int fault` |  |
 | 1537 | `int changes` |  |
-| 1813 | `static long frameChecksum` |  |
+| 1822 | `static long frameChecksum` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 84 | 1750 | **type** `public class LandNationsCheck` | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and how it moves, the seller of every plot of a real-Earth world and the... |
+| 84 | 1759 | **type** `public class LandNationsCheck` | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor and how it moves, the seller of every plot of a real-Earth world and the... |
 | 104 | 4 | `static void check(String label, boolean ok)` |  |
 | 109 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 114 | 5 | `static void quietly(Runnable r)` |  |
@@ -264,7 +264,7 @@
 | 1406 | 34 | `static void picksLifecycle(City c, ExecutorService worker, String where) throws Exception` | Exercise the screen's Picks path with a held worker queue and an owner-only completion queue. |
 | 1442 | 82 | `static void reviewCases(City c, ExecutorService worker, String where) throws Exception` | A pending pick cancelled by ordinary selection edits, and a level-changing purchase outside a retained draft. |
 
-### 14. A HOVER ACROSS MONTHS, POINTER MOVES AND FAILED WORK (lines 1524-1833)
+### 14. A HOVER ACROSS MONTHS, POINTER MOVES AND FAILED WORK (lines 1524-1842)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -277,8 +277,8 @@
 | 1574 | 3 | `static boolean hasPrice(List<String> words)` |  |
 | 1578 | 93 | `static void hoverLifecycle() throws Exception` |  |
 | 1672 | 18 | `static void hoverAdoption() throws Exception` |  |
-| 1691 | 37 | `static void hoverRealCancellation() throws Exception` |  |
-| 1729 | 31 | `static void hoverQueueWait() throws Exception` |  |
-| 1761 | 51 | `static void hoverCountPriority() throws Exception` |  |
-| 1816 | 17 | `static double hoverFrameMs(City city)` | The frame's transform, block lines and hover hit-tests, timed equally with and without a count out. |
+| 1691 | 46 | `static void hoverRealCancellation() throws Exception` |  |
+| 1738 | 31 | `static void hoverQueueWait() throws Exception` |  |
+| 1770 | 51 | `static void hoverCountPriority() throws Exception` |  |
+| 1825 | 17 | `static double hoverFrameMs(City city)` | The frame's transform, block lines and hover hit-tests, timed equally with and without a count out. |
 

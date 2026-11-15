@@ -17300,12 +17300,12 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1675 adoption premise: a stationary pointer has a quote out and its pricing card
   - L1680 adopting the map draft re-asks a stationary hover and replaces its pricing card with a price
   - L1687 the normal map reset delegates to the stationary-hover redraw lifecycle
-  - L1717 real cancellation premise: the level-12 river quote is still walking seller plots
-  - L1749 queue premise: the old block is already measuring
-  - L1769 priority premise: a level-12 quote crosses the parallel tile threshold
-  - L1799 frame premise: the level-12 count is out while the map's owner-thread geometry is timed
-  - L1807 the parallel count really walked rows and counted the block's unowned plots
-  - L1809 every row of a low-priority quote runs at low priority
+  - L1722 real cancellation premise: the level-12 river quote has reached seller rows and is still running
+  - L1758 queue premise: the old block is already measuring
+  - L1778 priority premise: a level-12 quote crosses the parallel tile threshold
+  - L1808 frame premise: the level-12 count is out while the map's owner-thread geometry is timed
+  - L1816 the parallel count really walked rows and counted the block's unowned plots
+  - L1818 every row of a low-priority quote runs at low priority
 
 ## LandlordPortCheck.java - 52 labelled assertions
 
