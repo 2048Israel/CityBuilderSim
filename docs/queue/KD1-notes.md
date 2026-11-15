@@ -35,3 +35,9 @@ Final batch-check.sh --fast exited 0. EnsembleCheck then exited 0, including EN2
 The publisher also rejects newly added numeric docs/ensemble/<version>.md files in ship.sh lines 182?183, so the orchestrator's EN2.md fallback is required. Its version comparison retires EN2 as soon as a newer numeric baseline is committed. The orchestrator was informed of both publisher guards.
 
 Pre-baseline one-in, one-out count from git diff --numstat origin/main over docs/batch.md, tools/ensemble and the four changed runner/check sources is 447 added and 426 removed. Generated dials, harness index and maps add 489 and remove 546. Across that process scope including the generated session indexes, 936 lines are added and 972 removed. Own notes/ship and the future baseline are excluded. Recompute against main after its pending merges before readiness.
+
+## Review REV-KD1-1
+
+? The reviewer found that CPU was sampled before the Windows memory probe, whose timeout can span several CPU samples. Read CPU after memory through the shared readResources helper, immediately before admission. An injected memory read moves CPU from below the ceiling to the ceiling while the read is in progress. KnownRedsCheck then proves the refreshed CPU holds the start, without sampling this PC. This corrects the review finding before the baseline and launcher run.
+
+The review repair's batch-check.sh KnownRedsCheck run exited 0, including the CPU-crossing fixture, regenerated maps and zero firm Stale findings. Its wrapper log is target/checks/kd1-review-check.txt.

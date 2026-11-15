@@ -169,6 +169,12 @@ public class KnownRedsCheck {
         check("RAM just below its floor holds despite free commit", AllChecks.startBlock(shortRam) == 2);
         AllChecks.Resources busy = new AllChecks.Resources(need, ram, AllChecks.CPU_PCT, growing);
         check("CPU at its ceiling holds despite both memory figures", AllChecks.startBlock(busy) == 3);
+        double[] currentCpu = { cpu };
+        AllChecks.Resources afterProbe = AllChecks.readResources(() -> {
+            currentCpu[0] = AllChecks.CPU_PCT;
+            return room;
+        }, () -> currentCpu[0]);
+        check("CPU crossing its ceiling during a slow memory probe holds the next start", AllChecks.startBlock(afterProbe) == 3);
         check("unknown commit holds an extra start", AllChecks.startBlock(new AllChecks.Resources(Double.NaN, ram, cpu, growing)) == 1);
         check("unknown RAM holds an extra start", AllChecks.startBlock(new AllChecks.Resources(need, Double.NaN, cpu, growing)) == 2);
         check("unknown CPU holds an extra start", AllChecks.startBlock(new AllChecks.Resources(need, ram, Double.NaN, growing)) == 3);

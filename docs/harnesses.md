@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**202 harness files, 24,063 labelled assertions.** AllChecks runs 202 of them.
+**202 harness files, 24,064 labelled assertions.** AllChecks runs 202 of them.
 
 ## Which harnesses read which class
 
@@ -16058,7 +16058,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L8940 4: what reshapes the page**
 - **L8976 5: what the kept month costs**
 
-## KnownRedsCheck.java - 49 labelled assertions
+## KnownRedsCheck.java - 50 labelled assertions
 
 > The harness for AllChecks' known reds, time limit and resource admission.
 > 
@@ -16107,24 +16107,25 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L167 unknown child commitment reserves its full growth
   - L169 RAM just below its floor holds despite free commit
   - L171 CPU at its ceiling holds despite both memory figures
-  - L172 unknown commit holds an extra start
-  - L173 unknown RAM holds an extra start
-  - L174 unknown CPU holds an extra start
-  - L175 the first harness always starts even without resource readings
-  - L176 commit holds name free GB and the growth budget
-  - L177 RAM holds name available GB
-  - L178 CPU holds name percent
-  - L180 CPU warmup holds until a full window is collected
-  - L182 the full CPU window keeps the ceiling
-  - L184 a new CPU sample replaces the oldest
-  - L186 an unavailable CPU sample holds until it ages out
-- **L208 6. a harness and its descendants have a limit**
-  - L209 the fixture exercises the wait with a shorter limit than production
-  - L224 the fixture really started its never-ending descendant
-  - L229 a harness over its limit is counted failed
-  - L230 its failing line names the time limit
-  - L232 the never-ending descendant was ended with its parent
-  - L234 a harness that finishes in time keeps its own exit and output
+  - L177 CPU crossing its ceiling during a slow memory probe holds the next start
+  - L178 unknown commit holds an extra start
+  - L179 unknown RAM holds an extra start
+  - L180 unknown CPU holds an extra start
+  - L181 the first harness always starts even without resource readings
+  - L182 commit holds name free GB and the growth budget
+  - L183 RAM holds name available GB
+  - L184 CPU holds name percent
+  - L186 CPU warmup holds until a full window is collected
+  - L188 the full CPU window keeps the ceiling
+  - L190 a new CPU sample replaces the oldest
+  - L192 an unavailable CPU sample holds until it ages out
+- **L214 6. a harness and its descendants have a limit**
+  - L215 the fixture exercises the wait with a shorter limit than production
+  - L230 the fixture really started its never-ending descendant
+  - L235 a harness over its limit is counted failed
+  - L236 its failing line names the time limit
+  - L238 the never-ending descendant was ended with its parent
+  - L240 a harness that finishes in time keeps its own exit and output
 
 ## LabourCheck.java - 178 labelled assertions
 

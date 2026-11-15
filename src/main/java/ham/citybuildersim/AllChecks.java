@@ -22,6 +22,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
@@ -179,7 +181,7 @@ public class AllChecks {
                 synchronized (live) {   // look and start under one lock, so two starts never pass on one reading; a run with nothing running always starts
                     int seen = 0;
                     while (!live.isEmpty()) {
-                        Resources reading = resources(live, cpu.average());
+                        Resources reading = readResources(() -> resources(live), cpu::average);
                         int block = startBlock(reading);
                         if (block == 0) break;
                         if (seen == 0) held.incrementAndGet();
@@ -375,8 +377,14 @@ public class AllChecks {
                 ? os.getCpuLoad() * 100 : Double.NaN;
     }
 
+    /** Read CPU last so a slow memory probe cannot admit a child using an earlier CPU window (REV-KD1-1). */
+    static Resources readResources(Supplier<Resources> memory, DoubleSupplier cpu) {
+        Resources r = memory.get();
+        return new Resources(r.freeCommit, r.availableRam, cpu.getAsDouble(), r.held);
+    }
+
     /** Windows exposes available commitment as swap space, Linux names its limit and charge in meminfo. */
-    static Resources resources(Set<Process> live, double cpu) {
+    static Resources resources(Set<Process> live) {
         double gb = 1024.0 * 1024 * 1024;
         double[] held = new double[live.size()];
         double commit = Double.NaN, ram = Double.NaN;
@@ -417,7 +425,7 @@ public class AllChecks {
         } catch (IOException | RuntimeException e) {
             // Missing child figures reserve its full size, unknown machine figures hold extra starts.
         } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
-        return new Resources(commit, ram, cpu, held);
+        return new Resources(commit, ram, Double.NaN, held);
     }
 
     /** The first line of a harness's entry: its name, its verdict as a number or OK, and how long it took. */
