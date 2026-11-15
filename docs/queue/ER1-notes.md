@@ -142,3 +142,71 @@ deposit or an unprofitable project. `Construction.plan()` declines another
 depot when queue months are below
 `BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING`; that is a response to
 the empty queue, not proof that adding builders would make a plot available.
+
+## The cause tested in the played state
+
+A short scratch-only counterfactual uses the saved m2383 state, copied into
+three independent `GameFiles.scratch()` folders and loaded through the real
+loader. It advances twelve months with the automatic works and the same
+January GovernmentPlayer policy as the standard run. The untouched loaded
+city's m2383 and m2395 population and job counts match the original trace
+(33,042 / 13,575 and 32,936 / 13,575). Log:
+`target/ER1/counterfact.log`; temporary driver:
+`target/ER1/probe-src/ER1Counterfact.java`.
+
+| m2395, after twelve months | no intervention | cash only | same cash, and one ground-ahead purchase |
+|---|---:|---:|---:|
+| population | 32,936 | 32,936 | 33,833 |
+| offered jobs | 13,575 | 13,575 | 13,853 |
+| owned ft² | 52,351,354.703 | 52,351,354.703 | 53,591,357.183 |
+| free ft² | 2,842.703 | 2,842.703 | 92,845.183 |
+
+Both treated cities receive the same treasury cash, sized from the selected
+offer's local price / `GROUND_AHEAD_CASH_SHARE`, with `BuildAdvice.SLACK`.
+This is an explicit experimental endowment, not a claim that the played city
+already held it. Only the third calls `keepGroundAhead()` at m2383. It buys
+offer 90, 0.1152 km², for US$85,336.874 thousand. At m2384 Manufacturing says
+`Built 1 Fabrication Works - steel worth more shaped than shipped`, and the
+queue holds 276 future jobs. The factory is finished by m2385. The cash-only
+twin annexes nothing and creates no job order. Agriculture remains land-held
+in the land-treated city: one small annexation is not a universal cure.
+
+**High confidence at this checkpoint:** the absence of a plot is an active
+cause, not merely correlated with weak growth or a missing builder. Restoring
+cash alone does not place an order because the automatic works buys land for
+its own needed works; it has no independent remit to buy growth land. The
+standalone advisor must perform that purchase, and its territory-buying moves
+use cash. The experiment proves a real private candidate passes finance once
+that one plot is present. It does not prove the entire 784-month counterfactual
+path or attribute all hunger to the land hold.
+
+## The short suite fixture
+
+`ER1Check`, registered in one line of `AllChecks.HARNESSES`, consumes a fresh
+scratch city's free ground before its first economic month, sets the treasury
+cash to zero, and funds a private Convenience Store buyer. Over the model's
+`PLANNING_HORIZON` months, every real `buildFor()` call is refused, every
+`keepGroundAhead()` look is counted cash-short, and neither physical job
+capacity nor jobs on site can increase. Then treasury cash is restored from
+the actual offer quote, `GROUND_AHEAD_CASH_SHARE` and `BuildAdvice.SLACK`.
+The same land rule buys ground, and the same private order is accepted with
+exactly the template's own future jobs. No rate, capacity or footprint is
+copied as a literal into its assertions.
+
+★ Keep this fixture in the ordinary gate tier: measured 2.059 seconds in the
+normal named harness run (`target/checks/ER1Check.log`, copied in the batch
+records under `target/ER1/`). The first draft's two failures were measurement
+errors, not a relaxed hold premise: a builder recalled 14 existing posts for
+one month (35 offered became 49, while physical capacity stayed 49), and
+`BusinessInvestment`'s copied land snapshot is refreshed for its next planning
+round, not immediately on annexation. The final test uses
+`getTotalJobsAtEveryPost()` for physical job capacity and the actual
+`LandManager.canAllocate()` gate for the immediate build action. The forced
+full ground, cash shortage, funded private order and all-month requirement
+are retained.
+
+The final named `./batch-check.sh ER1Check` passes (exit 0): compile, one
+harness, maps and zero firm stale findings. The direct diagnostic run passes
+in 2.094 seconds; the normal runner measures 2.059 seconds. The 1,271 compiled
+model classes hashed before and after the rebuild are byte-identical. The
+only Java changes are the new check and its registry entry.
