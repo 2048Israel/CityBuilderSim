@@ -230,3 +230,19 @@ preserves the long hold as a consequence of the player's purchasing rule;
 the run eventually recovers, but for centuries it lags the control. This is
 a player/land-office decision, not a justification to add free territory or
 tune farms in this diagnostic batch. One pending row carries the recommendation.
+
+
+The orchestrator read fixture commit ee0d02e2 and accepted it directly on
+2026-11-15; no further Codex review was requested for this harness-only batch.
+The hold lives at **both sides of a boundary**: the model's `LandMarket`
+prices and sells whole listed offers, while the automated player's
+`LongPlaytest.keepGroundAhead()` and room move in `advise()` buy territory
+from cash. The recommended repair is to the **advisor funding route**, with
+market prices and whole-offer rules retained. The other way keeps that
+cash-only advisor policy and leaves funding to the player. The pending row
+names the owner and both ways explicitly.
+
+While the read-only replay was running, R2d shipped main 32ec5a5d (0.9.118).
+The orchestrator instructed ER1 to finish the replay on its original model,
+then merge main and request the gate slot after KP2c. The long-city tables
+therefore describe 8083aaf33 / 0.9.117, not a claimed replay of R2d's recipes.

@@ -10,4 +10,4 @@ opens a Fabrication Works. ER1Check causes the land/cash condition and releases
 the same private job order after annexation in about two seconds. No model code changes.
 
 ## pending
-| ER1-F | Recommended: fund the automated player's demanded growth-land purchase through the existing bounded land-office funding flow; retain cash-only purchasing as the other way | Whole listed offers exceed treasury cash during a demonstrated land-held growth spell; funding and its refusal reasons need a separate paired measurement | [ER1 recommendation](ER1-notes.md#recommendation) |
+| ER1-F | Recommended: fund LongPlaytest.keepGroundAhead/advise's demanded growth-land purchase through the existing bounded land-office funding flow, keeping LandMarket's whole-offer rules; the other way is cash-only advisor buying and the player's existing funding page | The hold lives where the advisor's cash-only territory buying meets the model's whole listed offers; repair the advisor funding route, not market prices, in a separate paired measurement | [ER1 recommendation](ER1-notes.md#recommendation) |
