@@ -13,7 +13,7 @@ BF1-M and DM3-R map/planner failures remain separate from QB1's findings.
 WN5d's CityLand, LandMap, LandMarket, LandSellers, ui/MapView and
 LandNationsCheck are outside this batch's edits.
 
-Implementation and fixture attribution are complete; the ensemble and coordinated dry run remain.
+Implementation, fixture attribution, selected checks and the ensemble are complete; the coordinated dry run remains.
 
 ## The moved fixtures
 
@@ -112,7 +112,7 @@ under every policy had identical scorer figures and verdicts to HW1's kept
 0.9.104-model run. AUTO2 seed 2 already fails that identity test: both have
 2,399 CSV rows, equal through m1055, then at m1056 FX is 3.41398193 on QB1
 against 3.42566130 on HW1 and treasury debt 182563.836 against 182657.215.
-Population, prices and inflation part in m1057. So all 80 must finish.
+Population, prices and inflation part in m1057. All 80 were completed.
 Comparison: `target/checks/qb1-ensemble-comparison.json`; main's kept run:
 `../codex-HW1/target/ensemble/HW1-bf1-final`, snapshot `a0efd26d`.
 
@@ -194,8 +194,7 @@ finished, reaching 25 completed runs; then that drained dispatcher was ended.
 `JOBS=5 RESUME=1 tools/ensemble/ensemble.sh QB1` resumes the same immutable
 snapshot with all 25 complete CSVs/times retained and 55 runs left. Five active
 workers (ZERO_SLACK 9–13) were verified. No completed simulation is repeated.
-The first segment's incomplete score is not a batch verdict; the final score
-will replace it after all 80 finish. Other sessions and MemWatch are untouched.
+The final 80/80 score supersedes the first segment's incomplete interim score. Other sessions and MemWatch are untouched.
 
 ## Published main carried before the dry run
 
@@ -213,3 +212,45 @@ No WN5d source file received a bespoke hunk. Against new origin/main, QB1's
 only source differences remain ForeignDebtCheck's comment, KeptCheck's
 fixture, LongPlaytest's default and ScaleCheck's month. Published QUEUE,
 changelog, gate record and GameVersion enter solely from canonical main.
+
+## Final ensemble beside the 0.9.104 baseline
+
+**80/80 complete, none missing or short; exit 0; M1/F1 10/10 PASS.** All five
+policies have zero failed or unread audit months and zero finding runs. The
+64 policy runs match their AUTO2 twins before their switches. Overall score
+is **22/26**, beside main 0.9.104's **19/26**; H1 stays retired. The committed
+`docs/ensemble/QB1.md` is the runner's final baseline with only its two version
+labels changed to the publication token. The publisher names it by version.
+The two run segments report 105.5 and 22.6 elapsed minutes, with the same
+immutable model snapshot and all completed runs preserved across resume.
+
+Every changed verdict follows (the score file retains every baseline value):
+
+| policy / criterion | 0.9.104 | QB1 | class and reading |
+|---|---|---|---|
+| AUTO2 F1 | FAIL, 2/16 negative-GDP finding runs | PASS, 0/16 | hard; no finding in the final matrix |
+| ZERO_SLACK F1 | FAIL, 2/16 negative-GDP finding runs | PASS, 0/16 | hard; no finding in the final matrix |
+| ZERO_SLACK T2 | PASS, median 780,858 people | FAIL, median 513,902 | info; 65.8% of baseline, below the 75% floor |
+| ZERO_HOT T2 | FAIL, median 6,644 | PASS, median 6,644 | info; all 16 CSV traces are unchanged; the rolling baseline lowers its threshold to 4,983 |
+| SHOCK T2 | FAIL, median 34,104 | PASS, median 34,070 | info; the rolling baseline threshold is now 25,578 |
+
+★ Keep every score, and ship on M1/F1 alone, as Jerus decided. ZERO_SLACK's
+population fall remains visible information. AUTO2's median also falls from
+1,596,950 to 1,269,080 (79.5% retained), with T2 still PASS. ZERO_HOT's and
+SHOCK's new T2 passes follow the rolling baseline thresholds. CPB1 remains
+queued: this matrix avoids its old negative-GDP cases, without changing the
+underlying game code. No finding or monetary-audit exception is requested.
+
+Traces beside main's: `target/checks/qb1-ensemble-traces.md` and `.json`
+compare all 80 same-policy, same-seed CSV pairs with row counts, first
+differing fields/month, final populations, audit failures and finding names.
+The raw CSV roots are `target/ensemble/QB1/` and
+`../codex-HW1/target/ensemble/HW1-bf1-final/`. Identical in every CSV field:
+AUTO2 6/16, ZERO_SLACK 6/16, ZERO_HOT 16/16, SHOCK 11/16, HIGH 14/16
+(53/80 in all). Official score, summary and final baseline remain in the QB1
+run root; `target/checks/qb1-ensemble.txt` retains its final launcher result.
+
+The default long run's adviser build-bond counter is six abroad, none at
+home, highest quoted foreign rate 3.87%, in both full traces. Its 43 borrowing
+trace rows include the other treasury issuance. The quoted rule still
+exercises foreign borrowing when the sale is cheap enough.
