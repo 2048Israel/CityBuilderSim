@@ -141,3 +141,20 @@ dry run beside KD1's ensemble. The subsequent main-only live-classifier
 proof was sent immediately so the process fault can be settled before
 repeating a heavy suite. RT2's final default CSVs were requested for the
 merged comparison. Own model/fixture source remains 3398da4a.
+
+At 04:26 the orchestrator revised the 04:21 direction on the main-only
+live-classifier evidence: the two derived NEW lines are also main's process
+fault under the 11-04 rule. He instructed two exact, harness-scoped
+ship-file rows, ResearchViewCheck | exit 1 and ResearchViewCheck |
+ResearchViewCheck: 1 FAILED of 217, naming R2b-J and this cause.
+No --red-ok route is used; only Jerus can authorize that route.
+These two records cover derived output only; an uncovered primary
+assertion still stops the gate.
+
+R2b-J's ship MUST remove both derived rows when it fixes the classifier.
+R2b-V's real assertion row remains until its separate fixture repair.
+The queue's accepted brief is this notes section. The next normal gate
+must be fresh after merging RT2, so the old auto-reuse hint is removed
+from the provisional ship file; both old run directories stay recorded
+above. RT2's promised baseline CSV directory is
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-20261115-041842/trace.
