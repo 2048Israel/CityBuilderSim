@@ -148,7 +148,7 @@ public final class LicenceFees {
         double capacity = ref.unitFeed(false)[kind.ordinal()];
         if (!(capacity > 0)) return 0;
         double used = ref.flow().run(kind) * t.feedPerMonth() / capacity;
-        double gross = used * RefineryFlow.spread(kind, ref.cityValues()) * ref.getOperatingRate();
+        double gross = used * ref.flow().process().spread(kind, ref.cityValues()) * ref.getOperatingRate();
         BusinessInvestment plans = game.getBusinessInvestment();
         return gross - plans.standingRunningCostOf(t) - plans.standingCostOf(ref, t);
     }
@@ -165,6 +165,7 @@ public final class LicenceFees {
             bill += standing ? standingRecipeFee(game, t, recipe, prices, rate)
                     : recipeFee(t, recipe, accrualMonth, prices, game.getResearch()) * rate;
         }
+        bill += RecipeChanges.recipeFee(game, t, owner, recipe, standing, rate, charged);
         for (Equipment piece : t.getEquipment()) {
             if (!fitted.contains(piece.getId()) || !charged.add(piece.getSince()) || !piece.knownAt(game.getMonth(), game.getResearch())
                     || !payable(piece.getSince(), game.getMonth(), game.getResearch())) continue;
@@ -270,12 +271,13 @@ public final class LicenceFees {
 
         /** Book immutable production bills once, into the pending imported-service ledger for the next strike. */
         void finish() {
-            Map<Integer, Double> memo = new java.util.TreeMap<>();
+            Map<Integer, Double> memo = RecipeChanges.serviceFeeMemo(game);
             for (Bill bill : bills) {
                 bill.owner().bookLicenceFee(bill.amount());
                 memo.put(bill.id(), bill.amount() / bill.quantity());
             }
             game.restoreLicenceFees(memo);
+            game.getSectors().freight().captureRailServiceForInvoice();
         }
     }
 

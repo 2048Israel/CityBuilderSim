@@ -49,7 +49,7 @@ public class AllChecks {
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck", "ReloadCheck",
         "SaveSlotCheck", "ScaleCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "ChartFitCheck", "ToastCheck", "MoneyWordsCheck", "ClockCheck",
         "ConsumptionCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "CausesOfDeathCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodIndustryCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "QuayRailCheck", "QuayCraneCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "GoldMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "ObservationCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
-        "IslandNetCheck", "IslandRailCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "RecipeCheck", "ResearchCheck", "LicenceFeesCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck",
+        "IslandNetCheck", "IslandRailCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "RecipeCheck", "HistoricalRecipeCheck", "HistoricalLicenceCheck", "LicenceFeesCheck", "ResearchCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck",
         "ReplayCheck", "StaffingDrawCheck", "OwnerCheck",
         "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck"
     };
@@ -75,7 +75,7 @@ public class AllChecks {
     /** Keep 4 GB of RAM available, above the 2.9 GB left when two KeptChecks drove this 32 GB PC to 91% RAM (MG1). */
     static final double AVAILABLE_RAM_GB = 4;
 
-    /** Start beside another harness below 80% CPU, leaving room before MG1's measured 85–94% contention. */
+    /** Start beside another harness below 80% CPU, leaving room before MG1's measured 85â€“94% contention. */
     static final double CPU_PCT = 80;
 
     /** Sample every two seconds so held starts can resume without busy waiting (MG1). */
@@ -187,7 +187,7 @@ public class AllChecks {
                         if (seen == 0) held.incrementAndGet();
                         if ((seen & (1 << block)) == 0) {
                             heldBy[block]++;
-                            System.out.println("memory: " + name + " start held — " + holdLine(reading, block));
+                            System.out.println("memory: " + name + " start held â€” " + holdLine(reading, block));
                             seen |= 1 << block;
                         }
                         live.wait(RESOURCE_SECONDS * 1000L);
@@ -253,7 +253,7 @@ public class AllChecks {
         }
         System.out.println();
         System.out.println(summaryLine(ran, failed, (System.currentTimeMillis() - started) / 1000.0));
-        if (held.get() > 0) System.out.printf("memory: %d start(s) held until resources allowed — free commit %d, available RAM %d, CPU %d%n", held.get(), heldBy[1], heldBy[2], heldBy[3]);
+        if (held.get() > 0) System.out.printf("memory: %d start(s) held until resources allowed â€” free commit %d, available RAM %d, CPU %d%n", held.get(), heldBy[1], heldBy[2], heldBy[3]);
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
                 soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
         if (observed > 0) System.out.printf("%d path assertion%s OBSERVED, not counted: %s%n",
