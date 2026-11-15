@@ -189,3 +189,8 @@ It creates no simulated months in the original city.
 The fixture passed all four assertions after the repair, exit 0, in
 target/fp1/warrant-fixture.log. The fast check passed with zero firm Stale
 findings. The orchestrator will read this small scope-and-fixture delta.
+
+The orchestrator accepted c9e5e7c2's move-scope and fixture delta at 14:21.
+The new dry-run go arrived at 14:27, with main still ade96cfb. The branch
+was fetched and its main ancestry checked before launch. The provisional
+marker is still present.
