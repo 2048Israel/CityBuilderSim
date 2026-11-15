@@ -8774,7 +8774,8 @@ public class LongPlaytest {
                 works.buildStack(t(works, "Water Treatment Plant"), 1, true);
                 works.buildStack(t(works, "Paved Road"), 10, true);
             });
-            worst = play("a city whose bakeries make power and buy consumables, 36 months", works, 36, verbose);
+            // RT2: month 8 still has both kinds; the last power-making bakery retires at month 9, so month 36 caused neither flow.
+            worst = play("a city whose bakeries make power and buy consumables, 8 months", works, 8, verbose);
             Sector industry = works.getSectors().byKey(Sectors.INDUSTRY);
             MoneyAudit.Result last = works.getLastMoneyAudit();
             double sold = industry.statement().powerSold;

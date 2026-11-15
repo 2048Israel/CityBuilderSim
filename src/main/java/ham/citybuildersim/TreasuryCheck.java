@@ -984,7 +984,9 @@ public class TreasuryCheck {
 
         System.out.println("\n--- the surplus city, exporting: a dollar note rolls abroad, in dollars ---");
 
-        while (same.getMonth() < 20) press(same);
+        // RT2: the same city at m60 has exports that keep the six-month note
+        // within its window through maturity; m20 no longer does after bakery sales.
+        while (same.getMonth() < 60) press(same);
         check("fixture: it sells abroad now, and the window is open",
                 same.getDebtManager().getMonthlyExports() > 0 && same.foreignWindowOpen());
         quietly(() -> same.handleForeignLogic("Note", 500 * PriceLevel.FACTOR, 6, Game.BUILD_NOTE_GRANULE, false));

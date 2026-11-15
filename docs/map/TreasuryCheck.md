@@ -1,4 +1,4 @@
-# TreasuryCheck.java - 1,630 lines · 35 methods · 1 constants · harnesses
+# TreasuryCheck.java - 1,632 lines · 35 methods · 1 constants · harnesses
 
 `ham/citybuildersim/TreasuryCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -86,7 +86,7 @@
 | 567 | · THE REPORT. |
 | 587 | 7. ROLLING WHAT FALLS DUE (0.7.13). |
 | 616 | 8. FROM EARNED TO THE BUDGET (0.7.31). |
-| 1039 | 9. THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5). |
+| 1041 | 9. THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5). |
 
 ## Constants
 
@@ -99,20 +99,20 @@
 | line | field | says |
 |---:|---|---|
 | 110 | `static int fails` |  |
-| 1081 | `static int booksAsserted` | How many things the books part asserted, for its report line. |
-| 1112 | `final DebtManager manager` |  |
-| 1113 | `final Game payer` |  |
-| 1114 | `final Debt piece` |  |
-| 1115 | `final java.util.List<double[]> rows` |  |
-| 1116 | `int months` |  |
-| 1117 | `double sumExpense, sumCoupon, sumAmortised` |  |
-| 1118 | `double worstPvGap, worstTotalsGap` |  |
+| 1083 | `static int booksAsserted` | How many things the books part asserted, for its report line. |
+| 1114 | `final DebtManager manager` |  |
+| 1115 | `final Game payer` |  |
+| 1116 | `final Debt piece` |  |
+| 1117 | `final java.util.List<double[]> rows` |  |
+| 1118 | `int months` |  |
+| 1119 | `double sumExpense, sumCoupon, sumAmortised` |  |
+| 1120 | `double worstPvGap, worstTotalsGap` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 108 | 1523 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
+| 108 | 1525 | **type** `public class TreasuryCheck` | Plays a city and audits what the screens say the treasury did. |
 | 115 | 8 | `static void near(String what, int month, double actual, double expected)` |  |
 | 134 | 8 | `static void near(String what, int month, double actual, double expected, double size)` | ...and the journal's reconciliation, which subtracts one cash balance from another (0.7.54): MoneyAudit.tolerance(TOLERANCE, the treasury's size) - TOLERANCE exactly below 2^27 units (1.3e8), from there 64 of a double... |
 | 144 | 3 | `static double treasurySize(Game g)` | The treasury's size this month, for the journal's reconciliation: the larger of its opening and closing balances. |
@@ -127,7 +127,7 @@
 
 ### 7. ROLLING WHAT FALLS DUE (0.7.13). (lines 587-615)
 
-### 8. FROM EARNED TO THE BUDGET (0.7.31). (lines 616-1038)
+### 8. FROM EARNED TO THE BUDGET (0.7.31). (lines 616-1040)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -138,27 +138,27 @@
 | 773 | 5 | `static void quietly(Runnable work)` | Some quiet work: an issue's receipt, a save. |
 | 780 | 7 | `static Debt paper(Game g, String type, int months, int started, boolean foreign)` | The piece of paper of this type, term and currency issued in this month, or null. |
 | 789 | 3 | `static boolean audited(Game g)` | The press closed its audit, and nothing moved after it struck. |
-| 793 | 245 | `static void rolling()` |  |
+| 793 | 247 | `static void rolling()` |  |
 
-### 9. THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5). (lines 1039-1630)
+### 9. THE CITY'S PAPER ON AMORTISED COST (CD3, spec-city-debt.md section 5). (lines 1041-1632)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1084 | 4 | `static void books(String what, boolean ok)` | One fact of the books, printed either way. |
-| 1090 | 10 | `static void booksNear(String what, double actual, double expected, double tolerance)` | Two figures of the books that must agree to a tolerance, printed either way with the figures on a failure. |
-| 1111 | 52 | **type** `static final class Life` | A piece's months on a manager's books, stepped by the manager's own processAllDebts() - the books, the accretion and the month's payments in the game's order - with what each month left: {expense, coupon, amortised, c... |
-| 1120 | 5 | `Life(DebtManager manager, Game payer, Debt piece)` _(in TreasuryCheck.Life)_ |  |
-| 1127 | 20 | `void step(int n)` _(in TreasuryCheck.Life)_ | Steps n months, or to the piece's end when n is negative. |
-| 1149 | 1 | `double[] month(int m)` _(in TreasuryCheck.Life)_ | The month's row, counted from 1. |
-| 1152 | 4 | `boolean falls(int from, int to)` _(in TreasuryCheck.Life)_ | True when the carrying value closed every month from..to lower than it opened. |
-| 1158 | 4 | `boolean rises(int from, int to)` _(in TreasuryCheck.Life)_ | ...and higher. |
-| 1164 | 13 | `static void books()` |  |
-| 1186 | 54 | `static void balance()` | g. |
-| 1250 | 61 | `static void buyback()` | f. |
-| 1319 | 49 | `static void playedCity()` | e. |
-| 1370 | 3 | `static Debt onlyPiece(Game g)` | The one piece of paper a city owes, or null when it owes none or several. |
-| 1386 | 80 | `static void dollarPaper()` | d. |
-| 1468 | 44 | `static void calmTenYear(Game payer)` | a. |
-| 1514 | 71 | `static void premiumBillAmortizing(Game payer)` | b. |
-| 1587 | 43 | `static void reopenedLine(Game payer)` | c. |
+| 1086 | 4 | `static void books(String what, boolean ok)` | One fact of the books, printed either way. |
+| 1092 | 10 | `static void booksNear(String what, double actual, double expected, double tolerance)` | Two figures of the books that must agree to a tolerance, printed either way with the figures on a failure. |
+| 1113 | 52 | **type** `static final class Life` | A piece's months on a manager's books, stepped by the manager's own processAllDebts() - the books, the accretion and the month's payments in the game's order - with what each month left: {expense, coupon, amortised, c... |
+| 1122 | 5 | `Life(DebtManager manager, Game payer, Debt piece)` _(in TreasuryCheck.Life)_ |  |
+| 1129 | 20 | `void step(int n)` _(in TreasuryCheck.Life)_ | Steps n months, or to the piece's end when n is negative. |
+| 1151 | 1 | `double[] month(int m)` _(in TreasuryCheck.Life)_ | The month's row, counted from 1. |
+| 1154 | 4 | `boolean falls(int from, int to)` _(in TreasuryCheck.Life)_ | True when the carrying value closed every month from..to lower than it opened. |
+| 1160 | 4 | `boolean rises(int from, int to)` _(in TreasuryCheck.Life)_ | ...and higher. |
+| 1166 | 13 | `static void books()` |  |
+| 1188 | 54 | `static void balance()` | g. |
+| 1252 | 61 | `static void buyback()` | f. |
+| 1321 | 49 | `static void playedCity()` | e. |
+| 1372 | 3 | `static Debt onlyPiece(Game g)` | The one piece of paper a city owes, or null when it owes none or several. |
+| 1388 | 80 | `static void dollarPaper()` | d. |
+| 1470 | 44 | `static void calmTenYear(Game payer)` | a. |
+| 1516 | 71 | `static void premiumBillAmortizing(Game payer)` | b. |
+| 1589 | 43 | `static void reopenedLine(Game payer)` | c. |
 

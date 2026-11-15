@@ -204,7 +204,8 @@ public class FittingCheck {
 
     static void sectionTwo() {
         out.println("\n--- 2. cleared on a new game and on a load: a Game that drove forms starts the next city as a fresh process does ---");
-        Game g = Forms1900Check.town("fitting-cleared");
+        // RT2: the same counts are observed before the month-7 bakery retirement.
+        Game g = Forms1900Check.town("fitting-cleared", 4);
         String industryKey = g.getSectors().industry().key(), farmKey = g.getSectors().agriculture().key();
         GameFiles.Result wrote = EquipmentCheck.save(g, "fitting no counts");
         check("fixture: a city with no building unfitted saved", wrote.ok && !EquipmentCheck.anyUnfitted(g), wrote.message());

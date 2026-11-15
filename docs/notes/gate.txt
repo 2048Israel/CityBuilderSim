@@ -1,20 +1,25 @@
-# gate of Merge batch/KD1: its first item, a killed suite ending its harnesses' child JVMs, shipped in GF1 (2026-11-12). Folded in at the queue's triage (Jerus, 2026-11-09: "we really need to empty the queue"): **MG1**: The suite's memory guard by free GB, not 75% of the commit limit: Windows sizes its automatic pagefile to the load, so the share sat at 80-91% on 11-06 with up to 14 GB free and the suite ran one harness at a time. Start another while free commit covers one more harness, available RAM is over a dial and the CPU is under one (94% busy at 23:20 with the memory free); a harness proves both sides; settles SP1-E; **EN2**: The ensemble names the data files (`data/earth-2.bin`, `data/world-1.bin`) in a worktree, as the gate and `nightly.sh` do, with one baseline taken under the new setting (RE2's ★4, taken on its recommendation); a small process batch, Sonnet whole, 0.9.112
+# gate of Merge batch/RT2: the other buildings not counted in their sector's retirement measure, none of them money: FoodIndustry (spare in heads, a mill counted in kilograms of bread: a Bakery 66,400 heads against 232,000 kg, about 3.5 times too few sold), CoalMining (worked out, capacity the washed thermal flow, a coking mine counted in raw tonnes: up to 5 times) and Freight (capacity the least of track, sets and stations, a line counted by its track); each sells less than the rule means, 0.9.113
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 189 harnesses run in 2075s: 184 passed, 5 failed
+# suite: 199 harnesses run in 2397s: 193 passed, 6 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
+InvestCheck | exit 1
+InvestCheck | an older save's contract on site is read as its template's owner's - the landlords', for Houses, with the share of the tax a House of theirs gets back, which is not all of it FAIL
+InvestCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
 MapCheck | 3 FAILED
 DeathRecordCheck | exit 1
-DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
+DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
-LongPlaytest | exit 1
-LongPlaytest | (no FAIL line)
+PrizeCheck | exit 2
+PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1015.476826182461 of 1012.1739302492329)
+PrizeCheck | FAIL ...and its till (at most 405) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
+PrizeCheck | PrizeCheck: 2 FAILED of 284
 ResearchViewCheck | exit 1
 ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 2 rows, Agriculture: 2 of 5), and the sectors' rows add up to the city's
 ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217

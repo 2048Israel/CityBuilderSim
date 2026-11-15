@@ -175,7 +175,8 @@ public class EquipmentCheck {
         sectionOne();
         Game played = Forms1900Check.town("equipment-played");
         sectionTwo(played);
-        Game counted = Forms1900Check.town("equipment-counted");
+        // RT2: observe months 1-4, before the bakery sales at months 6-7.
+        Game counted = Forms1900Check.town("equipment-counted", 0);
         Game carts = cartTown("equipment-carts");
         sectionThree(counted, carts);
         sectionFour(counted, carts);
@@ -183,7 +184,7 @@ public class EquipmentCheck {
         sectionSix(counted);
         sectionSeven(counted, played);
         sectionEight(played);
-        Game steam = Forms1900Check.town("equipment-fit-steam");
+        Game steam = Forms1900Check.town("equipment-fit-steam", 2);
         sectionNine(steam);
         Game fitCarts = cartTown("equipment-fit-carts");
         sectionTen(steam, fitCarts);
@@ -456,6 +457,9 @@ public class EquipmentCheck {
                 steam + " / " + horses);
         check("fixture: before the month the shares are 0", industry.getSteamShare() == 0 && farms.getHorseShare() == 0);
         play(g, 1);
+        check("fixture: the observed month keeps the same unfitted bakery counts",
+                bakery.getQuantity() == 2 && industrial.getQuantity() == industrialAll
+                        && bakery.getUnfitted(DRIVE) == 1 && industrial.getUnfitted(DRIVE) == industrialAll);
         near("Industry's steam share is the unfitted bakeries' grid draw over all its buildings'", industry.getSteamShare(), steam, 1e-9);
         near("the farms' horse share is the unfitted farms' land over all their land", farms.getHorseShare(), horses, 1e-9);
         check("no other sector has a steam share", maxSteamExcept(g, industry.key()) == 0, "largest " + maxSteamExcept(g, industry.key()));
