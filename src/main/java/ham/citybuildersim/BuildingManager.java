@@ -3460,8 +3460,8 @@ public class BuildingManager {
            output; consumables the study's running cost less wages, the power
            bought and water - and the paper mill's fuel at the middle of fuel
            oil's band, the study naming no price. "since": 1900 but the Panel
-           Mill, about 1980, and the Wood Pellet Mill, the 1970s (research-1900.md
-           1.2, both unverified).
+           Mill, E19 at 1981 (FPL-GTR-59), and Wood Pellet Mill, E20 at retained
+           1970 (FPL-RP-656 dates only the decade; R2e).
            ------------------------------------------------------------------------------ */
         templates.add(new BuildingsTemplate("Sawmill", BuildingType.HEAVY_INDUSTRY)   // sawlogs into lumber, chips and sawdust
                 .setCashCost(11544)
@@ -3503,7 +3503,7 @@ public class BuildingManager {
                 .setJobs(JobType.UNIV_SCIENCE, 3)
                 .setSince(1900)
                 .setId(134));
-        templates.add(new BuildingsTemplate("Panel Mill", BuildingType.HEAVY_INDUSTRY)   // pulpwood pressed into OSB, 1980
+        templates.add(new BuildingsTemplate("Panel Mill", BuildingType.HEAVY_INDUSTRY)   // OSB, commercial 1981 (FPL-GTR-59, E19)
                 .setCashCost(107690)
                 .setConstructionPoints(53845)
                 .setConstructionMaterials(1795)
@@ -3520,7 +3520,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 35)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 9)
                 .setJobs(JobType.UNIV_SCIENCE, 2)
-                .setSince(1980)
+                .setSince("E19")
                 .setId(135));
         templates.add(new BuildingsTemplate("Pulp Mill", BuildingType.HEAVY_INDUSTRY)   // pulpwood and residues cooked into pulp; its liquor and bark its own power
                 .setCashCost(200006)
@@ -3580,7 +3580,7 @@ public class BuildingManager {
                 .setJobs(JobType.DIPLOMA, 10)
                 .setJobs(JobType.COLLEGE_ENGINEERING, 3)
                 .setJobs(JobType.UNIV_SCIENCE, 1)
-                .setSince(1970)
+                .setSince("E20")
                 .setId(138));
 
         /* ----------------------- HAULAGE (FR2, 2026-10-18) -----------------------

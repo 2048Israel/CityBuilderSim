@@ -332,6 +332,7 @@ adds its line here, not in `CLAUDE.md`.
         RecipeChange.java          R2d's sourced signed undo for one discovery, independent of other pieces.
         RecipeChanges.java         Composes those changes, preserving saved process choices and each piece's fitted count.
         HistoricalRecipeCheck.java R2d's per-row date/fitting fixtures, both fitting orders, default and real-clock checks.
+        PostwarRecipeCheck.java    R2e's postwar row transitions, independent and catalyst-stage composition, wood dates and default control.
         HistoricalLicenceCheck.java Independent recipe/piece and rail patent invoices, closed audits, saved bills and exemptions.
         RecipeCheck.java           R1c's recipes: the data read, a default city choosing nothing, the best
                                    recipe at the city's prices, known and runnable, the mix, the piece's

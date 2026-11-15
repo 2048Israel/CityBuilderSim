@@ -90,3 +90,48 @@ Initial fixture setup needed the same quiet streams as R2d's harness.
 The catalyst ordering fixture also now stands before PE24's actual1942
 month, so withholding a local find really leaves PE24 unknown. Its
 initial1950 date could not cause that premise. No existing law was changed.
+
+Focused postwar fixtures pass82/82. The identical source compiled against
+the retained whole main32ec5a5d classes/data fails43/78 (wood candidate
+checks are reached only when each new catalogue entry exists). All28 row
+transition assertions fail on main. Both composition directions, actual
+clock, real petrol/fuel-oil change and positive E11 captured bill fail too.
+Evidence is target/R2e-evidence/before/{compile,check}.log.
+HistoricalRecipeCheck120, HistoricalLicenceCheck80, RecipeCheck,
+EquipmentCheck, ResearchCheck207 and DiscoveryCheck pass.
+
+BuildingDataCheck kept its exact catalogue/fallback equality and exposed
+the two built-in wood dates. The fallback now names E19/E20 too. Its
+source comparison and dated-set law are preserved.
+
+## Bank fixture restatement, accepted by the orchestrator
+
+★ Mail175317 settles the caused FittingCheck finding in the same
+way as R2d's KeptCheck96. The catalogue now gives the founding Bank
+B1/B3 pieces. The actual1900 founding must have those pieces unfitted.
+
+Old section3 assertion, verbatim
+"the founding's own buildings (the bank, the builders' yard) carry no piece, and a village placed after it without construction comes as placed"
+
+New section3 assertion, verbatim
+"the founding Bank is wholly unfitted for B1/B3, while the hand-placed village comes fitted"
+
+It requires both actual Bank pieces, a positive standing quantity, both
+unfitted counts equal to that quantity, every hand-placed village piece
+fitted, and the existing empty driven-forms condition.
+
+Section4's existing fixture assertion and global law are unchanged
+"fixture: a city founded the 1900 way is founded the 1900 way, with nothing unfitted and Industry and Agriculture held"
+"...and nothing was unfitted by it: Industry's steam share is 0"
+
+The builtVillage factory now explicitly fits only the founding Bank
+before its Bakery experiment, causing that original all-fitted premise.
+No no-other-completion observation, global !anyUnfitted assertion or
+steam-share floor is changed. The real founding Bank is covered by
+section3 and PostwarRecipeCheck's B1/B3 transitions and both fitting orders.
+
+The final postwar fixtures pass85/85. On retained whole main code/data
+they fail45/81, including PE24's actual pre-zeolite fee (9,817,788.49
+instead of the sourced marginal7,991,638.97). E11's bill is1,826,149.52
+on its positive dispatched feed. The older82-assertion results above
+precede this added stage-fee control.
