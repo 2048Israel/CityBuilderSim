@@ -146,3 +146,16 @@ all LongPlaytest checks passed. target/checks/XR7-pretrace.log; eight CSVs under
 target/checks/XR7-premerge/trace-*.csv, hashes in that folder's SHA256SUMS.
 Seven have 2405 lines each; the borrow-event CSV has 52. Run from detached
 Windows process 18300, same data paths, soft timing. No source changed.
+
+Main 0.9.116 (FP1), b9c93a98, is merged at 699d02e3.
+Only docs/harnesses.md and docs/map/README.md conflicted; the generated indexes
+were regenerated from the combined source by --fast, exit 0, 0 firm Stale.
+No model/source conflict or independent mending was needed.
+
+The post-merge LongPlaytest also exits 0, all checks passed. Its eight CSVs under
+target/checks/XR7-postmerge/trace-*.csv are **byte-identical in all eight files**
+to the pre-merge reference. target/checks/XR7-trace-comparison.json records each
+SHA256 and byte count. Log target/checks/XR7-posttrace.log, detached Windows
+process 15316. Therefore docs/ensemble/XR7.md remains the final-model baseline;
+the FP1 merge requires no second ensemble. The orchestrator requested the
+gate's default MG1 pool (no -Dcbs.parallel=1) with soft timing.
