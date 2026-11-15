@@ -330,7 +330,8 @@ public class ResearchCheck {
                     + (lever.monthKnown() ? "" : " (January, the year alone)"), ok);
             leversRead &= ok;
         }
-        check("PolicyDates has levers with entry keys, and every one of them was held to the catalogue (" + levers + ")", levers >= 11 && leversRead);
+        check("PolicyDates has discoverable levers, each held to the catalogue, and Money has no discovery key (" + levers + ")", levers == java.util.Arrays.stream(PolicyDates.Lever.values())
+                .filter(l -> !PolicyDates.isMoney(l) && !PolicyDates.openAtFounding(l)).count() && leversRead && java.util.Arrays.stream(PolicyDates.Lever.values()).filter(PolicyDates::isMoney).allMatch(l -> l.entry().isEmpty()));
         check("PL1 (1915) and PL11 (1942) have no lever: each is in its year's January, the year alone",
                 of("PL1").year() == 1915 && of("PL1").monthOfYear() == 1 && !of("PL1").monthKnown() && of("PL1").worldMonth() == monthOf(1915, 1)
                         && of("PL11").year() == 1942 && of("PL11").monthOfYear() == 1 && !of("PL11").monthKnown() && of("PL11").worldMonth() == monthOf(1942, 1));

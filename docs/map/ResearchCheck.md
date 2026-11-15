@@ -1,4 +1,4 @@
-# ResearchCheck.java - 755 lines · 20 methods · 6 constants · harnesses
+# ResearchCheck.java - 756 lines · 20 methods · 6 constants · harnesses
 
 `ham/citybuildersim/ResearchCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -41,7 +41,7 @@
 >      PE14's and PAYS at it (and figures a thousandth short of paying are NOT_YET at it, so the rule runs), and Recipes.canRun() for the
 >      oxygen converter's recipe is false the month before E1's and true at it, for the part that may run it (the one without the open hearth).
 
-**Uses:** [ResearchCatalog](ResearchCatalog.md) (51), [PolicyDates](PolicyDates.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (14), [EquipmentFit](EquipmentFit.md) (12), [Recipes](Recipes.md) (11), [CityCalendar](CityCalendar.md) (6), [Equipment](Equipment.md) (5), [BuildingCatalog](BuildingCatalog.md) (3), [Recipe](Recipe.md) (2), [BuildingType](BuildingType.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
+**Uses:** [ResearchCatalog](ResearchCatalog.md) (51), [PolicyDates](PolicyDates.md) (22), [BuildingsTemplate](BuildingsTemplate.md) (14), [EquipmentFit](EquipmentFit.md) (12), [Recipes](Recipes.md) (11), [CityCalendar](CityCalendar.md) (6), [Equipment](Equipment.md) (5), [BuildingCatalog](BuildingCatalog.md) (3), [Recipe](Recipe.md) (2), [BuildingType](BuildingType.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
 
 ## Sections
 
@@ -52,12 +52,12 @@
 | 211 | · 1. the file reads |
 | 267 | · 2. needs |
 | 297 | · 3. history's dates |
-| 339 | · 4. the work |
-| 382 | · 5. known from |
-| 426 | · 6. the reader's refusals, and the fees |
-| 519 | 7. buildings.json's codes (R2, slice B) |
-| 630 | 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) |
-| 718 | · helpers |
+| 340 | · 4. the work |
+| 383 | · 5. known from |
+| 427 | · 6. the reader's refusals, and the fees |
+| 520 | 7. buildings.json's codes (R2, slice B) |
+| 631 | 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) |
+| 719 | · helpers |
 
 ## Constants
 
@@ -68,7 +68,7 @@
 | 135 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has. |
 | 136 | `ResearchCheck.PREFIX_COUNTS` | `{ 18, 10, 8, 5, 27, 6, 3, 12 }` |  |
 | 139 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
-| 522 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map....` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
+| 523 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map....` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 
 ## Fields (state)
 
@@ -81,7 +81,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 65 | 691 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
+| 65 | 692 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
 | 70 | 4 | `static void check(String label, boolean ok)` |  |
 | 76 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 
@@ -93,7 +93,7 @@
 | 144 | 3 | `static int monthOf(int year, int monthOfYear)` | The game month of a real calendar month, worked out here and not by PolicyDates. |
 | 148 | 3 | `static String prefixOf(String code)` |  |
 
-### fixtures for the reader (lines 152-518)
+### fixtures for the reader (lines 152-519)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -106,27 +106,27 @@
 | 192 | 5 | `static String text(String resource) throws Exception` |  |
 | 198 | 3 | `static Entry of(String code)` |  |
 | 202 | 3 | `static boolean has(Entry e, List<String> kinds)` |  |
-| 206 | 312 | `public static void main(String[] args) throws Exception` |  |
+| 206 | 313 | `public static void main(String[] args) throws Exception` |  |
 
-### 7. buildings.json's codes (R2, slice B) (lines 519-629)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 531 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id)` |  |
-| 536 | 93 | `static void sectionSeven()` |  |
-
-### 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) (lines 630-717)
+### 7. buildings.json's codes (R2, slice B) (lines 520-630)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 632 | 85 | `static void sectionEightAndNine()` |  |
+| 532 | 4 | `static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id)` |  |
+| 537 | 93 | `static void sectionSeven()` |  |
 
-### helpers (lines 718-755)
+### 8. known from history's month, 9. the verdict and the choice on it (R2, slice B) (lines 631-718)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 720 | 5 | `static List<String> codes(ResearchCatalog c)` |  |
-| 727 | 9 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5. |
-| 738 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
-| 748 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
+| 633 | 85 | `static void sectionEightAndNine()` |  |
+
+### helpers (lines 719-756)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 721 | 5 | `static List<String> codes(ResearchCatalog c)` |  |
+| 728 | 9 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5. |
+| 739 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
+| 749 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
 

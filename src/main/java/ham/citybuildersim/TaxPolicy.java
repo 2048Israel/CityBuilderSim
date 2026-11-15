@@ -225,7 +225,7 @@ public class TaxPolicy {
      * Returns whether the opening moved. Saved with the other openings (openingsForSave()).
      */
     public boolean bringForward(PolicyDates.Lever lever, int month) {
-        if (lever == null || PolicyDates.openAtFounding(lever)) return false;
+        if (lever == null || PolicyDates.isMoney(lever) || PolicyDates.openAtFounding(lever)) return false;
         int now = opening.get(lever);
         int earlier = Math.min(now, Math.max(month, PolicyDates.earliestOpening(lever)));
         if (earlier >= now) return false;

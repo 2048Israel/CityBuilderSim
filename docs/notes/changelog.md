@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.111 — R0f, Money on Canada's dates — 2026-11-15, ready, see docs/queue/R0f-notes.md
+Cities founded the 1900 way follow Canada's dated money: reserves hold the dollar at par until August 1914 and again from July 1926 to September 1931; exhaustion ends a gold episode early and survives a save. Interest follows the world on gold, the government's Advance Rate opens in August 1914, and the Bank of Canada opens the rest of Money in March 1935. Dates cannot be discovered early. Default founding retains its existing Money mechanics. Save format and oldest readable format rise to 53, because older unfitted cities had a different monetary contract. Founded-city, save and read checks cover the dates and the remembered exit.
+
 ### 0.9.110 — RT1b, RT1 money review follow-ups — 2026-11-15, ready, see docs/queue/RT1b-notes.md
 The sectors' and households' paper ledgers use the paper's relative rounding
 rule, so full principal payments, buybacks and central-bank purchases leave

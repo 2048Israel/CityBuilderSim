@@ -41,3 +41,9 @@ Pre-baseline one-in, one-out count from git diff --numstat origin/main over docs
 ? The reviewer found that CPU was sampled before the Windows memory probe, whose timeout can span several CPU samples. Read CPU after memory through the shared readResources helper, immediately before admission. An injected memory read moves CPU from below the ceiling to the ceiling while the read is in progress. KnownRedsCheck then proves the refreshed CPU holds the start, without sampling this PC. This corrects the review finding before the baseline and launcher run.
 
 The review repair's batch-check.sh KnownRedsCheck run exited 0, including the CPU-crossing fixture, regenerated maps and zero firm Stale findings. Its wrapper log is target/checks/kd1-review-check.txt.
+
+## Main integration and accepted review
+
+The orchestrator accepted REV-KD1-1 on 38cdf1eb at 02:26. At 04:36 it named main b49a6023c892e61e575f39c57b4d16774cf6fdd7 for the EN2 baseline and said R2b leaves the default trace unchanged. Merged origin/main b49a6023 into KD1. The three conflicts were generated dials, harness index and map README, resolved by regenerating from the merged sources. batch-check.sh --fast exited 0 with zero firm Stale findings. KD1's source diff against main still contains only AllChecks, KnownRedsCheck, EnsembleCheck and TimingCheck.
+
+★ MG1 supersedes Pending SP1-E's manual pagefile request. The new rule uses available commitment directly and includes RAM and CPU. Recommend dropping SP1-E on publication, as MG1's brief requests.
