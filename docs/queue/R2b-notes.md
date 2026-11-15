@@ -29,3 +29,68 @@ Started from main b49a6023 (0.9.111), on batch/R2b, 2026-11-15.
 
 - Provisional ship file pushed at 759f74ce. Final code and fixtures 3398da4a, reported as mends to the orchestrator. REV-R2b-1 reviews b49a6023..3398da4a.
 - Requested the dry-run slot at 03:16 Halifax on cbs-bus; waiting for the orchestrator go after RT2 and KD1. No local full suite or ensemble started. The kept run directory and its branch/main identities will be recorded here before readiness.
+
+## ResearchViewCheck finding and queued R2b-V
+
+The first normal gate is retained at C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2b-WdCE5H6G
+(ship.log, checks/suite.txt and clone/target/checks/NAME.log).
+It checked branch 7313196a770355d441192441f1408926bd709351 against main
+b49a6023c892e61e575f39c57b4d16774cf6fdd7. ALL selected 203 harnesses;
+the gate tier ran 196: 191 passed, four reds were main's recorded
+MoneyDatesCheck, MapCheck, DeathRecordCheck and LongPlaytest, and one new
+ResearchViewCheck assertion. Suite exit 4; launcher exit 1. The run is
+complete and checksummed, not cancelled. KeptCheck ended ALL OK,
+CentralBankCheck passed, no harness timed out, and only one start waited
+on the commit guard. Four path observations and 14 soft timing assertions
+were informational.
+
+R2b's proper exclusion of the future Assembly Plant makes the played
+1900 researchTown choose the known Fabrication Shop. Its known electric
+drive gives Manufacturing a legitimate fifth equipment row: Industry 2,
+Manufacturing 1, Agriculture 2 once the tractor is found. The original
+sector-filter assertion correctly reads each sector and sums five, but
+also hardcodes sectors.size() == 2 and Industry + Agriculture == the whole
+city. researchTown's guarantees never exclude a third sector.
+
+★ Keep the valid planner choice, every equipment row and the fixture's
+existing premise. This is a latent fixture assumption, not a filtering
+failure. Neither ResearchView nor ResearchViewCheck is changed. The
+batch brief requires demonstrating such a red on main and queuing a
+separate repair; R2b-V is that repair. It must cause the exactly-two-sector
+premise in a controlled filter fixture, retain the played town's guarantees,
+and independently hold the partition law over every actual sector in the
+played town. Do not hide Manufacturing or relax the partition law.
+The orchestrator accepted this attribution under the 11-04 rule at 04:12
+Halifax on cbs-bus: changing the hardcoded assertion belongs to its own batch.
+
+The demonstration uses a separately compiled git archive of whole main
+b49a6023 under target/R2b-main-evidence. The probe classpath contains that
+main's classes and dependency jars only, with no R2b model classes.
+target/checks/R2b-view-main-control.log runs the original researchTown and
+original sectionSix: the line passes, Industry 2 + Agriculture 2 of 4.
+target/checks/R2b-view-main-caused.log adds one successful, legal main
+order for a known Fabrication Shop, then calls the unchanged sectionSix:
+the identical line fails, Industry 2 + Agriculture 2 of 5, with no other
+section-6 failure. The diagnostic prints the actual partition:
+Industry, Manufacturing, Agriculture; sum 5, city 5.
+It also prints Game and ResearchView code-source paths proving both load
+from the separately compiled main. The relevant input is:
+
+```java
+Game g = ResearchViewCheck.researchTown();
+g.setCashForTest(Founding.WEALTHY_CASH * 100);
+g.buildStack(g.getBuildingManager().getTemplateByName("Fabrication Shop"), 1, true);
+ResearchViewCheck.sectionSix(g);
+```
+
+Main and branch source SHA-256 hashes are identical:
+ResearchView 636401d70f4811f25662fed98b9519c5d732eb8d15c686d73be2c4abae68faa0;
+ResearchViewCheck d78b071f5c900d2d994c1f4452df8de81dfc00c91bfff40ac2939bb4ffa7d716.
+The replay source is target/R2bViewProbe.java, the main compilation log
+target/checks/R2b-main-evidence-compile.log, and the original R2b path
+diagnostic target/checks/R2b-view-probe.log.
+
+Only these notes and the provisional ship file advance after the kept run.
+The narrow known-red row and queued R2b-V are rejudged through the normal
+gate route; tools/gate-reuse.sh explicitly binds and reuses a completed
+exit-4 run when only records change.
