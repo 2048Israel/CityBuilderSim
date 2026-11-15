@@ -550,3 +550,12 @@ royalty observable, rather than hiding it behind a nonpositive gain.
 Recipes.gainOf is byte-identical to current main. Freight's RT2
 retirementDemandAndCapacity, limitSpareRetirement and mayRetire methods
 are byte-identical too. There is no R2d delta in Game, Markets or Sector.
+
+
+The actual-source serial named run on aa58b73b exits 0: nine harnesses,
+all passed (HistoricalRecipeCheck 120, HistoricalLicenceCheck 80,
+LicenceFeesCheck 43, SaveFileCheck, ReadPathCheck, RailCheck,
+HomeRailCheck, QuayRailCheck and IslandRailCheck). Maps regenerated;
+zero firm Stale findings. Log: target/R2d-review5/named-check.log; full
+per-harness logs are in target/checks. Both newly added save/read assertions
+are green on their real load path.

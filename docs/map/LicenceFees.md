@@ -1,4 +1,4 @@
-# LicenceFees.java - 334 lines · 25 methods · 4 constants · model
+# LicenceFees.java - 335 lines · 25 methods · 4 constants · model
 
 `ham/citybuildersim/LicenceFees.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -14,7 +14,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (19), [Sector](Sector.md) (15), [Game](Game.md) (13), [Recipes](Recipes.md) (11), [Recipe](Recipe.md) (9), [BuildingsStacks](BuildingsStacks.md) (8), [ResearchCatalog](ResearchCatalog.md) (6), [SpreadPlanner](SpreadPlanner.md) (6), [ExtractionSector](ExtractionSector.md) (5), [Research](Research.md) (4), [EquipmentFit](EquipmentFit.md) (4), [Refining](Refining.md) (3), [ProcessingSector](ProcessingSector.md) (3), [Equipment](Equipment.md) (3), [BusinessInvestment](BusinessInvestment.md) (2), [JobType](JobType.md) (2), [RecipeChanges](RecipeChanges.md) (2), [RefineryFlow](RefineryFlow.md) (1), [Resource](Resource.md) (1), [Deposit](Deposit.md) (1)
 
-**Used by (10):** [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistorySave](HistorySave.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Markets](Markets.md), [MoneyAudit](MoneyAudit.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [Sector](Sector.md)
+**Used by (11):** [EquipmentFit](EquipmentFit.md), [Freight](Freight.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistorySave](HistorySave.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Markets](Markets.md), [MoneyAudit](MoneyAudit.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [Sector](Sector.md)
 
 ## Constants
 
@@ -38,7 +38,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 309 | **type** `public final class LicenceFees` | The patent rent on discoveries imported by a city founded the 1900 way. |
+| 26 | 310 | **type** `public final class LicenceFees` | The patent rent on discoveries imported by a city founded the 1900 way. |
 | 27 | 1 | `private LicenceFees()` |  |
 | 37 | 6 | `public static boolean payable(String code, int month, Research found)` | A patent is payable from history's month, excluding its twentieth anniversary. |
 | 45 | 3 | `public static double onGain(String code, int month, Research found, double gain)` | A loss, year, unknown code or unpatented entry costs nothing. |
@@ -53,7 +53,7 @@
 | 157 | 20 | `private static double one(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Set<String> fitted, boolean standing, do...` | One building with this recipe and these pieces, at its owner's run rate. |
 | 179 | 12 | `public static double forNew(Game game, BuildingsTemplate t)` | A new building's licence cost, included in every planner's running cost. |
 | 193 | 5 | `public static double forStanding(Game game, BuildingsTemplate t)` | The installed building's saved share of the last production's captured royalty. |
-| 205 | 77 | **type** `static final class Production` | One market pass's production record, confined to that pass. |
+| 205 | 78 | **type** `static final class Production` | One market pass's production record, confined to that pass. |
 | 206 | 1 | **type** `private record Ground(Resource resource, Deposit.FieldType type)` _(in LicenceFees.Production)_ |  |
 | 207 | 1 | **type** `private record Bill(Sector owner, int id, int quantity, double amount)` _(in LicenceFees.Production)_ |  |
 | 213 | 7 | `Production(Game game)` _(in LicenceFees.Production)_ |  |
@@ -62,9 +62,9 @@
 | 232 | 10 | `void before(Sector owner, boolean stock)` _(in LicenceFees.Production)_ | Flow mines/cutters remove the ground inside production. |
 | 244 | 16 | `private double flowExtractionRate(ExtractionSector owner, BuildingsTemplate t)` _(in LicenceFees.Production)_ | The real typed lift divided among the works that made it, including a field's last dispatch. |
 | 262 | 9 | `void made(Sector owner, boolean stock)` _(in LicenceFees.Production)_ | Called directly after this sector's output loop; capture all money inputs before any other producer or next-month choice. |
-| 273 | 8 | `void finish()` _(in LicenceFees.Production)_ | Book immutable production bills once, into the pending imported-service ledger for the next strike. |
-| 283 | 9 | `private static double stackBill(Game game, BuildingsStacks stack, Sector owner, double rate)` |  |
-| 293 | 27 | `private static double rawStackBill(Game game, BuildingsStacks stack, Sector owner, double rate)` |  |
-| 322 | 5 | `public static double paid(Game game)` | Read the settled flow from saved statements, never from end-of-month prices. |
-| 329 | 5 | `public static double accrued(Game game)` | Production's accrued bill, already saved in the pending imported-service ledger. |
+| 273 | 9 | `void finish()` _(in LicenceFees.Production)_ | Book immutable production bills once, into the pending imported-service ledger for the next strike. |
+| 284 | 9 | `private static double stackBill(Game game, BuildingsStacks stack, Sector owner, double rate)` |  |
+| 294 | 27 | `private static double rawStackBill(Game game, BuildingsStacks stack, Sector owner, double rate)` |  |
+| 323 | 5 | `public static double paid(Game game)` | Read the settled flow from saved statements, never from end-of-month prices. |
+| 330 | 5 | `public static double accrued(Game game)` | Production's accrued bill, already saved in the pending imported-service ledger. |
 
