@@ -4447,6 +4447,15 @@ public class KeptCheck {
             check("a " + kind + " is on a page of this city (" + at.size() + " pages)", !at.isEmpty());
             for (int i = 0; i < Math.min(2, at.size()); i++) {
                 Spot spot = at.get(i);
+                // QB1: the census's paper can fall due while other kinds are watched. Each independent
+                // debt-picture watch chooses live paper of its own, lasting beyond all six months.
+                if (kind.equals("PathChart") || kind.equals("BuybackLadder")) {
+                    Debt live = longestPiece(bench);
+                    check("fixture: the paper for the " + kind + " watch lasts beyond PICTURE_MONTHS",
+                            live != null && live.getMaturityMonth() > g.getMonth() + PICTURE_MONTHS);
+                    if (live != null) spot = new Spot(spot.label(), spot.page(),
+                            kind.equals("PathChart") ? lineOf(live) : closeOf(live), spot.month());
+                }
                 pictureKept(g, bench, spot, kind, kind.equals("BuybackLadder") && spot.label().equals("Close it now"));
             }
         }

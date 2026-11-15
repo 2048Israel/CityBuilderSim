@@ -1,4 +1,4 @@
-# ReplayMoveProbe.java - 927 lines · 33 methods · 12 constants · interface
+# ReplayMoveProbe.java - 935 lines · 33 methods · 12 constants · interface
 
 `ham/citybuildersim/ui/ReplayMoveProbe.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -55,11 +55,11 @@
 
 | line | section |
 |---:|---|
-| 280 | · the recording |
-| 352 | · views and waiting |
-| 440 | · the moves |
-| 526 | · the check ReplayCheck runs (5d) |
-| 862 | · the toolkit and reflection |
+| 288 | · the recording |
+| 360 | · views and waiting |
+| 448 | · the moves |
+| 534 | · the check ReplayCheck runs (5d) |
+| 870 | · the toolkit and reflection |
 
 ## Constants
 
@@ -72,11 +72,11 @@
 | 102 | `ReplayMoveProbe.SETTLE_MAX_S` | `20, MOVE_MAX_S = 120` | The most a view is waited for to settle, and a move to end, in seconds. |
 | 105 | `ReplayMoveProbe.GLIDE_S` | `10` | The seconds a glide takes. |
 | 108 | `ReplayMoveProbe.ON_SCREEN` | `Boolean.getBoolean("cbs.probe.onscreen")` | Whether the window is full screen on the PC's screen (-Dcbs.probe.onscreen=true) rather than the same size off every screen. |
-| 456 | `ReplayMoveProbe.LOAD_MAX_S` | `900` | The most a move's load is waited for, in seconds, before the probe stops it and says so. |
-| 529 | `ReplayMoveProbe.CHECK_LOAD_MAX_S` | `300` | How long a move's load is waited for in check(), in seconds, before it is stopped and said not to have reached Ready. |
-| 532 | `ReplayMoveProbe.PLANE_STREET_PX` | `8` | The scale of the "street" on a plane in check(), in pixels a plot: a level-0 view with the big tiles (MapFrame.BIG_TILES_FROM is 6). |
-| 535 | `ReplayMoveProbe.NORMAL_FRAMES` | `30` | The frames the normal game's map is asked to draw before the replay is entered, and the most the wait for them takes, in seconds. |
-| 536 | `ReplayMoveProbe.NORMAL_MAX_S` | `30` |  |
+| 464 | `ReplayMoveProbe.LOAD_MAX_S` | `900` | The most a move's load is waited for, in seconds, before the probe stops it and says so. |
+| 537 | `ReplayMoveProbe.CHECK_LOAD_MAX_S` | `300` | How long a move's load is waited for in check(), in seconds, before it is stopped and said not to have reached Ready. |
+| 540 | `ReplayMoveProbe.PLANE_STREET_PX` | `8` | The scale of the "street" on a plane in check(), in pixels a plot: a level-0 view with the big tiles (MapFrame.BIG_TILES_FROM is 6). |
+| 543 | `ReplayMoveProbe.NORMAL_FRAMES` | `30` | The frames the normal game's map is asked to draw before the replay is entered, and the most the wait for them takes, in seconds. |
+| 544 | `ReplayMoveProbe.NORMAL_MAX_S` | `30` |  |
 
 ## Fields (state)
 
@@ -99,68 +99,68 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 843 | **type** `public final class ReplayMoveProbe` | What a replay's camera moves show unpainted, measured: it opens the real window full screen on a recorded city in replay mode, runs the seven moves a trailer makes (the fly out and back, the glide from the street to t... |
+| 85 | 851 | **type** `public final class ReplayMoveProbe` | What a replay's camera moves show unpainted, measured: it opens the real window full screen on a recorded city in replay mode, runs the seven moves a trailer makes (the fly out and back, the glide from the street to t... |
 | 87 | 1 | `private ReplayMoveProbe()` |  |
 | 133 | 11 | `private static void offScreen(Stage s)` | The window moved off every screen at the primary screen's size, then made visible: drawn as full screen would be, seen by nobody. |
 | 145 | 8 | `private static void bind()` |  |
 | 154 | 21 | `public static void main(String[] args)` |  |
-| 176 | 103 | `private static void run(String[] args) throws Exception` |  |
+| 176 | 111 | `private static void run(String[] args) throws Exception` |  |
 
-### the recording (lines 280-351)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 283 | 8 | `private static Game found(GameFiles files)` | The city founded on the Earth at SPOT, on a FX-thread call; a friendlier line when the Earth's file is not there. |
-| 293 | 9 | `private static GameFiles scratch(String label)` | A scratch save folder, checked to lie under java.io.tmpdir (UiProbe's rule); null, after saying so, when it does not. |
-| 304 | 33 | `private static Game record(Path folder, int growTo, int recorded) throws Exception` | Founds a city, grows it to growTo, records `recorded` months more and copies the recording to `folder`; the grown city, or null if the scratch folder was refused. |
-| 338 | 13 | `private static void copyTree(Path from, Path to) throws IOException` |  |
-
-### views and waiting (lines 352-439)
+### the recording (lines 288-359)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 355 | 3 | `private static CameraPath.View at(double kmPx)` | A view on the globe at the city's centre, `kmPx` km a pixel (its month is the camera's to put on: mark() takes the month on screen). |
-| 360 | 5 | `private static CameraPath.View wholeNow() throws Exception` | The widest view as it stands now (its scale follows the canvas), the whole Earth facing the city. |
-| 367 | 9 | `private static CameraPath.View waitForWhole() throws Exception` | Waits for the expanded map's globe to exist, and returns the whole-Earth view (its centre is the city's). |
-| 378 | 12 | `private static void waitForCanvas() throws Exception` | Waits for the canvas to keep one size over three looks (the full screen takes a moment), and prints it. |
-| 392 | 6 | `private static void goTo(int month) throws Exception` | Puts the recorded month nearest `month` on screen, as the camera does. |
-| 400 | 7 | `private static void take(CameraPath.View v) throws Exception` | The expanded map's view taken whole and drawn (what a glide's or a fly's frame does). |
-| 408 | 6 | `private static void mark(boolean a) throws Exception` |  |
-| 416 | 3 | `private static void tell(String format, Object...arguments)` | One of the probe's waiting lines, unless check() runs it. |
-| 421 | 18 | `private static void settle(String what) throws Exception` | Waits, at most SETTLE_MAX_S, until MapView.viewSettled() has held over two looks 100 ms apart, and prints how long it took. |
+| 291 | 8 | `private static Game found(GameFiles files)` | The city founded on the Earth at SPOT, on a FX-thread call; a friendlier line when the Earth's file is not there. |
+| 301 | 9 | `private static GameFiles scratch(String label)` | A scratch save folder, checked to lie under java.io.tmpdir (UiProbe's rule); null, after saying so, when it does not. |
+| 312 | 33 | `private static Game record(Path folder, int growTo, int recorded) throws Exception` | Founds a city, grows it to growTo, records `recorded` months more and copies the recording to `folder`; the grown city, or null if the scratch folder was refused. |
+| 346 | 13 | `private static void copyTree(Path from, Path to) throws IOException` |  |
 
-### the moves (lines 440-525)
+### views and waiting (lines 360-447)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 443 | 11 | `private static void zoomOutGlide(String heading) throws Exception` | M3 and M7: the street at the city marked A, the whole Earth B, the street taken again and settled, then the glide. |
-| 463 | 62 | `private static void move(String heading, Runnable start, boolean glide) throws Exception` | Runs a move: started, its load waited for (at most LOAD_MAX_S) and printed, then run as a click runs it (the tally reset in the same FX task), polled until the camera is idle (at most MOVE_MAX_S), and printed under it... |
+| 363 | 3 | `private static CameraPath.View at(double kmPx)` | A view on the globe at the city's centre, `kmPx` km a pixel (its month is the camera's to put on: mark() takes the month on screen). |
+| 368 | 5 | `private static CameraPath.View wholeNow() throws Exception` | The widest view as it stands now (its scale follows the canvas), the whole Earth facing the city. |
+| 375 | 9 | `private static CameraPath.View waitForWhole() throws Exception` | Waits for the expanded map's globe to exist, and returns the whole-Earth view (its centre is the city's). |
+| 386 | 12 | `private static void waitForCanvas() throws Exception` | Waits for the canvas to keep one size over three looks (the full screen takes a moment), and prints it. |
+| 400 | 6 | `private static void goTo(int month) throws Exception` | Puts the recorded month nearest `month` on screen, as the camera does. |
+| 408 | 7 | `private static void take(CameraPath.View v) throws Exception` | The expanded map's view taken whole and drawn (what a glide's or a fly's frame does). |
+| 416 | 6 | `private static void mark(boolean a) throws Exception` |  |
+| 424 | 3 | `private static void tell(String format, Object...arguments)` | One of the probe's waiting lines, unless check() runs it. |
+| 429 | 18 | `private static void settle(String what) throws Exception` | Waits, at most SETTLE_MAX_S, until MapView.viewSettled() has held over two looks 100 ms apart, and prints how long it took. |
 
-### the check ReplayCheck runs (5d) (lines 526-861)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 539 | 1 | **type** `public record Normal(long frames, boolean camera, boolean moveHeld, int cachesPinned)` | The normal game, before the replay is entered: the map's frames drawn, and whether a camera, a loaded move or a pinned cache exists. |
-| 548 | 4 | **type** `public record Moved(String name, boolean ready, double loadSeconds, int planViews, int passed, boolean held...` | One glide, loaded and run: how long the load took and how many plan views it walked, whether it reached Ready and how many views it passed; while it waited, whether the map held the move and how many of the six caches... |
-| 554 | 1 | **type** `public record Cancelled(boolean wasLoading, boolean taken, String phaseAfter, boolean heldAfter, int pinned...` | Escape pressed while a glide loads: whether it was loading, whether the key was taken, and where the camera and the map were left. |
-| 557 | 2 | **type** `public record Left(boolean ready, int preparedBefore, boolean replayAfter, boolean heldAfter, int pinnedAft...` | Leaving a Ready move, measured in the same FX call before a detached canvas could tick again (CM2). |
-| 564 | 1 | **type** `public record Checked(String cannot, boolean globe, Normal normal, Moved zoomOut, Moved months, Cancelled e...` | What check() measured. |
-| 573 | 30 | `public static Checked check(Path recordingFolder, GameFiles windowFiles, double glideSeconds) throws Exception` | CM1's check, run by ReplayCheck 5d (2026-11-03): the window off screen on a game of its own (windowFiles), first as the normal game draws its map, then in the replay of the recording at recordingFolder with the expand... |
-| 604 | 94 | `private static Checked measureAll(Path folder, GameFiles windowFiles, double glideSeconds) throws Exception` |  |
-| 700 | 9 | `private static void markMonths(double first, double last) throws Exception` | M6's marks: the last month at `last` is B, the first month at `first` is A, and the view is settled on A. |
-| 711 | 9 | `private static MapView waitForMap() throws Exception` | Waits for the expanded map to exist on the window (the normal game's) and returns its view. |
-| 725 | 84 | `private static Moved measureGlide(String name, boolean byKey) throws Exception` | The glide set up from the marks: loaded (at most CHECK_LOAD_MAX_S), held while it waits, run by a click on the canvas's middle or by a plain key as the window sends it to ReplayMode.key(), and polled until the camera ... |
-| 811 | 27 | `private static Left leaveWhileReady() throws Exception` | Test the actual chartNodes range while a real move is retained, then leave without yielding another FX frame. |
-| 840 | 21 | `private static Cancelled cancelWhileLoading() throws Exception` | A glide set up from the marks and, once the map has begun to load it, Escape sent to ReplayMode.key(); then where it all stands. |
-
-### the toolkit and reflection (lines 862-927)
+### the moves (lines 448-533)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 865 | 17 | `private static String startJavaFx()` | Why JavaFX cannot start here, in a few words, or null when it can: the toolkit is started and the answer is whether it came up (UiProbe's). |
-| 884 | 5 | `private static<T> T fx(Callable<T> c) throws Exception` | Runs on the FX thread and waits for the answer; an exception in it comes back here. |
-| 890 | 9 | `private static Field field(Class<?> c, String name)` |  |
-| 900 | 9 | `private static Method method(Class<?> c, String name, Class<?>...parameters)` |  |
-| 910 | 7 | `private static Object get(Field f, Object on)` |  |
-| 918 | 9 | `private static Object call(Method m, Object on, Object...arguments)` |  |
+| 451 | 11 | `private static void zoomOutGlide(String heading) throws Exception` | M3 and M7: the street at the city marked A, the whole Earth B, the street taken again and settled, then the glide. |
+| 471 | 62 | `private static void move(String heading, Runnable start, boolean glide) throws Exception` | Runs a move: started, its load waited for (at most LOAD_MAX_S) and printed, then run as a click runs it (the tally reset in the same FX task), polled until the camera is idle (at most MOVE_MAX_S), and printed under it... |
+
+### the check ReplayCheck runs (5d) (lines 534-869)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 547 | 1 | **type** `public record Normal(long frames, boolean camera, boolean moveHeld, int cachesPinned)` | The normal game, before the replay is entered: the map's frames drawn, and whether a camera, a loaded move or a pinned cache exists. |
+| 556 | 4 | **type** `public record Moved(String name, boolean ready, double loadSeconds, int planViews, int passed, boolean held...` | One glide, loaded and run: how long the load took and how many plan views it walked, whether it reached Ready and how many views it passed; while it waited, whether the map held the move and how many of the six caches... |
+| 562 | 1 | **type** `public record Cancelled(boolean wasLoading, boolean taken, String phaseAfter, boolean heldAfter, int pinned...` | Escape pressed while a glide loads: whether it was loading, whether the key was taken, and where the camera and the map were left. |
+| 565 | 2 | **type** `public record Left(boolean ready, int preparedBefore, boolean replayAfter, boolean heldAfter, int pinnedAft...` | Leaving a Ready move, measured in the same FX call before a detached canvas could tick again (CM2). |
+| 572 | 1 | **type** `public record Checked(String cannot, boolean globe, Normal normal, Moved zoomOut, Moved months, Cancelled e...` | What check() measured. |
+| 581 | 30 | `public static Checked check(Path recordingFolder, GameFiles windowFiles, double glideSeconds) throws Exception` | CM1's check, run by ReplayCheck 5d (2026-11-03): the window off screen on a game of its own (windowFiles), first as the normal game draws its map, then in the replay of the recording at recordingFolder with the expand... |
+| 612 | 94 | `private static Checked measureAll(Path folder, GameFiles windowFiles, double glideSeconds) throws Exception` |  |
+| 708 | 9 | `private static void markMonths(double first, double last) throws Exception` | M6's marks: the last month at `last` is B, the first month at `first` is A, and the view is settled on A. |
+| 719 | 9 | `private static MapView waitForMap() throws Exception` | Waits for the expanded map to exist on the window (the normal game's) and returns its view. |
+| 733 | 84 | `private static Moved measureGlide(String name, boolean byKey) throws Exception` | The glide set up from the marks: loaded (at most CHECK_LOAD_MAX_S), held while it waits, run by a click on the canvas's middle or by a plain key as the window sends it to ReplayMode.key(), and polled until the camera ... |
+| 819 | 27 | `private static Left leaveWhileReady() throws Exception` | Test the actual chartNodes range while a real move is retained, then leave without yielding another FX frame. |
+| 848 | 21 | `private static Cancelled cancelWhileLoading() throws Exception` | A glide set up from the marks and, once the map has begun to load it, Escape sent to ReplayMode.key(); then where it all stands. |
+
+### the toolkit and reflection (lines 870-935)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 873 | 17 | `private static String startJavaFx()` | Why JavaFX cannot start here, in a few words, or null when it can: the toolkit is started and the answer is whether it came up (UiProbe's). |
+| 892 | 5 | `private static<T> T fx(Callable<T> c) throws Exception` | Runs on the FX thread and waits for the answer; an exception in it comes back here. |
+| 898 | 9 | `private static Field field(Class<?> c, String name)` |  |
+| 908 | 9 | `private static Method method(Class<?> c, String name, Class<?>...parameters)` |  |
+| 918 | 7 | `private static Object get(Field f, Object on)` |  |
+| 926 | 9 | `private static Object call(Method m, Object on, Object...arguments)` |  |
 

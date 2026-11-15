@@ -121,8 +121,8 @@ public class ScaleCheck {
     /** Jerus's two plans, in people: the copies whose sectors are free (section 6). */
     static final double[] FREE_PEOPLE = { 5e9, 1e10 };
 
-    /** The month ownTown() is copied at; its growth, ground, rents and orders are observed (PO1). */
-    static final int FREE_FIXTURE_MONTHS = 172;
+    /** QB1's quoted-borrowing town at month 225: growing, ground free, affordable rents and million-building interest decisions; the same copy laws as before. */
+    static final int FREE_FIXTURE_MONTHS = 225;
 
     /** Months each free copy plays, every one timed. */
     static final int FREE_MONTHS = 6;
