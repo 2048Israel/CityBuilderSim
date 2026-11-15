@@ -560,7 +560,8 @@ public class ResearchViewCheck {
         Equipment tractor = mixed.getEquipment("tractor"), drive = bakery.getEquipment("electric-drive");
         boolean farmsStand = FittingCheck.stack(town, "Mixed Farm").getQuantity() > 0 && FittingCheck.stack(town, "Grain Farm").getQuantity() > 0;
         check("a piece not known at the month is not shown: the farms' tractor (" + tractor.getSince() + ", history's month " + tractor.knownFrom() + ") is not known in month " + month + ", though the farms stand",
-                farmsStand && !tractor.knownAt(month, town.getResearch()) && rows.stream().noneMatch(r -> r.template() == mixed || r.template() == grain));
+                farmsStand && !tractor.knownAt(month, town.getResearch()) && rows.stream().noneMatch(r -> (r.template() == mixed || r.template() == grain)
+                        && r.piece().getId().equals(tractor.getId())));
         ResearchView.PieceRow driveRow = rows.stream().filter(r -> r.template() == bakery && r.piece() == drive).findFirst().orElse(null);
         check("...the Bakery's electric drive (known from a year) is, with no discovery behind it", driveRow != null && driveRow.from() == null && driveRow.unfitted() > 0);
 
@@ -569,7 +570,8 @@ public class ResearchViewCheck {
         setFinds(town, Map.of("PE1", pe1Month, "PE14", month - 1));
         List<ResearchView.PieceRow> withTractor = ResearchView.equipment(town, null);
         List<ResearchView.PieceRow> farmRows = new ArrayList<>();
-        for (ResearchView.PieceRow row : withTractor) if (row.template() == mixed || row.template() == grain) farmRows.add(row);
+        for (ResearchView.PieceRow row : withTractor)
+            if ((row.template() == mixed || row.template() == grain) && row.piece().getId().equals(tractor.getId())) farmRows.add(row);
         boolean farms = farmRows.size() == 2;
         for (ResearchView.PieceRow row : farmRows) {
             farms &= row.piece().getId().equals(tractor.getId()) && row.verdict().kind() != EquipmentFit.Kind.NOT_KNOWN && row.verdict().kind() != EquipmentFit.Kind.FITTED
@@ -628,9 +630,9 @@ public class ResearchViewCheck {
         String[] picked = town.getRecipes().chosen(mixed.getId());
         ResearchView.RecipeUse horses = uses.stream().filter(u -> u.template() == mixed).findFirst().orElse(null);
         check("fixture: the Mixed Farm's choice is kept - the tractor (its default, not known yet) for the fitted part, the horses for the unfitted - and its recipe piece is the tractor",
-                picked != null && picked.length == 2 && picked[1].equals("horses") && "tractor".equals(mixed.recipePieceId()) && !mixed.getRecipe("tractor").knownAt(month, town.getResearch()), String.valueOf(picked == null ? null : picked[0] + "/" + picked[1]));
+                picked != null && picked.length == 2 && (picked[1].equals("horses") || picked[1].startsWith("horses~")) && "tractor".equals(mixed.recipePieceId()) && !mixed.getRecipe("tractor").knownAt(month, town.getResearch()), String.valueOf(picked == null ? null : picked[0] + "/" + picked[1]));
         check("the horses run on every farm of the stack: each lacks its tractor, so the unfitted part is the whole stack (" + farms.getQuantity() + ")",
-                horses != null && horses.recipe().getId().equals("horses") && horses.running() == farms.getQuantity() && horses.buildings() == farms.getQuantity() && horses.from() == null);
+                horses != null && horses.recipe().getId().equals(picked[1]) && horses.running() == farms.getQuantity() && horses.buildings() == farms.getQuantity() && horses.from() == null);
 
         // The parts' sizes: one farm with the tractor, one without.
         int total = farms.getQuantity();

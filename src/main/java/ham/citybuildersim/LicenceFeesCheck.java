@@ -88,6 +88,12 @@ public final class LicenceFeesCheck {
     static void exemptions() throws Exception {
         System.out.println("--- 2. expiry, unpatented and local discoveries, and the default founding ---");
         Game g = town("licence-expiry", true);
+        // Isolate PE1 while retaining the total across all sectors: R2d also
+        // supplies independently patented recipes to this standing village.
+        Map<String, Integer> local = new java.util.HashMap<>();
+        for (ResearchCatalog.Entry e : ResearchCatalog.get().entries())
+            if (!e.code().equals("PE1")) local.put(e.code(), 1);
+        g.getResearch().restore(null, null, null, local);
         int end = ResearchCatalog.knownFrom("PE1") + LicenceFees.TERM_MONTHS;
         ResearchCheck.atMonth(g, end - 2);
         quietly(() -> g.simulateMonths(1));
@@ -397,6 +403,25 @@ public final class LicenceFeesCheck {
         check("fixture: E1 is under patent and its oxygen recipe has a positive gain to license",
                 LicenceFees.payable("E1", plain.getMonth(), plain.getResearch())
                 && LicenceFees.recipeFee(steel, oxygen, plain.getMonth(), prices, plain.getResearch()) > 0);
+        check("E1 supersedes the hearth in the real catalogue: either fitted status runs oxygen, so the piece's gain is zero",
+                EquipmentFit.verdictForNew(plain, steel, hearth).gain() == 0 && Recipes.gainOf(plain, steel) == 0
+                && Recipes.canRun(steel, oxygen, true, plain.getMonth(), plain.getResearch())
+                && Recipes.canRun(steel, oxygen, false, plain.getMonth(), plain.getResearch()));
+
+        // Synthetic required E1 process: no real finite-gain patented recipe
+        // piece remains. The tractor's FARM_HORSES gain is still R1d's NaN.
+        // Retain a positive default gross-versus-net control on this equipped
+        // template without changing the actual catalogue's E1 behaviour.
+        int[] posts = new int[JobType.values().length];
+        for (JobType job : JobType.values()) posts[job.ordinal()] = oxygen.getJobs(job);
+        Recipe required = new Recipe(oxygen.getId(), "Synthetic required E1 process", oxygen.getSince(),
+                hearth.getId(), true, oxygen.makes(), oxygen.uses(), posts, oxygen.getElectricity(),
+                oxygen.getGen(), oxygen.getWater(), oxygen.getConsumables());
+        Recipe bessemer = steel.getRecipe("bessemer");
+        steel.setRecipes(List.of(required, old, bessemer));
+        gross = Recipes.value(required, prices) - Recipes.value(bessemer, prices);
+        check("synthetic fixture: the required patented process has positive gross gain and a positive imported fee",
+                gross > 0 && LicenceFees.recipeFee(steel, required, plain.getMonth(), prices, plain.getResearch()) > 0);
         double during = EquipmentFit.verdictForNew(plain, steel, hearth).gain();
         check("a default city's fitting estimate during the patent term keeps the whole gross gain", near(during, gross));
         check("its game-layer recipe gain also carries no royalty", near(Recipes.gainOf(plain, steel), gross));

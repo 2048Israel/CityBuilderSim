@@ -276,7 +276,7 @@ public final class RefineryView {
             double run = counted ? flow.run(k) * rate : Double.NaN;
             double share = counted && feed[i] > 0 ? flow.run(k) / feed[i] : Double.NaN;
             units.add(new Unit(k, standing[i], onSite[i], feed[i], run, share, flow.spread(k),
-                    RefineryFlow.spread(k, cityValues), oneMore(r, game, templates.get(k))));
+                    flow.process().spread(k, cityValues), oneMore(r, game, templates.get(k))));
         }
 
         if (!counted) {
@@ -495,7 +495,7 @@ public final class RefineryView {
                         }
                     }
                 }
-                for (RefineryFlow.Yield y : k.yields()) {
+                for (RefineryFlow.Yield y : f.process().yields(k)) {
                     double made = take * y.perLitre();
                     if (y.stream() != null) pool.get(y.stream().ordinal()).merge(End.unit(k), made, Double::sum);
                     else link(links, End.unit(k), End.product(y.good()), litresOf(y.good(), made));

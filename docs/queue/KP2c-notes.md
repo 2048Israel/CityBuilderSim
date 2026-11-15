@@ -166,3 +166,14 @@ redraw alone fails (`target/kp2c-spark-before.log`, exit 1). On the mend all
 focused laws pass (`target/kp2c-unit.log`, exit 0). The delta's --fast also
 passes, zero firm/186 soft. The 40-harness pick above precedes this small
 retell/fixture delta; the final whole launcher run verifies it in full.
+
+The orchestrator gave the dry-run go at 17:26 on 2026-11-15 after R2d
+shipped (main 32ec5a5d3). Merged that main before the launcher. The four
+conflicts were generated indexes (dials, harnesses, KeptCheck's map and the
+map index), all regenerated. All ui/ files and the complete own methods
+greyedWhileHeld, doorsStyledOnce, nothingSet, kp2bSets and kp2cMends are
+byte-identical across the merge. R2d's section 96 and descriptions came in
+as authored; the source merge was automatic. Reported that audit to the
+orchestrator before launch. Merged --fast passes: compile 49 s, maps,
+zero firm/186 soft. The pushed provisional branch is now frozen for the
+normal detached tools/gate.sh KP2c --dry-run, in the default pool.

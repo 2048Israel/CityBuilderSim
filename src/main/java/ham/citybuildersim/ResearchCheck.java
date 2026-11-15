@@ -712,8 +712,8 @@ public class ResearchCheck {
                 "open-hearth".equals(shop.recipePieceId()) && e1Recipe.getNeedsEquipment() == null && "open-hearth".equals(shop.getRecipe("open-hearth").getNeedsEquipment()));
         check("the basic-oxygen recipe cannot be run by the part without the open hearth the month before E1's, and can at it",
                 !Recipes.canRun(shop, e1Recipe, false, e1 - 1) && Recipes.canRun(shop, e1Recipe, false, e1));
-        check("...and the part with the open hearth never runs it, known or not; the open-hearth recipe is the fitted part's from the first month",
-                !Recipes.canRun(shop, e1Recipe, true, e1 - 1) && !Recipes.canRun(shop, e1Recipe, true, e1)
+        check("...and the later oxygen process can supersede the old furnace from E1, while open hearth is available from the first month",
+                !Recipes.canRun(shop, e1Recipe, true, e1 - 1) && Recipes.canRun(shop, e1Recipe, true, e1)
                         && Recipes.canRun(shop, shop.getRecipe("open-hearth"), true, 1) && !Recipes.canRun(shop, shop.getRecipe("open-hearth"), false, e1));
         check("the Grain Farm's tractor recipe is the fitted part's, from PE14's month and not before, and the horses' recipe is the unfitted part's throughout",
                 !Recipes.canRun(grain, tractorRecipe, true, pe14 - 1) && Recipes.canRun(grain, tractorRecipe, true, pe14) && !Recipes.canRun(grain, tractorRecipe, false, pe14)

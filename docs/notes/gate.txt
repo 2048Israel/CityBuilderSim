@@ -1,8 +1,8 @@
-# gate of Merge batch/XR7: the world's pegs overshoot both ways: `WorldMoneys.resolve()` lands a world peg's break at the shadow plus `OVERSHOOT` of `max(0, x)`, so a world money stronger than its peg breaks with no overshoot (the Swiss franc, 2015, was one); the city's own peg does it both ways since XR5. Moves the default playtest's trace (the world's pegs break in it): the ensemble (XR5's ★1, recommended and taken by the orchestrator, 2026-11-06). Folded in at the queue's triage (Jerus, 2026-11-09: "we really need to empty the queue"): **XR8**: XR5's review follow-ups (the hold under a peg): no cap on what a hold may buy after a deep repeg - the bounded inverse grows exponentially past a lift of 0.2, so the central bank prints in one month about 9 years of GDP to hold 3x the shadow and about 115 years for 5x (`ForeignAccounts.java:1083`/`:1121` with `:1512`); cap it or break the peg, and check the audit's tolerance at such sums; and an old save under a peg loads with no felt support (`:3185`), its first month paying the whole gap (XR5's gate review, 2026-11-06; only a player-chosen peg reaches either), 0.9.117
+# gate of Merge batch/R2d: research: the 1900-1950 entries undone - each P row's 1900 recipe or piece (research-1900 §8.5) on its templates, so a city with every entry runs today's figures (★E3), with recipes written as changes so two pieces compose on one template (R1c ★4, ★8: the binder beside the tractor), 0.9.118
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 193 harnesses run in 2387s: 188 passed, 5 failed
+# suite: 205 harnesses run in 2649s: 199 passed, 6 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 InvestCheck | exit 1
@@ -16,10 +16,10 @@ MapCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
-ResearchViewCheck | exit 1
-ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 2 rows, Agriculture: 2 of 5), and the sectors' rows add up to the city's
-ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217
 PrizeCheck | exit 2
-PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1015.476826182461 of 1012.1739302492329)
-PrizeCheck | FAIL ...and its till (at most 405) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
+PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1011.1291940951232 of 1004.6942298626966)
+PrizeCheck | FAIL ...and its till (at most 388) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284
+ResearchViewCheck | exit 1
+ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 1 rows, Agriculture: 3 of 6), and the sectors' rows add up to the city's
+ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217

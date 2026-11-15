@@ -323,6 +323,11 @@ public final class Freight extends Sector {
     private double homeShare, quayShare;
 
     /* the month just billed, for the screens */
+    /** Engine mix of the goods just traded, saved for their later service invoice. */
+    private double railSteamForInvoice = Double.NaN;
+    /** Whether the imported PE21 service was in term when those goods were traded. */
+    private Boolean railPatentForInvoice;
+
     private double rTonnes, rHauled, rTruckBill, rHaulage, rFuel;
 
     /**
@@ -501,6 +506,28 @@ public final class Freight extends Sector {
      */
     public void haul(Sectors sectors) { haul(sectors, null); }
 
+    /** Freeze the fleet that served this goods month, before a later sale or demolition. */
+    public void captureRailServiceForInvoice() {
+        if (game != null && game.foundedUnfitted()) {
+            railSteamForInvoice = ham.citybuildersim.RecipeChanges.railSteamShare(game);
+            railPatentForInvoice = ham.citybuildersim.LicenceFees.payable("PE21", game.getMonth(), game.getResearch());
+        }
+    }
+
+    /** Eligibility is a liability of the produced month, before expiry or a later local find. */
+    private boolean patentPayableForInvoice() {
+        if (game == null || !game.foundedUnfitted()) return false;
+        return railPatentForInvoice != null ? railPatentForInvoice
+                : ham.citybuildersim.LicenceFees.payable("PE21", game.getMonth(), game.getResearch());
+    }
+
+    /** Before the first production boundary there is no earlier fleet to freeze. */
+    private double steamShareForInvoice() {
+        if (game == null || !game.foundedUnfitted()) return 0;
+        return Double.isFinite(railSteamForInvoice) ? railSteamForInvoice
+                : ham.citybuildersim.RecipeChanges.railSteamShare(game);
+    }
+
     /**
      * ...WITH THE CITY'S PORTS (0.7.86, batch O9; ham.citybuildersim.Ports):
      * the berths' shares in force bill the railway's part of each good and
@@ -661,20 +688,24 @@ public final class Freight extends Sector {
         // ...its fuel, drawn as a buyer (0.7.62): the refiners' shelf first, the world for the rest - diesel (0.7.76).
         // ...and the city tonnes' at CITY_LITRES_A_TONNE each, a third of a truck's (FR6); moved stays the boundary's.
         double cityRailedTotal = homeRailedMonth + quayRailedMonth;
-        Markets.Draw took = markets.draw(Good.DIESEL, this, key(),
-                moved * FUEL_LITRES_PER_TONNE + cityRailedTotal * CITY_LITRES_A_TONNE, sectors);
-        double fuel = took.cost();
+        double dieselEquivalent = moved * FUEL_LITRES_PER_TONNE + cityRailedTotal * CITY_LITRES_A_TONNE;
+        double steam = steamShareForInvoice();
+        ham.citybuildersim.RecipeChanges.railService(game, this, dieselEquivalent, steam, patentPayableForInvoice());
+        Markets.Draw took = markets.draw(Good.DIESEL, this, key(), dieselEquivalent * (1 - steam), sectors);
+        Markets.Draw coal = steam > 0 ? markets.draw(Good.THERMAL_COAL, this, key(),
+                dieselEquivalent * steam * ham.citybuildersim.RecipeChanges.RAIL_COAL_TONNES_PER_DIESEL_LITRE, sectors) : null;
+        double fuel = took.cost() + (coal == null ? 0 : coal.cost());
 
         rHaulage = haulage;
         rFuel = fuel;
-        rFuelImported = took.importCost();
+        rFuelImported = took.importCost() + (coal == null ? 0 : coal.importCost());
         rFuelLitres = took.units();
         rFuelLitresImported = took.imported();
         rHauled = moved;
         rHomeRailed = homeRailedMonth;
         rQuayRailed = quayRailedMonth;
         rHomeBill = cityBillMonth;
-        rCityLitres = cityRailedTotal * CITY_LITRES_A_TONNE;
+        rCityLitres = cityRailedTotal * CITY_LITRES_A_TONNE * (1 - steam);
         rPaidAbroad = abroad;
         abroadKnown = allowedKnown = true;
 
@@ -1618,7 +1649,10 @@ public final class Freight extends Sector {
         double revenue = picked * lorryRatePerTonne() * quote;
         // ...its fuel at what a litre costs to bring in today (0.7.62): the refiners' price or the world's - diesel's (0.7.76).
         double litre = markets == null ? Good.DIESEL.worldImportPrice() : markets.get(Good.DIESEL).landedPrice();
-        double fuel = picked * FUEL_LITRES_PER_TONNE * (Double.isFinite(litre) ? Math.max(0, litre) : 0);
+        double coalPrice = markets == null ? Good.THERMAL_COAL.worldImportPrice() : markets.get(Good.THERMAL_COAL).landedPrice();
+        double steam = game != null && game.foundedUnfitted() ? t.steamRailShare() : 0;
+        double fuel = picked * FUEL_LITRES_PER_TONNE * ((1 - steam) * (Double.isFinite(litre) ? Math.max(0, litre) : 0)
+                + steam * ham.citybuildersim.RecipeChanges.RAIL_COAL_TONNES_PER_DIESEL_LITRE * Math.max(0, coalPrice));
         return revenue - fuel - plans.runningCostOf(t) - plans.standingCostOf(this, t);
     }
 
@@ -1978,7 +2012,7 @@ public final class Freight extends Sector {
                 quote < .5 ? Line.Tone.GOOD : quote > .85 ? Line.Tone.WARN : Line.Tone.NONE));
         lines.add(Line.of("A lorry charges", f.amount(lorryRatePerTonne()) + " a tonne"));
         lines.add(Line.of("Rail freight billed", f.amount(rHaulage)));
-        lines.add(Line.of("Diesel", f.amount(rFuel), Line.Tone.MUTED));
+        lines.add(Line.of("Rail fuel", f.amount(rFuel), Line.Tone.MUTED));
 
         if (rCapacity <= 0) {
             lines.add(Line.note("There is no railway. Everything the city trades goes by "
@@ -2048,6 +2082,10 @@ public final class Freight extends Sector {
 
     @Override
     protected void saveExtras(Map<String, Double> extras) {
+        if (game != null && game.foundedUnfitted() && Double.isFinite(railSteamForInvoice))
+            extras.put("railSteamForInvoice", railSteamForInvoice);
+        if (game != null && game.foundedUnfitted() && railPatentForInvoice != null)
+            extras.put("railPatentForInvoice", railPatentForInvoice ? 1.0 : 0.0);
         extras.put("quote", quote);
         extras.put("fleetKnown", fleetKnown ? 1.0 : 0.0);
         for (Traffic stream : Traffic.values()) {
@@ -2093,6 +2131,10 @@ public final class Freight extends Sector {
 
     @Override
     protected void restoreExtras(Map<String, Double> extras) {
+        // Before R2d every rail invoice used diesel: a missing legacy mix is modern.
+        railSteamForInvoice = Math.max(0, Math.min(1, extras.getOrDefault("railSteamForInvoice", 0.0)));
+        // Before R2d no rail patent bill had been captured for a prior period.
+        railPatentForInvoice = extras.getOrDefault("railPatentForInvoice", 0.0) > 0;
         quote = extras.getOrDefault("quote", OPENING_QUOTE);
         // Absent in a save from before rolling stock existed. See fleetKnown.
         fleetKnown = extras.getOrDefault("fleetKnown", 0.0) > 0;
@@ -2140,6 +2182,8 @@ public final class Freight extends Sector {
 
     @Override
     protected void resetExtras() {
+        railSteamForInvoice = Double.NaN;
+        railPatentForInvoice = null;
         quote = OPENING_QUOTE;
         fleetKnown = false;
         java.util.Arrays.fill(carried, 0);

@@ -205,7 +205,15 @@
   "UNIV_SCIENCE, UNIV_HIGHTECH_ENG, UNIV_POLICY.",
   "",
   "If this file is missing or malformed the game falls back to its built-in",
-  "buildings and prints why, so a typo here can never stop it starting."
+  "buildings and prints why, so a typo here can never stop it starting.",
+  "",
+  "recipeChanges are independent signed undos of discoveries, anchored to the modern top level.",
+  "entry is the research catalogue code; equipment is the optional piece whose own unfitted count applies the undo.",
+  "without holds per-good makes/uses and per-job changes, plus electricity, gen, water and consumables differences; omitted differences are zero.",
+  "production1 changes utility output; dig is field tonnes per output; steamRail is the steam-engine share; crackerPetrol is the petrol-per-feed difference.",
+  "Each source names every figure and every estimate. Recipe alternatives and these independent changes compose before whole jobs and draw are rounded.",
+  "id and since override the change key and known date for a known-1900 step. The tilde is reserved for saved composite recipe ids.",
+  "Only a city founded unfitted applies the undos. The modern top level stays the default city's figures."
  ],
  "nextId": 153,
  "buildings": [
@@ -304,7 +312,18 @@
     "SNACKS": 480,
     "DRINKS": 5760
    },
-   "stock": 70000
+   "stock": 70000,
+   "recipeChanges": [
+    {
+     "entry": "PB2",
+     "source": "research-1900 PB2 [CPL-PW,PW,LOB]: delivery 3% + accounts 2% of bill (study estimates); posts/sale not found. R2d support-crew equivalent estimate: 5% of this template's food bill at Good.worldImportPrice divided by PayTier.UNSKILLED wage (both founding-priced); whole posts round once at application. Modern food invoice and default payroll unchanged. PB3 has no cost figure and adds no invented gain.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 1.1219653179190754
+      }
+     }
+    }
+   ]
   },
   {
    "id": 5,
@@ -342,7 +361,18 @@
     "SNACKS": 1600,
     "DRINKS": 19200
    },
-   "stock": 350000
+   "stock": 350000,
+   "recipeChanges": [
+    {
+     "entry": "PB2",
+     "source": "research-1900 PB2 [CPL-PW,PW,LOB]: delivery 3% + accounts 2% of bill (study estimates); posts/sale not found. R2d support-crew equivalent estimate: 5% of this template's food bill at Good.worldImportPrice divided by PayTier.UNSKILLED wage (both founding-priced); whole posts round once at application. Modern food invoice and default payroll unchanged. PB3 has no cost figure and adds no invented gain.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 3.739884393063584
+      }
+     }
+    }
+   ]
   },
   {
    "id": 3,
@@ -513,7 +543,47 @@
     "UNIV_SCIENCE": 2
    },
    "land": 2000000,
-   "roadLoad": 120
+   "roadLoad": 120,
+   "equipment": [
+    {
+     "id": "steam-turbine",
+     "name": "Steam turbine",
+     "since": "PE6",
+     "buys": {
+      "MACHINERY": 19996.567
+     },
+     "work": 12000,
+     "lifeMonths": 300
+    },
+    {
+     "id": "pulverised-coal",
+     "name": "Pulverised coal",
+     "since": "PE16",
+     "buys": {
+      "MACHINERY": 19996.567
+     },
+     "work": 12000,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE6",
+     "source": "research-1900 8.1 PE6 [P1.1,P1.3,P1.4,P1.6]: 3.6%->24.3%; PE16 [P1.5,P1.7] study estimate -40% fuel. R2d fixed-heat-input mapping: output stages 3.6/24.3, 0.6, 1 of modern. PE6 undo is first->middle; PE16 is middle->modern. No new coal invoice invented for the municipal utility. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "production1": -126518.51851851851
+     },
+     "equipment": "steam-turbine"
+    },
+    {
+     "entry": "PE16",
+     "source": "research-1900 PE16 [P1.5,P1.7,P1.3] study estimate -40% coal/kWh; fixed-heat-input output mapping and stage split described by PE6 source on this template. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "production1": -112000.0
+     },
+     "equipment": "pulverised-coal"
+    }
+   ]
   },
   {
    "id": 41,
@@ -604,7 +674,29 @@
     "UNIV_SCIENCE": 3
    },
    "land": 800000,
-   "roadLoad": 15
+   "roadLoad": 15,
+   "equipment": [
+    {
+     "id": "rapid-sand",
+     "name": "Rapid sand",
+     "since": "PE5",
+     "buys": {
+      "MACHINERY": 1227.313
+     },
+     "work": 4400,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE5",
+     "source": "research-1900 8.1 PE5 [P1.44,P1.40-P1.42]: rapid sand rate x60. R2d fixed-footprint mapping estimate: 60000/60=1000 water units on slow sand, same land; medical benefit belongs R2f. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "production1": -59000
+     },
+     "equipment": "rapid-sand"
+    }
+   ]
   },
   {
    "id": 29,
@@ -1416,6 +1508,48 @@
      },
      "work": 244,
      "lifeMonths": 300
+    },
+    {
+     "id": "high-speed-tools",
+     "name": "High speed tools",
+     "since": "PE2",
+     "buys": {
+      "MACHINERY": 415.299
+     },
+     "work": 244,
+     "lifeMonths": 300
+    },
+    {
+     "id": "carbide-tools",
+     "name": "Carbide tools",
+     "since": "PE22",
+     "buys": {
+      "MACHINERY": 415.299
+     },
+     "work": 244,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE2",
+     "source": "research-1900 8.1 PE2 [P2.24]: 30->90 ft/min; PE22 [P2.25]: x4. Carbon=12, HSS=4, carbide=1 units of cutting time. R2d mapping estimate: DIPLOMA posts are the cutting crew; the independent PE2 undo is 12-4=8 modern crews. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 496
+      }
+     },
+     "equipment": "high-speed-tools"
+    },
+    {
+     "entry": "PE22",
+     "source": "research-1900 8.1 PE22 [P2.25]: carbide cutting speed x4 over HSS. R2d cutting-crew mapping estimate: DIPLOMA posts; undo +3 modern crews. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 186
+      }
+     },
+     "equipment": "carbide-tools"
     }
    ]
   },
@@ -1455,6 +1589,48 @@
      },
      "work": 114,
      "lifeMonths": 300
+    },
+    {
+     "id": "high-speed-tools",
+     "name": "High speed tools",
+     "since": "PE2",
+     "buys": {
+      "MACHINERY": 272.015
+     },
+     "work": 114,
+     "lifeMonths": 300
+    },
+    {
+     "id": "carbide-tools",
+     "name": "Carbide tools",
+     "since": "PE22",
+     "buys": {
+      "MACHINERY": 272.015
+     },
+     "work": 114,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE2",
+     "source": "research-1900 8.1 PE2 [P2.24]: 30->90 ft/min; PE22 [P2.25]: x4. Carbon=12, HSS=4, carbide=1 units of cutting time. R2d mapping estimate: DIPLOMA posts are the cutting crew; the independent PE2 undo is 12-4=8 modern crews. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 840
+      }
+     },
+     "equipment": "high-speed-tools"
+    },
+    {
+     "entry": "PE22",
+     "source": "research-1900 8.1 PE22 [P2.25]: carbide cutting speed x4 over HSS. R2d cutting-crew mapping estimate: DIPLOMA posts; undo +3 modern crews. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 315
+      }
+     },
+     "equipment": "carbide-tools"
     }
    ]
   },
@@ -1494,6 +1670,48 @@
      },
      "work": 612,
      "lifeMonths": 300
+    },
+    {
+     "id": "high-speed-tools",
+     "name": "High speed tools",
+     "since": "PE2",
+     "buys": {
+      "MACHINERY": 1038.993
+     },
+     "work": 612,
+     "lifeMonths": 300
+    },
+    {
+     "id": "carbide-tools",
+     "name": "Carbide tools",
+     "since": "PE22",
+     "buys": {
+      "MACHINERY": 1038.993
+     },
+     "work": 612,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE2",
+     "source": "research-1900 8.1 PE2 [P2.24]: 30->90 ft/min; PE22 [P2.25]: x4. Carbon=12, HSS=4, carbide=1 units of cutting time. R2d mapping estimate: DIPLOMA posts are the cutting crew; the independent PE2 undo is 12-4=8 modern crews. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 976
+      }
+     },
+     "equipment": "high-speed-tools"
+    },
+    {
+     "entry": "PE22",
+     "source": "research-1900 8.1 PE22 [P2.25]: carbide cutting speed x4 over HSS. R2d cutting-crew mapping estimate: DIPLOMA posts; undo +3 modern crews. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 366
+      }
+     },
+     "equipment": "carbide-tools"
     }
    ]
   },
@@ -1534,6 +1752,16 @@
      },
      "work": 0,
      "lifeMonths": 180
+    },
+    {
+     "id": "milking-machine",
+     "name": "Milking machine",
+     "since": "PE18",
+     "buys": {
+      "MACHINERY": 4.478
+     },
+     "work": 2,
+     "lifeMonths": 300
     }
    ],
    "recipes": [
@@ -1548,6 +1776,27 @@
      "name": "Horses",
      "since": "1900",
      "uses": {}
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE18",
+     "source": "research-1900 PE18 [P2.51,P2.52]: 10->30 cows/hour/milker. R2d mapping estimate: unskilled farm crew as milking posts at fixed output, +2 modern crews; no butter mechanism invented. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 4
+      }
+     },
+     "equipment": "milking-machine"
+    },
+    {
+     "entry": "PE20",
+     "source": "research-1900 PE20 [P2.50]: hybrid corn yield +9-20%; midpoint +14.5% (R2d crop-mix mapping estimate across CROPS). Saved seed output = modern/1.145. Modern top-level has no seed input; cannot add a modern invoice without moving default figures.",
+     "without": {
+      "makes": {
+       "CROPS": -8.737991266375545
+      }
+     }
     }
    ]
   },
@@ -1586,6 +1835,26 @@
      },
      "work": 0,
      "lifeMonths": 180
+    },
+    {
+     "id": "combine",
+     "name": "Combine",
+     "since": "PE17",
+     "buys": {
+      "MACHINERY": 22.388
+     },
+     "work": 10,
+     "lifeMonths": 300
+    },
+    {
+     "id": "binder-thresher",
+     "name": "Binder thresher",
+     "since": "1900",
+     "buys": {
+      "MACHINERY": 22.388
+     },
+     "work": 10,
+     "lifeMonths": 300
     }
    ],
    "recipes": [
@@ -1600,6 +1869,39 @@
      "name": "Horses",
      "since": "1900",
      "uses": {}
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE17",
+     "source": "research-1900 PE17 [P2.48,P2.53]: 40-50->15-20 hours/100 bushels. Midpoints 45/17.5; R2d mapping estimate: unskilled harvesting posts only, additive to the separate 1900 binder undo and tractor/horse form. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 4.714285714285715
+      }
+     },
+     "equipment": "combine"
+    },
+    {
+     "entry": "PE17",
+     "source": "R1c notes row 7 [T,AH]: without binder and thresher posts about x5.5 (study estimate); undo +4.5 modern unskilled crews. R2d additive-stage estimate avoids one piece overwriting another; binder known 1900 beside tractor. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 13.5
+      }
+     },
+     "equipment": "binder-thresher",
+     "id": "binder",
+     "since": "1900"
+    },
+    {
+     "entry": "PE20",
+     "source": "research-1900 PE20 [P2.50]: hybrid corn yield +9-20%; midpoint +14.5% (R2d crop-mix mapping estimate across CROPS). Saved seed output = modern/1.145. Modern top-level has no seed input; cannot add a modern invoice without moving default figures.",
+     "without": {
+      "makes": {
+       "CROPS": -63.31877729257644
+      }
+     }
     }
    ]
   },
@@ -1662,6 +1964,16 @@
      },
      "work": 0,
      "lifeMonths": 180
+    },
+    {
+     "id": "milking-machine",
+     "name": "Milking machine",
+     "since": "PE18",
+     "buys": {
+      "MACHINERY": 242.537
+     },
+     "work": 108,
+     "lifeMonths": 300
     }
    ],
    "recipes": [
@@ -1676,6 +1988,18 @@
      "name": "Horses",
      "since": "1900",
      "uses": {}
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE18",
+     "source": "research-1900 PE18 [P2.51,P2.52]: 10->30 cows/hour/milker. R2d mapping estimate: unskilled farm crew as milking posts at fixed output, +2 modern crews; no butter mechanism invented. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 18
+      }
+     },
+     "equipment": "milking-machine"
     }
    ]
   },
@@ -1754,6 +2078,17 @@
      },
      "work": 12,
      "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE10",
+     "source": "research-1900 PE10 [P2.55], 8.5: before hydrogenation FATS from animals only; this crops-fed plant makes no FATS. Its SNACKS and crop use remain, since no split of their shared crop input is sourced.",
+     "without": {
+      "makes": {
+       "FATS": -8000
+      }
+     }
     }
    ]
   },
@@ -1865,7 +2200,29 @@
     "COLLEGE_ENGINEERING": 8
    },
    "land": 700000,
-   "roadLoad": 500
+   "roadLoad": 500,
+   "equipment": [
+    {
+     "id": "diesel-locomotive",
+     "name": "Diesel locomotive",
+     "since": "PE21",
+     "buys": {
+      "MACHINERY": 2611.94
+     },
+     "work": 2100,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE21",
+     "source": "research-1900 PE21 [P1.1,P1.85,P1.86]: 7.5%->28% efficiency (study estimate). Coal replaces diesel on the same moved tonnes: 36 MJ/L diesel, 24 GJ/t coal (R2d heating-value estimates), times 28/7.5. Actual invoice and planner share the fuel mix. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "steamRail": 1
+     },
+     "equipment": "diesel-locomotive"
+    }
+   ]
   },
   {
    "id": 63,
@@ -1884,7 +2241,29 @@
     "COLLEGE_ENGINEERING": 30
    },
    "land": 2400000,
-   "roadLoad": 2000
+   "roadLoad": 2000,
+   "equipment": [
+    {
+     "id": "diesel-locomotive",
+     "name": "Diesel locomotive",
+     "since": "PE21",
+     "buys": {
+      "MACHINERY": 9701.493
+     },
+     "work": 7800,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE21",
+     "source": "research-1900 PE21 [P1.1,P1.85,P1.86]: 7.5%->28% efficiency (study estimate). Coal replaces diesel on the same moved tonnes: 36 MJ/L diesel, 24 GJ/t coal (R2d heating-value estimates), times 28/7.5. Actual invoice and planner share the fuel mix. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "steamRail": 1
+     },
+     "equipment": "diesel-locomotive"
+    }
+   ]
   },
   {
    "id": 64,
@@ -1904,7 +2283,29 @@
     "COLLEGE_ENGINEERING": 72
    },
    "land": 5500000,
-   "roadLoad": 4900
+   "roadLoad": 4900,
+   "equipment": [
+    {
+     "id": "diesel-locomotive",
+     "name": "Diesel locomotive",
+     "since": "PE21",
+     "buys": {
+      "MACHINERY": 23134.328
+     },
+     "work": 18600,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE21",
+     "source": "research-1900 PE21 [P1.1,P1.85,P1.86]: 7.5%->28% efficiency (study estimate). Coal replaces diesel on the same moved tonnes: 36 MJ/L diesel, 24 GJ/t coal (R2d heating-value estimates), times 28/7.5. Actual invoice and planner share the fuel mix. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "steamRail": 1
+     },
+     "equipment": "diesel-locomotive"
+    }
+   ]
   },
   {
    "id": 65,
@@ -1944,6 +2345,37 @@
      },
      "work": 726,
      "lifeMonths": 300
+    },
+    {
+     "id": "carbide-tools",
+     "name": "Carbide tools",
+     "since": "PE22",
+     "buys": {
+      "MACHINERY": 1231.343
+     },
+     "work": 726,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE22",
+     "source": "research-1900 8.1 PE22 [P2.25]: carbide cutting speed x4 over HSS. R2d cutting-crew mapping estimate: DIPLOMA posts; undo +3 modern crews. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 165
+      }
+     },
+     "equipment": "carbide-tools"
+    },
+    {
+     "entry": "PE13",
+     "source": "research-1900 PE13 [P1.82,P1.81]: chassis assembly 12.5->1.55 man-hours. R2d mapping estimate: unskilled assembly posts alone scale at fixed output; engineers and other posts unchanged. Assembly Plant availability already PE13.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 706.4516129032259
+      }
+     }
     }
    ]
   },
@@ -1987,6 +2419,17 @@
      "work": 2430,
      "lifeMonths": 300
     }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE13",
+     "source": "research-1900 PE13 [P1.82,P1.81]: chassis assembly 12.5->1.55 man-hours. R2d mapping estimate: unskilled assembly posts alone scale at fixed output; engineers and other posts unchanged. Assembly Plant availability already PE13.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 2931.774193548387
+      }
+     }
+    }
    ]
   },
   {
@@ -2027,6 +2470,17 @@
      },
      "work": 1450,
      "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE13",
+     "source": "research-1900 PE13 [P1.82,P1.81]: chassis assembly 12.5->1.55 man-hours. R2d mapping estimate: unskilled assembly posts alone scale at fixed output; engineers and other posts unchanged. Assembly Plant availability already PE13.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 1377.5806451612902
+      }
+     }
     }
    ]
   },
@@ -2355,7 +2809,16 @@
    "refinery": {
     "unit": "CRACKER",
     "feed": 2322991
-   }
+   },
+   "recipeChanges": [
+    {
+     "entry": "PE24",
+     "source": "research-1900 PE24 [P1.49-P1.51]: thermal petrol 0.24 L/L gas oil vs catalytic about 0.555. Restore game modern 0.55 exactly; missing 0.31 remains fuel oil (R2d mass-balance estimate); other yields unchanged. Small and large use the same process.",
+     "without": {
+      "crackerPetrol": -0.31
+     }
+    }
+   ]
   },
   {
    "id": 80,
@@ -2378,7 +2841,16 @@
    "refinery": {
     "unit": "CRACKER",
     "feed": 72593464
-   }
+   },
+   "recipeChanges": [
+    {
+     "entry": "PE24",
+     "source": "research-1900 PE24 [P1.49-P1.51]: thermal petrol 0.24 L/L gas oil vs catalytic about 0.555. Restore game modern 0.55 exactly; missing 0.31 remains fuel oil (R2d mass-balance estimate); other yields unchanged. Small and large use the same process.",
+     "without": {
+      "crackerPetrol": -0.31
+     }
+    }
+   ]
   },
   {
    "id": 81,
@@ -2686,7 +3158,10 @@
    "port": {
     "cargo": "DRY_BULK",
     "tonnes": 50000000,
-    "ships": ["PANAMAX", "CAPESIZE"]
+    "ships": [
+     "PANAMAX",
+     "CAPESIZE"
+    ]
    },
    "equipment": [
     {
@@ -3044,6 +3519,16 @@
      },
      "work": 69231,
      "lifeMonths": 300
+    },
+    {
+     "id": "strip-mill",
+     "name": "Strip mill",
+     "since": "PE19",
+     "buys": {
+      "MACHINERY": 25832.351
+     },
+     "work": 69231,
+     "lifeMonths": 300
     }
    ],
    "recipes": [
@@ -3085,6 +3570,18 @@
       "COLLEGE_ENGINEERING": 162,
       "UNIV_SCIENCE": 36
      }
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE19",
+     "source": "research-1900 PE19 [P2.22,P2.23]: hand rolling 0.5->8 t/man-shift (study estimate). R2d mapping estimate: DIPLOMA crew as rolling posts, +15 modern crews; Bessemer/open-hearth process and converter stay independent. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 9450
+      }
+     },
+     "equipment": "strip-mill"
     }
    ]
   },
@@ -3350,6 +3847,16 @@
      },
      "work": 0,
      "lifeMonths": 120
+    },
+    {
+     "id": "coal-loader",
+     "name": "Coal loader",
+     "since": "PE15",
+     "buys": {
+      "MACHINERY": 11481.194
+     },
+     "work": 30770,
+     "lifeMonths": 300
     }
    ],
    "recipes": [
@@ -3370,6 +3877,18 @@
       "COLLEGE_ENGINEERING": 40,
       "UNIV_SCIENCE": 10
      }
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE15",
+     "source": "research-1900 PE15 [P2.8,P2.12,P2.13]: one colliery 5.5->8.5 short tons/man-day. R2d mapping estimate: unskilled loading crew at fixed output; R1c cutter remains an independent process. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 130.9090909090909
+      }
+     },
+     "equipment": "coal-loader"
     }
    ]
   },
@@ -3586,6 +4105,16 @@
      },
      "work": 4616,
      "lifeMonths": 300
+    },
+    {
+     "id": "long-kiln",
+     "name": "Long kiln",
+     "since": "PE4",
+     "buys": {
+      "MACHINERY": 1722.313
+     },
+     "work": 4616,
+     "lifeMonths": 300
     }
    ],
    "recipes": [
@@ -3611,6 +4140,18 @@
       "COLLEGE_ENGINEERING": 5,
       "UNIV_SCIENCE": 1
      }
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE4",
+     "source": "research-1900 8.5 PE4: short kilns burn coal at 30% of clinker weight (study estimate); R2d mapping estimate: cement/lime tonnes proxy clinker. Cement Plant subtracts R1c row 5 shaft-kiln coal 4690 so the two undos together give 30%, without counting shaft inefficiency twice. Long-kiln capacity remains this template size; Large Cement Plant availability is PE4. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "uses": {
+       "THERMAL_COAL": 2810.0
+      }
+     },
+     "equipment": "long-kiln"
     }
    ]
   },
@@ -3642,7 +4183,31 @@
     "AGGREGATE": 18750,
     "THERMAL_COAL": 16750
    },
-   "since": "PE4"
+   "since": "PE4",
+   "equipment": [
+    {
+     "id": "long-kiln",
+     "name": "Long kiln",
+     "since": "PE4",
+     "buys": {
+      "MACHINERY": 7175.746
+     },
+     "work": 19231,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE4",
+     "source": "research-1900 8.5 PE4: short kilns burn coal at 30% of clinker weight (study estimate); R2d mapping estimate: cement/lime tonnes proxy clinker. Cement Plant subtracts R1c row 5 shaft-kiln coal 4690 so the two undos together give 30%, without counting shaft inefficiency twice. Long-kiln capacity remains this template size; Large Cement Plant availability is PE4. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "uses": {
+       "THERMAL_COAL": 20750.0
+      }
+     },
+     "equipment": "long-kiln"
+    }
+   ]
   },
   {
    "id": 120,
@@ -3670,7 +4235,31 @@
     "LIMESTONE": 32400,
     "THERMAL_COAL": 3600
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "long-kiln",
+     "name": "Long kiln",
+     "since": "PE4",
+     "buys": {
+      "MACHINERY": 1076.194
+     },
+     "work": 2884,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE4",
+     "source": "research-1900 8.5 PE4: short kilns burn coal at 30% of clinker weight (study estimate); R2d mapping estimate: cement/lime tonnes proxy clinker. Cement Plant subtracts R1c row 5 shaft-kiln coal 4690 so the two undos together give 30%, without counting shaft inefficiency twice. Long-kiln capacity remains this template size; Large Cement Plant availability is PE4. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "uses": {
+       "THERMAL_COAL": 1800.0
+      }
+     },
+     "equipment": "long-kiln"
+    }
+   ]
   },
   {
    "id": 121,
@@ -3732,6 +4321,18 @@
       "UNIV_SCIENCE": 0
      }
     }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE7",
+     "source": "research-1900 PE7 [P2.10,P2.14,P2.15]: gravity recovery 60-75% vs flotation 90%; study midpoint 67.5/90=0.75. R2d mapping: fixed ore and concentrate grade, output x0.75. The rock drill stays independent. Copper-in-ground per concentrate tonne rises inversely, modern site.dig/0.75, so the same ore feed is depleted at either recovery.",
+     "without": {
+      "makes": {
+       "COPPER_CONC": -550.0
+      },
+      "dig": 0.1136666666666667
+     }
+    }
    ]
   },
   {
@@ -3762,7 +4363,19 @@
     "sites": 8,
     "dig": 0.341
    },
-   "since": "PE8"
+   "since": "PE8",
+   "recipeChanges": [
+    {
+     "entry": "PE7",
+     "source": "research-1900 PE7 [P2.10,P2.14,P2.15]: gravity recovery 60-75% vs flotation 90%; study midpoint 67.5/90=0.75. R2d mapping: fixed ore and concentrate grade, output x0.75. The rock drill stays independent. Copper-in-ground per concentrate tonne rises inversely, modern site.dig/0.75, so the same ore feed is depleted at either recovery.",
+     "without": {
+      "makes": {
+       "COPPER_CONC": -6600.0
+      },
+      "dig": 0.1136666666666667
+     }
+    }
+   ]
   },
   {
    "id": 123,
@@ -3974,7 +4587,32 @@
     "SAWLOGS": 1000,
     "PULPWOOD": 1000
    },
-   "since": 1900
+   "since": 1900,
+   "equipment": [
+    {
+     "id": "chainsaw",
+     "name": "Chainsaw",
+     "since": "PE26",
+     "buys": {
+      "MACHINERY": 43.209
+     },
+     "work": 116,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE26",
+     "source": "research-1900 PE26 [P2.33,P2.34]: 2->up to4 cords/worker/day. Study upper-bound estimate: same crew produces half each log grade without chainsaw. Capital/life: R1c call 10 estimate.",
+     "without": {
+      "makes": {
+       "SAWLOGS": -500.0,
+       "PULPWOOD": -500.0
+      }
+     },
+     "equipment": "chainsaw"
+    }
+   ]
   },
   {
    "id": 130,
@@ -4376,7 +5014,29 @@
     "COLLEGE_ENGINEERING": 7
    },
    "land": 550000,
-   "roadLoad": 490
+   "roadLoad": 490,
+   "equipment": [
+    {
+     "id": "diesel-locomotive",
+     "name": "Diesel locomotive",
+     "since": "PE21",
+     "buys": {
+      "MACHINERY": 2611.94
+     },
+     "work": 1860,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE21",
+     "source": "research-1900 PE21 [P1.1,P1.85,P1.86]: 7.5%->28% efficiency (study estimate). Coal replaces diesel on the same moved tonnes: 36 MJ/L diesel, 24 GJ/t coal (R2d heating-value estimates), times 28/7.5. Actual invoice and planner share the fuel mix. Capital/life: R1c call 10 estimate. The same estimate covers Rail Depot's railCapacity, not its stationTonnes.",
+     "without": {
+      "steamRail": 1
+     },
+     "equipment": "diesel-locomotive"
+    }
+   ]
   },
   {
    "id": 142,
@@ -4396,7 +5056,10 @@
    "port": {
     "cargo": "DRY_BULK",
     "tonnes": 2500000,
-    "ships": ["HANDYSIZE", "SUPRAMAX"]
+    "ships": [
+     "HANDYSIZE",
+     "SUPRAMAX"
+    ]
    }
   },
   {

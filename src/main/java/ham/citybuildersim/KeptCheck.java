@@ -299,7 +299,7 @@ import java.util.concurrent.TimeUnit;
  * city has nothing of either to draw, and says so):
  *  96. a sector's Investors page with its equipment, kept: the sector of the fixture's unfitted stack has ITS EQUIPMENT with the piece's card, the
  *      stack's row, how many carry it and the model's verdict; the page kept over last month's nodes is the page built new for R5_MONTHS months and hands
- *      back nine in ten of its nodes; the farms' page has none until the tractor is found here, then a card with its origin, what it does and "its gain
+ *      back nine in ten of its nodes; the farms' page keeps its known binder while the tractor is unknown, then adds the tractor with its origin, what it does and "its gain
  *      cannot be had yet", and the find lost and found again reshapes it as a page built new is reshaped; a played city has no ITS EQUIPMENT;
  *  97. a NEW build card, kept: the category page holding the fixture's new furnace shows the chip and the violet edge, where it came from, the strip
  *      under the head and the dot on the category's chip; the seen rule from both sides (NEW the month the card is first drawn, a redraw in that month
@@ -2867,8 +2867,8 @@ public class KeptCheck {
     /**
      * Section 96: a sector's Investors page with its equipment, kept. The sector of the fixture's unfitted stack has ITS EQUIPMENT on its page - the
      * piece's card with the stack's row, how many carry it and the model's verdict, in the words the model's figures give - and the page drawn kept over
-     * last month's nodes is the page built new, month after month; the farms' page, which has none until the tractor is found here, then has a card with
-     * where it came from, what it does and "its gain cannot be had yet", and comes and goes with the find as a page built new does; and a city founded
+     * last month's nodes is the page built new, month after month; the farms' page keeps its known binder while the tractor is unknown, then adds the tractor's card with
+     * its origin, what it does and "its gain cannot be had yet", and comes and goes with the find as a page built new does; and a city founded
      * the default way has no ITS EQUIPMENT on any Investors page.
      */
     static void researchEquipment(Game g, KeptBench played) throws Exception {
@@ -2925,9 +2925,13 @@ public class KeptCheck {
         check("the page still has equipment rows to draw (the next check's premise)", !ResearchView.equipment(town, key).isEmpty());
         nothingSet(bench, page, page.name() + " in the town, ITS EQUIPMENT on it");
 
-        // The farms have no row until the tractor is found here; then they have a card with its origin and what it does.
+        // R1c ★8: the known binder stays beside the tractor; finding the tractor adds its own row.
         BuildingsTemplate farm = ResearchViewCheck.template(town, "Mixed Farm");
         String farmKey = farm.getSector();
+        BuildingsTemplate grain = ResearchViewCheck.template(town, "Grain Farm");
+        Equipment tractorPiece = farm.getEquipment("tractor"), binder = grain.getEquipment("binder-thresher");
+        check("fixture: the farm catalogues supply the tractor and the independent 1900 binder", tractorPiece != null && binder != null);
+        if (tractorPiece == null || binder == null) return;
         java.util.Map<String, Integer> without = new java.util.HashMap<>(town.getResearch().foundHere());
         without.remove("PE14");
         java.util.Map<String, Integer> with = new java.util.HashMap<>(without);
@@ -2938,20 +2942,31 @@ public class KeptCheck {
         };
         Hand find = b -> {
             ResearchViewCheck.setFinds(town, with);
-            return ResearchView.equipment(town, farmKey).isEmpty() ? "the tractor found gives the farms no row" : null;
+            return ResearchView.equipment(town, farmKey).stream().noneMatch(r -> r.template() == farm && r.piece() == tractorPiece)
+                    ? "the tractor found gives the farms no tractor row" : null;
         };
         KeptBench.Page farms = fx(() -> bench.sectors(possessive(called(town, farmKey)) + " Investors page", farmKey, "Investors", false));
         fx(() -> lose.on(bench));
-        check("before the tractor is found the farms have no equipment to show (the model's rows)", ResearchView.equipment(town, farmKey).isEmpty());
+        List<ResearchView.PieceRow> beforeTractor = ResearchView.equipment(town, farmKey);
+        check("before the tractor is found no tractor row is shown, while the catalogue's known binder stays",
+                !tractorPiece.knownAt(town.getMonth(), town.getResearch()) && binder.knownAt(town.getMonth(), town.getResearch())
+                && beforeTractor.stream().noneMatch(r -> r.piece().getId().equals(tractorPiece.getId()))
+                && beforeTractor.stream().anyMatch(r -> r.template() == grain && r.piece() == binder));
         arrive(bench, farms);
-        check("...and no ITS EQUIPMENT on their page", !String.join("\n", fx(bench::signature)).contains("\"ITS EQUIPMENT\""));
+        String beforeShown = String.join("\n", fx(bench::signature));
+        check("...ITS EQUIPMENT shows the catalogue's binder and hides the unknown tractor",
+                beforeShown.contains("\"ITS EQUIPMENT\"") && beforeShown.contains("\"" + binder.getName() + "\"")
+                && !beforeShown.contains("\"" + tractorPiece.getName() + "\""));
         fx(() -> find.on(bench));
         arrive(bench, farms);
         String farmsShown = String.join("\n", fx(bench::signature));
         List<ResearchView.PieceRow> farmRows = ResearchView.equipment(town, farmKey);
-        ResearchView.PieceRow tractor = farmRows.isEmpty() ? null : farmRows.get(0);
+        ResearchView.PieceRow tractor = farmRows.stream().filter(r -> r.template() == farm && r.piece() == tractorPiece).findFirst().orElse(null);
         check("the tractor found here gives the farms a row in the model", tractor != null && tractor.from() != null
                 && tractor.from().source() == ResearchView.Source.HERE);
+        check("finding the tractor retains the catalogue's binder beside it",
+                farmRows.stream().anyMatch(r -> r.template() == grain && r.piece() == binder)
+                && farmsShown.contains("\"" + binder.getName() + "\""));
         if (tractor != null && tractor.from() != null) {
             ResearchView.Discovery d = tractor.from();
             check("...ITS EQUIPMENT is on their page with the piece (" + tractor.piece().getName() + ")",
@@ -2966,8 +2981,8 @@ public class KeptCheck {
         }
         fx(() -> lose.on(bench));
         pageReshaped(town, bench, farms, 96, List.of(
-                new Choice("the tractor found here (the farms' ITS EQUIPMENT comes)", find, true),
-                choice("...and lost again (it goes)", lose),
+                new Choice("the tractor found here (its card joins the binder)", find, true),
+                choice("...and lost again (its card goes, the binder stays)", lose),
                 new Choice("...and found again", find, true)));
 
         // A city founded the default way has none of it.

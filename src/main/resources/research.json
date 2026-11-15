@@ -387,7 +387,7 @@
     "fee": false, "feeNote": "", "work": 55, "study": "research-1900 8.1" },
   { "code": "PE21", "name": "Diesel-electric locomotive", "field": "ENGINEERING", "kind": ["equipment"], "size": "equipment",
     "year": 1925, "month": 6, "monthKnown": false, "world": "1925, the Bronx (ALCO); CN 9000, 1928",
-    "touches": "Freight Line, Rail Spur, Rail Terminal; Locomotive Works",
+    "touches": "Freight Line, Rail Spur, Rail Terminal, Rail Depot; Locomotive Works",
     "effect": "fuel into work 7.5% to 28%: -73% fuel a tonne-km (est.)", "sources": ["P1.1", "P1.85", "P1.86"],
     "needs": [], "requires": "",
     "fee": true, "feeNote": "", "work": 110, "study": "research-1900 8.1" },

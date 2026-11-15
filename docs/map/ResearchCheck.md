@@ -46,7 +46,7 @@
 
 **Uses:** [ResearchCatalog](ResearchCatalog.md) (56), [BuildingsTemplate](BuildingsTemplate.md) (26), [PolicyDates](PolicyDates.md) (22), [Game](Game.md) (14), [EquipmentFit](EquipmentFit.md) (12), [Recipes](Recipes.md) (11), [BuildAdvice](BuildAdvice.md) (8), [Refining](Refining.md) (7), [CityCalendar](CityCalendar.md) (6), [Equipment](Equipment.md) (5), [Sectors](Sectors.md) (5), [SpreadPlanner](SpreadPlanner.md) (4), [Ports](Ports.md) (4), [BuildingCatalog](BuildingCatalog.md) (3), [Founding](Founding.md) (3), [Good](Good.md) (3), [Recipe](Recipe.md) (2), [BuildingManager](BuildingManager.md) (2), [LongPlaytest](LongPlaytest.md) (2), [BuildingType](BuildingType.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [GameFiles](GameFiles.md) (1), [RefineryFlow](RefineryFlow.md) (1), [Investor](Investor.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
 
-**Used by (1):** [LicenceFeesCheck](LicenceFeesCheck.md)
+**Used by (2):** [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md)
 
 ## Sections
 
