@@ -1,8 +1,8 @@
-# gate of Merge batch/R2b: research: buildings on history's dates - in a city founded the 1900 way a template not yet known (`BuildingsTemplate.knownAt()`) is no candidate for any planner (the spread planner, extraction, retail, `BusinessInvestment`, the city's own works, the berths: about 40 readers of `getTemplatesBySector()`) and its order is refused; a 1900 refinery without its conversion units, 0.9.112
+# gate of Merge batch/KD1: its first item, a killed suite ending its harnesses' child JVMs, shipped in GF1 (2026-11-12). Folded in at the queue's triage (Jerus, 2026-11-09: "we really need to empty the queue"): **MG1**: The suite's memory guard by free GB, not 75% of the commit limit: Windows sizes its automatic pagefile to the load, so the share sat at 80-91% on 11-06 with up to 14 GB free and the suite ran one harness at a time. Start another while free commit covers one more harness, available RAM is over a dial and the CPU is under one (94% busy at 23:20 with the memory free); a harness proves both sides; settles SP1-E; **EN2**: The ensemble names the data files (`data/earth-2.bin`, `data/world-1.bin`) in a worktree, as the gate and `nightly.sh` do, with one baseline taken under the new setting (RE2's ★4, taken on its recommendation); a small process batch, Sonnet whole, 0.9.112
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 196 harnesses run in 2577s: 191 passed, 5 failed
+# suite: 189 harnesses run in 2075s: 184 passed, 5 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 MapCheck | exit 1

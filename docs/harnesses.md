@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**204 harness files, 24,110 labelled assertions.** AllChecks runs 204 of them.
+**204 harness files, 24,134 labelled assertions.** AllChecks runs 204 of them.
 
 ## Which harnesses read which class
 
@@ -8338,64 +8338,61 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1455 ...and the load path told the schools the nine, not the one
   - L1460 ...and the month by kind came back with the save, not zero
 
-## EnsembleCheck.java - 37 labelled assertions
+## EnsembleCheck.java - 41 labelled assertions
 
-> The inflation ensemble is in the tree and still runs: its driver compiles
-> against this tree, its two halves name the same policies, and the stored
-> baseline reads.
+> Checks the ensemble runner, driver compilation, policy names and stored baseline.
 > 
-> WHY (EN1, 2026-10-20). The ensemble - sixteen seeds under five monetary
-> policies - lived in a workbench zip, compiled at run time against a snapshot
-> of target/classes. Its driver calls LongPlaytest's code, so a refactor of the
-> model could break it and nobody would know until the next batch whose trace
-> moved came to run it (the ensemble runs only then, since EN1), on the day the
-> answer was wanted. It now lives in tools/ensemble, outside src/ (it is never
-> part of the build), and this harness is the only thing in the suite that
-> touches it.
-> ...
+> WHY (EN1): an out-of-tree driver could break against LongPlaytest unnoticed
+> until a batch needed its score. Fixtures prove both compiler verdicts, policy
+> agreement and baseline parsing, including missing fields and malformed JSON.
+> Run at the repository root, with -Dtools and -Ddocs overriding those folders.
 
-- **L104 no source tree**
-- **L122 the runner is in the tree**
-  - L126 tools/ensemble/
-- **L134 the driver compiles against this tree**
-  - L150 a source calling a method no class has does not compile
-  - L151 ...and the compiler names the method it could not find
-  - L158 a source calling a real class of the tree compiles
-  - L164 the driver compiles against the classes this harness runs on
-  - L167 ...and leaves its class behind
-- **L274 the driver and the scorer name the same policies**
-  - L279 the driver's constants are read from an enum
-  - L281 the scorer's strings are read from its list
-  - L283 the same names in a different order are the same policies
-  - L285 a policy the scorer lacks is a problem and is named
-  - L287 a policy the driver lacks is a problem and is named
-  - L289 a driver with no enum is a problem
-  - L290 a scorer with no list is a problem
-  - L297 the driver names at least one policy
-  - L298 the scorer names at least one policy
-  - L300 the driver's policies are the scorer's
-- **L422 the baseline is there and reads**
-  - L426 a sound canned page is accepted
-  - L429 a page missing one policy is rejected, and the policy is named
-  - L431 a page with no json block is rejected
-  - L433 a page with no verdict line is rejected
-  - L435 a page whose json does not parse is rejected
-  - L437 a page with no seeds is rejected
-  - L439 a page with 0 seeds is rejected
-  - L441 a page with a fractional seed count is rejected
-  - L443 a page with no take-offs is rejected
-  - L445 a page whose median population is 0 is rejected
-  - L447 a page whose median population is text is rejected
-  - L449 a page with no findings count is rejected
-  - L451 a page with no audit count is rejected
-  - L453 a page held to no policies is rejected, not passed
-  - L456 0.8.9 is older than 0.8.11, though 9 sorts after 1
-  - L457 0.10.0 is newer than 0.9.9
-  - L458 the newest of several pages is the highest number
-  - L460 a folder with no page named x.y.z.md has no newest
-  - L471 docs/ensemble holds at least one page named x.y.z.md
-  - L475 the newest baseline is not newer than the game
-  - L477 the newest baseline reads, with every policy in it
+- **L64 no source tree**
+- **L82 the runner is in the tree**
+  - L86 tools/ensemble/
+- **L94 the driver compiles against this tree**
+  - L110 a source calling a method no class has does not compile
+  - L111 ...and the compiler names the method it could not find
+  - L118 a source calling a real class of the tree compiles
+  - L124 the driver compiles against the classes this harness runs on
+  - L127 ...and leaves its class behind
+- **L230 the driver and the scorer name the same policies**
+  - L235 the driver's constants are read from an enum
+  - L237 the scorer's strings are read from its list
+  - L239 the same names in a different order are the same policies
+  - L241 a policy the scorer lacks is a problem and is named
+  - L243 a policy the driver lacks is a problem and is named
+  - L245 a driver with no enum is a problem
+  - L246 a scorer with no list is a problem
+  - L253 the driver names at least one policy
+  - L254 the scorer names at least one policy
+  - L256 the driver's policies are the scorer's
+- **L376 the baseline is there and reads**
+  - L380 a sound canned page is accepted
+  - L383 a page missing one policy is rejected, and the policy is named
+  - L385 a page with no json block is rejected
+  - L387 a page with no verdict line is rejected
+  - L389 a page whose json does not parse is rejected
+  - L391 a page with no seeds is rejected
+  - L393 a page with 0 seeds is rejected
+  - L395 a page with a fractional seed count is rejected
+  - L397 a page with no take-offs is rejected
+  - L399 a page whose median population is 0 is rejected
+  - L401 a page whose median population is text is rejected
+  - L403 a page with no findings count is rejected
+  - L405 a page with no audit count is rejected
+  - L407 a page held to no policies is rejected, not passed
+  - L410 0.8.9 is older than 0.8.11, though 9 sorts after 1
+  - L411 0.10.0 is newer than 0.9.9
+  - L412 the newest of several pages is the highest number
+  - L414 a folder with no page named x.y.z.md has no newest
+  - L415 EN2 supersedes older and same-version scores
+  - L416 a later data-backed version supersedes EN2
+  - L417 EN2 needs a valid model version
+  - L430 EN2 names its model version
+  - L432 docs/ensemble holds at least one page named x.y.z.md
+  - L436 the newest baseline is not newer than the game
+  - L438 the newest baseline reads, with every policy in it
 
 ## EquipmentCheck.java - 157 labelled assertions
 
@@ -16084,9 +16081,9 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L8940 4: what reshapes the page**
 - **L8976 5: what the kept month costs**
 
-## KnownRedsCheck.java - 30 labelled assertions
+## KnownRedsCheck.java - 50 labelled assertions
 
-> The harness for AllChecks' known reds and harness time limit.
+> The harness for AllChecks' known reds, time limit and resource admission.
 > 
 > WHY (FW7): a second failing HealthCheck assertion hid behind its known-red
 > verdict. Fixtures exercise the real runner's line tagging and the shell's
@@ -16124,13 +16121,34 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L143 inconsistent runner tags fail closed
   - L144 a missing summary fails closed
   - L145 a zero-harness summary fails closed
-- **L170 6. a harness and its descendants have a limit**
-  - L171 the fixture exercises the wait with a shorter limit than production
-  - L186 the fixture really started its never-ending descendant
-  - L191 a harness over its limit is counted failed
-  - L192 its failing line names the time limit
-  - L194 the never-ending descendant was ended with its parent
-  - L196 a harness that finishes in time keeps its own exit and output
+- **L154 7. another harness starts only with room for its memory and CPU**
+  - L161 the free commit reserves both running harnesses' remaining growth
+  - L162 one more starts at the commit and RAM floors, below the CPU ceiling
+  - L164 a byte-short commitment holds the next start
+  - L165 room for only the new child still holds while the others can grow
+  - L166 fully committed children need only one more harness's budget
+  - L167 unknown child commitment reserves its full growth
+  - L169 RAM just below its floor holds despite free commit
+  - L171 CPU at its ceiling holds despite both memory figures
+  - L177 CPU crossing its ceiling during a slow memory probe holds the next start
+  - L178 unknown commit holds an extra start
+  - L179 unknown RAM holds an extra start
+  - L180 unknown CPU holds an extra start
+  - L181 the first harness always starts even without resource readings
+  - L182 commit holds name free GB and the growth budget
+  - L183 RAM holds name available GB
+  - L184 CPU holds name percent
+  - L186 CPU warmup holds until a full window is collected
+  - L188 the full CPU window keeps the ceiling
+  - L190 a new CPU sample replaces the oldest
+  - L192 an unavailable CPU sample holds until it ages out
+- **L214 6. a harness and its descendants have a limit**
+  - L215 the fixture exercises the wait with a shorter limit than production
+  - L230 the fixture really started its never-ending descendant
+  - L235 a harness over its limit is counted failed
+  - L236 its failing line names the time limit
+  - L238 the never-ending descendant was ended with its parent
+  - L240 a harness that finishes in time keeps its own exit and output
 
 ## LabourCheck.java - 178 labelled assertions
 
@@ -27690,155 +27708,150 @@ _(this harness does not label its checks through a helper - it prints its findin
 
 ## TimingCheck.java - 124 labelled assertions
 
-> The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the suite moves.
+> Checks hard and soft timing, JVM forwarding, suite coverage and paired medians.
 > 
-> WHY THIS EXISTS (batch TM1, 2026-10-18). Batches on the PC took turns under
-> "one JVM at a time on the machine" because only the timing assertions
-> clashed under another JVM's load (EarthTerrainCheck 8: 116 ms against 80
-> with Jerus's game running, 27.8 without). The property lets two suites
-> check side by side; a property that could soften anything but a clock would
-> let a real failure through unseen, so this holds, with a fixture that cannot
-> but miss its budget, that the property touches only a clock - and holds the
-> suite to the one helper (Timing) that reads it.
-> 
-> What it has to prove:
-> ...
+> WHY (TM1): concurrent suites missed clocks under another JVM's load, while
+> correctness still needed hard verdicts. Fixtures force missed budgets and
+> keep non-timing failures hard. TM3 checks TSV recording and the paired judge.
+> Sections cover property values, child JVMs, suite routing, untouched verdicts,
+> recorded figures and paired margins, with both passing and failing fixtures.
+> The harness restores its timing properties before returning.
 
-  - L181 a measured figure against a zero budget
-- **L239 1. hard: a timing miss fails**
-  - L243 a measured figure against a zero budget
-  - L249 a figure within a budget it can meet
-  - L250 a figure within a budget it can meet prints OK
-  - L251 and the fixture counts nothing
-- **L259 2. soft: a timing miss is told, not counted**
-  - L262 a measured figure against a zero budget
-  - L264 the missed assertion's line says SOFT
-  - L265 it matches Timing.SOFT_LINE
-  - L266 it carries the figure, in ms
-  - L267 it carries the budget
-  - L268 and the fixture counts nothing
-  - L270 a known figure against a zero budget
-  - L271 a figure of 1.5 is told as 1.5 ms, budget 0 ms
-  - L273 a figure in nanoseconds against zero
-  - L274 the unit it names is the line's: 1.5 ns, budget 0 ns
-  - L275 and no milliseconds are told
-  - L278 below, with a figure equal to its budget
-  - L279 below(f, f), a strict miss, goes SOFT
-  - L280 and the fixture still counts nothing
-  - L284 below, with a figure equal to its budget
-  - L285 below(f, f) hard fails
-  - L286 and the fixture counts it
-  - L287 within, with a figure equal to its budget
-  - L288 within(f, f) hard holds: at most is not below
-- **L296 3. only a clock is soft**
-  - L302 a plain false assertion
-  - L303 soft: a false non-timing assertion still fails
-  - L304 and counted
-  - L306 false and a missed timing figure
-  - L307 soft: false && a miss fails
-  - L308 and counted
-  - L310 a missed timing figure and false
-  - L311 soft: a miss && false fails
-  - L312 and counted
-  - L314 an assertion after a FAIL that held a miss
-  - L315 it prints OK: the miss a failure swallowed is cleared
-  - L317 a missed timing figure alone
-  - L318 a miss alone is SOFT
-  - L319 and not counted
-  - L320 an assertion after a told SOFT line
-  - L321 it prints OK: the misses are cleared
-  - L323 a figure that is not a number
-  - L324 soft: a NaN figure fails, never measured
-  - L325 and counted
-  - L327 two missed figures in one condition
-  - L329 one SOFT line
-  - L330 it carries both figures and budgets
-  - L332 and the fixture counts nothing more
-- **L340 4. the property's values: soft is exactly \"soft\"**
-  - L342 soft() is true for soft
-  - L345 soft() is false for
-- **L370 5. across the JVM boundary: AllChecks forwards the property**
-  - L376 soft here: forwarded() is -D
-  - L378 soft here: the child's command carries it
-  - L380 soft here: the child JVM exits 0
-  - L381 soft here: and prints a SOFT line
-  - L385 unset here: forwarded() is null
-  - L386 unset here: the child's command carries no -D
-  - L389 unset here: the child JVM exits 1
-  - L390 unset here: and its line fails
-  - L394 a line that held
-  - L395 a line that went soft
-  - L396 a line that failed
-  - L400 AllChecks.softLines counts one in a log of a held, a soft and a failed line
-  - L404 and the temp log is removed
-- **L412 clock-only sections skip their rounds when soft (HA1)**
-- **L430 longest first and the gate/nightly partition (HA1)**
-  - L435 without readable times the refreshed medians decide
-  - L438 gate seconds include failed runs and ignore invalid rows
-  - L441 local seconds take precedence over the gate
-  - L443 ALL excludes the nightly tier; an exact direct pick includes its harness
-  - L453 every registered harness runs at the default gate or in the nightly tier
-- **L457 6. the suite goes through Timing**
-  - L459 the sources are at
-  - L468 the *Check sources are found
-  - L482 no *Check compares a figure against a *_MS or *_NS dial but through Timing
-  - L483 the one allowance still matches exactly one line (a stale one is a finding)
-  - L498 the harnesses that call Timing.within or below are exactly Timing.HARNESSES
-  - L511 each of them prints its assertion lines through Timing.verdict(ok, label)
-  - L529 no source but Timing.java holds the properties' string literals
-  - L530 and Timing.java holds them, so that rule is not vacuous
-  - L546 no assertion compares a measured time but through Timing
-  - L552 AllChecks.HARNESSES holds every name in Timing.HARNESSES
-  - L553 and holds TimingCheck
-- **L561 7. with no miss held, the verdict is the old one**
-  - L565 verdict(true) is exactly OK,
-  - L566 verdict(false) is exactly the old failing word,
-- **L583 8. the figures' record: each timing assertion writes its figure and budget for the gate**
-  - L590 a measured figure against a zero budget
-  - L591 no file named: none is written, and nothing is forwarded to a child
-  - L594 named: forwardedTsv() is -D
-  - L598 a measured figure against a zero budget
-  - L600 hard miss: one row of seven columns
-  - L602 ...the harness is the class that printed the line (this one), the label as printed
-  - L604 ...the figure is a measured one above the budget, the budget is the fixture's, in ms
-  - L606 ...it is FAIL, the first figure of its assertion
-  - L612 a measured figure against a zero budget
-  - L613 a figure that held
-  - L614 a figure in microseconds
-  - L616 soft: three rows, one for each assertion
-  - L617 ...the missed one is SOFT
-  - L618 ...the held one is OK with its figure and its budget
-  - L619 ...and the one in microseconds says so
-  - L625 two figures,\twith a tab\nand a line end
-  - L627 two figures in one condition: two rows, numbered 1 and 2, the one label
-  - L629 ...a tab or a line end in a label is a space, and a row stays one line of seven columns
-  - L636 a figure that was never measured
-  - L638 NaN, soft: the row says FAIL, as the verdict does
-  - L643 a figure after an unlabelled verdict
-  - L645 an unlabelled verdict writes no row, and what it judged is not told on the next line
-  - L652 the child's command carries the file
-  - L655 a child JVM writes its row to the file: TimingCheck's, FAIL
-- **L707 9. the margin's arithmetic: the batch against main, at the median of the paired rounds**
-  - L720 the dial is a margin of 15 percent (the brief's), told by the script
-  - L729 a batch exactly at the margin over main passes (the margin is a 'more than')
-  - L730 ...the line's notes carry both medians, the budget and why (main at the budget is within it)
-  - L732 ...and the harness's own count and exit pass with it
-  - L736 a hair over the margin stops, main at the budget and the batch over it: FAIL, over main's by more than the margin, the figures named
-  - L738 ...and the harness's own count and exit stop with it
-  - L741 the median decides, not one slow round of the batch's: [100 100 900] against main's 100 passes
-  - L743 ...nor one fast round of main's: main's median 900 against the batch's 100 passes
-  - L745 two rounds are a median of two (the mean): main 65, batch 105 stops
-  - L748 the margin is a dial: 30% slower passes at 40
-  - L750 main's median over the budget too passes though the batch is 30% over main's: main over the budget too
-  - L752 the batch's median within the budget (at it) passes though it is double main's: the batch within the budget
-  - L755 a side with one figure has no median: FAIL, no pair to compare
-  - L757 no figures at all (the paired runs did not run): FAIL, no pair to compare
-  - L759 an assertion the pairs do not have (a batch's own new one, a label changed): FAIL, no pair
-  - L763 a label that prints a figure pairs with itself across the sides' digits (6B for 5B, 101 for 100)
-  - L766 a red with no missed figure behind it is no timing red: FAIL, and the harness's own count with it
-  - L770 a passing timing red beside a red that is no clock's: the second stops, and the harness's count with it
-  - L773 a harness that failed with no timing red of its own: FAIL
-  - L778 the harnesses to time again are those with a timing red among the lines: MapCheck, not GridCheck
+  - L129 a measured figure against a zero budget
+- **L187 1. hard: a timing miss fails**
+  - L191 a measured figure against a zero budget
+  - L197 a figure within a budget it can meet
+  - L198 a figure within a budget it can meet prints OK
+  - L199 and the fixture counts nothing
+- **L207 2. soft: a timing miss is told, not counted**
+  - L210 a measured figure against a zero budget
+  - L212 the missed assertion's line says SOFT
+  - L213 it matches Timing.SOFT_LINE
+  - L214 it carries the figure, in ms
+  - L215 it carries the budget
+  - L216 and the fixture counts nothing
+  - L218 a known figure against a zero budget
+  - L219 a figure of 1.5 is told as 1.5 ms, budget 0 ms
+  - L221 a figure in nanoseconds against zero
+  - L222 the unit it names is the line's: 1.5 ns, budget 0 ns
+  - L223 and no milliseconds are told
+  - L226 below, with a figure equal to its budget
+  - L227 below(f, f), a strict miss, goes SOFT
+  - L228 and the fixture still counts nothing
+  - L232 below, with a figure equal to its budget
+  - L233 below(f, f) hard fails
+  - L234 and the fixture counts it
+  - L235 within, with a figure equal to its budget
+  - L236 within(f, f) hard holds: at most is not below
+- **L244 3. only a clock is soft**
+  - L250 a plain false assertion
+  - L251 soft: a false non-timing assertion still fails
+  - L252 and counted
+  - L254 false and a missed timing figure
+  - L255 soft: false && a miss fails
+  - L256 and counted
+  - L258 a missed timing figure and false
+  - L259 soft: a miss && false fails
+  - L260 and counted
+  - L262 an assertion after a FAIL that held a miss
+  - L263 it prints OK: the miss a failure swallowed is cleared
+  - L265 a missed timing figure alone
+  - L266 a miss alone is SOFT
+  - L267 and not counted
+  - L268 an assertion after a told SOFT line
+  - L269 it prints OK: the misses are cleared
+  - L271 a figure that is not a number
+  - L272 soft: a NaN figure fails, never measured
+  - L273 and counted
+  - L275 two missed figures in one condition
+  - L277 one SOFT line
+  - L278 it carries both figures and budgets
+  - L280 and the fixture counts nothing more
+- **L288 4. the property's values: soft is exactly \"soft\"**
+  - L290 soft() is true for soft
+  - L293 soft() is false for
+- **L318 5. across the JVM boundary: AllChecks forwards the property**
+  - L324 soft here: forwarded() is -D
+  - L326 soft here: the child's command carries it
+  - L328 soft here: the child JVM exits 0
+  - L329 soft here: and prints a SOFT line
+  - L333 unset here: forwarded() is null
+  - L334 unset here: the child's command carries no -D
+  - L337 unset here: the child JVM exits 1
+  - L338 unset here: and its line fails
+  - L342 a line that held
+  - L343 a line that went soft
+  - L344 a line that failed
+  - L348 AllChecks.softLines counts one in a log of a held, a soft and a failed line
+  - L352 and the temp log is removed
+- **L360 clock-only sections skip their rounds when soft (HA1)**
+- **L378 longest first and the gate/nightly partition (HA1)**
+  - L383 without readable times the refreshed medians decide
+  - L386 gate seconds include failed runs and ignore invalid rows
+  - L389 local seconds take precedence over the gate
+  - L391 ALL excludes the nightly tier; an exact direct pick includes its harness
+  - L401 every registered harness runs at the default gate or in the nightly tier
+- **L405 6. the suite goes through Timing**
+  - L407 the sources are at
+  - L416 the *Check sources are found
+  - L430 no *Check compares a figure against a *_MS or *_NS dial but through Timing
+  - L431 the one allowance still matches exactly one line (a stale one is a finding)
+  - L446 the harnesses that call Timing.within or below are exactly Timing.HARNESSES
+  - L459 each of them prints its assertion lines through Timing.verdict(ok, label)
+  - L477 no source but Timing.java holds the properties' string literals
+  - L478 and Timing.java holds them, so that rule is not vacuous
+  - L494 no assertion compares a measured time but through Timing
+  - L500 AllChecks.HARNESSES holds every name in Timing.HARNESSES
+  - L501 and holds TimingCheck
+- **L509 7. with no miss held, the verdict is the old one**
+  - L513 verdict(true) is exactly OK,
+  - L514 verdict(false) is exactly the old failing word,
+- **L531 8. the figures' record: each timing assertion writes its figure and budget for the gate**
+  - L538 a measured figure against a zero budget
+  - L539 no file named: none is written, and nothing is forwarded to a child
+  - L542 named: forwardedTsv() is -D
+  - L546 a measured figure against a zero budget
+  - L548 hard miss: one row of seven columns
+  - L550 ...the harness is the class that printed the line (this one), the label as printed
+  - L552 ...the figure is a measured one above the budget, the budget is the fixture's, in ms
+  - L554 ...it is FAIL, the first figure of its assertion
+  - L560 a measured figure against a zero budget
+  - L561 a figure that held
+  - L562 a figure in microseconds
+  - L564 soft: three rows, one for each assertion
+  - L565 ...the missed one is SOFT
+  - L566 ...the held one is OK with its figure and its budget
+  - L567 ...and the one in microseconds says so
+  - L573 two figures,\twith a tab\nand a line end
+  - L575 two figures in one condition: two rows, numbered 1 and 2, the one label
+  - L577 ...a tab or a line end in a label is a space, and a row stays one line of seven columns
+  - L584 a figure that was never measured
+  - L586 NaN, soft: the row says FAIL, as the verdict does
+  - L591 a figure after an unlabelled verdict
+  - L593 an unlabelled verdict writes no row, and what it judged is not told on the next line
+  - L600 the child's command carries the file
+  - L603 a child JVM writes its row to the file: TimingCheck's, FAIL
+- **L655 9. the margin's arithmetic: the batch against main, at the median of the paired rounds**
+  - L668 the dial is a margin of 15 percent (the brief's), told by the script
+  - L677 a batch exactly at the margin over main passes (the margin is a 'more than')
+  - L678 ...the line's notes carry both medians, the budget and why (main at the budget is within it)
+  - L680 ...and the harness's own count and exit pass with it
+  - L684 a hair over the margin stops, main at the budget and the batch over it: FAIL, over main's by more than the margin, the figures named
+  - L686 ...and the harness's own count and exit stop with it
+  - L689 the median decides, not one slow round of the batch's: [100 100 900] against main's 100 passes
+  - L691 ...nor one fast round of main's: main's median 900 against the batch's 100 passes
+  - L693 two rounds are a median of two (the mean): main 65, batch 105 stops
+  - L696 the margin is a dial: 30% slower passes at 40
+  - L698 main's median over the budget too passes though the batch is 30% over main's: main over the budget too
+  - L700 the batch's median within the budget (at it) passes though it is double main's: the batch within the budget
+  - L703 a side with one figure has no median: FAIL, no pair to compare
+  - L705 no figures at all (the paired runs did not run): FAIL, no pair to compare
+  - L707 an assertion the pairs do not have (a batch's own new one, a label changed): FAIL, no pair
+  - L711 a label that prints a figure pairs with itself across the sides' digits (6B for 5B, 101 for 100)
+  - L714 a red with no missed figure behind it is no timing red: FAIL, and the harness's own count with it
+  - L718 a passing timing red beside a red that is no clock's: the second stops, and the harness's count with it
+  - L721 a harness that failed with no timing red of its own: FAIL
+  - L726 the harnesses to time again are those with a timing red among the lines: MapCheck, not GridCheck
 
 ## ToastCheck.java - 37 labelled assertions
 
