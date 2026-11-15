@@ -463,3 +463,20 @@ The final R2c compatibility rerun of LicenceFeesCheck is also 43/43.
 The final merged-model default trace is next. Main's R2c notes confirm its
 eight final CSVs are byte-identical to the retained RT2-ready2 main trace;
 that retained prefix is the same comparison baseline here.
+
+## Integrated trace and current main
+
+The complete default LongPlaytest on ea161553 exits 0. All eight CSVs are
+byte-identical to the retained main prefix; evidence:
+target/R2d-evidence/branch-ea161553/playtest.log, compare.txt and SHA256SUMS.
+That is the integrated R2c/RT2 model, not the earlier prototype. No ensemble.
+
+CB2 then shipped as main a309bf7f and is merged before the dry run. Its
+only Java changes are CentralBankCheck and MonetaryCheck, with no resource
+or game-code changes; the model and the default comparison remain the same.
+merge-CB2-fast.log exits 0, zero firm Stale. The integrated money review is
+of ea161553 on 83f25ae7; CB2 changes none of that financial delta.
+
+★ Tool-stage undos are additive, calibrated to the quoted chronological
+12/4/1 cutting-time stages. No source measures nonchronological partial
+tool fits; those combinations use the same additive stage approximation.

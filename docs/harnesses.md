@@ -4399,27 +4399,27 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1865 ...and the ledger: what the year's surplus has paid
   - L1869 a month on, both hold the same
   - L1870 ...and have made the same money
-- **L1988 21. how strict: Standard is the old rule to the bit, loose minds low inflation as Standard does, and neither end spirals**
-  - L2031 ...and a new city's is Standard: its rule, advice, neutral rate and holdingRate() are the old
-  - L2036 very strict aims STRICTEST_AIM under the target
-  - L2037 ...never under MIN_INFLATION_TARGET: at half that target it aims at the bottom
-  - L2058 a strict step on its aim sets the neutral real rate plus the aim
-  - L2059 a loose step holds the neutral rate from the target to the top of its band
-  - L2060 ...and past the top answers only the excess, at its weight
-  - L2091 every step's weight is over one: past its band, inflation makes money dearer
-  - L2092 three points over the target, each step sets more than the one looser
-  - L2093 the words: Standard aims at the target
-  - L2095 ...very strict under it, at its aim:
-  - L2098 ...very loose acts only past its band, or under the target (0.7.81; under the band until then):
-  - L2110 fixture: the city is at its branch, on the rule, at Standard and the default target
-  - L2186 the Policy tab's preview at the step in force is the rule's own, to the bit
-  - L2218 fixture: each city of the set is at its branch, on the rule, at Standard and the default target
-  - L2229 STRICT_SHARE is over a half, so a set that holds the share holds the median too
-  - L2289 setting it is a decision on the central bank's record
-  - L2296 it survives a save
-  - L2299 fixture: the save carries it by name
-  - L2307 a save without it reads Standard
-  - L2309 ...as does a name this build does not know
+- **L1992 21. how strict: Standard is the old rule to the bit, loose minds low inflation as Standard does, and neither end spirals**
+  - L2035 ...and a new city's is Standard: its rule, advice, neutral rate and holdingRate() are the old
+  - L2040 very strict aims STRICTEST_AIM under the target
+  - L2041 ...never under MIN_INFLATION_TARGET: at half that target it aims at the bottom
+  - L2062 a strict step on its aim sets the neutral real rate plus the aim
+  - L2063 a loose step holds the neutral rate from the target to the top of its band
+  - L2064 ...and past the top answers only the excess, at its weight
+  - L2095 every step's weight is over one: past its band, inflation makes money dearer
+  - L2096 three points over the target, each step sets more than the one looser
+  - L2097 the words: Standard aims at the target
+  - L2099 ...very strict under it, at its aim:
+  - L2102 ...very loose acts only past its band, or under the target (0.7.81; under the band until then):
+  - L2114 fixture: the city is at its branch, on the rule, at Standard and the default target
+  - L2190 the Policy tab's preview at the step in force is the rule's own, to the bit
+  - L2222 fixture: each city of the set is at its branch, on the rule, at Standard and the default target
+  - L2233 STRICT_SHARE is over a half, so a set that holds the share holds the median too
+  - L2293 setting it is a decision on the central bank's record
+  - L2300 it survives a save
+  - L2303 fixture: the save carries it by name
+  - L2311 a save without it reads Standard
+  - L2313 ...as does a name this build does not know
 
 ## ChartCheck.java - 111 labelled assertions
 
@@ -19705,8 +19705,8 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L590 ...and the inflation target, the player's dial
   - L595 fixture: the save carried the target under its own key
   - L607 a save from before the dial reads the default: 2%, the constant it was
-- **L917 inflation falls with the rate**
-  - L979 the runs differ by the dial and by nothing else
+- **L916 inflation falls with the rate**
+  - L978 the runs differ by the dial and by nothing else
 
 ## MoneyDatesCheck.java - 23 labelled assertions
 

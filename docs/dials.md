@@ -5924,8 +5924,8 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1922 | `CentralBankCheck.STRICT_FALL_WINDOW` | `24` | The months after the fall in which the fixture needs the very loose twin under its target: the fall's own, before the currency has answered. |
 | 1925 | `CentralBankCheck.PROBE_HOUSES` | `43` | The probe city's houses before the next twenty: seed 7's shape since FR7 (probeCity()). |
 | 1928 | `CentralBankCheck.PROBE_MONTHS` | `4` | ...and the months it plays before them, seed 7's four. |
-| 1936 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3 }, { 41, 3 }, { 42, 3 }, { 43, 3 }, { 40, 4 }, { 41, 4 }, { 42, 4 }, { 43, 4 ...` | The founding shapes very strict is measured against Standard in (CB1): the houses before the next twenty and the months played before them, as the playtest's seeds 0 to 11 found (LongPlaytest, ENSE... |
-| 1945 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard (CB1): EP1 found it in 11 of 12 shapes and FR7 in 15 of 16, so a city's path reverses it in about one ci... |
+| 1936 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3, 20 }, { 41, 3, 20 }, { 42, 3, 20 }, { 43, 3, 20 }, { 40, 4, 20 }, { 41, 4, 2...` | The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses. |
+| 1949 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four, retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.1... |
 
 ### ChartFitCheck.java ([map](map/ChartFitCheck.md))
 
@@ -7263,11 +7263,11 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 702 | `MonetaryCheck.HELD_RATES` | `{.03,.10,.20,.40 }` | The policy rates the one founding is held at, from month 25: the three of the baseline, and since 0.7.2 a fourth at 40% - past the old stop of the dial (25% until 0.7.2), the uncapped case. |
 | 705 | `MonetaryCheck.MEASURED_MONTHS` | `60` | How long each run is: five years, the last three of them at the held rate. |
 | 708 | `MonetaryCheck.HELD_FROM` | `LongPlaytest.HELD_AFTER + 1` | The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. |
-| 721 | `MonetaryCheck.MEASUREMENT_NOISE` | `.0010` | How far apart two runs of the one founding may read, in inflation a year, when only the dial's timing moves: 0.10 points. |
-| 724 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. |
-| 844 | `MonetaryCheck.SETTLED_STEP` | `.01` | How far the groceries component of the price index may move in a month and still be settled, a fraction: a point. |
-| 847 | `MonetaryCheck.SETTLED_MONTHS` | `12` | How many months running the shelf must have moved no more than SETTLED_STEP for the town to count as settled: a year (six months settled it at month 53, the rows 12.17 / 9.27 / 8.20 / 7.85% in orde... |
-| 850 | `MonetaryCheck.MAX_SETTLE_MONTHS` | `60` | The most months the founding is played on to settle, so a town that never does is read as it stands. |
+| 720 | `MonetaryCheck.MEASUREMENT_NOISE` | `.0065` | How far apart two runs of the one founding may read when only the dial's timing moves: 0.65 points a year, about twice CB2's largest reading on RT2 main (0.9.113), holding each dial a month late ov... |
+| 723 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. |
+| 843 | `MonetaryCheck.SETTLED_STEP` | `.01` | How far the groceries component of the price index may move in a month and still be settled, a fraction: a point. |
+| 846 | `MonetaryCheck.SETTLED_MONTHS` | `12` | How many months running the shelf must have moved no more than SETTLED_STEP for the town to count as settled: a year (six months settled it at month 53, the rows 12.17 / 9.27 / 8.20 / 7.85% in orde... |
+| 849 | `MonetaryCheck.MAX_SETTLE_MONTHS` | `60` | The most months the founding is played on to settle, so a town that never does is read as it stands. |
 
 ### MoneyDatesCheck.java ([map](map/MoneyDatesCheck.md))
 
