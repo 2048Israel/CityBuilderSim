@@ -104,3 +104,31 @@ Final delta named check on `b9d1a337`:
 `./batch-check.sh SaveSlotCheck SaveFileCheck InboxCheck` **exit 0**, all three
 harnesses pass, the one SaveSlotCheck timing assertion SOFT; maps regenerated,
 Stale 0 firm findings. Log: `target/up6b/delta-named.log`.
+
+REV-UP6b-2 accepted the guard delta but found that its persistent suspension
+was silent to a player who saved by hand and carried on. **★ Keep the guard,
+explain its state.** `32916cfaeed0bce5b0257bff2f70e99063c2dfba` adds the
+model's `autosaveStatus()` words to the failure report, a standing
+`autosave-paused` inbox notice, and Quit's dialog. They say autosaves are off
+until the city is loaded again, and that the player can save by hand then
+load that save to resume them. Loading settles a saved pause notice. Close
+has no dialog; its comment and the exit docs now describe the conditional
+save rather than promising one. Longer failure and Quit labels wrap.
+
+The fixture now asserts these words after the real injected failure, checks
+that hand-saving succeeds while the warning remains, and loads that manual
+save to settle the saved warning before restoring the original autosave.
+`target/up6b/words-before.log`: **3 FAIL** against the guard-only code, every
+condition reached. `target/up6b/words-after.log`: **0 FAIL**. Fast check exit 0;
+serial SaveSlotCheck, SaveFileCheck and InboxCheck are rerunning on this delta.
+
+Final words-delta named check on `32916cfa`:
+`./batch-check.sh SaveSlotCheck SaveFileCheck InboxCheck` **exit 0**, all three
+harnesses pass, the one SaveSlotCheck timing assertion SOFT; maps regenerated,
+Stale 0 firm findings. Log: `target/up6b/words-named.log`.
+
+Orchestrator accepted the final delta in mail
+`20261115-120118-385-orchestrator-d644` after reading its shared status words,
+paused-notice lifecycle and unchanged guard, and granted the replacement
+normal-route dry run. The two stranger Codex reviews and this delta review
+are complete; their findings were mended before readiness.
