@@ -1,4 +1,4 @@
-# UserInterface.java - 7,421 lines · 247 methods · 46 constants · interface
+# UserInterface.java - 7,426 lines · 248 methods · 46 constants · interface
 
 `ham/citybuildersim/ui/UserInterface.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -269,7 +269,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 7369 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox - the rail down the left, the City overview's drawer and ... |
+| 53 | 7374 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox - the rail down the left, the City overview's drawer and ... |
 
 ### THE SCREENS, one class each since 2026-09-18, in the order the rail (lines 57-80)
 
@@ -624,7 +624,7 @@
 |---:|---:|---|---|
 | 7087 | 13 | `static void popPip(Region pip)` | A quarter second of "that landed", on the figure the month just changed - and since 0.7.26 on the land office's figures the month moved. |
 
-### THE REPLAY AND THE RECORDING (TR1, 2026-10-31) (lines 7101-7421)
+### THE REPLAY AND THE RECORDING (TR1, 2026-10-31) (lines 7101-7426)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -650,35 +650,36 @@
 | 7243 | 3 | `CameraPath.View expandedMapCameraView()` | The expanded map's view as a camera view (month 0), or null when it is not over the window (MapView.cameraView()). |
 | 7248 | 3 | `CameraPath.View expandedMapWhole()` | ...and the widest view the camera flies out to (MapView.cameraWhole()). |
 | 7253 | 3 | `void replayWake()` | The expanded map's frames asked for (the camera has a move to make). |
-| 7258 | 1 | `void replayOpenMap()` | The land office's map over the window on the city, as Expand opens it (the replay's M key). |
-| 7261 | 1 | `boolean replayMapOpen()` | Whether the land office's map is over the window (TR2: Follow opens, closes and moves it as the log says). |
-| 7264 | 3 | `void replayCloseMap()` | The expanded map closed, the office drawn again, as Esc does it; nothing when it is not over the window. |
-| 7269 | 3 | `void replaySetMapView(CameraPath.View view)` | A logged view put on the expanded map, as the camera puts a view (MapView.replayShowView()); nothing when the map is not over the window or is on the other kind of ground. |
-| 7274 | 3 | `String replayTabOf(String screen)` | The rail tab a screen belongs to ("land", "bank"...), or "" for a screen that is on no tab (the game menus, the funding pages...). |
-| 7279 | 11 | `boolean replayGoTab(String screen)` | Goes to the rail tab a screen belongs to, as pressing its rail button does (goHome); false when the screen is on no tab. |
-| 7293 | 1 | `Stage replayStage()` | What ReplayMode needs of this class's private parts, one small method each. |
-| 7295 | 1 | `Scene replayScene()` |  |
-| 7297 | 1 | `VBox replayPage()` |  |
-| 7299 | 1 | `Button replayButton(String text, String under, boolean primary)` |  |
-| 7301 | 1 | `boolean replayCityOpen()` |  |
-| 7303 | 1 | `void replaySetCityOpen(boolean open)` |  |
-| 7305 | 1 | `Runnable replayResumeTo()` |  |
-| 7307 | 1 | `void replaySetResumeTo(Runnable again)` |  |
-| 7309 | 1 | `void replayStopClock()` |  |
-| 7312 | 4 | `void replayAnotherCity()` | Another city on screen (the copy's month loaded, or the real city given back): the per-city reset a load does, and the notices it already had not toasted. |
-| 7317 | 1 | `void replayOpenCity()` |  |
-| 7319 | 1 | `void replayQuit()` |  |
-| 7321 | 1 | `void replayPlaceMenu(Runnable place)` |  |
-| 7324 | 1 | `javafx.scene.Node replayTitleLayer()` | The layers that stay above the time bar: the title layer (the menu) and the dialog that is up. |
-| 7326 | 1 | `javafx.scene.Node replayDialog()` |  |
-| 7329 | 1 | `boolean replayPressHeld()` | Whether a mouse button is down: nothing is rebuilt or loaded under a press (0.7.40). |
-| 7332 | 1 | `boolean replayGameMenuUp()` | Whether a menu of the game's own is up (the replay's menu, the list): the screens' keys and the time bar's step aside. |
-| 7334 | 1 | `void replayHideTooltips()` |  |
-| 7337 | 4 | `BorderPane replayRoot()` | The window's root: the BorderPane the header, the rail and the stage hang off, the first layer of windowStack. |
-| 7343 | 1 | `boolean isCinematic()` | Whether cinematic mode is on. |
-| 7346 | 1 | `boolean cinematicHidesChrome()` | Whether cinematic mode is on and takes the chrome away (not the form Follow keeps, TR2): what a map expanded in it follows. |
-| 7356 | 3 | `void replayCinematic(boolean on)` | Cinematic mode on or off (ReplayMode: the C key and the bar's button). |
-| 7365 | 33 | `void replayCinematic(boolean on, boolean keepChrome)` | ...and, with {@code keepChrome} (TR2, while Follow plays), the header and the rail stay and the map's pane stays under the header: the player's clicks that Follow re-enacts land where his layout put them. |
-| 7400 | 3 | `private void replayCinematicPane(boolean underHeader)` | A pane laid under the header while cinematic mode is on (showChartFullScreen()) starts at the window's top. |
-| 7405 | 16 | `private void liftChartPane(boolean lift)` | The expanded map's pane at the window's top (chartFullTop() 0, no margin) or, ending cinematic mode, back under the header as it was. |
+| 7258 | 3 | `void replayCancelMove(ReplayCamera camera)` | A cancelled camera move releases its store now, even when Ready has stopped the map's frames (CM1b). |
+| 7263 | 1 | `void replayOpenMap()` | The land office's map over the window on the city, as Expand opens it (the replay's M key). |
+| 7266 | 1 | `boolean replayMapOpen()` | Whether the land office's map is over the window (TR2: Follow opens, closes and moves it as the log says). |
+| 7269 | 3 | `void replayCloseMap()` | The expanded map closed, the office drawn again, as Esc does it; nothing when it is not over the window. |
+| 7274 | 3 | `void replaySetMapView(CameraPath.View view)` | A logged view put on the expanded map, as the camera puts a view (MapView.replayShowView()); nothing when the map is not over the window or is on the other kind of ground. |
+| 7279 | 3 | `String replayTabOf(String screen)` | The rail tab a screen belongs to ("land", "bank"...), or "" for a screen that is on no tab (the game menus, the funding pages...). |
+| 7284 | 11 | `boolean replayGoTab(String screen)` | Goes to the rail tab a screen belongs to, as pressing its rail button does (goHome); false when the screen is on no tab. |
+| 7298 | 1 | `Stage replayStage()` | What ReplayMode needs of this class's private parts, one small method each. |
+| 7300 | 1 | `Scene replayScene()` |  |
+| 7302 | 1 | `VBox replayPage()` |  |
+| 7304 | 1 | `Button replayButton(String text, String under, boolean primary)` |  |
+| 7306 | 1 | `boolean replayCityOpen()` |  |
+| 7308 | 1 | `void replaySetCityOpen(boolean open)` |  |
+| 7310 | 1 | `Runnable replayResumeTo()` |  |
+| 7312 | 1 | `void replaySetResumeTo(Runnable again)` |  |
+| 7314 | 1 | `void replayStopClock()` |  |
+| 7317 | 4 | `void replayAnotherCity()` | Another city on screen (the copy's month loaded, or the real city given back): the per-city reset a load does, and the notices it already had not toasted. |
+| 7322 | 1 | `void replayOpenCity()` |  |
+| 7324 | 1 | `void replayQuit()` |  |
+| 7326 | 1 | `void replayPlaceMenu(Runnable place)` |  |
+| 7329 | 1 | `javafx.scene.Node replayTitleLayer()` | The layers that stay above the time bar: the title layer (the menu) and the dialog that is up. |
+| 7331 | 1 | `javafx.scene.Node replayDialog()` |  |
+| 7334 | 1 | `boolean replayPressHeld()` | Whether a mouse button is down: nothing is rebuilt or loaded under a press (0.7.40). |
+| 7337 | 1 | `boolean replayGameMenuUp()` | Whether a menu of the game's own is up (the replay's menu, the list): the screens' keys and the time bar's step aside. |
+| 7339 | 1 | `void replayHideTooltips()` |  |
+| 7342 | 4 | `BorderPane replayRoot()` | The window's root: the BorderPane the header, the rail and the stage hang off, the first layer of windowStack. |
+| 7348 | 1 | `boolean isCinematic()` | Whether cinematic mode is on. |
+| 7351 | 1 | `boolean cinematicHidesChrome()` | Whether cinematic mode is on and takes the chrome away (not the form Follow keeps, TR2): what a map expanded in it follows. |
+| 7361 | 3 | `void replayCinematic(boolean on)` | Cinematic mode on or off (ReplayMode: the C key and the bar's button). |
+| 7370 | 33 | `void replayCinematic(boolean on, boolean keepChrome)` | ...and, with {@code keepChrome} (TR2, while Follow plays), the header and the rail stay and the map's pane stays under the header: the player's clicks that Follow re-enacts land where his layout put them. |
+| 7405 | 3 | `private void replayCinematicPane(boolean underHeader)` | A pane laid under the header while cinematic mode is on (showChartFullScreen()) starts at the window's top. |
+| 7410 | 16 | `private void liftChartPane(boolean lift)` | The expanded map's pane at the window's top (chartFullTop() 0, no margin) or, ending cinematic mode, back under the header as it was. |
 

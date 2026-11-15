@@ -17,3 +17,11 @@ All keys except Escape are consumed while loading, before text/modifier and ordi
 The first fast check passed, exit 0 (compile, maps, Stale 0 firm). Two initial focused runs exposed fixture setup mistakes (reflecting inherited Map.clear as a declared method, and scanning after a synthetic month change without first adopting its map). Fixed the fixtures; these were not model findings. Those exception exits left JavaFX alive, so only the verified owned ReplayCheck process trees (native parent PIDs 43840 and 36048) were ended by PID. Other sessions and MemWatch were untouched.
 
 Final named checks, regression demonstrations, default trace comparison and serialized gate evidence follow below.
+
+## Final named replay check
+
+Source mends are `9e2c10d7` (implementation) and `a0a53660` (fixtures and provisional ship file). `./batch-check.sh ReplayCheck` passed, exit 0: one harness, zero failures, Stale 0 firm. Kept output: `target/checks/CM1b-named-final.txt` and `CM1b-ReplayCheck-final.log`. The zoom-out loaded 481 views in 8.4 s, none passed, then drew 50 frames over L0/L1/FAR; across months loaded the same 481 views in 0.7 s and drew 41 frames. Both had zero unpainted frames, worker asks, evictions and off-plan frames, released their stores afterwards, and retained two distinct land contexts across the real purchase. All review follow-up assertions pass, including unasked FAR and globe-chart cells, and cleanup before section 6.
+
+The CM1 forgetting behavior was restored by removing only CM2's synchronous `endMove()` line in a temporary compiled MapView, leaving the current fixtures and other behavior intact. In the same FX call after leave it reports `heldAfter=true, pinnedAfter=6, preparedAfter=2`, exit 1 (`target/CM1b-mutants/cm1-forget/run.log`). This demonstrates the half CM2 already covers; CM1b does not duplicate that repair. Temporary mutant classes precede ordinary classes only in their diagnostic JVMs, and are never shipped.
+
+★ Failure callbacks capture the move's serial, not its MoveLoad object: a queued worker must not extend the pictures/store lifetime after cancellation. Adoption and changes to the remembered failures stay on FX. No new worker reads a live Game.
