@@ -177,9 +177,10 @@ Study 8.5's shell still has 63% kerosene, 15% fuel oil, 8% lube stock and
 stock to the current stream types. No invented subfractions. This mapping,
 like PE3, PE12 and PB3 above, is a call left for Jerus.
 
-## Remaining integration checkpoint
+## Earlier integration checkpoint (before the dependent batches shipped)
 
-No ship file yet. R2c and RT2 have not landed. Once they do: merge main,
+At this checkpoint there was no ship file and R2c/RT2 had not landed.
+The plan was to merge main,
 retain R2c Recipes.gainOf unchanged, delegate independent equipment gross gain
 inside EquipmentFit's founding guard and subtract R2c onGain on the result.
 Add the agreed small LicenceFees.one hook for independent recipe fees, net
@@ -261,9 +262,10 @@ The data's readme now documents signed undos and their physical units.
 A local provisional ship draft records PE3, PE12, PB3 and the slate gap;
 it is deliberately not staged or pushed while fee integration is pending.
 
-## Fee integration prototype (waiting for R2c and RT2 to ship)
+## Earlier fee integration prototype (before R2c and RT2 shipped)
 
-Main remains 4343a815. An ignored target/R2d-fee-prototype overlay combines
+At that point main remained 4343a815. An ignored
+target/R2d-fee-prototype overlay combined
 R2d 7510fc00 with R2c 66708ce2; it changes no tracked model source. The
 orchestrator approved the standing-value design on 2026-11-15 at 09:18.
 The proposed EquipmentFit hooks preserve its default guard, use the
@@ -438,3 +440,26 @@ condition for owing the actual imported service. This is the same PE21
 gain/25% rule, with no new figure or payment route. The orchestrator accepted
 this case in the same seam. HistoricalLicenceCheck is 60/60;
 all-closed-before/check.log and all-closed-mended.log retain the evidence.
+
+
+## Integrated main 83f25ae7
+
+R2c shipped 0.9.114 and is now merged. All ten integrated model/fixture
+sources match the tested final overlay byte-for-byte. Recipes.gainOf is
+byte-identical to main. The shared-file deltas are six EquipmentFit lines,
+five LicenceFees lines (the recipe hook, actual refinery process and saved
+service memo), and eight Recipes lines. Freight's two fee/quantity lines
+are beside the existing fuel invoice, outside both RT2 retirement methods.
+No R2d entry exists in the merged known-reds file.
+
+The actual branch's eight named checks pass with only the existing
+ResearchView filter fault: integrated-check.log, exit 3, zero firm Stale.
+HistoricalRecipeCheck has 120 assertions, HistoricalLicenceCheck 60 and
+LicenceFeesCheck 43. RecipeCheck, EquipmentCheck, ResearchCheck and
+DiscoveryCheck are green. The new fee harness is registered and indexed.
+Pick is ALL (207 harnesses); no local ALL run was started.
+The final R2c compatibility rerun of LicenceFeesCheck is also 43/43.
+
+The final merged-model default trace is next. Main's R2c notes confirm its
+eight final CSVs are byte-identical to the retained RT2-ready2 main trace;
+that retained prefix is the same comparison baseline here.

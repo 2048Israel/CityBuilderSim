@@ -332,9 +332,14 @@ adds its line here, not in `CLAUDE.md`.
         RecipeChange.java          R2d's sourced signed undo for one discovery, independent of other pieces.
         RecipeChanges.java         Composes those changes, preserving saved process choices and each piece's fitted count.
         HistoricalRecipeCheck.java R2d's per-row date/fitting fixtures, both fitting orders, default and real-clock checks.
+        HistoricalLicenceCheck.java Independent recipe/piece and rail patent invoices, closed audits, saved bills and exemptions.
         RecipeCheck.java           R1c's recipes: the data read, a default city choosing nothing, the best
                                    recipe at the city's prices, known and runnable, the mix, the piece's
                                    gain, the save, New Game, and the shipped rows in a 1900 town
+        LicenceFees.java           imported patent rent in 1900-way cities (R2c): net planner and fitting
+                                   gains, firms' IP service imports at the strike, saved statement and history
+        LicenceFeesCheck.java      positive payments, same-month money and foreign accounts, expiry,
+                                   exemptions, equal-gross ranking and nonzero save/read fixtures
         ResearchCatalog.java       the research catalogue (R2, 2026-11-05; research-design 4, research-1900
                                    8): research.json's 89 discoveries, each with its field, kind, history's
                                    month (the law rows PolicyDates' own), what it needs, its fee and its

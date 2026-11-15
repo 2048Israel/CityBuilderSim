@@ -663,6 +663,7 @@ public final class Freight extends Sector {
         double cityRailedTotal = homeRailedMonth + quayRailedMonth;
         double dieselEquivalent = moved * FUEL_LITRES_PER_TONNE + cityRailedTotal * CITY_LITRES_A_TONNE;
         double steam = ham.citybuildersim.RecipeChanges.railSteamShare(game);
+        ham.citybuildersim.RecipeChanges.railService(game, this, dieselEquivalent, steam);
         Markets.Draw took = markets.draw(Good.DIESEL, this, key(), dieselEquivalent * (1 - steam), sectors);
         Markets.Draw coal = steam > 0 ? markets.draw(Good.THERMAL_COAL, this, key(),
                 dieselEquivalent * steam * ham.citybuildersim.RecipeChanges.RAIL_COAL_TONNES_PER_DIESEL_LITRE, sectors) : null;
@@ -677,7 +678,7 @@ public final class Freight extends Sector {
         rHomeRailed = homeRailedMonth;
         rQuayRailed = quayRailedMonth;
         rHomeBill = cityBillMonth;
-        rCityLitres = cityRailedTotal * CITY_LITRES_A_TONNE;
+        rCityLitres = cityRailedTotal * CITY_LITRES_A_TONNE * (1 - steam);
         rPaidAbroad = abroad;
         abroadKnown = allowedKnown = true;
 

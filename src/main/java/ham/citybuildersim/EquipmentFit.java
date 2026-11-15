@@ -162,8 +162,38 @@ public final class EquipmentFit {
      * nothing for one that is not the template's recipe piece.
      */
     private static double gainOf(Game game, BuildingsTemplate t, Equipment piece) {
+        if (!game.foundedUnfitted()) return grossGainOf(game, t, piece);
+        if (t.changeNeeds(piece.getId())) {
+            double gross = grossGainOf(game, t, piece);
+            if (!t.isOwnedBySector()) return gross; // Public patent payments remain R2c-P.
+            return gross - LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), gross);
+        }
+        if (piece.getEnds() == null) {
+            if (!piece.getId().equals(t.recipePieceId())) return 0;
+            double net = Recipes.gainOf(game, t);
+            Recipe fitted = Recipes.best(t, true, game.getMonth(), Recipes.pricesOf(game), game.getResearch());
+            // The recipe has already paid a shared entry. A distinct patented
+            // piece enabling a free recipe must still lose its own rent.
+            return !game.foundedUnfitted() || piece.getSince().equals(fitted.getSince()) ? net
+                    : net - LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), grossGainOf(game, t, piece));
+        }
+        double gross = grossGainOf(game, t, piece);
+        return gross - (game.foundedUnfitted()
+                ? LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), gross) : 0);
+    }
+
+    /** Gain before patent rent, also used to bill the pieces actually fitted (R2c). */
+    static double grossGainOf(Game game, BuildingsTemplate t, Equipment piece) {
         if (game.foundedUnfitted() && t.changeNeeds(piece.getId())) return RecipeChanges.gainOf(game, t, piece);
-        if (piece.getEnds() == null) return piece.getId().equals(t.recipePieceId()) ? Recipes.gainOf(game, t) : 0;
+        if (piece.getEnds() == null) {
+            if (!piece.getId().equals(t.recipePieceId())) return 0;
+            Recipes.Prices p = Recipes.pricesOf(game);
+            Recipe fitted = game.foundedUnfitted() ? Recipes.best(t, true, game.getMonth(), p, game.getResearch())
+                    : Recipes.bestGross(t, true, game.getMonth(), p, game.getResearch());
+            Recipe without = game.foundedUnfitted() ? Recipes.best(t, false, game.getMonth(), p, game.getResearch())
+                    : Recipes.bestGross(t, false, game.getMonth(), p, game.getResearch());
+            return Recipes.value(fitted, p) - Recipes.value(without, p);
+        }
         switch (piece.getEnds()) {
             case STEAM:
                 return steamGain(t, cityPrice(game, Good.THERMAL_COAL), game.getEconomyManager().getPricePerWatt());
