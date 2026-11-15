@@ -512,6 +512,182 @@ public final class PostwarRecipeCheck {
                 opened == 1 && cement.uses(Good.THERMAL_COAL) == 6160, "coal " + cement.uses(Good.THERMAL_COAL));
     }
 
+    @SuppressWarnings("unchecked")
+    static Set<String> proposedPieces(Game game, BuildingsTemplate template) throws Exception {
+        try {
+            var method = EquipmentFit.class.getDeclaredMethod("fittedForNew", Game.class, BuildingsTemplate.class);
+            return (Set<String>) method.invoke(null, game, template);
+        } catch (NoSuchMethodException before) {
+            Set<String> fitted = new java.util.HashSet<>();
+            for (Equipment piece : template.getEquipment())
+                if (EquipmentFit.verdictForNew(game, template, piece).kind() == EquipmentFit.Kind.PAYS) fitted.add(piece.getId());
+            return fitted;
+        }
+    }
+
+    static boolean paysAt(Equipment piece, BuildingsTemplate template, Game game, double gain, EquipmentFit.Verdict quote) {
+        return EquipmentFit.judge(piece, template, game.getMonth(), 1, gain, quote.cost(), quote.realRate(), quote.hurdle(), game.getResearch()).kind()
+                == EquipmentFit.Kind.PAYS;
+    }
+
+    static void chosenSetAndRefit(JsonObject data) throws Exception {
+        out.println("--- 11. new-plant selection, patent appraisal and the next actual refit share their physical sets ---");
+        Game game = HistoricalLicenceCheck.town("R2e-chosen-large-kiln", true);
+        allExcept(game, "E2");
+        at(game, ResearchCatalog.knownFrom("E2"));
+        BuildingsTemplate large = HistoricalLicenceCheck.stand(game, "Large Cement Plant", 1);
+        BuildingsStacks kilnStack = game.getBuildingManager().getStack(large);
+        priceForBothReaders(game, Good.THERMAL_COAL, 1);
+        run(game);
+        Equipment longKiln = large.getEquipment("long-kiln"), preheater = large.getEquipment("preheater");
+        RecipeChange longChange = large.getRecipeChanges().stream().filter(c -> c.code().equals("PE4")).findFirst().orElseThrow();
+        RecipeChange heatChange = large.getRecipeChanges().stream().filter(c -> c.code().equals("E2")).findFirst().orElseThrow();
+        double full = entryGain(game, large, longChange);
+        double heat = entryGain(game, large, heatChange);
+        double heatNet = heat - LicenceFees.onGain("E2", game.getMonth(), game.getResearch(), heat);
+        kilnStack.setUnfitted("preheater", 1);
+        run(game);
+        double partial = entryGain(game, large, longChange);
+        boolean found = false;
+        double chosenPrice = 0;
+        for (int step = 0; step < 200 && !found; step++) {
+            chosenPrice = .01 * Math.pow(1.15, step);
+            priceForBothReaders(game, Good.MACHINERY, chosenPrice);
+            EquipmentFit.Verdict root = EquipmentFit.verdictForNew(game, large, longKiln);
+            EquipmentFit.Verdict child = EquipmentFit.verdictForNew(game, large, preheater);
+            found = paysAt(longKiln, large, game, full, root) && !paysAt(longKiln, large, game, partial, root)
+                    && !paysAt(preheater, large, game, heatNet, child);
+        }
+        check("fixture: full PE4 passes but rejected E2 leaves a real marginal gain below the same life/money gates",
+                found && full > partial && partial > 0, "full " + full + ", partial " + partial + ", machinery " + chosenPrice);
+        if (found) {
+            Set<String> selected = proposedPieces(game, large);
+            EquipmentFit.Verdict root = EquipmentFit.verdictForNew(game, large, longKiln);
+            check("the set selector re-evaluates PE4 after E2 goes and leaves both out",
+                    !selected.contains("preheater") && !selected.contains("long-kiln") && root.kind() == EquipmentFit.Kind.NOT_YET
+                            && HistoricalLicenceCheck.near(root.gain(), partial), selected + ", gain " + root.gain());
+            check("the rejected new-plant set accrues no equipment patent appraisal", LicenceFees.forNew(game, large) == 0, "");
+            priceForBothReaders(game, Good.MACHINERY, .001);
+            Set<String> cheap = proposedPieces(game, large);
+            check("a later read at changed inputs chooses the paying set afresh, without carrying a plan",
+                    cheap.contains("long-kiln") && cheap.contains("preheater") && !selected.contains("long-kiln"), cheap.toString());
+        }
+
+        Game cars = HistoricalLicenceCheck.town("R2e-rejected-robot-fee", true);
+        allExcept(cars, "PE13");
+        int assemblyDate = ResearchCatalog.knownFrom("PE13");
+        at(cars, assemblyDate);
+        BuildingsTemplate works = HistoricalLicenceCheck.stand(cars, "Vehicle Works", 1);
+        Equipment robot = works.getEquipment("welding-robot");
+        boolean rejected = false;
+        for (int step = 0; step < 120 && !rejected; step++) {
+            priceForBothReaders(cars, Good.MACHINERY, .01 * Math.pow(1.5, step));
+            rejected = EquipmentFit.verdictForNew(cars, works, robot).kind() == EquipmentFit.Kind.NOT_YET;
+        }
+        BuildingsStacks carStack = cars.getBuildingManager().getStack(works);
+        carStack.setUnfitted("welding-robot", 1);
+        at(cars, assemblyDate - 1);
+        run(cars);
+        Recipes.Prices prices = Recipes.pricesOf(cars);
+        double oldValue = actualValue(works, prices);
+        int oldPosts = works.getJobs(JobType.NO_DIPLOMA);
+        at(cars, assemblyDate);
+        run(cars);
+        double assemblyGain = actualValue(works, prices) - oldValue;
+        double rate = Math.max(0, Math.min(1, cars.getSectors().automotive().getOperatingRate()));
+        Set<String> selected = proposedPieces(cars, works);
+        check("fixture: real PE13 is known with B7, the robot is known and rejected, and the no-robot gain saves506 paid posts",
+                rejected && !selected.contains("welding-robot") && cars.getResearch().known("B7", cars.getMonth())
+                        && robot.knownAt(cars.getMonth(), cars.getResearch())
+                        && oldPosts - works.getJobs(JobType.NO_DIPLOMA) == 506 && prices.wages()[JobType.NO_DIPLOMA.ordinal()] > 0 && rate > 0,
+                "crew " + oldPosts + " -> " + works.getJobs(JobType.NO_DIPLOMA) + ", rate " + rate);
+        double expected = LicenceFees.onGain("PE13", cars.getMonth(), cars.getResearch(), assemblyGain) * rate;
+        double fee = LicenceFees.forNew(cars, works);
+        check("real PE13's new-building royalty follows its catalogue's unpatented flag",
+                !ResearchCatalog.get().entry("PE13").fee() && HistoricalLicenceCheck.near(fee, expected), fee + " vs " + expected);
+
+        // Synthetic control only: PE13's shipped fee is false. Attribute its same
+        // test-local recipe shape to fee-bearing E8, leaving both shipped files untouched.
+        JsonObject synthetic = null;
+        for (JsonElement item : data.getAsJsonArray("buildings")) {
+            JsonObject definition = item.getAsJsonObject();
+            if (!definition.get("name").getAsString().equals("Vehicle Works")) continue;
+            for (JsonElement row : definition.getAsJsonArray("recipeChanges"))
+                if (row.getAsJsonObject().get("entry").getAsString().equals("PE13")) synthetic = row.getAsJsonObject().deepCopy();
+        }
+        if (synthetic == null) throw new IllegalStateException("missing PE13 fixture data");
+        synthetic.addProperty("since", "E8");
+        synthetic.addProperty("source", "Synthetic patented control only; PE13-shaped crew delta under fee-bearing E8.");
+        RecipeChange patented = RecipeChange.read(synthetic, works);
+        works.setRecipeChanges(works.getRecipeChanges().stream().map(c -> c.code().equals("PE13") ? patented : c).toList());
+        allExcept(cars, "E8");
+        int patentDate = ResearchCatalog.knownFrom("E8");
+        at(cars, patentDate - 1);
+        run(cars);
+        prices = Recipes.pricesOf(cars);
+        oldValue = actualValue(works, prices);
+        at(cars, patentDate);
+        run(cars);
+        assemblyGain = actualValue(works, prices) - oldValue;
+        rate = Math.max(0, Math.min(1, cars.getSectors().automotive().getOperatingRate()));
+        selected = proposedPieces(cars, works);
+        expected = LicenceFees.onGain("E8", cars.getMonth(), cars.getResearch(), assemblyGain) * rate;
+        fee = LicenceFees.forNew(cars, works);
+        check("synthetic patented PE13-shaped control has an active fee code and a rejected known dependent",
+                ResearchCatalog.get().entry("E8").fee() && LicenceFees.payable("E8", cars.getMonth(), cars.getResearch())
+                        && !selected.contains("welding-robot") && assemblyGain > 0 && rate > 0, "");
+        check("synthetic patented recipe pays on the chosen no-robot set's real gain",
+                expected > 0 && HistoricalLicenceCheck.near(fee, expected), fee + " vs " + expected);
+
+        Game shops = HistoricalLicenceCheck.town("R2e-next-scanner", true);
+        allExcept(shops, "");
+        at(shops, ResearchCatalog.knownFrom("B5"));
+        BuildingsTemplate grocery = shops.getBuildingManager().getTemplateByName("Small Grocery Store");
+        BuildingsStacks storeStack = shops.getBuildingManager().getStack(grocery);
+        storeStack.removeQuantity(storeStack.getQuantity() - 2);
+        fitted(grocery, storeStack);
+        storeStack.setUnfitted("barcode-scanner", 1);
+        priceForBothReaders(shops, Good.MACHINERY, .001);
+        run(shops);
+        Recipes.Prices shopPrices = Recipes.pricesOf(shops);
+        double before = actualValue(grocery, shopPrices) * storeStack.getQuantity();
+        Equipment scanner = grocery.getEquipment("barcode-scanner");
+        EquipmentFit.Verdict verdict = EquipmentFit.verdict(shops, storeStack, scanner);
+        check("fixture: two stores stand with PB2 known, one scanner fitted and positive crew wages",
+                storeStack.getQuantity() == 2 && storeStack.getUnfitted("barcode-scanner") == 1
+                        && shops.getResearch().known("PB2", shops.getMonth()) && shopPrices.wages()[JobType.NO_DIPLOMA.ordinal()] > 0
+                        && shopPrices.wages()[JobType.DIPLOMA.ordinal()] > 0, "");
+        storeStack.setUnfitted("barcode-scanner", 0);
+        run(shops);
+        double actual = actualValue(grocery, shopPrices) * storeStack.getQuantity() - before;
+        check("the next one-store scanner refit credits the fleet's real zero rounded-payroll change and is refused",
+                actual == 0 && verdict.gain() == 0 && verdict.kind() == EquipmentFit.Kind.NOT_YET,
+                "actual " + actual + ", quoted " + verdict.gain() + ", " + verdict.kind());
+
+        Game fleet = HistoricalLicenceCheck.town("R2e-rounded-standing-robot", true);
+        allExcept(fleet, "E8");
+        at(fleet, ResearchCatalog.knownFrom("E8"));
+        BuildingsTemplate vehicle = HistoricalLicenceCheck.stand(fleet, "Vehicle Works", 3);
+        BuildingsStacks vehicles = fleet.getBuildingManager().getStack(vehicle);
+        vehicles.setUnfitted("welding-robot", 3);
+        run(fleet);
+        Recipes.Prices fleetPrices = Recipes.pricesOf(fleet);
+        double noRobots = actualValue(vehicle, fleetPrices) * vehicles.getQuantity();
+        vehicles.setUnfitted("welding-robot", 2);
+        run(fleet);
+        double fleetGain = actualValue(vehicle, fleetPrices) * vehicles.getQuantity() - noRobots;
+        var stackBill = LicenceFees.class.getDeclaredMethod("stackBill", Game.class, BuildingsStacks.class, Sector.class, double.class);
+        stackBill.setAccessible(true);
+        double fleetFee = (double) stackBill.invoke(null, fleet, vehicles, fleet.getSectors().automotive(), 1.0);
+        double fleetExpected = LicenceFees.onGain("E8", fleet.getMonth(), fleet.getResearch(), fleetGain);
+        check("fixture: one robot among three vehicles plants saves201 rounded posts in an active imported patent",
+                vehicles.getQuantity() == 3 && vehicles.getUnfitted("welding-robot") == 2
+                        && vehicle.getJobs(JobType.NO_DIPLOMA) == 233 && fleetPrices.wages()[JobType.NO_DIPLOMA.ordinal()] > 0
+                        && LicenceFees.payable("E8", fleet.getMonth(), fleet.getResearch()), "posts " + vehicle.getJobs(JobType.NO_DIPLOMA));
+        check("the installed robot's royalty uses the actual rounded fleet saving",
+                fleetExpected > 0 && HistoricalLicenceCheck.near(fleetFee, fleetExpected), fleetFee + " vs " + fleetExpected);
+    }
+
     public static void main(String[] args) throws Exception {
         fails = checks = 0;
         RecipeCheck.out = out;
@@ -537,6 +713,7 @@ public final class PostwarRecipeCheck {
         everyScopedGain(data);
         kilnAccounting();
         newCementPlant();
+        chosenSetAndRefit(data);
         out.println(fails == 0 ? "All PostwarRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

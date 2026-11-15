@@ -1,4 +1,4 @@
-# PostwarRecipeCheck.java - 543 lines · 16 methods · 0 constants · harnesses
+# PostwarRecipeCheck.java - 720 lines · 19 methods · 0 constants · harnesses
 
 `ham/citybuildersim/PostwarRecipeCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -10,13 +10,13 @@
 > crosses the real entry month. The identical fixture also runs on main's
 > compiled model and data, using this branch's source JSON as its oracle.
 
-**Uses:** [Good](Good.md) (48), [Game](Game.md) (18), [BuildingsTemplate](BuildingsTemplate.md) (18), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (15), [Recipes](Recipes.md) (14), [ResearchCatalog](ResearchCatalog.md) (13), [EquipmentFit](EquipmentFit.md) (13), [RecipeCheck](RecipeCheck.md) (12), [JobType](JobType.md) (12), [LicenceFees](LicenceFees.md) (12), [BuildingsStacks](BuildingsStacks.md) (8), [RecipeChange](RecipeChange.md) (7), [RecipeChanges](RecipeChanges.md) (5), [DataSave](DataSave.md) (4), [Equipment](Equipment.md) (3), [FittingCheck](FittingCheck.md) (3), [PolicyDates](PolicyDates.md) (2), [Recipe](Recipe.md) (2), [RefineryFlow](RefineryFlow.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [Forms1900Check](Forms1900Check.md) (2), [Founding](Founding.md) (1)
+**Uses:** [Good](Good.md) (53), [EquipmentFit](EquipmentFit.md) (31), [Game](Game.md) (26), [HistoricalLicenceCheck](HistoricalLicenceCheck.md) (26), [BuildingsTemplate](BuildingsTemplate.md) (25), [LicenceFees](LicenceFees.md) (22), [JobType](JobType.md) (21), [Recipes](Recipes.md) (21), [ResearchCatalog](ResearchCatalog.md) (20), [BuildingsStacks](BuildingsStacks.md) (13), [RecipeCheck](RecipeCheck.md) (12), [RecipeChange](RecipeChange.md) (11), [Equipment](Equipment.md) (8), [RecipeChanges](RecipeChanges.md) (5), [DataSave](DataSave.md) (4), [FittingCheck](FittingCheck.md) (3), [PolicyDates](PolicyDates.md) (2), [Recipe](Recipe.md) (2), [RefineryFlow](RefineryFlow.md) (2), [MaterialsCheck](MaterialsCheck.md) (2), [EquipmentCheck](EquipmentCheck.md) (2), [Forms1900Check](Forms1900Check.md) (2), [Founding](Founding.md) (1), [Sector](Sector.md) (1)
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 518 | **type** `public final class PostwarRecipeCheck` | The postwar engineering and business discoveries run their sourced earlier figures, compose in either order, retain saved decisions and leave default founding modern. |
+| 26 | 695 | **type** `public final class PostwarRecipeCheck` | The postwar engineering and business discoveries run their sourced earlier figures, compose in either order, retain saved decisions and leave default founding modern. |
 | 27 | 1 | `private PostwarRecipeCheck()` |  |
 | 29 | 6 | `static void knownExcept(Game game, Set<String> except)` |  |
 | 36 | 1 | `static boolean postwar(String code)` |  |
@@ -32,5 +32,8 @@
 | 377 | 50 | `static void everyScopedGain(JsonObject data) throws Exception` |  |
 | 428 | 57 | `static void kilnAccounting() throws Exception` |  |
 | 486 | 28 | `static void newCementPlant() throws Exception` |  |
-| 515 | 28 | `public static void main(String[] args) throws Exception` |  |
+| 516 | 11 | `static Set<String> proposedPieces(Game game, BuildingsTemplate template) throws Exception` |  |
+| 528 | 4 | `static boolean paysAt(Equipment piece, BuildingsTemplate template, Game game, double gain, EquipmentFit.Verdict quote)` |  |
+| 533 | 157 | `static void chosenSetAndRefit(JsonObject data) throws Exception` |  |
+| 691 | 29 | `public static void main(String[] args) throws Exception` |  |
 

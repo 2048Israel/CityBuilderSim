@@ -6,6 +6,8 @@ import ham.citybuildersim.sectors.SpreadPlanner;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.LinkedHashSet;
 import java.util.function.ToDoubleFunction;
 
 /**
@@ -161,22 +163,41 @@ public final class EquipmentFit {
      * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
      * nothing for one that is not the template's recipe piece.
      */
-    private static double gainOf(Game game, BuildingsTemplate t, Equipment piece, boolean newBuilding) {
+    private static double gainOf(Game game, BuildingsTemplate t, Equipment piece, Set<String> proposed) {
         if (!game.foundedUnfitted()) return grossGainOf(game, t, piece);
-        if (t.changeNeeds(piece.getId())) {
-            double gross = RecipeChanges.gainOf(game, t, piece, newBuilding);
-            if (!t.isOwnedBySector()) return gross; // Public patent payments remain R2c-P.
-            return gross - LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), gross);
+        boolean recipePiece = piece.getId().equals(t.recipePieceId());
+        if (t.changeNeeds(piece.getId()) || piece.getEnds() == null && recipePiece) {
+            double gross = proposed == null ? RecipeChanges.gainForRefit(game, t, piece)
+                    : RecipeChanges.gainForSet(game, t, piece, proposed);
+            double net = gross;
+            String recipeCode = null;
+            if (recipePiece) {
+                Recipe fitted, without;
+                if (proposed == null && t.getRecipeChanges().isEmpty()) {
+                    Recipes.Prices prices = Recipes.pricesOf(game);
+                    fitted = Recipes.best(t, true, game.getMonth(), prices, game.getResearch());
+                    without = Recipes.best(t, false, game.getMonth(), prices, game.getResearch());
+                } else if (proposed == null) {
+                    String[] ids = t.runningRecipeIds();
+                    fitted = t.getRecipe(ids[0]);
+                    without = t.getRecipe(ids[1]);
+                } else {
+                    Set<String> with = new java.util.HashSet<>(proposed), missing = new java.util.HashSet<>(proposed);
+                    with.add(piece.getId());
+                    missing.remove(piece.getId());
+                    fitted = RecipeChanges.recipeForNew(game, t, with);
+                    without = RecipeChanges.recipeForNew(game, t, missing);
+                }
+                Recipes.Prices prices = Recipes.pricesOf(game);
+                net -= LicenceFees.recipeFee(t, fitted, game.getMonth(), prices, game.getResearch())
+                        - LicenceFees.recipeFee(t, without, game.getMonth(), prices, game.getResearch());
+                recipeCode = fitted.getSince();
+            }
+            if (t.isOwnedBySector() && !piece.getSince().equals(recipeCode))
+                net -= LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), gross);
+            return net;
         }
-        if (piece.getEnds() == null) {
-            if (!piece.getId().equals(t.recipePieceId())) return 0;
-            double net = Recipes.gainOf(game, t);
-            Recipe fitted = Recipes.best(t, true, game.getMonth(), Recipes.pricesOf(game), game.getResearch());
-            // The recipe has already paid a shared entry. A distinct patented
-            // piece enabling a free recipe must still lose its own rent.
-            return !game.foundedUnfitted() || piece.getSince().equals(fitted.getSince()) ? net
-                    : net - LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), grossGainOf(game, t, piece));
-        }
+        if (piece.getEnds() == null) return 0;
         double gross = grossGainOf(game, t, piece);
         return gross - (game.foundedUnfitted()
                 ? LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), gross) : 0);
@@ -215,7 +236,7 @@ public final class EquipmentFit {
      * judged at a rate of 0. Reads, prices and books nothing; the month never calls it.
      */
     public static Verdict verdict(Game game, BuildingsStacks stack, Equipment piece) {
-        return priced(game, stack.getBuilding(), piece, stack.getUnfitted(piece.getId()), false);
+        return priced(game, stack.getBuilding(), piece, stack.getUnfitted(piece.getId()), null);
     }
 
     /**
@@ -225,16 +246,49 @@ public final class EquipmentFit {
      * books nothing.
      */
     public static Verdict verdictForNew(Game game, BuildingsTemplate t, Equipment piece) {
-        return priced(game, t, piece, 1, true);
+        if (!game.foundedUnfitted() || !piece.knownAt(game.getMonth(), game.getResearch()))
+            return priced(game, t, piece, 1, Set.of());
+        Set<String> chosen = fittedForNew(game, t);
+        Set<String> candidate = new java.util.HashSet<>(chosen);
+        candidate.add(piece.getId());
+        Verdict value = priced(game, t, piece, 1, candidate);
+        if (chosen.contains(piece.getId()) || value.kind() != Kind.PAYS) return value;
+        return new Verdict(Kind.NOT_YET, value.templateId(), value.pieceId(), value.gain(), value.cost(), value.lifeMonths(),
+                value.realRate(), value.factor(), value.earnsBack(), value.hurdle(), value.earningsOnCost());
+    }
+
+    /** Ephemeral new-building choice: remove one worst failure, in catalogue order on ties, then re-evaluate. */
+    public static Set<String> fittedForNew(Game game, BuildingsTemplate t) {
+        Set<String> chosen = new LinkedHashSet<>();
+        for (Equipment piece : t.getEquipment())
+            if (!game.foundedUnfitted() || piece.knownAt(game.getMonth(), game.getResearch())) chosen.add(piece.getId());
+        if (!game.foundedUnfitted()) return Set.copyOf(chosen);
+        while (!chosen.isEmpty()) {
+            Equipment worst = null;
+            double margin = Double.POSITIVE_INFINITY;
+            for (Equipment piece : t.getEquipment()) {
+                if (!chosen.contains(piece.getId())) continue;
+                Verdict value = priced(game, t, piece, 1, chosen);
+                if (value.kind() == Kind.PAYS) continue;
+                double shortfall = Double.isFinite(value.gain()) ? value.gain() - value.hurdle() : Double.NEGATIVE_INFINITY;
+                if (worst == null || shortfall < margin) {
+                    worst = piece;
+                    margin = shortfall;
+                }
+            }
+            if (worst == null) break;
+            chosen.remove(worst.getId());
+        }
+        return Set.copyOf(chosen);
     }
 
     /** verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). */
-    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted, boolean newBuilding) {
+    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted, Set<String> proposed) {
         int month = game.getMonth();
         Research found = game.getResearch();
         if (settled(piece, month, unfitted, found) != null) return judge(piece, t, month, unfitted, Double.NaN, Double.NaN, 0, 0, found);
 
-        double gain = gainOf(game, t, piece, newBuilding);
+        double gain = gainOf(game, t, piece, proposed);
         double cost = cost(piece, good -> cityPrice(game, good), game.getBuildingManager().nonMaterialPricePerPoint());
         Sector sector = game.getSectors().byKey(t.getSector());
         BusinessInvestment plans = game.getBusinessInvestment();
