@@ -945,8 +945,8 @@ public class ForeignDebtCheck {
      * years, a quarter to nearly half of its tax) in seeds 0, 4 and 5 and in
      * the default run.
      * LongPlaytest.borrowsAbroad() asks the quote for the sale itself (the
-     * build's rule under -Dplaytest.quotedBorrowing; off by default until
-     * CC1-S-B turns it on, as it moves the played city). This
+     * build's default rule since QB1; -Dplaytest.quotedBorrowing=false
+     * retains the former path for comparison). This
      * section proves it on a city where the old rule's premise stands - the
      * world's rate under the share of the city's own, the window open, no
      * foreign debt - and the two sizes of sale go the two ways the quotes

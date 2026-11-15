@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.106 — QB1, The test player borrows at the quoted rate — 2026-11-14, ready, see docs/queue/QB1-notes.md
+The test player compares the home and dollar quotes for its actual sale by
+default, so a low foreign rate before the sale cannot choose an expensive
+dollar bond. `-Dplaytest.quotedBorrowing=false` retains the previous path for
+comparison. ScaleCheck copies its growing town at month 225 with its original
+premises and tolerances. KeptCheck selects live paper for each debt-picture
+watch and verifies it lasts through the unchanged six-month laws.
+The 80-run ensemble passes all 10 M1/F1 criteria (22/26 overall); ZERO_SLACK's
+population criterion is informational. Checks and gate details are in the notes.
+
 ### 0.9.105 — WN5d, The hover's quote: five findings of WN5b's review — 2026-11-14, ready, see docs/queue/WN5d-notes.md
 The hover retains its previous price while this month's quote runs, and a measurement that spans months is priced on FX in the current month. Pointer changes cancel obsolete quotes between tiles and seller rows, and first-map adoption re-asks a stationary hover. RuntimeException and Error always hand their requests back, with a separate failure line and timed retry. Large low-priority ground counts use their own two-worker low-priority pool. Fixtures reproduce all five review findings before their mends and hold the quote lifecycle and owner-thread frame budget.
 
