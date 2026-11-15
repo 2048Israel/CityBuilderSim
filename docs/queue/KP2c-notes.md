@@ -1,147 +1,143 @@
 # KP2c — The kept screens' sweep, the rest
 
-Building on `batch/KP2c`, cut from main b9c93a98. The queue row links to
-KP2b-notes §6; §§1–5 and WC1 read. No known-red entry names KP2c on this
-starting tree. Source scope is ui/ and KeptCheck; section 96 is R2d's.
+Source scope: ui/ and KeptCheck, on batch/KP2c cut from main b9c93a989.
+The queue row links directly to KP2b-notes §6; §§1–5 and WC1 were read.
+No known-red entry names KP2c. Section 96 is unchanged for R2d.
 
-## What changed and why
+## 1. The row, built
 
-- The window's scrolling-page padding, Services' and Infrastructure's frame
-  padding compare their insets before setting them. Services' door cards,
-  including Infrastructure's traffic cards, choose their complete style
-  before writing it. Section 92 has no screen exemption left.
-- A kept grid stages column and row constraints, as it stages children.
-  Equivalent specifications keep the grid's own constraints and cause no
-  list change. Constraints omitted by the drawing code go at commit.
-- Optional node state and event handlers are explicitly given through
-  `Kept.give`. The draw clears only omitted state, at its end. This includes
-  unchanged assignments; JavaFX property listeners cannot detect those.
-  The existing kept-page callers use the helper, with no model changes.
-- Preferred sizes and HBox margins compare before setting. Section 92 now
-  observes preferred height, disable changes and constraint lists. Its
-  temporary layout observer hears JavaFX's actual equal-size/equal-margin
-  layout requests in the kept parent boxes; control probes cause both.
-- Comparison restores clear their saved roots/pools. Repaint counters have
-  weak keys. Auxiliary no-stage scenes drain their dirty lists through a
-  one-pixel snapshot after restore, as the page scene already did.
-- A press is held through disable/enable until release. A weak scene release
-  filter also hears release elsewhere while the slider is disabled; leaving
-  the scene releases it. Section 91 now actually sends that missed release,
-  preserving its stale-hold finding. Section 100 separately keeps the same
-  drag down through a greyed draw and an ungreyed draw, then releases it and
-  checks the committed thumb value.
+- UserInterface.scrolled keeps one PAGE_FOOT_ROOM, derived from PAGE_FOOT,
+  and sets padding only when it differs. Services and Infrastructure use
+  the shared FRAME_ROOM with the same guard. Services' door cards, including
+  Infrastructure's traffic cards, choose their complete style before
+  writing it once. NOT_KP2B and its ignored counter are gone.
+- Kept.Grid stages column and row constraints like children. Equal complete
+  specifications keep the grid's existing constraints; an omitted list is
+  cleared at commit. All grid callers use Kept.columns/rows.
+- Kept.give records assignment intent, including an unchanged assignment.
+  At draw end Kept resets only omitted optional state and handlers. The rule
+  is in Kept's rules list, and the kept callers use it. This removes the
+  false enabled interval in a repeatedly greyed control.
+- Preferred sizes and HBox margins compare before setting. Section 92 also
+  counts preferred height, disable changes and constraint lists. Temporary
+  observers on kept regions/boxes hear size calls and JavaFX margin layout
+  requests, including equal raw setters that property listeners miss.
+- Comparison restores clear saved roots, boxes and pools. Picture repaint
+  counters have weak keys. Each no-stage scene drains its dirty list with
+  a one-pixel snapshot after restoring a comparison, including the auxiliary
+  header, rail and panel scenes.
+- A slider keeps its physical press through disable/enable. A weak scene
+  release filter hears release elsewhere while disabled; permanent scene
+  departure releases it. A temporary departure during drawing/commit keeps
+  the press if the node returns to the same scene before commit.
+- Pieces.vitalsBar finishes a cell from another maker on each draw. Its
+  skip requires the look limitCell supplied, so another maker's freshly
+  supplied style cannot bypass the last-cell finish.
 
-## Calls
+## 2. ★ Calls and threading
 
-★ Guard the non-limitCell case in `Pieces.vitalsBar`, rather than dropping
-the promise. A maker that supplies its own style on every draw must still
-receive the last-cell look from the bar. The fixture reapplies that maker's
-style on the same node and checks the bar's own first-draw result.
+★ Guard the foreign-cell case rather than dropping the promise. A maker
+that reapplies its own style must still get the bar's last-cell look; the
+fixture checks the bar's own first-draw result on the same node's redraw.
 
-★ Track assignment intent explicitly, including handlers. A listener-only
-reset would treat a same-value assignment as an omission and clear a greyed
-control. Staging the reset also avoids a false enabled interval mid-draw.
+★ Track assignments explicitly, including handlers: JavaFX emits no change
+event for a same-value assignment, so a listener-only reset cannot tell an
+unchanged assignment from an omission. Deferring all omitted state also
+prevents disabled/style toggles in the middle of the draw.
 
-★ Preserve a physical press through greying and catch release at its scene.
-Clearing the press merely because the control is disabled loses ownership
-when it is enabled again during the same drag. Scene handlers are weak and
-removed when the node changes scene, so the remedy adds no scene-to-node
-retention path. All drawing, assignment, reset and input work stays on the
-FX thread; no worker is added.
+★ Compare all geometry, growth, alignment and fill values of constraint
+specifications, retaining the grid's actual objects when equal. The pages
+can keep their one drawing path without a cache per specification.
 
-## Checks and heap
+★ Preserve a physical press and catch release at its scene. Clearing it on
+disable loses the hand if the control is enabled again during that drag.
+The real Policy fixture also exposed reparenting when its staged-choice
+tray appears: a draw checks departure at commit, after its lists settle.
+Scene handlers are weak and removed on scene change. Section 91 now sends
+the physical release elsewhere while greyed; section 102 keeps the same
+drag down through greyed and ungreyed draws, then checks release commits
+the held value snapped with the slider's own min/block increment.
 
-In progress. The unchanged-main baseline is a normal whole KeptCheck with
-GC/live-heap samples at section boundaries, under AllChecks' 2048 MiB heap,
-soft timing and the required Earth/world files. Kept at
-`target/kp2c-baseline.log`; its temporary launcher is `target/KP2cHeap.java`.
+All drawing, state settlement, observers, snapshots and input stay on the
+FX thread. No worker or model/money call is added or changed. Bank/Fund
+changes are assignment tracking, guarded sizes/margins and staged grids.
 
-Before: section 30 185 MiB, section 40 186 MiB, section 50 615 MiB,
-section 60 about 890 MiB, section 70 1044 MiB. Final sections and the same
-after measurements will be recorded when complete. No budget or existing
-retention floor is weakened. New fixtures are in section 100.
+## 3. Fixtures, red first
 
-The default trace must remain unchanged: this batch changes screens only.
-No ensemble is authorized or needed. Final pick and kept gate-run directory,
-with branch and main commit, will be recorded after the orchestrator's go.
+The new fixtures are section 102. Early build logs print 100 for them;
+that provisional number was changed, with no fixture logic change, because
+Research already owns 100–101. Research and R2d's section 96 remain intact.
 
-## Focused red/green evidence
+`target/kp2c-before.log`: original ui implementations from b9c93a989 compiled
+ahead of current classes, with compatibility delegates for the new APIs
+and passive setter observation, no mends. The same CITY_MONTHS city uses
+KeptCheck's going-rate minimum wage. Exit 174: ten draw-state, foreign-cell,
+size, drag and retention assertions fail, and 164 section-92 pages repeat
+writes. An unchanged old icon requests size twice; equal raw size and
+margin setters are each heard once. Omissions still reset as required.
 
-The old implementations from b9c93a98 were compiled in
-`target/kp2c-before` ahead of current classes, with compatibility delegates
-for the new assignment/list APIs and passive setter observers, no mends.
-The same section 100 and section 92 fixtures ran on the same city played
-to CITY_MONTHS, with the going-rate minimum wage used by KeptCheck.
-`target/kp2c-before.log`: 174 failed assertions (exit 174). Ten are section
-100's old retention, toggling, foreign-cell, repeated-size and drag faults;
-164 pages in section 92 had repeated writes. Equal raw size and margin
-setters were each heard once, and the old icon redraw requested size twice.
-The counter therefore measures the formerly invisible setter calls.
+`target/kp2c-after.log`: every section-92 page zero. The remaining Policy
+drag failure found its transient scene departure; the final fix preserves
+the hold and release at the snapped value. `target/kp2c-unit.log`: all new
+fixtures pass, exit 0, with zero saved comparison roots (89 before), both
+retired-node references cleared and no unchanged icon layout request.
 
-`target/kp2c-after.log`: all section 92 pages zero; the integration drag
-still found a transient scene departure. `target/kp2c-unit.log`, on the
-final code: all section 100 probes pass, exit 0. Saved comparison roots
-fell from 89 to zero, both retired-node references cleared, and the same
-unchanged icon redraw requested no layout. These are focused diagnostics;
-the full harness, pick and launcher merge verdict remain required.
+REV-KP2c-1 found unqualified setters in ActionButton.retell and
+RowsPicture.set. Both now give their cursor/handlers explicitly. The new
+real-page fixtures prove the initial four row handlers and hand cursor
+exist, redraw twice kept, and check the same picture retains them; History
+does the same for its action button. Exact Pieces, RankingsScreen and
+UserInterface at 65e3e19e1 loaded ahead of current classes fail these two
+assertions: `target/kp2c-review-before.log`, exit 2. The mended focused run
+passes. The header's same private sparklines retain transparency in both.
 
-★ A draw that briefly reparents a held control keeps its press when the
-control returns to the same scene before commit. The real Policy fixture
-causes this by opening its staged-choice tray during the held, greyed draw.
-A scene departure outside a draw, or one that remains at commit, releases
-it. The release assertion uses the slider's own min/block increment to
-snap the player's held thumb, as the Ladder does; no copied policy dial.
+The full raw-setter audit covered every kept page/helper. Three remaining
+raw visibility setters are on private labels in Ladder's marks and Pieces'
+picture; Sparkline is HeadlineTile's private child. Kept hands back their
+owners. Raw tooltip installs belong to picture-owned parts or rebuilt menu
+cards; kept-node tooltips use Kept.tip. Styles are retold whole and are not
+resetOmitted properties; section 92 counts every screen with no exemption.
 
-The baseline whole KeptCheck at b9c93a98 was ALL OK, exit 0, with live heap
-1393 MiB before section 92 and 1552 MiB before section 93. These are lower
-than KP2b's earlier 1.95/1.97 GiB observations on its older model, still
-close to the 2048 MiB suite heap. A focused run's 103 MiB is not the full
-harness's after measurement; that comes from the pick and gate below.
+## 4. Checks, heap and default trace
 
-Source and fixtures at 65e3e19e1; fetched and merged origin/main (already
-up to date at b9c93a989). The local selection is 33 harnesses, so the
-required `./batch-check.sh --pick` is running once with the default pool.
-The launcher merge dry run is the whole-suite run; no local ALL or
-ensemble is run. Source changes remain strictly ui/ and KeptCheck.
+- Unchanged-main whole KeptCheck at b9c93a989: ALL OK, exit 0,
+  `target/kp2c-baseline.log`. A temporary PrintStream wrapper samples live
+  heap after GC at section boundaries under AllChecks' 2048 MiB heap.
+  Before: 185 MiB at section 30, 186 at 40, 615 at 50, about 890 at 60,
+  1393 before 92 and 1552 before 93. KP2b's 1.95/1.97 GiB observations
+  were on its older model; these are this main's measured before figures.
+- Fresh final `./batch-check.sh --pick`, default pool and the required
+  Earth/world files: exit 3; 40 harnesses run in 1497 s, 37 passed and
+  MapCheck, KeptCheck and ResearchViewCheck had only registered reds.
+  The picker names 33 filters; AllChecks also runs their substring matches.
+  `target/kp2c-pick-final.log`, `target/checks/suite.txt` and harness logs.
+  Stale: zero firm, 186 soft; 11 timing assertions soft, three path
+  observations informational. No premise or budget was weakened.
+- Whole KeptCheck: all KP2c laws pass; after release at its end,
+  **1349.6 MiB of 2048**, leaving 698.4 MiB (34.1%) free. Its sole red
+  is the registered KS1-UI header signature: the hidden FX label retains
+  144x14 bounds while fresh is 0x0 (18 rungs). The registry already names
+  hidden-header bounds; this run's unchanged-main baseline above passed.
+  No signature rule is relaxed and no new coverage is added.
+- Default LongPlaytest: All checks passed. Its full 486-line report equals
+  FP1's retained main report at
+  `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FP1-qkbYBzgy/checks/LongPlaytest.log`.
+  Only JDK-option notices, wall-clock prefixes, the elapsed banner and CL3
+  runtime measurements are normalized. SHA256:
+  `3deda6d14c92e4f03768e00dc2e520332698492262bc14b23960891cc6d7974c`.
+  The default trace is unchanged. Main was not rerun; no ensemble ran.
 
-The first pick was stopped at its own launcher PID 26396 after the full
-harness found ActionButton.retell's unqualified `setCursor`: it had not
-been migrated to `Kept.give`, so the new end reset took its hand cursor.
-The existing History signatures caused and found the condition; no
-signature or premise changed. The cursor assignment now records intent.
-The stopped output is `target/kp2c-pick-stopped-KeptCheck.log`. Only that
-verified process tree was ended; the next pick verifies the mended tree.
+Two earlier interrupted picks are discarded. The first Bash stop left its
+native Java suite detached; exact verified native PIDs were then ended,
+and a brief overlap had corrupted their output files. The final pick used
+a fresh checks directory and unique log after the process inventory showed
+those suites gone. Discarded logs remain in target/kp2c-interrupted-checks.
+Only this batch's verified process trees were ended; other sessions and
+MemWatch were left alone. No save slot was written.
 
+## 5. Review and launcher merge verdict
 
-## Gate review follow-up and complete assignment audit
-
-REV-KP2c-1 found RowsPicture.set's four unqualified mouse setters, the same
-assignment-intent omission as ActionButton.retell. They now use Kept.give.
-Section 100 draws Rankings and History fresh then twice kept, proves the
-initial handlers/cursors exist, and checks the same row picture's four
-handlers and hand cursor and the same action button's hand remain.
-`target/kp2c-review-before.log` loads the exact Pieces, RankingsScreen and
-UserInterface classes at 65e3e19e1 ahead of current classes: these two
-assertions fail, exit 2. `target/kp2c-unit.log` on the mends: all pass,
-exit 0. The header's same sparklines retain mouse transparency in both.
-
-The complete raw-setter sweep covered every kept screen and helper. The
-remaining three raw visibility calls are on the private labels of Ladder's
-marks and Pieces' picture, and Sparkline's constructor transparency is on
-HeadlineTile's private child: none is handed back by Kept. Raw tooltip
-installs likewise belong to picture-owned shapes/cells or the rebuilt
-menu/saved-city cards. Kept-node tooltips go through Kept.tip. Styles are
-retold whole and never cleared by resetOmitted; section 92 counts every
-screen's writes, with no exemption. No other raw setter assigns a property
-resetOmitted clears on a handed-back node.
-
-The first Bash stop left its native Java launcher detached. Its verified
-AllChecks PID 10340 and children were then stopped explicitly. Two picks
-had briefly overlapped writers in target/checks, so both interrupted runs
-are discarded: NUL gaps in that report are output corruption, not an
-economic trace change or a usable verdict. The second native AllChecks
-40852, its parent batch-check 12964 and Bash launcher 41068 were all ended;
-the process inventory showed only XR7's different AllChecks afterward.
-The discarded checks directory is preserved under
-`target/kp2c-interrupted-checks`. The final pick starts with a fresh checks
-directory and a unique log, `target/kp2c-pick-final.log`.
+The provisional ship marker remains pushed. The orchestrator orders the
+slot after XR7 then R2d; origin/main will be merged again before the dry run.
+The second review, final main/branch commits and retained launcher run
+directory will be recorded here after the orchestrator's go and verdict.

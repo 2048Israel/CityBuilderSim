@@ -11,7 +11,7 @@
 
 **Uses:** [Timing](Timing.md) (8), [KnownReds](KnownReds.md) (6), [Observation](Observation.md) (3)
 
-**Used by (5):** [DeterminismCheck](DeterminismCheck.md), [KnownRedsCheck](KnownRedsCheck.md), [ObservationCheck](ObservationCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [TimingCheck](TimingCheck.md)
+**Used by (6):** [DeterminismCheck](DeterminismCheck.md), [KeptCheck](KeptCheck.md), [KnownRedsCheck](KnownRedsCheck.md), [ObservationCheck](ObservationCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [TimingCheck](TimingCheck.md)
 
 ## Constants
 

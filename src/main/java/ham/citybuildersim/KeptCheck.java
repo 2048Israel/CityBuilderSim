@@ -328,6 +328,11 @@ import java.util.concurrent.TimeUnit;
  *      and the room; a school not built or hosting none says nothing), Government's Spending list with the Research line (the lines add up to the total, a
  *      door to Funding, who is paid), its payroll and the wage floor's naming the research staff (the floor in force shows no change of the payroll), each
  *      kept against a page built new with 92's rule.
+ * ...and the remaining kept sweep (KP2c):
+ * 102. unchanged optional state and grid constraints stay put; omitted state resets once; a foreign vitals cell gets the bar's look;
+ *      real Rankings and History redraws keep their handlers and cursors; equal raw size and margin setters are counted, guarded ones skipped;
+ *      a policy thumb holds across greying, ungreying and temporary reparenting in one drag, and releases at the player's snapped value;
+ *      comparison roots, retired pictures and no-stage scene dirty nodes are released, with a quarter of the suite heap left free.
  */
 public class KeptCheck {
 
@@ -9053,9 +9058,9 @@ public class KeptCheck {
     /** A full KeptCheck leaves at least a quarter of its suite heap for the next pages (KP2c). */
     static final double KEPT_HEAP_SHARE = .75;
 
-    /** Section 100: the kept sweep's remaining draw, drag and retention conditions, each caused here. */
+    /** Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. */
     static void kp2cMends(Game g, KeptBench bench) throws Exception {
-        System.out.println("\n--- 100: unchanged state stays put, a press survives greying, retired pages are released ---");
+        System.out.println("\n--- 102: unchanged state stays put, a press survives greying, retired pages are released ---");
         fx(() -> {
             KeptBench.Page page = bench.infrastructure();
             bench.home(page);
