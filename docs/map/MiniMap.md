@@ -33,7 +33,7 @@
 
 **Uses:** [MiniMapFrame](MiniMapFrame.md) (16), [CityMap](CityMap.md) (12), [MapView](MapView.md) (10), [Palette](Palette.md) (8), [MapTiles](MapTiles.md) (7), [Game](Game.md) (7), [UserInterface](UserInterface.md) (2), [MapFrame](MapFrame.md) (2), [TileRaster](TileRaster.md) (2), [World](World.md) (1)
 
-**Used by (1):** [UserInterface](UserInterface.md)
+**Used by (2):** [ReplayMoveProbe](ReplayMoveProbe.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

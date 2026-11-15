@@ -7254,6 +7254,11 @@ public class UserInterface extends Application {
         if (panKeys != null) panKeys.replayChanged();
     }
 
+    /** A cancelled camera move releases its store now, even when Ready has stopped the map's frames (CM1b). */
+    void replayCancelMove(ReplayCamera camera) {
+        if (panKeys != null) panKeys.cancelMove(camera);
+    }
+
     /** The land office's map over the window on the city, as Expand opens it (the replay's M key). */
     void replayOpenMap() { openMapOn(null); }
 
