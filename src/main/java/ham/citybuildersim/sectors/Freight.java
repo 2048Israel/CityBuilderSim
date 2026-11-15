@@ -1811,13 +1811,13 @@ public final class Freight extends Sector {
     }
 
     /**
-     * Tonnes against nameplate: a city whose trade collapses should sell the
-     * track, and this is the one sector in the game whose demand series is
-     * neither a good nor a headcount.
+     * Offered tonnes against standing track, the nameplate unitsOf() counts
+     * (RT2). The operating minimum of track, sets and handling is not additive:
+     * a shortage of sets or stations must not hide track that is spare to sell.
      */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {
-        return new double[] { rTonnes, rCapacity };
+        return new double[] { rTonnes, trackTonnes() };
     }
 
     @Override

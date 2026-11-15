@@ -1,6 +1,7 @@
 package ham.citybuildersim.sectors;
 
 import ham.citybuildersim.BuildingType;
+import ham.citybuildersim.BuildingsTemplate;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.Sector;
@@ -94,5 +95,11 @@ public final class FoodIndustry extends Sector {
                 game.getPopulationManager().getPopulation());
         return new double[] { demand,
                 (getCapacity(Good.BREAD) + getCapacity(Good.BAKERY)) / Agriculture.BAKED_KG_A_HEAD };
+    }
+
+    /** A mill's part of the retirement measure, in heads served by both its baked goods (RT2). */
+    @Override
+    public double unitsOf(BuildingsTemplate t) {
+        return t == null ? 0 : (t.makes(Good.BREAD) + t.makes(Good.BAKERY)) / Agriculture.BAKED_KG_A_HEAD;
     }
 }
