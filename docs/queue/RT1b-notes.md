@@ -23,3 +23,30 @@ ledger, cash and pooled money. Verification and mutation evidence follow.
 shortcut: legitimate remainders stay at both price levels.
 ★ Invoke the real desk through OutwardInvestment.recall(), rather than
 adding a test seam in Game, which R0f is changing concurrently.
+
+## Focused verification
+
+`batch-check.sh --fast`: exit 0; compile, maps, Stale (0 firm) and tree pass.
+`batch-check.sh HoldersCheck`: exit 0, all assertions pass, including every
+played month's audit. Logs: target/checks/rt1b-fast.txt,
+rt1b-holders.txt, and HoldersCheck.log.
+
+The focused section-14 runner is retained under target/rt1b-probes:
+
+- Final code: exit 0 (target/checks/rt1b-floor-final.txt).
+- The original e8ac5a53 OutwardInvestment and HouseholdBalance compiled over
+  the same fixture classes: exit 6. Full sector principal and buyback takes
+  fail at both scales; full cell principal and buyback takes fail at scale 1.
+  Partial holdings and every cash/income assertion still pass. This directly
+  demonstrates all three requested regressions on main's code, without
+  changing a premise (rt1b-floor-main.txt).
+- A temporary Game copy divides the desk's per-piece pro-rata transfer by
+  two, retaining its bank booking and price. Exit 12; the independent book
+  comparison fails on partial and full takes at both scales (0.306423 versus
+  0.612846, and 1.225691 versus 2.451382 at scale 1). The tracked Game is
+  untouched (rt1b-floor-broken-split.txt).
+
+The existing section-14 boundary checks keep a remainder ten times the
+relative floor and snap one at half the floor. The new controls also retain
+quarter-take rests and bound each holder's cash and reported flow within
+four ulps of its pro-rata price. The cash formulas themselves are unchanged.
