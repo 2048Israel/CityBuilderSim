@@ -1696,6 +1696,11 @@ public class HoldersCheck {
 
     /** ...its first sale made with the policy rate this much higher, so the line's coupon stands over the rates the city goes back to (13a, BD1). */
     static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise) throws Exception {
+        return reopeningFixture(label, restrikeOff, firstSaleRise, .15);
+    }
+
+    /** BK2b: a smaller first sale leaves less of the bank's own discount to cover the next sale's premium. */
+    static Reopening reopeningFixture(String label, boolean restrikeOff, double firstSaleRise, double firstSaleShare) throws Exception {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
         city.quietTheWorldForTheD();   // EP1: the constant world rate, see main()
@@ -1745,7 +1750,7 @@ public class HoldersCheck {
         }
         // WG2, 2026-11-10: THE FIRST SALE A SMALLER PART OF WHAT THE HOUSEHOLDS CAN PAY, .15 OF IT AND NOT
         // .2, so the second is more of the line.
-        final double ask1 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * .15);
+        final double ask1 = Math.max(100 * PriceLevel.FACTOR, city.getHouseholdBalance().spareForPaper() * firstSaleShare);
         java.util.List<Debt> had = new java.util.ArrayList<>(ledger.getDebt());
         quietly(() -> city.handleLongBondLogic(ask1, 20, 100 * PriceLevel.FACTOR));
         Debt line = newPiece(ledger, had);
@@ -2023,6 +2028,7 @@ public class HoldersCheck {
         out.println("\n--- 13. the line's discount at an issue or a trade (BD1): each holder's own moves with its face, so nothing is"
                 + " re-struck where it happens, the bank's unearned discount is the book's, and no figure of the city moved ---");
         thePremium();
+        thePremiumPastOwnDiscount();
         theDeskOnAnUnsettledLine();
         theBuybackBeforeTheSettle();
     }
@@ -2120,6 +2126,55 @@ public class HoldersCheck {
         if (!apart.isEmpty()) out.println("   first figure apart: " + apart);
         assertTrue("the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,"
                 + " in the month", apart.isEmpty());
+    }
+
+    /** BK2b: the bank's premium exceeds its own discount; the clamp's loss belongs to retained, outside income. */
+    static void thePremiumPastOwnDiscount() throws Exception {
+        out.println("   -- 13a extra. a small first sale, then a premium beyond the bank's own discount");
+        Reopening fix = reopeningFixture("holderscheck-premium-past-own", false, PREMIUM_RISE, .001);
+        Reopening twinFix = reopeningFixture("holderscheck-premium-past-own-twin", true, PREMIUM_RISE, .001);
+        Game city = fix.city(), twin = twinFix.city();
+        Debt line = fix.line(), twinLine = twinFix.line();
+        assertTrue("fixture: both small first sales made a settled line", line != null && twinLine != null);
+        if (line == null || twinLine == null) return;
+        Bank bank = city.getBank(), twinBank = twin.getBank();
+        assertTrue("fixture: the bank owns positive discount before the premium sale", line.discountOf(Debt.Holder.BANK) > 0);
+        Premium sale = reopenAtAPremium(city, line), twinSale = reopenAtAPremium(twin, twinLine);
+        assertTrue("fixture: both markets reopen the same line at a premium",
+                sale.quoted() && twinSale.quoted() && sale.sameLine() && twinSale.sameLine()
+                        && sale.proceeds() > sale.face() && twinSale.proceeds() > twinSale.face());
+        Edge[] edges = watchSettle(city, line);
+        MoneyAudit.Result audit = play(city);
+        city.settleProbeForTest = null;
+        MoneyAudit.Result twinAudit = play(twin);
+        Edge before = edges[0], after = edges[1];
+        double face = after.faceOf(Debt.Holder.BANK) - before.faceOf(Debt.Holder.BANK);
+        double premium = before.bankPaid(after) - face;
+        double own = before.discountOf(Debt.Holder.BANK), shortfall = premium - own;
+        out.printf("   bank premium $%,.9fk, own discount $%,.9fk, shortfall $%,.9fk, re-struck $%,.9fk%n",
+                premium, own, shortfall, bank.getDiscountRestruck());
+        assertTrue("fixture: the bank bought face and paid a premium larger than its positive own discount",
+                face > 0 && own > 0 && shortfall > MoneyAudit.CENT);
+        close("the settle exhausts the bank's own discount on this line", after.discountOf(Debt.Holder.BANK), 0, 0);
+        close("the premium beyond its own discount is booked as discountRestruck",
+                bank.getDiscountRestruck(), -shortfall, movementTolerance(bank));
+        close("...and the equity movement names exactly that re-strike",
+                bank.equityMovement().discountRestruck(), -shortfall, movementTolerance(bank));
+        close("the re-strike goes to retained earnings against the twin that books none",
+                bank.retainedEarnings() - twinBank.retainedEarnings(), -shortfall, splitTolerance(bank));
+        close("the bank's carried unearned discount agrees with the holders' book",
+                bank.getUnearnedDiscount(), city.getDebtManager().bankUnearnedDiscount(), movementTolerance(bank));
+        close("the equity movement closes with the premium loss named", bank.equityMovement().residual(), 0, movementTolerance(bank));
+        assertTrue("the bank's equity split is known", bank.knowsEquitySplit());
+        close("paid-in capital, retained earnings and preferred foot to equity", bank.equitySplitResidual(), 0, splitTolerance(bank));
+        close("the twin's movement exposes precisely the unbooked premium loss",
+                twinBank.equityMovement().residual(), -shortfall, movementTolerance(twinBank));
+        close("the twin's split exposes precisely the missing retained loss",
+                twinBank.equitySplitResidual(), shortfall, splitTolerance(twinBank));
+        assertTrue("income, tax, dividends, paper gains, treasury cash and equity agree with the twin bit for bit",
+                firstDifference(cityFigures(city), cityFigures(twin)).isEmpty());
+        assertTrue("the premium city's audit closes", Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved()));
+        assertTrue("...and the twin's audit closes", Math.abs(twinAudit.residual) <= MoneyAudit.tolerance(twinAudit.moved()));
     }
 
     /** 13b: the desk buying the households' paper of a line with a sale unsettled is handed the households' own discount per face, which is what the book moves by (BK2). */
@@ -2355,9 +2410,47 @@ public class HoldersCheck {
         assertTrue("...yet it stays, because the floor is a share of the face moved", Debt.moved(takenF + aboveF, -takenF) > 0);
 
         for (double scale : new double[]{1, PriceLevel.FACTOR}) {
+            theBuybackDiscountFloor(scale);
             theHolderLedgers(scale);
             theFirmDeskSplit(scale, .25);
             theFirmDeskSplit(scale, 1);
+        }
+    }
+
+    /** BK2b: every seller hands over all its discount when an ulp-short partial buyback snaps its kept face to none. */
+    static void theBuybackDiscountFloor(double scale) {
+        out.printf("   -- an ulp-short partial buyback leaves no discount on no face, scale %.15g%n", scale);
+        for (Debt.Holder seller : new Debt.Holder[]{Debt.Holder.BANK, Debt.Holder.HOUSEHOLDS, Debt.Holder.FIRMS, Debt.Holder.WORLD}) {
+            LongTermBond piece = ownedPiece();
+            piece.redenominate(scale);
+            double held = piece.heldBy(seller), own = piece.discountOf(seller), taken = Math.nextDown(held);
+            double proportional = own * (taken / held);
+            assertTrue(seller + ": fixture has positive discount and a positive remainder inside HOLDING_ROUNDING",
+                    own > 0 && held > taken && held - taken <= Debt.HOLDING_ROUNDING * taken);
+            assertTrue(seller + ": fixture's proportional discount would leave positive dust", own - proportional > 0);
+            double[] before = owned(piece);
+            close(seller + ": the buyback is handed the seller's whole discount", piece.unaccretedOn(seller, taken), own, 0);
+            double[] sold = new double[Debt.Holder.values().length];
+            sold[seller.ordinal()] = taken;
+            piece.retirePart(sold[Debt.Holder.BANK.ordinal()], sold[Debt.Holder.HOUSEHOLDS.ordinal()],
+                    sold[Debt.Holder.FIRMS.ordinal()], sold[Debt.Holder.WORLD.ordinal()]);
+            assertTrue(seller + ": the buyback is partial: other holders still own face", piece.getOustandingPrincipal() > 0);
+            assertTrue(seller + ": no more than rounding face remains", piece.heldBy(seller) <= Debt.HOLDING_ROUNDING * taken);
+            close(seller + ": no discount remains on the retired holding", piece.discountOf(seller), 0, 0);
+            for (Debt.Holder other : Debt.Holder.values()) {
+                if (other != seller) close(seller + ": " + other + " keeps its own discount", piece.discountOf(other), before[other.ordinal()], 0);
+            }
+
+            LongTermBond part = ownedPiece();
+            part.redenominate(scale);
+            double keep = 10 * Debt.HOLDING_ROUNDING * held, partTaken = held - keep;
+            sold[seller.ordinal()] = partTaken;
+            double expected = own * Math.min(1, partTaken / held);
+            assertTrue(seller + ": control keeps face above HOLDING_ROUNDING", held - partTaken > Debt.HOLDING_ROUNDING * partTaken);
+            close(seller + ": the control hands over only proportional discount", part.unaccretedOn(seller, partTaken), expected, 0);
+            part.retirePart(sold[Debt.Holder.BANK.ordinal()], sold[Debt.Holder.HOUSEHOLDS.ordinal()],
+                    sold[Debt.Holder.FIRMS.ordinal()], sold[Debt.Holder.WORLD.ordinal()]);
+            close(seller + ": the control keeps its discount above the floor", part.discountOf(seller), own - expected, 0);
         }
     }
 
