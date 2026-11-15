@@ -304,6 +304,7 @@ public class Game {
         }
 
         buildingManager = new BuildingManager();
+        buildingManager.setTemplateKnown(t -> !foundedUnfitted() || knows(t));
         economyManager = new EconomyManager(buildingManager);
         // ...and the city's strategic reserve, its trader in crude's market (0.7.85).
         reserve = new StrategicReserve();
@@ -1450,8 +1451,8 @@ public class Game {
     }
 
     /**
-     * Whether a building is known in this city this month (R3): history's month for its "since", or the month the city found its code. For R2b,
-     * which gates the planners by it; nothing asks yet.
+     * Whether a building is known in this city this month (R3): history's month for its "since", or the month the city found its code.
+     * BuildingManager's candidate rule applies this reading only in a city founded the 1900 way (R2b).
      */
     public boolean knows(BuildingsTemplate t) {
         return t.knownAt(month, research);
@@ -10253,7 +10254,7 @@ public class Game {
 
     
     
-    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER, NO_BRIDGE}
+    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER, NO_BRIDGE, NOT_KNOWN}
 
     /* =======================================================================
        HALF THE PRACTICE, BEFORE THE DOORS OPEN (2026-09-12)
@@ -10979,6 +10980,7 @@ public class Game {
      */
     public boolean buildFor(Investor payer, BuildingsTemplate template, int quantity) {
 
+        if (!buildingManager.isTemplateKnown(template)) return false;
         BuildQuote quote = quoteBuild(template, quantity);
 
         double landNeeded = template.getLandSqFt() * quantity;
@@ -11109,6 +11111,10 @@ public class Game {
      * (LandManager.canAllocateOn()), not the linked pool's; every other order is asked what it always was.
      */
     public BuildResult buildStack(BuildingsTemplate template, int quantity, boolean noConstruction, int asked){
+        if (!buildingManager.isTemplateKnown(template)) {
+            this.hasNewReceipt = false;
+            return BuildResult.NOT_KNOWN;
+        }
         double totalCost = noConstruction
                 ? template.getCashCost() * quantity
                 : quoteBuildOn(template, quantity, asked).total;
@@ -11307,7 +11313,8 @@ public class Game {
                         : Math.min(worksAhead + runsAhead * landManager.getSlopeShare(), landManager.idleSlopeSqFt());
                 java.util.List<LandManager.Claim> packedAhead = packs(t) ? claimsAhead.get(t.site().resource()) : null;
                 int island = islandPortLandmass(t, Landmasses.CHOSEN);
-                BuildResult refused = !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
+                BuildResult refused = !buildingManager.isTemplateKnown(t) ? BuildResult.NOT_KNOWN
+                        : !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasRiverFor(t, hydroAhead + n) ? BuildResult.NO_RIVER
                         : !hasBridgeFor(t, n) ? BuildResult.NO_BRIDGE
