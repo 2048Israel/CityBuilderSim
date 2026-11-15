@@ -547,7 +547,16 @@ public abstract class ProcessingSector extends Sector {
     private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city) {
         double share = feedShareStanding(t);
         double rate = share == 1 ? city.rate() : city.rate() * share;
-        return lastEarns(t, v, city, exchangeFactor(), tariff(), share, offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()));
+        SpreadPlanner.City standing = game == null ? city : new SpreadPlanner.City() {
+            public double cost(BuildingsTemplate b) { return city.cost(b); }
+            public double running(BuildingsTemplate b) { return game.getBusinessInvestment().standingRunningCostOf(b); }
+            public double standing(BuildingsTemplate b) { return city.standing(b); }
+            public double rate() { return city.rate(); }
+            public String land(BuildingsTemplate b) { return city.land(b); }
+            public String staff(BuildingsTemplate b) { return city.staff(b); }
+            public String money(double earns, double cost) { return city.money(earns, cost); }
+        };
+        return lastEarns(t, v, standing, exchangeFactor(), tariff(), share, offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()));
     }
 
     /** Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. */
@@ -559,5 +568,15 @@ public abstract class ProcessingSector extends Sector {
     public double lastEarns(BuildingsTemplate t) {
         if (t == null || game == null || buildings == null || markets == null || game.getBusinessInvestment() == null) return Double.NaN;
         return lastOneEarns(t, values(), planner.city(this, game.getBusinessInvestment(), game));
+    }
+
+    /** Standing earnings on the production actually dispatched, whose rate already includes feed/order limits (R2c). */
+    public double lastEarnsAt(BuildingsTemplate t, double rate) {
+        if (t == null || game == null || markets == null) return Double.NaN;
+        BusinessInvestment plans = game.getBusinessInvestment();
+        SpreadPlanner.Values v = values();
+        return grossStanding(t, v, rate) - plans.standingRunningCostOf(t) - plans.standingCostOf(this, t)
+                - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), tariff())
+                - offMarketFeed(t, rate) - freightRunning(t, v, rate, legPrice());
     }
 }

@@ -18,6 +18,18 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.114 — R2c, Licence fees on the current account — 2026-11-15, ready, see docs/queue/R2c-notes.md
+In a city founded the 1900 way, private firms pay 25% of the positive gain from
+a patented discovery imported from the world until twenty years after history's
+date. Local discoveries and unpatented entries are free. IP charges leave the
+firm's accounts as imported services in the same month's money audit and
+foreign current account. Production's bill is saved for the next strike,
+including last-term production paid after expiry; saved statements and
+monthly history retain paid and accrued flows. Saved per-building amounts
+keep standing planner costs identical through a load.
+Planners and fitting compare gains less the licence fee. Positive-payment,
+expiry, exemption, equal-gain ranking and nonzero save/read fixtures cover it.
+
 ### 0.9.113 — RT2, The other buildings counted in their sector retirement measure — 2026-11-15, ready, see docs/queue/RT2-notes.md
 FoodIndustry counts baked outputs per mill in heads, worked-out CoalMining
 counts raw mine nameplate, and Freight compares offered tonnes with

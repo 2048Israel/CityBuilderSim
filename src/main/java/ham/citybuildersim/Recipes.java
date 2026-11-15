@@ -95,7 +95,7 @@ public final class Recipes {
     }
 
     /**
-     * The best recipe a part can run at these prices: the highest value() of those it canRun(); a tie keeps the default, then the file's order; the
+     * The best recipe a part can run at these prices: the highest value() less patent rent of those it canRun(); a tie keeps the default, then the file's order; the
      * default where none can run. `fitted` is which part (it is no matter on a template with no recipe piece).
      */
     public static Recipe best(BuildingsTemplate t, boolean fitted, int month, Prices p) {
@@ -104,6 +104,15 @@ public final class Recipes {
 
     /** The same in a city whose research may have found a recipe's code before history's month (R3); no research (null) reads history's. */
     public static Recipe best(BuildingsTemplate t, boolean fitted, int month, Prices p, Research found) {
+        return best(t, fitted, month, p, found, true);
+    }
+
+    /** The same choice before patent rent, for a default-founded city's fitting estimates (R2c). */
+    static Recipe bestGross(BuildingsTemplate t, boolean fitted, int month, Prices p, Research found) {
+        return best(t, fitted, month, p, found, false);
+    }
+
+    private static Recipe best(BuildingsTemplate t, boolean fitted, int month, Prices p, Research found, boolean netFees) {
         Recipe dflt = t.defaultRecipe();
         List<Recipe> order = new ArrayList<>();
         order.add(dflt);
@@ -112,7 +121,7 @@ public final class Recipes {
         double most = Double.NEGATIVE_INFINITY;
         for (Recipe r : order) {
             if (!canRun(t, r, fitted, month, found)) continue;
-            double v = value(r, p);
+            double v = netFees ? LicenceFees.recipeValue(t, r, month, p, found) : value(r, p);
             if (Double.isNaN(v)) v = Double.NEGATIVE_INFINITY;
             if (best == null || v > most) {
                 best = r;
@@ -134,7 +143,8 @@ public final class Recipes {
     /** The same in a city whose research may have found a recipe's code before history's month (R3); no research (null) reads history's. */
     public static double recipeGain(BuildingsTemplate t, int month, Prices p, Research found) {
         if (t.recipePieceId() == null) return 0;
-        return value(best(t, true, month, p, found), p) - value(best(t, false, month, p, found), p);
+        return LicenceFees.recipeValue(t, best(t, true, month, p, found), month, p, found)
+                - LicenceFees.recipeValue(t, best(t, false, month, p, found), month, p, found);
     }
 
     /* ===== THE GAME LAYER: the city's prices, read on demand ===== */
@@ -149,6 +159,12 @@ public final class Recipes {
 
     /** The gain of the template's recipe piece at the city's prices and in the city's month (EquipmentFit.gainOf() for a piece that ends no form). */
     public static double gainOf(Game game, BuildingsTemplate t) {
+        if (!game.foundedUnfitted()) {
+            if (t.recipePieceId() == null) return 0;
+            Prices p = pricesOf(game);
+            return value(bestGross(t, true, game.getMonth(), p, game.getResearch()), p)
+                    - value(bestGross(t, false, game.getMonth(), p, game.getResearch()), p);
+        }
         return recipeGain(t, game.getMonth(), pricesOf(game), game.getResearch());
     }
 

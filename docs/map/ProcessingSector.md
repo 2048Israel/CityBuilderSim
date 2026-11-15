@@ -1,4 +1,4 @@
-# ProcessingSector.java - 563 lines · 44 methods · 0 constants · sectors
+# ProcessingSector.java - 582 lines · 45 methods · 0 constants · sectors
 
 `ham/citybuildersim/sectors/ProcessingSector.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 > price past it), so a works that replaces imports is not shed because one
 > ... (15 more lines in the source)
 
-**Uses:** [SpreadPlanner](SpreadPlanner.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (29), [Good](Good.md) (25), [BusinessInvestment](BusinessInvestment.md) (10), [Game](Game.md) (5), [Sector](Sector.md) (4), [Traffic](Traffic.md) (4), [GoodsMarket](GoodsMarket.md) (2), [Haulage](Haulage.md) (2), [Currency](Currency.md) (2), [BuildingType](BuildingType.md) (1), [Trade](Trade.md) (1)
+**Uses:** [SpreadPlanner](SpreadPlanner.md) (57), [BuildingsTemplate](BuildingsTemplate.md) (35), [Good](Good.md) (25), [BusinessInvestment](BusinessInvestment.md) (11), [Game](Game.md) (5), [Sector](Sector.md) (4), [Traffic](Traffic.md) (4), [GoodsMarket](GoodsMarket.md) (2), [Haulage](Haulage.md) (2), [Currency](Currency.md) (2), [BuildingType](BuildingType.md) (1), [Trade](Trade.md) (1)
 
-**Used by (18):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [CementConcrete](CementConcrete.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [Forestry](Forestry.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [RecipeCheck](RecipeCheck.md), [Sector](Sector.md), [WoodProducts](WoodProducts.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (20):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [CementConcrete](CementConcrete.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [Forestry](Forestry.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [RecipeCheck](RecipeCheck.md), [Sector](Sector.md), [WoodProducts](WoodProducts.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 
@@ -89,7 +89,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 95 | 469 | **type** `public abstract class ProcessingSector extends Sector` | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.6a and 2.7). |
+| 95 | 488 | **type** `public abstract class ProcessingSector extends Sector` | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.6a and 2.7). |
 | 100 | 3 | `protected ProcessingSector(String key, String label, BuildingType group)` |  |
 | 105 | 1 | `public SpreadPlanner planner()` | Its spread planner (a check or a probe sets its money gate for the counterfactual). |
 | 114 | 9 | `public void shipUnsoldStock(Good g, GoodsMarket market)` | The planner's world buyers also buy from its wholesale shed (BF1). |
@@ -157,11 +157,12 @@
 | 524 | 3 | `protected void restoreExtras(Map<String, Double> extras)` | A save without them reads none. |
 | 529 | 3 | `protected void resetExtras()` |  |
 
-### THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md (lines 533-563)
+### THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md (lines 533-582)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 547 | 5 | `private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city)` | What the last one of `t` standing earns a month at `v` and `city`: lastEarns() at the share of nameplate its feed fills (feedShareStanding()), that feed and its lorries in its costs - IDLE, THEN SHED's test, and the p... |
-| 554 | 3 | `public boolean isWeighed(BuildingsTemplate t)` | Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. |
-| 559 | 4 | `public double lastEarns(BuildingsTemplate t)` | What the last one of `t` standing earns a month at this month's values, as IDLE, THEN SHED counts it (lastOneEarns()) - below nothing an idle month; NaN with no city or markets. |
+| 547 | 14 | `private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city)` | What the last one of `t` standing earns a month at `v` and `city`: lastEarns() at the share of nameplate its feed fills (feedShareStanding()), that feed and its lorries in its costs - IDLE, THEN SHED's test, and the p... |
+| 563 | 3 | `public boolean isWeighed(BuildingsTemplate t)` | Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. |
+| 568 | 4 | `public double lastEarns(BuildingsTemplate t)` | What the last one of `t` standing earns a month at this month's values, as IDLE, THEN SHED counts it (lastOneEarns()) - below nothing an idle month; NaN with no city or markets. |
+| 574 | 8 | `public double lastEarnsAt(BuildingsTemplate t, double rate)` | Standing earnings on the production actually dispatched, whose rate already includes feed/order limits (R2c). |
 

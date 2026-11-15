@@ -1,8 +1,8 @@
-# gate of Merge batch/RT2: the other buildings not counted in their sector's retirement measure, none of them money: FoodIndustry (spare in heads, a mill counted in kilograms of bread: a Bakery 66,400 heads against 232,000 kg, about 3.5 times too few sold), CoalMining (worked out, capacity the washed thermal flow, a coking mine counted in raw tonnes: up to 5 times) and Freight (capacity the least of track, sets and stations, a line counted by its track); each sells less than the rule means, 0.9.113
+# gate of Merge batch/R2c: research: licence fees on the current account - 25% of what a patented entry got from the world adds, for 20 years from history's date (research-design §2.4, ★E2), paid by the firm that runs it as IP charges; the planners' and the fitting's gain less the fee; in a 1900 city, 0.9.114
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 199 harnesses run in 2397s: 193 passed, 6 failed
+# suite: 195 harnesses run in 1419s: 189 passed, 6 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 InvestCheck | exit 1

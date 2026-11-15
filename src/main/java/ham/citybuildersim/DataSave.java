@@ -1107,6 +1107,7 @@ public class DataSave implements Cloneable {
         try {
             DataSave copy = (DataSave) super.clone();
             if (buildings != null) copy.buildings = buildings.clone();
+            if (licenceFees != null) copy.licenceFees = java.util.Collections.unmodifiableMap(new java.util.TreeMap<>(licenceFees));
             return copy;
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
@@ -1200,6 +1201,17 @@ public class DataSave implements Cloneable {
      * so no format bump.
      */
     private java.util.Map<Integer, java.util.List<String>> recipeChoices;
+
+    /** The last captured royalty per installed building, by template id; a saved flow for standing readers (R2c). */
+    private java.util.Map<Integer, Double> licenceFees;
+
+    public void setLicenceFees(java.util.Map<Integer, Double> byId) {
+        licenceFees = byId == null || byId.isEmpty() ? null : java.util.Collections.unmodifiableMap(new java.util.TreeMap<>(byId));
+    }
+
+    public java.util.Map<Integer, Double> getLicenceFees() {
+        return licenceFees == null ? java.util.Map.of() : licenceFees;
+    }
 
     public void setRecipeChoices(java.util.Map<Integer, java.util.List<String>> byId) {
         this.recipeChoices = byId == null || byId.isEmpty() ? null : byId;

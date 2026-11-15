@@ -2268,6 +2268,11 @@ public abstract class Sector {
      * 0.7.62 (batch K), when the railway began drawing FUEL (Freight.haul()).
      */
 
+    /** Imported patent rent, banked with this month's other service inputs (R2c). */
+    public final void bookLicenceFee(double amount) {
+        bookImportedService(LicenceFees.IP_CHARGES, amount);
+    }
+
     /**
      * ...AND ONE AGAIN SINCE 0.7.91 (batch O10; spec-oil 2.7): the shuttle
      * tankers that take a platform's crude ashore, a service the world's

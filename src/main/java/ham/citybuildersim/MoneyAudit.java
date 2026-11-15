@@ -986,7 +986,9 @@ public final class MoneyAudit {
         // bought from the world that have no good behind them: the shuttle tankers' freight (0.7.91) and the
         // works' consumables (0.7.112, Sector.buyConsumables()), each in TRADE with the goods.
         for (Sector s : sectors.all()) {
-            out += debit.apply("- " + s.key() + " Imports", s.statement().imports, Scope.TRADE);
+            double ip = s.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+            out += debit.apply("- " + s.key() + " Imports", ip != 0 ? s.statement().imports - ip : s.statement().imports, Scope.TRADE);
+            if (ip != 0) out += debit.apply("- " + s.key() + " IP charges", ip, Scope.TRADE);
         }
         // ...and the strategic reserve's crude bought from the world (0.7.85), settled at the strike
         // beside the sectors' month; what it bought of the wells is a pool paying a pool, not listed.
