@@ -1701,7 +1701,13 @@ public class LandNationsCheck {
             int calls;
             @Override LandMarket.MeasuredQuote measure(LandMarket.Quoter use, long[] rect) {
                 if (calls++ == 0) {
-                    try { return super.measure(use, slow); }
+                    // Keep real quote work out until the model's cancellation checks stop it. A fast warm
+                    // measurement must not finish between observing seller progress and moving the pointer.
+                    try {
+                        for (;;) {
+                            super.measure(use, slow);
+                        }
+                    }
                     finally { finished.countDown(); }
                 }
                 next.countDown();
@@ -1711,10 +1717,9 @@ public class LandNationsCheck {
         try {
             long plots = city.sellers().plotsRead();
             quotes.words(block, Double::toString);
-            long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
-            while (city.sellers().plotsRead() == plots && finished.getCount() != 0 && System.nanoTime() < deadline) Thread.sleep(2);
+            while (city.sellers().plotsRead() == plots && finished.getCount() != 0) Thread.sleep(2);
             boolean splitting = city.sellers().plotsRead() > plots && finished.getCount() != 0;
-            check("real cancellation premise: the level-12 river quote is still walking seller plots", splitting);
+            check("real cancellation premise: the level-12 river quote has reached seller rows and is still running", splitting);
             long start = System.nanoTime();
             quotes.words(block + 1, Double::toString);
             boolean began = next.await(10, java.util.concurrent.TimeUnit.SECONDS);
@@ -1723,7 +1728,11 @@ public class LandNationsCheck {
             boolean ok = splitting && began && Timing.within(ms, LandMarket.QUOTER_MS * 8);
             if (!ok) fails++;
             out.printf("%-118s %s  %.2f ms%n", label, Timing.verdict(ok, label), ms);
-        } finally { quotes.leave(); worker.shutdownNow(); worker.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS); }
+        } finally {
+            quotes.leave();
+            worker.shutdownNow();
+            if (!worker.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS)) throw new IllegalStateException("The real quote did not release its worker");
+        }
     }
 
     static void hoverQueueWait() throws Exception {
