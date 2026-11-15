@@ -1364,6 +1364,39 @@ public final class KeptBench {
         return first == cell[0] && expected.equals(cell[0].getStyle());
     }
 
+    /** Real pages twice kept: retold pictures and controls must give their own optional state each draw. */
+    public boolean[] keptPageInteractions() throws Exception {
+        Page page = rankings();
+        home(page);
+        drawKept(page);
+        passes();
+        Pane rows = rankingsRows();
+        boolean firstRows = rows != null && rowsHandlers(rows) && rows.getCursor() == javafx.scene.Cursor.HAND;
+        for (int i = 0; i < 2; i++) { drawKept(page); passes(); }
+        boolean keptRows = rankingsRows() == rows && rows != null && rowsHandlers(rows) && rows.getCursor() == javafx.scene.Cursor.HAND;
+        forgetHistory();
+        drawHistoryKept();
+        passes();
+        Pieces.ActionButton action = find(column, Pieces.ActionButton.class, n -> true);
+        boolean firstAction = action != null && action.getCursor() == javafx.scene.Cursor.HAND;
+        for (int i = 0; i < 2; i++) { drawHistoryKept(); passes(); }
+        boolean keptAction = action != null && find(column, Pieces.ActionButton.class, n -> true) == action && action.getCursor() == javafx.scene.Cursor.HAND;
+        forgetChrome();
+        drawChromeKept();
+        chromePasses();
+        List<UserInterface.Sparkline> sparks = new ArrayList<>();
+        each(ui.header, n -> { if (n instanceof UserInterface.Sparkline s) sparks.add(s); });
+        boolean firstSparks = !sparks.isEmpty() && sparks.stream().allMatch(Node::isMouseTransparent);
+        for (int i = 0; i < 2; i++) { drawChromeKept(); chromePasses(); }
+        boolean keptSparks = !sparks.isEmpty() && sparks.stream().allMatch(n -> n.getScene() == headerScene && n.isMouseTransparent());
+        return new boolean[]{firstRows, keptRows, firstAction, keptAction, firstSparks, keptSparks};
+    }
+
+    private static boolean rowsHandlers(Node n) {
+        return n.getOnMouseMoved() != null && n.getOnMouseEntered() != null
+                && n.getOnMouseExited() != null && n.getOnMouseClicked() != null;
+    }
+
     /** Equal raw JavaFX setters cause layout, and the same redraw through the screens' helpers does not. */
     public int[] sizeAndMarginSets() throws Exception {
         Kept.Pool pool = new Kept.Pool();

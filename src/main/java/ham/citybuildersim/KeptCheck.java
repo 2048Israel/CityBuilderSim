@@ -9072,6 +9072,13 @@ public class KeptCheck {
         check("the draw that omits optional state and constraints resets all of them", state[1]);
         check("the following draw resets nothing again", state[2]);
         check("a kept vitals cell from another maker receives the last cell's look on every draw", fx(bench::foreignVitalsCell));
+        boolean[] interactions = fx(bench::keptPageInteractions);
+        check("the Rankings page starts with its four row handlers and hand cursor", interactions[0]);
+        check("...two kept redraws preserve all four handlers and the same row picture's hand", interactions[1]);
+        check("History starts with its action button's hand cursor", interactions[2]);
+        check("...two kept redraws preserve that same action button's hand", interactions[3]);
+        check("the header starts with mouse-transparent sparklines", interactions[4]);
+        check("...two kept redraws preserve those same sparklines' transparency", interactions[5]);
         int[] layouts = fx(bench::sizeAndMarginSets);
         check("an unchanged icon and HBox margin request no layout (" + layouts[0] + ")", layouts[0] == 0);
         check("the sweep counts an equal raw Region.setPrefSize (" + layouts[1] + ")", layouts[1] > 0);

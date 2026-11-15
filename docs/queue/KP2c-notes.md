@@ -111,3 +111,38 @@ The existing History signatures caused and found the condition; no
 signature or premise changed. The cursor assignment now records intent.
 The stopped output is `target/kp2c-pick-stopped-KeptCheck.log`. Only that
 verified process tree was ended; the next pick verifies the mended tree.
+
+## Gate review follow-up and complete assignment audit
++
++REV-KP2c-1 found RowsPicture.set's four unqualified mouse setters, the same
++assignment-intent omission as ActionButton.retell. They now use Kept.give.
++Section 100 draws Rankings and History fresh then twice kept, proves the
++initial handlers/cursors exist, and checks the same row picture's four
++handlers and hand cursor and the same action button's hand remain.
++`target/kp2c-review-before.log` loads the exact Pieces, RankingsScreen and
++UserInterface classes at 65e3e19e1 ahead of current classes: these two
++assertions fail, exit 2. `target/kp2c-unit.log` on the mends: all pass,
++exit 0. The header's same sparklines retain mouse transparency in both.
++
++The complete raw-setter sweep covered every kept screen and helper. The
++remaining three raw visibility calls are on the private labels of Ladder's
++marks and Pieces' picture, and Sparkline's constructor transparency is on
++HeadlineTile's private child: none is handed back by Kept. Raw tooltip
++installs likewise belong to picture-owned shapes/cells or the rebuilt
++menu/saved-city cards. Kept-node tooltips go through Kept.tip. Styles are
++retold whole and never cleared by resetOmitted; section 92 counts every
++screen's writes, with no exemption. No other raw setter assigns a property
++resetOmitted clears on a handed-back node.
++
++The first Bash stop left its native Java launcher detached. Its verified
++AllChecks PID 10340 and children were then stopped explicitly. Two picks
++had briefly overlapped writers in target/checks, so both interrupted runs
++are discarded: NUL gaps in that report are output corruption, not an
++economic trace change or a usable verdict. The second native AllChecks
++40852, its parent batch-check 12964 and Bash launcher 41068 were all ended;
++the process inventory showed only XR7's different AllChecks afterward.
++The discarded checks directory is preserved under
++`target/kp2c-interrupted-checks`. The final pick starts with a fresh checks
++directory and a unique log, `target/kp2c-pick-final.log`.
++EOF
+ git add src/main/java/ham/citybuildersim/ui/RankingsScreen.java src/main/java/ham/citybuildersim/ui/KeptBench.java src/main/java/ham/citybuildersim/KeptCheck.java docs/queue/KP2c-notes.md; git commit -m 'Keep Rankings row handlers and prove page interactions survive' -m 'The review found unqualified setters in RowsPicture.set. Draw the actual Rankings and History pages twice kept and check the same row handlers and hand cursors; the fixtures fail against 65e3e19e1. Audit every reset property and distinguish private picture children from handed-back nodes.' -m 'Written by Codex (GPT-6.1-Sol).'; git push origin batch/KP2c

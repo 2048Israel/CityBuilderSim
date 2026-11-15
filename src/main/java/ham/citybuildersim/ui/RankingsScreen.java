@@ -1236,21 +1236,21 @@ final class RankingsScreen {
                 double height = Math.min(TILE_ROWS, entries.size() - (tiles.size() - 1) * TILE_ROWS) * ROW_H;
                 if (last.getHeight() != height) last.setHeight(height);
             }
-            setOnMouseMoved(e -> {
+            Kept.give(onMouseMovedProperty(), e -> {
                 pointerSceneY = e.getSceneY();
                 lightRowAt(e.getY());
             });
             // Entered is what JavaFX sends when the page moves the rows under a pointer that was elsewhere (a wheel, at the next pulse): with the
             // pointer's place, and no mouse-moved after it.
-            setOnMouseEntered(e -> {
+            Kept.give(onMouseEnteredProperty(), e -> {
                 pointerSceneY = e.getSceneY();
                 lightRowAt(e.getY());
             });
-            setOnMouseExited(e -> {
+            Kept.give(onMouseExitedProperty(), e -> {
                 pointerSceneY = Double.NaN;
                 Kept.give(hover.visibleProperty(), false);
             });
-            setOnMouseClicked(e -> {
+            Kept.give(onMouseClickedProperty(), e -> {
                 Entry at = rowAt(e.getY());
                 if (at != null && !at.gap()) pick.accept(at.id());
             });
