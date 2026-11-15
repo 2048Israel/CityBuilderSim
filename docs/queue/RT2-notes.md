@@ -301,3 +301,47 @@ adds optional dataset arguments; the run's explicit inherited Earth/world
 options remain unchanged, and Ensemble.java's delta is comments only.
 Verify every completed CSV and dataset provenance, then rescore those same
 CSV files against EN2; no new simulated cities are needed for rescoring.
+
+## Final-model ensemble and authoritative EN2 comparison
+
+Label RT2-final, sealed classes/driver snapshot 392e4dcb (the reviewed
+2cb4a7b1 game model plus shipped R2b), completes all 80/80 in 88.5 minutes,
+none missing or short. Sixteen DONE lines per policy and eighty nonempty
+CSVs are verified. Every worker log contains the required explicit
+C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/earth-2.bin
+and world-1.bin JDK options. Provenance verification:
+target/checks/rt2-final-ensemble-provenance.json.
+KD1 changed only process/runner code, not this game model.
+
+The legacy launcher completes successfully despite the mid-run merge;
+all city simulations retain the original copied classes/driver and data.
+The new launcher then resumes with **0 of 80 runs to do**, retaining every
+CSV and rescoring only against **docs/ensemble/EN2.md**, from main
+4343a815. No city is rerun and main is not rerun for comparison.
+The legacy snapshot.txt has no data row; the committed baseline names
+the explicit settings verified in all eighty worker logs, rather than
+claiming the data was unrecorded.
+
+**Final EN2 verdict: PASS, all 10/10 M1/F1 hard checks.** Every policy has
+zero audit failures, zero unread audits and zero LongPlaytest findings.
+The scored count is 22/25 versus EN2's 23/26 (one vacuous, one retired).
+Exactly two verdict changes are informational:
+
+| Criterion | EN2 | RT2 final | Verdict change (information) |
+|---|---|---|---|
+| ZERO_HOT H2, late inflation minus AUTO2 | -0.36% [-5.42%, 4.53%] | 0.34% [-2.08%, 2.77%] | FAIL to VACUOUS, no burst to stop; numbers alone would fail |
+| ZERO_HOT T2, final population | 6,644 [4,733, 13,403] | 4,786 [3,227, 8,781] | PASS to FAIL; 75% floor is 4,983 |
+
+All other verdicts stay as EN2, including ZERO_SLACK T2 PASS on both:
+513,902 [100,209, 1,932,923] versus 1,136,972 [49,717, 2,018,574].
+AUTO2's final population is 1,860,775 [35,109, 3,095,735] versus EN2's
+1,271,894 [505,663, 2,728,057]; all 16 seeds reach 40,000, at median
+m1198 [727, 1779] versus EN2 m1159 [622, 1727].
+The first run's legacy 0.9.106 comparison above is historical only.
+
+Runner exit 0 and rescore exit 0. Logs:
+target/checks/rt2-final-ensemble.txt (88.5-minute simulation),
+target/checks/rt2-final-rescore.txt (zero simulation jobs),
+target/ensemble/RT2-final/{score.md,summary.json,baseline.md}.
+The authoritative baseline is committed as docs/ensemble/RT2.md with the
+data settings and EN2 comparison, for the publisher's version naming.

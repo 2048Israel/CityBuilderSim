@@ -9,3 +9,5 @@ unit. Freight limits the whole sale to preserve operating headroom, including
 station room for goods that bulk sidings cannot handle. Sector fixtures
 fail before each repair and pass after. The bakers' power-and-consumables
 fixture moves only from month 36 to month 8, keeping its city and assertions.
+All 80 final-model ensemble runs complete; M1 and F1 pass against EN2.
+ZERO_HOT T2's informational regression and H2's vacuity are recorded.
