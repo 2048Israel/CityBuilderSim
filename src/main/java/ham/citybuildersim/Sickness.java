@@ -17,6 +17,11 @@ package ham.citybuildersim;
  * walked from one band to the next. Nobody is tracked; the ring only knows
  * how the band's sick are spread over time.
  *
+ * ACUTE INFLUENZA STAYS BESIDE THE RING (R0h). Its cases end within weeks and
+ * CausesOfDeath books its dead. Putting them in the ring killed them again
+ * three months later. The acute share joins the visible sick and the youngest
+ * bar, while only the rate without influenza enters the mortality ring.
+ *
  * THE RATE DECIDES HOW MANY, THE RING HOW LONG. Each month the ring turns - the
  * dead come out, the month's recovery gets better, everyone else moves a slot
  * along - and then it meets the band's share: the shortfall fell ill this month
@@ -117,6 +122,8 @@ public class Sickness {
     /* ------------------------------ state ------------------------------ */
 
     private final double[][] ring = new double[AgeBand.values().length][RING];
+    /** This month's acute influenza shares: visible, but never aged into the mortality ring (R0h). */
+    private final double[] acute = new double[AgeBand.values().length];
     private boolean seeded;
     private double lastRecovery = RECOVERY_SERVED;
 
@@ -149,8 +156,14 @@ public class Sickness {
      */
     public void advanceMonth(double cityRate, double generalCoverage,
                              double childcareCoverage, double seniorCoverage) {
+        advanceMonth(cityRate, cityRate, generalCoverage, childcareCoverage, seniorCoverage);
+    }
+
+    /** The full rate remains visible; only the rate without influenza enters the ring. */
+    public void advanceMonth(double cityRate, double withoutInfluenza, double generalCoverage,
+                             double childcareCoverage, double seniorCoverage) {
         if (!seeded) {
-            seed(cityRate, generalCoverage, childcareCoverage, seniorCoverage);
+            seed(cityRate, withoutInfluenza, generalCoverage, childcareCoverage, seniorCoverage);
             return;
         }
         double r = recovery(generalCoverage);
@@ -165,7 +178,8 @@ public class Sickness {
             }
             double still = 0;
             for (double v : next) still += v;
-            double share = shareFor(b, cityRate, childcareCoverage, seniorCoverage);
+            double share = shareFor(b, withoutInfluenza, childcareCoverage, seniorCoverage);
+            acute[b.ordinal()] = Math.max(0, shareFor(b, cityRate, childcareCoverage, seniorCoverage) - share);
             if (still > share) {
                 // The sickness is lifting: everyone's odds of being among the
                 // better alike, whatever slot they are in.
@@ -190,11 +204,18 @@ public class Sickness {
      */
     public void seed(double cityRate, double generalCoverage,
                      double childcareCoverage, double seniorCoverage) {
+        seed(cityRate, cityRate, generalCoverage, childcareCoverage, seniorCoverage);
+    }
+
+    /** Seeds the chronic steady state, carrying the month's acute shares beside it. */
+    public void seed(double cityRate, double withoutInfluenza, double generalCoverage,
+                     double childcareCoverage, double seniorCoverage) {
         double r = recovery(generalCoverage);
         lastRecovery = r;
         for (AgeBand b : AgeBand.values()) {
             double[] slot = ring[b.ordinal()];
-            double share = shareFor(b, cityRate, childcareCoverage, seniorCoverage);
+            double share = shareFor(b, withoutInfluenza, childcareCoverage, seniorCoverage);
+            acute[b.ordinal()] = Math.max(0, shareFor(b, cityRate, childcareCoverage, seniorCoverage) - share);
             double q = (1 - deathChance(b)) * (1 - r);
             double total = 1 + (1 - r) + (1 - r) * (1 - r) / (1 - q);
             double n = share / total;
@@ -212,9 +233,9 @@ public class Sickness {
 
     /* ---------------------------- reading it ---------------------------- */
 
-    /** The share of a band that is sick. */
+    /** The share of a band that is sick, including this month's acute influenza. */
     public double share(AgeBand b) {
-        double s = 0;
+        double s = acute[b.ordinal()];
         for (double v : ring[b.ordinal()]) s += v;
         return s;
     }
@@ -248,13 +269,13 @@ public class Sickness {
 
     /**
      * People sick k months, across the city (0.7.28): one slot of every
-     * band's ring in people - the Services screen's long-sick bars, which
-     * peoplePastTwoMonths() is the slots from DEADLY_FROM of.
+     * band's ring in people, with acute cases in slot 0 - the Services screen's
+     * long-sick bars. peoplePastTwoMonths() is the slots from DEADLY_FROM on.
      */
     public double peopleInSlot(PopulationCohorts cohorts, int k) {
         double people = 0;
         if (cohorts == null) return 0;
-        for (AgeBand b : AgeBand.values()) people += slot(b, k) * cohorts.get(b);
+        for (AgeBand b : AgeBand.values()) people += (slot(b, k) + (k == 0 ? acute[b.ordinal()] : 0)) * cohorts.get(b);
         return people;
     }
 
@@ -282,6 +303,20 @@ public class Sickness {
     }
 
     /* ------------------------------ saving ------------------------------ */
+
+    /** A copy of this month's acute shares, saved separately from the chronic ring. */
+    public double[] getAcuteShares() { return acute.clone(); }
+
+    /** Missing on an older save means none; names follow the same saved bands as the ring. */
+    public void restoreAcute(String[] bands, double[] saved) {
+        java.util.Arrays.fill(acute, 0);
+        String[] names = bands == null || bands.length == 0 ? PopulationCohorts.LEGACY_BANDS : bands;
+        if (saved == null || saved.length != names.length) return;
+        for (int i = 0; i < names.length; i++) {
+            AgeBand target = bandNamed(names[i]);
+            if (target != null) acute[target.ordinal()] = Math.max(0, Math.min(MAX_SHARE, saved[i]));
+        }
+    }
 
     /** Every ring, the month's dead by band, the recovery, and whether it has been seeded. */
     public double[] getState() {
@@ -347,6 +382,7 @@ public class Sickness {
     public void reset() {
         for (double[] slot : ring) java.util.Arrays.fill(slot, 0);
         java.util.Arrays.fill(lastDeaths, 0);
+        java.util.Arrays.fill(acute, 0);
         lastRecovery = RECOVERY_SERVED;
         seeded = false;
     }
