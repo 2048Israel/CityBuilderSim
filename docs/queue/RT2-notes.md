@@ -260,3 +260,10 @@ run beside one ensemble is allowed ... never two of either at once."
 This revises the original brief's no-ensemble-beside-a-dry-run restriction.
 KD1's baseline ensemble goes first; RT2's new final-model ensemble follows it,
 then RT2's dry run. RT2's new ensemble remains on hold meanwhile.
+
+REV-RT2-3 on 216b7e2b..2cb4a7b1 returns SHIP: goods station room and total
+operating room retain both streams at planner headroom, and the three new
+cases require exactly 0, 1 and 3 safe sales without weakening checks.
+The orchestrator declares the model final at 2cb4a7b1; RT2's new ensemble
+follows KD1's baseline (estimated 85 minutes from 04:40), with a go to follow.
+No heavy RT2 job runs during this hold.
