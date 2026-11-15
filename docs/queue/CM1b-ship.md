@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CM1b-lA470zVh -->
 ## changelog
 ### {next} — CM1b, The replay loaded move, the review follow-ups — 2026-11-15, ready, see docs/queue/CM1b-notes.md
