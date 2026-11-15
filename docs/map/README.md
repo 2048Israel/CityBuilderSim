@@ -4,7 +4,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 577 files, 627,905 lines, 27,397 methods, 5,980 constants. `GameVersion.VERSION` is "0.9.119", `SAVE_FORMAT` 53.
+**The tree:** 577 files, 627,909 lines, 27,397 methods, 5,980 constants. `GameVersion.VERSION` is "0.9.119", `SAVE_FORMAT` 53.
 
 ## model (265 files)
 
@@ -67,7 +67,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Crime.java](Crime.md) | 525 | 61 | Crime, the police who deter and catch it, and the prisons that hold who they catch. | 21 |
 | [Currency.java](Currency.md) | 458 | 37 | What the city's money is called, and how it is written. | 52 |
 | [DataSave.java](DataSave.md) | 2,937 | 451 | sections: land and ore, the shedding warning... | 19 |
-| [Debt.java](Debt.md) | 1,432 | 116 | One piece of city paper. | 48 |
+| [Debt.java](Debt.md) | 1,436 | 116 | One piece of city paper. | 48 |
 | [DebtManager.java](DebtManager.md) | 3,521 | 281 | The city's borrowing: every bond, note and dollar bond the treasury owes, the market that prices the next one, and the policy rate every price of m... | 54 |
 | [DebtQuote.java](DebtQuote.md) | 308 | 12 | What a loan would cost, worked out BEFORE the player agrees to it. | 28 |
 | [DecisionLog.java](DecisionLog.md) | 213 | 24 | What the player decided, and when: every change of a policy and every spend at scale, one short line each, at the month it was made (0.7.23). | 43 |
