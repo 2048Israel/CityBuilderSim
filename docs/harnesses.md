@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**202 harness files, 24,039 labelled assertions.** AllChecks runs 202 of them.
+**203 harness files, 24,053 labelled assertions.** AllChecks runs 203 of them.
 
 ## Which harnesses read which class
 
@@ -12,7 +12,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 |---|---|
 | [AdviceValueOracle](map/AdviceValueOracle.md) | BuildAdviceCheck, WorksFinanceCheck |
 | [AgeBand](map/AgeBand.md) | ArrivalMixCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, HealthCheck, HouseholdMemoryCheck, LabourCheck, LongPlaytest, OutsideCheck, OwnerCheck, PopulationCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck |
-| [Agriculture](map/Agriculture.md) | AgricultureCheck, EquipmentCheck, FittingCheck, Forms1900Check, LongPlaytest, ZoningCheck |
+| [Agriculture](map/Agriculture.md) | AgricultureCheck, EquipmentCheck, FittingCheck, FoodIndustryCheck, Forms1900Check, LongPlaytest, ZoningCheck |
 | [ArrivalMix](map/ArrivalMix.md) | ArrivalMixCheck, BasketYearCheck, StaffingDrawCheck |
 | [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, KeptCheck, NewGameCheck, SaveFileCheck, WorksFinanceCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
@@ -37,14 +37,14 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BridgeMapCheck, BuildingDataCheck, CrossingCheck, DiscoveryCheck, EarthTerrainCheck, EquipmentCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, PriceLevelCheck, PrizeCheck, RailDrawCheck, RecipeCheck, ResearchCheck, SlopeCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, EarthFoundingCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, EarthFoundingCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck, WorksFinanceCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FittingCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck |
-| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BankFailureCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, LongPlaytest, PrizeCheck |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, CreditCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
@@ -118,7 +118,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FollowBench](map/FollowBench.md) | ReplayCheck |
 | [FollowPlayer](map/FollowPlayer.md) | ReplayCheck |
 | [FollowRules](map/FollowRules.md) | ReplayCheck |
-| [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, WaterCheck |
+| [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, FoodIndustryCheck, WaterCheck |
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck |
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, GoldMiningCheck, GoldStandardCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, MoneySignCheck, MoneyWordsCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
@@ -132,8 +132,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundCheck, FundLedgerCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
-| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
-| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | MapCheck, TruckRouteCheck |
 | [GameVersion](map/GameVersion.md) | BridgeCheck, ChartCheck, ConstructionControlCheck, EarthDepositsCheck, EarthTerrainCheck, EnsembleCheck, GoldMiningCheck, LandmassCheck, MaterialsCheck, RankingsCheck, ReplayCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, SectorStatementCheck, WellCheck |
@@ -144,7 +144,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GoldMining](map/GoldMining.md) | BuildingDataCheck, GoldMiningCheck |
 | [GoldPrice](map/GoldPrice.md) | GoldMiningCheck, GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, TradeCostCheck, VaultMoneysCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GdpCheck, GoldMiningCheck, InfrastructureCheck, InvestCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentPlayer](map/GovernmentPlayer.md) | GovernmentPlayerCheck, LongPlaytest |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
@@ -4694,7 +4694,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L629 7: a stall the clock makes itself, again and again**
   - L687 50×, a redraw begun while the clock stood still, then a stall of twice its cost: the reading stays the rung
 
-## CoalMiningCheck.java - 49 labelled assertions
+## CoalMiningCheck.java - 54 labelled assertions
 
 > Coal Mining, checked (0.7.126, batch I6; docs/studies/spec-materials.md 2.1,
 > 2.4, 2.10, 4 and 5's I6 row; the study's - materials-chains-research.md -
@@ -4710,63 +4710,69 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L130 1. the flow: raw coal washed into coking and thermal coal and spoil, the rest sold raw as thermal**
-  - L132 500,000 t of raw coal through a plant washing 500,000: 275,000 t coking, 100,000 thermal, 125,000 spoil (the study's 3.3)
-  - L135 ...the yields add to one, so every tonne in comes out
-  - L139 raw coal no plant washes sells as thermal coal, tonne for tonne, and makes no coking coal
-  - L142 past the wash: the surface mines' coal, the washed coal's thermal and the raw past the wash, all thermal
-  - L147 ...and a wash past the raw washes only the raw: 250,000 t into 137,500 coking and 50,000 thermal
-- **L154 2. the sector on the registry after the refinery, and what grew with it**
-  - L158 Sectors.KEYS has Coal Mining after the refinery, eighteenth (Jerus's Q21: coal the materials chains' first new
-  - L164 ...an extraction sector on coal, found by its saved name, making both coals and using diesel; Mining's group
-  - L168 Equity's companies are the keys and then the bank, the bank's index the keys' count
-  - L171 ...the households' share block a slot a company
-  - L173 ...the audit's pools the city, a pool a sector in the keys' order - coal mining's after the refinery's - and the
-  - L178 ...and the bank's year of sheets files a column of loans and of interim financing a sector
-  - L180 Resource.COAL is sold as thermal coal - both its types, washing being the sector's flow - at 1/200 of its export
-  - L192 ...so an offer's coal is in its price: a site's 6.5 Mt at US$0.25 a tonne, about US$1.6M (to the US$5k rounding)
-  - L195 the two coals are the goods batch I4 brought, at the study's 3.2 prices (thermal 75/50, coking 225/180), stockable
-- **L243 3. the four rows at parity: the study's 3.3, and its four cases worked from its own figures, to its rounding**
-  - L259 the
-  - L269 ...its ground
-  - L275 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
-  - L302 ...its four cases are the study's arithmetic to its rounding:
-  - L312 the surface mine burns the study's 230,000 L, the large one the same a tonne, the longwall and the plant none
-  - L321 the study's 3.4: a surface mine returns 3.3% a month exporting, a large one 3.6% (its \"3.3-3.6%\")
-  - L324 ...a longwall alone 0.8%, its raw coal sold as thermal
-  - L330 ...with the plant the pair 2.4% - the plant fed whole, two longwalls' 500,000 t (one longwall's 250,000 reads 2.2%)
-  - L334 ...and the plant alone 19%, because washing is where coking coal is made
-- **L352 4. a longwall alone sells its raw coal as thermal, tonne for tonne; with a plant, coking coal**
-  - L358 an Underground Coal Mine standing alone: the sector's nameplate 250,000 t of thermal coal and no coking (getCapacity())
-  - L363 ...a plant on site counts as supply the planner sees: the flow with it less the flow without, never below nothing
-  - L368 ...and standing, it washes the longwall's 250,000 t: 137,500 t of coking coal and 50,000 of thermal
-  - L372 ...a surface mine's coal is thermal whatever stands beside it, and no plant washes it
-- **L382 5. coal's types at I1's shares and E3's odds, and each mine on the field that fits it**
-  - L391 coal's fields on the default world are thermal at TYPE_SHARES' 85% and coking 15%, within two points (I1's draw)
-  - L396 on Earth coking leans on the ground (E3): odds three times as long in a fold belt, half on a shield, the rest at
-  - L410 fixture: a town founded on a coking field, three thermal sites by fiat (the first type)
-  - L412 a surface mine fits a thermal site, and three of them the three; a large one, four sites of one field, does not
-  - L414 ...a longwall fits only the coking sites, as many as there are, and the plant needs no site but coal in the ground
-  - L418 on four thermal sites of one piece the large mine fits, one and not two
-- **L482 6. the dig by type: the month's coal is the lift, each type's ground gives it up at its dig, W exact**
-  - L495 fixture: a surface mine and a longwall standing, no plant; the month's lift each one's nameplate at the sector's rate
-  - L498 ...what the market is priced on and the month makes: the lift's flow, the raw sold as thermal
-  - L506 at the month's end each type's ground gives up its coal at its dig: the thermal 1/.95 t a tonne, the coking 1/.80
-  - L509 ...E rising by the seam taken out, and W by type to the tonne
-  - L517 with 30,000 t of thermal seam left the surface mine digs what it holds, 30,000 x .95 t of coal; the longwall its whole ask
-  - L522 ...and once the thermal is out the surface mine digs nothing and is spare, and only it may be sold
-- **L531 7. the plan: a preparation plant beside the coking mines first, then the best mine that fits**
-  - L541 fixture: a longwall standing, its 250,000 t of raw coal unwashed: a plant would add 137,500 t of coking coal and take
-  - L550 ...its estimate the flow's increment: the coking coal at the makers' rule, less the thermal at what it was selling for,
-  - L554 ...and the plan orders the plant, before any mine
-  - L562 with the plant on site nothing is unwashed, so no second plant is ordered for it, and the sector is not held to one order in flight (BA1)
-  - L586 with the plant standing and room in its wash, the mines' rule: the best earnings on the whole cost of those that fit
-  - L590 ...a second longwall's raw coal is washed in the plant's spare 250,000 t: it adds coking coal, not thermal
-- **L597 8. a played month: the coal is the lift's, the ground gives it up, the audit closes**
-  - L613 fixture: a surface mine, a longwall and a plant standing, a month on: the sector made both coals
-  - L618 ...each coal's month - made for home, from the line abroad, and idled - the lift's flow at the month's rate
-  - L621 ...and the ground gave up the seam for it, the thermal at 1/.95 a tonne and the raw at 1/.80; W by type exact
-  - L625 the month's money audit closes
+- **L135 1. the flow: raw coal washed into coking and thermal coal and spoil, the rest sold raw as thermal**
+  - L137 500,000 t of raw coal through a plant washing 500,000: 275,000 t coking, 100,000 thermal, 125,000 spoil (the study's 3.3)
+  - L140 ...the yields add to one, so every tonne in comes out
+  - L144 raw coal no plant washes sells as thermal coal, tonne for tonne, and makes no coking coal
+  - L147 past the wash: the surface mines' coal, the washed coal's thermal and the raw past the wash, all thermal
+  - L152 ...and a wash past the raw washes only the raw: 250,000 t into 137,500 coking and 50,000 thermal
+- **L159 2. the sector on the registry after the refinery, and what grew with it**
+  - L163 Sectors.KEYS has Coal Mining after the refinery, eighteenth (Jerus's Q21: coal the materials chains' first new
+  - L169 ...an extraction sector on coal, found by its saved name, making both coals and using diesel; Mining's group
+  - L173 Equity's companies are the keys and then the bank, the bank's index the keys' count
+  - L176 ...the households' share block a slot a company
+  - L178 ...the audit's pools the city, a pool a sector in the keys' order - coal mining's after the refinery's - and the
+  - L183 ...and the bank's year of sheets files a column of loans and of interim financing a sector
+  - L185 Resource.COAL is sold as thermal coal - both its types, washing being the sector's flow - at 1/200 of its export
+  - L197 ...so an offer's coal is in its price: a site's 6.5 Mt at US$0.25 a tonne, about US$1.6M (to the US$5k rounding)
+  - L200 the two coals are the goods batch I4 brought, at the study's 3.2 prices (thermal 75/50, coking 225/180), stockable
+- **L248 3. the four rows at parity: the study's 3.3, and its four cases worked from its own figures, to its rounding**
+  - L264 the
+  - L274 ...its ground
+  - L280 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
+  - L307 ...its four cases are the study's arithmetic to its rounding:
+  - L317 the surface mine burns the study's 230,000 L, the large one the same a tonne, the longwall and the plant none
+  - L326 the study's 3.4: a surface mine returns 3.3% a month exporting, a large one 3.6% (its \"3.3-3.6%\")
+  - L329 ...a longwall alone 0.8%, its raw coal sold as thermal
+  - L335 ...with the plant the pair 2.4% - the plant fed whole, two longwalls' 500,000 t (one longwall's 250,000 reads 2.2%)
+  - L339 ...and the plant alone 19%, because washing is where coking coal is made
+- **L357 4. a longwall alone sells its raw coal as thermal, tonne for tonne; with a plant, coking coal**
+  - L363 an Underground Coal Mine standing alone: the sector's nameplate 250,000 t of thermal coal and no coking (getCapacity())
+  - L368 ...a plant on site counts as supply the planner sees: the flow with it less the flow without, never below nothing
+  - L373 ...and standing, it washes the longwall's 250,000 t: 137,500 t of coking coal and 50,000 of thermal
+  - L377 ...a surface mine's coal is thermal whatever stands beside it, and no plant washes it
+- **L387 5. coal's types at I1's shares and E3's odds, and each mine on the field that fits it**
+  - L396 coal's fields on the default world are thermal at TYPE_SHARES' 85% and coking 15%, within two points (I1's draw)
+  - L401 on Earth coking leans on the ground (E3): odds three times as long in a fold belt, half on a shield, the rest at
+  - L415 fixture: a town founded on a coking field, three thermal sites by fiat (the first type)
+  - L417 a surface mine fits a thermal site, and three of them the three; a large one, four sites of one field, does not
+  - L419 ...a longwall fits only the coking sites, as many as there are, and the plant needs no site but coal in the ground
+  - L423 on four thermal sites of one piece the large mine fits, one and not two
+- **L487 6. the dig by type: the month's coal is the lift, each type's ground gives it up at its dig, W exact**
+  - L500 fixture: a surface mine and a longwall standing, no plant; the month's lift each one's nameplate at the sector's rate
+  - L503 ...what the market is priced on and the month makes: the lift's flow, the raw sold as thermal
+  - L511 at the month's end each type's ground gives up its coal at its dig: the thermal 1/.95 t a tonne, the coking 1/.80
+  - L514 ...E rising by the seam taken out, and W by type to the tonne
+  - L522 with 30,000 t of thermal seam left the surface mine digs what it holds, 30,000 x .95 t of coal; the longwall its whole ask
+  - L527 ...and once the thermal is out the surface mine digs nothing and is spare, and only it may be sold
+- **L536 7. the plan: a preparation plant beside the coking mines first, then the best mine that fits**
+  - L546 fixture: a longwall standing, its 250,000 t of raw coal unwashed: a plant would add 137,500 t of coking coal and take
+  - L555 ...its estimate the flow's increment: the coking coal at the makers' rule, less the thermal at what it was selling for,
+  - L559 ...and the plan orders the plant, before any mine
+  - L567 with the plant on site nothing is unwashed, so no second plant is ordered for it, and the sector is not held to one order in flight (BA1)
+  - L591 with the plant standing and room in its wash, the mines' rule: the best earnings on the whole cost of those that fit
+  - L595 ...a second longwall's raw coal is washed in the plant's spare 250,000 t: it adds coking coal, not thermal
+- **L602 8. a played month: the coal is the lift's, the ground gives it up, the audit closes**
+  - L618 fixture: a surface mine, a longwall and a plant standing, a month on: the sector made both coals
+  - L623 ...each coal's month - made for home, from the line abroad, and idled - the lift's flow at the month's rate
+  - L626 ...and the ground gave up the seam for it, the thermal at 1/.95 a tonne and the raw at 1/.80; W by type exact
+  - L630 the month's money audit closes
+- **L638 9. worked-out mines count in raw nameplate, not the thermal output left after washing**
+  - L649 fixture: coking and thermal ground remain, so no mine is spare before exhaustion (washed=
+  - L661 the worked-out mines add up to the measure in raw tonnes (washed=
+  - L666 the rule sells the most-held mine and the share its constants allow (washed=
+  - L669 a wash plant is not a worked-out mine (washed=
+  - L670 the thermal type still has coal and its mines may not be sold
 
 ## ConstructionControlCheck.java - 154 labelled assertions
 
@@ -9857,6 +9863,23 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1941 ...and the floater's face, carrying value and last coupon
   - L1943 ...every payment it still owes
   - L1944 ...but not its margin, its index or its effective rate
+
+## FoodIndustryCheck.java - 5 labelled assertions
+
+> The mills counted in the heads their retirement measure serves (RT2).
+> 
+> WHY. The measure counted both baked goods in heads, while unitsOf() counted
+> only kilograms of bread. Two Bakeries and an Industrial Bakery, with no
+> customers, could not sell even one Bakery after the required losses.
+> Prove the buildings add up in the measure's unit and the rule sells the
+> most-held kind by its own headroom and gradual-retirement constants.
+
+- **L28 1. a mill is counted in the heads its sector's retirement measure serves**
+  - L40 fixture: no customers, two kinds of mill, the Bakery the more-held kind
+  - L51 each mill counts both baked goods in heads, and the buildings add up to the retirement capacity
+  - L53 a missing template counts nothing
+  - L54 without a city there is no shop headcount to measure
+  - L62 after RETIREMENT_LOSS_MONTHS losses the rule sells the most-held mill and the share its constants allow
 
 ## FoodProcessingCheck.java - 26 labelled assertions
 
@@ -17826,32 +17849,32 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L8742 ...and nothing moved after the audit struck
 - **L8744 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
 - **L8758 a works making its own power and buying consumables abroad: still nothing leaks**
-  - L8784 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
-  - L8787 ...and bought consumables abroad, inside their imports
-  - L8789 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
-  - L8791 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
-- **L8795 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
-- **L8807 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
-  - L8843 fixture: the yard bought old steel from the households and from a sector
-  - L8845 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
-  - L8847 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L8851 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
-- **L8855 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
-- **L8866 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
-  - L8895 fixture: the refinery bought old copper from the households and from a sector
-  - L8897 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
-  - L8899 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
-- **L8904 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
-- **L8933 the city's paper on its books: the amortisation is no money, and the audit closes**
-  - L8959 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
-  - L9005 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
-  - L9006 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
-  - L9008 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
-  - L9010 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
-  - L9012 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
-  - L9014 ...and nothing moved a pool after any month's audit struck
-  - L9015 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
-  - L9017 ...and it is the cash coupons the budget calls its cash interest
+  - L8785 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
+  - L8788 ...and bought consumables abroad, inside their imports
+  - L8790 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
+  - L8792 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
+- **L8796 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
+- **L8808 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
+  - L8844 fixture: the yard bought old steel from the households and from a sector
+  - L8846 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
+  - L8848 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L8852 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
+- **L8856 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
+- **L8867 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
+  - L8896 fixture: the refinery bought old copper from the households and from a sector
+  - L8898 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
+  - L8900 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
+- **L8905 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
+- **L8934 the city's paper on its books: the amortisation is no money, and the audit closes**
+  - L8960 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
+  - L9006 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
+  - L9007 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
+  - L9009 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
+  - L9011 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
+  - L9013 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
+  - L9015 ...and nothing moved a pool after any month's audit struck
+  - L9016 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
+  - L9018 ...and it is the cash coupons the budget calls its cash interest
 
 ## MainLineCheck.java - 160 labelled assertions
 
@@ -23182,7 +23205,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L693 ...and no kind rails more than crossed of it, either way
   - L696 ...and having moved boxes, its freight station is drawn a container yard (TrainSchedule.boxesByRail())
 
-## RailDepotCheck.java - 65 labelled assertions
+## RailDepotCheck.java - 69 labelled assertions
 
 > The railway's stations: the Rail Depot, and the rules that put a station
 > first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md
@@ -23198,91 +23221,96 @@ _(this harness does not label its checks through a helper - it prints its findin
 > what the stations let through. What it has to prove:
 > ...
 
-- **L162 1. THE RAIL DEPOT IN THE CATALOGUE**
-- **L166 the Rail Depot is in the catalogue, on the ladder, a tenth of a terminal**
-  - L168 it is id 141, Freight's, a RAIL building
-  - L170 ...its own track is its connection to the main line: railCapacity equals what it sorts
-  - L176 ...its cash is on the ladder: a tonne no dearer than the spur's and no cheaper than the line's
-  - L191 ...its posts, by type, are the terminal's x its share of the tonnes, rounded
-  - L198 ...and so are its construction points and materials, power, water, ground and road load
-  - L203 ...its three road loads still add to its one, to the bit
-  - L205 the Rail Terminal is a station of all it carries: stationTonnes equals its railCapacity
-  - L207 ...and the Rail Spur and the Freight Line sort nothing
-  - L216 the stations are the Rail Depot and the Rail Terminal and no other building
-  - L218 ...the one siding is the Rail Spur's
-  - L220 ...and the catalogue has four rail buildings: the spur, the line, the terminal and the depot
-- **L223 2. A YOUNG CITY'S FIRST RAIL ORDER IS A RAIL DEPOT**
-- **L227 a young city's first rail order is a Rail Depot, at its threshold and never a terminal**
-  - L232 tonnes a month just below the Depot's threshold: nothing is ordered, and the reason names the station
-  - L244 goods past the Depot's threshold and no bulk: the same, a Rail Depot
-- **L246 3. NO SPUR OR LINE BEFORE A STATION**
-- **L250 no spur or line before a station, whatever track the city has and whatever works stand**
-  - L263 with five bulk works and a line standing or not, at any tonnes: a Rail Depot or nothing, never a spur or a line
-  - L268 ...and spurs and lines already standing (a city from before the stations) do not count as one: still the Rail Depot first
-- **L271 4. THE STATIONS CAP WHAT IS RAILED**
-- **L275 the stations cap what is railed: goods through a station only, bulk past the stations on the sidings**
-  - L279 a depot, ample track and sets, bulk and goods past it: the bulk takes the station and the goods get none
-  - L282 ...goods alone never rail more than the depot handles
-  - L284 ...a bulk that leaves room shares the station: goods rail what it leaves, and together never past the depot
-  - L287 ...bulk past the stations rides the spurs' sidings: a depot and two spurs rail the stations' tonnes plus the sidings'
-  - L290 ...bulk that fits on a siding leaves the station whole for the goods
-  - L293 a spur and no station: bulk rails to the siding's tonnes and goods, which go only through a station, not at all
-  - L296 the sets or the track still limit it: a quarter of a depot's capacity rails a quarter of its tonnes
-  - L299 neither a station nor a spur: nothing rails, exactly zero (the band stays the lorries', to the bit)
-  - L302 its capacity is the least of the track, the sets and the stations and sidings together
-- **L309 ...and in a played city: lines alone rail nothing, spurs rail bulk, a depot lets the rest through**
-  - L330 four freight lines and no station or spur: capacity none, nothing hauled, the band the lorries' to the bit
-  - L344 then two spurs, no station: the capacity is the sidings', and the bulk, which is more, rides them up to it
-  - L350 ...and the goods, which go only through a station, are not railed at all (the fixture offers some)
-  - L357 then a depot: the capacity is the stations' and the sidings' together, and the goods ride the station
-- **L365 5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING**
-- **L369 the bulk works: which templates are one**
-  - L381 mines, quarries and the plants that work bulk are in:
-  - L388 ...shops, restaurants and homes are out, though a shop 'uses' grain (a few tonnes, under a set's month of it)
-  - L391 ...and Freight's own buildings are out: the railway is not a works to lay a siding into
-  - L394 the city counts the bulk works standing: three mines, and the shops beside them add none
-- **L397 a spur is ordered for a works without a siding, when the track and the sidings are short**
-  - L404 a terminal stands, three works have no siding, the track is short by the spur's threshold: a Rail Spur is ordered
-  - L406 ...though a Rail Depot is also wanted there (the stations are as short), and a depot beats a spur on profit per cost: the siding goes first, by kind
-  - L411 the track short by a tonne under the spur's threshold: no spur (nor anything: the stations are short by as little)
-  - L417 every bulk works already has a spur (three and three), the tonnes far past what stands: no spur, though a station may be
-  - L422 ...and the fourth works, with the same tonnes: a Rail Spur
-  - L428 a city with no bulk works: no spur, with the same tonnes
-  - L433 ...and with one works: a Rail Spur
-  - L441 a works with its siding and a terminal, tonnes past the track by a spur's threshold: no spur is laid for it (a second siding into one works)
-- **L444 6. THE OVERBUILD**
-- **L448 the overbuild: no track is ordered against track that already stands, while the sets limit the capacity**
-  - L454 the fixture: the track stands at many times the tonnes, the sets are the limit, and the old measure (tonnes less capacity) was past a spur's threshold
-  - L460 ...and the plan orders nothing: the track and the station already carry the tonnes, the sets are what lag
-  - L474 from half the depot's tonnes to sixteen times it, all under the track: never a spur or a line, a station at most
-  - L478 ...but past the track by a spur's threshold, the sets still lagging, track IS ordered (a spur): the guard is the track's, not the sets'
-  - L483 ...and a tonne under it: no track (the stations are what is short)
-  - L488 a depot stands and the track is short by a whole line, the stations by too little for a terminal: a Freight Line
-- **L492 7. A TERMINAL FOLLOWS WHEN THE TONNES OUTGROW THE DEPOTS**
-- **L496 a terminal follows when the tonnes outgrow the depots, at its own threshold**
-  - L502 two depots stand, the stations short a tonne under the terminal's threshold: not a terminal
-  - L508 ...and when the tonnes are three terminals past the depots: the order is a Rail Terminal
-- **L511 8. THE LAST STATION IS NOT RETIRED WHILE TRACK STANDS**
-- **L515 the last station is not retired while a spur or a line stands**
-  - L518 a lone depot with no other track may be sold
-  - L520 ...with a spur standing it may not
-  - L522 ...nor the only terminal with a line standing
-  - L524 ...but with a second depot standing one of them may go
-  - L526 ...and a depot beside a terminal may go, though the terminal is the one left
-  - L527 the track itself may still be sold, the station standing
-  - L529 a Truck Depot is still never retired by the railway's measure
-- **L532 9. THE LAST STATION IS KEPT WHILE IT HAS A STATION'S FREIGHT (FD1)**
-- **L536 the last station is kept while the freight it carries would order a station again**
-  - L541 a lone depot offered a depot's threshold of goods tonnes may not be sold: the sale would be bought back
-  - L545 ...a tonne under the threshold it may be sold: nothing would be ordered in its place
-  - L551 the premise, from one side: a city with no station offered that threshold orders a Rail Depot
-  - L556 ...and from the other: a tonne under it orders nothing, so the sale the guard refuses is the one that would be bought back
-  - L558 the first station is the Rail Depot, the smallest of the catalogue
-  - L566 the distress rule:
-  - L572 ...a tonne under the threshold, the same losses sell the Rail Depot
-  - L577 a lone terminal offered a depot's threshold may not be sold either: a depot would be ordered
-  - L582 two depots standing offered three thresholds: one may go, the guard is the last station's
-  - L585 a spur, a Truck Depot and a null are no station, so none of them is a sale that would be bought back
+- **L166 1. THE RAIL DEPOT IN THE CATALOGUE**
+- **L170 the Rail Depot is in the catalogue, on the ladder, a tenth of a terminal**
+  - L172 it is id 141, Freight's, a RAIL building
+  - L174 ...its own track is its connection to the main line: railCapacity equals what it sorts
+  - L180 ...its cash is on the ladder: a tonne no dearer than the spur's and no cheaper than the line's
+  - L195 ...its posts, by type, are the terminal's x its share of the tonnes, rounded
+  - L202 ...and so are its construction points and materials, power, water, ground and road load
+  - L207 ...its three road loads still add to its one, to the bit
+  - L209 the Rail Terminal is a station of all it carries: stationTonnes equals its railCapacity
+  - L211 ...and the Rail Spur and the Freight Line sort nothing
+  - L220 the stations are the Rail Depot and the Rail Terminal and no other building
+  - L222 ...the one siding is the Rail Spur's
+  - L224 ...and the catalogue has four rail buildings: the spur, the line, the terminal and the depot
+- **L227 2. A YOUNG CITY'S FIRST RAIL ORDER IS A RAIL DEPOT**
+- **L231 a young city's first rail order is a Rail Depot, at its threshold and never a terminal**
+  - L236 tonnes a month just below the Depot's threshold: nothing is ordered, and the reason names the station
+  - L248 goods past the Depot's threshold and no bulk: the same, a Rail Depot
+- **L250 3. NO SPUR OR LINE BEFORE A STATION**
+- **L254 no spur or line before a station, whatever track the city has and whatever works stand**
+  - L267 with five bulk works and a line standing or not, at any tonnes: a Rail Depot or nothing, never a spur or a line
+  - L272 ...and spurs and lines already standing (a city from before the stations) do not count as one: still the Rail Depot first
+- **L275 4. THE STATIONS CAP WHAT IS RAILED**
+- **L279 the stations cap what is railed: goods through a station only, bulk past the stations on the sidings**
+  - L283 a depot, ample track and sets, bulk and goods past it: the bulk takes the station and the goods get none
+  - L286 ...goods alone never rail more than the depot handles
+  - L288 ...a bulk that leaves room shares the station: goods rail what it leaves, and together never past the depot
+  - L291 ...bulk past the stations rides the spurs' sidings: a depot and two spurs rail the stations' tonnes plus the sidings'
+  - L294 ...bulk that fits on a siding leaves the station whole for the goods
+  - L297 a spur and no station: bulk rails to the siding's tonnes and goods, which go only through a station, not at all
+  - L300 the sets or the track still limit it: a quarter of a depot's capacity rails a quarter of its tonnes
+  - L303 neither a station nor a spur: nothing rails, exactly zero (the band stays the lorries', to the bit)
+  - L306 its capacity is the least of the track, the sets and the stations and sidings together
+- **L313 ...and in a played city: lines alone rail nothing, spurs rail bulk, a depot lets the rest through**
+  - L334 four freight lines and no station or spur: capacity none, nothing hauled, the band the lorries' to the bit
+  - L348 then two spurs, no station: the capacity is the sidings', and the bulk, which is more, rides them up to it
+  - L354 ...and the goods, which go only through a station, are not railed at all (the fixture offers some)
+  - L361 then a depot: the capacity is the stations' and the sidings' together, and the goods ride the station
+- **L369 5. A SPUR ONLY FOR A WORKS WITHOUT A SIDING**
+- **L373 the bulk works: which templates are one**
+  - L385 mines, quarries and the plants that work bulk are in:
+  - L392 ...shops, restaurants and homes are out, though a shop 'uses' grain (a few tonnes, under a set's month of it)
+  - L395 ...and Freight's own buildings are out: the railway is not a works to lay a siding into
+  - L398 the city counts the bulk works standing: three mines, and the shops beside them add none
+- **L401 a spur is ordered for a works without a siding, when the track and the sidings are short**
+  - L408 a terminal stands, three works have no siding, the track is short by the spur's threshold: a Rail Spur is ordered
+  - L410 ...though a Rail Depot is also wanted there (the stations are as short), and a depot beats a spur on profit per cost: the siding goes first, by kind
+  - L415 the track short by a tonne under the spur's threshold: no spur (nor anything: the stations are short by as little)
+  - L421 every bulk works already has a spur (three and three), the tonnes far past what stands: no spur, though a station may be
+  - L426 ...and the fourth works, with the same tonnes: a Rail Spur
+  - L432 a city with no bulk works: no spur, with the same tonnes
+  - L437 ...and with one works: a Rail Spur
+  - L445 a works with its siding and a terminal, tonnes past the track by a spur's threshold: no spur is laid for it (a second siding into one works)
+- **L448 6. THE OVERBUILD**
+- **L452 the overbuild: no track is ordered against track that already stands, while the sets limit the capacity**
+  - L458 the fixture: the track stands at many times the tonnes, the sets are the limit, and the old measure (tonnes less capacity) was past a spur's threshold
+  - L464 ...and the plan orders nothing: the track and the station already carry the tonnes, the sets are what lag
+  - L478 from half the depot's tonnes to sixteen times it, all under the track: never a spur or a line, a station at most
+  - L482 ...but past the track by a spur's threshold, the sets still lagging, track IS ordered (a spur): the guard is the track's, not the sets'
+  - L487 ...and a tonne under it: no track (the stations are what is short)
+  - L492 a depot stands and the track is short by a whole line, the stations by too little for a terminal: a Freight Line
+- **L496 7. A TERMINAL FOLLOWS WHEN THE TONNES OUTGROW THE DEPOTS**
+- **L500 a terminal follows when the tonnes outgrow the depots, at its own threshold**
+  - L506 two depots stand, the stations short a tonne under the terminal's threshold: not a terminal
+  - L512 ...and when the tonnes are three terminals past the depots: the order is a Rail Terminal
+- **L515 8. THE LAST STATION IS NOT RETIRED WHILE TRACK STANDS**
+- **L519 the last station is not retired while a spur or a line stands**
+  - L522 a lone depot with no other track may be sold
+  - L524 ...with a spur standing it may not
+  - L526 ...nor the only terminal with a line standing
+  - L528 ...but with a second depot standing one of them may go
+  - L530 ...and a depot beside a terminal may go, though the terminal is the one left
+  - L531 the track itself may still be sold, the station standing
+  - L533 a Truck Depot is still never retired by the railway's measure
+- **L536 9. THE LAST STATION IS KEPT WHILE IT HAS A STATION'S FREIGHT (FD1)**
+- **L540 the last station is kept while the freight it carries would order a station again**
+  - L545 a lone depot offered a depot's threshold of goods tonnes may not be sold: the sale would be bought back
+  - L549 ...a tonne under the threshold it may be sold: nothing would be ordered in its place
+  - L555 the premise, from one side: a city with no station offered that threshold orders a Rail Depot
+  - L560 ...and from the other: a tonne under it orders nothing, so the sale the guard refuses is the one that would be bought back
+  - L562 the first station is the Rail Depot, the smallest of the catalogue
+  - L570 the distress rule:
+  - L576 ...a tonne under the threshold, the same losses sell the Rail Depot
+  - L581 a lone terminal offered a depot's threshold may not be sold either: a depot would be ordered
+  - L586 two depots standing offered three thresholds: one may go, the guard is the last station's
+  - L589 a spur, a Truck Depot and a null are no station, so none of them is a sale that would be bought back
+- **L603 10. spare track counts in track tonnes, while sets or stations limit what runs**
+  - L612 fixture: the most-held kind is the line, with
+  - L616 the buildings add up to the retirement capacity in track tonnes (sets limit=
+  - L622 the rule sells the most-held line and the share its constants allow (sets limit=
+  - L627 offered freight that needs the track with TARGET_HEADROOM prevents a sale (sets limit=
 
 ## RailDrawCheck.java - 169 labelled assertions
 

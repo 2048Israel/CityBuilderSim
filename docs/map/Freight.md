@@ -1,6 +1,6 @@
 # Freight.java - 2,166 lines · 107 methods · 13 constants · sectors
 
-`ham/citybuildersim/sectors/Freight.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Freight.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
 > The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18;
 > docs/studies/spec-freight-and-infrastructure.md 3.1, D1). Its Rail division is the
@@ -264,7 +264,7 @@
 |---:|---:|---|---|
 | 1590 | 34 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more line would earn: the freight it could pick up, at today's quote, less what it costs to run and to stand. |
 | 1634 | 178 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
-| 1819 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Tonnes against nameplate: a city whose trade collapses should sell the track, and this is the one sector in the game whose demand series is neither a good nor a headcount. |
+| 1819 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Offered tonnes against standing track, the nameplate unitsOf() counts (RT2). |
 | 1824 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
 | 1849 | 10 | `public boolean mayRetire(BuildingsTemplate t)` | A Truck Depot is never retired by the railway's measure (FR2): the retirement rule weighs track against the tonnes offered it, and a depot has no track to weigh. |
 | 1865 | 8 | `public BuildingsTemplate firstStation()` | The smallest station of this sector's catalogue by the tonnes it sorts: the one plan() orders first, before any track; null with no catalogue or no station in it. |
