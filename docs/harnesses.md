@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**205 harness files, 24,187 labelled assertions.** AllChecks runs 205 of them.
+**205 harness files, 24,190 labelled assertions.** AllChecks runs 205 of them.
 
 ## Which harnesses read which class
 
@@ -12821,7 +12821,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1701 ...and the service's scale
   - L1702 ...while its fees move with the money
 
-## HistoricalRecipeCheck.java - 51 labelled assertions
+## HistoricalRecipeCheck.java - 54 labelled assertions
 
 > Each sourced 1900 undo runs before its entry, knowledge alone does not fit
 > equipment, independent pieces compose, and the default city stays modern.
@@ -12846,57 +12846,61 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L231 5. the actual railway invoice changes coal to diesel**
   - L253 fixture: actual boundary tonnes were offered and hauled, diesel
   - L255 actual rail fuel is
-- **L262 6. actual refinery flow changes thermal to catalytic cracking**
-  - L280 fixture: both real process flows actually crack the same positive gas-oil feed
-  - L284 the chosen process changes the actual flow by 0.31 L petrol per litre, with the same fuel-oil balance
-- **L290 7. the later oxygen converter supersedes an old open-hearth piece**
-  - L302 fixture: at the actual ranking prices oxygen conversion earns more than either old process
-  - L308 the modern oxygen recipe is available with and without the old furnace once every entry is known
-  - L311 where prices favour oxygen conversion, all known and fitted means exactly today's seven figures
-- **L317 8. an actual Machine Works completion before PE22 and a later refit**
-  - L325 fixture: a real Machine Works order went onto a construction site
-  - L331 fixture: that works really completed before carbide tools were known
-  - L333 the completed works left carbide tools off and runs its 1900 cutting figures
-  - L340 knowledge alone did not fit the completed works
-  - L343 fixture: the known carbide-tools refit was ordered and paid for
-  - L345 the actual refit completed, and only then removed the carbide undo
-- **L352 9. a saved independent price choice survives JSON and changed prices**
-  - L366 fixture: thermal cracking is chosen at dear fuel-oil prices, and its independent id survives the real save JSON
-  - L374 applying restored choices does not choose again at the changed prices
-  - L377 the next choice at those prices runs catalytic cracking at exactly main's modern yield
-- **L383 10. utility fitting gains use the price of the output's own unit**
-  - L390 fixture: water and power both have positive, distinct unit prices
-- **L412 11. process and equipment contributions round together once**
-  - L433 fixture: seven mines, three missing cutters and two missing loaders cause a nonintegral process mix
-  - L436 unskilled posts round once after adding the loader contribution
-- **L441 12. gravity recovery changes output, with the same actual ore depletion**
-  - L454 fixture: a standing sulphide mill has ample actual copper-in-ground for both extractions
-  - L463 the gravity recipe really recovers three quarters of modern concentrate from the field
-  - L465 its lower recovery still takes the same ore feed from the actual field
-  - L472 flotation restores exactly modern output and dig, while depleting that same ore feed
-- **L478 13. mixed sizes on the modern process keep an exact bounded yield**
-  - L496 fixture: one small and five large cracking units all run the modern recipe
-  - L500 their feed-weighted modern yield is exactly 0.55 and the actual flow solver accepts it
-- **L505 14. thermal-cracker export discounts use its actual petrol yield**
-  - L542 fixture: positive thermal feed and an export discount leave a profitable candidate
-  - L544 its appraisal discounts 0.24 L petrol per litre, preserving that profitable order
-- **L577 15. a thermal cracker's card, margins and ribbons read the solved process**
-  - L591 fixture: before PE24 a real standing unit's solved thermal process has positive feed
-  - L598 the build card lists the actual thermal products
-  - L603 the build card values exactly those thermal products
-  - L610 both view models use the solved thermal yields for their city-valued margins
-  - L615 the oil table's yield words show thermal petrol 24, rather than the modern 55
-  - L621 the actual petrol ribbon is 0.24 times the feed that really ran
-  - L623 all fuel-oil ribbons foot to the actual solved fuel oil, including the unconverted petrol
-  - L629 fixture: these prices idle the thermal process while the modern definition has a positive spread
-  - L635 both city-margin readers retain the actual negative thermal margin
-  - L638 the oil planner's spare-feed read preserves gas oil left by that idle thermal unit
-- **L646 16. the research model reads saved composite choices and independent known pieces**
-  - L653 fixture: standing horse farms have a saved independent pre-hybrid choice
-  - L658 the research recipe row resolves the saved choice, its figures and all running farms
-  - L662 the composed way has the discovery's human name
-  - L668 the composite row still counts only the unfitted part after one tractor is fitted
-  - L671 the known 1900 binder is shown beside the unknown tractor and combine, which remain hidden
+- **L262 17. the depot's rail capacity also runs steam before PE21**
+  - L282 fixture: a real depot-only railway invoices positive boundary tonnes
+  - L284 before PE21 the depot's own capacity runs steam and its real invoice draws coal only
+  - L296 after PE21 and fitting, the same depot restores modern diesel fuel
+- **L301 6. actual refinery flow changes thermal to catalytic cracking**
+  - L319 fixture: both real process flows actually crack the same positive gas-oil feed
+  - L323 the chosen process changes the actual flow by 0.31 L petrol per litre, with the same fuel-oil balance
+- **L329 7. the later oxygen converter supersedes an old open-hearth piece**
+  - L341 fixture: at the actual ranking prices oxygen conversion earns more than either old process
+  - L347 the modern oxygen recipe is available with and without the old furnace once every entry is known
+  - L350 where prices favour oxygen conversion, all known and fitted means exactly today's seven figures
+- **L356 8. an actual Machine Works completion before PE22 and a later refit**
+  - L364 fixture: a real Machine Works order went onto a construction site
+  - L370 fixture: that works really completed before carbide tools were known
+  - L372 the completed works left carbide tools off and runs its 1900 cutting figures
+  - L379 knowledge alone did not fit the completed works
+  - L382 fixture: the known carbide-tools refit was ordered and paid for
+  - L384 the actual refit completed, and only then removed the carbide undo
+- **L391 9. a saved independent price choice survives JSON and changed prices**
+  - L405 fixture: thermal cracking is chosen at dear fuel-oil prices, and its independent id survives the real save JSON
+  - L413 applying restored choices does not choose again at the changed prices
+  - L416 the next choice at those prices runs catalytic cracking at exactly main's modern yield
+- **L422 10. utility fitting gains use the price of the output's own unit**
+  - L429 fixture: water and power both have positive, distinct unit prices
+- **L451 11. process and equipment contributions round together once**
+  - L472 fixture: seven mines, three missing cutters and two missing loaders cause a nonintegral process mix
+  - L475 unskilled posts round once after adding the loader contribution
+- **L480 12. gravity recovery changes output, with the same actual ore depletion**
+  - L493 fixture: a standing sulphide mill has ample actual copper-in-ground for both extractions
+  - L502 the gravity recipe really recovers three quarters of modern concentrate from the field
+  - L504 its lower recovery still takes the same ore feed from the actual field
+  - L511 flotation restores exactly modern output and dig, while depleting that same ore feed
+- **L517 13. mixed sizes on the modern process keep an exact bounded yield**
+  - L535 fixture: one small and five large cracking units all run the modern recipe
+  - L539 their feed-weighted modern yield is exactly 0.55 and the actual flow solver accepts it
+- **L544 14. thermal-cracker export discounts use its actual petrol yield**
+  - L581 fixture: positive thermal feed and an export discount leave a profitable candidate
+  - L583 its appraisal discounts 0.24 L petrol per litre, preserving that profitable order
+- **L616 15. a thermal cracker's card, margins and ribbons read the solved process**
+  - L630 fixture: before PE24 a real standing unit's solved thermal process has positive feed
+  - L637 the build card lists the actual thermal products
+  - L642 the build card values exactly those thermal products
+  - L649 both view models use the solved thermal yields for their city-valued margins
+  - L654 the oil table's yield words show thermal petrol 24, rather than the modern 55
+  - L660 the actual petrol ribbon is 0.24 times the feed that really ran
+  - L662 all fuel-oil ribbons foot to the actual solved fuel oil, including the unconverted petrol
+  - L668 fixture: these prices idle the thermal process while the modern definition has a positive spread
+  - L674 both city-margin readers retain the actual negative thermal margin
+  - L677 the oil planner's spare-feed read preserves gas oil left by that idle thermal unit
+- **L685 16. the research model reads saved composite choices and independent known pieces**
+  - L692 fixture: standing horse farms have a saved independent pre-hybrid choice
+  - L697 the research recipe row resolves the saved choice, its figures and all running farms
+  - L701 the composed way has the discovery's human name
+  - L707 the composite row still counts only the unfitted part after one tractor is fitted
+  - L710 the known 1900 binder is shown beside the unknown tractor and combine, which remain hidden
 
 ## HistoryCheck.java - 97 labelled assertions
 

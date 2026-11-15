@@ -5014,7 +5014,29 @@
     "COLLEGE_ENGINEERING": 7
    },
    "land": 550000,
-   "roadLoad": 490
+   "roadLoad": 490,
+   "equipment": [
+    {
+     "id": "diesel-locomotive",
+     "name": "Diesel locomotive",
+     "since": "PE21",
+     "buys": {
+      "MACHINERY": 2611.94
+     },
+     "work": 1860,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "PE21",
+     "source": "research-1900 PE21 [P1.1,P1.85,P1.86]: 7.5%->28% efficiency (study estimate). Coal replaces diesel on the same moved tonnes: 36 MJ/L diesel, 24 GJ/t coal (R2d heating-value estimates), times 28/7.5. Actual invoice and planner share the fuel mix. Capital/life: R1c call 10 estimate. The same estimate covers Rail Depot's railCapacity, not its stationTonnes.",
+     "without": {
+      "steamRail": 1
+     },
+     "equipment": "diesel-locomotive"
+    }
+   ]
   },
   {
    "id": 142,

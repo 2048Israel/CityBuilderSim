@@ -146,7 +146,7 @@ public final class HistoricalRecipeCheck {
                 rows++;
             }
         }
-        check("the fixture actually exercised every shipped independent undo", rows == 35, "rows " + rows);
+        check("the fixture actually exercised every shipped independent undo", rows == 36, "rows " + rows);
     }
 
     static void composition() throws Exception {
@@ -256,6 +256,45 @@ public final class HistoricalRecipeCheck {
                     diesel ? oil > 0 && coal == 0 : coal > 0 && oil == 0,
                     "coal " + coal + ", diesel " + oil);
         }
+    }
+
+    static void depotFuel() throws Exception {
+        out.println("--- 17. the depot's rail capacity also runs steam before PE21 ---");
+        Game g = town("R2d-depot-fuel", true);
+        allExcept(g, "PE21");
+        int date = ResearchCatalog.knownFrom("PE21");
+        at(g, date - 1);
+        BuildingsTemplate depot = g.getBuildingManager().getTemplateByName("Rail Depot");
+        RecipeCheck.stand(g, depot, 1, new int[1]);
+        fitted(depot, g.getBuildingManager().getStack(depot));
+        run(g);
+        var rail = g.getSectors().freight();
+        Field carried = rail.getClass().getDeclaredField("carried");
+        carried.setAccessible(true);
+        ((double[]) carried.get(rail))[Traffic.BULK.ordinal()] = 1;
+        rail.setPantry(Good.ROLLING_STOCK, rail.setsNeeded());
+        Sector customer = g.getSectors().heavyIndustry();
+        customer.bookPurchase(new Trade(Good.IRON, Trade.WORLD, customer.key(), 100, Good.IRON.worldImportPrice()));
+        double coalBefore = rail.unitsImported(Good.THERMAL_COAL), dieselBefore = rail.unitsImported(Good.DIESEL);
+        silent(() -> rail.haul(g.getSectors()));
+        double coal = rail.unitsImported(Good.THERMAL_COAL) - coalBefore;
+        double diesel = rail.unitsImported(Good.DIESEL) - dieselBefore;
+        check("fixture: a real depot-only railway invoices positive boundary tonnes",
+                g.getBuildingManager().getStack(depot).getQuantity() == 1 && rail.getHauledTonnes() > 0 && rail.getFuelBill() > 0, "");
+        check("before PE21 the depot's own capacity runs steam and its real invoice draws coal only",
+                extra(depot, "steamRailShare", 0) == 1 && coal > 0 && diesel == 0, "coal " + coal + ", diesel " + diesel);
+        at(g, date);
+        fitted(depot, g.getBuildingManager().getStack(depot));
+        run(g);
+        ((double[]) carried.get(rail))[Traffic.BULK.ordinal()] = 1;
+        customer.bookPurchase(new Trade(Good.IRON, Trade.WORLD, customer.key(), 100, Good.IRON.worldImportPrice()));
+        coalBefore = rail.unitsImported(Good.THERMAL_COAL);
+        dieselBefore = rail.unitsImported(Good.DIESEL);
+        silent(() -> rail.haul(g.getSectors()));
+        coal = rail.unitsImported(Good.THERMAL_COAL) - coalBefore;
+        diesel = rail.unitsImported(Good.DIESEL) - dieselBefore;
+        check("after PE21 and fitting, the same depot restores modern diesel fuel",
+                extra(depot, "steamRailShare", 0) == 0 && diesel > 0 && coal == 0, "coal " + coal + ", diesel " + diesel);
     }
 
     static void cracking() throws Exception {
@@ -685,6 +724,7 @@ public final class HistoricalRecipeCheck {
         defaults(data);
         clock();
         railFuel();
+        depotFuel();
         cracking();
         supersedingProcess();
         completedPiece();

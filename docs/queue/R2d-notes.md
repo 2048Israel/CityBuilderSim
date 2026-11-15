@@ -34,7 +34,7 @@ Final gate pending; focused evidence is recorded below.
 
 Every change's source string in buildings.json gives its arithmetic and the
 study's source keys. R1c's legacy nine recipes and their sourcing stay in place.
-The additions are 35 undos on 27 templates:
+The additions are 36 undos on 28 templates:
 
 | rows | mapping |
 |---|---|
@@ -310,3 +310,64 @@ LicenceFeesCheck is green, 43/43. HistoricalLicenceCheck is now 20/20,
 including positive real thermal production rejecting imported PE24 with no
 fee. Against the pre-hook classes it has 11 failures of 20. RecipeCheck,
 EquipmentCheck and DiscoveryCheck are green on the same overlay.
+
+## Final rail coverage and producer boundary
+
+RT2 shipped as 0.9.113, main 6b898500, and was merged in 3ee38970. Fast
+check passed, zero firm Stale. Its protected Freight retirement methods were
+retained. The latest main baseline's eight CSVs are
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-ready2-20261115-094038/trace-*.csv.
+R2c follows; final fee integration still waits for its shipped main.
+
+The capacity audit found Rail Depot (id 141) besides the three templates in
+PE21's catalogue touches text. It has 50000 railCapacity in 1900, so leaving
+it unchanged supplied a diesel share before the entry. It now has the same
+sourced PE21 change as Spur, Line and Terminal. Station capacity and all
+top-level modern figures stay unchanged. Capital follows the same R1c call
+10 estimate: quarter cash as machinery, 1860 work points (one tenth), 300
+months. The current total is 36 undos on 28 templates. The exact new fixture
+against the retained old 35-row payload fails twice of 120: Depot's date
+crossing and its real pre-PE21 diesel invoice. Evidence:
+target/R2d-depot-before/check.log and classes/buildings.json.
+
+The idle money audit also caught the PE21 capture gap: rail templates make
+capacity, not a Good, so R2c's goods-based productionRate is zero. The
+orchestrator confirmed that private Freight pays; the public-berth exemption
+does not apply. The prepared railService hook is at the common haul invoice,
+after its tonnes/revenue are known and before its fuel draw changes marginal
+prices. It freezes the actual boundary and city-leg fuel equivalent, the
+capacity-weighted fitted share, and that invoice's per-litre saving; onGain
+takes the same 25%. It books through Sector.bookLicenceFee into R2c's pending
+imported-service ledger. No new payment route or Game field.
+
+★ Prospective estimates keep R2c's rule: net 25% of their own estimated
+gain, since dispatch is not yet known. Standing planners read the exact
+saved bill. The orchestrator explicitly said to preserve the gross
+estimator on 2026-11-15 at 10:23. Goods Production.finish keeps the rail
+service's saved cost memo through the later goods capture; it never books
+that memo a second time. Existing DataSave and sector JSON fields carry it.
+
+Month-order proof: Game.nextMonth calls startOfMonthUpdate exactly once
+(step 63), whose step 25 calls chargeFreight; that calls the common
+Freight.haul(sectors, ports). Its one-argument overload delegates there too.
+Step 30 then strikes/banks the sectors, including the frozen rail IP bill.
+SimulationEngine follows; its later goods capture preserves the rail memo.
+The clock-button and simulateMonths fixtures each run three real months,
+requiring positive haul tonnes and revenue, a positive bill equal to the
+saved per-building total exactly once, and closed audit/current account.
+
+The prepared fee fixture is now 43/43, versus 18 FAILED of 43 with the three
+pre-rail model classes (before-rail-43.log). It also has a mixed fleet
+(partially fitted Line), positive city and boundary hauls, the exact
+quarter-share formula, the partial stack's own memo, and a JSON round trip
+of the actual pending bill and standing memo. This found two additional
+details: capture before the fuel draw, and city diesel litres excluding the
+steam share. Before those mends, four of 43 fail (mixed-rail-before.log).
+The corrected overlay passes all 43 (rail-mended-43.log). Source snapshots
+and the frozen initial fee review patch are in target/R2d-fee-prototype.
+The later rail delta is reviewed separately; it preserves both RT2
+retirement methods and changes no Game/Sector method.
+
+The merged branch's HistoricalRecipeCheck (120), EquipmentCheck and
+BuildingDataCheck all pass together; depot-check.log exits 0, with zero firm
+Stale. The original data payload and before log remain retained.
