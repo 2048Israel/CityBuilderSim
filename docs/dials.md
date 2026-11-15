@@ -2,9 +2,9 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,949 constants in 568 files.**
+**5,953 constants in 568 files.**
 
-## model (2844 constants)
+## model (2849 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -563,10 +563,12 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 965 | `CityLand.CELLS` | `new LinkedHashMap<>(64, 0.75f, true) { @ Override protected boolean removeEldestEntry(M...` |  |
 | 1030 | `CityLand.TILE_COUNTS_KEPT` | `65_536` | Tiles' counts kept, by world and tile: 65,536 (a few megabytes) - the whole tiles an offer's count reads, which the next city on the same world's ground, or the same city drawn again, reads again. |
 | 1033 | `CityLand.PARALLEL_TILES` | `2_048` | A rectangle of this many tiles or more is counted over the machine's cores: 2,048 (about an eighth of a second's reading on one core). |
-| 1037 | `CityLand.TILE_COUNTS` | `new LinkedHashMap<>(1024, 0.75f, true) { @ Override protected boolean removeEldestEntry...` |  |
-| 1047 | `CityLand.WIDE` | `World.CLASSES + RELIEF_AREAS` | How wide a count of plots is (ET1): World.CLASSES plots by class, then RELIEF_AREAS more - the dry plots by relief (World.dry() classes, FLAT to VERY_STEEP) and the shallow sea's (SHALLOW), counted... |
-| 1190 | `CityLand.CENTRE_FIELDS` | `AREAS + 2 * KINDS + 3 + 2` | How wide the centre's record is: 24 (spec-grid 3, M3; 25 with a half-side before, format 31). |
-| 1193 | `CityLand.RECT_FIELDS` | `4` | How wide a centre rectangle's record is: x0, y0, x1, y1 - its plots, half-open. |
+| 1036 | `CityLand.QUOTE_COUNT_WORKERS` | `2` | Low-priority ground counts use two workers, preserving room for FX and the month (WN5d). |
+| 1038 | `CityLand.QUOTE_COUNTS` | `new java.util.concurrent.ForkJoinPool(QUOTE_COUNT_WORKERS, pool -> { java.util.concurre...` |  |
+| 1053 | `CityLand.TILE_COUNTS` | `new LinkedHashMap<>(1024, 0.75f, true) { @ Override protected boolean removeEldestEntry...` |  |
+| 1063 | `CityLand.WIDE` | `World.CLASSES + RELIEF_AREAS` | How wide a count of plots is (ET1): World.CLASSES plots by class, then RELIEF_AREAS more - the dry plots by relief (World.dry() classes, FLAT to VERY_STEEP) and the shallow sea's (SHALLOW), counted... |
+| 1223 | `CityLand.CENTRE_FIELDS` | `AREAS + 2 * KINDS + 3 + 2` | How wide the centre's record is: 24 (spec-grid 3, M3; 25 with a half-side before, format 31). |
+| 1226 | `CityLand.RECT_FIELDS` | `4` | How wide a centre rectangle's record is: x0, y0, x1, y1 - its plots, half-open. |
 
 ### CityMap.java ([map](map/CityMap.md))
 
@@ -1632,7 +1634,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.104"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.105"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `52` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `52` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -2267,18 +2269,21 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1536 | `LandMap.TRACK_WORDS` | `"Unmade street: the city has bought no road here"` | An unmade street's words in the hover (0.7.88; spec 5; "Track: ..." until FX5, with TRACK_ENTRY). |
 | 1539 | `LandMap.HALF_WORDS` | `"15 m", FULL_WORDS = "30 m"` | A street's widths in the hover: half (15 m) and full (30 m), a plot's 30 m right of way (spec 2.1). |
 | 1542 | `LandMap.PACKED_WORDS` | `" · packed at the city's edge"` | A building packed at the city's edge, in the hover (R7; "packed without a street" until MF1: it stands beside one now, or has one laid to it). |
-| 2189 | `LandMap.Picks.BLOCK_BOUGHT_NOTE` | `"1 block dropped: the city bought it"` | The note when the city bought picked blocks (the player's buying or its own); one block. |
-| 2192 | `LandMap.Picks.BLOCKS_BOUGHT_NOTE` | `"%d blocks dropped: the city bought them"` | ...two or more blocks at once; %d how many. |
-| 2195 | `LandMap.Picks.BLOCK_UNJOINED_NOTE` | `"1 block dropped: no longer joined to the city"` | The note when picked blocks no longer join the city - the blocks or offers they joined through were dropped or bought away; one block. |
-| 2198 | `LandMap.Picks.BLOCKS_UNJOINED_NOTE` | `"%d blocks dropped: no longer joined to the city"` | ...two or more blocks at once; %d how many. |
-| 2201 | `LandMap.Picks.BLOCK_RESIZED_NOTE` | `"1 block dropped: the city's blocks changed size"` | The note when the city's blocks changed size (its level rose with its ground) and the picked blocks were the old ones'; one block. |
-| 2204 | `LandMap.Picks.BLOCKS_RESIZED_NOTE` | `"%d blocks dropped: the city's blocks changed size"` | ...two or more blocks at once; %d how many. |
-| 2207 | `LandMap.Picks.BOUGHT_NOTE` | `"%s dropped: the city bought its ground"` | The note when the city bought a pick's ground (the player's buying or the city's own); %s the offer's name, "North 3". |
-| 2210 | `LandMap.Picks.BOUGHT_MANY_NOTE` | `"%d picks dropped: the city bought their ground"` | ...two or more picks at once; %d how many. |
-| 2213 | `LandMap.Picks.UNOFFERED_NOTE` | `"%s dropped: no longer offered"` | The note when a pick's ground is for sale under no offer now; %s the offer's name. |
-| 2216 | `LandMap.Picks.UNOFFERED_MANY_NOTE` | `"%d picks dropped: no longer offered"` | ...two or more picks at once; %d how many. |
-| 2219 | `LandMap.Picks.CARRIED_NOTE` | `"%s carried onto %s, listed again"` | The note when a pick's offer left the shelf and its ground is offered again, under another id: carried onto it; %s the pick's name or "2 picks", %s the offer's name or "2 offers". |
-| 2227 | `LandMap.BOX_BLOCKS_MOST` | `2_000` | The most blocks one box takes (BL1): 2,000, the flood from the city's ground into the box stopping there, the nearest first - a city is some six to twelve blocks across, so this is several cities o... |
+| 1574 | `LandMap.Quotes.KEPT` | `16` | The latest blocks whose prices the pointer keeps. |
+| 1576 | `LandMap.Quotes.RETRY_MS` | `2_000` | Milliseconds before a failed measurement may be asked again. |
+| 1578 | `LandMap.Quotes.FAILED` | `"Price could not be worked out"` | The failure line stays distinct from a successful empty quote. |
+| 2370 | `LandMap.Picks.BLOCK_BOUGHT_NOTE` | `"1 block dropped: the city bought it"` | The note when the city bought picked blocks (the player's buying or its own); one block. |
+| 2373 | `LandMap.Picks.BLOCKS_BOUGHT_NOTE` | `"%d blocks dropped: the city bought them"` | ...two or more blocks at once; %d how many. |
+| 2376 | `LandMap.Picks.BLOCK_UNJOINED_NOTE` | `"1 block dropped: no longer joined to the city"` | The note when picked blocks no longer join the city - the blocks or offers they joined through were dropped or bought away; one block. |
+| 2379 | `LandMap.Picks.BLOCKS_UNJOINED_NOTE` | `"%d blocks dropped: no longer joined to the city"` | ...two or more blocks at once; %d how many. |
+| 2382 | `LandMap.Picks.BLOCK_RESIZED_NOTE` | `"1 block dropped: the city's blocks changed size"` | The note when the city's blocks changed size (its level rose with its ground) and the picked blocks were the old ones'; one block. |
+| 2385 | `LandMap.Picks.BLOCKS_RESIZED_NOTE` | `"%d blocks dropped: the city's blocks changed size"` | ...two or more blocks at once; %d how many. |
+| 2388 | `LandMap.Picks.BOUGHT_NOTE` | `"%s dropped: the city bought its ground"` | The note when the city bought a pick's ground (the player's buying or the city's own); %s the offer's name, "North 3". |
+| 2391 | `LandMap.Picks.BOUGHT_MANY_NOTE` | `"%d picks dropped: the city bought their ground"` | ...two or more picks at once; %d how many. |
+| 2394 | `LandMap.Picks.UNOFFERED_NOTE` | `"%s dropped: no longer offered"` | The note when a pick's ground is for sale under no offer now; %s the offer's name. |
+| 2397 | `LandMap.Picks.UNOFFERED_MANY_NOTE` | `"%d picks dropped: no longer offered"` | ...two or more picks at once; %d how many. |
+| 2400 | `LandMap.Picks.CARRIED_NOTE` | `"%s carried onto %s, listed again"` | The note when a pick's offer left the shelf and its ground is offered again, under another id: carried onto it; %s the pick's name or "2 picks", %s the offer's name or "2 offers". |
+| 2408 | `LandMap.BOX_BLOCKS_MOST` | `2_000` | The most blocks one box takes (BL1): 2,000, the flood from the city's ground into the box stopping there, the nearest first - a city is some six to twelve blocks across, so this is several cities o... |
 
 ### LandMarket.java ([map](map/LandMarket.md))
 
@@ -2295,9 +2300,9 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 320 | `LandMarket.SCARCITY_FLOOR` | `.65` | Multiplier on acquisition cost when land is abundant. |
 | 323 | `LandMarket.SCARCITY_CEILING` | `1.90` | Multiplier when there is effectively nothing left. |
 | 335 | `LandMarket.SCARCITY_MIDPOINT` | `4.0` | Pressure at which the curve is half way up. |
-| 802 | `LandMarket.PRICE_STEP_USD` | `5 * PriceLevel.FACTOR` | The step an offer's price is rounded to, in thousands of US dollars: US$5k, as the parcels were (nobody wants to compare US$103,847 against US$98,211). |
-| 1034 | `LandMarket.RANK_TIE` | `1e-12` | How close two ranks (rates of ground a dollar, or prices that carry a sum) must be to be one rank: a part in a trillion. |
-| 1505 | `LandMarket.QUOTER_MS` | `16` | The most making a quoter may take on the screen's thread, in milliseconds: a frame at 60 Hz. |
+| 806 | `LandMarket.PRICE_STEP_USD` | `5 * PriceLevel.FACTOR` | The step an offer's price is rounded to, in thousands of US dollars: US$5k, as the parcels were (nobody wants to compare US$103,847 against US$98,211). |
+| 1038 | `LandMarket.RANK_TIE` | `1e-12` | How close two ranks (rates of ground a dollar, or prices that carry a sum) must be to be one rank: a part in a trillion. |
+| 1509 | `LandMarket.QUOTER_MS` | `16` | The most making a quoter may take on the screen's thread, in milliseconds: a frame at 60 Hz. |
 
 ### LandParcel.java ([map](map/LandParcel.md))
 
@@ -4229,7 +4234,7 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1194 constants)
+## interface (1193 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -4826,67 +4831,66 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 291 | `MapView.LABEL_OFF_PX` | `10` | A boat's or a train's label stands this many pixels off it, up and to the right, or the other way where the view's edge is in the road (WN7): 10. |
 | 297 | `MapView.WORKER` | `new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r ...` | The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the m... |
 | 305 | `MapView.QUOTES` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "land-quote"); t.setD...` | The thread a hover's block is quoted on (WN5b): its own, not WORKER's, because one quote can take seconds at a big level near a foreign coast and would hold the map's own jobs (plans, nodes, the mi... |
-| 313 | `MapView.QUOTES_KEPT` | `16` | How many blocks' quotes the hover keeps, the latest asked: 16 - a pointer that comes back to a block shows its price at once. |
-| 419 | `MapView.DRAFTS` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "land-drafts"); t.set...` | Pick measurements have their own queue: a slow hover cannot hold the clicked block behind it (WN5c). |
-| 483 | `MapView.YARD_IMAGES_KEPT` | `256` | The most yard pictures kept at once (HB2): each is one box of pixels, so the cap bounds what a pan over a big harbour holds. |
-| 485 | `MapView.YARDS_A_FRAME` | `12` | The most new yard pictures painted in one frame (HB2): a first frame over a big harbour paints them over several, the rest left as the tile drew them. |
-| 541 | `MapView.MODE_PICTURE` | `0, MODE_GROUND = 1, MODE_FADE = 2` | How the globe's picture was drawn: the planet's picture, the GROUND tier, or the plane's nodes alone for the crossfade. |
-| 594 | `MapView.DRAWING` | `"Drawing the city's map…"` | The note while the map is drawn away from the screen. |
-| 597 | `MapView.EXPAND_TIP` | `"The map under the window's header: drag along the city's edge to pick the exact ground...` | The Expand button's tooltip (since MS1 it says the drag picks; since BL1 the ground it picks is the player's own: a drag along the city's edge picks the exact ground, one from elsewhere pans). |
-| 601 | `MapView.HINT` | `"drag along the city's edge to pick the exact ground · drag elsewhere to pan"` | The expanded map's hint, at the right of its head: since 0.7.137 how to buy (spec-earth 3.1, "its hint becomes"), since MS1 by a click or a drag, since BL1 of the exact ground - blocks of the city'... |
-| 604 | `MapView.KEYS_TIP` | `"Click an offer to open its card beside it, or a free block along the city's edge to pi...` | ...the hint's tooltip: every key and gesture the expanded map takes - the panning and zooming the hint said until 0.7.137, and the buying since. |
-| 614 | `MapView.SELECT_EVERY` | `"Select every offer"` | The head's chip that picks every offer listed (B7). |
-| 1874 | `MapView.OFFER_EDGE` | `"#f6a6c9"` | The offers' pink: the mockup's band edge (rgba(246, 166, 201)). |
-| 1877 | `MapView.BLOCK_LINE_ALPHA` | `0.08` | The block lines' white, its alpha: 0.08 (0.7.69, star) - faint, so the ground under them reads first; at 0.08 a line shows on the dimmed world and on the city's own ground alike (the M5 renders). |
-| 1880 | `MapView.EDGE_ALPHA` | `MapTiles.EDGE_ALPHA` | The city's edge's white, its alpha: 0.55, as since 0.7.61 - the far nodes' too (MapTiles.EDGE_ALPHA, 0.7.128). |
-| 1883 | `MapView.WORLD_LINE_ALPHA` | `LandMap.WORLD_ALPHA` | The world line's opacity (spec-freight 4.1: "faded, to the edge of the view"): the model's dial, LandMap.WORLD_ALPHA, so the line and its legend swatch are one. |
-| 2196 | `MapView.DASH_ON` | `5, DASH_PERIOD = 9` | A run's dashes: 5 px on and 4 off, as the offers' edge has been drawn since 0.7.61. |
-| 2257 | `MapView.PICKED_ALPHA` | `0.22` | The tint of a picked offer's ground and of picked blocks: the building pink at 0.22 (the picked offer's since 0.7.137). |
-| 2314 | `MapView.NEW_TAG` | `"NEW"` | The words under an offer's number on the expanded map while it is NEW (0.7.137, board 6): the office's tag (LandScreen.isNew()), in the building pink. |
-| 2361 | `MapView.ICON_EDGE` | `Color.rgb(11, 17, 24, 0.85), ICON_DARK_INK = Color.rgb(11, 17, 24)` | An icon's edge, the dots' dark (11, 17, 24) at 0.85, and the mark written dark on a light colour: the same, whole. |
-| 2455 | `MapView.DIMMED` | `GlobePicture.colours(true)` | The ground's colours on the globe, by code - a class and its relief (ET1 slice D): the world off the city's land dimmed, as the far nodes dim it (GlobePicture.colours()). |
-| 2458 | `MapView.PIECE_PX` | `MapFrame.NODE_PX` | A GROUND-tier piece past the plane, in pixels a side: 128, a far node's (MapFrame.NODE_PX) - 9 to 50 ms on the worker from 0.48 to 7.3 km a pixel (E9's probe on the full file). |
-| 2461 | `MapView.RING_PX` | `6` | The city's ring on the globe, its radius in pixels: 6, the founding globe's site mark's arms (FoundingScreen, 6 px each way). |
-| 2464 | `MapView.NODE_SAMPLE_PX` | `16` | The screen is sampled every this many pixels for the part of it the plane draws (globeNodes()): 16, an eighth of a node - the part's edge found to 16 px, and padded by as much. |
-| 2604 | `MapView.CHART_NODE_OFFSET` | `1L<<19` | A chart node's indexes run negative west and north of the chart's anchor: this many are added to each to key it. |
-| 2963 | `MapView.DRAWING_EARTH` | `"Drawing the Earth…"` | The note while the planet's picture is made, the first time an Earth map is expanded. |
-| 3151 | `MapView.BLOCK_LINE_SAG_PX` | `0.25` | The most the camera may bend a block line from its chord before the line is split in two, in pixels: a quarter (the line is drawn a pixel wide, so a quarter is not seen). |
-| 3154 | `MapView.BLOCK_LINE_SPLITS` | `6` | ...and how many times a line is split at most: 6 (64 pieces - far more than the 64 px a line bends by at the widest near scale 12,000 km from the city needs). |
-| 3265 | `MapView.CLICK_TO_DROP` | `"Shift-click to drop it · Enter buys"` | The hover card's last line over a block that is picked already (BL1), in blue as the offers' is: how to drop it. |
-| 3755 | `MapView.CLICK_TO_BUY` | `"Click to buy it here"` | The hover card's last line over an offer on the expanded map (spec-earth 3.1, board 4), in blue. |
-| 3788 | `MapView.CARD_FIELDS` | `LandMap.CARD_FIELDS` | The most fields a hover card lists: 3 (LandMap.CARD_FIELDS since 0.7.135). |
-| 3832 | `MapView.CARD_GAP` | `14` | The card stands off its offer's box by this many pixels: 14, as the hover card stands off the pointer (showCard()). |
-| 3835 | `MapView.CARD_MARGIN` | `10` | ...and at least this far inside the view: 10, the hover card's (showCard()). |
-| 3838 | `MapView.BOX_FILL_ALPHA` | `0.12` | The box's fill (B7), the offers' pink at this alpha: 0.12 (star M6) - under the lit offer's 0.34 and the picked one's 0.22 (overlays()), so the offers under the box read through it. |
-| 4272 | `MapView.NATIONS_TIP` | `"A dot at each nation's largest port or city, by its output; its name, output and peopl...` | The Nations chip's tooltip (WN2). |
-| 4276 | `MapView.BORDERS_TIP` | `"The nations' borders, dashed white, at the far views; up close only where one crosses ...` | ...and the Borders chip's. |
-| 4279 | `MapView.RESOURCES_TIP` | `"The deposits: zoomed out, an icon at each one in its resource's colour with its mark(F...` | ...and the Resources chip's (LM1): what it shows, on every world, and how wide the map may be for it. |
-| 4291 | `MapView.TRADE_SELL_WORDS` | `"What we sell, a month", TRADE_BUY_WORDS = "What we buy"` | The legend's words for the two kinds of route (the board's, less its "it"). |
-| 4294 | `MapView.TRADE_ALPHA` | `0.78` | A route's colours: the business violet for what we sell and the ore's sand for what we buy (Palette's), at the board's stroke opacity, .78. |
-| 4295 | `MapView.TRADE_SELL` | `Color.web(Palette.BUSINESS, TRADE_ALPHA), TRADE_BUY = Color.web(Palette.ORE, TRADE_ALPHA)` |  |
-| 4298 | `MapView.ARROW_LEN_PX` | `34` | A generated world's arrow is this many pixels long from its tip inward... |
-| 4301 | `MapView.ARROW_HEAD_PX` | `9, ARROW_HEAD_WIDE_PX = 3` | ...with a head this many pixels long, and this much wider than the shaft either side. |
-| 4304 | `MapView.NO_FIGURES` | `new double [ 0 ]` | A stand-in for a feed that gave no figures. |
-| 4307 | `MapView.LABEL_NAME_PX` | `11` | A dot's label, the name: sans semibold, 11 px (the board's .lbl)... |
-| 4310 | `MapView.LABEL_FIGURES_PX` | `9.5` | ...and the figures under it, mono, 9.5 px (the board's .lbl2). |
-| 4313 | `MapView.DOT_EDGE_PX` | `1.2` | A dot's edge, in pixels: 1.2, in NationsMap.DOT_EDGE_ARGB (the board's). |
-| 4316 | `MapView.HALO_PX` | `3, HALO_ALPHA = 0.75` | A label's halo, drawn under its words: 3 px wide in NationsMap.DOT_EDGE_ARGB at 0.75 (the board's .lbl stroke). |
-| 4319 | `MapView.WIDTHS_MOST` | `600` | The widths of label words kept, by string (the names never change and the figures change once a year): the 600 most recently used. |
-| 4322 | `MapView.NATION_CARD_W` | `330` | A nation's card is this wide, in pixels: 330 (the board's .card)... |
-| 4325 | `MapView.NATION_CARD_GAP` | `4` | ...and its head, its distance line and its rows stand this many pixels apart: 4. |
-| 5326 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 th... |
-| 5329 | `MapView.SHIP_SIZE_WORDS` | `"Ships are drawn 1.6\u00d7 their size until 6 px a plot"` | The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). |
-| 5332 | `MapView.TRUCK_WORDS` | `"Trucks: one per %s"` | The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). |
-| 5340 | `MapView.TRACK_ENTRY` | `LandMap.TRACK_ENTRY` | The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. |
-| 5358 | `MapView.LEGEND_NOTE_WIDTH` | `300` | The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. |
-| 5413 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
-| 5589 | `MapView.REPLAY_FRAME_MS` | `24` | The most a frame spends painting tiles in a replay, in ms: 24 - a replay computes no month, so a frame's whole share is the picture's, and a view reached by the camera comes in over two or three fr... |
-| 5592 | `MapView.CAMERA_PAUSE_S` | `0.25` | A gap between two camera frames longer than this, in seconds, is not time the camera moved in: 0.25 - the pump stops when the view is idle and a glide or a fly must not find the minutes gone by in ... |
-| 5759 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
-| 5762 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
-| 5765 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
-| 5925 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
-| 6180 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
+| 416 | `MapView.DRAFTS` | `Executors.newSingleThreadExecutor(r -> { Thread t = new Thread(r, "land-drafts"); t.set...` | Pick measurements have their own queue: a slow hover cannot hold the clicked block behind it (WN5c). |
+| 480 | `MapView.YARD_IMAGES_KEPT` | `256` | The most yard pictures kept at once (HB2): each is one box of pixels, so the cap bounds what a pan over a big harbour holds. |
+| 482 | `MapView.YARDS_A_FRAME` | `12` | The most new yard pictures painted in one frame (HB2): a first frame over a big harbour paints them over several, the rest left as the tile drew them. |
+| 538 | `MapView.MODE_PICTURE` | `0, MODE_GROUND = 1, MODE_FADE = 2` | How the globe's picture was drawn: the planet's picture, the GROUND tier, or the plane's nodes alone for the crossfade. |
+| 595 | `MapView.DRAWING` | `"Drawing the city's map…"` | The note while the map is drawn away from the screen. |
+| 598 | `MapView.EXPAND_TIP` | `"The map under the window's header: drag along the city's edge to pick the exact ground...` | The Expand button's tooltip (since MS1 it says the drag picks; since BL1 the ground it picks is the player's own: a drag along the city's edge picks the exact ground, one from elsewhere pans). |
+| 602 | `MapView.HINT` | `"drag along the city's edge to pick the exact ground · drag elsewhere to pan"` | The expanded map's hint, at the right of its head: since 0.7.137 how to buy (spec-earth 3.1, "its hint becomes"), since MS1 by a click or a drag, since BL1 of the exact ground - blocks of the city'... |
+| 605 | `MapView.KEYS_TIP` | `"Click an offer to open its card beside it, or a free block along the city's edge to pi...` | ...the hint's tooltip: every key and gesture the expanded map takes - the panning and zooming the hint said until 0.7.137, and the buying since. |
+| 615 | `MapView.SELECT_EVERY` | `"Select every offer"` | The head's chip that picks every offer listed (B7). |
+| 1878 | `MapView.OFFER_EDGE` | `"#f6a6c9"` | The offers' pink: the mockup's band edge (rgba(246, 166, 201)). |
+| 1881 | `MapView.BLOCK_LINE_ALPHA` | `0.08` | The block lines' white, its alpha: 0.08 (0.7.69, star) - faint, so the ground under them reads first; at 0.08 a line shows on the dimmed world and on the city's own ground alike (the M5 renders). |
+| 1884 | `MapView.EDGE_ALPHA` | `MapTiles.EDGE_ALPHA` | The city's edge's white, its alpha: 0.55, as since 0.7.61 - the far nodes' too (MapTiles.EDGE_ALPHA, 0.7.128). |
+| 1887 | `MapView.WORLD_LINE_ALPHA` | `LandMap.WORLD_ALPHA` | The world line's opacity (spec-freight 4.1: "faded, to the edge of the view"): the model's dial, LandMap.WORLD_ALPHA, so the line and its legend swatch are one. |
+| 2200 | `MapView.DASH_ON` | `5, DASH_PERIOD = 9` | A run's dashes: 5 px on and 4 off, as the offers' edge has been drawn since 0.7.61. |
+| 2261 | `MapView.PICKED_ALPHA` | `0.22` | The tint of a picked offer's ground and of picked blocks: the building pink at 0.22 (the picked offer's since 0.7.137). |
+| 2318 | `MapView.NEW_TAG` | `"NEW"` | The words under an offer's number on the expanded map while it is NEW (0.7.137, board 6): the office's tag (LandScreen.isNew()), in the building pink. |
+| 2365 | `MapView.ICON_EDGE` | `Color.rgb(11, 17, 24, 0.85), ICON_DARK_INK = Color.rgb(11, 17, 24)` | An icon's edge, the dots' dark (11, 17, 24) at 0.85, and the mark written dark on a light colour: the same, whole. |
+| 2459 | `MapView.DIMMED` | `GlobePicture.colours(true)` | The ground's colours on the globe, by code - a class and its relief (ET1 slice D): the world off the city's land dimmed, as the far nodes dim it (GlobePicture.colours()). |
+| 2462 | `MapView.PIECE_PX` | `MapFrame.NODE_PX` | A GROUND-tier piece past the plane, in pixels a side: 128, a far node's (MapFrame.NODE_PX) - 9 to 50 ms on the worker from 0.48 to 7.3 km a pixel (E9's probe on the full file). |
+| 2465 | `MapView.RING_PX` | `6` | The city's ring on the globe, its radius in pixels: 6, the founding globe's site mark's arms (FoundingScreen, 6 px each way). |
+| 2468 | `MapView.NODE_SAMPLE_PX` | `16` | The screen is sampled every this many pixels for the part of it the plane draws (globeNodes()): 16, an eighth of a node - the part's edge found to 16 px, and padded by as much. |
+| 2608 | `MapView.CHART_NODE_OFFSET` | `1L<<19` | A chart node's indexes run negative west and north of the chart's anchor: this many are added to each to key it. |
+| 2967 | `MapView.DRAWING_EARTH` | `"Drawing the Earth…"` | The note while the planet's picture is made, the first time an Earth map is expanded. |
+| 3155 | `MapView.BLOCK_LINE_SAG_PX` | `0.25` | The most the camera may bend a block line from its chord before the line is split in two, in pixels: a quarter (the line is drawn a pixel wide, so a quarter is not seen). |
+| 3158 | `MapView.BLOCK_LINE_SPLITS` | `6` | ...and how many times a line is split at most: 6 (64 pieces - far more than the 64 px a line bends by at the widest near scale 12,000 km from the city needs). |
+| 3269 | `MapView.CLICK_TO_DROP` | `"Shift-click to drop it · Enter buys"` | The hover card's last line over a block that is picked already (BL1), in blue as the offers' is: how to drop it. |
+| 3700 | `MapView.CLICK_TO_BUY` | `"Click to buy it here"` | The hover card's last line over an offer on the expanded map (spec-earth 3.1, board 4), in blue. |
+| 3733 | `MapView.CARD_FIELDS` | `LandMap.CARD_FIELDS` | The most fields a hover card lists: 3 (LandMap.CARD_FIELDS since 0.7.135). |
+| 3777 | `MapView.CARD_GAP` | `14` | The card stands off its offer's box by this many pixels: 14, as the hover card stands off the pointer (showCard()). |
+| 3780 | `MapView.CARD_MARGIN` | `10` | ...and at least this far inside the view: 10, the hover card's (showCard()). |
+| 3783 | `MapView.BOX_FILL_ALPHA` | `0.12` | The box's fill (B7), the offers' pink at this alpha: 0.12 (star M6) - under the lit offer's 0.34 and the picked one's 0.22 (overlays()), so the offers under the box read through it. |
+| 4217 | `MapView.NATIONS_TIP` | `"A dot at each nation's largest port or city, by its output; its name, output and peopl...` | The Nations chip's tooltip (WN2). |
+| 4221 | `MapView.BORDERS_TIP` | `"The nations' borders, dashed white, at the far views; up close only where one crosses ...` | ...and the Borders chip's. |
+| 4224 | `MapView.RESOURCES_TIP` | `"The deposits: zoomed out, an icon at each one in its resource's colour with its mark(F...` | ...and the Resources chip's (LM1): what it shows, on every world, and how wide the map may be for it. |
+| 4236 | `MapView.TRADE_SELL_WORDS` | `"What we sell, a month", TRADE_BUY_WORDS = "What we buy"` | The legend's words for the two kinds of route (the board's, less its "it"). |
+| 4239 | `MapView.TRADE_ALPHA` | `0.78` | A route's colours: the business violet for what we sell and the ore's sand for what we buy (Palette's), at the board's stroke opacity, .78. |
+| 4240 | `MapView.TRADE_SELL` | `Color.web(Palette.BUSINESS, TRADE_ALPHA), TRADE_BUY = Color.web(Palette.ORE, TRADE_ALPHA)` |  |
+| 4243 | `MapView.ARROW_LEN_PX` | `34` | A generated world's arrow is this many pixels long from its tip inward... |
+| 4246 | `MapView.ARROW_HEAD_PX` | `9, ARROW_HEAD_WIDE_PX = 3` | ...with a head this many pixels long, and this much wider than the shaft either side. |
+| 4249 | `MapView.NO_FIGURES` | `new double [ 0 ]` | A stand-in for a feed that gave no figures. |
+| 4252 | `MapView.LABEL_NAME_PX` | `11` | A dot's label, the name: sans semibold, 11 px (the board's .lbl)... |
+| 4255 | `MapView.LABEL_FIGURES_PX` | `9.5` | ...and the figures under it, mono, 9.5 px (the board's .lbl2). |
+| 4258 | `MapView.DOT_EDGE_PX` | `1.2` | A dot's edge, in pixels: 1.2, in NationsMap.DOT_EDGE_ARGB (the board's). |
+| 4261 | `MapView.HALO_PX` | `3, HALO_ALPHA = 0.75` | A label's halo, drawn under its words: 3 px wide in NationsMap.DOT_EDGE_ARGB at 0.75 (the board's .lbl stroke). |
+| 4264 | `MapView.WIDTHS_MOST` | `600` | The widths of label words kept, by string (the names never change and the figures change once a year): the 600 most recently used. |
+| 4267 | `MapView.NATION_CARD_W` | `330` | A nation's card is this wide, in pixels: 330 (the board's .card)... |
+| 4270 | `MapView.NATION_CARD_GAP` | `4` | ...and its head, its distance line and its rows stand this many pixels apart: 4. |
+| 5272 | `MapView.LEGEND_ROWS` | `17` | Rows a column of the legend holds: 17, its 52 entries in three columns and the first row of a fourth, and the zones set after them (since 0.8.2 the train, 51 in three columns before; since 0.8.1 th... |
+| 5275 | `MapView.SHIP_SIZE_WORDS` | `"Ships are drawn 1.6\u00d7 their size until 6 px a plot"` | The legend's line under the boats' entries (0.7.97; the research's 4.4, mockup 3's legend). |
+| 5278 | `MapView.TRUCK_WORDS` | `"Trucks: one per %s"` | The legend's line for the trucks (0.8.8, batch FR5; spec-freight 4.7): "Trucks: one per 12 loads", the unit's words filled in by trucksWords(). |
+| 5286 | `MapView.TRACK_ENTRY` | `LandMap.TRACK_ENTRY` | The legend's unmade streets (0.7.88; spec 5): a street the city has bought no road for - the model's words since 0.7.135. |
+| 5304 | `MapView.LEGEND_NOTE_WIDTH` | `300` | The legend's note's widest, in pixels: the legend's own width at most, so it wraps under the entries. |
+| 5359 | `MapView.LEGEND_FOLD_WORDS` | `"· click to fold"` | The head line's words when the legend is open, after its chevron and "Legend" (the board's .lh). |
+| 5535 | `MapView.REPLAY_FRAME_MS` | `24` | The most a frame spends painting tiles in a replay, in ms: 24 - a replay computes no month, so a frame's whole share is the picture's, and a view reached by the camera comes in over two or three fr... |
+| 5538 | `MapView.CAMERA_PAUSE_S` | `0.25` | A gap between two camera frames longer than this, in seconds, is not time the camera moved in: 0.25 - the pump stops when the view is idle and a glide or a fly must not find the minutes gone by in ... |
+| 5705 | `MapView.STUCK_S` | `2` | How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the loa... |
+| 5708 | `MapView.LOAD_HEAP_SHARE` | `0.8` | The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. |
+| 5711 | `MapView.LOAD_WORDS_PX` | `28` | The height of the words written over the map while a move loads or waits for its click, in pixels: 28. |
+| 5871 | `MapView.NO_MOVE` | `new MoveLoad(0, 0, false)` | A move with nothing passed and nothing kept, for viewSettled(). |
+| 6126 | `MapView.MoveTally.WHERES` | `{ "L0", "L1", "L2", "FAR", "GROUND", "PICTURE" }` |  |
 
 ### MiniMap.java ([map](map/MiniMap.md))
 
@@ -6822,14 +6826,14 @@ Generated 2026-11-14 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 85 | `LandNationsCheck.out` | `System.out` |  |
-| 86 | `LandNationsCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 89 | `LandNationsCheck.SEED_A` | `20261101L, SEED_B = 20261102L` | The seeds the Random paths are drawn from. |
-| 96 | `LandNationsCheck.WINDSOR_LAT` | `42.315, WINDSOR_LON = - 83.04, DETROIT_LAT = 42.335, DETROIT_LON = - 83.045` | Where the cities stand: Windsor on the Detroit River (Canada), Detroit across it (the United States), Halifax (Canada, the reference), the Strait of Gibraltar. |
-| 97 | `LandNationsCheck.HALIFAX_LAT` | `44.64, HALIFAX_LON = - 63.57, GIBRALTAR_LAT = 36.14, GIBRALTAR_LON = - 5.35` |  |
-| 100 | `LandNationsCheck.ACRES_PER_HECTARE` | `ham.citybuildersim.tools.LandTable.ACRES_PER_HECTARE` | A hectare in acres: the unit the USDA and Statistics Canada give their prices in (tools.LandTable converts by the same figure). |
-| 902 | `LandNationsCheck.RUN_YEARS` | `10` | How many years the run plays, a look and some purchases at the start of each. |
-| 1096 | `LandNationsCheck.RIVER_LAT` | `42.32, RIVER_LON = - 83.04, COAST_LAT = 35.95, COAST_LON = - 5.45` | Where the hover is held: a spot on the Detroit River at Windsor, and one off the coast at the Strait of Gibraltar. |
+| 87 | `LandNationsCheck.out` | `System.out` |  |
+| 88 | `LandNationsCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 91 | `LandNationsCheck.SEED_A` | `20261101L, SEED_B = 20261102L` | The seeds the Random paths are drawn from. |
+| 98 | `LandNationsCheck.WINDSOR_LAT` | `42.315, WINDSOR_LON = - 83.04, DETROIT_LAT = 42.335, DETROIT_LON = - 83.045` | Where the cities stand: Windsor on the Detroit River (Canada), Detroit across it (the United States), Halifax (Canada, the reference), the Strait of Gibraltar. |
+| 99 | `LandNationsCheck.HALIFAX_LAT` | `44.64, HALIFAX_LON = - 63.57, GIBRALTAR_LAT = 36.14, GIBRALTAR_LON = - 5.35` |  |
+| 102 | `LandNationsCheck.ACRES_PER_HECTARE` | `ham.citybuildersim.tools.LandTable.ACRES_PER_HECTARE` | A hectare in acres: the unit the USDA and Statistics Canada give their prices in (tools.LandTable converts by the same figure). |
+| 905 | `LandNationsCheck.RUN_YEARS` | `10` | How many years the run plays, a look and some purchases at the start of each. |
+| 1099 | `LandNationsCheck.RIVER_LAT` | `42.32, RIVER_LON = - 83.04, COAST_LAT = 35.95, COAST_LON = - 5.45` | Where the hover is held: a spot on the Detroit River at Windsor, and one off the coast at the Strait of Gibraltar. |
 
 ### LandlordPortCheck.java ([map](map/LandlordPortCheck.md))
 

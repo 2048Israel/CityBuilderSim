@@ -1,8 +1,8 @@
-# gate of Merge batch/HW1: the auto city builds its works when they are needed (Jerus, 2026-11-13: "just build highways when it is needed"): highways 1.86% served at m2400 and under a fifth in 2,037 of 2,404 months, streets 37%, police 56%, payback holds on schools and police; the auto-builder orders an essential work when its share is under target, from cash and buying its land, never held on payback, 0.9.104
+# gate of Merge batch/WN5d: the hover's quote, five findings of WN5b's review: a quote that outlasts a month never shows (show last month's), a slow quote for a block left holds the next, an `Error` leaves its key in `quotesAsked`, a failed quote reads "Not the city's" all month, `CityLand.unownedCounts()` on the common pool at normal priority, 0.9.105
 # date: 2026-11-14
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 195 harnesses run in 2111s: 190 passed, 5 failed
+# suite: 191 harnesses run in 2107s: 187 passed, 4 failed
 MapCheck | exit 1
 MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
@@ -12,12 +12,12 @@ MapCheck | 4 FAILED
 PlanCheck | exit 1
 PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
 PlanCheck | 1 FAILED
-KeptCheck | exit 2
-KeptCheck | The position, Your rate: the redraw and the next equal a page built new  FAIL
-KeptCheck | the Columns on Borrow at home, asking for a sixth of the cash: each month's redraw hands back nine in ten of the pictures it had, or more (7 of 10) FAIL
-KeptCheck | 2 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | 1 FAILED
 LongPlaytest | exit 1
 LongPlaytest | (no FAIL line)
+KeptCheck | exit 2
+KeptCheck | The position, Your rate: the redraw and the next equal a page built new  FAIL
+KeptCheck | the Columns on Borrow at home, asking for a sixth of the cash: each month's redraw hands back nine in ten of the pictures it had, or more (7 of 10) FAIL
+KeptCheck | 2 FAILED

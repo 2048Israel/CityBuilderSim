@@ -626,6 +626,10 @@ public class LandMarket {
 
     /** Prices retained geometry at THIS office's month and price, without walking the seller plots again (WN5c). */
     private LandParcel priceGround(DraftGround measured, int id, int listedIn) {
+        return priceGround(measured, id, listedIn, true);
+    }
+
+    private LandParcel priceGround(DraftGround measured, int id, int listedIn, boolean linkage) {
         GridOffers.Rect r = measured.rect();
         CityLand.Ground ground = measured.ground();
         double[] km2 = ground.km2();
@@ -643,7 +647,7 @@ public class LandMarket {
         LandParcel offer = new LandParcel(id, r.side(), r.place(), r.level(), r.x0(), r.y0(), r.x1(), r.y1(), km2, ground.relief(), sites, amounts, usd, listedIn);
         offer.setSellers(sold);
         // ...and what of it is on ground the city has not linked (ET5): derived, never in the offer's record.
-        if (landmasses != null) {
+        if (linkage && landmasses != null) {
             Linkage link = measured.linkage();
             if (link != null && link.version() == landmasses.version()) offer.setUnlinked(link.dry(), link.buildable(), link.largest());
             else landmasses.offerSplit(World.of(land.key()), land, offer);
@@ -1520,7 +1524,7 @@ public class LandMarket {
         frozen.month = month;
         frozen.groundUsdPerSqFt = groundUsdPerSqFt;
         frozen.usPriceLevel = usPriceLevel;
-        return new Quoter(frozen);
+        return new Quoter(frozen, land);
     }
 
     /**
@@ -1530,9 +1534,28 @@ public class LandMarket {
      */
     public static final class Quoter {
         private final LandMarket frozen;
+        private final CityLand original;
+        private final LandGrid grid;
+        private final long owned;
+        private final int level;
 
-        private Quoter(LandMarket frozen) {
+        private Quoter(LandMarket frozen, CityLand original) {
             this.frozen = frozen;
+            this.original = original;
+            grid = original.grid();
+            owned = grid.ownedPlots();
+            level = original.level();
+        }
+
+        /** Immutable measured ground for an FX-thread price, using only this quoter's private office. */
+        public synchronized MeasuredQuote measure(long[] rect) {
+            long x0 = Math.max(0, Math.min(rect[0], rect[2])), y0 = Math.max(0, Math.min(rect[1], rect[3]));
+            long x1 = Math.min(World.SIDE, Math.max(rect[0], rect[2])), y1 = Math.min(World.SIDE, Math.max(rect[1], rect[3]));
+            if (x0 >= x1 || y0 >= y1) return null;
+            double dx = (x0 + x1) / 2.0 - (frozen.land.siteX() + 0.5), dy = (y0 + y1) / 2.0 - (frozen.land.siteY() + 0.5);
+            int at = GridOffers.sidePlace(dx, dy);
+            GridOffers.Rect r = new GridOffers.Rect(at / OFFERS_A_SIDE, at % OFFERS_A_SIDE, level, x0, y0, x1, y1);
+            return new MeasuredQuote(this, frozen.readGround(r));
         }
 
         /** LandMarket.quote() of the office as it stood: any thread, one call at a time (the copy's land is not made for two readers at once). */
@@ -1542,6 +1565,26 @@ public class LandMarket {
 
         /** The month the office priced in when it was copied. */
         public int month() { return frozen.month; }
+    }
+
+    /** A worker's immutable geometry and its source, published through the screen's owner dispatcher. */
+    public static final class MeasuredQuote {
+        private final Quoter source;
+        private final DraftGround ground;
+
+        private MeasuredQuote(Quoter source, DraftGround ground) {
+            this.source = source;
+            this.ground = ground;
+        }
+    }
+
+    /** FX thread only. A month may pass during measurement, so price unchanged ground in this office's current month. */
+    public LandParcel priceQuote(MeasuredQuote quote) {
+        if (quote == null) return null;
+        Quoter source = quote.source;
+        if (land != source.original || land.grid() != source.grid || land.grid().ownedPlots() != source.owned
+                || land.level() != source.level || sellers != source.frozen.sellers) return null;
+        return priceGround(quote.ground, 0, month, false);
     }
 
     /* ===================================================================
