@@ -583,3 +583,78 @@ checks/maps and merge UP6b main, whose model report is unchanged. Reported
 R2d mends at 025601b7, then requested the coordinated normal-route dry run.
 Final pick is ALL, 207 registered harnesses (final-pick.txt); no local ALL
 or local --pick ALL run was started. The provisional ship marker remains.
+
+
+## First normal-route gate: one fixture restatement
+
+On the orchestrator's go (20261115-133502-370-orchestrator-6ba6), ran
+sh tools/gate.sh R2d --dry-run with the gate's selection and default
+workers, with no cbs.parallel override. Hidden persistent host PID 13616
+outlived the tool calls. Kept run:
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2d-final-20261115-133522
+(/tmp/cbs-gate-R2d-final-20261115-133522).
+Branch 9dc28ff4ab5bca3b38b27ccf9b383971ce101ec2; main
+ade96cfbd2ed1074b834dbfb0bf0a93f329f841b.
+
+Gate exit 1, suite exit 4: 205 harnesses, 198 passed, seven failed.
+The only NEW harness is KeptCheck section 96, with exactly these two
+assertions plus its exit/count lines:
+- Old: before the tractor is found the farms have no equipment to show
+  (the model's rows).
+- Old: ...and no ITS EQUIPMENT on their page.
+
+All other failing harnesses are covered by the existing record:
+MoneyDatesCheck, InvestCheck, MapCheck, DeathRecordCheck, PrizeCheck and
+ResearchViewCheck. There were 15 SOFT timing assertions and three OBSERVED
+path assertions. HistoricalRecipeCheck 120 and HistoricalLicenceCheck 80
+pass in this fresh clone. Stale has zero firm findings. The launcher log is
+target/R2d-review5/gate-launch.log; the kept run has ship.log,
+clone/target/checks/suite.txt and unnamed.txt. The whole run finished
+before any harness source was mended; all NEW lines were collected.
+
+★ The orchestrator accepted the KeptCheck change as a premise restated by
+R1c ★8 (mail 20261115-140151-298-orchestrator-e503): an unknown piece is
+hidden, while the independent 1900 binder already stands beside the
+tractor. The two new wordings are:
+- Before the tractor is found no tractor row is shown, while the
+  catalogue's known binder stays.
+- ITS EQUIPMENT shows the catalogue's binder and hides the unknown tractor.
+
+The exact researchTown factory, month, find/loss maps, retained/fresh
+comparisons and node-retention floor remain unchanged. The check gets the
+binder and its name from Grain Farm's equipment catalogue on the same
+Agriculture page; its original tractor check still uses Mixed Farm. A discovered
+tractor is selected by its template and piece, and must have its local
+origin; the find action itself requires that precise row. The binder
+must remain after discovery. Choice labels describe the tractor card
+joining/leaving the binder, as the existing page-shape checks already do.
+
+The bounded diagnostic invokes the entire unchanged researchEquipment
+section on its own internal researchTown factory, with the main harness's
+600-month played default-city setup for its default control. The old
+assertions reproduce the full gate's exact two failures (24 assertions):
+target/R2d-kept-mend/before/check.log. This diagnostic supplements the
+required final full gate, which retains the whole preceding harness path.
+
+
+The restated bounded section passes all 26 assertions (two more than the
+original): target/R2d-kept-mend/after/check.log. Its before/after model
+sources are identical. An ignored diagnostic ResearchView overlay that
+exposes unknown tractors fails both restated visibility checks (two of 26):
+leak-unknown-tractor/check.log. The runtime mutant and probe live only in
+target/R2d-kept-mend; no production visibility rule is changed.
+
+
+The other ignored runtime overlay hides every tractor, including discovered
+ones. It fails the explicit post-find tractor row and four existing
+find/shape checks (five of 22 reached assertions; four detail assertions
+are behind the missing-row guard): hide-found-tractor/check.log. Thus both
+directions of the original unknown-piece visibility premise remain hard.
+
+
+The KeptCheck-only mend's --fast exits 0, regenerates maps and has zero
+firm Stale findings (target/R2d-kept-mend/fast.log). No model or resource
+source changes follow the 025601b7 default trace, so its eight identical
+CSVs remain the final-model comparison. The provisional ship marker stays.
+The orchestrator will review this harness delta; the replacement gate slot
+follows FP1 and XR7, after merging whatever main has reached then.
