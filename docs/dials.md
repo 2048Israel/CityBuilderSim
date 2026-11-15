@@ -2,9 +2,9 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,972 constants in 572 files.**
+**5,973 constants in 572 files.**
 
-## model (2858 constants)
+## model (2859 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1465,32 +1465,33 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 695 | `ForeignAccounts.EXPOSURE_WEIGHT` | `.5` | How much hot money and debt abroad add to the loading, per year's GDP of them (est.: a fifth of a year's GDP adds ten points). |
 | 698 | `ForeignAccounts.RISK_OFF_LOADING_MIN` | `-.08` | The least the loading can be: the yen's, the most a haven rises (WorldMoneys.YEN). |
 | 701 | `ForeignAccounts.RISK_OFF_LOADING_MAX` | `.30` | The most the loading can be (est.: the emerging floats' is .20). |
-| 1408 | `ForeignAccounts.BAND_WIDTH` | `.03` | Where a band opens, this share either side of its centre: the study's board 2 (est.; Singapore's band is thought to be about 2% either side, R36). |
-| 1411 | `ForeignAccounts.MAX_BAND_WIDTH` | `.25` | The widest a band can be set, a share either side of the centre. |
-| 1414 | `ForeignAccounts.MAX_BAND_SLOPE` | `.25` | The steepest a band's centre can crawl, a log a year, either way. |
-| 1417 | `ForeignAccounts.VAULT_FLOOR` | `1` | Months of imports the vault must keep under a peg or a band: under it the hold gives way (the usual rule of thumb is three months of cover; the study's prototype breaks at one). |
-| 1420 | `ForeignAccounts.OVERSHOOT` | `.25` | A broken peg lands at the shadow plus this share of the gap from the peg again - past the shadow on the weak side where the D$ was weaker than the peg, on the strong side where it was stronger (XR5... |
-| 1423 | `ForeignAccounts.BREAK_BASE` | `.001` | A peg's chance of breaking by doubt in a month at no gap at all (0.1%). |
-| 1426 | `ForeignAccounts.BREAK_SLOPE` | `.03` | ...rising by this much for each BREAK_GAP the shadow sits past the peg beyond the first BREAK_GAP (3% a month at a 20% gap). |
-| 1429 | `ForeignAccounts.BREAK_GAP` | `.10` | ...the gap, a log, under which doubt adds nothing to BREAK_BASE (10%). |
-| 1432 | `ForeignAccounts.GOLD_POINTS` | `.005` | The gold points: the rate is held this share either side of the mint's rate, the cost of shipping gold between New York and London (est.: about half a percent; Officer 1996). |
-| 1435 | `ForeignAccounts.COVER_RATIO` | `.40` | The least share of M0 the vault's gold must cover at the mint price, under which a sale breaks the gold (the Federal Reserve Act's 40% against notes, 1913, section 16). |
-| 1438 | `ForeignAccounts.PEG_SALT` | `0x5DEECE66D1B54A33L` | The salt that makes the peg's draws a stream of their own (odd). |
-| 1497 | `ForeignAccounts.CANADA_GOLD_PERIOD_SLOT` | `156` | Saved slot of the dated Canadian gold episode. |
-| 1499 | `ForeignAccounts.CANADA_GOLD_EXIT_SLOT` | `157` | Saved slot of the dated episode's exhausted flag. |
-| 1501 | `ForeignAccounts.SAVE_SLOTS` | `CANADA_GOLD_EXIT_SLOT + 1` | Exact size of the foreign-account stock, through Canada's dated gold state. |
-| 1836 | `ForeignAccounts.THIN_HOLD_MONTHS` | `24` | A vault that would hold a peg or a band for fewer months than this against a steady gap of BREAK_GAP is thin, and choosing one warns (XR5; Jerus, "Warn on a thin vault"): two years, the median peg'... |
-| 2114 | `ForeignAccounts.COFER_SHARES` | `{.567,.206,.050,.045,.021,.027,.021,.002 }` | The share of the world's reserves each of the eight holds, IMF COFER 2026Q2 [R23], in WorldMoneys.EIGHT's order, normalised when used: the US$ 56.7%, euro 20.6%, yen 5.0%, pound 4.5%, yuan 2.1%, Ca... |
-| 2117 | `ForeignAccounts.MONEYS` | `9` | How many moneys the vault keeps a balance in: the eight and gold. |
-| 2120 | `ForeignAccounts.GOLD` | `8` | The index of gold, the ninth, after the eight (GD2): the vault's balance in thousands of troy ounces, its price in US$ an ounce. |
-| 2123 | `ForeignAccounts.CODES` | `java.util.stream.Stream.concat(WorldMoneys.EIGHT.stream(), java.util.stream.Stream.of("...` | The nine codes in the vault's order: WorldMoneys.EIGHT, then "XAU" (ISO 4217's code for a troy ounce of gold). |
-| 2129 | `ForeignAccounts.MONEY_NAME` | `{ "the US dollar", "the euro", "the yen", "the pound", "the yuan", "the Canadian dollar...` | The money's name as a sentence has it ("the euro"), in CODES' order: the eight, then gold. |
-| 2132 | `ForeignAccounts.MONEY_PLURAL` | `{ "US dollars", "euros", "yen", "pounds", "yuan", "Canadian dollars", "Australian dolla...` | ...and what a purchase of it is ("euros"), for a button's words. |
-| 2135 | `ForeignAccounts.MONEY_MARK` | `{ "US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF ", "XAU " }` | ...and the mark a figure in it is written with ("€"), in the vault's order: the same marks the trade screen prints (CD8: the decision log names the money a piece is sold in by it); gold's is ISO's ... |
-| 2518 | `ForeignAccounts.COVER_WINDOW` | `12` | How many months the trailing figures are averaged over: the import bill the cover is measured against, and the balances the float reads. |
-| 3173 | `ForeignAccounts.PARITY_WATCH` | `.25` | How far from parity, either side, the rate reads as a watch - amber on the Trade tab, the drawer's THE CURRENCY row and the header's rate line, which until 0.7.35 judged one rate three ways (the sp... |
-| 3176 | `ForeignAccounts.PARITY_FAR` | `.50` | ...and how far reads as far: red on all four. |
-| 3192 | `ForeignAccounts.THIN_COVER` | `3` | Months of import cover under which the world prices a currency for a crisis rather than on its trade balance - the Trade tab's red line and its alert, three months by the usual rule of thumb - and ... |
+| 1419 | `ForeignAccounts.BAND_WIDTH` | `.03` | Where a band opens, this share either side of its centre: the study's board 2 (est.; Singapore's band is thought to be about 2% either side, R36). |
+| 1422 | `ForeignAccounts.MAX_BAND_WIDTH` | `.25` | The widest a band can be set, a share either side of the centre. |
+| 1425 | `ForeignAccounts.MAX_BAND_SLOPE` | `.25` | The steepest a band's centre can crawl, a log a year, either way. |
+| 1428 | `ForeignAccounts.VAULT_FLOOR` | `1` | Months of imports the vault must keep under a peg or a band: under it the hold gives way (the usual rule of thumb is three months of cover; the study's prototype breaks at one). |
+| 1431 | `ForeignAccounts.HOLD_PURCHASE_YEARS` | `1` | Most a peg or band may buy in a month, in years of GDP: one year leaves room for a 50% devaluation's bill while refusing a monthly bill larger than annual city income (estimate, XR7). |
+| 1434 | `ForeignAccounts.OVERSHOOT` | `.25` | A broken peg lands at the shadow plus this share of the gap from the peg again - past the shadow on the weak side where the D$ was weaker than the peg, on the strong side where it was stronger (XR5... |
+| 1437 | `ForeignAccounts.BREAK_BASE` | `.001` | A peg's chance of breaking by doubt in a month at no gap at all (0.1%). |
+| 1440 | `ForeignAccounts.BREAK_SLOPE` | `.03` | ...rising by this much for each BREAK_GAP the shadow sits past the peg beyond the first BREAK_GAP (3% a month at a 20% gap). |
+| 1443 | `ForeignAccounts.BREAK_GAP` | `.10` | ...the gap, a log, under which doubt adds nothing to BREAK_BASE (10%). |
+| 1446 | `ForeignAccounts.GOLD_POINTS` | `.005` | The gold points: the rate is held this share either side of the mint's rate, the cost of shipping gold between New York and London (est.: about half a percent; Officer 1996). |
+| 1449 | `ForeignAccounts.COVER_RATIO` | `.40` | The least share of M0 the vault's gold must cover at the mint price, under which a sale breaks the gold (the Federal Reserve Act's 40% against notes, 1913, section 16). |
+| 1452 | `ForeignAccounts.PEG_SALT` | `0x5DEECE66D1B54A33L` | The salt that makes the peg's draws a stream of their own (odd). |
+| 1511 | `ForeignAccounts.CANADA_GOLD_PERIOD_SLOT` | `156` | Saved slot of the dated Canadian gold episode. |
+| 1513 | `ForeignAccounts.CANADA_GOLD_EXIT_SLOT` | `157` | Saved slot of the dated episode's exhausted flag. |
+| 1515 | `ForeignAccounts.SAVE_SLOTS` | `CANADA_GOLD_EXIT_SLOT + 1` | Exact size of the foreign-account stock, through Canada's dated gold state. |
+| 1850 | `ForeignAccounts.THIN_HOLD_MONTHS` | `24` | A vault that would hold a peg or a band for fewer months than this against a steady gap of BREAK_GAP is thin, and choosing one warns (XR5; Jerus, "Warn on a thin vault"): two years, the median peg'... |
+| 2128 | `ForeignAccounts.COFER_SHARES` | `{.567,.206,.050,.045,.021,.027,.021,.002 }` | The share of the world's reserves each of the eight holds, IMF COFER 2026Q2 [R23], in WorldMoneys.EIGHT's order, normalised when used: the US$ 56.7%, euro 20.6%, yen 5.0%, pound 4.5%, yuan 2.1%, Ca... |
+| 2131 | `ForeignAccounts.MONEYS` | `9` | How many moneys the vault keeps a balance in: the eight and gold. |
+| 2134 | `ForeignAccounts.GOLD` | `8` | The index of gold, the ninth, after the eight (GD2): the vault's balance in thousands of troy ounces, its price in US$ an ounce. |
+| 2137 | `ForeignAccounts.CODES` | `java.util.stream.Stream.concat(WorldMoneys.EIGHT.stream(), java.util.stream.Stream.of("...` | The nine codes in the vault's order: WorldMoneys.EIGHT, then "XAU" (ISO 4217's code for a troy ounce of gold). |
+| 2143 | `ForeignAccounts.MONEY_NAME` | `{ "the US dollar", "the euro", "the yen", "the pound", "the yuan", "the Canadian dollar...` | The money's name as a sentence has it ("the euro"), in CODES' order: the eight, then gold. |
+| 2146 | `ForeignAccounts.MONEY_PLURAL` | `{ "US dollars", "euros", "yen", "pounds", "yuan", "Canadian dollars", "Australian dolla...` | ...and what a purchase of it is ("euros"), for a button's words. |
+| 2149 | `ForeignAccounts.MONEY_MARK` | `{ "US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF ", "XAU " }` | ...and the mark a figure in it is written with ("€"), in the vault's order: the same marks the trade screen prints (CD8: the decision log names the money a piece is sold in by it); gold's is ISO's ... |
+| 2532 | `ForeignAccounts.COVER_WINDOW` | `12` | How many months the trailing figures are averaged over: the import bill the cover is measured against, and the balances the float reads. |
+| 3187 | `ForeignAccounts.PARITY_WATCH` | `.25` | How far from parity, either side, the rate reads as a watch - amber on the Trade tab, the drawer's THE CURRENCY row and the header's rate line, which until 0.7.35 judged one rate three ways (the sp... |
+| 3190 | `ForeignAccounts.PARITY_FAR` | `.50` | ...and how far reads as far: red on all four. |
+| 3206 | `ForeignAccounts.THIN_COVER` | `3` | Months of import cover under which the world prices a currency for a crisis rather than on its trade balance - the Trade tab's red line and its alert, three months by the usual rule of thumb - and ... |
 
 ### Formats.java ([map](map/Formats.md))
 
@@ -1637,7 +1638,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.116"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.117"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `53` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `53` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -6074,20 +6075,20 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 210 | `CurrencyRegimeCheck.FLOAT` | `ForeignAccounts.Regime.FLOAT, LEAN = ForeignAccounts.Regime.LEAN, BAND = ForeignAccount...` | The four regimes, by their short names. |
-| 214 | `CurrencyRegimeCheck.TRADE` | `3_000, GDP = 6_000` | The trade a quiet currency settles on, each way, and the output it is weighed against: openness one (ExchangeRateCheck's). |
-| 217 | `CurrencyRegimeCheck.SEED` | `20_261_022L` | The market's seed in the sections that draw one. |
-| 220 | `CurrencyRegimeCheck.DEEP` | `1e9` | A vault no fixture of these can empty or come near the floor of, in dollars. |
-| 223 | `CurrencyRegimeCheck.DOLLAR` | `1e-6` | What the harness's own sums are held to where they are exact arithmetic on dollars. |
-| 602 | `CurrencyRegimeCheck.PEG_DEPOTS` | `12` | BA1, 2026-11-04: THE PEG TOWNS NO LONGER CAUSED THEIR CONDITION. |
-| 603 | `CurrencyRegimeCheck.PEG_VAULT_MONTHS` | `2 * ForeignAccounts.COMFORTABLE_COVER` |  |
-| 620 | `CurrencyRegimeCheck.CLIMB_LOOK_MONTHS` | `600` | BF1: the first full in-band window is later than the old search cap. |
-| 642 | `CurrencyRegimeCheck.DOUBT_CRAWL_MONTHS` | `8` | The months doubtTown() plays at the shadow, the peg following it, before the revaluation: the eight months the hot money takes to gather. |
-| 650 | `CurrencyRegimeCheck.BREAK_LOOK_MONTHS` | `3` | GW1: the months after the revaluation whose breaks section 3 can use: a break by doubt needs the month before it and its own month to be months where the smoothed miss is within TOLERANCE (the city... |
-| 653 | `CurrencyRegimeCheck.climbMonths` | `new java.util.HashMap<>()` | The months a probe town is played to, by (depots, causes held off): where the climbing town is pegged is found once (climbMonth()). |
-| 1179 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
-| 1460 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
-| 1477 | `CurrencyRegimeCheck.SURPLUS_DEPOTS` | `{ PEG_DEPOTS, 18, 20, 22, 24, 30, 36 }` | BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. |
+| 217 | `CurrencyRegimeCheck.FLOAT` | `ForeignAccounts.Regime.FLOAT, LEAN = ForeignAccounts.Regime.LEAN, BAND = ForeignAccount...` | The four regimes, by their short names. |
+| 221 | `CurrencyRegimeCheck.TRADE` | `3_000, GDP = 6_000` | The trade a quiet currency settles on, each way, and the output it is weighed against: openness one (ExchangeRateCheck's). |
+| 224 | `CurrencyRegimeCheck.SEED` | `20_261_022L` | The market's seed in the sections that draw one. |
+| 227 | `CurrencyRegimeCheck.DEEP` | `1e9` | A vault no fixture of these can empty or come near the floor of, in dollars. |
+| 230 | `CurrencyRegimeCheck.DOLLAR` | `1e-6` | What the harness's own sums are held to where they are exact arithmetic on dollars. |
+| 610 | `CurrencyRegimeCheck.PEG_DEPOTS` | `12` | BA1, 2026-11-04: THE PEG TOWNS NO LONGER CAUSED THEIR CONDITION. |
+| 611 | `CurrencyRegimeCheck.PEG_VAULT_MONTHS` | `2 * ForeignAccounts.COMFORTABLE_COVER` |  |
+| 628 | `CurrencyRegimeCheck.CLIMB_LOOK_MONTHS` | `600` | BF1: the first full in-band window is later than the old search cap. |
+| 650 | `CurrencyRegimeCheck.DOUBT_CRAWL_MONTHS` | `8` | The months doubtTown() plays at the shadow, the peg following it, before the revaluation: the eight months the hot money takes to gather. |
+| 658 | `CurrencyRegimeCheck.BREAK_LOOK_MONTHS` | `3` | GW1: the months after the revaluation whose breaks section 3 can use: a break by doubt needs the month before it and its own month to be months where the smoothed miss is within TOLERANCE (the city... |
+| 661 | `CurrencyRegimeCheck.climbMonths` | `new java.util.HashMap<>()` | The months a probe town is played to, by (depots, causes held off): where the climbing town is pegged is found once (climbMonth()). |
+| 1187 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
+| 1468 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
+| 1485 | `CurrencyRegimeCheck.SURPLUS_DEPOTS` | `{ PEG_DEPOTS, 18, 20, 22, 24, 30, 36 }` | BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. |
 
 ### CurveCheck.java ([map](map/CurveCheck.md))
 
@@ -7769,7 +7770,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 33 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nations.Path.R...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 3963 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 3966 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ### SaveSlotCheck.java ([map](map/SaveSlotCheck.md))
 
@@ -8158,21 +8159,21 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 61 | `WorldMoneysCheck.out` | `System.out` | Where the harness prints: the console. |
-| 64 | `WorldMoneysCheck.BASE_SEED` | `9_101` | The seed the single-world sections use. |
-| 67 | `WorldMoneysCheck.FULL_SEEDS` | `1_000, FIXTURE_SEEDS = 300` | The seeds the statistics are counted over: the full file's paths (26 years each), and the fixture's. |
-| 70 | `WorldMoneysCheck.PATH_MONTHS` | `311` | The months of a Random path the statistics are counted over: the 26-year run (the first January to the November 26 years on). |
-| 73 | `WorldMoneysCheck.LONG_MONTHS` | `360` | The months the identity and restore sections run on Random: thirty years. |
-| 76 | `WorldMoneysCheck.RULED_MONTHS` | `48` | The months Historical's rule runs in the identity and restore sections: 48, after the table's end. |
-| 84 | `WorldMoneysCheck.DIAL_TOL` | `.05` | A measured sd or persistence is within this share of the dial it is drawn from (a pooled lag-1 fit over 311 months a path is biased low by about 1.3%). |
-| 87 | `WorldMoneysCheck.SIGMAS` | `3` | A count of breaks or of risk-off starts is within this many standard deviations of its expected number. |
-| 90 | `WorldMoneysCheck.EXACT` | `1e-12` | Two logs or two rates that should be one differ by less than this (the rates are exp of sums of a few logs). |
-| 94 | `WorldMoneysCheck.FIXTURE_PEGS` | `Map.of("CHN", "peg:USD", "COL", "peg:CNY")` | Pegs the fixture is given: the yuan on the dollar, the peso on the yuan (a chain); and the loop of the two. |
-| 95 | `WorldMoneysCheck.FIXTURE_LOOP` | `Map.of("CHN", "peg:COP", "COL", "peg:CNY")` |  |
-| 98 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
-| 99 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { 9.1, 9.6, ...` |  |
-| 100 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
-| 1061 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
+| 62 | `WorldMoneysCheck.out` | `System.out` | Where the harness prints: the console. |
+| 65 | `WorldMoneysCheck.BASE_SEED` | `9_101` | The seed the single-world sections use. |
+| 68 | `WorldMoneysCheck.FULL_SEEDS` | `1_000, FIXTURE_SEEDS = 300` | The seeds the statistics are counted over: the full file's paths (26 years each), and the fixture's. |
+| 71 | `WorldMoneysCheck.PATH_MONTHS` | `311` | The months of a Random path the statistics are counted over: the 26-year run (the first January to the November 26 years on). |
+| 74 | `WorldMoneysCheck.LONG_MONTHS` | `360` | The months the identity and restore sections run on Random: thirty years. |
+| 77 | `WorldMoneysCheck.RULED_MONTHS` | `48` | The months Historical's rule runs in the identity and restore sections: 48, after the table's end. |
+| 85 | `WorldMoneysCheck.DIAL_TOL` | `.05` | A measured sd or persistence is within this share of the dial it is drawn from (a pooled lag-1 fit over 311 months a path is biased low by about 1.3%). |
+| 88 | `WorldMoneysCheck.SIGMAS` | `3` | A count of breaks or of risk-off starts is within this many standard deviations of its expected number. |
+| 91 | `WorldMoneysCheck.EXACT` | `1e-12` | Two logs or two rates that should be one differ by less than this (the rates are exp of sums of a few logs). |
+| 95 | `WorldMoneysCheck.FIXTURE_PEGS` | `Map.of("CHN", "peg:USD", "COL", "peg:CNY")` | Pegs the fixture is given: the yuan on the dollar, the peso on the yuan (a chain); and the loop of the two. |
+| 96 | `WorldMoneysCheck.FIXTURE_LOOP` | `Map.of("CHN", "peg:COP", "COL", "peg:CNY")` |  |
+| 99 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
+| 100 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { 9.1, 9.6, ...` |  |
+| 101 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
+| 1108 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
 
 ### YearBookCheck.java ([map](map/YearBookCheck.md))
 

@@ -833,6 +833,11 @@ public class ForeignAccounts {
         return rate > 0 ? interventionLocalFor(lift, annual) / rate : 0;
     }
 
+    /** XR7: compare lifts before taking the exponential inverse, so even an extreme repeg cannot overflow its purchase. */
+    private static boolean holdPurchaseTooLarge(double lift, double annual) {
+        return annual > 0 && lift > interventionMove(HOLD_PURCHASE_YEARS * annual, annual);
+    }
+
     /**
      * The sale itself, at the month's rate - before the reprice moves it, so
      * the dollars sold are never revalued (revalueVault() strikes the move on
@@ -1069,15 +1074,17 @@ public class ForeignAccounts {
              * those that bring it back down (THE STRONG EDGE), inside it deals
              * nothing - and what it dealt before still shows, fading, in the rate
              * (holdFelt). If a sale would take the vault under its floor the band
-             * gives way for the month: nothing is dealt, the rate stands at free,
+             * gives way for the month, as it does for a purchase above
+             * HOLD_PURCHASE_YEARS of output (XR7): nothing is dealt, the rate stands at free,
              * and the regime stays (Jerus's call, "gives way for the month").
              */
             double free = x + holdFelt;
             double weak = bandWeakEdge();
             double strong = bandStrongEdge();
             double lift = Math.max(Math.log(strong), Math.min(Math.log(weak), free)) - free;
-            double usd = holdUsd(lift, annual);
-            if (usd < 0 && getReservesUsd() + usd < vaultFloorUsd()) {
+            boolean purchaseTooLarge = holdPurchaseTooLarge(lift, annual);
+            double usd = purchaseTooLarge ? 0 : holdUsd(lift, annual);
+            if (purchaseTooLarge || (usd < 0 && getReservesUsd() + usd < vaultFloorUsd())) {
                 rate = clampRate(Math.exp(free));
             } else {
                 if (usd < 0) sellToDefend(-usd); else edgeBuy(usd);
@@ -1111,7 +1118,9 @@ public class ForeignAccounts {
             // rate and deals nothing.
             double free = x + holdFelt;
             double lift = Math.log(held) - free;
-            double usd = holdUsd(lift, annual);
+            boolean purchaseTooLarge = !isCanadaGold() && holdPurchaseTooLarge(lift, annual);
+            double usd = purchaseTooLarge ? 0 : holdUsd(lift, annual);
+            if (cause == BreakCause.NONE && purchaseTooLarge) cause = BreakCause.PURCHASE_LIMIT;
             // (b) THE VAULT: that sale would take it under its floor.
             if (isCanadaGold() && (getReservesUsd() <= 0 || (usd < 0 && getReservesUsd() + usd <= 0))) {
                 // The game rule is exhaustion, not the chosen peg's import floor or doubt.
@@ -1124,7 +1133,7 @@ public class ForeignAccounts {
             lastPegGap = gap;
             if (cause == BreakCause.NONE) {
                 // (c) HELD: the vault deals what the lift takes and the rate is the peg. A
-                // purchase never breaks a peg: the vault only fills.
+                // purchase below HOLD_PURCHASE_YEARS fills the vault.
                 if (usd < 0) sellToDefend(-usd); else edgeBuy(usd);
                 holdFelt += lift;
                 rate = clampRate(held);
@@ -1302,8 +1311,10 @@ public class ForeignAccounts {
      * vault under VAULT_FLOOR months of imports (Krugman's first generation),
      * or by chance, hazard(gap) a month, which rises with the shadow's gap
      * from the peg (Obstfeld's second: doubt itself breaks a peg). A purchase
-     * never breaks a peg, and a band whose sale the vault cannot afford gives
-     * way for the month and stays a band. The rate lands at the shadow plus
+     * above HOLD_PURCHASE_YEARS of annual output breaks a player-chosen peg
+     * before it deals (XR7); a band past that bound, or whose sale the vault
+     * cannot afford, gives way for the month and stays a band. The rate lands
+     * at the shadow plus
      * OVERSHOOT of the gap again - past the shadow on the strong side where it
      * was the stronger (XR5: the Swiss franc, 2015), on the weak side where it
      * was the weaker - (breakFelt, fading as the market's swings do; holdFelt
@@ -1382,9 +1393,9 @@ public class ForeignAccounts {
         EdgePayer(String words) { this.words = words; }
     }
 
-    /** Why a peg broke: holding it would take the vault under its floor (XR5: the sale the hold needs, not the month's deficit), or doubt itself did it (star 4); under Gold, the cover fell under the law's (GD3, last: its ordinal is saved). */
+    /** Why a peg broke: the vault floor, doubt, the gold cover, or XR7's purchase limit. Append causes: their ordinals are saved. */
     public enum BreakCause {
-        NONE("none"), VAULT("the vault ran short"), DOUBT("doubt"), COVER("the gold cover fell under the law's 40%");
+        NONE("none"), VAULT("the vault ran short"), DOUBT("doubt"), COVER("the gold cover fell under the law's 40%"), PURCHASE_LIMIT("the hold's purchase exceeded its limit");
         public final String words;
         BreakCause(String words) { this.words = words; }
     }
@@ -1415,6 +1426,9 @@ public class ForeignAccounts {
 
     /** Months of imports the vault must keep under a peg or a band: under it the hold gives way (the usual rule of thumb is three months of cover; the study's prototype breaks at one). */
     public static final double VAULT_FLOOR = 1;
+
+    /** Most a peg or band may buy in a month, in years of GDP: one year leaves room for a 50% devaluation's bill while refusing a monthly bill larger than annual city income (estimate, XR7). */
+    public static final double HOLD_PURCHASE_YEARS = 1;
 
     /** A broken peg lands at the shadow plus this share of the gap from the peg again - past the shadow on the weak side where the D$ was weaker than the peg, on the strong side where it was stronger (XR5; the Swiss franc, 2015) - and fades as the market's swings do (RatesModel, the study's prototype). */
     public static final double OVERSHOOT = .25;
@@ -3453,8 +3467,9 @@ public class ForeignAccounts {
                  * HOLD PAYS THE PRESSURE): holdFelt, the log rate's support from a
                  * peg's or a band's dealing, fading at INTERVENTION_HALF_LIFE. A
                  * level the month cannot restrike from the state it ended in: the
-                 * rate under a peg is the shadow plus it. A save that has none of
-                 * it reads a hold with no support, as a peg just entered would.
+                 * rate under a peg is the shadow plus it. DataSave carries this
+                 * slot through Game's writer and load path (XR7); do not infer
+                 * it from the loaded rate or charge the full gap again.
                  *
                  * ...AND THE PEG'S ANCHOR, slot 148 (WN4b, THE PEG'S ANCHOR): the
                  * money of the eight the peg (slot 76) is kept in, as an index, 0
@@ -3665,7 +3680,7 @@ public class ForeignAccounts {
             interestDriverUsd = interestDriver >= 0 && Double.isFinite(saved[145]) ? saved[145] : 0;
             interestBaseUsd = Double.isFinite(saved[146]) ? Math.max(0, saved[146]) : 0;
         }
-        // What the hold still puts on the rate (XR5, slot 147); a save from before it has a hold with no support.
+        // What the hold still puts on the rate (XR5, slot 147); carried by DataSave and Game, not reconstructed (XR7).
         if (saved.length > 147) holdFelt = Double.isFinite(saved[147]) ? saved[147] : 0;
         // The peg's anchor (WN4b, slot 148); a save from before it is a peg to the US$. A money with no saved rate to measure it by cannot anchor a peg: it reads the US$.
         if (saved.length > 148) {
