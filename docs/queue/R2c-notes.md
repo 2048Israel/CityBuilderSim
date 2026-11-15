@@ -455,3 +455,35 @@ The comparison marker trace-changed is 0; both the default report and its
 HA1 money fixtures finish cleanly. This is the final merged model, not the
 superseded comparison against pre-RT2 main. No ensemble is needed because
 this batch's contribution leaves all eight traces unchanged.
+
+## Kept versioned merge gate: green
+
+Orchestrator go 20261115-104636-252-orchestrator-1e9c authorized this sole
+versioned dry run; CB2 ran at most one harness beside it. The normal route
+ran synchronously in persistent native shell session 38766, which remained
+alive through completion (no detached background caller was dropped):
+sh tools/gate.sh R2c --dry-run.
+
+Kept directory: /tmp/cbs-gate-R2c-AaDf8ZRE
+Windows directory: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2c-AaDf8ZRE
+Branch: e642fc3c8b23c26cda4cc897a974466aafe623a7
+Main: 6b898500772b789e4758465c5181a3f5abc501ac
+Launcher: target/checks/R2c-RT2-final-gate-launcher.log
+Full classified output: the run's checks/suite.txt; publisher log: ship.log.
+
+Gate exit 0, suite exit 3 (known reds only), versioned as 0.9.114. ALL picks
+205; the normal soft route executes 195 harnesses: 189 pass and six have
+only main's known reds (MoneyDatesCheck, InvestCheck, MapCheck,
+DeathRecordCheck, PrizeCheck and ResearchViewCheck). There are ZERO unnamed
+red lines. Eight timing assertions are soft and four path assertions are
+observations, as the normal route declares. LicenceFeesCheck is 41/41;
+YearBookCheck is 724/724. The run contains checks.complete and the sealed
+checks.sha256. Head and refs compare unchanged before/after the dry run.
+
+Only these notes and the ship file advance after the kept gate. The ship
+file points at this directory; the provisional marker is removed last in
+its own commit and checked absent. No ensemble was run for this batch:
+all eight final default CSVs are byte-identical to the shipped RT2 model.
+The private-firm path is complete. Public works and berths remain the
+orchestrator's explicitly queued R2c-P scope, with their separate treasury
+payment and planner path described in that brief.

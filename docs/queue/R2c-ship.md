@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-R2c-AaDf8ZRE -->
 
 ## changelog
 ### {next} — R2c, Licence fees on the current account — 2026-11-15, ready, see docs/queue/R2c-notes.md
