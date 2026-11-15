@@ -1,4 +1,4 @@
-# ReplayCity.java - 186 lines · 19 methods · 1 constants · model
+# ReplayCity.java - 192 lines · 20 methods · 1 constants · model
 
 `ham/citybuildersim/ReplayCity.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
 
@@ -19,7 +19,7 @@
 
 **Uses:** [Game](Game.md) (5), [HistorySave](HistorySave.md) (5), [GameFiles](GameFiles.md) (4), [Recording](Recording.md) (3)
 
-**Used by (5):** [MapView](MapView.md), [ReplayCamera](ReplayCamera.md), [ReplayCheck](ReplayCheck.md), [ReplayGraphLayer](ReplayGraphLayer.md), [ReplayMode](ReplayMode.md)
+**Used by (6):** [MapView](MapView.md), [ReplayCamera](ReplayCamera.md), [ReplayCheck](ReplayCheck.md), [ReplayGraphLayer](ReplayGraphLayer.md), [ReplayMode](ReplayMode.md), [ReplayMoveProbe](ReplayMoveProbe.md)
 
 ## Constants
 
@@ -46,25 +46,26 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 163 | **type** `public final class ReplayCity` | The throwaway copy of a recorded city that replay shows (TR1, 2026-10-31): a Game of its own, in a scratch folder, that loads any recorded month and is marked a replay copy (Game.markReplayCopy) so that it never recor... |
+| 24 | 169 | **type** `public final class ReplayCity` | The throwaway copy of a recorded city that replay shows (TR1, 2026-10-31): a Game of its own, in a scratch folder, that loads any recorded month and is marked a replay copy (Game.markReplayCopy) so that it never recor... |
 | 40 | 1 | **type** `private record Prepared(Game game, Game.ReplayMap map)` | A loaded move's maps, and the whole copy each land epoch needs. |
 | 44 | 4 | `public void beginMove()` | Begins retaining months for a camera move; ordinary replay steps keep their existing load path (CM2). |
 | 50 | 1 | `public void endMove()` | Releases the move's maps and other land epochs on finish, refusal, replacement or cancellation. |
 | 53 | 1 | `public int preparedMonths()` | The distinct months held by the loaded move, for ReplayCheck's fixture. |
-| 55 | 3 | `private void keepMonth(int month)` |  |
-| 60 | 4 | `public ReplayCity(Recording recording)` | A replay of {@code recording}: the copy's folder is made now, the copy itself on the first load. |
-| 65 | 1 | `public Recording recording()` |  |
-| 68 | 1 | `public Game game()` | The copy, or null before the first load. |
-| 71 | 1 | `GameFiles files()` | The copy's own folder: where loadWhole writes (for a check that nothing else is). |
-| 74 | 1 | `public int[] months()` | The months the recording holds, ascending. |
-| 77 | 1 | `public int shown()` | The month on screen, or -1 before the first. |
-| 80 | 1 | `public boolean wholeMonth()` | Whether the month on screen was loaded in full (false after a quick step, which swapped only the map). |
-| 83 | 1 | `public double lastLoadMs()` | How long the last loadWhole took, in milliseconds. |
-| 86 | 1 | `public double lastStepMs()` | How long the last stepQuick took, in milliseconds. |
-| 94 | 31 | `public String loadWhole(int month)` | Loads a recorded month in full: its save and map written to the copy's folder as slot {@link #SLOT} (the history file deleted), loaded as the Load menu loads a save, then the recording's history cut at the month. |
-| 130 | 27 | `public boolean stepQuick(int month)` | Swaps only the map to a recorded month's: false, and nothing changed, when the month has no map, there is no copy yet, or the land is not the one the map was drawn on (a purchase between) - the caller then loads the m... |
-| 159 | 7 | `public HistorySave master()` | The recording's history, parsed once; null when the recording has none. |
-| 168 | 4 | `public HistorySave historyAt(int month)` | The history as it stood at {@code month} (HistorySave.cutAt); an empty history when the recording has none. |
-| 174 | 3 | `public void showHistoryAt(int month)` | Puts the history at {@code month} in the copy's charts: what a quick step leaves to its caller, because the cut is a copy of the whole history. |
-| 179 | 7 | `public int nearest(int month)` | The recorded month nearest {@code month} (the earlier of two equally near), or -1 for a recording with none: a month the recorder could not keep is a gap. |
+| 56 | 3 | `public int preparedContexts()` | The distinct land contexts actually retained, for the real land-change glide fixture (CM2). |
+| 60 | 3 | `private void keepMonth(int month)` |  |
+| 65 | 4 | `public ReplayCity(Recording recording)` | A replay of {@code recording}: the copy's folder is made now, the copy itself on the first load. |
+| 70 | 1 | `public Recording recording()` |  |
+| 73 | 1 | `public Game game()` | The copy, or null before the first load. |
+| 76 | 1 | `GameFiles files()` | The copy's own folder: where loadWhole writes (for a check that nothing else is). |
+| 79 | 1 | `public int[] months()` | The months the recording holds, ascending. |
+| 82 | 1 | `public int shown()` | The month on screen, or -1 before the first. |
+| 85 | 1 | `public boolean wholeMonth()` | Whether the month on screen was loaded in full (false after a quick step, which swapped only the map). |
+| 88 | 1 | `public double lastLoadMs()` | How long the last loadWhole took, in milliseconds. |
+| 91 | 1 | `public double lastStepMs()` | How long the last stepQuick took, in milliseconds. |
+| 100 | 31 | `public String loadWhole(int month)` | Loads a recorded month in full: its save and map written to the copy's folder as slot {@link #SLOT} (the history file deleted), loaded as the Load menu loads a save, then the recording's history cut at the month. |
+| 136 | 27 | `public boolean stepQuick(int month)` | Swaps only the map to a recorded month's: false, and nothing changed, when the month has no map, there is no copy yet, or the land is not the one the map was drawn on (a purchase between) - the caller then loads the m... |
+| 165 | 7 | `public HistorySave master()` | The recording's history, parsed once; null when the recording has none. |
+| 174 | 4 | `public HistorySave historyAt(int month)` | The history as it stood at {@code month} (HistorySave.cutAt); an empty history when the recording has none. |
+| 180 | 3 | `public void showHistoryAt(int month)` | Puts the history at {@code month} in the copy's charts: what a quick step leaves to its caller, because the cut is a copy of the whole history. |
+| 185 | 7 | `public int nearest(int month)` | The recorded month nearest {@code month} (the earlier of two equally near), or -1 for a recording with none: a month the recorder could not keep is a gap. |
 

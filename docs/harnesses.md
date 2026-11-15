@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**202 harness files, 24,023 labelled assertions.** AllChecks runs 202 of them.
+**202 harness files, 24,029 labelled assertions.** AllChecks runs 202 of them.
 
 ## Which harnesses read which class
 
@@ -195,7 +195,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandManager](map/LandManager.md) | AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, EssentialWorksCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HealthCheck, HouseholdMemoryCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RankingsCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck, ZoningViewCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
-| [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, KeptCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PortCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
+| [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, KeptCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PortCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
 | [LandScreen](map/LandScreen.md) | **none** |
 | [LandSellers](map/LandSellers.md) | LandNationsCheck, PartnersCheck |
 | [LandSellersView](map/LandSellersView.md) | LandNationsCheck |
@@ -24317,7 +24317,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L537 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
 - **L543 4. on the real Earth**
 
-## ReplayCheck.java - 179 labelled assertions
+## ReplayCheck.java - 185 labelled assertions
 
 > Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs;
 > and Follow (batch TR2, 2026-11-09): the timeline of the input logs and the player that plays it, with TR1's four review fixes.
@@ -24385,146 +24385,152 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L430 ...and back: the rate is the recorded one, nothing stuck
   - L434 the copy records nothing: switching it on leaves it off
   - L437 ...and a month played on the copy writes no month into the recording
-  - L446 a loaded move retains a whole-load epoch separately from its first month
-  - L453 a prepared month switches back to its own context and exact map even with its recording file absent
-  - L456 a prepared map cannot be given to another copy or to the normal game
-  - L459 releasing a move drops its months and restores the ordinary file-reading step
-  - L467 the player's folder (the saves and the recording in it) is byte for byte what it was
-- **L469 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing**
-  - L476 a sitting's log is named for the moment it began, in the recording's folder naming
-  - L513 every kind written through the writer, from two threads, and closed: read back event for event
-  - L517 ...and the sitting has every kind in it
-  - L518 ...the moves and drags closer than MOVE_EVERY_MS to the last one kept are dropped, those apart are kept
-  - L521 ...the header names the sitting's start
-  - L527 the sittings of a folder are listed oldest first, and nothing else in it
-  - L530 ...a log with one event reads back that one
-  - L545 a long sitting reads back whole: 2,000 events, in about
-  - L561 a copy of the file cut mid-record reads back a prefix of what was written: five cuts, the three through the body from
-  - L565 ...a file cut inside its header, or not a log at all, or missing, reads as none and throws nothing
-  - L574 a sitting still open reads up to its last flush, a crash losing no more than the flush's two seconds: 50 events
-  - L578 ...and closed it has the last one too, and add() after close is ignored
-  - L587 a re-enacted Save, Load and Quit on the copy ran: the copy wrote into its own folder
-  - L591 ...and the player's folder, with the recording in it, is byte for byte what it was
-  - L592 ...and the recording's months are the months it had
-- **L594 5. the camera's arithmetic**
-  - L602 on the
-  - L606 ...its middle scale is the geometric mean of the ends (to 1e-9)
-  - L615 ...and the scale only ever goes one way from the start to the end
-  - L626 the ease is 0 and 1 at the ends, symmetric about the middle, monotone, and still at both ends (a slope under 1e-6 at 0 and 1)
-  - L633 the centre's share at the middle for a ratio of 4 is the formula's own, (1 - r^-e) / (1 - r^-1), 2/3
-  - L636 ...and the share is the eased share itself when the scales match
-  - L639 on the globe the middle of a glide between two points on the equator 20 degrees apart is on the equator, halfway
-  - L642 ...closing in, the globe's share is the same formula on the inverse ratio: two thirds of the way
-  - L645 ...a path of no length stays at the point at every step
-  - L647 a glide's month is linear in t, not eased: a quarter of the way from 12 to 36 is 18, and the ends are the marks'
-  - L651 a glide between a globe's view and a plane's stays at its start until the end (the kinds cannot blend)
-  - L664 the fly out at t = 1 is exactly the widest scale and the city's centre, its scale grows all the way, and the month stays
-  - L666 the time a fly takes is the doublings of the view's width over the dial: a ratio squared takes twice as long, in as out
-  - L687 five notches in: the product of the steps' zooms is ZOOM_STEP^5 to 1e-6, and the hand rests after
-  - L689 ...every step zooms no more than the one before (it eases out), the first the most, about the point the wheel was at
-  - L695 two notches out are ZOOM_STEP^-2 in the same way
-  - L717 a held key's velocity rises toward its target and, let go, falls to nothing, no step jumping more than MOST_DT_S / SMOOTH_S of the target
-  - L726 a frame of a one-second hitch moves the view no more than a MOST_DT_S step does: a pause, not a jump
-  - L739 a drift moves the ground DRIFT_STEP_PX in a second and closes in by exp(DRIFT_ZOOM_STEP) about the view's middle, until still()
-  - L743 ...and still() stops it, and the zoom still to do and the keys' velocity with it
-- **L746 5b. the graphs behind the city**
-  - L754 the population line holds the recording's months in order, from its first month to its last
-  - L756 ...it draws nothing before the first month, all of it at the last, and the head is the last point
-  - L765 ...scaled to the whole recording: its highest point is 1 and none is above it, so a line rises as the months play
-  - L772 GDP is a year of output, twelve times the mean of the last twelve months, as the header quotes it
-  - L774 a month's place across the recording runs 0 at the first to 1 at the last, and a recording of one month is at 0
-- **L779 5c. a quick step leaves most of the map's pictures as they were**
-  - L798 a quick step to the next month is another map of the same world, and its tiles read the same ground the first read
-  - L801 ...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved
-  - L813 ...a tile whose stamp is the same paints the same pixels in both maps (
-- **L816 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1)**
-  - L826 the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned
-  - L833 Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)
-- **L837 6. recording costs the month only its fill, and changes nothing in it**
-  - L845 fixture: two cities grown the same, to the last digit
-  - L866 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
-  - L868 ...and the one that records has its 12 months on disk
-  - L873 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
-  - L891 ...and a month's file is smaller than the JSON of the save it holds
-  - L909 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
-  - L944 ...and runs on
-  - L948 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
-  - L950 ...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan
-  - L952 ...and it ran frame by frame to its end, at least
-  - L953 ...after it, no move is held and nothing is pinned
-- **L1009 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves**
-  - L1015 fixture: a log has written its first event
-  - L1022 a log whose write failed has ended its thread
-  - L1024 ...takes no more events: what is added after the failure is not queued, and nothing more is written
-  - L1028 ...closes at once, not after the wait for a thread that has gone
-  - L1036 ...and its file can be deleted: the failing path closed it (on Windows an open file cannot be)
-  - L1040 an id is exactly the shape newId writes: its own ids are accepted, a path, a drive, a dot or a stray character is not
-  - L1049 fixture: the city is recording, under an id of that shape
-  - L1052 ...with a recording on disk to be left alone
-  - L1059 fixture: the save says it is recording, and now names a folder
-  - L1064 a save whose recording id is
-  - L1075 ...and a month played writes nothing outside recordings/ and nothing in the one there
-  - L1079 ...and switching recording on again gives the city an id of its own, of the shape
-  - L1086 fixture: an old timeline of months 1 to 8
-  - L1091 a first write after a load, at month 5, that fails (a number the file cannot hold) leaves no month of the old timeline past it: months 1 to 4 and none from 5
-  - L1098 ...and one that cannot clear the old months (month 7 cannot be deleted) writes nothing and tells the caller: the flag is set, month 5 is not written, the old...
-  - L1100 ...and in the city: a first write after a load that cannot clear the old months writes nothing, and the next month ends the recording, saying so
-  - L1105 ...and the months queued behind that failing first write while the writer is held (the first and 3 more) are not written beside the old ones, nor is the hist...
-  - L1108 ...and so is the history that switching the recording off writes, behind a first month and one more
-  - L1110 ...and a recording switched off and on again behind a timeline whose first write fails is a new timeline: that failure, which comes after, does not end it,
-  - L1128 a recorded city that plays
-  - L1140 ...the recording's save of that month is the autosave's but for the name it carries, which stays \"
-  - L1143 ...and so is its map, byte for byte
-- **L1353 8. the timeline: which sitting holds a month, where Follow starts, what the player had, idle**
-  - L1384 a later sitting that rewound into the earlier's months makes two segments: the earlier for 100 to 149, the later for 150 to 180
-  - L1388 startOf: a month before the rewind is in the earlier sitting's segment at its marker's millisecond, a rewound one in the later's
-  - L1392 ...and monthAt gives the month back for each
-  - L1394 ...a month the recording does not hold, or no log reaches, is null: 99, the older sitting's 181 and 200 (the rewind deleted them), 1000
-  - L1398 a recording that still holds the older sitting's 181 to 200 gets them from it, as a third segment
-  - L1405 a month a skip jumped over starts at the first marker past it: 305 at the millisecond of 310's, and the month there is 310
-  - L1414 a sitting whose markers go back (a Load) is cut there: month 10 from its first run, 11 and 12 from the second, the 13 the rewind deleted nobody's
-  - L1420 ...and played, it loads 10, 11, 12 and stops
-  - L1424 stateAt, 700 ms into month 150: the screen open, the last mouse position, the window the sitting began with, the map open at its view, the button held
-  - L1429 ...at 950 ms: the button let go, and the map's view with a scale of 0 is closed
-  - L1432 ...at the segment's start, only what came before and at its marker: the window, no screen, no mouse, no map
-  - L1435 ...and far into a long sitting (hundreds of events on, past the saved states): the last screen, the last move, the first window
-  - L1437 ...a moment that is not in the timeline has no state, no month
-  - L1447 the input events are MOVE, DRAG, PRESS, RELEASE, WHEEL and the keys; WINDOW, SCREEN, MAP_VIEW, CLOCK and MONTH are markers
-  - L1459 played across the rewind, the months load in order, 100 to 149 from the older sitting and 150 to 180 from the newer, and the older's 150 to 200 never play
-  - L1472 with idle skipping on (the default), a 60 s gap between input plays in IDLE_KEEP_MS: the next input is not there a millisecond short, and is there at it; a m...
-  - L1481 ...with it off, the gap plays in full
-  - L1489 ...and at speed 4 the skipped gap takes a quarter of that
-  - L1501 a gap of exactly IDLE_GAP_MS plays in full, one millisecond more is idle
-  - L1513 a stopped player delivers nothing more
-  - L1519 ...and rejoined at now(), the month loads and its input up to the moment catches up, and the player is where the first stopped
-  - L1522 an empty timeline is done at once, plays nothing, and starts nowhere
-- **L1537 9. Follow into a headless copy: the copy is loaded at each logged month, the screens come in order, a join mid-month catches up**
-  - L1564 fixture: a sitting of
-  - L1570 the timeline of the recording's folder holds the one sitting, for the months it logged, and none for the recording's other months
-  - L1573 ...and the state at the first month's marker is the window the sitting opened with
-  - L1587 at speed
-  - L1596 ...the screens arrive in the order logged, each in the frame its logged time divided by the speed falls in (the most late
-  - L1600 ...and nothing played live is flagged as catching up, and a month's load comes before the input after its marker
-  - L1613 joining mid-month loads that month into the copy, then plays its input from just after its marker up to the moment, all flagged as catching up
-  - L1620 ...and the screen it ends on,
-  - L1624 ...and the live play after the join carries on to the month's next screen,
-  - L1628 starting exactly at a month's marker loads it and catches up on nothing
-  - L1632 following writes nothing in the recording's folder, and nothing in the player's
-- **L1639 10. Follow in the window: the rules drop a re-enacted Save, Load and Quit, the clock and the menu keys; then a sitting is played into the...**
-  - L1657 a move, press, release, wheel and key logged while the player was on a game menu (
-  - L1659 ...and the screens Save (the saving menu), Load (the load menu) and Quit (the main menu, which has New city and Settings too) are on are among the game menus
-  - L1661 ...so a re-enacted Save, Load and Quit never reaches the copy: their buttons are not marked, and the verdict holds with the point on no marked node and the c...
-  - L1674 with the copy on a game menu, every input logged on a city screen is dropped as the copy's menu
-  - L1675 a press, a release and a key are dropped while a dialog (Quit's) is up on the copy
-  - L1679 a press and a release on a node marked as the ghost never clicks (the rail's Menu, the clock) are dropped, and a move over it is kept
-  - L1690 Space, Left and Right, down and up, are dropped as the clock's keys
-  - L1691 ...but not in a text field, where Space types a space; and F11 is dropped as the window's key, typing or not
-  - L1697 Esc is dropped where it would open the game menu, typing or not, and kept where it closes something else
-  - L1701 P is dropped where it would open the game menu, and kept where it would not and in a text field
-  - L1711 a plain move, press, release, wheel and key on a city screen are kept, and so is any input where the screens are not known
-  - L1717 the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input
-  - L1734 in the window:
-  - L1736 in the window:
+  - L447 fixture: the recorded purchase rejects a quick step, and the whole month has another land stamp and more parcels
+  - L456 a loaded move retains the purchased-land epoch separately from its first month
+  - L464 a prepared month switches back to its own context and exact map even with its recording file absent
+  - L467 a prepared map cannot be given to another copy or to the normal game
+  - L470 releasing a move drops its months and restores the ordinary file-reading step
+  - L477 the player's folder (the saves and the recording in it) is byte for byte what it was
+- **L479 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing**
+  - L486 a sitting's log is named for the moment it began, in the recording's folder naming
+  - L523 every kind written through the writer, from two threads, and closed: read back event for event
+  - L527 ...and the sitting has every kind in it
+  - L528 ...the moves and drags closer than MOVE_EVERY_MS to the last one kept are dropped, those apart are kept
+  - L531 ...the header names the sitting's start
+  - L537 the sittings of a folder are listed oldest first, and nothing else in it
+  - L540 ...a log with one event reads back that one
+  - L555 a long sitting reads back whole: 2,000 events, in about
+  - L571 a copy of the file cut mid-record reads back a prefix of what was written: five cuts, the three through the body from
+  - L575 ...a file cut inside its header, or not a log at all, or missing, reads as none and throws nothing
+  - L584 a sitting still open reads up to its last flush, a crash losing no more than the flush's two seconds: 50 events
+  - L588 ...and closed it has the last one too, and add() after close is ignored
+  - L597 a re-enacted Save, Load and Quit on the copy ran: the copy wrote into its own folder
+  - L601 ...and the player's folder, with the recording in it, is byte for byte what it was
+  - L602 ...and the recording's months are the months it had
+- **L604 5. the camera's arithmetic**
+  - L612 on the
+  - L616 ...its middle scale is the geometric mean of the ends (to 1e-9)
+  - L625 ...and the scale only ever goes one way from the start to the end
+  - L636 the ease is 0 and 1 at the ends, symmetric about the middle, monotone, and still at both ends (a slope under 1e-6 at 0 and 1)
+  - L643 the centre's share at the middle for a ratio of 4 is the formula's own, (1 - r^-e) / (1 - r^-1), 2/3
+  - L646 ...and the share is the eased share itself when the scales match
+  - L649 on the globe the middle of a glide between two points on the equator 20 degrees apart is on the equator, halfway
+  - L652 ...closing in, the globe's share is the same formula on the inverse ratio: two thirds of the way
+  - L655 ...a path of no length stays at the point at every step
+  - L657 a glide's month is linear in t, not eased: a quarter of the way from 12 to 36 is 18, and the ends are the marks'
+  - L661 a glide between a globe's view and a plane's stays at its start until the end (the kinds cannot blend)
+  - L674 the fly out at t = 1 is exactly the widest scale and the city's centre, its scale grows all the way, and the month stays
+  - L676 the time a fly takes is the doublings of the view's width over the dial: a ratio squared takes twice as long, in as out
+  - L697 five notches in: the product of the steps' zooms is ZOOM_STEP^5 to 1e-6, and the hand rests after
+  - L699 ...every step zooms no more than the one before (it eases out), the first the most, about the point the wheel was at
+  - L705 two notches out are ZOOM_STEP^-2 in the same way
+  - L727 a held key's velocity rises toward its target and, let go, falls to nothing, no step jumping more than MOST_DT_S / SMOOTH_S of the target
+  - L736 a frame of a one-second hitch moves the view no more than a MOST_DT_S step does: a pause, not a jump
+  - L749 a drift moves the ground DRIFT_STEP_PX in a second and closes in by exp(DRIFT_ZOOM_STEP) about the view's middle, until still()
+  - L753 ...and still() stops it, and the zoom still to do and the keys' velocity with it
+- **L756 5b. the graphs behind the city**
+  - L764 the population line holds the recording's months in order, from its first month to its last
+  - L766 ...it draws nothing before the first month, all of it at the last, and the head is the last point
+  - L775 ...scaled to the whole recording: its highest point is 1 and none is above it, so a line rises as the months play
+  - L782 GDP is a year of output, twelve times the mean of the last twelve months, as the header quotes it
+  - L784 a month's place across the recording runs 0 at the first to 1 at the last, and a recording of one month is at 0
+- **L789 5c. a quick step leaves most of the map's pictures as they were**
+  - L808 a quick step to the next month is another map of the same world, and its tiles read the same ground the first read
+  - L811 ...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved
+  - L823 ...a tile whose stamp is the same paints the same pixels in both maps (
+- **L826 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1)**
+  - L836 the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned
+  - L840 the glide crosses the fixture's recorded land purchase with both months and distinct land contexts prepared
+  - L843 the real MapView chartNodes range covers every sampled GROUND point past the plane during a loaded move (
+  - L845 leaving a Ready move synchronously releases MoveLoad, all pins and the replay's prepared contexts
+  - L850 Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)
+- **L854 6. recording costs the month only its fill, and changes nothing in it**
+  - L862 fixture: two cities grown the same, to the last digit
+  - L883 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
+  - L885 ...and the one that records has its 12 months on disk
+  - L890 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
+  - L908 ...and a month's file is smaller than the JSON of the save it holds
+  - L926 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
+  - L959 fixture: the replay city really buys an offered parcel between its two recorded months
+  - L965 fixture: both sides of the purchase were recorded
+  - L984 ...and runs on
+  - L988 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
+  - L990 ...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan
+  - L992 ...and it ran frame by frame to its end, at least
+  - L993 ...after it, no move is held and nothing is pinned
+- **L1049 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves**
+  - L1055 fixture: a log has written its first event
+  - L1062 a log whose write failed has ended its thread
+  - L1064 ...takes no more events: what is added after the failure is not queued, and nothing more is written
+  - L1068 ...closes at once, not after the wait for a thread that has gone
+  - L1076 ...and its file can be deleted: the failing path closed it (on Windows an open file cannot be)
+  - L1080 an id is exactly the shape newId writes: its own ids are accepted, a path, a drive, a dot or a stray character is not
+  - L1089 fixture: the city is recording, under an id of that shape
+  - L1092 ...with a recording on disk to be left alone
+  - L1099 fixture: the save says it is recording, and now names a folder
+  - L1104 a save whose recording id is
+  - L1115 ...and a month played writes nothing outside recordings/ and nothing in the one there
+  - L1119 ...and switching recording on again gives the city an id of its own, of the shape
+  - L1126 fixture: an old timeline of months 1 to 8
+  - L1131 a first write after a load, at month 5, that fails (a number the file cannot hold) leaves no month of the old timeline past it: months 1 to 4 and none from 5
+  - L1138 ...and one that cannot clear the old months (month 7 cannot be deleted) writes nothing and tells the caller: the flag is set, month 5 is not written, the old...
+  - L1140 ...and in the city: a first write after a load that cannot clear the old months writes nothing, and the next month ends the recording, saying so
+  - L1145 ...and the months queued behind that failing first write while the writer is held (the first and 3 more) are not written beside the old ones, nor is the hist...
+  - L1148 ...and so is the history that switching the recording off writes, behind a first month and one more
+  - L1150 ...and a recording switched off and on again behind a timeline whose first write fails is a new timeline: that failure, which comes after, does not end it,
+  - L1168 a recorded city that plays
+  - L1180 ...the recording's save of that month is the autosave's but for the name it carries, which stays \"
+  - L1183 ...and so is its map, byte for byte
+- **L1393 8. the timeline: which sitting holds a month, where Follow starts, what the player had, idle**
+  - L1424 a later sitting that rewound into the earlier's months makes two segments: the earlier for 100 to 149, the later for 150 to 180
+  - L1428 startOf: a month before the rewind is in the earlier sitting's segment at its marker's millisecond, a rewound one in the later's
+  - L1432 ...and monthAt gives the month back for each
+  - L1434 ...a month the recording does not hold, or no log reaches, is null: 99, the older sitting's 181 and 200 (the rewind deleted them), 1000
+  - L1438 a recording that still holds the older sitting's 181 to 200 gets them from it, as a third segment
+  - L1445 a month a skip jumped over starts at the first marker past it: 305 at the millisecond of 310's, and the month there is 310
+  - L1454 a sitting whose markers go back (a Load) is cut there: month 10 from its first run, 11 and 12 from the second, the 13 the rewind deleted nobody's
+  - L1460 ...and played, it loads 10, 11, 12 and stops
+  - L1464 stateAt, 700 ms into month 150: the screen open, the last mouse position, the window the sitting began with, the map open at its view, the button held
+  - L1469 ...at 950 ms: the button let go, and the map's view with a scale of 0 is closed
+  - L1472 ...at the segment's start, only what came before and at its marker: the window, no screen, no mouse, no map
+  - L1475 ...and far into a long sitting (hundreds of events on, past the saved states): the last screen, the last move, the first window
+  - L1477 ...a moment that is not in the timeline has no state, no month
+  - L1487 the input events are MOVE, DRAG, PRESS, RELEASE, WHEEL and the keys; WINDOW, SCREEN, MAP_VIEW, CLOCK and MONTH are markers
+  - L1499 played across the rewind, the months load in order, 100 to 149 from the older sitting and 150 to 180 from the newer, and the older's 150 to 200 never play
+  - L1512 with idle skipping on (the default), a 60 s gap between input plays in IDLE_KEEP_MS: the next input is not there a millisecond short, and is there at it; a m...
+  - L1521 ...with it off, the gap plays in full
+  - L1529 ...and at speed 4 the skipped gap takes a quarter of that
+  - L1541 a gap of exactly IDLE_GAP_MS plays in full, one millisecond more is idle
+  - L1553 a stopped player delivers nothing more
+  - L1559 ...and rejoined at now(), the month loads and its input up to the moment catches up, and the player is where the first stopped
+  - L1562 an empty timeline is done at once, plays nothing, and starts nowhere
+- **L1577 9. Follow into a headless copy: the copy is loaded at each logged month, the screens come in order, a join mid-month catches up**
+  - L1604 fixture: a sitting of
+  - L1610 the timeline of the recording's folder holds the one sitting, for the months it logged, and none for the recording's other months
+  - L1613 ...and the state at the first month's marker is the window the sitting opened with
+  - L1627 at speed
+  - L1636 ...the screens arrive in the order logged, each in the frame its logged time divided by the speed falls in (the most late
+  - L1640 ...and nothing played live is flagged as catching up, and a month's load comes before the input after its marker
+  - L1653 joining mid-month loads that month into the copy, then plays its input from just after its marker up to the moment, all flagged as catching up
+  - L1660 ...and the screen it ends on,
+  - L1664 ...and the live play after the join carries on to the month's next screen,
+  - L1668 starting exactly at a month's marker loads it and catches up on nothing
+  - L1672 following writes nothing in the recording's folder, and nothing in the player's
+- **L1679 10. Follow in the window: the rules drop a re-enacted Save, Load and Quit, the clock and the menu keys; then a sitting is played into the...**
+  - L1697 a move, press, release, wheel and key logged while the player was on a game menu (
+  - L1699 ...and the screens Save (the saving menu), Load (the load menu) and Quit (the main menu, which has New city and Settings too) are on are among the game menus
+  - L1701 ...so a re-enacted Save, Load and Quit never reaches the copy: their buttons are not marked, and the verdict holds with the point on no marked node and the c...
+  - L1714 with the copy on a game menu, every input logged on a city screen is dropped as the copy's menu
+  - L1715 a press, a release and a key are dropped while a dialog (Quit's) is up on the copy
+  - L1719 a press and a release on a node marked as the ghost never clicks (the rail's Menu, the clock) are dropped, and a move over it is kept
+  - L1730 Space, Left and Right, down and up, are dropped as the clock's keys
+  - L1731 ...but not in a text field, where Space types a space; and F11 is dropped as the window's key, typing or not
+  - L1737 Esc is dropped where it would open the game menu, typing or not, and kept where it closes something else
+  - L1741 P is dropped where it would open the game menu, and kept where it would not and in a text field
+  - L1751 a plain move, press, release, wheel and key on a city screen are kept, and so is any input where the screens are not known
+  - L1757 the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input
+  - L1774 in the window:
+  - L1776 in the window:
 
 ## ResearchCheck.java - 105 labelled assertions
 
