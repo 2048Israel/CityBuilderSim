@@ -9084,6 +9084,8 @@ public class KeptCheck {
         check("...two kept redraws preserve that same action button's hand", interactions[3]);
         check("the header starts with mouse-transparent sparklines", interactions[4]);
         check("...two kept redraws preserve those same sparklines' transparency", interactions[5]);
+        check("Pieces.sparkline starts mouse-transparent when pooled directly", interactions[6]);
+        check("...two kept redraws preserve that same directly pooled sparkline's transparency", interactions[7]);
         int[] layouts = fx(bench::sizeAndMarginSets);
         check("an unchanged icon and HBox margin request no layout (" + layouts[0] + ")", layouts[0] == 0);
         check("the sweep counts an equal raw Region.setPrefSize (" + layouts[1] + ")", layouts[1] > 0);

@@ -93,10 +93,13 @@ passes. The header's same private sparklines retain transparency in both.
 
 The full raw-setter audit covered every kept page/helper. Three remaining
 raw visibility setters are on private labels in Ladder's marks and Pieces'
-picture; Sparkline is HeadlineTile's private child. Kept hands back their
-owners. Raw tooltip installs belong to picture-owned parts or rebuilt menu
-cards; kept-node tooltips use Kept.tip. Styles are retold whole and are not
-resetOmitted properties; section 92 counts every screen with no exemption.
+picture; Kept hands back their owners. Sparkline has both ownership modes:
+HeadlineTile owns one, while Pieces.sparkline pools one directly. Its
+constructor and each retell now give transparency explicitly, before the
+unchanged-series early return. Raw tooltip installs belong to picture-owned
+parts or rebuilt menu cards; kept-node tooltips use Kept.tip. Styles are
+retold whole and are not resetOmitted properties; section 92 counts every
+screen with no exemption.
 
 ## 4. Checks, heap and default trace
 
@@ -149,3 +152,15 @@ conflicted; all three were regenerated from the merged source. The merged
 XR7 intentionally changes world-peg traces and brings its own ensemble;
 the local pre-merge report comparison above remains the UI-only evidence.
 The launcher will verify the final combined model after R2d also ships.
+
+REV-KP2c-2 reviewed the whole 8083aaf33..99356968c change: one finding,
+otherwise SHIP. The initial transparency control covered header-owned
+sparklines but missed Pieces.sparkline's directly pooled instance. Its
+retell now gives the invariant too. Section 102 keeps the owned control
+and adds the real Pieces factory with one pool, a first draw and two
+unchanged redraws, at SPARK_WIDTH/SPARK_HEIGHT. Against exact UserInterface
+at 99356968c, its first draw and owned control pass and the directly pooled
+redraw alone fails (`target/kp2c-spark-before.log`, exit 1). On the mend all
+focused laws pass (`target/kp2c-unit.log`, exit 0). The delta's --fast also
+passes, zero firm/186 soft. The 40-harness pick above precedes this small
+retell/fixture delta; the final whole launcher run verifies it in full.

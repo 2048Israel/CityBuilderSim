@@ -2818,7 +2818,7 @@ public class UserInterface extends Application {
             setMinSize(0, 0);
             Pieces.prefSize(this, SPARK_WIDTH, SPARK_HEIGHT);
             setMaxSize(SPARK_WIDTH, SPARK_HEIGHT);
-            setMouseTransparent(true);
+            Kept.give(mouseTransparentProperty(), true);
         }
 
         Sparkline(double[] series, List<Integer> months, String colour) {
@@ -2832,6 +2832,8 @@ public class UserInterface extends Application {
          * was last laid out at (no layout is asked for: the size has not moved), or at its first layout.
          */
         void set(double[] series, List<Integer> months, String colour) {
+            // A header tile owns one, and Pieces.sparkline pools one directly: each retell gives this state in either case.
+            Kept.give(mouseTransparentProperty(), true);
             List<Double> finite = new ArrayList<>();
             List<Integer> when = new ArrayList<>();
             int first = 0, last = 0;

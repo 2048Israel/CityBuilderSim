@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**205 harness files, 24,271 labelled assertions.** AllChecks runs 205 of them.
+**205 harness files, 24,273 labelled assertions.** AllChecks runs 205 of them.
 
 ## Which harnesses read which class
 
@@ -15589,7 +15589,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2362 23b.
   - L2363 23c.
 
-## KeptCheck.java - 466 labelled assertions
+## KeptCheck.java - 468 labelled assertions
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -16124,28 +16124,30 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L9084 ...two kept redraws preserve that same action button's hand
   - L9085 the header starts with mouse-transparent sparklines
   - L9086 ...two kept redraws preserve those same sparklines' transparency
-  - L9088 an unchanged icon and HBox margin request no layout (
-  - L9089 the sweep counts an equal raw Region.setPrefSize (
-  - L9090 the sweep counts an equal raw HBox.setMargin (
-  - L9119 a real policy thumb holds through a greyed draw during its drag
-  - L9120 ...and through un-greying and a further draw in the same drag
-  - L9121 ...release commits the held value and ends the hold
-  - L9122 ...dropping the staged choice follows the city again
-  - L9127 the repaint counter does not keep a retired picture alive
-  - L9128 a no-stage chrome scene releases the fresh header after restore
-  - L9131 the full kept check leaves a quarter of AllChecks.HEAP_MB free
-- **L9135 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
-- **L9159 1 and 2: the kept page, month after month, against a page built new**
-  - L9183 an unchanged People draw creates no node
-  - L9217 each month's redraw keeps the page it drew (the same top node,
-  - L9228 the kept page's signature equals the new page's at every month (
-- **L9230 3: and its pixels**
-  - L9232 the kept page and the new page are the same picture at
-  - L9252 one figure made wrong on the kept page (\"
-  - L9254 ...and its picture
-  - L9255 ...and the next kept draw sets it right again
-- **L9257 4: what reshapes the page**
-- **L9293 5: what the kept month costs**
+  - L9087 Pieces.sparkline starts mouse-transparent when pooled directly
+  - L9088 ...two kept redraws preserve that same directly pooled sparkline's transparency
+  - L9090 an unchanged icon and HBox margin request no layout (
+  - L9091 the sweep counts an equal raw Region.setPrefSize (
+  - L9092 the sweep counts an equal raw HBox.setMargin (
+  - L9121 a real policy thumb holds through a greyed draw during its drag
+  - L9122 ...and through un-greying and a further draw in the same drag
+  - L9123 ...release commits the held value and ends the hold
+  - L9124 ...dropping the staged choice follows the city again
+  - L9129 the repaint counter does not keep a retired picture alive
+  - L9130 a no-stage chrome scene releases the fresh header after restore
+  - L9133 the full kept check leaves a quarter of AllChecks.HEAP_MB free
+- **L9137 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
+- **L9161 1 and 2: the kept page, month after month, against a page built new**
+  - L9185 an unchanged People draw creates no node
+  - L9219 each month's redraw keeps the page it drew (the same top node,
+  - L9230 the kept page's signature equals the new page's at every month (
+- **L9232 3: and its pixels**
+  - L9234 the kept page and the new page are the same picture at
+  - L9254 one figure made wrong on the kept page (\"
+  - L9256 ...and its picture
+  - L9257 ...and the next kept draw sets it right again
+- **L9259 4: what reshapes the page**
+- **L9295 5: what the kept month costs**
 
 ## KnownRedsCheck.java - 50 labelled assertions
 

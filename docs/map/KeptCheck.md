@@ -1,4 +1,4 @@
-# KeptCheck.java - 9,350 lines · 212 methods · 42 constants · harnesses
+# KeptCheck.java - 9,352 lines · 212 methods · 42 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -164,7 +164,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 337 | 9014 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 337 | 9016 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 341 | 5 | `static void check(String label, boolean ok)` |  |
 | 348 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure (R3b, sections 99 to 101). |
 | 365 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
@@ -489,7 +489,7 @@
 | 8499 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
 | 8529 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
 
-### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8583-9350)
+### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8583-9352)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -500,6 +500,6 @@
 | 8853 | 4 | `static void drawHeader(KeptBench bench) throws Exception` | The header drawn kept and laid out, as the clock's redraw leaves it. |
 | 8863 | 183 | `static void up7Speed(Game g, KeptBench bench) throws Exception` | Section 98: the speed's reading (UP7). |
 | 9048 | 9 | `static boolean onceEach(KeptBench.Sets s)` | Whether a draw wrote the reading's words once and its style once, and nothing else. |
-| 9062 | 71 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
-| 9134 | 216 | `public static void main(String[] args) throws Exception` |  |
+| 9062 | 73 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
+| 9136 | 216 | `public static void main(String[] args) throws Exception` |  |
 

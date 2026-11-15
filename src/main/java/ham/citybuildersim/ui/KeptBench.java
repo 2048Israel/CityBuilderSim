@@ -1389,7 +1389,18 @@ public final class KeptBench {
         boolean firstSparks = !sparks.isEmpty() && sparks.stream().allMatch(Node::isMouseTransparent);
         for (int i = 0; i < 2; i++) { drawChromeKept(); chromePasses(); }
         boolean keptSparks = !sparks.isEmpty() && sparks.stream().allMatch(n -> n.getScene() == headerScene && n.isMouseTransparent());
-        return new boolean[]{firstRows, keptRows, firstAction, keptAction, firstSparks, keptSparks};
+        Kept.Pool sparkPool = new Kept.Pool();
+        Region[] direct = new Region[1];
+        Runnable drawSpark = () -> Kept.draw(sparkPool, () -> direct[0] = Pieces.sparkline(
+                new double[]{1, 2, 3}, List.of(0, 1, 2), Palette.MONEY, UserInterface.SPARK_WIDTH, UserInterface.SPARK_HEIGHT));
+        drawSpark.run();
+        Region firstDirect = direct[0];
+        ui.setPage(firstDirect);
+        passes();
+        boolean firstPooled = firstDirect.isMouseTransparent();
+        for (int i = 0; i < 2; i++) { drawSpark.run(); passes(); }
+        boolean keptPooled = direct[0] == firstDirect && firstDirect.isMouseTransparent();
+        return new boolean[]{firstRows, keptRows, firstAction, keptAction, firstSparks, keptSparks, firstPooled, keptPooled};
     }
 
     private static boolean rowsHandlers(Node n) {
