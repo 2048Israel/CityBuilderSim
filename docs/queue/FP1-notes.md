@@ -119,3 +119,9 @@ REV-FP1-1 returned SHIP on code/fixtures commit 52ba03d2, relayed by the
 orchestrator at 12:07 on 2026-11-15. The pushed provisional ship commit is
 99c5bcb7. The heavy slot is held for UP6b's dry run, so FP1 is waiting for
 the orchestrator's explicit go.
+
+The orchestrator gave go at 12:25 after UP6b shipped. Main ade96cfb
+(0.9.115) was merged before FP1's dry run. Conflicts were confined to
+generated harness and README indexes and were resolved by regeneration.
+The merged fast check passed. The review approved FP1's own code at
+52ba03d2, and this merge adds the shipped UP6b changes.
