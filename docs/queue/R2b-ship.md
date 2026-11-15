@@ -6,6 +6,7 @@ A city founded the 1900 way offers planners, city works and berths only building
 
 ## queued
 | R2b-V | ResearchViewCheck section 6: take the sector count from the city's own sectors and keep its other laws; cause the valid third Manufacturing sector with a known Fabrication Shop, preserve researchTown guarantees and the all-sector partition law | [R2b finding](docs/queue/R2b-notes.md#researchviewcheck-finding-and-queued-r2b-v) |
+| R2b-J | KnownReds: recognize harness-prefixed N FAILED of TOTAL summaries as derived counts in live and retained-run judgments; keep unknown assertions NEW and incomplete-log checks hard | [R2b process finding](docs/queue/R2b-notes.md#process-finding-and-queued-r2b-j) |
 
 ## known-reds
 ResearchViewCheck | the sector filter keeps only its sector's templates | R2b-V | 2026-11-15 | Whole main b49a6023 reproduces the identical failure after a successful known Fabrication Shop order: Industry 2 + Agriculture 2 of 5, with Manufacturing 1 and a correct all-sector partition. The fixture assumes exactly two sectors without causing that premise; see R2b notes.

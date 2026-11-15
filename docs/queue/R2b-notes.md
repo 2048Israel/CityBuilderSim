@@ -95,3 +95,49 @@ Only these notes and the provisional ship file advance after the kept run.
 The narrow known-red row and queued R2b-V are rejudged through the normal
 gate route; tools/gate-reuse.sh explicitly binds and reuses a completed
 exit-4 run when only records change.
+
+## Process finding and queued R2b-J
+
+Normal-route rejudgment of the kept run was attempted with the accepted
+R2b-V assertion row present. It reused the sealed full run, on branch
+3d93b7762d94127cc138ddd75c7c43df57391640 and main
+b49a6023c892e61e575f39c57b4d16774cf6fdd7, in
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2b-t6HHwezk.
+Its suite judgment took one second. The actual assertion was covered,
+but two derived lines remained NEW: exit 1 and
+ResearchViewCheck: 1 FAILED of 217. Launcher exit 1, suite exit 4.
+The two retained runs and their checksums are left intact.
+
+KnownReds.count() on unchanged main accepts only exit N and bare N FAILED.
+It does not recognize this harness-prefixed summary. Both the live runner
+(AllChecks.newCount/report) and the saved-log judge call KnownReds.fresh.
+A small probe against the separately compiled WHOLE main, with the
+accepted assertion row already present and the raw harness log as input,
+prints LIVE newCount=2, the actual assertion marked known, and the
+prefixed summary marked NEW. Thus a fresh heavy run alone does not cure
+this format. Log: target/checks/R2b-summary-probe/live-report.log;
+source: target/R2bJudgeProbe.java. AllChecks code-source location is printed
+and points only to the main archive's classes.
+
+A copied-log diagnostic adding only the exact prefixed summary to a
+temporary, uncommitted known set makes the common judge return exit 3,
+five known-red harnesses. Log target/checks/R2b-summary-probe/judge.log.
+This isolates summary recognition: no missing primary assertion remains.
+No derived-line row is added to the ship file or registry, per the
+orchestrator's 04:21 instruction, and no gate/runner source is changed.
+
+★ R2b-J repairs the process separately: recognize harness-prefixed
+N FAILED of TOTAL as a derived summary, so live reports and rejudgments
+agree and exit/summary counts follow fully covered assertions. A fixture
+must use this actual ResearchViewCheck format with its primary assertion
+covered, plus a genuinely uncovered assertion that stays NEW. Keep
+completion/incomplete-log checks and every primary-assertion law hard.
+The queued brief is this section, preserving the post-gate records-only
+advance.
+
+At 04:21 the orchestrator assigned the heavy slot to RT2 and instructed
+R2b to stay frozen, merge origin/main after RT2 ships, and run a fresh
+dry run beside KD1's ensemble. The subsequent main-only live-classifier
+proof was sent immediately so the process fault can be settled before
+repeating a heavy suite. RT2's final default CSVs were requested for the
+merged comparison. Own model/fixture source remains 3398da4a.
