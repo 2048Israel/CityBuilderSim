@@ -1,14 +1,15 @@
 <!-- readiness: provisional -->
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-ready2-20261115-094038 -->
 
 ## changelog
 ### {next} — RT2, The other buildings counted in their sector retirement measure — 2026-11-15, ready, see docs/queue/RT2-notes.md
-FoodIndustry counts both baked outputs per mill in heads; worked-out
-CoalMining counts raw mine nameplate; Freight weighs offered tonnes against
-standing track. Each building and its sector's retirement measure share a
-unit. Freight limits the whole sale to preserve operating headroom, including
-station room for goods that bulk sidings cannot handle. Sector fixtures
-fail before each repair and pass after. The bakers' power-and-consumables
-fixture moves only from month 36 to month 8, keeping its city and assertions.
+FoodIndustry counts baked outputs per mill in heads, worked-out CoalMining
+counts raw mine nameplate, and Freight compares offered tonnes with
+standing track. Freight limits a spare sale to preserve operating headroom,
+including station room for goods that bulk sidings cannot handle.
+Each sector has a fixture that fails before its repair. Played fixtures
+keep their cities, premises and assertions through month re-picks.
+The full 199-harness merge dry run is green with known reds only.
 All 80 final-model ensemble runs complete; M1 and F1 pass against EN2.
 ZERO_HOT T2's informational regression and H2's vacuity are recorded.
 

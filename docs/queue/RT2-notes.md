@@ -9,7 +9,7 @@ it is separate from any moved fixture here.
 
 ★ Keep retirement additive. FoodIndustry keeps its headcount measure and
 counts both baked goods of each building in heads, by BAKED_KG_A_HEAD.
-CoalMining's whole-deposit exhaustion measure will count raw mine nameplate,
+CoalMining's whole-deposit exhaustion measure counts raw mine nameplate,
 as unitsOf and the existing type-exhaustion measure do. Its saleable thermal
 flow depends on washing and cannot be added mine by mine. Freight will measure
 standing track against offered tonnes, as its unitsOf counts track; the
@@ -19,13 +19,14 @@ No save fields, money movement or screens change.
 
 ## Verification
 
-In progress. Each sector gets a fixture demonstrating the former mismatch
-and the quantity the retirement constants permit. Retain each assertion and
-premise if a played fixture needs a new seed, month or city.
+Complete. Each sector has a pre-fix-failing fixture. The final 199-harness
+merge dry run is green with known reds only; the final 80-run ensemble
+passes M1 and F1. The retained final run and all calls are recorded below.
 
 ## Records
 
-Pending final pick, ensemble, stranger's review and retained gate run.
+Final pick is ALL through the authorized fresh-clone route. Model and
+fixture reviews are SHIP; final ensemble and retained green run follow.
 
 First verification: fast exit 0, 0 firm Stale findings; the three sector
 harnesses exit 0. Same harness bytecode with 2853630b's three sector classes
@@ -490,3 +491,63 @@ The explicit go authorizes the final dry run on acbb3f63 or its record-only
 successor. The required RT2 dry run? coordination message was sent;
 the already granted go remains in force. After green only notes and ship
 advance, with the marker removed last in its own commit and checked absent.
+
+## Caller interruption and authorized persistent launcher
+
+The run C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-ready-20261115-092344
+was cancelled by the guardian at 09:32, exit 130, cancelled file caller,
+with origin refs unchanged. RT2 issued no stop command. It is partial,
+not reusable. The background tool session's transient native caller ended;
+the exact upstream lifetime cause is not established. Its trace stops
+near m2017. No model or fixture changed.
+Orchestrator 20261115-093831-440-orchestrator-b32f authorizes a restart
+through the unchanged normal sh tools/gate.sh route in a persistent hidden
+PowerShell helper. Its PID is 25936; it waits for the gate and exits with
+the gate's status. The normal guardian and sh tools/gate.sh --stop remain
+intact; no process is hidden from the gate's logical/native tree walk.
+A three-second startup delay lets the transient launch parent finish
+before the guardian captures callers. Helper and launcher files are only
+ignored operational files under target/rt2-probe; no repository process
+code was changed. The restarted run is C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-ready2-20261115-094038, branch 1d0d86ab and
+main 4343a815. Only notes and ship may advance after its green verdict.
+
+## Retained final green run
+
+Normal versioned sh tools/gate.sh RT2 --dry-run, exclusive authorized slot:
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-ready2-20261115-094038
+(Git Bash /tmp/cbs-gate-RT2-ready2-20261115-094038).
+Branch tested: 1d0d86ab45ca3b335d89385387939d2284562cca.
+Main tested: 4343a81525f831df83511ccae1cd26d5ef71c478.
+Gate exit 0; complete batch-check exit 3. All 199 harnesses ran in 2397s:
+193 passed, six known-red harnesses (DeathRecordCheck, InvestCheck,
+MapCheck, MoneyDatesCheck, PrizeCheck, ResearchViewCheck). No NEW red.
+The whole check phase took 2464s, compile 39s, maps regenerated,
+Stale 0 firm / 186 soft. Fourteen timing assertions were SOFT and four
+path assertions OBSERVED, as the normal route specifies; two CPU admission
+holds waited, with no memory refusal. KeptCheck finishes ALL OK.
+
+checks.complete and checks.sha256 are retained; all 787 archived checksum
+entries verify. Origin refs before/after are identical. The dry run only
+simulates candidate 0.9.113; it publishes no commit or tag. Gate output:
+target/checks/rt2-ready-gate.txt; authoritative ship.log and complete checks
+are inside the retained run. This is the sole run named for reuse.
+
+All eight nonempty default CSVs remain at that run's trace-*.csv prefix:
+bank, bonds, build, house, labour, month and pop have 2404 data rows each;
+borrow has 51. Every file is byte-identical to the earlier complete RT2
+reference at 29a68154, independently hashed again after the gate.
+Per-file hashes: the retained trace-comparison.json.
+The final reviewed production model and completed 80-run ensemble therefore
+remain unchanged. M1/F1 pass 10/10; all other changed verdicts remain
+information as recorded beside EN2 above.
+
+The persistent helper PID25936, gate PID44284 and every one of 28 recorded
+owned native process identities have exited (creation times checked against
+PID reuse). Its normal guardian saw five Java processes through the unchanged
+logical/native tree walk. No recorded process outlived the completed gate.
+Operational evidence: target/rt2-probe/final-gate-owned-processes.json,
+final-process-cleanup.json, final-gate-integrity.txt.
+
+From this green run onward only this notes file and RT2-ship.md advance.
+The ship records retain the run marker; the provisional readiness marker is
+removed last in a separate one-file commit, checked absent, then pushed.
