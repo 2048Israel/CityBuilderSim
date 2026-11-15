@@ -7,3 +7,5 @@ GDP; a band gives way for that month at the same bound, avoiding the hold's
 exponential bill after deep devaluations. Nonzero peg support is checked through
 DataSave JSON, the real load path and next-month settlement, with money audit
 tolerances unchanged. Signed-break, boundary and save fixtures pass.
+The 80-run ensemble passes M1/F1 in all five policies; its only changed verdict
+is informational ZERO_HOT T2, FAIL to PASS against RT2's newer baseline.

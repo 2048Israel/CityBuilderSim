@@ -123,7 +123,8 @@ RETIRED excluded; RT2 scored 22/25 on its previous comparison.
 The sole changed verdict is informational ZERO_HOT T2, FAIL -> PASS.
 The population reading itself is unchanged from RT2: median 4786,
 range 3227-8781. XR7's threshold is 75% of RT2's 4786 (=3589.5);
-RT2's FAIL compared that same reading to its older EN2 baseline.
+RT2's FAIL compared that same reading to EN2's median 6644
+(range 4733-13403), whose 75% threshold was 4983.
 Thus this changed verdict is a baseline comparison change, not a population gain.
 All other criterion verdicts and printed figure ranges agree with RT2.
 
