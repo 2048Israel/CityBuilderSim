@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /c/Users/Jerus/AppData/Local/Temp/cbs-gate-WN5d-ee6xSfVt -->
 
 ## changelog
 ### {next} — WN5d, The hover's quote: five findings of WN5b's review — 2026-11-14, ready, see docs/queue/WN5d-notes.md
