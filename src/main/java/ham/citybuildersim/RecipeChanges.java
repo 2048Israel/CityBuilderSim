@@ -86,7 +86,7 @@ public final class RecipeChanges {
         double water = same ? a.getWater() : (na * a.getWater() + nb * b.getWater()) / all;
         double consumables = same ? a.getConsumables() : (na * a.getConsumables() + nb * b.getConsumables()) / all;
         for (RecipeChange c : t.getRecipeChanges()) {
-            double share = absent.getOrDefault(c.code(), 0.0);
+            double share = share(c, absent);
             if (!(share >= 0 && share <= 1)) throw new IllegalArgumentException("undo share " + share);
             if (share == 0) continue;
             for (var e : c.makes().entrySet()) made.merge(e.getKey(), share * e.getValue(), Double::sum);
@@ -105,6 +105,12 @@ public final class RecipeChanges {
 
     private static boolean has(String id, String code) {
         return id != null && java.util.Arrays.asList(id.split("~")).contains(code);
+    }
+
+    /** A later process improvement affects only the share running its prerequisite. */
+    private static double share(RecipeChange change, Map<String, Double> absent) {
+        double missing = absent.getOrDefault(change.code(), 0.0);
+        return change.after() == null ? missing : missing * (1 - absent.getOrDefault(change.after(), 0.0));
     }
 
     private static Recipe base(BuildingsTemplate t, String id) {
@@ -134,6 +140,9 @@ public final class RecipeChanges {
                         : quantity == 0 ? 0 : (double) Math.min(quantity, stack.getUnfitted(c.piece())) / quantity;
             }
             absent.put(c.code(), share);
+        }
+        for (RecipeChange c : t.getRecipeChanges()) {
+            double share = share(c, absent);
             production += share * c.production();
             land += share * c.land();
             steamRail += share * c.steamRail();
@@ -177,16 +186,25 @@ public final class RecipeChanges {
         double bill = 0;
         for (RecipeChange c : t.getRecipeChanges()) {
             if (c.piece() != null || has(recipe.getId(), c.code())
+                    || c.after() != null && has(recipe.getId(), c.after())
                     || !c.knownAt(game.getMonth(), game.getResearch())
                     || !LicenceFees.payable(c.since(), game.getMonth(), game.getResearch()) || !charged.add(c.since())) continue;
             double gain;
-            if (standing && c.crackerPetrol() != 0 && owner instanceof ham.citybuildersim.sectors.Refining ref) {
+            if (c.crackerPetrol() != 0 && owner instanceof ham.citybuildersim.sectors.Refining ref) {
                 var kind = ham.citybuildersim.sectors.RefineryFlow.Kind.CRACKER;
                 double capacity = ref.unitFeed(false)[kind.ordinal()];
-                double used = capacity > 0 ? ref.flow().run(kind) * t.feedPerMonth() / capacity : 0;
-                double[] values = ref.cityValues();
-                gain = -c.crackerPetrol() * used
-                        * (values[Good.PETROL.ordinal()] - values[Good.FUEL_OIL.ordinal()]) * rate;
+                double used = t.feedPerMonth();
+                double priceDifference = prices.good().applyAsDouble(Good.PETROL) - prices.good().applyAsDouble(Good.FUEL_OIL);
+                if (standing) {
+                    used = capacity > 0 ? ref.flow().run(kind) * t.feedPerMonth() / capacity : 0;
+                    double[] values = ref.cityValues();
+                    priceDifference = values[Good.PETROL.ordinal()] - values[Good.FUEL_OIL.ordinal()];
+                }
+                Map<String, Double> without = new TreeMap<>();
+                for (String code : recipe.getId().split("~")) without.put(code, 1.0);
+                double current = petrol(t, without);
+                without.put(c.code(), 1.0);
+                gain = (current - petrol(t, without)) * used * priceDifference * rate;
             } else if (standing) {
                 Recipe old = compose(t, recipe, Map.of(c.code(), 1.0), recipe.getId());
                 var values = ham.citybuildersim.sectors.SpreadPlanner.values(game.getMarkets());
@@ -197,6 +215,14 @@ public final class RecipeChanges {
             bill += LicenceFees.onGain(c.since(), game.getMonth(), game.getResearch(), gain);
         }
         return bill;
+    }
+
+    /** Petrol yield at the saved decisions, including a later catalyst's process scope. */
+    private static double petrol(BuildingsTemplate template, Map<String, Double> absent) {
+        double yield = .55;
+        for (RecipeChange change : template.getRecipeChanges())
+            yield += share(change, absent) * change.crackerPetrol();
+        return yield;
     }
 
     /** R2c's standing price roles: dispatched goods and consumables, fixed posts and utilities. */

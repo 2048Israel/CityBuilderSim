@@ -12,7 +12,7 @@ import java.util.Map;
  * the tractor. Additive changes preserve both, with one final rounding.
  * Physical units are the template's; money is priced once on read.
  */
-public record RecipeChange(String code, String since, String piece, String source, Map<Good, Double> makes,
+public record RecipeChange(String code, String since, String piece, String after, String source, Map<Good, Double> makes,
         Map<Good, Double> uses, Map<JobType, Double> jobs, double electricity, double gen,
         double water, double consumables, double production, double land, double steamRail,
         double crackerPetrol, double dig) {
@@ -25,6 +25,8 @@ public record RecipeChange(String code, String since, String piece, String sourc
         if (ResearchCatalog.get().entry(entry) == null) throw new IllegalArgumentException("unknown entry " + entry);
         String piece = o.has("equipment") ? o.get("equipment").getAsString() : null;
         if (piece != null && t.getEquipment(piece) == null) throw new IllegalArgumentException("missing piece " + piece);
+        String after = o.has("after") ? o.get("after").getAsString() : null;
+        if (code.equals(after)) throw new IllegalArgumentException("change depends on itself " + code);
         String source = o.get("source").getAsString();
         if (source.isBlank()) throw new IllegalArgumentException("missing source for " + code);
         JsonObject d = o.getAsJsonObject("without");
@@ -32,7 +34,7 @@ public record RecipeChange(String code, String since, String piece, String sourc
         Map<JobType, Double> jobs = new EnumMap<>(JobType.class);
         if (d.has("jobs")) for (Map.Entry<String, JsonElement> e : d.getAsJsonObject("jobs").entrySet())
             jobs.put(JobType.valueOf(e.getKey()), finite(e.getValue()));
-        return new RecipeChange(code, since, piece, source, Map.copyOf(makes), Map.copyOf(uses), Map.copyOf(jobs),
+        return new RecipeChange(code, since, piece, after, source, Map.copyOf(makes), Map.copyOf(uses), Map.copyOf(jobs),
                 number(d, "electricity"), number(d, "gen"), number(d, "water"),
                 number(d, "consumables") * PriceLevel.FACTOR,
                 number(d, "production1"), number(d, "land"), number(d, "steamRail"),
