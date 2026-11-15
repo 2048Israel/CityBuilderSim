@@ -133,3 +133,16 @@ SHOCK 156.5, HIGH 119.7. Total summed run time 429.6 minutes.
 Only M1/F1 are ship stops; A1 remains informational FAIL (7/16 in band,
 3.17% median inflation, 2.49%-3.67%), A2 remains informational FAIL
 (longest high-inflation spell median 20 months, 12-36).
+
+## Main-merge trace reference
+
+The orchestrator's final order is R2d's dry run, then FP1's, then XR7's.
+After FP1 ships, merge main before XR7's gate. R2d's eight CSVs were reported
+byte-identical to main's, and FP1 does not change the default model; retain this
+ensemble only if XR7's own eight pre/post-merge CSVs also agree.
+
+The pre-merge reference on main ade96cfb plus reviewed XR7 completed with exit 0,
+all LongPlaytest checks passed. target/checks/XR7-pretrace.log; eight CSVs under
+target/checks/XR7-premerge/trace-*.csv, hashes in that folder's SHA256SUMS.
+Seven have 2405 lines each; the borrow-event CSV has 52. Run from detached
+Windows process 18300, same data paths, soft timing. No source changed.
