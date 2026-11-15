@@ -16578,8 +16578,7 @@ public class Game {
         double[] priced = wantedPosts.pricedOn(populationManager.staffablePostsByBand());
         labourMarket.advanceMonth(
                 priced,
-                // (a harness may fill against the refused posts too, as LD1 did: WantedPosts.carryKeptOut)
-                WantedPosts.carryKeptOut ? populationManager.supplyByBand() : populationManager.supplyByBand(priced),
+                populationManager.supplyByBand(),
                 populationManager.getJobs(),
                 populationManager.getLicensedHeads());
         populationManager.takeWagesFrom(labourMarket);
