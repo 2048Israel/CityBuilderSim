@@ -3421,6 +3421,9 @@ public abstract class Sector {
     /** Whether a holding of this template may be sold back this month. The landlords say no to a door somebody wants. */
     public boolean mayRetire(BuildingsTemplate t) { return true; }
 
+    /** Limit a spare-capacity sale to what still leaves keepAtLeast units usable; additive sectors need no further limit. */
+    public int limitSpareRetirement(BuildingsTemplate t, int quantity, double keepAtLeast) { return quantity; }
+
     /** Why nothing could be sold, when mayRetire() refused everything. */
     public String noRetirementReason(boolean distress) {
         return distress ? "overdrawn, and nothing left to sell" : "nothing left to sell";

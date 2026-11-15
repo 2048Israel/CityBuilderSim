@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,966 constants in 569 files.**
+**5,967 constants in 570 files.**
 
 ## model (2854 constants)
 
@@ -391,7 +391,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 577 | `BusinessInvestment.RETIREMENT_SLACK` | `.25` | Capacity has to exceed demand by this much before any of it is spare. |
 | 580 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
 | 591 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
-| 1233 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
+| 1234 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
 
 ### Buyback.java ([map](map/Buyback.md))
 
@@ -1637,7 +1637,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.112"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.113"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `53` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `53` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -5680,7 +5680,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1657 constants)
+## harnesses (1658 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5942,23 +5942,23 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 90 | `CoalMiningCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
-| 92 | `CoalMiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
-| 127 | `CoalMiningCheck.STUDY_RAW` | `500_000, STUDY_COKING = 275_000, STUDY_THERMAL = 100_000, STUDY_SPOIL = 125_000` | The study's 3.3: a plant's 500,000 t of raw coal, and what comes of it. |
-| 204 | `CoalMiningCheck.ROWS` | `{ CoalMining.SURFACE_MINE, CoalMining.LARGE_SURFACE_MINE, CoalMining.UNDERGROUND_MINE, ...` | Coal Mining's rows, by their permanent ids, in the study's 3.3 order. |
-| 208 | `CoalMiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(120_000, 950_000, 800_000, 150_000)` | The study's 3.3: each one's cost, D$ thousands all in. |
-| 211 | `CoalMiningCheck.STUDY_POSTS` | `{ 80, 350, 400, 50 }` | ...its posts. |
-| 214 | `CoalMiningCheck.STUDY_KW` | `{ 800, 6_000, 29_000, 4_000 }` | ...its draw, kW. |
-| 217 | `CoalMiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(1_070, 5_570, 5_770, 774)` | ...its running cost a month, D$ thousands (the surface mine's "with 230,000 L diesel" in it, at the study's D$0.60). |
-| 220 | `CoalMiningCheck.STUDY_MAKES` | `{ 100_000, 800_000, 250_000, 500_000 }` | ...the coal each mine makes a month, t (the longwall's raw), and the plant's wash. |
-| 223 | `CoalMiningCheck.STUDY_SITES` | `{ 1, 4, 1, 0 }` | ...the sites each stands on, and of which type (the study's 1.3 and 3.3; the plant none). |
-| 225 | `CoalMiningCheck.STUDY_TYPES` | `{ Deposit.FieldType.THERMAL, Deposit.FieldType.THERMAL, Deposit.FieldType.COKING, null }` | ...and the type of field each stands on (null for the plant, which stands on none). |
-| 228 | `CoalMiningCheck.SURFACE_DIG` | `1 /.95, UNDERGROUND_DIG = 1 /.80` | ...the tonnes of seam a tonne of coal takes: 95% of the seam recovered at the surface, 80% by a longwall (the study's 3.1; spec 2.4). |
-| 231 | `CoalMiningCheck.STUDY_DIESEL_LITRES` | `230_000, STUDY_DIESEL =.0006 * PriceLevel.FACTOR` | ...the surface mine's diesel, litres a month (the study's 3.3), and its price in the study's runs, D$ thousands a litre (its 1.5). |
-| 234 | `CoalMiningCheck.STUDY_PLANT_HECTARES` | `19` | ...the plant's ground, hectares (the study's 3.3). |
-| 237 | `CoalMiningCheck.STUDY_ROUNDING` | `.05, STUDY_ROUNDING_POINT =.5` | The study's rounding: its returns to a tenth of a point, the plant's 19% to the point. |
-| 240 | `CoalMiningCheck.STUDY_SURFACE` | `3.3, STUDY_LARGE = 3.6, STUDY_ALONE =.8, STUDY_PAIR = 2.4, STUDY_PLANT = 19` | The returns the study's 3.4 states, % of the cost a month: a surface mine and a large one exporting, a longwall alone, the pair, the plant alone. |
-| 379 | `CoalMiningCheck.TYPE_WITHIN` | `.02` | How far coal's thermal share of the fields may sit from Deposit.TYPE_SHARES (spec-materials 4: two points, WorldCheck 8's). |
+| 94 | `CoalMiningCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
+| 96 | `CoalMiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
+| 132 | `CoalMiningCheck.STUDY_RAW` | `500_000, STUDY_COKING = 275_000, STUDY_THERMAL = 100_000, STUDY_SPOIL = 125_000` | The study's 3.3: a plant's 500,000 t of raw coal, and what comes of it. |
+| 209 | `CoalMiningCheck.ROWS` | `{ CoalMining.SURFACE_MINE, CoalMining.LARGE_SURFACE_MINE, CoalMining.UNDERGROUND_MINE, ...` | Coal Mining's rows, by their permanent ids, in the study's 3.3 order. |
+| 213 | `CoalMiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(120_000, 950_000, 800_000, 150_000)` | The study's 3.3: each one's cost, D$ thousands all in. |
+| 216 | `CoalMiningCheck.STUDY_POSTS` | `{ 80, 350, 400, 50 }` | ...its posts. |
+| 219 | `CoalMiningCheck.STUDY_KW` | `{ 800, 6_000, 29_000, 4_000 }` | ...its draw, kW. |
+| 222 | `CoalMiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(1_070, 5_570, 5_770, 774)` | ...its running cost a month, D$ thousands (the surface mine's "with 230,000 L diesel" in it, at the study's D$0.60). |
+| 225 | `CoalMiningCheck.STUDY_MAKES` | `{ 100_000, 800_000, 250_000, 500_000 }` | ...the coal each mine makes a month, t (the longwall's raw), and the plant's wash. |
+| 228 | `CoalMiningCheck.STUDY_SITES` | `{ 1, 4, 1, 0 }` | ...the sites each stands on, and of which type (the study's 1.3 and 3.3; the plant none). |
+| 230 | `CoalMiningCheck.STUDY_TYPES` | `{ Deposit.FieldType.THERMAL, Deposit.FieldType.THERMAL, Deposit.FieldType.COKING, null }` | ...and the type of field each stands on (null for the plant, which stands on none). |
+| 233 | `CoalMiningCheck.SURFACE_DIG` | `1 /.95, UNDERGROUND_DIG = 1 /.80` | ...the tonnes of seam a tonne of coal takes: 95% of the seam recovered at the surface, 80% by a longwall (the study's 3.1; spec 2.4). |
+| 236 | `CoalMiningCheck.STUDY_DIESEL_LITRES` | `230_000, STUDY_DIESEL =.0006 * PriceLevel.FACTOR` | ...the surface mine's diesel, litres a month (the study's 3.3), and its price in the study's runs, D$ thousands a litre (its 1.5). |
+| 239 | `CoalMiningCheck.STUDY_PLANT_HECTARES` | `19` | ...the plant's ground, hectares (the study's 3.3). |
+| 242 | `CoalMiningCheck.STUDY_ROUNDING` | `.05, STUDY_ROUNDING_POINT =.5` | The study's rounding: its returns to a tenth of a point, the plant's 19% to the point. |
+| 245 | `CoalMiningCheck.STUDY_SURFACE` | `3.3, STUDY_LARGE = 3.6, STUDY_ALONE =.8, STUDY_PAIR = 2.4, STUDY_PLANT = 19` | The returns the study's 3.4 states, % of the cost a month: a surface mine and a large one exporting, a longwall alone, the pair, the plant alone. |
+| 384 | `CoalMiningCheck.TYPE_WITHIN` | `.02` | How far coal's thermal share of the fields may sit from Deposit.TYPE_SHARES (spec-materials 4: two points, WorldCheck 8's). |
 
 ### ConstructionControlCheck.java ([map](map/ConstructionControlCheck.md))
 
@@ -6293,8 +6293,8 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 81 | `EquipmentCheck.DRIVE` | `"electric-drive", TRUCK = "motor-truck", TRACTOR = "tractor"` |  |
-| 206 | `EquipmentCheck.DRIVES` | `{ "Meat Works", "Snack & Oils Plant", "Bottling Plant", "Industrial Bakery", "Bakery", ...` | The templates that carry each piece, by name, as the notes say (R1-notes calls 2 and 3). |
-| 212 | `EquipmentCheck.FARMS` | `{ "Mixed Farm", "Grain Farm", "Livestock Farm" }` |  |
+| 207 | `EquipmentCheck.DRIVES` | `{ "Meat Works", "Snack & Oils Plant", "Bottling Plant", "Industrial Bakery", "Bakery", ...` | The templates that carry each piece, by name, as the notes say (R1-notes calls 2 and 3). |
+| 213 | `EquipmentCheck.FARMS` | `{ "Mixed Farm", "Grain Farm", "Livestock Farm" }` |  |
 
 ### EssentialWorksCheck.java ([map](map/EssentialWorksCheck.md))
 
@@ -6336,8 +6336,8 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 66 | `FittingCheck.DRIVE` | `EquipmentCheck.DRIVE, TRUCK = EquipmentCheck.TRUCK, TRACTOR = EquipmentCheck.TRACTOR` |  |
-| 391 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowl... |
-| 408 | `FittingCheck.ORDER_COST` | `{ Double.NaN, Double.NaN }, ORDER_QUOTED = { Double.NaN, Double.NaN }, ORDER_STICKER = ...` | What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(), which buildStack() charges); the quote's sticker,... |
+| 392 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowl... |
+| 409 | `FittingCheck.ORDER_COST` | `{ Double.NaN, Double.NaN }, ORDER_QUOTED = { Double.NaN, Double.NaN }, ORDER_STICKER = ...` | What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(), which buildStack() charges); the quote's sticker,... |
 
 ### FloatLinkCheck.java ([map](map/FloatLinkCheck.md))
 
@@ -6363,6 +6363,12 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1034 | `FloatLinkCheck.HELD_OVER_THE_WORLD` | `.0075, DIAL_MOVE =.015` | How far over the world's rate the dial is held in 3 (the old calendar's 3% over its 2.25%), and the move of it the section reads the bond's fall on. |
 | 1280 | `FloatLinkCheck.M_SHARES` | `new Worst()` |  |
 | 1281 | `FloatLinkCheck.FX_ZERO` | `new Worst()` |  |
+
+### FoodIndustryCheck.java ([map](map/FoodIndustryCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 20 | `FoodIndustryCheck.out` | `System.out` |  |
 
 ### FoodProcessingCheck.java ([map](map/FoodProcessingCheck.md))
 
@@ -6411,9 +6417,9 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 87 | `Forms1900Check.SETTLE` | `6` | The months a fixture city is played before anything is asked of it, so its farms and bakeries are running. |
 | 90 | `Forms1900Check.MONTHS` | `12` | The months the twin cities are compared over, and the money audit is held over. |
-| 464 | `Forms1900Check.CART_MONTHS` | `12` | The months the cart cities are played: the fleet and the money audit are held over them. |
-| 541 | `Forms1900Check.READ` | `6` | The month the per-tonne comparisons are read in: the trucks are seeded, the plant has run, and none of the three cities is short of trucks. |
-| 544 | `Forms1900Check.FARM_MONTHS` | `4` | The months the farm city is played before its books are read: the farms have a shelf by the third. |
+| 469 | `Forms1900Check.CART_MONTHS` | `12` | The months the cart cities are played: the fleet and the money audit are held over them. |
+| 546 | `Forms1900Check.READ` | `6` | The month the per-tonne comparisons are read in: the trucks are seeded, the plant has run, and none of the three cities is short of trucks. |
+| 549 | `Forms1900Check.FARM_MONTHS` | `4` | The months the farm city is played before its books are read: the farms have a shelf by the third. |
 
 ### FoundingYardCheck.java ([map](map/FoundingYardCheck.md))
 
@@ -7591,7 +7597,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 65 | `RailDepotCheck.LORRY_A_TONNE` | `.319 * PriceLevel.FACTOR` | What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. |
+| 70 | `RailDepotCheck.LORRY_A_TONNE` | `.319 * PriceLevel.FACTOR` | What a lorry charges for a tonne in the model's money: BuildingManager's RAIL banner measures $319 a tonne in the played city, and the fixtures' freight is the planner's to value, not this harness's. |
 
 ### RailDrawCheck.java ([map](map/RailDrawCheck.md))
 

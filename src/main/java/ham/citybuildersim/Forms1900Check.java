@@ -91,6 +91,11 @@ public class Forms1900Check {
 
     /** A town with farms for the horses and bakeries for the steam: roads, homes, groceries, power and water, the farms and the ovens standing at once. */
     static Game town(String label) {
+        return town(label, SETTLE);
+    }
+
+    /** The same town at a named month, for checks that must observe counts before a retirement (RT2). */
+    static Game town(String label, int settle) {
         Game g = new Game(GameFiles.scratch(label));
         quietly(() -> {
             g.run();
@@ -107,7 +112,7 @@ public class Forms1900Check {
             g.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
             g.buildStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             MaterialsCheck.handWorkers(g);
-            g.simulateMonths(SETTLE);
+            g.simulateMonths(settle);
         });
         return g;
     }

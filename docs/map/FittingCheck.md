@@ -1,4 +1,4 @@
-# FittingCheck.java - 1,129 lines · 34 methods · 3 constants · harnesses
+# FittingCheck.java - 1,130 lines · 34 methods · 3 constants · harnesses
 
 `ham/citybuildersim/FittingCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -60,25 +60,25 @@
 |---:|---|
 | 136 | 1. the shares at rest |
 | 203 | 2. cleared on a new game and on a load |
-| 250 | 3. the 1900 founding, off by default |
-| 384 | 4. what a new building comes with |
-| 520 | the fixtures of 5 to 12 |
-| 590 | 5. the order ranked with the buildings |
-| 696 | 6. the money and the goods |
-| 780 | 7. the work |
-| 895 | 8. one at a time |
-| 930 | 9. the depot's trucks |
-| 963 | 10. the player's Fit |
-| 1039 | 11. the save |
-| 1107 | 12. a default city orders none |
+| 251 | 3. the 1900 founding, off by default |
+| 385 | 4. what a new building comes with |
+| 521 | the fixtures of 5 to 12 |
+| 591 | 5. the order ranked with the buildings |
+| 697 | 6. the money and the goods |
+| 781 | 7. the work |
+| 896 | 8. one at a time |
+| 931 | 9. the depot's trucks |
+| 964 | 10. the player's Fit |
+| 1040 | 11. the save |
+| 1108 | 12. a default city orders none |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 66 | `FittingCheck.DRIVE` | `EquipmentCheck.DRIVE, TRUCK = EquipmentCheck.TRUCK, TRACTOR = EquipmentCheck....` |  |
-| 391 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowly, its second pair s... |
-| 408 | `FittingCheck.ORDER_COST` | `{ Double.NaN, Double.NaN }, ORDER_QUOTED = { Double.NaN, Double.NaN }, ORDER_...` | What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(), which buildStack() charges); the quote's sticker, the template's whol... |
+| 392 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowly, its second pair s... |
+| 409 | `FittingCheck.ORDER_COST` | `{ Double.NaN, Double.NaN }, ORDER_QUOTED = { Double.NaN, Double.NaN }, ORDER_...` | What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(), which buildStack() charges); the quote's sticker, the template's whol... |
 
 ## Fields (state)
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1070 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
+| 60 | 1071 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
 | 68 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 73 | 1 | `static void check(String label, boolean ok)` |  |
 | 76 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
@@ -109,87 +109,87 @@
 |---:|---:|---|---|
 | 138 | 64 | `static void sectionOne()` |  |
 
-### 2. cleared on a new game and on a load (lines 203-249)
+### 2. cleared on a new game and on a load (lines 203-250)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 205 | 44 | `static void sectionTwo()` |  |
+| 205 | 45 | `static void sectionTwo()` |  |
 
-### 3. the 1900 founding, off by default (lines 250-383)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 253 | 22 | `static Game village(String label, Founding founding, boolean literals, boolean depots)` | A village the way the playtest places one after newGame(): roads, homes, groceries, farms, bakeries, power and water, placed without construction (and, if asked, depots). |
-| 277 | 15 | `static String unfittedWholly(Game g, int[] counted)` | Whether every piece of every template on every stack is unfitted for the whole stack, and no stack without a piece has a count; the first fault, or null. |
-| 293 | 90 | `static void sectionThree() throws Exception` |  |
-
-### 4. what a new building comes with (lines 384-519)
+### 3. the 1900 founding, off by default (lines 251-384)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 394 | 8 | `static int pressUntilOpen(Game g, BuildingsStacks s, int most)` | Presses the clock until nothing is on site on this stack (at most `most` months); how many buildings opened over them. |
-| 412 | 10 | `static Game builtVillage(String label, Founding founding)` | A village on the goods' literals (the moved prices hold through the months), the builders' depots standing and the sectors that would build on their own held. |
-| 423 | 78 | `static void newBuildings(String label, boolean unfittedCity, int which)` |  |
-| 502 | 17 | `static void sectionFour()` |  |
+| 254 | 22 | `static Game village(String label, Founding founding, boolean literals, boolean depots)` | A village the way the playtest places one after newGame(): roads, homes, groceries, farms, bakeries, power and water, placed without construction (and, if asked, depots). |
+| 278 | 15 | `static String unfittedWholly(Game g, int[] counted)` | Whether every piece of every template on every stack is unfitted for the whole stack, and no stack without a piece has a count; the first fault, or null. |
+| 294 | 90 | `static void sectionThree() throws Exception` |  |
 
-### the fixtures of 5 to 12 (lines 520-589)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 527 | 12 | `static Game fitTown(String label, int unfitted)` | A default-founded village on the goods' literals (a moved price holds through the months) with the builders' depots standing, at least `unfitted` Bakeries standing and that many lacking the electric drive, and a month... |
-| 544 | 10 | `static boolean breadForBakeryScore(Game g, BusinessInvestment plans, String key, BuildingsTemplate t, double target)` | Moves bread's world price (EquipmentCheck.priceAt's way) to where the investors' estimate of a Bakery over the cost of one is `target`: the score rises with bread's price, found by bisection between the price as it st... |
-| 556 | 3 | `static void holdAll(Game g)` | Holds every sector: none asks its plan or fits anything in the round, so that the fixture's only orders are the ones the harness places. |
-| 561 | 3 | `static double breakEven(Game g, BuildingsStacks bakery)` | The coal price at which the drive on this stack's building just pays, from the verdict's own figures (EquipmentCheck 9's way): the stack must have a building unfitted. |
-| 566 | 3 | `static int afterRepairs(Game g)` | The builders' month after the repairs, before the fittings take theirs: what getBuildingOutput() reads with no job on site. |
-| 571 | 5 | `static double expectedCost(Game g, Equipment piece)` | What the quote of a piece's goods at the city's market comes to, plus its work at the builders' price a point: what ordering it should cost. |
-| 578 | 11 | `static double[] buildersDrew(Game g, Good good, int from)` | What the market recorded of the builders' draws of a good since `from` trades ago: {units, cost}. |
-
-### 5. the order ranked with the buildings (lines 590-695)
+### 4. what a new building comes with (lines 385-520)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 592 | 103 | `static void sectionFive()` |  |
+| 395 | 8 | `static int pressUntilOpen(Game g, BuildingsStacks s, int most)` | Presses the clock until nothing is on site on this stack (at most `most` months); how many buildings opened over them. |
+| 413 | 10 | `static Game builtVillage(String label, Founding founding)` | A village on the goods' literals (the moved prices hold through the months), the builders' depots standing and the sectors that would build on their own held. |
+| 424 | 78 | `static void newBuildings(String label, boolean unfittedCity, int which)` |  |
+| 503 | 17 | `static void sectionFour()` |  |
 
-### 6. the money and the goods (lines 696-779)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 698 | 81 | `static void sectionSix()` |  |
-
-### 7. the work (lines 780-894)
+### the fixtures of 5 to 12 (lines 521-590)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 782 | 112 | `static void sectionSeven()` |  |
+| 528 | 12 | `static Game fitTown(String label, int unfitted)` | A default-founded village on the goods' literals (a moved price holds through the months) with the builders' depots standing, at least `unfitted` Bakeries standing and that many lacking the electric drive, and a month... |
+| 545 | 10 | `static boolean breadForBakeryScore(Game g, BusinessInvestment plans, String key, BuildingsTemplate t, double target)` | Moves bread's world price (EquipmentCheck.priceAt's way) to where the investors' estimate of a Bakery over the cost of one is `target`: the score rises with bread's price, found by bisection between the price as it st... |
+| 557 | 3 | `static void holdAll(Game g)` | Holds every sector: none asks its plan or fits anything in the round, so that the fixture's only orders are the ones the harness places. |
+| 562 | 3 | `static double breakEven(Game g, BuildingsStacks bakery)` | The coal price at which the drive on this stack's building just pays, from the verdict's own figures (EquipmentCheck 9's way): the stack must have a building unfitted. |
+| 567 | 3 | `static int afterRepairs(Game g)` | The builders' month after the repairs, before the fittings take theirs: what getBuildingOutput() reads with no job on site. |
+| 572 | 5 | `static double expectedCost(Game g, Equipment piece)` | What the quote of a piece's goods at the city's market comes to, plus its work at the builders' price a point: what ordering it should cost. |
+| 579 | 11 | `static double[] buildersDrew(Game g, Good good, int from)` | What the market recorded of the builders' draws of a good since `from` trades ago: {units, cost}. |
 
-### 8. one at a time (lines 895-929)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 897 | 32 | `static void sectionEight()` |  |
-
-### 9. the depot's trucks (lines 930-962)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 932 | 30 | `static void sectionNine()` |  |
-
-### 10. the player's Fit (lines 963-1038)
+### 5. the order ranked with the buildings (lines 591-696)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 965 | 73 | `static void sectionTen()` |  |
+| 593 | 103 | `static void sectionFive()` |  |
 
-### 11. the save (lines 1039-1106)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1042 | 8 | `static String stateLine(Game g)` | Every sector's cash and the treasury, the counts and the jobs, as one line: two cities are alike when their lines are equal. |
-| 1051 | 55 | `static void sectionEleven() throws Exception` |  |
-
-### 12. a default city orders none (lines 1107-1129)
+### 6. the money and the goods (lines 697-780)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1109 | 20 | `static void sectionTwelve()` |  |
+| 699 | 81 | `static void sectionSix()` |  |
+
+### 7. the work (lines 781-895)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 783 | 112 | `static void sectionSeven()` |  |
+
+### 8. one at a time (lines 896-930)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 898 | 32 | `static void sectionEight()` |  |
+
+### 9. the depot's trucks (lines 931-963)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 933 | 30 | `static void sectionNine()` |  |
+
+### 10. the player's Fit (lines 964-1039)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 966 | 73 | `static void sectionTen()` |  |
+
+### 11. the save (lines 1040-1107)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1043 | 8 | `static String stateLine(Game g)` | Every sector's cash and the treasury, the counts and the jobs, as one line: two cities are alike when their lines are equal. |
+| 1052 | 55 | `static void sectionEleven() throws Exception` |  |
+
+### 12. a default city orders none (lines 1108-1130)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1110 | 20 | `static void sectionTwelve()` |  |
 

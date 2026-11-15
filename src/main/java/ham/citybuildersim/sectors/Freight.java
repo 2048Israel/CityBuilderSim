@@ -1811,17 +1811,43 @@ public final class Freight extends Sector {
     }
 
     /**
-     * Tonnes against nameplate: a city whose trade collapses should sell the
-     * track, and this is the one sector in the game whose demand series is
-     * neither a good nor a headcount.
+     * Offered tonnes against standing track, the nameplate unitsOf() counts
+     * (RT2). The operating minimum of track, sets and handling is not additive:
+     * a shortage of sets or stations must not hide track that is spare to sell.
      */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {
-        return new double[] { rTonnes, rCapacity };
+        return new double[] { rTonnes, trackTonnes() };
     }
 
     @Override
     public double unitsOf(BuildingsTemplate t) { return t == null ? 0 : t.getRailCapacity(); }
+
+    /**
+     * A track sale must leave the operating minimum above the planner's headroom
+     * too (RT2). Depots and spurs also remove handling: weighing only their track
+     * sold two of eight depots into 350,000 tonnes offered, leaving only 300,000.
+     * Limit the whole proposed quantity, not just whether one building may go.
+     * Goods also keep their own station room: spare bulk sidings cannot replace
+     * a goods yard. The offered mix is what remains after the ships' first cut.
+     */
+    @Override
+    public int limitSpareRetirement(BuildingsTemplate t, int quantity, double keepAtLeast) {
+        if (t == null) return 0;
+        double track = trackTonnes(), stations = stationTonnes(), sidings = sidingTonnes(), sets = fleet();
+        double goodsToKeep = rTonnes > 0 ? Math.max(0, rTonnes - rBulkOffered) * (keepAtLeast / rTonnes) : 0;
+        int low = 0, high = quantity;
+        while (low < high) {
+            int n = low + (high - low + 1) / 2;
+            double stationRoom = Math.max(0, stations - n * t.getStationTonnes());
+            double capacity = capacityOf(Math.max(0, track - n * t.getRailCapacity()), sets,
+                    stationRoom,
+                    Math.max(0, sidings - (t.isSiding() ? n * t.getRailCapacity() : 0)));
+            if (capacity >= keepAtLeast && stationRoom >= goodsToKeep) low = n;
+            else high = n - 1;
+        }
+        return low;
+    }
 
     /**
      * A Truck Depot is never retired by the railway's measure (FR2): the

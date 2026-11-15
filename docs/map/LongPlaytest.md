@@ -1,4 +1,4 @@
-# LongPlaytest.java - 9,023 lines · 168 methods · 126 constants · harnesses
+# LongPlaytest.java - 9,024 lines · 168 methods · 126 constants · harnesses
 
 `ham/citybuildersim/LongPlaytest.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -81,9 +81,9 @@
 | 8632 | · 2. a city under stress |
 | 8695 | · AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK. |
 | 8744 | · 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES |
-| 8795 | · OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the |
-| 8855 | · OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9): |
-| 8904 | · THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5; |
+| 8796 | · OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the |
+| 8856 | · OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9): |
+| 8905 | · THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5; |
 
 ## Constants
 
@@ -459,7 +459,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 8979 | **type** `public class LongPlaytest` | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. |
+| 45 | 8980 | **type** `public class LongPlaytest` | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. |
 
 ### FINDINGS (lines 53-71)
 
@@ -743,7 +743,7 @@
 | 8250 | 7 | `static double depositBeta()` | The run's deposit rate regressed on the dial: the share of a move in the policy rate savers saw, over every month. |
 | 8258 | 57 | `static String era(Game g, String label)` |  |
 
-### THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) (lines 8316-9023)
+### THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) (lines 8316-9024)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -753,10 +753,10 @@
 | 8421 | 8 | `private static void probeRun(Game g, int months)` |  |
 | 8430 | 7 | `static String money(double v)` |  |
 | 8438 | 7 | `static void cleanUp(Path root)` |  |
-| 8461 | 562 | **type** `static final class MoneyFixtures` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
+| 8461 | 563 | **type** `static final class MoneyFixtures` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
 | 8465 | 4 | `static void assertTrue(String label, boolean ok)` _(in LongPlaytest.MoneyFixtures)_ |  |
 | 8470 | 5 | `static void quietly(Runnable work)` _(in LongPlaytest.MoneyFixtures)_ |  |
 | 8476 | 6 | `static BuildingsTemplate t(Game g, String name)` _(in LongPlaytest.MoneyFixtures)_ |  |
 | 8488 | 20 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` _(in LongPlaytest.MoneyFixtures)_ | Runs `months` and returns the worst relative residual seen, printing the worst month. |
-| 8509 | 513 | `static void run(String[] args)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 8509 | 514 | `static void run(String[] args)` _(in LongPlaytest.MoneyFixtures)_ |  |
 
