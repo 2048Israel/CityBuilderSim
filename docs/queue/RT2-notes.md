@@ -140,3 +140,9 @@ are unchanged, and the fixtures cause the conditions. RT2's own model is
 settled at 9632e40b. The later 5d3a4afc only refreshes generated line references.
 The orchestrator reserves local ALL pick, ensemble and dry run until after
 CM1b's and R0f's dry runs, so no heavy RT2 job runs during this wait.
+
+CM1b/main e8ac5a53 is merged at a6cd4c1f; only generated dials and map-index
+conflicts, regenerated from the combined source. No RT2 model changes.
+On 2026-11-15 at 01:23 the orchestrator changes the shared-PC slot order to
+RT1b's dry run, R0f's rerun, then RT2. Local ALL pick, ensemble and dry run
+remain on hold by explicit instruction. RT2 stays idle with no JVMs.
