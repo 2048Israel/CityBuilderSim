@@ -65,6 +65,9 @@ public class SaveFileCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        System.out.println("--- R0f: the exhausted gold episode through DataSave and the load path ---");
+        assertTrue("Canadian gold's exhausted episode and inherited interest cross JSON and the next month", MoneyDatesCheck.saveChecks());
+
 
         /* ==================== 1. where it goes ==================== */
         System.out.println("--- the folder, per platform ---");

@@ -1,4 +1,4 @@
-# PrizeCheck.java - 1,993 lines · 75 methods · 10 constants · harnesses
+# PrizeCheck.java - 2,002 lines · 75 methods · 10 constants · harnesses
 
 `ham/citybuildersim/PrizeCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >  19. A MONTH THE BOOKS DO NOT CLOSE. When the month's cash update is blocked (a figure that is not finite) a find's purse is owed to Business Services
 > ... (3 more lines in the source)
 
-**Uses:** [Research](Research.md) (274), [Game](Game.md) (51), [DiscoveryCheck](DiscoveryCheck.md) (31), [BuildingsTemplate](BuildingsTemplate.md) (14), [TreasuryLine](TreasuryLine.md) (10), [JobType](JobType.md) (6), [Inbox](Inbox.md) (6), [Equity](Equity.md) (5), [MoneyAudit](MoneyAudit.md) (5), [BusinessInvestment](BusinessInvestment.md) (3), [SectorBooks](SectorBooks.md) (3), [GameFiles](GameFiles.md) (3), [EquipmentCheck](EquipmentCheck.md) (3), [Exchange](Exchange.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [WageLadder](WageLadder.md) (2), [BuildingManager](BuildingManager.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [BusinessServices](BusinessServices.md) (2), [Sector](Sector.md) (2), [Observation](Observation.md) (2), [Household](Household.md) (2), [EconomyManager](EconomyManager.md) (2), [PayTier](PayTier.md) (1), [Sectors](Sectors.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [BuildingType](BuildingType.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)... and 1 more
+**Uses:** [Research](Research.md) (274), [Game](Game.md) (51), [DiscoveryCheck](DiscoveryCheck.md) (31), [BuildingsTemplate](BuildingsTemplate.md) (14), [TreasuryLine](TreasuryLine.md) (10), [JobType](JobType.md) (6), [Inbox](Inbox.md) (6), [Equity](Equity.md) (5), [MoneyAudit](MoneyAudit.md) (5), [BusinessInvestment](BusinessInvestment.md) (3), [Sector](Sector.md) (3), [SectorBooks](SectorBooks.md) (3), [GameFiles](GameFiles.md) (3), [EquipmentCheck](EquipmentCheck.md) (3), [Exchange](Exchange.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [WageBand](WageBand.md) (2), [WageLadder](WageLadder.md) (2), [BuildingManager](BuildingManager.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [BusinessServices](BusinessServices.md) (2), [Observation](Observation.md) (2), [Household](Household.md) (2), [EconomyManager](EconomyManager.md) (2), [PayTier](PayTier.md) (1), [Sectors](Sectors.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [PopulationManager](PopulationManager.md) (1), [BuildingType](BuildingType.md) (1), [HouseholdBalance](HouseholdBalance.md) (1)... and 1 more
 
 **Used by (1):** [ResearchViewCheck](ResearchViewCheck.md)
 
@@ -84,16 +84,16 @@
 | 1037 | 9. the save |
 | 1155 | 10. no prize, no change |
 | 1275 | R4 SLICE B: THE LABS IN THE CITY (sections 11 to 17). A village founded the 1900 way (or the default way) with a Univ... |
-| 1427 | 11. the labs are buildings |
-| 1520 | 12. investors build a lab |
-| 1609 | 13. labs at work |
-| 1644 | 14. the purse paid |
-| 1724 | 15. idle labs are shed |
-| 1758 | 16. the save |
-| 1831 | 17. a city founded the default way; a reform of the money |
-| 1869 | 18. the month's counts are saved (R3b) |
-| 1920 | 19. a month the books do not close (R3b) |
-| 1950 | 20. the stake stays in the till (R3b) |
+| 1436 | 11. the labs are buildings |
+| 1529 | 12. investors build a lab |
+| 1618 | 13. labs at work |
+| 1653 | 14. the purse paid |
+| 1733 | 15. idle labs are shed |
+| 1767 | 16. the save |
+| 1840 | 17. a city founded the default way; a reform of the money |
+| 1878 | 18. the month's counts are saved (R3b) |
+| 1929 | 19. a month the books do not close (R3b) |
+| 1959 | 20. the stake stays in the till (R3b) |
 
 ## Constants
 
@@ -107,8 +107,8 @@
 | 1283 | `PrizeCheck.F` | `Field.ENGINEERING` | The field the city sections work in: the University hosts it, and the first lab any field wants is wanted in it. |
 | 1285 | `PrizeCheck.BS` | `Sectors.BUSINESS_SERVICES` |  |
 | 1288 | `PrizeCheck.STUDY_RATIO` | `12 / 10.9` | research-design 5.3: the lab's D$ 12M against the Engineering Services Office's D$ 10.9M for 120 staff, which the lab templates' figures are written from. |
-| 1304 | `PrizeCheck.LAB_COLLEGE_HEADS_MORE` | `200` | The college heads handed besides hand()'s 2,000 (MaterialsCheck.handWorkers()) to the village that orders a medical lab (section 12), where the gate's year of arrivals leaves its college posts out-running them. |
-| 1350 | `PrizeCheck.FUND_BUYS_SHARE_OF_CAP` | `.1` | The share of Business Services' market value the city's fund buys at its price, to give the village's shares a current quote (labCityWithAMarket()). |
+| 1304 | `PrizeCheck.LAB_COLLEGE_HEADS_MORE` | `200` | The least college heads handed besides hand()'s 2,000 (MaterialsCheck.handWorkers()) to the village that orders a medical lab (section 12), where the gate's year of arrivals leaves its college posts out-running them. |
+| 1359 | `PrizeCheck.FUND_BUYS_SHARE_OF_CAP` | `.1` | The share of Business Services' market value the city's fund buys at its price, to give the village's shares a current quote (labCityWithAMarket()). |
 
 ## Fields (state)
 
@@ -130,15 +130,15 @@
 | 1161 | `final List<String> foundNow` |  |
 | 1162 | `final EnumMap<Field, Double> idle` |  |
 | 1163 | `final EnumMap<Field, Integer> open` |  |
-| 1648 | `Game g` |  |
-| 1649 | `Entry target` |  |
-| 1650 | `double prize, potBefore` |  |
+| 1657 | `Game g` |  |
+| 1658 | `Entry target` |  |
+| 1659 | `double prize, potBefore` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 89 | 1905 | **type** `public class PrizeCheck` | A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts (R4, slice A: Research; docs/studies/research-design.md 5.3, 1.5, 5.4). |
+| 89 | 1914 | **type** `public class PrizeCheck` | A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts (R4, slice A: Research; docs/studies/research-design.md 5.3, 1.5, 5.4). |
 | 94 | 4 | `static void check(String label, boolean ok)` |  |
 | 100 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 | 105 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
@@ -248,85 +248,85 @@
 | 1220 | 18 | `static String against(Research r, int variant, long seed, EnumMap<Field, Double> staff)` | Runs a Research against the reference over all history; the first disagreement, or null. |
 | 1239 | 35 | `static void sectionTen()` |  |
 
-### R4 SLICE B: THE LABS IN THE CITY (sections 11 to 17). A village founded the 1900 way (or the default way) with a Univ... (lines 1275-1426)
+### R4 SLICE B: THE LABS IN THE CITY (sections 11 to 17). A village founded the 1900 way (or the default way) with a Univ... (lines 1275-1435)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1291 | 3 | `static void hand(Game g)` | Hands handed to the village (MaterialsCheck.handWorkers()), which last one month. |
 | 1296 | 6 | `static void playHanded(Game g, int months)` | `months` presses of the clock, the hands handed afresh before each. |
-| 1307 | 8 | `static void handMore(Game g)` | hand(), and LAB_COLLEGE_HEADS_MORE college heads besides, in the workforce as well: they too last one month. |
-| 1317 | 6 | `static void playHandedMore(Game g, int months)` | `months` presses of the clock, the hands and the college heads besides handed afresh before each. |
-| 1325 | 6 | `static int monthWantingALab(Field f, int labs)` | The first month in which a fresh Research with a prize no problem escapes wants `labs` labs in a field (Research.labsWanted() at the wages), or -1 for none in all of history. |
-| 1333 | 3 | `static Game labCity(String label, boolean the1900Way, Field f, int labs)` | A village with a University and the hands, played to the month before `f` first wants `labs` labs. |
-| 1342 | 6 | `static Game labCity(String label, boolean the1900Way, Field f, int labs, boolean todaysLadder)` | The same, on today's wage ladder or on the founding's (R0d ★7). |
-| 1365 | 12 | `static Game labCityWithAMarket(String label, boolean the1900Way, Field f, int labs)` | A village played as labCity() does, with a market for its Business Services shares at the lab's month: the owners' order for a lab is an issue of shares, which the Exchange allows only while the quote is within BUYBAC... |
-| 1379 | 3 | `static double coverNow(Game g, Entry e)` | What one more researcher-year of a problem costs the investors' reckoning in the city: the problem's remaining work times twelve times the post's cost at the city's wages now (Research's own statics). |
-| 1387 | 16 | `static double justWantsALab(Game g, Field f)` | The least prize at which Research wants a lab in the field in the city's next month: the least of the open problems' covers (coverNow()) at which Research.labsWanted() is one or more. |
-| 1405 | 7 | `static void pileJustUnder(Game g, Entry e)` | DiscoveryCheck.pileJustUnder() with the prizes, the pots, the labs' piles, the shares and the idle counts kept: it restores the research from its grants, posts, piles and finds alone, which clears them. |
-| 1414 | 5 | `static String labsOf(Game g)` | The labs of every field standing and on site, as one string: "ENGINEERING 1+0 MEDICINE 0+0 ...". |
-| 1421 | 5 | `static int labsInAll(Game g)` | The labs the city has in all fields, standing and on site. |
+| 1307 | 17 | `static void handMore(Game g)` | hand(), at least LAB_COLLEGE_HEADS_MORE college heads besides, and the model-quoted deficit for two medical labs: all last one month. |
+| 1326 | 6 | `static void playHandedMore(Game g, int months)` | `months` presses of the clock, the hands and the college heads besides handed afresh before each. |
+| 1334 | 6 | `static int monthWantingALab(Field f, int labs)` | The first month in which a fresh Research with a prize no problem escapes wants `labs` labs in a field (Research.labsWanted() at the wages), or -1 for none in all of history. |
+| 1342 | 3 | `static Game labCity(String label, boolean the1900Way, Field f, int labs)` | A village with a University and the hands, played to the month before `f` first wants `labs` labs. |
+| 1351 | 6 | `static Game labCity(String label, boolean the1900Way, Field f, int labs, boolean todaysLadder)` | The same, on today's wage ladder or on the founding's (R0d ★7). |
+| 1374 | 12 | `static Game labCityWithAMarket(String label, boolean the1900Way, Field f, int labs)` | A village played as labCity() does, with a market for its Business Services shares at the lab's month: the owners' order for a lab is an issue of shares, which the Exchange allows only while the quote is within BUYBAC... |
+| 1388 | 3 | `static double coverNow(Game g, Entry e)` | What one more researcher-year of a problem costs the investors' reckoning in the city: the problem's remaining work times twelve times the post's cost at the city's wages now (Research's own statics). |
+| 1396 | 16 | `static double justWantsALab(Game g, Field f)` | The least prize at which Research wants a lab in the field in the city's next month: the least of the open problems' covers (coverNow()) at which Research.labsWanted() is one or more. |
+| 1414 | 7 | `static void pileJustUnder(Game g, Entry e)` | DiscoveryCheck.pileJustUnder() with the prizes, the pots, the labs' piles, the shares and the idle counts kept: it restores the research from its grants, posts, piles and finds alone, which clears them. |
+| 1423 | 5 | `static String labsOf(Game g)` | The labs of every field standing and on site, as one string: "ENGINEERING 1+0 MEDICINE 0+0 ...". |
+| 1430 | 5 | `static int labsInAll(Game g)` | The labs the city has in all fields, standing and on site. |
 
-### 11. the labs are buildings (lines 1427-1519)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1429 | 90 | `static void sectionEleven()` |  |
-
-### 12. investors build a lab (lines 1520-1608)
+### 11. the labs are buildings (lines 1436-1528)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1522 | 86 | `static void sectionTwelve()` |  |
+| 1438 | 90 | `static void sectionEleven()` |  |
 
-### 13. labs at work (lines 1609-1643)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1611 | 32 | `static void sectionThirteen()` |  |
-
-### 14. the purse paid (lines 1644-1723)
+### 12. investors build a lab (lines 1529-1617)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1647 | 5 | **type** `static final class Found` | A city with a lab at work, a prize and a find just made: the city, the problem found, and what the pot held before. |
-| 1654 | 3 | `static Found findCity(String label, double prize)` | A village at month 80 with a lab standing and a prize (`prize`, or the one that just wants a lab if 0), a month played with the lab at work, then the target's pile put just under its size and the month of the find pla... |
-| 1659 | 18 | `static Found findCity(String label, double prize, java.util.function.Consumer<Game> beforeTheFind)` | ...and with `beforeTheFind` run on the city just before the month of the find is played (R3b: a month whose books do not come to a finite figure), or none. |
-| 1678 | 45 | `static void sectionFourteen()` |  |
+| 1531 | 86 | `static void sectionTwelve()` |  |
 
-### 15. idle labs are shed (lines 1724-1757)
+### 13. labs at work (lines 1618-1652)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1726 | 31 | `static void sectionFifteen()` |  |
+| 1620 | 32 | `static void sectionThirteen()` |  |
 
-### 16. the save (lines 1758-1830)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1760 | 70 | `static void sectionSixteen() throws Exception` |  |
-
-### 17. a city founded the default way; a reform of the money (lines 1831-1868)
+### 14. the purse paid (lines 1653-1732)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1833 | 35 | `static void sectionSeventeen()` |  |
+| 1656 | 5 | **type** `static final class Found` | A city with a lab at work, a prize and a find just made: the city, the problem found, and what the pot held before. |
+| 1663 | 3 | `static Found findCity(String label, double prize)` | A village at month 80 with a lab standing and a prize (`prize`, or the one that just wants a lab if 0), a month played with the lab at work, then the target's pile put just under its size and the month of the find pla... |
+| 1668 | 18 | `static Found findCity(String label, double prize, java.util.function.Consumer<Game> beforeTheFind)` | ...and with `beforeTheFind` run on the city just before the month of the find is played (R3b: a month whose books do not come to a finite figure), or none. |
+| 1687 | 45 | `static void sectionFourteen()` |  |
 
-### 18. the month's counts are saved (R3b) (lines 1869-1919)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1872 | 8 | `static String countsOf(Research r)` | The five counts of the month, field by field, as one string (full precision): researchers, idle, open, the labs' researchers, the labs' idle. |
-| 1881 | 38 | `static void sectionEighteen() throws Exception` |  |
-
-### 19. a month the books do not close (R3b) (lines 1920-1949)
+### 15. idle labs are shed (lines 1733-1766)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1922 | 27 | `static void sectionNineteen()` |  |
+| 1735 | 31 | `static void sectionFifteen()` |  |
 
-### 20. the stake stays in the till (R3b) (lines 1950-1993)
+### 16. the save (lines 1767-1839)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1952 | 41 | `static void sectionTwenty()` |  |
+| 1769 | 70 | `static void sectionSixteen() throws Exception` |  |
+
+### 17. a city founded the default way; a reform of the money (lines 1840-1877)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1842 | 35 | `static void sectionSeventeen()` |  |
+
+### 18. the month's counts are saved (R3b) (lines 1878-1928)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1881 | 8 | `static String countsOf(Research r)` | The five counts of the month, field by field, as one string (full precision): researchers, idle, open, the labs' researchers, the labs' idle. |
+| 1890 | 38 | `static void sectionEighteen() throws Exception` |  |
+
+### 19. a month the books do not close (R3b) (lines 1929-1958)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1931 | 27 | `static void sectionNineteen()` |  |
+
+### 20. the stake stays in the till (R3b) (lines 1959-2002)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1961 | 41 | `static void sectionTwenty()` |  |
 

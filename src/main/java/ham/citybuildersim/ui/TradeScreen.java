@@ -3814,6 +3814,10 @@ final class TradeScreen {
      * its alert: it is the moment of choice.
      */
     VBox exchangeCard() {
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            return card(line(PolicyDates.shutLine(PolicyDates.Lever.CENTRAL_BANK),
+                    "The vault follows Canada's dated money. Its reserves hold the dollar on gold; discretionary dealing opens with the Bank of Canada."));
+        }
         ForeignAccounts fx = ui.game.getForeignAccounts();
         FlowPane toggle = Kept.scope("toggle", () -> chipStrip(new String[] {"Buy — cash into the vault", "Sell — the vault into cash"},
                 tradeBuying ? "Buy — cash into the vault" : "Sell — the vault into cash", Palette.SIZE_LABEL, pick -> {

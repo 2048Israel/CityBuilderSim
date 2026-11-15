@@ -87,7 +87,7 @@ public class PolicyDatesCheck {
             new Row(Lever.SALES_TAX,            1920, 1, false, "PL5"),
             new Row(Lever.ZONING,               1924, 1, false, "PL6"),
             new Row(Lever.PENSION_REPLACEMENT,  1927, 1, false, "PL7"),
-            new Row(Lever.CENTRAL_BANK,         1935, 3, true,  "PL8"),    // the Bank of Canada, 11 Mar 1935
+            new Row(Lever.CENTRAL_BANK,         1935, 3, true,  ""),    // the Bank of Canada, 11 Mar 1935
             new Row(Lever.STUDENT_AID,          1939, 1, false, "PL9"),
             new Row(Lever.EI,                   1940, 8, true,  "PL10"),   // the Unemployment Insurance Act, 7 Aug 1940
             new Row(Lever.HEALTH_PREMIUM,       1947, 1, true,  "PL12"),   // Saskatchewan, 1 Jan 1947
@@ -240,6 +240,10 @@ public class PolicyDatesCheck {
             boolean afterBound = r.year() > CityCalendar.EPOCH_YEAR + boundYears;
             check(l + " is dated after the epoch plus the bound (" + (CityCalendar.EPOCH_YEAR + boundYears) + "), so the floor never moves it",
                     afterBound);
+            if (PolicyDates.isMoney(l)) {
+                check(l + " follows Canada's date, with no early opening from a discovery", PolicyDates.earliestOpening(l) == opens);
+                continue;
+            }
             check(l + "'s earliest opening is exactly MAX_EARLY_MONTHS before " + opens,
                     PolicyDates.earliestOpening(l) == opens - PolicyDates.MAX_EARLY_MONTHS);
             check(l + "'s earliest is not before month 1 and is before its date", PolicyDates.earliestOpening(l) >= 1
@@ -273,6 +277,8 @@ public class PolicyDatesCheck {
                     ? "The tax opens at the city's founding rate, " + DecisionLog.pct(TaxPolicy.DEFAULT_INCOME_TAX) + "; the setting is yours."
                     : l == Lever.MINIMUM_WAGE ? "The floor opens at the going unskilled wage; the setting is yours."
                     : l == Lever.ZONING ? "No ground is zoned until you draw a zone; the setting is yours."
+                    : l == Lever.POLICY_RATE ? "The Advance Rate opens at the world's rate; the setting is yours."
+                    : l == Lever.CENTRAL_BANK ? "The rest of Money opens for the city to choose; the setting is yours."
                     : "The lever opens at zero; the setting is yours.";
             check(l + "'s notice closes with where it opens: \"" + opensAt + "\"", notice.endsWith(l.terms() + ". " + opensAt));
         }

@@ -1578,6 +1578,8 @@ public class ReadPathCheck {
 
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        out.println("--- R0f: the dated Money readers keep the saved rule still ---");
+        assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());
 
         Path root = TempDirs.create("readpath");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
