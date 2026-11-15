@@ -177,3 +177,35 @@ existing MoneyDatesCheck whole-foreign-account twin entry, queued as R0f-S;
 leave it distinct from RT2. R0f's final eight default CSVs match its prior
 main byte for byte (R0f notes, final verification), and RT1b's do too. The
 newest stored ensemble baseline is therefore still 0.9.106.
+
+## Final ensemble
+
+One run on the final merged model, classes snapshot 0783d66f, label RT2:
+80/80 complete, none missing or short, 85.2 minutes with the normal five
+workers. Newest stored baseline 0.9.106; no main baseline rerun.
+Runner exit 0, batch verdict PASS, all ten M1/F1 hard checks pass.
+Every policy has zero money-audit failures, zero unread audits and zero
+LongPlaytest findings in all sixteen seeds. No CPB1 finding occurs here.
+
+Raw score: 22/25 criteria, versus baseline 22/26; H1 remains retired and H2
+is now vacuous. The three changed verdicts are information, as instructed:
+
+| Criterion | Baseline 0.9.106 | RT2 | Verdict change (information) |
+|---|---|---|---|
+| ZERO_HOT H2, late inflation minus AUTO2 twin | -0.36% [-5.42%, 4.53%] | 0.34% [-2.08%, 2.77%] | FAIL to VACUOUS: no burst to stop; the numbers alone would fail |
+| ZERO_SLACK T2, final population | 513,902 [100,209, 1,932,923] | 1,136,972 [49,717, 2,018,574] | FAIL to PASS |
+| ZERO_HOT T2, final population | 6,644 [4,733, 13,403] | 4,786 [3,227, 8,781] | PASS to FAIL, below 75% of baseline |
+
+For context, AUTO2's median final population is 1,860,775
+[35,109, 3,095,735], versus 1,269,080 [505,663, 2,728,057].
+All sixteen seeds reach 40,000 people: median m1198 [727, 1779], versus
+m1159 [622, 1727]; both T1 and AUTO2 T2 stay PASS.
+All other verdicts stay as baseline. The full table with baseline readings
+and raw summary is committed as docs/ensemble/RT2.md for publisher naming.
+Run output: target/ensemble/RT2/{score.md,summary.json,baseline.md},
+target/checks/rt2-ensemble.txt.
+
+The orchestrator's R2b request (20261115-031200-063-orchestrator-48ae) asks for
+the eight final default trace CSVs in a retained named path, in these notes
+and the ready message. The dry run will set the trace prefix within its
+documented CBS_GATE_DIRECTORY so the trace outlives this worktree.

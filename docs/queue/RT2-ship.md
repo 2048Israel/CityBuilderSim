@@ -9,4 +9,5 @@ unit. Freight also limits the whole sale to retain operating headroom after
 removing a depot's or spur's handling. Sector fixtures fail before each
 repair and pass after it. The bakers' power-and-consumables fixture moves
 from month 36 to month 8, where both flows occur, preserving its city and
-assertions.
+assertions. The 80-run ensemble passes every M1 money audit and F1 finding
+check; the three changed informational verdicts are recorded beside baseline.
