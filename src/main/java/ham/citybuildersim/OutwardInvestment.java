@@ -605,7 +605,7 @@ public class OutwardInvestment {
             double mine = paperOf(sector);
             if (mine <= 0) continue;
             double w = mine / held;
-            paper.put(sector, Math.max(0, mine - face * w));
+            paper.put(sector, Debt.moved(mine, -face * w));
             economy.setSectorCash(sector, economy.getSectorCash(sector) + Math.max(0, price) * w);
             paperSpent.merge(sector, -Math.max(0, price) * w, Double::sum);
         }

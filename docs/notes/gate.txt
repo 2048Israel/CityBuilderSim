@@ -1,8 +1,8 @@
-# gate of Merge batch/CM1b: the replay's loaded move, the review's follow-ups (CM1's notes 5b): the store and pins kept past a move stopped while Ready; a load that can stall (the give-up counts the worker's idle time only, no overall cap); `heapOver()` a fixed 80% with a gc per view; keys acting on the half-way view during a load; ReplayCheck's cleanup leaving the replay on, 0.9.109
+# gate of Merge batch/RT1b: rT1's money review follow-ups: the holders' own ledgers keep the ulp-short hair `Debt.moved()` now snaps on Debt's side - `OutwardInvestment.java:608`, `HouseholdBalance.java:3342` and `:3361` take a holder's face pro rata with `Math.max(0, mine - face*w)`, so a full take (a principal paid, a central-bank purchase, a buyback) leaves a sector's `paperOf` or a cell's `c.paper` about 4e-16 at one price level and not the other (only `Household.java:901`'s `paper > 0` branches on it, selling the hair): route them through `Debt.moved()`; and HoldersCheck 14's "add up to the piece" half, which cannot fail (the bank's share is the rest): a fixture that runs the desk itself (`Game.desksBuysFirmPaper`), 0.9.110
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 187 harnesses run in 1196s: 184 passed, 3 failed
+# suite: 191 harnesses run in 1420s: 188 passed, 3 failed
 MapCheck | exit 1
 MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL

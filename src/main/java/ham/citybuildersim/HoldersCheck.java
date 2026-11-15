@@ -109,7 +109,8 @@ import java.nio.file.Files;
  *     short and left them 4.4e-16 of a piece at today's prices and none at the founding's, which firmBookRatio() read as paper worth
  *     0.93 of face at one level and 1 at the other. Debt.moved() snaps a remainder within HOLDING_ROUNDING of the face moved to nothing,
  *     in every holder's move and the buyback's; a part-sale's rest and a remainder ten times the floor are kept; and the floor is a
- *     share of the face moved, so the founding's scale is the same.
+ *     share of the face moved, so the founding's scale is the same. RT1b also causes the rounding on the sectors' and cells' own
+ *     books, for principal and buybacks, and runs the firm's desk: the bank's independently booked face must equal the pieces' transfer.
  *
  * Each fixture causes its condition rather than finding a city in it.
  *
@@ -2308,17 +2309,11 @@ public class HoldersCheck {
                 taken, held, hair, Debt.HOLDING_ROUNDING * taken);
         LongTermBond piece = loosePiece();
         piece.moveToHouseholds(200); piece.moveToCentralBank(100); piece.moveToWorld(50); piece.moveToFirms(held);
-        final double bankBefore = piece.bankPrincipal();
         assertTrue("fixture: the businesses hold exactly the face the desk takes all but an ulp or two of", piece.firmPrincipal() == held);
         assertTrue("fixture: the old rule would have left them a hair above nothing, and the hair is under the floor on the face moved",
                 hair > 0 && hair <= Debt.HOLDING_ROUNDING * taken);
         piece.moveToFirms(-taken);
         assertTrue("a sale meant to take all a holder holds, struck an ulp short, leaves it none", piece.firmPrincipal() == 0);
-        double principal = piece.getOustandingPrincipal();
-        double sum = piece.householdPrincipal() + piece.centralBankPrincipal() + piece.firmPrincipal() + piece.worldPrincipal() + piece.bankPrincipal();
-        assertTrue("...and the face it held is the bank's: the holders' faces and the bank's still add up to the piece, to a part in HOLDING_ROUNDING",
-                Math.abs(sum - principal) <= Debt.HOLDING_ROUNDING * principal
-                        && Math.abs((piece.bankPrincipal() - bankBefore) - held) <= Debt.HOLDING_ROUNDING * principal);
 
         LongTermBond half = loosePiece();
         half.moveToFirms(held);
@@ -2358,6 +2353,123 @@ public class HoldersCheck {
         assertTrue("fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped",
                 aboveF < Debt.HOLDING_ROUNDING);
         assertTrue("...yet it stays, because the floor is a share of the face moved", Debt.moved(takenF + aboveF, -takenF) > 0);
+
+        for (double scale : new double[]{1, PriceLevel.FACTOR}) {
+            theHolderLedgers(scale);
+            theFirmDeskSplit(scale, .25);
+            theFirmDeskSplit(scale, 1);
+        }
+    }
+
+    /** Full pro-rata takes that leave positive rounding on main, with partial takes as a control (RT1b). */
+    static void theHolderLedgers(double scale) {
+        out.printf("   -- the holders' own books, scale %.15g%n", scale);
+        Game city = new Game(GameFiles.scratch("holderscheck-floor-books"));
+        EconomyManager economy = city.getEconomyManager();
+        String[] sectors = {Sectors.KEYS[0], Sectors.KEYS[1]};
+        double[] firmFace = {7.060103544449752 * scale, 6.77740972197304 * scale};
+        double total = firmFace[0] + firmFace[1];
+        double oldFirmHair = firmFace[0] - total * (firmFace[0] / total);
+        if (scale == 1) assertTrue("fixture: a full sector take leaves a positive ulp on main's subtraction", oldFirmHair > 0);
+        for (boolean principal : new boolean[]{true, false}) {
+            for (double share : new double[]{.25, 1}) {
+                OutwardInvestment book = new OutwardInvestment();
+                for (int i = 0; i < sectors.length; i++) {
+                    economy.setSectorCash(sectors[i], 0);
+                    book.takeAllotment(sectors[i], 0, firmFace[i], economy);
+                }
+                double face = total * share, price = principal ? face : face * .93;
+                if (principal) book.creditPaperPrincipal(face, economy);
+                else book.creditPaperBuyback(face, price, economy);
+                boolean kept = true, paid = true, spent = true;
+                for (int i = 0; i < sectors.length; i++) {
+                    double rest = firmFace[i] * (1 - share), cash = price * firmFace[i] / total;
+                    kept &= share == 1 ? book.paperOf(sectors[i]) == 0
+                            : Math.abs(book.paperOf(sectors[i]) - rest) <= Math.ulp(firmFace[i]);
+                    paid &= Math.abs(economy.getSectorCash(sectors[i]) - cash) <= 4 * Math.ulp(cash);
+                    spent &= Math.abs(book.getPaperSpentThisMonth(sectors[i]) + cash) <= 4 * Math.ulp(cash);
+                }
+                String step = "sectors, " + (principal ? "principal" : "buyback/purchase") + ", take " + share;
+                assertTrue(step + ": a full take leaves none; a partial take keeps the rest within an ulp", kept);
+                assertTrue(step + ": each till and its investing flow receive only their price share, within rounding", paid && spent);
+                close(step + ": the tills together receive the whole price", economy.getSectorCash(sectors[0])
+                        + economy.getSectorCash(sectors[1]), price, 4 * Math.ulp(price));
+            }
+        }
+
+        for (boolean principal : new boolean[]{true, false}) {
+            for (double share : new double[]{.25, 1}) {
+                HouseholdBalance book = new HouseholdBalance();
+                Household a = book.cells().get(0), b = book.cells().get(1);
+                a.households = 7; b.households = 3;
+                a.paper = 4.947965852576356 * scale; b.paper = .39279214327238 * scale;
+                double[] was = {a.paper, b.paper};
+                double held = book.totalPaper(), face = held * share, price = principal ? face : face * .93;
+                double oldHair = a.paper - held * (a.totalPaper() / held) / a.households;
+                if (scale == 1 && share == 1) assertTrue("fixture: a full cell take leaves a positive ulp on main's subtraction", oldHair > 0);
+                if (principal) book.creditPaperPrincipal(face);
+                else book.creditPaperBuyback(face, price);
+                boolean kept = true, paid = true, income = true;
+                Household[] cells = {a, b};
+                for (int i = 0; i < cells.length; i++) {
+                    Household cell = cells[i];
+                    double rest = was[i] * (1 - share), cash = price * was[i] / held;
+                    kept &= share == 1 ? cell.paper == 0 : Math.abs(cell.paper - rest) <= Math.ulp(was[i]);
+                    paid &= Math.abs(cell.savings - cash) <= 4 * Math.ulp(cash);
+                    income &= Math.abs(cell.paperIncome - (principal ? cash : 0)) <= 4 * Math.ulp(cash);
+                }
+                String step = "cells, " + (principal ? "principal" : "buyback/purchase") + ", take " + share;
+                assertTrue(step + ": a full take leaves none; a partial take keeps the rest within an ulp", kept);
+                assertTrue(step + ": savings and principal income keep only their price share, within rounding", paid && income);
+                close(step + ": savings together receive the whole price", book.totalSavings(), price, 4 * Math.ulp(price));
+            }
+        }
+    }
+
+    /** Run the actual desk through its wired recall, and compare two independently kept books, never a residual sum (RT1b). */
+    static void theFirmDeskSplit(double scale, double share) {
+        Game city = new Game(GameFiles.scratch("holderscheck-floor-desk"));
+        DebtManager ledger = city.getDebtManager();
+        OutwardInvestment outward = city.getOutwardInvestment();
+        Bank bank = city.getBank();
+        LongTermBond a = new LongTermBond(40 * scale, 120, 1, .05), b = new LongTermBond(50 * scale, 120, 1, .05);
+        double[] firms = {1.9513822214670675 * scale, .5 * scale};
+        Debt[] pieces = {a, b};
+        double[] bankBefore = new double[pieces.length];
+        for (int i = 0; i < pieces.length; i++) {
+            pieces[i].moveToHouseholds(2 * scale);
+            pieces[i].moveToCentralBank(3 * scale);
+            pieces[i].moveToWorld(4 * scale);
+            pieces[i].moveToFirms(firms[i]);
+            bankBefore[i] = pieces[i].bankPrincipal();
+        }
+        ledger.setDebt(new java.util.ArrayList<>(java.util.List.of(a, b)));
+        double held = ledger.firmPrincipal(), take = held * share;
+        String sector = Sectors.KEYS[0];
+        city.getEconomyManager().setSectorCash(sector, 0);
+        outward.takeAllotment(sector, 0, held, city.getEconomyManager());
+        outward.setPaperBook(.93, .05);
+        double bookBefore = bank.getCityBook(), cashBefore = bank.getCash(), poolsBefore = MoneyAudit.pooled(city);
+        double paid = outward.recall(sector, take * outward.getPaperRatio(), city.getEconomyManager());
+        double booked = bank.getCityBook() - bookBefore, transferred = 0;
+        boolean kept = true, others = true;
+        for (int i = 0; i < pieces.length; i++) {
+            double off = firms[i] - pieces[i].firmPrincipal();
+            transferred += off;
+            kept &= share == 1 ? pieces[i].firmPrincipal() == 0
+                    : Math.abs(off - firms[i] * share) <= 4 * Math.ulp(firms[i]);
+            kept &= Math.abs(pieces[i].bankPrincipal() - bankBefore[i] - off) <= 4 * Math.ulp(pieces[i].getOustandingPrincipal());
+            others &= pieces[i].householdPrincipal() == 2 * scale && pieces[i].centralBankPrincipal() == 3 * scale
+                    && pieces[i].worldPrincipal() == 4 * scale;
+        }
+        String step = "desk, scale " + scale + ", take " + share;
+        assertTrue(step + ": the real desk booked a purchase", booked > 0 && bank.getPaperBoughtFromFirms() == paid);
+        assertTrue(step + ": each piece transfers its share, full takes leaving none, other holders unmoved", kept && others);
+        close(step + ": the pieces' transfer equals the bank's independently recorded book increase",
+                transferred, booked, 4 * Math.ulp(held));
+        close(step + ": the sector's rest equals the pieces' rest", outward.totalPaper(), ledger.firmPrincipal(), 4 * Math.ulp(held));
+        close(step + ": the bank paid exactly what the till received", cashBefore - bank.getCash(), paid, 4 * Math.ulp(paid));
+        close(step + ": the pool-to-pool move closes to the cent", MoneyAudit.pooled(city), poolsBefore, MoneyAudit.CENT);
     }
 
     /* ================= 15. each holder's discount is its own (BK2) ================= */
