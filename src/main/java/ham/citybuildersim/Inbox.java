@@ -421,7 +421,8 @@ public class Inbox {
         if (!result.ok) {
             title = "The autosave could not be written";
             body = wrapped("Month " + month + "'s autosave could not be written: " + result.error
-                    + ". The autosave before it is still on disk, whole. Check there is free disk space; the next autosave tries again.",
+                    + ". The save and its history may be from different months: the history is written even if the save fails. "
+                    + "Check there is free disk space; the next autosave tries again.",
                     BODY_COLUMNS);
         } else if (result.historyError != null) {
             title = "The autosave's history could not be written";

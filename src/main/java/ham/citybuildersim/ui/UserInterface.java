@@ -7145,7 +7145,8 @@ public class UserInterface extends Application {
     public void stop() {
         stopRecorder();
         // The window's close autosaves like Quit (UP6; Jerus, 2026-10-23, on UP1's star 1: "Yes, autosave on close"): the real
-        // city, never a replay's throwaway copy (Quit leaves the replay first, ReplayMode). Nothing is written before a city is in play.
+        // city, never a replay's throwaway copy (Quit leaves the replay first, ReplayMode). Game uses the skip's completion
+        // flag for both exits, preserving its return point after a broken month. Nothing is written before a city is in play.
         Game city = replayOn() ? replayMode.realGame() : game;
         if (city != null) city.saveForClose();
     }

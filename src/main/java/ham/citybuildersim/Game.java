@@ -682,6 +682,7 @@ public class Game {
         this.lastSaveResult = null;
         this.loadFailure = null;
         this.skipFailure = null;
+        this.ranThrough = true;
 
         /*
          * The warning about construction shedding.
@@ -1113,8 +1114,7 @@ public class Game {
      * for it here.
      */
     public void saveForQuit(){
-        autosave("on quit");
-        awaitSaves();
+        saveForExit("on quit");
     }
 
     /**
@@ -1123,7 +1123,12 @@ public class Game {
      * hold it. UserInterface.stop() calls it.
      */
     public void saveForClose(){
-        autosave("on close");
+        saveForExit("on close");
+    }
+
+    /** Both exits keep the skip's return point when its last month stopped part-way (UP6b). */
+    private void saveForExit(String reason) {
+        if (ranThrough) autosave(reason);
         awaitSaves();
     }
 
@@ -8421,7 +8426,7 @@ public class Game {
 
         // Set when every month has run: a skip that stopped part-way (the catch below, or an Error the
         // finally lets through) does not autosave at its end - its city stopped inside a month.
-        boolean ranThrough = false;
+        ranThrough = false;
 
         // Snapshot before anything moves. Everything the summary shows is a diff
         // against this or a count taken month by month below - see TimeSkipReport.
@@ -16800,7 +16805,7 @@ public class Game {
         SaveWriter.shared().submit(job,
                 result -> {
                     System.out.println(GameFiles.slotLabel(GameFiles.AUTOSAVE_SLOT) + ": " + result.message());
-                    savesWritten.add(new Written(GameFiles.AUTOSAVE_SLOT, result));
+                    savesWritten.add(new Written(GameFiles.AUTOSAVE_SLOT, job.data().getMonth(), result));
                 });
         // A recorded city's history goes at the autosave's pace, from the snapshot the save already made (TR1; THE RECORDING).
         recordHistoryFrom(job);
@@ -16844,8 +16849,8 @@ public class Game {
      * "Autosave at the skip's end"). The running clock keeps its floor.
      * ====================================================================== */
 
-    /** A result the writer finished, and the slot it was for (UP6): an autosave's goes to the inbox, the player's Save is told by its page. */
-    private record Written(int slot, GameFiles.Result result) { }
+    /** A result the writer finished, with its slot and snapshot's month (UP6b): the report may arrive in a later month. */
+    private record Written(int slot, int month, GameFiles.Result result) { }
 
     /** Results the writer's thread has finished, waiting for the FX thread to take them: see reportSaves(). */
     private final java.util.concurrent.ConcurrentLinkedQueue<Written> savesWritten =
@@ -16877,7 +16882,7 @@ public class Game {
                     System.out.println("Autosave failed: " + w.result().error);
                 }
                 // The inbox keeps the autosave's trouble standing until one lands whole (UP6, LB3-S).
-                inbox.autosaveWritten(month, w.result());
+                inbox.autosaveWritten(w.month(), w.result());
             }
         }
     }
@@ -16948,7 +16953,7 @@ public class Game {
         playerSavesInWriter.incrementAndGet();
         SaveWriter.shared().submit(job, result -> {
             System.out.println(GameFiles.slotLabel(slot) + ": " + result.message());
-            savesWritten.add(new Written(slot, result));
+            savesWritten.add(new Written(slot, job.data().getMonth(), result));
             playerSavesInWriter.decrementAndGet();
             done.accept(result);
         });
@@ -17643,6 +17648,9 @@ public class Game {
      */
     private String skipFailure;
 
+    /** The skip's completion flag (UP6b), retained for both exits; a new or loaded city starts whole. */
+    private boolean ranThrough = true;
+
     public String takeSkipFailure() {
         String failure = skipFailure;
         skipFailure = null;
@@ -17651,9 +17659,11 @@ public class Game {
 
     /**
      * What the last write attempt did. Null until something has been saved.
-     * A numbered slot's save is here at once; an autosave's once reportSaves()
-     * has collected it from the writer (the next month's end, the next save,
-     * awaitSaves()).
+     * A synchronous save() sets it before returning. An autosave or a numbered
+     * saveInBackground() sets it once reportSaves() collects the writer's result
+     * (the next month's end, the next autosave, or awaitSaves()). The background
+     * Save's callback receives its result on the writer's thread without waiting
+     * for that report.
      */
     private GameFiles.Result lastSaveResult;
 
