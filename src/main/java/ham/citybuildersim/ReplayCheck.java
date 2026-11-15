@@ -437,6 +437,42 @@ public class ReplayCheck {
         helper("...and a month played on the copy writes no month into the recording",
                 Arrays.equals(rec.months(), have));
         replay.loadWhole(middle);
+        // CM2: cause a recorded purchase, not just a whole load on unchanged land.
+        Recording changedLand = landChangeRecording();
+        int landFirst = changedLand.firstMonth(), landLast = changedLand.lastMonth();
+        ReplayCity epochs = new ReplayCity(changedLand);
+        epochs.loadWhole(landFirst);
+        long oldLandStamp = epochs.game().getCityLand().stamp();
+        int oldPurchases = epochs.game().getCityLand().purchases().size();
+        helper("fixture: the recorded purchase rejects a quick step, and the whole month has another land stamp and more parcels",
+                !epochs.stepQuick(landLast) && epochs.loadWhole(landLast) == null
+                        && epochs.game().getCityLand().stamp() != oldLandStamp && epochs.game().getCityLand().purchases().size() > oldPurchases);
+        epochs.loadWhole(landFirst);
+        epochs.beginMove();
+        Game epochGame = epochs.game();
+        CityMap epochMap = epochGame.getCityMap();
+        CityLand epochLand = epochGame.getCityLand();
+        Game.ReplayMap epochToken = epochGame.keepReplayMap();
+        helper("a loaded move retains the purchased-land epoch separately from its first month",
+                !epochs.stepQuick(landLast) && epochs.loadWhole(landLast) == null && epochs.game() != epochGame
+                        && epochs.preparedMonths() == 2 && epochs.preparedContexts() == 2
+                        && epochGame.getCityMap() == epochMap && epochGame.getCityLand() == epochLand);
+        Game later = epochs.game();
+        Path hiddenMonth = changedLand.monthFile(landFirst).resolveSibling("cm2-held-month.bin");
+        Files.move(changedLand.monthFile(landFirst), hiddenMonth);
+        try {
+            helper("a prepared month switches back to its own context and exact map even with its recording file absent",
+                    epochs.stepQuick(landFirst) && epochs.game() == epochGame && epochs.game().getCityMap() == epochMap
+                            && epochs.game().getCityLand() == epochLand && !epochs.wholeMonth());
+            helper("a prepared map cannot be given to another copy or to the normal game",
+                    !later.replayMap(epochToken) && !g.replayMap(epochToken) && g.keepReplayMap() == null);
+            epochs.endMove();
+            helper("releasing a move drops its months and restores the ordinary file-reading step",
+                    epochs.preparedMonths() == 0 && !epochs.stepQuick(landFirst));
+        } finally {
+            epochs.endMove();
+            Files.move(hiddenMonth, changedLand.monthFile(landFirst));
+        }
         String hurt = firstDifference(playerBefore, hashes(files.getDirectory()));
         helper("the player's folder (the saves and the recording in it) is byte for byte what it was" + (hurt == null ? "" : " - " + hurt), hurt == null);
 
@@ -790,7 +826,7 @@ public class ReplayCheck {
         /* ====== 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1) ====== */
         System.out.println("\n--- 5d. a replay move loads first, then runs with nothing unpainted and nothing asked (CM1) ---");
         double glideSeconds = 2;        // short, to keep the suite quick: ReplayMoveProbe's main() measures the ten-second moves
-        ReplayMoveProbe.Checked cm = ReplayMoveProbe.check(rec.folder(), GameFiles.scratch("replaywindow"), glideSeconds);
+        ReplayMoveProbe.Checked cm = ReplayMoveProbe.check(changedLand.folder(), GameFiles.scratch("replaywindow"), glideSeconds);
         if (cm.cannot() != null) {
             System.out.println("      skipped: " + cm.cannot());
         } else {
@@ -801,6 +837,13 @@ public class ReplayCheck {
                     nm.frames() >= 30 && !nm.camera() && !nm.moveHeld() && nm.cachesPinned() == 0);
             movedChecks(cm.zoomOut(), glideSeconds, "click", true);
             movedChecks(cm.months(), glideSeconds, "key", false);
+            helper("the glide crosses the fixture's recorded land purchase with both months and distinct land contexts prepared",
+                    cm.months().ready() && cm.months().preparedMonths() == changedLand.months().length && cm.months().preparedContexts() >= 2);
+            ReplayMoveProbe.Left left = cm.left();
+            helper("the real MapView chartNodes range covers every sampled GROUND point past the plane during a loaded move (" + left.chartMissed() + " missed of " + left.chartPoints() + ")",
+                    left.ready() && left.chartPoints() > 0 && left.chartMissed() == 0);
+            helper("leaving a Ready move synchronously releases MoveLoad, all pins and the replay's prepared contexts",
+                    left.ready() && left.preparedBefore() >= 2 && !left.replayAfter() && !left.heldAfter() && left.pinnedAfter() == 0 && left.preparedAfter() == 0);
             ReplayMoveProbe.Cancelled esc = cm.escape();
             System.out.printf("      Esc while loading: was loading %b, taken %b, camera %s after, move held %b, caches pinned %d%n",
                     esc.wasLoading(), esc.taken(), esc.phaseAfter(), esc.heldAfter(), esc.pinnedAfter());
@@ -898,6 +941,29 @@ public class ReplayCheck {
 
         System.out.printf("%n%s: %d failure(s)%n", ReplayCheck.class.getSimpleName(), fails);
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** Two consecutive recorded months separated by a real land purchase; no other fixture's city is changed (CM2). */
+    static Recording landChangeRecording() throws Exception {
+        Game city = new Game(GameFiles.scratch("cm2landchange"));
+        city.newGame();
+        clockMonth(city);
+        city.setRecording(true);
+        clockMonth(city);
+        city.awaitSaves();
+        int before = city.getCityLand().purchases().size();
+        long stamp = city.getCityLand().stamp();
+        LandParcel offer = city.getLandManager().getMarket().bestValue();
+        boolean bought = offer != null && city.buyLandParcel(offer.getId());
+        boolean changed = bought && city.getCityLand().purchases().size() == before + 1 && city.getCityLand().stamp() != stamp;
+        helper("fixture: the replay city really buys an offered parcel between its two recorded months", changed);
+        if (!changed) throw new IllegalStateException("the land-change recording did not buy its parcel");
+        clockMonth(city);
+        city.setRecording(false);
+        city.awaitSaves();
+        Recording rec = Recording.at(city.recordingFolder());
+        helper("fixture: both sides of the purchase were recorded", rec.months().length == 2);
+        return rec;
     }
 
     /**

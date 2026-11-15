@@ -226,6 +226,9 @@ final class ReplayMode {
     /** The replay's camera: MapView asks for it each frame (UserInterface.replayCamera()). */
     ReplayCamera camera() { return camera; }
 
+    /** The replay copy whose months a loaded camera move retains, on the FX thread (CM2). */
+    ReplayCity moveCity() { return city; }
+
     /** The recorded month on screen. */
     int shownMonth() { return months[at]; }
 
@@ -733,6 +736,7 @@ final class ReplayMode {
         restFailed = -1;
         int month = months[at];
         if (city.stepQuick(month)) {
+            ui.game = city.game();       // CM2: a prepared land-change month has its own already-loaded context
             ui.replayMapChanged();
             return;
         }
@@ -761,6 +765,7 @@ final class ReplayMode {
 
     /** A month loaded whole: the per-city reset a load does (the expanded map and its view kept), the open screen drawn again. */
     private void afterWhole() {
+        ui.game = city.game();
         ui.replayAnotherCity();
         ui.redraw();
     }

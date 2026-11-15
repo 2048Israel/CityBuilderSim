@@ -17557,6 +17557,31 @@ public class Game {
         return true;
     }
 
+    /** A prepared replay map and its owning copy (CM2): never transferable to another Game or the normal game. */
+    public static final class ReplayMap {
+        private final Game owner;
+        private final CityMap map;
+
+        private ReplayMap(Game owner, CityMap map) {
+            this.owner = owner;
+            this.map = map;
+        }
+    }
+
+    /** Keeps the map with its lazy sea, rail and land pictures already handed over, on the replay's calling thread. */
+    public ReplayMap keepReplayMap() {
+        return replayCopy ? new ReplayMap(this, getCityMap()) : null;
+    }
+
+    /** Puts back this copy's prepared map without decoding or rebuilding its pictures (CM2's loaded move, FX thread only). */
+    public boolean replayMap(ReplayMap prepared) {
+        if (!replayCopy || prepared == null || prepared.owner != this) return false;
+        cityMap = prepared.map;
+        mapGeneration++;
+        mapAtSeaStale = false;
+        return true;
+    }
+
     /** Replay's history: a parsed history put in place of the copy's, as loadHistory() does with the file's, and the partner trade's years with it. A game that is not a replay copy keeps its own. */
     public void replayHistory(HistorySave h) {
         if (!replayCopy || h == null) return;

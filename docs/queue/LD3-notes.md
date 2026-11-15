@@ -22,7 +22,7 @@ The initial focused run enables the wage before further fixture changes.
 291 seconds, exit 3, with only the existing OX1 assertion red. None of the
 seven passing harnesses reports a missed observation.
 
-| Harness | Reached condition with LD2's wage | Repair already on main |
+| Harness | Reached condition with LD2's wage | Fixture history |
 |---|---|---|
 | HoldersCheck 6 | Household, bank and central-bank paper round-trip, and the next settle and coupons agree | GW1 reapplies the Heavy Industry hold to the twin, `4adf2e12` |
 | DeskCheck 8 | Gain line worth 512.3 against 517.7 carried, loss line worth 522.8 against 517.7 carried. The closing gains are +5.4 and -5.1 | BA1 searches the sale dial and the final cut between the two coupons, and FloatLinkCheck holds its fixture's sectors |
@@ -120,7 +120,15 @@ ended, including its detached MSYS batch-check and JVM children.
 
 Per that direction, the coordinated fresh-clone dry run will execute the
 same full pick for LD3. The request `LD3 dry run?` was sent on cbs-bus, and
-LD3 waits for the go before starting it.
+Orchestrator grants the slot after CM2 ships. At 23.15 on 2026-11-14 he
+reports CM2 shipped as main `2853630b` (0.9.107), directs the main merge,
+and gives the go for the normal gate route.
+
+Origin/main is merged before the dry run. Source merges cleanly. Four
+generated indexes conflict, and are regenerated from the combined source
+through `./batch-check.sh --fast`. Against the new main, Game.java still
+has only LD3's one wage-supply hunk. All CM2 replay and UI changes and the
+publisher's version, queue, changelog and gate record arrive from main.
 
 No process script, check machinery or standing rule changes. The process
 one-in, one-out count is zero added and zero removed.

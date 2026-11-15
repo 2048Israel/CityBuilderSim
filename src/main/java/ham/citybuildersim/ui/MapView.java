@@ -622,6 +622,7 @@ final class MapView {
 
     /** A new city or a load: everything drawn is another city's. */
     void forget() {
+        endMove();      // CM2: a detached canvas cannot tick again to release its prepared replay contexts
         // FM1: the trade chip's tip names the city's money, and the city has changed.
         if (tradeChip != null && Kept.tipOf(tradeChip) != null) Kept.tipOf(tradeChip).setText(tradeTip());
         backFromFunding = false;
@@ -2574,10 +2575,13 @@ final class MapView {
      * view's chart draws (GlobeFrame.chartHolds(): at the plane's scales the ground past GlobeFrame.handoverKm() of the city and off
      * the world's square), sampled every NODE_SAMPLE_PX as globeNodes() is, each sample's place on the chart (GlobeFrame.chartAt(), in
      * chart pixels at the view's stride) cut into nodes of MapFrame.NODE_PX and padded by a sample's step; null where the chart draws
-     * none. Kept for the view, as globeNodes()'s is.
+     * none. A loaded replay move (CM2) widens this to the whole visible disc in GROUND; ordinary play keeps its range.
+     * Kept for the view and that coverage, as globeNodes()'s is.
      */
     private long[] chartNodes(GlobeFrame v) {
-        if (chartNodesFor != null && chartNodesFor.sameView(v)) return chartNodesAt;
+        boolean wholeDisc = move != null && v.tier() == GlobeFrame.GROUND;
+        if (chartNodesFor != null && chartNodesFor.sameView(v) && chartWholeDisc == wholeDisc) return chartNodesAt;
+        chartWholeDisc = wholeDisc;
         chartNodesFor = v.copy(v.width(), v.height(), v.kmPx());
         long plots = MapFrame.nodePlotsAt(v.planeScale());
         double x0 = Double.MAX_VALUE, y0 = Double.MAX_VALUE, x1 = -Double.MAX_VALUE, y1 = -Double.MAX_VALUE;
@@ -2586,7 +2590,7 @@ final class MapView {
         for (double sy = 0.5; sy < h + NODE_SAMPLE_PX; sy += NODE_SAMPLE_PX) {
             for (double sx = 0.5; sx < w + NODE_SAMPLE_PX; sx += NODE_SAMPLE_PX) {
                 double px = Math.min(sx, w - 0.5), py = Math.min(sy, h - 0.5);
-                if (!v.chartHolds(px, py) || !v.chartAt(px, py, xy)) continue;
+                if (!v.chartHolds(px, py, wholeDisc) || !v.chartAt(px, py, xy)) continue;
                 x0 = Math.min(x0, xy[0]);
                 y0 = Math.min(y0, xy[1]);
                 x1 = Math.max(x1, xy[0]);
@@ -2603,6 +2607,7 @@ final class MapView {
 
     private GlobeFrame chartNodesFor;
     private long[] chartNodesAt;
+    private boolean chartWholeDisc;
 
     /** A chart node's indexes run negative west and north of the chart's anchor: this many are added to each to key it. */
     private static final long CHART_NODE_OFFSET = 1L << 19;
@@ -2835,7 +2840,8 @@ final class MapView {
             GlobeFrame.NodePixels cp = cr == null ? null : (nx, ny) -> chartSnap.get(chartKey(chartId, plots, nx, ny));
             GlobeFrame.Beyond beyond = mode == MODE_FADE ? (i, j, vx, vy, vz) -> 0 : beyond(t, pic);
             final int a0 = i0, a1 = i1, b0 = j0;
-            GlobePicture.bands(j1 - j0, GlobePicture.cores(), (k0, k1) -> t.ground(plots, np, cp, beyond, GlobePicture.SPACE, px, w, a0, a1, b0 + k0, b0 + k1));
+            boolean wholeDisc = move != null && globe.tier() == GlobeFrame.GROUND;
+            GlobePicture.bands(j1 - j0, GlobePicture.cores(), (k0, k1) -> t.ground(plots, np, cp, wholeDisc, beyond, GlobePicture.SPACE, px, w, a0, a1, b0 + k0, b0 + k1));
         }
         globeImg.getPixelWriter().setPixels(i0, j0, i1 - i0, j1 - j0, PixelFormat.getIntArgbInstance(), px, j0 * w + i0, w);
     }
@@ -5720,6 +5726,7 @@ final class MapView {
     private static final class MoveLoad {
         final int serial, of;
         final boolean months;
+        final ReplayCity city;
         /** The plan's next view, the views passed, whether the view {@code next} is taken, and since when the worker has sat idle on it (0 for not idle). */
         int next, passed;
         boolean applied;
@@ -5737,10 +5744,11 @@ final class MapView {
         /** Every view the load painted, so the run's tally can count a frame that showed any other (MoveTally.offPlan). */
         final Set<CameraPath.View> planned = new HashSet<>();
 
-        MoveLoad(int serial, int of, boolean months) {
+        MoveLoad(int serial, int of, boolean months, ReplayCity city) {
             this.serial = serial;
             this.of = of;
             this.months = months;
+            this.city = city;
         }
     }
 
@@ -5751,13 +5759,15 @@ final class MapView {
     private boolean moveRunning() { return move != null && move.running && move.months; }
 
     private void beginMove(ReplayCamera cam) {
-        move = new MoveLoad(cam.serial(), cam.planViews(), cam.movesTime());
+        move = new MoveLoad(cam.serial(), cam.planViews(), cam.movesTime(), cam.moveCity());
+        if (move.months) move.city.beginMove();
         pin(true);
     }
 
     /** The move ran out, was let go, cancelled, failed or replaced: the caches are let go of for room again, down to their sizes. */
     private void endMove() {
         if (move == null) return;
+        if (move.months) move.city.endMove();
         move = null;
         pin(false);
         dirty = true;
@@ -5868,7 +5878,7 @@ final class MapView {
     boolean viewSettled() { return loadSettled(NO_MOVE); }
 
     /** A move with nothing passed and nothing kept, for viewSettled(). */
-    private static final MoveLoad NO_MOVE = new MoveLoad(0, 0, false);
+    private static final MoveLoad NO_MOVE = new MoveLoad(0, 0, false, null);
 
     /** Whether a loaded move is held (CM1: ReplayMoveProbe.check(), which ReplayCheck 5d runs). */
     boolean moveHeld() { return move != null; }
@@ -6236,7 +6246,7 @@ final class MapView {
                 double w = globe.width(), h = globe.height();
                 for (double sy = 16; sy < h; sy += 32) {
                     for (double sx = 16; sx < w; sx += 32) {
-                        if (globe.onPlanet(sx, sy) && !(globe.drawsHold(sx, sy) || globe.chartHolds(sx, sy))) coarse++;
+                        if (globe.onPlanet(sx, sy) && !(globe.drawsHold(sx, sy) || globe.chartHolds(sx, sy, move != null))) coarse++;
                     }
                 }
             }
