@@ -1,8 +1,8 @@
-# gate of Merge batch/R0f: research: Money on Canada's dates - the D$ on gold to Aug 1914 and Jul 1926-1931, the Advance Rate opening the policy rate in Aug 1914, the Bank of Canada the rest of Money in Mar 1935 (`PolicyDates.POLICY_RATE`, `CENTRAL_BANK`); after GD2 and FM1, 0.9.111
+# gate of Merge batch/R2b: research: buildings on history's dates - in a city founded the 1900 way a template not yet known (`BuildingsTemplate.knownAt()`) is no candidate for any planner (the spread planner, extraction, retail, `BusinessInvestment`, the city's own works, the berths: about 40 readers of `getTemplatesBySector()`) and its order is refused; a 1900 refinery without its conversion units, 0.9.112
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 194 harnesses run in 2189s: 190 passed, 4 failed
+# suite: 196 harnesses run in 2577s: 191 passed, 5 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 MapCheck | exit 1
@@ -15,3 +15,6 @@ DeathRecordCheck | the orphan section does not fill behind it, in any month of t
 DeathRecordCheck | 1 FAILED
 LongPlaytest | exit 1
 LongPlaytest | (no FAIL line)
+ResearchViewCheck | exit 1
+ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 2 rows, Agriculture: 2 of 5), and the sectors' rows add up to the city's
+ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217

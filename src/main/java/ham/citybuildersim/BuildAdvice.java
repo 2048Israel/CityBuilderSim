@@ -170,7 +170,7 @@ public final class BuildAdvice {
     /** A category's buildings in catalogue order: those of its types it holds, and the reserve in Infrastructure's. */
     public static List<BuildingsTemplate> templatesOf(Category c, BuildingManager buildings) {
         List<BuildingsTemplate> out = new ArrayList<>();
-        for (BuildingsTemplate t : buildings.getTemplates()) if (c.holds(t)) out.add(t);
+        for (BuildingsTemplate t : buildings.getKnownTemplates()) if (c.holds(t)) out.add(t);
         return out;
     }
 
@@ -880,7 +880,7 @@ public final class BuildAdvice {
      * 0 with no highway in the catalogue.
      */
     public static double highwayFlow(Game game) {
-        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+        for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             if (t.getCategory() == BuildingType.INFRASTRUCTURE && t.isHighway()) {
                 return t.getCapacity() * InfrastructureManager.FREE_FLOW;
             }
@@ -1156,7 +1156,7 @@ public final class BuildAdvice {
         double demand = supplyDemand(game, m, Map.of())[1];
         if (!(demand > 0)) return false;
         double least = Double.POSITIVE_INFINITY;
-        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+        for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             if (!m.serves(t)) continue;
             double unit = built(game, m, t);
             if (m.kind() == Kind.HIGHWAYS) unit *= InfrastructureManager.FREE_FLOW;
@@ -1329,7 +1329,7 @@ public final class BuildAdvice {
         double before = need != null ? need.value() : figure(game, m, new LinkedHashMap<>());
 
         List<Weighed> weighed = new ArrayList<>();
-        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+        for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             // The streets' candidates: every road and line but a highway, which gives no access (FR7); the highways' the Elevated Highway alone.
             boolean candidate = m.kind() == Kind.ROADS
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway() : m.serves(t);
@@ -2232,7 +2232,7 @@ public final class BuildAdvice {
     public static BuildingsTemplate portTerminal(Game game, Measure m, Map<BuildingsTemplate, Integer> added,
                                                  java.util.Set<BuildingsTemplate> skip) {
         double dial = game.getEconomyManager().getTaxPolicy().getPortDues();
-        BuildingsTemplate t = Ports.payingTerminal(m.cargo(), game.getBuildingManager().getTemplates(),
+        BuildingsTemplate t = Ports.payingTerminal(m.cargo(), game.getBuildingManager().getKnownTemplates(),
                 portUncovered(game, m, added), game.getPorts().carriable(m.cargo()), dial, skip);
         return t != null && game.hasCoastFor(t, 1, Landmasses.RULE) ? t : null;
     }

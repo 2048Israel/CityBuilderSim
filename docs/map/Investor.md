@@ -10,7 +10,7 @@
 > addStack() are all indifferent. So making businesses build their own premises
 > is a matter of naming the payer, not of duplicating the build path.
 
-**Used by (4):** [BankFailureCheck](BankFailureCheck.md), [CreditCheck](CreditCheck.md), [Forestry](Forestry.md), [Game](Game.md)
+**Used by (5):** [BankFailureCheck](BankFailureCheck.md), [CreditCheck](CreditCheck.md), [Forestry](Forestry.md), [Game](Game.md), [ResearchCheck](ResearchCheck.md)
 
 ## Methods, in file order
 

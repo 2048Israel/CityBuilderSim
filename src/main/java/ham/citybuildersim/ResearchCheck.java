@@ -61,6 +61,9 @@ import java.util.regex.Pattern;
  *   9. THE VERDICT AND THE CHOICE ON HISTORY'S MONTH. EquipmentFit.judge() for the tractor with figures that pay is NOT_KNOWN the month before
  *      PE14's and PAYS at it (and figures a thousandth short of paying are NOT_YET at it, so the rule runs), and Recipes.canRun() for the
  *      oxygen converter's recipe is false the month before E1's and true at it, for the part that may run it (the one without the open hearth).
+ *  10. BUILDINGS ON THEIR DATES (R2b). All sector and category candidates exclude unknown templates in a 1900 city, opening on their month
+ *      or a local discovery. A paying spread-planner choice, a city's power shortage and funded direct city/private orders cause the refusals;
+ *      every candidate and direct order remains available in a default founding.
  */
 public class ResearchCheck {
 
@@ -512,6 +515,7 @@ public class ResearchCheck {
 
         sectionSeven();
         sectionEightAndNine();
+        buildingsOnDates();
 
         System.out.println(fails == 0 ? "ResearchCheck: all " + passes + " ok" : "ResearchCheck: " + fails + " FAILED of " + (passes + fails));
         System.exit(fails);
@@ -714,6 +718,154 @@ public class ResearchCheck {
         check("the Grain Farm's tractor recipe is the fitted part's, from PE14's month and not before, and the horses' recipe is the unfitted part's throughout",
                 !Recipes.canRun(grain, tractorRecipe, true, pe14 - 1) && Recipes.canRun(grain, tractorRecipe, true, pe14) && !Recipes.canRun(grain, tractorRecipe, false, pe14)
                         && Recipes.canRun(grain, horses, false, 1) && Recipes.canRun(grain, horses, false, pe14));
+    }
+
+    /* ==================== 10. the building candidates and orders (R2b) ==================== */
+
+    /** A scratch city with ample land and cash; the date alone must refuse its orders. */
+    static Game datedCity(String label, boolean historical) {
+        Game g = new Game(GameFiles.scratch(label));
+        PrintStream out = System.out;
+        try (PrintStream quiet = new PrintStream(java.io.OutputStream.nullOutputStream())) {
+            System.setOut(quiet);
+            g.newGame(Founding.defaults().withUnfitted(historical));
+            g.setCashForTest(Founding.WEALTHY_CASH * 100);
+            g.getLandManager().setOwnedSqFt(400_000_000);
+        } finally { System.setOut(out); }
+        return g;
+    }
+
+    /** Set the clock at an exact boundary without playing decades of unrelated economics. */
+    static void atMonth(Game g, int month) throws Exception {
+        var clock = Game.class.getDeclaredField("month");
+        clock.setAccessible(true);
+        clock.setInt(g, month);
+    }
+
+    static void buildingsOnDates() throws Exception {
+        System.out.println("\n--- 10. buildings are candidates and orders only once known in a 1900 city ---");
+        Game g = datedCity("research-building-dates", true);
+        BuildingManager b = g.getBuildingManager();
+        boolean sectors = true, categories = true, boundaries = true;
+        int unknown = 0;
+        for (BuildingsTemplate t : b.getTemplates()) {
+            if (!t.knownAt(g.getMonth(), g.getResearch())) {
+                unknown++;
+                sectors &= !b.getTemplatesBySector(t.getSector()).contains(t);
+                categories &= !b.getTemplatesByCategory(java.util.EnumSet.of(t.getCategory())).contains(t);
+                int date = ResearchCatalog.knownFrom(t.getSinceText());
+                atMonth(g, date - 1);
+                boundaries &= !b.getTemplatesBySector(t.getSector()).contains(t);
+                atMonth(g, date);
+                boundaries &= b.getTemplatesBySector(t.getSector()).contains(t);
+                atMonth(g, 1);
+            }
+        }
+        check("fixture: the actual catalogue contains unknown buildings in January 1900", unknown >= CODED.size());
+        check("every sector's candidate list leaves out every unknown building", sectors);
+        check("every category's candidate list leaves out every unknown building", categories);
+        check("every dated building joins its sector's candidates on its date, never the month before", boundaries);
+        boolean menu = true;
+        for (BuildAdvice.Category category : BuildAdvice.categories()) {
+            for (BuildingsTemplate t : BuildAdvice.templatesOf(category, b)) menu &= t.knownAt(1, g.getResearch());
+        }
+        check("the city's Build categories also contain only known candidates", menu);
+
+        // Cause a spread planner's choice: plentiful gas oil and valuable petrol make a cracker pay.
+        var cracker = b.getTemplateByName("Small Cracking Unit");
+        var city = new ham.citybuildersim.sectors.SpreadPlanner.City() {
+            public double cost(BuildingsTemplate t) { return 1; }
+            public double running(BuildingsTemplate t) { return 0; }
+            public double standing(BuildingsTemplate t) { return 0; }
+            public double rate() { return 1; }
+            public String land(BuildingsTemplate t) { return null; }
+            public String staff(BuildingsTemplate t) { return null; }
+            public String money(double earns, double cost) { return null; }
+        };
+        double[] values = new double[Good.values().length];
+        values[Good.PETROL.ordinal()] = 1;
+        values[Good.DIESEL.ordinal()] = 1;
+        var outlook = new ham.citybuildersim.sectors.Refining.Outlook(
+                new double[ham.citybuildersim.sectors.RefineryFlow.Kind.values().length], 8300,
+                ham.citybuildersim.sectors.Refining.MEDIUM_MIX, values, 0, 0,
+                ham.citybuildersim.sectors.Refining.MEDIUM_MIX, 0, 0);
+        var raw = ham.citybuildersim.sectors.SpreadPlanner.best(
+                ham.citybuildersim.sectors.Refining.appraise(outlook, List.of(cracker), city));
+        check("fixture: with feed, staff, ground and money the spread planner really chooses the unknown cracker", raw != null && raw.template() == cracker);
+        var before = ham.citybuildersim.sectors.SpreadPlanner.best(ham.citybuildersim.sectors.Refining.appraise(outlook,
+                b.getTemplatesBySector(Sectors.REFINING).stream().filter(t -> t == cracker).toList(), city));
+        check("the same paying cracker cannot be chosen from the 1900 city's candidates", before == null);
+        atMonth(g, ResearchCatalog.knownFrom(cracker.getSinceText()));
+        var after = ham.citybuildersim.sectors.SpreadPlanner.best(ham.citybuildersim.sectors.Refining.appraise(outlook,
+                b.getTemplatesBySector(Sectors.REFINING).stream().filter(t -> t == cracker).toList(), city));
+        check("on its date the spread planner chooses that paying cracker", after != null && after.template() == cracker);
+        atMonth(g, 1);
+        var appraised = ham.citybuildersim.sectors.Refining.appraise(outlook, b.getTemplatesBySector(Sectors.REFINING), city);
+        check("a 1900 refinery's appraisals and their packages contain no future conversion unit", appraised.stream().allMatch(c ->
+                c.template().knownAt(1, g.getResearch()) && c.with().stream().allMatch(t -> t.knownAt(1, g.getResearch()))));
+        g.getResearch().restore(Map.of(), Map.of(), Map.of(), Map.of(cracker.getSinceText(), 2));
+        check("a local discovery does not make the cracker a candidate before the discovery's month", !b.getTemplatesBySector(Sectors.REFINING).contains(cracker));
+        atMonth(g, 2);
+        check("a local discovery makes the cracker a candidate before history's date", b.getTemplatesBySector(Sectors.REFINING).contains(cracker));
+
+        atMonth(g, 1);
+        BuildingsTemplate container = b.getTemplateByName("Container Terminal");
+        check("fixture: enough container trade pays back the actual Container Terminal", Ports.payingTerminal(
+                Ports.Cargo.CONTAINER, b.getTemplates(), 1e12, 1e12, 1, null) == container);
+        check("the berth planner never chooses that unknown terminal in 1900", LongPlaytest.terminalFor(
+                g, Ports.Cargo.CONTAINER, 1e12, 1e12, 1) == null);
+        atMonth(g, ResearchCatalog.knownFrom(container.getSinceText()));
+        check("on its date the berth planner chooses that paying terminal", LongPlaytest.terminalFor(
+                g, Ports.Cargo.CONTAINER, 1e12, 1e12, 1) == container);
+
+        atMonth(g, 1);
+        BuildingsTemplate arc = b.getTemplate(11);
+        double cash = g.getCash(), ground = g.getLandManager().getFreeSqFt();
+        Investor payer = g.getSectorInvestor(g.getSectors().materials().key());
+        payer.receive(Founding.WEALTHY_CASH * 100);
+        double payerCash = payer.getCash();
+        Game.BuildResult order = g.buildStack(arc, 1, false);
+        check("a directly placed unknown order is refused before a site, cash or ground changes", order != Game.BuildResult.SUCCESS
+                && b.getStack(arc) == null && g.getCash() == cash && g.getLandManager().getFreeSqFt() == ground);
+        check("the instant-build route refuses it too", g.buildStack(arc, 1, true) != Game.BuildResult.SUCCESS && b.getStack(arc) == null);
+        check("a funded private order also refuses it before charging its payer", !g.buildFor(payer, arc, 1)
+                && b.getStack(arc) == null && g.getCash() == cash && payer.getCash() == payerCash);
+        check("the run's preflight refuses an unknown order too", g.buildRunStop(Map.of(arc, 1)) != Game.BuildResult.SUCCESS);
+        atMonth(g, ResearchCatalog.knownFrom(arc.getSinceText()));
+        int onSite = b.getStack(arc) == null ? 0 : b.getStack(arc).getUnderConstruction();
+        check("on its date the direct order succeeds and puts the building on site", g.buildStack(arc, 1, false) == Game.BuildResult.SUCCESS
+                && b.getStack(arc) != null && b.getStack(arc).getUnderConstruction() == onSite + 1);
+        check("on its date the private order also succeeds and charges its payer", g.buildFor(payer, arc, 1) && payer.getCash() < payerCash);
+
+        // The city really needs power; make the dated wind farm the sole allowed fix.
+        Game works = datedCity("research-city-works-dates", true);
+        BuildingManager wb = works.getBuildingManager();
+        works.buildStack(wb.getTemplateByName("House"), 5000, true);
+        MaterialsCheck.handWorkers(works);
+        var power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        BuildingsTemplate wind = wb.getTemplateByName("Wind Farm");
+        UtilitiesHandler utilities = works.getServicesManager().getUtilitiesHandler();
+        utilities.setWattsConsumption(2 * wind.getProduction1());
+        utilities.updateEnergyRatio();
+        double[] powerNeed = BuildAdvice.supplyDemand(works, power, Map.of());
+        check("fixture: the city has a power load and no generation to cover it", powerNeed[1] > powerNeed[0] && powerNeed[1] > 0);
+        Set<BuildingsTemplate> skip = new HashSet<>(wb.getTemplates());
+        skip.remove(wind);
+        atMonth(works, ResearchCatalog.knownFrom(wind.getSinceText()));
+        var can = BuildAdvice.suggestFor(works, null, power, works.getCash(), 1e12, 0, skip, true, false);
+        check("fixture: the city's power shortage actually selects a Wind Farm when known", can != null && can.template() == wind);
+        atMonth(works, 1);
+        var cannot = BuildAdvice.suggestFor(works, null, power, works.getCash(), 1e12, 0, skip, true, false);
+        check("the city's works never choose the same unknown Wind Farm in 1900", cannot == null);
+
+        Game modern = datedCity("research-default-building-dates", false);
+        boolean all = true;
+        for (BuildingsTemplate t : modern.getBuildingManager().getTemplates()) {
+            all &= modern.getBuildingManager().getTemplatesBySector(t.getSector()).contains(t);
+        }
+        check("a city founded the default way keeps every sector candidate, including future buildings", all);
+        check("a default city's direct order for the December 1900 arc furnace succeeds in January", modern.buildStack(
+                modern.getBuildingManager().getTemplate(11), 1, false) == Game.BuildResult.SUCCESS);
     }
 
     /* ----- helpers ----- */
