@@ -72,7 +72,7 @@ a harness-only correction after f746d394; the money model is unchanged.
 ## Default trace
 
 The default LongPlaytest on unchanged main d8e9c12b and the final model
-f746d394 passed. All eight CSVs compare byte-identical with cmp:
+f746d394 produced the same trace. All eight CSVs compare byte-identical with cmp:
 target/R2c-main/default-*.csv and target/R2c-final/default-*.csv.
 The logs are target/R2c-main/playtest.log and
 target/R2c-final/playtest.log; both finish All checks passed. The eight main
@@ -179,10 +179,10 @@ clean, with LicenceFeesCheck's registry entry and KD1's runner both retained.
 Only generated dials, harnesses and map README conflicted; they are regenerated
 from the combined source before the merge commit. No RT2 method was touched.
 
-Final capture-model LongPlaytest passed and all eight CSVs compare byte-
+Final capture-model LongPlaytest produced all eight CSVs, which compare byte-
 identical to the retained main model (target/R2c-captured/default-*.csv
 against target/R2c-main/default-*.csv). Its log and exit are
-target/R2c-captured/playtest.log and target/R2c-captured/exit (0).
+target/R2c-captured/playtest.log and target/R2c-captured/exit (1; see the final correction below).
 KD1 changes no gameplay Java or packaged model resources, so this is also
 the current main 4343a815 model baseline. No ensemble was run: the default
 trace never moved. The final code is f59d577c, carried through the main merge.
@@ -342,3 +342,38 @@ MaterialsCheck, SaveSlotCheck and ScaleCheck. The one SaveSlotCheck timing
 assertion is soft on this route. Maps regenerated, Stale has zero firm
 findings. Source and authored-record whitespace checks pass. The money mend
 is 13b407a6; the following commit only records results and generated indexes.
+
+## Final order, review and default invariance
+
+Orchestrator 20261115-084749-965-orchestrator-5832: REV-R2c-5 is SHIP at
+13b407a6. R2c now ships before RT2, whose fixture changes need review. No
+new merge is made: main remains 4343a815. The earlier plan to merge RT2 is
+superseded. Go was given for a versioned normal dry run, with the final trace
+as its one additional JVM job. No source changes follow that review.
+
+The final 13b407a6 model (b825662a adds only notes/generated indexes) gives
+eight byte-identical CSVs against the retained main model: month, borrow,
+house, pop, bank, bonds, build and labour. Final files are
+target/R2c-production-final/default-*.csv; comparison marker trace-changed
+is 0. Main 4343a815 changes only KD1's runner/check code from d8e9c12b, with
+no gameplay Java or model resource changes. No main run was duplicated and
+no ensemble was needed.
+
+Correction to the earlier trace verdict wording: all retained direct trace
+exit markers (main, initial, mended, captured and final) are 1, not 0. Their
+logs finish All checks passed from their later checks and contain no FAIL
+line; that tail alone was insufficient to call the whole program passed.
+The eight-file identity claim is verified independently with cmp. The
+coordinated ALL gate supplies the classified whole-suite verdict.
+
+Final normal dry run is in progress at /tmp/cbs-gate-R2c-ZOb3FdRH
+(C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2c-ZOb3FdRH).
+Branch: b825662a8a9ae52c2e7b221024146d49e5008049
+Main: 4343a81525f831df83511ccae1cd26d5ef71c478
+Launcher: target/checks/R2c-final-gate-launcher.log
+The nonzero direct exit is now traced: main and final reports have exactly
+one identical finding, 'a building on the map moved' at m2389, the same
+12 of 4301 boxes in district (-1,-1). It is already covered by known-reds
+DM3-R (and the no-FAIL exit line is covered by CL6), not an R2c finding.
+The gate's own LongPlaytest report has the identical finding too. All HA1
+money fixtures at the tail pass. This explains the earlier misleading tail.
