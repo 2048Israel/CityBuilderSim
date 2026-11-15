@@ -1,5 +1,4 @@
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0f-sYBv7jmW -->
-<!-- readiness: provisional -->
 <!-- verification: normal-route ALL dry run exit 0; suite exit 3, known reds only; eight default traces byte-identical; see notes -->
 ## changelog
 ### {next} — R0f, Money on Canada's dates — 2026-11-15, ready, see docs/queue/R0f-notes.md
