@@ -1,4 +1,4 @@
-# Kept.java - 687 lines · 66 methods · 4 constants · interface
+# Kept.java - 836 lines · 88 methods · 4 constants · interface
 
 `ham/citybuildersim/ui/Kept.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -34,7 +34,7 @@
 > ({@code Kept.scope(sector, () -> row(sector))}): a row that goes takes its own nodes with it,
 > and the rows after it keep theirs. A card is a scope too, so a chip that appears in one card
 > does not shift every label below it onto a neighbour's.</li>
-> <li>A node handed back first loses what the code gives it only sometimes - its click and hover
+> <li>A node handed back loses, at the draw's end, what the code did not give it this time - its click and hover
 > handlers, its action, its cursor, visibility, opacity, disabling and tooltip - where the code
 > set them (a value an inline style set is the style's, and left alone); so a row clickable last
 > month and not this one does not keep last month's click.</li>
@@ -54,6 +54,9 @@
 > style set back to rest at the draw would lose the hover look; and a control keeps the player's
 > hand ({@link #held}, {@link #text}): a slider's value is set only where it differs and never
 > while the player holds it, a field's text only where it differs and never while it has the focus.
+> A draw gives optional state through {@link #give}, and a grid's constraints through {@link #columns}
+> and {@link #rows}: reset at the draw's end only what that draw did not set. An unchanged assignment
+> still counts as given, so a greyed control and an unchanged grid never reset and set back.
 
 **Used by (31):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CapChips](CapChips.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [Ladder](Ladder.md), [LandScreen](LandScreen.md), [Levers](Levers.md), [MapTiles](MapTiles.md), [MapView](MapView.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [ResearchScreen](ResearchScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [Statement](Statement.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md), [ZoningScreen](ZoningScreen.md)
 
@@ -61,152 +64,182 @@
 
 | line | section |
 |---:|---|
-| 96 | THE POOL, THE DRAW AND THE SCOPES |
-| 328 | THE BOXES: their children are the draw's own list while a draw is on |
-| 496 | THE NODES, AS THE CODE ASKS FOR THEM |
-| 581 | WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE |
-| 630 | THE PLAYER'S HAND (KP2): a control on a kept page is not set under it |
+| 105 | THE POOL, THE DRAW AND THE SCOPES |
+| 365 | THE BOXES: their children are the draw's own list while a draw is on |
+| 630 | THE NODES, AS THE CODE ASKS FOR THEM |
+| 723 | WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE |
+| 772 | THE PLAYER'S HAND (KP2): a control on a kept page is not set under it |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 586 | `Kept.TOOLTIP` | `"javafx.scene.control.Tooltip"` | The key Tooltip.install() keeps a node's tooltip under in its properties: what tipOf() reads. |
-| 588 | `Kept.ANIMATION` | `"kept.animation"` | The key play() keeps a node's last animation under in its properties, to stop it before the next. |
-| 635 | `Kept.HELD` | `"kept.held"` | The key grip() keeps a node's "held" flag under, and the marker that it has been gripped. |
-| 636 | `Kept.GRIP` | `"kept.grip"` |  |
+| 728 | `Kept.TOOLTIP` | `"javafx.scene.control.Tooltip"` | The key Tooltip.install() keeps a node's tooltip under in its properties: what tipOf() reads. |
+| 730 | `Kept.ANIMATION` | `"kept.animation"` | The key play() keeps a node's last animation under in its properties, to stop it before the next. |
+| 777 | `Kept.HELD` | `"kept.held"` | The key grip() keeps a node's "held" flag under, and the marker that it has been gripped. |
+| 778 | `Kept.GRIP` | `"kept.grip"` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 102 | `private Scope root` |  |
-| 104 | `private int draws` | Draws served since the pool last started afresh: 0 means the next draw makes every node new. |
-| 106 | `private int lastMade, lastKept` | At the last draw: the nodes it made new, and the nodes it handed back (what KeptCheck counts). |
-| 132 | `private Map<Class<?>, List<Node>> made` |  |
-| 133 | `private Map<Class<?>, List<Node>> making` |  |
-| 134 | `private final Map<Class<?>, Integer> taken` |  |
-| 135 | `private Map<Object, Scope> inner` |  |
-| 136 | `private Map<Object, Scope> innerMaking` |  |
-| 154 | `final Draw outer` | The draw this one was begun inside, or null (UP2: a draw of another pool within a draw). |
-| 155 | `final ArrayDeque<Scope> scopes` |  |
-| 156 | `final List<Scope> begun` |  |
-| 157 | `final List<Staging> staged` |  |
-| 158 | `final List<Node> handedBack` |  |
-| 159 | `final Set<Node> made` |  |
-| 160 | `final Set<Node> tipped` |  |
-| 174 | `private static Draw drawing` | The draw on now, or null: then every call here makes a new node. |
-| 360 | `private ObservableList<Node> stage` |  |
-| 381 | `private ObservableList<Node> stage` |  |
-| 402 | `private ObservableList<Node> stage` |  |
-| 423 | `private ObservableList<Node> stage` |  |
-| 444 | `private ObservableList<Node> stage` |  |
-| 468 | `private ObservableList<Node> stage` |  |
+| 111 | `private Scope root` |  |
+| 113 | `private int draws` | Draws served since the pool last started afresh: 0 means the next draw makes every node new. |
+| 115 | `private int lastMade, lastKept` | At the last draw: the nodes it made new, and the nodes it handed back (what KeptCheck counts). |
+| 141 | `private Map<Class<?>, List<Node>> made` |  |
+| 142 | `private Map<Class<?>, List<Node>> making` |  |
+| 143 | `private final Map<Class<?>, Integer> taken` |  |
+| 144 | `private Map<Object, Scope> inner` |  |
+| 145 | `private Map<Object, Scope> innerMaking` |  |
+| 163 | `final Draw outer` | The draw this one was begun inside, or null (UP2: a draw of another pool within a draw). |
+| 164 | `final ArrayDeque<Scope> scopes` |  |
+| 165 | `final List<Scope> begun` |  |
+| 166 | `final List<Staging> staged` |  |
+| 167 | `final List<Node> handedBack` |  |
+| 168 | `final Set<Node> made` |  |
+| 169 | `final Set<Node> tipped` |  |
+| 170 | `final Set<Property<?>> given` |  |
+| 171 | `final Map<Node, Scene> detached` |  |
+| 185 | `private static Draw drawing` | The draw on now, or null: then every call here makes a new node. |
+| 187 | `private static Draw settling` | The draw whose staged lists are committing, when constructors must behave outside a draw. |
+| 190 | `static Consumer<Node> layoutObserver` | Bench observation of JavaFX layout requests, null during ordinary play (FX thread only). |
+| 192 | `static Consumer<Node> sizeObserver` | The preferred-size convenience setter bypasses Parent.requestLayout; observe its calls directly. |
+| 397 | `private ObservableList<Node> stage` |  |
+| 428 | `private ObservableList<Node> stage` |  |
+| 459 | `private ObservableList<Node> stage` |  |
+| 490 | `private ObservableList<Node> stage` |  |
+| 521 | `private ObservableList<Node> stage` |  |
+| 555 | `private ObservableList<Node> stage` |  |
+| 556 | `private ObservableList<ColumnConstraints> columns` |  |
+| 557 | `private ObservableList<RowConstraints> rows` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 92 | 596 | **type** `public final class Kept` | A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a screen's code made at its last draw, handed back to the same code, in the order it asks for them, at the next - so a month th... |
-| 94 | 1 | `private Kept()` |  |
+| 101 | 736 | **type** `public final class Kept` | A page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): the nodes a screen's code made at its last draw, handed back to the same code, in the order it asks for them, at the next - so a month th... |
+| 103 | 1 | `private Kept()` |  |
 
-### THE POOL, THE DRAW AND THE SCOPES (lines 96-327)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 101 | 28 | **type** `static final class Pool` | One screen's kept nodes: what each of its scopes made at its last draw. |
-| 109 | 3 | `int lastMade()` _(in Kept.Pool)_ | The nodes the last draw made new. |
-| 114 | 3 | `int lastKept()` _(in Kept.Pool)_ | The nodes the last draw handed back from the one before. |
-| 119 | 4 | `void forget()` _(in Kept.Pool)_ | Every node is made new at the next draw: another screen was shown, or another city opened. |
-| 125 | 3 | `boolean holds()` _(in Kept.Pool)_ | Whether the next draw has kept nodes to hand back. |
-| 131 | 19 | **type** `private static final class Scope` | One scope's nodes: by class, in the order the code asked for them; and its keyed inner scopes. |
-| 138 | 5 | `void begin()` _(in Kept.Scope)_ |  |
-| 145 | 4 | `void end()` _(in Kept.Scope)_ | What was not asked for this draw is let go: the next draw hands back only this one's. |
-| 152 | 20 | **type** `private static final class Draw` | A draw in progress. |
-| 162 | 3 | `Draw(Draw outer)` _(in Kept.Draw)_ |  |
-| 167 | 4 | `boolean drawing(Pool pool)` _(in Kept.Draw)_ | Whether this draw, or any it was begun inside, is drawing this pool. |
-| 177 | 3 | `static boolean drawing()` | Whether a kept draw is on. |
-| 193 | 32 | `static void draw(Pool pool, Runnable code)` | Runs a page's code as a kept draw from the pool: every node it asks for here is handed back from the pool's last draw where it can be, and when the code returns each box's children are set from what the code put in them. |
-| 231 | 19 | `static<T> T scope(Object key, Supplier<T> code)` | Runs part of a page in a scope of its own, keyed by what it shows - a card's name, a row's sector or building - so its nodes are handed back to it and to nothing else. |
-| 252 | 6 | `static void scope(Object key, Runnable code)` | The same, for code that makes nothing to return. |
-| 264 | 21 | `static<T extends Node> T of(Class<T> type, Supplier<? extends T> fresh)` | The next node of this class the current scope made last time, or a new one: the one way a kept page's code makes a node. |
-| 290 | 4 | `static boolean isNew(Node n)` | Whether this node was made new by the draw on now (or no draw is on): a listener or an event filter added only when this is true is added once in the node's life. |
-| 296 | 19 | `private static void handBack(Draw d, Node n)` | A node handed back, made what a new one is in what code gives a node only sometimes. |
-| 322 | 5 | `private static<T> void resetIfCodeSet(Property<? extends T> p, T initial)` | Back to a new node's value where it is not that already - but only a value code set: one an inline style set belongs to the style, outranks code, and would not come back until the style changed. |
-
-### THE BOXES: their children are the draw's own list while a draw is on (lines 328-495)
+### THE POOL, THE DRAW AND THE SCOPES (lines 105-364)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 333 | 7 | **type** `interface Staging` | A box that stages its children while a kept draw is on and sets them when it ends. |
-| 335 | 1 | `void stage()` _(in Kept.Staging)_ | A draw has handed this box out: its children are a list of the draw's own from now. |
-| 338 | 1 | `void commit()` _(in Kept.Staging)_ | The draw has ended: the real children set from the staged list, in one call, where they differ. |
-| 342 | 3 | `private static void settle(ObservableList<Node> real, List<? extends Node> want)` | The real list made equal to the staged one: untouched when it already is, else in one call. |
-| 347 | 5 | `static boolean same(List<? extends Node> real, List<? extends Node> want)` | Whether a children list is already these nodes, in this order. |
-| 354 | 3 | `static void set(ObservableList<Node> real, List<? extends Node> want)` | A pane's children made these nodes, in one call and only where they differ (the chrome's boxes are not Kept's own). |
-| 359 | 19 | **type** `static final class Column extends VBox implements Staging` | A VBox, kept. |
-| 362 | 1 | `Column()` _(in Kept.Column)_ |  |
-| 364 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Column)_ |  |
-| 368 | 3 | `public void stage()` _(in Kept.Column)_ |  |
-| 372 | 5 | `public void commit()` _(in Kept.Column)_ |  |
-| 380 | 19 | **type** `static final class Row extends HBox implements Staging` | An HBox, kept. |
-| 383 | 1 | `Row()` _(in Kept.Row)_ |  |
-| 385 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Row)_ |  |
-| 389 | 3 | `public void stage()` _(in Kept.Row)_ |  |
-| 393 | 5 | `public void commit()` _(in Kept.Row)_ |  |
-| 401 | 19 | **type** `static final class Stack extends StackPane implements Staging` | A StackPane, kept. |
-| 404 | 1 | `Stack()` _(in Kept.Stack)_ |  |
-| 406 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Stack)_ |  |
-| 410 | 3 | `public void stage()` _(in Kept.Stack)_ |  |
-| 414 | 5 | `public void commit()` _(in Kept.Stack)_ |  |
-| 422 | 19 | **type** `static final class Flow extends FlowPane implements Staging` | A FlowPane, kept. |
-| 425 | 1 | `Flow()` _(in Kept.Flow)_ |  |
-| 427 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Flow)_ |  |
-| 431 | 3 | `public void stage()` _(in Kept.Flow)_ |  |
-| 435 | 5 | `public void commit()` _(in Kept.Flow)_ |  |
-| 443 | 19 | **type** `static final class Plain extends Pane implements Staging` | A plain Pane, kept: its children placed by the code (layoutX and layoutY), not by the pane. |
-| 446 | 1 | `Plain()` _(in Kept.Plain)_ |  |
-| 448 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Plain)_ |  |
-| 452 | 3 | `public void stage()` _(in Kept.Plain)_ |  |
-| 456 | 5 | `public void commit()` _(in Kept.Plain)_ |  |
-| 467 | 23 | **type** `static final class Grid extends GridPane implements Staging` | A GridPane, kept. |
-| 470 | 1 | `Grid()` _(in Kept.Grid)_ |  |
-| 472 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Grid)_ |  |
-| 476 | 7 | `public void stage()` _(in Kept.Grid)_ |  |
-| 484 | 5 | `public void commit()` _(in Kept.Grid)_ |  |
-| 492 | 3 | `static Group group()` | A Group, kept: Group's getChildren() is final, so a kept group's children are set through {@link #children}. |
+| 110 | 28 | **type** `static final class Pool` | One screen's kept nodes: what each of its scopes made at its last draw. |
+| 118 | 3 | `int lastMade()` _(in Kept.Pool)_ | The nodes the last draw made new. |
+| 123 | 3 | `int lastKept()` _(in Kept.Pool)_ | The nodes the last draw handed back from the one before. |
+| 128 | 4 | `void forget()` _(in Kept.Pool)_ | Every node is made new at the next draw: another screen was shown, or another city opened. |
+| 134 | 3 | `boolean holds()` _(in Kept.Pool)_ | Whether the next draw has kept nodes to hand back. |
+| 140 | 19 | **type** `private static final class Scope` | One scope's nodes: by class, in the order the code asked for them; and its keyed inner scopes. |
+| 147 | 5 | `void begin()` _(in Kept.Scope)_ |  |
+| 154 | 4 | `void end()` _(in Kept.Scope)_ | What was not asked for this draw is let go: the next draw hands back only this one's. |
+| 161 | 22 | **type** `private static final class Draw` | A draw in progress. |
+| 173 | 3 | `Draw(Draw outer)` _(in Kept.Draw)_ |  |
+| 178 | 4 | `boolean drawing(Pool pool)` _(in Kept.Draw)_ | Whether this draw, or any it was begun inside, is drawing this pool. |
+| 195 | 3 | `static boolean drawing()` | Whether a kept draw is on. |
+| 211 | 39 | `static void draw(Pool pool, Runnable code)` | Runs a page's code as a kept draw from the pool: every node it asks for here is handed back from the pool's last draw where it can be, and when the code returns each box's children are set from what the code put in them. |
+| 256 | 19 | `static<T> T scope(Object key, Supplier<T> code)` | Runs part of a page in a scope of its own, keyed by what it shows - a card's name, a row's sector or building - so its nodes are handed back to it and to nothing else. |
+| 277 | 6 | `static void scope(Object key, Runnable code)` | The same, for code that makes nothing to return. |
+| 289 | 21 | `static<T extends Node> T of(Class<T> type, Supplier<? extends T> fresh)` | The next node of this class the current scope made last time, or a new one: the one way a kept page's code makes a node. |
+| 315 | 4 | `static boolean isNew(Node n)` | Whether this node was made new by the draw on now (or no draw is on): a listener or an event filter added only when this is true is added once in the node's life. |
+| 321 | 3 | `private static void handBack(Draw d, Node n)` | A node handed back: optional state is settled after the drawing code has had its turn. |
+| 326 | 4 | `static<T> void give(Property<T> property, T value)` | An explicit optional value, including an unchanged one, belongs to this draw. |
+| 331 | 3 | `private static<T> void omitted(Draw d, Property<T> p, T initial)` |  |
+| 335 | 17 | `private static void resetOmitted(Draw d, Node n)` |  |
+| 359 | 5 | `private static<T> void resetIfCodeSet(Property<? extends T> p, T initial)` | Back to a new node's value where it is not that already - but only a value code set: one an inline style set belongs to the style, outranks code, and would not come back until the style changed. |
 
-### THE NODES, AS THE CODE ASKS FOR THEM (lines 496-580)
+### THE BOXES: their children are the draw's own list while a draw is on (lines 365-629)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 501 | 5 | `static VBox column(double spacing)` | A VBox with this spacing. |
-| 508 | 5 | `static VBox column(double spacing, Node...kids)` | A VBox with this spacing and these children. |
-| 515 | 5 | `static HBox row(double spacing)` | An HBox with this spacing. |
-| 522 | 5 | `static HBox row(double spacing, Node...kids)` | An HBox with this spacing and these children. |
-| 529 | 5 | `static StackPane stack(Node...kids)` | A StackPane with these children. |
-| 536 | 6 | `static FlowPane flow(double hgap, double vgap)` | A FlowPane with these gaps. |
-| 544 | 3 | `static GridPane grid()` | A GridPane. |
-| 549 | 5 | `static Pane plain(Node...kids)` | A plain Pane with these children. |
-| 556 | 3 | `static Region region()` | A Region: a spacer, a bar, a swatch. |
-| 561 | 6 | `static Label label(String text)` | A Label with this text and no graphic. |
-| 569 | 6 | `static Label label(String text, Node graphic)` | A Label with this text and this graphic. |
-| 577 | 3 | `static void children(Group g, Node...kids)` | A Group's children set where they differ, kept or not (Group's own list cannot be staged). |
+| 370 | 7 | **type** `interface Staging` | A box that stages its children while a kept draw is on and sets them when it ends. |
+| 372 | 1 | `void stage()` _(in Kept.Staging)_ | A draw has handed this box out: its children are a list of the draw's own from now. |
+| 375 | 1 | `void commit()` _(in Kept.Staging)_ | The draw has ended: the real children set from the staged list, in one call, where they differ. |
+| 379 | 3 | `private static void settle(ObservableList<Node> real, List<? extends Node> want)` | The real list made equal to the staged one: untouched when it already is, else in one call. |
+| 384 | 5 | `static boolean same(List<? extends Node> real, List<? extends Node> want)` | Whether a children list is already these nodes, in this order. |
+| 391 | 3 | `static void set(ObservableList<Node> real, List<? extends Node> want)` | A pane's children made these nodes, in one call and only where they differ (the chrome's boxes are not Kept's own). |
+| 396 | 29 | **type** `static final class Column extends VBox implements Staging` | A VBox, kept. |
+| 399 | 1 | `Column()` _(in Kept.Column)_ |  |
+| 401 | 4 | `public void setPrefSize(double width, double height)` _(in Kept.Column)_ |  |
+| 406 | 4 | `public void requestLayout()` _(in Kept.Column)_ |  |
+| 411 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Column)_ |  |
+| 415 | 3 | `public void stage()` _(in Kept.Column)_ |  |
+| 419 | 5 | `public void commit()` _(in Kept.Column)_ |  |
+| 427 | 29 | **type** `static final class Row extends HBox implements Staging` | An HBox, kept. |
+| 430 | 1 | `Row()` _(in Kept.Row)_ |  |
+| 432 | 4 | `public void setPrefSize(double width, double height)` _(in Kept.Row)_ |  |
+| 437 | 4 | `public void requestLayout()` _(in Kept.Row)_ |  |
+| 442 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Row)_ |  |
+| 446 | 3 | `public void stage()` _(in Kept.Row)_ |  |
+| 450 | 5 | `public void commit()` _(in Kept.Row)_ |  |
+| 458 | 29 | **type** `static final class Stack extends StackPane implements Staging` | A StackPane, kept. |
+| 461 | 1 | `Stack()` _(in Kept.Stack)_ |  |
+| 463 | 4 | `public void setPrefSize(double width, double height)` _(in Kept.Stack)_ |  |
+| 468 | 4 | `public void requestLayout()` _(in Kept.Stack)_ |  |
+| 473 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Stack)_ |  |
+| 477 | 3 | `public void stage()` _(in Kept.Stack)_ |  |
+| 481 | 5 | `public void commit()` _(in Kept.Stack)_ |  |
+| 489 | 29 | **type** `static final class Flow extends FlowPane implements Staging` | A FlowPane, kept. |
+| 492 | 1 | `Flow()` _(in Kept.Flow)_ |  |
+| 494 | 4 | `public void setPrefSize(double width, double height)` _(in Kept.Flow)_ |  |
+| 499 | 4 | `public void requestLayout()` _(in Kept.Flow)_ |  |
+| 504 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Flow)_ |  |
+| 508 | 3 | `public void stage()` _(in Kept.Flow)_ |  |
+| 512 | 5 | `public void commit()` _(in Kept.Flow)_ |  |
+| 520 | 29 | **type** `static final class Plain extends Pane implements Staging` | A plain Pane, kept: its children placed by the code (layoutX and layoutY), not by the pane. |
+| 523 | 1 | `Plain()` _(in Kept.Plain)_ |  |
+| 525 | 4 | `public void setPrefSize(double width, double height)` _(in Kept.Plain)_ |  |
+| 530 | 4 | `public void requestLayout()` _(in Kept.Plain)_ |  |
+| 535 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Plain)_ |  |
+| 539 | 3 | `public void stage()` _(in Kept.Plain)_ |  |
+| 543 | 5 | `public void commit()` _(in Kept.Plain)_ |  |
+| 554 | 37 | **type** `static final class Grid extends GridPane implements Staging` | A GridPane, kept: constraints stage with children. |
+| 559 | 1 | `Grid()` _(in Kept.Grid)_ |  |
+| 561 | 4 | `public void setPrefSize(double width, double height)` _(in Kept.Grid)_ |  |
+| 566 | 4 | `public void requestLayout()` _(in Kept.Grid)_ |  |
+| 571 | 3 | `public ObservableList<Node> getChildren()` _(in Kept.Grid)_ |  |
+| 575 | 5 | `public void stage()` _(in Kept.Grid)_ |  |
+| 581 | 9 | `public void commit()` _(in Kept.Grid)_ |  |
+| 592 | 3 | `static ObservableList<ColumnConstraints> columns(GridPane grid)` |  |
+| 596 | 3 | `static ObservableList<RowConstraints> rows(GridPane grid)` |  |
+| 600 | 10 | `private static<T> void settleConstraints(ObservableList<T> actual, List<T> want, java.util.function.BiPredicate<T, T> same)` |  |
+| 611 | 6 | `private static boolean sameColumn(ColumnConstraints a, ColumnConstraints b)` |  |
+| 618 | 6 | `private static boolean sameRow(RowConstraints a, RowConstraints b)` |  |
+| 626 | 3 | `static Group group()` | A Group, kept: Group's getChildren() is final, so a kept group's children are set through {@link #children}. |
 
-### WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE (lines 581-629)
+### THE NODES, AS THE CODE ASKS FOR THEM (lines 630-722)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 591 | 3 | `static Tooltip tipOf(Node n)` | The tooltip installed on a node, or null. |
-| 600 | 14 | `static Tooltip tip(Node n, String text, double delayMillis)` | A tooltip on a node with this text and delay: the node's own, its text set, when it has one and a draw is on; else a new one installed, as Tooltip.install did. |
-| 616 | 3 | `static Animation animationOf(Node n)` | The animation a node was last given through {@link #play}, or null. |
-| 624 | 5 | `static void play(Node owner, Animation a)` | An animation on a node, played: the one this node was last given stopped first, so a month that lands while the last month's count-up still runs does not leave two counting one label. |
+| 635 | 5 | `static VBox column(double spacing)` | A VBox with this spacing. |
+| 642 | 5 | `static VBox column(double spacing, Node...kids)` | A VBox with this spacing and these children. |
+| 649 | 5 | `static HBox row(double spacing)` | An HBox with this spacing. |
+| 656 | 5 | `static HBox row(double spacing, Node...kids)` | An HBox with this spacing and these children. |
+| 663 | 5 | `static StackPane stack(Node...kids)` | A StackPane with these children. |
+| 670 | 6 | `static FlowPane flow(double hgap, double vgap)` | A FlowPane with these gaps. |
+| 678 | 3 | `static GridPane grid()` | A GridPane. |
+| 683 | 5 | `static Pane plain(Node...kids)` | A plain Pane with these children. |
+| 690 | 3 | `static Region region()` | A Region: a spacer, a bar, a swatch. |
+| 695 | 6 | **type** `static final class SizedRegion extends Region` | A plain Region with the same passive setter observation as the kept boxes. |
+| 696 | 4 | `public void setPrefSize(double width, double height)` _(in Kept.SizedRegion)_ |  |
+| 703 | 6 | `static Label label(String text)` | A Label with this text and no graphic. |
+| 711 | 6 | `static Label label(String text, Node graphic)` | A Label with this text and this graphic. |
+| 719 | 3 | `static void children(Group g, Node...kids)` | A Group's children set where they differ, kept or not (Group's own list cannot be staged). |
 
-### THE PLAYER'S HAND (KP2): a control on a kept page is not set under it (lines 630-687)
+### WHAT A NODE IS GIVEN THAT WOULD PILE UP ON A KEPT ONE (lines 723-771)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 647 | 20 | `static void grip(Node n)` | Makes {@link #held} true for this node between a primary-button press on it and the release that ends the press. |
-| 673 | 4 | `static boolean held(Node n)` | Whether the player holds this node now (see {@link #grip}); a slider also counts as held while its value is changing. |
-| 682 | 5 | `static void text(TextInputControl f, String text)` | A field's text set only where it differs and never while the field has the focus: a set marks the field edited and moves its caret, and the player typing owns it. |
+| 733 | 3 | `static Tooltip tipOf(Node n)` | The tooltip installed on a node, or null. |
+| 742 | 14 | `static Tooltip tip(Node n, String text, double delayMillis)` | A tooltip on a node with this text and delay: the node's own, its text set, when it has one and a draw is on; else a new one installed, as Tooltip.install did. |
+| 758 | 3 | `static Animation animationOf(Node n)` | The animation a node was last given through {@link #play}, or null. |
+| 766 | 5 | `static void play(Node owner, Animation a)` | An animation on a node, played: the one this node was last given stopped first, so a month that lands while the last month's count-up still runs does not leave two counting one label. |
+
+### THE PLAYER'S HAND (KP2): a control on a kept page is not set under it (lines 772-836)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 789 | 22 | `static void grip(Node n)` | Makes {@link #held} true for this node between a primary-button press on it and the release that ends the press. |
+| 812 | 4 | `private static void letGo(Node n)` |  |
+| 822 | 4 | `static boolean held(Node n)` | Whether the player holds this node now (see {@link #grip}); a slider also counts as held while its value is changing. |
+| 831 | 5 | `static void text(TextInputControl f, String text)` | A field's text set only where it differs and never while the field has the focus: a set marks the field edited and moves its caret, and the player typing owns it. |
 

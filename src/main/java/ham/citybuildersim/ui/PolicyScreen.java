@@ -996,9 +996,9 @@ final class PolicyScreen {
         String rest = own + " -fx-cursor: hand;";
         String lit = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? lit : rest);
-        c.setOnMouseEntered(e -> c.setStyle(lit));
-        c.setOnMouseExited(e -> c.setStyle(rest));
-        c.setOnMouseClicked(e -> go.run());
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(lit));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest));
+        Kept.give(c.onMouseClickedProperty(), e -> go.run());
         return c;
     }
 
@@ -2231,7 +2231,7 @@ final class PolicyScreen {
                 // Kept (KP6, KP2b): the style set once, whole, not words()' and then this one on top of it (which wrote it twice at each draw).
                 Label fold = words((shown ? "▾ " : "▸ ") + zero.size() + " paid nothing: " + names, Palette.SIZE_LABEL + 1, Palette.TEXT_MUTED,
                         " -fx-cursor: hand; -fx-padding: 6 6 6 6;");
-                fold.setOnMouseClicked(e -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); });
+                Kept.give(fold.onMouseClickedProperty(), e -> { if (!openLines.remove(key)) openLines.add(key); showPolicyMenu(); });
                 return fold;
             }));
             if (shown) for (Payer p : zero) addPayer(list, p, scale, which);
@@ -2314,9 +2314,9 @@ final class PolicyScreen {
             String hand = rest + " -fx-cursor: hand;";
             String over = hand + " -fx-background-color: " + Palette.CONTROL + ";";
             row.setStyle(row.isHover() ? over : hand);
-            row.setOnMouseEntered(e -> row.setStyle(over));
-            row.setOnMouseExited(e -> row.setStyle(hand));
-            row.setOnMouseClicked(e -> toggle.run());
+            Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(over));
+            Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(hand));
+            Kept.give(row.onMouseClickedProperty(), e -> toggle.run());
         } else {
             row.setStyle(rest);
         }
@@ -2792,7 +2792,7 @@ final class PolicyScreen {
             c.setPercentWidth(100 * share[i] / FloorView.GAUGE_TOP);
             c.setHgrow(Priority.ALWAYS);
             c.setFillWidth(true);
-            names.getColumnConstraints().add(c);
+            Kept.columns(names).add(c);
             Label zone = words(words[i], Palette.SIZE_CAPTION, Palette.TEXT_MUTED,
                     " -fx-border-color: transparent transparent transparent " + Palette.EDGE + "; -fx-border-width: 0 0 0 1; -fx-padding: 0 4 0 4;");
             names.add(zone, i, 0);
@@ -2980,8 +2980,8 @@ final class PolicyScreen {
             VBox o = option(tieName(tie, share), tieSays(tie), tie == want, tie == now, () -> {
                 if (!shut) choose(FLOOR_TIE, now, tie);
             });
-            o.setDisable(shut);
-            o.setOpacity(shut ? .5 : 1);
+            Kept.give(o.disableProperty(), shut);
+            Kept.give(o.opacityProperty(), shut ? .5 : 1);
             options[i] = o;
         }
         VBox c = card(cardHead(Icons.POLICY, Palette.MONEY, "TIE IT TO", TIE_INFO, null), Kept.column(Palette.GAP, options),
@@ -4195,7 +4195,7 @@ final class PolicyScreen {
         choice.setStyle("-fx-padding: 4 10 4 10; -fx-cursor: hand;"
                 + (lit ? Palette.block(Palette.CONTROL, Palette.ACCENT) + Palette.strong(Palette.SIZE_CAPTION + 1, Palette.TEXT_HEAD)
                         : Palette.block(Palette.PANEL) + Palette.words(Palette.SIZE_CAPTION + 1, Palette.TEXT_LABEL)));
-        choice.setOnMouseClicked(e -> pick.run());
+        Kept.give(choice.onMouseClickedProperty(), e -> pick.run());
         return choice;
     }
 
@@ -6265,9 +6265,9 @@ final class PolicyScreen {
         // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
         String lit = rest + " -fx-background-color: " + Palette.CONTROL + ";";
         row.setStyle(row.isHover() ? lit : rest);
-        row.setOnMouseEntered(e -> row.setStyle(lit));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> toggle.run());
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(lit));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> toggle.run());
         return row;
     }
 
@@ -6453,7 +6453,7 @@ final class PolicyScreen {
         Lever amountLever = new Lever("grantAmount", "...at", amountNow, 0, amountMax, amountStep,
                 v -> amountWords(wantBasis, v, ui.game.getExpectations().getExpectedLevel()), v -> policy.setGrant(wantBasis, v));
         boolean shut = isShut(PolicyDates.Lever.STUDENT_AID);
-        pick.setDisable(shut);
+        Kept.give(pick.disableProperty(), shut);
         Ladder ladder = ladderOf(amountLever).greyed(shut);
         double each = ui.game.grantPerStudentUnder(basis, amount);
         DoubleFunction<List<Effect>> effects = grantEffects(policy);

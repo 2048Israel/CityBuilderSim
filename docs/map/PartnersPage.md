@@ -14,7 +14,7 @@
 > WHAT SURVIVES THE REDRAW. TradeScreen redraws every month; the nation shown, the span, the good and the goods' fold are fields here (and the folds
 > TradeScreen's openLines), so a month landing leaves the page where the player left it.
 
-**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (81), [PartnersView](PartnersView.md) (58), [Good](Good.md) (18), [WorldMarket](WorldMarket.md) (15), [Icons](Icons.md) (13), [TradeScreen](TradeScreen.md) (9), [Pieces](Pieces.md) (9), [Money](Money.md) (8), [Nations](Nations.md) (7), [NationsMap](NationsMap.md) (6), [PartnerTrade](PartnerTrade.md) (5), [UserInterface](UserInterface.md) (2), [WorldData](WorldData.md) (2), [Game](Game.md) (1)
+**Uses:** [Palette](Palette.md) (109), [Kept](Kept.md) (88), [PartnersView](PartnersView.md) (58), [Good](Good.md) (18), [WorldMarket](WorldMarket.md) (15), [Icons](Icons.md) (13), [Pieces](Pieces.md) (10), [TradeScreen](TradeScreen.md) (9), [Money](Money.md) (8), [Nations](Nations.md) (7), [NationsMap](NationsMap.md) (6), [PartnerTrade](PartnerTrade.md) (5), [UserInterface](UserInterface.md) (2), [WorldData](WorldData.md) (2), [Game](Game.md) (1)
 
 **Used by (1):** [TradeScreen](TradeScreen.md)
 

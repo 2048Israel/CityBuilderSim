@@ -843,9 +843,9 @@ final class BankScreen {
         String rest = cardStyle(Palette.EDGE) + " -fx-cursor: hand;";
         String over = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? over : rest);
-        c.setOnMouseEntered(e -> c.setStyle(over));
-        c.setOnMouseExited(e -> c.setStyle(rest));
-        c.setOnMouseClicked(e -> go.run());
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(over));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest));
+        Kept.give(c.onMouseClickedProperty(), e -> go.run());
         return c;
     }
 
@@ -2347,7 +2347,7 @@ final class BankScreen {
         double now = bank.sheet(p.line()), then = bank.yearAgo(p.line());
         Region sw = Kept.region();
         sw.setMinSize(10, 10);
-        sw.setPrefSize(10, 10);
+        Pieces.prefSize(sw, 10, 10);
         sw.setMaxSize(10, 10);
         sw.setStyle(p.ghost() ? "-fx-background-color: " + p.colour() + "33; -fx-border-color: " + p.colour() + "; -fx-border-width: 1;"
                 : "-fx-background-color: " + p.colour() + "; -fx-background-radius: 2;");
@@ -2359,7 +2359,7 @@ final class BankScreen {
         Label name = words((opens ? (open ? "▾ " : "▸ ") : "") + p.name(), Palette.SIZE_LABEL + 1,
                 opens ? Palette.ACCENT : Palette.TEXT_LABEL, opens);
         if (opens) {
-            name.setOnMouseClicked(e -> {
+            Kept.give(name.onMouseClickedProperty(), e -> {
                 if (!openLines.remove(key)) openLines.add(key);
                 showBankMenu();
             });
@@ -2549,7 +2549,7 @@ final class BankScreen {
         b.setHgrow(Priority.ALWAYS);
         javafx.scene.layout.ColumnConstraints f = new javafx.scene.layout.ColumnConstraints();
         f.setMinWidth(Region.USE_PREF_SIZE);
-        g.getColumnConstraints().addAll(a, b, f);
+        Kept.columns(g).addAll(a, b, f);
         for (int i = 0; i < parts.length; i++) {
             final int at = i, r = known ? 2 * i : i;
             // Kept (KP5): a part is a scope keyed by its sheet line, its year-ago row a scope inside it (a city lives a year of months and gains the row).
@@ -4322,11 +4322,11 @@ final class BankScreen {
                 ui.game.bankResolutionAdvance() > 0 ? Palette.WARN : Palette.TEXT_HEAD), 3, 0);
         Button rescue = Kept.of(Button.class, Button::new);
         rescue.setText("Resolve the bank for its shares – " + money(needed));
-        rescue.setDisable(!can);
+        Kept.give(rescue.disableProperty(), !can);
         // Kept (KP5): set on both sides - a button kept from a draw that could resolve the bank is not left in the green.
         rescue.setStyle(can ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                 + " -fx-padding: 8 18 8 18;" : "");
-        rescue.setOnAction(e -> {
+        Kept.give(rescue.onActionProperty(), e -> {
             if (!ui.game.canResolveBank()) return;
             ui.game.resolveBank();
             ui.innerScrollAt.remove("showBankMenu:body");
@@ -4436,14 +4436,14 @@ final class BankScreen {
         HBox act = Kept.scope("act", () -> {
             Button accept = Kept.of(Button.class, Button::new);
             accept.setText("Accept – buy " + marked(here, money(size)));
-            accept.setDisable(shortBy > 0);
+            Kept.give(accept.disableProperty(), shortBy > 0);
             // Set on both sides (KP5): a button kept from a draw with the treasury short is not left grey of its green.
             accept.setStyle(shortBy > 0 ? "" : "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                     + " -fx-padding: 8 18 8 18;");
-            accept.setOnAction(e -> { game.acceptPreferredOffer(); showBankMenu(); });
+            Kept.give(accept.onActionProperty(), e -> { game.acceptPreferredOffer(); showBankMenu(); });
             Button decline = Kept.of(Button.class, Button::new);
             decline.setText("Decline");
-            decline.setOnAction(e -> { game.declinePreferredOffer(); showBankMenu(); });
+            Kept.give(decline.onActionProperty(), e -> { game.declinePreferredOffer(); showBankMenu(); });
             HBox row = Kept.row(8, accept, decline);
             row.setAlignment(Pos.CENTER_LEFT);
             return row;

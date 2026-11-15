@@ -409,7 +409,7 @@ final class BuildScreen {
                     + " -fx-background-color: transparent; -fx-border-color: transparent;"
                     + " -fx-padding: 6 10 6 6; -fx-cursor: hand;");
             Kept.tip(overview, "The city's job, what would help most, and what the market builds", 1000);
-            overview.setOnAction(e -> showOverview());
+            Kept.give(overview.onActionProperty(), e -> showOverview());
             return overview;
         }));
 
@@ -423,7 +423,7 @@ final class BuildScreen {
                 strip.getChildren().add(Kept.scope("rule", () -> {
                     Region rule = Kept.region();
                     rule.setMinSize(1, 18);
-                    rule.setPrefSize(1, 18);
+                    Pieces.prefSize(rule, 1, 18);
                     rule.setMaxSize(1, 18);
                     rule.setStyle("-fx-background-color: " + Palette.EDGE + ";");
                     return rule;
@@ -455,7 +455,7 @@ final class BuildScreen {
                 Kept.tip(tab, (theirs
                         ? "Investors build these themselves. You can build them too."
                         : "Nobody builds these but the city.") + (fresh.isEmpty() ? "" : newWords(fresh)), 250);
-                tab.setOnAction(e -> openCategory(category.name()));
+                Kept.give(tab.onActionProperty(), e -> openCategory(category.name()));
                 return tab;
             }));
         }
@@ -488,7 +488,7 @@ final class BuildScreen {
     static Region whoDot(boolean investors) {
         Region dot = Kept.region();
         dot.setMinSize(6, 6);
-        dot.setPrefSize(6, 6);
+        Pieces.prefSize(dot, 6, 6);
         dot.setMaxSize(6, 6);
         dot.setStyle("-fx-background-color: " + (investors ? INVESTOR_DOT : CITY_DOT)
                 + "; -fx-background-radius: 3;");
@@ -525,7 +525,7 @@ final class BuildScreen {
         titled.setAlignment(Pos.CENTER_LEFT);
         if (!BuildAdvice.OVERVIEW.equals(menuTitle)) {
             title.setStyle(title.getStyle() + " -fx-cursor: hand;");
-            title.setOnMouseClicked(e -> showOverview());
+            Kept.give(title.onMouseClickedProperty(), e -> showOverview());
             titled.getChildren().addAll(Kept.scope("crumb", () -> {
                 Label sep = Kept.label("›");
                 sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
@@ -735,7 +735,7 @@ final class BuildScreen {
                 door.setMaxWidth(LAND_FREE_CELL - 28);
                 List<Zoning.Zone> zones = ui.game.getZoning().zones();
                 String page = zones.size() == 1 ? ZoningScreen.zonePage(zones.get(0).sector()) : ZoningScreen.THE_GROUND;
-                door.setOnMouseClicked(e -> {
+                Kept.give(door.onMouseClickedProperty(), e -> {
                     e.consume();
                     ui.policyScreen.open(PolicyScreen.ZONING, page);
                 });
@@ -752,7 +752,7 @@ final class BuildScreen {
             Label shortcut = Kept.label(bestLandWords(best));
             shortcut.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BUILDING) + " -fx-cursor: hand; -fx-padding: 2 0 0 0;");
             shortcut.setMaxWidth(LAND_FREE_CELL - 28);
-            shortcut.setOnMouseClicked(e -> {
+            Kept.give(shortcut.onMouseClickedProperty(), e -> {
                 e.consume();
                 buyBestLand(best, this::showBuildMenu);
             });
@@ -958,7 +958,7 @@ final class BuildScreen {
         VBox cover = Kept.scope("cover", () -> statCover(template, f));
         Label info = Kept.scope("info", () -> infoDot(key, cover));
         // A pointer left over the (i) across a redraw has kept the cover open, but sends no mouse-entered to a kept node.
-        cover.setVisible(pinnedStats.contains(key) || info.isHover());
+        Kept.give(cover.visibleProperty(), pinnedStats.contains(key) || info.isHover());
         card.getChildren().addAll(face, cover, info);
         StackPane.setAlignment(info, Pos.TOP_RIGHT);
         StackPane.setMargin(info, new javafx.geometry.Insets(8, 8, 0, 0));
@@ -1103,7 +1103,7 @@ final class BuildScreen {
     private static Region newDot() {
         Region dot = Kept.region();
         dot.setMinSize(8, 8);
-        dot.setPrefSize(8, 8);
+        Pieces.prefSize(dot, 8, 8);
         dot.setMaxSize(8, 8);
         dot.setStyle("-fx-background-color: " + Palette.DISCOVERY + "; -fx-background-radius: 4;"
                 + " -fx-border-color: " + Palette.TEXT_HEAD + "; -fx-border-width: 1; -fx-border-radius: 5;");
@@ -1283,8 +1283,8 @@ final class BuildScreen {
             javafx.scene.text.Text coming = textRun(" · " + formatter.format(onSite) + " on site · "
                     + atTodaysQueue(f.siteMonths()), null, Palette.SIZE_LABEL, Palette.BUILDING);
             coming.setUnderline(true);
-            coming.setCursor(javafx.scene.Cursor.HAND);
-            coming.setOnMouseClicked(e -> ui.constructionScreen.showSite(ConstructionControl.keyOf(t)));
+            Kept.give(coming.cursorProperty(), javafx.scene.Cursor.HAND);
+            Kept.give(coming.onMouseClickedProperty(), e -> ui.constructionScreen.showSite(ConstructionControl.keyOf(t)));
             Kept.set(haveLine.getChildren(), List.of(have, coming));
         } else {
             Kept.set(haveLine.getChildren(), List.of(have));
@@ -1693,7 +1693,7 @@ final class BuildScreen {
                 + "\nClick for " + inv.owner().key() + "'s Investors page.", 300);
         tip.setWrapText(true);
         tip.setMaxWidth(420);
-        row.setOnMouseClicked(e -> ui.sectorScreen.openSectorBooks(inv.owner(), "Investors"));
+        Kept.give(row.onMouseClickedProperty(), e -> ui.sectorScreen.openSectorBooks(inv.owner(), "Investors"));
         return row;
     }
 
@@ -2510,7 +2510,7 @@ final class BuildScreen {
         Label info = Kept.label("i");
         info.setAlignment(Pos.CENTER);
         info.setMinSize(18, 18);
-        info.setPrefSize(18, 18);
+        Pieces.prefSize(info, 18, 18);
         info.setMaxSize(18, 18);
         Runnable dress = () -> info.setStyle("-fx-background-radius: 50%;"
                 + " -fx-background-color: "
@@ -2518,12 +2518,12 @@ final class BuildScreen {
                 + " -fx-text-fill: " + Palette.TEXT_BODY + "; -fx-font-size: 10px;"
                 + " -fx-font-weight: bold; -fx-font-family: 'Georgia'; -fx-cursor: hand;");
         dress.run();
-        info.setOnMouseEntered(e -> cover.setVisible(true));
-        info.setOnMouseExited(e -> cover.setVisible(pinnedStats.contains(key)));
-        info.setOnMouseClicked(e -> {
+        Kept.give(info.onMouseEnteredProperty(), e -> Kept.give(cover.visibleProperty(), true));
+        Kept.give(info.onMouseExitedProperty(), e -> Kept.give(cover.visibleProperty(), pinnedStats.contains(key)));
+        Kept.give(info.onMouseClickedProperty(), e -> {
             if (!pinnedStats.remove(key)) pinnedStats.add(key);
             dress.run();
-            cover.setVisible(true);
+            Kept.give(cover.visibleProperty(), true);
         });
         Kept.tip(info, "Hover to read, click to keep it open", 400);
         return info;
@@ -2631,7 +2631,7 @@ final class BuildScreen {
 
         VBox cover = Kept.column(0, scroller);
         cover.setMinSize(0, 0);
-        cover.setPrefSize(NEED_CARD, 0);
+        Pieces.prefSize(cover, NEED_CARD, 0);
         cover.setMaxSize(NEED_CARD, Double.MAX_VALUE);
         cover.setStyle(Palette.block(Palette.FIELD, Palette.ACCENT) + " -fx-background-radius: 8; -fx-border-radius: 8;");
         return cover;
@@ -2759,8 +2759,8 @@ final class BuildScreen {
             }
         }
         if (pendingHint == null) return;
-        pendingHint.setManaged(true);
-        pendingHint.setVisible(any);
+        Kept.give(pendingHint.managedProperty(), true);
+        Kept.give(pendingHint.visibleProperty(), any);
     }
 
 
@@ -3089,11 +3089,11 @@ final class BuildScreen {
         String over = Palette.ACCENT + " " + Palette.ACCENT + " " + Palette.ACCENT + ";";
         // The look the pointer calls for is chosen from isHover(), where it is set (a kept tile sends no mouse-entered to a pointer that has not moved).
         tile.setStyle(rest + (tile.isHover() ? over : edge));
-        tile.setOnMouseEntered(e -> tile.setStyle(rest + over));
-        tile.setOnMouseExited(e -> tile.setStyle(rest + edge));
+        Kept.give(tile.onMouseEnteredProperty(), e -> tile.setStyle(rest + over));
+        Kept.give(tile.onMouseExitedProperty(), e -> tile.setStyle(rest + edge));
         Kept.tip(tile, worst == null ? c.name() + ": nothing near its line. Click to build for it."
                 : c.name() + ": " + worst.label().toLowerCase() + " · " + worst.reading() + ". Click to build for it.", 300);
-        tile.setOnMouseClicked(e -> openCategory(c.name()));
+        Kept.give(tile.onMouseClickedProperty(), e -> openCategory(c.name()));
         return tile;
     }
 
@@ -3129,7 +3129,7 @@ final class BuildScreen {
                 Pieces.ActionButton order = actionButton(Icons.BUILD, Palette.BUILDING, ACTION_INLINE,
                         allPress(advice), () -> orderAll(advice));
                 order.setMinWidth(Region.USE_PREF_SIZE);
-                HBox.setMargin(order, new javafx.geometry.Insets(0, 0, 0, 10));
+                Pieces.hMargin(order, new javafx.geometry.Insets(0, 0, 0, 10));
                 return order;
             }));
         }
@@ -3719,7 +3719,7 @@ final class BuildScreen {
                 withdraw.setText("Withdraw");
                 Kept.tip(withdraw, "Stop asking for this one. What it raised stays in the treasury: the paper is "
                         + "sold and cannot be unsold.", 300);
-                withdraw.setOnAction(e -> { ui.game.getAutoBuilder().withdraw(index, ui.game.getDecisions()); showOverview(); });
+                Kept.give(withdraw.onActionProperty(), e -> { ui.game.getAutoBuilder().withdraw(index, ui.game.getDecisions()); showOverview(); });
                 HBox row = Kept.row(16, name, figures, withdraw);
                 row.setAlignment(Pos.CENTER_LEFT);
                 row.setStyle("-fx-padding: 10 12 10 12; -fx-background-color: " + Palette.RAISED + ";"
@@ -3824,10 +3824,10 @@ final class BuildScreen {
                 + " -fx-background-radius: 6; -fx-border-radius: 6; -fx-cursor: hand; -fx-border-color: ";
         // The look the pointer calls for is chosen from isHover(), where it is set (a kept tile sends no mouse-entered to a pointer that has not moved).
         tile.setStyle(rest + (tile.isHover() ? Palette.BUSINESS : Palette.EDGE) + ";");
-        tile.setOnMouseEntered(e -> tile.setStyle(rest + Palette.BUSINESS + ";"));
-        tile.setOnMouseExited(e -> tile.setStyle(rest + Palette.EDGE + ";"));
+        Kept.give(tile.onMouseEnteredProperty(), e -> tile.setStyle(rest + Palette.BUSINESS + ";"));
+        Kept.give(tile.onMouseExitedProperty(), e -> tile.setStyle(rest + Palette.EDGE + ";"));
         Kept.tip(tile, c.name() + ": investors build these themselves. You can build them too.", 1000);
-        tile.setOnMouseClicked(e -> openCategory(c.name()));
+        Kept.give(tile.onMouseClickedProperty(), e -> openCategory(c.name()));
         return tile;
     }
 
@@ -4254,10 +4254,10 @@ final class BuildScreen {
         String over = picked ? Palette.BUILDING : Palette.ACCENT;
         // The look the pointer calls for is chosen from isHover(), where it is set (a kept card sends no mouse-entered to a pointer that has not moved).
         card.setStyle(rest + (card.isHover() ? over : edge) + ";");
-        card.setOnMouseEntered(e -> card.setStyle(rest + over + ";"));
-        card.setOnMouseExited(e -> card.setStyle(rest + edge + ";"));
+        Kept.give(card.onMouseEnteredProperty(), e -> card.setStyle(rest + over + ";"));
+        Kept.give(card.onMouseExitedProperty(), e -> card.setStyle(rest + edge + ";"));
         Kept.tip(card, tip, 300);
-        card.setOnMouseClicked(e -> {
+        Kept.give(card.onMouseClickedProperty(), e -> {
             measurePicked.put(c.name(), m);
             showCityCategory(c);
         });
@@ -5262,7 +5262,7 @@ final class BuildScreen {
         // kept whether or not there is a dot (0.7.20), so the first purchase
         // moves nothing.
         corner.setMinSize(18, 18);
-        corner.setPrefSize(18, 18);
+        Pieces.prefSize(corner, 18, 18);
         if (receipts.isEmpty()) {
             // Kept (KP3): a pulse that outlived its dot (another city's receipts forgotten) goes with it.
             if (ui.receiptPulse != null) {
@@ -5277,7 +5277,7 @@ final class BuildScreen {
         // Kept (KP3): the dot is a scope of its own, since a corner with no receipt has none.
         Button dot = Kept.scope("dot", () -> Kept.of(Button.class, Button::new));
         dot.setMinSize(18, 18);
-        dot.setPrefSize(18, 18);
+        Pieces.prefSize(dot, 18, 18);
         dot.setMaxSize(18, 18);
         dot.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-background-radius: 50%;"
                 + " -fx-border-color: " + Palette.CONFIRM + "; -fx-border-width: 1;"
@@ -5295,13 +5295,13 @@ final class BuildScreen {
          * itself), and it goes when the build page does (UserInterface
          * .clearMenu() -> closeReceipt()).
          */
-        dot.setOnAction(e -> {
+        Kept.give(dot.onActionProperty(), e -> {
             ui.receiptSeen = ui.game.getReceiptSerial();
             if (ui.receiptPulse != null) {
                 ui.receiptPulse.stop();
                 ui.receiptPulse = null;
             }
-            dot.setOpacity(1);
+            Kept.give(dot.opacityProperty(), 1);
             if (receiptPopup != null) closeReceipt(); else openReceipt(dot);
         });
 
@@ -5318,7 +5318,7 @@ final class BuildScreen {
             Animation was = Kept.animationOf(dot);
             if (was != null) {
                 was.stop();
-                dot.setOpacity(1);
+                Kept.give(dot.opacityProperty(), 1);
             }
         }
         // A redraw while it is open shows the newest purchases in it.
@@ -5988,7 +5988,7 @@ final class BuildScreen {
     private Button pageButton(String text, Runnable go) {
         Button b = Kept.of(Button.class, Button::new);
         b.setText(text);
-        b.setOnAction(e -> go.run());
+        Kept.give(b.onActionProperty(), e -> go.run());
         return b;
     }
 
@@ -6366,7 +6366,7 @@ final class BuildScreen {
         String back = from.title() == null ? BuildAdvice.OVERVIEW : from.title();
         Label title = ui.pageTitle("Build");
         title.setStyle(title.getStyle() + " -fx-cursor: hand;");
-        title.setOnMouseClicked(e -> handleAllBuildingMenus(from.title(), from.categories()));
+        Kept.give(title.onMouseClickedProperty(), e -> handleAllBuildingMenus(from.title(), from.categories()));
         Label sep = Kept.label("›");
         sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
         Label where = Kept.label(sub);
@@ -6472,7 +6472,7 @@ final class BuildScreen {
 
             Button cancel = Kept.of(Button.class, Button::new);
             cancel.setText("Cancel");
-            cancel.setOnAction(e -> handleAllBuildingMenus(from.title(), from.categories()));
+            Kept.give(cancel.onActionProperty(), e -> handleAllBuildingMenus(from.title(), from.categories()));
             page.getChildren().add(cancel);
             ui.setPage(page);
         });
@@ -6526,7 +6526,7 @@ final class BuildScreen {
             page.getChildren().add(Kept.scope("head", () -> runHead("Not built", from)));
             Button back = Kept.of(Button.class, Button::new);
             back.setText("Back to " + (from.title() == null ? BuildAdvice.OVERVIEW : from.title()));
-            back.setOnAction(e -> handleAllBuildingMenus(from.title(), from.categories()));
+            Kept.give(back.onActionProperty(), e -> handleAllBuildingMenus(from.title(), from.categories()));
             page.getChildren().addAll(Kept.scope("card", () -> alert(w[0], w[1])), back);
             ui.setPage(page);
         });

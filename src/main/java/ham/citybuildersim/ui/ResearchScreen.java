@@ -259,9 +259,9 @@ final class ResearchScreen {
         Kept.tip(row, fieldName(f) + ": click for its funding.", 300);
         // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
         row.setStyle(row.isHover() ? DOOR_LIT : DOOR_STYLE);
-        row.setOnMouseEntered(e -> row.setStyle(DOOR_LIT));
-        row.setOnMouseExited(e -> row.setStyle(DOOR_STYLE));
-        row.setOnMouseClicked(e -> go(FUNDING));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(DOOR_LIT));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(DOOR_STYLE));
+        Kept.give(row.onMouseClickedProperty(), e -> go(FUNDING));
         return row;
     }
 
@@ -799,9 +799,9 @@ final class ResearchScreen {
         if (sector != null) {
             // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
             row.setStyle(row.isHover() ? DOOR_LIT : DOOR_STYLE);
-            row.setOnMouseEntered(e -> row.setStyle(DOOR_LIT));
-            row.setOnMouseExited(e -> row.setStyle(DOOR_STYLE));
-            row.setOnMouseClicked(e -> ui.sectorScreen.openSectorBooks(sector, "Investors"));
+            Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(DOOR_LIT));
+            Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(DOOR_STYLE));
+            Kept.give(row.onMouseClickedProperty(), e -> ui.sectorScreen.openSectorBooks(sector, "Investors"));
         } else {
             row.setStyle(ROW_STYLE);
         }
@@ -929,7 +929,7 @@ final class ResearchScreen {
         boolean here = d.source() == Source.HERE;
         Region r = Kept.region();
         r.setMinSize(DOT, DOT);
-        r.setPrefSize(DOT, DOT);
+        Pieces.prefSize(r, DOT, DOT);
         r.setMaxSize(DOT, DOT);
         String round = " -fx-background-radius: " + DOT / 2 + "; -fx-border-radius: " + DOT / 2 + "; -fx-border-color: " + colour + "; -fx-border-width: 2;";
         r.setStyle("-fx-background-color: " + (here ? colour : Palette.RAISED) + ";" + round);
@@ -955,7 +955,7 @@ final class ResearchScreen {
         private int first = ResearchView.FIRST_MONTH, last = ResearchView.FIRST_MONTH + 12, rows;
 
         Timeline() {
-            canvas.setMouseTransparent(true);
+            Kept.give(canvas.mouseTransparentProperty(), true);
             super.getChildren().add(canvas);
             setMinWidth(0);
         }

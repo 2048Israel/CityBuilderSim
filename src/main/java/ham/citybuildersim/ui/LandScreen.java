@@ -1024,7 +1024,7 @@ final class LandScreen {
         Region swatch = Kept.scope("pageTitle.swatch", () -> {
             Region s = Kept.region();
             s.setMinSize(10, 10);
-            s.setPrefSize(10, 10);
+            Pieces.prefSize(s, 10, 10);
             s.setMaxSize(10, 10);
             s.setStyle("-fx-background-color: " + Palette.BUILDING + "; -fx-background-radius: 3;");
             return s;
@@ -1049,7 +1049,7 @@ final class LandScreen {
         HBox titled = Kept.row(10, title);
         titled.setAlignment(Pos.CENTER_LEFT);
         if (sub != null) {
-            title.setOnMouseClicked(e -> showLandMenu());
+            Kept.give(title.onMouseClickedProperty(), e -> showLandMenu());
             Label sep = Kept.label("›");
             sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
             Label where = Kept.label(sub);
@@ -1210,7 +1210,7 @@ final class LandScreen {
     static HBox ghostSwatch(String colour, String name) {
         Region dot = Kept.region();
         dot.setMinSize(10, 10);
-        dot.setPrefSize(10, 10);
+        Pieces.prefSize(dot, 10, 10);
         dot.setMaxSize(10, 10);
         dot.setStyle("-fx-background-color: " + colour + "40; -fx-border-color: " + colour + ";"
                 + " -fx-border-width: 1; -fx-background-radius: 2; -fx-border-radius: 2;");
@@ -1300,12 +1300,12 @@ final class LandScreen {
      * ---------------------------------------------------------------------------------------------------------------- */
     HBox nextPlots(Next next) {
         Button fewer = stepper("−", 26, () -> { nextCount--; showLandMenu(); });
-        fewer.setDisable(next.n() <= 1);
+        Kept.give(fewer.disableProperty(), next.n() <= 1);
         Label count = Kept.label(String.valueOf(next.n()));
         count.setStyle(Palette.figure(Palette.SIZE_BODY, Palette.TEXT_HEAD));
         count.setMinWidth(Region.USE_PREF_SIZE);
         Button more = stepper("+", 26, () -> { nextCount++; showLandMenu(); });
-        more.setDisable(next.n() >= next.listed());
+        Kept.give(more.disableProperty(), next.n() >= next.listed());
 
         Label total = Kept.label(next.total());
         total.setStyle(Palette.figure(Palette.SIZE_SECTION, next.totalTone()));
@@ -1547,7 +1547,7 @@ final class LandScreen {
                 Region part = Kept.region();
                 double w = Math.max(1, shares[k] * barW);
                 part.setMinSize(w, 8);
-                part.setPrefSize(w, 8);
+                Pieces.prefSize(part, w, 8);
                 part.setMaxSize(w, 8);
                 part.setStyle("-fx-background-color: " + MapView.css(ground[k]) + ";");
                 b.getChildren().add(part);
@@ -1588,9 +1588,9 @@ final class LandScreen {
                 + " -fx-border-radius: 4; -fx-background-radius: 4; -fx-padding: 2 0 2 0; -fx-cursor: hand;");
         buy.setMaxWidth(Double.MAX_VALUE);
         List<Integer> just = List.of(p.getId());
-        buy.setOnAction(e -> buyOrFund(just));
+        Kept.give(buy.onActionProperty(), e -> buyOrFund(just));
         // The press is the button's: the row under it does not pick its offer over the page the button opened.
-        buy.setOnMouseClicked(javafx.event.Event::consume);
+        Kept.give(buy.onMouseClickedProperty(), javafx.event.Event::consume);
         Kept.tip(buy, r.buttonTip(), 250);
         Label price = gridCell(r.price(), r.priceTone(), Palette.SIZE_BODY, true);
         if (turned) UserInterface.popPip(price);
@@ -1618,15 +1618,15 @@ final class LandScreen {
         String lit = rest + " -fx-cursor: hand; -fx-background-color: " + Palette.CONTROL + ";";
         // Kept (KP2, rule 6): a row under a still pointer stays hovered across a draw and is not entered again.
         row.setStyle(row.isHover() ? lit : rested);
-        row.setOnMouseEntered(e -> {
+        Kept.give(row.onMouseEnteredProperty(), e -> {
             row.setStyle(lit);
             map.light(p.getSide(), p.getPlace());
         });
-        row.setOnMouseExited(e -> {
+        Kept.give(row.onMouseExitedProperty(), e -> {
             row.setStyle(rested);
             map.light(-1, -1);
         });
-        row.setOnMouseClicked(e -> {
+        Kept.give(row.onMouseClickedProperty(), e -> {
             place = p.getPlace();
             showLandMenu();
         });
@@ -1796,10 +1796,10 @@ final class LandScreen {
         // ...then the other ores the city's ground holds (I13-L), a scope each by its name, and the oil last.
         for (OreLine line : otherOres()) card.getChildren().add(Kept.scope(line.name(), () -> oreBlock(line)));
         card.getChildren().add(oil);
-        card.setOnMouseEntered(e -> card.setStyle(lit));
-        card.setOnMouseExited(e -> card.setStyle(rested));
+        Kept.give(card.onMouseEnteredProperty(), e -> card.setStyle(lit));
+        Kept.give(card.onMouseExitedProperty(), e -> card.setStyle(rested));
         Kept.tip(card, "Mines are built under Build › Industry. Click to go there.", 300);
-        card.setOnMouseClicked(e -> ui.buildScreen.openCategory(BuildAdvice.INDUSTRY));
+        Kept.give(card.onMouseClickedProperty(), e -> ui.buildScreen.openCategory(BuildAdvice.INDUSTRY));
         if (popped != null) UserInterface.popPip(popped);
         return card;
     }
@@ -1824,7 +1824,7 @@ final class LandScreen {
                 : "No industry digs " + l.name().toLowerCase(java.util.Locale.ROOT) + " yet.", 300);
         if (l.industry() != null) {
             Sector industry = l.industry();
-            box.setOnMouseClicked(e -> {
+            Kept.give(box.onMouseClickedProperty(), e -> {
                 e.consume();
                 ui.sectorScreen.openSectorBooks(industry, SectorScreen.SECTOR_PAGES[0]);
             });
@@ -1861,7 +1861,7 @@ final class LandScreen {
                     Kept.tip(row, (word == null || word.isEmpty() ? "No word recorded" : word)
                             + "\nClick for its investors.", 250);
                     Sector sector = ui.game.getSectors().byKey(key);
-                    if (sector != null) row.setOnMouseClicked(e -> ui.sectorScreen.openSectorBooks(sector, "Investors"));
+                    if (sector != null) Kept.give(row.onMouseClickedProperty(), e -> ui.sectorScreen.openSectorBooks(sector, "Investors"));
                     return row;
                 }));
             }
@@ -1876,7 +1876,7 @@ final class LandScreen {
     VBox details() {
         Label toggle = Kept.label("details " + (detailsOpen ? Statement.OPENED : Statement.CLOSED));
         toggle.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
-        toggle.setOnMouseClicked(e -> { detailsOpen = !detailsOpen; showLandMenu(); });
+        Kept.give(toggle.onMouseClickedProperty(), e -> { detailsOpen = !detailsOpen; showLandMenu(); });
         VBox box = Kept.column(4, toggle);
         if (!detailsOpen) return box;
         // Kept (KP2): what the fold opens is a scope of its own, so closing it lets its nodes go and nothing else moves.
@@ -2135,7 +2135,7 @@ final class LandScreen {
 
             Button cancel = Kept.of(Button.class, Button::new);
             cancel.setText("Cancel");
-            cancel.setOnAction(e -> showLandMenu());
+            Kept.give(cancel.onActionProperty(), e -> showLandMenu());
             page.getChildren().add(cancel);
             ui.setPage(page);
         });
@@ -2214,7 +2214,7 @@ final class LandScreen {
                             paper == null ? "the plots bought" : "the " + paper + " and the plots bought")));
             Button back = Kept.of(Button.class, Button::new);
             back.setText("Back to the land office");
-            back.setOnAction(e -> showLandMenu());
+            Kept.give(back.onActionProperty(), e -> showLandMenu());
             page.getChildren().addAll(card, back);
             ui.setPage(page);
         });
@@ -2363,7 +2363,7 @@ final class LandScreen {
                             + Palette.block(Palette.CONTROL));
                     HistoryScreen.tip(chip, "Drop " + p.where() + " from the card");
                     int id = p.getId();
-                    chip.setOnMouseClicked(e -> { map.dropPick(id); e.consume(); });
+                    Kept.give(chip.onMouseClickedProperty(), e -> { map.dropPick(id); e.consume(); });
                     return chip;
                 }));
             }
@@ -2378,7 +2378,7 @@ final class LandScreen {
                             + Palette.block(Palette.CONTROL));
                     HistoryScreen.tip(chip, "Drop your ground from the card");
                     List<Integer> ids = m.groundIds();
-                    chip.setOnMouseClicked(e -> { map.dropGround(ids); e.consume(); });
+                    Kept.give(chip.onMouseClickedProperty(), e -> { map.dropGround(ids); e.consume(); });
                     return chip;
                 }));
             }
@@ -2404,7 +2404,7 @@ final class LandScreen {
             Region part = Kept.region();
             double w = Math.max(1, shares[k] * barW);
             part.setMinSize(w, 8);
-            part.setPrefSize(w, 8);
+            Pieces.prefSize(part, w, 8);
             part.setMaxSize(w, 8);
             part.setStyle("-fx-background-color: " + MapView.css(ground[k]) + ";");
             bar.getChildren().add(part);
@@ -2540,7 +2540,7 @@ final class LandScreen {
         Label close = Kept.label("", icon(Icons.CLOSE, Palette.TEXT_LABEL, 12));
         close.setStyle("-fx-padding: 2; -fx-cursor: hand;");
         HistoryScreen.tip(close, "Close the card · Esc");
-        close.setOnMouseClicked(e -> { map.closeCard(); e.consume(); });
+        Kept.give(close.onMouseClickedProperty(), e -> { map.closeCard(); e.consume(); });
         HBox top = Kept.row(6, name, gap, close);
         top.setAlignment(Pos.CENTER_LEFT);
         VBox box = Kept.column(6, top);

@@ -243,7 +243,7 @@ final class SummaryScreen {
             header.setMaxWidth(Double.MAX_VALUE);
             header.setStyle("-fx-padding: 4 2 4 0; -fx-cursor: hand;"
                     + (open ? " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;" : ""));
-            header.setOnMouseClicked(e -> {
+            Kept.give(header.onMouseClickedProperty(), e -> {
                 if (!panelOpen.remove(key)) panelOpen.add(key);
                 refreshCityPanel();
             });
@@ -344,7 +344,7 @@ final class SummaryScreen {
                 + " -fx-border-color: " + (on ? Palette.ACCENT : "transparent") + ";"
                 + " -fx-border-width: 0 0 2 0;"
                 + " -fx-text-fill: " + (on ? Palette.TEXT_HEAD : PANEL_LABEL) + ";");
-        chip.setOnMouseClicked(e -> {
+        Kept.give(chip.onMouseClickedProperty(), e -> {
             // The player's pick: the chip's Summary gives way, and the pick is kept.
             needsView = false;
             ui.prefs.setPanelDashboard(dashboard);
@@ -389,10 +389,10 @@ final class SummaryScreen {
             // The look the pointer calls for: a kept row is not entered afresh when it is drawn again under the pointer.
             row.setStyle(row.isHover()
                     ? rest + " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;" : rest);
-            row.setOnMouseClicked(e -> go.run());
-            row.setOnMouseEntered(e -> row.setStyle(rest
+            Kept.give(row.onMouseClickedProperty(), e -> go.run());
+            Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(rest
                     + " -fx-background-color: " + Palette.RAISED + "; -fx-background-radius: 3;"));
-            row.setOnMouseExited(e -> row.setStyle(rest));
+            Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
             return row;
         });
     }
@@ -421,7 +421,7 @@ final class SummaryScreen {
         Label link = Kept.label(text);
         link.setStyle("-fx-font-size: 9px; -fx-text-fill: " + Palette.ACCENT + "; -fx-cursor: hand;"
                 + " -fx-underline: true;");
-        link.setOnMouseClicked(e -> act.run());
+        Kept.give(link.onMouseClickedProperty(), e -> act.run());
         return link;
     }
 
