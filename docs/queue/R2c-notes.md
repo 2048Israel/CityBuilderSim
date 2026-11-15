@@ -447,3 +447,11 @@ Maps regenerated and Stale has zero firm findings
 fixtures. The new default comparison is against the eight trace-*.csv files
 in C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-ready2-20261115-094038,
 as the orchestrator instructed in 20261115-103016-065-orchestrator-471b.
+
+The final merged LongPlaytest exits 0. All eight CSVs in
+target/R2c-after-RT2/default-*.csv compare byte-identical with RT2-ready2's
+trace-*.csv: month, borrow, house, pop, bank, bonds, build and labour.
+The comparison marker trace-changed is 0; both the default report and its
+HA1 money fixtures finish cleanly. This is the final merged model, not the
+superseded comparison against pre-RT2 main. No ensemble is needed because
+this batch's contribution leaves all eight traces unchanged.
