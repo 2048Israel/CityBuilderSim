@@ -360,6 +360,7 @@ public class CurrencyRegimeCheck {
         theOvershootBothWays();
         theTiedPathPricesTheCurve();
         aThinVaultsMonthsAreWhatTheHoldDoes();
+        aDeepRepegsPurchaseIsBounded();
 
         out.printf("%n(%.0f s)%n", (System.currentTimeMillis() - started) / 1000.0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -2532,6 +2533,40 @@ public class CurrencyRegimeCheck {
                 exactMonths >= lower);
         assertTrue("...and the projection is not the whole story for a vault that falls under THIN_COVER: it held fewer months than projected (" + held + " against " + String.format("%.2f", atEntry) + ")",
                 held < Math.floor(atEntry));
+    }
+
+    /** XR7/XR8: force the exponential inverse, rather than wait for a player to choose a deep repeg. */
+    static void aDeepRepegsPurchaseIsBounded() {
+        out.println("\n--- 19. a deep repeg cannot buy years of output in a month (XR7) ---");
+        for (double multiple : new double[] { 3, 5 }) {
+            ForeignAccounts fx = book(TRADE, TRADE, DEEP, 0, PEG);
+            fx.repeg(fx.getRate() * multiple);
+            double annual = 12 * fx.getGdpTrailing(), before = fx.getReservesUsd();
+            month(fx, TRADE, TRADE);
+            double gap = Math.log(fx.getLastBreakShadow() / fx.getPegRate());
+            double unbounded = ForeignAccounts.interventionLocalFor(Math.log(multiple), annual);
+            assertTrue("fixture: holding " + multiple + " times the shadow costs more than HOLD_PURCHASE_YEARS of output (" + unbounded / annual + " years)",
+                    unbounded > ForeignAccounts.HOLD_PURCHASE_YEARS * annual);
+            assertTrue("the deep repeg breaks at the purchase limit before buying or owing anything", fx.getRegime() == FLOAT
+                    && fx.getLastBreakCause() == ForeignAccounts.BreakCause.PURCHASE_LIMIT && fx.getEdgeBoughtLocal() == 0 && fx.getEdgeOwedLocal() == 0);
+            same("the purchase-limit break leaves the dollar vault whole", fx.getReservesUsd(), before);
+            close("its strong-side landing uses the same signed overshoot", Math.log(fx.getRate() / fx.getLastBreakShadow()), ForeignAccounts.OVERSHOOT * gap, 1e-12);
+        }
+        for (double share : new double[] { .99, 1.01 }) {
+            ForeignAccounts fx = book(TRADE, TRADE, DEEP, 0, PEG);
+            double annual = 12 * fx.getGdpTrailing();
+            double lift = ForeignAccounts.interventionMove(share * ForeignAccounts.HOLD_PURCHASE_YEARS * annual, annual);
+            fx.repeg(fx.getRate() * Math.exp(lift));
+            month(fx, TRADE, TRADE);
+            assertTrue("the purchase bound brackets the inverse at " + share + " of HOLD_PURCHASE_YEARS", share < 1
+                    ? fx.getRegime() == PEG && fx.getEdgeBoughtLocal() > 0 && fx.getEdgeBoughtLocal() <= ForeignAccounts.HOLD_PURCHASE_YEARS * annual
+                    : fx.getLastBreakCause() == ForeignAccounts.BreakCause.PURCHASE_LIMIT && fx.getEdgeBoughtLocal() == 0);
+        }
+        ForeignAccounts band = book(TRADE, TRADE, DEEP, 0, BAND);
+        band.setBand(band.getRate() * 5, 0, ForeignAccounts.BAND_WIDTH);
+        month(band, TRADE, TRADE);
+        assertTrue("a band beyond the purchase limit gives way for the month without a purchase", band.getRegime() == BAND && band.getEdgeBoughtLocal() == 0
+                && band.getHoldFelt() == 0 && band.getRate() < band.bandStrongEdge());
     }
 
     /** 21 as "21st", for a printed line. */

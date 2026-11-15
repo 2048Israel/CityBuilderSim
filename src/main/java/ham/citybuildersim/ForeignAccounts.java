@@ -1384,7 +1384,7 @@ public class ForeignAccounts {
 
     /** Why a peg broke: holding it would take the vault under its floor (XR5: the sale the hold needs, not the month's deficit), or doubt itself did it (star 4); under Gold, the cover fell under the law's (GD3, last: its ordinal is saved). */
     public enum BreakCause {
-        NONE("none"), VAULT("the vault ran short"), DOUBT("doubt"), COVER("the gold cover fell under the law's 40%");
+        NONE("none"), VAULT("the vault ran short"), DOUBT("doubt"), COVER("the gold cover fell under the law's 40%"), PURCHASE_LIMIT("the hold's purchase exceeded its limit");
         public final String words;
         BreakCause(String words) { this.words = words; }
     }
@@ -1415,6 +1415,9 @@ public class ForeignAccounts {
 
     /** Months of imports the vault must keep under a peg or a band: under it the hold gives way (the usual rule of thumb is three months of cover; the study's prototype breaks at one). */
     public static final double VAULT_FLOOR = 1;
+
+    /** Most a peg or band may buy in a month, in years of GDP: beyond one year's output its first bill alone exceeds the city's annual income (estimate, XR7). */
+    public static final double HOLD_PURCHASE_YEARS = 1;
 
     /** A broken peg lands at the shadow plus this share of the gap from the peg again - past the shadow on the weak side where the D$ was weaker than the peg, on the strong side where it was stronger (XR5; the Swiss franc, 2015) - and fades as the market's swings do (RatesModel, the study's prototype). */
     public static final double OVERSHOOT = .25;

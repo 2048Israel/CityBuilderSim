@@ -175,6 +175,7 @@ public class WorldMoneysCheck {
         }
         Scope fx = new Scope("fixture", WorldData.of(bytes));
         sections(fx, new Pass(fx, FIXTURE_SEEDS, null), new Pass(fx, FIXTURE_SEEDS, FIXTURE_PEGS), FIXTURE_PEGS);
+        theSignedBreaks(fx);
 
         out.println("--- the full file, when it is named ---");
         Path fullPath = WorldData.locate();
@@ -196,6 +197,45 @@ public class WorldMoneysCheck {
         out.printf("%nWorldMoneysCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** XR7: a floating twin exposes the shadow before a peg's signed overshoot is added. */
+    static void theSignedBreaks(Scope sc) {
+        out.println("--- world pegs overshoot both ways (XR7) ---");
+        int[] found = new int[2];
+        Tally landings = new Tally(), fades = new Tally(), reloads = new Tally();
+        for (long seed = BASE_SEED; seed < BASE_SEED + 100 && (found[0] == 0 || found[1] == 0); seed++) {
+            Map<String, String> peg = Map.of("CHN", "peg:USD");
+            WorldMoneys held = sc.moneys(Nations.Path.RANDOM, seed, peg);
+            WorldMoneys free = sc.moneys(Nations.Path.RANDOM, seed, null);
+            for (int t = 1; t <= LONG_MONTHS; t++) {
+                held.step(t, null);
+                free.step(t, null);
+                if (!held.breaksThisMonth().contains("CNY")) continue;
+                double gap = held.pegGap("CNY");
+                int side = gap < 0 ? 0 : 1;
+                found[side]++;
+                double excess = ForeignAccounts.OVERSHOOT * gap;
+                landings.see(Math.abs(Math.log(held.rate("CNY") / free.rate("CNY")) - excess) <= EXACT,
+                        () -> "gap " + gap + ", excess " + Math.log(held.rate("CNY") / free.rate("CNY")));
+                WorldMoneys back = sc.moneys(Nations.Path.RANDOM, seed, peg);
+                back.restore(held.toSaveArray());
+                for (int j = 1; j <= 12; j++) {
+                    held.step(t + j, null);
+                    free.step(t + j, null);
+                    back.step(t + j, null);
+                    double expected = excess * StrictMath.pow(.5, j / WorldMoneys.OWN_HALF_LIFE);
+                    fades.see(Math.abs(Math.log(held.rate("CNY") / free.rate("CNY")) - expected) <= EXACT,
+                            () -> "gap " + gap + ", fading excess");
+                    reloads.see(Arrays.equals(held.toSaveArray(), back.toSaveArray()), () -> "saved break " + gap);
+                }
+                break;
+            }
+        }
+        assertTrue("fixtures broke with shadows on both sides: " + found[0] + " stronger, " + found[1] + " weaker", found[0] > 0 && found[1] > 0);
+        tally("every break lands OVERSHOOT of its signed gap past the floating twin's shadow", landings);
+        tally("the signed overshoot fades with the world's own swing on either side", fades);
+        tally("a world saved at either break continues the signed overshoot to the bit", reloads);
     }
 
     /** The sections both scopes run; floats is the pass over the file's own regimes, pegs the one the pegs are counted on (the fixture's with the regimes it is given). */
