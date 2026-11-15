@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-RT1b-ylIvHZQ9 -->
 
 ## changelog
 ### {next} — RT1b, RT1 money review follow-ups — 2026-11-15, ready, see docs/queue/RT1b-notes.md

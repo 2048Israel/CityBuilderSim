@@ -102,3 +102,38 @@ The required `RT1b dry run?` message acknowledged that go. Main remains
 e8ac5a53; neither concurrent batch has shipped, so no main merge is needed.
 The launcher gate below supplies the completed final selection verdict.
 No process scripts or suite machinery were changed by RT1b.
+
+## Retained launcher verdict
+
+**Green:** `sh tools/gate.sh RT1b --dry-run`, launcher exit **0**, checks
+exit **3**. The launcher's normal versioned route ran the full gate tier
+plus the four directly selected nightly harnesses (AuctionCheck,
+EducationCheck, PrizeCheck, ShortSellingCheck): **191 harnesses, 188 passed,
+3 registered red harnesses, no NEW red**. This is broader than the local
+39-harness pick the starter asked to stop and supplies its final verification.
+
+- DeathRecordCheck: the registered orphan-section line (OX1).
+- MapCheck: its three registered geometry lines (map completeness, connected
+  streets, and street surface).
+- LongPlaytest: the same default layout movement paired against untouched
+  main above. Every money fixture and the closing paper-books checks pass.
+
+Nine timing assertions were SOFT, as required by the normal route. Five
+played-path assertions were OBSERVED (MonetaryCheck 1, HealthCheck 1,
+MapCheck 2, PrizeCheck 1), with their dependent laws skipped by the existing
+mechanism. No premise, assertion or allowance was changed to get this verdict.
+Compile, maps and Stale passed (0 firm findings). No known-reds entry was
+added or transferred; none belongs to RT1b or RT1 in the current registry.
+
+Kept run: `/tmp/cbs-gate-RT1b-ylIvHZQ9` (ship.log, checks/suite.txt,
+checks/NAME.log, selection, checks.complete, checks.sha256). Its two commits:
+
+- Main: `e8ac5a53b1bbc604ce984dbe7b366a69d00e3fff`.
+- Branch: `3f755a84084cdb47226ee0dfef90151c13c58ed0`.
+
+The recorded selection is `full nightly AuctionCheck EducationCheck
+PrizeCheck ShortSellingCheck version=0.9.110`. The dry run left the clone's
+main head unchanged. A final fetch confirms origin/main is still the same
+commit. Since this kept run only these notes and the ship file advance;
+source and fixtures remain the reviewed 226500c2 implementation. The ship
+file names the run for reuse, and its provisional marker is removed last.
