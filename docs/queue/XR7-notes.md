@@ -103,3 +103,32 @@ The ensemble was started by hidden Windows process 41904, independently of the
 tool process, label XR7, explicitly against docs/ensemble/0.9.113.md (RT2).
 Log: target/checks/XR7-ensemble.log; snapshot/results: target/ensemble/XR7/.
 Both real data paths are exported through JDK_JAVA_OPTIONS throughout.
+
+Stranger's Codex review REV-XR7-1 returned **SHIP** on b6d5c412, relayed by
+the orchestrator at 12:44 Atlantic, 2026-11-15. No review mends were required.
+
+## Ensemble verdict
+
+target/ensemble/XR7/score.md and baseline.md: exit 0, all 80/80 runs complete,
+none missing or short, 86.8 minutes wall time. Snapshot 6bd92258 is the reviewed
+b6d5c412 model plus its provisional ship record. Both data paths are named in
+the committed docs/ensemble/XR7.md; compare against RT2, docs/ensemble/0.9.113.md.
+
+M1 and F1 both PASS in every policy (10/10 hard criteria): zero failed audit
+months, zero unread audits, and 0/16 runs with LongPlaytest findings in AUTO2,
+ZERO_SLACK, ZERO_HOT, SHOCK and HIGH. All 64 switched-policy runs match their
+AUTO2 twins before the switch. Overall score 23/25, with one VACUOUS and one
+RETIRED excluded; RT2 scored 22/25 on its previous comparison.
+
+The sole changed verdict is informational ZERO_HOT T2, FAIL -> PASS.
+The population reading itself is unchanged from RT2: median 4786,
+range 3227-8781. XR7's threshold is 75% of RT2's 4786 (=3589.5);
+RT2's FAIL compared that same reading to its older EN2 baseline.
+Thus this changed verdict is a baseline comparison change, not a population gain.
+All other criterion verdicts and printed figure ranges agree with RT2.
+
+Median run seconds: AUTO2 625.8, ZERO_SLACK 619.0, ZERO_HOT 58.7,
+SHOCK 156.5, HIGH 119.7. Total summed run time 429.6 minutes.
+Only M1/F1 are ship stops; A1 remains informational FAIL (7/16 in band,
+3.17% median inflation, 2.49%-3.67%), A2 remains informational FAIL
+(longest high-inflation spell median 20 months, 12-36).
