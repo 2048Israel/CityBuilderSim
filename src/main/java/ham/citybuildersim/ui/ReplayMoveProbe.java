@@ -596,12 +596,20 @@ public final class ReplayMoveProbe {
                 fx(() -> {
                     if (mode != null) mode.leave();
                     if (mode != null) ((AnimationTimer) get(field(ReplayMode.class, "timer"), mode)).stop();
-                    stopPump(map);
                     Object mini = ui == null ? null : get(field(UserInterface.class, "miniMap"), ui);
+                    if (stage != null && stage.getScene() != null) stage.getScene().setRoot(new javafx.scene.Group());
+                    if (ui != null) {
+                        AnimationTimer clock = (AnimationTimer) get(field(UserInterface.class, "clock"), ui);
+                        if (clock != null) clock.stop();
+                    }
+                    stopPump(map);
                     stopPump(mini);
+                    // A late worker adoption still asks for a frame; a detached canvas must not register its pump again.
+                    if (map != null) call(requestDraw, map);
                     followups.put("check cleanup turns replay off and unregisters both pumps before the timed section",
                             ui != null && !ui.replayOn() && map != null && !(Boolean) get(field(MapView.class, "running"), map)
-                                    && mini != null && !(Boolean) get(field(MiniMap.class, "running"), mini));
+                                    && canvas.getScene() == null && mini != null && ((MiniMap) mini).node().getScene() == null
+                                    && !(Boolean) get(field(MiniMap.class, "running"), mini));
                     if (stage != null) stage.close();
                     return null;
                 });
