@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**207 harness files, 24,383 labelled assertions.** AllChecks runs 207 of them.
+**207 harness files, 24,407 labelled assertions.** AllChecks runs 207 of them.
 
 ## Which harnesses read which class
 
@@ -54,8 +54,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CapChips](map/CapChips.md) | **none** |
 | [CapSetting](map/CapSetting.md) | AuctionCheck |
 | [CapitalFlows](map/CapitalFlows.md) | AuctionCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, FloatLinkCheck, HoldersCheck, InterestAbroadCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
-| [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, ChildcareCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, WorksFinanceCheck |
-| [CausesOfDeath](map/CausesOfDeath.md) | CausesOfDeathCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
+| [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CausesOfDeathCheck, ChildcareCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, WorksFinanceCheck |
+| [CausesOfDeath](map/CausesOfDeath.md) | CausesOfDeathCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SicknessCheck |
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, Forms1900Check, IndustryViewCheck, QuarryingCheck |
 | [CentralBank](map/CentralBank.md) | BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, FloatLinkCheck, ForeignCheck, FundCheck, GoldMiningCheck, HoldersCheck, LongPlaytest, MoneyDatesCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck |
 | [ChartFitBench](map/ChartFitBench.md) | ChartFitCheck |
@@ -154,7 +154,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [HarbourYard](map/HarbourYard.md) | PortCheck, QuayRailCheck |
 | [HarnessMap](map/HarnessMap.md) | **none** |
 | [Haulage](map/Haulage.md) | BondCheck, BuildCardCheck, EquipmentCheck, Forms1900Check, FreightViewCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, MaterialsCheck, RailCheck, TradeBandCheck, TruckRouteCheck |
-| [Health](map/Health.md) | BuildAdviceCheck, CausesOfDeathCheck, ChartCheck, ChildcareCheck, DeathCareFirstCheck, EssentialWorksCheck, HealthCheck, LongPlaytest, OutsideCheck, ScaleCheck, SicknessCheck, YearBookCheck |
+| [Health](map/Health.md) | BuildAdviceCheck, CausesOfDeathCheck, ChartCheck, ChildcareCheck, DeathCareFirstCheck, EssentialWorksCheck, HealthCheck, LongPlaytest, OutsideCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck, YearBookCheck |
 | [Healthcare](map/Healthcare.md) | BuildAdviceCheck, CausesOfDeathCheck, ChildcareCheck, DeathCareFirstCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
 | [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, FreightViewCheck, GdpCheck, HaulageCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
 | [HistoryGrapher](map/HistoryGrapher.md) | **none** |
@@ -3843,7 +3843,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L365 a risk-off with no book to repay repays nothing and counts no month
   - L368 what was repaid in a risk-off survives being written down
 
-## CausesOfDeathCheck.java - 132 labelled assertions
+## CausesOfDeathCheck.java - 137 labelled assertions
 
 > Proves the causes of death of 1900 (R0b, slice 1): the model on its own,
 > before the month hands its rates to the cohorts. Every claim below sets its
@@ -3859,150 +3859,156 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   8. booking the dead, the TB sick and the save
 > ...
 
-- **L185 1. the constants hold together**
-  - L187 Canada's 1901 people by band sum to 1
-  - L189 who dies of
-  - L196 fixture: summer diarrhoea and winter pneumonia do have seasons
-  - L201 the influenza's months share all of its dead between them
-  - L213 history is 1 in January 1900 for every cause
-  - L214 ...and 0 in January 1980 for every cause but the influenza, whose months carry it
-  - L215 ...never negative in two hundred years
-  - L216 ...and never above 1900's value, childbirth aside
-  - L224 mothers' deaths peak at 1930's 5.8 over 1900's MOTHERS_1900
-  - L225 ...and sit above 1900's only between 1921 and 1940
-  - L227 the mean outbreak is a real severity, between Health's floor and its largest peak
-- **L231 2. a 1900 city dies of each cause at its 1900 rate**
-  - L243 ...and never more than the rate itself
-  - L246 mothers die at
-  - L248 the influenza kills nobody in 1900
-- **L250 3. the split leaves a 1900 baby's rate where it was**
-  - L265 fixture: babies' shares are under the cap
-  - L266 babies' shares are 1900's rates over the excess, uncapped
-  - L268 fixture: children's shares come to more than the cap
-  - L269 children's shares are scaled to sum to MAX_SPLIT
-  - L272 the children's shares keep their proportions under the cap
-  - L275 an adult's shares of a swing are nothing
-  - L276 childbirth never splits a swing
-  - L278 an adult's factor is untouched by the split
-  - L283 fixture: at the swing's top a baby dies of causes in July 1930
-  - L288 at a factor of
-  - L297 in October 1918 at a factor of 1
-  - L304 in 1980
+- **L186 1. the constants hold together**
+  - L188 Canada's 1901 people by band sum to 1
+  - L190 who dies of
+  - L197 fixture: summer diarrhoea and winter pneumonia do have seasons
+  - L202 the influenza's months share all of its dead between them
+  - L214 history is 1 in January 1900 for every cause
+  - L215 ...and 0 in January 1980 for every cause but the influenza, whose months carry it
+  - L216 ...never negative in two hundred years
+  - L217 ...and never above 1900's value, childbirth aside
+  - L225 mothers' deaths peak at 1930's 5.8 over 1900's MOTHERS_1900
+  - L226 ...and sit above 1900's only between 1921 and 1940
+  - L228 the mean outbreak is a real severity, between Health's floor and its largest peak
+- **L232 2. a 1900 city dies of each cause at its 1900 rate**
+  - L244 ...and never more than the rate itself
+  - L247 mothers die at
+  - L249 the influenza kills nobody in 1900
+- **L251 3. the split leaves a 1900 baby's rate where it was**
+  - L266 fixture: babies' shares are under the cap
+  - L267 babies' shares are 1900's rates over the excess, uncapped
+  - L269 fixture: children's shares come to more than the cap
+  - L270 children's shares are scaled to sum to MAX_SPLIT
+  - L273 the children's shares keep their proportions under the cap
+  - L276 an adult's shares of a swing are nothing
+  - L277 childbirth never splits a swing
+  - L279 an adult's factor is untouched by the split
+  - L284 fixture: at the swing's top a baby dies of causes in July 1930
+  - L289 at a factor of
+  - L298 in October 1918 at a factor of 1
   - L305 in 1980
-- **L311 4. seasons and outbreaks**
-  - L321 diarrhoea in
-  - L325 pneumonia in
-  - L328 typhoid has no season
-  - L336 fixture: with an outbreak running the babies and children do die of one
-  - L337 with no outbreak running nobody dies of one
-  - L339 outbreak deaths in
-  - L353 fixture: Health alone had outbreaks in a tenth of its months or fewer, and some
-  - L355 Health's mean outbreak severity over
-- **L360 5. history on its dates**
-  - L364 typhoid in 1915 is 1/40.8 of 1900's (chlorination, Toronto 40.8 to 1.0)
-  - L366 ...and so is an adult's typhoid rate that January
-  - L368 TB in 1948 is 37 of 1900's 180
-  - L371 mothers in January 1944 die at 2.8 per 1,000 births (penicillin)
-  - L374 ...and in January 1950 at 1.1
-  - L383 typhoid over 1946-50 is under 1 per 100,000 (the study: about 0)
-  - L391 every cause is zero in every month of 1980 and 2000
-  - L393 fixture: 1979 still has deaths to take away
-- **L395 6. the city's conditions raise a cause, never lower it**
-  - L401 fixture: by 1930 history has taken most of typhoid away
-  - L403 1930 with no piped water: an adult's typhoid is 1900's again
-  - L405 ...a baby's diarrhoea too
-  - L406 1930 with half the city piped: typhoid is half-way between
-  - L410 hunger
-  - L412 ...and a baby's TB the same
-  - L414 ...and summer diarrhoea by 1 + DIARRHOEA_HUNGER x hungry
-  - L418 no general care raises an adult's pneumonia by 1 + UNCARED
-  - L420 ...and leaves a baby's pneumonia alone (childcare is theirs)
-  - L421 ...and raises an adult's TB the same
-  - L422 ...and the mothers' deaths
-  - L423 fixture: TB's hunger and no care together would be over the cap
-  - L426 every condition at its worst holds an adult's TB at CONDITION_CAP
-  - L446 no piped water, hunger or lack of care takes any cause below its history, in any month to 1980
-  - L447 shares outside 0 to 1 are held to the ends
-- **L449 7. the 1918 influenza**
-  - L461 the influenza kills in the months it has a share of and in no other
-  - L462 ...and it ran for ten months
-  - L465 October 1918 to March 1920 the city loses INFLUENZA_DEATHS of its people
-  - L467 October 1918 holds .35 of the dead
-  - L475 the sick peak in October 1918, at INFLUENZA_SICK x .35
-  - L476 ...in October 1918
-  - L477 September 1918 has no influenza sick
-  - L478 ...nor has April 1920
-  - L479 over the epidemic a quarter of the people were sick, INFLUENZA_SICK
-- **L481 8. booking the dead, the TB sick and the save**
-  - L491 the causes' dead add up to the dead the cohorts booked
-  - L494 ...TB's are each band's dead by TB's share of its rate
-  - L501 ...and every band's dead are given out whole
-  - L510 two causes split a band's dead by their rates: TB 25%
-  - L511 ...pneumonia 75%
-  - L512 a band with no rate books nothing
-  - L525 after thirteen months the twelve-month sum has dropped the first
-  - L526 ...and the total has not
-  - L527 ...and last month's is the thirteenth
-  - L528 a cause that was never booked has none
-  - L539 the TB sick are the TB's dead over the long sick's chance, band by band
-  - L540 ...the adults' part being their TB deaths over Sickness.deathChance(ADULT)
-  - L542 fixture: the adults are most of the TB sick
-  - L550 a null people array gives zeros and no TB sick
-  - L555 ...and so does a length that is not the bands'
-  - L573 garbage in (NaN, negatives, infinities) still gives finite rates of at least zero
-  - L586 the state is last month's, the totals, the ring and the TB sick
-  - L588 a state of the right length is taken
-  - L596 the restored instance gives back every getter, and the state itself
-  - L597 fixture: the played city has dead of each named cause
-  - L600 a state one too short is refused
-  - L601 ...one too long
-  - L602 ...empty
-  - L603 ...and null
-  - L604 a refused state leaves the instance as it was
-  - L606 a reset city has booked nothing
-- **L623 a real city's month books the causes**
-  - L642 fixture: the first month brought people to the city
-  - L651 the city played all
-  - L652 every month the cohorts' cause dead are the causes' booked dead
-  - L653 ...and the month's dead add up: of age, illness, killed, aged out and the causes
-  - L654 ...and, once there were people, somebody died of the causes in every month
-  - L656 over the
-  - L657 ...and the book's total for it is the months' sum
-  - L661 adults die at more than AgeBand's
-- **L679 the 1918 influenza in a real city**
-  - L718 the city played on to December 1918, game month
-  - L719 every month ran (nothing stopped the skip)
-  - L720 the influenza booked nobody before October 1918
-  - L721 ...Health had none of its sick before October 1918
-  - L722 ...and the inbox had no influenza notice before it
-  - L723 it booked somebody in October 1918
-  - L724 ...in November
-  - L725 ...and in December
-  - L726 Health's influenza sick in October 1918 are the model's for that month
-  - L728 ...which is a quarter of the people times its first wave's share, not nothing
-  - L729 ...and they are in the sick rate: its parts, capped, make it
-  - L731 Health's influenza sick in December 1918 are the model's
-  - L733 the inbox holds a live influenza notice in October 1918
-  - L734 ...and in November 1918, titled for it
-  - L735 ...which names the dead and the sick
-  - L744 fixture: the influenza has dead on the books in December 1918
-  - L752 a reloaded city keeps every cause's last month, year and total
-  - L753 ...the cohorts' dead of the causes
-  - L754 ...and Health's influenza sick
-- **L824 a reload mid-influenza, played on to March 1919**
-  - L844 fixture: the playtest's city played a month at a time to December 1918
-  - L845 fixture: it had influenza sick in December 1918, on Health's rate
-  - L846 fixture: the reload is at the same month, and has the same people
-  - L865 every month ran on both cities, and they are in the same game month
-  - L867 fixture:
-- **L885 the fixtures' hold kept across a load**
-  - L891 fixture: the held twin loaded the city of September 1918
-  - L892 a held twin keeps the influenza's hold in Health after the load
-  - L893 ...and the causes' hold
-  - L906 fixture: the held twin played every month from October 1918 to March 1920
-  - L908 fixture: those months were influenza months in the model, and the unheld city had its sick in October 1918
-  - L910 the held twin has no influenza sick in any month from October 1918 to March 1920
-  - L911 ...and its causes booked no influenza dead in any of them
+  - L306 in 1980
+- **L312 4. seasons and outbreaks**
+  - L322 diarrhoea in
+  - L326 pneumonia in
+  - L329 typhoid has no season
+  - L337 fixture: with an outbreak running the babies and children do die of one
+  - L338 with no outbreak running nobody dies of one
+  - L340 outbreak deaths in
+  - L354 fixture: Health alone had outbreaks in a tenth of its months or fewer, and some
+  - L356 Health's mean outbreak severity over
+- **L361 5. history on its dates**
+  - L365 typhoid in 1915 is 1/40.8 of 1900's (chlorination, Toronto 40.8 to 1.0)
+  - L367 ...and so is an adult's typhoid rate that January
+  - L369 TB in 1948 is 37 of 1900's 180
+  - L372 mothers in January 1944 die at 2.8 per 1,000 births (penicillin)
+  - L375 ...and in January 1950 at 1.1
+  - L384 typhoid over 1946-50 is under 1 per 100,000 (the study: about 0)
+  - L392 every cause is zero in every month of 1980 and 2000
+  - L394 fixture: 1979 still has deaths to take away
+- **L396 6. the city's conditions raise a cause, never lower it**
+  - L402 fixture: by 1930 history has taken most of typhoid away
+  - L404 1930 with no piped water: an adult's typhoid is 1900's again
+  - L406 ...a baby's diarrhoea too
+  - L407 1930 with half the city piped: typhoid is half-way between
+  - L411 hunger
+  - L413 ...and a baby's TB the same
+  - L415 ...and summer diarrhoea by 1 + DIARRHOEA_HUNGER x hungry
+  - L419 no general care raises an adult's pneumonia by 1 + UNCARED
+  - L421 ...and leaves a baby's pneumonia alone (childcare is theirs)
+  - L422 ...and raises an adult's TB the same
+  - L423 ...and the mothers' deaths
+  - L424 fixture: TB's hunger and no care together would be over the cap
+  - L427 every condition at its worst holds an adult's TB at CONDITION_CAP
+  - L447 no piped water, hunger or lack of care takes any cause below its history, in any month to 1980
+  - L448 shares outside 0 to 1 are held to the ends
+- **L450 7. the 1918 influenza**
+  - L462 the influenza kills in the months it has a share of and in no other
+  - L463 ...and it ran for ten months
+  - L466 October 1918 to March 1920 the city loses INFLUENZA_DEATHS of its people
+  - L468 October 1918 holds .35 of the dead
+  - L476 the sick peak in October 1918, at INFLUENZA_SICK x .35
+  - L477 ...in October 1918
+  - L478 September 1918 has no influenza sick
+  - L479 ...nor has April 1920
+  - L480 over the epidemic a quarter of the people were sick, INFLUENZA_SICK
+- **L482 8. booking the dead, the TB sick and the save**
+  - L492 the causes' dead add up to the dead the cohorts booked
+  - L495 ...TB's are each band's dead by TB's share of its rate
+  - L502 ...and every band's dead are given out whole
+  - L511 two causes split a band's dead by their rates: TB 25%
+  - L512 ...pneumonia 75%
+  - L513 a band with no rate books nothing
+  - L526 after thirteen months the twelve-month sum has dropped the first
+  - L527 ...and the total has not
+  - L528 ...and last month's is the thirteenth
+  - L529 a cause that was never booked has none
+  - L540 the TB sick are the TB's dead over the long sick's chance, band by band
+  - L541 ...the adults' part being their TB deaths over Sickness.deathChance(ADULT)
+  - L543 fixture: the adults are most of the TB sick
+  - L551 a null people array gives zeros and no TB sick
+  - L556 ...and so does a length that is not the bands'
+  - L574 garbage in (NaN, negatives, infinities) still gives finite rates of at least zero
+  - L587 the state is last month's, the totals, the ring and the TB sick
+  - L589 a state of the right length is taken
+  - L597 the restored instance gives back every getter, and the state itself
+  - L598 fixture: the played city has dead of each named cause
+  - L601 a state one too short is refused
+  - L602 ...one too long
+  - L603 ...empty
+  - L604 ...and null
+  - L605 a refused state leaves the instance as it was
+  - L607 a reset city has booked nothing
+- **L624 a real city's month books the causes**
+  - L643 fixture: the first month brought people to the city
+  - L652 the city played all
+  - L653 every month the cohorts' cause dead are the causes' booked dead
+  - L654 ...and the month's dead add up: of age, illness, killed, aged out and the causes
+  - L655 ...and, once there were people, somebody died of the causes in every month
+  - L657 over the
+  - L658 ...and the book's total for it is the months' sum
+  - L662 adults die at more than AgeBand's
+- **L680 the 1918 influenza in a real city**
+  - L719 the city played on to December 1918, game month
+  - L720 every month ran (nothing stopped the skip)
+  - L721 the influenza booked nobody before October 1918
+  - L722 ...Health had none of its sick before October 1918
+  - L723 ...and the inbox had no influenza notice before it
+  - L724 it booked somebody in October 1918
+  - L725 ...in November
+  - L726 ...and in December
+  - L727 Health's influenza sick in October 1918 are the model's for that month
+  - L729 ...which is a quarter of the people times its first wave's share, not nothing
+  - L730 ...and they are in the sick rate: its parts, capped, make it
+  - L732 Health's influenza sick in December 1918 are the model's
+  - L734 the inbox holds a live influenza notice in October 1918
+  - L735 ...and in November 1918, titled for it
+  - L736 ...which names the dead and the sick
+  - L745 fixture: the influenza has dead on the books in December 1918
+  - L753 a reloaded city keeps every cause's last month, year and total
+  - L754 ...the cohorts' dead of the causes
+  - L755 ...and Health's influenza sick
+- **L827 a reload mid-influenza, played on to March 1919**
+  - L847 fixture: the playtest's city played a month at a time to December 1918
+  - L848 fixture: it had influenza sick in December 1918, on Health's rate
+  - L849 fixture: the reload is at the same month, and has the same people
+  - L868 every month ran on both cities, and they are in the same game month
+  - L870 fixture:
+- **L884 the influenza sick counted once: September 1918 twins (R0h)**
+  - L889 fixture: both twins loaded the same September 1918 city with causes on
+  - L920 fixture: both twins played every month, only one had influenza sick, and its causes booked influenza dead
+  - L922 the epidemic remains in the visible adult sick share every month
+  - L923 fixture: opening cohorts times each ring rate book its dead without a competing-risk cap
+  - L925 January-April 1919 month
+- **L951 the fixtures' hold kept across a load**
+  - L957 fixture: the held twin loaded the city of September 1918
+  - L958 a held twin keeps the influenza's hold in Health after the load
+  - L959 ...and the causes' hold
+  - L972 fixture: the held twin played every month from October 1918 to March 1920
+  - L974 fixture: those months were influenza months in the model, and the unheld city had its sick in October 1918
+  - L976 the held twin has no influenza sick in any month from October 1918 to March 1920
+  - L977 ...and its causes booked no influenza dead in any of them
 
 ## CementConcreteCheck.java - 22 labelled assertions
 
@@ -24116,7 +24122,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1686 a save that lands before its history is read (
   - L1688 ...and the row ends as the finished slot reads: its name (
 
-## ReadPathCheck.java - 44 labelled assertions
+## ReadPathCheck.java - 46 labelled assertions
 
 > Reading the city must not change the city.
 > 
@@ -24132,62 +24138,65 @@ _(this harness does not label its checks through a helper - it prints its findin
 >                              reloaded city collected $0 where the live one
 > ...
 
-- **L1581 XR7: reads keep the support already bought under a peg**
-  - L1584 fixture: a chosen peg has nonzero support and an unpaid nonlinear purchase
-  - L1588 reading a supported peg keeps its support, its purchase bill and all foreign-account state to the bit
-- **L1589 R2c: IP service flows and planner reads**
-  - L1590 reading paid IP charges and net planner gains keeps the money still
-  - L1591 live and loaded rail reads keep the saved steam period when its depot is gone
-- **L1593 R0f: the dated Money readers keep the saved rule still**
-  - L1594 reading dated Money keeps the gold episode, its exit and the inherited rate unchanged
-- **L1599 a city with money moving in every sector**
-  - L1691 fixture: the businesses owe bonds, and orders rest on their books
-  - L1693 fixture: the city's fund holds shares and bonds
-  - L1702 every sector is actually trading
-- **L1708 the FIRST read, which is the hard one**
-  - L1764 one pass over the screens moved nothing
-  - L1781 the live sale figure IS the one in the ledger
-- **L1785 read it, and read it again**
-  - L1814 reading the city fifty times changed nothing
-- **L1816 and the specific one item 7 was about**
-  - L1872 every one of the thirteen pantries fell by what sold and rose by what arrived
-  - L1879 ...and the statement never sold more than was in stock
-  - L1881 ...and the shelf never goes negative
-- **L1884 the tax the city takes is the tax it shows**
-  - L1892 business tax collected == business tax printed
-  - L1896 ...and it is the companies taxed separately, not netted
-- **L1901 a rate change reaches the treasury at once**
-  - L1931 doubling the rate moves the very next month's commercial tax
-- **L1934 the build advice's reads, after a load (0.7.51)**
-  - L2043 fixture: the offers have sellers by hand (two named in the first, one in the second, none in the rest), and the tally has figures where the world file sizes it
-  - L2047 fixture: the city holds hills by hand - the centre,
-  - L2056 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
-  - L2066 fixture: the city has suggestions to compare
-  - L2067 every one of them the same after a load, to the bit
-  - L2068 ...the high schools' leavers a number, not NaN
-  - L2070 the land on the world is the same after a load: its centre, its blocks and purchases
-  - L2072 ...its offers, field for field
-  - L2074 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
-  - L2085 ...with who sells each of them (WN5): the offers' sellers back to the bit, the first two named and the rest not, every offer the same field for field
-  - L2094 ...and what the city has bought from whom (WN5): every nation's area and dollars back to the bit
-  - L2107 the save carries who sells each offer, and the tally where the file sizes it, in keys of their own (WN5)
-  - L2108 the save carries the three keys of the ground by relief, and they are what the load read
-  - L2120 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
-  - L2125 ...and a save without WN5's three keys loads every offer the host's whole, at the price it was listed at, and nothing bought from anyone
-  - L2127 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
-  - L2132 the saved file reads:
-  - L2134 ...and what was taken out of its ground
-  - L2136 ...and out of its offshore pool (0.7.93)
-  - L2138 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
-- **L2153 and a city on the real Earth: reading its world fifty times**
-  - L2155 fixture: EarthCheck's fixture is beside the classes
-  - L2181 fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links
-  - L2187 fixture: a plot of the North Sea west of it
-  - L2214 reading an Earth city's world fifty times changed nothing (
-- **L2225 the world market and the trade by partner: reading them changes nothing (WN3)**
-  - L2227 fixture: the twelve-nation world file is beside the classes
-  - L2253 fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn
-  - L2273 reading the world market and the trade by partner fifty times changed nothing (
+- **L1586 XR7: reads keep the support already bought under a peg**
+  - L1589 fixture: a chosen peg has nonzero support and an unpaid nonlinear purchase
+  - L1593 reading a supported peg keeps its support, its purchase bill and all foreign-account state to the bit
+- **L1594 R2c: IP service flows and planner reads**
+  - L1595 reading paid IP charges and net planner gains keeps the money still
+  - L1596 live and loaded rail reads keep the saved steam period when its depot is gone
+- **L1598 R0f: the dated Money readers keep the saved rule still**
+  - L1599 reading dated Money keeps the gold episode, its exit and the inherited rate unchanged
+- **L1604 a city with money moving in every sector**
+  - L1696 fixture: the businesses owe bonds, and orders rest on their books
+  - L1698 fixture: the city's fund holds shares and bonds
+  - L1707 every sector is actually trading
+- **L1713 the FIRST read, which is the hard one**
+  - L1769 one pass over the screens moved nothing
+  - L1786 the live sale figure IS the one in the ledger
+- **L1790 read it, and read it again**
+  - L1819 reading the city fifty times changed nothing
+- **L1821 and the specific one item 7 was about**
+  - L1877 every one of the thirteen pantries fell by what sold and rose by what arrived
+  - L1884 ...and the statement never sold more than was in stock
+  - L1886 ...and the shelf never goes negative
+- **L1889 the tax the city takes is the tax it shows**
+  - L1897 business tax collected == business tax printed
+  - L1901 ...and it is the companies taxed separately, not netted
+- **L1906 a rate change reaches the treasury at once**
+  - L1936 doubling the rate moves the very next month's commercial tax
+- **L1939 the build advice's reads, after a load (0.7.51)**
+- **L1955 reading acute influenza shares leaves them and the ring alone (R0h)**
+  - L1964 fixture: influenza acute shares and chronic sickness are both present
+  - L1975 fifty reads leave every acute share, ring slot and Health component unchanged
+  - L2076 fixture: the offers have sellers by hand (two named in the first, one in the second, none in the rest), and the tally has figures where the world file sizes it
+  - L2080 fixture: the city holds hills by hand - the centre,
+  - L2089 fixture: the loaded city's diplomas this month are not known (getNewDiplomas() NaN after a load)
+  - L2099 fixture: the city has suggestions to compare
+  - L2100 every one of them the same after a load, to the bit
+  - L2101 ...the high schools' leavers a number, not NaN
+  - L2103 the land on the world is the same after a load: its centre, its blocks and purchases
+  - L2105 ...its offers, field for field
+  - L2107 ...with the ground by relief (ET1) as given: the centre's, each purchase's and each offer's, foothill, steep, very steep and shallow sea, to the bit
+  - L2118 ...with who sells each of them (WN5): the offers' sellers back to the bit, the first two named and the rest not, every offer the same field for field
+  - L2127 ...and what the city has bought from whom (WN5): every nation's area and dollars back to the bit
+  - L2140 the save carries who sells each offer, and the tally where the file sizes it, in keys of their own (WN5)
+  - L2141 the save carries the three keys of the ground by relief, and they are what the load read
+  - L2153 ...a save with none of the three loads, and reads all flat: its dry ground flat in the centre, every holding and every offer,
+  - L2158 ...and a save without WN5's three keys loads every offer the host's whole, at the price it was listed at, and nothing bought from anyone
+  - L2160 a city on one landmass writes no \"landmasses\" key, and loaded it is the same one landmass: no placements, nothing unlinked, the same free ground
+  - L2165 the saved file reads:
+  - L2167 ...and what was taken out of its ground
+  - L2169 ...and out of its offshore pool (0.7.93)
+  - L2171 ...and by type, once a works dug by type (0.7.110): the save's state and E by type, to the bit
+- **L2186 and a city on the real Earth: reading its world fifty times**
+  - L2188 fixture: EarthCheck's fixture is beside the classes
+  - L2214 fixture: a town on the Earth, played a year, with ground across the water and a terminal on it that no port at home links
+  - L2220 fixture: a plot of the North Sea west of it
+  - L2247 reading an Earth city's world fifty times changed nothing (
+- **L2258 the world market and the trade by partner: reading them changes nothing (WN3)**
+  - L2260 fixture: the twelve-nation world file is beside the classes
+  - L2286 fixture: a city on the file has a market, solved for the year it is in, and a trade by partner that has seen a year turn
+  - L2306 reading the world market and the trade by partner fifty times changed nothing (
 
 ## RealDollarCheck.java - 62 labelled assertions
 
@@ -25944,7 +25953,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1302 a run plot over fresh water is a bridge and never a tunnel, whatever relief the plot carries
   - L1308 ...and this tile has no run on steep ground, so it has no viaduct and no tunnel: the bridges are over water alone
 
-## SaveFileCheck.java - 758 labelled assertions
+## SaveFileCheck.java - 766 labelled assertions
 
 > Verifies where saves go and how they are written.
 > 
@@ -26575,186 +26584,195 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L3218 every refused save byte for byte as it was, and nothing written beside it
   - L3224 a save at the floor is loadable
   - L3228 ...and loads, at the month it was saved
-- **L3258 allocated land survives an ordinary load (AW2)**
-  - L3274 fixture: the injected footprint exceeds owned land but the live ledger has room for a house
-  - L3277 saved the discrepant live city in scratch
-  - L3281 the ordinary load succeeded
-  - L3282 the live allocation came back
-  - L3283 the live free ground came back
-  - L3284 the live building footprint came back
-  - L3286 the live ground price came back
-  - L3287 the next building quote is unchanged
-  - L3291 the live city orders its next house
-  - L3292 the ordinary load orders the same house
-  - L3293 both orders consume the same ground
-  - L3294 both orders leave the same free ground
-  - L3295 both orders leave the same treasury
-  - L3296 both orders leave the same number on site
-  - L3306 a save without the allocation key still reads its building footprint
-  - L3308 fixture: that reconstruction refuses the very same house for land
-  - L3311 saved an explicit zero allocation in scratch
-  - L3314 an explicit zero allocation comes back as zero
-- **L3319 a saved land ledger follows changed catalogue plots (AW2)**
-  - L3331 fixture: an old-catalogue house is placed with its ground allocated
-  - L3337 saved the old catalogue plot and its allocation
-  - L3342 fixture: the plot changed between save and ordinary load
-  - L3343 changed plots adjust the counter by their footprint delta
-  - L3345 changed plots retain the source city's unallocated gap
-- **L3352 private and automatic construction continue after a load (AW2)**
-  - L3373 fixture: the short retailer can staff a new shop
-  - L3382 fixture: no free ground, services need works and an unallocated site remains
-  - L3385 saved the town before construction resumes
-  - L3406 every template has the same standing and ordered count
-  - L3407 private planner decisions match after the month
-  - L3408 owned ground matches after the month
-  - L3409 allocated ground matches after the month
-  - L3410 free ground matches after the month
-  - L3411 automatic orders match after the month
-  - L3412 automatic land purchases match after the month
-  - L3413 the automatic order details match after the month
-  - L3417 the continuation actually placed private orders outside the automatic builder's remit (Retail:
-  - L3419 the continuation actually placed automatic orders
-  - L3420 the continuation actually bought ground for those orders
-- **L3440 every id crosses a save, the highest past a gap in the ids too**
-  - L3463 fixture: the highest id,
-  - L3465 fixture: two of it stand
-  - L3468 fixture: the city saved
-  - L3473 the highest id's buildings came back
-  - L3478 ...and every id's count is the one saved
-- **L3509 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
-  - L3526 fixture: a generated city saved
-  - L3530 a generated city writes none of the four Earth fields
-  - L3542 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
-  - L3546 ...its land and map the city's that wrote it
-  - L3548 saved again
-  - L3551 ...and writes its own bytes back, but for this build's stamp: its format, version and time
-  - L3554 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
-  - L3561 fixture: EarthCheck's fixture is beside the classes
-  - L3577 fixture: a city founded on the real Earth, played four months
-  - L3579 saved
-  - L3581 the save carries its kind, its spot and its data, and its seed (0.7.121)
-  - L3586 ...read back as the same key
-  - L3590 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
-  - L3593 saved again
-  - L3596 ...and writes the same bytes but its time
-  - L3599 two months on: the treasury
-  - L3600 ...the households' savings
-  - L3603 ...and every sector's till
-  - L3604 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
-  - L3610 the save carries the ground by relief in keys of its own, a row for each holding and each offer standing (ET1)
-  - L3615 ...and no row of the land's own is wider for it: GD4's centre 26, a holding 33, an offer 31
-  - L3619 ...read back, the relief is the city's: its centre's, each holding's and each offer's, to the bit
-  - L3626 the Earth city's save carries who sells each offer, a row for each, where the world file names the sellers - and no key where it does not (WN5)
-  - L3636 ...and reloaded the Earth city stands the same offers, sellers and all, and the same nations sell its ground
-  - L3646 fixture: Perth's window
-  - L3656 fixture: Perth's city holds a purchase with foothill in it and one with shallow sea
-  - L3662 fixture: the land with its relief wrote itself
-  - L3667 a holding with foothill and shallow sea round-trips: the land rebuilt from the file is the land written, every relief figure of it
-  - L3675 ...each holding's own row, the foothill in this one and the shallow sea in that
-  - L3682 an offer whose relief row is set by hand reads it back through its record, and the record is still 29 wide
-  - L3688 a save without the three keys has none of them
-  - L3698 ...reads all flat: the dry ground flat in the centre, in the total and in every holding, nothing steep, nothing shallow (never refused)
-  - L3705 a relief row of the wrong width reads that holding flat and leaves the rest as saved
-  - L3714 a land office restoring an offer reads its relief row, and with none reads it all flat
-  - L3724 a city on one landmass writes no \"landmasses\" key (its save is the old bytes)
-  - L3729 fixture: a square of Goeree-Overflakkee with dry ground and shore, found by search with the model's own reader
-  - L3742 fixture: a terminal stands on the island, which owns shore the city bought and no port at home links
-  - L3744 saved
-  - L3747 the save carries the key \"landmasses\", a row for the terminal's template with the island's id for its one standing unit, and nothing leaving
-  - L3754 read back, the terminal stands on the island again and the land is the same
-  - L3757 saved again
-  - L3760 ...and writes the same bytes but its time
-  - L3768 a save without the key loads - it is not refused - and reads every terminal at home: none on the island, none placed
-  - L3783 a row of a template that is no terminal is passed over (not refused): the terminal's row stands alone
-  - L3795 an Earth save of the format before the landmasses (
-  - L3797 an Earth save of the format before the landmasses (
-  - L3806 a city with no bridge writes no \"bridges\" key (its save is the old bytes), and the island city of the landmasses' block writes none either
-  - L3826 fixture: a Road Bridge stands (built at once) and a Rail Bridge is on site, over a crossing the survey found; the island is linked by the one that stands
-  - L3829 saved
-  - L3831 the save carries the key \"bridges\", a row for each bridge, and the format of every Earth save of this build (no bump)
-  - L3835 read back, the bridges run where they ran, the one that stands links the island, and the land is the same
-  - L3839 saved again
-  - L3842 ...and writes the same bytes but its time
-  - L3849 a save without the key loads - it is not refused - and reads no bridge: none recorded, the island unlinked
-  - L3864 a row of a template that is no bridge, and one of a kind the game does not know, are passed over (not refused): the two real bridges stand alone
-  - L3889 a save with
-  - L3891 ...nothing of it applied, and every file as it was
-- **L3909 and a refused save loaded into a running city leaves that city as it was**
-  - L3920 fixture: the city is loaded and running, past month 1
-  - L3921 fixture: slot 2 is below the floor and slot 5 from a newer build
-  - L3929 the save below the floor is refused, naming the build that still opens it
-  - L3931 ...and the city in play is the same city: its managers the same objects, its month and cash
-  - L3936 the newer build's save is refused, naming the build that opens it
-  - L3938 ...words that name that build and this one
-  - L3941 ...and the city in play is still the same city
-  - L3950 ...and what it saves after both refusals is what it saved before them, key for key
-- **L4035 the world market and the trade by partner cross a save; a format-47 save is refused (WN3)**
-  - L4037 fixture: the twelve-nation world file is beside the classes
-  - L4080 the month's record of trade by good is the month's fills and draws, every month of the fixture and every good, to the unit
-  - L4081 ...and it holds what GoodsMarket's own tally does not: draws made before the clearing, which the clearing wipes from the tally (
-  - L4084 fixture: with the file named, the city built a market and solved the year it is in (
-  - L4088 fixture: it tallied its trade by partner, and one year turned into the history (
-  - L4091 fixture: the city traded with the world's nations this month or this year (so the round trip has something to carry):
-  - L4094 saved
-  - L4096 the save writes the market's year, its prices and scales, and the trade by partner
-  - L4101 fixture: the city built the world's moneys with the market, in the city's month
-  - L4106 the save writes the moneys' state (worldMoneys), as many numbers as WorldMoneys.toSaveArray() gives (
-  - L4110 fixture: the city built the policy rates with the moneys, in the city's month
-  - L4114 the save writes the policy rates' state (policyRates), as many numbers as PolicyRates.toSaveArray() gives (
-  - L4116 fixture: the city's price of money is the US's policy rate (
-  - L4118 ...and the foreign accounts' array runs to slot 104, the world's (95-104)
-  - L4121 ...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5), the peg's anchor (148, WN4b), gold's balance, price ...
-  - L4122 fixture: the vault holds gold, bought by name, at a price, with a share of the chosen mix, and slots 149-151 are its balance, its price and that share (
-  - L4127 ...a city off gold saves slots 152-155 as the getters say: no mint price, no mint rate, not following, no event
-  - L4138 a bare currency on Gold, following the dollar with a date open: slots 152-155 are the getters (
-  - L4151 ...and its next six reprices (the rate and the mint price, gold moving, following the dollar) are the live currency's to the bit
-  - L4152 fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22
-  - L4156 fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$
-  - L4161 ...and the history writes each finished year's table by partner and good (1)
-  - L4169 ...and the history writes the eight policy rates (policyUSD ... policyCHF) a month each, as many points as the euro's series
-  - L4175 a load builds the market and restores its year
-  - L4178 ...its mill prices and supply scales bit for bit
-  - L4185 ...restored and not solved again: no sweeps in the loaded market (
-  - L4188 a load restores the world's moneys in the month they were saved in, the very same state to the bit
-  - L4190 ...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit
-  - L4193 a load restores the policy rates in the month they were saved in, to the bit, and hands the city the US's rate as it was
-  - L4196 ...and the history's policy series as they were
-  - L4213 ...and the vault in eight as it was: the eight balances and their rates, gold's balance and price, the mix, the chosen and the trade shares, the month's cros...
-  - L4214 ...the trade by partner, the month and the year to date, as it was
-  - L4215 ...the finished years in the history
-  - L4217 ...so the map's feed is last month's trade at once: its month, its lanes and its year to date
-  - L4230 ...and every good's market stands at the band it was struck at (
-  - L4233 a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve
-  - L4235 the month after runs the same in both: the moneys, the D$'s rate and its world's line to the bit
-  - L4240 ...and the policy rates and the city's price of money to the bit (the US's rate
-  - L4244 the month after runs the same in both: the cash to the cent and the trade by partner
-  - L4257 a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)
-  - L4270 a save with no world moneys loads, and they are caught up from the first January to the saved month (
-  - L4272 ...with the very cycle and risk-off the saved city had: they are a function of the seed and the month
-  - L4281 a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function ...
-  - L4296 fixture: with no world file the city has no market and no partner record
-  - L4298 ...no moneys either, and its D$ has no world (WN4)
-  - L4300 saved
-  - L4302 ...and its save writes none of the new keys, in the markets or beside them
-  - L4306 ...no policy rates, and its price of money is the constant (XR4)
-  - L4310 ...every market on the goods' literals
-- **L4335 current-format land repair and refusal**
-  - L4351 a current-format save's changed land figure loads and redraws its actual ground
-  - L4375 ...and the refused save is untouched
-- **L4500 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT**
-  - L4532 
-  - L4538 ...and matches the city that was saved
-  - L4564 
-  - L4567 ...and it is back at month one
-- **L4569 5. WHAT A RELOAD MUST NOT FORGET**
-  - L4608 the mine has a payroll at all after a load
-  - L4609 ...and it is the payroll it was working
-  - L4613 utility income survives a load
-  - L4615 the residents' statement is not blank after a load
-  - L4617 ...and the government's revenue block is not either
-  - L4625 ...and rebuilding it does not book the month twice
-  - L4633 the population trend survives, so forecasts are not flat
-  - L4641 every sector's losing streak survives a load
+- **L3252 acute influenza shares beside the saved sickness ring (R0h)**
+  - L3260 fixture: each age band has an acute influenza share to save
+  - L3262 the acute fixture saved
+  - L3265 the acute shares are written separately from the ring
+  - L3269 every acute share and every ring slot cross the actual load to the bit
+  - L3273 ...the visible sick share of
+  - L3275 ...the youngest sick bar
+  - L3277 ...the chronic Health rate
+  - L3281 an old save without acute shares loads none, even over a city that had them
+- **L3295 allocated land survives an ordinary load (AW2)**
+  - L3311 fixture: the injected footprint exceeds owned land but the live ledger has room for a house
+  - L3314 saved the discrepant live city in scratch
+  - L3318 the ordinary load succeeded
+  - L3319 the live allocation came back
+  - L3320 the live free ground came back
+  - L3321 the live building footprint came back
+  - L3323 the live ground price came back
+  - L3324 the next building quote is unchanged
+  - L3328 the live city orders its next house
+  - L3329 the ordinary load orders the same house
+  - L3330 both orders consume the same ground
+  - L3331 both orders leave the same free ground
+  - L3332 both orders leave the same treasury
+  - L3333 both orders leave the same number on site
+  - L3343 a save without the allocation key still reads its building footprint
+  - L3345 fixture: that reconstruction refuses the very same house for land
+  - L3348 saved an explicit zero allocation in scratch
+  - L3351 an explicit zero allocation comes back as zero
+- **L3356 a saved land ledger follows changed catalogue plots (AW2)**
+  - L3368 fixture: an old-catalogue house is placed with its ground allocated
+  - L3374 saved the old catalogue plot and its allocation
+  - L3379 fixture: the plot changed between save and ordinary load
+  - L3380 changed plots adjust the counter by their footprint delta
+  - L3382 changed plots retain the source city's unallocated gap
+- **L3389 private and automatic construction continue after a load (AW2)**
+  - L3410 fixture: the short retailer can staff a new shop
+  - L3419 fixture: no free ground, services need works and an unallocated site remains
+  - L3422 saved the town before construction resumes
+  - L3443 every template has the same standing and ordered count
+  - L3444 private planner decisions match after the month
+  - L3445 owned ground matches after the month
+  - L3446 allocated ground matches after the month
+  - L3447 free ground matches after the month
+  - L3448 automatic orders match after the month
+  - L3449 automatic land purchases match after the month
+  - L3450 the automatic order details match after the month
+  - L3454 the continuation actually placed private orders outside the automatic builder's remit (Retail:
+  - L3456 the continuation actually placed automatic orders
+  - L3457 the continuation actually bought ground for those orders
+- **L3477 every id crosses a save, the highest past a gap in the ids too**
+  - L3500 fixture: the highest id,
+  - L3502 fixture: two of it stand
+  - L3505 fixture: the city saved
+  - L3510 the highest id's buildings came back
+  - L3515 ...and every id's count is the one saved
+- **L3546 and a city on the real Earth, saved and read back; a format-37 save on its generated world**
+  - L3563 fixture: a generated city saved
+  - L3567 a generated city writes none of the four Earth fields
+  - L3579 a save at the floor with no worldKind loads, on its seed's generated world (format 37 until FR2)
+  - L3583 ...its land and map the city's that wrote it
+  - L3585 saved again
+  - L3588 ...and writes its own bytes back, but for this build's stamp: its format, version and time
+  - L3591 a format-37 save is refused since 0.8.5: FR2's floor (40) is past the format an Earth city was first written in
+  - L3598 fixture: EarthCheck's fixture is beside the classes
+  - L3614 fixture: a city founded on the real Earth, played four months
+  - L3616 saved
+  - L3618 the save carries its kind, its spot and its data, and its seed (0.7.121)
+  - L3623 ...read back as the same key
+  - L3627 an Earth city reloaded stands on the same Earth world, its land the same, its map read back
+  - L3630 saved again
+  - L3633 ...and writes the same bytes but its time
+  - L3636 two months on: the treasury
+  - L3637 ...the households' savings
+  - L3640 ...and every sector's till
+  - L3641 a map sidecar names its world's whole key: an Earth map is not this seed's generated world's
+  - L3647 the save carries the ground by relief in keys of its own, a row for each holding and each offer standing (ET1)
+  - L3652 ...and no row of the land's own is wider for it: GD4's centre 26, a holding 33, an offer 31
+  - L3656 ...read back, the relief is the city's: its centre's, each holding's and each offer's, to the bit
+  - L3663 the Earth city's save carries who sells each offer, a row for each, where the world file names the sellers - and no key where it does not (WN5)
+  - L3673 ...and reloaded the Earth city stands the same offers, sellers and all, and the same nations sell its ground
+  - L3683 fixture: Perth's window
+  - L3693 fixture: Perth's city holds a purchase with foothill in it and one with shallow sea
+  - L3699 fixture: the land with its relief wrote itself
+  - L3704 a holding with foothill and shallow sea round-trips: the land rebuilt from the file is the land written, every relief figure of it
+  - L3712 ...each holding's own row, the foothill in this one and the shallow sea in that
+  - L3719 an offer whose relief row is set by hand reads it back through its record, and the record is still 29 wide
+  - L3725 a save without the three keys has none of them
+  - L3735 ...reads all flat: the dry ground flat in the centre, in the total and in every holding, nothing steep, nothing shallow (never refused)
+  - L3742 a relief row of the wrong width reads that holding flat and leaves the rest as saved
+  - L3751 a land office restoring an offer reads its relief row, and with none reads it all flat
+  - L3761 a city on one landmass writes no \"landmasses\" key (its save is the old bytes)
+  - L3766 fixture: a square of Goeree-Overflakkee with dry ground and shore, found by search with the model's own reader
+  - L3779 fixture: a terminal stands on the island, which owns shore the city bought and no port at home links
+  - L3781 saved
+  - L3784 the save carries the key \"landmasses\", a row for the terminal's template with the island's id for its one standing unit, and nothing leaving
+  - L3791 read back, the terminal stands on the island again and the land is the same
+  - L3794 saved again
+  - L3797 ...and writes the same bytes but its time
+  - L3805 a save without the key loads - it is not refused - and reads every terminal at home: none on the island, none placed
+  - L3820 a row of a template that is no terminal is passed over (not refused): the terminal's row stands alone
+  - L3832 an Earth save of the format before the landmasses (
+  - L3834 an Earth save of the format before the landmasses (
+  - L3843 a city with no bridge writes no \"bridges\" key (its save is the old bytes), and the island city of the landmasses' block writes none either
+  - L3863 fixture: a Road Bridge stands (built at once) and a Rail Bridge is on site, over a crossing the survey found; the island is linked by the one that stands
+  - L3866 saved
+  - L3868 the save carries the key \"bridges\", a row for each bridge, and the format of every Earth save of this build (no bump)
+  - L3872 read back, the bridges run where they ran, the one that stands links the island, and the land is the same
+  - L3876 saved again
+  - L3879 ...and writes the same bytes but its time
+  - L3886 a save without the key loads - it is not refused - and reads no bridge: none recorded, the island unlinked
+  - L3901 a row of a template that is no bridge, and one of a kind the game does not know, are passed over (not refused): the two real bridges stand alone
+  - L3926 a save with
+  - L3928 ...nothing of it applied, and every file as it was
+- **L3946 and a refused save loaded into a running city leaves that city as it was**
+  - L3957 fixture: the city is loaded and running, past month 1
+  - L3958 fixture: slot 2 is below the floor and slot 5 from a newer build
+  - L3966 the save below the floor is refused, naming the build that still opens it
+  - L3968 ...and the city in play is the same city: its managers the same objects, its month and cash
+  - L3973 the newer build's save is refused, naming the build that opens it
+  - L3975 ...words that name that build and this one
+  - L3978 ...and the city in play is still the same city
+  - L3987 ...and what it saves after both refusals is what it saved before them, key for key
+- **L4072 the world market and the trade by partner cross a save; a format-47 save is refused (WN3)**
+  - L4074 fixture: the twelve-nation world file is beside the classes
+  - L4117 the month's record of trade by good is the month's fills and draws, every month of the fixture and every good, to the unit
+  - L4118 ...and it holds what GoodsMarket's own tally does not: draws made before the clearing, which the clearing wipes from the tally (
+  - L4121 fixture: with the file named, the city built a market and solved the year it is in (
+  - L4125 fixture: it tallied its trade by partner, and one year turned into the history (
+  - L4128 fixture: the city traded with the world's nations this month or this year (so the round trip has something to carry):
+  - L4131 saved
+  - L4133 the save writes the market's year, its prices and scales, and the trade by partner
+  - L4138 fixture: the city built the world's moneys with the market, in the city's month
+  - L4143 the save writes the moneys' state (worldMoneys), as many numbers as WorldMoneys.toSaveArray() gives (
+  - L4147 fixture: the city built the policy rates with the moneys, in the city's month
+  - L4151 the save writes the policy rates' state (policyRates), as many numbers as PolicyRates.toSaveArray() gives (
+  - L4153 fixture: the city's price of money is the US's policy rate (
+  - L4155 ...and the foreign accounts' array runs to slot 104, the world's (95-104)
+  - L4158 ...and to slot 148, the vault's (105-141), what it earned (142-146, XR4), the hold's support (147, XR5), the peg's anchor (148, WN4b), gold's balance, price ...
+  - L4159 fixture: the vault holds gold, bought by name, at a price, with a share of the chosen mix, and slots 149-151 are its balance, its price and that share (
+  - L4164 ...a city off gold saves slots 152-155 as the getters say: no mint price, no mint rate, not following, no event
+  - L4175 a bare currency on Gold, following the dollar with a date open: slots 152-155 are the getters (
+  - L4188 ...and its next six reprices (the rate and the mint price, gold moving, following the dollar) are the live currency's to the bit
+  - L4189 fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22
+  - L4193 fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$
+  - L4198 ...and the history writes each finished year's table by partner and good (1)
+  - L4206 ...and the history writes the eight policy rates (policyUSD ... policyCHF) a month each, as many points as the euro's series
+  - L4212 a load builds the market and restores its year
+  - L4215 ...its mill prices and supply scales bit for bit
+  - L4222 ...restored and not solved again: no sweeps in the loaded market (
+  - L4225 a load restores the world's moneys in the month they were saved in, the very same state to the bit
+  - L4227 ...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit
+  - L4230 a load restores the policy rates in the month they were saved in, to the bit, and hands the city the US's rate as it was
+  - L4233 ...and the history's policy series as they were
+  - L4250 ...and the vault in eight as it was: the eight balances and their rates, gold's balance and price, the mix, the chosen and the trade shares, the month's cros...
+  - L4251 ...the trade by partner, the month and the year to date, as it was
+  - L4252 ...the finished years in the history
+  - L4254 ...so the map's feed is last month's trade at once: its month, its lanes and its year to date
+  - L4267 ...and every good's market stands at the band it was struck at (
+  - L4270 a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve
+  - L4272 the month after runs the same in both: the moneys, the D$'s rate and its world's line to the bit
+  - L4277 ...and the policy rates and the city's price of money to the bit (the US's rate
+  - L4281 the month after runs the same in both: the cash to the cent and the trade by partner
+  - L4294 a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)
+  - L4307 a save with no world moneys loads, and they are caught up from the first January to the saved month (
+  - L4309 ...with the very cycle and risk-off the saved city had: they are a function of the seed and the month
+  - L4318 a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function ...
+  - L4333 fixture: with no world file the city has no market and no partner record
+  - L4335 ...no moneys either, and its D$ has no world (WN4)
+  - L4337 saved
+  - L4339 ...and its save writes none of the new keys, in the markets or beside them
+  - L4343 ...no policy rates, and its price of money is the constant (XR4)
+  - L4347 ...every market on the goods' literals
+- **L4372 current-format land repair and refusal**
+  - L4388 a current-format save's changed land figure loads and redraws its actual ground
+  - L4412 ...and the refused save is untouched
+- **L4537 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT**
+  - L4569 
+  - L4575 ...and matches the city that was saved
+  - L4601 
+  - L4604 ...and it is back at month one
+- **L4606 5. WHAT A RELOAD MUST NOT FORGET**
+  - L4645 the mine has a payroll at all after a load
+  - L4646 ...and it is the payroll it was working
+  - L4650 utility income survives a load
+  - L4652 the residents' statement is not blank after a load
+  - L4654 ...and the government's revenue block is not either
+  - L4662 ...and rebuilding it does not book the month twice
+  - L4670 the population trend survives, so forecasts are not flat
+  - L4678 every sector's losing streak survives a load
 
 ## SaveSlotCheck.java - 225 labelled assertions
 
@@ -27491,7 +27509,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1103 ...and with them off the world posted no ask and sold nothing short, as the switch says
   - L1105 ...and that city passed the audit and kept its register whole too
 
-## SicknessCheck.java - 55 labelled assertions
+## SicknessCheck.java - 64 labelled assertions
 
 > The long sick: who stays sick, and who it kills.
 > 
@@ -27500,69 +27518,79 @@ _(this harness does not label its checks through a helper - it prints its findin
 > by curing people, not by scaling a death rate. Every claim below sets its
 > own cause. See claude/the-long-sick.md.
 
-- **L54 1. the base rates**
-  - L56 children: half the life table's 0.015%
-  - L57 teens: half of 0.04%
-  - L58 adults: half of 0.45%
-  - L59 babies untouched
-  - L74 seniors, 70 to 85, from the life table
-  - L75 elders, 85 to 120, from the life table
-  - L76 and the split brackets the flat rate it replaced
-  - L80 general care no longer scales
-  - L82 ...or everybody covered
-- **L85 2. how much of each band is sick**
-  - L92 babies with no childcare: twice the city rate
-  - L93 ...with half of it, one and a half times
-  - L94 ...with childcare for everybody, the city rate
-  - L95 seniors with no senior care: twice
-  - L96 ...with it, the city rate
-  - L97 no band is ever sicker than the ceiling
-- **L100 3. the ring: recovery, and nobody dies at once**
-  - L104 fixture: a well city's ring is empty
-  - L106 the month they fall ill, they are all in the first slot
-  - L107 ...and nobody can die of it yet
-  - L109 with no general care, half of them are better a month later
-  - L111 ...the city rate is met by new cases
-  - L112 ...and two months sick is still not enough to die of it
-  - L116 past two months, what is left of them can die
-  - L117 ...at the adults' 2% a month
-  - L124 with general care for everybody, nine in ten are better in a month
-  - L129 the dead leave the ring: a slot three months on keeps (1-h)(1-r)
-- **L133 4. each age's chance, and the steady state**
-  - L135 babies 4% a month
-  - L136 children 1%
-  - L137 teens 1%
-  - L138 adults 2%
-  - L139 seniors 4%
-  - L151 steady state,
-  - L159 ...and a month at the same rate leaves it where it was
-  - L165 when the rate halves, the adults sick are the new rate
-  - L168 ...and nobody's slot is favoured
-  - L182 a city with no care loses far more
-  - L193 fixture: the hungry city is sicker
-  - L194 ...so more of it dies of illness
-- **L197 5. the pyramid**
-  - L208 the adults who died of illness are the opening band times the ring's rate
-  - L210 ...on top of everybody else's deaths
-  - L213 a pyramid with no ring has no illness deaths
-- **L215 6. a city**
-  - L268 fixture: the hospitals gave the second city more coverage
-  - L270 the adults' share of the ring is the city's sick rate - output is untouched
-  - L272 the city with no hospitals lost people to illness
-  - L275 ...many times more, per head, than the city with them
-  - L278 the ring's dead are the pyramid's dead
-  - L279 every month passed the money audit
-- **L281 7. a save, and a save from before**
-  - L284 fixture: the ring has something in it
-  - L291 the whole ring comes back
-  - L292 a malformed ring is refused whole
-  - L296 fixture: the ring is gone
-  - L298 a city with no ring seeds one and loses its long sick the same month
-- **L301 8. the ring in people (0.7.28)**
-  - L313 fixture: somebody is sick past two months
-  - L314 the slots in people add up to the people sick
-  - L315 ...and from DEADLY_FROM on, to the people past two months
-  - L316 a slot outside the ring holds nobody
+- **L54 acute sickness beside the ring (R0h)**
+  - L93 an unseeded advance carries the acute share beside the same chronic steady state
+  - L104 acute shares restore by saved band name, even in reverse order
+  - L107 missing acute state clears any previous month's acute share
+  - L110 reset clears the acute shares too
+  - L117 the rate without influenza is the held Health's capped rate, injury
+  - L120 acute months leave every ring slot exactly as the rate without influenza
+  - L121 ...and the ring's death rates and long sick are exactly the chronic twin's
+  - L122 every band's visible sick share is the full rate, including at the ceilings
+  - L123 the acute cases join the youngest bar and the total sick, in people
+- **L128 1. the base rates**
+  - L130 children: half the life table's 0.015%
+  - L131 teens: half of 0.04%
+  - L132 adults: half of 0.45%
+  - L133 babies untouched
+  - L148 seniors, 70 to 85, from the life table
+  - L149 elders, 85 to 120, from the life table
+  - L150 and the split brackets the flat rate it replaced
+  - L154 general care no longer scales
+  - L156 ...or everybody covered
+- **L159 2. how much of each band is sick**
+  - L166 babies with no childcare: twice the city rate
+  - L167 ...with half of it, one and a half times
+  - L168 ...with childcare for everybody, the city rate
+  - L169 seniors with no senior care: twice
+  - L170 ...with it, the city rate
+  - L171 no band is ever sicker than the ceiling
+- **L174 3. the ring: recovery, and nobody dies at once**
+  - L178 fixture: a well city's ring is empty
+  - L180 the month they fall ill, they are all in the first slot
+  - L181 ...and nobody can die of it yet
+  - L183 with no general care, half of them are better a month later
+  - L185 ...the city rate is met by new cases
+  - L186 ...and two months sick is still not enough to die of it
+  - L190 past two months, what is left of them can die
+  - L191 ...at the adults' 2% a month
+  - L198 with general care for everybody, nine in ten are better in a month
+  - L203 the dead leave the ring: a slot three months on keeps (1-h)(1-r)
+- **L207 4. each age's chance, and the steady state**
+  - L209 babies 4% a month
+  - L210 children 1%
+  - L211 teens 1%
+  - L212 adults 2%
+  - L213 seniors 4%
+  - L225 steady state,
+  - L233 ...and a month at the same rate leaves it where it was
+  - L239 when the rate halves, the adults sick are the new rate
+  - L242 ...and nobody's slot is favoured
+  - L256 a city with no care loses far more
+  - L267 fixture: the hungry city is sicker
+  - L268 ...so more of it dies of illness
+- **L271 5. the pyramid**
+  - L282 the adults who died of illness are the opening band times the ring's rate
+  - L284 ...on top of everybody else's deaths
+  - L287 a pyramid with no ring has no illness deaths
+- **L289 6. a city**
+  - L342 fixture: the hospitals gave the second city more coverage
+  - L344 the adults' share of the ring is the city's sick rate - output is untouched
+  - L346 the city with no hospitals lost people to illness
+  - L349 ...many times more, per head, than the city with them
+  - L352 the ring's dead are the pyramid's dead
+  - L353 every month passed the money audit
+- **L355 7. a save, and a save from before**
+  - L358 fixture: the ring has something in it
+  - L365 the whole ring comes back
+  - L366 a malformed ring is refused whole
+  - L370 fixture: the ring is gone
+  - L372 a city with no ring seeds one and loses its long sick the same month
+- **L375 8. the ring in people (0.7.28)**
+  - L387 fixture: somebody is sick past two months
+  - L388 the slots in people add up to the people sick
+  - L389 ...and from DEADLY_FROM on, to the people past two months
+  - L390 a slot outside the ring holds nobody
 
 ## SkipReportCheck.java - 73 labelled assertions
 

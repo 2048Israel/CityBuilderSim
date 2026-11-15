@@ -35,7 +35,7 @@
 
 **Uses:** [AgeBand](AgeBand.md) (13), [Health](Health.md) (7), [CityCalendar](CityCalendar.md) (4), [CareType](CareType.md) (1), [Healthcare](Healthcare.md) (1), [Sickness](Sickness.md) (1)
 
-**Used by (8):** [CausesOfDeathCheck](CausesOfDeathCheck.md), [Game](Game.md), [Health](Health.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md)
+**Used by (9):** [CausesOfDeathCheck](CausesOfDeathCheck.md), [Game](Game.md), [Health](Health.md), [Inbox](Inbox.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [ServicesScreen](ServicesScreen.md), [SicknessCheck](SicknessCheck.md)
 
 ## Sections
 
