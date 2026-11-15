@@ -690,3 +690,21 @@ This merge began on the scheduled fetch just before orchestrator mail
 20261115-152906-523-orchestrator-9862 arrived. Reported that timing, completed
 the clean checkpoint, then waited for its post-XR7 merge/rerun go. No new
 dry run has started.
+
+
+## XR7 main integrated for the replacement gate
+
+The orchestrator's go 20261115-163230-426-orchestrator-83b4 names main
+8083aaf334bce0475cc8a0a9dc979dc808bc37d7 (XR7, 0.9.117). It is merged;
+source merges cleanly, including both historical save/read assertions.
+The six generated index conflicts were regenerated. --fast exits 0 with
+zero firm Stale: target/R2d-final2/merge-XR7-fast.log. Recipes.gainOf and
+the three RT2 Freight retirement methods are byte-identical to this main
+(protected-methods.txt). No R2d model/resource change follows 025601b7.
+
+The final eight-CSV reference supplied by the orchestrator is
+C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-XR7/target/checks/XR7-postmerge/trace-*.csv:
+XR7's code on b9c93a98, equal to main 8083aaf3's model. Capture R2d's eight
+inside the normal gate and compare after it, before advancing records.
+Push the merge first; push nothing while the gate runs. Only notes and
+the ship file advance after a successful gate. Provisional marker retained.

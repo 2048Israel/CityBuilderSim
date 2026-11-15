@@ -889,6 +889,7 @@ public class ReadPathCheck {
         g.getForeignAccounts().getPegAnchor();
         g.getForeignAccounts().getPegPerAnchor();
         g.getForeignAccounts().getPegRate();
+        g.getForeignAccounts().getHoldFelt();
         g.getForeignAccounts().regimeWords();
         g.getDebtManager().tieRate();
         g.getDebtManager().tieMoney();
@@ -1575,9 +1576,16 @@ public class ReadPathCheck {
     }
 
     public static void main(String[] args) throws Exception {
-
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        out.println("--- XR7: reads keep the support already bought under a peg ---");
+        Game supported = CurrencyRegimeCheck.supportedTown("xr7-read-support");
+        ForeignAccounts supportedFx = supported.getForeignAccounts();
+        assertTrue("fixture: a chosen peg has nonzero support and an unpaid nonlinear purchase", supportedFx.getRegime() == ForeignAccounts.Regime.PEG
+                && supportedFx.getHoldFelt() > 0 && supportedFx.getEdgeOwedLocal() > ForeignAccounts.INTERVENTION_LINEAR * 12 * supportedFx.getGdpTrailing());
+        double[] supportBefore = supportedFx.toSaveArray();
+        for (int i = 0; i < 10; i++) readEverything(supported);
+        assertTrue("reading a supported peg keeps its support, its purchase bill and all foreign-account state to the bit", java.util.Arrays.equals(supportBefore, supportedFx.toSaveArray()));
         out.println("--- R2c: IP service flows and planner reads ---");
         assertTrue("reading paid IP charges and net planner gains keeps the money still", LicenceFeesCheck.readChecks());
         assertTrue("live and loaded rail reads keep the saved steam period when its depot is gone", HistoricalLicenceCheck.readChecks());

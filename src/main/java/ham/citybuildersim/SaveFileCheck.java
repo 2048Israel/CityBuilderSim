@@ -65,6 +65,9 @@ public class SaveFileCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        System.out.println("--- XR7: support already bought under a peg crosses the save ---");
+        assertTrue("nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again", CurrencyRegimeCheck.savedHoldSupportChecks());
+
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
         assertTrue("the prior steam rail period survives the actual load after its last unfitted depot closes", HistoricalLicenceCheck.saveChecks());
