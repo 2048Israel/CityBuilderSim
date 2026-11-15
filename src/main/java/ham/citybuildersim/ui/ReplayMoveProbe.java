@@ -223,6 +223,10 @@ public final class ReplayMoveProbe {
                 call(method(ReplayMode.class, "setCinematic", boolean.class), mode, true);
                 stage.setWidth(ReplayMode.FILM_W);
                 stage.setHeight(ReplayMode.FILM_H);
+                if (!ON_SCREEN) {
+                    double left = Screen.getScreens().stream().mapToDouble(s -> s.getBounds().getMinX()).min().orElse(0);
+                    stage.setX(left - stage.getWidth() - 200);
+                }
             }
             return null;
         });
@@ -232,6 +236,10 @@ public final class ReplayMoveProbe {
         waitForCanvas();
         if (Boolean.getBoolean("cbs.probe.film") && fx(() -> canvas.getWidth() != ReplayMode.FILM_W || canvas.getHeight() != ReplayMode.FILM_H)) {
             throw new IllegalStateException("the film probe needs a 1920 x 1080 canvas");
+        }
+        if (Boolean.getBoolean("cbs.probe.film") && !ON_SCREEN && fx(() -> Screen.getScreens().stream().anyMatch(s ->
+                s.getBounds().intersects(stage.getX(), stage.getY(), stage.getWidth(), stage.getHeight())))) {
+            throw new IllegalStateException("the film probe must stay off every screen");
         }
 
         double street = GlobeFrame.leastKmPx();
