@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.118 — R2d, The 1900-1950 entries undone — 2026-11-15, ready, see docs/queue/R2d-notes.md
+A city founded the 1900 way now runs sourced pre-entry figures, with
+independent changes that compose beside process recipes and fitted equipment.
+Thirty-six undos cover twenty-eight templates; cards, margins, research rows
+and refinery ribbons read the actual process. Patent rents use the actual
+goods and rail invoices, with saved bills through demolition and settlement.
+Fixtures cross each entry's month, fit pieces in either order, and exercise
+real construction, refitting, extraction, fuel and cracking. All eight default
+traces are unchanged. The notes name every estimate and the sourcing gaps
+left for Jerus.
+
 ### 0.9.117 — XR7, The world's pegs overshoot both ways, and the hold capped — 2026-11-15, ready, see docs/queue/XR7-notes.md
 World pegs now land past their shadow on either side through the city's existing
 OVERSHOOT dial. A chosen peg breaks before a month's purchase exceeds a year's

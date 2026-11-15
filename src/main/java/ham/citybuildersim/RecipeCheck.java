@@ -158,6 +158,26 @@ public class RecipeCheck {
 
     static boolean runs(BuildingsTemplate t, Recipe r) { return differs(t, r) == null; }
 
+    /** R2d: the original process-mix law, with every independent equipment undo composed on it. */
+    static String notMixWithChanges(Game g, BuildingsTemplate t, Recipe fitted, int nf, Recipe unfitted, int nu) {
+        Map<String, Double> absent = new java.util.TreeMap<>();
+        BuildingsStacks stack = g.getBuildingManager().getStack(t);
+        int n = stack == null ? 0 : stack.getQuantity();
+        for (RecipeChange c : t.getRecipeChanges()) {
+            if (c.piece() == null) continue; // Already included in the decoded chosen process ids.
+            double share = !c.knownAt(g.getMonth(), g.getResearch()) ? 1
+                    : n == 0 ? 0 : (double) Math.min(n, stack.getUnfitted(c.piece())) / n;
+            absent.put(c.code(), share);
+        }
+        return differs(t, RecipeChanges.compose(t, fitted, nf, unfitted, nu, absent, "expected"));
+    }
+
+    /** The process id with its independently chosen recipe undos, as saved by the driver. */
+    static Recipe composedChoice(Game g, BuildingsTemplate t, Recipe base, Recipes.Prices prices) {
+        return t.getRecipe(RecipeChanges.choose(t, base.getId(), g.getMonth(), g.getResearch(), prices));
+    }
+
+
     /** Two templates' live figures alike, to the bit: the first difference, or null. */
     static String differs(BuildingsTemplate a, BuildingsTemplate b) {
         return differs(a, Recipe.topLevelOf(b));
@@ -748,7 +768,9 @@ public class RecipeCheck {
             g.getRecipes().choose(g);
             g.getRecipes().apply(g);
         });
-        check("a template with no building runs the fitted part's recipe: what a new building with the piece would run", runs(fab, fp), String.valueOf(differs(fab, fp)));
+        check("a template with no building runs the fitted process plus the undos of discoveries not yet known",
+                notMixWithChanges(g, fab, composedChoice(g, fab, fp, Recipes.pricesOf(g)), 1, fp, 0) == null,
+                notMixWithChanges(g, fab, composedChoice(g, fab, fp, Recipes.pricesOf(g)), 1, fp, 0));
     }
 
     /* ============================ 6. the fit's gain for a recipe piece ============================ */
@@ -979,6 +1001,7 @@ public class RecipeCheck {
         java.util.Set<Integer> inFile = new java.util.TreeSet<>(), pieceInFile = new java.util.TreeSet<>();
         for (JsonElement e : root.getAsJsonArray("buildings")) {
             JsonObject o = e.getAsJsonObject();
+            if (o.has("recipeChanges")) inFile.add(o.get("id").getAsInt());
             if (!o.has("recipes")) continue;
             inFile.add(o.get("id").getAsInt());
             for (JsonElement r : o.getAsJsonArray("recipes")) if (r.getAsJsonObject().has("needsEquipment")) pieceInFile.add(o.get("id").getAsInt());
@@ -996,7 +1019,7 @@ public class RecipeCheck {
                 readPiece.add(t.getId());
             }
         }
-        check("fixture: the templates with a choice are the buildings the file gives recipes, and the ones with a recipe piece those whose recipes need one (read from the file here)",
+        check("fixture: the templates with a choice are the buildings the file gives process or independent recipes, and the ones with a process recipe piece those whose recipes need one (read from the file here)",
                 !inFile.isEmpty() && read.equals(inFile) && readPiece.equals(pieceInFile), read + " vs " + inFile + " / " + readPiece + " vs " + pieceInFile);
         check("fixture: the town is founded the 1900 way, in 1900, and the default town is not", g.foundedUnfitted() && year(g) == 1900 && !def.foundedUnfitted());
 
@@ -1021,11 +1044,14 @@ public class RecipeCheck {
             Recipe horses = ft.getRecipe("horses");
             horsesBuyNone &= horses != null && !horses.uses().containsKey(Good.DIESEL) && !horses.uses().containsKey(Good.PETROL);
             topBuys &= ft.defaultRecipe().uses().getOrDefault(Good.DIESEL, 0.0) > 0 && ft.defaultRecipe().uses().getOrDefault(Good.PETROL, 0.0) > 0;
-            farmsOk &= ft.runningRecipeIds()[1].equals("horses") && runs(ft, horses) && runs(fd, fd.defaultRecipe()) && stack(def, farm).getQuantity() > 0;
+            Recipe chosenHorses = composedChoice(g, ft, horses, Recipes.pricesOf(g));
+            farmsOk &= ft.runningRecipeIds()[1].equals(chosenHorses.getId())
+                    && notMixWithChanges(g, ft, chosenHorses, stack(g, farm).getQuantity(), chosenHorses, 0) == null
+                    && runs(fd, fd.defaultRecipe()) && stack(def, farm).getQuantity() > 0;
             dieselWanted += stack(def, farm).getQuantity() * fd.defaultRecipe().uses().getOrDefault(Good.DIESEL, 0.0);
             petrolWanted += stack(def, farm).getQuantity() * fd.defaultRecipe().uses().getOrDefault(Good.PETROL, 0.0);
         }
-        check("fixture: each farm's top level (the tractor's recipe) buys diesel and petrol and its horses' recipe buys neither, and with every farm unfitted the 1900 town's farms run the horses",
+        check("fixture: each farm's top level (the tractor's recipe) buys diesel and petrol and its horses' recipe buys neither, and with every farm unfitted the 1900 town's farms run horses with the independent 1900 undos",
                 topBuys && horsesBuyNone && farmsOk, "top buys " + topBuys + ", horses buy none " + horsesBuyNone + ", farms run horses " + farmsOk);
         check("in the town founded the 1900 way, with every farm unfitted, the farms' input need at capacity of diesel and of petrol is 0 (the horses' recipe buys none)",
                 agri.getInputAtCapacity(Good.DIESEL) == 0 && agri.getInputAtCapacity(Good.PETROL) == 0, agri.getInputAtCapacity(Good.DIESEL) + " / " + agri.getInputAtCapacity(Good.PETROL));
@@ -1052,17 +1078,18 @@ public class RecipeCheck {
             String worse = notBest(t, ru, false, month, pc);
             if (worse == null) worse = notBest(t, rf, true, month, pc);
             if (bestFault == null && worse != null) bestFault = t.getName() + ": " + worse;
-            if (entryFault == null && !List.of(rf.getId(), ru.getId()).equals(choiceOf(g, t))) entryFault = t.getName() + ": " + choiceOf(g, t) + " vs " + rf.getId() + ", " + ru.getId();
+            Recipe composedFitted = composedChoice(g, t, rf, pc), composedUnfitted = composedChoice(g, t, ru, pc);
+            if (entryFault == null && !List.of(composedFitted.getId(), composedUnfitted.getId()).equals(choiceOf(g, t))) entryFault = t.getName() + ": " + choiceOf(g, t) + " vs " + rf.getId() + ", " + ru.getId();
             if (mixFault == null) {
-                String mix = notMix(t, rf, st.getQuantity() - 1, ru, 1);
+                String mix = notMixWithChanges(g, t, composedFitted, st.getQuantity() - 1, composedUnfitted, 1);
                 if (mix != null) mixFault = t.getName() + ": " + mix;
             }
         }
         check("every template with a recipe piece: its unfitted part runs a recipe that needs nothing and is known in the city's year", unfittedFault == null && !withPiece.isEmpty(), unfittedFault);
         check("...and its fitted part one that needs the piece, known in the year, or the default where it can run none (the farms' tractor recipe is PE14's, June 1917)", fittedFault == null, fittedFault);
         check("...each the best its part can run at the city's prices, by the model's own Recipes.value(): no recipe it can run is worth more", bestFault == null, bestFault);
-        check("...the city chose exactly those two for the template, [fitted, unfitted], and keeps them", entryFault == null, entryFault);
-        check("...and with one building of two or more unfitted the template's figures are the weighted mix of the two", mixFault == null, mixFault);
+        check("...the city keeps those two process choices with their independent recipe undos", entryFault == null, entryFault);
+        check("...and with one building of two or more unfitted the template's figures are the weighted process mix with independent equipment undos", mixFault == null, mixFault);
 
         BuildingsTemplate oxygen = template(g, "Oxygen Steel Shop");
         check("the Oxygen Steel Shop: its unfitted part runs the Bessemer converter (the basic-oxygen converter, its default, is E1's code, November 1952, and not yet known) and its fitted part the open hearth",
@@ -1081,8 +1108,8 @@ public class RecipeCheck {
         Recipe kraft = pulp.getRecipe("kraft"), sulphite = pulp.getRecipe("sulphite"), groundwood = pulp.getRecipe("groundwood");
         Recipe pulpRun = Recipes.best(pulp, false, month, pc);
         boolean onlyOneWithout = true;
-        for (BuildingsTemplate t : shipped) onlyOneWithout &= t.recipePieceId() != null || t == pulp;
-        check("the Pulp Mill is the one shipped template with no recipe piece, and in 1900 it cannot run kraft (its year is later) but can run sulphite and groundwood",
+        for (BuildingsTemplate t : shipped) if (t.getRecipes().size() > 1) onlyOneWithout &= t.recipePieceId() != null || t == pulp;
+        check("the Pulp Mill is the one shipped alternative-process template with no recipe piece, and in 1900 it cannot run kraft (its year is later) but can run sulphite and groundwood",
                 onlyOneWithout && pulp.recipePieceId() == null && pulp.recipePiece() == null && kraft.isYear() && Integer.parseInt(kraft.getSince()) > year && !Recipes.canRun(pulp, kraft, false, month)
                         && !Recipes.canRun(pulp, kraft, true, month) && Recipes.canRun(pulp, sulphite, false, month) && Recipes.canRun(pulp, groundwood, false, month),
                 String.valueOf(kraft));

@@ -554,7 +554,7 @@ public final class OilView {
         }
         BusinessInvestment plans = game.getBusinessInvestment();
         Refining.Outlook o = plans == null ? null : r.outlook(plans);
-        RefineryFlow.Flow weighed = o == null ? null : RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values());
+        RefineryFlow.Flow weighed = o == null ? null : RefineryFlow.solve(o.feed(), o.crude(), o.mix(), o.values(), o.crackerPetrol());
         double[] values = r.cityValues();
         double[] feed = r.unitFeed(false);
 
@@ -578,7 +578,7 @@ public final class OilView {
             double run = u == null ? (refinery.counted() ? 0 : Double.NaN) : u.run();
             double share = u == null ? Double.NaN : u.share();
             double months = sites.containsKey(k) ? game.onSiteMonths(sites.get(k)) : 0;
-            UnitRow row = new UnitRow(k, on, site, feed[k.ordinal()], run, share, RefineryFlow.spread(k, values), gate, spare,
+            UnitRow row = new UnitRow(k, on, site, feed[k.ordinal()], run, share, refinery.flow().process().spread(k, values), gate, spare,
                     Double.NaN, months);
             (on > 0 ? standing : site > 0 ? building : rest).add(row);
         }
@@ -1038,7 +1038,8 @@ public final class OilView {
     static UnitLine unitLine(View v, UnitRow u) {
         String name = u.crude() ? "Crude units" : u.kind().unitName();
         String count = u.standing() > 0 ? "×" + u.standing() : "—";
-        String what = u.crude() ? "crude → its " + RefineryView.COLUMN.length + " cuts" : whatWords(u.kind());
+        String what = u.crude() ? "crude → its " + RefineryView.COLUMN.length + " cuts" : whatWords(u.kind(),
+                v.refinery() == null ? RefineryFlow.MODERN_PROCESS : v.refinery().flow().process());
         double feed = u.standing() > 0 ? u.feed() : u.gate() == null ? Double.NaN
                 : u.crude() ? u.gate().template().uses(Good.CRUDE) * Refining.CRUDE_LITRES_PER_TONNE : u.gate().template().feedPerMonth();
         String barrels = Double.isFinite(feed) ? barrelsFigure(feed) : "—";
@@ -1058,8 +1059,13 @@ public final class OilView {
      * item's words joined by NO_BREAK, so a line wraps only between items.
      */
     public static String whatWords(Kind k) {
+        return whatWords(k, RefineryFlow.MODERN_PROCESS);
+    }
+
+    /** The yields of the process actually shown, rather than the standalone modern definition. */
+    public static String whatWords(Kind k, RefineryFlow.Process process) {
         List<RefineryFlow.Yield> litres = new ArrayList<>(), tonnes = new ArrayList<>();
-        for (RefineryFlow.Yield y : k.yields()) (Double.isFinite(y.product().litresPerTonne()) ? litres : tonnes).add(y);
+        for (RefineryFlow.Yield y : process.yields(k)) (Double.isFinite(y.product().litresPerTonne()) ? litres : tonnes).add(y);
         litres.sort((a, b) -> Double.compare(b.perLitre(), a.perLitre()));
         StringBuilder s = new StringBuilder(k.feed().words().replace(' ', NO_BREAK)).append(NO_BREAK).append('→');
         boolean first = true;

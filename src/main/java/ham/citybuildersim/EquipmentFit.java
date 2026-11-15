@@ -163,6 +163,11 @@ public final class EquipmentFit {
      */
     private static double gainOf(Game game, BuildingsTemplate t, Equipment piece) {
         if (!game.foundedUnfitted()) return grossGainOf(game, t, piece);
+        if (t.changeNeeds(piece.getId())) {
+            double gross = grossGainOf(game, t, piece);
+            if (!t.isOwnedBySector()) return gross; // Public patent payments remain R2c-P.
+            return gross - LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), gross);
+        }
         if (piece.getEnds() == null) {
             if (!piece.getId().equals(t.recipePieceId())) return 0;
             double net = Recipes.gainOf(game, t);
@@ -179,6 +184,7 @@ public final class EquipmentFit {
 
     /** Gain before patent rent, also used to bill the pieces actually fitted (R2c). */
     static double grossGainOf(Game game, BuildingsTemplate t, Equipment piece) {
+        if (game.foundedUnfitted() && t.changeNeeds(piece.getId())) return RecipeChanges.gainOf(game, t, piece);
         if (piece.getEnds() == null) {
             if (!piece.getId().equals(t.recipePieceId())) return 0;
             Recipes.Prices p = Recipes.pricesOf(game);

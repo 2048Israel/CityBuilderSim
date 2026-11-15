@@ -91,6 +91,8 @@ public final class Recipes {
     public static boolean canRun(BuildingsTemplate t, Recipe r, boolean fitted, int month, Research found) {
         if (!r.knownAt(month, found)) return false;
         if (t.recipePieceId() == null) return true;
+        // A later process (oxygen conversion) supersedes the old open-hearth piece.
+        if (r.isDefault() && r.getNeedsEquipment() == null && !Recipe.DEFAULT_SINCE.equals(r.getSince())) return true;
         return (r.getNeedsEquipment() != null) == fitted;
     }
 
@@ -185,6 +187,8 @@ public final class Recipes {
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
             if (!t.hasRecipeChoice()) continue;
             String fitted = best(t, true, month, prices, found).getId(), unfitted = best(t, false, month, prices, found).getId();
+            fitted = RecipeChanges.choose(t, fitted, month, found, prices);
+            unfitted = RecipeChanges.choose(t, unfitted, month, found, prices);
             String dflt = t.defaultRecipe().getId();
             if (!fitted.equals(dflt) || !unfitted.equals(dflt)) chosen.put(t.getId(), new String[] { fitted, unfitted });
         }
@@ -208,7 +212,8 @@ public final class Recipes {
             Recipe fitted = picked == null ? null : t.getRecipe(picked[0]);
             Recipe without = picked == null ? null : t.getRecipe(picked[1]);
             declareGoods(game, t);
-            t.runRecipes(fitted, quantity - unfitted, without, unfitted);
+            if (!RecipeChanges.apply(game, t, stack, picked))
+                t.runRecipes(fitted, quantity - unfitted, without, unfitted);
         }
     }
 
@@ -225,6 +230,7 @@ public final class Recipes {
         Sector owner = game.getSectors().byKey(t.getSector());
         if (owner == null) return;
         for (Recipe r : t.getRecipes()) if (!r.isDefault()) owner.declareRecipeGoods(r);
+        RecipeChanges.declareGoods(game, t);
     }
 
     /** Forgets the choices: Game.buildWorld() calls it, so that a Game that played a 1900 city starts the next city as a fresh process does. */
