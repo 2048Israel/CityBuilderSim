@@ -41,13 +41,37 @@ public final class RecipeChanges {
 
     /** A fresh recipe with the stated fractions of each undo. Order is immaterial. */
     public static Recipe compose(BuildingsTemplate t, Recipe base, Map<String, Double> absent, String id) {
-        if (absent.isEmpty()) return base;
+        return compose(t, base, 1, base, 0, absent, id);
+    }
+
+    /** Mixes the unrounded process contributions and independent undos, then rounds once. */
+    public static Recipe compose(BuildingsTemplate t, Recipe a, int na, Recipe b, int nb,
+                                 Map<String, Double> absent, String id) {
+        na = Math.max(0, na);
+        nb = Math.max(0, nb);
+        if (na + nb == 0) na = 1;
+        if (na == 0) { a = b; na = nb; nb = 0; }
+        boolean same = nb == 0 || a.getId().equals(b.getId());
+        double all = na + (double) nb;
         Map<Good, Double> made = new EnumMap<>(Good.class), used = new EnumMap<>(Good.class);
-        made.putAll(base.makes());
-        used.putAll(base.uses());
         double[] posts = new double[JobType.values().length];
-        for (JobType j : JobType.values()) posts[j.ordinal()] = base.getJobs(j);
-        double draw = base.getElectricity(), gen = base.getGen(), water = base.getWater(), consumables = base.getConsumables();
+        if (same) {
+            made.putAll(a.makes());
+            used.putAll(a.uses());
+            for (JobType j : JobType.values()) posts[j.ordinal()] = a.getJobs(j);
+        } else {
+            for (Good g : Good.values()) {
+                double m = (na * a.makes().getOrDefault(g, 0.0) + nb * b.makes().getOrDefault(g, 0.0)) / all;
+                double u = (na * a.uses().getOrDefault(g, 0.0) + nb * b.uses().getOrDefault(g, 0.0)) / all;
+                if (m > 0) made.put(g, m);
+                if (u > 0) used.put(g, u);
+            }
+            for (JobType j : JobType.values()) posts[j.ordinal()] = (na * (double) a.getJobs(j) + nb * (double) b.getJobs(j)) / all;
+        }
+        double draw = same ? a.getElectricity() : (na * (double) a.getElectricity() + nb * (double) b.getElectricity()) / all;
+        double gen = same ? a.getGen() : (na * a.getGen() + nb * b.getGen()) / all;
+        double water = same ? a.getWater() : (na * a.getWater() + nb * b.getWater()) / all;
+        double consumables = same ? a.getConsumables() : (na * a.getConsumables() + nb * b.getConsumables()) / all;
         for (RecipeChange c : t.getRecipeChanges()) {
             double share = absent.getOrDefault(c.code(), 0.0);
             if (!(share >= 0 && share <= 1)) throw new IllegalArgumentException("undo share " + share);
@@ -62,41 +86,52 @@ public final class RecipeChanges {
         }
         int[] jobs = new int[posts.length];
         for (int i = 0; i < jobs.length; i++) jobs[i] = (int) Math.round(posts[i]);
-        return new Recipe(id, base.getName(), base.getSince(), base.getNeedsEquipment(), false,
+        return new Recipe(id, a.getName(), a.getSince(), a.getNeedsEquipment(), false,
                 made, used, jobs, (int) Math.round(draw), gen, water, consumables);
     }
 
-    /** Applies each piece's own missing share after the base recipe mix is set. */
-    static void apply(Game game, BuildingsTemplate t, BuildingsStacks stack, String[] picked) {
-        if (t.getRecipeChanges().isEmpty()) return;
+    private static boolean has(String id, String code) {
+        return id != null && java.util.Arrays.asList(id.split("~")).contains(code);
+    }
+
+    private static Recipe base(BuildingsTemplate t, String id) {
+        Recipe r = id == null ? null : t.getRecipe(id.split("~")[0]);
+        return r == null ? t.defaultRecipe() : r;
+    }
+
+    /** Applies the complete unrounded mix; false leaves an unchanged legacy template to its driver. */
+    static boolean apply(Game game, BuildingsTemplate t, BuildingsStacks stack, String[] picked) {
+        if (t.getRecipeChanges().isEmpty()) return false;
         int quantity = stack == null ? 0 : stack.getQuantity();
-        Map<String, Double> pieces = new TreeMap<>();
+        int without = stack == null || t.recipePieceId() == null ? 0 : Math.min(quantity, stack.getUnfitted(t.recipePieceId()));
+        int na = quantity - without, nb = without;
+        if (na + nb == 0) na = 1;
+        double all = na + (double) nb;
+        String first = picked == null ? t.defaultRecipe().getId() : picked[0];
+        String second = picked == null ? t.defaultRecipe().getId() : picked[1];
+        Map<String, Double> absent = new TreeMap<>();
         double production = t.recipeProduction(), land = t.recipeLand(), steamRail = 0, petrol = 0.55;
+        double dig = t.recipeSite() == null ? 0 : t.recipeSite().dig();
         for (RecipeChange c : t.getRecipeChanges()) {
             double share;
             if (c.piece() == null) {
-                // The same independent decision is appended to both legacy parts.
-                String id = picked == null ? "" : picked[0];
-                share = java.util.Arrays.asList(id.split("~")).contains(c.code()) ? 1 : 0;
+                share = (na * (has(first, c.code()) ? 1.0 : 0) + nb * (has(second, c.code()) ? 1.0 : 0)) / all;
             } else {
                 share = !c.knownAt(game.getMonth(), game.getResearch()) ? 1
                         : quantity == 0 ? 0 : (double) Math.min(quantity, stack.getUnfitted(c.piece())) / quantity;
-                pieces.put(c.code(), share);
             }
+            absent.put(c.code(), share);
             production += share * c.production();
             land += share * c.land();
             steamRail += share * c.steamRail();
             petrol += share * c.crackerPetrol();
+            dig += share * c.dig();
         }
-        if (!pieces.isEmpty()) {
-            Recipe live = Recipe.topLevelOf(t);
-            Recipe composed = compose(t, live, pieces, live.getId());
-            // Preserve the saved process ids; the independent equipment is not a price choice.
-            String[] ids = t.runningRecipeIds();
-            t.runRecipes(composed, 1, composed, 0);
-            t.setRunningRecipeIds(ids);
-        }
-        t.runRecipeExtras(production, land, steamRail, petrol);
+        Recipe composed = compose(t, base(t, first), na, base(t, second), nb, absent, first);
+        t.runRecipes(composed, 1, composed, 0);
+        t.setRunningRecipeIds(new String[] { first, second });
+        t.runRecipeExtras(production, land, steamRail, petrol, dig);
+        return true;
     }
 
     /** Gross monthly contribution of one independent piece, before R2c's rent. */

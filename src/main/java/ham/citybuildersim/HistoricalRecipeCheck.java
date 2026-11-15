@@ -74,13 +74,14 @@ public final class HistoricalRecipeCheck {
         f.put("consumables", t.getConsumables());
         f.put("production1", t.getProduction1());
         f.put("land", t.getLandSqFt());
+        f.put("dig", t.site() == null ? 0 : t.site().dig());
         f.put("steamRail", extra(t, "steamRailShare", 0));
         f.put("crackerPetrol", extra(t, "crackerPetrol", .55));
         return f;
     }
 
     /** Missing pre-R2d read methods expose main's actual modern value, not a compile failure. */
-    static double extra(BuildingsTemplate t, String method, double beforeValue) {
+    static double extra(Object t, String method, double beforeValue) {
         try { return ((Number) t.getClass().getMethod(method).invoke(t)).doubleValue(); }
         catch (NoSuchMethodException e) { return beforeValue; }
         catch (ReflectiveOperationException e) { throw new IllegalStateException(e); }
@@ -406,6 +407,145 @@ public final class HistoricalRecipeCheck {
         }
     }
 
+
+    static void oneRounding(JsonObject data) throws Exception {
+        out.println("--- 11. process and equipment contributions round together once ---");
+        Game g = town("R2d-one-rounding", true);
+        allExcept(g, "");
+        at(g, PolicyDates.monthOf(1950, 1));
+        BuildingsTemplate t = g.getBuildingManager().getTemplateByName("Underground Coal Mine");
+        RecipeCheck.stand(g, t, 7, new int[1]);
+        BuildingsStacks stack = g.getBuildingManager().getStack(t);
+        fitted(t, stack);
+        stack.setUnfitted("coal-cutter", 3);
+        stack.setUnfitted("coal-loader", 2);
+        double loader = 0;
+        for (JsonElement b : data.getAsJsonArray("buildings"))
+            if (b.getAsJsonObject().get("name").getAsString().equals(t.getName()))
+                for (JsonElement c : b.getAsJsonObject().getAsJsonArray("recipeChanges"))
+                    if (c.getAsJsonObject().get("entry").getAsString().equals("PE15"))
+                        loader = c.getAsJsonObject().getAsJsonObject("without").getAsJsonObject("jobs").get("NO_DIPLOMA").getAsDouble();
+        run(g);
+        double process = (4.0 * t.getRecipe("machine-cut").getJobs(JobType.NO_DIPLOMA)
+                + 3.0 * t.getRecipe("hand-cut").getJobs(JobType.NO_DIPLOMA)) / 7;
+        double loading = 2 * loader / 7;
+        long expected = Math.round(process + loading);
+        check("fixture: seven mines, three missing cutters and two missing loaders cause a nonintegral process mix",
+                stack.getQuantity() == 7 && stack.getUnfitted("coal-cutter") == 3 && stack.getUnfitted("coal-loader") == 2
+                        && Math.round(Math.round(process) + loading) != expected && loader > 0, "");
+        check("unskilled posts round once after adding the loader contribution",
+                t.getJobs(JobType.NO_DIPLOMA) == expected, t.getJobs(JobType.NO_DIPLOMA) + " vs " + expected);
+    }
+
+    static void recoveryDepletion() throws Exception {
+        out.println("--- 12. gravity recovery changes output, with the same actual ore depletion ---");
+        Game g = town("R2d-recovery", true);
+        allExcept(g, "PE7");
+        BuildingsTemplate t = g.getBuildingManager().getTemplateByName("Copper Mine & Mill");
+        RecipeCheck.stand(g, t, 1, new int[1]);
+        BuildingsStacks stack = g.getBuildingManager().getStack(t);
+        fitted(t, stack);
+        LandManager land = g.getLandManager();
+        land.restoreSites(Resource.COPPER, land.getSites(Resource.COPPER) + 100,
+                land.getOwnedAmount(Resource.COPPER) + 100 * Resource.COPPER.amountPerSite());
+        double modernOutput = t.defaultRecipe().makes().get(Good.COPPER_CONC) * stack.getQuantity();
+        double expectedOre = modernOutput * ham.citybuildersim.sectors.CopperMining.CONC_DIG;
+        double left = land.getRemaining(Resource.COPPER, Deposit.FieldType.SULPHIDE);
+        check("fixture: a standing sulphide mill has ample actual copper-in-ground for both extractions",
+                stack.getQuantity() == 1 && left > expectedOre * 10, "remaining " + left);
+        var mine = g.getSectors().copperMining();
+        var extract = mine.getClass().getDeclaredMethod("groundLimit", Good.class, double.class);
+        extract.setAccessible(true);
+        at(g, ResearchCatalog.knownFrom("PE7") - 1);
+        run(g);
+        double old = (Double) extract.invoke(mine, Good.COPPER_CONC, t.makes(Good.COPPER_CONC));
+        double firstOre = left - land.getRemaining(Resource.COPPER, Deposit.FieldType.SULPHIDE);
+        check("the gravity recipe really recovers three quarters of modern concentrate from the field",
+                Math.abs(old - modernOutput * .75) < 1e-8, old + " vs " + modernOutput);
+        check("its lower recovery still takes the same ore feed from the actual field",
+                Math.abs(firstOre - expectedOre) < 1e-6 * expectedOre, firstOre + " vs " + expectedOre);
+        at(g, ResearchCatalog.knownFrom("PE7"));
+        run(g);
+        left = land.getRemaining(Resource.COPPER, Deposit.FieldType.SULPHIDE);
+        double modern = (Double) extract.invoke(mine, Good.COPPER_CONC, t.makes(Good.COPPER_CONC));
+        double secondOre = left - land.getRemaining(Resource.COPPER, Deposit.FieldType.SULPHIDE);
+        check("flotation restores exactly modern output and dig, while depleting that same ore feed",
+                modern == modernOutput && t.site().dig() == ham.citybuildersim.sectors.CopperMining.CONC_DIG
+                        && Math.abs(secondOre - expectedOre) < 1e-6 * expectedOre, secondOre + " vs " + expectedOre);
+    }
+
+    static void boundedCrackingMean() throws Exception {
+        out.println("--- 13. mixed sizes on the modern process keep an exact bounded yield ---");
+        Game g = town("R2d-cracker-mean", true);
+        allExcept(g, "");
+        at(g, PolicyDates.monthOf(2000, 1));
+        EquipmentCheck.priceAt(g, Good.PETROL, 1);
+        EquipmentCheck.priceAt(g, Good.FUEL_OIL, .001);
+        BuildingsTemplate small = g.getBuildingManager().getTemplateByName("Small Cracking Unit");
+        BuildingsTemplate large = g.getBuildingManager().getTemplateByName("Cracking Unit");
+        RecipeCheck.stand(g, small, 1, new int[1]);
+        RecipeCheck.stand(g, large, 5, new int[1]);
+        RecipeCheck.stand(g, g.getBuildingManager().getTemplateByName("Oil Refinery"), 2, new int[1]);
+        run(g);
+        var ref = g.getSectors().refining();
+        double mean = extra(ref, "crackerPetrol", .55);
+        boolean solved;
+        String detail = "";
+        try { ref.flow(); solved = true; }
+        catch (IllegalArgumentException e) { solved = false; detail = e.toString(); }
+        check("fixture: one small and five large cracking units all run the modern recipe",
+                g.getBuildingManager().getStack(small).getQuantity() == 1
+                        && g.getBuildingManager().getStack(large).getQuantity() == 5
+                        && extra(small, "crackerPetrol", .55) == .55 && extra(large, "crackerPetrol", .55) == .55, "");
+        check("their feed-weighted modern yield is exactly 0.55 and the actual flow solver accepts it",
+                mean == .55 && solved, mean + " " + detail);
+    }
+
+    static void thermalAppraisal() throws Exception {
+        out.println("--- 14. thermal-cracker export discounts use its actual petrol yield ---");
+        Game g = town("R2d-thermal-appraisal", true);
+        BuildingsTemplate t = g.getBuildingManager().getTemplateByName("Small Cracking Unit");
+        double[] none = new double[ham.citybuildersim.sectors.RefineryFlow.Kind.values().length];
+        double[] values = new double[Good.values().length], away, imports = new double[Good.values().length];
+        java.util.Arrays.fill(values, 1);
+        java.util.Arrays.fill(imports, Double.POSITIVE_INFINITY);
+        values[Good.PETROL.ordinal()] = 10;
+        away = values.clone();
+        away[Good.PETROL.ordinal()] = 2;
+        imports[Good.PETROL.ordinal()] = 0;
+        double yield = .24;
+        var kind = ham.citybuildersim.sectors.RefineryFlow.Kind.CRACKER;
+        ham.citybuildersim.sectors.RefineryFlow.Flow flow;
+        try {
+            var solve = ham.citybuildersim.sectors.RefineryFlow.class.getMethod("solve", double[].class, double.class,
+                    double[].class, double[].class, double.class);
+            flow = (ham.citybuildersim.sectors.RefineryFlow.Flow) solve.invoke(null, none, 83000,
+                    ham.citybuildersim.sectors.Refining.MEDIUM_MIX, values, yield);
+        } catch (NoSuchMethodException e) {
+            flow = ham.citybuildersim.sectors.RefineryFlow.solve(none, 83000,
+                    ham.citybuildersim.sectors.Refining.MEDIUM_MIX, values);
+        }
+        ham.citybuildersim.sectors.Refining.Outlook outlook = null;
+        for (var ctor : ham.citybuildersim.sectors.Refining.Outlook.class.getConstructors())
+            if (ctor.getParameterCount() == 14)
+                outlook = (ham.citybuildersim.sectors.Refining.Outlook) ctor.newInstance(none, 83000,
+                        ham.citybuildersim.sectors.Refining.MEDIUM_MIX, values, 0, 0,
+                        ham.citybuildersim.sectors.Refining.MEDIUM_MIX, 0, 0, Double.POSITIVE_INFINITY, away, imports, null, yield);
+        if (outlook == null) outlook = new ham.citybuildersim.sectors.Refining.Outlook(none, 83000,
+                ham.citybuildersim.sectors.Refining.MEDIUM_MIX, values, 0, 0,
+                ham.citybuildersim.sectors.Refining.MEDIUM_MIX, 0, 0, Double.POSITIVE_INFINITY, away, imports, null);
+        var city = RefineryCheck.frame(null, null);
+        double fed = Math.min(flow.spare(ham.citybuildersim.sectors.RefineryFlow.Stream.GAS_OIL), t.feedPerMonth());
+        double discount = yield * fed * (values[Good.PETROL.ordinal()] - away[Good.PETROL.ordinal()]);
+        double expected = ham.citybuildersim.sectors.SpreadPlanner.earns(t, flow.spread(kind) * fed - discount, city);
+        var candidate = ham.citybuildersim.sectors.Refining.unitEstimate(outlook, flow, t, city);
+        check("fixture: positive thermal feed and an export discount leave a profitable candidate",
+                fed == t.feedPerMonth() && fed > 0 && discount > 0 && expected > 0, "expected " + expected);
+        check("its appraisal discounts 0.24 L petrol per litre, preserving that profitable order",
+                Math.abs(candidate.earns() - expected) < 1e-9 * expected && candidate.passes(),
+                candidate.earns() + " vs " + expected + ", gate " + candidate.failed());
+    }
+
     public static void main(String[] args) throws Exception {
         RecipeCheck.out = out; RecipeCheck.quiet = quiet;
         EquipmentCheck.out = out; EquipmentCheck.quiet = quiet;
@@ -423,6 +563,10 @@ public final class HistoricalRecipeCheck {
         completedPiece();
         savedPriceChoice();
         utilityUnits(data);
+        oneRounding(data);
+        recoveryDepletion();
+        boundedCrackingMean();
+        thermalAppraisal();
         out.println(fails == 0 ? "All HistoricalRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

@@ -125,3 +125,68 @@ The new fixture sets positive distinct utility prices and checks all three
 utility pieces at their own unit. HistoricalRecipeCheck is 90/90 green
 (check-6.log); restoring only the previous RecipeChanges class reproduces
 exactly the rapid-sand failure, 1 FAILED of 90 (utility-before/check.log).
+
+## First review and its mends (REV-R2d-1)
+
+Orchestrator's first stranger reviewed 4343a815..8e7a2676 before readiness.
+All three findings are mended, with causing fixtures:
+1. Feed-weighted modern cracker yields could average to 0.5500000000000002
+   and violate the solver's hard maximum. Bound the average to its actual
+   input yields; a homogeneous input is exact. Do not loosen yields().
+   One small plus five large modern units now produce exactly 0.55.
+2. Seven underground mines, three without cutters and two without loaders,
+   produced 328 rather than 329 posts from rounding the process first.
+   Compose raw process and independent contributions, then round once.
+   The fixture proves single and double rounding differ on its actual data.
+3. The thermal cracker's export discount used modern petrol output. Pass
+   the actual process into madeOf/madeAlone, preserving the old modern
+   overload. The fixture has full positive feed, no home petrol room,
+   and a profitable thermal order; the old appraisal wrongly rejects it.
+
+Self-review's PE7 follow-up: main's site.dig is copper-in-ground per tonne of
+concentrate. It rises from main's coefficient by the inverse 0.75 recovery,
+so the lower output still depletes the same ore feed. Both mine sizes carry
+the derived dig undo in the data. A mill on ample owned sulphide ground
+actually extracts at both recoveries; field withdrawals match and modern
+dig is restored exactly.
+
+HistoricalRecipeCheck is 100/100 green. RecipeCheck, CopperMiningCheck and
+RefineryCheck are green together: review-1-check.log, exit 0; zero firm Stale.
+The exact final fixtures on all nine model classes from 8e7a2676 produce
+7 FAILED of 100: the two PE7 per-row dig assertions, water-unit gain, early
+rounding (328 vs 329), actual depletion (562.65 vs 750.2), the rejected
+0.5500000000000002 flow, and thermal appraisal (-5087351.54 vs +673666.14).
+Evidence: target/R2d-evidence/review-before/{compile,check}.log.
+
+## Default traces
+
+Main 4343a815 and branch f6c3996e each ran the full default 2405-month trace,
+with earth-2.bin and world-1.bin at the repository data paths in the brief.
+All eight CSVs are byte-identical (cmp): bank, bonds, borrow, build, house,
+labour, month and pop. Main is target/R2d-evidence/main; the branch and
+compare.txt are target/R2d-evidence/branch-f6c3996e. Main SHA256SUMS is there.
+No ensemble: no default trace moved. After RT2 lands, compare the final gate
+trace against its kept main trace too.
+
+## Explicit slate mapping gap
+
+Orchestrator confirmed this call on 2026-11-15: PE11/23/25/27 keep R2b's
+conversion-unit dates; pre-PE11 crude units keep main's straight-run cuts.
+Study 8.5's shell still has 63% kerosene, 15% fuel oil, 8% lube stock and
+14% light products. The study does not split the light fraction or map lube
+stock to the current stream types. No invented subfractions. This mapping,
+like PE3, PE12 and PB3 above, is a call left for Jerus.
+
+## Remaining integration checkpoint
+
+No ship file yet. R2c and RT2 have not landed. Once they do: merge main,
+retain R2c Recipes.gainOf unchanged, delegate independent equipment gross gain
+inside EquipmentFit's founding guard and subtract R2c onGain on the result.
+Add the agreed small LicenceFees.one hook for independent recipe fees, net
+those fees in the independent price choice, and test both gross/net and
+production capture. For PE24 capture, use the installed cracker's share of
+the feed actually run, not its unused nameplate feed. R2c already uses that
+basis for a conversion building's own fee. Default cities pay none.
+Then regenerate maps, push final code, send "R2d mends at <commit>", publish a
+provisional ship file, ask "R2d dry run?" and wait for go before the launcher
+ALL dry run. Use a kept gate run and its final eight CSVs for comparison.

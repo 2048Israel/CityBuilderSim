@@ -598,6 +598,7 @@ public class BuildingsTemplate {
     private String recipePieceId;
     private java.util.List<RecipeChange> recipeChanges = java.util.List.of();
     private double recipeProduction, recipeLand;
+    private Site recipeSite;
     private double steamRailShare;
     private double crackerPetrol = 0.55;
 
@@ -610,6 +611,7 @@ public class BuildingsTemplate {
         recipeChanges = changes.stream().sorted(java.util.Comparator.comparing(RecipeChange::code)).toList();
         recipeProduction = production1;
         recipeLand = landSqFt;
+        recipeSite = site;
         return this;
     }
 
@@ -624,6 +626,9 @@ public class BuildingsTemplate {
     /** Ground before any undo. */
     double recipeLand() { return recipeLand; }
 
+    /** The immutable modern extraction coefficient and site identity. */
+    Site recipeSite() { return recipeSite; }
+
     /** Share of rail engines on steam, for the actual fuel invoice. */
     public double steamRailShare() { return steamRailShare; }
 
@@ -631,11 +636,12 @@ public class BuildingsTemplate {
     public double crackerPetrol() { return crackerPetrol; }
 
     /** Sets the non-goods figures of the independent changes. */
-    void runRecipeExtras(double production, double land, double steamRail, double petrol) {
+    void runRecipeExtras(double production, double land, double steamRail, double petrol, double dig) {
         production1 = production;
         landSqFt = land;
         steamRailShare = steamRail;
         crackerPetrol = petrol;
+        if (recipeSite != null) site = new Site(recipeSite.resource(), recipeSite.type(), recipeSite.sites(), dig);
     }
 
     private volatile String runsFitted, runsUnfitted;

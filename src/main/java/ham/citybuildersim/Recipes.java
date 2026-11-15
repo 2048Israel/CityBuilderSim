@@ -196,8 +196,8 @@ public final class Recipes {
             Recipe fitted = picked == null ? null : t.getRecipe(picked[0]);
             Recipe without = picked == null ? null : t.getRecipe(picked[1]);
             declareGoods(game, t);
-            t.runRecipes(fitted, quantity - unfitted, without, unfitted);
-            RecipeChanges.apply(game, t, stack, picked);
+            if (!RecipeChanges.apply(game, t, stack, picked))
+                t.runRecipes(fitted, quantity - unfitted, without, unfitted);
         }
     }
 

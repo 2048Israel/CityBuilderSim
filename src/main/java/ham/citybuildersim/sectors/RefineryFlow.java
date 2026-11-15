@@ -233,8 +233,13 @@ public final class RefineryFlow {
 
     /** What `litres` of a kind's feed make with nothing downstream to take any of it, by product (litres; tonnes of coke and bitumen): a unit's card. */
     public static Map<Good, Double> madeAlone(Kind k, double litres) {
+        return madeAlone(k, litres, 0.55);
+    }
+
+    /** Products of the actual cracking process; modern callers retain the original list. */
+    public static Map<Good, Double> madeAlone(Kind k, double litres, double crackerPetrol) {
         Map<Good, Double> out = new EnumMap<>(Good.class);
-        for (Yield y : k.yields()) out.merge(y.product(), Math.max(0, litres) * y.perLitre(), Double::sum);
+        for (Yield y : yields(k, crackerPetrol)) out.merge(y.product(), Math.max(0, litres) * y.perLitre(), Double::sum);
         return Collections.unmodifiableMap(out);
     }
 

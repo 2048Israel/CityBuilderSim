@@ -15,7 +15,7 @@ import java.util.Map;
 public record RecipeChange(String code, String since, String piece, String source, Map<Good, Double> makes,
         Map<Good, Double> uses, Map<JobType, Double> jobs, double electricity, double gen,
         double water, double consumables, double production, double land, double steamRail,
-        double crackerPetrol) {
+        double crackerPetrol, double dig) {
 
     /** Reads a sourced undo; bad entries cost that change, never half its fields. */
     static RecipeChange read(JsonObject o, BuildingsTemplate t) {
@@ -36,7 +36,7 @@ public record RecipeChange(String code, String since, String piece, String sourc
                 number(d, "electricity"), number(d, "gen"), number(d, "water"),
                 number(d, "consumables") * PriceLevel.FACTOR,
                 number(d, "production1"), number(d, "land"), number(d, "steamRail"),
-                number(d, "crackerPetrol"));
+                number(d, "crackerPetrol"), number(d, "dig"));
     }
 
     private static Map<Good, Double> goods(JsonObject o, String key) {

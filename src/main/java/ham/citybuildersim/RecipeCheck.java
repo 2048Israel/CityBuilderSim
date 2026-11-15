@@ -160,8 +160,6 @@ public class RecipeCheck {
 
     /** R2d: the original process-mix law, with every independent equipment undo composed on it. */
     static String notMixWithChanges(Game g, BuildingsTemplate t, Recipe fitted, int nf, Recipe unfitted, int nu) {
-        BuildingsTemplate expected = new BuildingsTemplate("Expected process mix", t.getCategory());
-        expected.runRecipes(fitted, nf, unfitted, nu);
         Map<String, Double> absent = new java.util.TreeMap<>();
         BuildingsStacks stack = g.getBuildingManager().getStack(t);
         int n = stack == null ? 0 : stack.getQuantity();
@@ -171,7 +169,7 @@ public class RecipeCheck {
                     : n == 0 ? 0 : (double) Math.min(n, stack.getUnfitted(c.piece())) / n;
             absent.put(c.code(), share);
         }
-        return differs(t, RecipeChanges.compose(t, Recipe.topLevelOf(expected), absent, "expected"));
+        return differs(t, RecipeChanges.compose(t, fitted, nf, unfitted, nu, absent, "expected"));
     }
 
     /** The process id with its independently chosen recipe undos, as saved by the driver. */

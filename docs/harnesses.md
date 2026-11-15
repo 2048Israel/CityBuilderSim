@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**204 harness files, 24,142 labelled assertions.** AllChecks runs 204 of them.
+**204 harness files, 24,152 labelled assertions.** AllChecks runs 204 of them.
 
 ## Which harnesses read which class
 
@@ -77,7 +77,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildersFirstCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DeathCareFirstCheck, EssentialWorksCheck, LandmassCheck, LongPlaytest, RoadCheck, SaveSlotCheck, WorksFinanceCheck |
 | [ConstructionScreen](map/ConstructionScreen.md) | **none** |
 | [Consumption](map/Consumption.md) | BasketYearCheck, ConsumptionCheck, ForeignCheck, PriceLevelCheck |
-| [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck |
+| [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, GdpCheck, HistoricalRecipeCheck, IndustryViewCheck |
 | [CopperRefining](map/CopperRefining.md) | BuildCardCheck, BuildingDataCheck, CopperRefiningCheck, GdpCheck, IndustryViewCheck, LongPlaytest, ReadPathCheck |
 | [CorporateBond](map/CorporateBond.md) | BankFailureCheck, BondCheck, FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
 | [Credits](map/Credits.md) | CreditsCheck |
@@ -90,7 +90,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, GoldStandardCheck, KeptCheck, LabourCheck, LongPlaytest, OilCheck, PegAnchorCheck, PolicyDatesCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
 | [DemolitionLog](map/DemolitionLog.md) | CalendarCheck, HouseholdCheck, MortgageCheck |
 | [Denomination](map/Denomination.md) | DenominationCheck, NewGameCheck |
-| [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GoldMiningCheck, IndustryViewCheck, LandCheck, LandmassCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
+| [Deposit](map/Deposit.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GoldMiningCheck, HistoricalRecipeCheck, IndustryViewCheck, LandCheck, LandmassCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, WellCheck, WorldCheck |
 | [DepositMarks](map/DepositMarks.md) | MapCheck |
 | [Dials](map/Dials.md) | ResearchPreviewCheck |
 | [DistrictPicture](map/DistrictPicture.md) | MapCheck |
@@ -192,7 +192,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandDrawing](map/LandDrawing.md) | EarthTerrainCheck, LandCheck, MiningCheck, OilCheck, SaveFileCheck, ScaleCheck |
 | [LandFactors](map/LandFactors.md) | LandNationsCheck, PartnersCheck |
 | [LandGrid](map/LandGrid.md) | EarthTerrainCheck, GridCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, MapCheck |
-| [LandManager](map/LandManager.md) | AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, EssentialWorksCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HealthCheck, HouseholdMemoryCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RankingsCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [LandManager](map/LandManager.md) | AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, EssentialWorksCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HealthCheck, HistoricalRecipeCheck, HouseholdMemoryCheck, HydroCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, RankingsCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, SlopeCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [LandMap](map/LandMap.md) | EarthTerrainCheck, GatewayCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, MainLineCheck, MapCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SlopeCheck, ZoningViewCheck |
 | [LandMarket](map/LandMarket.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, FundCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MiningCheck, OilCheck, QuarryingCheck, ReadPathCheck, RoadCheck, SaveFileCheck |
 | [LandParcel](map/LandParcel.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, EarthFoundingCheck, ForestryCheck, IslandNetCheck, KeptCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PortCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, ScaleCheck, TreasuryCheck, WaterCheck, WellCheck |
@@ -287,7 +287,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ResearchPreview](map/ResearchPreview.md) | KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [ResearchScreen](map/ResearchScreen.md) | **none** |
 | [ResearchView](map/ResearchView.md) | KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
-| [Resource](map/Resource.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GoldMiningCheck, HaulageCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
+| [Resource](map/Resource.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GoldMiningCheck, HaulageCheck, HistoricalRecipeCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | InvestCheck, LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BasketYearCheck, BondCheck, BuildCardCheck, BuildingDataCheck, CarCheck, ExpectationsCheck, ForeignCheck, Forms1900Check, GdpCheck, GroceryCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SupplierCreditCheck, WaterCheck |
 | [RetiredHousehold](map/RetiredHousehold.md) | HouseholdCheck |
@@ -322,7 +322,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SlopeRenders](map/SlopeRenders.md) | **none** |
 | [SocialSecurity](map/SocialSecurity.md) | HouseholdCheck, PolicyPreviewCheck |
 | [SourceTree](map/SourceTree.md) | StaleCheck |
-| [SpreadPlanner](map/SpreadPlanner.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, ForestryCheck, HaulageCheck, IndustryViewCheck, LongPlaytest, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PortCheck, QuarryingCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, WoodProductsCheck |
+| [SpreadPlanner](map/SpreadPlanner.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, ForestryCheck, HaulageCheck, HistoricalRecipeCheck, IndustryViewCheck, LongPlaytest, MaterialsCheck, OilCheck, OilViewCheck, OrderSearchCheck, PortCheck, QuarryingCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, WoodProductsCheck |
 | [Stale](map/Stale.md) | StaleCheck |
 | [Statement](map/Statement.md) | BankCheck, BondCheck, BooksCheck, CapitalFlowCheck, CopperRefiningCheck, EssentialWorksCheck, Forms1900Check, HouseholdCheck, LongPlaytest, MaterialsCheck, MiningCheck, NewGameCheck, RailCheck, SectorStatementCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck |
 | [StatementView](map/StatementView.md) | **none** |
@@ -12797,7 +12797,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1701 ...and the service's scale
   - L1702 ...while its fees move with the money
 
-## HistoricalRecipeCheck.java - 26 labelled assertions
+## HistoricalRecipeCheck.java - 36 labelled assertions
 
 > Each sourced 1900 undo runs before its entry, knowledge alone does not fit
 > equipment, independent pieces compose, and the default city stays modern.
@@ -12806,42 +12806,56 @@ _(this harness does not label its checks through a helper - it prints its findin
 > known and pieces fitted, and crosses this entry's actual month. This harness
 > also compiles against pre-R2d code, so its before failures are model failures.
 
-- **L110 1. each row crosses its own date, on the affected template**
-  - L148 the fixture actually exercised every shipped independent undo
-- **L152 2. binder beside tractor, in both fitting orders and at partial counts**
-  - L160 fixture: exactly four farms stand, so two missing pieces are half
-  - L170 fixture: both old ways run before either fit, order
-  - L177 first fit changes only its own contribution, order
-  - L184 both orders reach the identical modern figures
-  - L187 half the farm stacks without binders add half the sourced 4.5 crews, rounded once
-  - L194 saved choices plus independent unfitted counts replay the same figures, without a save slot
-- **L198 3. default founding keeps modern figures and no saved recipe choice**
-  - L206 three real months and an explicit driver call keep every default template byte-for-byte modern
-- **L211 4. the real month calls the change at its boundary**
-  - L223 the standing camp ran the half-yield axe recipe before the month and the chainsaw recipe on the clock
-- **L230 5. the actual railway invoice changes coal to diesel**
-  - L252 fixture: actual boundary tonnes were offered and hauled, diesel
-  - L254 actual rail fuel is
-- **L261 6. actual refinery flow changes thermal to catalytic cracking**
-  - L279 fixture: both real process flows actually crack the same positive gas-oil feed
-  - L283 the chosen process changes the actual flow by 0.31 L petrol per litre, with the same fuel-oil balance
-- **L289 7. the later oxygen converter supersedes an old open-hearth piece**
-  - L301 fixture: at the actual ranking prices oxygen conversion earns more than either old process
-  - L307 the modern oxygen recipe is available with and without the old furnace once every entry is known
-  - L310 where prices favour oxygen conversion, all known and fitted means exactly today's seven figures
-- **L316 8. an actual Machine Works completion before PE22 and a later refit**
-  - L324 fixture: a real Machine Works order went onto a construction site
-  - L330 fixture: that works really completed before carbide tools were known
-  - L332 the completed works left carbide tools off and runs its 1900 cutting figures
-  - L339 knowledge alone did not fit the completed works
-  - L342 fixture: the known carbide-tools refit was ordered and paid for
-  - L344 the actual refit completed, and only then removed the carbide undo
-- **L351 9. a saved independent price choice survives JSON and changed prices**
-  - L365 fixture: thermal cracking is chosen at dear fuel-oil prices, and its independent id survives the real save JSON
-  - L373 applying restored choices does not choose again at the changed prices
-  - L376 the next choice at those prices runs catalytic cracking at exactly main's modern yield
-- **L382 10. utility fitting gains use the price of the output's own unit**
-  - L389 fixture: water and power both have positive, distinct unit prices
+- **L111 1. each row crosses its own date, on the affected template**
+  - L149 the fixture actually exercised every shipped independent undo
+- **L153 2. binder beside tractor, in both fitting orders and at partial counts**
+  - L161 fixture: exactly four farms stand, so two missing pieces are half
+  - L171 fixture: both old ways run before either fit, order
+  - L178 first fit changes only its own contribution, order
+  - L185 both orders reach the identical modern figures
+  - L188 half the farm stacks without binders add half the sourced 4.5 crews, rounded once
+  - L195 saved choices plus independent unfitted counts replay the same figures, without a save slot
+- **L199 3. default founding keeps modern figures and no saved recipe choice**
+  - L207 three real months and an explicit driver call keep every default template byte-for-byte modern
+- **L212 4. the real month calls the change at its boundary**
+  - L224 the standing camp ran the half-yield axe recipe before the month and the chainsaw recipe on the clock
+- **L231 5. the actual railway invoice changes coal to diesel**
+  - L253 fixture: actual boundary tonnes were offered and hauled, diesel
+  - L255 actual rail fuel is
+- **L262 6. actual refinery flow changes thermal to catalytic cracking**
+  - L280 fixture: both real process flows actually crack the same positive gas-oil feed
+  - L284 the chosen process changes the actual flow by 0.31 L petrol per litre, with the same fuel-oil balance
+- **L290 7. the later oxygen converter supersedes an old open-hearth piece**
+  - L302 fixture: at the actual ranking prices oxygen conversion earns more than either old process
+  - L308 the modern oxygen recipe is available with and without the old furnace once every entry is known
+  - L311 where prices favour oxygen conversion, all known and fitted means exactly today's seven figures
+- **L317 8. an actual Machine Works completion before PE22 and a later refit**
+  - L325 fixture: a real Machine Works order went onto a construction site
+  - L331 fixture: that works really completed before carbide tools were known
+  - L333 the completed works left carbide tools off and runs its 1900 cutting figures
+  - L340 knowledge alone did not fit the completed works
+  - L343 fixture: the known carbide-tools refit was ordered and paid for
+  - L345 the actual refit completed, and only then removed the carbide undo
+- **L352 9. a saved independent price choice survives JSON and changed prices**
+  - L366 fixture: thermal cracking is chosen at dear fuel-oil prices, and its independent id survives the real save JSON
+  - L374 applying restored choices does not choose again at the changed prices
+  - L377 the next choice at those prices runs catalytic cracking at exactly main's modern yield
+- **L383 10. utility fitting gains use the price of the output's own unit**
+  - L390 fixture: water and power both have positive, distinct unit prices
+- **L412 11. process and equipment contributions round together once**
+  - L433 fixture: seven mines, three missing cutters and two missing loaders cause a nonintegral process mix
+  - L436 unskilled posts round once after adding the loader contribution
+- **L441 12. gravity recovery changes output, with the same actual ore depletion**
+  - L454 fixture: a standing sulphide mill has ample actual copper-in-ground for both extractions
+  - L463 the gravity recipe really recovers three quarters of modern concentrate from the field
+  - L465 its lower recovery still takes the same ore feed from the actual field
+  - L472 flotation restores exactly modern output and dig, while depleting that same ore feed
+- **L478 13. mixed sizes on the modern process keep an exact bounded yield**
+  - L496 fixture: one small and five large cracking units all run the modern recipe
+  - L500 their feed-weighted modern yield is exactly 0.55 and the actual flow solver accepts it
+- **L505 14. thermal-cracker export discounts use its actual petrol yield**
+  - L542 fixture: positive thermal feed and an export discount leave a profitable candidate
+  - L544 its appraisal discounts 0.24 L petrol per litre, preserving that profitable order
 
 ## HistoryCheck.java - 97 labelled assertions
 
@@ -24020,170 +24034,170 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   2. A CITY FOUNDED THE DEFAULT WAY CHOOSES NOTHING: after months pressed, and with the driver asked outright, every template's figures are its
 > ...
 
-- **L341 1. the catalog reads recipes: unstated figures are the top level, one default, bad entries reported**
-  - L345 a file with recipes on one building and none on the other is read, and nothing is reported
-  - L349 the recipes are the file's three, in its order, and the template has a choice
-  - L352 the entry that states no figure is the default, and no other is; defaultRecipe() is it
-  - L354 ...its figures are the template's top level, to the bit, its since 1900 when it states none, and it needs nothing
-  - L356 a recipe's name is what the file says, and its id where it says none
-  - L357 a figure a recipe does not state is the top level's: the kilned recipe's makes, draw, own power and water
-  - L360 ...and what it states is what it states: 40 crops (the top level's 50), 8 posts of NO_DIPLOMA and none of DIPLOMA (jobs stated whole)
-  - L362 \"uses\": {} states uses nothing (the top level uses crops), and a stated 0 is 0 (the draw), not the top level's
-  - L365 ...and what it does not state is inherited: the posts and the own power
-  - L366 consumables are priced at the founding's level as the top level's are: the default's are the template's, the stated 200 is 200 times the factor
-  - L368 ...and the inherited ones are the top level's (100 times the factor)
-  - L369 ...the top level's own 100 times the factor
-  - L370 a year as a JSON number is read as text and known from its January; a catalogue code is a code, known from its entry's month (E1's, November 1952: not by tha...
-  - L375 a piece that ends no form is read, and kept because a recipe needs it: it is the template's recipe piece
-  - L378 getRecipe() answers by id and null for an id it has not
-  - L380 a building with no list has one recipe: its top level, id default, since 1900, needing nothing, with no recipe piece
-  - L384 ...whose figures are its top level, to the bit (consumables too: the factor is in them once)
-  - L389 a file of bad recipes still reads all five buildings
-  - L392 the first has eleven entries and two good ones: the default and the one that needs the kiln are kept, in the file's order
-  - L395 ...and the first \"base\" kept, not the second of its id
-  - L397 ...the second of one id reported
-  - L398 ...the one with no id, and the one that is no object
-  - L399 ...the one with no since
-  - L400 ...an unknown good in makes and one in uses, each by its good
-  - L401 ...an unknown job type
-  - L402 ...a piece the building does not carry
-  - L403 ...a negative figure
-  - L404 a piece that ends no form and that no recipe needs is reported and dropped, the piece a recipe needs and the one that ends a form kept
-  - L409 two entries that state no figure are two defaults: reported, and the list dropped (the one implicit default is left)
-  - L412 a list in which every entry states a figure has no default: reported, and the list dropped
-  - L415 recipes that need two pieces of equipment are reported and the list dropped: the piece that ends no form goes with it, the drive stays
-  - L419 a piece that ends a form may be the one a recipe needs, even for the default: it is the recipe piece, and its form stays
-  - L426 setRecipes() refuses a list with no default, two defaults, a repeated id and a piece the building does not carry
-- **L444 2. a city founded the default way chooses nothing: every template runs its top level, nothing is chosen, nothing is saved**
-  - L454 fixture: the city is founded the default way, and its Bakery knows a recipe that earns more at the city's prices
-  - L457 fixture: that recipe makes snacks and uses diesel, which Industry declares neither of
-  - L459 six months pressed: the Bakery runs its top level, to the bit
-  - L464 ...and so does every template: its figures are its default recipe's
-  - L465 nothing was chosen, and the Bakery's parts both ran the default
-  - L471 asked outright to choose and apply, the driver still chooses nothing and sets nothing
-  - L472 no sector declares a good of a recipe it never ran: Industry still declares neither snacks nor diesel, and every sector's declared goods are as they were
-  - L476 the save has no recipe key
-  - L478 ...and loads, with no choice and every template on its top level
-- **L485 3. the best recipe at the city's prices: the value of a month, the break-even, the tie, and the template's figures in the city**
-  - L496 the value of a month is what it makes less what it uses, less BusinessInvestment's running cost (posts, draw, water), plus the power it makes at the tariff, ...
-  - L507 ...the exchange factor it uses is the one every processing and extraction sector pays its consumables at
-  - L508 ...and the wages, the power and the water are the economy's
-  - L517 fixture: the break-even price of crops, solved from the model's own value() at two prices, is the three times the harness sized it for
-  - L518 fixture: the richer recipe earns more below it and less above it
-  - L522 in the pure core a crops price a tenth below the break-even chooses the richer recipe for either part, and one a tenth above chooses the default
-  - L532 a tie keeps the default, though a recipe of the same value comes first in the file
-  - L535 ...and a tie between two that earn more keeps the one earlier in the file
-  - L539 fixture: the city is founded the 1900 way, in 1900, with the Bakery's two buildings and no recipe piece
-  - L542 fixture: the city's price of crops moved to a tenth below the break-even
-  - L547 below it the city's choice is the richer recipe for both parts, and the Bakery's figures are its figures, to the bit
-  - L554 a tenth above it the choice is the default, nothing is kept, and the figures are set back to the top level, to the bit
-  - L562 fixture: the crops price moved to half the break-even, where the richer recipe is the best
-  - L563 a press of the month at those prices chooses it and leaves the Bakery running it (the top of the month chooses, and the sites' end applies)
-  - L571 fixture: a recipe that makes snacks and uses diesel, which Industry declares neither of, earns more than the default at the city's prices
-  - L573 giving the template the recipe declares nothing: Industry still declares neither
-  - L578 where the Bakery first runs it, Industry declares the snacks it makes and the diesel it uses, and the Bakery's figures are the recipe's
-  - L581 a month with them declared runs, the Bakery still on the recipe
-  - L588 ...and the declaration is not undone when the Bakery runs the default again, the only recipe known (as R0c's CROPS is not)
-- **L595 4. known and runnable: a future year or a code not in the catalogue is never chosen, the recipe piece splits the two parts, a part with n...**
-  - L608 fixture: the template's recipe piece is its electric drive, which also ends the steam form; 1900, two buildings, both without the drive
-  - L611 fixture: the recipe that needs nothing earns more at the city's prices than the one that needs the piece, and each future or coded one earns more still
-  - L614 a recipe is known from its January: the 1903 one in 1903 and not in 1902; a code that is in no catalogue in no year, 1800 to 2200
-  - L618 ...and a code that is in the catalogue is known from its entry's month (R2): E1's recipe from November 1952 and not the month before, not by that January but...
-  - L620 the unfitted part runs the best that needs nothing and is known (the better one), and never the faster ones that are not
-  - L622 the fitted part runs the best that needs the piece and is known, though one that needs nothing earns more (the fitted part never runs one that needs nothing)
-  - L624 in January 1903 the future one is known and the fitted part runs it (it was the month that kept it out); 1950's does the same for the unfitted part
-  - L626 a code that is in no catalogue is chosen in no month: in 2200 the unfitted part still runs the 1950 one, though the coded one earns more
-  - L644 400 random price sets: the unfitted part never runs a recipe that needs the piece, the fitted part never one that needs nothing
-  - L645 ...a recipe whose code is in no catalogue is chosen at none, nor a recipe of a later year than 1900
-  - L649 the fitted part with no recipe it can run (the one that needs the piece is not yet known) runs the default, which needs nothing
-  - L658 in the city the unfitted part chose the better one and the fitted part the ovens, and nothing that is not known
-  - L660 both buildings are without the drive, so the template runs the unfitted part's recipe alone, to the bit
-  - L663 with both fitted it runs the fitted part's, the ovens, to the bit
-  - L675 fixture: the fitted part's recipe is the ghost, and no building is fitted to run it: the template runs the default
-  - L677 a recipe no building runs is declared all the same: Industry declares lubricants and LPG
-  - L680 with one building fitted to run it, Industry still declares both
-- **L706 5. the mix: the figures weighted by the buildings of each part, exact when one part is empty or both run the default**
-  - L719 fixture: five Bakeries stand, two of them without the drive; the posts and the draw differ so that the rounding shows
-  - L722 fixture: the default's water is a figure whose weighted mean with itself is not itself to the bit
-  - L728 the fitted three run the ovens and the unfitted two the default
-  - L729 the template's makes, uses, posts, draw and own power are (3 x the fitted's + 2 x the unfitted's) / 5, the posts and the draw to the nearest whole
-  - L731 ...and the mix is not either recipe's alone, nor an unweighted mean (the figures are the weighted ones)
-  - L733 ...the posts of NO_DIPLOMA are the rounded (3 x 20 + 2 x 28) / 5, 23.2 to 23, and the draw the rounded (3 x 30 + 2 x 24) / 5, 27.6 to 28
-  - L736 applying again changes nothing
-  - L741 with no building unfitted the template runs the fitted part's recipe alone, to the bit
-  - L742 ...and a screen that held the makes it was given before keeps them whole: the maps are replaced, not changed under it
-  - L746 with all five unfitted it runs the unfitted part's alone, to the bit
-  - L749 with two unfitted again it is the mix again (the choice is kept; only the counts move)
-  - L758 fixture: the recipe that needs the piece is not known in 1900, so both parts run the default, and nothing is chosen for the Bakery
-  - L760 two of five unfitted and both parts on the default: the template is set back to its top level, to the bit (no mean of two equal figures)
-  - L768 fixture: the Fabrication Works has a recipe piece and no stack in the town
-  - L773 a template with no building runs the fitted process plus the undos of discoveries not yet known
-- **L781 6. the fit's gain for a recipe piece: the best fitted recipe less the best unfitted, the verdict across the break-even**
-  - L792 fixture: the Bakery's two pieces end no form and are unfitted on both its buildings
-  - L800 fixture: the kiln is priced (NOT_YET or PAYS), with a cost, a factor and a hurdle, and what its gain must reach is a number
-  - L805 fixture: the recipe piece is the kiln, the fitted part runs the kilned recipe and the unfitted part the default
-  - L809 the verdict's gain is the value of the best recipe a fitted building could run less the best an unfitted one could, at the city's prices, by the model's own ...
-  - L811 ...which is the Recipes.gainOf() of the city
-  - L812 ...and half what it needs to pay, as the fixture sized it
-  - L813 ...and at that gain the kiln does not pay
-  - L817 fixture: the break-even price of bread, solved from the model's own recipeGain() at two prices, is above today's
-  - L822 fixture: the city's price of bread moved a hundredth above and then below the break-even
-  - L823 in the city bread a hundredth above the break-even makes the kiln PAY, and a hundredth below it does not
-  - L825 ...the cost, the rate and the hurdle are the same at both (they do not read the bread), the gain is not
-  - L827 ...a new building's verdict is the same figure at the price below (NOT_YET)
-  - L830 ...and above the break-even a new building's verdict is PAYS
-  - L832 a piece that ends no form and that no recipe needs adds nothing: its gain is 0, and it does not pay
-  - L842 fixture: the drive on the Industrial Bakery ends the steam form and is its recipe piece, the recipe it enables worth much more
-  - L844 a piece that ends a form keeps its form's gain: the drive's verdict is the steam coal saved at the city's price of coal, not the recipe's
-  - L846 ...which differs from the recipe's gain
-- **L852 7. save and load: the choices are written only off the default, come back on a load that ends on them, and the twin runs as the unbroken ...**
-  - L870 with crops dear the default is the best for both parts: nothing is chosen for the Bakery, and the save has no choice for it
-  - L879 fixture: after a month at today's prices the fitted Bakery runs the ovens and the unfitted one the richer alternative, and the template is their mix
-  - L883 the city saved, with the Bakery's choices in the file under the template's id
-  - L889 the loaded city is founded the 1900 way, in the same month, and holds the saved choices before any template has a recipe to run them
-  - L891 ...a template that knows no such recipe runs its top level (the saved id is read when applied, and there is none)
-  - L893 the unbroken city's Industry declares the snacks and the diesel of the ovens its Bakery runs; the loaded city's, with nothing yet to run, does not
-  - L897 given the recipes, the loaded Bakery runs the saved choices and its figures are the unbroken city's, to the bit
-  - L899 ...and the load's apply declares again from the choices it restored: the loaded Industry now declares the snacks and the diesel
-  - L908 fixture: in the loaded city the break-even price of crops between the alternative and the default is above today's
-  - L910 fixture: crops moved to twice it, where a choice struck afresh would be the default for the unfitted part
-  - L913 the load's apply runs the SAVED choices all the same (the alternative), the choices are untouched, and the Bakery is the unbroken city's mix
-  - L916 the next month's top strikes them afresh at those prices: the unfitted part now runs the default, the fitted the ovens
-  - L922 an unbroken city and its reloaded twin, one press later, hold the same choices and the same figures to the bit
-  - L927 ...and two presses beyond
-- **L933 8. a Game that played a 1900 town, then founded the default way: no choice kept, no template off its top level**
-  - L941 fixture: the 1900 town chose the ovens for its fitted Bakery and runs a mix, off its top level
-  - L945 a new game founded the default way on the same object: not founded the 1900 way, and no choice kept
-  - L951 ...and every template runs its top level (the city's templates are its own: the last city's are gone)
-  - L958 given a recipe that earns more and three months pressed, the new city's Bakery still runs its top level and nothing is chosen
-- **L998 9. the shipped rows: every template of buildings.json with recipes runs the best each part can, the farms' fuel, the pieces priced, a rel...**
-  - L1024 fixture: the templates with a choice are the buildings the file gives process or independent recipes, and the ones with a process recipe piece those whose re...
-  - L1026 fixture: the town is founded the 1900 way, in 1900, and the default town is not
-  - L1038 fixture: at least two of every template with a recipe piece stand in the 1900 town (
-  - L1056 fixture: each farm's top level (the tractor's recipe) buys diesel and petrol and its horses' recipe buys neither, and with every farm unfitted the 1900 town'...
-  - L1058 in the town founded the 1900 way, with every farm unfitted, the farms' input need at capacity of diesel and of petrol is 0 (the horses' recipe buys none)
-  - L1060 ...and the sector declares both as its inputs, though no farm buys them there
-  - L1061 in the default town the farms' input need at capacity of diesel is each farm's fuel times the farms standing, every template running its top level
-  - L1063 ...and of petrol
-  - L1064 ...which is more than nothing, and the default town chose nothing
-  - L1090 every template with a recipe piece: its unfitted part runs a recipe that needs nothing and is known in the city's year
-  - L1091 ...and its fitted part one that needs the piece, known in the year, or the default where it can run none (the farms' tractor recipe is PE14's, June 1917)
-  - L1092 ...each the best its part can run at the city's prices, by the model's own Recipes.value(): no recipe it can run is worth more
-  - L1093 ...the city keeps those two process choices with their independent recipe undos
-  - L1094 ...and with one building of two or more unfitted the template's figures are the weighted process mix with independent equipment undos
-  - L1097 the Oxygen Steel Shop: its unfitted part runs the Bessemer converter (the basic-oxygen converter, its default, is E1's code, November 1952, and not yet known...
-  - L1105 a farm with its tractor fitted buys the tractor's fuel and one without it none: the farms' need of diesel is the fitted farms' times the tractor recipe's
-  - L1114 the Pulp Mill is the one shipped alternative-process template with no recipe piece, and in 1900 it cannot run kraft (its year is later) but can run sulphite ...
-  - L1118 ...and runs whichever of those is worth more at the city's prices, for both parts, its figures that recipe's to the bit
-  - L1140 each recipe piece that ends no form (
-  - L1142 ...and a new building's verdict for it is priced the same way
-  - L1145 the farms' tractor is their recipe piece and ends FARM_HORSES, and its verdict is NOT_KNOWN (it is not known before 1917, PE14's June): the fitted farm part ...
-  - L1154 the 1900 town saved, and loads
-  - L1165 a reload of the 1900 town ends on the same choices for every shipped template, and the same running recipes
-  - L1166 ...and on the same template figures, to the bit: makes, uses, posts, draw, own power, water and consumables
-  - L1181 fixture: pressed to the December before kraft's year, the mill cannot run kraft and runs the better of the other two, its figures that recipe's
-  - L1192 from January of kraft's year kraft is among what the mill can run
-  - L1193 ...and it runs the one worth most of the three at the city's prices, by value(), kept as the city's choice (none when that is the default, kraft), its figure...
+- **L339 1. the catalog reads recipes: unstated figures are the top level, one default, bad entries reported**
+  - L343 a file with recipes on one building and none on the other is read, and nothing is reported
+  - L347 the recipes are the file's three, in its order, and the template has a choice
+  - L350 the entry that states no figure is the default, and no other is; defaultRecipe() is it
+  - L352 ...its figures are the template's top level, to the bit, its since 1900 when it states none, and it needs nothing
+  - L354 a recipe's name is what the file says, and its id where it says none
+  - L355 a figure a recipe does not state is the top level's: the kilned recipe's makes, draw, own power and water
+  - L358 ...and what it states is what it states: 40 crops (the top level's 50), 8 posts of NO_DIPLOMA and none of DIPLOMA (jobs stated whole)
+  - L360 \"uses\": {} states uses nothing (the top level uses crops), and a stated 0 is 0 (the draw), not the top level's
+  - L363 ...and what it does not state is inherited: the posts and the own power
+  - L364 consumables are priced at the founding's level as the top level's are: the default's are the template's, the stated 200 is 200 times the factor
+  - L366 ...and the inherited ones are the top level's (100 times the factor)
+  - L367 ...the top level's own 100 times the factor
+  - L368 a year as a JSON number is read as text and known from its January; a catalogue code is a code, known from its entry's month (E1's, November 1952: not by tha...
+  - L373 a piece that ends no form is read, and kept because a recipe needs it: it is the template's recipe piece
+  - L376 getRecipe() answers by id and null for an id it has not
+  - L378 a building with no list has one recipe: its top level, id default, since 1900, needing nothing, with no recipe piece
+  - L382 ...whose figures are its top level, to the bit (consumables too: the factor is in them once)
+  - L387 a file of bad recipes still reads all five buildings
+  - L390 the first has eleven entries and two good ones: the default and the one that needs the kiln are kept, in the file's order
+  - L393 ...and the first \"base\" kept, not the second of its id
+  - L395 ...the second of one id reported
+  - L396 ...the one with no id, and the one that is no object
+  - L397 ...the one with no since
+  - L398 ...an unknown good in makes and one in uses, each by its good
+  - L399 ...an unknown job type
+  - L400 ...a piece the building does not carry
+  - L401 ...a negative figure
+  - L402 a piece that ends no form and that no recipe needs is reported and dropped, the piece a recipe needs and the one that ends a form kept
+  - L407 two entries that state no figure are two defaults: reported, and the list dropped (the one implicit default is left)
+  - L410 a list in which every entry states a figure has no default: reported, and the list dropped
+  - L413 recipes that need two pieces of equipment are reported and the list dropped: the piece that ends no form goes with it, the drive stays
+  - L417 a piece that ends a form may be the one a recipe needs, even for the default: it is the recipe piece, and its form stays
+  - L424 setRecipes() refuses a list with no default, two defaults, a repeated id and a piece the building does not carry
+- **L442 2. a city founded the default way chooses nothing: every template runs its top level, nothing is chosen, nothing is saved**
+  - L452 fixture: the city is founded the default way, and its Bakery knows a recipe that earns more at the city's prices
+  - L455 fixture: that recipe makes snacks and uses diesel, which Industry declares neither of
+  - L457 six months pressed: the Bakery runs its top level, to the bit
+  - L462 ...and so does every template: its figures are its default recipe's
+  - L463 nothing was chosen, and the Bakery's parts both ran the default
+  - L469 asked outright to choose and apply, the driver still chooses nothing and sets nothing
+  - L470 no sector declares a good of a recipe it never ran: Industry still declares neither snacks nor diesel, and every sector's declared goods are as they were
+  - L474 the save has no recipe key
+  - L476 ...and loads, with no choice and every template on its top level
+- **L483 3. the best recipe at the city's prices: the value of a month, the break-even, the tie, and the template's figures in the city**
+  - L494 the value of a month is what it makes less what it uses, less BusinessInvestment's running cost (posts, draw, water), plus the power it makes at the tariff, ...
+  - L505 ...the exchange factor it uses is the one every processing and extraction sector pays its consumables at
+  - L506 ...and the wages, the power and the water are the economy's
+  - L515 fixture: the break-even price of crops, solved from the model's own value() at two prices, is the three times the harness sized it for
+  - L516 fixture: the richer recipe earns more below it and less above it
+  - L520 in the pure core a crops price a tenth below the break-even chooses the richer recipe for either part, and one a tenth above chooses the default
+  - L530 a tie keeps the default, though a recipe of the same value comes first in the file
+  - L533 ...and a tie between two that earn more keeps the one earlier in the file
+  - L537 fixture: the city is founded the 1900 way, in 1900, with the Bakery's two buildings and no recipe piece
+  - L540 fixture: the city's price of crops moved to a tenth below the break-even
+  - L545 below it the city's choice is the richer recipe for both parts, and the Bakery's figures are its figures, to the bit
+  - L552 a tenth above it the choice is the default, nothing is kept, and the figures are set back to the top level, to the bit
+  - L560 fixture: the crops price moved to half the break-even, where the richer recipe is the best
+  - L561 a press of the month at those prices chooses it and leaves the Bakery running it (the top of the month chooses, and the sites' end applies)
+  - L569 fixture: a recipe that makes snacks and uses diesel, which Industry declares neither of, earns more than the default at the city's prices
+  - L571 giving the template the recipe declares nothing: Industry still declares neither
+  - L576 where the Bakery first runs it, Industry declares the snacks it makes and the diesel it uses, and the Bakery's figures are the recipe's
+  - L579 a month with them declared runs, the Bakery still on the recipe
+  - L586 ...and the declaration is not undone when the Bakery runs the default again, the only recipe known (as R0c's CROPS is not)
+- **L593 4. known and runnable: a future year or a code not in the catalogue is never chosen, the recipe piece splits the two parts, a part with n...**
+  - L606 fixture: the template's recipe piece is its electric drive, which also ends the steam form; 1900, two buildings, both without the drive
+  - L609 fixture: the recipe that needs nothing earns more at the city's prices than the one that needs the piece, and each future or coded one earns more still
+  - L612 a recipe is known from its January: the 1903 one in 1903 and not in 1902; a code that is in no catalogue in no year, 1800 to 2200
+  - L616 ...and a code that is in the catalogue is known from its entry's month (R2): E1's recipe from November 1952 and not the month before, not by that January but...
+  - L618 the unfitted part runs the best that needs nothing and is known (the better one), and never the faster ones that are not
+  - L620 the fitted part runs the best that needs the piece and is known, though one that needs nothing earns more (the fitted part never runs one that needs nothing)
+  - L622 in January 1903 the future one is known and the fitted part runs it (it was the month that kept it out); 1950's does the same for the unfitted part
+  - L624 a code that is in no catalogue is chosen in no month: in 2200 the unfitted part still runs the 1950 one, though the coded one earns more
+  - L642 400 random price sets: the unfitted part never runs a recipe that needs the piece, the fitted part never one that needs nothing
+  - L643 ...a recipe whose code is in no catalogue is chosen at none, nor a recipe of a later year than 1900
+  - L647 the fitted part with no recipe it can run (the one that needs the piece is not yet known) runs the default, which needs nothing
+  - L656 in the city the unfitted part chose the better one and the fitted part the ovens, and nothing that is not known
+  - L658 both buildings are without the drive, so the template runs the unfitted part's recipe alone, to the bit
+  - L661 with both fitted it runs the fitted part's, the ovens, to the bit
+  - L673 fixture: the fitted part's recipe is the ghost, and no building is fitted to run it: the template runs the default
+  - L675 a recipe no building runs is declared all the same: Industry declares lubricants and LPG
+  - L678 with one building fitted to run it, Industry still declares both
+- **L704 5. the mix: the figures weighted by the buildings of each part, exact when one part is empty or both run the default**
+  - L717 fixture: five Bakeries stand, two of them without the drive; the posts and the draw differ so that the rounding shows
+  - L720 fixture: the default's water is a figure whose weighted mean with itself is not itself to the bit
+  - L726 the fitted three run the ovens and the unfitted two the default
+  - L727 the template's makes, uses, posts, draw and own power are (3 x the fitted's + 2 x the unfitted's) / 5, the posts and the draw to the nearest whole
+  - L729 ...and the mix is not either recipe's alone, nor an unweighted mean (the figures are the weighted ones)
+  - L731 ...the posts of NO_DIPLOMA are the rounded (3 x 20 + 2 x 28) / 5, 23.2 to 23, and the draw the rounded (3 x 30 + 2 x 24) / 5, 27.6 to 28
+  - L734 applying again changes nothing
+  - L739 with no building unfitted the template runs the fitted part's recipe alone, to the bit
+  - L740 ...and a screen that held the makes it was given before keeps them whole: the maps are replaced, not changed under it
+  - L744 with all five unfitted it runs the unfitted part's alone, to the bit
+  - L747 with two unfitted again it is the mix again (the choice is kept; only the counts move)
+  - L756 fixture: the recipe that needs the piece is not known in 1900, so both parts run the default, and nothing is chosen for the Bakery
+  - L758 two of five unfitted and both parts on the default: the template is set back to its top level, to the bit (no mean of two equal figures)
+  - L766 fixture: the Fabrication Works has a recipe piece and no stack in the town
+  - L771 a template with no building runs the fitted process plus the undos of discoveries not yet known
+- **L779 6. the fit's gain for a recipe piece: the best fitted recipe less the best unfitted, the verdict across the break-even**
+  - L790 fixture: the Bakery's two pieces end no form and are unfitted on both its buildings
+  - L798 fixture: the kiln is priced (NOT_YET or PAYS), with a cost, a factor and a hurdle, and what its gain must reach is a number
+  - L803 fixture: the recipe piece is the kiln, the fitted part runs the kilned recipe and the unfitted part the default
+  - L807 the verdict's gain is the value of the best recipe a fitted building could run less the best an unfitted one could, at the city's prices, by the model's own ...
+  - L809 ...which is the Recipes.gainOf() of the city
+  - L810 ...and half what it needs to pay, as the fixture sized it
+  - L811 ...and at that gain the kiln does not pay
+  - L815 fixture: the break-even price of bread, solved from the model's own recipeGain() at two prices, is above today's
+  - L820 fixture: the city's price of bread moved a hundredth above and then below the break-even
+  - L821 in the city bread a hundredth above the break-even makes the kiln PAY, and a hundredth below it does not
+  - L823 ...the cost, the rate and the hurdle are the same at both (they do not read the bread), the gain is not
+  - L825 ...a new building's verdict is the same figure at the price below (NOT_YET)
+  - L828 ...and above the break-even a new building's verdict is PAYS
+  - L830 a piece that ends no form and that no recipe needs adds nothing: its gain is 0, and it does not pay
+  - L840 fixture: the drive on the Industrial Bakery ends the steam form and is its recipe piece, the recipe it enables worth much more
+  - L842 a piece that ends a form keeps its form's gain: the drive's verdict is the steam coal saved at the city's price of coal, not the recipe's
+  - L844 ...which differs from the recipe's gain
+- **L850 7. save and load: the choices are written only off the default, come back on a load that ends on them, and the twin runs as the unbroken ...**
+  - L868 with crops dear the default is the best for both parts: nothing is chosen for the Bakery, and the save has no choice for it
+  - L877 fixture: after a month at today's prices the fitted Bakery runs the ovens and the unfitted one the richer alternative, and the template is their mix
+  - L881 the city saved, with the Bakery's choices in the file under the template's id
+  - L887 the loaded city is founded the 1900 way, in the same month, and holds the saved choices before any template has a recipe to run them
+  - L889 ...a template that knows no such recipe runs its top level (the saved id is read when applied, and there is none)
+  - L891 the unbroken city's Industry declares the snacks and the diesel of the ovens its Bakery runs; the loaded city's, with nothing yet to run, does not
+  - L895 given the recipes, the loaded Bakery runs the saved choices and its figures are the unbroken city's, to the bit
+  - L897 ...and the load's apply declares again from the choices it restored: the loaded Industry now declares the snacks and the diesel
+  - L906 fixture: in the loaded city the break-even price of crops between the alternative and the default is above today's
+  - L908 fixture: crops moved to twice it, where a choice struck afresh would be the default for the unfitted part
+  - L911 the load's apply runs the SAVED choices all the same (the alternative), the choices are untouched, and the Bakery is the unbroken city's mix
+  - L914 the next month's top strikes them afresh at those prices: the unfitted part now runs the default, the fitted the ovens
+  - L920 an unbroken city and its reloaded twin, one press later, hold the same choices and the same figures to the bit
+  - L925 ...and two presses beyond
+- **L931 8. a Game that played a 1900 town, then founded the default way: no choice kept, no template off its top level**
+  - L939 fixture: the 1900 town chose the ovens for its fitted Bakery and runs a mix, off its top level
+  - L943 a new game founded the default way on the same object: not founded the 1900 way, and no choice kept
+  - L949 ...and every template runs its top level (the city's templates are its own: the last city's are gone)
+  - L956 given a recipe that earns more and three months pressed, the new city's Bakery still runs its top level and nothing is chosen
+- **L996 9. the shipped rows: every template of buildings.json with recipes runs the best each part can, the farms' fuel, the pieces priced, a rel...**
+  - L1022 fixture: the templates with a choice are the buildings the file gives process or independent recipes, and the ones with a process recipe piece those whose re...
+  - L1024 fixture: the town is founded the 1900 way, in 1900, and the default town is not
+  - L1036 fixture: at least two of every template with a recipe piece stand in the 1900 town (
+  - L1054 fixture: each farm's top level (the tractor's recipe) buys diesel and petrol and its horses' recipe buys neither, and with every farm unfitted the 1900 town'...
+  - L1056 in the town founded the 1900 way, with every farm unfitted, the farms' input need at capacity of diesel and of petrol is 0 (the horses' recipe buys none)
+  - L1058 ...and the sector declares both as its inputs, though no farm buys them there
+  - L1059 in the default town the farms' input need at capacity of diesel is each farm's fuel times the farms standing, every template running its top level
+  - L1061 ...and of petrol
+  - L1062 ...which is more than nothing, and the default town chose nothing
+  - L1088 every template with a recipe piece: its unfitted part runs a recipe that needs nothing and is known in the city's year
+  - L1089 ...and its fitted part one that needs the piece, known in the year, or the default where it can run none (the farms' tractor recipe is PE14's, June 1917)
+  - L1090 ...each the best its part can run at the city's prices, by the model's own Recipes.value(): no recipe it can run is worth more
+  - L1091 ...the city keeps those two process choices with their independent recipe undos
+  - L1092 ...and with one building of two or more unfitted the template's figures are the weighted process mix with independent equipment undos
+  - L1095 the Oxygen Steel Shop: its unfitted part runs the Bessemer converter (the basic-oxygen converter, its default, is E1's code, November 1952, and not yet known...
+  - L1103 a farm with its tractor fitted buys the tractor's fuel and one without it none: the farms' need of diesel is the fitted farms' times the tractor recipe's
+  - L1112 the Pulp Mill is the one shipped alternative-process template with no recipe piece, and in 1900 it cannot run kraft (its year is later) but can run sulphite ...
+  - L1116 ...and runs whichever of those is worth more at the city's prices, for both parts, its figures that recipe's to the bit
+  - L1138 each recipe piece that ends no form (
+  - L1140 ...and a new building's verdict for it is priced the same way
+  - L1143 the farms' tractor is their recipe piece and ends FARM_HORSES, and its verdict is NOT_KNOWN (it is not known before 1917, PE14's June): the fitted farm part ...
+  - L1152 the 1900 town saved, and loads
+  - L1163 a reload of the 1900 town ends on the same choices for every shipped template, and the same running recipes
+  - L1164 ...and on the same template figures, to the bit: makes, uses, posts, draw, own power, water and consumables
+  - L1179 fixture: pressed to the December before kraft's year, the mill cannot run kraft and runs the better of the other two, its figures that recipe's
+  - L1190 from January of kraft's year kraft is among what the mill can run
+  - L1191 ...and it runs the one worth most of the three at the city's prices, by value(), kept as the city's choice (none when that is the default, kraft), its figure...
 
 ## RefineryCheck.java - 108 labelled assertions
 

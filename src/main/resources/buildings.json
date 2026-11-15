@@ -4317,11 +4317,12 @@
    "recipeChanges": [
     {
      "entry": "PE7",
-     "source": "research-1900 PE7 [P2.10,P2.14,P2.15]: gravity recovery 60-75% vs flotation 90%; study midpoint 67.5/90=0.75. R2d mapping: fixed ore and concentrate grade, output x0.75. The rock drill stays independent.",
+     "source": "research-1900 PE7 [P2.10,P2.14,P2.15]: gravity recovery 60-75% vs flotation 90%; study midpoint 67.5/90=0.75. R2d mapping: fixed ore and concentrate grade, output x0.75. The rock drill stays independent. Copper-in-ground per concentrate tonne rises inversely, modern site.dig/0.75, so the same ore feed is depleted at either recovery.",
      "without": {
       "makes": {
        "COPPER_CONC": -550.0
-      }
+      },
+      "dig": 0.1136666666666667
      }
     }
    ]
@@ -4358,11 +4359,12 @@
    "recipeChanges": [
     {
      "entry": "PE7",
-     "source": "research-1900 PE7 [P2.10,P2.14,P2.15]: gravity recovery 60-75% vs flotation 90%; study midpoint 67.5/90=0.75. R2d mapping: fixed ore and concentrate grade, output x0.75. The rock drill stays independent.",
+     "source": "research-1900 PE7 [P2.10,P2.14,P2.15]: gravity recovery 60-75% vs flotation 90%; study midpoint 67.5/90=0.75. R2d mapping: fixed ore and concentrate grade, output x0.75. The rock drill stays independent. Copper-in-ground per concentrate tonne rises inversely, modern site.dig/0.75, so the same ore feed is depleted at either recovery.",
      "without": {
       "makes": {
        "COPPER_CONC": -6600.0
-      }
+      },
+      "dig": 0.1136666666666667
      }
     }
    ]

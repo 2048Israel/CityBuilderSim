@@ -505,15 +505,19 @@ public final class Refining extends Sector {
     /** Feed-weighted yield of the standing cracking units, after Recipes applies. */
     public double crackerPetrol() {
         if (game == null || !game.foundedUnfitted() || buildings == null) return 0.55;
-        double feed = 0, petrol = 0;
+        double feed = 0, petrol = 0, minimum = Double.POSITIVE_INFINITY, maximum = Double.NEGATIVE_INFINITY;
         for (BuildingsStacks stack : buildings.getStacksView()) {
             BuildingsTemplate t = stack.getBuilding();
             if (t.refineryUnit() != RefineryFlow.Kind.CRACKER) continue;
             double f = stack.getQuantity() * t.feedPerMonth();
+            if (!(f > 0)) continue;
             feed += f;
             petrol += f * t.crackerPetrol();
+            minimum = Math.min(minimum, t.crackerPetrol());
+            maximum = Math.max(maximum, t.crackerPetrol());
         }
-        if (feed > 0) return petrol / feed;
+        // Keep the mean within its actual inputs, exact for a homogeneous process.
+        if (feed > 0) return Math.max(minimum, Math.min(maximum, petrol / feed));
         BuildingsTemplate candidate = buildings.getTemplateByName("Cracking Unit");
         return candidate == null ? 0.55 : candidate.crackerPetrol();
     }
@@ -1683,9 +1687,9 @@ public final class Refining extends Sector {
             }
         }
         double gross = flow.spread(k) * Math.min(spare, one);
-        if (o != null && (o.run() != null || pastImports(o, madeOf(k, Math.min(spare, one))) > 0)) {
+        if (o != null && (o.run() != null || pastImports(o, madeOf(k, Math.min(spare, one), o.crackerPetrol())) > 0)) {
             // ...petrol and diesel past the city's imports at the net export price, at the run with it standing (R1).
-            gross -= pastImports(o, madeOf(k, Math.min(spare, one)));
+            gross -= pastImports(o, madeOf(k, Math.min(spare, one), o.crackerPetrol()));
             double[] with = o.feed().clone();
             with[k.ordinal()] += one;
             gross *= runWith(o, RefineryFlow.solve(with, o.crude(), o.mix(), o.values(), o.crackerPetrol()));
@@ -1696,8 +1700,13 @@ public final class Refining extends Sector {
 
     /** What `litres` of a kind's feed make with nothing downstream, by Good's ordinal (RefineryFlow.madeAlone()). */
     static double[] madeOf(RefineryFlow.Kind k, double litres) {
+        return madeOf(k, litres, 0.55);
+    }
+
+    /** Products at the actual thermal or catalytic process, including the export discount. */
+    static double[] madeOf(RefineryFlow.Kind k, double litres, double crackerPetrol) {
         double[] out = new double[Good.values().length];
-        for (Map.Entry<Good, Double> e : RefineryFlow.madeAlone(k, litres).entrySet()) out[e.getKey().ordinal()] += e.getValue();
+        for (Map.Entry<Good, Double> e : RefineryFlow.madeAlone(k, litres, crackerPetrol).entrySet()) out[e.getKey().ordinal()] += e.getValue();
         return out;
     }
 
