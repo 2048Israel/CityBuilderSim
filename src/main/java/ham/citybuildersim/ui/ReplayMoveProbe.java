@@ -586,6 +586,8 @@ public final class ReplayMoveProbe {
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
         silent = true;
         Map<String, Boolean> followups = new LinkedHashMap<>();
+        String cleanup = "check cleanup turns replay off and unregisters both pumps before the timed section";
+        followups.put(cleanup, false);
         try {
             bind();
             return measureAll(recordingFolder, windowFiles, glideSeconds, followups);
@@ -606,7 +608,7 @@ public final class ReplayMoveProbe {
                     stopPump(mini);
                     // A late worker adoption still asks for a frame; a detached canvas must not register its pump again.
                     if (map != null) call(requestDraw, map);
-                    followups.put("check cleanup turns replay off and unregisters both pumps before the timed section",
+                    followups.put(cleanup,
                             ui != null && !ui.replayOn() && map != null && !(Boolean) get(field(MapView.class, "running"), map)
                                     && canvas.getScene() == null && mini != null && ((MiniMap) mini).node().getScene() == null
                                     && !(Boolean) get(field(MiniMap.class, "running"), mini));
@@ -857,14 +859,15 @@ public final class ReplayMoveProbe {
                 return !cam.busy() && !map.moveHeld() && map.cachesPinned() == 0 && words.contains((int) MapView.LOAD_MAX_S + " s load limit");
             }));
         } finally { release.countDown(); }
-        MapView.LoadMemory memory = new MapView.LoadMemory(900, 1000);
+        long most = 1_000_000, start = (long) Math.ceil(most * (1 + MapView.LOAD_HEAP_SHARE) / 2);
+        MapView.LoadMemory memory = new MapView.LoadMemory(start, most);
         int[] collections = { 0 };
-        boolean baselineFits = !memory.over(() -> 900, () -> collections[0]++);
+        boolean baselineFits = start > MapView.LOAD_HEAP_SHARE * most && !memory.over(() -> start, () -> collections[0]++);
         boolean growthFits = !memory.over(() -> memory.limit, () -> collections[0]++);
         boolean over = memory.over(() -> memory.limit + 1, () -> collections[0]++);
         for (int i = 0; i < 5; i++) over &= memory.over(() -> memory.limit + 1, () -> collections[0]++);
         results.put("a city starting above the old heap threshold can load and excess growth collects at most once", baselineFits && growthFits && over && collections[0] == 1);
-        MapView.LoadMemory reclaimed = new MapView.LoadMemory(0, 1000);
+        MapView.LoadMemory reclaimed = new MapView.LoadMemory(0, most);
         long[] used = { reclaimed.limit + 1 };
         int[] reclaimedCollections = { 0 };
         boolean recovered = !reclaimed.over(() -> used[0], () -> { reclaimedCollections[0]++; used[0] = 0; });

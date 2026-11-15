@@ -27,3 +27,22 @@ The CM1 forgetting behavior was restored by removing only CM2's synchronous `end
 ★ Failure callbacks capture the move's serial, not its MoveLoad object: a queued worker must not extend the pictures/store lifetime after cancellation. Adoption and changes to the remembered failures stay on FX. No new worker reads a live Game.
 
 ★ Cleanup also detaches the harness scene root and stops its ordinary UI clock. A late worker adoption calls MapView.requestDraw(); a canvas left attached to a closed stage could restart the just-stopped pump. The finally fixture explicitly makes that late request and requires both nodes detached and both pumps still unregistered. This is harness cleanup only.
+
+## Original-behavior regression demonstrations
+
+All ten focused variants exited 1 with their expected finding, and the mended driver exited 0. Summary: `target/checks/CM1b-regressions.txt`; individual compiled source, compile log and window output: `target/CM1b-mutants/CASE/`. These are minimal reversions of the old behavior in current code, so CM2's independent prepared-context and geometry changes remain present.
+
+| Variant | Finding |
+|---|---|
+| cm1-forget | Removing CM2's one synchronous release line leaves the move, all six pins and both prepared months held immediately after leave. |
+| ready-stop | Removing the synchronous camera-to-map cancellation fails Esc and X while Ready, and load-time map loss. |
+| stalls | Restoring the old remembered kinds fails the unasked tile/district-picture, FAR-node and globe-chart fixtures. |
+| failed-job | Omitting FX adoption of the failed node fails the given-up/no-retry assertion after a real worker job throws. |
+| cap | Removing the overall elapsed-time check fails while a real worker task is held busy. |
+| heap-fixed | Restoring `LOAD_HEAP_SHARE * maxHeap` fails the city already above that threshold. |
+| heap-gc | Restoring collection on every excessive sample fails both repeated-overflow and recovery-then-overflow fixtures. |
+| keys | Restoring the old handler changes the half-view's marks, month or camera instead of consuming its keys. |
+| mapgone | Restoring collapse without notifying the camera fails immediate starting-view/month recovery. |
+| cleanup | Restoring timer/close-only cleanup leaves replay or pumps active and fails the cleanup assertion. |
+
+The heap fixture derives its above-threshold starting use from `LOAD_HEAP_SHARE`, rather than pinning the old percentage in its premise. Each fixture restores its state explicitly after sampling, including with the broken behavior, so failures do not cascade into another fixture. This batch changes no process scripts or suite framework; one-in, one-out does not apply.
