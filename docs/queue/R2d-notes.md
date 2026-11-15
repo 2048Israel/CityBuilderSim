@@ -28,7 +28,10 @@ Started from main 4343a815 on batch/R2d, 2026-11-15.
 
 ## Checks
 
-Final gate pending; focused evidence is recorded below.
+Final normal-route gate GREEN: exit 0, suite exit 3; 205 harnesses,
+199 passed and six covered known-red harnesses. Zero NEW lines and zero
+firm Stale. All eight default CSVs are byte-identical to post-XR7 main.
+The final kept run and both exact commits are recorded at the end.
 
 ## Row mapping and estimates
 
@@ -708,3 +711,50 @@ XR7's code on b9c93a98, equal to main 8083aaf3's model. Capture R2d's eight
 inside the normal gate and compare after it, before advancing records.
 Push the merge first; push nothing while the gate runs. Only notes and
 the ship file advance after a successful gate. Provisional marker retained.
+
+
+## Final kept dry run — GREEN
+
+On the orchestrator's post-XR7 go, ran sh tools/gate.sh R2d --dry-run from
+hidden persistent PowerShell host PID 39512. The gate used its own selection
+and default workers, with no cbs.parallel override. The only diagnostic
+addition was the agreed standard playtest.trace property. No tracked file
+was edited and nothing was pushed while it ran.
+
+- Kept run: /tmp/cbs-gate-R2d-final2-20261115-163523.
+- Windows: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2d-final2-20261115-163523.
+- Branch: 59b6a4345805504611ae70c643a96a7e20adae0c.
+- Main: 8083aaf334bce0475cc8a0a9dc979dc808bc37d7.
+- Gate exit 0; suite exit 3. The gate selected ALL from 207 registered
+  harnesses and ran 205 with its selected nightly readers: 199 passed,
+  six covered known-red harnesses. Zero unnamed red lines.
+- Covered harnesses: MoneyDatesCheck, InvestCheck, MapCheck,
+  DeathRecordCheck, PrizeCheck and ResearchViewCheck. No covers or
+  known-red transfers added for R2d.
+- HistoricalRecipeCheck 120 and HistoricalLicenceCheck 80 pass.
+  Full KeptCheck ends ALL OK, including section 96's restated unknown
+  tractor checks, the catalogue binder and the unchanged retention floors.
+  Both actual historical SaveFileCheck/ReadPathCheck load assertions pass.
+- Eleven timing assertions SOFT (EarthTerrainCheck 1, SaveSlotCheck 1,
+  MapCheck 8, PlanCheck 1). Four path assertions OBSERVED (HealthCheck 1,
+  MapCheck 2, KeptCheck 1). KeptCheck's observed path is finding a bookRow
+  on a money page for the pointer test; its original premise is unchanged.
+- Stale: zero firm findings. checks.complete and checks.sha256 are present.
+  The launcher's HEAD and origin refs compare unchanged before/after.
+
+The run's ship.log and checks/suite.txt retain the verdict. Local launcher:
+target/R2d-final2/gate-launch.log. After the run finished, compared all eight
+CSV files against the orchestrator's exact post-XR7 reference:
+C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-XR7/target/checks/XR7-postmerge/trace-*.csv.
+Bank, bonds, borrow, build, house, labour, month and pop are byte-identical.
+The reference hashes are unchanged from before the gate. Evidence:
+target/R2d-final2/compare.txt, SHA256SUMS, main-reference-SHA256SUMS and
+main-reference-prefix.txt. The final CSVs are retained at the kept run's
+trace-*.csv prefix. No R2d ensemble was needed: the default trace is
+unchanged from current main.
+
+Reported GREEN and the kept directory to the orchestrator. Only these
+notes and the ship file advance after this run. The ship keeps its four
+sourcing Pending rows for Jerus (PE3, PE12, PB3 and the 1900 refinery slate).
+Its gate-run line names this receipt for reuse. Drop the provisional marker
+last, in its own commit, and verify it absent before readiness.

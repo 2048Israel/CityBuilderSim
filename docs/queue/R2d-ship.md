@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2d-final2-20261115-163523 -->
 
 ## changelog
 ### {next} — R2d, The 1900-1950 entries undone — 2026-11-15, ready, see docs/queue/R2d-notes.md
