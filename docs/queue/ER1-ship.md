@@ -1,7 +1,7 @@
 <!-- readiness: provisional -->
 ## changelog
 ### ER1 — Rotterdam's land buyer and the shifted growth hold — 2026-11-15, ready, no tag (harness), see docs/queue/ER1-notes.md
-Today's standard Rotterdam and default cities both finish 4,000 months with no
+On 0.9.117, standard Rotterdam and default cities finish 4,000 months with no
 findings. Rotterdam's old twelve-thousand episode has shifted: 13,575 offered
 jobs hold for 784 months while its plots remain full and builders have no queue.
 Recorded hunger is predominantly priced out, rather than unfilled grocery orders.

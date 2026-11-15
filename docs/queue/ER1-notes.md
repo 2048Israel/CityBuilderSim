@@ -362,3 +362,20 @@ batch has no model change, and the orchestrator instructed no ensemble.
 The next check is the fresh-clone launcher gate on the merge with current
 main. `tools/pick.sh` selects ALL because the harness registry changed;
 no local full suite or local ALL pick has been run.
+
+
+## Main merge and gate preparation
+
+Main 32ec5a5d (R2d, 0.9.118) is merged at
+fd429f976f357ee83e22bc0820ac899744c4c367. Conflicts were generated indexes
+only; main's versions were taken and then regenerated on the combined source.
+The merged `./batch-check.sh ER1Check` exits 0 (compile 52 seconds, harness,
+maps and zero firm stale findings), log `target/ER1/merge-check.log`.
+`tools/pick.sh` selects ALL 208 registered harnesses. Per the starter's
+instruction, this is delegated to the launcher dry run, not a local ALL pick.
+
+Against merged main, the only Java/resource differences are ER1Check.java and
+AllChecks.java's single registry line; all game and balance files match main.
+R2d changed recipes separately, so the pinned 0.9.117 long traces are not
+claimed identical to 0.9.118. ER1 introduces no game-trace change on either
+base. The ship file remains provisional until the coordinated dry run passes.
