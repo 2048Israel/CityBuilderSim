@@ -346,6 +346,37 @@ public final class HistoricalRecipeCheck {
                 "unfitted " + stack.getUnfitted("carbide-tools") + ", posts " + oldPosts + " -> " + t.getJobs(JobType.DIPLOMA));
     }
 
+
+    static void savedPriceChoice() throws Exception {
+        out.println("--- 9. a saved independent price choice survives JSON and changed prices ---");
+        Game g = town("R2d-saved-change", true);
+        allExcept(g, "PE24");
+        at(g, ResearchCatalog.knownFrom("PE24"));
+        BuildingsTemplate t = g.getBuildingManager().getTemplateByName("Cracking Unit");
+        RecipeCheck.stand(g, t, 1, new int[1]);
+        boolean cheap = EquipmentCheck.priceAt(g, Good.PETROL, .001)
+                && EquipmentCheck.priceAt(g, Good.FUEL_OIL, 1);
+        run(g);
+        DataSave save = new DataSave();
+        save.setRecipeChoices(g.getRecipes().forSave());
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        DataSave read = gson.fromJson(gson.toJson(save), DataSave.class);
+        List<String> choice = read.getRecipeChoices().get(t.getId());
+        check("fixture: thermal cracking is chosen at dear fuel-oil prices, and its independent id survives the real save JSON",
+                cheap && Math.abs(extra(t, "crackerPetrol", .55) - .24) < 1e-12
+                        && choice != null && choice.get(0).contains("~PE24"), String.valueOf(choice));
+        boolean dear = EquipmentCheck.priceAt(g, Good.PETROL, 1)
+                && EquipmentCheck.priceAt(g, Good.FUEL_OIL, .001);
+        g.getRecipes().clear();
+        g.getRecipes().restore(read.getRecipeChoices());
+        silent(() -> g.getRecipes().apply(g));
+        check("applying restored choices does not choose again at the changed prices",
+                dear && Math.abs(extra(t, "crackerPetrol", .55) - .24) < 1e-12, "");
+        run(g);
+        check("the next choice at those prices runs catalytic cracking at exactly main's modern yield",
+                extra(t, "crackerPetrol", .55) == .55, "");
+    }
+
     public static void main(String[] args) throws Exception {
         RecipeCheck.out = out; RecipeCheck.quiet = quiet;
         EquipmentCheck.out = out; EquipmentCheck.quiet = quiet;
@@ -361,6 +392,7 @@ public final class HistoricalRecipeCheck {
         cracking();
         supersedingProcess();
         completedPiece();
+        savedPriceChoice();
         out.println(fails == 0 ? "All HistoricalRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

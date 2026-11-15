@@ -112,3 +112,9 @@ Focused checks through 1266adaa plus the fixture changes:
   completed during either default or 1900 Bakery wait.
 - RefineryCheck and RailCheck green in selected-1. No verdict or premise floor
   was lowered. No R2d entry existed in known-reds at the fork.
+
+Added the independent thermal/catalytic price decision's real DataSave JSON
+round-trip, changing actual ranking prices on both sides. Restored choices
+stay thermal until choose() runs again. HistoricalRecipeCheck is 86/86 green
+(check-4.log), and the identical final fixture on main model classes is
+50 FAILED of 86 (before/final-check.log). Fast-4 is green, zero firm Stale.
