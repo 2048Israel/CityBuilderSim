@@ -661,13 +661,16 @@ public final class Freight extends Sector {
         // ...its fuel, drawn as a buyer (0.7.62): the refiners' shelf first, the world for the rest - diesel (0.7.76).
         // ...and the city tonnes' at CITY_LITRES_A_TONNE each, a third of a truck's (FR6); moved stays the boundary's.
         double cityRailedTotal = homeRailedMonth + quayRailedMonth;
-        Markets.Draw took = markets.draw(Good.DIESEL, this, key(),
-                moved * FUEL_LITRES_PER_TONNE + cityRailedTotal * CITY_LITRES_A_TONNE, sectors);
-        double fuel = took.cost();
+        double dieselEquivalent = moved * FUEL_LITRES_PER_TONNE + cityRailedTotal * CITY_LITRES_A_TONNE;
+        double steam = ham.citybuildersim.RecipeChanges.railSteamShare(game);
+        Markets.Draw took = markets.draw(Good.DIESEL, this, key(), dieselEquivalent * (1 - steam), sectors);
+        Markets.Draw coal = steam > 0 ? markets.draw(Good.THERMAL_COAL, this, key(),
+                dieselEquivalent * steam * ham.citybuildersim.RecipeChanges.RAIL_COAL_TONNES_PER_DIESEL_LITRE, sectors) : null;
+        double fuel = took.cost() + (coal == null ? 0 : coal.cost());
 
         rHaulage = haulage;
         rFuel = fuel;
-        rFuelImported = took.importCost();
+        rFuelImported = took.importCost() + (coal == null ? 0 : coal.importCost());
         rFuelLitres = took.units();
         rFuelLitresImported = took.imported();
         rHauled = moved;
@@ -1618,7 +1621,10 @@ public final class Freight extends Sector {
         double revenue = picked * lorryRatePerTonne() * quote;
         // ...its fuel at what a litre costs to bring in today (0.7.62): the refiners' price or the world's - diesel's (0.7.76).
         double litre = markets == null ? Good.DIESEL.worldImportPrice() : markets.get(Good.DIESEL).landedPrice();
-        double fuel = picked * FUEL_LITRES_PER_TONNE * (Double.isFinite(litre) ? Math.max(0, litre) : 0);
+        double coalPrice = markets == null ? Good.THERMAL_COAL.worldImportPrice() : markets.get(Good.THERMAL_COAL).landedPrice();
+        double steam = game != null && game.foundedUnfitted() ? t.steamRailShare() : 0;
+        double fuel = picked * FUEL_LITRES_PER_TONNE * ((1 - steam) * (Double.isFinite(litre) ? Math.max(0, litre) : 0)
+                + steam * ham.citybuildersim.RecipeChanges.RAIL_COAL_TONNES_PER_DIESEL_LITRE * Math.max(0, coalPrice));
         return revenue - fuel - plans.runningCostOf(t) - plans.standingCostOf(this, t);
     }
 
@@ -1952,7 +1958,7 @@ public final class Freight extends Sector {
                 quote < .5 ? Line.Tone.GOOD : quote > .85 ? Line.Tone.WARN : Line.Tone.NONE));
         lines.add(Line.of("A lorry charges", f.amount(lorryRatePerTonne()) + " a tonne"));
         lines.add(Line.of("Rail freight billed", f.amount(rHaulage)));
-        lines.add(Line.of("Diesel", f.amount(rFuel), Line.Tone.MUTED));
+        lines.add(Line.of("Rail fuel", f.amount(rFuel), Line.Tone.MUTED));
 
         if (rCapacity <= 0) {
             lines.add(Line.note("There is no railway. Everything the city trades goes by "

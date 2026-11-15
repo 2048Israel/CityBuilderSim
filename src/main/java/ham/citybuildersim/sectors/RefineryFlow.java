@@ -187,6 +187,15 @@ public final class RefineryFlow {
         public Stream solvedIn() { return feed.residue() ? Stream.RESIDUE : feed; }
     }
 
+    /** Thermal cracking leaves the petrol not converted as fuel oil (R2d estimate).
+     * The modern route returns the original list and preserves its arithmetic. */
+    private static List<Yield> yields(Kind k, double crackerPetrol) {
+        if (k != Kind.CRACKER || crackerPetrol == 0.55) return k.yields();
+        if (!(crackerPetrol >= 0 && crackerPetrol <= 0.55)) throw new IllegalArgumentException("cracker petrol yield");
+        return List.of(Yield.of(Stream.CRACKED_GAS, .25), Yield.of(Good.PETROL, crackerPetrol),
+                Yield.of(Stream.DIESEL, .18), Yield.of(Good.FUEL_OIL, .07 + (.55 - crackerPetrol)));
+    }
+
     /** The streams in the order they are solved (3 in the header). */
     public static final Stream[] FLOW_ORDER = { Stream.GAS_OIL, Stream.RESIDUE, Stream.HEAVY_NAPHTHA, Stream.CRACKED_GAS };
 
@@ -212,8 +221,13 @@ public final class RefineryFlow {
 
     /** A unit's spread a litre of its feed: what it makes of the litre at the values, less what the litre is worth with no unit (the prototype's spread()). */
     public static double spread(Kind k, double[] value) {
+        return spread(k, value, 0.55);
+    }
+
+    /** Spread of the thermal or catalytic cracking process; other units are unchanged. */
+    public static double spread(Kind k, double[] value, double crackerPetrol) {
         double made = 0;
-        for (Yield y : k.yields()) made += y.perLitre() * value[y.product().ordinal()];
+        for (Yield y : yields(k, crackerPetrol)) made += y.perLitre() * value[y.product().ordinal()];
         return made - feedValue(k.feed(), value);
     }
 
@@ -283,6 +297,11 @@ public final class RefineryFlow {
      * struck at `value` (each product's, by Good's ordinal). See the header.
      */
     public static Flow solve(double[] feed, double crudeTonnes, double[] mix, double[] value) {
+        return solve(feed, crudeTonnes, mix, value, 0.55);
+    }
+
+    /** The same flow with the cracking process actually known and chosen here. */
+    public static Flow solve(double[] feed, double crudeTonnes, double[] mix, double[] value, double crackerPetrol) {
         int nStreams = Stream.values().length, nKinds = Kind.values().length;
         // 1. The crude into its cuts: Refining.slate()'s arithmetic, to the bit.
         double run = Math.max(0, crudeTonnes) * Refining.CRUDE_LITRES_PER_TONNE;
@@ -301,7 +320,7 @@ public final class RefineryFlow {
         double[] out = new double[Good.values().length];
         double[] runs = new double[nKinds];
         double[] spreads = new double[nKinds];
-        for (Kind k : Kind.values()) spreads[k.ordinal()] = spread(k, value);
+        for (Kind k : Kind.values()) spreads[k.ordinal()] = spread(k, value, crackerPetrol);
 
         // 2. Hydrogen: the reformers' make on the straight-run heavy naphtha, before anything is cracked (★ O4-3: when they run).
         int hn = Stream.HEAVY_NAPHTHA.ordinal();
@@ -331,7 +350,7 @@ public final class RefineryFlow {
                 }
                 if (k == Kind.HYDROCRACKER) h2 -= take * HYDROGEN_USED;
                 runs[ki] = take;
-                for (Yield y : k.yields()) {
+                for (Yield y : yields(k, crackerPetrol)) {
                     if (y.stream() != null) s[y.stream().ordinal()] += take * y.perLitre();
                     else out[y.good().ordinal()] += take * y.perLitre();
                 }
