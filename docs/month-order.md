@@ -427,7 +427,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _...AND THE PEOPLE VIOLENCE KILLED (2026-09-11)._
 29. **L15234** `double adultsBefore = cohorts.get(AgeBand.ADULT);` → [PopulationCohorts.get](map/PopulationCohorts.md) (L102)
 30. **L15235** `violence[AgeBand.ADULT.ordinal()] = adultsBefore > 0` → [Crime.getKilled](map/Crime.md) (L413)
-31. **L15255** `double[][] causeRates = causesOfDeath.rates(month, inBand, mortalityFactors,` → [CausesOfDeath.rates](map/CausesOfDeath.md) (L450), [Game.getWaterRatio](map/Game.md) (L3074), [HouseholdBalance.getHungerRate](map/HouseholdBalance.md) (L3993), [Health.getOutbreakSeverity](map/Health.md) (L362), [PopulationCohorts.getLastBirths](map/PopulationCohorts.md) (L103)  
+31. **L15255** `double[][] causeRates = causesOfDeath.rates(month, inBand, mortalityFactors,` → [CausesOfDeath.rates](map/CausesOfDeath.md) (L450), [Game.getWaterRatio](map/Game.md) (L3074), [HouseholdBalance.getHungerRate](map/HouseholdBalance.md) (L3993), [Health.getOutbreakSeverity](map/Health.md) (L364), [PopulationCohorts.getLastBirths](map/PopulationCohorts.md) (L103)  
    _...AND WHAT THEY DIE OF (R0b)._
 32. **L15258** `double[] causeTotals = CausesOfDeath.bandTotals(causeRates);` → [CausesOfDeath.bandTotals](map/CausesOfDeath.md) (L384)
 33. **L15260** `for (AgeBand b : AgeBand.values()) {` → [CausesOfDeath.isHeldOff](map/CausesOfDeath.md) (L425), [CausesOfDeath.keptFactor](map/CausesOfDeath.md) (L361)  

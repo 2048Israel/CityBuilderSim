@@ -4,7 +4,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 576 files, 627,961 lines, 27,403 methods, 5,979 constants. `GameVersion.VERSION` is "0.9.119", `SAVE_FORMAT` 53.
+**The tree:** 576 files, 627,992 lines, 27,404 methods, 5,979 constants. `GameVersion.VERSION` is "0.9.119", `SAVE_FORMAT` 53.
 
 ## model (265 files)
 
@@ -47,7 +47,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CameraPath.java](CameraPath.md) | 231 | 20 | The replay camera's arithmetic without the toolkit (TR1, 2026-10-31): the glide between two marked views, the fly out to the whole Earth and back, ... | 6 |
 | [CapSetting.java](CapSetting.md) | 78 | 8 | A cap on the yield an automatic sale takes, saved and said (D28). | 5 |
 | [CapitalFlows.java](CapitalFlows.md) | 871 | 55 | Hot money: what comes in chasing a spread, and what happens when it leaves. | 20 |
-| [CareType.java](CareType.md) | 170 | 7 | What a healthcare building actually does. | 35 |
+| [CareType.java](CareType.md) | 170 | 7 | What a healthcare building actually does. | 36 |
 | [CausesOfDeath.java](CausesOfDeath.md) | 606 | 30 | The causes of death of 1900, and how history and the city take them away. | 9 |
 | [CentralBank.java](CentralBank.md) | 991 | 99 | The city's central bank: the balance sheet its money is made on, and the one place money is made or destroyed. | 26 |
 | [ChartModel.java](ChartModel.md) | 735 | 50 | What a time chart shows, as numbers: the window of months it looks at and how a drag, a wheel, a range button and the overview move it; the ticks o... | 22 |
@@ -120,7 +120,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [GovernmentView.java](GovernmentView.md) | 154 | 25 | What the government owns net of its paper, in years of its revenue, and the existing levers that can give an excess back (GV1, spec-wealth 3.2). | 6 |
 | [GridOffers.java](GridOffers.md) | 356 | 28 | The city's offers on the block grid: on each of its four sides six places, left to right facing out, and in each place one standing offer - a recta... | 9 |
 | [HarbourYard.java](HarbourYard.md) | 508 | 31 | The picture of one work on the shore at the near view (HB2, 2026-11-09): its open cargo yard by what it handles, the stock on it at a level, and th... | 4 |
-| [Health.java](Health.md) | 448 | 27 | How much of the workforce is off sick this month. | 28 |
+| [Health.java](Health.md) | 450 | 27 | How much of the workforce is off sick this month. | 28 |
 | [Healthcare.java](Healthcare.md) | 968 | 55 | The city's healthcare service: what it costs, what it collects, and what it does with the dead. | 27 |
 | [HistoryGrapher.java](HistoryGrapher.md) | 115 | 1 |  | 1 |
 | [HistorySave.java](HistorySave.md) | 2,292 | 84 | Every month the city has ever lived, one number at a time. | 55 |
@@ -491,7 +491,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 739 | 29 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 0 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,363 | 95 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 5 |
 | [LicenceFeesCheck.java](LicenceFeesCheck.md) | 530 | 15 | Licence fees leave a running firm's money and enter this month's current account. | 3 |
-| [LongPlaytest.java](LongPlaytest.md) | 9,024 | 168 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 63 |
+| [LongPlaytest.java](LongPlaytest.md) | 9,024 | 168 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 64 |
 | [MainLineCheck.java](MainLineCheck.md) | 1,743 | 56 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 643 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
 | [MapCheck.java](MapCheck.md) | 15,632 | 412 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 13 |
@@ -553,7 +553,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [SectorFlowCheck.java](SectorFlowCheck.md) | 308 | 11 | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held t... | 0 |
 | [SectorStatementCheck.java](SectorStatementCheck.md) | 1,288 | 28 | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every mon... | 3 |
 | [ShortSellingCheck.java](ShortSellingCheck.md) | 1,108 | 46 | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, ... | 0 |
-| [SicknessCheck.java](SicknessCheck.md) | 397 | 6 | The long sick: who stays sick, and who it kills. | 0 |
+| [SicknessCheck.java](SicknessCheck.md) | 426 | 7 | The long sick: who stays sick, and who it kills. | 0 |
 | [SkipReportCheck.java](SkipReportCheck.md) | 323 | 5 | Verifies the fast-forward summary. | 0 |
 | [SlopeCheck.java](SlopeCheck.md) | 918 | 32 | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill gro... | 1 |
 | [StaffingDrawCheck.java](StaffingDrawCheck.md) | 1,094 | 50 | The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff Sector.MIN_STAFFABLE_TO_ORDER... | 0 |

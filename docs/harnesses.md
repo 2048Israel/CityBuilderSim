@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**207 harness files, 24,407 labelled assertions.** AllChecks runs 207 of them.
+**207 harness files, 24,411 labelled assertions.** AllChecks runs 207 of them.
 
 ## Which harnesses read which class
 
@@ -54,7 +54,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CapChips](map/CapChips.md) | **none** |
 | [CapSetting](map/CapSetting.md) | AuctionCheck |
 | [CapitalFlows](map/CapitalFlows.md) | AuctionCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, FloatLinkCheck, HoldersCheck, InterestAbroadCheck, LongPlaytest, ReadPathCheck, SaveFileCheck |
-| [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CausesOfDeathCheck, ChildcareCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, WorksFinanceCheck |
+| [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CausesOfDeathCheck, ChildcareCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SicknessCheck, WorksFinanceCheck |
 | [CausesOfDeath](map/CausesOfDeath.md) | CausesOfDeathCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SicknessCheck |
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, Forms1900Check, IndustryViewCheck, QuarryingCheck |
 | [CentralBank](map/CentralBank.md) | BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, FloatLinkCheck, ForeignCheck, FundCheck, GoldMiningCheck, HoldersCheck, LongPlaytest, MoneyDatesCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck |
@@ -27509,7 +27509,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1103 ...and with them off the world posted no ask and sold nothing short, as the switch says
   - L1105 ...and that city passed the audit and kept its register whole too
 
-## SicknessCheck.java - 64 labelled assertions
+## SicknessCheck.java - 68 labelled assertions
 
 > The long sick: who stays sick, and who it kills.
 > 
@@ -27528,69 +27528,74 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L121 ...and the ring's death rates and long sick are exactly the chronic twin's
   - L122 every band's visible sick share is the full rate, including at the ceilings
   - L123 the acute cases join the youngest bar and the total sick, in people
-- **L128 1. the base rates**
-  - L130 children: half the life table's 0.015%
-  - L131 teens: half of 0.04%
-  - L132 adults: half of 0.45%
-  - L133 babies untouched
-  - L148 seniors, 70 to 85, from the life table
-  - L149 elders, 85 to 120, from the life table
-  - L150 and the split brackets the flat rate it replaced
-  - L154 general care no longer scales
-  - L156 ...or everybody covered
-- **L159 2. how much of each band is sick**
-  - L166 babies with no childcare: twice the city rate
-  - L167 ...with half of it, one and a half times
-  - L168 ...with childcare for everybody, the city rate
-  - L169 seniors with no senior care: twice
-  - L170 ...with it, the city rate
-  - L171 no band is ever sicker than the ceiling
-- **L174 3. the ring: recovery, and nobody dies at once**
-  - L178 fixture: a well city's ring is empty
-  - L180 the month they fall ill, they are all in the first slot
-  - L181 ...and nobody can die of it yet
-  - L183 with no general care, half of them are better a month later
-  - L185 ...the city rate is met by new cases
-  - L186 ...and two months sick is still not enough to die of it
-  - L190 past two months, what is left of them can die
-  - L191 ...at the adults' 2% a month
-  - L198 with general care for everybody, nine in ten are better in a month
-  - L203 the dead leave the ring: a slot three months on keeps (1-h)(1-r)
-- **L207 4. each age's chance, and the steady state**
-  - L209 babies 4% a month
-  - L210 children 1%
-  - L211 teens 1%
-  - L212 adults 2%
-  - L213 seniors 4%
-  - L225 steady state,
-  - L233 ...and a month at the same rate leaves it where it was
-  - L239 when the rate halves, the adults sick are the new rate
-  - L242 ...and nobody's slot is favoured
-  - L256 a city with no care loses far more
-  - L267 fixture: the hungry city is sicker
-  - L268 ...so more of it dies of illness
-- **L271 5. the pyramid**
-  - L282 the adults who died of illness are the opening band times the ring's rate
-  - L284 ...on top of everybody else's deaths
-  - L287 a pyramid with no ring has no illness deaths
-- **L289 6. a city**
-  - L342 fixture: the hospitals gave the second city more coverage
-  - L344 the adults' share of the ring is the city's sick rate - output is untouched
-  - L346 the city with no hospitals lost people to illness
-  - L349 ...many times more, per head, than the city with them
-  - L352 the ring's dead are the pyramid's dead
-  - L353 every month passed the money audit
-- **L355 7. a save, and a save from before**
-  - L358 fixture: the ring has something in it
-  - L365 the whole ring comes back
-  - L366 a malformed ring is refused whole
-  - L370 fixture: the ring is gone
-  - L372 a city with no ring seeds one and loses its long sick the same month
-- **L375 8. the ring in people (0.7.28)**
-  - L387 fixture: somebody is sick past two months
-  - L388 the slots in people add up to the people sick
-  - L389 ...and from DEADLY_FROM on, to the people past two months
-  - L390 a slot outside the ring holds nobody
+- **L128 a fresh city's founding seed remains main's (R0h review)**
+  - L133 before the first advance, the rate without influenza is the founding sick rate
+  - L135 fixture: the founding has no influenza and no seeded sickness ring
+  - L149 the first real month's whole ring equals main's founding seed and handover
+  - L150 after an advance with no influenza, the two rates still agree
+- **L156 1. the base rates**
+  - L158 children: half the life table's 0.015%
+  - L159 teens: half of 0.04%
+  - L160 adults: half of 0.45%
+  - L161 babies untouched
+  - L176 seniors, 70 to 85, from the life table
+  - L177 elders, 85 to 120, from the life table
+  - L178 and the split brackets the flat rate it replaced
+  - L182 general care no longer scales
+  - L184 ...or everybody covered
+- **L187 2. how much of each band is sick**
+  - L194 babies with no childcare: twice the city rate
+  - L195 ...with half of it, one and a half times
+  - L196 ...with childcare for everybody, the city rate
+  - L197 seniors with no senior care: twice
+  - L198 ...with it, the city rate
+  - L199 no band is ever sicker than the ceiling
+- **L202 3. the ring: recovery, and nobody dies at once**
+  - L206 fixture: a well city's ring is empty
+  - L208 the month they fall ill, they are all in the first slot
+  - L209 ...and nobody can die of it yet
+  - L211 with no general care, half of them are better a month later
+  - L213 ...the city rate is met by new cases
+  - L214 ...and two months sick is still not enough to die of it
+  - L218 past two months, what is left of them can die
+  - L219 ...at the adults' 2% a month
+  - L226 with general care for everybody, nine in ten are better in a month
+  - L231 the dead leave the ring: a slot three months on keeps (1-h)(1-r)
+- **L235 4. each age's chance, and the steady state**
+  - L237 babies 4% a month
+  - L238 children 1%
+  - L239 teens 1%
+  - L240 adults 2%
+  - L241 seniors 4%
+  - L253 steady state,
+  - L261 ...and a month at the same rate leaves it where it was
+  - L267 when the rate halves, the adults sick are the new rate
+  - L270 ...and nobody's slot is favoured
+  - L284 a city with no care loses far more
+  - L295 fixture: the hungry city is sicker
+  - L296 ...so more of it dies of illness
+- **L299 5. the pyramid**
+  - L310 the adults who died of illness are the opening band times the ring's rate
+  - L312 ...on top of everybody else's deaths
+  - L315 a pyramid with no ring has no illness deaths
+- **L317 6. a city**
+  - L370 fixture: the hospitals gave the second city more coverage
+  - L372 the adults' share of the ring is the city's sick rate - output is untouched
+  - L374 the city with no hospitals lost people to illness
+  - L377 ...many times more, per head, than the city with them
+  - L380 the ring's dead are the pyramid's dead
+  - L381 every month passed the money audit
+- **L383 7. a save, and a save from before**
+  - L386 fixture: the ring has something in it
+  - L393 the whole ring comes back
+  - L394 a malformed ring is refused whole
+  - L398 fixture: the ring is gone
+  - L400 a city with no ring seeds one and loses its long sick the same month
+- **L403 8. the ring in people (0.7.28)**
+  - L415 fixture: somebody is sick past two months
+  - L416 the slots in people add up to the people sick
+  - L417 ...and from DEADLY_FROM on, to the people past two months
+  - L418 a slot outside the ring holds nobody
 
 ## SkipReportCheck.java - 73 labelled assertions
 
