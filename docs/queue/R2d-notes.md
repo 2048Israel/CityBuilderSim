@@ -559,3 +559,11 @@ HomeRailCheck, QuayRailCheck and IslandRailCheck). Maps regenerated;
 zero firm Stale findings. Log: target/R2d-review5/named-check.log; full
 per-harness logs are in target/checks. Both newly added save/read assertions
 are green on their real load path.
+
+
+Main ade96cfb (UP6b, 0.9.115) is merged before the final trace and gate.
+Only the two generated-index conflicts needed resolution; --fast regenerates
+them from the merged sources, exits 0, and reports zero firm Stale.
+Evidence: target/R2d-review5/merge-UP6b-fast.log. The incoming publisher
+records and VERSION are accepted unchanged from main. UP6b's retained gate
+records the same model report as R2c, apart from runtime/log timestamps.

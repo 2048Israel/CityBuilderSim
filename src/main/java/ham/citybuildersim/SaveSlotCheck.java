@@ -71,7 +71,10 @@ import java.util.concurrent.atomic.AtomicLong;
  * the writer waits for it, so both are written; 7e.3c that the writer touches no slot but
  * the one the player saved to, and refuses the autosave's slot and one past the last; and
  * 7e.4 that a history which could not be written is told beside the save's result - to the
- * player (the sync way too) and, for an autosave, in the inbox - with the .bak kept.
+     * player (the sync way too) and, for an autosave, in the inbox - with the .bak kept.
+     * Section 7f (UP6b) causes a skip to throw inside a month before closing, delays an
+     * autosave's report across a month, and writes newer history beside a failed save;
+     * it also holds a numbered background result until the calling thread reports it.
  */
 public class SaveSlotCheck {
 
@@ -349,6 +352,7 @@ public class SaveSlotCheck {
 
         /* ============ 7e. the skip's end, the close and the player's Save (UP6, 2026-11-06) ============ */
         skipEndCloseAndSave();
+        autosaveReviewFollowUps();
 
         /* ==================== 8. histories are per slot ==================== */
         System.out.println("\n--- and each city keeps its own past ---");
@@ -757,6 +761,150 @@ public class SaveSlotCheck {
             writer.release();
             cleanUp(files.getDirectory().getParent());
         }
+    }
+
+    /** UP6b: cause a broken skip, a late report and a failed save beside newer history, on scratch files. */
+    static void autosaveReviewFollowUps() throws Exception {
+        System.out.println("\n--- 7f. autosave review follow-ups (UP6b) ---");
+        GameFiles files = GameFiles.scratch("saveslot-7f");
+        SaveWriter writer = SaveWriter.shared();
+        try {
+            Game city = new Game(files);
+            city.useSaveClockForChecks(() -> 0L);
+            quietly(city::run);
+            step(city);
+
+            System.out.println("--- 7f.1 a skip throws inside its second month, then the window closes ---");
+            int before = city.getMonth();
+            city.settleProbeForTest = after -> {
+                if (!after && city.getMonth() == before + 2) {
+                    throw new IllegalStateException("7f injected failure before the month's settlement");
+                }
+            };
+            int[] completed = { -1 };
+            quietly(() -> completed[0] = city.simulateMonths(3));
+            city.settleProbeForTest = null;
+            assertTrue("fixture: one month completed and the next stopped before its history was recorded",
+                    completed[0] == 1 && city.getMonth() == before + 2
+                    && lastMonthOfHistory(city) == before + 1);
+            String failure = city.takeSkipFailure();
+            assertTrue("fixture: the skip reported its injected failure", failure != null);
+            String pausedWords = "Autosaves are off until this city is loaded again.";
+            assertTrue("the failure page says autosaves stay off until the city is loaded again",
+                    failure != null && failure.contains(pausedWords));
+            Notice paused = city.getInbox().live("autosave-paused");
+            assertTrue("the inbox keeps the same warning while autosaves are off",
+                    paused != null && String.join(" ", paused.getBody()).contains(pausedWords));
+            Map<String, String> beforeClose = hashed(files.savesDirectory());
+            quietly(city::saveForClose);
+            assertEquals("the close after the broken skip preserves every autosave file", hashed(files.savesDirectory()), beforeClose);
+            quietly(city::saveForQuit);
+            assertEquals("Quit uses the same completed-skip guard", hashed(files.savesDirectory()), beforeClose);
+            assertEquals("the return point is still the whole month before the skip",
+                    files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth(), before);
+            assertEquals("...with its own history beside it", lastMonthOf(files.historyFile(GameFiles.AUTOSAVE_SLOT)), before);
+
+            quietly(() -> city.autosave("7f asked after the broken skip"));
+            city.awaitSaves();
+            assertEquals("an explicit autosave after the broken skip preserves every file",
+                    hashed(files.savesDirectory()), beforeClose);
+            int[] atNextMonth = { -1 }, moreCompleted = { -1 };
+            city.autoBuildProbeForTest = after -> {
+                if (!after && atNextMonth[0] == -1) {
+                    city.awaitSaves();
+                    atNextMonth[0] = files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth();
+                }
+            };
+            quietly(() -> moreCompleted[0] = city.simulateMonths(2));
+            city.autoBuildProbeForTest = null;
+            assertEquals("Simulate more preserves the return point before its first month starts", atNextMonth[0], before);
+            assertTrue("fixture: Simulate more completed both later months", moreCompleted[0] == 2);
+            assertEquals("...its end still preserves every file from before the broken skip",
+                    hashed(files.savesDirectory()), beforeClose);
+            city.useSaveClockForChecks(() -> 2 * floorNanos());
+            for (int i = 0; i < Game.AUTOSAVE_MONTHS; i++) step(city);
+            city.awaitSaves();
+            assertEquals("the periodic autosave also preserves the return point until a load",
+                    hashed(files.savesDirectory()), beforeClose);
+            city.useSaveClockForChecks(() -> 0L);
+
+            quietly(() -> city.saveGame(GameFiles.SLOT_COUNT, "7f manual save while autosaves are off"));
+            assertTrue("saving by hand succeeds and keeps the autosaves-off warning standing",
+                    city.getLastSaveResult().whole() && city.getInbox().live("autosave-paused") != null);
+            quietly(() -> city.loadGameSave(GameFiles.SLOT_COUNT));
+            assertTrue("loading that manual save settles its saved autosaves-off warning",
+                    city.getInbox().live("autosave-paused") == null);
+
+            // A load rebuilds the city after the broken month and restores ordinary close saves.
+            quietly(() -> city.loadGameSave(GameFiles.AUTOSAVE_SLOT));
+            step(city);
+            quietly(city::saveForClose);
+            assertEquals("after reloading, the close saves the city's completed month",
+                    files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth(), city.getMonth());
+
+            Path save = files.saveFile(GameFiles.AUTOSAVE_SLOT);
+            Path saveTmp = save.resolveSibling(save.getFileName() + ".tmp");
+            System.out.println("--- 7f.2 a failed autosave is reported one month late ---");
+            int askedMonth = city.getMonth();
+            makeObstacle(saveTmp);
+            writer.hold();
+            try {
+                quietly(() -> city.autosave("7f delayed failure"));
+                step(city);
+                assertTrue("fixture: the city advanced while its failed autosave was held",
+                        city.getMonth() == askedMonth + 1 && city.getInbox().live("autosave") == null);
+            } finally {
+                writer.release();
+            }
+            city.awaitSaves();
+            Notice notice = city.getInbox().live("autosave");
+            assertTrue("the late notice names the autosave's month, not the reporting month's",
+                    notice != null && String.join(" ", notice.getBody()).startsWith("Month " + askedMonth + "'s autosave"));
+
+            System.out.println("--- 7f.3 the failed save is older than the history beside it ---");
+            byte[] oldSave = Files.readAllBytes(save);
+            int oldMonth = files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth();
+            int newerMonth = city.getMonth();
+            quietly(() -> city.autosave("7f newer history"));
+            city.awaitSaves();
+            assertTrue("fixture: the failed save kept its bytes while the newer history landed",
+                    !city.getLastSaveResult().ok && Arrays.equals(oldSave, Files.readAllBytes(save))
+                    && files.readHeader(GameFiles.AUTOSAVE_SLOT).getMonth() == oldMonth
+                    && oldMonth < newerMonth && lastMonthOf(files.historyFile(GameFiles.AUTOSAVE_SLOT)) == newerMonth);
+            notice = city.getInbox().live("autosave");
+            assertTrue("the notice says the save and history may be from different months",
+                    notice != null && String.join(" ", notice.getBody()).contains("may be from different months")
+                    && !String.join(" ", notice.getBody()).contains("still on disk, whole"));
+            cleanUp(saveTmp);
+
+            System.out.println("--- 7f.4 a numbered background result reaches the model when reported ---");
+            GameFiles.Result previous = city.getLastSaveResult();
+            java.util.concurrent.CompletableFuture<GameFiles.Result> done = new java.util.concurrent.CompletableFuture<>();
+            writer.hold();
+            try {
+                quietly(() -> city.saveInBackground(GameFiles.SLOT_COUNT, "7f player's save", done::complete));
+                assertTrue("the held background Save returns without changing the last reported result",
+                        !done.isDone() && city.getLastSaveResult() == previous);
+            } finally {
+                writer.release();
+            }
+            GameFiles.Result landed = landed("7f.4", done);
+            assertTrue("its callback has a whole result while the model still holds the previous report",
+                    landed != null && landed.whole() && city.getLastSaveResult() == previous);
+            city.awaitSaves();
+            assertTrue("after reporting, the numbered background result is the model's last result",
+                    landed != null && city.getLastSaveResult() == landed);
+        } finally {
+            writer.release();
+            writer.awaitIdle();
+            cleanUp(files.getDirectory().getParent());
+        }
+    }
+
+    /** The last completed month in the live history, before any attempted save can obscure it. */
+    static int lastMonthOfHistory(Game city) {
+        List<Integer> months = city.getHistorySave().getMonth();
+        return months.isEmpty() ? -1 : months.get(months.size() - 1);
     }
 
     /**

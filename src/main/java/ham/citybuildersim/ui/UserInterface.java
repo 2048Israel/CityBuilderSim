@@ -4189,8 +4189,10 @@ public class UserInterface extends Application {
 
         Label ask = new Label("Quit to the desktop?");
         ask.setStyle(Palette.words(Palette.SIZE_LEAD, Palette.TEXT_HEAD) + " -fx-font-weight: bold;");
-        // Only a city in play is autosaved (Game.autosave() writes nothing before one).
-        Label why = new Label(cityOpen ? "This city is autosaved." : "There is no city open.");
+        // The model's shared guard also owns the words when a broken skip has suspended autosaves (UP6b).
+        Label why = new Label(cityOpen ? game.autosaveStatus() : "There is no city open.");
+        why.setWrapText(true);
+        why.setMaxWidth(420);
         why.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED));
 
         Button yes = new Button("Quit");
@@ -4759,11 +4761,14 @@ public class UserInterface extends Application {
             VBox problem = reportSection("SOMETHING WENT WRONG");
             for (String line : failure.split("\n")) {
                 Label item = monoLabel("  " + line);
+                item.setWrapText(true);
+                item.setMaxWidth(Double.MAX_VALUE);
                 item.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.BAD + ";");
                 problem.getChildren().add(item);
             }
             Label advice = monoLabel("  The months that did run are real. "
-                    + "Save or reload before continuing.");
+                    + "You can save by hand or reload the earlier autosave.");
+            advice.setWrapText(true);
             advice.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
             problem.getChildren().add(advice);
             column.getChildren().add(problem);
@@ -7139,13 +7144,14 @@ public class UserInterface extends Application {
 
     /**
      * The platform calls this as the last window goes: the input log is closed (flushed) with it, and the city is autosaved
-     * as Quit autosaves it (UP6), written before this returns - the JVM ends once it has.
+     * as Quit autosaves it (UP6), unless a broken skip has suspended autosaves (UP6b). Pending writes finish before this returns.
      */
     @Override
     public void stop() {
         stopRecorder();
         // The window's close autosaves like Quit (UP6; Jerus, 2026-10-23, on UP1's star 1: "Yes, autosave on close"): the real
-        // city, never a replay's throwaway copy (Quit leaves the replay first, ReplayMode). Nothing is written before a city is in play.
+        // city, never a replay's throwaway copy (Quit leaves the replay first, ReplayMode). Game uses the skip's completion
+        // flag for both exits, preserving its return point after a broken month. Nothing is written before a city is in play.
         Game city = replayOn() ? replayMode.realGame() : game;
         if (city != null) city.saveForClose();
     }

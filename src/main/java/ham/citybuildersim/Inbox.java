@@ -410,6 +410,11 @@ public class Inbox {
 
     /* ----- the autosave (UP6) ----- */
 
+    /** The broken-skip warning (UP6b): it stands through hand saves and is settled when that city is loaded again. */
+    public void autosavesPaused(int month, boolean paused, String advice) {
+        take(null, month, "autosave-paused", paused, "Autosaves are off", wrapped(advice, BODY_COLUMNS));
+    }
+
     /**
      * An autosave that could not be written whole (UP6, LB3-S), a condition notice keyed "autosave": the save failed, or it landed
      * beside a history that could not be written (the slot then holds the new save and an older history). A whole result settles
@@ -421,7 +426,8 @@ public class Inbox {
         if (!result.ok) {
             title = "The autosave could not be written";
             body = wrapped("Month " + month + "'s autosave could not be written: " + result.error
-                    + ". The autosave before it is still on disk, whole. Check there is free disk space; the next autosave tries again.",
+                    + ". The save and its history may be from different months: the history is written even if the save fails. "
+                    + "Check there is free disk space; the next autosave tries again.",
                     BODY_COLUMNS);
         } else if (result.historyError != null) {
             title = "The autosave's history could not be written";
