@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.108 — LD3, LD2's wage on in every harness — 2026-11-14, ready, see docs/queue/LD3-notes.md
+Every harness now uses LD2's wage and the temporary carryKeptOut switch is
+removed. HoldersCheck asserts that its loaded twin keeps the fixture's Heavy
+Industry hold, the cause of LD2's original settlement gap. The auto-builder's
+post-load orders, steep curve and pegged purchase have hard fixture laws.
+DeathRecordCheck measures the layoff against the same-month open twin over
+two years, with its existing OX1 rehire finding retained separately.
+
 ### 0.9.107 — CM2, the replay's loaded move on the globe — 2026-11-14, ready, see docs/queue/CM2-notes.md
 Loaded replay moves now ask and draw ground charts across the whole visible globe disc in GROUND, removing coarse
 planet-picture patches: the seven-move probe at 1920 × 1080 reports no unpainted frames, worker asks or picture evictions.
