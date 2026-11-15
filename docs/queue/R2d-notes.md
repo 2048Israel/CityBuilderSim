@@ -480,3 +480,73 @@ of ea161553 on 83f25ae7; CB2 changes none of that financial delta.
 ★ Tool-stage undos are additive, calibrated to the quoted chronological
 12/4/1 cutting-time stages. No source measures nonchronological partial
 tool fits; those combinations use the same additive stage approximation.
+
+
+## Fifth review: the service period survives the last depot
+
+REV-R2d-5 found that removing the last *unfitted* depot reset the live
+fleet's steam share to zero. Its positive prior-period haul then burned
+diesel and paid PE21 for equipment that had never been fitted. The exact
+pre-mend classes fail eight of the 72 physical-snapshot assertions:
+target/R2d-review5/before/check.log. Both month routes show 52,234.2335
+phantom diesel litres and a 7,296.765443 phantom patent bill.
+
+★ Freeze the rail engine mix at the goods-production boundary, in the
+existing LicenceFees.Production.finish capture, before Sector.endOfMonth.
+Historical rail fuel now uses that last month's frozen split rather than
+the fleet remaining when the haul invoice arrives. The actual haul's
+boundary and city-leg quantities still determine fuel and the patent
+benefit at invoice prices. This is the same service period as those traded
+goods. Default founding still takes its original all-diesel path.
+
+★ The orchestrator's 2026-11-15 13:04 call also freezes PE21 payability in
+that production month: patent expiry or a later local discovery cannot
+erase an already-earned liability. The following service period uses the
+new exemption. This matches R2c's accrual-month rule; the estimate of a
+new private PE21 fit remains its existing 25% nameplate estimate.
+
+The optional SectorState.extras keys railSteamForInvoice (fraction) and
+railPatentForInvoice (0/1) travel through the existing save path, without
+a format or unit change. A missing legacy mix means the old all-diesel
+invoice; a missing eligibility means no previously captured rail patent
+bill, matching pre-R2d saves. Default founding writes neither key. Reset
+clears both; currency redenomination does not scale a fraction or flag.
+
+HistoricalLicenceCheck is now 80/80. It really produces a service period
+on an unfitted depot, orders its buy-out/demolition, and closes the next
+month through each clock route with a positive haul and fuel bill. No
+depot remains; the frozen steam period still burns coal, zero diesel,
+and owes zero PE21. The fitted final-depot control still owes its positive
+earned service bill. JSON also distinguishes a valid zero steam share
+from an absent key. The last-patent-month case invoices after expiry;
+the local-find case discovers after production, saves and actually loads
+from disk before invoicing. Both pay the earned bill and no new fee on
+the following exempt service.
+
+The same 80 assertions against the physical-snapshot predecessor with
+invoice-date eligibility fail nine, including both earned-bill checks
+(paid 0). Evidence: target/R2d-review5/eligibility-before/check.log and
+mended/eligibility-check.log. The earlier physical snapshot alone was
+72/72 in mended/check.log. These before fixtures change no model code.
+
+The two existing direct mixed-fleet invoice fixtures now first produce
+the fleet's real service period. Their city-leg subcase explicitly stages
+a 100-tonne domestic crop transaction and its in-force home share: the
+extra production month can retire the bakery, which otherwise removes
+the required positive city leg. The assertion still requires both city
+and boundary fuel and the exact half-diesel invoice; it was not weakened.
+The actual whole-month rail cases continue to use their ordinary trades.
+
+SaveFileCheck and ReadPathCheck each invoke a dedicated actual disk-load
+fixture, using their scratch GameFiles root. It saves after real depot
+closure and before the still-positive prior service invoice, with the
+frozen steam mix and active imported-patent eligibility. Loading must
+retain both despite the empty live fleet, then burn coal and charge no
+PE21. The read path repeatedly visits the freight view, cost estimates,
+current account and state writer, and must leave money and extras
+unchanged. Positive post-load coal/diesel prices keep a wrong phantom
+royalty observable, rather than hiding it behind a nonpositive gain.
+
+Recipes.gainOf is byte-identical to current main. Freight's RT2
+retirementDemandAndCapacity, limitSpareRetirement and mayRetire methods
+are byte-identical too. There is no R2d delta in Game, Markets or Sector.

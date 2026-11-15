@@ -195,6 +195,7 @@ public final class HistoricalLicenceCheck {
         BuildingsStacks stack = g.getBuildingManager().getStack(depot);
         stack.setUnfitted("diesel-locomotive", 1);
         HistoricalRecipeCheck.run(g);
+        HistoricalRecipeCheck.silent(() -> g.simulateMonths(1)); // This mix serves the goods later invoiced.
         boolean[] ordered = { false };
         HistoricalRecipeCheck.silent(() -> ordered[0] = g.buyOutAndDemolish(depot, 1));
         // Game's real order: apply recipes, close demolitions, then invoice
@@ -235,6 +236,10 @@ public final class HistoricalLicenceCheck {
         HistoricalRecipeCheck.run(g);
         rail.setPantry(Good.ROLLING_STOCK, rail.setsNeeded());
         HistoricalRecipeCheck.silent(() -> g.simulateMonths(1));
+        check("the fitted service period saves a valid zero steam snapshot",
+                rail.toState().extras.containsKey("railSteamForInvoice")
+                && rail.toState().extras.get("railSteamForInvoice") == 0
+                && rail.toState().extras.getOrDefault("railPatentForInvoice", 0.0) == 1, "");
         boolean[] ordered = { false };
         HistoricalRecipeCheck.silent(() -> ordered[0] = g.buyOutAndDemolish(depot, 1));
         var close = Game.class.getDeclaredMethod("closeDemolished");
@@ -256,6 +261,109 @@ public final class HistoricalLicenceCheck {
         check("goods capture preserves that pending final bill without assigning cost to an absent depot",
                 expected > 0 && railMemo(g) == 0
                 && near(rail.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) - before, expected), "");
+    }
+
+    static void lastUnfittedRailClosed() throws Exception {
+        System.out.println("--- the final unfitted depot's service stays steam across closure and load (REV-R2d-5) ---");
+        for (boolean reload : new boolean[] { false, true }) {
+            Game g = FittingCheck.builtVillage("R2d-last-unfitted-" + reload, Founding.defaults().withUnfitted(true));
+            HistoricalRecipeCheck.allExcept(g, "PE21");
+            ResearchCheck.atMonth(g, ResearchCatalog.knownFrom("PE21"));
+            BuildingsTemplate depot = stand(g, "Rail Depot", 1);
+            BuildingsStacks stack = g.getBuildingManager().getStack(depot);
+            stack.setUnfitted("diesel-locomotive", 1);
+            HistoricalRecipeCheck.priceForBothReaders(g, Good.THERMAL_COAL, 100);
+            HistoricalRecipeCheck.priceForBothReaders(g, Good.DIESEL, .001);
+            HistoricalRecipeCheck.run(g);
+            var rail = g.getSectors().freight();
+            rail.setPantry(Good.ROLLING_STOCK, rail.setsNeeded());
+            HistoricalRecipeCheck.silent(() -> g.simulateMonths(1));
+            SectorState saved = rail.toState();
+            check("fixture: the unfitted depot really serves a period with a captured all-steam mix, load " + reload,
+                    stack.getQuantity() == 1 && stack.getUnfitted("diesel-locomotive") == 1
+                    && LicenceFees.payable("PE21", g.getMonth(), g.getResearch())
+                    && RecipeChanges.gainOf(g, depot, depot.getEquipment("diesel-locomotive")) > 0
+                    && saved.extras.getOrDefault("railSteamForInvoice", Double.NaN) == 1
+                    && saved.extras.getOrDefault("railPatentForInvoice", Double.NaN) == 1,
+                    "saved mix " + saved.extras.get("railSteamForInvoice"));
+            if (reload) {
+                Gson gson = new Gson();
+                SectorState loaded = gson.fromJson(gson.toJson(saved), SectorState.class);
+                SectorState legacy = gson.fromJson(gson.toJson(saved), SectorState.class);
+                legacy.extras.remove("railSteamForInvoice");
+                legacy.extras.remove("railPatentForInvoice");
+                rail.restore(legacy);
+                boolean modernLegacy = rail.toState().extras.getOrDefault("railSteamForInvoice", Double.NaN) == 0
+                        && rail.toState().extras.getOrDefault("railPatentForInvoice", Double.NaN) == 0;
+                rail.restore(loaded);
+                check("legacy absence keeps the old modern rail meaning, while JSON restores the captured steam period",
+                        modernLegacy && rail.toState().extras.getOrDefault("railSteamForInvoice", Double.NaN) == 1
+                        && rail.toState().extras.getOrDefault("railPatentForInvoice", Double.NaN) == 1, "");
+            }
+            boolean[] ordered = { false };
+            HistoricalRecipeCheck.silent(() -> ordered[0] = g.buyOutAndDemolish(depot, 1));
+            if (reload) HistoricalRecipeCheck.silent(() -> g.simulateMonths(1));
+            else FittingCheck.step(g, 1);
+            double paid = rail.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+            MoneyAudit.Result audit = g.getLastMoneyAudit();
+            check("fixture: normal month closure removes the unfitted final depot before its positive haul invoice, load " + reload,
+                    ordered[0] && g.getBuildingManager().getQuantity(depot.getId()) == 0
+                    && rail.getHauledTonnes() > 0 && rail.getFuelBill() > 0, g.getLastHandRefusal());
+            check("the unfitted final depot's real invoice burns coal and no diesel, load " + reload,
+                    rail.getFuelBill() > 0 && rail.getFuelLitres() == 0, "diesel " + rail.getFuelLitres());
+            check("equipment never fitted creates no PE21 royalty after final demolition, load " + reload,
+                    paid == 0 && LicenceFees.paid(g) == 0, "paid " + paid);
+            check("that actual steam-service month closes its audit and current account, load " + reload,
+                    Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved())
+                    && LicenceFeesCheck.near(g.getForeignAccounts().currentAccount(), audit.currentAccount()), "residual " + audit.residual);
+        }
+    }
+
+    static void railEligibility() throws Exception {
+        System.out.println("--- PE21 liability belongs to its production month, not its later invoice ---");
+        for (boolean lateFind : new boolean[] { false, true }) {
+            Game g = FittingCheck.builtVillage("R2d-rail-eligibility-" + lateFind, Founding.defaults().withUnfitted(true));
+            HistoricalRecipeCheck.allExcept(g, "PE21");
+            int end = ResearchCatalog.knownFrom("PE21") + LicenceFees.TERM_MONTHS;
+            ResearchCheck.atMonth(g, lateFind ? ResearchCatalog.knownFrom("PE21") : end - 2);
+            BuildingsTemplate depot = stand(g, "Rail Depot", 1);
+            var rail = g.getSectors().freight();
+            HistoricalRecipeCheck.priceForBothReaders(g, Good.THERMAL_COAL, 100);
+            HistoricalRecipeCheck.priceForBothReaders(g, Good.DIESEL, .001);
+            HistoricalRecipeCheck.run(g);
+            rail.setPantry(Good.ROLLING_STOCK, rail.setsNeeded());
+            Game production = g;
+            HistoricalRecipeCheck.silent(() -> production.simulateMonths(1));
+            if (lateFind) {
+                Map<String, Integer> found = new java.util.HashMap<>();
+                for (ResearchCatalog.Entry entry : ResearchCatalog.get().entries())
+                    found.put(entry.code(), entry.code().equals("PE21") ? g.getMonth() : 1);
+                g.getResearch().restore(null, null, null, found); // The local find is AFTER this period's production.
+                check("fixture: a local find after production leaves the imported period's frozen eligibility",
+                        !LicenceFees.payable("PE21", g.getMonth(), g.getResearch())
+                        && rail.toState().extras.getOrDefault("railPatentForInvoice", Double.NaN) == 1, "");
+                g = loadSteamInvoice(g); // Exercise the full saved eligibility path too.
+                rail = g.getSectors().freight();
+                check("actual disk load keeps earned eligibility despite the now-local patent",
+                        !LicenceFees.payable("PE21", g.getMonth(), g.getResearch()) && savedSteam(g) == 0
+                        && rail.toState().extras.getOrDefault("railPatentForInvoice", Double.NaN) == 1, "");
+            } else {
+                check("fixture: the last patent month really produces a fitted diesel period with eligibility",
+                        g.getMonth() == end - 1 && savedSteam(g) == 0
+                        && rail.toState().extras.getOrDefault("railPatentForInvoice", Double.NaN) == 1, "");
+            }
+            Game invoice = g;
+            HistoricalRecipeCheck.silent(() -> invoice.simulateMonths(1));
+            double paid = rail.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+            if (!lateFind) check("the last period's real haul is invoiced after patent expiry",
+                    g.getMonth() == end && !LicenceFees.payable("PE21", g.getMonth(), g.getResearch())
+                    && rail.getHauledTonnes() > 0 && rail.getFuelLitres() > 0, "");
+            check("the already-produced " + (lateFind ? "pre-find" : "last-patent-month") + " service still pays its earned bill",
+                    paid > 0 && LicenceFeesCheck.near(paid, g.getLastMoneyAudit().figure("- " + rail.key() + " IP charges")), "paid " + paid);
+            HistoricalRecipeCheck.silent(() -> invoice.simulateMonths(1));
+            check("the following " + (lateFind ? "locally known" : "post-expiry") + " service has no new royalty",
+                    rail.getHauledTonnes() > 0 && rail.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) == 0, "");
+        }
     }
 
     static double railMemo(Game g) {
@@ -314,6 +422,16 @@ public final class HistoricalLicenceCheck {
                 BuildingsStacks stack = g.getBuildingManager().getStack(line);
                 stack.setUnfitted("diesel-locomotive", 1);
                 HistoricalRecipeCheck.run(g);
+                HistoricalRecipeCheck.silent(() -> g.simulateMonths(1)); // Produce the mixed fleet's service period.
+                // Stage a declared domestic crop transaction and its in-force
+                // city share. Bakery retirement cannot erase this invoice condition.
+                SectorState carrying = rail.toState();
+                carrying.extras.put("homeShare", 1.0);
+                rail.restore(carrying);
+                Sector seller = g.getSectors().agriculture(), buyer = g.getSectors().byKey(g.getBuildingManager().getTemplateByName("Industrial Bakery").getSector());
+                Trade crop = new Trade(Good.CROPS, seller.key(), buyer.key(), 100, 1);
+                seller.bookSale(crop);
+                buyer.bookPurchase(crop);
                 double steam = RecipeChanges.railSteamShare(g);
                 Recipes.Prices prices = Recipes.pricesOf(g);
                 double saving = RecipeChanges.RAIL_COAL_TONNES_PER_DIESEL_LITRE * prices.good().applyAsDouble(Good.THERMAL_COAL)
@@ -357,12 +475,102 @@ public final class HistoricalLicenceCheck {
         }
     }
 
+    /** A real steam-service period, then its last depot closed before the invoice. */
+    static Game closedSteamInvoice(String label) throws Exception {
+        RecipeCheck.out = System.out; RecipeCheck.quiet = HistoricalRecipeCheck.quiet;
+        FittingCheck.out = System.out; FittingCheck.quiet = HistoricalRecipeCheck.quiet;
+        EquipmentCheck.out = System.out; EquipmentCheck.quiet = HistoricalRecipeCheck.quiet;
+        Forms1900Check.out = System.out; Forms1900Check.quiet = HistoricalRecipeCheck.quiet;
+        Game g = FittingCheck.builtVillage(label, Founding.defaults().withUnfitted(true));
+        HistoricalRecipeCheck.allExcept(g, "PE21");
+        ResearchCheck.atMonth(g, ResearchCatalog.knownFrom("PE21"));
+        BuildingsTemplate depot = stand(g, "Rail Depot", 1);
+        g.getBuildingManager().getStack(depot).setUnfitted("diesel-locomotive", 1);
+        HistoricalRecipeCheck.priceForBothReaders(g, Good.THERMAL_COAL, 100);
+        HistoricalRecipeCheck.priceForBothReaders(g, Good.DIESEL, .001);
+        HistoricalRecipeCheck.run(g);
+        var rail = g.getSectors().freight();
+        rail.setPantry(Good.ROLLING_STOCK, rail.setsNeeded());
+        HistoricalRecipeCheck.silent(() -> g.simulateMonths(1));
+        boolean[] ordered = { false };
+        HistoricalRecipeCheck.silent(() -> ordered[0] = g.buyOutAndDemolish(depot, 1));
+        if (!ordered[0]) throw new IllegalStateException(g.getLastHandRefusal());
+        var close = Game.class.getDeclaredMethod("closeDemolished");
+        close.setAccessible(true);
+        close.invoke(g);
+        return g;
+    }
+
+    static double savedSteam(Game g) {
+        return g.getSectors().freight().toState().extras.getOrDefault("railSteamForInvoice", Double.NaN);
+    }
+
+    static Game loadSteamInvoice(Game from) {
+        if (!from.saveGame(10, "R2d rail service snapshot").ok) throw new IllegalStateException("scratch save failed");
+        Game loaded = new Game(from.getGameFiles());
+        HistoricalRecipeCheck.silent(() -> loaded.loadGameSave(10));
+        // Keep the prospective diesel gain positive after the normal loader
+        // restores world prices, so no phantom royalty can hide behind a loss.
+        loaded.playOnLiterals();
+        HistoricalRecipeCheck.priceForBothReaders(loaded, Good.THERMAL_COAL, 100);
+        HistoricalRecipeCheck.priceForBothReaders(loaded, Good.DIESEL, .001);
+        return loaded;
+    }
+
+    /** SaveFileCheck: the full writer/loader retains a steam period after its asset is gone. */
+    static boolean saveChecks() throws Exception {
+        Game live = closedSteamInvoice("R2d-snapshot-disk");
+        Game loaded = loadSteamInvoice(live);
+        BuildingsTemplate depot = loaded.getBuildingManager().getTemplateByName("Rail Depot");
+        boolean frozen = savedSteam(live) == 1 && savedSteam(loaded) == 1
+                && live.getSectors().freight().toState().extras.getOrDefault("railPatentForInvoice", Double.NaN) == 1
+                && loaded.getSectors().freight().toState().extras.getOrDefault("railPatentForInvoice", Double.NaN) == 1
+                && loaded.getBuildingManager().getQuantity(depot.getId()) == 0
+                && RecipeChanges.railSteamShare(loaded) == 0;
+        HistoricalRecipeCheck.silent(() -> loaded.simulateMonths(1));
+        var rail = loaded.getSectors().freight();
+        boolean invoiced = rail.getHauledTonnes() > 0 && rail.getFuelBill() > 0 && rail.getFuelLitres() == 0
+                && LicenceFees.paid(loaded) == 0;
+        if (!(frozen && invoiced))
+            System.out.printf("   rail disk: frozen %s, haul %.9f, diesel %.9f, IP %.9f%n",
+                    frozen, rail.getHauledTonnes(), rail.getFuelLitres(), LicenceFees.paid(loaded));
+        return frozen && invoiced;
+    }
+
+    /** ReadPathCheck: live and loaded reads cannot reconstruct the saved period from no remaining assets. */
+    static boolean readChecks() throws Exception {
+        Game live = closedSteamInvoice("R2d-snapshot-reads");
+        Game loaded = loadSteamInvoice(live);
+        boolean kept = true;
+        for (Game g : new Game[] { live, loaded }) {
+            var rail = g.getSectors().freight();
+            BuildingsTemplate depot = g.getBuildingManager().getTemplateByName("Rail Depot");
+            Map<String, Double> money = NewGameCheck.snapshot(g);
+            Map<String, Double> extras = new java.util.TreeMap<>(rail.toState().extras);
+            kept &= savedSteam(g) == 1 && rail.toState().extras.getOrDefault("railPatentForInvoice", Double.NaN) == 1
+                    && RecipeChanges.railSteamShare(g) == 0
+                    && g.getBuildingManager().getQuantity(depot.getId()) == 0;
+            for (int n = 0; n < 10; n++) {
+                FreightView.of(g);
+                rail.getFuelBill(); rail.getFuelImported(); rail.getAllowedRevenue();
+                g.getBusinessInvestment().standingRunningCostOf(depot);
+                LicenceFees.forStanding(g, depot);
+                g.getForeignAccounts().currentAccount();
+                rail.toState();
+            }
+            kept &= savedSteam(g) == 1 && money.equals(NewGameCheck.snapshot(g))
+                    && extras.equals(rail.toState().extras);
+        }
+        if (!kept) System.out.printf("   rail reads: live mix %.3f, loaded mix %.3f%n", savedSteam(live), savedSteam(loaded));
+        return kept;
+    }
+
     public static void main(String[] args) throws Exception {
         RecipeCheck.out = System.out; RecipeCheck.quiet = HistoricalRecipeCheck.quiet;
         FittingCheck.out = System.out; FittingCheck.quiet = HistoricalRecipeCheck.quiet;
         EquipmentCheck.out = System.out; EquipmentCheck.quiet = HistoricalRecipeCheck.quiet;
         Forms1900Check.out = System.out; Forms1900Check.quiet = HistoricalRecipeCheck.quiet;
-        tools(); copper(); cracker(false, false); cracker(true, false); cracker(true, true); rail(); publicPieces(); demolishedRail(); lastRailClosed();
+        tools(); copper(); cracker(false, false); cracker(true, false); cracker(true, true); rail(); publicPieces(); demolishedRail(); lastRailClosed(); lastUnfittedRailClosed(); railEligibility();
         System.out.println("HistoricalLicenceCheck: " + (fails == 0 ? "all " + checks + " passed" : fails + " FAILED of " + checks));
         if (fails != 0) System.exit(1);
     }

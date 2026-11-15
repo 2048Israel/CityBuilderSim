@@ -1580,6 +1580,7 @@ public class ReadPathCheck {
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         out.println("--- R2c: IP service flows and planner reads ---");
         assertTrue("reading paid IP charges and net planner gains keeps the money still", LicenceFeesCheck.readChecks());
+        assertTrue("live and loaded rail reads keep the saved steam period when its depot is gone", HistoricalLicenceCheck.readChecks());
 
         out.println("--- R0f: the dated Money readers keep the saved rule still ---");
         assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());

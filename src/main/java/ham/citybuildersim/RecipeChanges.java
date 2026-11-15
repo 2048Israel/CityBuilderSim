@@ -215,7 +215,7 @@ public final class RecipeChanges {
      * the common monthly strike. Capacity shares match railSteamShare(): the
      * actual boundary and city-leg fuel replaces the nameplate appraisal.
      */
-    public static void railService(Game game, ham.citybuildersim.sectors.Freight rail, double fuelEquivalent, double steamShare) {
+    public static void railService(Game game, ham.citybuildersim.sectors.Freight rail, double fuelEquivalent, double steamShare, boolean patentPayable) {
         if (game == null || !game.foundedUnfitted()) return;
         Map<Integer, Double> memo = game.licenceFeesForSave();
         for (BuildingsTemplate t : game.getBuildingManager().getTemplates())
@@ -227,7 +227,8 @@ public final class RecipeChanges {
         Recipes.Prices prices = Recipes.pricesOf(game);
         double saving = RAIL_COAL_TONNES_PER_DIESEL_LITRE * prices.good().applyAsDouble(Good.THERMAL_COAL)
                 - prices.good().applyAsDouble(Good.DIESEL);
-        double bill = LicenceFees.onGain("PE21", game.getMonth(), game.getResearch(), dieselEquivalent * saving);
+        double gain = dieselEquivalent * saving;
+        double bill = patentPayable && Double.isFinite(gain) && gain > 0 ? LicenceFees.SHARE * gain : 0;
         if (bill > 0) {
             rail.bookLicenceFee(bill);
             double dieselCapacity = 0;

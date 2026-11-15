@@ -277,6 +277,7 @@ public final class LicenceFees {
                 memo.put(bill.id(), bill.amount() / bill.quantity());
             }
             game.restoreLicenceFees(memo);
+            game.getSectors().freight().captureRailServiceForInvoice();
         }
     }
 
