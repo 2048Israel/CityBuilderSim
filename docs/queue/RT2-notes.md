@@ -444,3 +444,27 @@ The later fixture has m65 1,107.46k due, 20.35k abroad, zero netting,
 and an open window. Thus the moved month re-causes the specific exporting
 window premise; it does not change the debt rule or erase the earlier
 closed-window rollover test. The m25 result remains recorded above.
+
+## Final fixture verification before replacement dry run
+
+Commit 7801e547 contains the five harness/helper month changes and their
+regenerated indexes. The full named command
+./batch-check.sh BankCheck TreasuryCheck EquipmentCheck FittingCheck
+exits 0: all five selected harnesses pass (the BankCheck substring also
+selects CentralBankCheck). Compile 41s, maps current, Stale 0 firm / 186
+soft. Three admission holds waited for CPU; no test was stopped.
+Log: target/checks/rt2-final-repicks.txt. sh tools/pick.sh selects ALL
+(204 registered harnesses); the authorized route is the normal fresh-clone
+full dry run, without duplicating a local ALL suite.
+Rejudging a copy of the earlier full suite with the five exact new cover
+rows and CBS_REJUDGE=1 leaves exactly 37 NEW lines, all in the four moved
+fixtures, and none in InvestCheck, DeathRecordCheck or PrizeCheck.
+Log: target/rt2-probe/rejudge-before-repicks.txt.
+Exact-input SHA-256: legacy-invest.json
+21b42cdd0cf38600dad807c3eb97f8c342bb6074befb0ab777d955c2445e7b72;
+death-before.json
+cda4edd31782fb6873e8c778bd4c10a11d2ca9158df2877b3685419702e648bb.
+The main-class/input manifest is target/rt2-probe/main-proof-manifest.json.
+The orchestrator received the complete 47-line classification and asked
+for a stranger's review of fixture commit 7801e547 before the next dry run.
+The ship file stays provisional pending that review and a green full run.
