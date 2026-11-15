@@ -1,5 +1,9 @@
 # XR7 - The world's pegs overshoot both ways, and the hold capped
 
+Ready: stranger's Codex review SHIP, ensemble M1/F1 10/10, all eight main-merge
+traces identical, and the sealed launcher suite accepted for reuse by the
+orchestrator (known reds only, exit 3; zero unnamed reds).
+
 Built on main ade96cfb (0.9.115), on batch/XR7. XR8 is folded in.
 No known-reds entry names XR7 on this starting main.
 
@@ -174,3 +178,30 @@ Launcher branch commit: 1260b1808bc771c2f1ff5156b4f5ff5bec0e6339.
 Launcher main commit: b9c93a989e42f074073ce3e2c6f06f4eb8ee41c4.
 Outer log: target/checks/XR7-dryrun.log. Only XR7's notes and ship file advance
 after this point; the provisional marker stays until the final green record.
+
+## Final launcher result and readiness
+
+The full suite plus the normal direct nightly picks (GlobeCheck, KeptCheck,
+LandmassCheck, prospective version 0.9.117) finished in 2465 seconds with exit 3:
+only main's five known-red harnesses, no NEW red, no unnamed red.
+MoneyDatesCheck is R0f-S; InvestCheck is RT2-L; the three MapCheck lines are
+the existing building-count, disconnected-street and street-surface findings
+(DM3, BF1-M, DM3-R); DeathRecordCheck is OX1; ResearchViewCheck is R2b-V/R2b-J.
+No known-red entry named XR7, and none was transferred or newly covered.
+Four played-path assertions were informational OBSERVED (HealthCheck 1,
+MapCheck 2, KeptCheck 1); no law or premise was relaxed.
+
+The launcher itself exited 1 at its final branch guard: I pushed the notes and
+ship-file run reference as 814fb8cb while it was testing 1260b180. The source,
+fixtures, baseline and main were unchanged. This was a record-push sequencing
+error; no model mending or new suite run was needed. The completed suite had
+already been sealed as checks.complete with its hashes, and unnamed.txt is empty.
+Independent sha256sum verification of every kept check/generated file exits 0.
+
+At 16:27 Atlantic the orchestrator explicitly accepted this sealed run for
+publication reuse and instructed no retry: gate-reuse does not use the outer
+exit file, and accepts the notes/ship-only advance. Its main is still b9c93a98.
+The final own-source patch matches reviewed b6d5c412 relative to this main,
+as the orchestrator also confirmed. Only these two XR7 record files advance
+past the tested commit. The final ship file points at this sealed directory;
+the provisional marker is removed last in its own commit.
