@@ -546,6 +546,101 @@ public final class HistoricalRecipeCheck {
                 candidate.earns() + " vs " + expected + ", gate " + candidate.failed());
     }
 
+
+    /** Expected thermal yields: the study's 0.24 petrol, leaving the modern difference as fuel oil. */
+    static Map<Good, Double> thermalProducts(double litres) {
+        var k = ham.citybuildersim.sectors.RefineryFlow.Kind.CRACKER;
+        double modernPetrol = k.yields().stream().filter(y -> y.product() == Good.PETROL).mapToDouble(y -> y.perLitre()).sum();
+        Map<Good, Double> expected = new java.util.EnumMap<>(Good.class);
+        for (var y : k.yields()) {
+            double fraction = y.perLitre();
+            if (y.product() == Good.PETROL) fraction = .24;
+            if (y.product() == Good.FUEL_OIL) fraction += modernPetrol - .24;
+            expected.merge(y.product(), fraction * litres, Double::sum);
+        }
+        return expected;
+    }
+
+    static double thermalSpread(double[] values) {
+        double gross = 0;
+        for (var e : thermalProducts(1).entrySet()) gross += e.getValue() * values[e.getKey().ordinal()];
+        return gross - ham.citybuildersim.sectors.RefineryFlow.feedValue(
+                ham.citybuildersim.sectors.RefineryFlow.Stream.GAS_OIL, values);
+    }
+
+    static void priceForBothReaders(Game g, Good good, double price) {
+        EquipmentCheck.priceAt(g, good, price);
+        g.getMarkets().get(good).setLocalPrice(price);
+    }
+
+    static void thermalReaders() throws Exception {
+        out.println("--- 15. a thermal cracker's card, margins and ribbons read the solved process ---");
+        Game g = town("R2d-thermal-readers", true);
+        allExcept(g, "PE24");
+        at(g, ResearchCatalog.knownFrom("PE24") - 1);
+        BuildingsTemplate t = g.getBuildingManager().getTemplateByName("Small Cracking Unit");
+        RecipeCheck.stand(g, t, 1, new int[1]);
+        RecipeCheck.stand(g, g.getBuildingManager().getTemplateByName("Oil Refinery"), 2, new int[1]);
+        priceForBothReaders(g, Good.PETROL, 1);
+        priceForBothReaders(g, Good.FUEL_OIL, .001);
+        run(g);
+        var ref = g.getSectors().refining();
+        var k = ham.citybuildersim.sectors.RefineryFlow.Kind.CRACKER;
+        var flow = ref.flow();
+        double fed = flow.run(k);
+        check("fixture: before PE24 a real standing unit's solved thermal process has positive feed",
+                g.getMonth() < ResearchCatalog.knownFrom("PE24") && fed > 0
+                        && Math.abs(extra(t, "crackerPetrol", .55) - .24) < 1e-12, "feed " + fed);
+        Map<Good, Double> expected = thermalProducts(t.feedPerMonth());
+        Map<Good, Double> card = ham.citybuildersim.sectors.Refining.madeBy(t);
+        boolean same = expected.keySet().equals(card.keySet());
+        for (var e : expected.entrySet()) same &= Math.abs(e.getValue() - card.getOrDefault(e.getKey(), 0.0)) < 1e-8;
+        check("the build card lists the actual thermal products", same, card.toString());
+        double va = 0;
+        for (var e : expected.entrySet()) va += e.getValue() * BuildCard.priceOf(g, e.getKey());
+        va -= ham.citybuildersim.sectors.Refining.feedValueOf(t,
+                ham.citybuildersim.sectors.RefineryFlow.values(good -> BuildCard.priceOf(g, good)));
+        check("the build card values exactly those thermal products",
+                Math.abs(BuildCard.valueAdded(g, t) - va) < 1e-9 * Math.max(1, Math.abs(va)), BuildCard.valueAdded(g, t) + " vs " + va);
+        double expectedSpread = thermalSpread(ref.cityValues());
+        var picture = RefineryView.of(g);
+        var oil = OilView.of(g);
+        var unit = picture.unit(k);
+        var oilUnit = oil.units().stream().filter(u -> u.kind() == k).findFirst().orElse(null);
+        check("both view models use the solved thermal yields for their city-valued margins",
+                unit != null && oilUnit != null && Math.abs(unit.citySpread() - expectedSpread) < 1e-10
+                        && Math.abs(oilUnit.citySpread() - expectedSpread) < 1e-10,
+                (unit == null ? "no refinery unit" : unit.citySpread()) + " vs " + expectedSpread);
+        var words = OilView.unitLines(oil).stream().filter(u -> u.name().equals(k.unitName())).findFirst().orElse(null);
+        check("the oil table's yield words show thermal petrol 24, rather than the modern 55",
+                words != null && words.what().contains("petrol" + ' ' + "24"), words == null ? "no words" : words.what());
+        var links = RefineryView.trace(flow, 1);
+        double petrol = links.stream().filter(l -> l.from().unit() == k && l.to().product() == Good.PETROL)
+                .mapToDouble(l -> l.litres()).sum();
+        double fuel = links.stream().filter(l -> l.to().product() == Good.FUEL_OIL).mapToDouble(l -> l.litres()).sum();
+        check("the actual petrol ribbon is 0.24 times the feed that really ran",
+                Math.abs(petrol - fed * .24) < 1e-8 * fed, petrol + " vs " + fed * .24);
+        check("all fuel-oil ribbons foot to the actual solved fuel oil, including the unconverted petrol",
+                Math.abs(fuel - flow.of(Good.FUEL_OIL)) < 1e-8 * Math.max(1, flow.of(Good.FUEL_OIL)), fuel + " vs " + flow.of(Good.FUEL_OIL));
+        priceForBothReaders(g, Good.LPG, .001);
+        priceForBothReaders(g, Good.DIESEL, .001);
+        priceForBothReaders(g, Good.FUEL_OIL, .5);
+        flow = ref.flow();
+        check("fixture: these prices idle the thermal process while the modern definition has a positive spread",
+                flow.spread(k) < 0 && flow.run(k) == 0
+                        && ham.citybuildersim.sectors.RefineryFlow.spread(k, ref.cityValues()) > 0, "thermal " + flow.spread(k));
+        expectedSpread = thermalSpread(ref.cityValues());
+        unit = RefineryView.of(g).unit(k);
+        oilUnit = OilView.of(g).units().stream().filter(u -> u.kind() == k).findFirst().orElse(null);
+        check("both city-margin readers retain the actual negative thermal margin",
+                unit != null && oilUnit != null && unit.citySpread() < 0 && oilUnit.citySpread() < 0
+                        && Math.abs(unit.citySpread() - expectedSpread) < 1e-10 && Math.abs(oilUnit.citySpread() - expectedSpread) < 1e-10, "");
+        check("the oil planner's spare-feed read preserves gas oil left by that idle thermal unit",
+                oilUnit != null && oilUnit.spare() > 0 && Math.abs(oilUnit.spare()
+                        - ham.citybuildersim.sectors.Refining.spareFeed(flow, k)) < 1e-8,
+                oilUnit == null ? "no oil unit" : "spare " + oilUnit.spare());
+    }
+
     public static void main(String[] args) throws Exception {
         RecipeCheck.out = out; RecipeCheck.quiet = quiet;
         EquipmentCheck.out = out; EquipmentCheck.quiet = quiet;
@@ -567,6 +662,7 @@ public final class HistoricalRecipeCheck {
         recoveryDepletion();
         boundedCrackingMean();
         thermalAppraisal();
+        thermalReaders();
         out.println(fails == 0 ? "All HistoricalRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

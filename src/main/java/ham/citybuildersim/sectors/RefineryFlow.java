@@ -196,6 +196,35 @@ public final class RefineryFlow {
                 Yield.of(Stream.DIESEL, .18), Yield.of(Good.FUEL_OIL, .07 + (.55 - crackerPetrol)));
     }
 
+    /** The modern conversion process, shared by standalone definitions and default cities. */
+    public static final Process MODERN_PROCESS = new Process(0.55);
+
+    /** An immutable resolved process: cards, margins and ribbons read these same yields. */
+    public record Process(double crackerPetrol) {
+        public Process {
+            if (!(crackerPetrol >= 0 && crackerPetrol <= 0.55))
+                throw new IllegalArgumentException("cracker petrol yield");
+        }
+
+        /** This process's physical yields, including thermal cracking. */
+        public List<Yield> yields(Kind kind) { return RefineryFlow.yields(kind, crackerPetrol); }
+
+        /** Products from this process's feed, with nothing downstream. */
+        public Map<Good, Double> madeAlone(Kind kind, double litres) {
+            return RefineryFlow.madeAlone(kind, litres, crackerPetrol);
+        }
+
+        /** This process's margin at the stated valuation prices. */
+        public double spread(Kind kind, double[] values) {
+            return RefineryFlow.spread(kind, values, crackerPetrol);
+        }
+    }
+
+    /** Resolves the chosen process once, retaining the exact modern definition. */
+    public static Process process(double crackerPetrol) {
+        return crackerPetrol == 0.55 ? MODERN_PROCESS : new Process(crackerPetrol);
+    }
+
     /** The streams in the order they are solved (3 in the header). */
     public static final Stream[] FLOW_ORDER = { Stream.GAS_OIL, Stream.RESIDUE, Stream.HEAVY_NAPHTHA, Stream.CRACKED_GAS };
 
@@ -251,9 +280,11 @@ public final class RefineryFlow {
         private final double[] cuts, runs, spreads, spare;
         private final double hydrogen, spareHydrogen;
         private final Refining.Slate slate;
+        private final Process process;
 
         Flow(double crude, double[] cuts, double[] runs, double[] spreads, double[] spare, double hydrogen,
-             double spareHydrogen, Refining.Slate slate) {
+             double spareHydrogen, Refining.Slate slate, Process process) {
+            this.process = process;
             this.crude = crude;
             this.cuts = cuts;
             this.runs = runs;
@@ -263,6 +294,9 @@ public final class RefineryFlow {
             this.spareHydrogen = spareHydrogen;
             this.slate = slate;
         }
+
+        /** The immutable process that produced this solved flow, also read by its views. */
+        public Process process() { return process; }
 
         /** The crude run, in litres. */
         public double crude() { return crude; }
@@ -307,6 +341,7 @@ public final class RefineryFlow {
 
     /** The same flow with the cracking process actually known and chosen here. */
     public static Flow solve(double[] feed, double crudeTonnes, double[] mix, double[] value, double crackerPetrol) {
+        Process process = process(crackerPetrol);
         int nStreams = Stream.values().length, nKinds = Kind.values().length;
         // 1. The crude into its cuts: Refining.slate()'s arithmetic, to the bit.
         double run = Math.max(0, crudeTonnes) * Refining.CRUDE_LITRES_PER_TONNE;
@@ -325,7 +360,7 @@ public final class RefineryFlow {
         double[] out = new double[Good.values().length];
         double[] runs = new double[nKinds];
         double[] spreads = new double[nKinds];
-        for (Kind k : Kind.values()) spreads[k.ordinal()] = spread(k, value, crackerPetrol);
+        for (Kind k : Kind.values()) spreads[k.ordinal()] = process.spread(k, value);
 
         // 2. Hydrogen: the reformers' make on the straight-run heavy naphtha, before anything is cracked (★ O4-3: when they run).
         int hn = Stream.HEAVY_NAPHTHA.ordinal();
@@ -355,7 +390,7 @@ public final class RefineryFlow {
                 }
                 if (k == Kind.HYDROCRACKER) h2 -= take * HYDROGEN_USED;
                 runs[ki] = take;
-                for (Yield y : yields(k, crackerPetrol)) {
+                for (Yield y : process.yields(k)) {
                     if (y.stream() != null) s[y.stream().ordinal()] += take * y.perLitre();
                     else out[y.good().ordinal()] += take * y.perLitre();
                 }
@@ -391,6 +426,6 @@ public final class RefineryFlow {
             if (out[g.ordinal()] > 0) products.put(g, out[g.ordinal()]);
         }
         return new Flow(run, cuts, runs, spreads, spare, hydrogen, Math.max(0, h2),
-                new Refining.Slate(Collections.unmodifiableMap(products), residue - cut));
+                new Refining.Slate(Collections.unmodifiableMap(products), residue - cut), process);
     }
 }

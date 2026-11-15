@@ -190,3 +190,35 @@ basis for a conversion building's own fee. Default cities pay none.
 Then regenerate maps, push final code, send "R2d mends at <commit>", publish a
 provisional ship file, ask "R2d dry run?" and wait for go before the launcher
 ALL dry run. Use a kept gate run and its final eight CSVs for comparison.
+
+## Second review and its mends (REV-R2d-2)
+
+The first model mends held. The next stranger found three remaining modern
+readers: the build card, the city-margin models, and the refinery ribbons.
+RefineryFlow now exposes the immutable resolved Process carried by each
+solved Flow. Cards use the template's resolved process, the two margin models
+value that process, and trace() reads the solved process's yields. The oil
+table's yield words use the same getter. The modern standalone overloads are
+preserved and retain the original yield list.
+
+The requested grep also found OilView's planner solve without the process
+parameter; its spare-feed read now uses the actual outlook process. The
+remaining Kind.LUBE.yields() is the unchanged fixed lube yield constant;
+other raw Kind readers are the modern definition or harness oracles.
+R2c's installedUnitGain is the one remaining integration reader, explicitly
+authorized for the post-merge hook; it must use the actual flow's process.
+
+Thermal fixtures cause positive real feed and check the card's products and
+value, both margin models, the oil table's 24% words, the actual petrol ribbon
+and whole fuel-oil closure. A second price vector makes the thermal spread
+negative and the modern definition positive, proving both city margins and
+OilView's spare-feed appraisal keep the actual process. All 110 assertions
+pass (review-2-fixture.log). The identical fixture on all eleven model classes
+from e34200be fails exactly eight assertions, covering every reader above
+(review-2-before/check.log). HistoricalRecipeCheck, OilViewCheck,
+RefineryViewCheck and BuildCardCheck are green together: review-2-check.log,
+exit 0, zero firm Stale.
+
+The second complete default comparison, after all first-review model mends,
+also kept all eight CSVs byte-identical to main 4343a815. Evidence:
+target/R2d-evidence/branch-e34200be/compare.txt. No ensemble.

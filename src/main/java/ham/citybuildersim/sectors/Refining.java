@@ -242,7 +242,7 @@ public final class Refining extends Sector {
      */
     public static Map<Good, Double> madeBy(BuildingsTemplate t) {
         if (t == null) return Collections.emptyMap();
-        if (isConversionUnit(t)) return RefineryFlow.madeAlone(t.refineryUnit(), t.feedPerMonth());
+        if (isConversionUnit(t)) return RefineryFlow.process(t.crackerPetrol()).madeAlone(t.refineryUnit(), t.feedPerMonth());
         return isCrudeUnit(t) ? slate(t.uses(Good.CRUDE)).products() : t.goodsMade();
     }
 
@@ -1706,7 +1706,7 @@ public final class Refining extends Sector {
     /** Products at the actual thermal or catalytic process, including the export discount. */
     static double[] madeOf(RefineryFlow.Kind k, double litres, double crackerPetrol) {
         double[] out = new double[Good.values().length];
-        for (Map.Entry<Good, Double> e : RefineryFlow.madeAlone(k, litres, crackerPetrol).entrySet()) out[e.getKey().ordinal()] += e.getValue();
+        for (Map.Entry<Good, Double> e : RefineryFlow.process(crackerPetrol).madeAlone(k, litres).entrySet()) out[e.getKey().ordinal()] += e.getValue();
         return out;
     }
 

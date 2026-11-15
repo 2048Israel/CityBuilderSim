@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**204 harness files, 24,152 labelled assertions.** AllChecks runs 204 of them.
+**204 harness files, 24,162 labelled assertions.** AllChecks runs 204 of them.
 
 ## Which harnesses read which class
 
@@ -31,7 +31,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BridgeWorks](map/BridgeWorks.md) | BridgeCheck, BuildCardCheck, PriceLevelCheck, SaveSlotCheck |
 | [Bridges](map/Bridges.md) | BridgeCheck, IslandLinkCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, EquipmentCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandmassCheck, LongPlaytest, ReadPathCheck, ResearchCheck, RoadCheck, SectorFlowCheck, WaterCheck, WorksFinanceCheck |
-| [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, HousingCheck, HydroCheck, LandmassCheck, LongPlaytest, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
+| [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, HistoricalRecipeCheck, HousingCheck, HydroCheck, LandmassCheck, LongPlaytest, OilCheck, PortCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildScreen](map/BuildScreen.md) | **none** |
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck |
@@ -233,7 +233,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Observation](map/Observation.md) | AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, CallCheck, CapitalFlowCheck, CentralBankCheck, ConstructionControlCheck, CurrencyRegimeCheck, CurveCheck, DeskCheck, FittingCheck, FloatLinkCheck, ForeignCheck, FundCheck, HealthCheck, HoldersCheck, HomeRailCheck, HousingCheck, KeptCheck, LabourCheck, MapCheck, MonetaryCheck, ObservationCheck, PolicyPreviewCheck, PriceLevelCheck, PrizeCheck, SaveFileCheck, ScaleCheck |
 | [Offending](map/Offending.md) | **none** |
 | [Oil](map/Oil.md) | BuildingDataCheck, EarthFoundingCheck, LongPlaytest, MapCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryViewCheck, SaveFileCheck, SectorStatementCheck, WellCheck |
-| [OilView](map/OilView.md) | EarthFoundingCheck, OilViewCheck, ReadPathCheck, WellCheck |
+| [OilView](map/OilView.md) | EarthFoundingCheck, HistoricalRecipeCheck, OilViewCheck, ReadPathCheck, WellCheck |
 | [OldMetal](map/OldMetal.md) | BuildCardCheck, CopperRefiningCheck, IndustryViewCheck, LongPlaytest, MaterialsCheck, ReadPathCheck, SaveFileCheck |
 | [OrderBook](map/OrderBook.md) | BankCheck, BankFailureCheck, BondCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, OrderBookCheck, OwnerCheck, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [OreView](map/OreView.md) | LandCheck |
@@ -273,7 +273,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Recording](map/Recording.md) | ReplayCheck, SaveFileCheck |
 | [Reenactor](map/Reenactor.md) | **none** |
 | [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, HistoricalRecipeCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, SaveFileCheck |
-| [RefineryView](map/RefineryView.md) | IndustryViewCheck, KeptCheck, OilViewCheck, RefineryCheck, RefineryViewCheck |
+| [RefineryView](map/RefineryView.md) | HistoricalRecipeCheck, IndustryViewCheck, KeptCheck, OilViewCheck, RefineryCheck, RefineryViewCheck |
 | [Refining](map/Refining.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, HistoricalRecipeCheck, LongPlaytest, OilCheck, OilViewCheck, PortCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck |
 | [ReliefRenders](map/ReliefRenders.md) | **none** |
 | [ReplayCamera](map/ReplayCamera.md) | **none** |
@@ -12797,7 +12797,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1701 ...and the service's scale
   - L1702 ...while its fees move with the money
 
-## HistoricalRecipeCheck.java - 36 labelled assertions
+## HistoricalRecipeCheck.java - 46 labelled assertions
 
 > Each sourced 1900 undo runs before its entry, knowledge alone does not fit
 > equipment, independent pieces compose, and the default city stays modern.
@@ -12856,6 +12856,17 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L505 14. thermal-cracker export discounts use its actual petrol yield**
   - L542 fixture: positive thermal feed and an export discount leave a profitable candidate
   - L544 its appraisal discounts 0.24 L petrol per litre, preserving that profitable order
+- **L577 15. a thermal cracker's card, margins and ribbons read the solved process**
+  - L591 fixture: before PE24 a real standing unit's solved thermal process has positive feed
+  - L598 the build card lists the actual thermal products
+  - L603 the build card values exactly those thermal products
+  - L610 both view models use the solved thermal yields for their city-valued margins
+  - L615 the oil table's yield words show thermal petrol 24, rather than the modern 55
+  - L621 the actual petrol ribbon is 0.24 times the feed that really ran
+  - L623 all fuel-oil ribbons foot to the actual solved fuel oil, including the unconverted petrol
+  - L629 fixture: these prices idle the thermal process while the modern definition has a positive spread
+  - L635 both city-margin readers retain the actual negative thermal margin
+  - L638 the oil planner's spare-feed read preserves gas oil left by that idle thermal unit
 
 ## HistoryCheck.java - 97 labelled assertions
 

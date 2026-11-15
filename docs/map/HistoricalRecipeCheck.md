@@ -1,4 +1,4 @@
-# HistoricalRecipeCheck.java - 573 lines · 25 methods · 2 constants · harnesses
+# HistoricalRecipeCheck.java - 669 lines · 29 methods · 2 constants · harnesses
 
 `ham/citybuildersim/HistoricalRecipeCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -9,7 +9,7 @@
 > known and pieces fitted, and crosses this entry's actual month. This harness
 > also compiles against pre-R2d code, so its before failures are model failures.
 
-**Uses:** [Good](Good.md) (42), [Game](Game.md) (22), [BuildingsTemplate](BuildingsTemplate.md) (20), [RecipeCheck](RecipeCheck.md) (18), [JobType](JobType.md) (15), [Refining](Refining.md) (12), [ResearchCatalog](ResearchCatalog.md) (10), [EquipmentCheck](EquipmentCheck.md) (10), [Recipes](Recipes.md) (10), [RefineryFlow](RefineryFlow.md) (9), [BuildingsStacks](BuildingsStacks.md) (8), [Resource](Resource.md) (8), [PolicyDates](PolicyDates.md) (5), [FittingCheck](FittingCheck.md) (4), [DataSave](DataSave.md) (4), [Deposit](Deposit.md) (4), [Equipment](Equipment.md) (2), [Trade](Trade.md) (2), [CopperMining](CopperMining.md) (2), [Forms1900Check](Forms1900Check.md) (2), [PriceLevel](PriceLevel.md) (1), [Freight](Freight.md) (1), [Traffic](Traffic.md) (1), [Sector](Sector.md) (1), [Founding](Founding.md) (1), [EquipmentFit](EquipmentFit.md) (1), [BuildingType](BuildingType.md) (1), [LandManager](LandManager.md) (1), [RefineryCheck](RefineryCheck.md) (1), [SpreadPlanner](SpreadPlanner.md) (1)
+**Uses:** [Good](Good.md) (61), [Game](Game.md) (24), [BuildingsTemplate](BuildingsTemplate.md) (21), [RecipeCheck](RecipeCheck.md) (20), [JobType](JobType.md) (15), [Refining](Refining.md) (15), [RefineryFlow](RefineryFlow.md) (15), [ResearchCatalog](ResearchCatalog.md) (12), [EquipmentCheck](EquipmentCheck.md) (11), [Recipes](Recipes.md) (10), [BuildingsStacks](BuildingsStacks.md) (8), [Resource](Resource.md) (8), [PolicyDates](PolicyDates.md) (5), [FittingCheck](FittingCheck.md) (4), [DataSave](DataSave.md) (4), [Deposit](Deposit.md) (4), [BuildCard](BuildCard.md) (4), [RefineryView](RefineryView.md) (3), [OilView](OilView.md) (3), [Equipment](Equipment.md) (2), [Trade](Trade.md) (2), [CopperMining](CopperMining.md) (2), [Forms1900Check](Forms1900Check.md) (2), [PriceLevel](PriceLevel.md) (1), [Freight](Freight.md) (1), [Traffic](Traffic.md) (1), [Sector](Sector.md) (1), [Founding](Founding.md) (1), [EquipmentFit](EquipmentFit.md) (1), [BuildingType](BuildingType.md) (1)... and 3 more
 
 ## Constants
 
@@ -29,7 +29,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 25 | 549 | **type** `public final class HistoricalRecipeCheck` | Each sourced 1900 undo runs before its entry, knowledge alone does not fit equipment, independent pieces compose, and the default city stays modern. |
+| 25 | 645 | **type** `public final class HistoricalRecipeCheck` | Each sourced 1900 undo runs before its entry, knowledge alone does not fit equipment, independent pieces compose, and the default city stays modern. |
 | 30 | 6 | `static { ... }` |  |
 | 37 | 5 | `static void check(String label, boolean ok, String detail)` |  |
 | 43 | 5 | `static void silent(Runnable action)` |  |
@@ -55,5 +55,9 @@
 | 440 | 36 | `static void recoveryDepletion() throws Exception` |  |
 | 477 | 26 | `static void boundedCrackingMean() throws Exception` |  |
 | 504 | 44 | `static void thermalAppraisal() throws Exception` |  |
-| 549 | 24 | `public static void main(String[] args) throws Exception` |  |
+| 551 | 12 | `static Map<Good, Double> thermalProducts(double litres)` | Expected thermal yields: the study's 0.24 petrol, leaving the modern difference as fuel oil. |
+| 564 | 6 | `static double thermalSpread(double[] values)` |  |
+| 571 | 4 | `static void priceForBothReaders(Game g, Good good, double price)` |  |
+| 576 | 67 | `static void thermalReaders() throws Exception` |  |
+| 644 | 25 | `public static void main(String[] args) throws Exception` |  |
 

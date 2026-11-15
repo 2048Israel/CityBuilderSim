@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,969 constants in 572 files.**
+**5,970 constants in 572 files.**
 
 ## model (2855 constants)
 
@@ -2646,15 +2646,15 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1022 | `OilView.UNIT_HEADS` | `{ "Unit · what it turns into what", "b/d", "running", "spread", "state" }` | The table's heads, in its columns' order (mockup 2's). |
 | 1025 | `OilView.UNIT_WIDTHS` | `{ 0, 64, 62, 76, 210 }` | The columns' widths (b/d, running, spread, the state; the first takes the rest - 238 px in the units' box's 650 at the 1,389 window). |
 | 1028 | `OilView.PILL` | `RefineryView.TEXT_2, PILL_BUILDING = ACCENT, PILL_GOOD = GOOD, PILL_GATE = WARN, PILL_B...` | The pills' colours: neutral, under way, good, a gate the player can clear, a loss (mockup 2's .pill, .b, .w, .r). |
-| 1085 | `OilView.NO_BREAK` | `'\u00a0'` | The space inside a table's item, where a line does not break: "fuel oil 7" stays whole. |
-| 1183 | `OilView.PRODUCT_HEADS` | `{ "Product", "price here", "world", "× crude", "made here", "used here", "imported", "e...` | The table's heads, in its columns' order (mockup 2's). |
-| 1187 | `OilView.PRODUCT_WIDTHS` | `{ 150, 76, 76, 58, 72, 72, 72, 72, 0 }` | The columns' widths (the product, the seven figures; where it went takes the rest - 560 px in the box's 1,208 at the 1,389 window). |
-| 1190 | `OilView.PRODUCTS_WORDS` | `"this month · litres(M a million, k a thousand); crude, bitumen and coke in" + " tonnes...` | The products table's line over it. |
-| 1194 | `OilView.PRODUCTS_RIGHT` | `"world: halfway between the import and the export price · × crude: the" + " world price...` | ...and at its right. |
-| 1198 | `OilView.CRUDE` | `RefineryView.CRUDE` | Crude's colour in the table (mockup 1's). |
-| 1221 | `OilView.HALF` | `.5` | Under half a unit, a figure is written as nothing (RefineryView.figure() would write "0"). |
-| 1274 | `OilView.LADDER_STEPS` | `100` | The steps a lever's ladder takes from nothing to the most it may be set to: a hundredth of its reach a step (★ O12-8). |
-| 1293 | `OilView.NO_RESERVE` | `"No Strategic Reserve stands.Build one under Build › Industry › Oil storage: the city" ...` | What the reserve's section says when none stands and none is held. |
+| 1091 | `OilView.NO_BREAK` | `'\u00a0'` | The space inside a table's item, where a line does not break: "fuel oil 7" stays whole. |
+| 1189 | `OilView.PRODUCT_HEADS` | `{ "Product", "price here", "world", "× crude", "made here", "used here", "imported", "e...` | The table's heads, in its columns' order (mockup 2's). |
+| 1193 | `OilView.PRODUCT_WIDTHS` | `{ 150, 76, 76, 58, 72, 72, 72, 72, 0 }` | The columns' widths (the product, the seven figures; where it went takes the rest - 560 px in the box's 1,208 at the 1,389 window). |
+| 1196 | `OilView.PRODUCTS_WORDS` | `"this month · litres(M a million, k a thousand); crude, bitumen and coke in" + " tonnes...` | The products table's line over it. |
+| 1200 | `OilView.PRODUCTS_RIGHT` | `"world: halfway between the import and the export price · × crude: the" + " world price...` | ...and at its right. |
+| 1204 | `OilView.CRUDE` | `RefineryView.CRUDE` | Crude's colour in the table (mockup 1's). |
+| 1227 | `OilView.HALF` | `.5` | Under half a unit, a figure is written as nothing (RefineryView.figure() would write "0"). |
+| 1280 | `OilView.LADDER_STEPS` | `100` | The steps a lever's ladder takes from nothing to the most it may be set to: a hundredth of its reach a step (★ O12-8). |
+| 1299 | `OilView.NO_RESERVE` | `"No Strategic Reserve stands.Build one under Build › Industry › Oil storage: the city" ...` | What the reserve's section says when none stands and none is held. |
 
 ### OldMetal.java ([map](map/OldMetal.md))
 
@@ -3916,7 +3916,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 43 | `ZoningView.SHORT_SHARE` | `1e-6` | A zone holds less than it wants by more than this share of its want: SHORT (Z10's "holds 12.4 of 40 km²"), not a rounding. |
 
-## sectors (192 constants)
+## sectors (193 constants)
 
 ### Agriculture.java ([map](map/Agriculture.md))
 
@@ -4164,7 +4164,8 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 80 | `RefineryFlow.HYDROGEN_USED` | `1850` | ...and a barrel of gas oil a hydrocracker uses [R7]. |
 | 83 | `RefineryFlow.RESIDUE_LITRES_PER_TONNE` | `1010` | Litres in a tonne of residue: fuel oil's [P35] (Good.FUEL_OIL), what the coke's and the bitumen's weights are struck at. |
 | 86 | `RefineryFlow.LITRES_A_MONTH_PER_BARREL_A_DAY` | `30.44 * 158.987` | A litre a month of a barrel a day: 30.44 days of 158.987 L - how the units' sizes in barrels a day become their feed in litres (spec-oil 2.3). |
-| 200 | `RefineryFlow.FLOW_ORDER` | `{ Stream.GAS_OIL, Stream.RESIDUE, Stream.HEAVY_NAPHTHA, Stream.CRACKED_GAS }` | The streams in the order they are solved (3 in the header). |
+| 200 | `RefineryFlow.MODERN_PROCESS` | `new Process(0.55)` | The modern conversion process, shared by standalone definitions and default cities. |
+| 229 | `RefineryFlow.FLOW_ORDER` | `{ Stream.GAS_OIL, Stream.RESIDUE, Stream.HEAVY_NAPHTHA, Stream.CRACKED_GAS }` | The streams in the order they are solved (3 in the header). |
 
 ### Refining.java ([map](map/Refining.md))
 
