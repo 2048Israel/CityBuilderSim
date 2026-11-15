@@ -5,7 +5,9 @@ their sector's retirement rule used. A Bakery counts both bread and baked
 goods in heads served. Worked-out coal mines count in raw mine nameplate,
 including when preparation plants wash the coal into other outputs. The
 railway weighs offered tonnes against standing track, so a shortage of wagon
-sets or station handling does not conceal track it could sell.
+sets or station handling does not conceal track it could sell. A depot or
+spur sale is limited by the operating capacity that would remain: the whole
+quantity must retain the planner's headroom for the offered freight.
 
 The loss streak, spare-capacity threshold, headroom and gradual-sale limits
 keep their existing rules. The three fixtures now cause the missing sales:

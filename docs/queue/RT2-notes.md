@@ -133,3 +133,10 @@ The no-op controls AgricultureCheck, FoodProcessingCheck, FoodIndustryCheck
 and CoalMiningCheck all exit 0 (target/checks/rt2-no-op.txt), retaining their
 asserted retirement quantities. The mended shared hook changes no additive
 sector's sale.
+
+REV-RT2-2 on a54e054e..9632e40b returns SHIP: every rail kind is capped by
+prospective operating capacity, other sectors' quantities and sale accounting
+are unchanged, and the fixtures cause the conditions. RT2's own model is
+settled at 9632e40b. The later 5d3a4afc only refreshes generated line references.
+The orchestrator reserves local ALL pick, ensemble and dry run until after
+CM1b's and R0f's dry runs, so no heavy RT2 job runs during this wait.
