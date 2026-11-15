@@ -15,8 +15,3 @@ expiry, exemption, equal-gain ranking and nonzero save/read fixtures cover it.
 
 ## queued
 | R2c-P | Public works and berths: treasury-paid IP service imports, with their planners' gains less the fee (research-design 2.4; R2c scope ruling) | [R2c-P](docs/queue/R2c-P.md) |
-
-## known-reds
-PrizeCheck | ...the owners put up money for it: Business Services raised more than its twin that built no lab | RT2-P | 2026-11-15 | Unchanged main from founding reproduces exactly 1017.9557536877466 raised against pre-month quote and stake 1014.5221050525304; the live-order quote premise moves within the month.
-PrizeCheck | never stood above the six months of costs it keeps | RT2-P | 2026-11-15 | Unchanged main holds 406 against a zero operating-cost cushion while retaining its stake and buying back nothing; the fixture does not cause its stated cushion premise.
-PrizeCheck | PrizeCheck: 2 FAILED of 284 | R2b-J | 2026-11-15 | The main classifier leaves this prefixed derived summary NEW beside the two main-proven RT2-P assertions; remove when R2b-J ships.

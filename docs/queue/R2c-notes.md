@@ -424,3 +424,26 @@ LicenceFeesCheck 41/41 pass. The cascading YearBook completeness failures
 and the misclassified OK refusal lines disappear. Maps regenerate, zero
 firm Stale findings (target/checks/R2c-yearbook-focused.log). There is no
 source change after 1ed0a26a; only the generated indexes and this record.
+
+## Merge of shipped RT2
+
+Merged main 6b898500 (RT2, 0.9.113) before this second publication. The only
+source conflict was AllChecks' registration array: FoodIndustryCheck and
+LicenceFeesCheck are both retained. KD1's runner is untouched. Sector and
+BusinessInvestment merged cleanly; relative to new main their only changes
+are the licence-cost hooks and the five-line imported-service booker, not
+RT2's quantity limit or planRetirement. Generated-index conflicts were
+resolved by regeneration from the combined source.
+
+The three duplicate PrizeCheck ship rows were removed. Main now has both
+RT2-P primary assertions and the exact 2 FAILED of 284 summary under R2b-J;
+tools/known-reds.sh R2c docs/queue/R2c-ship.md confirms all three remain
+covered in target/checks/R2c-known-after-main.txt. No extra cover is needed.
+
+Merged-model integration checks all pass, exit 0: LicenceFeesCheck 41/41,
+YearBookCheck 724/724, EquipmentCheck, FittingCheck and Forms1900Check.
+Maps regenerated and Stale has zero firm findings
+(target/checks/R2c-RT2-merge-focused.log). This includes RT2's revised fitting
+fixtures. The new default comparison is against the eight trace-*.csv files
+in C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-ready2-20261115-094038,
+as the orchestrator instructed in 20261115-103016-065-orchestrator-471b.

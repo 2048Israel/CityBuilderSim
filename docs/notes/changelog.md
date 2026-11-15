@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.113 — RT2, The other buildings counted in their sector retirement measure — 2026-11-15, ready, see docs/queue/RT2-notes.md
+FoodIndustry counts baked outputs per mill in heads, worked-out CoalMining
+counts raw mine nameplate, and Freight compares offered tonnes with
+standing track. Freight limits a spare sale to preserve operating headroom,
+including station room for goods that bulk sidings cannot handle.
+Each sector has a fixture that fails before its repair. Played fixtures
+keep their cities, premises and assertions through month re-picks.
+The full 199-harness merge dry run is green with known reds only.
+All 80 final-model ensemble runs complete; M1 and F1 pass against EN2.
+ZERO_HOT T2's informational regression and H2's vacuity are recorded.
+
 ### KD1 — The suite memory guard by free GB, and the ensemble names its data — 2026-11-15, ready, no tag (process), see docs/queue/KD1-notes.md
 Soft suite starts reserve commitment for running growth and another 2.5 GiB
 harness, require 4 GiB available RAM and CPU below 80% over six seconds,

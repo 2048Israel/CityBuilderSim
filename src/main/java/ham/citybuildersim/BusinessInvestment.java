@@ -702,6 +702,7 @@ public class BusinessInvestment {
         int wanted = (int) Math.floor(sheddable / unitsEach);
         int gradual = (int) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION);
         int quantity = Math.max(0, Math.min(wanted, Math.min(gradual, mostHeld)));
+        quantity = Math.max(0, Math.min(quantity, sector.limitSpareRetirement(worst, quantity, keepAtLeast)));
 
         if (quantity <= 0) {
             return Decision.no(key, refused && mostHeld == 0
