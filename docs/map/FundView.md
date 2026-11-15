@@ -1,4 +1,4 @@
-# FundView.java - 875 lines · 39 methods · 8 constants · model
+# FundView.java - 921 lines · 41 methods · 8 constants · model
 
 `ham/citybuildersim/FundView.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -22,9 +22,9 @@
 > whatever the ledger knows. Nothing here writes anything: BuildCard's shape,
 > so a probe reads every figure a page draws.
 
-**Uses:** [FundLedger](FundLedger.md) (58), [Equity](Equity.md) (19), [Game](Game.md) (17), [HistorySave](HistorySave.md) (13), [Exchange](Exchange.md) (11), [BondMarket](BondMarket.md) (10), [OrderBook](OrderBook.md) (10), [TreasuryFund](TreasuryFund.md) (9), [ChartModel](ChartModel.md) (9), [CorporateBond](CorporateBond.md) (7), [DecisionLog](DecisionLog.md) (7), [Bank](Bank.md) (3), [CityCalendar](CityCalendar.md) (3), [PriceLevel](PriceLevel.md) (2)
+**Uses:** [FundLedger](FundLedger.md) (60), [Equity](Equity.md) (19), [Game](Game.md) (18), [HistorySave](HistorySave.md) (13), [Exchange](Exchange.md) (11), [BondMarket](BondMarket.md) (10), [OrderBook](OrderBook.md) (10), [TreasuryFund](TreasuryFund.md) (9), [ChartModel](ChartModel.md) (9), [CorporateBond](CorporateBond.md) (7), [DecisionLog](DecisionLog.md) (7), [CityCalendar](CityCalendar.md) (4), [Bank](Bank.md) (3), [PriceLevel](PriceLevel.md) (2)
 
-**Used by (7):** [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [LongPlaytest](LongPlaytest.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
+**Used by (8):** [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [PriceLevelCheck](PriceLevelCheck.md), [ReadPathCheck](ReadPathCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Sections
 
@@ -56,7 +56,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 847 | **type** `public final class FundView` | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, its return over a chart's window, the market to search, a hand order's q... |
+| 29 | 893 | **type** `public final class FundView` | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, its return over a chart's window, the market to search, a hand order's q... |
 | 31 | 1 | `private FundView()` |  |
 
 ### the dials (lines 33-52)
@@ -133,7 +133,7 @@
 | 641 | 92 | `public static Quote quote(Game g, Order o)` |  |
 | 735 | 72 | `static Quote bondQuote(Game g, Order o)` | ...a bond's: at its value a unit of face, or the price named; no cap (the rule's 30% is of its book, not of the bond). |
 
-### the record (lines 808-875)
+### the record (lines 808-921)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -141,5 +141,10 @@
 | 820 | 1 | `public boolean fromLog()` _(in FundView.Line)_ |  |
 | 824 | 8 | `public static String groupOf(String kind)` | The group a ledger row is filed under. |
 | 839 | 28 | `public static List<Line> activity(Game g, String group, String key)` | The record, newest first, filtered by group ("All" for every one) and, when `key` is not null, to one lot's rows (a share's market and rescue books together). |
-| 869 | 6 | `public static boolean sameLot(String key, String rowKey)` | Whether a row's key is the lot a security page shows: a share's books together. |
+| 869 | 1 | **type** `public record ActivityYear(int year, int months, double net, List<Line> lines)` | An older calendar year's recorded months and their realized gains plus income, under the selected Activity chip. |
+| 872 | 1 | **type** `public record ActivityRecord(List<Line> recent, List<ActivityYear> years)` | Activity's latest months and older calendar years, newest first, with each line in exactly one period. |
+| 875 | 1 | **type** `public record ActivityTotals(int trades, double money, double realized)` | The ledger's money and realized result for a group of trades on one side of one market. |
+| 878 | 9 | `public static ActivityTotals activityTotals(List<Line> lines)` | The figures on a grouped Activity row, read from its own ledger rows. |
+| 889 | 24 | `public static ActivityRecord activityRecord(Game g, String group, int recentMonths)` | The periods Activity draws, with counts and net figures worked out here before any screen is drawn. |
+| 915 | 6 | `public static boolean sameLot(String key, String rowKey)` | Whether a row's key is the lot a security page shows: a share's books together. |
 

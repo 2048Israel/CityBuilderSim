@@ -1754,7 +1754,7 @@ public class KeptCheck {
         pageCost(g, bench, page, n, budget, dial, 9);
     }
 
-    /** ...the median of `samples` months, for the pages whose month is long (the fund's, tens of thousands of nodes). */
+    /** ...the median of `samples` months, also used to calibrate the fund's two list pages. */
     static void pageCost(Game g, KeptBench bench, KeptBench.Page page, int n, double budget, String dial, int samples) throws Exception {
         if (Timing.skip("KeptCheck.pageCost " + page.name())) return;
         System.out.println("\n--- " + n + ": what the kept month on " + page.name() + " costs ---");
@@ -3698,13 +3698,11 @@ public class KeptCheck {
     static final double KEPT_FINANCES_MS = 18;
 
     /**
-     * The budget for the kept month on the fund's heaviest page (Search and Activity, the two costed, weigh most; their size follows the city's age: the
-     * bonds it has issued are the rows of Search, its months of events the rows of Activity), on the PC: twice the kept month's median, rounded up
-     * (the same five runs: Activity 124.3 to 191.9 ms, 160.3 between them, built new 195.1 to 252.7; Search 57.8 to 71.3, 62.0 between them, built new
-     * 105.9 to 172.6). Played alone from month 605 they were a quarter of that; in KeptCheck's own city at month 2,100 Search had 13,000 nodes and
-     * took 228 ms.
+     * The PC's budget for the kept month on the fund's heaviest page is twice the median in five sequential money-section runs, rounded up
+     * (FP1's Activity 41.7 to 47.1 ms, 45.8 between them, built new 93.5 to 129.7, and Search 10.1 to 10.7 ms, 10.5 between them, built new 20.3 to 23.7).
+     * Search starts with SEARCH_ROWS results and Activity with its latest twelve months and the older years shut. The five readings are in FP1-notes.md.
      */
-    static final double KEPT_FUND_MS = 321;
+    static final double KEPT_FUND_MS = 92;
 
     /** The Bank tab's pages that have two views, a Summary and a Statement. */
     private static boolean twoViews(String page) {
@@ -4283,8 +4281,7 @@ public class KeptCheck {
 
         // Search: the words and the chips; Activity: the groups, the months, the lines that group.
         List<Choice> search = new ArrayList<>();
-        // (A bond named by its number, one row, on each chip; and the whole list once: the whole list is 8,000 nodes and 19,000 pixels tall, a stress
-        // for the page's scroller more than for the nodes - a word that names a company would list its dozens of bonds, a different page in a different city.)
+        // A bond named by its number, one row, on each chip, then the market's first page.
         String oneBond = lotOf(securities, "B:", List.of(), false);
         String word = oneBond == null ? "bond" : "#" + oneBond.substring(2);
         for (String filter : KeptBench.fundFilters()) {
@@ -4299,14 +4296,12 @@ public class KeptCheck {
         // Activity's rows are keyed by their words, and a line of the record names the bond it is about as the book names it now: in the month a
         // bond with a long record is repaid, every line of it reads other words and is made new (59 rows, 611 nodes of 2,700 in this city at month 615).
         // That is the page showing the month's events, not a page rebuilt, so the share of its nodes a month hands back is printed there and not asserted.
-        for (String group : List.of("Trades", "All")) {
-            for (int months : group.equals("All") ? new int[]{6} : new int[]{60}) {
-                search.add(acting("Activity, " + group + ", " + months + " months", b -> {
-                    b.fundPage("Activity");
-                    b.fundActivity(group, months);
-                    return null;
-                }));
-            }
+        for (String group : KeptBench.fundGroups()) {
+            search.add(acting("Activity, " + group + ", the latest twelve months", b -> {
+                b.fundPage("Activity");
+                b.fundActivity(group, fundDial("ACTIVITY_MONTHS"));
+                return null;
+            }));
         }
         search.add(acting("Activity's grouped lines opened (the rule's trades of a month, when it made some)", b -> {
             b.fundPage("Activity");
@@ -4315,6 +4310,8 @@ public class KeptCheck {
         }));
         search.add(acting("...and closed", b -> { b.fundFoldsClosed(); return null; }));
         pageReshaped(g, bench, tab, 63, search);
+        fundLists(g, bench, tab);
+        fundWarrantRow();
         t = took("Search and Activity", t);
 
         // A security's page, from Portfolio and from Search, with the ticket's choices.
@@ -4354,6 +4351,249 @@ public class KeptCheck {
         fx(() -> {
             bench.fundOnShow(false);
             bench.fundPage("Portfolio");
+            return null;
+        });
+    }
+
+    /** The screen's own paging dials, also used by the bench's package-private hands. */
+    static int fundDial(String name) throws Exception {
+        java.lang.reflect.Field field = Class.forName("ham.citybuildersim.ui.FundScreen").getDeclaredField(name);
+        field.setAccessible(true);
+        return field.getInt(null);
+    }
+
+    /** Search rows in their on-screen order, leaving section heads and the paging control out. */
+    static List<javafx.scene.layout.HBox> fundResultRows(KeptBench bench) {
+        javafx.scene.Node first = bench.nodesOnPage().stream().filter(n -> n instanceof javafx.scene.layout.HBox box
+                && box.getOnMouseClicked() != null && box.getChildren().stream().anyMatch(c -> c instanceof javafx.scene.control.Label l
+                && "›".equals(l.getText()))).findFirst().orElse(null);
+        if (first == null) return List.of();
+        return ((javafx.scene.layout.Pane) first.getParent()).getChildren().stream()
+                .filter(n -> n instanceof javafx.scene.layout.HBox && n.getOnMouseClicked() != null)
+                .map(n -> (javafx.scene.layout.HBox) n).toList();
+    }
+
+    /** The names in Search have the market's original order, including a held lot repeated in its market section. */
+    static void fundSearchPage(Game g, KeptBench bench, int limit) {
+        List<FundView.Hit> hits = FundView.search(g, bench.fundSearchBox().getText(), "All");
+        List<javafx.scene.layout.HBox> rows = fundResultRows(bench);
+        List<String> names = new ArrayList<>();
+        for (var row : rows) {
+            var lead = (javafx.scene.layout.HBox) row.getChildren().get(0);
+            var named = (javafx.scene.layout.VBox) lead.getChildren().get(1);
+            names.add(((javafx.scene.control.Label) named.getChildren().get(0)).getText());
+        }
+        int shown = Math.min(limit, hits.size());
+        check("Search shows the first " + shown + " results in their market order", names.equals(hits.subList(0, shown).stream().map(FundView.Hit::name).toList()));
+        String more = bench.chipWith(s -> s.startsWith("Show more · "));
+        check("Search says exactly how many results are left, and its last page has no Show more",
+                shown == hits.size() ? more == null : ("Show more · " + (hits.size() - shown) + " left").equals(more));
+    }
+
+    /** FP1's real sale, income and contribution in one older year cause the summary's different money columns. */
+    static void fundYearNet(Game g) throws Exception {
+        TreasuryFund.State saved = g.getFund().toState();
+        try {
+            FundLedger ledger = g.getFund().getLedger();
+            ledger.reset();
+            int first = g.getMonth() - 36;
+            while (CityCalendar.monthOfYear(first) != 1) first++;
+            String company = Equity.COMPANIES[0];
+            ledger.boughtShare(company, false, 100, 2, 2, first);
+            ledger.soldShare(company, true, 25, 5, 0, 100, 0, 0, first + 1);
+            ledger.soldShare(company, true, 25, 1, 0, 75, 0, 0, first + 2);
+            ledger.dividend(company, 12, 0, first + 3);
+            ledger.flow(FundLedger.PAY_IN, 1_000, true, first + 3);
+            ledger.flow(FundLedger.DRAW_OUT, 200, true, first + 3);
+            int recentMonths = fundDial("ACTIVITY_MONTHS");
+            int recent = g.getMonth() - recentMonths + 1;
+            ledger.flow(FundLedger.PAY_IN, 1, true, recent - 1);
+            ledger.flow(FundLedger.PAY_IN, 1, true, recent);
+            ledger.flow(FundLedger.PAY_IN, 1, true, g.getMonth());
+            FundView.ActivityRecord record = FundView.activityRecord(g, "All", recentMonths);
+            int fixtureYear = CityCalendar.yearOf(first);
+            FundView.ActivityYear year = record.years().stream().filter(y -> y.year() == fixtureYear).findFirst().orElseThrow();
+            List<FundLedger.Activity> rows = ledger.getActivity().stream().filter(r -> CityCalendar.yearOf(r.month()) == year.year()).toList();
+            double realized = rows.stream().mapToDouble(FundLedger.Activity::realized).sum();
+            double income = rows.stream().filter(r -> FundLedger.DIVIDEND.equals(r.kind())).mapToDouble(FundLedger.Activity::money).sum();
+            double paidIn = rows.stream().filter(r -> FundLedger.PAY_IN.equals(r.kind())).mapToDouble(FundLedger.Activity::money).sum();
+            check("the older year's fixture has profitable and loss-making sales, income and a contribution",
+                    realized != 0 && income > 0 && paidIn > 0 && rows.stream().anyMatch(r -> r.realized() < 0));
+            check("the year's net is its ledger's realized gains plus income, with contributions and principal excluded",
+                    year.net() == realized + income && year.net() != realized + income + paidIn);
+            check("the year's count is its distinct recorded months", year.months() == rows.stream().map(FundLedger.Activity::month).distinct().count());
+            check("Activity's latest twelve months include the boundary month and keep the preceding one behind a year fold",
+                    record.recent().stream().map(FundView.Line::month).toList().equals(List.of(g.getMonth(), recent))
+                    && record.years().stream().flatMap(y -> y.lines().stream()).anyMatch(l -> l.month() == recent - 1));
+            List<FundView.Line> all = new ArrayList<>(record.recent());
+            for (FundView.ActivityYear older : record.years()) all.addAll(older.lines());
+            check("every Activity line occurs in exactly one period, in its original order", all.equals(FundView.activity(g, "All", null)));
+            FundView.ActivityRecord money = FundView.activityRecord(g, FundView.MONEY, recentMonths);
+            check("the Money chip's older years have zero realized-plus-income net", money.years().stream().allMatch(y -> y.net() == 0));
+        } finally {
+            g.getFund().restore(saved);
+        }
+    }
+
+    /** Section 63 opens and shuts the paging controls and each older year, kept against a page built new. */
+    static void fundLists(Game g, KeptBench bench, KeptBench.Page tab) throws Exception {
+        System.out.println("\n--- 63: the fund's Search pages and Activity years (FP1) ---");
+        fx(() -> { fundYearNet(g); return null; });
+        int rows = fundDial("SEARCH_ROWS");
+        List<Choice> choices = new ArrayList<>();
+        choices.add(choice("Search starts with SEARCH_ROWS", b -> {
+            b.fundPage("Search");
+            b.fundSearch("", "All");
+            b.drawKept(tab);
+            check("the played city's market causes at least three Search pages", FundView.search(g, "", "All").size() > rows * 2);
+            fundSearchPage(g, b, rows);
+            return null;
+        }));
+        for (int page = 2; page <= 3; page++) {
+            int limit = page * rows;
+            choices.add(choice("Search Show more reaches page " + page, b -> {
+                String more = b.chipWith(s -> s.startsWith("Show more · "));
+                if (more == null || !b.pressChip(more)) return "Show more is absent";
+                fundSearchPage(g, b, limit);
+                return null;
+            }));
+        }
+        choices.add(choice("typing starts Search at its first rows", b -> {
+            b.drawKept(tab); // Restore the screen's field reference after the comparison's fresh draw.
+            b.fundSearchBox().setText("bond");
+            fundSearchPage(g, b, rows);
+            return null;
+        }));
+        choices.add(choice("clearing the words starts Search at its first rows", b -> {
+            b.drawKept(tab);
+            b.fundSearchBox().clear();
+            fundSearchPage(g, b, rows);
+            return null;
+        }));
+        choices.add(choice("Search expanded before a chip is pressed", b -> {
+            String more = b.chipWith(s -> s.startsWith("Show more · "));
+            return more != null && b.pressChip(more) ? null : "Show more is absent";
+        }));
+        choices.add(choice("the Bonds chip starts at SEARCH_ROWS", b -> {
+            if (!b.pressChip("Bonds")) return "the Bonds chip is absent";
+            check("a chip starts Search again from its first rows", fundResultRows(b).size() == Math.min(rows, FundView.search(g, "", "Bonds").size()));
+            return null;
+        }));
+        choices.add(choice("Search's final partial page", b -> {
+            b.drawKept(tab);
+            // A query naming one issuer causes several pages without drawing the entire old city's market.
+            String issuer = FundView.search(g, "", "Bonds").stream().map(FundView.Hit::issuer).distinct().filter(name -> {
+                int count = FundView.search(g, name, "Bonds").size();
+                return count > rows && count % rows != 0;
+            }).findFirst().orElse(null);
+            if (issuer == null) return "no issuer causes both a full page and a final partial page";
+            b.fundSearchBox().setText(issuer);
+            String more;
+            int presses = 0;
+            while ((more = b.chipWith(s -> s.startsWith("Show more · "))) != null && presses++ < 100) b.pressChip(more);
+            check("all of the issuer's matches can be reached and Show more goes away", b.chipWith(s -> s.startsWith("Show more · ")) == null
+                    && fundResultRows(b).size() == FundView.search(g, issuer, "Bonds").size());
+            return null;
+        }));
+        pageReshaped(g, bench, tab, 63, choices);
+        fx(() -> {
+            int month = g.getMonth();
+            bench.fundPage("Search");
+            bench.fundSearch("", "Shares");
+            bench.drawKept(tab);
+            List<javafx.scene.layout.HBox> shares = fundResultRows(bench);
+            List<FundView.Hit> shareHits = FundView.search(g, "", "Shares");
+            check("the replacement fixture has listed shares on show", !shares.isEmpty() && !shareHits.isEmpty());
+            check("the replacement fixture presses the Bonds chip", bench.pressChip("Bonds"));
+            List<javafx.scene.layout.HBox> bonds = fundResultRows(bench);
+            List<FundView.Hit> bondHits = FundView.search(g, "", "Bonds");
+            check("the same row positions now show different securities", !shares.isEmpty() && !shareHits.isEmpty()
+                    && !bonds.isEmpty() && !bondHits.isEmpty()
+                    && !shareHits.get(0).key().equals(bondHits.get(0).key()));
+            int commonRows = Math.min(shares.size(), bonds.size());
+            boolean sameRows = commonRows > 0;
+            for (int row = 0; row < commonRows; row++) {
+                sameRows &= shares.get(row) == bonds.get(row);
+            }
+            check("replacing shares with bonds keeps every common row node", sameRows);
+            check("the replaced rows' fields equal a page built new", againstNew(bench, tab, true) == null);
+            if (!bonds.isEmpty() && !bondHits.isEmpty()) {
+                bonds.get(0).fireEvent(new javafx.scene.input.MouseEvent(javafx.scene.input.MouseEvent.MOUSE_CLICKED,
+                        5, 5, 5, 5, javafx.scene.input.MouseButton.PRIMARY, 1,
+                        false, false, false, false, true, false, false, false, false, true, null));
+                check("a reused row opens its current bond", has(bench.signature(), label(bondHits.get(0).name()))
+                        && bench.nodesOnPage().stream().noneMatch(n -> n instanceof javafx.scene.control.TextField box
+                        && "Search shares and bonds".equals(box.getPromptText())));
+            }
+            check("the replacement fixture leaves the model in the same month", g.getMonth() == month);
+            return null;
+        });
+        fx(() -> {
+            bench.fundPage("Activity");
+            bench.fundActivity("All", fundDial("ACTIVITY_MONTHS"));
+            bench.fundFoldsClosed();
+            bench.drawKept(tab);
+            List<FundView.ActivityYear> years = FundView.activityRecord(g, "All", fundDial("ACTIVITY_MONTHS")).years();
+            check("the played city's record causes multiple older year folds", years.size() > 1);
+            for (FundView.ActivityYear year : years) {
+                String closed = "▸ " + year.year() + " · " + year.months() + (year.months() == 1 ? " month" : " months");
+                check("year " + year.year() + " starts shut with its recorded month count", bench.chipWith(closed::equals) != null);
+                check("year " + year.year() + " shows FundView's net in its fold line", has(bench.signature(), label("Net realized + income "
+                        + ham.citybuildersim.ui.Pieces.pnl(g.getCurrency().qualifiedSymbol(), year.net(), Double.NaN).text())));
+                check("year " + year.year() + " has its months hidden while shut", year.lines().stream().map(FundView.Line::month).distinct()
+                        .noneMatch(m -> has(bench.signature(), label(CityCalendar.format(m)))));
+                int before = bench.signature().size();
+                check("year " + year.year() + " can be opened by its own fold", bench.pressChip(closed));
+                check("year " + year.year() + " reveals its months", bench.signature().size() > before);
+                check("year " + year.year() + " shows every recorded month when open", year.lines().stream().map(FundView.Line::month).distinct()
+                        .allMatch(m -> has(bench.signature(), label(CityCalendar.format(m)))));
+                check("year " + year.year() + " open equals a page built new", againstNew(bench, tab, true) == null);
+                String opened = closed.replace('▸', '▾');
+                check("year " + year.year() + " can be shut by its own fold", bench.pressChip(opened));
+                check("year " + year.year() + " shut equals a page built new", againstNew(bench, tab, true) == null);
+            }
+            return null;
+        });
+        List<Choice> folds = new ArrayList<>();
+        for (FundView.ActivityYear year : fx(() -> FundView.activityRecord(g, "All", fundDial("ACTIVITY_MONTHS")).years().subList(0, 2))) {
+            folds.add(acting("Activity year " + year.year() + " open across a month", b -> { b.fundFold("fund:year:" + year.year(), true); return null; }));
+        }
+        folds.add(acting("Activity's years shut again", b -> { b.fundFoldsClosed(); return null; }));
+        pageReshaped(g, bench, tab, 63, folds);
+    }
+
+    /** A loaded preferred block's warrants give a reused Search row an empty move after a wrapped value. */
+    static void fundWarrantRow() throws Exception {
+        fx(() -> {
+            Game town = new Game(GameFiles.scratch("kept-fund-warrant-row"));
+            town.newGame();
+            Bank.Preferred block = new Bank.Preferred();
+            block.par = 1;
+            block.issued = town.getMonth();
+            block.strike = 1;
+            block.warrantShares = 1;
+            block.warrantsExpire = town.getMonth() + Bank.WARRANT_TERM_MONTHS;
+            block.warrantsOut = true;
+            town.getBank().restorePreferred(List.of(block), null);
+            KeptBench bench = new KeptBench(town);
+            bench.clock(false, null);
+            KeptBench.Page page = bench.finances("Search's empty warrant move", "The city's fund", "Search");
+            bench.home(page);
+            bench.fundSearch(FundView.preferredPosition(town).name(), "All");
+            bench.drawKept(page);
+            javafx.scene.layout.HBox before = fundResultRows(bench).get(0);
+            javafx.scene.control.Label move = (javafx.scene.control.Label) before.getChildren().get(3);
+            // The spoil-and-redraw proof also used by pageShows, forcing the emptied wrapped-label cache.
+            String words = "1Y: its record is shorter than a year";
+            move.setText(words + " " + words + " " + words);
+            bench.settle();
+            check("the warrant fixture gives the previous move multiple wrapped lines", move.getHeight() > move.getFont().getSize() * 2);
+            bench.fundSearch(FundView.warrantsPosition(town).name(), "All");
+            bench.drawKept(page);
+            javafx.scene.layout.HBox after = fundResultRows(bench).get(0);
+            check("the warrants replace the preferred in the same row node", before == after);
+            check("the warrant's current move is empty", ((javafx.scene.control.Label) after.getChildren().get(3)).getText().isEmpty());
+            check("a recycled warrant row clears its wrapped move and equals a page built new", againstNew(bench, page, true) == null);
             return null;
         });
     }
@@ -5053,6 +5293,12 @@ public class KeptCheck {
         });
         pageCost(g, bench, borrow, 68, KEPT_FINANCES_MS, "KEPT_FINANCES_MS");
 
+        fx(() -> {
+            bench.fundSearch("", "All");
+            bench.fundActivity("All", fundDial("ACTIVITY_MONTHS"));
+            bench.fundFoldsClosed();
+            return null;
+        });
         List<KeptBench.Page> fundPages = new ArrayList<>();
         for (String p : KeptBench.financePages("The city's fund")) fundPages.add(fx(() -> bench.finances("the fund's " + p, "The city's fund", p)));
         fx(() -> {

@@ -673,3 +673,20 @@ calls it, and shared helpers guard unopened streams. The normal route,
 default workers and the gate's own selection stay unchanged. If XR7 has
 shipped, compare against its latest retained main prefix, since XR7 itself
 changes the world's pegs and default trace; no main rerun is needed.
+
+
+## FP1 main integrated while awaiting the next slot
+
+Main b9c93a989 (FP1, 0.9.116) is merged. Its source changes are the fund
+screen, its pure FundView reads, KeptCheck and the publisher's version.
+KeptCheck merges cleanly; researchEquipment is byte-identical to the
+accepted 73d4f89b/de8ea330 method (FP1-method-proof.txt). The four generated
+index conflicts were regenerated. --fast exits 0 with zero firm Stale:
+target/R2d-final2/merge-FP1-fast.log. FP1's notes confirm its unchanged
+default trace. Incoming QUEUE/changelog/gate/VERSION records stay as main
+published them. No R2d model/resource change is made here.
+
+This merge began on the scheduled fetch just before orchestrator mail
+20261115-152906-523-orchestrator-9862 arrived. Reported that timing, completed
+the clean checkpoint, then waited for its post-XR7 merge/rerun go. No new
+dry run has started.

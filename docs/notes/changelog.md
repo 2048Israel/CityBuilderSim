@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.116 — FP1, The fund's long lists a page at a time — 2026-11-15, ready, see docs/queue/FP1-notes.md
+The fund's Search shows forty results at first, with Show more adding forty
+and stating how many remain. Typing or choosing a chip starts it again.
+Search keeps its row nodes when the first page changes securities.
+Activity keeps its latest twelve months open and each earlier calendar year
+behind a fold, with its recorded month count and net realized gains plus
+income supplied by FundView. KeptCheck exercises paging, year folds and
+the ledger totals, with the Fund redraw budget remeasured in five runs.
+Search also repairs BF1-K's stale empty price/held glyph bounds. Its Partners
+triangle finding remains with BF1-K.
+
 ### 0.9.115 — UP6b, The autosave: UP6 review follow-ups — 2026-11-15, ready, see docs/queue/UP6b-notes.md
 Every autosave path now shares the skip's completion guard, preserving its return point after a month throws until load or new city, including close, Quit and Simulate more. The failure page, inbox and Quit explain when autosaves are off and how loading restores them. Autosave notices name the saved job's month even when reported later, and describe the possible mismatch between an older save and newer history after a failed write. The last-save-result comment distinguishes synchronous saves from reported background results. Scratch-folder SaveSlotCheck fixtures cause the failed skip, late report and mismatched files and verify background result reporting.
 
