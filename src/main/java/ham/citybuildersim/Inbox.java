@@ -410,6 +410,11 @@ public class Inbox {
 
     /* ----- the autosave (UP6) ----- */
 
+    /** The broken-skip warning (UP6b): it stands through hand saves and is settled when that city is loaded again. */
+    public void autosavesPaused(int month, boolean paused, String advice) {
+        take(null, month, "autosave-paused", paused, "Autosaves are off", wrapped(advice, BODY_COLUMNS));
+    }
+
     /**
      * An autosave that could not be written whole (UP6, LB3-S), a condition notice keyed "autosave": the save failed, or it landed
      * beside a history that could not be written (the slot then holds the new save and an older history). A whole result settles

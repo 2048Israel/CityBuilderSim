@@ -787,7 +787,14 @@ public class SaveSlotCheck {
             assertTrue("fixture: one month completed and the next stopped before its history was recorded",
                     completed[0] == 1 && city.getMonth() == before + 2
                     && lastMonthOfHistory(city) == before + 1);
-            assertTrue("fixture: the skip reported its injected failure", city.takeSkipFailure() != null);
+            String failure = city.takeSkipFailure();
+            assertTrue("fixture: the skip reported its injected failure", failure != null);
+            String pausedWords = "Autosaves are off until this city is loaded again.";
+            assertTrue("the failure page says autosaves stay off until the city is loaded again",
+                    failure != null && failure.contains(pausedWords));
+            Notice paused = city.getInbox().live("autosave-paused");
+            assertTrue("the inbox keeps the same warning while autosaves are off",
+                    paused != null && String.join(" ", paused.getBody()).contains(pausedWords));
             Map<String, String> beforeClose = hashed(files.savesDirectory());
             quietly(city::saveForClose);
             assertEquals("the close after the broken skip preserves every autosave file", hashed(files.savesDirectory()), beforeClose);
@@ -820,6 +827,13 @@ public class SaveSlotCheck {
             assertEquals("the periodic autosave also preserves the return point until a load",
                     hashed(files.savesDirectory()), beforeClose);
             city.useSaveClockForChecks(() -> 0L);
+
+            quietly(() -> city.saveGame(GameFiles.SLOT_COUNT, "7f manual save while autosaves are off"));
+            assertTrue("saving by hand succeeds and keeps the autosaves-off warning standing",
+                    city.getLastSaveResult().whole() && city.getInbox().live("autosave-paused") != null);
+            quietly(() -> city.loadGameSave(GameFiles.SLOT_COUNT));
+            assertTrue("loading that manual save settles its saved autosaves-off warning",
+                    city.getInbox().live("autosave-paused") == null);
 
             // A load rebuilds the city after the broken month and restores ordinary close saves.
             quietly(() -> city.loadGameSave(GameFiles.AUTOSAVE_SLOT));

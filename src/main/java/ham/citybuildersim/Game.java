@@ -1063,6 +1063,8 @@ public class Game {
          * Two rebuild passes were always one too many. There is one now.
          */
         loadGame(slot);
+        // A hand save can carry the broken-skip warning; loading restores the completion guard (UP6b).
+        inbox.autosavesPaused(month, false, autosaveStatus());
         // NOTE: previously also called handleStartGame() here, which caused
         // the same infinite-loop freeze described above.
         decisions.release();
@@ -1111,7 +1113,7 @@ public class Game {
     /**
      * The quit's autosave (UP1): asked for, and on disk when this returns -
      * System.exit does not wait for the writer's thread, so quitting waits
-     * for it here.
+     * for it here. After a broken skip the shared guard keeps the earlier autosave instead.
      */
     public void saveForQuit(){
         saveForExit("on quit");
@@ -1119,8 +1121,8 @@ public class Game {
 
     /**
      * The window's close autosave (UP6; Jerus, 2026-10-23, on UP1's star 1: "Yes, autosave on close"): Quit's, under its own
-     * name, and on disk when this returns - the JVM ends once the window's stop() returns, and the writer's thread does not
-     * hold it. UserInterface.stop() calls it.
+     * name, and on disk when this returns unless a broken skip has suspended autosaves. Then it keeps the return point.
+     * The JVM ends once the window's stop() returns. UserInterface.stop() calls it.
      */
     public void saveForClose(){
         saveForExit("on close");
@@ -8488,6 +8490,10 @@ public class Game {
             // Later months cannot repair the part-month left by a failed skip. Only buildWorld()
             // (new city or load) restores this one guard, shared by every autosave path (UP6b).
             ranThrough &= completedAll;
+            if (!ranThrough) {
+                inbox.autosavesPaused(month, true, autosaveStatus());
+                if (skipFailure != null) skipFailure += "\n" + autosaveStatus();
+            }
             graphs = previousGraphs;
             reports = previousReports;
             skipping = previousSkipping;
@@ -16772,6 +16778,12 @@ public class Game {
 
     public int getMonthsUntilAutosave() {
         return Math.max(0, AUTOSAVE_MONTHS - monthsSinceAutosave);
+    }
+
+    /** What the failure page, inbox and Quit say about the one autosave guard (UP6b). */
+    public String autosaveStatus() {
+        return ranThrough ? "This city is autosaved."
+                : "Autosaves are off until this city is loaded again. Save by hand, then load that save to turn them back on.";
     }
 
     /**
