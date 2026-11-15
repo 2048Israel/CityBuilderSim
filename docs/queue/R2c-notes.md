@@ -334,3 +334,11 @@ payment are zero (target/checks/R2c-last-ore-before-final.log). The new model
 is 41/41, exit 0 (target/checks/R2c-production-frame-final.log), including all
 prior boundaries, planners, audits and exact normal scratch save/load.
 No RT2 changed method was edited.
+
+Production-record validation: all nine focused harnesses passed, exit 0
+(target/checks/R2c-production-focused.log): LicenceFeesCheck 41/41,
+SaveFileCheck, ReadPathCheck, ForeignCheck, RecipeCheck, EquipmentCheck,
+MaterialsCheck, SaveSlotCheck and ScaleCheck. The one SaveSlotCheck timing
+assertion is soft on this route. Maps regenerated, Stale has zero firm
+findings. Source and authored-record whitespace checks pass. The money mend
+is 13b407a6; the following commit only records results and generated indexes.
