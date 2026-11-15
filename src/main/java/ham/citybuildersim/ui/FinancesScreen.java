@@ -661,9 +661,9 @@ final class FinancesScreen {
         String rest = Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;";
         l.setStyle(l.isHover() ? rest + " -fx-underline: true;" : rest);
         l.setMinWidth(Region.USE_PREF_SIZE);
-        l.setOnMouseEntered(e -> l.setStyle(rest + " -fx-underline: true;"));
-        l.setOnMouseExited(e -> l.setStyle(rest));
-        l.setOnMouseClicked(e -> {
+        Kept.give(l.onMouseEnteredProperty(), e -> l.setStyle(rest + " -fx-underline: true;"));
+        Kept.give(l.onMouseExitedProperty(), e -> l.setStyle(rest));
+        Kept.give(l.onMouseClickedProperty(), e -> {
             e.consume();
             go.run();
         });
@@ -1485,9 +1485,9 @@ final class FinancesScreen {
         String rest = "-fx-padding: 2 4 2 4; -fx-background-radius: 4; -fx-cursor: hand;";
         // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set.
         row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> openLine(debt));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> openLine(debt));
         return row;
     }
 
@@ -1730,7 +1730,7 @@ final class FinancesScreen {
                 resolve.setText("Resolve the bank – " + d(cost));
                 resolve.setStyle("-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;"
                         + " -fx-padding: 6 16 6 16;");
-                resolve.setOnAction(e -> {
+                Kept.give(resolve.onActionProperty(), e -> {
                     g.resolveBank();
                     showFinanceMenu();
                 });
@@ -1898,9 +1898,9 @@ final class FinancesScreen {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand; -fx-border-color: ";
         // Kept (KP5): the edge the pointer calls for is chosen from isHover() where it is set.
         c.setStyle(rest + (c.isHover() ? Palette.ACCENT : Palette.EDGE) + ";");
-        c.setOnMouseEntered(e -> c.setStyle(rest + Palette.ACCENT + ";"));
-        c.setOnMouseExited(e -> c.setStyle(rest + Palette.EDGE + ";"));
-        c.setOnMouseClicked(e -> open(area, null, null));
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(rest + Palette.ACCENT + ";"));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest + Palette.EDGE + ";"));
+        Kept.give(c.onMouseClickedProperty(), e -> open(area, null, null));
         return c;
     }
 
@@ -2436,7 +2436,7 @@ final class FinancesScreen {
         javafx.scene.layout.ColumnConstraints narrow = new javafx.scene.layout.ColumnConstraints();
         narrow.setPercentWidth(34);
         narrow.setHgrow(Priority.ALWAYS);
-        two.getColumnConstraints().addAll(wide, narrow);
+        Kept.columns(two).addAll(wide, narrow);
         two.setMaxWidth(Double.MAX_VALUE);
         if (left instanceof Region r) GridPane.setFillHeight(r, true);
         if (right instanceof Region r) GridPane.setFillHeight(r, true);
@@ -2582,7 +2582,7 @@ final class FinancesScreen {
         sample.getStrokeDashArray().setAll(java.util.Arrays.stream(dash).boxed().toList());
         javafx.scene.layout.Pane holder = Kept.plain(sample);
         holder.setMinSize(22, 10);
-        holder.setPrefSize(22, 10);
+        Pieces.prefSize(holder, 22, 10);
         holder.setMaxSize(22, 10);
         HBox row = Kept.row(5, holder, captionWords(name));
         row.setAlignment(Pos.CENTER_LEFT);
@@ -2600,7 +2600,7 @@ final class FinancesScreen {
         dot.setStrokeWidth(1.5);
         javafx.scene.layout.Pane holder = Kept.plain(dot);
         holder.setMinSize(10, 10);
-        holder.setPrefSize(10, 10);
+        Pieces.prefSize(holder, 10, 10);
         holder.setMaxSize(10, 10);
         HBox row = Kept.row(5, holder, captionWords(name));
         row.setAlignment(Pos.CENTER_LEFT);
@@ -3256,8 +3256,8 @@ final class FinancesScreen {
         t.setHgap(4);
         t.setVgap(0);
         // The first column takes what a wide window leaves; a narrow one scrolls the table across (acrossWhenNarrow()).
-        t.getColumnConstraints().get(0).setMaxWidth(Double.MAX_VALUE);
-        t.getColumnConstraints().get(0).setHgrow(Priority.ALWAYS);
+        Kept.columns(t).get(0).setMaxWidth(Double.MAX_VALUE);
+        Kept.columns(t).get(0).setHgrow(Priority.ALWAYS);
         // The headings are words, in the words' face: the figures' face is wider than a heading's column (KP2b: made so, not made in the
         // figures' face and set again).
         if (dollars) gridHead(t, true, "Line", "If closed now", Money.ours() + "'s move since sold", "Face", "Coupon", "Issue yield", "Price", "Yield", "Worth", "Carried", "vs face", "Duration", "Holders");
@@ -3318,10 +3318,10 @@ final class FinancesScreen {
                 boolean over = false;
                 for (Node h : hot) {
                     over |= h.isHover();
-                    h.setCursor(javafx.scene.Cursor.HAND);
-                    h.setOnMouseClicked(e -> openLine(debt));
-                    h.setOnMouseEntered(e -> bg.setStyle(lit));
-                    h.setOnMouseExited(e -> bg.setStyle(resting));
+                    Kept.give(h.cursorProperty(), javafx.scene.Cursor.HAND);
+                    Kept.give(h.onMouseClickedProperty(), e -> openLine(debt));
+                    Kept.give(h.onMouseEnteredProperty(), e -> bg.setStyle(lit));
+                    Kept.give(h.onMouseExitedProperty(), e -> bg.setStyle(resting));
                 }
                 // The look the pointer calls for is chosen from isHover() where it is set: a pointer that has not moved stays over a kept row.
                 bg.setStyle(over ? lit : resting);
@@ -3402,9 +3402,9 @@ final class FinancesScreen {
         close.setFocusTraversable(false);
         close.setStyle("-fx-font-size: 9px; -fx-padding: 2 4 2 4; -fx-background-radius: 6;");
         Kept.tip(close, "Close " + pieceName(l.debt()) + " now: the page for buying it back, in whole or in part. The figure beside it is at fair; the page shows what the auction would book, at the holders' asks (BB1).", 1000);
-        close.setOnAction(e -> openClose(l.debt()));
+        Kept.give(close.onActionProperty(), e -> openClose(l.debt()));
         // The click is the button's, not the row's: the rest of the row opens the line's page.
-        close.setOnMouseClicked(javafx.scene.input.MouseEvent::consume);
+        Kept.give(close.onMouseClickedProperty(), javafx.scene.input.MouseEvent::consume);
         Label figure = gainFigure(gainOf(l.ifClosedNow(), l.ifClosedNowShare()), Palette.SIZE_BODY);
         figure.setMinWidth(CLOSE_FIGURE);
         figure.setPrefWidth(CLOSE_FIGURE);
@@ -3821,14 +3821,14 @@ final class FinancesScreen {
             closeIt.setStyle(affordable ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;" : "");
             if (!affordable && taken) Kept.tip(closeIt, "Closing all of it costs " + d(whole.paid()) + "; the treasury has " + d(g.getCash())
                     + ". The page can close part of it.", 1000);
-            closeIt.setOnAction(e -> openClose(debt));
+            Kept.give(closeIt.onActionProperty(), e -> openClose(debt));
             boolean callable = debt instanceof LongTermBond bond && bond.isCallable();
             Button callIt = Kept.of(Button.class, Button::new);
             callIt.setText(callable ? "Call it…" : "Call it · not callable");
             callIt.setMinWidth(Region.USE_PREF_SIZE);
-            callIt.setDisable(!callable);
+            Kept.give(callIt.disableProperty(), !callable);
             // Close it now is where the call is: the page that holds the call card.
-            callIt.setOnAction(e -> openClose(debt));
+            Kept.give(callIt.onActionProperty(), e -> openClose(debt));
             HBox buttons = Kept.row(Palette.GAP, closeIt, callIt);
             buttons.setAlignment(Pos.CENTER_LEFT);
             card.getChildren().add(buttons);
@@ -3999,7 +3999,7 @@ final class FinancesScreen {
         Drawn(double least, double first, double height) {
             this.first = first;
             setMinSize(least, height);
-            setPrefSize(first, height);
+            Pieces.prefSize(this, first, height);
             setMaxSize(Double.MAX_VALUE, height);
         }
 
@@ -4545,7 +4545,7 @@ final class FinancesScreen {
             if (which == 1) closeFaceText = typed;
             else            closeMaxText = typed;
         }, null);
-        box.setOnAction(e -> showFinanceMenu());
+        Kept.give(box.onActionProperty(), e -> showFinanceMenu());
         // Kept (KP5): the box is the one the last draw made, so the focus listener is added once and reads at its firing what the
         // page was last drawn on, which each draw puts in the box's properties.
         box.getProperties().put(CLOSE_SHOWN, shown);
@@ -4775,9 +4775,9 @@ final class FinancesScreen {
         Button buy = Kept.of(Button.class, Button::new);
         buy.setText(taken ? "Buy back " + d(q.takenFace()) + " · pay " + d(q.paid()) : "Buy back");
         buy.setMinWidth(Region.USE_PREF_SIZE);
-        buy.setDisable(!taken || !afford);
+        Kept.give(buy.disableProperty(), !taken || !afford);
         buy.setStyle(taken && afford ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;" : "");
-        buy.setOnAction(e -> {
+        Kept.give(buy.onActionProperty(), e -> {
             ui.game.buyBack(debt, face, typedMax);
             // A freshly built page: retiring paper moves the rate, so every other card's price is now stale.
             open("The book", null, debt);
@@ -4888,9 +4888,9 @@ final class FinancesScreen {
         Button call = Kept.of(Button.class, Button::new);
         call.setText(can ? "Call it · pay " + d(cost) : "Call it");
         call.setMinWidth(Region.USE_PREF_SIZE);
-        call.setDisable(!can || !afford);
+        Kept.give(call.disableProperty(), !can || !afford);
         call.setStyle(can && afford ? "-fx-background-color: " + Palette.CONFIRM + "; -fx-text-fill: white;" : "");
-        call.setOnAction(e -> {
+        Kept.give(call.onActionProperty(), e -> {
             ui.game.callLine(bond);
             open("The book", null, null);
         });
@@ -4947,7 +4947,7 @@ final class FinancesScreen {
             this.row = n > 24 ? 13 : 18;
             double h = TOP + n * row + FOOT;
             setMinSize(LEAST_W, h);
-            setPrefSize(FIRST_W, h);
+            Pieces.prefSize(this, FIRST_W, h);
             setMaxSize(Double.MAX_VALUE, h);
             draw(drawnAt > 0 ? drawnAt : FIRST_W);
         }
@@ -5059,7 +5059,7 @@ final class FinancesScreen {
             l.setMaxWidth(wide);
             double at = align == javafx.geometry.Pos.CENTER_RIGHT ? x - wide : align == javafx.geometry.Pos.CENTER ? x - wide / 2 : x;
             l.relocate(at, y);
-            l.setMouseTransparent(true);
+            Kept.give(l.mouseTransparentProperty(), true);
             getChildren().add(l);
         }
     }
@@ -5627,7 +5627,7 @@ final class FinancesScreen {
                     askTyped = typed;
                     askTypedOver = borrowAsk;
                 }, null);
-        box.setOnAction(e -> commitAsk(box, true));
+        Kept.give(box.onActionProperty(), e -> commitAsk(box, true));
         // Kept (KP5): the box is the one the last draw made, so the focus listener is added once; it reads the box it is on and the
         // screen's own fields when it fires.
         if (Kept.isNew(box)) {
@@ -5732,7 +5732,7 @@ final class FinancesScreen {
         String ground = on ? " -fx-background-color: " + Palette.PINNED + "; -fx-border-color: " + Palette.ACCENT + ";"
                 : " -fx-background-color: " + Palette.PANEL + "; -fx-border-color: " + Palette.EDGE + ";";
         t.setStyle(rest + ground);
-        t.setOnMouseClicked(e -> {
+        Kept.give(t.onMouseClickedProperty(), e -> {
             if (borrowType.equals(kit.key())) return;
             borrowType = kit.key();
             borrowTerm = nearestTerm(kit, "Note".equals(kit.key()) ? 6 : 10);
@@ -6000,11 +6000,11 @@ final class FinancesScreen {
         boolean raises = quote.cashReceived() > 0;
         go.setText(raises ? (sale.shortSale() ? "Sell what the bids cover · raise " : "Hold the auction · raise ")
                 + w.apply(quote.cashReceived()) : "Nothing is raised after the fixed cost of " + w.apply(sale.ask().fee()));
-        go.setDisable(!raises);
+        Kept.give(go.disableProperty(), !raises);
         go.setWrapText(true);
         go.setMaxWidth(Double.MAX_VALUE);
         go.setStyle(Palette.words(Palette.SIZE_LABEL, "white") + " -fx-background-color: " + Palette.CONFIRM + ";");
-        go.setOnAction(e -> {
+        Kept.give(go.onActionProperty(), e -> {
             String summary = executeDebtLogic(kit.key(), ask, term, kit.rounding(), cap, callable);
             borrowAsk = 0;
             showDebtResultMenu(booked, false, null, summary);
@@ -6400,7 +6400,7 @@ final class FinancesScreen {
             l.setMaxWidth(wide);
             double left = align == javafx.geometry.Pos.CENTER_RIGHT ? x - wide : align == javafx.geometry.Pos.CENTER ? x - wide / 2 : x;
             l.relocate(left, y);
-            l.setMouseTransparent(true);
+            Kept.give(l.mouseTransparentProperty(), true);
             getChildren().add(l);
         }
     }
@@ -6429,7 +6429,7 @@ final class FinancesScreen {
         repudiate.setText("Default on the foreign debt…");
         repudiate.setStyle("-fx-background-color: transparent; -fx-border-color: " + Palette.BAD + ";"
                 + " -fx-border-radius: 6; -fx-background-radius: 6; -fx-text-fill: " + Palette.BAD_SOFT + ";");
-        repudiate.setOnAction(e -> showForeignDefaultMenu());
+        Kept.give(repudiate.onActionProperty(), e -> showForeignDefaultMenu());
         HBox row = Kept.row(0, repudiate);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-padding: 6 0 4 0;");
@@ -6471,11 +6471,11 @@ final class FinancesScreen {
             p.getChildren().add(pair(wipes, costs));
             Button keep = Kept.of(Button.class, Button::new);
             keep.setText("Keep paying");
-            keep.setOnAction(e -> open("Borrow", "Abroad", null));
+            Kept.give(keep.onActionProperty(), e -> open("Borrow", "Abroad", null));
             Button confirm = Kept.of(Button.class, Button::new);
             confirm.setText("Default. I understand nobody will lend abroad for five years.");
             confirm.setStyle("-fx-background-color: " + Palette.ALERT_EDGE + "; -fx-text-fill: white;");
-            confirm.setOnAction(e -> {
+            Kept.give(confirm.onActionProperty(), e -> {
                 ui.game.defaultOnForeignDebt("the city chose to");
                 open(null, null, null);
             });
@@ -6782,9 +6782,9 @@ final class FinancesScreen {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-cursor: hand; -fx-border-color: ";
         // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set (a kept card is not entered afresh).
         c.setStyle(rest + (c.isHover() ? Palette.BUSINESS : Palette.EDGE) + ";");
-        c.setOnMouseEntered(e -> c.setStyle(rest + Palette.BUSINESS + ";"));
-        c.setOnMouseExited(e -> c.setStyle(rest + Palette.EDGE + ";"));
-        c.setOnMouseClicked(e -> {
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(rest + Palette.BUSINESS + ";"));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest + Palette.EDGE + ";"));
+        Kept.give(c.onMouseClickedProperty(), e -> {
             bookBondId = is.largestId();
             open("The bond market", "A bond's book", null);
         });
@@ -6976,7 +6976,7 @@ final class FinancesScreen {
         double w = most > 0 ? Math.max(2, l.quantity() / most * side) : 2;
         Region bar = Kept.region();
         bar.setMinSize(w, 12);
-        bar.setPrefSize(w, 12);
+        Pieces.prefSize(bar, w, 12);
         bar.setMaxSize(w, 12);
         bar.setStyle("-fx-background-color: " + (bid ? Palette.MONEY : Palette.BUSINESS_LIGHT) + "; -fx-background-radius: 2;");
         HBox left = Kept.row(0), right = Kept.row(0);

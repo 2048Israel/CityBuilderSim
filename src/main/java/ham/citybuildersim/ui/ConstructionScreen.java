@@ -152,7 +152,7 @@ final class ConstructionScreen {
                     + " -fx-background-radius: " + Palette.RADIUS + ";"
                     + " -fx-border-color: " + (on ? Palette.BUILDING : "transparent") + ";"
                     + " -fx-border-width: 0 0 2 0; -fx-padding: 6 12 6 12; -fx-cursor: hand;");
-            b.setOnAction(e -> showTab(name));
+            Kept.give(b.onActionProperty(), e -> showTab(name));
             tabs.getChildren().add(b);
         }
         Region gap = Kept.region();
@@ -920,7 +920,7 @@ final class ConstructionScreen {
             row.setStyle("-fx-padding: 6 8 6 8; -fx-cursor: hand; -fx-background-radius: " + Palette.RADIUS + ";"
                     + (on ? " -fx-background-color: " + Palette.PINNED + "; -fx-border-color: " + Palette.BUILDING
                             + "; -fx-border-width: 0 0 0 3;" : ""));
-            row.setOnMouseClicked(e -> {
+            Kept.give(row.onMouseClickedProperty(), e -> {
                 pick = name;
                 pickShell = shell;
                 count = 1;
@@ -975,8 +975,8 @@ final class ConstructionScreen {
                 head.getChildren().addAll(Kept.scope("count", () -> {
                     Button less = action("−", Palette.TEXT_BODY, () -> { count = Math.max(1, count - 1); draw(); });
                     Button more = action("+", Palette.TEXT_BODY, () -> { count = Math.min(most, count + 1); draw(); });
-                    less.setDisable(count <= 1);
-                    more.setDisable(count >= most);
+                    Kept.give(less.disableProperty(), count <= 1);
+                    Kept.give(more.disableProperty(), count >= most);
                     return List.<Node>of(less, figureLabel(String.valueOf(count), Palette.TEXT_HEAD), more,
                             caption("of " + most));
                 }));
@@ -1055,15 +1055,15 @@ final class ConstructionScreen {
             go.setText(verb);
             go.setStyle(Palette.words(Palette.SIZE_BODY, "white") + " -fx-font-weight: bold;"
                     + " -fx-background-color: " + Palette.ALERT_EDGE + "; -fx-padding: 8 16 8 16; -fx-cursor: hand;");
-            go.setDisable(total > g.getCash());
-            go.setOnAction(e -> {
+            Kept.give(go.disableProperty(), total > g.getCash());
+            Kept.give(go.onActionProperty(), e -> {
                 if (pickShell) confirmShellDemolition(shell);
                 else if (bq != null) confirmBuyOut(t, n, bq);
                 else confirmDemolition(t, n, dq);
             });
             Button discard = Kept.of(Button.class, Button::new);
             discard.setText("Discard");
-            discard.setOnAction(e -> { pick = null; count = 1; draw(); });
+            Kept.give(discard.onActionProperty(), e -> { pick = null; count = 1; draw(); });
             Label sure = caption(total > g.getCash()
                     ? "The treasury is short of " + money(total - g.getCash()) + "."
                     : "Nothing happens until you press it.");
@@ -1279,7 +1279,7 @@ final class ConstructionScreen {
         b.setStyle(Palette.words(Palette.SIZE_CAPTION, tone) + " -fx-background-color: transparent;"
                 + " -fx-border-color: " + tone + "; -fx-border-radius: " + Palette.RADIUS + ";"
                 + " -fx-padding: 3 9 3 9; -fx-cursor: hand;");
-        b.setOnAction(e -> act.run());
+        Kept.give(b.onActionProperty(), e -> act.run());
         return b;
     }
 
@@ -1288,7 +1288,7 @@ final class ConstructionScreen {
         l.setStyle(Palette.words(Palette.SIZE_CAPTION, live ? Palette.TEXT_LABEL : Palette.TEXT_SPENT)
                 + (live ? " -fx-cursor: hand;" : ""));
         // Set on both sides of the condition: a kept arrow that went dead is handed back with no click, and one that lives is given this draw's.
-        l.setOnMouseClicked(live ? e -> act.run() : null);
+        Kept.give(l.onMouseClickedProperty(), live ? e -> act.run() : null);
         return l;
     }
 

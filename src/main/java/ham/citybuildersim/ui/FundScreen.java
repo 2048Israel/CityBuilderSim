@@ -1188,7 +1188,7 @@ final class FundScreen {
                 card.getChildren().add(Kept.scope("more:" + grp, () -> {
                     Label more = Kept.label("and " + hidden + " more under " + d(g, FundView.FOLD_UNDER) + " ▸");
                     more.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand; -fx-padding: 4 0 4 6;");
-                    more.setOnMouseClicked(e -> { open.add(k); redraw(); });
+                    Kept.give(more.onMouseClickedProperty(), e -> { open.add(k); redraw(); });
                     return more;
                 }));
             }
@@ -1326,9 +1326,9 @@ final class FundScreen {
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
         // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
         row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> openSecurity(hd.key()));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> openSecurity(hd.key()));
         return row;
     }
 
@@ -1365,9 +1365,9 @@ final class FundScreen {
         String rest = "-fx-padding: 5 6 5 6; -fx-background-radius: 6; -fx-cursor: hand;"
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
         row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> toggle.run());
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> toggle.run());
         return row;
     }
 
@@ -1476,7 +1476,7 @@ final class FundScreen {
         HBox row = Kept.row(8, named, fig);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-cursor: hand; -fx-padding: 2 0 2 0;");
-        row.setOnMouseClicked(e -> openSecurity(c.key()));
+        Kept.give(row.onMouseClickedProperty(), e -> openSecurity(c.key()));
         return row;
     }
 
@@ -1614,9 +1614,9 @@ final class FundScreen {
                 + " -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 0 1 0;";
         // Kept (KP5): the look the pointer calls for is chosen from isHover() where it is set (a kept row is not entered afresh).
         row.setStyle(row.isHover() ? rest + " -fx-background-color: " + Palette.CONTROL + ";" : rest);
-        row.setOnMouseEntered(e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> openSecurity(f.key()));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(rest + " -fx-background-color: " + Palette.CONTROL + ";"));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> openSecurity(f.key()));
         return row;
     }
 
@@ -1845,7 +1845,7 @@ final class FundScreen {
         double w = most > 0 ? Math.max(2, l.quantity() / most * side) : 2;
         Region bar = Kept.region();
         bar.setMinSize(w, 12);
-        bar.setPrefSize(w, 12);
+        Pieces.prefSize(bar, w, 12);
         bar.setMaxSize(w, 12);
         bar.setStyle("-fx-background-color: " + (bid ? Palette.MONEY : Palette.BUSINESS_LIGHT) + "; -fx-background-radius: 2;");
         HBox left = Kept.row(0), right = Kept.row(0);
@@ -1938,7 +1938,7 @@ final class FundScreen {
                 words("the city's stake in its bank, both books", Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL));
         ring.setAlignment(Pos.CENTER_LEFT);
         ring.setStyle("-fx-cursor: hand;");
-        ring.setOnMouseClicked(e -> ui.bankScreen.openPage("Capital & owners"));
+        Kept.give(ring.onMouseClickedProperty(), e -> ui.bankScreen.openPage("Capital & owners"));
         return card(caption("THE CITY'S STAKE", null), ring, doorPill("The bank's owners", Icons.BANK, Palette.MONEY, () -> ui.bankScreen.openPage("Capital & owners")));
     }
 
@@ -2240,7 +2240,7 @@ final class FundScreen {
                 boolean expanded = open.contains(key);
                 Label head = words((expanded ? "▾ " : "▸ ") + year.year() + " · " + year.months()
                         + (year.months() == 1 ? " month" : " months"), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, true);
-                head.setOnMouseClicked(e -> { if (!open.remove(key)) open.add(key); redraw(); });
+                Kept.give(head.onMouseClickedProperty(), e -> { if (!open.remove(key)) open.add(key); redraw(); });
                 Pnl net = pnl(sym(g), year.net(), Double.NaN);
                 Label figure = words("Net realized + income " + net.text(), Palette.SIZE_LABEL, net.tone());
                 Kept.tip(figure, "Realized gains and losses plus income in these recorded months, under the selected chip.", 150);
@@ -2293,7 +2293,7 @@ final class FundScreen {
         Label what = words((opens ? (open.contains(k) ? "▾ " : "▸ ") : "") + a.what(), Palette.SIZE_LABEL + 1, Palette.TEXT_BODY, opens);
         HBox.setHgrow(what, Priority.ALWAYS);
         what.setMaxWidth(Double.MAX_VALUE);
-        if (opens) what.setOnMouseClicked(e -> { if (!open.remove(k)) open.add(k); redraw(); });
+        if (opens) Kept.give(what.onMouseClickedProperty(), e -> { if (!open.remove(k)) open.add(k); redraw(); });
         Label by = words(a.by(), Palette.SIZE_CAPTION, Palette.TEXT_MUTED);
         by.setMinWidth(80);
         by.setPrefWidth(80);
@@ -2306,7 +2306,7 @@ final class FundScreen {
                 arrow.setStyle(Palette.strong(Palette.SIZE_HEADING + 2, Palette.ACCENT) + " -fx-cursor: hand;");
                 arrow.setMinWidth(16);
                 String key = a.key();
-                arrow.setOnMouseClicked(e -> openSecurity(key));
+                Kept.give(arrow.onMouseClickedProperty(), e -> openSecurity(key));
                 return arrow;
             }));
         } else {

@@ -832,7 +832,7 @@ final class RankingsScreen {
         toggle.setPadding(PIN_ROOM);
         toggle.setStyle("-fx-cursor: hand;");
         HistoryScreen.tip(toggle, pin ? "Unpin" : "Pin it to the top of the list and to your card");
-        toggle.setOnMouseClicked(e -> {
+        Kept.give(toggle.onMouseClickedProperty(), e -> {
             e.consume();
             if (!pinned.remove(p.key())) pinned.add(p.key());
             showRankingsMenu();
@@ -849,11 +849,11 @@ final class RankingsScreen {
         String over = base + " -fx-background-color: " + Palette.HOVER + ";";
         line.setStyle(!lit && line.isHover() ? over : ground);
         if (!lit) {
-            line.setOnMouseEntered(e -> line.setStyle(over));
-            line.setOnMouseExited(e -> line.setStyle(ground));
+            Kept.give(line.onMouseEnteredProperty(), e -> line.setStyle(over));
+            Kept.give(line.onMouseExitedProperty(), e -> line.setStyle(ground));
         }
         if (greyed) HistoryScreen.tip(line, "Ranked on Real world 2025 only");
-        line.setOnMouseClicked(e -> {
+        Kept.give(line.onMouseClickedProperty(), e -> {
             measure = p.key();
             showRankingsMenu();
         });
@@ -1192,9 +1192,9 @@ final class RankingsScreen {
             setPrefWidth(10);
             setStyle("-fx-cursor: hand;");
             hover.setStyle("-fx-background-color: " + Palette.HOVER + ";");
-            hover.setMouseTransparent(true);
-            hover.setManaged(false);
-            hover.setVisible(false);
+            Kept.give(hover.mouseTransparentProperty(), true);
+            Kept.give(hover.managedProperty(), false);
+            Kept.give(hover.visibleProperty(), false);
             getChildren().add(hover);
             widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
             // The page scrolls, or grows above the rows, under a still pointer: the band follows to the row the pointer is over now. The property
@@ -1225,7 +1225,7 @@ final class RankingsScreen {
                 for (int from = 0; from < entries.size(); from += TILE_ROWS) {
                     Canvas tile = new Canvas(0, Math.min(TILE_ROWS, entries.size() - from) * ROW_H);
                     tile.setLayoutY(from * ROW_H);
-                    tile.setManaged(false);
+                    Kept.give(tile.managedProperty(), false);
                     tiles.add(tile);
                     getChildren().add(tile);
                 }
@@ -1248,7 +1248,7 @@ final class RankingsScreen {
             });
             setOnMouseExited(e -> {
                 pointerSceneY = Double.NaN;
-                hover.setVisible(false);
+                Kept.give(hover.visibleProperty(), false);
             });
             setOnMouseClicked(e -> {
                 Entry at = rowAt(e.getY());
@@ -1262,7 +1262,7 @@ final class RankingsScreen {
         /** The row the pointer is over now lit, from where it last was in the scene (the rows may have moved since), and none when it is not over them. */
         private void lightUnderPointer() {
             javafx.geometry.Point2D at = isHover() && Double.isFinite(pointerSceneY) && getScene() != null ? sceneToLocal(0, pointerSceneY) : null;
-            if (at == null) hover.setVisible(false);
+            if (at == null) Kept.give(hover.visibleProperty(), false);
             else lightRowAt(at.getY());
         }
 
@@ -1275,7 +1275,7 @@ final class RankingsScreen {
         private void lightRowAt(double y) {
             Entry at = rowAt(y);
             boolean lit = at != null && !at.gap() && !at.you() && !at.id().equals(open);
-            hover.setVisible(lit);
+            Kept.give(hover.visibleProperty(), lit);
             if (lit) hover.resizeRelocate(0, Math.floor(y / ROW_H) * ROW_H, getWidth(), ROW_H);
         }
 
@@ -1488,7 +1488,7 @@ final class RankingsScreen {
             value.setMinWidth(Region.USE_PREF_SIZE);
             line = Kept.row(6, label, name, value);
             line.setStyle("-fx-cursor: hand;");
-            line.setOnMouseClicked(e -> {
+            Kept.give(line.onMouseClickedProperty(), e -> {
                 drawer = r.id();
                 showRankingsMenu();
             });
@@ -1519,7 +1519,7 @@ final class RankingsScreen {
         line.setAlignment(Pos.CENTER_LEFT);
         line.setStyle("-fx-cursor: hand;");
         if (why != null) HistoryScreen.tip(line, why);
-        line.setOnMouseClicked(e -> {
+        Kept.give(line.onMouseClickedProperty(), e -> {
             measure = p.key();
             showRankingsMenu();
         });
@@ -1582,7 +1582,7 @@ final class RankingsScreen {
             setPrefHeight(H);
             setMaxHeight(H);
             setPrefWidth(10);
-            canvas.setManaged(false);
+            Kept.give(canvas.managedProperty(), false);
             getChildren().add(canvas);
             widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
         }
@@ -1673,7 +1673,7 @@ final class RankingsScreen {
         close.setStyle(Palette.words(Palette.SIZE_SECTION, Palette.TEXT_MUTED) + " -fx-cursor: hand;");
         close.setMinWidth(Region.USE_PREF_SIZE);
         HistoryScreen.tip(close, "Close");
-        close.setOnMouseClicked(e -> {
+        Kept.give(close.onMouseClickedProperty(), e -> {
             drawer = null;
             showRankingsMenu();
         });
@@ -1748,7 +1748,7 @@ final class RankingsScreen {
         HBox row = Kept.row(4, name, real, realMark, source, yours, yoursMark);
         row.setAlignment(Pos.CENTER_LEFT);
         row.setStyle("-fx-cursor: hand;");
-        row.setOnMouseClicked(e -> {
+        Kept.give(row.onMouseClickedProperty(), e -> {
             measure = p.key();
             showRankingsMenu();
         });

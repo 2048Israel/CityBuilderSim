@@ -110,7 +110,7 @@ final class CapChips {
         HBox entry = Kept.scope("entry", () -> {
             String shown = typed != null ? typed : now.mode() == Auction.Mode.YIELD ? yieldText(now) : "";
             TextField box = searchBox(shown, "type a yield, 4.5", 150, t -> typed = t, null);
-            box.setOnAction(e -> commit(box, true));
+            Kept.give(box.onActionProperty(), e -> commit(box, true));
             // A press that changed what the box should say - a chip that sets the cap (Fill it, fair + the tail), an Enter that set a yield - while
             // the box has the focus: a kept draw never sets a field under the player's typing (Kept.text), and what is typed always reaches `typed`,
             // so a focused box that differs from what the page shows is one a press has changed. Set here, the caret at the end (KP5, slice D).
