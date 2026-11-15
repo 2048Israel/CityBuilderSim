@@ -520,7 +520,7 @@ public final class WorldMoneys {
                 double x = lnShadow[k] - ln;
                 gap[k] = x;
                 if (!board[k] && !quiet && unit(who[k], t, BREAK_DRAW) < ForeignAccounts.hazard(Math.max(0, x))) {
-                    double overshoot = ForeignAccounts.OVERSHOOT * Math.max(0, x);
+                    double overshoot = ForeignAccounts.OVERSHOOT * x;
                     swing[k] += overshoot;
                     lnShadow[k] += overshoot;
                     ln = lnShadow[k];

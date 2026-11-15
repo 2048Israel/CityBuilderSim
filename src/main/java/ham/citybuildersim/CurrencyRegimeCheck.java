@@ -163,6 +163,13 @@ import java.util.List;
  *      no GDP gives infinity, a vault under its floor 0, and asking changes
  *      nothing.
  *
+ *  19. A DEEP REPEG CANNOT BUY YEARS OF OUTPUT IN A MONTH (XR7/XR8). At 3x and
+ *      5x the shadow the peg breaks before dealing, with a signed landing;
+ *      purchases just below the GDP bound still hold and just above break;
+ *      a band gives way for the month. MoneyAudit's cent still applies to the
+ *      old exponential bills. SaveFileCheck and ReadPathCheck also borrow a
+ *      real chosen peg with nonlinear purchases and nonzero saved support.
+ *
  * Numbering is the running order. Money is in thousands, as everywhere.
  *
  * @author Jerus
@@ -2545,11 +2552,17 @@ public class CurrencyRegimeCheck {
             month(fx, TRADE, TRADE);
             double gap = Math.log(fx.getLastBreakShadow() / fx.getPegRate());
             double unbounded = ForeignAccounts.interventionLocalFor(Math.log(multiple), annual);
+            out.printf("   %sx: inverse %,f, audit tolerance %.12f (cent %.12f)%n", multiple, unbounded, MoneyAudit.tolerance(unbounded), MoneyAudit.CENT);
+            same("the audit's tolerance at the old exponential bill is still its cent floor", MoneyAudit.tolerance(unbounded), MoneyAudit.CENT);
             assertTrue("fixture: holding " + multiple + " times the shadow costs more than HOLD_PURCHASE_YEARS of output (" + unbounded / annual + " years)",
                     unbounded > ForeignAccounts.HOLD_PURCHASE_YEARS * annual);
             assertTrue("the deep repeg breaks at the purchase limit before buying or owing anything", fx.getRegime() == FLOAT
                     && fx.getLastBreakCause() == ForeignAccounts.BreakCause.PURCHASE_LIMIT && fx.getEdgeBoughtLocal() == 0 && fx.getEdgeOwedLocal() == 0);
             same("the purchase-limit break leaves the dollar vault whole", fx.getReservesUsd(), before);
+            ForeignAccounts restored = new ForeignAccounts();
+            restored.restore(fx.toSaveArray());
+            assertTrue("the appended purchase-limit cause crosses a save without moving prior cause ordinals", restored.getLastBreakCause() == ForeignAccounts.BreakCause.PURCHASE_LIMIT
+                    && Arrays.equals(restored.toSaveArray(), fx.toSaveArray()));
             close("its strong-side landing uses the same signed overshoot", Math.log(fx.getRate() / fx.getLastBreakShadow()), ForeignAccounts.OVERSHOOT * gap, 1e-12);
         }
         for (double share : new double[] { .99, 1.01 }) {
@@ -2567,6 +2580,58 @@ public class CurrencyRegimeCheck {
         month(band, TRADE, TRADE);
         assertTrue("a band beyond the purchase limit gives way for the month without a purchase", band.getRegime() == BAND && band.getEdgeBoughtLocal() == 0
                 && band.getHoldFelt() == 0 && band.getRate() < band.bandStrongEdge());
+    }
+
+    /** A real player-chosen peg carrying nonzero support and a large unpaid purchase, for save/read checks (XR7). */
+    static Game supportedTown(String label) {
+        if (quiet == null) quiet = new PrintStream(OutputStream.nullOutputStream());
+        Game city = town(label, Founding.defaults(), 2);
+        play(city, 60);
+        ForeignAccounts fx = city.getForeignAccounts();
+        double annual = 12 * fx.getGdpTrailing();
+        quietly(() -> {
+            city.setCurrencyRegime(PEG);
+            city.repeg(fx.getRate() * Math.exp(ForeignAccounts.interventionMove(.35 * ForeignAccounts.HOLD_PURCHASE_YEARS * annual, annual)));
+        });
+        play(city, 1);
+        return city;
+    }
+
+    /** The actual DataSave JSON and Game loader must carry support already paid for, and the next bill must only replace its fade. */
+    static boolean savedHoldSupportChecks() {
+        Game live = supportedTown("xr7-save-support");
+        ForeignAccounts fx = live.getForeignAccounts();
+        double annual = 12 * fx.getGdpTrailing(), owed = fx.getEdgeOwedLocal();
+        if (fx.getRegime() != PEG || !(fx.getHoldFelt() > 0) || !(owed > ForeignAccounts.INTERVENTION_LINEAR * annual)) return false;
+        if (!live.saveGame(2, "supported peg").ok) return false;
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        DataSave json = gson.fromJson(gson.toJson(live.liveSaveForChecks()), DataSave.class);
+        if (Double.compare(json.getForeignAccounts()[147], fx.getHoldFelt()) != 0) return false;
+        Game back = new Game(live.getGameFiles());
+        quietly(() -> back.loadGameSave(2));
+        ForeignAccounts restored = back.getForeignAccounts();
+        if (!Arrays.equals(fx.toSaveArray(), restored.toSaveArray()) || restored.getHoldFelt() == 0) return false;
+
+        // Counterfactual: the same saved state with only its support erased pays the whole gap again.
+        ForeignAccounts paid = new ForeignAccounts(), erased = new ForeignAccounts();
+        paid.restore(restored.toSaveArray());
+        double[] missing = restored.toSaveArray();
+        missing[147] = 0;
+        erased.restore(missing);
+        Held paidMonth = heldMonth(paid, TRADE, TRADE, Double.NaN);
+        Held erasedMonth = heldMonth(erased, TRADE, TRADE, Double.NaN);
+        double paidNeed = paidMonth.deal * paidMonth.rateBefore, erasedNeed = erasedMonth.deal * erasedMonth.rateBefore;
+        System.out.printf("   saved support %.9f, next controlled need %.9f, erased-support need %.9f%n", restored.getHoldFelt(), paidNeed, erasedNeed);
+        if (!(paidNeed > 0 && erasedNeed > 2 * paidNeed)) return false;
+        play(live, 1);
+        play(back, 1);
+        System.out.printf("   paid large saved bill %.9f (%.4f years), audit residual %.12f, tolerance %.12f%n", owed, owed / annual,
+                live.getLastMoneyAudit().residual, MoneyAudit.tolerance(annual * ForeignAccounts.HOLD_PURCHASE_YEARS));
+        return Math.abs(live.getCentralBank().getDollarsBought() - owed) <= MoneyAudit.CENT
+                && Math.abs(fx.getHoldFelt() - restored.getHoldFelt()) <= 1e-9
+                && Math.abs(fx.getEdgeOwedLocal() - restored.getEdgeOwedLocal()) <= MoneyAudit.tolerance(fx.getEdgeOwedLocal())
+                && ExchangeRateCheck.auditCloses(live) && ExchangeRateCheck.auditCloses(back)
+                && Math.abs(live.getLastMoneyAudit().residual) <= MoneyAudit.CENT;
     }
 
     /** 21 as "21st", for a printed line. */

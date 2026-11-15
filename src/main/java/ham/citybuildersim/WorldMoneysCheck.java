@@ -38,7 +38,8 @@ import java.util.stream.IntStream;
  *      major's and an emerging float's own swing's, within 5% of CYCLE_SIGMA / CYCLE_HALF_LIFE and the money's sigma / OWN_HALF_LIFE; printed:
  *      each one's volatility a year and the half-life an economist would fit, beside the study's table.
  *   4. PEGS HOLD AND BREAK BY THE RULE: a held peg's rate over its anchor's is its ratio; a loop holds; no board ever breaks; the breaks
- *      over the paths are the sum of ForeignAccounts.hazard(gap) over the held months, within 3 sd (Poisson).
+ *      over the paths are the sum of ForeignAccounts.hazard(gap) over the held months, within 3 sd (Poisson). XR7's floating twins expose
+ *      each signed overshoot and its fade; the real-world paths count strong and weak break landings separately.
  *   5. A RISK-OFF moves the havens up and the high yielders down by their loadings, and fades by its half-life; starts counted against RISK_OFF_RATE.
  *   6. THE TERMS OF TRADE: a January's rise of 0.1 in a commodity exporter's ln terms of trade moves its money by TOT_PASS x its commodity share
  *      x 0.1, a third in each of January, February and March, and no other money; the market's two reads (commodityShare, lnTermsOfTrade)
@@ -476,7 +477,7 @@ public class WorldMoneysCheck {
         final Acc[] own;
         final double[] sum12, sumSq12, halfLife, worst;
         final long[] n12;
-        long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks;
+        long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks, strongBreaks, weakBreaks;
         final long[] breaks;
         final double[] hazard;
         final long[] faced;
@@ -508,7 +509,7 @@ public class WorldMoneysCheck {
         final double[] sum12, sumSq12;
         final long[] n12;
         final List<List<Double>> halfLives = new ArrayList<>(), worsts = new ArrayList<>();
-        long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks;
+        long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks, strongBreaks, weakBreaks;
         final long[] breaks, faced;
         final double[] hazard;
         final double millis;
@@ -556,6 +557,8 @@ public class WorldMoneysCheck {
                 ratioBad += part.ratioBad;
                 boardMonths += part.boardMonths;
                 boardBreaks += part.boardBreaks;
+                strongBreaks += part.strongBreaks;
+                weakBreaks += part.weakBreaks;
                 for (int j = 0; j < watch.length; j++) {
                     own[j].merge(part.own[j]);
                     sum12[j] += part.sum12[j];
@@ -605,7 +608,10 @@ public class WorldMoneysCheck {
                     } else if (held || b) {
                         p.faced[q]++;
                         p.hazard[q] += ForeignAccounts.hazard(Math.max(0, w.pegGap(c)));
-                        if (b) p.breaks[q]++;
+                        if (b) {
+                            p.breaks[q]++;
+                            if (w.pegGap(c) < 0) p.strongBreaks++; else p.weakBreaks++;
+                        }
                     }
                     if (held) {
                         p.ratioChecked++;
@@ -713,6 +719,7 @@ public class WorldMoneysCheck {
         poisson(soft + " soft pegs: the breaks over " + pass.seeds + " paths against the sum of hazard(max(0, gap)) over the " + faced + " months they were held", breaks, hazard, Math.sqrt(hazard));
         out.printf("  finding: %d of %d soft pegs on a path broke within %d years (%.1f%%); the hazard they faced was %.2f%% a month on average%n", breaks, (long) soft * pass.seeds,
                 PATH_MONTHS / 12, 100.0 * breaks / Math.max(1, (long) soft * pass.seeds), 100 * hazard / Math.max(1, faced));
+        out.printf("  finding: signed break landings: %d strong-side, %d weak-side (%s)%n", pass.strongBreaks, pass.weakBreaks, sc.name);
         if (!given) return;
         // a loop of pegs holds last month's rate, quietly: the two moneys are where they began
         WorldMoneys loop = sc.moneys(Nations.Path.RANDOM, BASE_SEED, FIXTURE_LOOP);
