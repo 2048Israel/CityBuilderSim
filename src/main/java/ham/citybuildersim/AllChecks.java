@@ -19,24 +19,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
  * Runs every harness, one JVM each, and says which failed.
  *
- * WHY: each harness calls System.exit(), so it needs its own JVM. Hand-running
- * the growing list left checks unrun. GF1 bounds each child's life after CD9's
- * JavaFX thread survived an OutOfMemoryError for 62 minutes.
- *
- * -q prints verdicts, -f only failures, keeping whole logs in target/checks.
- * Other arguments select by substring, --timing selects Timing.HARNESSES.
- * The exit counts failed harnesses. JavaFX checks skip without its classpath.
- * -f tags each red against the same record as batch-check.sh (FW7), prints at
- * every failing assertion so the judge sees every red. Timing properties are forwarded (TM1).
- * Logged soft runs share PARALLEL slots, memory-gated and heap-bounded (SP1),
- * hard timing and plain output run serially. TIMES keeps each run's duration.
+ * WHY: harnesses exit their JVMs. GF1 bounds children after CD9's 62-minute
+ * JavaFX hang, and MG1 gates extra starts on free commit, RAM and averaged CPU.
+ * Quiet modes keep logs and timings, forwarding Timing properties and tagging
+ * every failing assertion through the common judge (FW7, TM1).
  */
 public class AllChecks {
 
@@ -73,8 +69,20 @@ public class AllChecks {
     /** A harness gets four times KeptCheck's usual 435 seconds before its process tree is ended (GF1, CD9's hung FX thread). */
     static final int HARNESS_SECONDS = 4 * 435;
 
-    /** No harness is started beside another of this run while the machine's commit charge is over this percent (SP1): the first three, started at 79.8%, took the PC to 85.9% within a minute as they grew (2026-10-27), and the batches stop a run at 85; a suite died with CreateProcess error 1450 at 43 of 54 GB on 2026-10-21. */
-    static final int COMMIT_PCT = 75;
+    /** Non-heap room is 512 MB per harness, above SP1's measured 103 MB at startup and allowing compiler, classes and JavaFX growth (MG1). */
+    static final int NON_HEAP_MB = 512;
+
+    /** Keep 4 GB of RAM available, above the 2.9 GB left when two KeptChecks drove this 32 GB PC to 91% RAM (MG1). */
+    static final double AVAILABLE_RAM_GB = 4;
+
+    /** Start beside another harness below 80% CPU, leaving room before MG1's measured 85–94% contention. */
+    static final double CPU_PCT = 80;
+
+    /** Sample every two seconds so held starts can resume without busy waiting (MG1). */
+    static final int RESOURCE_SECONDS = 2;
+
+    /** Average three CPU samples, covering six seconds between starts (MG1). */
+    static final int CPU_SAMPLES = 3;
 
     /** Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). */
     static final List<String> LONGEST_FIRST = List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "EarthTerrainCheck");
@@ -153,8 +161,12 @@ public class AllChecks {
         }
         int atOnce = parallel(logged, timingOnly);
         if (atOnce > 1) order.sort(longestFirst(TIMES, Path.of(System.getProperty("user.home"), ".cbs-gate-times.tsv")));
-        Set<Process> live = ConcurrentHashMap.newKeySet();   // what runs, and the lock a start waits on for the commit charge to fall
+        Set<Process> live = ConcurrentHashMap.newKeySet();
         AtomicInteger held = new AtomicInteger();   // starts that waited at least once
+        int[] heldBy = new int[4];
+        CpuWindow cpu = new CpuWindow();
+        ScheduledExecutorService sampler = Executors.newSingleThreadScheduledExecutor(r -> { Thread th = new Thread(r); th.setDaemon(true); return th; });
+        sampler.scheduleAtFixedRate(() -> cpu.add(systemCpu()), 0, RESOURCE_SECONDS, TimeUnit.SECONDS);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> live.forEach(AllChecks::endTree)));
         ExecutorService pool = Executors.newFixedThreadPool(atOnce, r -> { Thread th = new Thread(r); th.setDaemon(true); return th; });
         Map<String, Future<double[]>> runs = new HashMap<>();   // each: its exit code and its own seconds, from its start
@@ -167,9 +179,19 @@ public class AllChecks {
                 Process p;
                 long t;
                 synchronized (live) {   // look and start under one lock, so two starts never pass on one reading; a run with nothing running always starts
-                    boolean waited = false;
-                    while (!live.isEmpty() && commitPct() > COMMIT_PCT) { waited = true; live.wait(2000); }
-                    if (waited) held.incrementAndGet();
+                    int seen = 0;
+                    while (!live.isEmpty()) {
+                        Resources reading = readResources(() -> resources(live), cpu::average);
+                        int block = startBlock(reading);
+                        if (block == 0) break;
+                        if (seen == 0) held.incrementAndGet();
+                        if ((seen & (1 << block)) == 0) {
+                            heldBy[block]++;
+                            System.out.println("memory: " + name + " start held — " + holdLine(reading, block));
+                            seen |= 1 << block;
+                        }
+                        live.wait(RESOURCE_SECONDS * 1000L);
+                    }
                     p = pb.start();
                     t = System.currentTimeMillis();
                     live.add(p);
@@ -224,13 +246,14 @@ public class AllChecks {
             }
         }
         pool.shutdown();
+        sampler.shutdownNow();
         if (logged) {
             times.sort(Comparator.comparingDouble((String x) -> Double.parseDouble(x.substring(0, x.indexOf('	')))).reversed());
             Files.write(TIMES, times, StandardCharsets.UTF_8);
         }
         System.out.println();
         System.out.println(summaryLine(ran, failed, (System.currentTimeMillis() - started) / 1000.0));
-        if (held.get() > 0) System.out.printf("memory: %d start(s) held until the commit charge fell under %d%% (AllChecks.COMMIT_PCT)%n", held.get(), COMMIT_PCT);
+        if (held.get() > 0) System.out.printf("memory: %d start(s) held until resources allowed — free commit %d, available RAM %d, CPU %d%n", held.get(), heldBy[1], heldBy[2], heldBy[3]);
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
                 soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
         if (observed > 0) System.out.printf("%d path assertion%s OBSERVED, not counted: %s%n",
@@ -306,15 +329,103 @@ public class AllChecks {
         return Math.max(1, Math.min(n, Runtime.getRuntime().availableProcessors() / 2));
     }
 
-    /**
-     * The machine's commit charge in percent (SP1): on Windows the commit limit
-     * and what is left of it, as Task Manager shows it; elsewhere swap, which
-     * only a starved machine fills. 0 when there is no figure.
-     */
-    static double commitPct() {
-        if (!(ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os)) return 0;
-        long total = os.getTotalSwapSpaceSize();
-        return total <= 0 ? 0 : 100.0 * (total - os.getFreeSwapSpaceSize()) / total;
+    /** Injectable machine readings in GiB and percent, with each running child's private commitment. */
+    record Resources(double freeCommit, double availableRam, double cpu, double[] held) {
+        double needed() {
+            double full = (HEAP_MB + NON_HEAP_MB) / 1024.0;
+            double need = full;
+            for (double committed : held) need += Math.max(0, full - committed);
+            return need;
+        }
+    }
+
+    /** MG1's pure admission rule holds extra starts on unknown readings and always lets an empty run progress. */
+    static int startBlock(Resources r) {
+        if (r.held.length == 0) return 0;
+        if (!(r.freeCommit >= r.needed())) return 1;
+        if (!(r.availableRam >= AVAILABLE_RAM_GB)) return 2;
+        if (!(r.cpu >= 0 && r.cpu < CPU_PCT)) return 3;
+        return 0;
+    }
+
+    static String holdLine(Resources r, int block) {
+        return switch (block) {
+            case 1 -> String.format(Locale.ROOT, "free commit %.2f GB, need %.2f GB including running growth", r.freeCommit, r.needed());
+            case 2 -> String.format(Locale.ROOT, "available RAM %.2f GB, need %.2f GB", r.availableRam, AVAILABLE_RAM_GB);
+            default -> String.format(Locale.ROOT, "CPU %.1f%%, need below %.1f%% over %d seconds", r.cpu, CPU_PCT, RESOURCE_SECONDS * CPU_SAMPLES);
+        };
+    }
+
+    /** A rolling window holds extra starts until its first complete CPU window. */
+    static class CpuWindow {
+        final double[] samples = new double[CPU_SAMPLES];
+        int count;
+        synchronized void add(double value) { samples[count++ % samples.length] = value; }
+        synchronized double average() {
+            if (count < samples.length) return Double.NaN;
+            double sum = 0;
+            for (double value : samples) {
+                if (!(value >= 0)) return Double.NaN;
+                sum += value;
+            }
+            return sum / samples.length;
+        }
+    }
+
+    static double systemCpu() {
+        return ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os
+                ? os.getCpuLoad() * 100 : Double.NaN;
+    }
+
+    /** Read CPU last so a slow memory probe cannot admit a child using an earlier CPU window (REV-KD1-1). */
+    static Resources readResources(Supplier<Resources> memory, DoubleSupplier cpu) {
+        Resources r = memory.get();
+        return new Resources(r.freeCommit, r.availableRam, cpu.getAsDouble(), r.held);
+    }
+
+    /** Windows exposes available commitment as swap space, Linux names its limit and charge in meminfo. */
+    static Resources resources(Set<Process> live) {
+        double gb = 1024.0 * 1024 * 1024;
+        double[] held = new double[live.size()];
+        double commit = Double.NaN, ram = Double.NaN;
+        try {
+            if (System.getProperty("os.name").startsWith("Windows")) {
+                String ids = String.join(",", live.stream().map(p -> Long.toString(p.pid())).toList());
+                Process probe = new ProcessBuilder("powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
+                        "Get-Process -Id " + ids + " -ErrorAction SilentlyContinue | ForEach-Object { $_.PrivateMemorySize64 }")
+                        .redirectError(ProcessBuilder.Redirect.DISCARD).start();
+                try {
+                    if (probe.waitFor(5, TimeUnit.SECONDS)) {
+                        String output = new String(probe.getInputStream().readAllBytes(), StandardCharsets.UTF_8).strip();
+                        int i = 0;
+                        for (String line : output.lines().toList()) held[i++] = Double.parseDouble(line.strip()) / gb;
+                    }
+                } finally { if (probe.isAlive()) endTree(probe); }
+                if (ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os) {
+                    commit = os.getFreeSwapSpaceSize() / gb;
+                    ram = os.getFreeMemorySize() / gb;
+                }
+            } else if (Files.isRegularFile(Path.of("/proc/meminfo"))) {
+                // Read child commitment first, then free commit, so growth during the reading cannot be counted twice.
+                int i = 0;
+                for (Process p : live) {
+                    for (String line : Files.readAllLines(Path.of("/proc", Long.toString(p.pid()), "status"))) {
+                        if (line.startsWith("RssAnon:")) held[i] = Double.parseDouble(line.split("\\s+")[1]) / (1024 * 1024);
+                    }
+                    i++;
+                }
+                Map<String, Double> memory = new HashMap<>();
+                for (String line : Files.readAllLines(Path.of("/proc/meminfo"))) {
+                    String[] parts = line.split("\\s+");
+                    memory.put(parts[0], Double.parseDouble(parts[1]) / (1024 * 1024));
+                }
+                commit = memory.get("CommitLimit:") - memory.get("Committed_AS:");
+                ram = memory.get("MemAvailable:");
+            }
+        } catch (IOException | RuntimeException e) {
+            // Missing child figures reserve its full size, unknown machine figures hold extra starts.
+        } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        return new Resources(commit, ram, Double.NaN, held);
     }
 
     /** The first line of a harness's entry: its name, its verdict as a number or OK, and how long it took. */
@@ -405,12 +516,7 @@ public class AllChecks {
         return out;
     }
 
-    /**
-     * The one line under the summary that says which harnesses were known reds
-     * only and which had a NEW red; with no record, that none was read. It has
-     * no "harness" in it and does not end in "0 failed": batch-check.sh and
-     * ship.sh find the summary by those.
-     */
+    /** Lists known and new reds without resembling the suite summary used by shell callers. */
     static String againstLine(Path record, Set<String> known, List<String> knownOnly, List<String> newRed) {
         String file = record.toString().replace('\\', '/');
         if (known == null) return "No known reds read (" + file + " not found): every red is untagged";
@@ -421,15 +527,7 @@ public class AllChecks {
         return "Against " + file + ": " + String.join("; ", parts);
     }
 
-    /**
-     * How a harness is started: the JVM and classpath this one was, under -Xmx
-     * HEAP_MB and -Xms HEAP_START_MB (SP1), the timing
-     * properties (the mode, and the file the figures go to, TM3) if they are set here (a child JVM inherits no system property, only
-     * JDK_JAVA_OPTIONS), and when its output is kept (-q and -f) in UTF-8
-     * whatever the machine's own charset is - on Windows a redirected
-     * System.out is Cp1252, and the first non-ASCII label stopped the run
-     * (2026-10-13, MapCheck on the PC).
-     */
+    /** Starts a heap-bounded harness with forwarded properties and UTF-8 logged output (SP1, TM3). */
     static List<String> command(String java, String classpath, String name, boolean logged) {
         List<String> c = new ArrayList<>(List.of(java, "-Xmx" + HEAP_MB + "m", "-Xms" + HEAP_START_MB + "m"));
         Observation.forwardTo(c);
@@ -463,12 +561,7 @@ public class AllChecks {
         }
     }
 
-    /**
-     * What -f prints of a failed harness's log: each failing line, after the
-     * title of the section it is in (once per section); a log with no failing line in it - a harness that died some other
-     * way - gives its last ten lines instead. A byte that is not UTF-8 is read
-     * as a replacement character, never thrown.
-     */
+    /** Keeps each failing section and assertion, or the last ten lines after an unlabelled death, replacing invalid UTF-8. */
     static List<String> failingLines(Path log) throws IOException {
         List<String> lines = List.of(new String(Files.readAllBytes(log), StandardCharsets.UTF_8).split("\\R"));
         List<String> out = new ArrayList<>();

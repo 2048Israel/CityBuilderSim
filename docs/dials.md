@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,966 constants in 571 files.**
+**5,970 constants in 571 files.**
 
 ## model (2858 constants)
 
@@ -5689,7 +5689,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1653 constants)
+## harnesses (1657 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5703,26 +5703,30 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 44 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "MoneySignCheck", "NewGameCheck...` | Every harness: the gate and nightly selections together cover this registry. |
-| 62 | `AllChecks.PARALLEL` | `3` | How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. |
-| 65 | `AllChecks.PARALLEL_PROPERTY` | `"cbs.parallel"` | The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). |
-| 68 | `AllChecks.HEAP_MB` | `2048` | The most heap a harness JVM may take, its -Xmx (SP1): measured 2026-10-27 under a 4 GB ceiling, no harness committed more than 1.5 GB (SaveSlotCheck) or kept more than 0.6 GB after a collection (Ma... |
-| 71 | `AllChecks.HEAP_START_MB` | `64` | The heap a harness JVM starts with, its -Xms (SP1): the JVM's default is a 64th of the RAM, 508 MB committed at once whether used or not (measured 2026-10-27: BooksCheck 616 MB of commit by default... |
-| 74 | `AllChecks.HARNESS_SECONDS` | `4 * 435` | A harness gets four times KeptCheck's usual 435 seconds before its process tree is ended (GF1, CD9's hung FX thread). |
-| 77 | `AllChecks.COMMIT_PCT` | `75` | No harness is started beside another of this run while the machine's commit charge is over this percent (SP1): the first three, started at 79.8%, took the PC to 85.9% within a minute as they grew (... |
-| 80 | `AllChecks.LONGEST_FIRST` | `List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck",...` | Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). |
-| 83 | `AllChecks.NIGHTLY` | `List.of("KeptCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "EducationChec...` | Runs nightly, and at the gate only when a direct pick names it (HA1). |
-| 89 | `AllChecks.LOGS` | `Paths.get("target", "checks")` | Where -q and -f keep each harness's whole output. |
-| 92 | `AllChecks.TIMES` | `LOGS.resolve("times.tsv")` | Where -q and -f write each harness's seconds and exit, a line each, longest first (GT1: no gate said where its forty minutes went). |
-| 95 | `AllChecks.SECTION` | `Pattern.compile("^\\s*---\\s.*\\s---\\s*$")` | A harness's section title, "--- what it proves ---". |
-| 98 | `AllChecks.SUMMARY` | `Pattern.compile("^\\s*\\d+ FAILED\\s*$")` | A harness's closing count, "N FAILED": printed, but not under the last section's title. |
-| 101 | `AllChecks.FAILING` | `Pattern.compile("\\bFAIL(ED)?\\b\|Exception\|^\\S*Error\\b\|^Caused by")` | A line that says something failed: an assertion's FAIL, the "N FAILED" summary, an exception. |
-| 104 | `AllChecks.IN_ALL` | `Pattern.compile("^\\.\\.\\.[0-9]+ failing lines in all: ")` | The line failingLines prints when it left failing lines out: "... |
-| 107 | `AllChecks.GATE` | `Paths.get("docs", "notes", "gate.txt")` | Main's recorded reds, one line each after the "#" lines: what ship.sh writes at every gate. |
-| 110 | `AllChecks.KNOWN_PROPERTY` | `"cbs.knownReds"` | The system property that names the record when it is not GATE; batch-check.sh gives it the record it judges against. |
-| 113 | `AllChecks.NO_FAIL_LINE` | `"(no FAIL line; its last lines:)"` | The line a log says before the last lines of a harness that died with no failing line of its own. |
-| 116 | `AllChecks.KNOWN_TAG` | `"[known] "` | The tag -f puts before a failing line that is in the record; the same width as NEW_TAG. |
-| 119 | `AllChecks.NEW_TAG` | `"[NEW] "` | The tag -f puts before a failing line that is not in the record. |
+| 40 | `AllChecks.HARNESSES` | `{ "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "MoneySignCheck", "NewGameCheck...` | Every harness: the gate and nightly selections together cover this registry. |
+| 58 | `AllChecks.PARALLEL` | `3` | How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. |
+| 61 | `AllChecks.PARALLEL_PROPERTY` | `"cbs.parallel"` | The property that sets it for one run: -Dcbs.parallel=1 runs them one at a time (given on the java command line or in JDK_JAVA_OPTIONS). |
+| 64 | `AllChecks.HEAP_MB` | `2048` | The most heap a harness JVM may take, its -Xmx (SP1): measured 2026-10-27 under a 4 GB ceiling, no harness committed more than 1.5 GB (SaveSlotCheck) or kept more than 0.6 GB after a collection (Ma... |
+| 67 | `AllChecks.HEAP_START_MB` | `64` | The heap a harness JVM starts with, its -Xms (SP1): the JVM's default is a 64th of the RAM, 508 MB committed at once whether used or not (measured 2026-10-27: BooksCheck 616 MB of commit by default... |
+| 70 | `AllChecks.HARNESS_SECONDS` | `4 * 435` | A harness gets four times KeptCheck's usual 435 seconds before its process tree is ended (GF1, CD9's hung FX thread). |
+| 73 | `AllChecks.NON_HEAP_MB` | `512` | Non-heap room is 512 MB per harness, above SP1's measured 103 MB at startup and allowing compiler, classes and JavaFX growth (MG1). |
+| 76 | `AllChecks.AVAILABLE_RAM_GB` | `4` | Keep 4 GB of RAM available, above the 2.9 GB left when two KeptChecks drove this 32 GB PC to 91% RAM (MG1). |
+| 79 | `AllChecks.CPU_PCT` | `80` | Start beside another harness below 80% CPU, leaving room before MG1's measured 85–94% contention. |
+| 82 | `AllChecks.RESOURCE_SECONDS` | `2` | Sample every two seconds so held starts can resume without busy waiting (MG1). |
+| 85 | `AllChecks.CPU_SAMPLES` | `3` | Average three CPU samples, covering six seconds between starts (MG1). |
+| 88 | `AllChecks.LONGEST_FIRST` | `List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck",...` | Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). |
+| 91 | `AllChecks.NIGHTLY` | `List.of("KeptCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "EducationChec...` | Runs nightly, and at the gate only when a direct pick names it (HA1). |
+| 97 | `AllChecks.LOGS` | `Paths.get("target", "checks")` | Where -q and -f keep each harness's whole output. |
+| 100 | `AllChecks.TIMES` | `LOGS.resolve("times.tsv")` | Where -q and -f write each harness's seconds and exit, a line each, longest first (GT1: no gate said where its forty minutes went). |
+| 103 | `AllChecks.SECTION` | `Pattern.compile("^\\s*---\\s.*\\s---\\s*$")` | A harness's section title, "--- what it proves ---". |
+| 106 | `AllChecks.SUMMARY` | `Pattern.compile("^\\s*\\d+ FAILED\\s*$")` | A harness's closing count, "N FAILED": printed, but not under the last section's title. |
+| 109 | `AllChecks.FAILING` | `Pattern.compile("\\bFAIL(ED)?\\b\|Exception\|^\\S*Error\\b\|^Caused by")` | A line that says something failed: an assertion's FAIL, the "N FAILED" summary, an exception. |
+| 112 | `AllChecks.IN_ALL` | `Pattern.compile("^\\.\\.\\.[0-9]+ failing lines in all: ")` | The line failingLines prints when it left failing lines out: "... |
+| 115 | `AllChecks.GATE` | `Paths.get("docs", "notes", "gate.txt")` | Main's recorded reds, one line each after the "#" lines: what ship.sh writes at every gate. |
+| 118 | `AllChecks.KNOWN_PROPERTY` | `"cbs.knownReds"` | The system property that names the record when it is not GATE; batch-check.sh gives it the record it judges against. |
+| 121 | `AllChecks.NO_FAIL_LINE` | `"(no FAIL line; its last lines:)"` | The line a log says before the last lines of a harness that died with no failing line of its own. |
+| 124 | `AllChecks.KNOWN_TAG` | `"[known] "` | The tag -f puts before a failing line that is in the record; the same width as NEW_TAG. |
+| 127 | `AllChecks.NEW_TAG` | `"[NEW] "` | The tag -f puts before a failing line that is not in the record. |
 
 ### ArrivalMixCheck.java ([map](map/ArrivalMixCheck.md))
 
@@ -6282,16 +6286,16 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 213 | `EnsembleCheck.POLICY_ENUM` | `Pattern.compile("\\benum\\s+Policy\\s*\\{([^}]*)\\}")` |  |
-| 214 | `EnsembleCheck.POLICIES_LIST` | `Pattern.compile("(?m)^POLICIES\\s*=\\s*\\[([^\\]]*)\\]")` |  |
-| 216 | `EnsembleCheck.QUOTED` | `Pattern.compile("\"([^\"]*)\"\|'([^']*)'")` | A name in double or single quotes, as either half lists its policies. |
-| 306 | `EnsembleCheck.BASELINE_NAME` | `Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)\\.md")` |  |
-| 308 | `EnsembleCheck.CRITERIA` | `Pattern.compile("(?m)^criteria passed:\\s*(\\d+)\\s*/\\s*(\\d+)\\b")` | A stored score's verdict line: "criteria passed: N / M". |
-| 309 | `EnsembleCheck.JSON_BLOCK` | `Pattern.compile("(?s)'''json\\s*\\R(.*?)\\R\\s*'''")` |  |
-| 396 | `EnsembleCheck.VERDICT` | `"criteria passed: 5/6(vacuous, not counted: 0); missing runs: none; short runs: none"` | A canned page's verdict line, for the reader's fixtures. |
-| 398 | `EnsembleCheck.JSON` | `""" { "seeds": 4, "policies": { "ALPHA": {"final_pop_median": 1000.5, "runs_with_findin...` | ...and its JSON block, sound as it stands; a fixture edits it into a page the reader should refuse. |
-| 485 | `EnsembleCheck.BROKEN` | `""" package ham.citybuildersim; final class EnsembleCheckBroken { static void call() { ...` | Calls a method that no class has: the change the guard exists for, made by hand. |
-| 494 | `EnsembleCheck.SOUND` | `""" package ham.citybuildersim; final class EnsembleCheckSound { static Class<?> call()...` | Calls a class that is there. |
+| 169 | `EnsembleCheck.POLICY_ENUM` | `Pattern.compile("\\benum\\s+Policy\\s*\\{([^}]*)\\}")` |  |
+| 170 | `EnsembleCheck.POLICIES_LIST` | `Pattern.compile("(?m)^POLICIES\\s*=\\s*\\[([^\\]]*)\\]")` |  |
+| 172 | `EnsembleCheck.QUOTED` | `Pattern.compile("\"([^\"]*)\"\|'([^']*)'")` | A name in double or single quotes, as either half lists its policies. |
+| 262 | `EnsembleCheck.BASELINE_NAME` | `Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)\\.md")` |  |
+| 264 | `EnsembleCheck.CRITERIA` | `Pattern.compile("(?m)^criteria passed:\\s*(\\d+)\\s*/\\s*(\\d+)\\b")` | A stored score's verdict line: "criteria passed: N / M". |
+| 265 | `EnsembleCheck.JSON_BLOCK` | `Pattern.compile("(?s)'''json\\s*\\R(.*?)\\R\\s*'''")` |  |
+| 354 | `EnsembleCheck.VERDICT` | `"criteria passed: 5/6(vacuous, not counted: 0); missing runs: none; short runs: none"` | A canned page's verdict line, for the reader's fixtures. |
+| 356 | `EnsembleCheck.JSON` | `""" { "seeds": 4, "policies": { "ALPHA": {"final_pop_median": 1000.5, "runs_with_findin...` | ...and its JSON block, sound as it stands; a fixture edits it into a page the reader should refuse. |
+| 446 | `EnsembleCheck.BROKEN` | `""" package ham.citybuildersim; final class EnsembleCheckBroken { static void call() { ...` | Calls a method that no class has: the change the guard exists for, made by hand. |
+| 455 | `EnsembleCheck.SOUND` | `""" package ham.citybuildersim; final class EnsembleCheckSound { static Class<?> call()...` | Calls a class that is there. |
 
 ### EquipmentCheck.java ([map](map/EquipmentCheck.md))
 
@@ -7894,14 +7898,14 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 88 | `TimingCheck.FIXTURE_BUDGET_MS` | `0` | The fixture's own budget, in milliseconds: zero, so its measured figure always misses; never a real dial's budget. |
-| 91 | `TimingCheck.SOURCES` | `Paths.get("src", "main", "java", "ham", "citybuildersim")` | Where the sources lie, seen from the repository root, which is where the suite runs. |
-| 94 | `TimingCheck.COMPARES_DIAL` | `Pattern.compile("(<=?\|>=?)\\s*\\(?([A-Za-z]+\\.)?[A-Z][A-Z_]*_(MS\|NS)\\b" + "\|\\b[A-Z][...` | A line that compares a figure against a *_MS or *_NS dial, either way round: what a timing assertion looked like before it went through Timing. |
-| 99 | `TimingCheck.ALLOWED_FILE` | `"MapCheck.java"` | The file of the one allowance: the line below is a test of the clock's own resolution, which asserts no figure, so it stays a bare comparison. |
-| 102 | `TimingCheck.ALLOWED_TEXT` | `"cpuStepMs()<= CPU_STEP_MS"` | The one line the dial rule allows outside Timing: MapCheck deciding whether the thread-CPU clock is fine enough to time with at all (a test of the clock's resolution, not an assertion). |
-| 105 | `TimingCheck.FIXTURE_HARNESS` | `"TimingCheck$Fixture"` | What a child JVM is started as: the fixture's own main, below. |
-| 108 | `TimingCheck.ALL_SOURCES` | `Paths.get("src", "main", "java")` | Where the walk of every source starts. |
-| 664 | `TimingCheck.PAIR_AWK` | `Paths.get("tools", "timing-pair.awk")` |  |
+| 41 | `TimingCheck.FIXTURE_BUDGET_MS` | `0` | The fixture's own budget, in milliseconds: zero, so its measured figure always misses; never a real dial's budget. |
+| 44 | `TimingCheck.SOURCES` | `Paths.get("src", "main", "java", "ham", "citybuildersim")` | Where the sources lie, seen from the repository root, which is where the suite runs. |
+| 47 | `TimingCheck.COMPARES_DIAL` | `Pattern.compile("(<=?\|>=?)\\s*\\(?([A-Za-z]+\\.)?[A-Z][A-Z_]*_(MS\|NS)\\b" + "\|\\b[A-Z][...` | A line that compares a figure against a *_MS or *_NS dial, either way round: what a timing assertion looked like before it went through Timing. |
+| 52 | `TimingCheck.ALLOWED_FILE` | `"MapCheck.java"` | The file of the one allowance: the line below is a test of the clock's own resolution, which asserts no figure, so it stays a bare comparison. |
+| 55 | `TimingCheck.ALLOWED_TEXT` | `"cpuStepMs()<= CPU_STEP_MS"` | The one line the dial rule allows outside Timing: MapCheck deciding whether the thread-CPU clock is fine enough to time with at all (a test of the clock's resolution, not an assertion). |
+| 58 | `TimingCheck.FIXTURE_HARNESS` | `"TimingCheck$Fixture"` | What a child JVM is started as: the fixture's own main, below. |
+| 61 | `TimingCheck.ALL_SOURCES` | `Paths.get("src", "main", "java")` | Where the walk of every source starts. |
+| 612 | `TimingCheck.PAIR_AWK` | `Paths.get("tools", "timing-pair.awk")` |  |
 
 ### ToastCheck.java ([map](map/ToastCheck.md))
 

@@ -169,3 +169,20 @@ ReadPathCheck each finish All checks passed, exit 0
 focused harnesses passed on the capture model. The final --fast compiled,
 regenerated maps and reported zero firm Stale findings, exit 0
 (target/checks/R2c-capture-fast.log). Source/record diff whitespace checks pass.
+
+## Main merge for KD1
+
+KD1 shipped untagged as main 4343a815. It changes only AllChecks,
+EnsembleCheck, KnownRedsCheck and TimingCheck among Java sources; the game
+model used by the retained main trace remains d8e9c12b's. Merge source is
+clean, with LicenceFeesCheck's registry entry and KD1's runner both retained.
+Only generated dials, harnesses and map README conflicted; they are regenerated
+from the combined source before the merge commit. No RT2 method was touched.
+
+Final capture-model LongPlaytest passed and all eight CSVs compare byte-
+identical to the retained main model (target/R2c-captured/default-*.csv
+against target/R2c-main/default-*.csv). Its log and exit are
+target/R2c-captured/playtest.log and target/R2c-captured/exit (0).
+KD1 changes no gameplay Java or packaged model resources, so this is also
+the current main 4343a815 model baseline. No ensemble was run: the default
+trace never moved. The final code is f59d577c, carried through the main merge.

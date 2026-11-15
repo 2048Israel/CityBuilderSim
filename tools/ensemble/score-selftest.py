@@ -17,7 +17,8 @@ class Scoring(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="cbs-ei1-")
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name) / "checkout with spaces"
+        self.root.mkdir()
         self.run = self.root / "runs" / "fixture"
         self.run.mkdir(parents=True)
         for policy, end in POLICIES.items():
@@ -111,6 +112,67 @@ class Scoring(unittest.TestCase):
             self.assertTrue((self.run / "baseline.md").exists())
             self.assertIn("| class |", (self.run / "baseline.md").read_text(encoding="utf-8"))
             env["BASELINE"] = (self.run / "baseline.md").as_posix()
+
+        # EN2 exercises actual discovery in a checkout with spaces, plus inherited and absent data.
+        subprocess.run(["git", "init", "-q", str(self.root)], check=True, capture_output=True)
+        data = self.root / "data"
+        data.mkdir()
+        for name in ("earth-2.bin", "world-1.bin"):
+            (data / name).touch()
+        (self.root / "target" / "classes" / "ham" / "citybuildersim").mkdir(parents=True)
+        deps = self.root / "fixture-deps.txt"
+        deps.write_text("unused\n", encoding="utf-8")
+        env["ENSEMBLE_DEPS"] = deps.as_posix()
+        env.pop("JDK_JAVA_OPTIONS", None)
+        env.pop("JAVA_OPTS", None)
+        env["BASELINE"] = self.base.as_posix()
+        for inherited, files in (("", True), ("-Dcbs.world=caller-world.bin", True), ("", False)):
+            shutil.rmtree(self.run / "classes")
+            env["JDK_JAVA_OPTIONS"] = inherited
+            if not files:
+                shutil.rmtree(data)
+            result = subprocess.run(["bash", (tools / "ensemble.sh").as_posix(), "fixture"], env=env,
+                                    capture_output=True, encoding="utf-8")
+            self.assertEqual(result.returncode, 4, result.stdout + result.stderr)
+            page = (self.run / "baseline.md").read_text(encoding="utf-8")
+            if inherited:
+                self.assertIn(inherited, page)
+                self.assertNotIn("earth-2.bin", page)
+            elif files:
+                self.assertIn((data / "earth-2.bin").as_posix(), page)
+                self.assertIn((data / "world-1.bin").as_posix(), page)
+            else:
+                self.assertIn("Data files named for this snapshot — `none`", page)
+
+        baselines = self.root / "docs" / "ensemble"
+        baselines.mkdir(parents=True)
+        old = self.base.read_text(encoding="utf-8")
+        (baselines / "0.8.0.md").write_text(old, encoding="utf-8")
+        (baselines / "EN2.md").write_text("# Ensemble baseline: 0.9.0\n" + old, encoding="utf-8")
+        env.pop("BASELINE")
+        for expected in ("EN2.md", "0.10.0.md"):
+            if expected != "EN2.md":
+                (baselines / expected).write_text(old, encoding="utf-8")
+            result = subprocess.run(["bash", (tools / "ensemble.sh").as_posix(), "fixture"], env=env,
+                                    capture_output=True, encoding="utf-8")
+            self.assertEqual(result.returncode, 4, result.stdout + result.stderr)
+            self.assertIn("Scored against `docs/ensemble/" + expected + "`", (self.run / "baseline.md").read_text(encoding="utf-8"))
+
+        # A real --one invocation preserves each discovered path as one Java argument.
+        java = stub / "java"
+        args = self.root / "java-args.txt"
+        java.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$ENS_TEST_ARGS"\n'
+                        'echo "DONE AUTO2 seed 0 months 1 of 1 in 1s"\n', encoding="utf-8")
+        java.chmod(0o755)
+        env.update(ENS_TEST_ARGS=args.as_posix(), ENS_EARTH=(self.root / "earth file.bin").as_posix(),
+                   ENS_WORLD=(self.root / "world file.bin").as_posix(), ENS_RUNW=self.run.as_posix(),
+                   ENS_SEP=os.pathsep, ENS_DEPS="unused", ENS_JAVA_OPTS="", ENS_LOCK="")
+        result = subprocess.run(["bash", (tools / "ensemble.sh").as_posix(), "--one",
+                                 self.run.as_posix(), "AUTO2", "0"], env=env, capture_output=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        passed = args.read_text(encoding="utf-8").splitlines()
+        self.assertIn("-Dcbs.earth=" + env["ENS_EARTH"], passed)
+        self.assertIn("-Dcbs.world=" + env["ENS_WORLD"], passed)
 
 
 if __name__ == "__main__":
