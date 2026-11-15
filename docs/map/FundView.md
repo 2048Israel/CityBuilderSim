@@ -142,8 +142,8 @@
 | 824 | 8 | `public static String groupOf(String kind)` | The group a ledger row is filed under. |
 | 839 | 28 | `public static List<Line> activity(Game g, String group, String key)` | The record, newest first, filtered by group ("All" for every one) and, when `key` is not null, to one lot's rows (a share's market and rescue books together). |
 | 869 | 1 | **type** `public record ActivityYear(int year, int months, double net, List<Line> lines)` | An older calendar year's recorded months and their realized gains plus income, under the selected Activity chip. |
-| 872 | 1 | **type** `public record ActivityRecord(List<Line> recent, List<ActivityYear> years)` | Activity's latest months and older calendar years, newest first; each line belongs to exactly one period. |
-| 875 | 1 | **type** `public record ActivityTotals(double money, double realized)` | The ledger's money and realized result for a group of trades on one side of one market. |
+| 872 | 1 | **type** `public record ActivityRecord(List<Line> recent, List<ActivityYear> years)` | Activity's latest months and older calendar years, newest first, with each line in exactly one period. |
+| 875 | 1 | **type** `public record ActivityTotals(int trades, double money, double realized)` | The ledger's money and realized result for a group of trades on one side of one market. |
 | 878 | 9 | `public static ActivityTotals activityTotals(List<Line> lines)` | The figures on a grouped Activity row, read from its own ledger rows. |
 | 889 | 24 | `public static ActivityRecord activityRecord(Game g, String group, int recentMonths)` | The periods Activity draws, with counts and net figures worked out here before any screen is drawn. |
 | 915 | 6 | `public static boolean sameLot(String key, String rowKey)` | Whether a row's key is the lot a security page shows: a share's books together. |

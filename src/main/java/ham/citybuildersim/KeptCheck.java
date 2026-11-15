@@ -1754,7 +1754,7 @@ public class KeptCheck {
         pageCost(g, bench, page, n, budget, dial, 9);
     }
 
-    /** ...the median of `samples` months, for the pages whose month is long (the fund's, tens of thousands of nodes). */
+    /** ...the median of `samples` months, also used to calibrate the fund's two list pages. */
     static void pageCost(Game g, KeptBench bench, KeptBench.Page page, int n, double budget, String dial, int samples) throws Exception {
         if (Timing.skip("KeptCheck.pageCost " + page.name())) return;
         System.out.println("\n--- " + n + ": what the kept month on " + page.name() + " costs ---");
@@ -3683,13 +3683,11 @@ public class KeptCheck {
     static final double KEPT_FINANCES_MS = 18;
 
     /**
-     * The budget for the kept month on the fund's heaviest page (Search and Activity, the two costed, weigh most; their size follows the city's age: the
-     * bonds it has issued are the rows of Search, its months of events the rows of Activity), on the PC: twice the kept month's median, rounded up
-     * (the same five runs: Activity 124.3 to 191.9 ms, 160.3 between them, built new 195.1 to 252.7; Search 57.8 to 71.3, 62.0 between them, built new
-     * 105.9 to 172.6). Played alone from month 605 they were a quarter of that; in KeptCheck's own city at month 2,100 Search had 13,000 nodes and
-     * took 228 ms.
+     * The PC's budget for the kept month on the fund's heaviest page is twice the median in five sequential money-section runs, rounded up
+     * (FP1's Activity 41.7 to 47.1 ms, 45.8 between them, built new 93.5 to 129.7, and Search 10.1 to 10.7 ms, 10.5 between them, built new 20.3 to 23.7).
+     * Search starts with SEARCH_ROWS results and Activity with its latest twelve months and the older years shut. The five readings are in FP1-notes.md.
      */
-    static final double KEPT_FUND_MS = 321;
+    static final double KEPT_FUND_MS = 92;
 
     /** The Bank tab's pages that have two views, a Summary and a Statement. */
     private static boolean twoViews(String page) {
@@ -4376,7 +4374,7 @@ public class KeptCheck {
                 shown == hits.size() ? more == null : ("Show more · " + (hits.size() - shown) + " left").equals(more));
     }
 
-    /** FP1: a real sale, income and contribution in one older year cause the summary's different money columns. */
+    /** FP1's real sale, income and contribution in one older year cause the summary's different money columns. */
     static void fundYearNet(Game g) throws Exception {
         TreasuryFund.State saved = g.getFund().toState();
         try {
@@ -4421,7 +4419,7 @@ public class KeptCheck {
         }
     }
 
-    /** Section 63: paging controls and each older year really open and shut, kept against a page built new. */
+    /** Section 63 opens and shuts the paging controls and each older year, kept against a page built new. */
     static void fundLists(Game g, KeptBench bench, KeptBench.Page tab) throws Exception {
         System.out.println("\n--- 63: the fund's Search pages and Activity years (FP1) ---");
         fx(() -> { fundYearNet(g); return null; });
@@ -4492,9 +4490,15 @@ public class KeptCheck {
             for (FundView.ActivityYear year : years) {
                 String closed = "▸ " + year.year() + " · " + year.months() + (year.months() == 1 ? " month" : " months");
                 check("year " + year.year() + " starts shut with its recorded month count", bench.chipWith(closed::equals) != null);
+                check("year " + year.year() + " shows FundView's net in its fold line", has(bench.signature(), label("Net realized + income "
+                        + ham.citybuildersim.ui.Pieces.pnl(g.getCurrency().qualifiedSymbol(), year.net(), Double.NaN).text())));
+                check("year " + year.year() + " has its months hidden while shut", year.lines().stream().map(FundView.Line::month).distinct()
+                        .noneMatch(m -> has(bench.signature(), label(CityCalendar.format(m)))));
                 int before = bench.signature().size();
                 check("year " + year.year() + " can be opened by its own fold", bench.pressChip(closed));
                 check("year " + year.year() + " reveals its months", bench.signature().size() > before);
+                check("year " + year.year() + " shows every recorded month when open", year.lines().stream().map(FundView.Line::month).distinct()
+                        .allMatch(m -> has(bench.signature(), label(CityCalendar.format(m)))));
                 check("year " + year.year() + " open equals a page built new", againstNew(bench, tab, true) == null);
                 String opened = closed.replace('▸', '▾');
                 check("year " + year.year() + " can be shut by its own fold", bench.pressChip(opened));
@@ -5205,6 +5209,12 @@ public class KeptCheck {
         });
         pageCost(g, bench, borrow, 68, KEPT_FINANCES_MS, "KEPT_FINANCES_MS");
 
+        fx(() -> {
+            bench.fundSearch("", "All");
+            bench.fundActivity("All", fundDial("ACTIVITY_MONTHS"));
+            bench.fundFoldsClosed();
+            return null;
+        });
         List<KeptBench.Page> fundPages = new ArrayList<>();
         for (String p : KeptBench.financePages("The city's fund")) fundPages.add(fx(() -> bench.finances("the fund's " + p, "The city's fund", p)));
         fx(() -> {

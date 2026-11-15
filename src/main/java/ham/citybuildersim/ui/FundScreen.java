@@ -896,7 +896,7 @@ final class FundScreen {
                 else {
                     String verb = FundLedger.BUY.equals(a.kind()) ? "bought" : "sold";
                     FundView.ActivityTotals totals = FundView.activityTotals(lines.subList(i, j));
-                    out.add(new Act(a.month(), "The rule " + verb + " " + inside.size() + (bondRow ? " bonds" : " companies' shares"),
+                    out.add(new Act(a.month(), "The rule " + verb + " " + totals.trades() + (bondRow ? " bonds" : " companies' shares"),
                             "the rule", "", d(g, totals.money()), FundLedger.SELL.equals(a.kind()) ? pnl(sym(g), totals.realized(), Double.NaN) : null,
                             null, false, inside));
                 }

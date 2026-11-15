@@ -45,3 +45,72 @@ signature and canvas comparison passed that first run.
 
 Final check results, five timing readings and retained gate details follow
 when those runs finish.
+
+The final focused replay passed every Fund assertion, including the original
+Portfolio/ticket checks and the new paging/year-fold checks. Its kept costs
+were Search 5.0 ms and Activity 16.7 ms, with fresh draws 22.8 and 28.3 ms.
+These are correctness-replay readings, separate from the five calibration
+runs below. The replay log is target/fp1/pages-final.log.
+
+Main a309bf7f (CB2) was merged at 00aece74. Its generated README index
+conflict was resolved by regeneration, and the merged fast check passed.
+The orchestrator confirmed that BF1-K's existing cover and queue row stay,
+because its Partners triangle finding remains. FP1 repairs its Fund Search
+glyph finding only.
+
+## Timing setup
+
+Five exploratory cost-only JVMs each built the played city to month 2105
+and called section 68's pageCost on the default Search and Activity pages.
+Their kept Search readings were 19.3, 15.1, 15.9, 16.6 and 18.1 ms.
+Their kept Activity readings were 32.8, 36.9, 35.8, 28.7 and 32.1 ms.
+All five exited zero. These start JavaFX's Fund controls cold.
+For final calibration the runner uses KP5's complete money sections 55–68,
+after building the same played city, with one JVM at a time. ★ Section 68
+explicitly starts Search on All with no words and Activity on All with its
+twelve-month window and the year folds shut. This measures the new default
+pages, independent of words or folds left by earlier control fixtures.
+The original heaviest-page check remains hard.
+
+The money-section calibration route also checks section 68's original
+heaviest-page premise. In its first run Activity made 3,145 nodes, Search
+803 and Portfolio 876, so that premise passed. Fund correctness passed.
+Three diagnostic failures were outside Fund in this shortened entry route,
+which skips KeptCheck's normal earlier sections: Bank Funding retention
+85.9%, a chosen bond's empty levels fold, and Finances retention 89.4%.
+Their premises and assertions were left intact. The retained gate uses the
+normal KeptCheck entry point and supplies the authoritative verdict.
+
+## Final calibration
+
+Five sequential JVMs on main a309bf7f, with the Fund changes, each using
+KeptCheck.money after LongPlaytest.probeCity and probePlay to 2100.
+The floor was set to the going rate before play, matching KeptCheck.
+Each pageCost reading is its median of five measured months.
+
+| Run | Search kept | Search new | Activity kept | Activity new |
+|---|---:|---:|---:|---:|
+| 1 | 10.7 ms | 21.2 ms | 41.7 ms | 129.7 ms |
+| 2 | 10.5 ms | 21.2 ms | 42.3 ms | 106.1 ms |
+| 3 | 10.1 ms | 20.3 ms | 47.1 ms | 97.9 ms |
+| 4 | 10.3 ms | 23.7 ms | 45.8 ms | 102.1 ms |
+| 5 | 10.6 ms | 21.7 ms | 46.7 ms | 93.5 ms |
+
+Search median 10.5 ms. Activity median 45.8 ms.
+KEPT_FUND_MS is ceil(2 × 45.8) = 92, replacing 321.
+All five had the same three pre-Fund diagnostic failures noted above and
+zero Fund failures. Logs are target/fp1/money-1.log through money-5.log.
+Activity remains the heaviest of the four default pages in every run.
+Its twelve open months contain 3,145 nodes in this fixture, which accounts
+for the larger cost than the 803-node Search and the Finances pages.
+The final extra change reads the grouped trade count through FundView too,
+beside its money and realized result. Its value and grouping are identical.
+
+## Final verification
+
+The final fast check passed with zero firm Stale findings. Maps were
+regenerated. Default trace unchanged by FP1, whose production changes are
+FundScreen and pure FundView getters. The model and month paths match
+main a309bf7f. No ensemble was run, as directed for this screen batch.
+The retained normal-route merge dry run follows, with cbs.parallel=1
+to keep one JVM-heavy harness at a time.

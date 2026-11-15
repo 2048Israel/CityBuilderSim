@@ -868,11 +868,11 @@ public final class FundView {
     /** An older calendar year's recorded months and their realized gains plus income, under the selected Activity chip. */
     public record ActivityYear(int year, int months, double net, List<Line> lines) { }
 
-    /** Activity's latest months and older calendar years, newest first; each line belongs to exactly one period. */
+    /** Activity's latest months and older calendar years, newest first, with each line in exactly one period. */
     public record ActivityRecord(List<Line> recent, List<ActivityYear> years) { }
 
     /** The ledger's money and realized result for a group of trades on one side of one market. */
-    public record ActivityTotals(double money, double realized) { }
+    public record ActivityTotals(int trades, double money, double realized) { }
 
     /** The figures on a grouped Activity row, read from its own ledger rows. */
     public static ActivityTotals activityTotals(List<Line> lines) {
@@ -882,7 +882,7 @@ public final class FundView {
             money += line.row().money();
             realized += line.row().realized();
         }
-        return new ActivityTotals(money, realized);
+        return new ActivityTotals(lines.size(), money, realized);
     }
 
     /** The periods Activity draws, with counts and net figures worked out here before any screen is drawn. */
