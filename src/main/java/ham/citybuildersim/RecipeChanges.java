@@ -110,7 +110,7 @@ public final class RecipeChanges {
         Recipe modern = t.defaultRecipe();
         Recipe old = compose(t, modern, Map.of(c.code(), 1.0), modern.getId());
         double gain = Recipes.value(modern, p) - Recipes.value(old, p);
-        gain -= c.production() * p.pricePerWatt();
+        gain -= c.production() * (t.getCategory() == BuildingType.WATER ? p.pricePerWaterUnit() : p.pricePerWatt());
         if (c.steamRail() != 0) {
             double litres = t.getRailCapacity() * ham.citybuildersim.sectors.Freight.FUEL_LITRES_PER_TONNE;
             gain += c.steamRail() * litres * (RAIL_COAL_TONNES_PER_DIESEL_LITRE * p.good().applyAsDouble(Good.THERMAL_COAL)

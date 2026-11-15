@@ -9,7 +9,7 @@
 > Recipe decisions are saved in the existing recipe ids after "~"; fitting
 > counts are read on application, including after a construction site opens.
 
-**Uses:** [Recipe](Recipe.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [Good](Good.md) (8), [Recipes](Recipes.md) (5), [RecipeChange](RecipeChange.md) (5), [JobType](JobType.md) (4), [Game](Game.md) (4), [BuildingsStacks](BuildingsStacks.md) (2), [Freight](Freight.md) (2), [Research](Research.md) (1), [Equipment](Equipment.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Recipe](Recipe.md) (12), [BuildingsTemplate](BuildingsTemplate.md) (8), [Good](Good.md) (8), [Recipes](Recipes.md) (5), [RecipeChange](RecipeChange.md) (5), [JobType](JobType.md) (4), [Game](Game.md) (4), [BuildingsStacks](BuildingsStacks.md) (2), [Freight](Freight.md) (2), [Research](Research.md) (1), [Equipment](Equipment.md) (1), [BuildingType](BuildingType.md) (1), [Sector](Sector.md) (1)
 
 **Used by (5):** [BuildingsTemplate](BuildingsTemplate.md), [EquipmentFit](EquipmentFit.md), [Freight](Freight.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md)
 

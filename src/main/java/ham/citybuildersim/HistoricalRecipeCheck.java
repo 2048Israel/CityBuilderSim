@@ -377,6 +377,35 @@ public final class HistoricalRecipeCheck {
                 extra(t, "crackerPetrol", .55) == .55, "");
     }
 
+
+    static void utilityUnits(JsonObject data) throws Exception {
+        out.println("--- 10. utility fitting gains use the price of the output's own unit ---");
+        Game g = town("R2d-utility-units", true);
+        allExcept(g, "");
+        at(g, PolicyDates.monthOf(1950, 1));
+        g.getEconomyManager().setPricePerWatt(.003);
+        g.getEconomyManager().setPricePerWaterUnit(.005);
+        Recipes.Prices prices = Recipes.pricesOf(g);
+        check("fixture: water and power both have positive, distinct unit prices",
+                prices.pricePerWaterUnit() > 0 && prices.pricePerWatt() > 0
+                        && prices.pricePerWaterUnit() != prices.pricePerWatt(), "");
+        for (JsonElement e : data.getAsJsonArray("buildings")) {
+            JsonObject building = e.getAsJsonObject();
+            if (!building.has("recipeChanges")) continue;
+            BuildingsTemplate t = g.getBuildingManager().getTemplateByName(building.get("name").getAsString());
+            for (JsonElement change : building.getAsJsonArray("recipeChanges")) {
+                JsonObject c = change.getAsJsonObject();
+                if (!c.getAsJsonObject("without").has("production1")) continue;
+                String id = c.get("equipment").getAsString();
+                Equipment piece = t.getEquipment(id);
+                check(t.getName() + "/" + id + ": sourced output gain is priced in its own utility unit",
+                        piece != null && Math.abs(EquipmentFit.verdictForNew(g, t, piece).gain()
+                                + c.getAsJsonObject("without").get("production1").getAsDouble()
+                                * (t.getCategory() == BuildingType.WATER ? prices.pricePerWaterUnit() : prices.pricePerWatt())) < 1e-9, "");
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         RecipeCheck.out = out; RecipeCheck.quiet = quiet;
         EquipmentCheck.out = out; EquipmentCheck.quiet = quiet;
@@ -393,6 +422,7 @@ public final class HistoricalRecipeCheck {
         supersedingProcess();
         completedPiece();
         savedPriceChoice();
+        utilityUnits(data);
         out.println(fails == 0 ? "All HistoricalRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

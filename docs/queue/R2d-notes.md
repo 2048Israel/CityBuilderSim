@@ -118,3 +118,10 @@ round-trip, changing actual ranking prices on both sides. Restored choices
 stay thermal until choose() runs again. HistoricalRecipeCheck is 86/86 green
 (check-4.log), and the identical final fixture on main model classes is
 50 FAILED of 86 (before/final-check.log). Fast-4 is green, zero firm Stale.
+
+Self-review found one dimension error before the first review: rapid-sand
+production is water, so its fitting gain must use the water unit price.
+The new fixture sets positive distinct utility prices and checks all three
+utility pieces at their own unit. HistoricalRecipeCheck is 90/90 green
+(check-6.log); restoring only the previous RecipeChanges class reproduces
+exactly the rapid-sand failure, 1 FAILED of 90 (utility-before/check.log).
