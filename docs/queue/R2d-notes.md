@@ -567,3 +567,19 @@ them from the merged sources, exits 0, and reports zero firm Stale.
 Evidence: target/R2d-review5/merge-UP6b-fast.log. The incoming publisher
 records and VERSION are accepted unchanged from main. UP6b's retained gate
 records the same model report as R2c, apart from runtime/log timestamps.
+
+
+## Final mend review and default trace
+
+The complete default LongPlaytest on 025601b7 (merged with ade96cfb)
+exits 0. All eight CSVs are byte-identical to main's retained RT2-ready2
+prefix: bank, bonds, borrow, build, house, labour, month and pop.
+Evidence: target/R2d-evidence/branch-025601b7/playtest.log, compare.txt,
+SHA256SUMS and commits.txt. No ensemble was needed or run.
+
+REV-R2d-6 reviewed 239428ee..aa58b73b and returned SHIP in orchestrator
+mail 20261115-133318-464-orchestrator-67b4. The later commits only record
+checks/maps and merge UP6b main, whose model report is unchanged. Reported
+R2d mends at 025601b7, then requested the coordinated normal-route dry run.
+Final pick is ALL, 207 registered harnesses (final-pick.txt); no local ALL
+or local --pick ALL run was started. The provisional ship marker remains.
