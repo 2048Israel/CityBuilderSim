@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.109 — CM1b, The replay loaded move, the review follow-ups — 2026-11-15, ready, see docs/queue/CM1b-notes.md
+Replay camera moves release their stored pictures, pins and prepared months immediately when stopped while Ready, and restore their starting view if their map closes during loading. Loads remember every missing kind, stop retrying failed jobs, and refuse at a stated overall limit. Their memory budget measures growth from the starting heap, with at most one collection per load. Keys are consumed during loading, and ReplayCheck closes its replay and unregisters both map pumps before its timing section. CM2's prepared maps and ordinary game behavior are preserved.
+
 ### 0.9.108 — LD3, LD2's wage on in every harness — 2026-11-14, ready, see docs/queue/LD3-notes.md
 Every harness now uses LD2's wage and the temporary carryKeptOut switch is
 removed. HoldersCheck asserts that its loaded twin keeps the fixture's Heavy

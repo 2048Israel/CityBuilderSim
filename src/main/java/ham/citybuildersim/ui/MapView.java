@@ -871,6 +871,7 @@ final class MapView {
         if (buffer.length < w * w) buffer = new int[w * w];
         for (long[] t : tilesInView(f)) {
             long tx = t[0], ty = t[1], key = MapTiles.key(tx, ty);
+            if (move != null && move.stuckTiles.contains(((long) cacheIndex(pictures) << 58) ^ key)) continue;
             Img img = pictures.get(key);
             if (img != null && img.version == version) continue;
             if (img != null && moveRunning()) {     // (CM1) a loaded move's month, taken from what the load kept of it
@@ -920,6 +921,8 @@ final class MapView {
     private void ask(long tx, long ty) {
         final MapTiles askedFor = tiles;
         final CityMap map = shownMap;
+        final int moveSerial = move == null ? 0 : move.serial;
+        final Pictures pictures = move == null ? null : picturesFor(frame().level(), MapFrame.tilePx(frame().level(), frame().scale()));
         for (CityMap.Job j : tiles.jobs(tx, ty)) {
             WORKER.submit(() -> {
                 if (tiles != askedFor) return;      // (TR1) a map a replay has stepped past: its plans are not drawn
@@ -927,6 +930,13 @@ final class MapView {
                     j.run();
                 } catch (RuntimeException e) {
                     System.out.println("A district's plan could not be drawn: " + e);
+                    if (moveSerial != 0) {
+                        Platform.runLater(() -> {
+                            if (move != null && move.serial == moveSerial) move.stuckTiles.add(((long) cacheIndex(pictures) << 58) ^ MapTiles.key(tx, ty));
+                            requestDraw();
+                        });
+                        return;
+                    }
                 }
                 Platform.runLater(() -> {
                     if (tiles == askedFor) map.adopt(j);
@@ -979,11 +989,13 @@ final class MapView {
         if (picturesWanted.isEmpty() || !tiles.picturesFit(f)) return;
         final MapTiles askedFor = tiles;
         final CityMap map = shownMap;
+        final int moveSerial = move == null ? 0 : move.serial;
         final List<CityMap.District> asked = new ArrayList<>();
         final List<CityMap.Job> jobs = new ArrayList<>();
         long until = System.nanoTime() + (long) (FRAME_MS * 1e6);
         for (CityMap.District d : picturesWanted) {
             if (System.nanoTime() > until) break;
+            if (move != null && move.stuckPictures.contains(d)) continue;
             if (!picturesAsked.add(d)) continue;
             asked.add(d);
             jobs.addAll(map.pictureJobs(d));
@@ -991,15 +1003,19 @@ final class MapView {
         if (asked.isEmpty()) return;
         WORKER.submit(() -> {
             if (tiles != askedFor) return;      // (TR1) a map a replay has stepped past: its pictures are not drawn
+            boolean failed = false;
             for (CityMap.Job j : jobs) {
                 try {
                     j.run();
                 } catch (RuntimeException e) {
                     System.out.println("A district's picture could not be drawn: " + e);
+                    failed = true;
                 }
             }
+            final boolean gaveUp = failed;
             Platform.runLater(() -> {
                 if (tiles != askedFor) return;
+                if (gaveUp && move != null && move.serial == moveSerial) move.stuckPictures.addAll(asked);
                 for (CityMap.Job j : jobs) map.adopt(j);
                 picturesAsked.removeAll(asked);
                 requestDraw();
@@ -1032,6 +1048,7 @@ final class MapView {
         for (long ny = ny0; ny <= ny1; ny++) {
             for (long nx = nx0; nx <= nx1; nx++) {
                 long key = nodeKey(plots, nx, ny);
+                if (move != null && move.stuckNodes.contains(key)) continue;
                 Img img = nodes.get(key);
                 if (img == null) {
                     // Its ground asked of WORKER once; the answer asks for a frame.
@@ -1097,6 +1114,7 @@ final class MapView {
         for (long[] a : asking) {
             final long nx = a[0], ny = a[1], key = a[2], x0 = nx * span, y0 = ny * span;
             final MapTiles askedFor = tiles;
+            final int moveSerial = move == null ? 0 : move.serial;
             WORKER.submit(() -> {
                 long[] w = nodesWanted;
                 if (w == null || w[0] != plots || nx < w[1] || nx > w[2] || ny < w[3] || ny > w[4]) {
@@ -1106,8 +1124,21 @@ final class MapView {
                     });
                     return;
                 }
-                byte[] relief = world.earth() ? new byte[n * n] : null;
-                byte[] ground = MapTiles.nodeTerrain(world, x0, y0, plots, relief);
+                byte[] relief, ground;
+                try {
+                    relief = world.earth() ? new byte[n * n] : null;
+                    ground = MapTiles.nodeTerrain(world, x0, y0, plots, relief);
+                } catch (RuntimeException e) {
+                    if (moveSerial == 0) throw e;
+                    System.out.println("A node's ground could not be drawn: " + e);
+                    Platform.runLater(() -> {
+                        if (tiles != askedFor) return;
+                        nodesAsked.remove(key);
+                        if (move != null && move.serial == moveSerial) move.stuckNodes.add(key);
+                        requestDraw();
+                    });
+                    return;
+                }
                 Platform.runLater(() -> {
                     nodesAsked.remove(key);
                     if (tiles != askedFor) return;
@@ -2663,6 +2694,7 @@ final class MapView {
         for (long ny = r[4]; ny <= r[5]; ny++) {
             for (long nx = r[2]; nx <= r[3]; nx++) {
                 long key = chartKey(id, plots, nx, ny);
+                if (move != null && move.stuckCharts.contains(key)) continue;
                 if (charts.get(key) == null && chartsAsked.add(key)) asking.add(new long[] { nx, ny, key });
             }
         }
@@ -2674,6 +2706,7 @@ final class MapView {
         final int gen = chartGen, n = MapFrame.NODE_PX;
         for (long[] a : asking) {
             final long nx = a[0], ny = a[1], key = a[2];
+            final int moveSerial = move == null ? 0 : move.serial;
             WORKER.submit(() -> {
                 long[] w = chartsWanted;
                 if (w == null || w[0] != plots || w[1] != id || nx < w[2] || nx > w[3] || ny < w[4] || ny > w[5]) {
@@ -2690,6 +2723,12 @@ final class MapView {
                     MapTiles.chartPixels(ground, relief, pixels);
                 } catch (RuntimeException e) {
                     System.out.println("A chart's ground could not be drawn: " + e);
+                    if (moveSerial != 0) Platform.runLater(() -> {
+                        if (gen != chartGen) return;
+                        chartsAsked.remove(key);
+                        if (move != null && move.serial == moveSerial) move.stuckCharts.add(key);
+                        requestDraw();
+                    });
                     return;
                 }
                 Platform.runLater(() -> {
@@ -5107,6 +5146,8 @@ final class MapView {
     void collapse(boolean redraw) {
         hoverQuotes.leave();
         if (!expanded) return;
+        ReplayCamera cam = ui.replayCamera();
+        if (cam != null) cam.mapGone();
         expanded = false;
         ui.panKeysTo(null);
         keyW = keyA = keyS = keyD = false;
@@ -5699,7 +5740,7 @@ final class MapView {
      * A replay's camera move loaded before it runs (CM1, 2026-11-03): Jerus films his trailer from a replay and a glide or a fly out
      * that reaches the screen before the worker has shows half of it black. A move therefore LOADS first (ReplayCamera.LOAD): loadStep()
      * takes the camera's plan views (ReplayCamera.planView(), ReplayCamera.PLAN_HZ a second of the move's own clock) one after another
-     * and paints each with the real paint() until nothing it needs is missing (loadSettled()), with no limit on the time, while the
+     * and paints each with the real paint() until nothing it needs is missing (loadSettled()), up to LOAD_MAX_S, while the
      * caches are pinned (Pictures.pinned) so the walk does not let go of its own early views; then the move waits for a click and
      * runs on pictures that are all there. A move across months keeps, for each month, what the load saw (MoveLoad's store): a quick
      * step to another month makes a new CityMap whose district plans are not drawn and every picture stale, and the run takes the
@@ -5710,7 +5751,10 @@ final class MapView {
     /** How long the worker may sit idle while a view of the load still lacks something before the load passes it, in seconds: 2 - a far node or chart the worker cannot ground never comes back, and the load is not held by it; the Ready line counts them. */
     static final double STUCK_S = 2;
 
-    /** The share of the most the heap may hold at which a load stops, saying so: 0.8 - a move too long or too wide to hold in memory is refused, not run half loaded. */
+    /** The overall seconds allowed for a replay move to load, including busy worker time: 120 leaves room for CM2's whole-disc and multi-month loads. */
+    static final double LOAD_MAX_S = 120;
+
+    /** The share of the heap still available at a load's start that it may add before stopping: 0.8 leaves headroom even for a city already using most of the heap. */
     static final double LOAD_HEAP_SHARE = 0.8;
 
     /** The height of the words written over the map while a move loads or waits for its click, in pixels: 28. */
@@ -5731,10 +5775,16 @@ final class MapView {
         int next, passed;
         boolean applied;
         long idleSince;
+        final long started = System.nanoTime();
+        final LoadMemory memory = new LoadMemory(heapUsed(), Runtime.getRuntime().maxMemory());
+        boolean passing;
+        boolean deficient;
         /** From the click's wait to the move's end: the run takes pictures from the store. */
         boolean running;
         /** The far nodes and chart nodes that were asked and never came back, when their view was passed. */
         final Set<Long> stuckNodes = new HashSet<>(), stuckCharts = new HashSet<>();
+        final Set<Long> stuckTiles = new HashSet<>();
+        final Set<CityMap.District> stuckPictures = new HashSet<>();
         /** Month, then (cache index and tile key) to the tile's picture; and (cache index and tile key) to the copies by stamp. */
         final HashMap<Integer, HashMap<Long, TileCopy>> tilesAt = new HashMap<>();
         final HashMap<Long, List<TileCopy>> tileCopies = new HashMap<>();
@@ -5773,6 +5823,14 @@ final class MapView {
         dirty = true;
     }
 
+    /** Release a cancelled move synchronously, restoring a load's starting month and view before its map can detach. */
+    void cancelMove(ReplayCamera cam) {
+        boolean loading = move != null && !move.running;
+        endMove();
+        if (loading) backToStart(cam);
+        requestDraw();
+    }
+
     /** A load that did not reach its click, ended: the view and the month back to where the move begins. */
     private void backToStart(ReplayCamera cam) {
         CameraPath.View v0 = cam.startView();
@@ -5798,6 +5856,20 @@ final class MapView {
         MoveLoad m = move;
         long until = System.nanoTime() + (long) (REPLAY_FRAME_MS * 1e6);
         while (true) {
+            if (System.nanoTime() - m.started >= (long) (LOAD_MAX_S * 1e9)) {
+                cam.loadFailed("the move reached the " + (int) LOAD_MAX_S + " s load limit: shorten it or zoom less");
+                endMove();
+                backToStart(cam);
+                return false;
+            }
+            if (m.memory.over(MapView::heapUsed, System::gc)) {
+                Runtime rt = Runtime.getRuntime();
+                long used = heapUsed() >> 20, most = rt.maxMemory() >> 20;
+                cam.loadFailed("the move needs more memory than the game has (" + used + " of " + most + " MB): shorten it or zoom less");
+                endMove();
+                backToStart(cam);
+                return false;
+            }
             if (m.next >= m.of) {
                 CameraPath.View v0 = cam.startView();
                 cam.showMonthOf(v0);
@@ -5828,17 +5900,11 @@ final class MapView {
                 continue;
             }
             if (WORKER.getTaskCount() == tasks && loadSettled(m)) {
-                if (heapOver()) {
-                    Runtime rt = Runtime.getRuntime();
-                    long used = (rt.totalMemory() - rt.freeMemory()) >> 20, most = rt.maxMemory() >> 20;
-                    cam.loadFailed("the move needs more memory than the game has (" + used + " of " + most + " MB): shorten it or zoom less");
-                    endMove();
-                    backToStart(cam);
-                    return false;
-                }
                 if (m.months) scanView(m, true, cam.shownMonth());
+                if (m.deficient) m.passed++;
                 m.next++;
                 m.applied = false;
+                m.deficient = false;
                 m.idleSince = 0;
                 if (System.nanoTime() > until) break;
                 continue;
@@ -5848,12 +5914,7 @@ final class MapView {
                 if (m.idleSince == 0) {
                     m.idleSince = now;
                 } else if (now - m.idleSince > (long) (STUCK_S * 1e9)) {
-                    m.passed++;
-                    m.stuckNodes.addAll(nodesAsked);
-                    m.stuckCharts.addAll(chartsAsked);
-                    m.next++;
-                    m.applied = false;
-                    m.idleSince = 0;
+                    passView(m);
                     continue;
                 }
             } else {
@@ -5865,13 +5926,42 @@ final class MapView {
         return true;
     }
 
-    /** Whether the heap is over LOAD_HEAP_SHARE of what the game may have, after a collection if it looked so. */
-    private static boolean heapOver() {
+    /** Give an idle, incomplete view up once, remembering requests and visible cells that were never requested (CM1b). */
+    private void passView(MoveLoad m) {
+        m.passed++;
+        m.stuckNodes.addAll(nodesAsked);
+        m.stuckCharts.addAll(chartsAsked);
+        m.stuckPictures.addAll(picturesAsked);
+        m.passing = true;
+        try { scanView(m, false, 0); } finally { m.passing = false; }
+        m.next++;
+        m.applied = false;
+        m.deficient = false;
+        m.idleSince = 0;
+    }
+
+    private static long heapUsed() {
         Runtime rt = Runtime.getRuntime();
-        long limit = (long) (LOAD_HEAP_SHARE * rt.maxMemory());
-        if (rt.totalMemory() - rt.freeMemory() <= limit) return false;
-        System.gc();
-        return rt.totalMemory() - rt.freeMemory() > limit;
+        return rt.totalMemory() - rt.freeMemory();
+    }
+
+    /** A load's incremental heap budget, with at most one collection across all its views (CM1b). */
+    static final class LoadMemory {
+        final long limit;
+        boolean collected;
+
+        LoadMemory(long start, long most) {
+            limit = start + (long) (LOAD_HEAP_SHARE * Math.max(0, most - start));
+        }
+
+        boolean over(java.util.function.LongSupplier used, Runnable collect) {
+            if (used.getAsLong() <= limit) return false;
+            if (!collected) {
+                collected = true;
+                collect.run();
+            }
+            return used.getAsLong() > limit;
+        }
     }
 
     /** The view as it stands lacks nothing, outside a move: loadSettled() with nothing passed (ReplayMoveProbe's and ReplayCheck's wait for a still view). */
@@ -5906,7 +5996,10 @@ final class MapView {
         if (tiles == null) return false;
         for (Long k : nodesAsked) if (!m.stuckNodes.contains(k)) return false;
         for (Long k : chartsAsked) if (!m.stuckCharts.contains(k)) return false;
-        if (!picturesAsked.isEmpty()) return false;
+        for (CityMap.District d : picturesAsked) {
+            if (!m.stuckPictures.contains(d)) return false;
+            m.deficient = true;
+        }
         return scanView(m, false, 0);
     }
 
@@ -5925,9 +6018,11 @@ final class MapView {
                 for (long ny = cr[4]; ny <= cr[5]; ny++) {
                     for (long nx = cr[2]; nx <= cr[3]; nx++) {
                         long key = chartKey(cr[1], cr[0], nx, ny);
-                        if (m.stuckCharts.contains(key)) continue;
+                        if (m.stuckCharts.contains(key)) { m.deficient = true; continue; }
                         Img img = charts.get(key);
-                        if (img == null || img.pixels == null) return false;
+                        if (img == null || img.pixels == null) {
+                            if (m.passing) m.stuckCharts.add(key); else return false;
+                        }
                     }
                 }
             }
@@ -5940,8 +6035,13 @@ final class MapView {
         int cache = cacheIndex(pictures);
         for (long[] t : tilesInView(f)) {
             long key = MapTiles.key(t[0], t[1]);
+            long slot = ((long) cache << 58) ^ key;
+            if (m.stuckTiles.contains(slot)) { m.deficient = true; continue; }
             Img img = pictures.get(key);
-            if (img == null || img.image == null || img.version != version) return false;
+            if (img == null || img.image == null || img.version != version) {
+                if (m.passing) { m.stuckTiles.add(slot); continue; }
+                return false;
+            }
             if (record) storeTile(m, month, cache, key, img);
         }
         return true;
@@ -5954,12 +6054,18 @@ final class MapView {
         for (long ny = ny0; ny <= ny1; ny++) {
             for (long nx = nx0; nx <= nx1; nx++) {
                 long key = nodeKey(plots, nx, ny);
-                if (m.stuckNodes.contains(key)) continue;
+                if (m.stuckNodes.contains(key)) { m.deficient = true; continue; }
                 Img img = nodes.get(key);
-                if (img == null || img.image == null || img.pixels == null || img.version != version) return false;
+                if (img == null || img.image == null || img.pixels == null || img.version != version) {
+                    if (m.passing) { m.stuckNodes.add(key); continue; }
+                    return false;
+                }
                 if (img.partial && img.pictures != kept) {
                     if (fits == null) fits = tiles.picturesFit(asker);
-                    if (fits) return false;
+                    if (fits) {
+                        if (m.passing) { m.stuckNodes.add(key); continue; }
+                        return false;
+                    }
                 }
                 if (record) storeNode(m, month, key, img);
             }
