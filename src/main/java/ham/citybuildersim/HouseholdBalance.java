@@ -3481,7 +3481,7 @@ public class HouseholdBalance {
             double w = paperWeight(c, held);
             if (w <= 0) continue;
             double each = face * w / c.households;
-            c.paper = Math.max(0, c.paper - each);
+            c.paper = Debt.moved(c.paper, -each);
             c.savings += each;
             c.paperIncome += each;
         }
@@ -3500,7 +3500,7 @@ public class HouseholdBalance {
         for (Household c : cells) {
             double w = paperWeight(c, held);
             if (w <= 0) continue;
-            c.paper = Math.max(0, c.paper - face * w / c.households);
+            c.paper = Debt.moved(c.paper, -face * w / c.households);
             c.savings += Math.max(0, price) * w / c.households;
         }
     }

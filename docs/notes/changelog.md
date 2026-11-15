@@ -18,6 +18,13 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.110 — RT1b, RT1 money review follow-ups — 2026-11-15, ready, see docs/queue/RT1b-notes.md
+The sectors' and households' paper ledgers use the paper's relative rounding
+rule, so full principal payments, buybacks and central-bank purchases leave
+no ulp-sized holding. HoldersCheck causes each old remainder, tests both price
+levels, preserves partial holdings and cash, and measures the real firm-paper
+desk against the bank's independently recorded book; a broken split fails.
+
 ### 0.9.109 — CM1b, The replay loaded move, the review follow-ups — 2026-11-15, ready, see docs/queue/CM1b-notes.md
 Replay camera moves release their stored pictures, pins and prepared months immediately when stopped while Ready, and restore their starting view if their map closes during loading. Loads remember every missing kind, stop retrying failed jobs, and refuse at a stated overall limit. Their memory budget measures growth from the starting heap, with at most one collection per load. Keys are consumed during loading, and ReplayCheck closes its replay and unregisters both map pumps before its timing section. CM2's prepared maps and ordinary game behavior are preserved.
 

@@ -56,7 +56,7 @@
 > when the spread has gone, when it borrows, or when it needs the money - by
 > the rule that sends the dollars home. See THE CITY'S PAPER.
 
-**Uses:** [EconomyManager](EconomyManager.md) (13), [Sectors](Sectors.md) (11), [ForeignAccounts](ForeignAccounts.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (2), [PriceLevel](PriceLevel.md) (1), [Sector](Sector.md) (1)
+**Uses:** [EconomyManager](EconomyManager.md) (13), [Sectors](Sectors.md) (11), [ForeignAccounts](ForeignAccounts.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (2), [PriceLevel](PriceLevel.md) (1), [Sector](Sector.md) (1), [Debt](Debt.md) (1)
 
 **Used by (16):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [EconomyManager](EconomyManager.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [TradeScreen](TradeScreen.md)
 
