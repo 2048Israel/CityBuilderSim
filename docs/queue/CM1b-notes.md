@@ -46,3 +46,29 @@ All ten focused variants exited 1 with their expected finding, and the mended dr
 | cleanup | Restoring timer/close-only cleanup leaves replay or pumps active and fails the cleanup assertion. |
 
 The heap fixture derives its above-threshold starting use from `LOAD_HEAP_SHARE`, rather than pinning the old percentage in its premise. Each fixture restores its state explicitly after sampling, including with the broken behavior, so failures do not cascade into another fixture. This batch changes no process scripts or suite framework; one-in, one-out does not apply.
+
+## Review, trace and film
+
+REV-CM1b-1 reviewed `2853630b..a0a53660` and returned **SHIP**: the five follow-ups, callback guards, ordinary-game branches and caused fixtures all hold. The orchestrator separately accepted the probe-only `6cb75a1e` and `84a836dd` follow-ups (mail `20261114-234557-269`). No game-code changes follow `a0a53660`.
+
+The final probe driver with detached-scene cleanup and the dial-derived heap premise passes all twelve review assertions, exit 0 (`target/checks/CM1b-final-probe.txt`). Removing only scene-root detachment makes the late worker draw re-register the map pump and fails cleanup, exit 1 (`CM1b-late-callback.txt`, `target/CM1b-mutants/late-callback/run.log`). Together with the earlier ten variants this covers each original review finding and the cleanup's asynchronous edge.
+
+The default trace pair is against the starting CM2 main `2853630b`, compiled from an untouched source archive under `target/CM1b-main`. All **eight CSV files are byte-identical**. SHA-256 evidence: `target/checks/CM1b-trace-compare.txt`. After excluding only the startup option line, run elapsed time, layout-watch elapsed time and two narration clocks, all **523 report lines** also match (`CM1b-report-compare.json`, normalized hash `7de4abe436793d9854768744f103ba8cb64ad5c89f606a65bb7695292fc70ead`). Both runs exit 1 for the same registered layout finding: twelve boxes move at m2389; every money fixture and the final money footer pass. No model figure differs. The ensemble is skipped under batch.md section 6. Direct diagnostic console output used Windows' native encoding; those fourteen completed diagnostic logs were explicitly decoded from CP1252 and rewritten as UTF-8 through Git Bash before comparing reports. CSV bytes were not converted or normalized.
+
+The film runs use CM2's unchanged 123-month Andorra recording, `../codex-CM2/target/CM2-recording`, and the exact 1920 x 1080 off-screen canvas. Final `CM1b-film-final.txt`: M3 loads 2,401 views in 23.5 s, draws 204 frames, worst gap 140.5 ms; M6 loads 2,401 views in 17.9 s, draws 316 FAR frames, mean gap 31.8 ms, worst **49.1 ms**. Both reach Ready with no view passed, and both have zero black/coarse/stale/unpainted frames, worker asks, evictions and off-plan frames. Paired CM2-main M6 (`CM1b-film-main.txt`) loads in 18.8 s, mean 31.8 ms, worst **48.7 ms**; CM2's retained final measurement was 49.2 ms. These are functional/performance observations on the shared PC, not a replacement for the nightly timing verdict; no floor or premise is relaxed. Both film JVMs exit 0.
+
+## Incoming LD3 main and final gate preparation
+
+The orchestrator released the serialized dry-run slot after LD3 shipped (mail `20261114-235420-425`). Merged main `c0120d77` (0.9.108) as `5514d367` before final verification. The only conflict was the generated `docs/map/README.md`, resolved by regenerating all indexes from the combined source. LD3's named source files and the publisher-owned version, queue, changelog and gate record match origin/main exactly; CM1b authored no hunk in them. LD3 removes the always-on harness switch and the equivalent true branch in repriceLabour; its own retained gate compares all 523 normalized default-report lines byte-identically to CM2's main. The final merged gate report will also be compared with CM1b's report above.
+
+Final pick and retained normal-route dry-run metadata follow below.
+
+## Final pick
+
+On the merged main, `./batch-check.sh --pick` exits **3**, known reds only (`target/checks/CM1b-pick.txt`, kept suite `CM1b-pick-suite.txt`, replay log `CM1b-ReplayCheck-merged.log`). All seven selected harnesses ran: BuildMenuCheck, ClockCheck, LandCheck, MapCheck, ReplayCheck, TimingCheck and ZoningViewCheck. MapCheck alone is red, for its three registered main findings (drawing tally, road network, road surface). No NEW line appears. ReplayCheck, including the final late-callback cleanup and dial-derived heap fixture, passes. Stale has 0 firm findings. Eight timing assertions are SOFT and two played-path premises OBSERVED under the normal policy. One harness start waited for the standard 75% commit-charge guard. No timing floor or assertion is changed.
+
+The indexes were regenerated after midnight, so their generated date headers advance to November 15 across the map set. The provisional ship file is pushed before the authorized versioned normal-route dry run. Source and generated indexes are frozen from this checkpoint; after that run only these notes and the ship file will advance.
+
+## Retained gate run
+
+Metadata and final verdict are recorded here when the normal-route run completes.
