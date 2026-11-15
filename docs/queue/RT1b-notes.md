@@ -57,3 +57,48 @@ money-review flag says no; the starter was nevertheless sent the explicit
 money review request, `RT1b mends at 226500c21a9fb21b35abb464c884290d7cf0fdcc`.
 R0f's dry run was active at that time, so all subsequent work stayed at one
 heavy JVM at a time; no full suite or ensemble was run alongside its gate.
+
+The trace baseline is an untouched source archive of e8ac5a53 under
+`target/RT1b-main`, compiled independently (exit 0). It is the default
+2,400-month playtest, with the same Earth/world inputs and 2 GiB heap as the
+candidate. Both emit the eight CSVs at target/checks/rt1b-main-* and
+rt1b-final-*; the pair runs serially. This is a default trace comparison,
+not a second monetary ensemble baseline. The provisional ship file was
+pushed before gate work (a24f6f35).
+
+## Stranger review
+
+The starter reports REV-RT1b-1 on e8ac5a53..226500c2: **SHIP**. Its finding:
+all three ledger moves preserve units and cash formulas; the real-desk
+fixture compares transferred face with the bank's independently booked
+increase. Source remains at the reviewed 226500c2 implementation.
+
+## Default trace
+
+The full main/candidate pair finished: both exit 1 for the same registered
+LongPlaytest finding (DM3-R), twelve boxes moving in district (-1,-1) at
+m2389. All eight closed CSVs are byte-identical, with hashes retained in
+`target/checks/rt1b-trace-comparison.json`. The 524 report lines also match
+apart from the overall and layout-watch elapsed times and two narration
+clock prefixes (`rt1b-report-diff.txt`, `rt1b-report-comparison.json`).
+The two completed direct-Java reports were CP1252; they were decoded and
+rewritten as UTF-8 through Git Bash for comparison. CSV bytes were untouched.
+
+The ensemble is skipped under batch.md section 6 because the trace is
+unchanged. Every money-audit fixture and all six sidecar reloads pass in both
+reports. The selected check is running serially with cbs.parallel=1.
+
+## Final selection and gate handoff
+
+The local `batch-check.sh --pick` selected the same 39 harnesses and ran
+serially while R0f's gate was active. Before it completed, the starter
+explicitly stopped that duplicate run and granted the dry-run slot
+(cbs-bus 20261115-012315-820-orchestrator-b763): the dry run runs the same
+selection. Its partial log is target/checks/rt1b-pick.txt, not a completed
+verdict. Only its own verified PowerShell process tree (PID 13368, command
+naming that RT1b log) was ended, by PID and descendants, never by image.
+
+The required `RT1b dry run?` message acknowledged that go. Main remains
+e8ac5a53; neither concurrent batch has shipped, so no main merge is needed.
+The launcher gate below supplies the completed final selection verdict.
+No process scripts or suite machinery were changed by RT1b.
