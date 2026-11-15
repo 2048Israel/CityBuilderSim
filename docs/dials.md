@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,977 constants in 576 files.**
+**5,977 constants in 577 files.**
 
 ## model (2860 constants)
 
@@ -6354,8 +6354,8 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 66 | `FittingCheck.DRIVE` | `EquipmentCheck.DRIVE, TRUCK = EquipmentCheck.TRUCK, TRACTOR = EquipmentCheck.TRACTOR` |  |
-| 392 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowl... |
-| 425 | `FittingCheck.ORDER_COST` | `{ Double.NaN, Double.NaN }, ORDER_QUOTED = { Double.NaN, Double.NaN }, ORDER_STICKER = ...` | What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(), which buildStack() charges); the quote's sticker,... |
+| 397 | `FittingCheck.BAKERY_MONTHS` | `60` | The months a pair of Bakeries is given to finish: 36 until R0d, whose 1900 village on 1901's wages (WageLadder) grows more slowly - 1,242 people at month 14 against 1,780 - and so builds more slowl... |
+| 430 | `FittingCheck.ORDER_COST` | `{ Double.NaN, Double.NaN }, ORDER_QUOTED = { Double.NaN, Double.NaN }, ORDER_STICKER = ...` | What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(), which buildStack() charges); the quote's sticker,... |
 
 ### FloatLinkCheck.java ([map](map/FloatLinkCheck.md))
 
@@ -7725,7 +7725,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 90 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Spot("E12", ...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
 | 135 | `ResearchCheck.MONTH_KNOWN` | `30` | The entries whose World column names a month: the table's count. |
 | 138 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has. |
-| 139 | `ResearchCheck.PREFIX_COUNTS` | `{ 18, 10, 8, 5, 27, 6, 3, 12 }` |  |
+| 139 | `ResearchCheck.PREFIX_COUNTS` | `{ 20, 10, 8, 5, 27, 6, 3, 12 }` |  |
 | 142 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594 }, { "M10...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
 | 527 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 

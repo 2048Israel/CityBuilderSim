@@ -1,4 +1,4 @@
-# HistoricalRecipeCheck.java - 742 lines · 31 methods · 2 constants · harnesses
+# HistoricalRecipeCheck.java - 743 lines · 31 methods · 2 constants · harnesses
 
 `ham/citybuildersim/HistoricalRecipeCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -31,7 +31,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 25 | 718 | **type** `public final class HistoricalRecipeCheck` | Each sourced 1900 undo runs before its entry, knowledge alone does not fit equipment, independent pieces compose, and the default city stays modern. |
+| 25 | 719 | **type** `public final class HistoricalRecipeCheck` | Each sourced 1900 undo runs before its entry, knowledge alone does not fit equipment, independent pieces compose, and the default city stays modern. |
 | 30 | 6 | `static { ... }` |  |
 | 37 | 5 | `static void check(String label, boolean ok, String detail)` |  |
 | 43 | 5 | `static void silent(Runnable action)` |  |
@@ -43,25 +43,25 @@
 | 84 | 5 | `static double extra(Object t, String method, double beforeValue)` | Missing pre-R2d read methods expose main's actual modern value, not a compile failure. |
 | 90 | 15 | `static boolean matchesUndo(Map<String, Double> old, Map<String, Double> modern, JsonObject d)` |  |
 | 106 | 3 | `static Game town(String label, boolean historical)` |  |
-| 110 | 41 | `static void rows(JsonObject data) throws Exception` |  |
-| 152 | 45 | `static void composition() throws Exception` |  |
-| 198 | 12 | `static void defaults(JsonObject data) throws Exception` |  |
-| 211 | 17 | `static void clock() throws Exception` |  |
-| 230 | 30 | `static void railFuel() throws Exception` |  |
-| 261 | 38 | `static void depotFuel() throws Exception` |  |
-| 300 | 27 | `static void cracking() throws Exception` |  |
-| 328 | 25 | `static void supersedingProcess() throws Exception` |  |
-| 355 | 33 | `static void completedPiece() throws Exception` |  |
-| 390 | 29 | `static void savedPriceChoice() throws Exception` |  |
-| 421 | 27 | `static void utilityUnits(JsonObject data) throws Exception` |  |
-| 450 | 28 | `static void oneRounding(JsonObject data) throws Exception` |  |
-| 479 | 36 | `static void recoveryDepletion() throws Exception` |  |
-| 516 | 26 | `static void boundedCrackingMean() throws Exception` |  |
-| 543 | 44 | `static void thermalAppraisal() throws Exception` |  |
-| 590 | 12 | `static Map<Good, Double> thermalProducts(double litres)` | Expected thermal yields: the study's 0.24 petrol, leaving the modern difference as fuel oil. |
-| 603 | 6 | `static double thermalSpread(double[] values)` |  |
-| 610 | 4 | `static void priceForBothReaders(Game g, Good good, double price)` |  |
-| 615 | 67 | `static void thermalReaders() throws Exception` |  |
-| 684 | 30 | `static void compositeResearchReader() throws Exception` |  |
-| 715 | 27 | `public static void main(String[] args) throws Exception` |  |
+| 110 | 42 | `static void rows(JsonObject data) throws Exception` |  |
+| 153 | 45 | `static void composition() throws Exception` |  |
+| 199 | 12 | `static void defaults(JsonObject data) throws Exception` |  |
+| 212 | 17 | `static void clock() throws Exception` |  |
+| 231 | 30 | `static void railFuel() throws Exception` |  |
+| 262 | 38 | `static void depotFuel() throws Exception` |  |
+| 301 | 27 | `static void cracking() throws Exception` |  |
+| 329 | 25 | `static void supersedingProcess() throws Exception` |  |
+| 356 | 33 | `static void completedPiece() throws Exception` |  |
+| 391 | 29 | `static void savedPriceChoice() throws Exception` |  |
+| 422 | 27 | `static void utilityUnits(JsonObject data) throws Exception` |  |
+| 451 | 28 | `static void oneRounding(JsonObject data) throws Exception` |  |
+| 480 | 36 | `static void recoveryDepletion() throws Exception` |  |
+| 517 | 26 | `static void boundedCrackingMean() throws Exception` |  |
+| 544 | 44 | `static void thermalAppraisal() throws Exception` |  |
+| 591 | 12 | `static Map<Good, Double> thermalProducts(double litres)` | Expected thermal yields: the study's 0.24 petrol, leaving the modern difference as fuel oil. |
+| 604 | 6 | `static double thermalSpread(double[] values)` |  |
+| 611 | 4 | `static void priceForBothReaders(Game g, Good good, double price)` |  |
+| 616 | 67 | `static void thermalReaders() throws Exception` |  |
+| 685 | 30 | `static void compositeResearchReader() throws Exception` |  |
+| 716 | 27 | `public static void main(String[] args) throws Exception` |  |
 

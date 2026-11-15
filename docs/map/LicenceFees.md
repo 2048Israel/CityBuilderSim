@@ -14,7 +14,7 @@
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (19), [Sector](Sector.md) (15), [Game](Game.md) (13), [Recipes](Recipes.md) (11), [Recipe](Recipe.md) (9), [BuildingsStacks](BuildingsStacks.md) (8), [ResearchCatalog](ResearchCatalog.md) (6), [SpreadPlanner](SpreadPlanner.md) (6), [ExtractionSector](ExtractionSector.md) (5), [Research](Research.md) (4), [EquipmentFit](EquipmentFit.md) (4), [Refining](Refining.md) (3), [ProcessingSector](ProcessingSector.md) (3), [Equipment](Equipment.md) (3), [BusinessInvestment](BusinessInvestment.md) (2), [JobType](JobType.md) (2), [RecipeChanges](RecipeChanges.md) (2), [RefineryFlow](RefineryFlow.md) (1), [Resource](Resource.md) (1), [Deposit](Deposit.md) (1)
 
-**Used by (11):** [EquipmentFit](EquipmentFit.md), [Freight](Freight.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistorySave](HistorySave.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Markets](Markets.md), [MoneyAudit](MoneyAudit.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [Sector](Sector.md)
+**Used by (12):** [EquipmentFit](EquipmentFit.md), [Freight](Freight.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistorySave](HistorySave.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Markets](Markets.md), [MoneyAudit](MoneyAudit.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [Sector](Sector.md)
 
 ## Constants
 
