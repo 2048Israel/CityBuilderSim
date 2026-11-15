@@ -4268,8 +4268,7 @@ public class KeptCheck {
 
         // Search: the words and the chips; Activity: the groups, the months, the lines that group.
         List<Choice> search = new ArrayList<>();
-        // (A bond named by its number, one row, on each chip; and the whole list once: the whole list is 8,000 nodes and 19,000 pixels tall, a stress
-        // for the page's scroller more than for the nodes - a word that names a company would list its dozens of bonds, a different page in a different city.)
+        // A bond named by its number, one row, on each chip, then the market's first page.
         String oneBond = lotOf(securities, "B:", List.of(), false);
         String word = oneBond == null ? "bond" : "#" + oneBond.substring(2);
         for (String filter : KeptBench.fundFilters()) {
@@ -4284,14 +4283,12 @@ public class KeptCheck {
         // Activity's rows are keyed by their words, and a line of the record names the bond it is about as the book names it now: in the month a
         // bond with a long record is repaid, every line of it reads other words and is made new (59 rows, 611 nodes of 2,700 in this city at month 615).
         // That is the page showing the month's events, not a page rebuilt, so the share of its nodes a month hands back is printed there and not asserted.
-        for (String group : List.of("Trades", "All")) {
-            for (int months : group.equals("All") ? new int[]{6} : new int[]{60}) {
-                search.add(acting("Activity, " + group + ", " + months + " months", b -> {
-                    b.fundPage("Activity");
-                    b.fundActivity(group, months);
-                    return null;
-                }));
-            }
+        for (String group : KeptBench.fundGroups()) {
+            search.add(acting("Activity, " + group + ", the latest twelve months", b -> {
+                b.fundPage("Activity");
+                b.fundActivity(group, fundDial("ACTIVITY_MONTHS"));
+                return null;
+            }));
         }
         search.add(acting("Activity's grouped lines opened (the rule's trades of a month, when it made some)", b -> {
             b.fundPage("Activity");
@@ -4300,6 +4297,7 @@ public class KeptCheck {
         }));
         search.add(acting("...and closed", b -> { b.fundFoldsClosed(); return null; }));
         pageReshaped(g, bench, tab, 63, search);
+        fundLists(g, bench, tab);
         t = took("Search and Activity", t);
 
         // A security's page, from Portfolio and from Search, with the ticket's choices.
@@ -4341,6 +4339,175 @@ public class KeptCheck {
             bench.fundPage("Portfolio");
             return null;
         });
+    }
+
+    /** The screen's own paging dials, also used by the bench's package-private hands. */
+    static int fundDial(String name) throws Exception {
+        java.lang.reflect.Field field = Class.forName("ham.citybuildersim.ui.FundScreen").getDeclaredField(name);
+        field.setAccessible(true);
+        return field.getInt(null);
+    }
+
+    /** Search rows in their on-screen order, leaving section heads and the paging control out. */
+    static List<javafx.scene.layout.HBox> fundResultRows(KeptBench bench) {
+        javafx.scene.Node first = bench.nodesOnPage().stream().filter(n -> n instanceof javafx.scene.layout.HBox box
+                && box.getOnMouseClicked() != null && box.getChildren().stream().anyMatch(c -> c instanceof javafx.scene.control.Label l
+                && "›".equals(l.getText()))).findFirst().orElse(null);
+        if (first == null) return List.of();
+        return ((javafx.scene.layout.Pane) first.getParent()).getChildren().stream()
+                .filter(n -> n instanceof javafx.scene.layout.HBox && n.getOnMouseClicked() != null)
+                .map(n -> (javafx.scene.layout.HBox) n).toList();
+    }
+
+    /** The names in Search have the market's original order, including a held lot repeated in its market section. */
+    static void fundSearchPage(Game g, KeptBench bench, int limit) {
+        List<FundView.Hit> hits = FundView.search(g, bench.fundSearchBox().getText(), "All");
+        List<javafx.scene.layout.HBox> rows = fundResultRows(bench);
+        List<String> names = new ArrayList<>();
+        for (var row : rows) {
+            var lead = (javafx.scene.layout.HBox) row.getChildren().get(0);
+            var named = (javafx.scene.layout.VBox) lead.getChildren().get(1);
+            names.add(((javafx.scene.control.Label) named.getChildren().get(0)).getText());
+        }
+        int shown = Math.min(limit, hits.size());
+        check("Search shows the first " + shown + " results in their market order", names.equals(hits.subList(0, shown).stream().map(FundView.Hit::name).toList()));
+        String more = bench.chipWith(s -> s.startsWith("Show more · "));
+        check("Search says exactly how many results are left, and its last page has no Show more",
+                shown == hits.size() ? more == null : ("Show more · " + (hits.size() - shown) + " left").equals(more));
+    }
+
+    /** FP1: a real sale, income and contribution in one older year cause the summary's different money columns. */
+    static void fundYearNet(Game g) throws Exception {
+        TreasuryFund.State saved = g.getFund().toState();
+        try {
+            FundLedger ledger = g.getFund().getLedger();
+            ledger.reset();
+            int first = g.getMonth() - 36;
+            while (CityCalendar.monthOfYear(first) != 1) first++;
+            String company = Equity.COMPANIES[0];
+            ledger.boughtShare(company, false, 100, 2, 2, first);
+            ledger.soldShare(company, true, 25, 5, 0, 100, 0, 0, first + 1);
+            ledger.soldShare(company, true, 25, 1, 0, 75, 0, 0, first + 2);
+            ledger.dividend(company, 12, 0, first + 3);
+            ledger.flow(FundLedger.PAY_IN, 1_000, true, first + 3);
+            ledger.flow(FundLedger.DRAW_OUT, 200, true, first + 3);
+            int recentMonths = fundDial("ACTIVITY_MONTHS");
+            int recent = g.getMonth() - recentMonths + 1;
+            ledger.flow(FundLedger.PAY_IN, 1, true, recent - 1);
+            ledger.flow(FundLedger.PAY_IN, 1, true, recent);
+            ledger.flow(FundLedger.PAY_IN, 1, true, g.getMonth());
+            FundView.ActivityRecord record = FundView.activityRecord(g, "All", recentMonths);
+            int fixtureYear = CityCalendar.yearOf(first);
+            FundView.ActivityYear year = record.years().stream().filter(y -> y.year() == fixtureYear).findFirst().orElseThrow();
+            List<FundLedger.Activity> rows = ledger.getActivity().stream().filter(r -> CityCalendar.yearOf(r.month()) == year.year()).toList();
+            double realized = rows.stream().mapToDouble(FundLedger.Activity::realized).sum();
+            double income = rows.stream().filter(r -> FundLedger.DIVIDEND.equals(r.kind())).mapToDouble(FundLedger.Activity::money).sum();
+            double paidIn = rows.stream().filter(r -> FundLedger.PAY_IN.equals(r.kind())).mapToDouble(FundLedger.Activity::money).sum();
+            check("the older year's fixture has profitable and loss-making sales, income and a contribution",
+                    realized != 0 && income > 0 && paidIn > 0 && rows.stream().anyMatch(r -> r.realized() < 0));
+            check("the year's net is its ledger's realized gains plus income, with contributions and principal excluded",
+                    year.net() == realized + income && year.net() != realized + income + paidIn);
+            check("the year's count is its distinct recorded months", year.months() == rows.stream().map(FundLedger.Activity::month).distinct().count());
+            check("Activity's latest twelve months include the boundary month and keep the preceding one behind a year fold",
+                    record.recent().stream().map(FundView.Line::month).toList().equals(List.of(g.getMonth(), recent))
+                    && record.years().stream().flatMap(y -> y.lines().stream()).anyMatch(l -> l.month() == recent - 1));
+            List<FundView.Line> all = new ArrayList<>(record.recent());
+            for (FundView.ActivityYear older : record.years()) all.addAll(older.lines());
+            check("every Activity line occurs in exactly one period, in its original order", all.equals(FundView.activity(g, "All", null)));
+            FundView.ActivityRecord money = FundView.activityRecord(g, FundView.MONEY, recentMonths);
+            check("the Money chip's older years have zero realized-plus-income net", money.years().stream().allMatch(y -> y.net() == 0));
+        } finally {
+            g.getFund().restore(saved);
+        }
+    }
+
+    /** Section 63: paging controls and each older year really open and shut, kept against a page built new. */
+    static void fundLists(Game g, KeptBench bench, KeptBench.Page tab) throws Exception {
+        System.out.println("\n--- 63: the fund's Search pages and Activity years (FP1) ---");
+        fx(() -> { fundYearNet(g); return null; });
+        int rows = fundDial("SEARCH_ROWS");
+        List<Choice> choices = new ArrayList<>();
+        choices.add(choice("Search starts with SEARCH_ROWS", b -> {
+            b.fundPage("Search");
+            b.fundSearch("", "All");
+            b.drawKept(tab);
+            check("the played city's market causes at least three Search pages", FundView.search(g, "", "All").size() > rows * 2);
+            fundSearchPage(g, b, rows);
+            return null;
+        }));
+        for (int page = 2; page <= 3; page++) {
+            int limit = page * rows;
+            choices.add(choice("Search Show more reaches page " + page, b -> {
+                String more = b.chipWith(s -> s.startsWith("Show more · "));
+                if (more == null || !b.pressChip(more)) return "Show more is absent";
+                fundSearchPage(g, b, limit);
+                return null;
+            }));
+        }
+        choices.add(choice("typing starts Search at its first rows", b -> {
+            b.drawKept(tab); // Restore the screen's field reference after the comparison's fresh draw.
+            b.fundSearchBox().setText("bond");
+            fundSearchPage(g, b, rows);
+            return null;
+        }));
+        choices.add(choice("clearing the words starts Search at its first rows", b -> {
+            b.drawKept(tab);
+            b.fundSearchBox().clear();
+            fundSearchPage(g, b, rows);
+            return null;
+        }));
+        choices.add(choice("Search expanded before a chip is pressed", b -> {
+            String more = b.chipWith(s -> s.startsWith("Show more · "));
+            return more != null && b.pressChip(more) ? null : "Show more is absent";
+        }));
+        choices.add(choice("the Bonds chip starts at SEARCH_ROWS", b -> {
+            if (!b.pressChip("Bonds")) return "the Bonds chip is absent";
+            check("a chip starts Search again from its first rows", fundResultRows(b).size() == Math.min(rows, FundView.search(g, "", "Bonds").size()));
+            return null;
+        }));
+        choices.add(choice("Search's final partial page", b -> {
+            b.drawKept(tab);
+            // A query naming one issuer causes several pages without drawing the entire old city's market.
+            String issuer = FundView.search(g, "", "Bonds").stream().map(FundView.Hit::issuer).distinct().filter(name -> {
+                int count = FundView.search(g, name, "Bonds").size();
+                return count > rows && count % rows != 0;
+            }).findFirst().orElse(null);
+            if (issuer == null) return "no issuer causes both a full page and a final partial page";
+            b.fundSearchBox().setText(issuer);
+            String more;
+            int presses = 0;
+            while ((more = b.chipWith(s -> s.startsWith("Show more · "))) != null && presses++ < 100) b.pressChip(more);
+            check("all of the issuer's matches can be reached and Show more goes away", b.chipWith(s -> s.startsWith("Show more · ")) == null
+                    && fundResultRows(b).size() == FundView.search(g, issuer, "Bonds").size());
+            return null;
+        }));
+        pageReshaped(g, bench, tab, 63, choices);
+        fx(() -> {
+            bench.fundPage("Activity");
+            bench.fundActivity("All", fundDial("ACTIVITY_MONTHS"));
+            bench.fundFoldsClosed();
+            bench.drawKept(tab);
+            List<FundView.ActivityYear> years = FundView.activityRecord(g, "All", fundDial("ACTIVITY_MONTHS")).years();
+            check("the played city's record causes multiple older year folds", years.size() > 1);
+            for (FundView.ActivityYear year : years) {
+                String closed = "▸ " + year.year() + " · " + year.months() + (year.months() == 1 ? " month" : " months");
+                check("year " + year.year() + " starts shut with its recorded month count", bench.chipWith(closed::equals) != null);
+                int before = bench.signature().size();
+                check("year " + year.year() + " can be opened by its own fold", bench.pressChip(closed));
+                check("year " + year.year() + " reveals its months", bench.signature().size() > before);
+                check("year " + year.year() + " open equals a page built new", againstNew(bench, tab, true) == null);
+                String opened = closed.replace('▸', '▾');
+                check("year " + year.year() + " can be shut by its own fold", bench.pressChip(opened));
+                check("year " + year.year() + " shut equals a page built new", againstNew(bench, tab, true) == null);
+            }
+            return null;
+        });
+        List<Choice> folds = new ArrayList<>();
+        for (FundView.ActivityYear year : fx(() -> FundView.activityRecord(g, "All", fundDial("ACTIVITY_MONTHS")).years().subList(0, 2))) {
+            folds.add(acting("Activity year " + year.year() + " open across a month", b -> { b.fundFold("fund:year:" + year.year(), true); return null; }));
+        }
+        folds.add(acting("Activity's years shut again", b -> { b.fundFoldsClosed(); return null; }));
+        pageReshaped(g, bench, tab, 63, folds);
     }
 
     /* ----- the pictures (64) ----- */

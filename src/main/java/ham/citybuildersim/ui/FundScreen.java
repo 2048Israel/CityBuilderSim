@@ -100,8 +100,11 @@ final class FundScreen {
         return page;
     }
 
-    /** The months of the record Activity shows before "show older", and how many more each press adds. */
-    static final int ACTIVITY_MONTHS = 60;
+    /** The months of Activity shown outside the older calendar years' folds. */
+    static final int ACTIVITY_MONTHS = 12;
+
+    /** The first Search results shown, and the additional rows each Show more reveals. */
+    static final int SEARCH_ROWS = 40;
 
     /** The rows of a security's own record under its book. */
     static final int SECURITY_ROWS = 12;
@@ -129,6 +132,8 @@ final class FundScreen {
     String filter = "All";
     String group = "All";
     int activityMonths = ACTIVITY_MONTHS;
+    int searchRows = SEARCH_ROWS;
+    private String resultsQuery = "", resultsFilter = "All";
 
     /** Folds and opened rows, by key. */
     final Set<String> open = new HashSet<>();
@@ -521,9 +526,14 @@ final class FundScreen {
                  String held, double[] spark, int company, String issuer) { }
 
     static List<Found> found(Game g, String query, String filter) {
+        return found(g, FundView.search(g, query, filter));
+    }
+
+    /** Only the hits on show need their prices, dates and moves put into words. */
+    static List<Found> found(Game g, List<FundView.Hit> hits) {
         List<Found> out = new ArrayList<>();
         int now = g.getMonth();
-        for (FundView.Hit h : FundView.search(g, query, filter)) {
+        for (FundView.Hit h : hits) {
             boolean bond = FundView.BOND.equals(h.kind());
             String sub, tag, mv;
             switch (h.kind()) {
@@ -857,19 +867,22 @@ final class FundScreen {
 
     /** The record's lines, newest first, grouped: a month's rule trades on one side of one market are one line with the lots inside. */
     static List<Act> acts(Game g, String group, String key, int months) {
-        List<Act> out = new ArrayList<>();
-        int now = g.getMonth();
         List<FundView.Line> lines = FundView.activity(g, group, key);
+        if (months > 0) lines = lines.stream().filter(l -> g.getMonth() - l.month() < months).toList();
+        return acts(g, lines, key);
+    }
+
+    /** The visible part of the record, with the same grouping on every page. */
+    static List<Act> acts(Game g, List<FundView.Line> lines, String key) {
+        List<Act> out = new ArrayList<>();
         int i = 0;
         while (i < lines.size()) {
             FundView.Line l = lines.get(i);
-            if (months > 0 && now - l.month() >= months) break;
             FundLedger.Activity a = l.row();
             if (a != null && !a.hand() && (FundLedger.BUY.equals(a.kind()) || FundLedger.SELL.equals(a.kind())) && key == null) {
                 // The rule's same-month, same-side trades in one market: one line.
                 boolean bondRow = a.key() != null && a.key().startsWith("B:");
                 List<Act> inside = new ArrayList<>();
-                double money = 0, realized = 0;
                 int j = i;
                 while (j < lines.size()) {
                     FundView.Line m = lines.get(j);
@@ -877,15 +890,14 @@ final class FundScreen {
                     if (b == null || b.hand() || b.month() != a.month() || !b.kind().equals(a.kind())
                             || (b.key() != null && b.key().startsWith("B:")) != bondRow) break;
                     inside.add(act(g, m));
-                    money += b.money();
-                    realized += b.realized();
                     j++;
                 }
                 if (inside.size() == 1) out.add(inside.get(0));
                 else {
                     String verb = FundLedger.BUY.equals(a.kind()) ? "bought" : "sold";
+                    FundView.ActivityTotals totals = FundView.activityTotals(lines.subList(i, j));
                     out.add(new Act(a.month(), "The rule " + verb + " " + inside.size() + (bondRow ? " bonds" : " companies' shares"),
-                            "the rule", "", d(g, money), FundLedger.SELL.equals(a.kind()) ? pnl(sym(g), realized, Double.NaN) : null,
+                            "the rule", "", d(g, totals.money()), FundLedger.SELL.equals(a.kind()) ? pnl(sym(g), totals.realized(), Double.NaN) : null,
                             null, false, inside));
                 }
                 i = j;
@@ -1497,10 +1509,12 @@ final class FundScreen {
         page.getChildren().add(Kept.scope("top", () -> {
             box = searchBox(query, "Search shares and bonds", 600, typed -> {
                 query = typed;
+                searchRows = SEARCH_ROWS;
                 fillResults(g, results);
             }, () -> { if (ui.rootMenu != null) ui.rootMenu.requestFocus(); });
             FlowPane chips = chipStrip(FILTERS, filter, Palette.SIZE_LABEL, pick -> {
                 filter = pick;
+                searchRows = SEARCH_ROWS;
                 redraw();
             });
             HBox top = Kept.row(14, box, chips);
@@ -1522,7 +1536,10 @@ final class FundScreen {
     /** The results, refilled in place as the box is typed in (a redraw would lose the next key). */
     void fillResults(Game g, VBox results) {
         results.getChildren().clear();
-        List<Found> all = found(g, query, filter);
+        if (!query.equals(resultsQuery) || !filter.equals(resultsFilter)) searchRows = SEARCH_ROWS;
+        resultsQuery = query;
+        resultsFilter = filter;
+        List<FundView.Hit> all = FundView.search(g, query, filter);
         if (all.isEmpty()) {
             results.getChildren().add(Kept.scope("none", () -> line(query.isBlank() ? "Nothing on the market."
                     : "Nothing matches \"" + query.trim() + "\".")));
@@ -1531,19 +1548,25 @@ final class FundScreen {
         // Kept (KP5): a row is a scope keyed by the security it shows, a section's head by the section, and what the list says only
         // sometimes is a scope of its own.
         String section = null;
-        boolean anyBond = false;
-        for (Found f : all) {
+        boolean anyBond = all.stream().anyMatch(h -> FundView.BOND.equals(h.kind()));
+        int shown = Math.min(searchRows, all.size());
+        for (Found f : found(g, all.subList(0, shown))) {
             if (f.section() != null && !f.section().equals(section)) {
                 section = f.section();
                 final String head = section;
                 results.getChildren().add(Kept.scope("section:" + head, () -> groupHead(head)));
             }
-            anyBond |= "BOND".equals(f.tag());
             results.getChildren().add(Kept.scope("found:" + f.key(), () -> foundRow(g, f)));
         }
         if (query.isBlank() && !anyBond && ("All".equals(filter) || "Bonds".equals(filter))) {
             results.getChildren().add(Kept.scope("noBonds", () -> groupHead(FundView.BONDS_SECTION)));
             results.getChildren().add(Kept.scope("noBond", () -> line("No company has a bond outstanding.")));
+        }
+        if (shown < all.size()) {
+            results.getChildren().add(Kept.scope("more", () -> stepChip("Show more · " + (all.size() - shown) + " left", () -> {
+                searchRows += SEARCH_ROWS;
+                fillResults(g, results);
+            }, false)));
         }
     }
 
@@ -1565,7 +1588,7 @@ final class FundScreen {
         HBox tagBox = Kept.row(0, tag(f.tag(), colourOf(f.key())));
         tagBox.setMinWidth(86);
         tagBox.setAlignment(Pos.CENTER_LEFT);
-        VBox priceBox = figureCell(f.price(), null, null, 150);
+        VBox priceBox = Kept.scope(f.price().isEmpty() ? "empty price" : "price", () -> figureCell(f.price(), null, null, 150));
         Label mv = words(f.move(), Palette.SIZE_LABEL, Palette.TEXT_BODY);
         mv.setMinWidth(0);
         mv.setPrefWidth(220);
@@ -1574,7 +1597,7 @@ final class FundScreen {
         boolean lined = f.spark() != null && f.spark().length >= 2;
         Node spark = Kept.scope(lined ? "spark" : "space", () -> lined
                 ? sparkline(f.spark(), months(g, f.spark().length), Palette.BUSINESS, 96, 22) : spacer(96));
-        Label held = words(f.held(), Palette.SIZE_LABEL, Palette.TEXT_LABEL);
+        Label held = Kept.scope(f.held().isEmpty() ? "empty held" : "held", () -> words(f.held(), Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         held.setMinWidth(0);
         HBox.setHgrow(held, Priority.ALWAYS);
         held.setMaxWidth(Double.MAX_VALUE);
@@ -2202,41 +2225,62 @@ final class FundScreen {
                     + "one market are one line: open it for the lots. Before this build kept a record, the rescues and the "
                     + "fund's and the bank's decisions fill in, from the decision log.", chips);
         }));
-        List<Act> rows = acts(g, group, null, activityMonths);
-        VBox list = Kept.scope("list", () -> {
-            VBox column = Kept.column(0);
-            int lastMonth = Integer.MIN_VALUE;
-            for (Act a : rows) {
-                if (a.month() != lastMonth) {
-                    lastMonth = a.month();
-                    final int dated = lastMonth;
-                    column.getChildren().add(Kept.scope("month:" + dated, () -> {
-                        Label m = Kept.label(CityCalendar.format(dated));
-                        m.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 8 0 2 6;");
-                        return m;
-                    }));
-                }
-                String k = "fund:act:" + a.month() + ":" + a.what();
-                column.getChildren().add(Kept.scope("act:" + k, () -> actRow(g, a, true, "")));
-                if (!a.inside().isEmpty() && open.contains(k)) {
-                    for (Act inner : a.inside()) {
-                        column.getChildren().add(Kept.scope("inside:" + k + ":" + inner.what(), () -> actRow(g, inner, false, " -fx-padding: 2 6 2 40;")));
-                    }
-                }
-            }
-            if (rows.isEmpty()) column.getChildren().add(Kept.scope("nothing", () -> line("Nothing in the last " + activityMonths + " months.")));
-            return column;
-        });
-        page.getChildren().add(Kept.scope("card", () -> card(list)));
-        List<Act> older = acts(g, group, null, 0);
-        if (older.size() > rows.size()) {
-            page.getChildren().add(Kept.scope("older", () -> door("Show older", Palette.ACCENT, () -> { activityMonths += ACTIVITY_MONTHS; redraw(); })));
+        FundView.ActivityRecord record = FundView.activityRecord(g, group, activityMonths);
+        page.getChildren().add(Kept.scope("recent", () -> {
+            VBox list = activityRows(g, acts(g, record.recent(), null));
+            if (record.recent().isEmpty()) list.getChildren().add(Kept.scope("nothing",
+                    () -> line("Nothing in the last " + activityMonths + " months.")));
+            return card(list);
+        }));
+        for (FundView.ActivityYear year : record.years()) {
+            page.getChildren().add(Kept.scope("year:" + year.year(), () -> {
+                String key = "fund:year:" + year.year();
+                boolean expanded = open.contains(key);
+                Label head = words((expanded ? "▾ " : "▸ ") + year.year() + " · " + year.months()
+                        + (year.months() == 1 ? " month" : " months"), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL, true);
+                head.setOnMouseClicked(e -> { if (!open.remove(key)) open.add(key); redraw(); });
+                Pnl net = pnl(sym(g), year.net(), Double.NaN);
+                Label figure = words("Net realized + income " + net.text(), Palette.SIZE_LABEL, net.tone());
+                Kept.tip(figure, "Realized gains and losses plus income in these recorded months, under the selected chip.", 150);
+                HBox header = Kept.row(14, head, figure);
+                header.setAlignment(Pos.CENTER_LEFT);
+                VBox content = Kept.column(0, header);
+                if (expanded) content.getChildren().add(Kept.scope("months",
+                        () -> activityRows(g, acts(g, year.lines(), null))));
+                return card(content);
+            }));
         }
         FundLedger ledger = g.getFund().getLedger();
         if (ledger.getDropped() > 0) {
             page.getChildren().add(Kept.scope("dropped", () -> muted("The record keeps its newest " + FundLedger.ACTIVITY_ROWS + " lines; "
                     + ledger.getDropped() + " older ones have gone.")));
         }
+    }
+
+    /** The months on show, with the rule's trades still opening to their lots. */
+    VBox activityRows(Game g, List<Act> rows) {
+        VBox column = Kept.column(0);
+        int lastMonth = Integer.MIN_VALUE;
+        for (Act a : rows) {
+            if (a.month() != lastMonth) {
+                lastMonth = a.month();
+                final int dated = lastMonth;
+                column.getChildren().add(Kept.scope("month:" + dated, () -> {
+                    Label m = Kept.label(CityCalendar.format(dated));
+                    m.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL) + " -fx-padding: 8 0 2 6;");
+                    return m;
+                }));
+            }
+            String k = "fund:act:" + a.month() + ":" + a.what();
+            column.getChildren().add(Kept.scope("act:" + k, () -> actRow(g, a, true, "")));
+            if (!a.inside().isEmpty() && open.contains(k)) {
+                for (Act inner : a.inside()) {
+                    column.getChildren().add(Kept.scope("inside:" + k + ":" + inner.what(),
+                            () -> actRow(g, inner, false, " -fx-padding: 2 6 2 40;")));
+                }
+            }
+        }
+        return column;
     }
 
     /** One line of the record: what, by whom, units, money, realized, and "›" to its security; a grouped line opens. `extra` is more style for the row (an inner line's deeper padding). */

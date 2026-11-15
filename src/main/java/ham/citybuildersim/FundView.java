@@ -865,6 +865,52 @@ public final class FundView {
         return out;
     }
 
+    /** An older calendar year's recorded months and their realized gains plus income, under the selected Activity chip. */
+    public record ActivityYear(int year, int months, double net, List<Line> lines) { }
+
+    /** Activity's latest months and older calendar years, newest first; each line belongs to exactly one period. */
+    public record ActivityRecord(List<Line> recent, List<ActivityYear> years) { }
+
+    /** The ledger's money and realized result for a group of trades on one side of one market. */
+    public record ActivityTotals(double money, double realized) { }
+
+    /** The figures on a grouped Activity row, read from its own ledger rows. */
+    public static ActivityTotals activityTotals(List<Line> lines) {
+        double money = 0, realized = 0;
+        for (Line line : lines) {
+            if (line.row() == null) continue;
+            money += line.row().money();
+            realized += line.row().realized();
+        }
+        return new ActivityTotals(money, realized);
+    }
+
+    /** The periods Activity draws, with counts and net figures worked out here before any screen is drawn. */
+    public static ActivityRecord activityRecord(Game g, String group, int recentMonths) {
+        List<Line> recent = new ArrayList<>();
+        java.util.Map<Integer, List<Line>> older = new java.util.LinkedHashMap<>();
+        for (Line line : activity(g, group, null)) {
+            if (g.getMonth() - line.month() < recentMonths) recent.add(line);
+            else older.computeIfAbsent(CityCalendar.yearOf(line.month()), y -> new ArrayList<>()).add(line);
+        }
+        List<ActivityYear> years = new ArrayList<>();
+        for (var entry : older.entrySet()) {
+            List<Line> lines = entry.getValue();
+            int months = (int) lines.stream().map(Line::month).distinct().count();
+            double net = 0;
+            for (Line line : lines) {
+                FundLedger.Activity row = line.row();
+                if (row == null) continue;
+                net += row.realized();
+                if (INCOME.equals(line.group()) || (FundLedger.PREFERRED.equals(row.kind()) && "dividend".equals(row.note()))) {
+                    net += row.money();
+                }
+            }
+            years.add(new ActivityYear(entry.getKey(), months, net, List.copyOf(lines)));
+        }
+        return new ActivityRecord(List.copyOf(recent), List.copyOf(years));
+    }
+
     /** Whether a row's key is the lot a security page shows: a share's books together. */
     public static boolean sameLot(String key, String rowKey) {
         if (rowKey == null) return false;
