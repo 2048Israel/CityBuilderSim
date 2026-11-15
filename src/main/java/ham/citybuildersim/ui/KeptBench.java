@@ -25,6 +25,8 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -180,6 +182,8 @@ public final class KeptBench {
     public void restoreKept() throws Exception {
         ui.setPage(kept.toArray(new Node[0]));
         passes();
+        kept = List.of();
+        release(scene);
     }
 
     /**
@@ -300,6 +304,9 @@ public final class KeptBench {
         ui.tabRail.getChildren().addAll(0, keptRail.subList(0, at));
         ui.tabRail.getChildren().addAll(keptRail.subList(at + 1, keptRail.size()));
         chromePasses();
+        keptHeader = keptRail = List.of();
+        keptPools = null;
+        release(headerScene, railScene);
     }
 
     /**
@@ -476,6 +483,9 @@ public final class KeptBench {
         ui.constructionPanel.getChildren().setAll(keptSites);
         ui.inboxCorner.getChildren().setAll(keptList);
         panelPasses();
+        keptCity = keptSites = keptList = List.of();
+        keptPanelPools = null;
+        release(cityScene, sitesScene, listScene);
     }
 
     /** The three scenes' CSS and layout, as a frame's pulse runs them: {CSS ms, layout ms}, summed. */
@@ -723,6 +733,14 @@ public final class KeptBench {
             }
         }
         passes();
+        keptHistory = List.of();
+        keptHistoryPool = null;
+        keptChipPools = null;
+        keptLegend.clear();
+        keptRanges.clear();
+        chartParents = null;
+        chartAt = null;
+        release(scene);
     }
 
     /**
@@ -1205,7 +1223,8 @@ public final class KeptBench {
     }
 
     /**
-     * What one kept draw set on the nodes it handed back (KP2b): how many times a style, a text, a graphic, a padding or a preferred width
+     * What one kept draw set on the nodes it handed back (KP2b/KP2c): style, text, graphic, padding, preferred size, disabling, constraints,
+     * and size/margin layout requests, including requests made by an equal raw JavaFX setter. How many times each
      * was written on a node that was on the page before the draw (`count`), those written from a file the caller names as not yet mended
      * (`ignored`, not in the count), and the sources of the first, most first (each once, with how often and the first node it wrote:
      * "x14 Pieces.java:132 < Kept.java:61 style: Column .style [...] -> [...]").
@@ -1214,12 +1233,11 @@ public final class KeptBench {
 
     /**
      * One more kept draw of a page, the city unchanged (no month between), with a listener on every node of the page before it: on its style;
-     * on a label's or a text's words and a label's graphic; on a region's padding and preferred width. Each listener counts and reads its
+     * on a label's or a text's words and a label's graphic; on a region's padding and preferred size; on disabling and grid constraint lists. Each listener counts and reads its
      * property again, so the next write is seen too: a value set to what it already is sets nothing (a String property compares by value),
      * and a value set to another and back, or an Insets made again (an object property compares by reference), is counted at each write.
      * The page is drawn and laid out before this is called, and no CSS or layout pass runs inside it (a pass writes properties of its own).
-     * It does not see what moves no property: a size or a margin set to what it is (Region.setPrefSize, HBox.setMargin) asks its parent for a
-     * layout all the same, whatever it is given.
+     * A temporary observer on kept boxes also hears equal Region.setPrefSize and HBox.setMargin layout requests, which move no property.
      * The listeners are taken off before it returns. A write whose nearest line of the game's code is in one of the files `unmended` names
      * is counted apart: a screen outside the sweep's list, named by the check that asks, with its reason.
      */
@@ -1235,7 +1253,9 @@ public final class KeptBench {
         int[] count = {0, 0};
         java.util.Map<String, Object[]> sources = new java.util.LinkedHashMap<>();
         List<Runnable> off = new ArrayList<>();
+        java.util.Set<Node> watched = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
         each(root, n -> {
+            watched.add(n);
             watchSets(n, "style", n.styleProperty(), count, sources, unmended, off);
             if (n instanceof Labeled l) {
                 watchSets(n, "text", l.textProperty(), count, sources, unmended, off);
@@ -1246,11 +1266,33 @@ public final class KeptBench {
             if (n instanceof Region r) {
                 watchSets(n, "padding", r.paddingProperty(), count, sources, unmended, off);
                 watchSets(n, "prefWidth", r.prefWidthProperty(), count, sources, unmended, off);
+                watchSets(n, "prefHeight", r.prefHeightProperty(), count, sources, unmended, off);
+            }
+            watchSets(n, "disable", n.disableProperty(), count, sources, unmended, off);
+            if (n instanceof javafx.scene.layout.GridPane grid) {
+                watchList(n, "columns", grid.getColumnConstraints(), count, sources, unmended, off);
+                watchList(n, "rows", grid.getRowConstraints(), count, sources, unmended, off);
             }
         });
+        java.util.function.Consumer<Node> previous = Kept.layoutObserver;
+        java.util.function.Consumer<Node> previousSize = Kept.sizeObserver;
+        Kept.sizeObserver = n -> {
+            if (watched.contains(n)) heardSet(n, "setPrefSize", null, "layout requested", count, sources, unmended);
+        };
+        Kept.layoutObserver = n -> {
+            if (!watched.contains(n)) return;
+            for (StackTraceElement at : new Throwable().getStackTrace()) {
+                if (at.getClassName().equals("javafx.scene.layout.HBox") && at.getMethodName().equals("setMargin")) {
+                    heardSet(n, at.getMethodName(), null, "layout requested", count, sources, unmended);
+                    break;
+                }
+            }
+        };
         try {
             draw.run();
         } finally {
+            Kept.layoutObserver = previous;
+            Kept.sizeObserver = previousSize;
             for (Runnable r : off) r.run();
         }
         List<String> first = new ArrayList<>();
@@ -1264,6 +1306,118 @@ public final class KeptBench {
         return redrawSets(p, java.util.Set.of());
     }
 
+    /** KP2c's draw-end fixture: equal constraints and a greyed button stay put; omissions reset once. */
+    public boolean[] drawEndState() throws Exception {
+        Kept.Pool pool = new Kept.Pool();
+        javafx.scene.control.Button[] button = new javafx.scene.control.Button[1];
+        javafx.scene.layout.GridPane[] grid = new javafx.scene.layout.GridPane[1];
+        Node[] root = new Node[1];
+        boolean[] give = {true};
+        Runnable draw = () -> Kept.draw(pool, () -> {
+            button[0] = Kept.of(javafx.scene.control.Button.class, javafx.scene.control.Button::new);
+            grid[0] = Kept.grid();
+            if (give[0]) {
+                Kept.give(button[0].disableProperty(), true);
+                Kept.give(button[0].managedProperty(), false);
+                Kept.give(button[0].mouseTransparentProperty(), true);
+                Kept.give(button[0].visibleProperty(), false);
+                Kept.give(button[0].opacityProperty(), .5);
+                Kept.give(button[0].cursorProperty(), javafx.scene.Cursor.HAND);
+                Kept.give(button[0].onActionProperty(), e -> { });
+                Kept.columns(grid[0]).add(new javafx.scene.layout.ColumnConstraints(Statement.STATEMENT));
+                Kept.rows(grid[0]).add(new javafx.scene.layout.RowConstraints(Palette.SIZE_BODY));
+            }
+            root[0] = Kept.column(0, button[0], grid[0]);
+        });
+        draw.run();
+        ui.setPage(root[0]);
+        passes();
+        Object columnBefore = grid[0].getColumnConstraints().get(0), rowBefore = grid[0].getRowConstraints().get(0);
+        int[] toggles = {0};
+        button[0].disableProperty().addListener((o, a, b) -> toggles[0]++);
+        Sets unchanged = redrawSets(root[0], draw, java.util.Set.of());
+        boolean quiet = unchanged.count() == 0 && toggles[0] == 0 && button[0].isDisable()
+                && grid[0].getColumnConstraints().get(0) == columnBefore && grid[0].getRowConstraints().get(0) == rowBefore;
+        give[0] = false;
+        draw.run();
+        boolean omitted = !button[0].isDisable() && button[0].isManaged() && !button[0].isMouseTransparent()
+                && button[0].isVisible() && button[0].getOpacity() == 1 && button[0].getCursor() == null
+                && button[0].getOnAction() == null && grid[0].getColumnConstraints().isEmpty() && grid[0].getRowConstraints().isEmpty();
+        int resetCount = toggles[0];
+        draw.run();
+        return new boolean[]{quiet, omitted, toggles[0] == resetCount && resetCount == 1};
+    }
+
+    /** A non-limitCell maker reapplies its own style before vitalsBar on each draw (KP2b's review). */
+    public boolean foreignVitalsCell() {
+        Kept.Pool pool = new Kept.Pool();
+        VBox[] cell = new VBox[1];
+        Runnable draw = () -> Kept.draw(pool, () -> {
+            cell[0] = Kept.column(0);
+            cell[0].setStyle("-fx-padding: 99;");
+            Pieces.vitalsBar(cell[0]);
+        });
+        draw.run();
+        VBox first = cell[0];
+        String expected = cell[0].getStyle();
+        draw.run();
+        return first == cell[0] && expected.equals(cell[0].getStyle());
+    }
+
+    /** Equal raw JavaFX setters cause layout, and the same redraw through the screens' helpers does not. */
+    public int[] sizeAndMarginSets() throws Exception {
+        Kept.Pool pool = new Kept.Pool();
+        Region[] icon = new Region[1];
+        javafx.scene.layout.HBox[] row = new javafx.scene.layout.HBox[1];
+        Runnable draw = () -> Kept.draw(pool, () -> {
+            icon[0] = Pieces.icon(Icons.POPULATION, Palette.PEOPLE, Palette.SIZE_BODY);
+            Pieces.hMargin(icon[0], Pieces.FRAME_ROOM);
+            row[0] = Kept.row(0, icon[0]);
+        });
+        draw.run();
+        ui.setPage(row[0]);
+        passes();
+        Sets equal = redrawSets(row[0], draw, java.util.Set.of());
+        Sets rawSize = redrawSets(row[0], () -> icon[0].setPrefSize(icon[0].getPrefWidth(), icon[0].getPrefHeight()), java.util.Set.of());
+        passes();
+        Sets rawMargin = redrawSets(row[0], () -> javafx.scene.layout.HBox.setMargin(icon[0], javafx.scene.layout.HBox.getMargin(icon[0])), java.util.Set.of());
+        return new int[]{equal.count(), rawSize.count(), rawMargin.count()};
+    }
+
+    /** Saved comparison roots must end with the restore; they otherwise hold whole retired pages. */
+    public int comparisonRoots() {
+        return kept.size() + keptHeader.size() + keptRail.size() + keptCity.size() + keptSites.size() + keptList.size()
+                + keptHistory.size() + keptPage.size() + keptBoxes.size() + keptBar.size() + keptTab.size()
+                + (keptPools == null ? 0 : keptPools.length) + (keptPanelPools == null ? 0 : keptPanelPools.length)
+                + (keptFramePools == null ? 0 : keptFramePools.length) + (keptHistoryPool == null ? 0 : 1)
+                + (keptChipPools == null ? 0 : keptChipPools.length) + keptLegend.size() + keptRanges.size()
+                + (chartParents == null ? 0 : chartParents.length);
+    }
+
+    /** An unattached picture counted by the bench: only the diagnostic map could keep it alive. */
+    public java.lang.ref.WeakReference<Pane> retiredPicture() {
+        Pane picture = new Pane();
+        repaints(picture);
+        return new java.lang.ref.WeakReference<>(picture);
+    }
+
+    /** A rendered temporary header child retired by restore: a no-stage scene must drain its dirty list too. */
+    public java.lang.ref.WeakReference<Node> retiredChrome() throws Exception {
+        drawChromeKept();
+        showFreshChrome();
+        Node retired = new Label("retired header child");
+        ui.header.getChildren().add(retired);
+        chromePasses();
+        restoreKeptChrome();
+        return new java.lang.ref.WeakReference<>(retired);
+    }
+
+    /** A physical release caught by the scene while a disabled slider cannot hear its own handler. */
+    public static void releaseElsewhere(Node n) {
+        javafx.event.Event.fireEvent(n.getScene(), new javafx.scene.input.MouseEvent(MouseEvent.MOUSE_RELEASED,
+                0, 0, 0, 0, MouseButton.PRIMARY, 1, false, false, false, false, false, false, false, false, false, false, null));
+    }
+
     /** The most sources redrawSets names. */
     private static final int SETS_NAMED = Integer.getInteger("keptbench.named", 12);
 
@@ -1272,19 +1426,32 @@ public final class KeptBench {
         Object[] was = {property.getValue()};
         javafx.beans.InvalidationListener l = o -> {
             Object now = property.getValue();
+            heardSet(n, what, was[0], now, count, sources, unmended);
+            was[0] = now;
+        };
+        property.addListener(l);
+        off.add(() -> property.removeListener(l));
+    }
+
+    private static void watchList(Node n, String what, javafx.collections.ObservableList<?> list, int[] count,
+                                  java.util.Map<String, Object[]> sources, java.util.Set<String> unmended, List<Runnable> off) {
+        javafx.collections.ListChangeListener<Object> listener = c ->
+                heardSet(n, what, null, "list changed", count, sources, unmended);
+        list.addListener(listener);
+        off.add(() -> list.removeListener(listener));
+    }
+
+    private static void heardSet(Node n, String what, Object was, Object now, int[] count,
+                                 java.util.Map<String, Object[]> sources, java.util.Set<String> unmended) {
             String[] at2 = whereSet();
             String where = at2[0];
             if (unmended.contains(at2[1])) {
                 count[1]++;
             } else {
                 count[0]++;
-                Object[] at = sources.computeIfAbsent(where + " " + what, k -> new Object[]{0, describeSet(n) + " ." + what + differ(was[0], now)});
+                Object[] at = sources.computeIfAbsent(where + " " + what, k -> new Object[]{0, describeSet(n) + " ." + what + differ(was, now)});
                 at[0] = (int) at[0] + 1;
             }
-            was[0] = now;
-        };
-        property.addListener(l);
-        off.add(() -> property.removeListener(l));
     }
 
     /**
@@ -1389,7 +1556,9 @@ public final class KeptBench {
         ui.setPage(keptPage.toArray(new Node[0]));
         for (java.util.Map.Entry<Pane, List<Node>> e : keptBoxes.entrySet()) Kept.set(e.getKey().getChildren(), e.getValue());
         passes();
-        release();
+        keptPage = List.of();
+        keptBoxes.clear();
+        release(scene);
     }
 
     private final WritableImage tiny = new WritableImage(1, 1);
@@ -1402,8 +1571,12 @@ public final class KeptBench {
      * synchronising and costs nothing to draw.
      */
     public void release() {
+        release(scene, headerScene, railScene, cityScene, sitesScene, listScene, barScene, tabScene);
+    }
+
+    private void release(Scene... scenes) {
         tinyView.setViewport(new javafx.geometry.Rectangle2D(0, 0, 1, 1));
-        column.snapshot(tinyView, tiny);
+        for (Scene s : scenes) s.getRoot().snapshot(tinyView, tiny);
     }
 
     /** Every box (Pane) under a node and the children it holds now. */
@@ -2831,7 +3004,8 @@ public final class KeptBench {
         return out;
     }
 
-    private final java.util.Map<Pane, int[]> repaintCounts = new java.util.IdentityHashMap<>();
+    // A picture owns its counter; observing one must not keep it and its retired page alive.
+    private final java.util.Map<Pane, int[]> repaintCounts = new java.util.WeakHashMap<>();
 
     /**
      * How many times a picture has drawn itself since the bench first asked about it (0 at that first asking): a chart counts its
@@ -4781,6 +4955,9 @@ public final class KeptBench {
         ui.drawerBar.getChildren().setAll(keptBar);
         ui.constructionTab.getChildren().setAll(keptTab);
         framePasses();
+        keptBar = keptTab = List.of();
+        keptFramePools = null;
+        release(barScene, tabScene);
     }
 
     /** Both scenes' CSS and layout, as a frame's pulse runs them: {CSS ms, layout ms}, summed. */

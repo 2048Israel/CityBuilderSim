@@ -8,6 +8,7 @@ import javafx.css.StyleOrigin;
 import javafx.css.StyleableProperty;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.event.EventHandler;
 import javafx.event.WeakEventHandler;
 import javafx.scene.control.ButtonBase;
@@ -167,6 +168,7 @@ public final class Kept {
         final Set<Node> made = Collections.newSetFromMap(new IdentityHashMap<>());
         final Set<Node> tipped = Collections.newSetFromMap(new IdentityHashMap<>());
         final Set<Property<?>> given = Collections.newSetFromMap(new IdentityHashMap<>());
+        final Map<Node, Scene> detached = new IdentityHashMap<>();
 
         Draw(Draw outer) {
             this.outer = outer;
@@ -181,9 +183,13 @@ public final class Kept {
 
     /** The draw on now, or null: then every call here makes a new node. Only ever touched on the FX thread. */
     private static Draw drawing;
+    /** The draw whose staged lists are committing, when constructors must behave outside a draw. */
+    private static Draw settling;
 
     /** Bench observation of JavaFX layout requests, null during ordinary play (FX thread only). */
     static Consumer<Node> layoutObserver;
+    /** The preferred-size convenience setter bypasses Parent.requestLayout; observe its calls directly. */
+    static Consumer<Node> sizeObserver;
 
     /** Whether a kept draw is on. */
     static boolean drawing() {
@@ -218,10 +224,15 @@ public final class Kept {
         } finally {
             // Nothing is being drawn while the boxes are settled: what a children change calls is not this draw's.
             drawing = null;
+            Draw previousSettling = settling;
+            settling = d;
             try {
                 for (Scope s : d.begun) s.end();
                 for (Node n : d.handedBack) resetOmitted(d, n);
                 for (Staging s : d.staged) s.commit();
+                for (Map.Entry<Node, Scene> e : d.detached.entrySet()) {
+                    if (e.getKey().getScene() != e.getValue()) letGo(e.getKey());
+                }
                 // A tooltip the code gave a node last time and not this time goes.
                 for (Node n : d.handedBack) {
                     Tooltip t = tipOf(n);
@@ -231,6 +242,7 @@ public final class Kept {
                 pool.lastMade = d.made.size();
                 pool.lastKept = d.handedBack.size();
             } finally {
+                settling = previousSettling;
                 drawing = outer;
             }
         }
@@ -386,6 +398,11 @@ public final class Kept {
 
         Column() { }
 
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
+
         @Override public void requestLayout() {
             if (layoutObserver != null) layoutObserver.accept(this);
             super.requestLayout();
@@ -411,6 +428,11 @@ public final class Kept {
         private ObservableList<Node> stage;
 
         Row() { }
+
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
 
         @Override public void requestLayout() {
             if (layoutObserver != null) layoutObserver.accept(this);
@@ -438,6 +460,11 @@ public final class Kept {
 
         Stack() { }
 
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
+
         @Override public void requestLayout() {
             if (layoutObserver != null) layoutObserver.accept(this);
             super.requestLayout();
@@ -464,6 +491,11 @@ public final class Kept {
 
         Flow() { }
 
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
+
         @Override public void requestLayout() {
             if (layoutObserver != null) layoutObserver.accept(this);
             super.requestLayout();
@@ -489,6 +521,11 @@ public final class Kept {
         private ObservableList<Node> stage;
 
         Plain() { }
+
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
 
         @Override public void requestLayout() {
             if (layoutObserver != null) layoutObserver.accept(this);
@@ -520,6 +557,11 @@ public final class Kept {
         private ObservableList<RowConstraints> rows;
 
         Grid() { }
+
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
 
         @Override public void requestLayout() {
             if (layoutObserver != null) layoutObserver.accept(this);
@@ -646,7 +688,15 @@ public final class Kept {
 
     /** A Region: a spacer, a bar, a swatch. */
     static Region region() {
-        return of(Region.class, Region::new);
+        return of(SizedRegion.class, SizedRegion::new);
+    }
+
+    /** A plain Region with the same passive setter observation as the kept boxes. */
+    static final class SizedRegion extends Region {
+        @Override public void setPrefSize(double width, double height) {
+            if (sizeObserver != null) sizeObserver.accept(this);
+            super.setPrefSize(width, height);
+        }
     }
 
     /** A Label with this text and no graphic. */
@@ -743,8 +793,7 @@ public final class Kept {
         });
         EventHandler<MouseEvent> release = e -> {
             if (e.getButton() != MouseButton.PRIMARY) return;
-            n.getProperties().remove(HELD);
-            if (n instanceof Slider s && s.isValueChanging()) s.setValueChanging(false);
+            letGo(n);
         };
         n.addEventFilter(MouseEvent.MOUSE_RELEASED, release);
         WeakEventHandler<MouseEvent> sceneRelease = new WeakEventHandler<>(release);
@@ -752,11 +801,17 @@ public final class Kept {
             if (was != null) was.removeEventFilter(MouseEvent.MOUSE_RELEASED, sceneRelease);
             if (now != null) now.addEventFilter(MouseEvent.MOUSE_RELEASED, sceneRelease);
             else {
-                n.getProperties().remove(HELD);
-                if (n instanceof Slider s) s.setValueChanging(false);
+                Draw draw = drawing != null ? drawing : settling;
+                if (draw != null && was != null) draw.detached.putIfAbsent(n, was);
+                else letGo(n);
             }
         });
         if (n.getScene() != null) n.getScene().addEventFilter(MouseEvent.MOUSE_RELEASED, sceneRelease);
+    }
+
+    private static void letGo(Node n) {
+        n.getProperties().remove(HELD);
+        if (n instanceof Slider s && s.isValueChanging()) s.setValueChanging(false);
     }
 
     /**
