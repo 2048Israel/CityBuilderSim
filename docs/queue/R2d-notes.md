@@ -296,3 +296,17 @@ available to either fitted status. These observations were sent to the
 orchestrator before changing any tracked or scratch fixture premise.
 The initially suggested Bakery replacement was withdrawn: that drive is
 free in 1900 and cannot cause the required positive-patent condition.
+
+Orchestrator's 09:26 fixture-scope instruction is implemented in the scratch
+overlay for the post-merge commit: PE1 expiry gives all other entries local
+knowledge and keeps total bills across all sectors. The real E1 case now
+asserts that both fitted statuses can run oxygen and the hearth adds zero.
+There is no other finite-gain required patented recipe: the only dated
+primary piece is the tractor, whose FARM_HORSES gain is still NaN pending
+R1d. A separate, explicitly synthetic required E1 process on the same
+equipped steel-shop template supplies a positive gross/imported-fee control.
+Both original default-gross assertions and the expiry assertion remain.
+LicenceFeesCheck is green, 43/43. HistoricalLicenceCheck is now 20/20,
+including positive real thermal production rejecting imported PE24 with no
+fee. Against the pre-hook classes it has 11 failures of 20. RecipeCheck,
+EquipmentCheck and DiscoveryCheck are green on the same overlay.
