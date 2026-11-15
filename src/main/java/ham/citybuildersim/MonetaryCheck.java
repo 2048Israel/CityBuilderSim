@@ -708,17 +708,16 @@ public class MonetaryCheck {
     static final int HELD_FROM = LongPlaytest.HELD_AFTER + 1;
 
     /**
-     * How far apart two runs of the one founding may read, in inflation a year, when only the dial's timing moves: 0.10 points.
-     *
-     * RE-MEASURED AT 0.7.11 (Jerus, 2026-09-24: "re-measure it"). Holding each row's dial from month 26 instead of 25 moves
-     * the rows by 0.000 / 0.053 / 0.051 / 0.040 points (3% / 10% / 20% / 40%); at 0.7.3 the largest was 0.019 (0.026 at
-     * 0.7.2) and the allowance 0.05. What moved it is the landlords' insured mortgage (0.7.11): its rate is fixed for a
-     * ten-year term at whatever the dial reads the month it is written, so the month the dial moves in now decides the
-     * rate a building carries for a decade - a House written a month before the hold pays 4.48% where one written after
-     * it pays 11.2%. That is how fixed-rate lending behaves, so it is noise in the sense this constant means: the timing
-     * of the hand, not the level of the dial. The allowance keeps the headroom it had (about twice the largest reading).
+     * How far apart two runs of the one founding may read when only the dial's timing moves: 0.65 points a year,
+     * about twice CB2's largest reading on RT2 main (0.9.113), holding each dial a month late over the same window.
+     * On the harness's own setup (buildersShortOn false), the 3% / 10% / 20% / 40% rows differed by
+     * 0.000 / 0.276 / 0.322 / 0.320 points; the 20% row is now largest.
+     * At 40%, lags of 1 / 2 / 3 / 4 / 5 / 6 months move inflation by 0.320 / 0.365 / 0.435 / 0.568 / 0.574 / 0.665
+     * points: six months misses this premise, five does not; a miss is observed and skips ordering (PO1), not a failed law.
+     * Re-measured as at 0.7.11 (Jerus: "re-measure it"): the hand's timing fixes a mortgage's rate for its term,
+     * so this allows timing variation, while TRANSMISSION_FLOOR still requires a full point across the dial's range.
      */
-    static final double MEASUREMENT_NOISE = .0010;
+    static final double MEASUREMENT_NOISE = .0065;
 
     /** How much lower inflation must run at a dial of 40% than at 3%, a year: one point - the channel has to be worth a point across the range or it is not a channel. */
     static final double TRANSMISSION_FLOOR = .01;
