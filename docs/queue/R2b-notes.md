@@ -1,5 +1,7 @@
 # R2b — Buildings on history's dates
 
+Ready: the fresh normal-route gate passed, launcher exit 0 and suite exit 3, known reds only. All eight default traces match main byte for byte. Own model and fixtures remain 3398da4a.
+
 Started from main b49a6023 (0.9.111), on batch/R2b, 2026-11-15.
 
 ## Built and calls
@@ -158,3 +160,34 @@ must be fresh after merging RT2, so the old auto-reuse hint is removed
 from the provisional ship file; both old run directories stay recorded
 above. RT2's promised baseline CSV directory is
 C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-20261115-041842/trace.
+
+## Final fresh gate: passed
+
+The orchestrator's 04:36 go superseded the wait for RT2: RT2 stopped to
+mend and main stayed b49a6023, so no predecessor merge was needed. A full
+FRESH normal-route run, with all three accepted rows present from the
+start and no reuse hint, ran beside KD1's baseline ensemble.
+
+- Retained run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2b-Y8tUFPu3
+- Branch checked: e18ad09f822747fce331b51e4fb4a16ff49086e3
+- Main checked: b49a6023c892e61e575f39c57b4d16774cf6fdd7
+- Log: that directory's ship.log; sealed suite and harness logs under checks/.
+- ALL selected 203 harnesses; the normal gate tier ran 196 in 2,577s:
+  191 passed, 5 known-red harnesses, no NEW red.
+- Known only: MoneyDatesCheck, MapCheck, DeathRecordCheck, LongPlaytest
+  and the main-proven ResearchViewCheck finding above.
+- Compile 41s; complete check 2,645s. Suite exit 3, launcher exit 0.
+  Finished 2026-11-15 05:21 Halifax.
+- KeptCheck ALL OK; no timeout. Fifteen timing assertions soft and four
+  path observations informational. One start held by the commit guard.
+- The normal dry run restored its clone tree; checks.complete and sealed
+  logs remain in the retained run. The ship file names this successful
+  run for reuse, replacing the earlier failed attempts.
+- A final fetch still found main at b49a6023. Source and fixture code did
+  not advance after 3398da4a; since the checked branch, only these notes
+  and the ship file advance. The provisional marker is dropped last.
+
+REV-R2b-1's SHIP verdict on the code and fixtures stands. The two separate
+main faults are queued as R2b-V and R2b-J, with the exact accepted rows.
+All existing fixture premises remain intact. No model ensemble was
+needed: the eight default traces are byte-identical to this same main.
