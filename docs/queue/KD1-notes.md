@@ -59,3 +59,11 @@ The ensemble finished at 06:04, exit 0, 80/80 runs, no missing or short runs, 83
 New score is 23/26 against the prior baseline's 22/26, with all 10 hard criteria passing. ZERO_SLACK T2 changed from informational FAIL to PASS, median final population 513,902 [100,209 to 1,932,923]. The three remaining informational failures match the baseline readings and verdicts. AUTO2 A1 inflation is 3.15% [2.62% to 3.69%], four of sixteen seeds in band. AUTO2 A2's runaway spell is 22 [12 to 36] months. ZERO_HOT H2 is -0.36% [-5.42% to 4.53%], nine of sixteen below the earlier excess. M1 and F1 pass for all policies.
 
 At 05:30 the orchestrator reported R2b shipped on main d8e9c12b, with all eight default traces byte-identical, and confirmed this baseline remains valid. Main will be merged before the launcher dry run, as requested.
+
+## Final main integration and process count
+
+Merged main d8e9c12b before the dry run. The only conflicts were generated docs/harnesses.md and docs/map/README.md. Regeneration resolved them, batch-check.sh --fast exited 0, and EnsembleCheck read the committed EN2 baseline successfully against game 0.9.112. Its log is target/checks/kd1-en2-readable.txt. The source diff from this main contains the same four runner/check files. Selected source/rules/scripts retain LF line endings.
+
+Final git diff --numstat origin/main over docs/batch.md, tools/ensemble and the four changed runner/check sources gives 461 added and 426 removed. Generated dials, harness index and maps add 491 and remove 546. Combined process and session-index scope is 952 added, 972 removed. Own notes, ship and ensemble score are excluded. The core rows are 75/103 batch checklist, 141/48 AllChecks, 25/64 EnsembleCheck, 45/1 KnownRedsCheck, 8/60 TimingCheck, 10/49 ensemble driver, 62/90 ensemble README, 32/10 runner and 63/1 runner/scorer self-tests.
+
+The orchestrator granted the no-tag dry run at 06:05 after main integration and a pushed provisional ship file, with RT2's single ensemble beside it under the revised scheduling rule. No other heavy job runs for KD1.

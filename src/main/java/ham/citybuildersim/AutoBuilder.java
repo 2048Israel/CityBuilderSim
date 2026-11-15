@@ -583,7 +583,7 @@ public final class AutoBuilder {
         double least = Double.POSITIVE_INFINITY;
         double[] before = BuildAdvice.supplyDemand(game, m, Map.of());
         double share = before[1] > 0 ? before[0] / before[1] : 1;
-        for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+        for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
             if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
             double[] after = BuildAdvice.supplyDemand(game, m, Map.of(t, 1));
@@ -1197,7 +1197,7 @@ public final class AutoBuilder {
         // A slow site cannot cover service that faster work can deliver sooner.
         if (essential(m) && BuildAdvice.units(site) > 0) {
             double first = BuildAdvice.firstCompletion(game, m, site);
-            for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+            for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
                 if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
                 double lead = game.quoteBuild(t, 1).months;
