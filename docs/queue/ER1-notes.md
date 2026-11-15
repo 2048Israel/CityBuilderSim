@@ -210,3 +210,23 @@ harness, maps and zero firm stale findings. The direct diagnostic run passes
 in 2.094 seconds; the normal runner measures 2.059 seconds. The 1,271 compiled
 model classes hashed before and after the rebuild are byte-identical. The
 only Java changes are the new check and its registry entry.
+
+## Recommendation
+
+★ Recommend a separate batch for the automated player's **growth-land funding**:
+when a land-held, positive-profit private candidate and an empty building queue
+show a growth hold, let the territory-buying move request the existing land
+office's bounded funding flow, using the existing debt-service test and term,
+instead of repeatedly trying a cash-only whole-offer purchase. Preserve the
+land prices, crowding curve, private financing tests, builder premise and
+cash-share rule for unfinanced purchases. Measure the funded refusal reasons
+and compare both sites with the same player. ER1's one-plot counterfactual is
+evidence for testing this path, not evidence to lower land prices or force a
+private lender to approve every plant.
+
+The other way is to retain the conservative cash-only automated land policy
+and leave the player to use the land office's existing funding page. That
+preserves the long hold as a consequence of the player's purchasing rule;
+the run eventually recovers, but for centuries it lags the control. This is
+a player/land-office decision, not a justification to add free territory or
+tune farms in this diagnostic batch. One pending row carries the recommendation.
