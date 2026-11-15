@@ -10,7 +10,7 @@ Built from main d8e9c12b on batch/R2c. No known-reds entry names R2c.
   accounting path. Keep the named charge in HistorySave as well.
 - ★ Only foundedUnfitted cities pay. The catalogue fee flag, the world's
   month through the next 240 months (exclusive), and local discovery decide
-  liability; no fee on a loss or on an entry the city found itself.
+  liability in the production month; no fee on a loss or on an entry the city found itself.
 
 ## Verification
 
@@ -60,9 +60,9 @@ FittingCheck, ResearchCheck, SaveFileCheck and ReadPathCheck, sequential JVMs:
 exit 0; no red assertion. Maps regenerated, Stale zero firm findings. New
 fixtures write no slot: prepareSaveForChecks snapshots in memory, JSON is
 round-tripped in memory, and the actual sector/history load restorers read it.
-The model charges once at startOfMonthUpdate's strike, before
-SimulationEngine's construction/demographic phase; both halves are the one
-Game.nextMonth window, with no duplicate payment in the engine.
+The initial model charged at startOfMonthUpdate's strike. REV-R2c-2 below
+supersedes that live calculation with a captured production bill; settlement
+still uses the strike in the one Game.nextMonth window.
 
 Fixture review tightened the equal-recipe offer: PB2 arrives naturally in 1916,
 inside PE1's patent term. The earlier draft restored B5 as an impossibly early
@@ -107,3 +107,65 @@ money; a zero-gain licence cannot conceal the regression.
 RecipeCheck, EquipmentCheck and FittingCheck passed with the model mends;
 the final causing-fixture run passed LicenceFeesCheck and Stale (zero firm
 findings), regenerated maps, exit 0. Repeat default trace follows.
+
+## REV-R2c-2: capture the dispatched flow
+
+The second delta review confirmed the default guards and the cash/current-
+account/audit settlement, with no softened assertion, but found live refinery
+flow was reread after endOfMonth had changed its mix and run. The held fixture
+hid a run cut after production.
+
+- ★ Capture every private IP bill in Markets.clearMonth immediately after
+  production and before sector endOfMonth decisions. The existing pending
+  imported-service ledger saves the exact bill through DataSave/SectorState;
+  the following strike banks that amount. Do not reconstruct a flow from the
+  next run, mix, prices or recipe. This supersedes the initial live-at-strike
+  design described above.
+- ★ Orchestrator ruling 20261115-063259-369-orchestrator-7933: liability is
+  the production month's patent window. Last-month production still owes its
+  bill at the next strike after expiry. First post-expiry production accrues
+  nothing. The proposed next-strike-date test was rejected and not retained.
+- The unheld fixture starts at RUN_PACE, makes output on patented crackers,
+  and cuts the next run to zero because crude is dear. It must retain a
+  positive pending bill, round-trip it between production and strike, and
+  pay it with closed money and foreign accounts.
+- Exemption fixtures establish own discovery or an unpatented entry before
+  production; they do not retroactively relabel a prior earned bill.
+  The expiry fixture separately checks last-term accrual, settlement after
+  expiry, and no new post-expiry bill.
+
+The common capture route is docs/month-order.md, Game.nextMonth step 65
+(finalUpdateEconomy), immediately after step 64's
+SimulationEngine.simulateMonth. finalUpdateEconomy calls
+EconomyManager.finalEconUpdate, which calls Markets.clearMonth. Inside that
+single market pass, the capture is after substep 4 (produceStock) and before
+substep 5 (sector endOfMonth). The clock, button and skip take the same route;
+SimulationEngine is the middle half, with no separate market pass or duplicate
+capture. Settlement remains the next startOfMonthUpdate's strike inside the
+MoneyAudit window.
+
+The final causing fixtures pass 33/33 (target/checks/R2c-capture-fixture.log).
+The unheld refinery accrued and then paid exactly 29.642364640 after its next
+run fell to zero; MoneyAudit residual -0.000000000175. Its pending bill and
+zero run survive JSON through DataSave/SectorState restore before the next
+full Game month. Both paid and pending flows also survive generic save/restore
+and repeated reads. No slot is written.
+
+On 7403e115's captured LicenceFees/Game/Markets classes, the same final harness
+reports 25 passed, 8 FAILED (target/checks/R2c-capture-before.log): the boundary,
+run-cut payment, pending save and pending read assertions fail. The unheld
+production-and-cut premise itself passes on that code, so the fixture exposes
+the erased bill directly. The initial cold village had no staffed power or
+residents and made no production; the final fixture first lets the village
+fill and its grid run, then stands the patented plant and asserts its actual
+positive production. No condition was waived.
+
+The 7403e115 default rerun also passed, with all eight CSVs byte-identical to
+d8e9c12b (target/R2c-mended). A final capture-model comparison follows.
+
+Final capture-model validation: LicenceFeesCheck 33/33; SaveFileCheck and
+ReadPathCheck each finish All checks passed, exit 0
+(target/checks/R2c-capture-save.log and R2c-capture-read.log). The other four
+focused harnesses passed on the capture model. The final --fast compiled,
+regenerated maps and reported zero firm Stale findings, exit 0
+(target/checks/R2c-capture-fast.log). Source/record diff whitespace checks pass.

@@ -14357,7 +14357,6 @@ public class Game {
          * Sector.strike(). This was five hand-listed report calls and a
          * hand-written ledger.
          */
-        LicenceFees.charge(this);   // R2c: import and firm settlement in the same audit window
         economyManager.strikeSectors();
         // ...the month's draws before the strike - the railway's diesel, its trucks', bitumen ordered between the presses - back on their sellers' rows the strike just cleared (FW5, 2026-10-25).
         getMarkets().rowDrawsBeforeStrike(getSectors());

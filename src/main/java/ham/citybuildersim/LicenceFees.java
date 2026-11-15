@@ -10,9 +10,11 @@ import java.util.Set;
  *
  * WHY (R2c; research-design 2.4, E2). Imported technology used to add its whole
  * gain to firms' accounts. A licence now buys an imported service in the same
- * strike as every other input: Sector banks it, MoneyAudit names it as trade,
- * and ForeignAccounts takes that reconciled month. DataSave/SectorState keeps
- * the statement's named input; HistorySave keeps the monthly series.
+ * strike as every other input. Production captures the bill before the next
+ * run or mix is chosen; Sector banks that saved bill at the next strike,
+ * MoneyAudit names it as trade, and ForeignAccounts takes the same month.
+ * DataSave/SectorState keeps pending and settled inputs; HistorySave keeps
+ * the paid monthly series.
  */
 public final class LicenceFees {
     private LicenceFees() { }
@@ -59,20 +61,22 @@ public final class LicenceFees {
         return Recipes.value(r, p) - recipeFee(t, r, month, p, found);
     }
 
-    // A building's gain is its sector's estimate, including special outputs
+    // A new building's gain is its sector's estimate, including special outputs
     // (refinery streams, retail service). That estimate asks runningCostOf(),
     // which includes this fee. Suppress only the nested calculation, per
     // thread, so simultaneous screen reads still price their own licences.
     private static final ThreadLocal<Boolean> pricing = ThreadLocal.withInitial(() -> false);
 
     private static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing) {
-        if (!payable(t.getSinceText(), game.getMonth(), game.getResearch())) return 0;
+        int accrualMonth = game.getMonth();
+        if (!payable(t.getSinceText(), accrualMonth, game.getResearch())
+                || (standing && !game.getResearch().known(t.getSinceText(), game.getMonth()))) return 0;
         boolean nested = pricing.get();
         pricing.set(true);
         try {
             double gain = standing && owner instanceof Refining ref && t.refineryUnit() != null
                     ? installedUnitGain(game, t, ref) : owner.estimatedMonthlyProfit(t, game.getBusinessInvestment());
-            return onGain(t.getSinceText(), game.getMonth(), game.getResearch(), gain);
+            return onGain(t.getSinceText(), accrualMonth, game.getResearch(), gain);
         } finally {
             pricing.set(nested);
         }
@@ -100,13 +104,14 @@ public final class LicenceFees {
         Set<String> charged = new HashSet<>();
         charged.add(t.getSinceText());
         Recipes.Prices prices = Recipes.pricesOf(game);
+        int accrualMonth = game.getMonth();
         double rate = Math.max(0, Math.min(1, owner.getOperatingRate()));
-        if (recipe != null && charged.add(recipe.getSince())) {
-            bill += recipeFee(t, recipe, game.getMonth(), prices, game.getResearch()) * rate;
+        if (recipe != null && charged.add(recipe.getSince()) && recipe.knownAt(game.getMonth(), game.getResearch())) {
+            bill += recipeFee(t, recipe, accrualMonth, prices, game.getResearch()) * rate;
         }
         for (Equipment piece : t.getEquipment()) {
-            if (!fitted.contains(piece.getId()) || !charged.add(piece.getSince())) continue;
-            bill += onGain(piece.getSince(), game.getMonth(), game.getResearch(),
+            if (!fitted.contains(piece.getId()) || !charged.add(piece.getSince()) || !piece.knownAt(game.getMonth(), game.getResearch())) continue;
+            bill += onGain(piece.getSince(), accrualMonth, game.getResearch(),
                     EquipmentFit.grossGainOf(game, t, piece)) * rate;
         }
         return bill;
@@ -127,9 +132,12 @@ public final class LicenceFees {
     }
 
     /**
-     * Bill standing firms immediately before their statements strike. Recipe
-     * and equipment counts are the ones running at that strike. A shared
-     * entry (the tractor and its recipe) is paid once.
+     * Capture the production's bill before endOfMonth chooses the next run,
+     * mix or prices. The pending imported-service ledger carries it to the
+     * next strike, including a save between the two. Liability belongs to
+     * production's patent window: its last month's bill survives expiry;
+     * production after expiry accrues nothing.
+     * A shared entry (the tractor and its recipe) is paid once.
      */
     public static void charge(Game game) {
         if (!game.foundedUnfitted()) return;
@@ -150,7 +158,8 @@ public final class LicenceFees {
             }
             // Other pieces have independent fitted counts.
             for (Equipment piece : t.getEquipment()) {
-                if (piece.getId().equals(t.recipePieceId()) || piece.getSince().equals(t.getSinceText())) continue;
+                if (piece.getId().equals(t.recipePieceId()) || piece.getSince().equals(t.getSinceText())
+                        || !piece.knownAt(game.getMonth(), game.getResearch())) continue;
                 int count = stack.getQuantity() - stack.getUnfitted(piece.getId());
                 double bill = onGain(piece.getSince(), game.getMonth(), game.getResearch(),
                         EquipmentFit.grossGainOf(game, t, piece)) * count

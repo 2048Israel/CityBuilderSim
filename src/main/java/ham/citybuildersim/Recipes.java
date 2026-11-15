@@ -95,7 +95,7 @@ public final class Recipes {
     }
 
     /**
-     * The best recipe a part can run at these prices: the highest value() of those it canRun(); a tie keeps the default, then the file's order; the
+     * The best recipe a part can run at these prices: the highest value() less patent rent of those it canRun(); a tie keeps the default, then the file's order; the
      * default where none can run. `fitted` is which part (it is no matter on a template with no recipe piece).
      */
     public static Recipe best(BuildingsTemplate t, boolean fitted, int month, Prices p) {

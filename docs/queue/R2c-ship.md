@@ -6,7 +6,9 @@ In a city founded the 1900 way, private firms pay 25% of the positive gain from
 a patented discovery imported from the world until twenty years after history's
 date. Local discoveries and unpatented entries are free. IP charges leave the
 firm's accounts as imported services in the same month's money audit and
-foreign current account; saved statements and monthly history retain the flow.
+foreign current account. Production's bill is saved for the next strike,
+including last-term production paid after expiry; saved statements and
+monthly history retain the paid flow.
 Planners and fitting compare gains less the licence fee. Positive-payment,
 expiry, exemption, equal-gain ranking and nonzero save/read fixtures cover it.
 

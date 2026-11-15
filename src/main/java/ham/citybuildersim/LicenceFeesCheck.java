@@ -48,6 +48,10 @@ public final class LicenceFeesCheck {
                     "Industrial Bakery", "Bakery", "Coal Power Plant", "Water Treatment Plant" };
             int[] counts = { 6, 400, 4, 2, 1, 2, 2, 1, 1 };
             for (int n = 0; n < names.length; n++) g.buildStack(b.getTemplateByName(names[n]), counts[n], true);
+            // The new village starts at zero residents and zero staffed
+            // power. Let workers arrive and the grid run before standing a
+            // patented plant: a nameplate alone is not production.
+            g.simulateMonths(3);
         });
         ResearchCheck.atMonth(g, ResearchCatalog.knownFrom("PE1"));
         quietly(() -> {
@@ -67,7 +71,7 @@ public final class LicenceFeesCheck {
         Game g = town("licence-payment", true);
         check("fixture: a PE1 Electric Arc Furnace really stands in a city founded unfitted",
                 g.foundedUnfitted() && g.getBuildingManager().getStack(g.getBuildingManager().getTemplate(11)).getQuantity() == 1);
-        quietly(() -> g.simulateMonths(1));
+        quietly(() -> g.simulateMonths(2));
         double fee = LicenceFees.paid(g);
         MoneyAudit.Result a = g.getLastMoneyAudit();
         check("the firm actually paid positive IP charges", fee > 0);
@@ -86,31 +90,83 @@ public final class LicenceFeesCheck {
         int end = ResearchCatalog.knownFrom("PE1") + LicenceFees.TERM_MONTHS;
         ResearchCheck.atMonth(g, end - 2);
         quietly(() -> g.simulateMonths(1));
-        double last = LicenceFees.paid(g);
+        double last = g.getSectors().heavyIndustry().pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        check("production in the last patent month accrues a positive bill", last > 0 && g.getMonth() == end - 1);
         quietly(() -> g.simulateMonths(1));
-        check("the last patent month pays and its twentieth anniversary pays nothing", last > 0 && LicenceFees.paid(g) == 0);
+        check("the strike after expiry pays that last bill exactly, while expired production accrues nothing", last > 0
+                && near(LicenceFees.paid(g), last) && g.getSectors().heavyIndustry().pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) == 0);
+        quietly(() -> g.simulateMonths(1));
+        check("the following strike has no post-expiry royalty to pay", last > 0 && LicenceFees.paid(g) == 0);
 
+        Game imported = town("licence-exemptions-control", true);
+        ResearchCheck.atMonth(imported, ResearchCatalog.knownFrom("PB1"));
+        quietly(() -> imported.simulateMonths(2));
+        double before = LicenceFees.paid(imported);
         Game home = town("licence-home", true);
-        quietly(() -> home.simulateMonths(1));
-        double before = LicenceFees.paid(home);
+        ResearchCheck.atMonth(home, ResearchCatalog.knownFrom("PB1"));
         home.getResearch().restore(null, null, null, Map.of("PE1", ResearchCatalog.knownFrom("PE1") - 1));
-        quietly(() -> home.simulateMonths(1));
+        quietly(() -> home.simulateMonths(2));
         check("the same running entry costs nothing when the city discovered it itself", before > 0 && LicenceFees.paid(home) == 0);
 
         Game free = town("licence-free", true);
-        quietly(() -> free.simulateMonths(1));
-        double licensed = LicenceFees.paid(free);
         // Hold the physical plant fixed and change only the catalogue entry's
-        // patent status: B5 (barcode scanners) is explicitly unpatented.
-        free.getBuildingManager().getTemplate(11).setSince("B5");
-        ResearchCheck.atMonth(free, ResearchCatalog.knownFrom("B5"));
-        quietly(() -> free.simulateMonths(1));
-        check("the identical plant under an unpatented entry pays nothing", licensed > 0
-                && !ResearchCatalog.get().entry("B5").fee() && LicenceFees.paid(free) == 0);
+        // patent status before any production: PB1 is explicitly unpatented,
+        // and arrives while the control plant's PE1 is still in its term.
+        free.getBuildingManager().getTemplate(11).setSince("PB1");
+        ResearchCheck.atMonth(free, ResearchCatalog.knownFrom("PB1"));
+        quietly(() -> free.simulateMonths(2));
+        check("the identical plant under an unpatented entry pays nothing", before > 0
+                && !ResearchCatalog.get().entry("PB1").fee() && LicenceFees.paid(free) == 0);
 
         Game plain = town("licence-default", false);
-        quietly(() -> plain.simulateMonths(1));
+        quietly(() -> plain.simulateMonths(2));
         check("a default-founded city running the patented furnace pays nothing", LicenceFees.paid(plain) == 0);
+    }
+
+    static void dispatchedGain() throws Exception {
+        System.out.println("--- 5. a run cut after production cannot erase its saved royalty (REV-R2c-2) ---");
+        Game g = town("licence-run-cut", true);
+        BuildingsTemplate cracker = g.getBuildingManager().getTemplateByName("Small Cracking Unit");
+        ResearchCheck.atMonth(g, ResearchCatalog.knownFrom(cracker.getSinceText()));
+        quietly(() -> {
+            g.buildStack(g.getBuildingManager().getTemplateByName("Oil Refinery"), 1, true);
+            g.buildStack(cracker, 2, true);
+            MaterialsCheck.handWorkers(g);
+            g.getSectors().refining().setRunShareForTest(Refining.RUN_PACE);
+            GoodsMarket petrol = g.getMarkets().get(Good.PETROL), crude = g.getMarkets().get(Good.CRUDE);
+            petrol.setWorldPrices(100 * Good.PETROL.worldImportPrice(), 100 * Good.PETROL.worldExportPrice());
+            petrol.setLocalPrice(100 * Good.PETROL.worldExportPrice() * g.getMarkets().getExchangeRate());
+            // Cracking adds value, but the whole barrel loses against its
+            // dear crude. The unheld operator cuts next month's run to zero.
+            crude.setWorldPrices(10_000 * Good.CRUDE.worldImportPrice(), 10_000 * Good.CRUDE.worldExportPrice());
+        });
+        Refining ref = g.getSectors().refining();
+        quietly(() -> g.simulateMonths(1));
+        double bill = ref.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        check("fixture: an unheld refinery really produced on its crackers, then cut its next run to zero",
+                !g.getBusinessInvestment().isHeld(Sectors.REFINING) && ref.monthsRate() > 0
+                && ref.monthsFlow().run(RefineryFlow.Kind.CRACKER) > 0 && ref.runShare() == 0);
+        check("the completed production leaves a positive pending royalty despite the new zero run", bill > 0);
+        Gson gson = new Gson();
+        DataSave saved = gson.fromJson(gson.toJson(g.prepareSaveForChecks(10, "dispatched licence").data()), DataSave.class);
+        SectorState state = saved.getSectors().stream().filter(s -> Sectors.REFINING.equals(s.key)).findFirst().orElseThrow();
+        quietly(() -> {
+            ref.pending().otherInputs.clear();
+            ref.pending().imports = 0;
+            ref.setRunShareForTest(1);
+            ref.restore(state);
+            ref.restoreBills(state);
+        });
+        check("a save between production and settlement retains that exact pending bill and the zero run",
+                bill > 0 && near(bill, ref.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0)) && ref.runShare() == 0);
+        quietly(() -> g.simulateMonths(1));
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        double paid = ref.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        check("the next strike pays the saved dispatch, with a named service import and closed money/foreign accounts", bill > 0
+                && near(paid, bill) && near(paid, audit.figure("- " + Sectors.REFINING + " IP charges"))
+                && Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved())
+                && near(g.getForeignAccounts().currentAccount(), audit.currentAccount()));
+        System.out.printf("   dispatched %.9f, paid %.9f, next run %.3f, residual %.12f%n", bill, paid, ref.runShare(), audit.residual);
     }
 
     static void planners() throws Exception {
@@ -183,7 +239,7 @@ public final class LicenceFeesCheck {
                 && LicenceFees.payable(cracker.getSinceText(), g.getMonth(), g.getResearch()));
         check("fixture: another cracker would lose money because the standing units already take its feed",
                 ref.estimatedMonthlyProfit(cracker, g.getBusinessInvestment()) < 0);
-        quietly(() -> g.simulateMonths(1));
+        quietly(() -> g.simulateMonths(2));
         double fee = ref.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         check("the profitable standing crackers pay positive IP charges even with no spare feed for another unit", fee > 0);
@@ -219,7 +275,7 @@ public final class LicenceFeesCheck {
     /** Nonzero statement and history through the actual save objects, with no slot written. */
     static boolean saveChecks() throws Exception {
         Game g = town("licence-save", true);
-        quietly(() -> g.simulateMonths(1));
+        quietly(() -> g.simulateMonths(2));
         double paid = LicenceFees.paid(g);
         SaveWriter.Job job = g.prepareSaveForChecks(10, "IP service flow");
         Gson gson = new Gson();
@@ -230,22 +286,27 @@ public final class LicenceFeesCheck {
         HistorySave back = gson.fromJson(gson.toJson(job.history()), HistorySave.class);
         HistorySave loaded = new HistorySave();
         loaded.restoreFrom(back);
-        return paid > 0 && near(paid, firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0))
+        boolean settled = paid > 0 && near(paid, firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0))
                 && near(loaded.recentTotal("ipCharges", 1), Math.round(paid * 100.0) / 100.0);
+        double pending = state.ledger.otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        quietly(firm::strike);
+        return settled && pending > 0 && near(pending, firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0));
     }
 
     /** Repeated pricing and saved-flow reads leave every fingerprinted money pool unchanged. */
     static boolean readChecks() throws Exception {
         Game g = town("licence-read", true);
-        quietly(() -> g.simulateMonths(1));
+        quietly(() -> g.simulateMonths(2));
         double paid = LicenceFees.paid(g);
+        double pending = g.getSectors().heavyIndustry().pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
         Map<String, Double> before = NewGameCheck.snapshot(g);
         for (int n = 0; n < 30; n++) {
             LicenceFees.paid(g);
             g.getHistorySave().recentTotal("ipCharges", 1);
             g.getBusinessInvestment().estimatedMonthlyProfit(Sectors.HEAVY_INDUSTRY, g.getBuildingManager().getTemplate(11));
         }
-        return paid > 0 && before.equals(NewGameCheck.snapshot(g)) && LicenceFees.paid(g) == paid;
+        return paid > 0 && pending > 0 && before.equals(NewGameCheck.snapshot(g)) && LicenceFees.paid(g) == paid
+                && g.getSectors().heavyIndustry().pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) == pending;
     }
 
     public static void main(String[] args) throws Exception {
@@ -253,7 +314,8 @@ public final class LicenceFeesCheck {
         exemptions();
         planners();
         reviewRegressions();
-        System.out.println("--- 5. the nonzero flow survives saves and reads ---");
+        dispatchedGain();
+        System.out.println("--- 6. the nonzero flow survives saves and reads ---");
         check("DataSave and HistorySave JSON and the load restorers keep the paid flow", saveChecks());
         check("repeated screen and planner reads keep the paid flow and every money pool still", readChecks());
         System.out.printf("%d passed, %d FAILED%n", passes, fails);

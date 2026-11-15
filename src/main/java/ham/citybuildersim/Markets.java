@@ -209,6 +209,11 @@ public final class Markets {
             }
         }
 
+        // R2c: capture the IP service bill on the production just made, before
+        // the sectors choose next month's mix/run. Its pending ledger settles
+        // at the next strike, with the same import and MoneyAudit window.
+        if (game != null) LicenceFees.charge(game);
+
         // 5. the month's loose ends
         for (Sector s : sectors.all()) s.endOfMonth(game);
         // ...and the pass is over: every share reads 1 again (WN3).
