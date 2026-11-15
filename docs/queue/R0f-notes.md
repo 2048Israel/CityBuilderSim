@@ -30,3 +30,24 @@ A separate whole-foreign-account equality after the next month is still red. The
 - Visual QA: rendered and inspected `target/R0f-ui/1900-rate.png`, `1900-currency.png`, `1914-advance.png`, `1935-bank.png`. Closed pages show dates and the inherited-interest explanation; August 1914 shows only the manual Advance Rate; March 1935 shows the existing full Money controls. Temporary KeptBench renderer exited 0 after writing all images; JavaFX emitted a toolkit-thread NullPointerException on shutdown after the completed rendering, not during drawing.
 - Before-change proof: the new fixture compiled against main c0120d77 model classes (with the new pure PolicyDates data) failed the gold and gate conditions (`target/checks/R0f-before.txt`), without a linkage error. Both boundary assertions also retain their before-state premise, so merely already being off gold or having controls open cannot count as a transition.
 - The first original trace attempt was invalidated by a clean compile deleting its lazily loaded class files. Both traces therefore run from independent copied class directories, preventing that build/run race; no result from the interrupted attempt is used.
+
+### Default trace
+
+The final model (34851590; source and fixtures frozen at c4f49283) and unchanged main c0120d77 ran the full default 2,400-month LongPlaytest from isolated class directories. **All eight CSV trace files are byte-identical**, with no exclusions or normalisation. Therefore the ensemble is skipped under docs/batch.md 6. `target/checks/R0f-trace-comparison.txt` retains every matching SHA-256; traces are under `target/R0f-base/trace-*.csv` and `target/R0f-final/trace-*.csv`.
+
+Both playtests exit 1 only for the existing DM3-R finding: twelve of district (-1,-1)'s 4,301 boxes move at month 2389. The finding text and counts match exactly. Both runs' money fixtures finish green. Logs: `target/checks/R0f-base-playtest.txt`, `target/checks/R0f-final-playtest.txt`. This is separate from R0f-S and from any newly caused failure.
+
+The final committed fixture on the before-change model reports 17 failures (`target/checks/R0f-before-final.txt`), including **each** explicit crossing assertion: August 1914, July 1926, September 1931 and March 1935. It still audits 427 months with zero money-audit failures; dates and permissions, rather than an incidental economic crash, are the failures.
+
+Matching trace hashes (main and R0f):
+
+| CSV | SHA-256 in both runs |
+|---|---|
+| trace-bank.csv | `ec87f0b662ef4454901a3969682a27d54294edbf866648798d92c6982e29b9dc` |
+| trace-bonds.csv | `38960e947f63cdfc0f36efea066e79e6ff0701db129013052dd99ac2adaaaecf` |
+| trace-borrow.csv | `56f88a3dc5eafcf2b69c92b591aa1d0fb1458529b0a9d854e772e6b22cf91bf3` |
+| trace-build.csv | `4f8d05d6be61bb06e55c51926b68d48aa40e5fd9a999fd7bb53bb1cc3a98e62d` |
+| trace-house.csv | `e4a0d57746386b8a0a361edd92dd1f60eb228f94821c02874e9b3ece424f9b54` |
+| trace-labour.csv | `87e8c6a36d828feab8dbad3f7544742a823eeb7ab57cb7c9b150a45eddf631a2` |
+| trace-month.csv | `4777025983e027980e45e54551c62e8dbb7f4a551726d882ab760fd6a3ed6ed0` |
+| trace-pop.csv | `d18dcab4154c4327249148c1670354d67d6a04b40d2f45fd22adc4dbd46c7c7f` |
