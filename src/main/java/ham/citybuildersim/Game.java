@@ -682,6 +682,7 @@ public class Game {
         this.lastSaveResult = null;
         this.loadFailure = null;
         this.skipFailure = null;
+        this.ranThrough = true;
 
         /*
          * The warning about construction shedding.
@@ -1062,6 +1063,8 @@ public class Game {
          * Two rebuild passes were always one too many. There is one now.
          */
         loadGame(slot);
+        // A hand save can carry the broken-skip warning; loading restores the completion guard (UP6b).
+        inbox.autosavesPaused(month, false, autosaveStatus());
         // NOTE: previously also called handleStartGame() here, which caused
         // the same infinite-loop freeze described above.
         decisions.release();
@@ -1110,20 +1113,24 @@ public class Game {
     /**
      * The quit's autosave (UP1): asked for, and on disk when this returns -
      * System.exit does not wait for the writer's thread, so quitting waits
-     * for it here.
+     * for it here. After a broken skip the shared guard keeps the earlier autosave instead.
      */
     public void saveForQuit(){
-        autosave("on quit");
-        awaitSaves();
+        saveForExit("on quit");
     }
 
     /**
      * The window's close autosave (UP6; Jerus, 2026-10-23, on UP1's star 1: "Yes, autosave on close"): Quit's, under its own
-     * name, and on disk when this returns - the JVM ends once the window's stop() returns, and the writer's thread does not
-     * hold it. UserInterface.stop() calls it.
+     * name, and on disk when this returns unless a broken skip has suspended autosaves. Then it keeps the return point.
+     * The JVM ends once the window's stop() returns. UserInterface.stop() calls it.
      */
     public void saveForClose(){
-        autosave("on close");
+        saveForExit("on close");
+    }
+
+    /** Both exits keep the skip's return point when its last month stopped part-way (UP6b). */
+    private void saveForExit(String reason) {
+        autosave(reason);
         awaitSaves();
     }
 
@@ -8419,9 +8426,9 @@ public class Game {
 
         int completed = 0;
 
-        // Set when every month has run: a skip that stopped part-way (the catch below, or an Error the
-        // finally lets through) does not autosave at its end - its city stopped inside a month.
-        boolean ranThrough = false;
+        // Keep the last whole city's guard during the loop, so a healthy skip can still autosave
+        // completed months. The finally latches ranThrough false if this skip stops inside one.
+        boolean completedAll = false;
 
         // Snapshot before anything moves. Everything the summary shows is a diff
         // against this or a count taken month by month below - see TimeSkipReport.
@@ -8457,7 +8464,7 @@ public class Game {
                 // ...and the sales nobody pressed (CD2, D28 to D30): the rollover's and automatic building's.
                 skipReport.sampleSales(autoSalesThisMonth);
             }
-            ranThrough = true;
+            completedAll = true;
 
         } catch (RuntimeException e) {
             /*
@@ -8480,6 +8487,13 @@ public class Game {
                     + (GameLog.file() == null ? "(no log file)" : GameLog.file());
 
         } finally {
+            // Later months cannot repair the part-month left by a failed skip. Only buildWorld()
+            // (new city or load) restores this one guard, shared by every autosave path (UP6b).
+            ranThrough &= completedAll;
+            if (!ranThrough) {
+                inbox.autosavesPaused(month, true, autosaveStatus());
+                if (skipFailure != null) skipFailure += "\n" + autosaveStatus();
+            }
             graphs = previousGraphs;
             reports = previousReports;
             skipping = previousSkipping;
@@ -8498,7 +8512,7 @@ public class Game {
             // skip do. A skip that stopped part-way leaves the "before skipping" autosave as
             // the point to come back to (the catch above).
             awaitSaves();
-            if (months > 1 && ranThrough) autosave("after skipping " + months + " months");
+            if (months > 1) autosave("after skipping " + months + " months");
         }
 
         return completed;
@@ -16766,8 +16780,14 @@ public class Game {
         return Math.max(0, AUTOSAVE_MONTHS - monthsSinceAutosave);
     }
 
+    /** What the failure page, inbox and Quit say about the one autosave guard (UP6b). */
+    public String autosaveStatus() {
+        return ranThrough ? "This city is autosaved."
+                : "Autosaves are off until this city is loaded again. Save by hand, then load that save to turn them back on.";
+    }
+
     /**
-     * Writes the autosave slot, if there is a city to write.
+     * Writes the autosave slot, if there is a city to write and no skip has left a partial month.
      *
      * Called on five occasions, and each covers a different way of losing a
      * city: every twelve months for the ordinary case, before a multi-month skip
@@ -16775,6 +16795,8 @@ public class Game {
      * after one so the skip's last month is on disk too (UP6), on quit, and on
      * the window's close (UP6), because the window closing is the most common
      * accident of all.
+     * After a skip fails, every path preserves the last whole autosave until a
+     * load or a new city restores the shared completion guard (UP6b).
      *
      * Failures are reported and swallowed. An autosave that cannot write must
      * not stop a month advancing or a player quitting - it is a safety net, and
@@ -16789,10 +16811,10 @@ public class Game {
         autosaveJob(reason);
     }
 
-    /** The autosave, returning the job it made (null when the city is not initialised) so the month that autosaves can hand its fill to the recording (TR2). */
+    /** The autosave, returning its job (null before a city is initialised or after a broken skip) so the month that autosaves can hand its fill to the recording (TR2). */
     private SaveWriter.Job autosaveJob(String reason) {
 
-        if (!initialized) return null;
+        if (!initialized || !ranThrough) return null;
 
         reportSaves();
 
@@ -16800,7 +16822,7 @@ public class Game {
         SaveWriter.shared().submit(job,
                 result -> {
                     System.out.println(GameFiles.slotLabel(GameFiles.AUTOSAVE_SLOT) + ": " + result.message());
-                    savesWritten.add(new Written(GameFiles.AUTOSAVE_SLOT, result));
+                    savesWritten.add(new Written(GameFiles.AUTOSAVE_SLOT, job.data().getMonth(), result));
                 });
         // A recorded city's history goes at the autosave's pace, from the snapshot the save already made (TR1; THE RECORDING).
         recordHistoryFrom(job);
@@ -16844,8 +16866,8 @@ public class Game {
      * "Autosave at the skip's end"). The running clock keeps its floor.
      * ====================================================================== */
 
-    /** A result the writer finished, and the slot it was for (UP6): an autosave's goes to the inbox, the player's Save is told by its page. */
-    private record Written(int slot, GameFiles.Result result) { }
+    /** A result the writer finished, with its slot and snapshot's month (UP6b): the report may arrive in a later month. */
+    private record Written(int slot, int month, GameFiles.Result result) { }
 
     /** Results the writer's thread has finished, waiting for the FX thread to take them: see reportSaves(). */
     private final java.util.concurrent.ConcurrentLinkedQueue<Written> savesWritten =
@@ -16877,7 +16899,7 @@ public class Game {
                     System.out.println("Autosave failed: " + w.result().error);
                 }
                 // The inbox keeps the autosave's trouble standing until one lands whole (UP6, LB3-S).
-                inbox.autosaveWritten(month, w.result());
+                inbox.autosaveWritten(w.month(), w.result());
             }
         }
     }
@@ -16948,7 +16970,7 @@ public class Game {
         playerSavesInWriter.incrementAndGet();
         SaveWriter.shared().submit(job, result -> {
             System.out.println(GameFiles.slotLabel(slot) + ": " + result.message());
-            savesWritten.add(new Written(slot, result));
+            savesWritten.add(new Written(slot, job.data().getMonth(), result));
             playerSavesInWriter.decrementAndGet();
             done.accept(result);
         });
@@ -17643,6 +17665,9 @@ public class Game {
      */
     private String skipFailure;
 
+    /** The skip's completion guard (UP6b), shared by every autosave; only a new or loaded city restores it after failure. */
+    private boolean ranThrough = true;
+
     public String takeSkipFailure() {
         String failure = skipFailure;
         skipFailure = null;
@@ -17651,9 +17676,11 @@ public class Game {
 
     /**
      * What the last write attempt did. Null until something has been saved.
-     * A numbered slot's save is here at once; an autosave's once reportSaves()
-     * has collected it from the writer (the next month's end, the next save,
-     * awaitSaves()).
+     * A synchronous save() sets it before returning. An autosave or a numbered
+     * saveInBackground() sets it once reportSaves() collects the writer's result
+     * (the next month's end, the next autosave, or awaitSaves()). The background
+     * Save's callback receives its result on the writer's thread without waiting
+     * for that report.
      */
     private GameFiles.Result lastSaveResult;
 
