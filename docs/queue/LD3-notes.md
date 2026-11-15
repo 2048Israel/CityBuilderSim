@@ -132,3 +132,63 @@ publisher's version, queue, changelog and gate record arrive from main.
 
 No process script, check machinery or standing rule changes. The process
 one-in, one-out count is zero added and zero removed.
+
+
+## Retained gate run
+
+`sh tools/gate.sh LD3 --dry-run` finishes on 2026-11-14 with launcher exit 0
+and suite exit 3. The kept directory is `/tmp/cbs-gate-LD3-mauTys0a`, native
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-LD3-mauTys0a`.
+
+The two commits judged are
+
+- Branch `96736191c3d7412ee6f2cd43381fe502ebcb6a36`.
+- Main `2853630bd9fa6526a95f7127e3e90850254dc7fa` (CM2, 0.9.107).
+
+The launcher sets prospective version 0.9.108 and selects ALL, 202 registered
+harnesses. Its normal gate tier plus the four directly picked nightly
+harnesses runs 191 in 1,606 seconds. The nightly picks are AuctionCheck,
+IslandLinkCheck, OrderSearchCheck and ShortSellingCheck. KeptCheck belongs
+to the nightly tier and is outside this normal-route selection.
+
+188 harnesses pass. The only red harnesses are the existing registered cases
+
+- MapCheck's every-30th-month drawing tally, separate road network and road
+  surface laws, already assigned to DM3, BF1-M and DM3-R respectively.
+- DeathRecordCheck's original m48 orphan-section law, OX1. All four new
+  paired layoff assertions pass, with maximum excess 0.923.
+- LongPlaytest's registered CL6 no-FAIL verdict. Its 2,405-month run also
+  records the existing moved-map finding at m2389, already assigned to
+  DM3-R. Its money fixtures finish with the footer `All checks passed.`,
+  while the runner correctly retains the known finding verdict.
+
+All requested wage-on fixture laws execute. HoldersCheck's hold parity,
+AutoBuildCheck's 17 post-load orders, both steep-curve consumers and the
+pegged purchase pass. DeskCheck, OrderSearchCheck, ScaleCheck, SaveFileCheck
+and ReadPathCheck pass in the retained run.
+
+Eight soft timing assertions and four played-path observations elsewhere
+are informational. Compilation and generated maps pass, with zero firm
+Stale findings. `checks.complete`, `checks.sha256`, `selection`, `ship.log`
+and `checks/suite.txt` retain the complete verdict and individual logs.
+`unnamed.txt` is empty. Remote refs before and after the dry run are equal.
+The source remains frozen at the judged branch commit. Only LD3's notes
+and ship file advance after this run.
+
+## Default trace and ensemble
+
+The retained LongPlaytest output is compared with main's retained CM2 run,
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CM2-GH6EhASW/checks/LongPlaytest.log`.
+CM2's published main is the main commit judged above. Both complete logs
+decode as UTF-8. After removing the startup JDK-option line, normalizing
+line endings and excluding elapsed-run fields and narration clock prefixes,
+all 523 lines are identical. The SHA-256 of both normalized payloads is
+`e2e11915d9fee03cb993a163b10cb8d7bad8e76a552f21661e5b941b1077286c`.
+
+The raw differences are the overall runtime, layout-window runtime and the
+two clock prefixes on the vault-land fixture's narration. Every model
+figure, finding and money assertion agrees. Evidence is
+`target/ld3-trace-comparison.json` and `target/ld3-trace.diff`, beside the
+two retained full logs. The ensemble is skipped under batch.md section 6
+because the default model trace is identical to main's. No main baseline
+was rerun.
