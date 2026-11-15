@@ -1493,6 +1493,13 @@ public class ForeignAccounts {
 
     /* ===== MONEY ON CANADA'S DATES (R0f) ===== */
 
+    /** Saved slot of the dated Canadian gold episode. */
+    public static final int CANADA_GOLD_PERIOD_SLOT = 156;
+    /** Saved slot of the dated episode's exhausted flag. */
+    public static final int CANADA_GOLD_EXIT_SLOT = 157;
+    /** Exact size of the foreign-account stock, through Canada's dated gold state. */
+    public static final int SAVE_SLOTS = CANADA_GOLD_EXIT_SLOT + 1;
+
     /** The dated episode last heard, and whether this city's vault exhausted it; saved in slots 156-157. */
     private int canadaGoldPeriod;
     private boolean canadaGoldLeft;
@@ -3683,9 +3690,9 @@ public class ForeignAccounts {
             mintFollows = saved[154] > .5;
             goldEvent = GoldEvent.values()[ordinalOr(saved[155], GoldEvent.values().length, GoldEvent.NONE.ordinal())];
         }
-        if (saved.length > 157) {
-            canadaGoldPeriod = ordinalOr(saved[156], 3, 0);
-            canadaGoldLeft = saved[157] > .5;
+        if (saved.length >= SAVE_SLOTS) {
+            canadaGoldPeriod = ordinalOr(saved[CANADA_GOLD_PERIOD_SLOT], 3, 0);
+            canadaGoldLeft = saved[CANADA_GOLD_EXIT_SLOT] > .5;
         }
     }
 

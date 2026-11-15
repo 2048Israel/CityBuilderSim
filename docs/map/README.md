@@ -4,7 +4,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 569 files, 622,860 lines, 27,148 methods, 5,958 constants. `GameVersion.VERSION` is "0.9.109", `SAVE_FORMAT` 53.
+**The tree:** 569 files, 622,877 lines, 27,148 methods, 5,961 constants. `GameVersion.VERSION` is "0.9.109", `SAVE_FORMAT` 53.
 
 ## model (262 files)
 
@@ -96,7 +96,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FloatingRateNote.java](FloatingRateNote.md) | 218 | 20 | A floating-rate note: a coupon every month on the whole face, the month's policy rate plus a margin fixed at the sale, and the face at the end - at... | 6 |
 | [FloorView.java](FloorView.md) | 376 | 61 | What the Policy tab's minimum-wage page draws (WS1): the floor against the going rate and the unskilled wage, against the average wage and the worl... | 2 |
 | [FollowPlayer.java](FollowPlayer.md) | 174 | 15 | Plays an InputTimeline in real time (TR2, 2026-11-09): the cursor of Follow. | 2 |
-| [ForeignAccounts.java](ForeignAccounts.md) | 3,887 | 251 | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. | 63 |
+| [ForeignAccounts.java](ForeignAccounts.md) | 3,894 | 251 | The city's dealings with the rest of the world: the balance of payments, the reserve position, and the exchange rate. | 63 |
 | [Formats.java](Formats.md) | 165 | 12 | The few formats a sector needs to describe itself, without the toolkit. | 62 |
 | [Founding.java](Founding.md) | 649 | 58 | How a city was founded: its name, its money's name, and the treasury and the vault the founders left it. | 130 |
 | [FoundingName.java](FoundingName.md) | 73 | 6 | The city's name as the Found-a-city page holds it: blank to begin with, filled by a place searched, and the player's own once they have typed one (... | 2 |
@@ -517,7 +517,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PopulationCheck.java](PopulationCheck.md) | 1,648 | 13 | The demographics: do they hold together, and do they move the city the way they were told to? | 0 |
 | [PortCheck.java](PortCheck.md) | 2,347 | 72 | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). | 5 |
 | [PriceLevelCheck.java](PriceLevelCheck.md) | 1,385 | 55 | A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus 2026-10-30:... | 13 |
-| [PrizeCheck.java](PrizeCheck.md) | 1,993 | 75 | A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts (R4, ... | 1 |
+| [PrizeCheck.java](PrizeCheck.md) | 2,002 | 75 | A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts (R4, ... | 1 |
 | [QuarryingCheck.java](QuarryingCheck.md) | 638 | 13 | Quarrying, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-researc... | 1 |
 | [QuayCraneCheck.java](QuayCraneCheck.md) | 409 | 17 | The quay crane (HB2, 2026-11-09; QuayCrane, BoatSchedule.atQuay()): a boat at its terminal's quay is worked by a light line from over the ship to t... | 0 |
 | [QuayRailCheck.java](QuayRailCheck.md) | 657 | 39 | The quay lines of the harbour, the spur the railway lays to each, and the railed terminals QuayRail reads from them (batch HB2, Jerus 2026-11-09: "... | 0 |
@@ -532,7 +532,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RefineryViewCheck.java](RefineryViewCheck.md) | 632 | 23 | The refinery's pictogram (0.7.95, batch O11; docs/studies/spec-oil.md 2.12): RefineryView's figures and its picture, held to the model's own reads ... | 2 |
 | [ReloadCheck.java](ReloadCheck.md) | 552 | 34 | Plays a city, saves it, loads the save into a second game, runs both a month and compares what each would save: a reloaded city has to play its nex... | 2 |
 | [ReplayCheck.java](ReplayCheck.md) | 1,780 | 37 | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs; and Follow (batch TR2... | 1 |
-| [ResearchCheck.java](ResearchCheck.md) | 755 | 20 | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what... | 0 |
+| [ResearchCheck.java](ResearchCheck.md) | 756 | 20 | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what... | 0 |
 | [ResearchPreviewCheck.java](ResearchPreviewCheck.md) | 726 | 34 | The preview each dial card on Policy > Research shows: what a set of dials would find here over ten years (R3b, slice A: ResearchPreview, and the w... | 1 |
 | [ResearchViewCheck.java](ResearchViewCheck.md) | 1,721 | 48 | What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()). | 1 |
 | [RestaurantsCheck.java](RestaurantsCheck.md) | 575 | 6 | A meal out is food, and it is the same food. | 0 |

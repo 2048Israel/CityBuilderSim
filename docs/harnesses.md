@@ -21363,7 +21363,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L467 ...and tieRate() the US's rate
 - **L475 8. the save: slot 148 is the anchor; a restored euro peg plays the same, and a save without the slot reads the US$**
   - L480 fixture: a euro peg that has dealt for eight months and carries a support (
-  - L482 the array runs to slot 148, the peg's anchor (WN4b), gold's three (GD2) and the mint's four (GD3) after it (
+  - L482 the array runs to slot 148, the peg's anchor (WN4b), gold's three (GD2) and the mint's four (GD3), then Canada's episode and exit (R0f) (
   - L483 slot 148 is the anchor's index, the euro's
   - L484 slot 147 is still the hold's support
   - L485 slot 76 is still the peg, now D$ per euro
@@ -22847,109 +22847,109 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1254 ...with three labs of 300 researchers in every field and a prize of 0 it is the same: the labs find nothing, pile nothing and sit idle (
   - L1261 ...and a prize with no lab changes none of the work either: the schools take every purse (
   - L1272 with a prize of 0 nobody wants a lab, in any field, in any month of history: no wanted, no target, no stake, no chase
-- **L1430 11. the labs are buildings: four templates, one a field, with a lab's jobs; no planner of Business Services offers one**
-  - L1434 fixture: both the built-in definitions and buildings.json are there
-  - L1482 a \"researches\" that is no field is reported by name and read as none, and one that is a field is read: the key is a Field's name
-  - L1503 Business Services' plan is never a lab nor held for the staff of one, over 36 months of a 1900 village, a default one and a 1900 village with no hands (
-  - L1516 fixture: the sector's only templates are the four labs and the city cannot staff one (
-  - L1517 ...and the plan still offers none and holds for nobody's staff: no template, no hold, no build
-- **L1523 12. investors build a lab while the purse pays for it: owners first, never a loan, one a field a month, only in a city founded the 1900 way**
-  - L1529 fixture: three villages at month
-  - L1541 ...and it wants one at that prize and none a hair under it
-  - L1545 fixture: the default-way village's model would want a lab at the same prize (its research is empty: it has not run)
-  - L1548 fixture: the lab has a target, a cost and a stake above nothing
-  - L1561 fixture: eligible owners receive the lab's liquidity buffer
-  - L1568 fixture: the handed village can staff its Engineering lab
-  - L1573 within a month of play a lab is ordered: one is on site, none standing yet, and the month's word under
-  - L1576 ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (
-  - L1578 ...and no loan: Business Services borrowed this month what its twin did
-  - L1580 with the prize a hair under, none is ordered: nothing on site, and nothing said
-  - L1581 a village founded the default way with the same prize orders none and says nothing
-  - L1582 ...and the lab is in no other field, and no other village ordered one
-  - L1595 fixture: a prize that covers every problem the world leaves a team time for makes the model want
-  - L1599 fixture: the village, handed its heads, can staff a medical lab
-  - L1602 ...yet the investors order one that month, never two: at most one lab a field a month
-  - L1606 ...and the next month one more only if the model still wants more than the one it has (wanted
-- **L1612 13. a lab at work: its researchers are the posts' filled ones, and go for the problem the purse pays for**
-  - L1623 fixture: two labs stand, and the buildings' jobs grew by two labs' (Research.labJobs() twice), which the city's jobs count
-  - L1625 fixture: a prize covers a problem the world leaves time for
-  - L1630 fixture: the labs have a target on the chase list
-  - L1634 the month's lab researchers are the filled researchers of the labs' posts at the month's fill, two labs' hundred posts each (
-  - L1635 ...and there are some: the posts are filled
-  - L1638 their work lands on the target: the lab share on it is above nothing
-  - L1639 ...and every lab researcher is on a problem or idle: the shares and the idle make the researchers (
-  - L1640 ...the labs' part of the target's pile is above nothing and within the pile
-  - L1641 a field with no lab has no lab researchers
-- **L1679 14. the purse is paid: the labs' share to Business Services' till through the treasury's prizes line, the schools' to the pot, told in th...**
-  - L1683 fixture: the lab has a target on the chase list after its first month at work
-  - L1686 fixture: the lab's month found
-  - L1688 the purse is the prize, split by the work piled
-  - L1689 the treasury's prizes line paid exactly the labs' share (
-  - L1690 ...none of it refused past the ceiling: no arrears
-  - L1692 Business Services' cash flow statement received the same figure from the city (its cash rose by what the treasury paid)
-  - L1693 ...and the statement explains the sector's till to the cent: nothing unexplained
-  - L1695 the month's money audit closes with the transfer in it
-  - L1696 the national accounts carry it where the business subsidies are (a transfer to a firm, not government consumption): the month's subsidies paid
-  - L1697 the schools' share is in the field's pot
-  - L1700 the inbox's \"found\" notice carries the sentence:
-  - L1701 the sentence names the prize and both parts, and a part of nothing would be left out
-  - L1704 the treasury's prizes line is discretionary like the subsidies: not a promise, not a purchase, owed as arrears when refused, labelled for the prizes, and the...
-  - L1708 a month with no find pays no prize: the month's prize paid is zero again
-  - L1713 fixture: the lab has a target on the chase list after its first month at work, at the largest prize
-  - L1717 a purse past the treasury's room is paid what the treasury may spend and the rest is owed, as arrears on the prizes' line (
-  - L1720 ...and the sector's books still close on what it was paid, and the audit with them
-- **L1727 15. a lab with nothing to chase idles for LAB_IDLE_MONTHS months and is then sold back, as any building is**
-  - L1733 fixture: a lab stands in a village with no prize, nothing to chase and no count yet
-  - L1739 not one month before: through the first
-  - L1742 the next month it is sold back: no lab stands, the count starts again, the sale is in the demolition log under Business Services
-  - L1746 ...and no other lab is ordered or sold in the months after: with no prize nobody wants one
-  - L1754 a lab of a sector a harness holds is not sold, though its idle months pass the threshold (
-- **L1761 16. the save: prizes, pots, the labs' piles, the shares, the idle counts and the month's prize paid come back, and a loaded city plays on...**
-  - L1772 fixture: a city with a prize, two labs, a find and its purse paid, work piled by the labs, last month's shares and a lab too many
-  - L1776 the city is saved
-  - L1778 ...with the new keys under its research
-  - L1782 loaded without a failure
-  - L1783 the prizes, the pots, the labs' piles, the city's shares and the idle counts come back equal
-  - L1787 ...and the month's prize paid
-  - L1788 ...the labs stand as they did and the jobs are the same
-  - L1807 two years on, month by month, the saved city and the loaded one have the same finds (in order,
-  - L1813 ...and at the end the same pots, piles and labs' piles
-  - L1819 fixture: a city founded the default way that has played two months holds no research at all
-  - L1821 a prize alone makes it hold some
-  - L1824 ...so the save has the research key, with the prize under its field
-  - L1827 ...and a load puts it back: the prize is 12.5 in law and nothing in the other fields
-- **L1834 17. a city founded the default way orders nothing, pays nothing and has no lab, whatever the prizes; a reform of the money scales prizes,...**
-  - L1840 fixture: a village founded the default way at month
-  - L1847 six months on nothing is ordered, said, paid or owed, and nothing is found, piled or potted: no lab, no prize paid, no purse
-  - L1854 fixture: the lab has a target on the chase list after its first month at work
-  - L1858 fixture: a prize, a pot, a prize paid this month and a find
-  - L1862 fixture: the reform went through and moved the money: the treasury's cash is
-  - L1863 the prize is scaled as the cash is
-  - L1864 ...the pot too
-  - L1865 ...and the month's prize paid
-  - L1866 the work piled, the finds and the other fields' prizes are not money and are as they were
-- **L1882 18. the month's researchers, idle researchers, open problems, lab researchers and idle lab researchers are saved: a load reads them as th...**
-  - L1892 fixture: a city with a grant, a prize and two labs, three months on: every field has researchers, engineering has problems open, lab researchers and some of ...
-  - L1894 ...and medicine has a problem open and nobody idle: the counts differ field by field
-  - L1898 the city is saved
-  - L1901 ...with the five counts under its research
-  - L1904 loaded without a failure
-  - L1905 the loaded city reads the same five counts in every field as the one saved did, before it plays a month:
-  - L1916 a save without the five reads them empty, with the rest of the research as it was
-- **L1923 19. a month whose books do not come to a finite figure moves no cash, and the labs' share of a find in it is owed to Business Services an...**
-  - L1926 fixture: the lab has a target on the chase list after its first month at work
-  - L1930 fixture: the month of the find, with the treasury's cash not a number, found
-  - L1932 the month's cash update was blocked: nothing was paid to the labs, the prize paid is 0 and Business Services' statement received nothing from the city
-  - L1935 ...but the labs' share is owed: arrears on the prizes' line, to Business Services, of exactly the purse's labs' part (
-  - L1936 ...Business Services is owed it, whatever else the blocked month refused it
-  - L1937 ...and it is among the month's refusals, as any refused line is
-  - L1938 the schools' share is in the pot all the same: the find was made
-  - L1943 with cash back the next month pays it down: nothing is owed on the prizes' line, and Business Services' till received the labs' share from the city as arrear...
-  - L1947 ...and the prize paid that month stays 0: it came as arrears, not as a prize
-- **L1953 20. the stake the investors put up for a lab: in a village whose prize draws a lab the Exchange's buyback spends none of it before the find**
-  - L1987 the Exchange's buyback spent nothing of it in any of the
-  - L1988 ...because it never qualified to bid: a record that is bad (
-  - L1990 ...and its till (at most
+- **L1439 11. the labs are buildings: four templates, one a field, with a lab's jobs; no planner of Business Services offers one**
+  - L1443 fixture: both the built-in definitions and buildings.json are there
+  - L1491 a \"researches\" that is no field is reported by name and read as none, and one that is a field is read: the key is a Field's name
+  - L1512 Business Services' plan is never a lab nor held for the staff of one, over 36 months of a 1900 village, a default one and a 1900 village with no hands (
+  - L1525 fixture: the sector's only templates are the four labs and the city cannot staff one (
+  - L1526 ...and the plan still offers none and holds for nobody's staff: no template, no hold, no build
+- **L1532 12. investors build a lab while the purse pays for it: owners first, never a loan, one a field a month, only in a city founded the 1900 way**
+  - L1538 fixture: three villages at month
+  - L1550 ...and it wants one at that prize and none a hair under it
+  - L1554 fixture: the default-way village's model would want a lab at the same prize (its research is empty: it has not run)
+  - L1557 fixture: the lab has a target, a cost and a stake above nothing
+  - L1570 fixture: eligible owners receive the lab's liquidity buffer
+  - L1577 fixture: the handed village can staff its Engineering lab
+  - L1582 within a month of play a lab is ordered: one is on site, none standing yet, and the month's word under
+  - L1585 ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (
+  - L1587 ...and no loan: Business Services borrowed this month what its twin did
+  - L1589 with the prize a hair under, none is ordered: nothing on site, and nothing said
+  - L1590 a village founded the default way with the same prize orders none and says nothing
+  - L1591 ...and the lab is in no other field, and no other village ordered one
+  - L1604 fixture: a prize that covers every problem the world leaves a team time for makes the model want
+  - L1608 fixture: the village, handed its heads, can staff a medical lab
+  - L1611 ...yet the investors order one that month, never two: at most one lab a field a month
+  - L1615 ...and the next month one more only if the model still wants more than the one it has (wanted
+- **L1621 13. a lab at work: its researchers are the posts' filled ones, and go for the problem the purse pays for**
+  - L1632 fixture: two labs stand, and the buildings' jobs grew by two labs' (Research.labJobs() twice), which the city's jobs count
+  - L1634 fixture: a prize covers a problem the world leaves time for
+  - L1639 fixture: the labs have a target on the chase list
+  - L1643 the month's lab researchers are the filled researchers of the labs' posts at the month's fill, two labs' hundred posts each (
+  - L1644 ...and there are some: the posts are filled
+  - L1647 their work lands on the target: the lab share on it is above nothing
+  - L1648 ...and every lab researcher is on a problem or idle: the shares and the idle make the researchers (
+  - L1649 ...the labs' part of the target's pile is above nothing and within the pile
+  - L1650 a field with no lab has no lab researchers
+- **L1688 14. the purse is paid: the labs' share to Business Services' till through the treasury's prizes line, the schools' to the pot, told in th...**
+  - L1692 fixture: the lab has a target on the chase list after its first month at work
+  - L1695 fixture: the lab's month found
+  - L1697 the purse is the prize, split by the work piled
+  - L1698 the treasury's prizes line paid exactly the labs' share (
+  - L1699 ...none of it refused past the ceiling: no arrears
+  - L1701 Business Services' cash flow statement received the same figure from the city (its cash rose by what the treasury paid)
+  - L1702 ...and the statement explains the sector's till to the cent: nothing unexplained
+  - L1704 the month's money audit closes with the transfer in it
+  - L1705 the national accounts carry it where the business subsidies are (a transfer to a firm, not government consumption): the month's subsidies paid
+  - L1706 the schools' share is in the field's pot
+  - L1709 the inbox's \"found\" notice carries the sentence:
+  - L1710 the sentence names the prize and both parts, and a part of nothing would be left out
+  - L1713 the treasury's prizes line is discretionary like the subsidies: not a promise, not a purchase, owed as arrears when refused, labelled for the prizes, and the...
+  - L1717 a month with no find pays no prize: the month's prize paid is zero again
+  - L1722 fixture: the lab has a target on the chase list after its first month at work, at the largest prize
+  - L1726 a purse past the treasury's room is paid what the treasury may spend and the rest is owed, as arrears on the prizes' line (
+  - L1729 ...and the sector's books still close on what it was paid, and the audit with them
+- **L1736 15. a lab with nothing to chase idles for LAB_IDLE_MONTHS months and is then sold back, as any building is**
+  - L1742 fixture: a lab stands in a village with no prize, nothing to chase and no count yet
+  - L1748 not one month before: through the first
+  - L1751 the next month it is sold back: no lab stands, the count starts again, the sale is in the demolition log under Business Services
+  - L1755 ...and no other lab is ordered or sold in the months after: with no prize nobody wants one
+  - L1763 a lab of a sector a harness holds is not sold, though its idle months pass the threshold (
+- **L1770 16. the save: prizes, pots, the labs' piles, the shares, the idle counts and the month's prize paid come back, and a loaded city plays on...**
+  - L1781 fixture: a city with a prize, two labs, a find and its purse paid, work piled by the labs, last month's shares and a lab too many
+  - L1785 the city is saved
+  - L1787 ...with the new keys under its research
+  - L1791 loaded without a failure
+  - L1792 the prizes, the pots, the labs' piles, the city's shares and the idle counts come back equal
+  - L1796 ...and the month's prize paid
+  - L1797 ...the labs stand as they did and the jobs are the same
+  - L1816 two years on, month by month, the saved city and the loaded one have the same finds (in order,
+  - L1822 ...and at the end the same pots, piles and labs' piles
+  - L1828 fixture: a city founded the default way that has played two months holds no research at all
+  - L1830 a prize alone makes it hold some
+  - L1833 ...so the save has the research key, with the prize under its field
+  - L1836 ...and a load puts it back: the prize is 12.5 in law and nothing in the other fields
+- **L1843 17. a city founded the default way orders nothing, pays nothing and has no lab, whatever the prizes; a reform of the money scales prizes,...**
+  - L1849 fixture: a village founded the default way at month
+  - L1856 six months on nothing is ordered, said, paid or owed, and nothing is found, piled or potted: no lab, no prize paid, no purse
+  - L1863 fixture: the lab has a target on the chase list after its first month at work
+  - L1867 fixture: a prize, a pot, a prize paid this month and a find
+  - L1871 fixture: the reform went through and moved the money: the treasury's cash is
+  - L1872 the prize is scaled as the cash is
+  - L1873 ...the pot too
+  - L1874 ...and the month's prize paid
+  - L1875 the work piled, the finds and the other fields' prizes are not money and are as they were
+- **L1891 18. the month's researchers, idle researchers, open problems, lab researchers and idle lab researchers are saved: a load reads them as th...**
+  - L1901 fixture: a city with a grant, a prize and two labs, three months on: every field has researchers, engineering has problems open, lab researchers and some of ...
+  - L1903 ...and medicine has a problem open and nobody idle: the counts differ field by field
+  - L1907 the city is saved
+  - L1910 ...with the five counts under its research
+  - L1913 loaded without a failure
+  - L1914 the loaded city reads the same five counts in every field as the one saved did, before it plays a month:
+  - L1925 a save without the five reads them empty, with the rest of the research as it was
+- **L1932 19. a month whose books do not come to a finite figure moves no cash, and the labs' share of a find in it is owed to Business Services an...**
+  - L1935 fixture: the lab has a target on the chase list after its first month at work
+  - L1939 fixture: the month of the find, with the treasury's cash not a number, found
+  - L1941 the month's cash update was blocked: nothing was paid to the labs, the prize paid is 0 and Business Services' statement received nothing from the city
+  - L1944 ...but the labs' share is owed: arrears on the prizes' line, to Business Services, of exactly the purse's labs' part (
+  - L1945 ...Business Services is owed it, whatever else the blocked month refused it
+  - L1946 ...and it is among the month's refusals, as any refused line is
+  - L1947 the schools' share is in the pot all the same: the find was made
+  - L1952 with cash back the next month pays it down: nothing is owed on the prizes' line, and Business Services' till received the labs' share from the city as arrear...
+  - L1956 ...and the prize paid that month stays 0: it came as arrears, not as a prize
+- **L1962 20. the stake the investors put up for a lab: in a village whose prize draws a lab the Exchange's buyback spends none of it before the find**
+  - L1996 the Exchange's buyback spent nothing of it in any of the
+  - L1997 ...because it never qualified to bid: a record that is bad (
+  - L1999 ...and its till (at most
 
 ## QuarryingCheck.java - 47 labelled assertions
 
@@ -24627,91 +24627,91 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L309 every year is 1900 to 1995 and every month 1 to 12
   - L318 the tables name a month for
   - L319 E1 is November 1952:
-  - L333 PolicyDates has levers with entry keys, and every one of them was held to the catalogue (
-  - L334 PL1 (1915) and PL11 (1942) have no lever: each is in its year's January, the year alone
-  - L337 every law entry is a recipe of the Law school: PL1-PL12 and L5 are Policy levers
-- **L339 4. the work**
-  - L348 every entry's work is within 1 of the rule, rounded (workByRule of its size, field and year)
-  - L354 B4, B6 and PB1 are buildings with a recipe's work
-  - L356 M1, M3, M10 and PM2 to PM6 are a drug's work
-  - L358 M9, PE4 and L4 are equipment's work; PE13 a building's; PM1 and M5 a recipe's
-  - L361 the rule's 1950 figures are the study's: a building 400, equipment 400, a recipe 200, a drug 500
-  - L373 in the rule's year the work is the kind's own figure, and a discovery costs more every year
-  - L377 work grows 5.3% a year, and 3.5% in medicine (ten years: x
-- **L382 5. known from**
-  - L384 a year is known from its January: \"1900\" is month 1, \"1907\" is PolicyDates.monthOf(1907, 1)
-  - L387 a code is known from its entry's month: E1 is November 1952
-  - L389 PE14 (the tractor) is known from its entry's month, June 1917
-  - L391 a code the catalogue lacks, a blank and null are never known
-  - L394 worldMonth(code) is never for a code the catalogue lacks, and entry() is null for it, for a blank and for null
-  - L403 buildings.json's since \"
-  - L406 every code buildings.json carries in a \"since\" is a discovery in the catalogue (
-  - L413 entries() is unmodifiable
-  - L424 get() is one catalogue, the same for every thread
-- **L426 6. the reader's refusals, and the fees**
-  - L429 a clean file is read whole and reports nothing
-  - L432 a fixture entry is read as written: engineering, a building's size, 1960 month 6, worldMonth = PolicyDates'
-  - L437 a duplicate code keeps the first entry and reports it
-  - L442 an unknown field is skipped and reported, and the next entry is still read
-  - L446 an unknown size is skipped and reported
-  - L450 an unknown kind is skipped and reported
-  - L454 an entry with no kind is skipped and reported
-  - L457 a month 13 and a month 0 are skipped and reported
-  - L461 a year before the epoch (
-  - L465 a negative work is skipped and reported; a work of 0 is read
-  - L469 a blank code is skipped and reported
-  - L473 a need that is not in the catalogue is reported, and the entry stays
-  - L478 a need dated after its entry is reported, and the entry stays
-  - L482 a need in the entry's own month is no fault and reports nothing
-  - L485 an entry that needs itself is reported and stays
-  - L488 a text that is not JSON gives an empty catalogue and a report
-  - L490 a text with no entries array gives an empty catalogue and a report
-  - L492 an entry that is not an object is skipped and reported, the rest read
-  - L494 an empty catalogue answers like the real one: no entry, never known
-- **L497 the fees the tables carry**
-  - L500 no law entry carries a licence fee (law is not patented, research-design 2.4) but L4's DNA lab, which is equipment, as its table says
-  - L502 E1 carries one and E10 does not; M3 does not (not patented, unverified); B1 does and B5 does not
-  - L505 PM4 carries one \"partly\"; M9's equipment does; E5 does not (est.); PE3 does (est.); PM2 does, University of Toronto, for $1; PE14 does not
-  - L509 the business methods are free: B7 lean production, B8 the online shop, PB2 the self-service grocery, PB3 the supermarket
-- **L537 every code buildings.json carries is the right kind of discovery, and the dated rows are the studies'**
-  - L539 fixture: buildings.json loads
-  - L566 every template whose since is not a year has a code that is a discovery in the catalogue unlocking a building, and the template's year is the entry's (
-  - L568 ...every piece of equipment whose since is a code has one that unlocks equipment (
-  - L569 ...and every recipe whose since is a code has one that is not a building alone (
-  - L570 the templates dated by a code are exactly research-1900.md 1.2's list, 29 of them, each by the entry that opens it
-  - L574 the Oxygen Steel Shop is dated 1900 (its Bessemer and open-hearth recipes are its 1900 ways; E1 dates its recipe, not the building)
-  - L576 the Panel Mill stays 1980 and the Wood Pellet Mill 1970, years: research-1900.md's words, no entry yet (Q13)
-  - L584 every other template is undated or 1900
-  - L593 every discovery that unlocks a building (
-  - L611 fixture: a file of four buildings, a code, a year, none and a ghost code, reads all four
-  - L615 a code is kept as written, its year is the entry's, and it is known from the entry's month (PE4, June 1902) and not the month before
-  - L617 a year is its digits, and is known from its January (the file's \"since\": 1902 and the code's year are the same year, not the same month)
-  - L619 no since is undated: empty text, year 0, known from the first month
-  - L620 a code the catalogue lacks is reported by name, kept as written, year 0, and never known
-  - L624 setSince(int) is setSince(String) of the digits, and 0 or less is undated; setSince(String) takes a code, trims, and blank or null is undated
-- **L633 a piece, a recipe and a building are known from history's month, and asking by the year agrees**
-  - L638 fixture: the Grain Farm, the Oxygen Steel Shop, the Container Terminal, the House, the Pulp Mill, the Electric Arc Furnace, the Scrap Yard and the Bakery are...
-  - L644 fixture: the tractor piece and recipe, the oxygen converter's recipe, kraft, the horses' recipe and the drive are read
-  - L649 the Grain Farm's tractor piece is known from PE14's month, June 1917, and not the month before; its tractor recipe the same
-  - L652 the Oxygen Steel Shop's recipe dated \"E1\" is known from E1's month, November 1952, and not the month before
-  - L654 the Container Terminal (96) is known from E5's month, April 1956, and not before; its year is 1956 and its text \"E5\"
-  - L656 the Electric Arc Furnace (11) is known from PE1's month, December 1900, and not the month before: a building a first-year discovery opens
-  - L658 the Pulp Mill's kraft recipe (\"1907\") is known from January 1907 and not the month before
-  - L667 an undated template (a House, and each of the
-  - L668 a template dated 1900 (the Scrap Yard) is known from the first month too
-  - L683 knownIn(y) is knownAt(PolicyDates.monthOf(y, 1)) for each of these, 1900 to 1960
-  - L684 ...and none of them, dated 1900 or later, is known in 1899, the year before the start (PolicyDates.monthOf clamps 1899 to month 1; Equipment.januaryOf does not)
-  - L685 a year since reads the same way at the boundary: the 1907 recipe is known in 1907 and not in 1906; the tractor in 1918 and not in 1917 (its June is after tha...
-- **L688 the verdict and the choice are made on history's month**
-  - L697 fixture: a gain a thousandth over both lines (the annuity's and the hurdle) earns back the cost and passes the gate
-  - L699 the tractor with figures that pay is NOT_KNOWN the month before PE14's, pricing nothing
-  - L700 ...and PAYS at PE14's month, with one building unfitted
-  - L701 ...while figures a thousandth short of paying are NOT_YET at that month: the rule runs once the piece is known
-  - L702 ...and with no building unfitted it is FITTED before it is known, as it always was
-  - L706 fixture: the Oxygen Steel Shop's recipe piece is the open hearth, which the basic-oxygen recipe does not need, and the open-hearth recipe does
-  - L708 the basic-oxygen recipe cannot be run by the part without the open hearth the month before E1's, and can at it
-  - L710 ...and the part with the open hearth never runs it, known or not; the open-hearth recipe is the fitted part's from the first month
-  - L713 the Grain Farm's tractor recipe is the fitted part's, from PE14's month and not before, and the horses' recipe is the unfitted part's throughout
+  - L333 PolicyDates has discoverable levers, each held to the catalogue, and Money has no discovery key (
+  - L335 PL1 (1915) and PL11 (1942) have no lever: each is in its year's January, the year alone
+  - L338 every law entry is a recipe of the Law school: PL1-PL12 and L5 are Policy levers
+- **L340 4. the work**
+  - L349 every entry's work is within 1 of the rule, rounded (workByRule of its size, field and year)
+  - L355 B4, B6 and PB1 are buildings with a recipe's work
+  - L357 M1, M3, M10 and PM2 to PM6 are a drug's work
+  - L359 M9, PE4 and L4 are equipment's work; PE13 a building's; PM1 and M5 a recipe's
+  - L362 the rule's 1950 figures are the study's: a building 400, equipment 400, a recipe 200, a drug 500
+  - L374 in the rule's year the work is the kind's own figure, and a discovery costs more every year
+  - L378 work grows 5.3% a year, and 3.5% in medicine (ten years: x
+- **L383 5. known from**
+  - L385 a year is known from its January: \"1900\" is month 1, \"1907\" is PolicyDates.monthOf(1907, 1)
+  - L388 a code is known from its entry's month: E1 is November 1952
+  - L390 PE14 (the tractor) is known from its entry's month, June 1917
+  - L392 a code the catalogue lacks, a blank and null are never known
+  - L395 worldMonth(code) is never for a code the catalogue lacks, and entry() is null for it, for a blank and for null
+  - L404 buildings.json's since \"
+  - L407 every code buildings.json carries in a \"since\" is a discovery in the catalogue (
+  - L414 entries() is unmodifiable
+  - L425 get() is one catalogue, the same for every thread
+- **L427 6. the reader's refusals, and the fees**
+  - L430 a clean file is read whole and reports nothing
+  - L433 a fixture entry is read as written: engineering, a building's size, 1960 month 6, worldMonth = PolicyDates'
+  - L438 a duplicate code keeps the first entry and reports it
+  - L443 an unknown field is skipped and reported, and the next entry is still read
+  - L447 an unknown size is skipped and reported
+  - L451 an unknown kind is skipped and reported
+  - L455 an entry with no kind is skipped and reported
+  - L458 a month 13 and a month 0 are skipped and reported
+  - L462 a year before the epoch (
+  - L466 a negative work is skipped and reported; a work of 0 is read
+  - L470 a blank code is skipped and reported
+  - L474 a need that is not in the catalogue is reported, and the entry stays
+  - L479 a need dated after its entry is reported, and the entry stays
+  - L483 a need in the entry's own month is no fault and reports nothing
+  - L486 an entry that needs itself is reported and stays
+  - L489 a text that is not JSON gives an empty catalogue and a report
+  - L491 a text with no entries array gives an empty catalogue and a report
+  - L493 an entry that is not an object is skipped and reported, the rest read
+  - L495 an empty catalogue answers like the real one: no entry, never known
+- **L498 the fees the tables carry**
+  - L501 no law entry carries a licence fee (law is not patented, research-design 2.4) but L4's DNA lab, which is equipment, as its table says
+  - L503 E1 carries one and E10 does not; M3 does not (not patented, unverified); B1 does and B5 does not
+  - L506 PM4 carries one \"partly\"; M9's equipment does; E5 does not (est.); PE3 does (est.); PM2 does, University of Toronto, for $1; PE14 does not
+  - L510 the business methods are free: B7 lean production, B8 the online shop, PB2 the self-service grocery, PB3 the supermarket
+- **L538 every code buildings.json carries is the right kind of discovery, and the dated rows are the studies'**
+  - L540 fixture: buildings.json loads
+  - L567 every template whose since is not a year has a code that is a discovery in the catalogue unlocking a building, and the template's year is the entry's (
+  - L569 ...every piece of equipment whose since is a code has one that unlocks equipment (
+  - L570 ...and every recipe whose since is a code has one that is not a building alone (
+  - L571 the templates dated by a code are exactly research-1900.md 1.2's list, 29 of them, each by the entry that opens it
+  - L575 the Oxygen Steel Shop is dated 1900 (its Bessemer and open-hearth recipes are its 1900 ways; E1 dates its recipe, not the building)
+  - L577 the Panel Mill stays 1980 and the Wood Pellet Mill 1970, years: research-1900.md's words, no entry yet (Q13)
+  - L585 every other template is undated or 1900
+  - L594 every discovery that unlocks a building (
+  - L612 fixture: a file of four buildings, a code, a year, none and a ghost code, reads all four
+  - L616 a code is kept as written, its year is the entry's, and it is known from the entry's month (PE4, June 1902) and not the month before
+  - L618 a year is its digits, and is known from its January (the file's \"since\": 1902 and the code's year are the same year, not the same month)
+  - L620 no since is undated: empty text, year 0, known from the first month
+  - L621 a code the catalogue lacks is reported by name, kept as written, year 0, and never known
+  - L625 setSince(int) is setSince(String) of the digits, and 0 or less is undated; setSince(String) takes a code, trims, and blank or null is undated
+- **L634 a piece, a recipe and a building are known from history's month, and asking by the year agrees**
+  - L639 fixture: the Grain Farm, the Oxygen Steel Shop, the Container Terminal, the House, the Pulp Mill, the Electric Arc Furnace, the Scrap Yard and the Bakery are...
+  - L645 fixture: the tractor piece and recipe, the oxygen converter's recipe, kraft, the horses' recipe and the drive are read
+  - L650 the Grain Farm's tractor piece is known from PE14's month, June 1917, and not the month before; its tractor recipe the same
+  - L653 the Oxygen Steel Shop's recipe dated \"E1\" is known from E1's month, November 1952, and not the month before
+  - L655 the Container Terminal (96) is known from E5's month, April 1956, and not before; its year is 1956 and its text \"E5\"
+  - L657 the Electric Arc Furnace (11) is known from PE1's month, December 1900, and not the month before: a building a first-year discovery opens
+  - L659 the Pulp Mill's kraft recipe (\"1907\") is known from January 1907 and not the month before
+  - L668 an undated template (a House, and each of the
+  - L669 a template dated 1900 (the Scrap Yard) is known from the first month too
+  - L684 knownIn(y) is knownAt(PolicyDates.monthOf(y, 1)) for each of these, 1900 to 1960
+  - L685 ...and none of them, dated 1900 or later, is known in 1899, the year before the start (PolicyDates.monthOf clamps 1899 to month 1; Equipment.januaryOf does not)
+  - L686 a year since reads the same way at the boundary: the 1907 recipe is known in 1907 and not in 1906; the tractor in 1918 and not in 1917 (its June is after tha...
+- **L689 the verdict and the choice are made on history's month**
+  - L698 fixture: a gain a thousandth over both lines (the annuity's and the hurdle) earns back the cost and passes the gate
+  - L700 the tractor with figures that pay is NOT_KNOWN the month before PE14's, pricing nothing
+  - L701 ...and PAYS at PE14's month, with one building unfitted
+  - L702 ...while figures a thousandth short of paying are NOT_YET at that month: the rule runs once the piece is known
+  - L703 ...and with no building unfitted it is FITTED before it is known, as it always was
+  - L707 fixture: the Oxygen Steel Shop's recipe piece is the open hearth, which the basic-oxygen recipe does not need, and the open-hearth recipe does
+  - L709 the basic-oxygen recipe cannot be run by the part without the open hearth the month before E1's, and can at it
+  - L711 ...and the part with the open hearth never runs it, known or not; the open-hearth recipe is the fitted part's from the first month
+  - L714 the Grain Farm's tractor recipe is the fitted part's, from PE14's month and not before, and the horses' recipe is the unfitted part's throughout
 
 ## ResearchPreviewCheck.java - 82 labelled assertions
 
@@ -28761,7 +28761,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L992 ...and the eight's balances and rates as they were
   - L993 ...the chosen shares as they were, to the bit
   - L995 ...and the next month's hand gives it a gold rate, with still no gold held
-  - L1000 the array runs to slot 155, gold's three (149-151, GD2) and the mint's four (152-155, GD3) after the peg's anchor in 148 (
+  - L1000 the array runs through Canada's dated gold state, gold's three (149-151, GD2) and the mint's four (152-155, GD3) and Canada's episode and exit (156-157, R0f)...
   - L1001 slot 149 is gold's balance, in thousands of ounces
   - L1002 slot 150 is gold's price, US$ an ounce
   - L1003 slot 151 is gold's chosen share

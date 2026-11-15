@@ -22200,7 +22200,7 @@ public class Game {
      * @return true if the reform happened
      */
     public boolean reformCurrency(double factor) {
-        if (!isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) return false;
+        if (!forcedReform && !isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) return false;
 
         if ((!forcedReform && !canReformCurrency()) || !denomination.canLop(factor)) return false;
 
@@ -22414,7 +22414,7 @@ public class Game {
 
 
     /**
-     * The reform without the price-level gate, for a harness.
+     * The reform without the player's eligibility gates (price level and dated Bank of Canada), for a harness.
      *
      * DenominationCheck needs a city that has been reformed in order to test
      * what a reform does; it does not need that city to have inflated tenfold

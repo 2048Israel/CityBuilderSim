@@ -1901,5 +1901,5 @@
 | 22168 | 1 | `public Denomination getDenomination()` |  |
 | 22171 | 3 | `public boolean canReformCurrency()` | Whether the reform button should be showing. |
 | 22202 | 212 | `public boolean reformCurrency(double factor)` | Lops zeros off the currency: one new dollar for `factor` old ones. |
-| 22425 | 4 | `boolean reformCurrencyForTest(double factor)` | The reform without the price-level gate, for a harness. |
+| 22425 | 4 | `boolean reformCurrencyForTest(double factor)` | The reform without the player's eligibility gates (price level and dated Bank of Canada), for a harness. |
 

@@ -65,3 +65,31 @@ The reviewer also confirmed R0f-S on unchanged main: the positive-only `carriedR
 Orchestrator accepted b8eb46dc's review mend and, after CM1b shipped, explicitly instructed merging main e8ac5a53 (0.9.109) and using the launcher dry run for the ALL pick, with no duplicate local full run (bus 20261115-004002-379-orchestrator-604d). The merge had no source conflict: its three conflicts were generated `docs/dials.md`, `docs/map/GameVersion.md` and `docs/map/README.md`; all maps were regenerated. `./batch-check.sh --fast` on the merge exits 0 (`target/checks/R0f-merge-fast.txt`). The official main changes to VERSION, queue, changelog and gate record enter only by this merge.
 
 The coordinated launcher gets the required Earth/world options plus `-Dplaytest.trace=C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-R0f/target/R0f-gate-final/trace`, so its full playtest supplies the trace on the final reviewed model as well. This changes trace output only; no playtest premise, model setting, seed or duration changes.
+
+### First ALL dry run (failed; not reusable)
+
+Run directory: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0f-mq9Oy4O8` (Git Bash `/tmp/cbs-gate-R0f-mq9Oy4O8`). Started by the normal `sh tools/gate.sh R0f --dry-run` route with the orchestrator's go. Its immutable identities are:
+
+- branch: `456e6c65f119cb483765f52c1b8d4a6e4bc5f29b`
+- main: `e8ac5a53b1bbc604ce984dbe7b366a69d00e3fff`
+
+The launcher transcript is `target/checks/R0f-gate-launch.txt`; the retained directory owns `ship.log`, the fresh clone's `target/checks/` logs and its result metadata. The launcher exited 1 because R0f-owned assertions and fixture preconditions failed; this run is not reusable for readiness. The provisional ship marker stayed on, and source/fixture mends require a new coordinated run.
+
+
+### First ALL findings and mends
+
+The normal launcher ran the full suite on branch 456e6c65 and main e8ac5a53, then stopped for these R0f-owned lines, kept individually in the run's `unnamed.txt`:
+
+- VaultMoneysCheck's two old 156-slot assertions, PegAnchorCheck's one and CurrencyRegimeCheck's band-support fixture length. The array is now 158 slots because the episode and exit must be saved. The model names CANADA_GOLD_PERIOD_SLOT, CANADA_GOLD_EXIT_SLOT and SAVE_SLOTS; those exact size assertions use the model's contract. No held band, peg, dealing or restore premise changes, and all old slot positions stay fixed.
+- ResearchCheck expected at least eleven discovery keys. Money is data, so CENTRAL_BANK no longer has a discovery key. The check now requires every dated non-Money lever to have its catalogue entry and both Money keys to be empty, preserving the date/field/catalogue assertions rather than weakening them to an arbitrary new floor.
+- DiscoveryCheck and PrizeCheck's reform-invariance fixtures already use the existing `reformCurrencyForTest` seam, which sets forcedReform to bypass player eligibility. The new date guard incorrectly ignored that flag. It now applies only to the player's door, preserving the existing seam and both unchanged fixtures. Public Currency reform remains closed before the Bank opens.
+- ★ PrizeCheck section 12's medical-lab staffing and its two consequent ordering lines. Main's unchanged section 12 passes (`target/checks/R0f-main-prize12.txt`). The identical month-173 city with handed heads [0,5000,2200,1000] has main posts [3514,3674,2659,454.0629] and 86.937 college spare; R0f's dated money changes the works before that month to posts [7520,5106,2094,373.1107], whose diploma shortage draws college heads down to -43.567 spare and the lab staffs 69.935%, below the unchanged 80% floor. Logs `target/checks/R0f-main-medical.txt` and `target/checks/R0f-branch-medical.txt` retain wanted/spare/drawn vectors. handMore keeps its 200-head minimum, then physically supplies the college deficit for two model-quoted medical labs (wanted minus spare). The city, month, wages, lab target, ordering cap and hard staffing floor are unchanged; no loop tunes the fixture until a verdict passes. This restores the original premise of a village handed enough workers to test the one-lab-a-field monthly cap.
+
+Orchestrator agreed the seam/schema/key mends and requested another delta review and dry-run go; the next slot order is RT1b, R0f, then RT2 (bus 20261115-012315-619-orchestrator-2ae3). No unrelated line was re-filed for these failures.
+
+Orchestrator accepted the PrizeCheck repair on the house rule (20261115-013026-149-orchestrator-2f1f): the two-lab staffing premise, every assertion and the 80% floor stay as they are; only the handing follows the model's wanted-minus-spare deficit with the existing 200-head minimum. The named mending check runs with `-Dcbs.parallel=1`, so only one harness is JVM-heavy while RT1b owns its dry-run slot.
+
+
+The serial named run `./batch-check.sh MoneyDatesCheck VaultMoneysCheck PegAnchorCheck CurrencyRegimeCheck ResearchCheck DiscoveryCheck PrizeCheck` exits **3**, only accepted R0f-S red; all seven harnesses ran and every repaired assertion passes. PrizeCheck has one existing policy-approved OBSERVED path assertion, recorded as information. Compile, maps, Stale (0 firm) and tree pass. Log: `target/checks/R0f-contract-mends.txt`. No assertion was weakened or deleted, and no fixture date, city or staffing floor moved.
+
+The first full launcher's post-review, main-merged default trace also matches all eight original main traces byte for byte (the same SHA-256 values above). Thus its additional owned reds were contract/fixture assertions, with no default model trace movement. The next launcher will capture the final mended model again.

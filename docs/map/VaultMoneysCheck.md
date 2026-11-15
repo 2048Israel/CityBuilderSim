@@ -52,7 +52,7 @@
 > balance, so a deficit month sold and a surplus month bought and a peg moved to 1.6 on balanced trade dealt nothing; now the hold
 > deals the lift the peg and the shadow ask, so the fixtures move the peg to cause the sale or the purchase they stand on.
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (126), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (15), [WorldMoneys](WorldMoneys.md) (13), [WorldData](WorldData.md) (11), [WorldMoneysCheck](WorldMoneysCheck.md) (7), [Game](Game.md) (5), [GoldPrice](GoldPrice.md) (4), [Nations](Nations.md) (2), [CurrencyCheck](CurrencyCheck.md) (1), [PartnerTrade](PartnerTrade.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (127), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (15), [WorldMoneys](WorldMoneys.md) (13), [WorldData](WorldData.md) (11), [WorldMoneysCheck](WorldMoneysCheck.md) (7), [Game](Game.md) (5), [GoldPrice](GoldPrice.md) (4), [Nations](Nations.md) (2), [CurrencyCheck](CurrencyCheck.md) (1), [PartnerTrade](PartnerTrade.md) (1)
 
 ## Sections
 
@@ -77,7 +77,7 @@
 |---:|---|---|---|
 | 61 | `VaultMoneysCheck.out` | `System.out` |  |
 | 64 | `VaultMoneysCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
-| 67 | `VaultMoneysCheck.SLOTS` | `156` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10), the... |
+| 67 | `VaultMoneysCheck.SLOTS` | `ForeignAccounts.SAVE_SLOTS` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10), the... |
 | 70 | `VaultMoneysCheck.GOLD` | `ForeignAccounts.GOLD` | Gold's index in the vault (ForeignAccounts.GOLD), and the two prices the gold sections hand it, US$ an ounce: the 1900 statute's par and Proclamation 2072's (GoldPrice). |
 | 71 | `VaultMoneysCheck.OLD_PRICE` | `GoldPrice.PAR_1900, NEW_PRICE = GoldPrice.PAR_1934` |  |
 | 73 | `VaultMoneysCheck.ALL_USD` | `ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE, W...` |  |

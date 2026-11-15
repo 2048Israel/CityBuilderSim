@@ -1300,16 +1300,25 @@ public class PrizeCheck {
         }
     }
 
-    /** The college heads handed besides hand()'s 2,000 (MaterialsCheck.handWorkers()) to the village that orders a medical lab (section 12), where the gate's year of arrivals leaves its college posts out-running them. */
+    /** The least college heads handed besides hand()'s 2,000 (MaterialsCheck.handWorkers()) to the village that orders a medical lab (section 12), where the gate's year of arrivals leaves its college posts out-running them. */
     static final double LAB_COLLEGE_HEADS_MORE = 200;
 
-    /** hand(), and LAB_COLLEGE_HEADS_MORE college heads besides, in the workforce as well: they too last one month. */
+    /** hand(), at least LAB_COLLEGE_HEADS_MORE college heads besides, and the model-quoted deficit for two medical labs: all last one month. */
     static void handMore(Game g) {
         hand(g);
         PopulationManager hands = g.getPopulationManager();
         double[] heads = hands.getSkilledHeads().clone();
         heads[WageBand.COLLEGE.ordinal()] += LAB_COLLEGE_HEADS_MORE;
         hands.restoreWorkforce(hands.getWorkforceForSave() + Math.round(LAB_COLLEGE_HEADS_MORE));
+        hands.restoreSkilledHeads(heads);
+        // R0f changes the village's works before this month, so the diploma posts can draw down college heads too. The premise is workers
+        // for two medical labs, not a particular old surplus: supply that physical deficit from the model's posts, keeping the 80% gate hard.
+        Sector.Staffing twoLabs = g.getSectors().businessServices().staffing(g.labTemplate(Field.MEDICINE), 2);
+        int college = WageBand.COLLEGE.ordinal();
+        double extra = Math.ceil(Math.max(0, twoLabs.wanted()[college] - twoLabs.spare()[college]));
+        heads = hands.getSkilledHeads().clone();
+        heads[college] += extra;
+        hands.restoreWorkforce(hands.getWorkforceForSave() + Math.round(extra));
         hands.restoreSkilledHeads(heads);
     }
 

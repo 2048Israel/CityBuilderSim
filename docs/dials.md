@@ -2,9 +2,9 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**5,958 constants in 569 files.**
+**5,961 constants in 569 files.**
 
-## model (2851 constants)
+## model (2854 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1476,18 +1476,21 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1432 | `ForeignAccounts.GOLD_POINTS` | `.005` | The gold points: the rate is held this share either side of the mint's rate, the cost of shipping gold between New York and London (est.: about half a percent; Officer 1996). |
 | 1435 | `ForeignAccounts.COVER_RATIO` | `.40` | The least share of M0 the vault's gold must cover at the mint price, under which a sale breaks the gold (the Federal Reserve Act's 40% against notes, 1913, section 16). |
 | 1438 | `ForeignAccounts.PEG_SALT` | `0x5DEECE66D1B54A33L` | The salt that makes the peg's draws a stream of their own (odd). |
-| 1829 | `ForeignAccounts.THIN_HOLD_MONTHS` | `24` | A vault that would hold a peg or a band for fewer months than this against a steady gap of BREAK_GAP is thin, and choosing one warns (XR5; Jerus, "Warn on a thin vault"): two years, the median peg'... |
-| 2107 | `ForeignAccounts.COFER_SHARES` | `{.567,.206,.050,.045,.021,.027,.021,.002 }` | The share of the world's reserves each of the eight holds, IMF COFER 2026Q2 [R23], in WorldMoneys.EIGHT's order, normalised when used: the US$ 56.7%, euro 20.6%, yen 5.0%, pound 4.5%, yuan 2.1%, Ca... |
-| 2110 | `ForeignAccounts.MONEYS` | `9` | How many moneys the vault keeps a balance in: the eight and gold. |
-| 2113 | `ForeignAccounts.GOLD` | `8` | The index of gold, the ninth, after the eight (GD2): the vault's balance in thousands of troy ounces, its price in US$ an ounce. |
-| 2116 | `ForeignAccounts.CODES` | `java.util.stream.Stream.concat(WorldMoneys.EIGHT.stream(), java.util.stream.Stream.of("...` | The nine codes in the vault's order: WorldMoneys.EIGHT, then "XAU" (ISO 4217's code for a troy ounce of gold). |
-| 2122 | `ForeignAccounts.MONEY_NAME` | `{ "the US dollar", "the euro", "the yen", "the pound", "the yuan", "the Canadian dollar...` | The money's name as a sentence has it ("the euro"), in CODES' order: the eight, then gold. |
-| 2125 | `ForeignAccounts.MONEY_PLURAL` | `{ "US dollars", "euros", "yen", "pounds", "yuan", "Canadian dollars", "Australian dolla...` | ...and what a purchase of it is ("euros"), for a button's words. |
-| 2128 | `ForeignAccounts.MONEY_MARK` | `{ "US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF ", "XAU " }` | ...and the mark a figure in it is written with ("€"), in the vault's order: the same marks the trade screen prints (CD8: the decision log names the money a piece is sold in by it); gold's is ISO's ... |
-| 2511 | `ForeignAccounts.COVER_WINDOW` | `12` | How many months the trailing figures are averaged over: the import bill the cover is measured against, and the balances the float reads. |
-| 3166 | `ForeignAccounts.PARITY_WATCH` | `.25` | How far from parity, either side, the rate reads as a watch - amber on the Trade tab, the drawer's THE CURRENCY row and the header's rate line, which until 0.7.35 judged one rate three ways (the sp... |
-| 3169 | `ForeignAccounts.PARITY_FAR` | `.50` | ...and how far reads as far: red on all four. |
-| 3185 | `ForeignAccounts.THIN_COVER` | `3` | Months of import cover under which the world prices a currency for a crisis rather than on its trade balance - the Trade tab's red line and its alert, three months by the usual rule of thumb - and ... |
+| 1497 | `ForeignAccounts.CANADA_GOLD_PERIOD_SLOT` | `156` | Saved slot of the dated Canadian gold episode. |
+| 1499 | `ForeignAccounts.CANADA_GOLD_EXIT_SLOT` | `157` | Saved slot of the dated episode's exhausted flag. |
+| 1501 | `ForeignAccounts.SAVE_SLOTS` | `CANADA_GOLD_EXIT_SLOT + 1` | Exact size of the foreign-account stock, through Canada's dated gold state. |
+| 1836 | `ForeignAccounts.THIN_HOLD_MONTHS` | `24` | A vault that would hold a peg or a band for fewer months than this against a steady gap of BREAK_GAP is thin, and choosing one warns (XR5; Jerus, "Warn on a thin vault"): two years, the median peg'... |
+| 2114 | `ForeignAccounts.COFER_SHARES` | `{.567,.206,.050,.045,.021,.027,.021,.002 }` | The share of the world's reserves each of the eight holds, IMF COFER 2026Q2 [R23], in WorldMoneys.EIGHT's order, normalised when used: the US$ 56.7%, euro 20.6%, yen 5.0%, pound 4.5%, yuan 2.1%, Ca... |
+| 2117 | `ForeignAccounts.MONEYS` | `9` | How many moneys the vault keeps a balance in: the eight and gold. |
+| 2120 | `ForeignAccounts.GOLD` | `8` | The index of gold, the ninth, after the eight (GD2): the vault's balance in thousands of troy ounces, its price in US$ an ounce. |
+| 2123 | `ForeignAccounts.CODES` | `java.util.stream.Stream.concat(WorldMoneys.EIGHT.stream(), java.util.stream.Stream.of("...` | The nine codes in the vault's order: WorldMoneys.EIGHT, then "XAU" (ISO 4217's code for a troy ounce of gold). |
+| 2129 | `ForeignAccounts.MONEY_NAME` | `{ "the US dollar", "the euro", "the yen", "the pound", "the yuan", "the Canadian dollar...` | The money's name as a sentence has it ("the euro"), in CODES' order: the eight, then gold. |
+| 2132 | `ForeignAccounts.MONEY_PLURAL` | `{ "US dollars", "euros", "yen", "pounds", "yuan", "Canadian dollars", "Australian dolla...` | ...and what a purchase of it is ("euros"), for a button's words. |
+| 2135 | `ForeignAccounts.MONEY_MARK` | `{ "US$", "€", "¥", "£", "CN¥", "C$", "A$", "CHF ", "XAU " }` | ...and the mark a figure in it is written with ("€"), in the vault's order: the same marks the trade screen prints (CD8: the decision log names the money a piece is sold in by it); gold's is ISO's ... |
+| 2518 | `ForeignAccounts.COVER_WINDOW` | `12` | How many months the trailing figures are averaged over: the import bill the cover is measured against, and the balances the float reads. |
+| 3173 | `ForeignAccounts.PARITY_WATCH` | `.25` | How far from parity, either side, the rate reads as a watch - amber on the Trade tab, the drawer's THE CURRENCY row and the header's rate line, which until 0.7.35 judged one rate three ways (the sp... |
+| 3176 | `ForeignAccounts.PARITY_FAR` | `.50` | ...and how far reads as far: red on all four. |
+| 3192 | `ForeignAccounts.THIN_COVER` | `3` | Months of import cover under which the world prices a currency for a crisis rather than on its trade balance - the Trade tab's red line and its alert, three months by the usual rule of thumb - and ... |
 
 ### Formats.java ([map](map/Formats.md))
 
@@ -7393,7 +7396,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 57 | `PegAnchorCheck.LEAN` | `ForeignAccounts.Regime.LEAN, PEG = ForeignAccounts.Regime.PEG, FLOAT = ForeignAccounts....` |  |
 | 59 | `PegAnchorCheck.TRADE` | `CurrencyRegimeCheck.TRADE, DEEP = CurrencyRegimeCheck.DEEP` |  |
 | 62 | `PegAnchorCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc (VaultMoneysCheck's). |
-| 65 | `PegAnchorCheck.SLOTS` | `156` | The length of the foreign accounts' array: the peg's anchor in slot 148 (WN4b), then gold's balance, price and chosen share in 149-151 (GD2) and the mint in 152-155 (GD3). |
+| 65 | `PegAnchorCheck.SLOTS` | `ForeignAccounts.SAVE_SLOTS` | The length of the foreign accounts' array: the peg's anchor in slot 148 (WN4b), then gold's balance, price and chosen share in 149-151 (GD2) and the mint in 152-155 (GD3). |
 
 ### PlanCheck.java ([map](map/PlanCheck.md))
 
@@ -7537,8 +7540,8 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1283 | `PrizeCheck.F` | `Field.ENGINEERING` | The field the city sections work in: the University hosts it, and the first lab any field wants is wanted in it. |
 | 1285 | `PrizeCheck.BS` | `Sectors.BUSINESS_SERVICES` |  |
 | 1288 | `PrizeCheck.STUDY_RATIO` | `12 / 10.9` | research-design 5.3: the lab's D$ 12M against the Engineering Services Office's D$ 10.9M for 120 staff, which the lab templates' figures are written from. |
-| 1304 | `PrizeCheck.LAB_COLLEGE_HEADS_MORE` | `200` | The college heads handed besides hand()'s 2,000 (MaterialsCheck.handWorkers()) to the village that orders a medical lab (section 12), where the gate's year of arrivals leaves its college posts out-... |
-| 1350 | `PrizeCheck.FUND_BUYS_SHARE_OF_CAP` | `.1` | The share of Business Services' market value the city's fund buys at its price, to give the village's shares a current quote (labCityWithAMarket()). |
+| 1304 | `PrizeCheck.LAB_COLLEGE_HEADS_MORE` | `200` | The least college heads handed besides hand()'s 2,000 (MaterialsCheck.handWorkers()) to the village that orders a medical lab (section 12), where the gate's year of arrivals leaves its college post... |
+| 1359 | `PrizeCheck.FUND_BUYS_SHARE_OF_CAP` | `.1` | The share of Business Services' market value the city's fund buys at its price, to give the village's shares a current quote (labCityWithAMarket()). |
 
 ### QuarryingCheck.java ([map](map/QuarryingCheck.md))
 
@@ -7689,7 +7692,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 135 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has. |
 | 136 | `ResearchCheck.PREFIX_COUNTS` | `{ 18, 10, 8, 5, 27, 6, 3, 12 }` |  |
 | 139 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594 }, { "M10...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
-| 522 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
+| 523 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 
 ### ResearchPreviewCheck.java ([map](map/ResearchPreviewCheck.md))
 
@@ -7929,7 +7932,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 61 | `VaultMoneysCheck.out` | `System.out` |  |
 | 64 | `VaultMoneysCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
-| 67 | `VaultMoneysCheck.SLOTS` | `156` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; Currency... |
+| 67 | `VaultMoneysCheck.SLOTS` | `ForeignAccounts.SAVE_SLOTS` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; Currency... |
 | 70 | `VaultMoneysCheck.GOLD` | `ForeignAccounts.GOLD` | Gold's index in the vault (ForeignAccounts.GOLD), and the two prices the gold sections hand it, US$ an ounce: the 1900 statute's par and Proclamation 2072's (GoldPrice). |
 | 71 | `VaultMoneysCheck.OLD_PRICE` | `GoldPrice.PAR_1900, NEW_PRICE = GoldPrice.PAR_1934` |  |
 | 73 | `VaultMoneysCheck.ALL_USD` | `ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE, WORLD_MIX =...` |  |

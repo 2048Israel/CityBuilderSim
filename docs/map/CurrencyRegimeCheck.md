@@ -64,7 +64,7 @@
 >   5. THE DOUBT TAKES THE HOT MONEY HOME. A bare CapitalFlows: setDoubt(h)
 > ... (97 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (179), [Game](Game.md) (57), [DebtManager](DebtManager.md) (34), [CapitalFlows](CapitalFlows.md) (29), [Expectations](Expectations.md) (19), [CurrencyCheck](CurrencyCheck.md) (11), [ExchangeRateCheck](ExchangeRateCheck.md) (11), [Founding](Founding.md) (10), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [Observation](Observation.md) (6), [YieldCurve](YieldCurve.md) (5), [PriceLevel](PriceLevel.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Nations](Nations.md) (2), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (180), [Game](Game.md) (57), [DebtManager](DebtManager.md) (34), [CapitalFlows](CapitalFlows.md) (29), [Expectations](Expectations.md) (19), [CurrencyCheck](CurrencyCheck.md) (11), [ExchangeRateCheck](ExchangeRateCheck.md) (11), [Founding](Founding.md) (10), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [Observation](Observation.md) (6), [YieldCurve](YieldCurve.md) (5), [PriceLevel](PriceLevel.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Nations](Nations.md) (2), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
 
 **Used by (5):** [GoldStandardCheck](GoldStandardCheck.md), [InterventionCheck](InterventionCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
