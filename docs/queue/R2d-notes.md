@@ -260,3 +260,39 @@ find. Its old history-only hearth/Bessemer gain comparison remains intact.
 The data's readme now documents signed undos and their physical units.
 A local provisional ship draft records PE3, PE12, PB3 and the slate gap;
 it is deliberately not staged or pushed while fee integration is pending.
+
+## Fee integration prototype (waiting for R2c and RT2 to ship)
+
+Main remains 4343a815. An ignored target/R2d-fee-prototype overlay combines
+R2d 7510fc00 with R2c 66708ce2; it changes no tracked model source. The
+orchestrator approved the standing-value design on 2026-11-15 at 09:18.
+The proposed EquipmentFit hooks preserve its default guard, use the
+independent delta as gross gain and subtract onGain exactly once. The small
+LicenceFees.one hook delegates independent free recipes to RecipeChanges.
+Standing goods and consumables follow captured dispatch, fixed wages and
+utilities follow R2c's standing roles, and PE24 uses only its template's
+share of the feed actually dispatched. The building's own PE11 rent reads
+the solved thermal Process. Recipes.gainOf remains R2c's unchanged method.
+
+The scratch HistoricalLicenceCheck has 17 assertions, all green with the
+hooks. The identical fixture against the three pre-hook model classes has
+11 failures of 17 (before-17.log). It causes actual carbide-equipped machine
+production, a flotation mill's production and settlement, and direct real
+refinery stock production at the producer boundary. Flotation paid
+441995.607166905 with a closed money audit and matching history/current
+account. A local find and patent expiry both stop further bills. With two
+thermal crackers the dispatched-feed building bill is 7600748.465522626;
+the old modern-yield reader instead bills 17418536.955372340. Six catalytic
+crackers process 2320680 litres against 13937946 installed; PE24's exact
+incremental dispatched-feed bill is 9817788.489849713. No unused nameplate
+feed is charged. All jobs used the explicit earth-2/world-1 paths.
+
+The overlay's HistoricalRecipeCheck remains green. R2c's LicenceFeesCheck
+has four integration assertions requiring an explicit fixture-scope call:
+the expiry fixture compares the total of all firms, now including another
+independent patented recipe; its default-fitting fixture assumes a hearth
+still enables basic oxygen after E1. R2d's accepted E1 rule makes oxygen
+available to either fitted status. These observations were sent to the
+orchestrator before changing any tracked or scratch fixture premise.
+The initially suggested Bakery replacement was withdrawn: that drive is
+free in 1900 and cannot cause the required positive-patent condition.
