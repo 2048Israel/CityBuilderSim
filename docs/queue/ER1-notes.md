@@ -1,5 +1,13 @@
 # ER1 — What holds Rotterdam's Earth city at twelve thousand for a century
 
+**Ready.** The launcher gate on main 0.9.119 passed, with only main's known
+reds. On the pinned 0.9.117 model, the old twelve-thousand episode has shifted
+to 784 months at 13,575 offered jobs: full plots, private land refusals and
+builders with no queue. A cash-and-land twin opens a real factory; a cash-only
+twin does not within the same twelve-month skip. The short ER1Check takes
+2.039 seconds in the final gate. No model code changes; the advisor's growth-land
+funding recommendation is carried in one pending row.
+
 ## Contract and reproduction
 
 Diagnosis only, from [AN2's finding and ★1](AN2-notes.md). No model code,
@@ -329,7 +337,7 @@ by `keepGroundAhead()`, a second by the scored room move. The m2716 record
 shows both counters advance, 0.2304 km² more owned ground and a renewed
 private build. Further looks and needed automatic works buy more territory.
 By m3000 jobs have reached 29,408; farms still occupy the same area. This is
-capital-and-territory access followed by orders, not fields suddenly filling
+access to capital and territory followed by orders, not fields suddenly filling
 all of the city's spare land.
 
 **Why the population follows, high confidence in the rule and measured draw:**
@@ -378,4 +386,36 @@ Against merged main, the only Java/resource differences are ER1Check.java and
 AllChecks.java's single registry line; all game and balance files match main.
 R2d changed recipes separately, so the pinned 0.9.117 long traces are not
 claimed identical to 0.9.118. ER1 introduces no game-trace change on either
-base. The ship file remains provisional until the coordinated dry run passes.
+base. The ship file was provisional at gate preparation; the final launcher record follows.
+
+
+## Final launcher gate and readiness
+
+The orchestrator released the heavy-run slot after KP2c shipped. Main
+9c36a155 (0.9.119) was merged at 7000baa2; the requested
+`./batch-check.sh --fast` passed (compile 46 seconds, regenerated maps,
+zero firm stale findings). The provisional ship file was already pushed.
+The normal command `sh tools/gate.sh ER1 --dry-run --no-tag` ran detached
+(launcher PID 38308), using the default pool, with no pushes during the run.
+
+**Kept run:** `/tmp/cbs-gate-ER1-dI1IZ65g`, also
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-ER1-dI1IZ65g`.
+`ship.log` is the launcher/publisher log; `checks/` contains the complete
+harness logs and verdict. The two exact commits it tested are:
+
+- branch: `7000baa2dbd2fad1cc19914b08eb7d4e18a2dc6e`
+- main: `9c36a155ba6d3857ed7f8edb73d706d711007bf6`
+
+The launcher exits **0**. Its complete default gate tier ran **193 harnesses:
+188 passed, five had only existing known reds** (MoneyDatesCheck, InvestCheck,
+MapCheck, DeathRecordCheck, ResearchViewCheck). The suite's accepted exit is
+3; the encompassing check finishes in 1,913 seconds. There are no new reds
+and `unnamed.txt` is empty. ER1Check passes in **2.039 seconds**, with six
+cash-short looks, six private refusals, physical posts held, and the same
+private order accepted after the quoted land purchase. No known-red entry
+was added, transferred or edited by ER1; none named ER1.
+
+The final record-only commits add this kept run to the ship file and drop
+the provisional marker last, in its own commit. No source, index, model or
+balance file advances after the tested branch commit. No tag is requested,
+no real ship command is run, and no real save slot is opened or written.
