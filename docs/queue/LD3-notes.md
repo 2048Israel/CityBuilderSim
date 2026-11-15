@@ -111,7 +111,16 @@ with 60 laid-off adults and maximum same-month excess 0.923. The builder's
 post-load window places 17 orders in both twins with zero drift.
 
 `target/checks/ld3-mended.txt` and `target/checks/suite.txt` retain that run.
-The final pick and retained dry run are pending.
+The final local `./batch-check.sh --pick` selects ALL, 202 harnesses,
+including its direct nightly picks, and compiles successfully. Orchestrator
+requested its cancellation at 23.02 on 2026-11-14 because CM2's full dry run
+was already running and concurrent suites had timed KeptCheck out the night
+before. The local run is incomplete. Only LD3's verified process tree was
+ended, including its detached MSYS batch-check and JVM children.
+
+Per that direction, the coordinated fresh-clone dry run will execute the
+same full pick for LD3. The request `LD3 dry run?` was sent on cbs-bus, and
+LD3 waits for the go before starting it.
 
 No process script, check machinery or standing rule changes. The process
 one-in, one-out count is zero added and zero removed.
