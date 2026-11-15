@@ -1,8 +1,8 @@
-# gate of Merge batch/UP6b: uP6's review follow-ups (the autosave): the window's close after a skip that threw part-way autosaves a city stopped inside a month (`ui/UserInterface.java:6980` / `Game.java:1110`; Quit already did; UP6 refuses it at the skip's end, `ranThrough`); the autosave notice names the month it is reported in, not the autosave's (`Game.java:16471`: carry the job's month in `Written`); `Inbox.java:344`'s "the autosave before it is still on disk, whole" while `Job.write` wrote a newer history beside it; `Game.java:17159`'s comment (UP6's gate review, 2026-11-06), 0.9.115
+# gate of Merge batch/FP1: the fund's long lists a page at a time: Search's first rows with Show more, Activity's last year open and each earlier year a fold (KP5's ★C: 13,000 nodes on Search at month 2,100, 58-192 ms a month kept), 0.9.116
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 192 harnesses run in 988s: 186 passed, 6 failed
+# suite: 192 harnesses run in 2054s: 187 passed, 5 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 InvestCheck | exit 1
@@ -16,10 +16,10 @@ MapCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
+ResearchViewCheck | exit 1
+ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 2 rows, Agriculture: 2 of 5), and the sectors' rows add up to the city's
+ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217
 PrizeCheck | exit 2
 PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1015.476826182461 of 1012.1739302492329)
 PrizeCheck | FAIL ...and its till (at most 405) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284
-ResearchViewCheck | exit 1
-ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 2 rows, Agriculture: 2 of 5), and the sectors' rows add up to the city's
-ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217
