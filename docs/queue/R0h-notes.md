@@ -125,3 +125,8 @@ After the founding mend, the January-April twins' raw ring differences are
 -0.001072, +0.180864, +0.491282 and +0.165453 deaths. Their independently replayed
 chronic drift is exactly the same in each month; residual excess is zero within
 1e-9 in all four. Influenza still books about two deaths in each of those months.
+
+The orchestrator accepted 4a6f3ebf's mend and closed REV-R0h-1 on 2026-11-15.
+The authorized ensemble uses that classes snapshot against current main
+9c36a155 (0.9.119), with the newest stored baseline 0.9.117. The two intervening
+versions are kept-screen repairs and do not change the default model trace.
