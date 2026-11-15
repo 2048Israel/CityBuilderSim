@@ -123,6 +123,34 @@ public class SicknessCheck {
         check("the acute cases join the youngest bar and the total sick, in people", worstPeople, 0, 1e-9);
     }
 
+    /** The founding has not struck a Health rate yet; its zero must not seed phantom chronic sickness. */
+    static void theFoundingSeed() {
+        System.out.println("\n--- a fresh city's founding seed remains main's (R0h review) ---");
+        Game city = new Game(GameFiles.scratch("sickness-founding"), LongPlaytest.founding());
+        quietly(city::run);
+        Health health = city.getHealth();
+        double openingRate = health.getSickRate();
+        check("before the first advance, the rate without influenza is the founding sick rate",
+                health.getSickRateWithoutInfluenza(), openingRate, 0);
+        assertTrue("fixture: the founding has no influenza and no seeded sickness ring",
+                health.getInfluenzaRate() == 0 && !city.getSickness().isSeeded());
+        quietly(() -> city.simulateMonths(1));
+        Healthcare care = city.getHealthcare();
+        double general = care.getCoverage(CareType.GENERAL);
+        double child = care.getCoverage(CareType.CHILDCARE), senior = care.getCoverage(CareType.SENIOR);
+        Sickness main = new Sickness();
+        // Main seeds from the full founding rate, then turns the ring on the first month's full rate.
+        main.seed(openingRate, general, child, senior);
+        main.advanceMonth(health.getSickRate(), general, child, senior);
+        boolean same = true;
+        for (AgeBand b : AgeBand.values()) for (int k = 0; k < Sickness.RING; k++) {
+            same &= city.getSickness().slot(b, k) == main.slot(b, k);
+        }
+        assertTrue("the first real month's whole ring equals main's founding seed and handover", same);
+        check("after an advance with no influenza, the two rates still agree", health.getSickRateWithoutInfluenza(),
+                health.getSickRate(), 0);
+    }
+
     public static void main(String[] args) throws Exception {
 
         /* ============ 1. the base rates ============ */
@@ -391,6 +419,7 @@ public class SicknessCheck {
 
         System.out.println();
         acuteBesideTheRing();
+        theFoundingSeed();
         System.out.println(fails == 0 ? "The long sick die, and clinics save them." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }

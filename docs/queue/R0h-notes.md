@@ -85,3 +85,43 @@ will execute and judge that full selection. Ensemble and dry run pending. The de
 changes because it crosses 1918; an ensemble is required. No current known-reds
 entry names R0h. No process machinery was changed, so the one-in/one-out count
 does not apply.
+
+## Stranger review: the founding rate
+
+REV-R0h-1 reviewed b822ded0 and found that a fresh Health records sickRate as
+zero while baselineRate starts at WELL_SERVED_RATE. The new getter originally
+summed that baseline before the first advance and seeded phantom long sickness
+outside the influenza. Accepted and mended: when influenzaRate is zero, return
+the recorded sickRate exactly; only an influenza month needs the separately
+capped chronic sum. This also preserves bit equality outside the episode.
+
+★5 The founding must preserve the recorded zero rather than invent a baseline
+history. A fresh real city's first month is compared slot-for-slot with main's
+four-argument seed and handover. Its initial and advanced no-influenza rates
+must match the full rate exactly. The fixture runs before and after the mend.
+A shortened default trace through December 1919 compares all eight CSVs against
+main's original Health, Sickness, Game and DataSave classes; it is a bounded
+onset diagnostic, not a replacement ensemble baseline.
+
+The new founding fixture failed both initial-rate equality (0.03 versus 0) and
+first-month ring equality on b822ded0's getter (exit 4), then passed after the
+mend. SicknessCheck and CausesOfDeathCheck together: exit 0, zero firm Stale
+findings. Logs: target/r0h-founding-before.log,
+target/r0h-founding-before-sickness.log, target/r0h-founding-after.log,
+target/r0h-reviewed-sickness.log and target/r0h-reviewed-causes.log.
+
+Both shortened default LongPlaytest runs (main and fixed) exited 0. Every trace
+CSV is identical through December 1918 (month 228), including all the years
+before influenza. The first differences are January 1919 (month 229) in month,
+population, household, build and bonds; bank and labour first differ at 230;
+borrow is identical for the whole diagnostic. Thus no founding or pre-episode
+drift remains: the first trace change is the delayed mortality correction in
+1919, not an earlier 1918 economic change. The changed lives naturally affect
+later months. Logs and all eight pairs: target/r0h-trace/; comparison provenance:
+main's 9c36a155 original Health, Sickness, Game and DataSave over the otherwise
+identical compiled branch, JDK/data settings as the focused checks.
+
+After the founding mend, the January-April twins' raw ring differences are
+-0.001072, +0.180864, +0.491282 and +0.165453 deaths. Their independently replayed
+chronic drift is exactly the same in each month; residual excess is zero within
+1e-9 in all four. Influenza still books about two deaths in each of those months.

@@ -335,6 +335,8 @@ public class Health {
 
     /** The chronic rate for Sickness's ring, capped before the acute influenza is added (R0h). */
     public double getSickRateWithoutInfluenza() {
+        // Before the first advance the recorded rate is still zero; an absent influenza changes nothing.
+        if (influenzaRate == 0) return sickRate;
         return Math.min(MAX_SICK_RATE,
                 baselineRate + outbreakSeverity + unburiedRate + hungerRate + unhousedRate + injuryRate);
     }
