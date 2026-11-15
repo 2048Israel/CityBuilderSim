@@ -13,7 +13,7 @@ BF1-M and DM3-R map/planner failures remain separate from QB1's findings.
 WN5d's CityLand, LandMap, LandMarket, LandSellers, ui/MapView and
 LandNationsCheck are outside this batch's edits.
 
-Validation and fixture attribution are in progress.
+Implementation and fixture attribution are complete; the ensemble and coordinated dry run remain.
 
 ## The moved fixtures
 
@@ -102,7 +102,7 @@ both complete harnesses green, maps regenerated, no firm stale findings.
 The source diff was reviewed as a stranger's; no relaxed assertions or
 unrelated source edits. Orchestrator read the complete source diff through
 `a32e4873` and reported no findings (cbs-bus, 2026-11-14 19:28 Halifax).
-No source changes after that commit.
+The later KeptCheck fixture repair is recorded below; model code stays unchanged.
 
 ## Why the full ensemble is still required
 
@@ -117,13 +117,13 @@ Comparison: `target/checks/qb1-ensemble-comparison.json`; main's kept run:
 `../codex-HW1/target/ensemble/HW1-bf1-final`, snapshot `a0efd26d`.
 
 The final-model run is `target/ensemble/QB1`, immutable snapshot `35690378`;
-all source remains the reviewed `a32e4873`. Three workers were used while
+the model source remains the reviewed `a32e4873`; KeptCheck does not enter the driver. Three workers were used while
 the suite and attribution replay shared this PC. The dispatcher was briefly
 paused to start the missing-policy identity proof, then resumed as soon as
 AUTO2's difference was established. The extra partial ZERO_SLACK seed 2
 proof process was stopped by its own PIDs; its `NO DONE` progress line is
-that interrupted proof, and the ordinary runner will replace its partial
-CSV in the single completed 80-run set. No completed run is discarded.
+that interrupted proof, and the ordinary runner replaced its partial CSV and completed ZERO_SLACK seed 2
+(422.9 seconds) in the same 80-run set. No completed run is discarded.
 
 ## KeptCheck's moved debt-picture fixture
 
@@ -165,5 +165,29 @@ before-fix regression fixture; the existing full harness retains it.
 The first capture attempt and initial pick's maps/stale tail collided with
 an in-place compile, so their class-load errors are discarded, not waived.
 The completed diagnostic uses the ensemble's immutable model classes; the
-final selected suite will run with source and classes frozen. The final
+final selected suite ran with source and classes frozen; its accepted result is below. The final
 ensemble does not read KeptCheck, and its model snapshot is unchanged.
+
+## Final selected suite
+
+`./batch-check.sh --pick` on final source `7ccd34f3`: **exit 3, accepted**.
+It selects 76 of 202 harnesses; the runner reports 82 run, 80 passed and two
+registered-red harnesses. No new assertion red remains. Compile, regenerated
+maps, tree and Stale pass; zero firm stale findings (186 soft prose findings).
+Logs: `target/checks/qb1-final-pick.txt`, `qb1-final-suite.txt` and
+`qb1-final-known-reds.txt`. The complete repaired KeptCheck says ALL OK,
+including both lifetime guards and every section after 64.
+
+The two registered-red harnesses remain separate: MapCheck's three drawing
+laws (the every-30-month summary under DM3, connectivity under BF1-M, surface
+under DM3-R), and LongPlaytest's already reproduced twelve-box movement at
+m2389 under DM3-R. No new known-red entry or transfer is needed. There are
+13 soft timings (SaveSlotCheck one, MapCheck eleven, PlanCheck one) and four
+played-path observations (AutoBuildCheck one, MonetaryCheck one, MapCheck two).
+Two starts waited for the PC's commit charge to fall below the suite's 75%
+bar. These are information; their hard correctness laws retain their verdicts.
+
+At 21:00 Halifax, with my selected suite finished, the PC had about 10 GB
+physical and 23 GB virtual memory free and 20 logical processors. The verified
+QB1 dispatcher alone was raised from three workers to the runner's normal five
+using GNU xargs' control signals. Other sessions and MemWatch are untouched.
