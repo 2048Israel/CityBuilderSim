@@ -1,8 +1,8 @@
-# gate of Merge batch/R2d: research: the 1900-1950 entries undone - each P row's 1900 recipe or piece (research-1900 §8.5) on its templates, so a city with every entry runs today's figures (★E3), with recipes written as changes so two pieces compose on one template (R1c ★4, ★8: the binder beside the tractor), 0.9.118
+# gate of Merge batch/ER1: what holds an Earth city at Rotterdam's site at about 12 thousand people for 97 years (m618-m1778) when the default city grows sevenfold in the same months - a diagnosis only, with a fixture that holds the city there: the land in use at 99-100% by m618 and only a third of the fields; land falling to 54% and hunger at 60% by m1778; what changes at m1778-m2025, when the fields reach 100% and jobs fourfold; the fix is its own batch (AN2's ★1, recommended and taken by the orchestrator, 2026-11-07), 0.9.119
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 205 harnesses run in 2649s: 199 passed, 6 failed
+# suite: 193 harnesses run in 1834s: 188 passed, 5 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 InvestCheck | exit 1
@@ -16,10 +16,13 @@ MapCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
+ResearchViewCheck | exit 1
+ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 1 rows, Agriculture: 3 of 6), and the sectors' rows add up to the city's
+ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217
+KeptCheck | exit 1
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+KeptCheck | 1 FAILED
 PrizeCheck | exit 2
 PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1011.1291940951232 of 1004.6942298626966)
 PrizeCheck | FAIL ...and its till (at most 388) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284
-ResearchViewCheck | exit 1
-ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 1 rows, Agriculture: 3 of 6), and the sectors' rows add up to the city's
-ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217

@@ -20,7 +20,7 @@
 > own, Prices open beside them: D2, D3, D5), read off the screen's thread by SavedCities, and the city's rank over the
 > years on its card (D12).
 
-**Uses:** [Palette](Palette.md) (167), [Rankings](Rankings.md) (117), [Kept](Kept.md) (104), [WorldMeasures](WorldMeasures.md) (58), [SavedCities](SavedCities.md) (15), [Money](Money.md) (11), [Pieces](Pieces.md) (11), [CityCalendar](CityCalendar.md) (9), [HistoryScreen](HistoryScreen.md) (9), [Nations](Nations.md) (6), [Icons](Icons.md) (5), [Currency](Currency.md) (3), [UserInterface](UserInterface.md) (2), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1), [GameLog](GameLog.md) (1), [CityMeasures](CityMeasures.md) (1)
+**Uses:** [Palette](Palette.md) (167), [Kept](Kept.md) (124), [Rankings](Rankings.md) (117), [WorldMeasures](WorldMeasures.md) (58), [SavedCities](SavedCities.md) (15), [Money](Money.md) (11), [Pieces](Pieces.md) (11), [CityCalendar](CityCalendar.md) (9), [HistoryScreen](HistoryScreen.md) (9), [Nations](Nations.md) (6), [Icons](Icons.md) (5), [Currency](Currency.md) (3), [UserInterface](UserInterface.md) (2), [Game](Game.md) (2), [GameFiles](GameFiles.md) (1), [GameLog](GameLog.md) (1), [CityMeasures](CityMeasures.md) (1)
 
 **Used by (2):** [KeptBench](KeptBench.md), [UserInterface](UserInterface.md)
 

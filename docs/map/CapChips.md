@@ -18,7 +18,7 @@
 > box, kept through a month's redraw: a screen calls noteFocus() before it
 > rebuilds, so a box that had the focus takes it back.
 
-**Uses:** [Auction](Auction.md) (19), [Kept](Kept.md) (7), [FinancesScreen](FinancesScreen.md) (6), [Palette](Palette.md) (6)
+**Uses:** [Auction](Auction.md) (19), [Kept](Kept.md) (8), [FinancesScreen](FinancesScreen.md) (6), [Palette](Palette.md) (6)
 
 **Used by (3):** [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [KeptBench](KeptBench.md)
 

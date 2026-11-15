@@ -249,9 +249,9 @@ final class PartnersPage {
         l.setStyle(l.isHover() ? over : rest);
         l.setMinWidth(0);
         l.setMaxWidth(Double.MAX_VALUE);
-        l.setOnMouseEntered(e -> l.setStyle(over));
-        l.setOnMouseExited(e -> l.setStyle(rest));
-        l.setOnMouseClicked(e -> {
+        Kept.give(l.onMouseEnteredProperty(), e -> l.setStyle(over));
+        Kept.give(l.onMouseExitedProperty(), e -> l.setStyle(rest));
+        Kept.give(l.onMouseClickedProperty(), e -> {
             e.consume();
             open(number);
         });
@@ -424,7 +424,7 @@ final class PartnersPage {
             n.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
             Pane sample = Kept.plain(l);
             sample.setMinSize(22, 12);
-            sample.setPrefSize(22, 12);
+            Pieces.prefSize(sample, 22, 12);
             sample.setMaxSize(22, 12);
             HBox item = Kept.row(6, sample, n);
             item.setAlignment(Pos.CENTER_LEFT);
@@ -741,9 +741,9 @@ final class PartnersPage {
         // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set; handlers set, not added.
         back.setStyle(back.isHover() ? over : rest);
         back.setMinWidth(Region.USE_PREF_SIZE);
-        back.setOnMouseEntered(e -> back.setStyle(over));
-        back.setOnMouseExited(e -> back.setStyle(rest));
-        back.setOnMouseClicked(e -> {
+        Kept.give(back.onMouseEnteredProperty(), e -> back.setStyle(over));
+        Kept.give(back.onMouseExitedProperty(), e -> back.setStyle(rest));
+        Kept.give(back.onMouseClickedProperty(), e -> {
             nation = 0;
             ui.innerScrollAt.remove("showForeignMenu:body");
             trade.showForeignMenu();
@@ -768,7 +768,7 @@ final class PartnersPage {
         values.setHgrow(Priority.ALWAYS);
         values.setMinWidth(0);
         ranks.setHalignment(javafx.geometry.HPos.RIGHT);
-        g.getColumnConstraints().addAll(labels, values, ranks);
+        Kept.columns(g).addAll(labels, values, ranks);
         int at = 0;
         for (NationsMap.Row r : p.figureRows()) {
             final int line = at;

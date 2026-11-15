@@ -166,7 +166,7 @@ final class ZoningScreen {
             w.setMinWidth(Region.USE_PREF_SIZE);
             return w;
         });
-        back.setOnMouseClicked(e -> policy.open(PolicyScreen.ZONING, THE_GROUND));
+        Kept.give(back.onMouseClickedProperty(), e -> policy.open(PolicyScreen.ZONING, THE_GROUND));
         titled.getChildren().set(2, back);
         titled.getChildren().addAll(3, Kept.scope("zone", () -> {
             Label sep = Kept.label("›");
@@ -359,7 +359,7 @@ final class ZoningScreen {
                     });
             zone.setMinWidth(250);
             zone.setMaxWidth(Region.USE_PREF_SIZE);
-            zone.setDisable(shut);
+            Kept.give(zone.disableProperty(), shut);
             return zone;
         })));
         if (!shut && policy.openLines.contains(PICK)) page.getChildren().add(Kept.scope("picker", this::picker));
@@ -371,7 +371,7 @@ final class ZoningScreen {
                 VBox list = PolicyScreen.card();
                 list.setSpacing(2);
                 for (ZoningView.Row r : rows) list.getChildren().add(Kept.scope("zone:" + r.sector(), () -> zoneRow(r)));
-                list.setDisable(shut);
+                Kept.give(list.disableProperty(), shut);
                 return list;
             }));
         }
@@ -476,9 +476,9 @@ final class ZoningScreen {
         // Kept (KP6): the look the pointer calls for is chosen from isHover() where it is set.
         String lit = rest + " -fx-background-color: " + Palette.CONTROL + ";";
         row.setStyle(row.isHover() ? lit : rest);
-        row.setOnMouseEntered(e -> row.setStyle(lit));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> policy.open(PolicyScreen.ZONING, zonePage(r.sector())));
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(lit));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> policy.open(PolicyScreen.ZONING, zonePage(r.sector())));
         return row;
     }
 
@@ -806,7 +806,7 @@ final class ZoningScreen {
         Ladder ladder = policy.ladderOf(lever).greyed(shut);
         HBox units = Kept.row(6, unitChip(s, "A share of the dry ground", Zoning.Size.SHARE, kind),
                 unitChip(s, "km²", Zoning.Size.KM2, kind));
-        units.setDisable(shut);
+        Kept.give(units.disableProperty(), shut);
         ZoningView.Page now = ZoningView.page(ui.game, ui.game.getZoning(), s);
         String status = now.plot() == null ? "Its sector has no building that stands on ground."
                 : "Measured in " + Formats.plural(now.plot().getName()) + ", "
