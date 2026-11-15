@@ -30,7 +30,7 @@ At 1920 × 1080, before/after (the shipped half-resolution rendering):
 | M6 | 0 | 0 | 23.9 | 563 / 585 | 270.3 / 35.6 |
 | M7 | 70,940 | 0 | 24.8 | 348 / 360 | 95.4 / 88.2 |
 
-All seven after moves reached Ready with no view passed. Every after move has zero black, coarse, stale, unpainted frames, worker asks, evictions and off-plan frames. M6's mean gap is 17.1 ms; the retained month switches are around 0.01 ms. The whole loads occur during LOAD, or after the move has ended for the ordinary full-month rest. After logs are `target/checks/CM2-after-half.txt` and `CM2-after-half-steps.txt`. Final figures, resolution choice, checks, trace comparison and the retained gate run are recorded below before readiness.
+All seven after moves reached Ready with no view passed. Every after move has zero black, coarse, stale, unpainted frames, worker asks, evictions and off-plan frames. M6's mean gap is 17.1 ms; the retained month switches are around 0.01 ms. The whole loads occur during LOAD, or after the move has ended for the ordinary full-month rest. After logs are `target/checks/CM2-after-half.txt` and `CM2-after-half-steps.txt`. The resolution decision, trace comparison and retained gate verdict are recorded below.
 
 
 ## Resolution experiment
@@ -60,7 +60,7 @@ After the review mends, `./batch-check.sh ReplayCheck GlobeCheck` passed again, 
 
 The default playtest trace does not move: all **eight CSV files are byte-identical** against the original main classes from `3ca9a8bc`; hashes and comparison are in `target/checks/CM2-trace-verified.txt`. The reports also match after normalizing only clocks: the run heading, layout-watch durations, and two timestamp prefixes in the audit fixtures. An initial report comparison normalized just the heading and correctly exposed those additional clock fields (`CM2-trace-compare.txt`); no model figure differed. Both runs exit 1 for the same already-recorded DM3-R movement of twelve boxes at m2389, with money fixtures passing; this is not caused or changed by CM2. All economic calculations and QB1's files remain unchanged. The ensemble is skipped under batch.md §6 because the default trace is unchanged.
 
-REV-CM2-2 reviewed `a1d9cd8d..27833d4e` and returned **SHIP**: the three mends are correct, their assertions cause their conditions, leaving is synchronous on FX, and normal play is unchanged (orchestrator mail 20261114-215633-054). The amended provisional branch is pushed for the exclusive dry-run slot; QB1 currently holds that slot.
+REV-CM2-2 reviewed `a1d9cd8d..27833d4e` and returned **SHIP**: the three mends are correct, their assertions cause their conditions, leaving is synchronous on FX, and normal play is unchanged (orchestrator mail 20261114-215633-054). At that review checkpoint the branch was provisional and QB1 held the slot; the later serialized run is recorded below.
 
 At orchestrator request (mail 20261114-220127-829), the amended local ALL pick was also stopped rather than run a duplicate suite beside QB1's active dry run; this avoids the PC contention that had previously timed out KeptCheck. Only the verified owned pick process tree, native PID 8128, was ended. The amended named checks remain green; the normal fresh-clone dry run will supply the full ALL verdict. The orchestrator requires waiting for its go and merging main after QB1 ships, before starting that dry run.
 
@@ -73,3 +73,12 @@ Orchestrator released the dry-run slot after QB1 shipped: incoming main `8a67da4
 The merged fast check passed, exit 0: compile, regenerated maps, Stale 0 firm (`target/checks/CM2-merged-fast.txt`). Main was merged as `08d9b0f2`; the protected publisher files and QB1's four source files match `origin/main` exactly. No CM2 source change follows the reviewed game-code mends and probe-only `c82fc4fd` correction. The provisional branch is pushed before the authorized normal-route dry run; its retained launcher run and branch/main identities are recorded next.
 
 A final byte-level preflight caught punctuation replaced by PowerShell's default stdin-pipe encoding in the draft records. Repaired using ASCII-only Python character escapes inside Git Bash, writing UTF-8 explicitly and checking the stored heading bytes before the gate. No source code changed.
+
+## Retained gate run
+
+Normal route: `sh tools/gate.sh CM2 --dry-run`, authorized by the orchestrator after QB1 shipped. Kept run: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CM2-GH6EhASW` (Git Bash alias `/tmp/cbs-gate-CM2-GH6EhASW`). It judges branch `bb3dd140464634d78887a5f7b76d7b2c7ee7ad76` against main `8a67da4d386efdc60b2ae53d9b813125c8aa218d`. Source is frozen; only these notes and the ship file may advance after this run. The launcher accepted the UTF-8 ship heading, set the prospective version to 0.9.107, selected ALL (202 registered harnesses, normal gate tier plus the directly selected nightly GlobeCheck), and compiled successfully. The completed verdict follows.
+
+
+The run completed on 2026-11-14 at 23:06:01 local time: **launcher exit 0, check-suite exit 3 (known reds only)**. AllChecks ran 188 harnesses in 1,373 s: 185 passed, 3 known red (DeathRecordCheck, LongPlaytest, MapCheck), zero NEW reds. The whole check step took 1,438 s including compile and generated checks. ReplayCheck and GlobeCheck passed; 5d reached Ready without passing a view, both moves had zero unpainted frames/asks/evictions/off-plan frames, and the new land-context, real-range and synchronous-leave assertions passed. Eight timing assertions were SOFT and five played-path premises OBSERVED under the normal policy; none was counted as a correctness failure. Stale had 0 firm findings. No known-reds transfer or new approval is needed.
+
+Retained evidence is the run's `ship.log`, `checks/suite.txt`, per-harness `checks/NAME.log`, checksums and branch/main metadata. `unnamed.txt` is empty. Remote refs before/after are identical: the launcher performed no publication. The ship file names this exact kept run for reuse. Only CM2's notes and ship file advance from the gated branch commit; the provisional marker is removed last.
