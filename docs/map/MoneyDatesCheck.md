@@ -1,4 +1,4 @@
-# MoneyDatesCheck.java - 206 lines · 9 methods · 2 constants · harnesses
+# MoneyDatesCheck.java - 228 lines · 10 methods · 2 constants · harnesses
 
 `ham/citybuildersim/MoneyDatesCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -8,7 +8,7 @@
 > or opens a lever early. The empty-vault town causes exhaustion, then receives reserves to distinguish remembering an exit from rechecking
 > today's balance. Save files belong only to GameFiles.scratch(), never a player's folder.
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (26), [PolicyDates](PolicyDates.md) (19), [Game](Game.md) (16), [DebtManager](DebtManager.md) (8), [Founding](Founding.md) (5), [CentralBank](CentralBank.md) (3), [MoneyAudit](MoneyAudit.md) (2), [DataSave](DataSave.md) (2), [GameFiles](GameFiles.md) (1), [WorldEconomy](WorldEconomy.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (30), [PolicyDates](PolicyDates.md) (22), [Game](Game.md) (18), [DebtManager](DebtManager.md) (11), [Founding](Founding.md) (5), [CentralBank](CentralBank.md) (3), [MoneyAudit](MoneyAudit.md) (2), [DataSave](DataSave.md) (2), [GameFiles](GameFiles.md) (1), [WorldEconomy](WorldEconomy.md) (1)
 
 **Used by (2):** [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -31,7 +31,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 17 | 190 | **type** `public final class MoneyDatesCheck` | Proves Canada's dated Money: both gold episodes, the Advance Rate, the Bank of Canada, and a reserve exhaustion that survives a load. |
+| 17 | 212 | **type** `public final class MoneyDatesCheck` | Proves Canada's dated Money: both gold episodes, the Advance Rate, the Bank of Canada, and a reserve exhaustion that survives a load. |
 | 24 | 4 | `private static void check(String label, boolean ok)` |  |
 | 29 | 6 | `private static Game town(String name, double reserves)` |  |
 | 36 | 11 | `private static void step(Game g)` |  |
@@ -40,5 +40,6 @@
 | 64 | 26 | `static boolean saveChecks() throws Exception` | SaveFileCheck calls the same caused exhaustion through DataSave, JSON, and the ordinary load path. |
 | 91 | 4 | `private static void difference(String when, double[] a, double[] b)` |  |
 | 97 | 19 | `static boolean readChecks() throws Exception` | ReadPathCheck holds the saved rule still while its public readers are asked repeatedly. |
-| 117 | 89 | `public static void main(String[] args) throws Exception` |  |
+| 118 | 19 | `private static boolean secondExhaustion() throws Exception` | REV-R0f-1: exhaustion after the Advance Rate's date must release the dial in that very month, before any reload. |
+| 138 | 90 | `public static void main(String[] args) throws Exception` |  |
 

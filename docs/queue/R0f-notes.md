@@ -51,3 +51,11 @@ Matching trace hashes (main and R0f):
 | trace-labour.csv | `87e8c6a36d828feab8dbad3f7544742a823eeb7ab57cb7c9b150a45eddf631a2` |
 | trace-month.csv | `4777025983e027980e45e54551c62e8dbb7f4a551726d882ab760fd6a3ed6ed0` |
 | trace-pop.csv | `d18dcab4154c4327249148c1670354d67d6a04b40d2f45fd22adc4dbd46c7c7f` |
+
+### Stranger review REV-R0f-1
+
+The review of c0120d77..c4f49283 found a real in-month permission bug: after exhaustion in the 1926-31 gold episode, DebtManager's cached `rateOpen` stayed false until the next month, while a load of that month computed it true. Game now refreshes the dated rate permission immediately after the reprice breaks a hold in a 1900 city. The default founding skips the added branch.
+
+The new fixture starts with zero reserves, actually plays from 1900 to June 1926, asserts the first exit occurred and the vault is empty, then crosses July 1926. The new episode breaks by VAULT, the break count increments, and a distinct manual Advance Rate must take immediately in the same month and round-trip through JSON. Before the fix it fails (`target/checks/R0f-review-before.txt`, two failures including R0f-S); after it passes (`target/checks/R0f-review-after.txt`, only R0f-S red). The expanded dated run audits **745 months: 237 on dated gold, 507 floating, zero money-audit failures**.
+
+The reviewer also confirmed R0f-S on unchanged main: the positive-only `carriedRetailWant` / `carriedRetailCapacity` restoration guard leaves the loaded zero-spending month with a recomputed positive want. The exact whole-account assertion remains hard and queued separately. No review finding is left unmended in R0f.

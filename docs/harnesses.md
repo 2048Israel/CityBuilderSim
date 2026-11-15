@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**203 harness files, 24,063 labelled assertions.** AllChecks runs 203 of them.
+**203 harness files, 24,064 labelled assertions.** AllChecks runs 203 of them.
 
 ## Which harnesses read which class
 
@@ -19468,7 +19468,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L917 inflation falls with the rate**
   - L979 the runs differ by the dial and by nothing else
 
-## MoneyDatesCheck.java - 22 labelled assertions
+## MoneyDatesCheck.java - 23 labelled assertions
 
 > Proves Canada's dated Money: both gold episodes, the Advance Rate, the Bank of Canada, and a reserve exhaustion that survives a load.
 > 
@@ -19476,32 +19476,33 @@ _(this harness does not label its checks through a helper - it prints its findin
 > or opens a lever early. The empty-vault town causes exhaustion, then receives reserves to distinguish remembering an exit from rechecking
 > today's balance. Save files belong only to GameFiles.scratch(), never a player's folder.
 
-- **L120 1. gold to August 1914, with no policy rate**
-  - L124 January 1900 starts held at par by the vault
-  - L129 before the Finance Act, the player's rate and the rule are refused and gold stays in force
-  - L133 the founded town actually reaches July 1914 still held at par, without a doubt break
-  - L138 crossing August 1914 floats the dollar and opens the Advance Rate
-  - L146 the Advance Rate takes a setting while the rest of Money remains shut
-  - L150 the chosen Advance Rate survives the next month
-  - L152 the Advance Rate survives the ordinary load
-- **L155 2. July 1926 returns to par; September 1931 floats again**
-  - L157 June 1926 remains a float in the same founded city
-  - L159 crossing July 1926 returns to the old par and world interest
-  - L163 the returned gold fixes interest to the world even though the Advance Rate's date has passed
-  - L165 the second gold episode crosses JSON intact
-  - L167 August 1931 is still on gold at par
-  - L169 crossing the final gold date floats again
-- **L171 3. March 1935 opens the Bank of Canada as data, never a discovery**
-  - L172 a law find cannot bring either Money date forward
-  - L178 February 1935 keeps the Bank and its controls closed
-  - L184 crossing March 1935 opens the rule, target, holdings and currency regime
-  - L189 Money's opened settings cross a save
-  - L193 after March 1935 the historical switch leaves the chosen regime alone
-- **L195 4. empty reserves cause an early exit and the exit survives next month and a load**
-  - L196 an exhausted episode stays left even after reserves return, identically after JSON and a month
-  - L197 the exhausted-gold city's whole foreign-account twin matches after the next month
-  - L198 reading Money never mutates its saved rule or inherited rate
-  - L199 every played month conserves money to MoneyAudit's tolerance, across both gold and floating months
+- **L141 1. gold to August 1914, with no policy rate**
+  - L145 January 1900 starts held at par by the vault
+  - L150 before the Finance Act, the player's rate and the rule are refused and gold stays in force
+  - L154 the founded town actually reaches July 1914 still held at par, without a doubt break
+  - L159 crossing August 1914 floats the dollar and opens the Advance Rate
+  - L167 the Advance Rate takes a setting while the rest of Money remains shut
+  - L171 the chosen Advance Rate survives the next month
+  - L173 the Advance Rate survives the ordinary load
+- **L176 2. July 1926 returns to par; September 1931 floats again**
+  - L178 June 1926 remains a float in the same founded city
+  - L180 crossing July 1926 returns to the old par and world interest
+  - L184 the returned gold fixes interest to the world even though the Advance Rate's date has passed
+  - L186 the second gold episode crosses JSON intact
+  - L188 August 1931 is still on gold at par
+  - L190 crossing the final gold date floats again
+- **L192 3. March 1935 opens the Bank of Canada as data, never a discovery**
+  - L193 a law find cannot bring either Money date forward
+  - L199 February 1935 keeps the Bank and its controls closed
+  - L205 crossing March 1935 opens the rule, target, holdings and currency regime
+  - L210 Money's opened settings cross a save
+  - L214 after March 1935 the historical switch leaves the chosen regime alone
+- **L216 4. empty reserves cause an early exit and the exit survives next month and a load**
+  - L217 an exhausted episode stays left even after reserves return, identically after JSON and a month
+  - L218 the exhausted-gold city's whole foreign-account twin matches after the next month
+  - L219 second-episode exhaustion releases the Advance Rate in the breaking month, identically before and after JSON
+  - L220 reading Money never mutates its saved rule or inherited rate
+  - L221 every played month conserves money to MoneyAudit's tolerance, across both gold and floating months
 
 ## MoneySignCheck.java - 70 labelled assertions
 

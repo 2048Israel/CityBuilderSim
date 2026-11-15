@@ -4,7 +4,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 569 files, 622,526 lines, 27,137 methods, 5,957 constants. `GameVersion.VERSION` is "0.9.108", `SAVE_FORMAT` 53.
+**The tree:** 569 files, 622,550 lines, 27,138 methods, 5,957 constants. `GameVersion.VERSION` is "0.9.108", `SAVE_FORMAT` 53.
 
 ## model (262 files)
 
@@ -104,7 +104,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FuelSplit.java](FuelSplit.md) | 229 | 8 | FUEL, split into the PETROL and DIESEL it became: a save written before 0.7.76 converted once, on its load, before anything is restored (batch O1; ... | 2 |
 | [FundLedger.java](FundLedger.md) | 789 | 94 | The city's fund's cost basis: what each holding cost, by the average-cost method, what its sales and maturities realized, what it has paid in incom... | 12 |
 | [FundView.java](FundView.md) | 875 | 39 | The city's fund as the screens read it (0.7.39): every holding with its average cost and P&L, what the fund has made since it began and by kind, it... | 7 |
-| [Game.java](Game.md) | 22,435 | 1003 | sections: THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6), THE FITT... | 280 |
+| [Game.java](Game.md) | 22,437 | 1003 | sections: THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6), THE FITT... | 280 |
 | [GameFiles.java](GameFiles.md) | 559 | 46 | Where the game keeps its files, and how it writes them. | 179 |
 | [GameLog.java](GameLog.md) | 348 | 20 | Everything the game prints, written somewhere a player can find it. | 12 |
 | [GamePrefs.java](GamePrefs.md) | 260 | 29 | How the player likes the window, kept between runs. | 6 |
@@ -492,7 +492,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [MaterialsCheck.java](MaterialsCheck.md) | 1,541 | 31 | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), a... | 18 |
 | [MiningCheck.java](MiningCheck.md) | 600 | 10 | Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore. | 11 |
 | [MonetaryCheck.java](MonetaryCheck.md) | 1,005 | 14 | Money: what a basket costs, what the world charges, and what the rate does. | 3 |
-| [MoneyDatesCheck.java](MoneyDatesCheck.md) | 206 | 9 | Proves Canada's dated Money: both gold episodes, the Advance Rate, the Bank of Canada, and a reserve exhaustion that survives a load. | 2 |
+| [MoneyDatesCheck.java](MoneyDatesCheck.md) | 228 | 10 | Proves Canada's dated Money: both gold episodes, the Advance Rate, the Bank of Canada, and a reserve exhaustion that survives a load. | 2 |
 | [MoneySignCheck.java](MoneySignCheck.md) | 397 | 9 | The money's sign is the city's to choose and place, and with the default it writes what it always wrote (FM1). | 0 |
 | [MoneyWordsCheck.java](MoneyWordsCheck.md) | 344 | 17 | The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). | 0 |
 | [MortgageCheck.java](MortgageCheck.md) | 1,245 | 26 | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. | 1 |

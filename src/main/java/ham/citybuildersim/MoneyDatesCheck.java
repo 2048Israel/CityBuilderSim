@@ -114,6 +114,27 @@ public final class MoneyDatesCheck {
         } finally { System.setOut(before); }
     }
 
+    /** REV-R0f-1: exhaustion after the Advance Rate's date must release the dial in that very month, before any reload. */
+    private static boolean secondExhaustion() throws Exception {
+        Game g = town("money-second-exhaustion", 0);
+        ForeignAccounts fx = g.getForeignAccounts();
+        through(g, PolicyDates.GOLD_RETURN - 1);
+        int breaks = fx.getBreaks();
+        boolean premise = g.getMonth() == PolicyDates.GOLD_RETURN - 1 && breaks > 0
+                && fx.getRegime() == ForeignAccounts.Regime.FLOAT && fx.getReservesUsd() == 0;
+        step(g);
+        boolean exhaustedAgain = g.getMonth() == PolicyDates.GOLD_RETURN && fx.getBreaks() == breaks + 1
+                && fx.getLastBreakCause() == ForeignAccounts.BreakCause.VAULT && fx.getRegime() == ForeignAccounts.Regime.FLOAT;
+        double before = g.getDebtManager().getPolicyRate();
+        double want = before == DebtManager.MAX_POLICY_RATE ? DebtManager.MIN_POLICY_RATE : DebtManager.MAX_POLICY_RATE;
+        g.getDebtManager().takeTheDial(want);
+        boolean acceptedImmediately = g.getDebtManager().getPolicyRate() == want;
+        Game back = reload(g, "second gold exhausted");
+        boolean kept = back.getDebtManager().getPolicyRate() == g.getDebtManager().getPolicyRate();
+        back.getDebtManager().takeTheDial(want);
+        return premise && exhaustedAgain && acceptedImmediately && kept && back.getDebtManager().getPolicyRate() == want;
+    }
+
     public static void main(String[] args) throws Exception {
         System.setOut(QUIET);
         try {
@@ -195,6 +216,7 @@ public final class MoneyDatesCheck {
             OUT.println("--- 4. empty reserves cause an early exit and the exit survives next month and a load ---");
             check("an exhausted episode stays left even after reserves return, identically after JSON and a month", saveChecks());
             check("the exhausted-gold city's whole foreign-account twin matches after the next month", exhaustedTwinMatches);
+            check("second-episode exhaustion releases the Advance Rate in the breaking month, identically before and after JSON", secondExhaustion());
             check("reading Money never mutates its saved rule or inherited rate", readChecks());
             check("every played month conserves money to MoneyAudit's tolerance, across both gold and floating months",
                     auditedMonths > PolicyDates.openingMonth(PolicyDates.Lever.CENTRAL_BANK) && goldMonths > 0 && floatingMonths > 0 && auditFailures == 0);

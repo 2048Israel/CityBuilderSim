@@ -13972,6 +13972,8 @@ public class Game {
                     foreign.getLastBreakCause().words, getCurrency().qualifiedSymbol(), rateBeforeReprice, foreign.getRate(),
                     100 * (foreign.getRate() / rateBeforeReprice - 1)));
             if (onGoldBeforeReprice) debtManager.dropGoldAim();
+            // R0f: a 1926-31 exhaustion frees the Advance Rate now, as a load of this same month does.
+            if (foundedUnfitted()) debtManager.hearMoneyMonth(month, foreign.isCanadaGold());
         }
         // ...AND THE WORLD'S NEWS (WN4): money that ran to safety abroad, a world peg that broke.
         noteTheWorldMoneys(rateBeforeReprice);
