@@ -50,3 +50,10 @@ The existing section-14 boundary checks keep a remainder ten times the
 relative floor and snap one at half the floor. The new controls also retain
 quarter-take rests and bound each holder's cash and reported flow within
 four ulps of its pro-rata price. The cash formulas themselves are unchanged.
+
+The actual `tools/pick.sh` selection on 226500c2 is 39 of 202, not ALL
+(the initial estimate sent to the starter was corrected). Its automatic
+money-review flag says no; the starter was nevertheless sent the explicit
+money review request, `RT1b mends at 226500c21a9fb21b35abb464c884290d7cf0fdcc`.
+R0f's dry run was active at that time, so all subsequent work stayed at one
+heavy JVM at a time; no full suite or ensemble was run alongside its gate.
