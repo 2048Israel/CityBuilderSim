@@ -148,7 +148,11 @@ the empty queue, not proof that adding builders would make a plot available.
 A short scratch-only counterfactual uses the saved m2383 state, copied into
 three independent `GameFiles.scratch()` folders and loaded through the real
 loader. It advances twelve months with the automatic works and the same
-January GovernmentPlayer policy as the standard run. The untouched loaded
+January GovernmentPlayer policy as the standard run. This is the next
+twelve-month skip: there is no advisor look inside it, and the endpoint is
+before the next look. It tests whether private investment needs the plot;
+it does not claim a cash-rich advisor would never buy at a later look.
+The untouched loaded
 city's m2383 and m2395 population and job counts match the original trace
 (33,042 / 13,575 and 32,936 / 13,575). Log:
 `target/ER1/counterfact.log`; temporary driver:
@@ -246,3 +250,115 @@ While the read-only replay was running, R2d shipped main 32ec5a5d (0.9.118).
 The orchestrator instructed ER1 to finish the replay on its original model,
 then merge main and request the gate slot after KP2c. The long-city tables
 therefore describe 8083aaf33 / 0.9.117, not a claimed replay of R2d's recipes.
+
+
+## The control beside it
+
+Both standard runs have exit 0 and no LongPlaytest findings. The generated
+control takes 1,227 seconds and ends at the same m4005. The same player,
+founding, seed, national history and policy settings are used; only the world
+site differs. In m618–2025 the control grows 43.9 times, Rotterdam 2.87 times.
+This is the current comparison, not AN2's sevenfold figure.
+
+| month | Rotterdam people | Rotterdam offered jobs | default people | default offered jobs |
+|---:|---:|---:|---:|---:|
+| 618 | 11,556 | 6,362 | 6,349 | 3,399 |
+| 769 | 30,890 | 12,575 | 13,241 | 5,755 |
+| 1074 | 32,228 | 13,684 | 14,579 | 6,165 |
+| 1321 | 36,655 | 15,744 | 32,151 | 13,591 |
+| 1537 | 45,499 | 19,411 | 32,405 | 13,266 |
+| 1778 | 33,211 | 13,575 | 73,610 | 32,513 |
+| 2025 | 33,170 | 13,575 | 278,833 | 119,372 |
+| 2252 | 33,518 | 13,575 | 503,912 | 215,663 |
+| 2400 | 33,157 | 13,575 | 647,319 | 267,597 |
+| 3000 | 64,289 | 29,408 | 1,627,412 | 661,677 |
+| 4005 | 741,753 | 308,114 | 4,661,263 | 1,924,592 |
+
+## The monthly decisions and the release
+
+The read-only replay records model getters at every month-end, investor words
+from `getLastInvestments()`, every listed offer, and the existing test player's
+purchase/refusal counters. It adds no actions. Outputs are
+`target/ER1/diagnose-rotterdam-{ER1,decisions,offers}.csv`; the temporary
+observer and a LongPlaytest source copy with its one observer call are in
+`target/ER1/probe-src/`. The ordinary eight CSVs are also written for a byte
+comparison with the original run. A counter changed by an advisor look is
+seen at the next month-end; the look itself occurs between months.
+
+| recorded investor decision | m618–1778 (1,161 months) | m1746–2529 (784 months) |
+|---|---:|---:|
+| Manufacturing: no land | 1,106 | 784 |
+| Agriculture: no land | 1,090 | 784 |
+| Copper Refining: no land | 643 | 784 |
+| Construction: 0.0 months of work queued | 921 | 784 |
+| Real Estate: housing ahead of jobs | 238 | 784 |
+
+Across the 784-month job hold, ground-ahead purchases stay at 17 and scored
+room purchases at 15. Cash-share refusals rise from 44 to 59; owned territory
+does not grow. These are observed calls and model decisions, not guessed
+refusals from an empty queue. The private planners do not buy territory for
+the city. The monthly AutoBuilder can annex for a needed works order, but
+has no standalone growth-territory order. Without an advisor purchase, a
+profitable private factory can remain a land refusal indefinitely.
+
+The current crop readings underline the changed timeline:
+
+| month | crops / the model's baked-food need | Agriculture footprint, ft² |
+|---:|---:|---:|
+| 618 | 46.92% | 600,000 |
+| 769 | 14.59% | 600,000 |
+| 1074 | 13.11% | 600,000 |
+| 1321 | 10.09% | 600,000 |
+| 1537 | 6.54% | 600,000 |
+| 1778 | 11.15% | 600,000 |
+| 2025 | 11.21% | 600,000 |
+| 2252 | 10.93% | 600,000 |
+| 2715 | 12.65% | 600,000 |
+| 2737 | 10.57% | 600,000 |
+| 3000 | 10.47% | 600,000 |
+
+**What changes, with high confidence:** not a m1778–2025 farming release.
+Nothing like AN2's 100% fields and fourfold jobs occurs then: both endpoints
+have 13,575 offered jobs, roughly 11% crop self-sufficiency and the same Mixed Farm's
+600,000 ft². The actual territory release is the look at m2715. Cash
+has risen from D$3.850 billion at m2383 to D$1.359 trillion; the exchange rate
+has strengthened from D$1,541.2025 to D$870.47834 per US$. Offer 90's old
+US$85,336.874-thousand quote is unchanged, but now costs D$74.284 billion,
+inside the D$135.941-billion ground-ahead cash budget. One offer is bought
+by `keepGroundAhead()`, a second by the scored room move. The m2716 record
+shows both counters advance, 0.2304 km² more owned ground and a renewed
+private build. Further looks and needed automatic works buy more territory.
+By m3000 jobs have reached 29,408; farms still occupy the same area. This is
+capital-and-territory access followed by orders, not fields suddenly filling
+all of the city's spare land.
+
+**Why the population follows, high confidence in the rule and measured draw:**
+`Migration.monthlyNet()` weights jobs by `JOB_WEIGHT`, using
+`residentsPerJob(adultShare)`; housing is the smaller `HOME_WEIGHT` component.
+After `BRAKE_FROM_MONTH`, joblessness above `HEALTHY_OUT_OF_WORK` also brakes
+arrivals and sends surplus workers out. At m1778 the recorded target is
+37,041.1, unemployment 11.31%, arrivals 66.900 and departures 129.009. At
+m2025 it is 36,553.3, 11.04%, 81.840 and 138.156. No new jobs means no large
+new jobs draw; births, deaths, age composition and migration still move the
+population around the hold. The causal experiment opens jobs and raises the
+population in the land-treated twin. A claim that *all* price, hunger and
+population variation is caused by this single hold remains unproved.
+
+
+## Pinned replay closed
+
+The read-only replay exits 0 in 1,485 seconds at m4005. **All eight complete
+ordinary CSVs are byte-identical** to the first Rotterdam run: month, borrow,
+house, population, bank, bonds, construction and labour. The comparison,
+byte counts and SHA-256 values are in
+`target/ER1/trace-neutrality-final.json`. The borrow writer only flushes its
+small file when the run closes; its earlier empty buffer was not a changed
+trajectory. The observer adds no action and changes no model class.
+
+No game code or balance data is changed by ER1. The default control remains
+its original 8083aaf33 trace, and the 1,271 compiled model classes before and
+after the ER1 harness rebuild are identical. There is no ER1 ensemble: the
+batch has no model change, and the orchestrator instructed no ensemble.
+The next check is the fresh-clone launcher gate on the merge with current
+main. `tools/pick.sh` selects ALL because the harness registry changed;
+no local full suite or local ALL pick has been run.
