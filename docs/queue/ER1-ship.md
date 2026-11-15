@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-ER1-dI1IZ65g -->
 ## changelog
 ### ER1 — Rotterdam's land buyer and the shifted growth hold — 2026-11-15, ready, no tag (harness), see docs/queue/ER1-notes.md
