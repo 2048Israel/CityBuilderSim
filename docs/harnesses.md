@@ -2,7 +2,7 @@
 
 Generated 2026-11-14 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**202 harness files, 24,018 labelled assertions.** AllChecks runs 202 of them.
+**202 harness files, 24,023 labelled assertions.** AllChecks runs 202 of them.
 
 ## Which harnesses read which class
 
@@ -64,7 +64,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
 | [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, EquipmentCheck, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, KeptCheck, LandNationsCheck, OilViewCheck, PolicyDatesCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, SaveFileCheck, WorldMoneysCheck, YearBookCheck |
-| [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
+| [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WaterCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
 | [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, LandCheck, LongPlaytest, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
@@ -11571,7 +11571,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1084 ...the same luxuries
   - L1085 ...and strikes the same GDP
 
-## GlobeCheck.java - 137 labelled assertions
+## GlobeCheck.java - 138 labelled assertions
 
 > The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, GlobeFrame's view and its handoff to the city's plane, the far rule's three cameras, and the planet's picture with a frame drawn from it - on screen since 0.7.135 (batch E9), which MapCheck 13 holds.
 > 
@@ -11630,121 +11630,122 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1144 ...a half-resolution copy of a view keeps its rule (the frame a moving view is drawn at is 2 x the km a pixel: past the handoff on its own)
   - L1147 ...and the legend is the plane's at every scale closer than the handoff, past the reach too, the GROUND tier's from the handoff and the picture's wide
   - L1180 at the world's square's edge, past the hand-over, the charts draw both sides of it: chartHolds() and ground() agree, the plane draws neither side (drawsHold(...
-  - L1199 Baddeck
-  - L1207 one plot a pixel (his scale and the closest): the classes the nodes give through the camera are the plane's own, plot for plot, on both sides of the reach - ...
-  - L1209 two, four and eight plots a pixel: within NEAR_PAST_FOLDED of the plane's own plots' classes (the forest folded), and within NEAR_PAST_CLASSES with it told a...
-  - L1211 ...and the two sides of the reach agree with the plane's plots as well as each other: no seam where the camera crosses it
-  - L1212 not dithered: the reprojected nodes' pixels that differ from both horizontal neighbours are no more of them than the plane's own, to NEAR_PAST_SPECKLE
-  - L1214 ...where the far rule's own speckle - what Jerus's second screenshot shows - is at least FAR_SPECKLE_AT_LEAST of the pixels over a forested window, so the fi...
-  - L1227 fixture: lakes where the far rule draws a perfect disc and the plane's lake is frayed are found - at least LAKES_PICKED of them in the windows
-  - L1228 a small lake through the camera is the plane's own lake, pixel for pixel at one plot a pixel (LAKE_SAME_IOU), frayed by its own noise - not the far rule's disc
-  - L1252 a frame of the plane's nodes through the camera at his scale is drawn in no more than FRAME_MS of
-- **L1485 2d. the slanted ground (MS3): the streak Jerus's screenshot shows, as a number: the plane's shape distortion makes it (not the turn, not ...**
-  - L1521 the measure, calibrated on the rule's own noise: no stretch reads 1 within STREAK_READ_TOL, a stretch of 2 or 4 (and 3 turned 30 degrees) between STREAK_READ...
-  - L1524 ...and a north-up view's bearing of a field stretched along y is north-south, and a rolled view's bearing is the screen direction less the roll (streakBearin...
-  - L1601 the cause - the plane's own noise: the noise under each pixel is stretched exactly as Lambert's projection stretches it - at every placement its E over its E...
-  - L1603 ...the plane's own plots streak along the line to the city, and more as sigma grows: from sigma 1.5 their streak is within STREAK_BEARING_DEG of the line, th...
-  - L1606 ...the fixture causes it: the plane's plots' E / E_ref is at least STREAK_SHOWN at 12,000 km on at least one fixture window
-  - L1608 not the pixel lookup (MS3: restricted to the plane's own ground, within the hand-over): at every placement within GlobeFrame.handoverKm() of the city the pla...
-  - L1611 not the turn: the turn is done - the roll is 0 (north up) at every placement 2,000 km and farther; and a turn cannot stretch anyway (E is the same under a ro...
-  - L1613 the fix - past the hand-over the drawn ground is true in shape: its E / E_ref is within STREAK_READ_TOL of 1 at every placement past GlobeFrame.SHAPE_HANDOVE...
-  - L1780 no seam where the plane hands over to the charts, nor where the sphere's noise is blended in whole: on a fixture window and near Goose Bay, at both ends of t...
-  - L1782 ...the measure sees one: the sphere's noise switched on at the hand-over with no band reads at least SEAM_SHOWN on every window
-  - L1783 ...and the class shares (water, forest, grass, the rest) either side of the line are within SHARE_TOL of each other
-  - L1823 the sphere's noise keeps the plane's spread: over 2^16 sampled points its standard deviation is within SPREAD_TOL of the plane's noiseAt() over 2^16 plot cen...
-  - L1878 a chart node (classes, relief, colours) at
-  - L1898 a ground() frame of 2d's view over held chart nodes is drawn in no more than FRAME_MS of
-- **L1950 3. the handoff: the globe and the city's plane at the swap, facing the city and at the reach**
-  - L1968 facing the city the plane and the globe part by under half a pixel on the expanded map at HANDOFF_PLOTS
-  - L1969 ...and by more at twice it: the handoff is the widest power of two under half a pixel
-  - L1999 at REACH_KM, turned to the plane's up, the swap parts by under REACH_PARTING_PX
-  - L2000 ...where north up it parts by more than ten times that: the roll is what makes it fit
-- **L2042 4. the plane's camera is today's far nodes: every stride, the windows and the world, as 0.7.131 drew them**
-  - L2052 on the fixture's four windows every stride's far node, aligned and centred, and the whole world's, are 0.7.131's byte for byte
-  - L2066 on the full file, eight spots' far nodes at every stride and their worlds' are 0.7.131's byte for byte
-- **L2077 5. the globe's camera: its ground the plane's at the handoff, its dither on the ground**
-  - L2123 facing the city at the handoff the globe's camera draws the plane's node but for the forest's dither (a pixel in a thousand at most)
-  - L2124 ...its forest of the dry ground within SHARE_POINTS of the plane's, and its rivers where the plane's are
-  - L2126 a turn of TURN_PX flips the forest on no more than that share of the dry pixels: the dither moves with the ground
-  - L2135 the globe's dither cell is at least a pixel tall and under two at every scale of the GROUND tier, and the picture's texel at its own
-- **L2143 6. the planet's picture: a class a texel through the grid's camera, its land and its rule the far layers'**
-  - L2146 the picture is the same made twice, on two threads as on one
-  - L2149 on the fixture each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast
-  - L2153 ...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS
-  - L2167 on the full file each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast
-  - L2169 ...and the planet's land, by area, is theirs within EarthTerrainCheck.LAND_WITHIN
-  - L2173 ...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS
-  - L2174 ...and it draws ice (Greenland's sheet), desert (the Sahara), forest and rivers (the Amazon's)
-- **L2292 7. a frame of the expanded map from the picture, timed on the main thread's CPU**
-  - L2316 a frame from the planet's picture is drawn in no more than FRAME_MS of
-- **L2375 8. the planet's picture holds each texel's relief beside its class: mountains grey from orbit, snow white, the classes as they were**
-  - L2386 a texel's code is its class in the low bits and its relief above, CODES of them, FLAT's the class itself; the globe's colour for each is the map's (TileRaste...
-  - L2400 every texel's relief is on dry ground alone (no slope on water or ice: snow stays white), and the picture has slopes
-  - L2416 the fixture's hilliest degree in the picture is the far rule's, texel for texel, through a band of one degree's rows instead of ten
-  - L2438 a frame over it colours each pixel by its texel's code - a grey on open ground, forest shaded - and from a table of the classes alone, as before
-  - L2454 on the full file the Himalaya and Tibet's relief shares are the data's within RELIEF_SIGMAS spreads, with grey in all three classes, and its snow all white
-- **L2503 9 to 12. the nations on the map: the fixture**
-  - L2505 WorldDataCheck's fixture and its expected figures are beside the classes (
-  - L2510 the map holds the fixture's
-- **L2520 9 to 12. the nations on the map: the full file, when it is named**
-  - L2522 the file -D
-  - L2534 the map holds the full file's
-  - L2537 the map is built from the file in no more than BUILD_MS (
-- **L2641 9. the borders culled to the view, at its level, and timed (1,389 x 868, a Halifax city)**
-  - L2672 the city's ground at 1 km a pixel is the GROUND tier, not the plane
-  - L2673 over Europe fewer than a quarter of the lines are considered (
-  - L2675 the whole planet draws no more than VERTICES_MOST (
-- **L2689 10. the nations' dots and labels: the full file**
-  - L2751 Canada and the United States are labelled over the North Atlantic
-  - L2761 Luxembourg and Belgium, whose coarse area is under LABEL_AREA_TIMES boxes at this view, keep only their dots
-- **L2786 11. the hit test: the fixture**
-  - L2807 the fixture's cells (
-  - L2808 a view centred on a Belgian, a German or a Dutch cell with no dot near gives that cell's nation through nationAt (
-  - L2809 a view centred on a sea cell gives no one through nationAt; ownerName says Belgium for 2 and no one for 0
-  - L2814 a point at a dot's centre gives its nation (
-  - L2830 a point within a dot's radius and HIT_SLOP_PX of its centre gives the nearest centre's nation of the dots that reach it (
-- **L2834 11. the hit test: the full file**
-  - L2842 the point at each dot's centre gives its nation (
-  - L2843 the open Atlantic (40 N, 40 W) gives no one and Canada's interior (60 N, 100 W) gives Canada
-  - L2844 ownerAt is the owner layer's, and ownerName names an area as well as a nation (Kosovo)
-  - L2945 the ordinal words are 1st 2nd 3rd 4th 11th 12th 13th 21st 22nd 101st 111th 112th (
-  - L2952 usd() writes US$2.24T, US$580B, US$58.1B, US$5.81B, the same in M, a whole number with thousands separated below, and steps up where a rounding reaches the n...
-  - L2957 people() writes 1.43B, 41.5M, 390k, 57k (not 57.0k), 5.81k, the whole number below a thousand, and steps up where a rounding reaches the next unit
-  - L2958 sig3() keeps three significant figures: 54,300 for 54,321, 1.37, 0.857, 0.86 (not 0.860), 15,800 for 15,812, 150 and 1.30
-  - L2965 a hover says the name, \"GDP ... people\", the km from the city and CLICK_FOR_CARD last (
-- **L2978 12. the card: the policy rate row (XR4)**
-  - L3017 a nation on one of the eight moneys has a \"
-  - L3019 ...and a card handed no policy rates is the five rows it was (
-  - L3020 ...the euro's rate is the one figure on every nation on the euro (
-  - L3024 the policy rate is written to two places, the quarter-points the banks move in, with a true minus and no minus on a rounded zero:
-- **L3092 13. the city's trade as lanes: shared and branching, each edge once, cached, culled to the view and timed (1,389 x 868, a Halifax city)**
-- **L3098 14. a generated world's partners as arrows at the map's edge**
-  - L3155 the lanes share:
-  - L3157 every partner over MIN_LANE is reached: its lane's last vertex is its node, and each edge on the way back starts where the one before it ends, the last at th...
-  - L3159 every route through the tree is within BUNDLE_DETOUR (
-  - L3160 an edge's sums are the sales and the purchases of the partners beyond it, and the edges that leave the city carry all of them (
-  - L3162 a partner under MIN_LANE has no lane (Poland,
-  - L3164 the sampled vertices are fewer than lanes apiece would be (
-  - L3181 each edge is kept once: no two edges join the same two places, no inner vertex is kept twice, and an edge is sampled every LANE_STEP (
-  - L3184 a width is 0 for no money, LANE_MIN_PX for a trace, LANE_MAX_PX for the largest, 3 for a tenth of it and 2 for a hundredth (the square root of the share), an...
-  - L3192 the widest edge is LANE_MAX_PX (
-  - L3197 no trade is no lane and no draw; a partner at the city has none, one at its antipode a lane of ninety segments, a node or a figure that is not a number, or i...
-  - L3224 the lanes are the same for the same month, city and every figure (the build keeps a copy), and not for another month, another city, one figure moved by one, ...
-  - L3239 lanes kept while their month and figures stand are built once a month: 12 months of 30 frames, and one figure moved in the middle of a month, are
-  - L3243 the same view twice gives back the same Drawn (the cache), and a view moved a little does not
-  - L3251 with the view turned away from the lanes (the city's antipode at 10 km a pixel) nothing is projected:
-  - L3259 over Europe at 3 km a pixel fewer than half the edges are in view (
-  - L3269 every vertex drawn, in the four views of section 9, is within DRAW_MARGIN_PX (
-  - L3292 a frame projects each vertex to the pixel GlobeFrame.at() gives it, from the unit vectors:
-  - L3313 the sales (8 px) and the purchases (5 px) of a lane lie side by side, each stroke half the other's width off the line on opposite sides, 6.5 px apart, stroke...
-  - L3369 a partner due east of the stand-in has an arrow on the right edge, at the middle (
-  - L3370 the arrows' widths are by money as the lanes' are: the largest direction (5,000 sold east) is LANE_MAX_PX and its 1,000 bought
-  - L3378 the same size places the arrows as they were, a new size places them again
-  - L3389 a bearing from the stand-in, followed the distance to the partner, lands on the partner (the initial great-circle bearing): the worst miss of 200 pairs
-  - L3415 with
-  - L3435 twelve partners within four degrees of east stand on the right edge at least ARROW_GAP_PX (
-  - L3440 a partner under MIN_LANE has no arrow (299 sold; 150 and 149.99 bought), one at MIN_LANE (300 bought) has; no stand-in place, no trade, or a partner on the s...
-- **L3447 13. the city's trade as lanes: the full file's nodes**
+  - L1197 a loaded replay's wider GROUND view draws the whole disc from held nodes, its chart coverage agrees with its pixels, and ordinary coverage stays unchanged
+  - L1216 Baddeck
+  - L1224 one plot a pixel (his scale and the closest): the classes the nodes give through the camera are the plane's own, plot for plot, on both sides of the reach - ...
+  - L1226 two, four and eight plots a pixel: within NEAR_PAST_FOLDED of the plane's own plots' classes (the forest folded), and within NEAR_PAST_CLASSES with it told a...
+  - L1228 ...and the two sides of the reach agree with the plane's plots as well as each other: no seam where the camera crosses it
+  - L1229 not dithered: the reprojected nodes' pixels that differ from both horizontal neighbours are no more of them than the plane's own, to NEAR_PAST_SPECKLE
+  - L1231 ...where the far rule's own speckle - what Jerus's second screenshot shows - is at least FAR_SPECKLE_AT_LEAST of the pixels over a forested window, so the fi...
+  - L1244 fixture: lakes where the far rule draws a perfect disc and the plane's lake is frayed are found - at least LAKES_PICKED of them in the windows
+  - L1245 a small lake through the camera is the plane's own lake, pixel for pixel at one plot a pixel (LAKE_SAME_IOU), frayed by its own noise - not the far rule's disc
+  - L1269 a frame of the plane's nodes through the camera at his scale is drawn in no more than FRAME_MS of
+- **L1502 2d. the slanted ground (MS3): the streak Jerus's screenshot shows, as a number: the plane's shape distortion makes it (not the turn, not ...**
+  - L1538 the measure, calibrated on the rule's own noise: no stretch reads 1 within STREAK_READ_TOL, a stretch of 2 or 4 (and 3 turned 30 degrees) between STREAK_READ...
+  - L1541 ...and a north-up view's bearing of a field stretched along y is north-south, and a rolled view's bearing is the screen direction less the roll (streakBearin...
+  - L1618 the cause - the plane's own noise: the noise under each pixel is stretched exactly as Lambert's projection stretches it - at every placement its E over its E...
+  - L1620 ...the plane's own plots streak along the line to the city, and more as sigma grows: from sigma 1.5 their streak is within STREAK_BEARING_DEG of the line, th...
+  - L1623 ...the fixture causes it: the plane's plots' E / E_ref is at least STREAK_SHOWN at 12,000 km on at least one fixture window
+  - L1625 not the pixel lookup (MS3: restricted to the plane's own ground, within the hand-over): at every placement within GlobeFrame.handoverKm() of the city the pla...
+  - L1628 not the turn: the turn is done - the roll is 0 (north up) at every placement 2,000 km and farther; and a turn cannot stretch anyway (E is the same under a ro...
+  - L1630 the fix - past the hand-over the drawn ground is true in shape: its E / E_ref is within STREAK_READ_TOL of 1 at every placement past GlobeFrame.SHAPE_HANDOVE...
+  - L1797 no seam where the plane hands over to the charts, nor where the sphere's noise is blended in whole: on a fixture window and near Goose Bay, at both ends of t...
+  - L1799 ...the measure sees one: the sphere's noise switched on at the hand-over with no band reads at least SEAM_SHOWN on every window
+  - L1800 ...and the class shares (water, forest, grass, the rest) either side of the line are within SHARE_TOL of each other
+  - L1840 the sphere's noise keeps the plane's spread: over 2^16 sampled points its standard deviation is within SPREAD_TOL of the plane's noiseAt() over 2^16 plot cen...
+  - L1895 a chart node (classes, relief, colours) at
+  - L1915 a ground() frame of 2d's view over held chart nodes is drawn in no more than FRAME_MS of
+- **L1967 3. the handoff: the globe and the city's plane at the swap, facing the city and at the reach**
+  - L1985 facing the city the plane and the globe part by under half a pixel on the expanded map at HANDOFF_PLOTS
+  - L1986 ...and by more at twice it: the handoff is the widest power of two under half a pixel
+  - L2016 at REACH_KM, turned to the plane's up, the swap parts by under REACH_PARTING_PX
+  - L2017 ...where north up it parts by more than ten times that: the roll is what makes it fit
+- **L2059 4. the plane's camera is today's far nodes: every stride, the windows and the world, as 0.7.131 drew them**
+  - L2069 on the fixture's four windows every stride's far node, aligned and centred, and the whole world's, are 0.7.131's byte for byte
+  - L2083 on the full file, eight spots' far nodes at every stride and their worlds' are 0.7.131's byte for byte
+- **L2094 5. the globe's camera: its ground the plane's at the handoff, its dither on the ground**
+  - L2140 facing the city at the handoff the globe's camera draws the plane's node but for the forest's dither (a pixel in a thousand at most)
+  - L2141 ...its forest of the dry ground within SHARE_POINTS of the plane's, and its rivers where the plane's are
+  - L2143 a turn of TURN_PX flips the forest on no more than that share of the dry pixels: the dither moves with the ground
+  - L2152 the globe's dither cell is at least a pixel tall and under two at every scale of the GROUND tier, and the picture's texel at its own
+- **L2160 6. the planet's picture: a class a texel through the grid's camera, its land and its rule the far layers'**
+  - L2163 the picture is the same made twice, on two threads as on one
+  - L2166 on the fixture each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast
+  - L2170 ...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS
+  - L2184 on the full file each 1-degree cell's land is the far layers' within its own rounding, and within SHARE_POINTS in the mean over the cells with a coast
+  - L2186 ...and the planet's land, by area, is theirs within EarthTerrainCheck.LAND_WITHIN
+  - L2190 ...every texel's sea the far layers' half-contour, its ice and desert the bits' and its forest the data's within SHARE_POINTS
+  - L2191 ...and it draws ice (Greenland's sheet), desert (the Sahara), forest and rivers (the Amazon's)
+- **L2309 7. a frame of the expanded map from the picture, timed on the main thread's CPU**
+  - L2333 a frame from the planet's picture is drawn in no more than FRAME_MS of
+- **L2392 8. the planet's picture holds each texel's relief beside its class: mountains grey from orbit, snow white, the classes as they were**
+  - L2403 a texel's code is its class in the low bits and its relief above, CODES of them, FLAT's the class itself; the globe's colour for each is the map's (TileRaste...
+  - L2417 every texel's relief is on dry ground alone (no slope on water or ice: snow stays white), and the picture has slopes
+  - L2433 the fixture's hilliest degree in the picture is the far rule's, texel for texel, through a band of one degree's rows instead of ten
+  - L2455 a frame over it colours each pixel by its texel's code - a grey on open ground, forest shaded - and from a table of the classes alone, as before
+  - L2471 on the full file the Himalaya and Tibet's relief shares are the data's within RELIEF_SIGMAS spreads, with grey in all three classes, and its snow all white
+- **L2520 9 to 12. the nations on the map: the fixture**
+  - L2522 WorldDataCheck's fixture and its expected figures are beside the classes (
+  - L2527 the map holds the fixture's
+- **L2537 9 to 12. the nations on the map: the full file, when it is named**
+  - L2539 the file -D
+  - L2551 the map holds the full file's
+  - L2554 the map is built from the file in no more than BUILD_MS (
+- **L2658 9. the borders culled to the view, at its level, and timed (1,389 x 868, a Halifax city)**
+  - L2689 the city's ground at 1 km a pixel is the GROUND tier, not the plane
+  - L2690 over Europe fewer than a quarter of the lines are considered (
+  - L2692 the whole planet draws no more than VERTICES_MOST (
+- **L2706 10. the nations' dots and labels: the full file**
+  - L2768 Canada and the United States are labelled over the North Atlantic
+  - L2778 Luxembourg and Belgium, whose coarse area is under LABEL_AREA_TIMES boxes at this view, keep only their dots
+- **L2803 11. the hit test: the fixture**
+  - L2824 the fixture's cells (
+  - L2825 a view centred on a Belgian, a German or a Dutch cell with no dot near gives that cell's nation through nationAt (
+  - L2826 a view centred on a sea cell gives no one through nationAt; ownerName says Belgium for 2 and no one for 0
+  - L2831 a point at a dot's centre gives its nation (
+  - L2847 a point within a dot's radius and HIT_SLOP_PX of its centre gives the nearest centre's nation of the dots that reach it (
+- **L2851 11. the hit test: the full file**
+  - L2859 the point at each dot's centre gives its nation (
+  - L2860 the open Atlantic (40 N, 40 W) gives no one and Canada's interior (60 N, 100 W) gives Canada
+  - L2861 ownerAt is the owner layer's, and ownerName names an area as well as a nation (Kosovo)
+  - L2962 the ordinal words are 1st 2nd 3rd 4th 11th 12th 13th 21st 22nd 101st 111th 112th (
+  - L2969 usd() writes US$2.24T, US$580B, US$58.1B, US$5.81B, the same in M, a whole number with thousands separated below, and steps up where a rounding reaches the n...
+  - L2974 people() writes 1.43B, 41.5M, 390k, 57k (not 57.0k), 5.81k, the whole number below a thousand, and steps up where a rounding reaches the next unit
+  - L2975 sig3() keeps three significant figures: 54,300 for 54,321, 1.37, 0.857, 0.86 (not 0.860), 15,800 for 15,812, 150 and 1.30
+  - L2982 a hover says the name, \"GDP ... people\", the km from the city and CLICK_FOR_CARD last (
+- **L2995 12. the card: the policy rate row (XR4)**
+  - L3034 a nation on one of the eight moneys has a \"
+  - L3036 ...and a card handed no policy rates is the five rows it was (
+  - L3037 ...the euro's rate is the one figure on every nation on the euro (
+  - L3041 the policy rate is written to two places, the quarter-points the banks move in, with a true minus and no minus on a rounded zero:
+- **L3109 13. the city's trade as lanes: shared and branching, each edge once, cached, culled to the view and timed (1,389 x 868, a Halifax city)**
+- **L3115 14. a generated world's partners as arrows at the map's edge**
+  - L3172 the lanes share:
+  - L3174 every partner over MIN_LANE is reached: its lane's last vertex is its node, and each edge on the way back starts where the one before it ends, the last at th...
+  - L3176 every route through the tree is within BUNDLE_DETOUR (
+  - L3177 an edge's sums are the sales and the purchases of the partners beyond it, and the edges that leave the city carry all of them (
+  - L3179 a partner under MIN_LANE has no lane (Poland,
+  - L3181 the sampled vertices are fewer than lanes apiece would be (
+  - L3198 each edge is kept once: no two edges join the same two places, no inner vertex is kept twice, and an edge is sampled every LANE_STEP (
+  - L3201 a width is 0 for no money, LANE_MIN_PX for a trace, LANE_MAX_PX for the largest, 3 for a tenth of it and 2 for a hundredth (the square root of the share), an...
+  - L3209 the widest edge is LANE_MAX_PX (
+  - L3214 no trade is no lane and no draw; a partner at the city has none, one at its antipode a lane of ninety segments, a node or a figure that is not a number, or i...
+  - L3241 the lanes are the same for the same month, city and every figure (the build keeps a copy), and not for another month, another city, one figure moved by one, ...
+  - L3256 lanes kept while their month and figures stand are built once a month: 12 months of 30 frames, and one figure moved in the middle of a month, are
+  - L3260 the same view twice gives back the same Drawn (the cache), and a view moved a little does not
+  - L3268 with the view turned away from the lanes (the city's antipode at 10 km a pixel) nothing is projected:
+  - L3276 over Europe at 3 km a pixel fewer than half the edges are in view (
+  - L3286 every vertex drawn, in the four views of section 9, is within DRAW_MARGIN_PX (
+  - L3309 a frame projects each vertex to the pixel GlobeFrame.at() gives it, from the unit vectors:
+  - L3330 the sales (8 px) and the purchases (5 px) of a lane lie side by side, each stroke half the other's width off the line on opposite sides, 6.5 px apart, stroke...
+  - L3386 a partner due east of the stand-in has an arrow on the right edge, at the middle (
+  - L3387 the arrows' widths are by money as the lanes' are: the largest direction (5,000 sold east) is LANE_MAX_PX and its 1,000 bought
+  - L3395 the same size places the arrows as they were, a new size places them again
+  - L3406 a bearing from the stand-in, followed the distance to the partner, lands on the partner (the initial great-circle bearing): the worst miss of 200 pairs
+  - L3432 with
+  - L3452 twelve partners within four degrees of east stand on the right edge at least ARROW_GAP_PX (
+  - L3457 a partner under MIN_LANE has no arrow (299 sold; 150 and 149.99 bought), one at MIN_LANE (300 bought) has; no stand-in place, no trade, or a partner on the s...
+- **L3464 13. the city's trade as lanes: the full file's nodes**
 
 ## GoldMiningCheck.java - 49 labelled assertions
 
@@ -24316,7 +24317,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L537 1. a played city, reloaded, plays its next month as the one that kept running: every history series**
 - **L543 4. on the real Earth**
 
-## ReplayCheck.java - 175 labelled assertions
+## ReplayCheck.java - 179 labelled assertions
 
 > Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs;
 > and Follow (batch TR2, 2026-11-09): the timeline of the input logs and the player that plays it, with TR1's four review fixes.
@@ -24384,142 +24385,146 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L430 ...and back: the rate is the recorded one, nothing stuck
   - L434 the copy records nothing: switching it on leaves it off
   - L437 ...and a month played on the copy writes no month into the recording
-  - L441 the player's folder (the saves and the recording in it) is byte for byte what it was
-- **L443 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing**
-  - L450 a sitting's log is named for the moment it began, in the recording's folder naming
-  - L487 every kind written through the writer, from two threads, and closed: read back event for event
-  - L491 ...and the sitting has every kind in it
-  - L492 ...the moves and drags closer than MOVE_EVERY_MS to the last one kept are dropped, those apart are kept
-  - L495 ...the header names the sitting's start
-  - L501 the sittings of a folder are listed oldest first, and nothing else in it
-  - L504 ...a log with one event reads back that one
-  - L519 a long sitting reads back whole: 2,000 events, in about
-  - L535 a copy of the file cut mid-record reads back a prefix of what was written: five cuts, the three through the body from
-  - L539 ...a file cut inside its header, or not a log at all, or missing, reads as none and throws nothing
-  - L548 a sitting still open reads up to its last flush, a crash losing no more than the flush's two seconds: 50 events
-  - L552 ...and closed it has the last one too, and add() after close is ignored
-  - L561 a re-enacted Save, Load and Quit on the copy ran: the copy wrote into its own folder
-  - L565 ...and the player's folder, with the recording in it, is byte for byte what it was
-  - L566 ...and the recording's months are the months it had
-- **L568 5. the camera's arithmetic**
-  - L576 on the
-  - L580 ...its middle scale is the geometric mean of the ends (to 1e-9)
-  - L589 ...and the scale only ever goes one way from the start to the end
-  - L600 the ease is 0 and 1 at the ends, symmetric about the middle, monotone, and still at both ends (a slope under 1e-6 at 0 and 1)
-  - L607 the centre's share at the middle for a ratio of 4 is the formula's own, (1 - r^-e) / (1 - r^-1), 2/3
-  - L610 ...and the share is the eased share itself when the scales match
-  - L613 on the globe the middle of a glide between two points on the equator 20 degrees apart is on the equator, halfway
-  - L616 ...closing in, the globe's share is the same formula on the inverse ratio: two thirds of the way
-  - L619 ...a path of no length stays at the point at every step
-  - L621 a glide's month is linear in t, not eased: a quarter of the way from 12 to 36 is 18, and the ends are the marks'
-  - L625 a glide between a globe's view and a plane's stays at its start until the end (the kinds cannot blend)
-  - L638 the fly out at t = 1 is exactly the widest scale and the city's centre, its scale grows all the way, and the month stays
-  - L640 the time a fly takes is the doublings of the view's width over the dial: a ratio squared takes twice as long, in as out
-  - L661 five notches in: the product of the steps' zooms is ZOOM_STEP^5 to 1e-6, and the hand rests after
-  - L663 ...every step zooms no more than the one before (it eases out), the first the most, about the point the wheel was at
-  - L669 two notches out are ZOOM_STEP^-2 in the same way
-  - L691 a held key's velocity rises toward its target and, let go, falls to nothing, no step jumping more than MOST_DT_S / SMOOTH_S of the target
-  - L700 a frame of a one-second hitch moves the view no more than a MOST_DT_S step does: a pause, not a jump
-  - L713 a drift moves the ground DRIFT_STEP_PX in a second and closes in by exp(DRIFT_ZOOM_STEP) about the view's middle, until still()
-  - L717 ...and still() stops it, and the zoom still to do and the keys' velocity with it
-- **L720 5b. the graphs behind the city**
-  - L728 the population line holds the recording's months in order, from its first month to its last
-  - L730 ...it draws nothing before the first month, all of it at the last, and the head is the last point
-  - L739 ...scaled to the whole recording: its highest point is 1 and none is above it, so a line rises as the months play
-  - L746 GDP is a year of output, twelve times the mean of the last twelve months, as the header quotes it
-  - L748 a month's place across the recording runs 0 at the first to 1 at the last, and a recording of one month is at 0
-- **L753 5c. a quick step leaves most of the map's pictures as they were**
-  - L772 a quick step to the next month is another map of the same world, and its tiles read the same ground the first read
-  - L775 ...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved
-  - L787 ...a tile whose stamp is the same paints the same pixels in both maps (
-- **L790 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1)**
-  - L800 the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned
-  - L807 Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)
-- **L811 6. recording costs the month only its fill, and changes nothing in it**
-  - L819 fixture: two cities grown the same, to the last digit
-  - L840 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
-  - L842 ...and the one that records has its 12 months on disk
-  - L847 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
-  - L865 ...and a month's file is smaller than the JSON of the save it holds
-  - L883 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
-  - L918 ...and runs on
-  - L922 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
-  - L924 ...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan
-  - L926 ...and it ran frame by frame to its end, at least
-  - L927 ...after it, no move is held and nothing is pinned
-- **L983 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves**
-  - L989 fixture: a log has written its first event
-  - L996 a log whose write failed has ended its thread
-  - L998 ...takes no more events: what is added after the failure is not queued, and nothing more is written
-  - L1002 ...closes at once, not after the wait for a thread that has gone
-  - L1010 ...and its file can be deleted: the failing path closed it (on Windows an open file cannot be)
-  - L1014 an id is exactly the shape newId writes: its own ids are accepted, a path, a drive, a dot or a stray character is not
-  - L1023 fixture: the city is recording, under an id of that shape
-  - L1026 ...with a recording on disk to be left alone
-  - L1033 fixture: the save says it is recording, and now names a folder
-  - L1038 a save whose recording id is
-  - L1049 ...and a month played writes nothing outside recordings/ and nothing in the one there
-  - L1053 ...and switching recording on again gives the city an id of its own, of the shape
-  - L1060 fixture: an old timeline of months 1 to 8
-  - L1065 a first write after a load, at month 5, that fails (a number the file cannot hold) leaves no month of the old timeline past it: months 1 to 4 and none from 5
-  - L1072 ...and one that cannot clear the old months (month 7 cannot be deleted) writes nothing and tells the caller: the flag is set, month 5 is not written, the old...
-  - L1074 ...and in the city: a first write after a load that cannot clear the old months writes nothing, and the next month ends the recording, saying so
-  - L1079 ...and the months queued behind that failing first write while the writer is held (the first and 3 more) are not written beside the old ones, nor is the hist...
-  - L1082 ...and so is the history that switching the recording off writes, behind a first month and one more
-  - L1084 ...and a recording switched off and on again behind a timeline whose first write fails is a new timeline: that failure, which comes after, does not end it,
-  - L1102 a recorded city that plays
-  - L1114 ...the recording's save of that month is the autosave's but for the name it carries, which stays \"
-  - L1117 ...and so is its map, byte for byte
-- **L1327 8. the timeline: which sitting holds a month, where Follow starts, what the player had, idle**
-  - L1358 a later sitting that rewound into the earlier's months makes two segments: the earlier for 100 to 149, the later for 150 to 180
-  - L1362 startOf: a month before the rewind is in the earlier sitting's segment at its marker's millisecond, a rewound one in the later's
-  - L1366 ...and monthAt gives the month back for each
-  - L1368 ...a month the recording does not hold, or no log reaches, is null: 99, the older sitting's 181 and 200 (the rewind deleted them), 1000
-  - L1372 a recording that still holds the older sitting's 181 to 200 gets them from it, as a third segment
-  - L1379 a month a skip jumped over starts at the first marker past it: 305 at the millisecond of 310's, and the month there is 310
-  - L1388 a sitting whose markers go back (a Load) is cut there: month 10 from its first run, 11 and 12 from the second, the 13 the rewind deleted nobody's
-  - L1394 ...and played, it loads 10, 11, 12 and stops
-  - L1398 stateAt, 700 ms into month 150: the screen open, the last mouse position, the window the sitting began with, the map open at its view, the button held
-  - L1403 ...at 950 ms: the button let go, and the map's view with a scale of 0 is closed
-  - L1406 ...at the segment's start, only what came before and at its marker: the window, no screen, no mouse, no map
-  - L1409 ...and far into a long sitting (hundreds of events on, past the saved states): the last screen, the last move, the first window
-  - L1411 ...a moment that is not in the timeline has no state, no month
-  - L1421 the input events are MOVE, DRAG, PRESS, RELEASE, WHEEL and the keys; WINDOW, SCREEN, MAP_VIEW, CLOCK and MONTH are markers
-  - L1433 played across the rewind, the months load in order, 100 to 149 from the older sitting and 150 to 180 from the newer, and the older's 150 to 200 never play
-  - L1446 with idle skipping on (the default), a 60 s gap between input plays in IDLE_KEEP_MS: the next input is not there a millisecond short, and is there at it; a m...
-  - L1455 ...with it off, the gap plays in full
-  - L1463 ...and at speed 4 the skipped gap takes a quarter of that
-  - L1475 a gap of exactly IDLE_GAP_MS plays in full, one millisecond more is idle
-  - L1487 a stopped player delivers nothing more
-  - L1493 ...and rejoined at now(), the month loads and its input up to the moment catches up, and the player is where the first stopped
-  - L1496 an empty timeline is done at once, plays nothing, and starts nowhere
-- **L1511 9. Follow into a headless copy: the copy is loaded at each logged month, the screens come in order, a join mid-month catches up**
-  - L1538 fixture: a sitting of
-  - L1544 the timeline of the recording's folder holds the one sitting, for the months it logged, and none for the recording's other months
-  - L1547 ...and the state at the first month's marker is the window the sitting opened with
-  - L1561 at speed
-  - L1570 ...the screens arrive in the order logged, each in the frame its logged time divided by the speed falls in (the most late
-  - L1574 ...and nothing played live is flagged as catching up, and a month's load comes before the input after its marker
-  - L1587 joining mid-month loads that month into the copy, then plays its input from just after its marker up to the moment, all flagged as catching up
-  - L1594 ...and the screen it ends on,
-  - L1598 ...and the live play after the join carries on to the month's next screen,
-  - L1602 starting exactly at a month's marker loads it and catches up on nothing
-  - L1606 following writes nothing in the recording's folder, and nothing in the player's
-- **L1613 10. Follow in the window: the rules drop a re-enacted Save, Load and Quit, the clock and the menu keys; then a sitting is played into the...**
-  - L1631 a move, press, release, wheel and key logged while the player was on a game menu (
-  - L1633 ...and the screens Save (the saving menu), Load (the load menu) and Quit (the main menu, which has New city and Settings too) are on are among the game menus
-  - L1635 ...so a re-enacted Save, Load and Quit never reaches the copy: their buttons are not marked, and the verdict holds with the point on no marked node and the c...
-  - L1648 with the copy on a game menu, every input logged on a city screen is dropped as the copy's menu
-  - L1649 a press, a release and a key are dropped while a dialog (Quit's) is up on the copy
-  - L1653 a press and a release on a node marked as the ghost never clicks (the rail's Menu, the clock) are dropped, and a move over it is kept
-  - L1664 Space, Left and Right, down and up, are dropped as the clock's keys
-  - L1665 ...but not in a text field, where Space types a space; and F11 is dropped as the window's key, typing or not
-  - L1671 Esc is dropped where it would open the game menu, typing or not, and kept where it closes something else
-  - L1675 P is dropped where it would open the game menu, and kept where it would not and in a text field
-  - L1685 a plain move, press, release, wheel and key on a city screen are kept, and so is any input where the screens are not known
-  - L1691 the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input
-  - L1708 in the window:
-  - L1710 in the window:
+  - L446 a loaded move retains a whole-load epoch separately from its first month
+  - L453 a prepared month switches back to its own context and exact map even with its recording file absent
+  - L456 a prepared map cannot be given to another copy or to the normal game
+  - L459 releasing a move drops its months and restores the ordinary file-reading step
+  - L467 the player's folder (the saves and the recording in it) is byte for byte what it was
+- **L469 4. the input log round-trips; a re-enacted Save, Load, Quit writes nothing**
+  - L476 a sitting's log is named for the moment it began, in the recording's folder naming
+  - L513 every kind written through the writer, from two threads, and closed: read back event for event
+  - L517 ...and the sitting has every kind in it
+  - L518 ...the moves and drags closer than MOVE_EVERY_MS to the last one kept are dropped, those apart are kept
+  - L521 ...the header names the sitting's start
+  - L527 the sittings of a folder are listed oldest first, and nothing else in it
+  - L530 ...a log with one event reads back that one
+  - L545 a long sitting reads back whole: 2,000 events, in about
+  - L561 a copy of the file cut mid-record reads back a prefix of what was written: five cuts, the three through the body from
+  - L565 ...a file cut inside its header, or not a log at all, or missing, reads as none and throws nothing
+  - L574 a sitting still open reads up to its last flush, a crash losing no more than the flush's two seconds: 50 events
+  - L578 ...and closed it has the last one too, and add() after close is ignored
+  - L587 a re-enacted Save, Load and Quit on the copy ran: the copy wrote into its own folder
+  - L591 ...and the player's folder, with the recording in it, is byte for byte what it was
+  - L592 ...and the recording's months are the months it had
+- **L594 5. the camera's arithmetic**
+  - L602 on the
+  - L606 ...its middle scale is the geometric mean of the ends (to 1e-9)
+  - L615 ...and the scale only ever goes one way from the start to the end
+  - L626 the ease is 0 and 1 at the ends, symmetric about the middle, monotone, and still at both ends (a slope under 1e-6 at 0 and 1)
+  - L633 the centre's share at the middle for a ratio of 4 is the formula's own, (1 - r^-e) / (1 - r^-1), 2/3
+  - L636 ...and the share is the eased share itself when the scales match
+  - L639 on the globe the middle of a glide between two points on the equator 20 degrees apart is on the equator, halfway
+  - L642 ...closing in, the globe's share is the same formula on the inverse ratio: two thirds of the way
+  - L645 ...a path of no length stays at the point at every step
+  - L647 a glide's month is linear in t, not eased: a quarter of the way from 12 to 36 is 18, and the ends are the marks'
+  - L651 a glide between a globe's view and a plane's stays at its start until the end (the kinds cannot blend)
+  - L664 the fly out at t = 1 is exactly the widest scale and the city's centre, its scale grows all the way, and the month stays
+  - L666 the time a fly takes is the doublings of the view's width over the dial: a ratio squared takes twice as long, in as out
+  - L687 five notches in: the product of the steps' zooms is ZOOM_STEP^5 to 1e-6, and the hand rests after
+  - L689 ...every step zooms no more than the one before (it eases out), the first the most, about the point the wheel was at
+  - L695 two notches out are ZOOM_STEP^-2 in the same way
+  - L717 a held key's velocity rises toward its target and, let go, falls to nothing, no step jumping more than MOST_DT_S / SMOOTH_S of the target
+  - L726 a frame of a one-second hitch moves the view no more than a MOST_DT_S step does: a pause, not a jump
+  - L739 a drift moves the ground DRIFT_STEP_PX in a second and closes in by exp(DRIFT_ZOOM_STEP) about the view's middle, until still()
+  - L743 ...and still() stops it, and the zoom still to do and the keys' velocity with it
+- **L746 5b. the graphs behind the city**
+  - L754 the population line holds the recording's months in order, from its first month to its last
+  - L756 ...it draws nothing before the first month, all of it at the last, and the head is the last point
+  - L765 ...scaled to the whole recording: its highest point is 1 and none is above it, so a line rises as the months play
+  - L772 GDP is a year of output, twelve times the mean of the last twelve months, as the header quotes it
+  - L774 a month's place across the recording runs 0 at the first to 1 at the last, and a recording of one month is at 0
+- **L779 5c. a quick step leaves most of the map's pictures as they were**
+  - L798 a quick step to the next month is another map of the same world, and its tiles read the same ground the first read
+  - L801 ...and fewer than half the tiles in view have another stamp: the pictures kept are repainted only where their inputs moved
+  - L813 ...a tile whose stamp is the same paints the same pixels in both maps (
+- **L816 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1)**
+  - L826 the normal game draws its map (at least 30 frames) with no camera, no loaded move and nothing pinned
+  - L833 Esc while a glide loads leaves the camera idle, no move held and nothing pinned (it was loading when Esc came)
+- **L837 6. recording costs the month only its fill, and changes nothing in it**
+  - L845 fixture: two cities grown the same, to the last digit
+  - L866 12 months played by both, one recording: population, cash, GDP and the price level equal in every month
+  - L868 ...and the one that records has its 12 months on disk
+  - L873 the recorder's part of the month is within SaveWriter.CLOCK_MS, the most of the twelve
+  - L891 ...and a month's file is smaller than the JSON of the save it holds
+  - L909 a writer held behind never holds the clock: the months over the backlog are counted, not kept, and the rest are on disk
+  - L944 ...and runs on
+  - L948 ...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks
+  - L950 ...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan
+  - L952 ...and it ran frame by frame to its end, at least
+  - L953 ...after it, no move is held and nothing is pinned
+- **L1009 7. TR1's review: a failed log write, an id from a save, a failed first write, a month that autosaves**
+  - L1015 fixture: a log has written its first event
+  - L1022 a log whose write failed has ended its thread
+  - L1024 ...takes no more events: what is added after the failure is not queued, and nothing more is written
+  - L1028 ...closes at once, not after the wait for a thread that has gone
+  - L1036 ...and its file can be deleted: the failing path closed it (on Windows an open file cannot be)
+  - L1040 an id is exactly the shape newId writes: its own ids are accepted, a path, a drive, a dot or a stray character is not
+  - L1049 fixture: the city is recording, under an id of that shape
+  - L1052 ...with a recording on disk to be left alone
+  - L1059 fixture: the save says it is recording, and now names a folder
+  - L1064 a save whose recording id is
+  - L1075 ...and a month played writes nothing outside recordings/ and nothing in the one there
+  - L1079 ...and switching recording on again gives the city an id of its own, of the shape
+  - L1086 fixture: an old timeline of months 1 to 8
+  - L1091 a first write after a load, at month 5, that fails (a number the file cannot hold) leaves no month of the old timeline past it: months 1 to 4 and none from 5
+  - L1098 ...and one that cannot clear the old months (month 7 cannot be deleted) writes nothing and tells the caller: the flag is set, month 5 is not written, the old...
+  - L1100 ...and in the city: a first write after a load that cannot clear the old months writes nothing, and the next month ends the recording, saying so
+  - L1105 ...and the months queued behind that failing first write while the writer is held (the first and 3 more) are not written beside the old ones, nor is the hist...
+  - L1108 ...and so is the history that switching the recording off writes, behind a first month and one more
+  - L1110 ...and a recording switched off and on again behind a timeline whose first write fails is a new timeline: that failure, which comes after, does not end it,
+  - L1128 a recorded city that plays
+  - L1140 ...the recording's save of that month is the autosave's but for the name it carries, which stays \"
+  - L1143 ...and so is its map, byte for byte
+- **L1353 8. the timeline: which sitting holds a month, where Follow starts, what the player had, idle**
+  - L1384 a later sitting that rewound into the earlier's months makes two segments: the earlier for 100 to 149, the later for 150 to 180
+  - L1388 startOf: a month before the rewind is in the earlier sitting's segment at its marker's millisecond, a rewound one in the later's
+  - L1392 ...and monthAt gives the month back for each
+  - L1394 ...a month the recording does not hold, or no log reaches, is null: 99, the older sitting's 181 and 200 (the rewind deleted them), 1000
+  - L1398 a recording that still holds the older sitting's 181 to 200 gets them from it, as a third segment
+  - L1405 a month a skip jumped over starts at the first marker past it: 305 at the millisecond of 310's, and the month there is 310
+  - L1414 a sitting whose markers go back (a Load) is cut there: month 10 from its first run, 11 and 12 from the second, the 13 the rewind deleted nobody's
+  - L1420 ...and played, it loads 10, 11, 12 and stops
+  - L1424 stateAt, 700 ms into month 150: the screen open, the last mouse position, the window the sitting began with, the map open at its view, the button held
+  - L1429 ...at 950 ms: the button let go, and the map's view with a scale of 0 is closed
+  - L1432 ...at the segment's start, only what came before and at its marker: the window, no screen, no mouse, no map
+  - L1435 ...and far into a long sitting (hundreds of events on, past the saved states): the last screen, the last move, the first window
+  - L1437 ...a moment that is not in the timeline has no state, no month
+  - L1447 the input events are MOVE, DRAG, PRESS, RELEASE, WHEEL and the keys; WINDOW, SCREEN, MAP_VIEW, CLOCK and MONTH are markers
+  - L1459 played across the rewind, the months load in order, 100 to 149 from the older sitting and 150 to 180 from the newer, and the older's 150 to 200 never play
+  - L1472 with idle skipping on (the default), a 60 s gap between input plays in IDLE_KEEP_MS: the next input is not there a millisecond short, and is there at it; a m...
+  - L1481 ...with it off, the gap plays in full
+  - L1489 ...and at speed 4 the skipped gap takes a quarter of that
+  - L1501 a gap of exactly IDLE_GAP_MS plays in full, one millisecond more is idle
+  - L1513 a stopped player delivers nothing more
+  - L1519 ...and rejoined at now(), the month loads and its input up to the moment catches up, and the player is where the first stopped
+  - L1522 an empty timeline is done at once, plays nothing, and starts nowhere
+- **L1537 9. Follow into a headless copy: the copy is loaded at each logged month, the screens come in order, a join mid-month catches up**
+  - L1564 fixture: a sitting of
+  - L1570 the timeline of the recording's folder holds the one sitting, for the months it logged, and none for the recording's other months
+  - L1573 ...and the state at the first month's marker is the window the sitting opened with
+  - L1587 at speed
+  - L1596 ...the screens arrive in the order logged, each in the frame its logged time divided by the speed falls in (the most late
+  - L1600 ...and nothing played live is flagged as catching up, and a month's load comes before the input after its marker
+  - L1613 joining mid-month loads that month into the copy, then plays its input from just after its marker up to the moment, all flagged as catching up
+  - L1620 ...and the screen it ends on,
+  - L1624 ...and the live play after the join carries on to the month's next screen,
+  - L1628 starting exactly at a month's marker loads it and catches up on nothing
+  - L1632 following writes nothing in the recording's folder, and nothing in the player's
+- **L1639 10. Follow in the window: the rules drop a re-enacted Save, Load and Quit, the clock and the menu keys; then a sitting is played into the...**
+  - L1657 a move, press, release, wheel and key logged while the player was on a game menu (
+  - L1659 ...and the screens Save (the saving menu), Load (the load menu) and Quit (the main menu, which has New city and Settings too) are on are among the game menus
+  - L1661 ...so a re-enacted Save, Load and Quit never reaches the copy: their buttons are not marked, and the verdict holds with the point on no marked node and the c...
+  - L1674 with the copy on a game menu, every input logged on a city screen is dropped as the copy's menu
+  - L1675 a press, a release and a key are dropped while a dialog (Quit's) is up on the copy
+  - L1679 a press and a release on a node marked as the ghost never clicks (the rail's Menu, the clock) are dropped, and a move over it is kept
+  - L1690 Space, Left and Right, down and up, are dropped as the clock's keys
+  - L1691 ...but not in a text field, where Space types a space; and F11 is dropped as the window's key, typing or not
+  - L1697 Esc is dropped where it would open the game menu, typing or not, and kept where it closes something else
+  - L1701 P is dropped where it would open the game menu, and kept where it would not and in a text field
+  - L1711 a plain move, press, release, wheel and key on a city screen are kept, and so is any input where the screens are not known
+  - L1717 the log's markers (screen, window, month, clock, map) are kept whatever the screens: they are no input
+  - L1734 in the window:
+  - L1736 in the window:
 
 ## ResearchCheck.java - 105 labelled assertions
 
