@@ -13,7 +13,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The harness for AllChecks' known reds and harness time limit.
+ * The harness for AllChecks' known reds, time limit and resource admission.
  *
  * WHY (FW7): a second failing HealthCheck assertion hid behind its known-red
  * verdict. Fixtures exercise the real runner's line tagging and the shell's
@@ -144,8 +144,52 @@ public class KnownRedsCheck {
         check("a missing summary fails closed", judge(tmp.resolve("incomplete"), "unfinished", record).exit() == 1);
         check("a zero-harness summary fails closed", judge(tmp.resolve("empty"), "0 harnesses run in 1s: 0 passed, 0 failed\n", record).exit() == 1);
         limited(tmp);
+        resourceAdmission();
         if (fails > 0) System.out.println("\n" + fails + " FAILED");
         System.exit(fails);
+    }
+
+    /** MG1 fixtures cause each hold through injected readings, independently of this PC's load. */
+    static void resourceAdmission() {
+        System.out.println("--- 7. another harness starts only with room for its memory and CPU ---");
+        double full = (AllChecks.HEAP_MB + AllChecks.NON_HEAP_MB) / 1024.0;
+        double ram = AllChecks.AVAILABLE_RAM_GB;
+        double cpu = Math.nextDown(AllChecks.CPU_PCT);
+        double[] growing = { full / 2, full / 4 };
+        double need = full * 2.25;
+        AllChecks.Resources room = new AllChecks.Resources(need, ram, cpu, growing);
+        check("the free commit reserves both running harnesses' remaining growth", room.needed() == need);
+        check("one more starts at the commit and RAM floors, below the CPU ceiling", AllChecks.startBlock(room) == 0);
+        AllChecks.Resources shortCommit = new AllChecks.Resources(Math.nextDown(need), ram, cpu, growing);
+        check("a byte-short commitment holds the next start", AllChecks.startBlock(shortCommit) == 1);
+        check("room for only the new child still holds while the others can grow", AllChecks.startBlock(new AllChecks.Resources(full, ram, cpu, growing)) == 1);
+        check("fully committed children need only one more harness's budget", AllChecks.startBlock(new AllChecks.Resources(full, ram, cpu, new double[] { full, full * 2 })) == 0);
+        check("unknown child commitment reserves its full growth", AllChecks.startBlock(new AllChecks.Resources(Math.nextDown(full * 2), ram, cpu, new double[] { 0 })) == 1);
+        AllChecks.Resources shortRam = new AllChecks.Resources(need, Math.nextDown(ram), cpu, growing);
+        check("RAM just below its floor holds despite free commit", AllChecks.startBlock(shortRam) == 2);
+        AllChecks.Resources busy = new AllChecks.Resources(need, ram, AllChecks.CPU_PCT, growing);
+        check("CPU at its ceiling holds despite both memory figures", AllChecks.startBlock(busy) == 3);
+        double[] currentCpu = { cpu };
+        AllChecks.Resources afterProbe = AllChecks.readResources(() -> {
+            currentCpu[0] = AllChecks.CPU_PCT;
+            return room;
+        }, () -> currentCpu[0]);
+        check("CPU crossing its ceiling during a slow memory probe holds the next start", AllChecks.startBlock(afterProbe) == 3);
+        check("unknown commit holds an extra start", AllChecks.startBlock(new AllChecks.Resources(Double.NaN, ram, cpu, growing)) == 1);
+        check("unknown RAM holds an extra start", AllChecks.startBlock(new AllChecks.Resources(need, Double.NaN, cpu, growing)) == 2);
+        check("unknown CPU holds an extra start", AllChecks.startBlock(new AllChecks.Resources(need, ram, Double.NaN, growing)) == 3);
+        check("the first harness always starts even without resource readings", AllChecks.startBlock(new AllChecks.Resources(Double.NaN, Double.NaN, Double.NaN, new double[0])) == 0);
+        check("commit holds name free GB and the growth budget", AllChecks.holdLine(shortCommit, 1).contains("GB including running growth"));
+        check("RAM holds name available GB", AllChecks.holdLine(shortRam, 2).contains("RAM") && AllChecks.holdLine(shortRam, 2).contains("GB"));
+        check("CPU holds name percent", AllChecks.holdLine(busy, 3).contains("%"));
+        AllChecks.CpuWindow window = new AllChecks.CpuWindow();
+        check("CPU warmup holds until a full window is collected", Double.isNaN(window.average()));
+        for (int i = 0; i < AllChecks.CPU_SAMPLES; i++) window.add(AllChecks.CPU_PCT);
+        check("the full CPU window keeps the ceiling", window.average() == AllChecks.CPU_PCT);
+        window.add(0);
+        check("a new CPU sample replaces the oldest", window.average() == AllChecks.CPU_PCT * (AllChecks.CPU_SAMPLES - 1) / AllChecks.CPU_SAMPLES);
+        window.add(-1);
+        check("an unavailable CPU sample holds until it ages out", Double.isNaN(window.average()));
     }
 
     /** A fixture with a never-ending descendant, or an immediate successful exit. */

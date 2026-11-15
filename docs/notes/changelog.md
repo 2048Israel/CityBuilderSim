@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### KD1 — The suite memory guard by free GB, and the ensemble names its data — 2026-11-15, ready, no tag (process), see docs/queue/KD1-notes.md
+Soft suite starts reserve commitment for running growth and another 2.5 GiB
+harness, require 4 GiB available RAM and CPU below 80% over six seconds,
+and report each limiting resource. Injected fixtures prove admission and
+holds, including CPU crossing its ceiling during a slow memory probe.
+Worktree ensembles discover both data files and record their snapshot's
+inputs. EN2's baseline completed 80/80 runs, with all 10 hard criteria passing.
+
 ### 0.9.112 — R2b, Buildings on history's dates — 2026-11-15, ready, see docs/queue/R2b-notes.md
 A city founded the 1900 way offers planners, city works and berths only buildings known on history's date or discovered locally; direct city and private orders refuse unknown buildings before spending or drawing materials. The refinery's dated cracking and upgrading units wait for their discoveries. Default-founded cities keep every candidate. ResearchCheck causes the planner, works, berth and direct-order cases and holds their date boundaries.
 

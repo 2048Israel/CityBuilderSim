@@ -46,11 +46,14 @@ fi
 # --- one run: what xargs calls (the script itself, hidden mode) --------------
 if [ "${1:-}" = "--one" ]; then
     RUN=$2; P=$3; S=$4
+    DATA_ARGS=()
+    [ -z "${ENS_EARTH:-}" ] || DATA_ARGS+=("-Dcbs.earth=$ENS_EARTH")
+    [ -z "${ENS_WORLD:-}" ] || DATA_ARGS+=("-Dcbs.world=$ENS_WORLD")
     rm -f "$RUN/times/$P-$S.txt"
     LOCKCMD=""
     [ -n "${ENS_LOCK:-}" ] && LOCKCMD="flock $ENS_LOCK"
     # shellcheck disable=SC2086
-    $LOCKCMD java -Xmx2g "-Djava.io.tmpdir=$ENS_RUNW/tmp" ${ENS_JAVA_OPTS:-} \
+    $LOCKCMD java -Xmx2g "-Djava.io.tmpdir=$ENS_RUNW/tmp" "${DATA_ARGS[@]}" ${ENS_JAVA_OPTS:-} \
         -cp "$ENS_RUNW/driver$ENS_SEP$ENS_RUNW/classes$ENS_SEP$ENS_DEPS" \
         ham.citybuildersim.Ensemble "$P" "$S" "$ENS_RUNW/$P-$S.csv" > "$RUN/logs/$P-$S.log" 2>&1
     # DONE <policy> seed <s> months <m> of <end> in <secs>s ...
@@ -84,6 +87,19 @@ SEEDS=${SEEDS:-$(seq 0 15)}
 POLICIES=${POLICIES:-"AUTO2 ZERO_SLACK ZERO_HOT SHOCK HIGH"}
 RESUME=${RESUME:-1}
 JAVA_OPTS=${JAVA_OPTS:-}
+ENS_EARTH=; ENS_WORLD=; DATA_SHOWN=
+# WHY (EN2): a worktree has no data folder, so the old ensemble scored a generated world.
+if [ -z "${JDK_JAVA_OPTIONS:-}" ]; then
+    MAIN=$(git worktree list --porcelain 2>/dev/null | sed -n '1s/^worktree //p')
+    [ ! -f "$MAIN/data/earth-2.bin" ] || ENS_EARTH=$(native "$MAIN/data/earth-2.bin")
+    [ ! -f "$MAIN/data/world-1.bin" ] || ENS_WORLD=$(native "$MAIN/data/world-1.bin")
+    [ -z "$ENS_EARTH" ] || DATA_SHOWN="-Dcbs.earth=$ENS_EARTH"
+    [ -z "$ENS_WORLD" ] || DATA_SHOWN="${ENS_EARTH:+$DATA_SHOWN }-Dcbs.world=$ENS_WORLD"
+fi
+case "$JAVA_OPTS ${JDK_JAVA_OPTIONS:-}" in
+    *-Dcbs.earth=*|*-Dcbs.world=*) DATA_SHOWN="${DATA_SHOWN:+$DATA_SHOWN; }JAVA_OPTS=$JAVA_OPTS; JDK_JAVA_OPTIONS=${JDK_JAVA_OPTIONS:-}" ;;
+esac
+DATA_SHOWN=${DATA_SHOWN:-none}
 ENSEMBLE_OUT=${ENSEMBLE_OUT:-target/ensemble}
 PYLIB=${ENSEMBLE_PYLIB:-$HOME/.cache/cbs-ensemble/py}
 if [ -z "${PYTHON:-}" ]; then
@@ -108,6 +124,9 @@ fi
 BASELINE=${BASELINE-}
 if [ -z "$BASELINE" ]; then
     NEWEST=$(ls docs/ensemble 2>/dev/null | grep -E '^[0-9][0-9.]*\.md$' | sort -V | tail -1)
+    # EN2 ships untagged, retaining its id until a later version has a new data-backed score.
+    EN2_VERSION=$(sed -n 's/^# Ensemble baseline: \([0-9][0-9.]*\)$/\1/p' docs/ensemble/EN2.md 2>/dev/null | head -1)
+    if [ -n "$EN2_VERSION" ] && [ "$(printf '%s\n' "${NEWEST%.md}" "$EN2_VERSION" | sort -V | tail -1)" = "$EN2_VERSION" ]; then NEWEST=EN2.md; fi
     [ -n "$NEWEST" ] && BASELINE="docs/ensemble/$NEWEST" || BASELINE=none
 fi
 if [ "$BASELINE" != none ]; then
@@ -151,6 +170,7 @@ else
         echo "commit: $COMMIT"
         echo "date: $(date -u +%Y-%m-%dT%H:%MZ)"
         echo "label: $LABEL"
+        echo "data: $DATA_SHOWN"
     } > "$RUN/snapshot.txt"
 fi
 snap() { sed -n "s/^$1: //p" "$RUN/snapshot.txt" 2>/dev/null | head -1 | tr -d '\r'; }
@@ -176,12 +196,17 @@ for P in $POLICIES; do
     done
 done
 TODO=$(wc -l < "$RUN/jobs.txt" | tr -d ' ')
+SNAPDATA=$(snap data)
+if [ "$KEPT" = 1 ] && [ "$TODO" -gt 0 ] && [ "$SNAPDATA" != "$DATA_SHOWN" ]; then
+    echo "data settings differ from the snapshot; use a fresh label for these settings" >&2
+    exit 1
+fi
 SNAPNOTE=""; [ "$KEPT" = 1 ] && SNAPNOTE=", snapshot kept from the first start"
 echo "ensemble $LABEL: classes of $COMMIT (v$VERSION)$SNAPNOTE; $JOBS at once, $TODO of $TOTAL runs to do"
 
 START=$(date +%s)
 if [ "$TODO" -gt 0 ]; then
-    export ENS_RUNW="$RUNW" ENS_SEP="$SEP" ENS_DEPS="$DEPS" ENS_JAVA_OPTS="$JAVA_OPTS" ENS_LOCK="$LOCKED"
+    export ENS_RUNW="$RUNW" ENS_SEP="$SEP" ENS_DEPS="$DEPS" ENS_JAVA_OPTS="$JAVA_OPTS" ENS_LOCK="$LOCKED" ENS_EARTH ENS_WORLD
     xargs -P "$JOBS" -n 2 bash "$SELF" --one "$RUN" < "$RUN/jobs.txt"
 fi
 WALL=$(( $(date +%s) - START ))
@@ -203,10 +228,9 @@ fi
 # --- the score -----------------------------------------------------------------------------------------------
 cat "$RUN"/times/*.txt > "$RUN/times.txt" 2>/dev/null
 [ -s "$RUN/times.txt" ] || rm -f "$RUN/times.txt"
-BASEARG=""
-[ -n "$BASELINEW" ] && BASEARG="--baseline $BASELINEW"
-# shellcheck disable=SC2086
-ENSEMBLE_PYLIB="$PYLIB" "$PYTHON" -I tools/ensemble/score.py "$RUNW" $BASEARG --summary "$RUNW/summary.json" > "$RUN/score.md" 2> "$RUN/logs/score.txt"
+BASE_ARGS=()
+[ -z "$BASELINEW" ] || BASE_ARGS=(--baseline "$BASELINEW")
+ENSEMBLE_PYLIB="$PYLIB" "$PYTHON" -I tools/ensemble/score.py "$RUNW" "${BASE_ARGS[@]}" --summary "$RUNW/summary.json" > "$RUN/score.md" 2> "$RUN/logs/score.txt"
 SCORED=$?
 case "$SCORED" in
 0|4) ;;
@@ -225,15 +249,13 @@ FENCE='```'
     printf '# Ensemble baseline: %s\n\n' "$VERSION"
     printf 'The ensemble on the model of **%s**: classes snapshot of commit %s (%s), label %s, %s of %s runs.\n' \
         "$VERSION" "$COMMIT" "$SNAPDATE" "$LABEL" "$DONE" "$TOTAL"
+    printf 'Data files named for this snapshot — `%s`.\n' "${SNAPDATA:-not recorded (legacy snapshot)}"
     if [ -n "$BASELINE_SHOWN" ]; then
         printf 'Scored against `%s` for T1, T2 and F1. ' "$BASELINE_SHOWN"
     else
         printf 'Scored with no baseline: T1, T2 and F1 report this run only. '
     fi
-    printf 'Commit this file on the batch'"'"'s branch as `docs/ensemble/<batch id>.md` when its playtest trace moved, '
-    printf 'with the version above (this heading and the line under it) written as the next-version token in braces, as the batch'"'"'s ship file writes it: '
-    printf 'ship.sh gives the file its version at the gate, renames it to `docs/ensemble/<version>.md` and fills the token. '
-    printf 'A batch whose trace is byte-identical to main'"'"'s does not rerun the ensemble.\n\n'
+    printf '\n'
     tr -d '\r' < "$RUN/score.md" | sed '1d' | sed '/./,$!d'
     printf '\n## summary.json\n\n'
     printf 'What `--baseline` reads: T1, T2 and F1 compare with it.\n\n'

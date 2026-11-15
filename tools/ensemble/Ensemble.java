@@ -16,37 +16,16 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * The inflation ensemble's driver: one seeded city, founded and played the way
- * LongPlaytest founds and plays it, under one of five monetary policies, written
- * out as one CSV row a month.
+ * Plays a seeded LongPlaytest city under one monetary policy, writing monthly CSV.
  *
- * WHY (P1b, 2026-10-04). The roadmap "inflation that answers to money" judges
- * 0.7.42 and 0.7.43 against five policies over sixteen seeds. One seed is the
- * weather; sixteen seeds under one fixed driver are the climate. This file is
- * that fixed driver. It lives in tools/ensemble/, outside the game's sources
- * (tools/ensemble/ensemble.sh compiles it against a snapshot of target/classes)
- * and it must keep compiling as the model changes, so
- * every figure it writes is read through the Adapter at the bottom, by name and
- * by reflection: a getter a later tree renames or removes reads NaN, never a
- * compile error, and a getter a later tree adds is one line in columns().
+ * WHY (P1b): sixteen seeds distinguish a policy's effects from one founding.
+ * The runner compiles this driver against its classes snapshot. Adapter reads
+ * optional getters reflectively, yielding NaN when a getter is unavailable.
+ * LongPlaytest supplies founding, building, policy actions and monthly audits.
  *
- * usage:  java ... ham.citybuildersim.Ensemble <POLICY> <seed> <out.csv>
- *   POLICY  AUTO2 | ZERO_SLACK | ZERO_HOT | SHOCK | HIGH   (see THE FIVE POLICIES)
- *   seed    0..15, LongPlaytest's ensemble seed (-Dplaytest.seed): a few houses
- *           more, a month or two longer in the founding
- * optional:
- *   -Densemble.months=N       stop after month N (a timing pilot, or a cut)
- *   -Densemble.hotStart=M     ZERO_HOT's first month at 0% (default HOT_START)
- *   -Densemble.slackStart=M   ZERO_SLACK's first month at 0% (default SLACK_START)
- *   -Densemble.extra=a=p;b=q  extra columns, each a dotted getter path off Game,
- *                             e.g. expected=getCentralBank.getExpectedInflation
- *
- * What it does NOT do that LongPlaytest does: the save/reload round trip every
- * seventh stop (it tests the save, not the economy; it costs time and disk), the
- * report and the traces. Everything else - the founding, the advisor, the skip
- * rhythm, the annual wealth policy, the borrowing, the land, the demolitions, the player's
- * answer to a failed bank and to its offer, and the audit of every month - is
- * LongPlaytest's own code, called rather than copied where it can be.
+ * Arguments are POLICY (AUTO2, ZERO_SLACK, ZERO_HOT, SHOCK, HIGH), seed and CSV.
+ * Properties ensemble.months, ensemble.hotStart and ensemble.slackStart
+ * override duration and switch months. ensemble.extra adds named getter paths.
  */
 public class Ensemble {
 
@@ -65,29 +44,11 @@ public class Ensemble {
     static final int AUTO2_MONTHS = 2400;
     /** ★ A mature city: where SHOCK and HIGH change policy (and ZERO_SLACK did until 0.7.100). */
     static final int MATURE = 600;
-    /**
-     * ★ ZERO_SLACK: the first month at 0%, in a mature city (0.7.100, batch P1; Jerus's A27 of
-     * 2026-10-10). Until 0.7.100 it was MATURE, and month 600 is a city at takeoff, not a slack
-     * one: on 0.7.43 its twin's unemployment was 14.9% at the switch and about 5% within the
-     * window while its population grew x2.44 in 240 months (the 0.7.44 diagnosis's star 1). The
-     * inflation spec's section 8 names the month for slack: "use city2400-like mature seeds or
-     * month 1,800" (runs/spec-inflation.md), and every 0.7.99 AUTO2 seed has taken off (40,000
-     * people) by month 1,243. The same hold from 1,800 was measured on 0.7.43 (out/diag-slack1800).
-     */
+    /** ★ ZERO_SLACK switches at month 1800, after all measured AUTO2 seeds took off by 1243 (P1, inflation spec section 8). */
     static final int SLACK_START = Integer.getInteger("ensemble.slackStart", 1800);
     /** ZERO_SLACK: 0% held this long after SLACK_START. */
     static final int SLACK_ZERO_MONTHS = 240;
-    /**
-     * ★ ZERO_HOT: the first month at 0%, in a young city's growth phase. Measured on 0.7.41's
-     * AUTO2 seeds: the city runs hottest in its first building boom - unemployment under 5%,
-     * rent up about 45%, the autopilot's own rate above 5% from month 45-77 (to 9-29% at the
-     * peak) and above 5% again on and off to month 291. Month 42 is the first month after the
-     * index has its first twelve-month rate (41), so the autopilot has had nothing to lean
-     * against yet, and the 240 months at 0% cover every seed's early months above 5% but the
-     * last few (to month 291).
-     * (Month 120, the brief's example, starts after every seed's first month above 5% and
-     * after the peak in 10 of 16.)
-     */
+    /** ★ ZERO_HOT switches at month 42, after the first annual index reading and before the measured founding boom peaks (P1b). */
     static final int HOT_START = Integer.getInteger("ensemble.hotStart", 42);
     /** ZERO_HOT: 0% held this long... */
     static final int HOT_ZERO_MONTHS = 240;

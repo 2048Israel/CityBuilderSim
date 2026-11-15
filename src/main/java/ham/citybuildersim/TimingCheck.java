@@ -18,61 +18,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the suite moves.
+ * Checks hard and soft timing, JVM forwarding, suite coverage and paired medians.
  *
- * WHY THIS EXISTS (batch TM1, 2026-10-18). Batches on the PC took turns under
- * "one JVM at a time on the machine" because only the timing assertions
- * clashed under another JVM's load (EarthTerrainCheck 8: 116 ms against 80
- * with Jerus's game running, 27.8 without). The property lets two suites
- * check side by side; a property that could soften anything but a clock would
- * let a real failure through unseen, so this holds, with a fixture that cannot
- * but miss its budget, that the property touches only a clock - and holds the
- * suite to the one helper (Timing) that reads it.
- *
- * What it has to prove:
- *   1. hard (the property unset, or "hard"): the fixture's timing assertion
- *      prints FAIL and counts 1; a figure within a budget it can meet prints OK;
- *   2. soft: the same missed assertion's line says SOFT with its figure and
- *      budget, matches Timing.SOFT_LINE and counts nothing; the unit is the one
- *      the assertion names; a strict miss (below, equal figures) goes soft too
- *      and fails hard;
- *   3. only a clock is soft: a false non-timing assertion is FAIL and counted,
- *      whichever side of && a miss is on; a told miss is cleared, as is one a
- *      FAIL swallowed; a NaN figure is FAIL even soft; two misses in one
- *      condition are told on the one line;
- *   4. soft() is true for exactly "soft";
- *   5. across the JVM boundary: AllChecks.command forwards the property, and a
- *      child JVM started as AllChecks starts one exits 0 and prints SOFT when
- *      soft, exits 1 and prints FAIL when not; AllChecks.softLines counts the
- *      SOFT lines of a log;
- *   6. the suite goes through it: no *Check source compares a figure against a
- *      *_MS or *_NS dial but through Timing (bar one allowance), the harnesses
- *      that call it are Timing.HARNESSES, each prints through Timing.verdict,
- *      the property is read in one place, and AllChecks runs every one of them
- *      and this;
- *   7. the rest of the suite is untouched: with no miss held, verdict(true) is
- *      exactly OK and verdict(false) exactly FAIL in every mode;
- *   8. the figures' record (TM3): with -Dcbs.timing.tsv naming a file, each
- *      assertion's line writes a row for every figure it judged - harness,
- *      label, measured, budget, unit, status (OK, SOFT or FAIL), the figure's
- *      place in the assertion - and with none named nothing is written; a
- *      child JVM started as AllChecks starts one writes to the same file;
- *   9. the margin's arithmetic (tools/timing-pair.awk, which the ship gate runs
- *      on main's figures and the merge's): the batch passes at the margin and
- *      stops a hair over it, the median decides and not one slow round, main's
- *      median over the budget too or the batch's within it passes (SP1 item 7),
- *      a side with fewer than two figures stops, a line that is no clock's
- *      stops, and a failed harness's own count passes only with a timing red
- *      that passes.
- *
- * A harness that times prints its lines through the labelled verdict
- * (Timing.verdict(ok, label)), and no assertion compares two measured times
- * but through Timing (section 6): MapCheck's "the view adds nothing a tile",
- * which compared the view's time with section 5's and so stayed hard in the
- * soft suite, went red on a merge that could not reach it (CC1-S, 2026-10-26).
- *
- * It sets the property itself in every section and restores it at the end, so
- * it passes whatever the run was given.
+ * WHY (TM1): concurrent suites missed clocks under another JVM's load, while
+ * correctness still needed hard verdicts. Fixtures force missed budgets and
+ * keep non-timing failures hard. TM3 checks TSV recording and the paired judge.
+ * Sections cover property values, child JVMs, suite routing, untouched verdicts,
+ * recorded figures and paired margins, with both passing and failing fixtures.
+ * The harness restores its timing properties before returning.
  */
 public class TimingCheck {
 
@@ -136,12 +89,7 @@ public class TimingCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
-    /**
-     * The fixture: a miniature harness with its own failure count and its own
-     * output, whose line is the suite's, printed through Timing.verdict. In
-     * process it writes to a buffer; as a child JVM (its main, below) to
-     * System.out, one timing assertion that cannot hold.
-     */
+    /** A miniature timing harness that writes to a buffer locally or stdout in a child JVM. */
     public static final class Fixture {
 
         int fails = 0;

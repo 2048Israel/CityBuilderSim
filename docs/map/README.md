@@ -4,7 +4,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 569 files, 623,171 lines, 27,156 methods, 5,962 constants. `GameVersion.VERSION` is "0.9.112", `SAVE_FORMAT` 53.
+**The tree:** 569 files, 623,217 lines, 27,165 methods, 5,966 constants. `GameVersion.VERSION` is "0.9.112", `SAVE_FORMAT` 53.
 
 ## model (262 files)
 
@@ -371,7 +371,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | file | lines | methods | what it is | used by |
 |---|---:|---:|---|---:|
 | [AgricultureCheck.java](AgricultureCheck.md) | 463 | 7 | The ground under the loaf. | 0 |
-| [AllChecks.java](AllChecks.md) | 490 | 21 | Runs every harness, one JVM each, and says which failed. | 5 |
+| [AllChecks.java](AllChecks.md) | 583 | 28 | Runs every harness, one JVM each, and says which failed. | 5 |
 | [ArrivalMixCheck.java](ArrivalMixCheck.md) | 375 | 21 | The skill mix of the arrivals by year (R0d slice 2): the year's mix in a city founded the 1900 way, and WageBand's ceilings in every other city. | 0 |
 | [AuctionCheck.java](AuctionCheck.md) | 1,744 | 43 | The city's paper sold at auction: one clearing yield, and what it costs. | 1 |
 | [AutoBuildCheck.java](AutoBuildCheck.md) | 2,037 | 46 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 2 |
@@ -428,7 +428,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EarthFoundingCheck.java](EarthFoundingCheck.md) | 706 | 18 | Founding a city on the real Earth (0.7.121, batch E4; the project's spec-earth.md 2, 6 and 8): the founding card's figures against the plots they a... | 0 |
 | [EarthTerrainCheck.java](EarthTerrainCheck.md) | 2,642 | 64 | The Earth's ground (0.7.115, batch E2; the project's spec-earth.md 3 and 8): EarthTerrain's plots held to the data they are drawn from on the three... | 4 |
 | [EducationCheck.java](EducationCheck.md) | 1,500 | 12 | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. | 2 |
-| [EnsembleCheck.java](EnsembleCheck.md) | 509 | 24 | The inflation ensemble is in the tree and still runs: its driver compiles against this tree, its two halves name the same policies, and the stored ... | 0 |
+| [EnsembleCheck.java](EnsembleCheck.md) | 470 | 25 | Checks the ensemble runner, driver compilation, policy names and stored baseline. | 0 |
 | [EquipmentCheck.java](EquipmentCheck.md) | 1,161 | 46 | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would ea... | 8 |
 | [EquityCheck.java](EquityCheck.md) | 386 | 5 | Verifies the share register: who buys, at what price, what they are paid, and that a month with owners in it still adds up. | 0 |
 | [EssentialWorksCheck.java](EssentialWorksCheck.md) | 1,042 | 30 | Essential works ordered for their unmet service, including their ground (HW1). | 1 |
@@ -477,7 +477,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [IslandRailCheck.java](IslandRailCheck.md) | 946 | 45 | The railway has a piece of its own on each piece of the city's ground the water parts, its track dealt by built weight and its yards on the islands... | 1 |
 | [JunctionCheck.java](JunctionCheck.md) | 2,367 | 94 | Proves that the junctions and interchanges of spec-freight 4.6 are drawn by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19). | 5 |
 | [KeptCheck.java](KeptCheck.md) | 9,032 | 205 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 4 |
-| [KnownRedsCheck.java](KnownRedsCheck.md) | 254 | 9 | The harness for AllChecks' known reds and harness time limit. | 0 |
+| [KnownRedsCheck.java](KnownRedsCheck.md) | 298 | 10 | The harness for AllChecks' known reds, time limit and resource admission. | 0 |
 | [LabourCheck.java](LabourCheck.md) | 1,690 | 15 | Verifies the labour market: who can hold a job, and what it costs. | 1 |
 | [LandCheck.java](LandCheck.md) | 3,696 | 61 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 7 |
 | [LandClassCheck.java](LandClassCheck.md) | 1,349 | 51 | A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going price stays the price of flat ... | 3 |
@@ -552,7 +552,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [StaffingDrawCheck.java](StaffingDrawCheck.md) | 1,094 | 50 | The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff Sector.MIN_STAFFABLE_TO_ORDER... | 0 |
 | [StaleCheck.java](StaleCheck.md) | 331 | 6 | The prose still describes the code: the firm half of `tools.Stale`, asserted, and `tools.Names` proved on a fixture. | 0 |
 | [SupplierCreditCheck.java](SupplierCreditCheck.md) | 340 | 10 | The grocers' supplier credit (0.7.44): stock bought on the suppliers' credit when the till cannot pay for it, owed for a month, repaid out of the s... | 0 |
-| [TimingCheck.java](TimingCheck.md) | 780 | 32 | The harness for soft timing (batch TM1): a timing assertion fails hard, goes SOFT and uncounted under -Dcbs.timing=soft, and nothing else in the su... | 0 |
+| [TimingCheck.java](TimingCheck.md) | 728 | 32 | Checks hard and soft timing, JVM forwarding, suite coverage and paired medians. | 0 |
 | [ToastCheck.java](ToastCheck.md) | 388 | 16 | A toast stays out of the page's way (TS1): while a toast shows, the page's foot takes a bottom padding as tall as the toasts, the scroll's pixel of... | 0 |
 | [TradeBandCheck.java](TradeBandCheck.md) | 440 | 18 | TradeBand, the model behind the Trade tab's band in legs, held to the study's last bullet of section 6 (docs/studies/spec-freight-and-infrastructur... | 0 |
 | [TradeCostCheck.java](TradeCostCheck.md) | 634 | 6 | The wedge between what the world charges and what it pays, and what it is made of. | 0 |
