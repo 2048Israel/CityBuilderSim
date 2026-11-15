@@ -794,11 +794,16 @@ public final class GlobeFrame {
      * the node is not in, `beyond`'s colour; the pixels the chart drew found no node count in the return with the plane's.
      */
     public int ground(long plots, NodePixels nodes, NodePixels charts, Beyond beyond, int space, int[] out, int outW, int i0, int i1, int j0, int j1) {
+        return ground(plots, nodes, charts, false, beyond, space, out, outW, i0, i1, j0, j1);
+    }
+
+    /** A loaded replay move draws charts across the visible disc, including the wider GROUND scales (CM2). */
+    public int ground(long plots, NodePixels nodes, NodePixels charts, boolean wholeDisc, Beyond beyond, int space, int[] out, int outW, int i0, int i1, int j0, int j1) {
         Composed c = composed();
         int n = MapFrame.NODE_PX;
         double span = (double) n * plots, perSpan = 1 / span;
         double half = World.SIDE / 2.0, rPlots = EarthProj.RADIUS_M / World.PLOT_M;
-        boolean drawCharts = charts != null && c.wholeSquare;
+        boolean drawCharts = charts != null && (wholeDisc || c.wholeSquare);
         // The camera's east and north on the unit sphere step by these a pixel across.
         double step = c.m / EarthProj.RADIUS_M, de = step * c.cosR, dn = step * c.sinR;
         long lastNx = Long.MIN_VALUE, lastNy = Long.MIN_VALUE, lastCx = Long.MIN_VALUE, lastCy = Long.MIN_VALUE;
@@ -916,7 +921,12 @@ public final class GlobeFrame {
 
     /** Whether a screen point is drawn from the view's chart (MS3): on the planet at the plane's scales, and not where drawsHold() has the plane draw it - past handoverKm() of the city, or off the world's square. Where ground() given charts draws the chart. */
     public boolean chartHolds(double sx, double sy) {
-        return composed().wholeSquare && !Double.isNaN(cityUp(sx, sy)) && !drawsHold(sx, sy);
+        return chartHolds(sx, sy, false);
+    }
+
+    /** The same chart coverage as ground(), widened only for a loaded replay move (CM2). */
+    public boolean chartHolds(double sx, double sy, boolean wholeDisc) {
+        return (wholeDisc || composed().wholeSquare) && !Double.isNaN(cityUp(sx, sy)) && !drawsHold(sx, sy);
     }
 
     /** A screen point's place on the view's chart, into xy, in chart pixels at the view's plots (MapFrame.nodePlotsAt(planeScale())): the anchor's orthographic east over plots x PLOT_M and minus its north over it - what ground() reads the chart's node and pixel from, and the hover's. False off the disc. */

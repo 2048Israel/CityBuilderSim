@@ -1180,6 +1180,23 @@ public class GlobeCheck {
         check("at the world's square's edge, past the hand-over, the charts draw both sides of it: chartHolds() and ground() agree, the plane draws neither side (drawsHold(), planeHolds(), no plane node asked for), no pixel is the far rule's"
                 + " and none unheld", held > 1000 && farOnes > 1000 && mismatch == 0 && unheld == 0 && missed == 0 && planeAsked == 0 && chartAsked > 0 && cityKm > GlobeFrame.handoverKm());
 
+        // CM2: a loaded move needs the charts beyond the plane at the wider GROUND scales too.
+        GlobeFrame loaded = new GlobeFrame(256, 256, CITIES[0][0], CITIES[0][1]);
+        loaded.set(CITIES[0][0], CITIES[0][1], (GlobeFrame.HANDOFF_KM + GlobeFrame.PICTURE_FROM_KM) / 2);
+        int[] ordinary = new int[px.length], explicit = new int[px.length];
+        long stride = MapFrame.nodePlotsAt(loaded.planeScale());
+        loaded.ground(stride, (nx, ny) -> planeNode, (nx, ny) -> chartNode, (i, j, vx, vy, vz) -> NO_NODE, -2, ordinary, 256, 0, 256, 0, 256);
+        loaded.ground(stride, (nx, ny) -> planeNode, (nx, ny) -> chartNode, false, (i, j, vx, vy, vz) -> NO_NODE, -2, explicit, 256, 0, 256, 0, 256);
+        int missingLoaded = loaded.ground(stride, (nx, ny) -> planeNode, (nx, ny) -> chartNode, true, (i, j, vx, vy, vz) -> NO_NODE, -2, px, 256, 0, 256, 0, 256);
+        int coarseOrdinary = 0, coarseLoaded = 0, disagreements = 0;
+        for (int j = 0; j < 256; j++) for (int i = 0; i < 256; i++) {
+            if (ordinary[j * 256 + i] == NO_NODE) coarseOrdinary++;
+            if (px[j * 256 + i] == NO_NODE) coarseLoaded++;
+            if (loaded.chartHolds(i + .5, j + .5, true) != (px[j * 256 + i] == chartMark)) disagreements++;
+        }
+        check("a loaded replay's wider GROUND view draws the whole disc from held nodes, its chart coverage agrees with its pixels, and ordinary coverage stays unchanged",
+                loaded.tier() == GlobeFrame.GROUND && coarseOrdinary > 0 && coarseLoaded == 0 && missingLoaded == 0 && disagreements == 0 && Arrays.equals(ordinary, explicit));
+
         // The classes through the camera over a view straddling the reach: each of the fixture's windows, with the city its reach north of it - and on the
         // full file Cape Breton north of Baddeck, Jerus's two screenshots, the city at Halifax.
         Near near = new Near();

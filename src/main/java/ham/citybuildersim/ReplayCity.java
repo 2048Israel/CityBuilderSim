@@ -3,6 +3,7 @@ package ham.citybuildersim;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashMap;
 
 /**
  * The throwaway copy of a recorded city that replay shows (TR1, 2026-10-31): a Game of its own, in a scratch folder, that loads
@@ -34,6 +35,31 @@ public final class ReplayCity {
     private boolean whole;
     private double lastLoadMs;
     private double lastStepMs;
+
+    /** A loaded move's maps, and the whole copy each land epoch needs. All access stays on the calling (FX) thread. */
+    private record Prepared(Game game, Game.ReplayMap map) { }
+    private HashMap<Integer, Prepared> prepared;
+
+    /** Begins retaining months for a camera move; ordinary replay steps keep their existing load path (CM2). */
+    public void beginMove() {
+        prepared = new HashMap<>();
+        if (game != null && shown >= 0) keepMonth(shown);
+    }
+
+    /** Releases the move's maps and other land epochs on finish, refusal, replacement or cancellation. */
+    public void endMove() { prepared = null; }
+
+    /** The distinct months held by the loaded move, for ReplayCheck's fixture. */
+    public int preparedMonths() { return prepared == null ? 0 : prepared.size(); }
+
+    /** The distinct land contexts actually retained, for the real land-change glide fixture (CM2). */
+    public int preparedContexts() {
+        return prepared == null ? 0 : (int) prepared.values().stream().map(Prepared::game).distinct().count();
+    }
+
+    private void keepMonth(int month) {
+        if (prepared != null) prepared.put(month, new Prepared(game, game.keepReplayMap()));
+    }
 
     /** A replay of {@code recording}: the copy's folder is made now, the copy itself on the first load. */
     public ReplayCity(Recording recording) {
@@ -68,7 +94,8 @@ public final class ReplayCity {
      * Loads a recorded month in full: its save and map written to the copy's folder as slot {@link #SLOT} (the history file
      * deleted), loaded as the Load menu loads a save, then the recording's history cut at the month. The copy is the same Game
      * object load after load, built on the first (and marked a replay copy before it loads anything). Returns the copy's load
-     * failure, or null when the month is on screen.
+     * failure, or null when the month is on screen. While a camera move is retained (CM2), a whole load makes another copy
+     * so the earlier land epoch and its prepared maps remain valid; only that move can switch among these contexts.
      */
     public String loadWhole(int month) {
         long began = System.nanoTime();
@@ -84,7 +111,8 @@ public final class ReplayCity {
         } catch (IOException e) {
             return "The month could not be put in the replay's folder: " + e.getMessage();
         }
-        if (game == null) {
+        // A land change must not mutate a context whose maps the move already holds. Only whole loads make another Game.
+        if (game == null || prepared != null) {
             game = new Game(files);
             game.markReplayCopy();
         }
@@ -95,6 +123,9 @@ public final class ReplayCity {
         shown = month;
         whole = true;
         lastLoadMs = (System.nanoTime() - began) / 1e6;
+        keepMonth(month);
+        if (Boolean.getBoolean("cbs.replay.stepProfile")) System.err.printf(java.util.Locale.ROOT,
+                "replay month %d whole %.2f ms%n", month, lastLoadMs);
         return null;
     }
 
@@ -105,11 +136,28 @@ public final class ReplayCity {
     public boolean stepQuick(int month) {
         if (game == null) return false;
         long began = System.nanoTime();
+        Prepared held = prepared == null ? null : prepared.get(month);
+        if (held != null) {
+            if (!held.game().replayMap(held.map())) return false;
+            game = held.game();
+            shown = month;
+            whole = false;
+            lastStepMs = (System.nanoTime() - began) / 1e6;
+            if (Boolean.getBoolean("cbs.replay.stepProfile")) System.err.printf(java.util.Locale.ROOT,
+                    "replay month %d prepared %.3f ms%n", month, lastStepMs);
+            return true;
+        }
         byte[] map = recording.mapOf(month);
-        if (map == null || !game.replayMap(map, month)) return false;
+        long read = System.nanoTime();
+        boolean stepped = map != null && game.replayMap(map, month);
+        if (Boolean.getBoolean("cbs.replay.stepProfile")) System.err.printf(java.util.Locale.ROOT,
+                "replay month %d read %.2f ms map %.2f ms success %s%n", month,
+                (read - began) / 1e6, (System.nanoTime() - read) / 1e6, stepped);
+        if (!stepped) return false;
         shown = month;
         whole = false;
         lastStepMs = (System.nanoTime() - began) / 1e6;
+        keepMonth(month);
         return true;
     }
 

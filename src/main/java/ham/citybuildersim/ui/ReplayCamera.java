@@ -108,6 +108,9 @@ final class ReplayCamera {
     /** Whether the move being loaded or run takes time with it: a glide whose two ends are of different months (a fly keeps the month on screen). */
     boolean movesTime() { return glideKind && from != null && to != null && from.month() != to.month(); }
 
+    /** The map's loaded move keeps and releases this copy's prepared months (CM2). */
+    ham.citybuildersim.ReplayCity moveCity() { return mode.moveCity(); }
+
     /** The month of a plan view put on screen, as the glide does it frame by frame (by quick steps); a fly leaves the month alone (CM1: the load shows each view's month). */
     void showMonthOf(CameraPath.View v) {
         if (glideKind) mode.showMonth(v.month());
