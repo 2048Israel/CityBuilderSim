@@ -114,3 +114,8 @@ FundScreen and pure FundView getters. The model and month paths match
 main a309bf7f. No ensemble was run, as directed for this screen batch.
 The retained normal-route merge dry run follows, with cbs.parallel=1
 to keep one JVM-heavy harness at a time.
+
+REV-FP1-1 returned SHIP on code/fixtures commit 52ba03d2, relayed by the
+orchestrator at 12:07 on 2026-11-15. The pushed provisional ship commit is
+99c5bcb7. The heavy slot is held for UP6b's dry run, so FP1 is waiting for
+the orchestrator's explicit go.
