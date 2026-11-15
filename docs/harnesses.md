@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**203 harness files, 24,064 labelled assertions.** AllChecks runs 203 of them.
+**203 harness files, 24,065 labelled assertions.** AllChecks runs 203 of them.
 
 ## Which harnesses read which class
 
@@ -28536,7 +28536,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L459 a van is the world's at 68.135: 72 less 5 t of fabricated steel at .665 and 0.6 t of machinery at .9
   - L464 ...so the van plant makes of a van over the parts in it what it did, to the cent
 
-## VaultMoneysCheck.java - 223 labelled assertions
+## VaultMoneysCheck.java - 224 labelled assertions
 
 > The vault in eight moneys (batch WN4, slice C; spec-nations 5.2-5.4): ForeignAccounts keeps a balance in each of the eight the IMF's
 > COFER names, takes a dollar in by the reserve mix and gives one up from the largest holding, revalues across the moneys when the
@@ -28552,241 +28552,242 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   1. ALL US$ IS THE OLD VAULT: a ForeignAccounts on the default mix, driven through a treasury buy, a defence sale, an edge buy, a
 > ...
 
-- **L169 1. all US$ is the old vault: every site's arithmetic on the US$ balance is what it was on the one field, to the bit**
-  - L171 fixture: the default mix is all US$, the whole of it in the first money
-  - L181 a treasury purchase adds local / rate to the dollars
-  - L187 fixture: the peg holds at 1.6 on balanced trade, the vault having bought the lift to it (
-  - L191 ...and again at the peg's rate
-  - L194 ...a purchase named \"USD\" is the same arithmetic (the founders' dollars are bought so)
-  - L203 fixture: the peg is revalued to 1.3 in a deficit month and the peg's vault sold the lift (sold
-  - L206 a defence sale takes the dollars sold off the dollars
-  - L211 fixture: the month is a surplus and the peg's vault bought the lift (
-  - L213 an edge buy adds the dollars bought
-  - L217 the revaluation is the dollars times the rate's move since the vault was last valued
-  - L224 a partial treasury sale returns the old clamp's figure
-  - L225 ...and takes sold / rate off the dollars
-  - L231 land paid from the vault returns the dollars it took
-  - L232 ...and takes them off the dollars
-  - L233 through all of it the vault held only US$, in the first balance
-  - L238 a land bill bigger than the vault spends all it holds
-  - L239 ...and empties it exactly
-  - L244 a vault bought again holds local / rate
-  - L247 a sale of everything raises what the dollars fetch at the rate
-  - L248 ...and leaves nothing, not even a division's rounding
-  - L253 an empty vault revalued after the currency fell books the old expression's -0.0
-  - L266 rates that move under an all-US$ vault leave the cross move at 0
-  - L267 ...with no money to name as the driver
-  - L268 ...and the revaluation the old expression's, with no cross term
-- **L283 2. a buy goes in by the mix: the world's, the chosen, the trade's; a money with no rate takes nothing**
-  - L295 under WORLD_MIX a purchase of 1,000 puts COFER_SHARES' share of its US$ into each money, in the money's own units
-  - L296 ...so the vault is worth the 1,000 that was bought
-  - L297 ...and the euro holds 20.6 /
-  - L306 under CHOSEN the player's shares:
-  - L307 ...and a money the player gave nothing holds nothing
-  - L316 under MATCH_TRADE the trade shares handed, normalised (3, 2, 1, 0, 4 of 10)
-  - L317 ...Game's hand is read back as shares that sum to 1
-  - L321 MATCH_TRADE with no trade handed buys all US$
-  - L331 a yen with no rate holds nothing, whatever the mix says
-  - L332 ...and the US$ takes the yen's share: its own and the yen's
-  - L333 ...the rest as the mix says
-  - L334 ...so the shares in force still sum to 1
-  - L338 no rate handed to any money (no world file) buys all US$ under any mix
-  - L343 a money whose rate is not above zero this month has none
-  - L348 chosen shares: a negative or NaN share reads 0 and the rest are scaled to 1 (0, 1/2, 0, 1/2)
-  - L351 ...all zero means all US$
-  - L353 ...a five-point step on the euro takes five points from the US$ (all it had)
-  - L356 ...a step on a money keeps the eight at 100% (
-  - L362 the founders' dollars, bought into \"USD\", are dollars even under the world's mix
-  - L363 ...and nothing else
-  - L366 a purchase named EUR puts all of it into euros, in euros
-  - L367 ...under the default mix, and no other money holds anything
-  - L373 a purchase named for a money with no rate this month goes to the US$
-  - L377 ...and one named for a code that is none of the eight goes by the mix
-  - L390 fixture: a surplus month on the peg, the edge bought dollars (
-  - L391 the vault rose by the edge's dollars
-  - L392 ...the euro's share of them went into euros, in euros
-  - L393 ...and the yen's likewise
-- **L410 3. a sale comes from the largest holding, then the next; a named sale from the named money alone**
-  - L412 fixture: 50,000 in euros, 30,000 in pounds and 20,000 in Canadian dollars is a vault of 100,000
-  - L415 a sale of 40,000 sells 40,000
-  - L416 ...taking all 40,000 from the largest, the euros (10,000 left)
-  - L417 ...and nothing from the pounds
-  - L418 ...nor the Canadian dollars
-  - L424 a sale of 60,000 sells 60,000
-  - L425 ...taking all 50,000 of the euros
-  - L426 ...and 10,000 from the next, the pounds (20,000 left)
-  - L427 ...none from the Canadian dollars
-  - L431 a sale of everything returns the whole vault
-  - L432 ...and empties all three balances exactly
-  - L439 a sale named for the Canadian dollars sells what was asked
-  - L440 ...out of the Canadian dollars (5,000 left)
-  - L441 ...and neither the euros, the largest, nor the pounds gave up a unit
-  - L443 asked for more than it holds, the named sale is clamped at what the money holds
-  - L444 ...and empties it exactly
-  - L445 ...with the others still untouched
-  - L447 a sale named for a money it holds none of returns 0
-  - L448 ...and moves nothing
-  - L450 a code that is none of the eight sells from the largest, as the unnamed sale does
-  - L451 ...the euros (40,000 left)
-  - L452 sellableReserves(code) is what that money alone fetches at the rate
-  - L464 holdings of equal worth: the earlier in the eight's order, the euro, gives first
-  - L465 ...and the pound keeps its 10,000
-  - L481 fixture: the peg's vault sold the lift to a revalued peg in a deficit month (
-  - L482 the defence sold from the euros, the largest
-  - L483 ...and the pounds gave up nothing
-  - L489 land paid from the vault takes the dollars asked
-  - L490 ...from the largest, the euros (38,000 left)
-  - L491 ...and not from the pounds
-  - L494 a bill bigger than the whole vault spends all of it
-  - L495 ...and empties every balance exactly
-- **L503 4. the cross revaluation: the eight moving against each other is a revaluation, booked in local money exactly**
-  - L510 fixture: 100 euros at 1.10 US$ the euro, bought with D$220 at the rate of 2
-  - L512 a month with nothing moved books no cross move
-  - L517 the euro moved to 1.00: the cross move is -10
-  - L519 ...the driver is the euro
-  - L520 ...its move against the dollar is -9.1%
-  - L521 ...so the vault is worth 100 US$ now, not 110
-  - L525 a purchase of 50 more euros in the month, at the new rate, leaves the cross move at -10
-  - L526 ...and the vault is worth 150
-  - L530 revalueVault() books reservesUsd x (rate - last rate) + cross x last rate
-  - L531 ...cleared: the cross move is still -10 to read, and booked
-  - L533 a second revaluation in the same month books no cross move again (the move at the rate alone: none)
-  - L546 V1 r1 - (V1 - cross) r0: the whole month's move in local money
-  - L550 a hand in which nothing moved starts a new month at a cross move of 0
-  - L551 ...with no driver
-  - L566 a euro up 10% (1,000 euros) and a yen down 1% (10,000 yen): the cross move is the sum of the two
-  - L568 ...the driver is the one that moved the vault the most in US$ (the
-- **L577 5. MATCH_TRADE maps each partner's money to the eight (the full file)**
-  - L610 fixture: most of the nations named are in the file (
-  - L614 the whole world's trade, weighted, maps to shares that sum to 1
-  - L617 ...the dollar the largest of them (the free floats and the dollar's pegs,
-  - L620 a trade of nothing maps to all zero, which the vault reads as all US$
-  - L625 ...and a purchase under MATCH_TRADE with that buys all US$
-- **L634 6. the save: the eight balances, their rates, the mix and the cross move ride the array**
-  - L651 fixture: a vault in four moneys with a cross move this month and a driver
-  - L657 the array runs to slot 148, the vault's (105-141), what it earned (142-146), the hold's support (147) and the peg's anchor (148, WN4b), then gold's three (14...
-  - L658 slot 22 is still the vault's dollars, the total
-  - L659 ...and slot 19 its worth at home
-  - L662 slots 105-112 are the eight balances and 113-120 their US$ per unit (1 for the dollar)
-  - L663 slot 121 is the mix's ordinal
-  - L664 slots 122-129 are the chosen shares and 130-137 the trade's
-  - L666 slot 138 is the month's cross move
-  - L667 slot 139 says it is booked
-  - L668 slot 140 is the driver's index
-  - L669 slot 141 its move against the dollar
-  - L673 restored, every slot reads back to the bit
-  - L677 ...holdings, their US$ worth and which have a rate: the same
-  - L678 ...the vault's dollars
-  - L679 ...the mix, the chosen shares, the trade shares and the shares in force
-  - L681 ...the cross move read for the page
-  - L682 ...and its driver
-  - L693 the next month revalues the same, to the bit
-  - L694 ...with the same cross move
-  - L695 ...the same driver, and the same holdings
-  - L698 ...and a purchase by the chosen mix goes the same way in both
-  - L708 a save between the hand and the revaluation says the move is still to book (slot 139)
-  - L715 ...and the restored vault books it, as the unsaved one does
-  - L721 a save that has no slot 105 on reads its slot 22 into the US$ balance
-  - L722 ...nothing in any other money, the default mix, no cross move
-  - L724 ...and only the dollar has a rate until Game hands the rest
-  - L731 restoring over a vault that held euros leaves none of them, and the default mix
-  - L733 reset() empties all eight, and sets the default mix and the US$ alone rated
-- **L741 7. in a city (the full file): Game hands the eight their rates; a city that never touches the mix holds only US$**
-  - L748 fixture: before its first month the city has no moneys and only the dollar has a rate
-  - L751 fixture: three months on, the city has the world's moneys in its month
-  - L758 the first month handed all eight their rates
-  - L759 ...each the US$ per unit, 1 / the moneys' rate of the month
-  - L760 a city that has not touched the mix holds only US$, with no cross move and no driver
-  - L766 the city's trade by money was handed (the town traded with partners:
-  - L774 a purchase of euros spends the cash it was asked
-  - L775 ...and puts spend / rate US$ of it in euros, in euros
-  - L776 ...the other balances unchanged (still only the US$ and the euros; no gold)
-  - L782 a purchase by the world's mix puts something in each of the eight, and nothing in gold, which no COFER mix holds
-  - L785 selling the euros by name raises what they fetch, and no other balance is touched
-  - L786 ...leaving none
-  - L792 fixture: the vault held seven moneys through the month, and they moved against each other
-  - L793 the month's revaluation in local money is the dollars at the rate's move plus the cross move at the last rate
-- **L804 8. gold, the ninth: a purchase into \"XAU\" holds its US$ over the price; the world's mix and the trade's put nothing in it; a chosen sha...**
-  - L806 fixture: the vault keeps
-  - L810 ...with a name, a plural and a mark of its own (\"XAU \", as the franc's is \"CHF \"), and COFER's shares still the eight's
-  - L815 fixture: gold has a rate, its price an ounce, and the vault holds none
-  - L818 a purchase of 1,000 into \"XAU\" holds 1,000 over the price, in ounces
-  - L819 ...worth, at the price, the 1,000 it cost: getHoldingUsd is the ounces times the price
-  - L820 ...and getReservesUsd includes it: the 1,000 in dollars and the 1,000 in gold
-  - L821 ...and nothing else was bought: the dollars are what they were and the euro holds none
-  - L825 under the default mix (ALL_USD) a purchase is dollars alone: gold, with a rate, holds nothing
-  - L831 under WORLD_MIX a purchase puts nothing in gold, though gold has a rate (COFER counts no gold)
-  - L832 ...the eight take the whole 1,000
-  - L838 under MATCH_TRADE (the eight's trade shares, as Game hands them: no nation trades in gold) a purchase puts nothing in gold
-  - L840 ...the eight take the whole 1,000
-  - L850 under CHOSEN a 30% share of gold puts 30% of a purchase in gold: 300 over the price, in ounces
-  - L851 ...the dollars their 60% and the euros their 10%, in euros
-  - L853 ...the chosen shares, gold's among them, sum to 1
-  - L855 a five-point step on gold moves its share to 35%
-  - L856 ...the others give the points in proportion, so the shares still sum to 1
-  - L859 fixture: gold was never handed a price (an array of the eight hands none): no rate, no price
-  - L861 a purchase into \"XAU\" with no gold price this month goes to the US$
-  - L862 ...and gold holds nothing
-  - L868 a gold price that is no number takes gold's rate away, so a chosen share of it buys nothing in gold
-  - L869 ...the dollars take gold's share with their own (60% and 30%)
-- **L877 9. gold earns nothing: a rate at every index, gold's included, leaves its balance as it was, and the yield is struck on the others**
-  - L887 a finite rate (6%) handed at every index, gold's too, leaves gold's balance exactly as it was
-  - L888 ...while the dollars earned a twelfth of it
-  - L889 ...and the euros theirs, in euros
-  - L890 the month's interest is the dollars' and the euros' alone: 2 x 1,000 x 6% / 12
-  - L891 the yield is struck on the earning balances, gold left out: the 6% they earned, not the 4% of all three
-  - L892 gold is never the money that earned most
-  - L898 a vault of gold alone, at a rate of 6% at every index, holds the ounces it held
-  - L899 ...it earned nothing: no interest, no driver, no yield
-  - L903 ...and a rate of -50% at every index takes none of it either
-- **L911 10. gold is revalued as the others are: a new price moves the cross revaluation by ounces x the change; a named sale of it comes from gol...**
-  - L919 a new gold price handed (the statute's 1900 par to Proclamation 2072's) moves the cross revaluation by ounces x (new - old), the euro unmoved
-  - L922 ...gold moved most, so the driver's code is \"XAU\" and its index gold's
-  - L923 ...its move against the US$ is the price's own, new over old less one (a rise is +)
-  - L924 ...and the vault is worth the gold at the new price and the euros at theirs
-  - L934 gold up 0.1% and the euro down 10%: the cross move is both moves, summed
-  - L936 ...and the driver is the euro, which moved the more in US$: gold is the driver only when it is the money that moved most
-  - L944 a named sale of half of gold's worth raises that
-  - L945 ...from gold alone: half its ounces go
-  - L946 ...the dollars and the euros untouched
-  - L947 a named sale of more than gold holds raises what it held: the other half
-  - L948 ...clamped at what gold holds, leaving none
-  - L949 ...with the dollars and the euros still untouched
-  - L950 a named sale of gold when the vault holds none raises nothing
-  - L956 an unnamed sale takes from the largest holding by worth, gold included: 2,000 off gold's 5,000
-  - L957 ...and none from the dollars
-- **L965 11. the save with gold: slots 149-151 are its balance, its price and its chosen share; a save without them holds no gold; gold anchors no...**
-  - L979 fixture: a vault in four moneys, gold among them, at a price that has moved, with a chosen mix of the eight and none of it in gold
-  - L987 an array cut to
-  - L992 ...and the eight's balances and rates as they were
-  - L993 ...the chosen shares as they were, to the bit
-  - L995 ...and the next month's hand gives it a gold rate, with still no gold held
-  - L1000 the array runs through Canada's dated gold state, gold's three (149-151, GD2) and the mint's four (152-155, GD3) and Canada's episode and exit (156-157, R0f)...
-  - L1001 slot 149 is gold's balance, in thousands of ounces
-  - L1002 slot 150 is gold's price, US$ an ounce
-  - L1003 slot 151 is gold's chosen share
-  - L1004 ...which is a share of 30%
-  - L1007 restored, every slot reads back to the bit
-  - L1008 ...gold's balance, price and chosen share the same to the bit, and the rate there
-  - L1010 ...the vault's worth, gold's among it
-  - L1011 ...and the shares in force, gold's 30% among them
-  - L1013 the next month's gold price revalues both the same, to the bit
-  - L1019 a saved gold balance with no price to value it at reads empty, and has no rate, as the eight's do
-  - L1023 setPegAnchor(GOLD) is refused, gold though it has a rate: the anchor stays the US$
-  - L1025 ...while the euro, with a rate, can still anchor one
-  - L1030 a saved slot 148 of
-- **L1039 12. gold in a city (the full file): Game hands the vault gold's price at the month the moneys stand in; a default city holds none; the de...**
-  - L1046 fixture: before its first month the city has no world moneys, so gold has no rate and no move
-  - L1048 the city's gold price is the nations' GoldPrice, and a month before the calendar's first has none
-  - L1062 fixture: the moneys stood in the game's month (index
-  - L1063 after each month the vault has a gold rate
-  - L1064 ...which is new GoldPrice(nations).usdPerOunce(that month), to the bit (US$
-  - L1065 ...and Game's move for gold is that price over last month's, less one
-  - L1066 a default city (ALL_USD) holds no gold through its months
-  - L1067 the debt offers no paper in \"XAU\": the city's paper is written in the eight
-  - L1071 a purchase of gold by name spends the cash it was asked
-  - L1072 ...and puts spend / rate / price in ounces in the vault
-  - L1073 ...and no other balance beyond the US$ (the city holds US$ and gold)
+- **L172 1. all US$ is the old vault: every site's arithmetic on the US$ balance is what it was on the one field, to the bit**
+  - L174 fixture: the default mix is all US$, the whole of it in the first money
+  - L184 a treasury purchase adds local / rate to the dollars
+  - L190 fixture: the peg holds at 1.6 on balanced trade, the vault having bought the lift to it (
+  - L194 ...and again at the peg's rate
+  - L197 ...a purchase named \"USD\" is the same arithmetic (the founders' dollars are bought so)
+  - L206 fixture: the peg is revalued to 1.3 in a deficit month and the peg's vault sold the lift (sold
+  - L209 a defence sale takes the dollars sold off the dollars
+  - L214 fixture: the month is a surplus and the peg's vault bought the lift (
+  - L216 an edge buy adds the dollars bought
+  - L220 the revaluation is the dollars times the rate's move since the vault was last valued
+  - L227 a partial treasury sale returns the old clamp's figure
+  - L228 ...and takes sold / rate off the dollars
+  - L234 land paid from the vault returns the dollars it took
+  - L235 ...and takes them off the dollars
+  - L236 through all of it the vault held only US$, in the first balance
+  - L241 a land bill bigger than the vault spends all it holds
+  - L242 ...and empties it exactly
+  - L247 a vault bought again holds local / rate
+  - L250 a sale of everything raises what the dollars fetch at the rate
+  - L251 ...and leaves nothing, not even a division's rounding
+  - L256 an empty vault revalued after the currency fell books the old expression's -0.0
+  - L269 rates that move under an all-US$ vault leave the cross move at 0
+  - L270 ...with no money to name as the driver
+  - L271 ...and the revaluation the old expression's, with no cross term
+- **L286 2. a buy goes in by the mix: the world's, the chosen, the trade's; a money with no rate takes nothing**
+  - L298 under WORLD_MIX a purchase of 1,000 puts COFER_SHARES' share of its US$ into each money, in the money's own units
+  - L299 ...so the vault is worth the 1,000 that was bought
+  - L300 ...and the euro holds 20.6 /
+  - L309 under CHOSEN the player's shares:
+  - L310 ...and a money the player gave nothing holds nothing
+  - L319 under MATCH_TRADE the trade shares handed, normalised (3, 2, 1, 0, 4 of 10)
+  - L320 ...Game's hand is read back as shares that sum to 1
+  - L324 MATCH_TRADE with no trade handed buys all US$
+  - L334 a yen with no rate holds nothing, whatever the mix says
+  - L335 ...and the US$ takes the yen's share: its own and the yen's
+  - L336 ...the rest as the mix says
+  - L337 ...so the shares in force still sum to 1
+  - L341 no rate handed to any money (no world file) buys all US$ under any mix
+  - L346 a money whose rate is not above zero this month has none
+  - L351 chosen shares: a negative or NaN share reads 0 and the rest are scaled to 1 (0, 1/2, 0, 1/2)
+  - L354 ...all zero means all US$
+  - L356 ...a five-point step on the euro takes five points from the US$ (all it had)
+  - L359 ...a step on a money keeps the eight at 100% (
+  - L365 the founders' dollars, bought into \"USD\", are dollars even under the world's mix
+  - L366 ...and nothing else
+  - L369 a purchase named EUR puts all of it into euros, in euros
+  - L370 ...under the default mix, and no other money holds anything
+  - L376 a purchase named for a money with no rate this month goes to the US$
+  - L380 ...and one named for a code that is none of the eight goes by the mix
+  - L393 fixture: a surplus month on the peg, the edge bought dollars (
+  - L394 the vault rose by the edge's dollars
+  - L395 ...the euro's share of them went into euros, in euros
+  - L396 ...and the yen's likewise
+- **L413 3. a sale comes from the largest holding, then the next; a named sale from the named money alone**
+  - L415 fixture: 50,000 in euros, 30,000 in pounds and 20,000 in Canadian dollars is a vault of 100,000
+  - L418 a sale of 40,000 sells 40,000
+  - L419 ...taking all 40,000 from the largest, the euros (10,000 left)
+  - L420 ...and nothing from the pounds
+  - L421 ...nor the Canadian dollars
+  - L427 a sale of 60,000 sells 60,000
+  - L428 ...taking all 50,000 of the euros
+  - L429 ...and 10,000 from the next, the pounds (20,000 left)
+  - L430 ...none from the Canadian dollars
+  - L434 a sale of everything returns the whole vault
+  - L435 ...and empties all three balances exactly
+  - L442 a sale named for the Canadian dollars sells what was asked
+  - L443 ...out of the Canadian dollars (5,000 left)
+  - L444 ...and neither the euros, the largest, nor the pounds gave up a unit
+  - L446 asked for more than it holds, the named sale is clamped at what the money holds
+  - L447 ...and empties it exactly
+  - L448 ...with the others still untouched
+  - L450 a sale named for a money it holds none of returns 0
+  - L451 ...and moves nothing
+  - L453 a code that is none of the eight sells from the largest, as the unnamed sale does
+  - L454 ...the euros (40,000 left)
+  - L455 sellableReserves(code) is what that money alone fetches at the rate
+  - L467 holdings of equal worth: the earlier in the eight's order, the euro, gives first
+  - L468 ...and the pound keeps its 10,000
+  - L484 fixture: the peg's vault sold the lift to a revalued peg in a deficit month (
+  - L485 the defence sold from the euros, the largest
+  - L486 ...and the pounds gave up nothing
+  - L492 land paid from the vault takes the dollars asked
+  - L493 ...from the largest, the euros (38,000 left)
+  - L494 ...and not from the pounds
+  - L497 a bill bigger than the whole vault spends all of it
+  - L498 ...and empties every balance exactly
+- **L506 4. the cross revaluation: the eight moving against each other is a revaluation, booked in local money exactly**
+  - L513 fixture: 100 euros at 1.10 US$ the euro, bought with D$220 at the rate of 2
+  - L515 a month with nothing moved books no cross move
+  - L520 the euro moved to 1.00: the cross move is -10
+  - L522 ...the driver is the euro
+  - L523 ...its move against the dollar is -9.1%
+  - L524 ...so the vault is worth 100 US$ now, not 110
+  - L528 a purchase of 50 more euros in the month, at the new rate, leaves the cross move at -10
+  - L529 ...and the vault is worth 150
+  - L533 revalueVault() books reservesUsd x (rate - last rate) + cross x last rate
+  - L534 ...cleared: the cross move is still -10 to read, and booked
+  - L536 a second revaluation in the same month books no cross move again (the move at the rate alone: none)
+  - L549 V1 r1 - (V1 - cross) r0: the whole month's move in local money
+  - L553 a hand in which nothing moved starts a new month at a cross move of 0
+  - L554 ...with no driver
+  - L569 a euro up 10% (1,000 euros) and a yen down 1% (10,000 yen): the cross move is the sum of the two
+  - L571 ...the driver is the one that moved the vault the most in US$ (the
+- **L580 5. MATCH_TRADE maps each partner's money to the eight (the full file)**
+  - L613 fixture: most of the nations named are in the file (
+  - L617 the whole world's trade, weighted, maps to shares that sum to 1
+  - L620 ...the dollar the largest of them (the free floats and the dollar's pegs,
+  - L623 a trade of nothing maps to all zero, which the vault reads as all US$
+  - L628 ...and a purchase under MATCH_TRADE with that buys all US$
+- **L637 6. the save: the eight balances, their rates, the mix and the cross move ride the array**
+  - L654 fixture: a vault in four moneys with a cross move this month and a driver
+  - L660 the array runs to slot 148, the vault's (105-141), what it earned (142-146), the hold's support (147) and the peg's anchor (148, WN4b), then gold's three (14...
+  - L661 slot 22 is still the vault's dollars, the total
+  - L662 ...and slot 19 its worth at home
+  - L665 slots 105-112 are the eight balances and 113-120 their US$ per unit (1 for the dollar)
+  - L666 slot 121 is the mix's ordinal
+  - L667 slots 122-129 are the chosen shares and 130-137 the trade's
+  - L669 slot 138 is the month's cross move
+  - L670 slot 139 says it is booked
+  - L671 slot 140 is the driver's index
+  - L672 slot 141 its move against the dollar
+  - L676 restored, every slot reads back to the bit
+  - L680 ...holdings, their US$ worth and which have a rate: the same
+  - L681 ...the vault's dollars
+  - L682 ...the mix, the chosen shares, the trade shares and the shares in force
+  - L684 ...the cross move read for the page
+  - L685 ...and its driver
+  - L696 the next month revalues the same, to the bit
+  - L697 ...with the same cross move
+  - L698 ...the same driver, and the same holdings
+  - L701 ...and a purchase by the chosen mix goes the same way in both
+  - L711 a save between the hand and the revaluation says the move is still to book (slot 139)
+  - L718 ...and the restored vault books it, as the unsaved one does
+  - L724 a save that has no slot 105 on reads its slot 22 into the US$ balance
+  - L725 ...nothing in any other money, the default mix, no cross move
+  - L727 ...and only the dollar has a rate until Game hands the rest
+  - L734 restoring over a vault that held euros leaves none of them, and the default mix
+  - L736 reset() empties all eight, and sets the default mix and the US$ alone rated
+- **L744 7. in a city (the full file): Game hands the eight their rates; a city that never touches the mix holds only US$**
+  - L751 fixture: before its first month the city has no moneys and only the dollar has a rate
+  - L754 fixture: three months on, the city has the world's moneys in its month
+  - L761 the first month handed all eight their rates
+  - L762 ...each the US$ per unit, 1 / the moneys' rate of the month
+  - L763 a city that has not touched the mix holds only US$, with no cross move and no driver
+  - L769 the city's trade by money was handed (the town traded with partners:
+  - L777 a purchase of euros spends the cash it was asked
+  - L778 ...and puts spend / rate US$ of it in euros, in euros
+  - L779 ...the other balances unchanged (still only the US$ and the euros; no gold)
+  - L785 a purchase by the world's mix puts something in each of the eight, and nothing in gold, which no COFER mix holds
+  - L788 selling the euros by name raises what they fetch, and no other balance is touched
+  - L789 ...leaving none
+  - L795 fixture: the vault held seven moneys through the month, and they moved against each other
+  - L796 the month's revaluation in local money is the dollars at the rate's move plus the cross move at the last rate
+- **L807 8. gold, the ninth: a purchase into \"XAU\" holds its US$ over the price; the world's mix and the trade's put nothing in it; a chosen sha...**
+  - L809 fixture: the vault keeps
+  - L813 ...with a name, a plural and a mark of its own (\"XAU \", as the franc's is \"CHF \"), and COFER's shares still the eight's
+  - L818 fixture: gold has a rate, its price an ounce, and the vault holds none
+  - L821 a purchase of 1,000 into \"XAU\" holds 1,000 over the price, in ounces
+  - L822 ...worth, at the price, the 1,000 it cost: getHoldingUsd is the ounces times the price
+  - L823 ...and getReservesUsd includes it: the 1,000 in dollars and the 1,000 in gold
+  - L824 ...and nothing else was bought: the dollars are what they were and the euro holds none
+  - L828 under the default mix (ALL_USD) a purchase is dollars alone: gold, with a rate, holds nothing
+  - L834 under WORLD_MIX a purchase puts nothing in gold, though gold has a rate (COFER counts no gold)
+  - L835 ...the eight take the whole 1,000
+  - L841 under MATCH_TRADE (the eight's trade shares, as Game hands them: no nation trades in gold) a purchase puts nothing in gold
+  - L843 ...the eight take the whole 1,000
+  - L853 under CHOSEN a 30% share of gold puts 30% of a purchase in gold: 300 over the price, in ounces
+  - L854 ...the dollars their 60% and the euros their 10%, in euros
+  - L856 ...the chosen shares, gold's among them, sum to 1
+  - L858 a five-point step on gold moves its share to 35%
+  - L859 ...the others give the points in proportion, so the shares still sum to 1
+  - L862 fixture: gold was never handed a price (an array of the eight hands none): no rate, no price
+  - L864 a purchase into \"XAU\" with no gold price this month goes to the US$
+  - L865 ...and gold holds nothing
+  - L871 a gold price that is no number takes gold's rate away, so a chosen share of it buys nothing in gold
+  - L872 ...the dollars take gold's share with their own (60% and 30%)
+- **L880 9. gold earns nothing: a rate at every index, gold's included, leaves its balance as it was, and the yield is struck on the others**
+  - L890 a finite rate (6%) handed at every index, gold's too, leaves gold's balance exactly as it was
+  - L891 ...while the dollars earned a twelfth of it
+  - L892 ...and the euros theirs, in euros
+  - L893 the month's interest is the dollars' and the euros' alone: 2 x 1,000 x 6% / 12
+  - L894 the yield is struck on the earning balances, gold left out: the 6% they earned, not the 4% of all three
+  - L895 gold is never the money that earned most
+  - L901 a vault of gold alone, at a rate of 6% at every index, holds the ounces it held
+  - L902 ...it earned nothing: no interest, no driver, no yield
+  - L906 ...and a rate of -50% at every index takes none of it either
+- **L914 10. gold is revalued as the others are: a new price moves the cross revaluation by ounces x the change; a named sale of it comes from gol...**
+  - L922 a new gold price handed (the statute's 1900 par to Proclamation 2072's) moves the cross revaluation by ounces x (new - old), the euro unmoved
+  - L925 ...gold moved most, so the driver's code is \"XAU\" and its index gold's
+  - L926 ...its move against the US$ is the price's own, new over old less one (a rise is +)
+  - L927 ...and the vault is worth the gold at the new price and the euros at theirs
+  - L937 gold up 0.1% and the euro down 10%: the cross move is both moves, summed
+  - L939 ...and the driver is the euro, which moved the more in US$: gold is the driver only when it is the money that moved most
+  - L947 a named sale of half of gold's worth raises that
+  - L948 ...from gold alone: half its ounces go
+  - L949 ...the dollars and the euros untouched
+  - L950 a named sale of more than gold holds raises what it held: the other half
+  - L951 ...clamped at what gold holds, leaving none
+  - L952 ...with the dollars and the euros still untouched
+  - L953 a named sale of gold when the vault holds none raises nothing
+  - L959 an unnamed sale takes from the largest holding by worth, gold included: 2,000 off gold's 5,000
+  - L960 ...and none from the dollars
+- **L968 11. the save with gold: slots 149-151 are its balance, its price and its chosen share; a save without them holds no gold; gold anchors no...**
+  - L982 fixture: a vault in four moneys, gold among them, at a price that has moved, with a chosen mix of the eight and none of it in gold
+  - L990 fixture: the pre-GD2 save has exactly PRE_GD2_SLOTS slots, ending before gold's balance
+  - L992 an array cut to
+  - L997 ...and the eight's balances and rates as they were
+  - L998 ...the chosen shares as they were, to the bit
+  - L1000 ...and the next month's hand gives it a gold rate, with still no gold held
+  - L1005 the array runs through Canada's dated gold state, gold's three (149-151, GD2) and the mint's four (152-155, GD3) and Canada's episode and exit (156-157, R0f)...
+  - L1006 slot 149 is gold's balance, in thousands of ounces
+  - L1007 slot 150 is gold's price, US$ an ounce
+  - L1008 slot 151 is gold's chosen share
+  - L1009 ...which is a share of 30%
+  - L1012 restored, every slot reads back to the bit
+  - L1013 ...gold's balance, price and chosen share the same to the bit, and the rate there
+  - L1015 ...the vault's worth, gold's among it
+  - L1016 ...and the shares in force, gold's 30% among them
+  - L1018 the next month's gold price revalues both the same, to the bit
+  - L1024 a saved gold balance with no price to value it at reads empty, and has no rate, as the eight's do
+  - L1028 setPegAnchor(GOLD) is refused, gold though it has a rate: the anchor stays the US$
+  - L1030 ...while the euro, with a rate, can still anchor one
+  - L1035 a saved slot 148 of
+- **L1044 12. gold in a city (the full file): Game hands the vault gold's price at the month the moneys stand in; a default city holds none; the de...**
+  - L1051 fixture: before its first month the city has no world moneys, so gold has no rate and no move
+  - L1053 the city's gold price is the nations' GoldPrice, and a month before the calendar's first has none
+  - L1067 fixture: the moneys stood in the game's month (index
+  - L1068 after each month the vault has a gold rate
+  - L1069 ...which is new GoldPrice(nations).usdPerOunce(that month), to the bit (US$
+  - L1070 ...and Game's move for gold is that price over last month's, less one
+  - L1071 a default city (ALL_USD) holds no gold through its months
+  - L1072 the debt offers no paper in \"XAU\": the city's paper is written in the eight
+  - L1076 a purchase of gold by name spends the cash it was asked
+  - L1077 ...and puts spend / rate / price in ounces in the vault
+  - L1078 ...and no other balance beyond the US$ (the city holds US$ and gold)
 
 ## WageLadderCheck.java - 63 labelled assertions
 
