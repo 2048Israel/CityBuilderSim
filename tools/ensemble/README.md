@@ -1,95 +1,67 @@
 # The monetary ensemble
 
-The check of the game's monetary model. It plays 16 seeded cities under each of
-5 policies (AUTO2 for 2,400 months, ZERO_SLACK, ZERO_HOT, SHOCK and HIGH), one
-JVM and one CSV a run, and `score.py` scores the 80 CSVs against the criteria
-in its header (A1 to R3, T1, T2, M1, F1) into a table and a `summary.json`.
-`Ensemble.java` is the driver (a city founded and played as LongPlaytest does,
-one CSV row a month), `ensemble.sh` the runner, `score.py` the scorer, and
-`stop.ps1` what stops a run on Windows.
+Sixteen seeded cities under five policies produce 80 CSVs. `Ensemble.java`
+plays LongPlaytest's founding and model, `ensemble.sh` snapshots and runs it,
+`score.py` scores the CSVs, and `stop.ps1` stops a Windows run.
 
-## The rule (EN1, Jerus, 2026-10-20)
+## When to run
 
-Run it only for a batch whose playtest trace moves. A batch whose trace is
-byte-identical to main's skips it and says so in its notes. It compares with
-the newest `docs/ensemble/<version>.md` and never reruns main. A batch that
-moved the trace commits its run's `baseline.md` as `docs/ensemble/<batch id>.md`
-on its branch; `ship.sh` names it `docs/ensemble/<version>.md` in the merge, by
-the version it sets at the gate (BP1, 2026-10-24), and that file is the next
-batch's baseline.
+Run once on the final model when the default playtest trace moves, excluding
+its runtime line (EN1). Compare against the newest `docs/ensemble/<version>.md`.
+Commit `baseline.md` as `docs/ensemble/<batch id>.md`, with the version in its
+heading and introductory line replaced by the ship file's next-version token.
+The publisher fills the token and renames the baseline (BP1).
+Only M1 (money audit) and F1 (findings against the baseline) stop shipping.
+Other criteria retain their scores and changed verdicts as information (EI1).
 
-Only M1 (money audit) and F1 (findings, against the baseline) are hard ship stops.
-Every other criterion defaults to info and keeps its score. The table shows each
-class, baseline value and verdict, and calls out changed verdicts. The batch verdict
-uses hard criteria alone. WHY (EI1) HW1's later payoff failed T2 in short scenarios.
+## Run and resume
 
-## Running it
+In Git Bash at the checkout or worktree root, compile with `mvn -q compile`,
+then run `tools/ensemble/ensemble.sh <batch id>` in the background and wait.
+Python uses `-I` and finds pandas through `ENSEMBLE_PYLIB`. Install it once
+with `python -m pip install --target "$HOME/.cache/cbs-ensemble/py" pandas`.
+The cloud lock restricts runs to one JVM where it applies.
 
-On the PC, in Git Bash at the root of the checkout or worktree:
+A label keeps its first classes snapshot. Restarting it keeps completed CSVs
+and times, rerunning the rest. A changed data setting needs a fresh label.
+When `JDK_JAVA_OPTIONS` is empty, the runner discovers the main checkout's
+`data/earth-2.bin` and `data/world-1.bin`, each if present. Explicit `JAVA_OPTS`
+properties override discovered defaults. The baseline names the snapshot's
+data settings, including inherited options, or says none (EN2).
+EN2.md takes precedence over same-version/older scores until a later version is scored.
 
-    mvn -q compile                                              # target/classes must be built
-    python -m pip install --target "$HOME/.cache/cbs-ensemble/py" pandas   # once
-    tools/ensemble/ensemble.sh en1                              # the label: the batch's id
-
-Run it in the background and wait for it; it prints about six lines. Python runs
-with `-I`, which ignores `PYTHONPATH`, so pandas is found through `ENSEMBLE_PYLIB`.
-In the cloud it is the same command; pandas for the system Python needs no pip
-step, and the workbench's JVM lock is taken for each run, one at a time.
-
-The classes are copied to the run's folder at the first start, so compiling the
-tree while it runs cannot reach it. Starting the same label again resumes: runs
-with a CSV and a times file are kept, the snapshot is kept, the rest are run.
-Use a new label (or `RESUME=0`) for a fresh run.
-
-## Environment (all optional)
+## Optional environment
 
 | variable | default | meaning |
 |---|---|---|
-| `JOBS` | 5; 1 where the cloud lock applies | runs at once |
-| `SEEDS` | `0..15` | seeds to run |
-| `POLICIES` | `AUTO2 ZERO_SLACK ZERO_HOT SHOCK HIGH` | policies, longest first; the others are read against AUTO2, so keep it |
-| `BASELINE` | newest `docs/ensemble/<version>.md` | a `summary.json` or such a `.md`; `none` for none |
-| `JAVA_OPTS` | none | passed to every run, e.g. `-Densemble.months=720` |
-| `ENSEMBLE_OUT` | `target/ensemble` | the folder the runs go under |
-| `PYTHON` | `python3` if it runs, else `python` | the interpreter for `score.py` |
-| `ENSEMBLE_PYLIB` | `$HOME/.cache/cbs-ensemble/py` | where `pip --target` put pandas |
-| `RESUME` | 1 | 1 keeps finished runs, 0 reruns them |
-| `ENSEMBLE_DEPS` | Maven's `target/classpath.txt` | a file holding the dependency classpath, instead of Maven's |
+| `JOBS` | 5, or 1 with the cloud lock | simultaneous runs |
+| `SEEDS` | `0..15` | seeds |
+| `POLICIES` | `AUTO2 ZERO_SLACK ZERO_HOT SHOCK HIGH` | policies, keeping AUTO2 twins |
+| `BASELINE` | newest baseline, including EN2 | Markdown or summary JSON, or `none` |
+| `JAVA_OPTS` | empty | extra JVM arguments, such as `-Densemble.months=720` |
+| `ENSEMBLE_OUT` | `target/ensemble` | output parent |
+| `PYTHON` | working python3, else python | scorer interpreter |
+| `ENSEMBLE_PYLIB` | `$HOME/.cache/cbs-ensemble/py` | pandas location |
+| `RESUME` | 1 | keep completed runs, or 0 to rerun |
+| `ENSEMBLE_DEPS` | Maven's classpath | caller's dependency classpath file |
 
-## What it writes, under `$ENSEMBLE_OUT/<label>/`
+## Outputs and verification
 
-- `score.md`: the table, `criteria passed: n/m`, and the hard-only `batch verdict`.
-  `changed verdict` lines name each change against the baseline. A criterion with
-  nothing to judge says VACUOUS, and one Jerus retired says RETIRED with his
-  words (`score.py`'s THE PREMISES RETIRED; H1 since CD1, 2026-10-21): both
-  are printed with their numbers and left out of n and m.
-- `baseline.md`: that table in the form `docs/ensemble/<version>.md` keeps, with
-  a paragraph naming the version, commit, date and label, and the `summary.json`.
-- `summary.json`: T1, T2 and F1's inputs plus each criterion's class, value and verdict.
-  Old Markdown baselines supply readings from their table. Old JSON without readings
-  shows `unavailable` for the previous verdict.
-- `<POLICY>-<seed>.csv`, `times/`, `times.txt`, `progress.txt` (a `DONE` line
-  a run, or `NO DONE <policy> <seed>`), `logs/` (a log a run, `javac.txt`,
-  `score.txt`), `snapshot.txt`, `classes/`, `deps.txt`, `driver/`, `tmp/`.
+Under `$ENSEMBLE_OUT/<label>/`, `score.md` holds the criteria, changed
+verdicts and hard-only batch verdict. VACUOUS and RETIRED rows keep their
+figures and are excluded from the passed count. `baseline.md` combines the
+provenance, table and fenced `summary.json` used by the next comparison.
+Old JSON without criterion readings reports an unavailable previous verdict.
 
-Runner exit status: 0 hard criteria pass; 1 build or driver compile failure (`build first` means
-`target/classes` is missing); 2 scoring failed or pandas is missing; 3 runs are
-missing (what is there is still scored); 4 a hard criterion failed, with the score,
-summary and baseline retained. `score.py` exits 0 or 4 for its hard verdict.
-It needs the AUTO2 runs, the twins. Run `sh tools/ensemble/ensemble-selftest.sh`
-after scorer or runner edits.
+The same folder keeps each policy-seed CSV and log, `times/`, `times.txt`,
+`progress.txt` (DONE or NO DONE per run), `snapshot.txt`, `classes/`,
+`deps.txt`, `driver/`, `tmp/` and compiler/scorer logs under `logs/`.
+Exit 0 passes, 1 fails setup/compilation, 2 fails scoring/dependencies,
+3 has missing runs, and 4 fails hard criteria. Exits 0, 3 and 4 keep scores.
+Run `sh tools/ensemble/ensemble-selftest.sh` after runner or scorer edits.
+A typical PC run costs about 80 CPU-minutes, 20 minutes five at a time.
 
-## Cost
-
-About 80 CPU-minutes: a run takes about 130 s for AUTO2, 118 for ZERO_SLACK, 17
-for ZERO_HOT and SHOCK, 9 for HIGH. At five at a time that is about 20 minutes
-on the PC; in the cloud, one at a time, over an hour.
-
-## Stopping it
-
-    tools/ensemble/ensemble.sh --stop en1
-
-A task manager that stops the script leaves `xargs` and the JVMs running. `--stop`
-ends the run's own shell, its `xargs`, the runs' shells and their JVMs, found by
-the run's folder in their command lines, so the suite and other runs are left
-alone. Do not edit `ensemble.sh` while a run is going: bash reads a script as it runs it.
+Stop with `tools/ensemble/ensemble.sh --stop <label>`. It ends that run's
+shells, xargs and JVMs by its folder, preserving other runs. Resume with the
+same label. Keep the script fixed while a run is active because Bash reads
+it during execution.
