@@ -479,3 +479,14 @@ R2c to ship first, then RT2 merges that main update, checks all eight CSVs
 against its kept trace, and requests the exclusive dry-run slot. R2c's
 eight CSVs match its main byte for byte. No local production mend follows
 the accepted review.
+
+## Final execution order: RT2 before R2c
+
+Orchestrator instruction 20261115-092239-148-orchestrator-c847 supersedes
+the R2c-first plan: its dry run stopped on its own faults and needs another
+cycle. RT2 has the exclusive slot now, versioned, over main 4343a815;
+merge nothing. No R2c code enters this batch or its final ensemble model.
+The explicit go authorizes the final dry run on acbb3f63 or its record-only
+successor. The required RT2 dry run? coordination message was sent;
+the already granted go remains in force. After green only notes and ship
+advance, with the marker removed last in its own commit and checked absent.
