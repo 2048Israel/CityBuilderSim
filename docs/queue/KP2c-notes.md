@@ -142,8 +142,10 @@ MemWatch were left alone. No save slot was written.
 
 The provisional ship marker remains pushed. The orchestrator orders the
 slot after XR7 then R2d; origin/main will be merged again before the dry run.
-The second review, final main/branch commits and retained launcher run
-directory will be recorded here after the orchestrator's go and verdict.
+REV-KP2c-2's one follow-up is mended at b10c2a681; the orchestrator read
+that delta and accepted it at 17:18 on 2026-11-15. Final main/branch commits
+and the retained launcher run directory will be recorded after its go and
+verdict. No dry run has started.
 
 Main advanced to XR7, 8083aaf33, after the local pick. Merged it before the
 launcher run. Only docs/dials.md, docs/harnesses.md and docs/map/README.md
