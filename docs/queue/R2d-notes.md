@@ -379,3 +379,62 @@ Logs: target/R2d-fee-prototype/RT2-*.log. The rail delta review artifact is
 rail-fee-review.patch, SHA256
 d997eacf48f1b21008c6c84c6c2375817f2b1a324fa2db5c7a5b922410a00a5b.
 The initial prepared-fee-review.patch (9ca4a328...) remains frozen.
+
+## Default trace after all 36 rows
+
+Branch 4ffacbc7 (model source d1ec65ee), on main 6b898500, ran the complete
+default LongPlaytest with earth-2/world-1: exit 0. All eight CSVs are
+byte-identical to main's RT2-ready2 retained trace. Evidence:
+target/R2d-evidence/branch-4ffacbc7/playtest.log, compare.txt and SHA256SUMS.
+No ensemble. PE21's catalogue touches text now includes Rail Depot too;
+this is a display label, matching the fourth actual rail-capacity template.
+
+## Fourth review: demolition and the municipal exemption
+
+REV-R2d-4 found that closeDemolished can remove an unfitted unit after
+recipes cached the engine mix, before the invoice. Two equal units, one
+unfitted, become one fitted unit while the fuel draw still uses 50% steam.
+Reading the new fitted count for rent would bill twice the actual benefit.
+
+The prepared hook now receives the very steam share Freight uses for its
+fuel draw. It allocates that actual diesel-equivalent quantity among the
+templates by their cached diesel-capacity share, never reconstructing the
+invoice from later fitted counts. No Game or Sector method changes.
+A real buy-out/demolition fixture supplies working builders, applies the
+mixed recipe, orders buyOutAndDemolish, calls the actual closeDemolished,
+and requires one fitted unit left with the cached half-steam invoice. It
+draws exactly half diesel; rent and its saved standing memo both follow
+that same actual draw. On the reviewed d997eacf model it bills
+6116.445225065157 against an actual benefit fee of 3058.2226125325783.
+
+The same audit found that the independent fitting hook netted fees from
+public PE5/PE6/PE16 pieces while R2c deliberately bills private firms only.
+The orchestrator confirmed the municipal exemption: non-Sector templates
+keep their full gross estimate, with no bill. R2c-P's public payment route
+takes these water/power templates too. The three controls require positive
+gains during active patents, full-gross verdicts, and no prospective or
+actual firm bill. A private PE21 control retains its 25% estimated rent.
+
+HistoricalLicenceCheck is now 57/57. The exact same fixture on the reviewed
+pre-mend model classes fails five of 57: the three public net estimates,
+the demolition bill and its memo. Evidence:
+target/R2d-fee-prototype/review-4-before/check.log and review-4-mended.log.
+The delta is review-4-mends.patch, SHA256
+31f9f19ddbefc187120bb2b8641d7fbcc8ee95b7a8dba8ef92e18477dd120634.
+These remain prepared model files, to be applied after R2c reaches main.
+
+The label follow-up passes ResearchCheck and DiscoveryCheck; ResearchView
+has only its existing filter fault. depot-research-check.log exits 3, zero
+firm Stale. No assertion or filter premise changed.
+
+The adjacent last-depot fixture closes the sole depot through the real
+buy-out/demolition path, then requires Freight's positive prior-month
+invoice to pay even though no current asset can receive a cost memo.
+The allocation guard had dropped this final bill: 0 against an actual
+7303.653242228116 (two failures of 60). The helper now computes PE21's bill
+once from the passed invoice diesel snapshot first. Only its standing memo
+is allocated among remaining cached diesel capacity; allocation is not a
+condition for owing the actual imported service. This is the same PE21
+gain/25% rule, with no new figure or payment route. The orchestrator accepted
+this case in the same seam. HistoricalLicenceCheck is 60/60;
+all-closed-before/check.log and all-closed-mended.log retain the evidence.
