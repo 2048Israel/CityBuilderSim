@@ -366,7 +366,7 @@ line; that tail alone was insufficient to call the whole program passed.
 The eight-file identity claim is verified independently with cmp. The
 coordinated ALL gate supplies the classified whole-suite verdict.
 
-Final normal dry run is in progress at /tmp/cbs-gate-R2c-ZOb3FdRH
+The normal dry run below failed; see the full-gate mend record. Directory: /tmp/cbs-gate-R2c-ZOb3FdRH
 (C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2c-ZOb3FdRH).
 Branch: b825662a8a9ae52c2e7b221024146d49e5008049
 Main: 4343a81525f831df83511ccae1cd26d5ef71c478
@@ -377,3 +377,42 @@ one identical finding, 'a building on the map moved' at m2389, the same
 DM3-R (and the no-FAIL exit line is covered by CL6), not an R2c finding.
 The gate's own LongPlaytest report has the identical finding too. All HA1
 money fixtures at the tail pass. This explains the earlier misleading tail.
+
+## Full-gate YearBook mend and PrizeCheck attribution
+
+The ZOb3FdRH dry run is FAILED, not kept: suite exit 4 / gate exit 1,
+27 unnamed lines. ALL selected 204 harnesses; the normal soft route executed
+194, with 185 passing and 9 failing. The new IP history fields lacked
+YearBook rules. That is this batch's omission. It caused YearBookCheck's
+five failures and the dependent WorldMoneysCheck, InterestAbroadCheck and
+ResearchViewCheck completeness failures. The refusal lines ending OK in
+InterestAbroadCheck were only misclassified in that already-red report;
+no classifier change is needed when its actual YearBook premise is mended.
+
+- ★ Both ipCharges and ipAccrued are yearly FLOWS: add the month's bills,
+  rather than taking December. The notes distinguish paid imports already
+  inside importsAbroad from production accrued for its next strike.
+- A two-year nonzero ramp for each key now requires 78 and 222, rather than
+  the old fallback's 12 and 24, plus the flow mark. Against the old YearBook
+  class it causes six more failures, 11/724 total
+  (target/checks/R2c-yearbook-before.log). This is not an all-zero rule check.
+
+PrizeCheck was proved on the captured whole pre-change main classes:
+d8e9c12b's gameplay and PrizeCheck are unchanged by main4343's KD1 runner
+updates. It reproduces both primary failures EXACTLY, including raised
+1017.9557536877466 against 1014.5221050525304 and till 406 against a zero
+cushion. Exit 2, 2 FAILED of 284, in target/checks/R2c-main-PrizeCheck.log.
+The labels and figures match RT2's unchanged-main proofs. The same RT2-P
+queued fixture repair owns the live-order quote and active-cost-cushion
+premises; the prefixed derived summary is the existing R2b-J classifier
+repair. The provisional ship file records those three rows. PrizeCheck's
+premises and laws are unchanged here.
+
+Orchestrator 20261115-092239-252-orchestrator-e071 supersedes the preceding
+publication order: RT2 takes the dry-run slot and ships first. After these
+mends, push and report mends; then merge the shipped main, compare all eight
+traces against RT2's retained CSVs, and ask for a fresh R2c dry-run go.
+The failed ZOb3FdRH directory must never be advertised for reuse.
+The repaired YearBook passes all 724 assertions, exit 0
+(target/checks/R2c-yearbook-after.log). The economic transfer/capture model
+is unchanged; this completes the annual interpretation of its saved flows.
