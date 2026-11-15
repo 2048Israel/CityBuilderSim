@@ -94,3 +94,12 @@ final pick, rather than run the local 62-harness pick as well (FP1 held the heav
 slot). Code/fixtures final, then stranger's Codex review, then ensemble permission,
 then dry-run permission after the review and ensemble. No local ALL or full suite.
 Latest fetched main before final-model publication: ade96cfb, still 0.9.115.
+
+Final model/fixtures: b6d5c4124bb6e3351c2043035fa2d8e47a875201.
+Provisional ship first pushed at 6bd92258.
+The orchestrator granted the ensemble at 12:42 Atlantic, requested its default
+five workers beside FP1's dry run, and started REV-XR7-1 on b6d5c412.
+The ensemble was started by hidden Windows process 41904, independently of the
+tool process, label XR7, explicitly against docs/ensemble/0.9.113.md (RT2).
+Log: target/checks/XR7-ensemble.log; snapshot/results: target/ensemble/XR7/.
+Both real data paths are exported through JDK_JAVA_OPTIONS throughout.
