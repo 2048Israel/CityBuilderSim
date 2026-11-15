@@ -159,3 +159,18 @@ SHA256 and byte count. Log target/checks/XR7-posttrace.log, detached Windows
 process 15316. Therefore docs/ensemble/XR7.md remains the final-model baseline;
 the FP1 merge requires no second ensemble. The orchestrator requested the
 gate's default MG1 pool (no -Dcbs.parallel=1) with soft timing.
+
+## Retained launcher dry run
+
+Normal route: sh tools/gate.sh XR7 --dry-run, started after the orchestrator's
+15:42 Atlantic go, from detached Windows process 35552, default MG1 pool.
+Both real data properties are exported; timing is the gate's normal soft timing.
+No local ALL or full suite was run outside this launcher, and the orchestrator
+explicitly used this widest run as XR7's final pick.
+
+Kept directory: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-XR7-KESBdy9Y
+(Git Bash /tmp/cbs-gate-XR7-KESBdy9Y), with ship.log, clone and retained checks.
+Launcher branch commit: 1260b1808bc771c2f1ff5156b4f5ff5bec0e6339.
+Launcher main commit: b9c93a989e42f074073ce3e2c6f06f4eb8ee41c4.
+Outer log: target/checks/XR7-dryrun.log. Only XR7's notes and ship file advance
+after this point; the provisional marker stays until the final green record.

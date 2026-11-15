@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-XR7-KESBdy9Y -->
 ## changelog
 ### {next} — XR7, The world's pegs overshoot both ways, and the hold capped — 2026-11-15, ready, see docs/queue/XR7-notes.md
 World pegs now land past their shadow on either side through the city's existing
