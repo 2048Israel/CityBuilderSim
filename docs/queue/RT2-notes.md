@@ -146,3 +146,8 @@ conflicts, regenerated from the combined source. No RT2 model changes.
 On 2026-11-15 at 01:23 the orchestrator changes the shared-PC slot order to
 RT1b's dry run, R0f's rerun, then RT2. Local ALL pick, ensemble and dry run
 remain on hold by explicit instruction. RT2 stays idle with no JVMs.
+
+RT1b/main cd7f9dca is merged after its ship at 01:54. Only generated
+harness/map-index conflicts, regenerated from the combined source. Its
+holder-ledger repair is inherited from main; RT2's own model stays unchanged.
+R0f's dry run starts next, with RT2 still idle until the orchestrator's go.
