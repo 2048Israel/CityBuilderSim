@@ -5082,7 +5082,7 @@ public final class Pieces {
             Kept.give(row.mouseTransparentProperty(), true);
             row.getChildren().addAll(new Region(), words);
             getChildren().add(row);
-            setCursor(javafx.scene.Cursor.HAND);
+            Kept.give(cursorProperty(), javafx.scene.Cursor.HAND);
             setPickOnBounds(true);
             hoverProperty().addListener((o, was, is) -> dress());
             pressedProperty().addListener((o, was, is) -> dress());
@@ -5097,8 +5097,8 @@ public final class Pieces {
 
         /**
          * A kept button (KP1) handed back for another draw: told what it is for and what a press does, and
-         * said again. Kept's hand-back took its hand cursor (code set it, in the constructor), so it is
-         * given back; its hover and click listeners were added once, and read this button's fields.
+         * said again. The draw is explicitly given its cursor; its hover and click listeners were
+         * added once, and read this button's fields.
          */
         void retell(String svg, String accent, double tall, Press press, Runnable go) {
             this.svg = svg;
@@ -5108,7 +5108,7 @@ public final class Pieces {
                 requestLayout();
             }
             this.go = go;
-            setCursor(javafx.scene.Cursor.HAND);
+            Kept.give(cursorProperty(), javafx.scene.Cursor.HAND);
             show(press);
         }
 

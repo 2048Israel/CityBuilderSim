@@ -103,3 +103,11 @@ up to date at b9c93a989). The local selection is 33 harnesses, so the
 required `./batch-check.sh --pick` is running once with the default pool.
 The launcher merge dry run is the whole-suite run; no local ALL or
 ensemble is run. Source changes remain strictly ui/ and KeptCheck.
+
+The first pick was stopped at its own launcher PID 26396 after the full
+harness found ActionButton.retell's unqualified `setCursor`: it had not
+been migrated to `Kept.give`, so the new end reset took its hand cursor.
+The existing History signatures caused and found the condition; no
+signature or premise changed. The cursor assignment now records intent.
+The stopped output is `target/kp2c-pick-stopped-KeptCheck.log`. Only that
+verified process tree was ended; the next pick verifies the mended tree.
