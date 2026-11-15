@@ -47,3 +47,15 @@ The review repair's batch-check.sh KnownRedsCheck run exited 0, including the CP
 The orchestrator accepted REV-KD1-1 on 38cdf1eb at 02:26. At 04:36 it named main b49a6023c892e61e575f39c57b4d16774cf6fdd7 for the EN2 baseline and said R2b leaves the default trace unchanged. Merged origin/main b49a6023 into KD1. The three conflicts were generated dials, harness index and map README, resolved by regenerating from the merged sources. batch-check.sh --fast exited 0 with zero firm Stale findings. KD1's source diff against main still contains only AllChecks, KnownRedsCheck, EnsembleCheck and TimingCheck.
 
 ★ MG1 supersedes Pending SP1-E's manual pagefile request. The new rule uses available commitment directly and includes RAM and CPU. Recommend dropping SP1-E on publication, as MG1's brief requests.
+
+## EN2 baseline run
+
+★ The orchestrator revised its operational scheduling rule at 04:39, explicitly permitting one dry run beside one ensemble while continuing to forbid two dry runs or two ensembles together. It cited R2b's 03:18–04:05 dry run beside RT2's five-worker ensemble, approximately 42% CPU and 7 GiB free, with KeptCheck ALL OK. KD1 follows that revised go. The earlier 1,740-second timeout involved two suites and five ensemble JVMs.
+
+Started the 80-run baseline at 04:39 on c5f5df20, whose game model is main b49a6023. The run is target/ensemble/KD1-EN2, with JOBS=5, all sixteen seeds and all five policies. JDK_JAVA_OPTIONS is unset and JAVA_OPTS empty, so this exercises the runner's own worktree discovery. Both main data files exist, earth-2.bin approximately 269 MiB and world-1.bin approximately 8.4 MiB. Its wrapper log is target/checks/kd1-ensemble-run.txt.
+
+The ensemble finished at 06:04, exit 0, 80/80 runs, no missing or short runs, 83.7 minutes wall time. Summed per-run elapsed time is 24,884.9 seconds (414.7 JVM-minutes). The README now points to measured run times instead of retaining its obsolete 20-minute estimate. The committed baseline is docs/ensemble/EN2.md, model 0.9.111, snapshot c5f5df20 at 2026-11-15T08:40Z, scored against docs/ensemble/0.9.106.md.
+
+New score is 23/26 against the prior baseline's 22/26, with all 10 hard criteria passing. ZERO_SLACK T2 changed from informational FAIL to PASS, median final population 513,902 [100,209 to 1,932,923]. The three remaining informational failures match the baseline readings and verdicts. AUTO2 A1 inflation is 3.15% [2.62% to 3.69%], four of sixteen seeds in band. AUTO2 A2's runaway spell is 22 [12 to 36] months. ZERO_HOT H2 is -0.36% [-5.42% to 4.53%], nine of sixteen below the earlier excess. M1 and F1 pass for all policies.
+
+At 05:30 the orchestrator reported R2b shipped on main d8e9c12b, with all eight default traces byte-identical, and confirmed this baseline remains valid. Main will be merged before the launcher dry run, as requested.

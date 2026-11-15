@@ -59,7 +59,7 @@ The same folder keeps each policy-seed CSV and log, `times/`, `times.txt`,
 Exit 0 passes, 1 fails setup/compilation, 2 fails scoring/dependencies,
 3 has missing runs, and 4 fails hard criteria. Exits 0, 3 and 4 keep scores.
 Run `sh tools/ensemble/ensemble-selftest.sh` after runner or scorer edits.
-A typical PC run costs about 80 CPU-minutes, 20 minutes five at a time.
+Run time depends on the model and data, and times.txt records each run's seconds.
 
 Stop with `tools/ensemble/ensemble.sh --stop <label>`. It ends that run's
 shells, xargs and JVMs by its folder, preserving other runs. Resume with the
