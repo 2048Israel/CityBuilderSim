@@ -130,3 +130,10 @@ The orchestrator accepted 4a6f3ebf's mend and closed REV-R0h-1 on 2026-11-15.
 The authorized ensemble uses that classes snapshot against current main
 9c36a155 (0.9.119), with the newest stored baseline 0.9.117. The two intervening
 versions are kept-screen repairs and do not change the default model trace.
+
+Main moved to 6114b00f (ER1) during the ensemble. Merged as requested; the only
+Java changes on that main increment are ER1Check and AllChecks' registration.
+LongPlaytest and the model are unchanged, so the default trace does not move
+and the in-flight 4a6f3ebf ensemble remains valid. Three generated-index conflicts
+(harnesses, LongPlaytest's map and the map README) took main temporarily and are
+regenerated from the merged sources after the ensemble, before the dry run.
