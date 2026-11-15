@@ -641,6 +641,38 @@ public final class HistoricalRecipeCheck {
                 oilUnit == null ? "no oil unit" : "spare " + oilUnit.spare());
     }
 
+
+    static void compositeResearchReader() throws Exception {
+        out.println("--- 16. the research model reads saved composite choices and independent known pieces ---");
+        Game g = town("R2d-research-composite", true);
+        silent(g::unfitTheFounding);
+        run(g);
+        BuildingsTemplate t = g.getBuildingManager().getTemplateByName("Mixed Farm");
+        BuildingsStacks stack = g.getBuildingManager().getStack(t);
+        String[] picked = g.getRecipes().chosen(t.getId());
+        check("fixture: standing horse farms have a saved independent pre-hybrid choice",
+                picked != null && picked[1].startsWith("horses~") && picked[1].contains("PE20")
+                        && stack.getQuantity() >= 2 && stack.getUnfitted("tractor") == stack.getQuantity(), "");
+        var row = ResearchView.recipesInUse(g).stream()
+                .filter(r -> r.template() == t && r.recipe().getId().equals(picked[1])).findFirst().orElse(null);
+        check("the research recipe row resolves the saved choice, its figures and all running farms",
+                row != null && row.running() == stack.getQuantity() && row.buildings() == stack.getQuantity()
+                        && row.recipe().makes().get(Good.CROPS) == t.makes(Good.CROPS)
+                        && row.recipe().makes().get(Good.CROPS) < t.getRecipe("horses").makes().get(Good.CROPS), "");
+        check("the composed way has the discovery's human name",
+                row != null && row.recipe().getName().contains(ResearchCatalog.get().entry("PE20").name())
+                        && !row.recipe().getName().contains("~"), row == null ? "no row" : row.recipe().getName());
+        stack.setUnfitted("tractor", stack.getQuantity() - 1);
+        row = ResearchView.recipesInUse(g).stream()
+                .filter(r -> r.template() == t && r.recipe().getId().equals(picked[1])).findFirst().orElse(null);
+        check("the composite row still counts only the unfitted part after one tractor is fitted",
+                row != null && row.running() == stack.getQuantity() - 1, "");
+        var equipment = ResearchView.equipment(g, Sectors.AGRICULTURE);
+        check("the known 1900 binder is shown beside the unknown tractor and combine, which remain hidden",
+                equipment.stream().anyMatch(r -> r.piece().getId().equals("binder-thresher"))
+                        && equipment.stream().noneMatch(r -> r.piece().getId().equals("tractor") || r.piece().getId().equals("combine")), "");
+    }
+
     public static void main(String[] args) throws Exception {
         RecipeCheck.out = out; RecipeCheck.quiet = quiet;
         EquipmentCheck.out = out; EquipmentCheck.quiet = quiet;
@@ -663,6 +695,7 @@ public final class HistoricalRecipeCheck {
         boundedCrackingMean();
         thermalAppraisal();
         thermalReaders();
+        compositeResearchReader();
         out.println(fails == 0 ? "All HistoricalRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

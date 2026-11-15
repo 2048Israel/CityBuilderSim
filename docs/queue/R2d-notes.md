@@ -28,7 +28,7 @@ Started from main 4343a815 on batch/R2d, 2026-11-15.
 
 ## Checks
 
-Pending.
+Final gate pending; focused evidence is recorded below.
 
 ## Row mapping and estimates
 
@@ -222,3 +222,41 @@ exit 0, zero firm Stale.
 The second complete default comparison, after all first-review model mends,
 also kept all eight CSVs byte-identical to main 4343a815. Evidence:
 target/R2d-evidence/branch-e34200be/compare.txt. No ensemble.
+
+## Research-reader audit
+
+ResearchView.recipesInUse used only base ids, so horses~PE20 was saved and
+running but absent from the page. It now resolves saved selected variants,
+while retaining known unchosen alternatives with zero running. Composite
+names come from the catalogue's human discovery names; no internal save id
+is shown. HistoricalRecipeCheck proves full and partial running counts,
+the old crop figures and the human name; it also proves the known 1900
+binder is listed while the unknown tractor and combine stay hidden.
+
+On the prior 3a71398a ResearchView/RecipeChanges classes the same fixture
+has exactly three failures of 115 (research-reader-before/check.log).
+On the branch all 115 pass. DiscoveryCheck and BuildingDataCheck pass;
+ResearchViewCheck has only the recorded sector-filter fault:
+ResearchViewCheck: 1 FAILED of 217. Combined readers-mended-check.log exits 3.
+
+Orchestrator explicitly approved the following narrow fixture repairs:
+- The label "a piece not known at the month is not shown: the farms' tractor"
+  formerly used noneMatch(template is Mixed Farm or Grain Farm), selecting
+  every piece on those farms. It now uses the same template predicate AND
+  piece id == tractor. A known binder is not an unknown tractor.
+- The label "the tractor's two rows appear" formerly collected every piece
+  on either farm and expected two rows. It now collects the same templates
+  AND piece id == tractor, retaining the two-row, provenance, unfitted count
+  and verdict assertions. The new binder/unknown-combine observation above
+  covers the independent pieces rather than hiding them.
+The labels are unchanged. From the sector-filter comment through section 6's
+end, the block is byte-identical to 3a71398a (checked before writing).
+No assertion was removed; ResearchViewCheck's count stays 217, so all three
+existing R2b-V/R2b-J known-reds parts still match and need no replacement row.
+DiscoveryCheck now permits E1 to supersede the old furnace after an early
+local find, keeping both parts blocked the month before and without the
+find. Its old history-only hearth/Bessemer gain comparison remains intact.
+
+The data's readme now documents signed undos and their physical units.
+A local provisional ship draft records PE3, PE12, PB3 and the slate gap;
+it is deliberately not staged or pushed while fee integration is pending.

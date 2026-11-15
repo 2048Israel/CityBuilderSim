@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**204 harness files, 24,162 labelled assertions.** AllChecks runs 204 of them.
+**204 harness files, 24,167 labelled assertions.** AllChecks runs 204 of them.
 
 ## Which harnesses read which class
 
@@ -286,7 +286,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, EquipmentCheck, HistoricalRecipeCheck, KeptCheck, PolicyPreviewCheck, PrizeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [ResearchPreview](map/ResearchPreview.md) | KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [ResearchScreen](map/ResearchScreen.md) | **none** |
-| [ResearchView](map/ResearchView.md) | KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [ResearchView](map/ResearchView.md) | HistoricalRecipeCheck, KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [Resource](map/Resource.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, BuildingDataCheck, CoalMiningCheck, CopperMiningCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ForestryCheck, GoldMiningCheck, HaulageCheck, HistoricalRecipeCheck, IndustryViewCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, OilViewCheck, PlanCheck, QuarryingCheck, RailDrawCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, ScaleCheck, SlopeCheck, WellCheck, WorldCheck, ZoningCheck, ZoningViewCheck |
 | [Restaurants](map/Restaurants.md) | InvestCheck, LongPlaytest, RestaurantsCheck |
 | [Retail](map/Retail.md) | BasketYearCheck, BondCheck, BuildCardCheck, BuildingDataCheck, CarCheck, ExpectationsCheck, ForeignCheck, Forms1900Check, GdpCheck, GroceryCheck, HealthCheck, InfrastructureCheck, InvestCheck, LongPlaytest, MonetaryCheck, NewGameCheck, OilCheck, ReadPathCheck, RefineryViewCheck, RestaurantsCheck, SaveFileCheck, SupplierCreditCheck, WaterCheck |
@@ -309,7 +309,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SectorScreen](map/SectorScreen.md) | **none** |
 | [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, GoldMiningCheck, HomeRailCheck, RailCheck, SectorStatementCheck, TruckRouteCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CapitalFlowCheck, CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
-| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurveCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EducationCheck, EquityCheck, ExchangeCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, OilCheck, OilViewCheck, OwnerCheck, PartnersCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurveCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EducationCheck, EquityCheck, ExchangeCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, OilCheck, OilViewCheck, OwnerCheck, PartnersCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, VanCheck, WellCheck, WoodProductsCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
 | [ServicesScreen](map/ServicesScreen.md) | **none** |
 | [ShadowBasket](map/ShadowBasket.md) | **none** |
@@ -7593,146 +7593,146 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L735 ...and still not by the unfitted part (it needs the tractor), found or not
   - L741 fixture: the Oxygen Steel Shop's oxygen recipe (E1) is its default, the Bessemer recipe (1900) is older and needs no piece, and at pig iron twice the price t...
   - L746 the part without the open hearth runs the oxygen recipe from the month E1 was found here, and the Bessemer one before and without it, nor does an empty resea...
-  - L749 ...so the open hearth's gain over the unfitted part is that against the oxygen recipe with the find, and against the Bessemer without it
-  - L753 ...and the oxygen recipe is never the fitted part's, found or not
-  - L765 in a city that found nothing, the best recipe and the gain of every template with a choice are history's, as before R3
-  - L769 the tractor with figures that pay is NOT_KNOWN in month
-- **L780 10. the same months, researchers and seed find the same things; a saved run continues as the whole one**
-  - L782 fixture: the run finds something here
-  - L783 two runs on the same seed find the same codes in the same months, in the same order
-  - L787 six seeds do not all find the same things in the same months:
-  - L801 fixture: at month
-  - L805 what is saved is put back whole: the grant, the posts, the piles and the finds in their order
-  - L814 a run saved at month
-  - L820 a malformed save is skipped entry by entry: a field that is not one, an amount below nothing, a code the catalogue lacks, a month before the first, a pile no...
-  - L824 ...and restoring nothing empties it
-  - L825 the saves are keyed by field name and by code, never by an ordinal
-- **L833 11. a new game starts with no research**
-  - L837 a city founded the default way has an empty research
-  - L841 fixture: the city's templates have the Small Cracking Unit dated by PE11 and the Grain Farm with its tractor
-  - L844 fixture: it is before PE11's and PE14's months
-  - L845 history's reading holds in a city that found nothing: the Small Cracking Unit is not known and the tractor's verdict is NOT_KNOWN
-  - L851 fixture: the city's research has grants, posts, work piled and two finds
-  - L853 the game asks the city's research: the Small Cracking Unit is known this month, and the tractor's verdict is no longer NOT_KNOWN
-  - L855 ...and the template's own reading, history's, is unchanged
-  - L858 after a new game the same research object has no grant, no post, no work piled and nothing found
-  - L862 ...and the city is back to history's reading: the Small Cracking Unit is unknown and the tractor NOT_KNOWN again
-- **L947 12. a grant buys posts at the top of the month, and they are among the city's jobs**
-  - L950 fixture: a city founded the 1900 way with a University standing and no grant
-  - L953 with every grant at 0 a month adds no post: the labour market's jobs are the buildings' jobs, and the city's getJobs() too
-  - L959 fixture: the city's wages give an engineering post a cost, and the University gives room for more than five posts
-  - L961 a grant is refused if it is not an amount, and taken if it is
-  - L964 one month on, the engineering grant has bought the posts Research.posts() says at the strike's wages: five whole posts (
-  - L966 ...and no other field has any: no grant there
-  - L968 the labour market's jobs this month are the buildings' jobs plus the posts' (Research.jobs()):
-  - L971 ...the larger half of the researchers in the licence-holding band, the smaller in science, and the support in the college's engineers
-  - L976 the buildings' own figure is not written into: asking the city for its jobs leaves what the buildings count as it was
-  - L984 a grant far past the room buys the room and no more:
-  - L990 the grant put back to 0 buys no post the next month, and the jobs are the buildings' again
-- **L997 13. the posts' bill is the pay of the filled posts and the labs' other costs, a promise the treasury pays and the audit counts**
-  - L1002 fixture: no grant, no post, no bill
-  - L1008 fixture: the grants bought posts in two fields
-  - L1010 fixture: some of the posts are filled, so the bill is above nothing
-  - L1011 the month's research payroll is the sum of Research.payroll() over the fields at the month's wages and fill
-  - L1012 ...its other costs the sum of Research.bill() less that pay
-  - L1013 ...and the bill is the two
-  - L1016 the bill is at most the bill of every post filled: a post nobody fills costs nothing
-  - L1018 the treasury's line is a promise, not a purchase, and named for the grants
-  - L1021 ...and the last of the lines but the prizes' (R4), so that no saved name moved: every other line is before it
-  - L1025 the month's money audit lists both research lines and closes: the treasury paid what the audit counted as leaving
-  - L1034 getExpenses() includes the bill: without it the city pays out exactly that much less
-  - L1036 the national accounts carry the bill as the government's spending (the month's books were struck from the bill)
-  - L1041 ...and in the government's total expenses: without the line the total is that much less
-  - L1045 a bill that is not a number or below nothing is none
-  - L1051 the next month's audit closes too, with the bill struck again at that month's wages
-- **L1058 14. a city founded the default way: no grant, no change; a grant buys posts that are paid and whose researchers have nothing to work on**
-  - L1062 fixture: a city founded the default way with a University and a Law School standing
-  - L1064 with no grant a month adds no job, no bill and no research notice, and the research stays empty
-  - L1067 ...and its faculty are recorded as researchers who are all idle, with no problem open and nothing found or arrived
-  - L1074 ...for every field the idle researchers are all the researchers, and no problem is open
-  - L1085 with a grant the posts are hired in a city founded the default way, as the model says:
-  - L1090 ...and they are paid: the bill is the model's, above nothing, and the audit closes
-  - L1099 every researcher is idle and no problem is open; the researchers are the faculty's 40% of the staffed staff and the filled posts', and nothing is found
-  - L1102 through to month
-- **L1109 15. the inbox tells what the city found and what reached it from abroad, once**
-  - L1114 fixture: engineering has problems open in the first month a press makes, which the University's faculty work on
-  - L1120 fixture: a discovery of the world's is dated within the next dozen months, and is not the one found
-  - L1121 fixture: neither is in the inbox yet
-  - L1124 fixture: the University's faculty were researchers in engineering that month, and the discovery was found in it
-  - L1126 a find raises one notice in its month, keyed by the code:
-  - L1131 ...titled for the discovery, and naming the school that researched it, how far ahead of the world to a tenth of a year, and what it touches
-  - L1134 ...and the lines of its body are no wider than the inbox's measure
-  - L1135 nothing from abroad yet: the world's date has not come
-  - L1138 the month after, the notice is settled and not raised again
-  - L1145 on history's date
-  - L1149 ...titled \"From abroad\" with the world's own words and what it touches
-  - L1152 ...settled the month after, and neither kind is raised twice: still one of each
-  - L1155 the month a city is founded raises none: no research notice dated month 1
-- **L1161 16. a law discovery found here brings its Policy lever forward, never before its earliest and never later than it was**
-  - L1165 fixture: the income tax's entry is PL3, history opens it in month
-  - L1167 a code that is no lever's key finds none: a blank, an unknown code, a lever with no key (the policy rate) and a discovery of another kind
-  - L1170 every lever that carries a key is found by it, and the key is a law discovery of the catalogue
-  - L1173 a find before the earliest month brings the lever to the earliest and no sooner
-  - L1174 ...a second find, in a later month, does not move it later
-  - L1176 a find in a month between the earliest and history brings the lever to that month
-  - L1177 ...a find in a month after history's, or in one that leaves the lever open, moves nothing
-  - L1178 a lever open from founding has nothing to bring forward, and nor does a null lever
-  - L1181 a lever already open (openAll()) is untouched
-  - L1186 a lever brought forward is saved with the other openings and comes back
-  - L1195 fixture: the city's save carries its month and is carried to month
-  - L1199 fixture: the carried city loads in month
-  - L1206 fixture: both laws are open to the law faculty next month, and the income tax opens in history's month in this city
-  - L1212 both are found in month
-  - L1215 the income tax now opens in month
-  - L1218 ...so it is still shut in the month of the find, the policy having held it at the top of the month
-  - L1221 the month after the find the lever is open and its own notice is raised, as for a lever history opens
-- **L1228 17. the save: a city with research writes it, a load restores it whole and plays on as the city saved; a city with none writes no key**
-  - L1233 a city founded the default way, with a University and no grant, writes no research key: its researchers are idle and pile nothing
-  - L1237 ...a save with no key restores an empty research, even in a Game that held another city's
-  - L1243 ...and a Game that held a city's research and loads that save keeps none of it: no grant, no post, no pile, no find and no bill
-  - L1257 fixture: the city has grants, posts, work piled and a find, and a bill
-  - L1261 the city is saved
-  - L1263 ...with a research key, keyed by field name and by code
-  - L1267 loaded without a failure
-  - L1268 the grants, the posts, the piles and the finds (in their order) come back equal
-  - L1271 ...the loaded city's jobs include its posts, and equal the saved city's
-  - L1273 ...and the month's bill comes back: payroll and costs
-  - L1274 ...the costs too
-  - L1275 ...and the national accounts' spending on it
-  - L1276 a find known before the save is known after it: the discovery's code is among the finds and is known from its month
-  - L1279 one month played on the saved city and on the loaded one gives the same piles and the same finds
-  - L1283 ...to the piles' last digits, and the same posts
-  - L1284 ...and the same research bill
-  - L1285 ...and the same jobs
-- **L1291 18. a reform of the money scales the grants and the bill, and nothing else of the research**
-  - L1305 fixture: grants in two fields, posts, work piled, a find and a bill
-  - L1309 fixture: the reform went through and moved the money: the research bill is
-  - L1310 the grants are scaled as the bill is: the engineering grant
-  - L1311 ...and the medical grant
-  - L1312 ...the pay of the posts too
-  - L1313 ...and the national accounts' spending on them
-  - L1314 the posts, the piles and the finds are not money and are as they were
-  - L1315 a grant of 0 stays 0 and the other fields stay without one
-- **L1321 19. a school ordered demolished gives no posts the next month: the strike follows the demolitions that close**
-  - L1333 fixture: both villages, founded the 1900 way with one University, struck the engineering posts the grant buys (
-  - L1337 the University is ordered demolished, between the presses: the city's own to pull down, and the quote paid
-  - L1338 it still stands until the month starts, and so does its room and the grant's posts
-  - L1342 the month it closes the University is gone: no school stands, and its room with it
-  - L1343 ...so the grant buys no post that month, from a room that is not there: the strike followed the demolition (before it, a school ordered pulled down still gav...
-  - L1345 ...and the city's jobs are the buildings' alone, the posts' gone with the school
-  - L1346 the twin, with no order, struck its five posts again: the order moved nothing but the school's
-- **L1352 20. the city's own payroll at a new floor counts the research posts, and the landlords' credit check counts every post the city offers**
-  - L1362 fixture: a grant has bought posts that are filled and paid (
-  - L1372 fixture: the village has no minimum wage law yet, so the floor binds nobody
-  - L1373 ...and a floor raised past every job's target moves the city's own payroll by nothing, the posts' pay in it
-  - L1392 fixture: the floor raised is past the target of every job the research posts hold, so the posts' pay moves (by
-  - L1393 the city's own payroll at that floor is what it is today plus the move of its teachers', its doctors' and nurses' and its research posts' pay, job by job
-  - L1395 ...so it is that much above what it was when it left the posts out: the posts' share is their jobs times what the floor lifts each to
-  - L1397 at the floor in force it is the payroll the city pays today, the posts' pay in it
-  - L1398 ...and PolicyPreview.cityPayroll() is that figure, the one a screen sets the effect against
-  - L1406 fixture: the posts are
-  - L1416 the credit check's head shortage counts the research posts as plan() does: each post's job houses 2.25 heads (the 2.25 plan() and the check both write),
-  - L1418 ...and with the posts held again it is what it was
+  - L749 ...so the found oxygen process supersedes both parts with no fitting gain, while history alone keeps the hearth-over-Bessemer gain
+  - L753 ...and the fitted part can run oxygen from its own find, with both parts blocked before the find or without it
+  - L768 in a city that found nothing, the best recipe and the gain of every template with a choice are history's, as before R3
+  - L772 the tractor with figures that pay is NOT_KNOWN in month
+- **L783 10. the same months, researchers and seed find the same things; a saved run continues as the whole one**
+  - L785 fixture: the run finds something here
+  - L786 two runs on the same seed find the same codes in the same months, in the same order
+  - L790 six seeds do not all find the same things in the same months:
+  - L804 fixture: at month
+  - L808 what is saved is put back whole: the grant, the posts, the piles and the finds in their order
+  - L817 a run saved at month
+  - L823 a malformed save is skipped entry by entry: a field that is not one, an amount below nothing, a code the catalogue lacks, a month before the first, a pile no...
+  - L827 ...and restoring nothing empties it
+  - L828 the saves are keyed by field name and by code, never by an ordinal
+- **L836 11. a new game starts with no research**
+  - L840 a city founded the default way has an empty research
+  - L844 fixture: the city's templates have the Small Cracking Unit dated by PE11 and the Grain Farm with its tractor
+  - L847 fixture: it is before PE11's and PE14's months
+  - L848 history's reading holds in a city that found nothing: the Small Cracking Unit is not known and the tractor's verdict is NOT_KNOWN
+  - L854 fixture: the city's research has grants, posts, work piled and two finds
+  - L856 the game asks the city's research: the Small Cracking Unit is known this month, and the tractor's verdict is no longer NOT_KNOWN
+  - L858 ...and the template's own reading, history's, is unchanged
+  - L861 after a new game the same research object has no grant, no post, no work piled and nothing found
+  - L865 ...and the city is back to history's reading: the Small Cracking Unit is unknown and the tractor NOT_KNOWN again
+- **L950 12. a grant buys posts at the top of the month, and they are among the city's jobs**
+  - L953 fixture: a city founded the 1900 way with a University standing and no grant
+  - L956 with every grant at 0 a month adds no post: the labour market's jobs are the buildings' jobs, and the city's getJobs() too
+  - L962 fixture: the city's wages give an engineering post a cost, and the University gives room for more than five posts
+  - L964 a grant is refused if it is not an amount, and taken if it is
+  - L967 one month on, the engineering grant has bought the posts Research.posts() says at the strike's wages: five whole posts (
+  - L969 ...and no other field has any: no grant there
+  - L971 the labour market's jobs this month are the buildings' jobs plus the posts' (Research.jobs()):
+  - L974 ...the larger half of the researchers in the licence-holding band, the smaller in science, and the support in the college's engineers
+  - L979 the buildings' own figure is not written into: asking the city for its jobs leaves what the buildings count as it was
+  - L987 a grant far past the room buys the room and no more:
+  - L993 the grant put back to 0 buys no post the next month, and the jobs are the buildings' again
+- **L1000 13. the posts' bill is the pay of the filled posts and the labs' other costs, a promise the treasury pays and the audit counts**
+  - L1005 fixture: no grant, no post, no bill
+  - L1011 fixture: the grants bought posts in two fields
+  - L1013 fixture: some of the posts are filled, so the bill is above nothing
+  - L1014 the month's research payroll is the sum of Research.payroll() over the fields at the month's wages and fill
+  - L1015 ...its other costs the sum of Research.bill() less that pay
+  - L1016 ...and the bill is the two
+  - L1019 the bill is at most the bill of every post filled: a post nobody fills costs nothing
+  - L1021 the treasury's line is a promise, not a purchase, and named for the grants
+  - L1024 ...and the last of the lines but the prizes' (R4), so that no saved name moved: every other line is before it
+  - L1028 the month's money audit lists both research lines and closes: the treasury paid what the audit counted as leaving
+  - L1037 getExpenses() includes the bill: without it the city pays out exactly that much less
+  - L1039 the national accounts carry the bill as the government's spending (the month's books were struck from the bill)
+  - L1044 ...and in the government's total expenses: without the line the total is that much less
+  - L1048 a bill that is not a number or below nothing is none
+  - L1054 the next month's audit closes too, with the bill struck again at that month's wages
+- **L1061 14. a city founded the default way: no grant, no change; a grant buys posts that are paid and whose researchers have nothing to work on**
+  - L1065 fixture: a city founded the default way with a University and a Law School standing
+  - L1067 with no grant a month adds no job, no bill and no research notice, and the research stays empty
+  - L1070 ...and its faculty are recorded as researchers who are all idle, with no problem open and nothing found or arrived
+  - L1077 ...for every field the idle researchers are all the researchers, and no problem is open
+  - L1088 with a grant the posts are hired in a city founded the default way, as the model says:
+  - L1093 ...and they are paid: the bill is the model's, above nothing, and the audit closes
+  - L1102 every researcher is idle and no problem is open; the researchers are the faculty's 40% of the staffed staff and the filled posts', and nothing is found
+  - L1105 through to month
+- **L1112 15. the inbox tells what the city found and what reached it from abroad, once**
+  - L1117 fixture: engineering has problems open in the first month a press makes, which the University's faculty work on
+  - L1123 fixture: a discovery of the world's is dated within the next dozen months, and is not the one found
+  - L1124 fixture: neither is in the inbox yet
+  - L1127 fixture: the University's faculty were researchers in engineering that month, and the discovery was found in it
+  - L1129 a find raises one notice in its month, keyed by the code:
+  - L1134 ...titled for the discovery, and naming the school that researched it, how far ahead of the world to a tenth of a year, and what it touches
+  - L1137 ...and the lines of its body are no wider than the inbox's measure
+  - L1138 nothing from abroad yet: the world's date has not come
+  - L1141 the month after, the notice is settled and not raised again
+  - L1148 on history's date
+  - L1152 ...titled \"From abroad\" with the world's own words and what it touches
+  - L1155 ...settled the month after, and neither kind is raised twice: still one of each
+  - L1158 the month a city is founded raises none: no research notice dated month 1
+- **L1164 16. a law discovery found here brings its Policy lever forward, never before its earliest and never later than it was**
+  - L1168 fixture: the income tax's entry is PL3, history opens it in month
+  - L1170 a code that is no lever's key finds none: a blank, an unknown code, a lever with no key (the policy rate) and a discovery of another kind
+  - L1173 every lever that carries a key is found by it, and the key is a law discovery of the catalogue
+  - L1176 a find before the earliest month brings the lever to the earliest and no sooner
+  - L1177 ...a second find, in a later month, does not move it later
+  - L1179 a find in a month between the earliest and history brings the lever to that month
+  - L1180 ...a find in a month after history's, or in one that leaves the lever open, moves nothing
+  - L1181 a lever open from founding has nothing to bring forward, and nor does a null lever
+  - L1184 a lever already open (openAll()) is untouched
+  - L1189 a lever brought forward is saved with the other openings and comes back
+  - L1198 fixture: the city's save carries its month and is carried to month
+  - L1202 fixture: the carried city loads in month
+  - L1209 fixture: both laws are open to the law faculty next month, and the income tax opens in history's month in this city
+  - L1215 both are found in month
+  - L1218 the income tax now opens in month
+  - L1221 ...so it is still shut in the month of the find, the policy having held it at the top of the month
+  - L1224 the month after the find the lever is open and its own notice is raised, as for a lever history opens
+- **L1231 17. the save: a city with research writes it, a load restores it whole and plays on as the city saved; a city with none writes no key**
+  - L1236 a city founded the default way, with a University and no grant, writes no research key: its researchers are idle and pile nothing
+  - L1240 ...a save with no key restores an empty research, even in a Game that held another city's
+  - L1246 ...and a Game that held a city's research and loads that save keeps none of it: no grant, no post, no pile, no find and no bill
+  - L1260 fixture: the city has grants, posts, work piled and a find, and a bill
+  - L1264 the city is saved
+  - L1266 ...with a research key, keyed by field name and by code
+  - L1270 loaded without a failure
+  - L1271 the grants, the posts, the piles and the finds (in their order) come back equal
+  - L1274 ...the loaded city's jobs include its posts, and equal the saved city's
+  - L1276 ...and the month's bill comes back: payroll and costs
+  - L1277 ...the costs too
+  - L1278 ...and the national accounts' spending on it
+  - L1279 a find known before the save is known after it: the discovery's code is among the finds and is known from its month
+  - L1282 one month played on the saved city and on the loaded one gives the same piles and the same finds
+  - L1286 ...to the piles' last digits, and the same posts
+  - L1287 ...and the same research bill
+  - L1288 ...and the same jobs
+- **L1294 18. a reform of the money scales the grants and the bill, and nothing else of the research**
+  - L1308 fixture: grants in two fields, posts, work piled, a find and a bill
+  - L1312 fixture: the reform went through and moved the money: the research bill is
+  - L1313 the grants are scaled as the bill is: the engineering grant
+  - L1314 ...and the medical grant
+  - L1315 ...the pay of the posts too
+  - L1316 ...and the national accounts' spending on them
+  - L1317 the posts, the piles and the finds are not money and are as they were
+  - L1318 a grant of 0 stays 0 and the other fields stay without one
+- **L1324 19. a school ordered demolished gives no posts the next month: the strike follows the demolitions that close**
+  - L1336 fixture: both villages, founded the 1900 way with one University, struck the engineering posts the grant buys (
+  - L1340 the University is ordered demolished, between the presses: the city's own to pull down, and the quote paid
+  - L1341 it still stands until the month starts, and so does its room and the grant's posts
+  - L1345 the month it closes the University is gone: no school stands, and its room with it
+  - L1346 ...so the grant buys no post that month, from a room that is not there: the strike followed the demolition (before it, a school ordered pulled down still gav...
+  - L1348 ...and the city's jobs are the buildings' alone, the posts' gone with the school
+  - L1349 the twin, with no order, struck its five posts again: the order moved nothing but the school's
+- **L1355 20. the city's own payroll at a new floor counts the research posts, and the landlords' credit check counts every post the city offers**
+  - L1365 fixture: a grant has bought posts that are filled and paid (
+  - L1375 fixture: the village has no minimum wage law yet, so the floor binds nobody
+  - L1376 ...and a floor raised past every job's target moves the city's own payroll by nothing, the posts' pay in it
+  - L1395 fixture: the floor raised is past the target of every job the research posts hold, so the posts' pay moves (by
+  - L1396 the city's own payroll at that floor is what it is today plus the move of its teachers', its doctors' and nurses' and its research posts' pay, job by job
+  - L1398 ...so it is that much above what it was when it left the posts out: the posts' share is their jobs times what the floor lifts each to
+  - L1400 at the floor in force it is the payroll the city pays today, the posts' pay in it
+  - L1401 ...and PolicyPreview.cityPayroll() is that figure, the one a screen sets the effect against
+  - L1409 fixture: the posts are
+  - L1419 the credit check's head shortage counts the research posts as plan() does: each post's job houses 2.25 heads (the 2.25 plan() and the check both write),
+  - L1421 ...and with the posts held again it is what it was
 
 ## EarthCheck.java - 80 labelled assertions
 
@@ -12797,7 +12797,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1701 ...and the service's scale
   - L1702 ...while its fees move with the money
 
-## HistoricalRecipeCheck.java - 46 labelled assertions
+## HistoricalRecipeCheck.java - 51 labelled assertions
 
 > Each sourced 1900 undo runs before its entry, knowledge alone does not fit
 > equipment, independent pieces compose, and the default city stays modern.
@@ -12867,6 +12867,12 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L629 fixture: these prices idle the thermal process while the modern definition has a positive spread
   - L635 both city-margin readers retain the actual negative thermal margin
   - L638 the oil planner's spare-feed read preserves gas oil left by that idle thermal unit
+- **L646 16. the research model reads saved composite choices and independent known pieces**
+  - L653 fixture: standing horse farms have a saved independent pre-hybrid choice
+  - L658 the research recipe row resolves the saved choice, its figures and all running farms
+  - L662 the composed way has the discovery's human name
+  - L668 the composite row still counts only the unfitted part after one tractor is fitted
+  - L671 the known 1900 binder is shown beside the unknown tractor and combine, which remain hidden
 
 ## HistoryCheck.java - 97 labelled assertions
 
@@ -25016,184 +25022,184 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L551 ...in the templates' order
   - L557 the share fitted is the rows' fitted buildings over their buildings (
   - L562 a piece not known at the month is not shown: the farms' tractor (
-  - L565 ...the Bakery's electric drive (known from a year) is, with no discovery behind it
-  - L579 ...found here (PE14 in month
-  - L593 the sector filter keeps only its sector's templates (
-  - L595 ...a sector with no stack, or no sector at all, has none
-  - L602 a fitting on site is counted on its row: one Bakery drive being fitted
-- **L609 7. the recipes in use: non-default, known, and running as Recipes.chosen() and the parts' sizes say**
-  - L622 the town has recipes in use:
-  - L623 ...each listed recipe is not its template's default and is known at the city's month
-  - L624 ...running is the buildings of the parts that chose it (Recipes.chosen()): the fitted part is the stack less its unfitted count of the recipe piece, the unfi...
-  - L630 fixture: the Mixed Farm's choice is kept - the tractor (its default, not known yet) for the fitted part, the horses for the unfitted - and its recipe piece i...
-  - L632 the horses run on every farm of the stack: each lacks its tractor, so the unfitted part is the whole stack (
-  - L639 with one farm of
-  - L652 a template with no recipe piece is all one part: the Pulp Mill (
-  - L655 ...a way known and not chosen is listed with nothing running
-  - L661 a template with a choice of recipes and no stack lists nothing: the Iron Mine has
-  - L668 a listed recipe carries the discovery of its code where that is on the timeline, and none where it is a year (no shipped non-default recipe is dated by a cod...
-- **L674 8. origin and the NEW mark: found here or from abroad, a year is its January, new for NEW_MONTHS - 1 months and not at NEW_MONTHS**
-  - L679 fixture: the furnace is opened by PE1, found here in month
-  - L682 a template opened by a code found here is HERE at the month found, with the entry and the years ahead of the world
-  - L684 ...and NEW,
-  - L689 one month older, at NEW_MONTHS, it is not new - and it still has its origin: HERE in month
-  - L694 found by no one, the world's month is the origin: ABROAD at history's month
-  - L702 newTemplates() is every template that isNew(), in the templates' order (
-  - L706 a template known at the founding has no origin: an undated House, and a Quarry dated 1900, the founding's January
-  - L709 ...nor one not known yet: the Large Cement Plant (PE4, history's month
-  - L716 a code history has not reached is not an origin yet, and is on the month it does: T2 in month
-  - L720 ...a code history dates AT FIRST_MONTH (T1) was known at the founding: no origin in any month
-  - L722 a code the catalogue lacks is never known, so never an origin
-  - L724 an undated row has none either
-  - L730 a since that is a year is ABROAD at its January: the Panel Mill (1980) none in month
-  - L732 ...and new for NEW_MONTHS - 1 months after it and not at NEW_MONTHS
-  - L735 a year of the founding's January (1900) is known at the founding: none
-  - L740 the four labs are labs, and a school (the University), a house and nothing at all are not
-- **L773 9. the series: the researchers, the spend and the share fitted, every month as the model says, through a save, the year book and a reform**
-  - L817 fixture:
-  - L828 each field's researchers are recorded every month, the same length as the axis (
-  - L831 ...the lab's are in them: in the month the lab first worked, engineering's
-  - L836 researchSpend is every month's own figure, the month's research bill and prize paid, in each of the
-  - L837 ...in the find's month it is the bill and the prize together,
-  - L842 equipmentFitted is the share of the equipment fitted, between 0 and 1, in each month, as the stacks say (the last
-  - L849 a load restores the history whole: the three kinds of series, the same length and the same figures
-  - L852 ...and a month recorded on it follows: every series is still the axis' length
-  - L858 the year book rules each: the researchers are levels, the spend a flow, the share fitted a rate, each with a note, and nothing in the history is left without...
-  - L870 a reform of the money halves the spend and leaves the researchers and the share fitted alone
-  - L908 fixture: no equipment stands, so the share fitted is not a number
-  - L913 two months with nothing to count: the share fitted has not begun (no series), while the researchers and the spend have, month for month
-  - L924 a bakery built, it begins at the first month with equipment: NaN (not counting) in the
-  - L930 a cut at a month before the series began leaves no such series (not an empty one), the others kept; a cut at the end keeps it whole
-  - L938 through a save it comes back as it began: the same months blank, the same figures
-  - L946 every bakery pulled down, the month after records 0 on the series that has begun (a gap cannot be kept: the series lines up with the axis' end)
-- **L954 10. researchTown(): each of its guarantees**
-  - L956 founded the 1900 way, in month
-  - L960 (a) a discovery found HERE and at least two from ABROAD are on the timeline:
-  - L962 ...the find is PE1 at month 3, the world's are PE2 (month 6) and PE3 (month 13), in that order of months
-  - L974 (b) a stack stands with a known piece some of its buildings lack, and its sector's equipment lists it with a verdict that is not FITTED:
-  - L985 (c) a template is NEW, its origin within NEW_MONTHS of the month:
-  - L994 (d) a recipe is in use on a template with a recipe piece (the farms' horses) and on one with none (the Pulp Mill's):
-- **L1045 11. the Overview: each field's row is the model's own reads, and the words say them**
-  - L1048 fixture: a 1900 city with schools and grants that bought posts in engineering, medicine and business, none in law, and the posts struck at a fill
-  - L1053 a row for each field, in the enum's order
-  - L1079 each field's researchers, lab researchers, idle (the city's and the labs'), problems in reach, what they touch, and finds here and from abroad are the model'...
-  - L1081 fixture: some field has problems in reach and some has none, so \"nothing in reach\" and \"N in reach\" are both on the page
-  - L1082 the page's totals: found here and from abroad are the timeline's, and the rows add up
-  - L1092 the researchers of all the fields are the model's (the city's and the labs')
-  - L1093 ...and the idle among them
-  - L1094 ...the researchers at work are above nothing (the faculty and the filled posts)
-  - L1095 the money a month: the research bill is the economy's
-  - L1096 ...and is above nothing, the grants having bought posts the labour market filled
-  - L1097 ...the prizes paid the labs are Game.getPrizePaid() (none: no prize is set)
-  - L1099 researchers to each 1,000 at work: the researchers over the jobs filled, times 1,000 (
-  - L1101 ...and none where nobody works, whatever the researchers
-  - L1105 engineering is hosted by an Institute of Technology and two Universities: \"
-  - L1108 medicine by a Medical School and the Universities, business and law by the Universities alone (a school of the field first, the Universities after)
-  - L1115 ...the engineering count is every standing school the model's staffByField() gives it a share of:
-  - L1119 \"nothing in reach\" for none, \"1 in reach: rail\" for one, \"2 in reach: a; b\" for two, the count alone where the texts are blank
-  - L1123 the schools' words: none is \"no school\", one is singular, many plural (\"Universities\", \"Institutes of Technology\", \"Law Schools\")
-- **L1134 12. the Funding card: grant, prize, posts, room, researchers, bill, unspent grant, labs and the least prize that brings one, at the grant...**
-  - L1160 each field's card is the model's: grant, prize, posts struck and the grant's own (no pot here), room, post cost, the grant that fills the room, researchers
-  - L1162 the cards' bills add to the economy's research bill: the whole month's bill is the posts'
-  - L1163 some of a grant is unspent: a grant of half a post over its whole posts leaves most of that half unspent, never more than the grant
-  - L1166 law has no grant and the card says so: no posts, nothing unspent, and the room its Universities give it
-  - L1176 a field whose pot bought posts beyond the grant says so: the posts are the grant's and the pot's, the potPosts the difference, and the unspent grant is the g...
-  - L1204 the least prize that brings a lab to a field: at it the field's chase has a problem, a unit under it none, and none where no open problem could be finished b...
-  - L1206 fixture: some field has such a prize and some has none (
-  - L1207 no wages, no cost of a post, no threshold
-  - L1230 a staged grant buys the posts Research.posts() says within the room (none for none, the room's whole posts for a grant past it), gives the faculty and the fi...
-  - L1235 fixture: the catalogue has a Research Lab for medicine
-  - L1239 a lab built is a lab standing in its field's card, and only there:
-- **L1261 13. the preview through the game: the model's researchers, ResearchPreview's draws, cached, and a staged dial equal to the one in force i...**
-  - L1266 the first read of the preview runs it once
-  - L1267 the as-is preview is ResearchPreview's over the researchers the model has now and the prizes set, from ResearchPreview.DRAWS draws of ResearchPreview.SEED
-  - L1269 ...and finds something to say: the small problems of a young century are found in a good share of its draws (
-  - L1271 read again with nothing staged, or a null stage: the very same Result, no run
-  - L1281 a staged grant runs the preview once, with that field's researchers the faculty and the filled posts it buys (
-  - L1283 ...and the as-is is still kept: no run
-  - L1284 ...and the same stage read again is kept too
-  - L1288 a staged grant of nothing leaves the faculty alone to research (
-  - L1291 more researchers in a field find no less in it, fewer no more, from the same draws, and the three differ
-  - L1297 a staged grant equal to the grant in force is the as-is answer itself, kept, with no run
-  - L1304 a staged prize is the field's prize in the model's question, and runs once more
-  - L1306 ...and a prize pays: the field's purse is the prize times its finds
-  - L1312 a new month runs the preview again
-- **L1318 14. R5's gate review: the found-here and abroad counts laid on History's months, what is still to come, the bars' shares**
-  - L1323 fixture: the history has an axis of at least two months and the timeline has finds both ways
-  - L1335 the counts laid on History's months are, at each month of its axis, the discoveries at or before it, here and from abroad (
-  - L1336 ...and the last of them is the timeline's counts
-  - L1338 an axis with gaps is read at each of its own months: 3, 5, 6 and 40 (PE1 found in 3, PE2 abroad in 6, PE3 abroad in 13)
-  - L1342 an empty axis is empty, one month is one entry, and an axis that runs backwards is not a number throughout
-  - L1348 what is still to come is the catalogue's entries the city does not yet know (
-  - L1350 ...and the pure core subtracts and never goes below none
-  - L1366 the equipment bars' share is the fitted buildings over the buildings, 0 to 1, for each of the
-  - L1368 ...and a stack of no buildings has the share 0 on either bar, and a whole one 1
-- **L1377 15. a city founded the default way: nothing in reach, nothing to find, no lab to come, though the catalogue's dates say otherwise of the ...**
-  - L1387 fixture: founded the default way, with a University and a grant that bought posts; the catalogue, read by the date, would have problems open in engineering
-  - L1395 the Overview has nothing in reach, nothing found and nothing from abroad, and every researcher idle (the posts are jobs and the faculty is there, with nothin...
-  - L1397 ...and the Funding cards have no lab threshold
-  - L1399 ...the posts a grant buys are still the model's (the grant is paid and the posts are jobs)
-  - L1401 the preview has nothing to find, as is and staged
-  - L1403 what is still to come is none, the city having known them all at its founding
-- **L1413 16. the figures across the top and the dials' ranges: the sums, the words, the posts the room holds, and a range that reaches past what i...**
-  - L1421 the researchers at work are everyone less the idle, field by field
-  - L1422 ...and no more than all of them, and above nothing in the town
-  - L1423 the problems in reach are the fields' added (
-  - L1431 in reach by field: \"engineering 6 · medicine 2 · business and law none\" for two with some
-  - L1440 ...\"law none\" for one with none, no \"none\" for all with some, \"nothing in reach in any field\" for none
-  - L1444 ...and the town's own: it names the fields with something in reach with their counts
-  - L1453 the room in whole posts is the room floored, field by field
-  - L1458 ...58.7 is 58 whole posts (Research.posts() floors, so a grant that fills the room buys 58), none is none, and what is not a number is none
-  - L1473 the grant dial runs from nothing in round steps (1, 2 or 5 times a power of ten, not above a post's cost and over two fifths of it), a whole number of them, ...
-  - L1477 ...a grant in force beyond what the room asks for is still on the dial (2,500 posts), 20% past the room otherwise (100 posts: 120), and a post with no cost i...
-  - L1481 niceFloor: the greatest of 1, 2 and 5 times a power of ten not above the figure; a step stays put while the cost walks (0.5158 and 0.53 are both 0.5; 0.99 is...
-  - L1486 ...so a month's wages moving a post's cost by a little leave the grant dial's step where it was (
-  - L1490 niceCeil: the least of 1, 2 and 5 times a power of ten not below the figure
-  - L1503 the prize dial runs from nothing to a round number that reaches
-  - L1507 ...a prize in force past it, and a threshold past it, are on the dial
-  - L1509 the researchers in labs are the posts of a lab for each, none for none or fewer
-- **L1516 17. the card: nothing staged is the same figure on both sides; a staged grant and prize are the model's posts, bill, labs and preview**
-  - L1531 nothing staged: every row has the same figure on both sides, the grant and the prize are the ones in force
-  - L1532 ...and the preview's words are one on both sides
-  - L1538 the card's \"now\" is the Funding read and the Overview's: researchers = the faculty and the posts' (
-  - L1541 ...and the preview's figures for the field are the Result's: finds
-  - L1551 a staged grant: the card is moved, the grant shown is the staged one, the prize is not
-  - L1552 ...its posts, researchers and bill are atGrant()'s (
-  - L1555 ...the unspent is what the grant leaves of the posts' pay (the grant less the grant's posts' bill, never below none)
-  - L1557 ...and the preview is the staged Result's, the \"now\" the one in force
-  - L1559 ...and the grant in force staged is no change (nothing is moved by staging what is set)
-  - L1566 a grant past the room buys the room's posts (
-  - L1568 ...and what it leaves unspent is above nothing (the grant over the posts' pay), the card says so
-  - L1569 ...and a card with a hundredth of a dollar unspent says nothing of it
-  - L1574 fixture: engineering has a least prize that brings a lab in this town (
-  - L1579 a staged prize: the card is moved by the prize alone, the labs are the staged preview's first month (
-  - L1582 ...whatever labs it brings are a lab's posts each (
-  - L1585 ...and the card without a prize move keeps the labs the town has (
-  - L1589 a chance under one is a percent and a count from one up: asChance() of the pair, and previewWords() says \"none\", \"under 1%\", \"25%\", \"1.10\"
-- **L1597 18. the schools' research posts: a kind's share of each field's posts by its share of the room, and THE BUDGET with the staged grants' posts**
-  - L1619 the kinds of school together stand up the game's own staff in each field (Game.researchStaff()), and give it their rooms' sum as the field's room
-  - L1620 ...the posts struck, over the kinds that carry them, are the research's own (
-  - L1623 the University hosts all four fields (
-  - L1626 ...the Medical School, with the Universities, carries medicine's posts between them: its share is its room over the field's
-  - L1628 a kind of school that hosts none (a high school, a college), and one of which none stands (a Law school), carries nothing
-  - L1631 the kinds that host research are the University, the Institute of technology and the Medical, Business and Law schools, and no other
-  - L1636 the Overview's schools are the hosting kinds that stand, with how many: the University (2), the Medical School (1) and the Institute of technology (1) - in t...
-  - L1643 THE BUDGET with nothing staged is the books' balance on both sides (
-  - L1648 a staged grant adds its posts' bill to the research bill and takes it off the balance:
-  - L1650 ...a prize moves nothing (it is paid on a find), and two grants together move it by the two bills
-- **L1669 20. a city founded the default way with a University and no grant now: its researchers are the faculty's own, and they survive a save**
-  - L1678 fixture: founded the default way with a University, its grant taken away a month ago, its faculty at research (
-  - L1680 the Overview counts no post where no grant bought one (
-  - L1681 the research has nothing of its own (empty) and still has the month's counts to show
-  - L1684 the city is saved
-  - L1686 ...with its research written for the faculty's counts alone
-  - L1689 loaded without a failure
-  - L1690 the loaded city reads the same counts in every field before it plays a month:
-  - L1693 ...so its Overview (and the hub's card) show the same researchers and idle (
-- **L1700 19. a lab standing: the card counts it and its researchers, and the same lab is on both sides of a card that moves a grant**
-  - L1709 fixture: an Engineering Research Lab stands and its researchers are counted (
-  - L1711 the card counts the lab and its researchers with the field's: researchers
-  - L1717 a grant staged lower moves the field's researchers and not the lab's: the lab is on both sides (
+  - L566 ...the Bakery's electric drive (known from a year) is, with no discovery behind it
+  - L581 ...found here (PE14 in month
+  - L595 the sector filter keeps only its sector's templates (
+  - L597 ...a sector with no stack, or no sector at all, has none
+  - L604 a fitting on site is counted on its row: one Bakery drive being fitted
+- **L611 7. the recipes in use: non-default, known, and running as Recipes.chosen() and the parts' sizes say**
+  - L624 the town has recipes in use:
+  - L625 ...each listed recipe is not its template's default and is known at the city's month
+  - L626 ...running is the buildings of the parts that chose it (Recipes.chosen()): the fitted part is the stack less its unfitted count of the recipe piece, the unfi...
+  - L632 fixture: the Mixed Farm's choice is kept - the tractor (its default, not known yet) for the fitted part, the horses for the unfitted - and its recipe piece i...
+  - L634 the horses run on every farm of the stack: each lacks its tractor, so the unfitted part is the whole stack (
+  - L641 with one farm of
+  - L654 a template with no recipe piece is all one part: the Pulp Mill (
+  - L657 ...a way known and not chosen is listed with nothing running
+  - L663 a template with a choice of recipes and no stack lists nothing: the Iron Mine has
+  - L670 a listed recipe carries the discovery of its code where that is on the timeline, and none where it is a year (no shipped non-default recipe is dated by a cod...
+- **L676 8. origin and the NEW mark: found here or from abroad, a year is its January, new for NEW_MONTHS - 1 months and not at NEW_MONTHS**
+  - L681 fixture: the furnace is opened by PE1, found here in month
+  - L684 a template opened by a code found here is HERE at the month found, with the entry and the years ahead of the world
+  - L686 ...and NEW,
+  - L691 one month older, at NEW_MONTHS, it is not new - and it still has its origin: HERE in month
+  - L696 found by no one, the world's month is the origin: ABROAD at history's month
+  - L704 newTemplates() is every template that isNew(), in the templates' order (
+  - L708 a template known at the founding has no origin: an undated House, and a Quarry dated 1900, the founding's January
+  - L711 ...nor one not known yet: the Large Cement Plant (PE4, history's month
+  - L718 a code history has not reached is not an origin yet, and is on the month it does: T2 in month
+  - L722 ...a code history dates AT FIRST_MONTH (T1) was known at the founding: no origin in any month
+  - L724 a code the catalogue lacks is never known, so never an origin
+  - L726 an undated row has none either
+  - L732 a since that is a year is ABROAD at its January: the Panel Mill (1980) none in month
+  - L734 ...and new for NEW_MONTHS - 1 months after it and not at NEW_MONTHS
+  - L737 a year of the founding's January (1900) is known at the founding: none
+  - L742 the four labs are labs, and a school (the University), a house and nothing at all are not
+- **L775 9. the series: the researchers, the spend and the share fitted, every month as the model says, through a save, the year book and a reform**
+  - L819 fixture:
+  - L830 each field's researchers are recorded every month, the same length as the axis (
+  - L833 ...the lab's are in them: in the month the lab first worked, engineering's
+  - L838 researchSpend is every month's own figure, the month's research bill and prize paid, in each of the
+  - L839 ...in the find's month it is the bill and the prize together,
+  - L844 equipmentFitted is the share of the equipment fitted, between 0 and 1, in each month, as the stacks say (the last
+  - L851 a load restores the history whole: the three kinds of series, the same length and the same figures
+  - L854 ...and a month recorded on it follows: every series is still the axis' length
+  - L860 the year book rules each: the researchers are levels, the spend a flow, the share fitted a rate, each with a note, and nothing in the history is left without...
+  - L872 a reform of the money halves the spend and leaves the researchers and the share fitted alone
+  - L910 fixture: no equipment stands, so the share fitted is not a number
+  - L915 two months with nothing to count: the share fitted has not begun (no series), while the researchers and the spend have, month for month
+  - L926 a bakery built, it begins at the first month with equipment: NaN (not counting) in the
+  - L932 a cut at a month before the series began leaves no such series (not an empty one), the others kept; a cut at the end keeps it whole
+  - L940 through a save it comes back as it began: the same months blank, the same figures
+  - L948 every bakery pulled down, the month after records 0 on the series that has begun (a gap cannot be kept: the series lines up with the axis' end)
+- **L956 10. researchTown(): each of its guarantees**
+  - L958 founded the 1900 way, in month
+  - L962 (a) a discovery found HERE and at least two from ABROAD are on the timeline:
+  - L964 ...the find is PE1 at month 3, the world's are PE2 (month 6) and PE3 (month 13), in that order of months
+  - L976 (b) a stack stands with a known piece some of its buildings lack, and its sector's equipment lists it with a verdict that is not FITTED:
+  - L987 (c) a template is NEW, its origin within NEW_MONTHS of the month:
+  - L996 (d) a recipe is in use on a template with a recipe piece (the farms' horses) and on one with none (the Pulp Mill's):
+- **L1047 11. the Overview: each field's row is the model's own reads, and the words say them**
+  - L1050 fixture: a 1900 city with schools and grants that bought posts in engineering, medicine and business, none in law, and the posts struck at a fill
+  - L1055 a row for each field, in the enum's order
+  - L1081 each field's researchers, lab researchers, idle (the city's and the labs'), problems in reach, what they touch, and finds here and from abroad are the model'...
+  - L1083 fixture: some field has problems in reach and some has none, so \"nothing in reach\" and \"N in reach\" are both on the page
+  - L1084 the page's totals: found here and from abroad are the timeline's, and the rows add up
+  - L1094 the researchers of all the fields are the model's (the city's and the labs')
+  - L1095 ...and the idle among them
+  - L1096 ...the researchers at work are above nothing (the faculty and the filled posts)
+  - L1097 the money a month: the research bill is the economy's
+  - L1098 ...and is above nothing, the grants having bought posts the labour market filled
+  - L1099 ...the prizes paid the labs are Game.getPrizePaid() (none: no prize is set)
+  - L1101 researchers to each 1,000 at work: the researchers over the jobs filled, times 1,000 (
+  - L1103 ...and none where nobody works, whatever the researchers
+  - L1107 engineering is hosted by an Institute of Technology and two Universities: \"
+  - L1110 medicine by a Medical School and the Universities, business and law by the Universities alone (a school of the field first, the Universities after)
+  - L1117 ...the engineering count is every standing school the model's staffByField() gives it a share of:
+  - L1121 \"nothing in reach\" for none, \"1 in reach: rail\" for one, \"2 in reach: a; b\" for two, the count alone where the texts are blank
+  - L1125 the schools' words: none is \"no school\", one is singular, many plural (\"Universities\", \"Institutes of Technology\", \"Law Schools\")
+- **L1136 12. the Funding card: grant, prize, posts, room, researchers, bill, unspent grant, labs and the least prize that brings one, at the grant...**
+  - L1162 each field's card is the model's: grant, prize, posts struck and the grant's own (no pot here), room, post cost, the grant that fills the room, researchers
+  - L1164 the cards' bills add to the economy's research bill: the whole month's bill is the posts'
+  - L1165 some of a grant is unspent: a grant of half a post over its whole posts leaves most of that half unspent, never more than the grant
+  - L1168 law has no grant and the card says so: no posts, nothing unspent, and the room its Universities give it
+  - L1178 a field whose pot bought posts beyond the grant says so: the posts are the grant's and the pot's, the potPosts the difference, and the unspent grant is the g...
+  - L1206 the least prize that brings a lab to a field: at it the field's chase has a problem, a unit under it none, and none where no open problem could be finished b...
+  - L1208 fixture: some field has such a prize and some has none (
+  - L1209 no wages, no cost of a post, no threshold
+  - L1232 a staged grant buys the posts Research.posts() says within the room (none for none, the room's whole posts for a grant past it), gives the faculty and the fi...
+  - L1237 fixture: the catalogue has a Research Lab for medicine
+  - L1241 a lab built is a lab standing in its field's card, and only there:
+- **L1263 13. the preview through the game: the model's researchers, ResearchPreview's draws, cached, and a staged dial equal to the one in force i...**
+  - L1268 the first read of the preview runs it once
+  - L1269 the as-is preview is ResearchPreview's over the researchers the model has now and the prizes set, from ResearchPreview.DRAWS draws of ResearchPreview.SEED
+  - L1271 ...and finds something to say: the small problems of a young century are found in a good share of its draws (
+  - L1273 read again with nothing staged, or a null stage: the very same Result, no run
+  - L1283 a staged grant runs the preview once, with that field's researchers the faculty and the filled posts it buys (
+  - L1285 ...and the as-is is still kept: no run
+  - L1286 ...and the same stage read again is kept too
+  - L1290 a staged grant of nothing leaves the faculty alone to research (
+  - L1293 more researchers in a field find no less in it, fewer no more, from the same draws, and the three differ
+  - L1299 a staged grant equal to the grant in force is the as-is answer itself, kept, with no run
+  - L1306 a staged prize is the field's prize in the model's question, and runs once more
+  - L1308 ...and a prize pays: the field's purse is the prize times its finds
+  - L1314 a new month runs the preview again
+- **L1320 14. R5's gate review: the found-here and abroad counts laid on History's months, what is still to come, the bars' shares**
+  - L1325 fixture: the history has an axis of at least two months and the timeline has finds both ways
+  - L1337 the counts laid on History's months are, at each month of its axis, the discoveries at or before it, here and from abroad (
+  - L1338 ...and the last of them is the timeline's counts
+  - L1340 an axis with gaps is read at each of its own months: 3, 5, 6 and 40 (PE1 found in 3, PE2 abroad in 6, PE3 abroad in 13)
+  - L1344 an empty axis is empty, one month is one entry, and an axis that runs backwards is not a number throughout
+  - L1350 what is still to come is the catalogue's entries the city does not yet know (
+  - L1352 ...and the pure core subtracts and never goes below none
+  - L1368 the equipment bars' share is the fitted buildings over the buildings, 0 to 1, for each of the
+  - L1370 ...and a stack of no buildings has the share 0 on either bar, and a whole one 1
+- **L1379 15. a city founded the default way: nothing in reach, nothing to find, no lab to come, though the catalogue's dates say otherwise of the ...**
+  - L1389 fixture: founded the default way, with a University and a grant that bought posts; the catalogue, read by the date, would have problems open in engineering
+  - L1397 the Overview has nothing in reach, nothing found and nothing from abroad, and every researcher idle (the posts are jobs and the faculty is there, with nothin...
+  - L1399 ...and the Funding cards have no lab threshold
+  - L1401 ...the posts a grant buys are still the model's (the grant is paid and the posts are jobs)
+  - L1403 the preview has nothing to find, as is and staged
+  - L1405 what is still to come is none, the city having known them all at its founding
+- **L1415 16. the figures across the top and the dials' ranges: the sums, the words, the posts the room holds, and a range that reaches past what i...**
+  - L1423 the researchers at work are everyone less the idle, field by field
+  - L1424 ...and no more than all of them, and above nothing in the town
+  - L1425 the problems in reach are the fields' added (
+  - L1433 in reach by field: \"engineering 6 · medicine 2 · business and law none\" for two with some
+  - L1442 ...\"law none\" for one with none, no \"none\" for all with some, \"nothing in reach in any field\" for none
+  - L1446 ...and the town's own: it names the fields with something in reach with their counts
+  - L1455 the room in whole posts is the room floored, field by field
+  - L1460 ...58.7 is 58 whole posts (Research.posts() floors, so a grant that fills the room buys 58), none is none, and what is not a number is none
+  - L1475 the grant dial runs from nothing in round steps (1, 2 or 5 times a power of ten, not above a post's cost and over two fifths of it), a whole number of them, ...
+  - L1479 ...a grant in force beyond what the room asks for is still on the dial (2,500 posts), 20% past the room otherwise (100 posts: 120), and a post with no cost i...
+  - L1483 niceFloor: the greatest of 1, 2 and 5 times a power of ten not above the figure; a step stays put while the cost walks (0.5158 and 0.53 are both 0.5; 0.99 is...
+  - L1488 ...so a month's wages moving a post's cost by a little leave the grant dial's step where it was (
+  - L1492 niceCeil: the least of 1, 2 and 5 times a power of ten not below the figure
+  - L1505 the prize dial runs from nothing to a round number that reaches
+  - L1509 ...a prize in force past it, and a threshold past it, are on the dial
+  - L1511 the researchers in labs are the posts of a lab for each, none for none or fewer
+- **L1518 17. the card: nothing staged is the same figure on both sides; a staged grant and prize are the model's posts, bill, labs and preview**
+  - L1533 nothing staged: every row has the same figure on both sides, the grant and the prize are the ones in force
+  - L1534 ...and the preview's words are one on both sides
+  - L1540 the card's \"now\" is the Funding read and the Overview's: researchers = the faculty and the posts' (
+  - L1543 ...and the preview's figures for the field are the Result's: finds
+  - L1553 a staged grant: the card is moved, the grant shown is the staged one, the prize is not
+  - L1554 ...its posts, researchers and bill are atGrant()'s (
+  - L1557 ...the unspent is what the grant leaves of the posts' pay (the grant less the grant's posts' bill, never below none)
+  - L1559 ...and the preview is the staged Result's, the \"now\" the one in force
+  - L1561 ...and the grant in force staged is no change (nothing is moved by staging what is set)
+  - L1568 a grant past the room buys the room's posts (
+  - L1570 ...and what it leaves unspent is above nothing (the grant over the posts' pay), the card says so
+  - L1571 ...and a card with a hundredth of a dollar unspent says nothing of it
+  - L1576 fixture: engineering has a least prize that brings a lab in this town (
+  - L1581 a staged prize: the card is moved by the prize alone, the labs are the staged preview's first month (
+  - L1584 ...whatever labs it brings are a lab's posts each (
+  - L1587 ...and the card without a prize move keeps the labs the town has (
+  - L1591 a chance under one is a percent and a count from one up: asChance() of the pair, and previewWords() says \"none\", \"under 1%\", \"25%\", \"1.10\"
+- **L1599 18. the schools' research posts: a kind's share of each field's posts by its share of the room, and THE BUDGET with the staged grants' posts**
+  - L1621 the kinds of school together stand up the game's own staff in each field (Game.researchStaff()), and give it their rooms' sum as the field's room
+  - L1622 ...the posts struck, over the kinds that carry them, are the research's own (
+  - L1625 the University hosts all four fields (
+  - L1628 ...the Medical School, with the Universities, carries medicine's posts between them: its share is its room over the field's
+  - L1630 a kind of school that hosts none (a high school, a college), and one of which none stands (a Law school), carries nothing
+  - L1633 the kinds that host research are the University, the Institute of technology and the Medical, Business and Law schools, and no other
+  - L1638 the Overview's schools are the hosting kinds that stand, with how many: the University (2), the Medical School (1) and the Institute of technology (1) - in t...
+  - L1645 THE BUDGET with nothing staged is the books' balance on both sides (
+  - L1650 a staged grant adds its posts' bill to the research bill and takes it off the balance:
+  - L1652 ...a prize moves nothing (it is paid on a find), and two grants together move it by the two bills
+- **L1671 20. a city founded the default way with a University and no grant now: its researchers are the faculty's own, and they survive a save**
+  - L1680 fixture: founded the default way with a University, its grant taken away a month ago, its faculty at research (
+  - L1682 the Overview counts no post where no grant bought one (
+  - L1683 the research has nothing of its own (empty) and still has the month's counts to show
+  - L1686 the city is saved
+  - L1688 ...with its research written for the faculty's counts alone
+  - L1691 loaded without a failure
+  - L1692 the loaded city reads the same counts in every field before it plays a month:
+  - L1695 ...so its Overview (and the hub's card) show the same researchers and idle (
+- **L1702 19. a lab standing: the card counts it and its researchers, and the same lab is on both sides of a card that moves a grant**
+  - L1711 fixture: an Engineering Research Lab stands and its researchers are counted (
+  - L1713 the card counts the lab and its researchers with the field's: researchers
+  - L1719 a grant staged lower moves the field's researchers and not the lab's: the lab is on both sides (
 
 ## RestaurantsCheck.java - 36 labelled assertions
 

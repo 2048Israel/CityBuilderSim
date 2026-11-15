@@ -36,7 +36,17 @@ public final class RecipeChanges {
         if (base == null) return null;
         Map<String, Double> absent = new TreeMap<>();
         for (int i = 1; i < parts.length; i++) absent.put(parts[i], 1.0);
-        return compose(t, base, absent, id);
+        Recipe composed = compose(t, base, absent, id);
+        java.util.List<String> before = new java.util.ArrayList<>();
+        for (RecipeChange c : t.getRecipeChanges()) {
+            if (c.piece() != null || !absent.containsKey(c.code())) continue;
+            ResearchCatalog.Entry entry = ResearchCatalog.get().entry(c.since());
+            if (entry != null) before.add(entry.name());
+        }
+        if (before.isEmpty()) return composed;
+        String label = base.getId().equals(Recipe.DEFAULT_ID) ? "Before " + String.join(", ", before)
+                : base.getName() + " (before " + String.join(", ", before) + ")";
+        return composed.withName(label);
     }
 
     /** A fresh recipe with the stated fractions of each undo. Order is immaterial. */

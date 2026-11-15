@@ -285,7 +285,8 @@ public final class ResearchView {
 
     /**
      * The recipes in use, in a city founded the 1900 way: for each template with a choice of recipes and a stack of buildings, each of its recipes other
-     * than the default that is known at the city's month. `running` counts the buildings of the parts that run it: the fitted part is the stack's quantity
+     * than the default that is known at the city's month, resolving selected independent variants from their saved ids.
+     * `running` counts the buildings of the parts that run it: the fitted part is the stack's quantity
      * less its unfitted count of the template's recipe piece, the unfitted part that count, and a template with no recipe piece is all one part (the
      * way Recipes.apply() counts them), as chosen by Recipes.chosen(). Empty in a city founded the default way.
      */
@@ -304,7 +305,21 @@ public final class ResearchView {
             String piece = t.recipePieceId();
             int unfitted = piece == null ? 0 : Math.min(quantity, stack.getUnfitted(piece));
             String[] picked = game.getRecipes().chosen(t.getId());
-            for (Recipe r : t.getRecipes()) {
+            // Retain known alternatives at zero; resolve the saved variant for any selected base.
+            Map<String, Recipe> variants = new java.util.LinkedHashMap<>();
+            for (Recipe base : t.getRecipes()) {
+                boolean selected = false;
+                if (picked != null) for (String id : picked) {
+                    if (!id.equals(base.getId()) && !id.startsWith(base.getId() + "~")) continue;
+                    Recipe variant = t.getRecipe(id);
+                    if (variant != null) {
+                        variants.put(variant.getId(), variant);
+                        selected = true;
+                    }
+                }
+                if (!selected) variants.put(base.getId(), base);
+            }
+            for (Recipe r : variants.values()) {
                 if (r.isDefault() || !r.knownAt(month, research)) continue;
                 int running = 0;
                 if (picked != null && picked[0].equals(r.getId())) running += quantity - unfitted;

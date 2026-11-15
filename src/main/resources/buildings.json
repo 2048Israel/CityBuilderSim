@@ -205,7 +205,15 @@
   "UNIV_SCIENCE, UNIV_HIGHTECH_ENG, UNIV_POLICY.",
   "",
   "If this file is missing or malformed the game falls back to its built-in",
-  "buildings and prints why, so a typo here can never stop it starting."
+  "buildings and prints why, so a typo here can never stop it starting.",
+  "",
+  "recipeChanges are independent signed undos of discoveries, anchored to the modern top level.",
+  "entry is the research catalogue code; equipment is the optional piece whose own unfitted count applies the undo.",
+  "without holds per-good makes/uses and per-job changes, plus electricity, gen, water and consumables differences; omitted differences are zero.",
+  "production1 changes utility output; dig is field tonnes per output; steamRail is the steam-engine share; crackerPetrol is the petrol-per-feed difference.",
+  "Each source names every figure and every estimate. Recipe alternatives and these independent changes compose before whole jobs and draw are rounded.",
+  "id and since override the change key and known date for a known-1900 step. The tilde is reserved for saved composite recipe ids.",
+  "Only a city founded unfitted applies the undos. The modern top level stays the default city's figures."
  ],
  "nextId": 153,
  "buildings": [
