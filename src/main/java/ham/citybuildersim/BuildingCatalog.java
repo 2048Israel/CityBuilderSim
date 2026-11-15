@@ -508,7 +508,6 @@ public class BuildingCatalog {
         return goods;
     }
 
-    /** A piece that ends no form is there to enable a recipe: one that no recipe of the building needs is reported and dropped, once the recipes are read. */
     /** Independent signed undos, each sourced and keyed by its discovery. */
     private void readRecipeChanges(JsonObject o, BuildingsTemplate template, String name) {
         if (!o.has("recipeChanges")) return;

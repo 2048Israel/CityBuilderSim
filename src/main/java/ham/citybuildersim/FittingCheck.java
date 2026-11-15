@@ -400,6 +400,22 @@ public class FittingCheck {
         return opened;
     }
 
+    /** Counts actual quantity increases each month, so a bakery-only premise is observed. */
+    static int pressUntilOpenAlone(Game g, BuildingsStacks target, int most, int[] unrelated) {
+        int opened = 0;
+        for (int i = 0; i < most && target.getUnderConstruction() > 0; i++) {
+            java.util.Map<Integer, Integer> before = new java.util.HashMap<>();
+            for (BuildingsStacks stack : g.getBuildingManager().getStacksView())
+                before.put(stack.getBuilding().getId(), stack.getQuantity());
+            step(g, 1);
+            opened += target.getLastFinished();
+            for (BuildingsStacks stack : g.getBuildingManager().getStacksView())
+                if (stack != target) unrelated[0] += Math.max(0,
+                        stack.getQuantity() - before.getOrDefault(stack.getBuilding().getId(), 0));
+        }
+        return opened;
+    }
+
     /**
      * What the last order cost, by city: [the city founded the 1900 way, the default one]; what the model quoted for it just before (Game.quoteBuildOn(),
      * which buildStack() charges); the quote's sticker, the template's whole cost at that city's builders; and the model's own sticker for it,
@@ -412,8 +428,9 @@ public class FittingCheck {
     static Game builtVillage(String label, Founding founding) {
         Game g = village(label, founding, true, false);
         quietly(() -> {
-            g.getBusinessInvestment().holdSector(Sectors.INDUSTRY);
-            g.getBusinessInvestment().holdSector(Sectors.AGRICULTURE);
+            // R2d: cause this fixture's global no-other-unfitted premise.
+            // An unheld Manufacturing order used to finish a future carbide piece here.
+            holdAll(g);
             g.buildStack(g.getBuildingManager().getTemplateByName("Construction Depot"), 4, true);
             g.simulateMonths(Forms1900Check.SETTLE);
         });
@@ -450,11 +467,15 @@ public class FittingCheck {
         quietly(() -> ordered[0] = g.buildStack(t, 2, false));
         ORDER_COST[which] = cash - g.getCash();
         check("fixture: two Bakeries are on site", ordered[0] == Game.BuildResult.SUCCESS && bakery.getUnderConstruction() == 2, String.valueOf(ordered[0]));
-        int opened = pressUntilOpen(g, bakery, BAKERY_MONTHS);
+        int[] unrelated = { 0 };
+        int opened = pressUntilOpenAlone(g, bakery, BAKERY_MONTHS, unrelated);
+        check("fixture: no other building completed while the two Bakeries opened", unrelated[0] == 0,
+                "other completions " + unrelated[0]);
         check("at that price the Bakeries that finished came fitted: the count of the drive unfitted is as it was", opened == 2 && bakery.getUnfitted(DRIVE) == before,
                 "opened " + opened + ", count " + before + " -> " + bakery.getUnfitted(DRIVE));
         if (unfittedCity) {
-            check("...and nothing was unfitted by it: Industry's steam share is 0", !EquipmentCheck.anyUnfitted(g) && g.getSectors().industry().getSteamShare() == 0);
+            check("...and nothing was unfitted by it: Industry's steam share is 0", !EquipmentCheck.anyUnfitted(g) && g.getSectors().industry().getSteamShare() == 0,
+                    "unfitted " + g.getBuildingManager().getUnfittedById() + ", steam " + g.getSectors().industry().getSteamShare());
         }
 
         // Below it: the finished ones come unfitted in a city founded the 1900 way, fitted in a default city.

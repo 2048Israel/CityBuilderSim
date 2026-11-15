@@ -329,6 +329,9 @@ adds its line here, not in `CLAUDE.md`.
                                    in a city founded the 1900 way, set on the template as the mix of its
                                    fitted and unfitted parts; chosen where the Policy hears the month,
                                    applied again after the sites advance and on a load; saved by template id
+        RecipeChange.java          R2d's sourced signed undo for one discovery, independent of other pieces.
+        RecipeChanges.java         Composes those changes, preserving saved process choices and each piece's fitted count.
+        HistoricalRecipeCheck.java R2d's per-row date/fitting fixtures, both fitting orders, default and real-clock checks.
         RecipeCheck.java           R1c's recipes: the data read, a default city choosing nothing, the best
                                    recipe at the city's prices, known and runnable, the mix, the piece's
                                    gain, the save, New Game, and the shipped rows in a 1900 town

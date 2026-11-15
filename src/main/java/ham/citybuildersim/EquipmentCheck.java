@@ -279,7 +279,7 @@ public class EquipmentCheck {
         for (String name : DRIVES) {
             BuildingsTemplate t = bm.getTemplateByName(name);
             Equipment p = t == null ? null : t.getEquipment(DRIVE);
-            boolean ok = p != null && t.getEquipment().size() == 1 && p.getEnds() == Equipment.Form.STEAM && p.isYear() && p.getSince().equals("1900")
+            boolean ok = p != null && t.getEquipment().stream().filter(e -> e.getEnds() == Equipment.Form.STEAM).count() == 1 && p.getEnds() == Equipment.Form.STEAM && p.isYear() && p.getSince().equals("1900")
                     && p.getLifeMonths() == 300;
             // The rules the figures were struck by (R1-notes call 9, est.): the motors' tonnes are 8 kg a kW of peak draw, the month's mean
             // over a 0.6 load factor, to a tenth of a tonne; the work a tenth of the building's own construction points, to a point.
@@ -305,7 +305,7 @@ public class EquipmentCheck {
         for (String name : FARMS) {
             BuildingsTemplate t = bm.getTemplateByName(name);
             Equipment p = t == null ? null : t.getEquipment(TRACTOR);
-            boolean ok = p != null && t.getEquipment().size() == 1 && p.getEnds() == Equipment.Form.FARM_HORSES && !p.isYear()
+            boolean ok = p != null && t.getEquipment().stream().filter(e -> e.getEnds() == Equipment.Form.FARM_HORSES).count() == 1 && p.getEnds() == Equipment.Form.FARM_HORSES && !p.isYear()
                     && p.getSince().equals("PE14") && p.getWork() == 0 && p.getLifeMonths() == 180 && p.getBuys().size() == 1;
             // 3 t of machinery a hundred acres of the farm's land (R1-notes call 9, est.), to a tenth of a tonne.
             if (ok) ok = Math.abs(p.getBuys().getOrDefault(Good.MACHINERY, -1.0) - 3.0 * t.getLandSqFt() / 43_560 / 100) <= 0.05 + 1e-9;
@@ -322,22 +322,22 @@ public class EquipmentCheck {
         named.addAll(List.of(FARMS));
         named.add("Truck Depot");
         for (BuildingsTemplate t : bm.getTemplates()) {
-            if (t.getEquipment().isEmpty() || named.contains(t.getName()) || t.recipePieceId() != null) continue;
+            if (t.getEquipment().isEmpty() || named.contains(t.getName()) || t.recipePieceId() != null || !t.getRecipeChanges().isEmpty()) continue;
             other++;
             if (firstOther == null) firstOther = t.getName();
         }
-        check("no other template carries a piece than the drive's, the depot's, the farms' and the ones whose recipes need one", other == 0, other + " do, " + firstOther + " first");
+        check("no other template carries a piece than the drive's, the depot's, the farms' and the ones whose process or independent recipes need one", other == 0, other + " do, " + firstOther + " first");
 
         boolean everyEnds = true;
         String firstEnds = null;
         for (BuildingsTemplate t : bm.getTemplates()) {
             for (Equipment p : t.getEquipment()) {
-                boolean ok = p.getEnds() != null || p.getId().equals(t.recipePieceId());
+                boolean ok = p.getEnds() != null || p.getId().equals(t.recipePieceId()) || t.changeNeeds(p.getId());
                 everyEnds &= ok;
                 if (!ok && firstEnds == null) firstEnds = t.getName() + "/" + p.getId();
             }
         }
-        check("every piece ends one of the three forms or is its template's recipe piece, the one its recipes need", everyEnds, firstEnds);
+        check("every piece ends one of the three forms or is needed by a process or independent recipe on its template", everyEnds, firstEnds);
 
         int formless = 0, formlessWanted = 0;
         String firstFormless = null;
@@ -354,13 +354,17 @@ public class EquipmentCheck {
                         wanted |= recipe.has("needsEquipment") && recipe.get("needsEquipment").getAsString().equals(piece.get("id").getAsString());
                     }
                 }
+                if (o.has("recipeChanges")) for (JsonElement r : o.getAsJsonArray("recipeChanges")) {
+                    JsonObject change = r.getAsJsonObject();
+                    wanted |= change.has("equipment") && change.get("equipment").getAsString().equals(piece.get("id").getAsString());
+                }
                 BuildingsTemplate t = bm.getTemplate(o.get("id").getAsInt());
-                wanted &= t != null && piece.get("id").getAsString().equals(t.recipePieceId());
+                wanted &= t != null && (piece.get("id").getAsString().equals(t.recipePieceId()) || t.changeNeeds(piece.get("id").getAsString()));
                 if (wanted) formlessWanted++;
                 else if (firstFormless == null) firstFormless = o.get("name").getAsString() + "/" + piece.get("id").getAsString();
             }
         }
-        check("...and the file's pieces that end none (" + formless + ") are each needed by a recipe of their building, and are the template's recipe piece once read",
+        check("...and the file's pieces that end none (" + formless + ") are each needed by a recipe of their building, and are needed by its process or independent recipe once read",
                 formless > 0 && formlessWanted == formless, formlessWanted + " of " + formless + ", first " + firstFormless);
 
         BuildingsTemplate grainFarm = bm.getTemplateByName("Grain Farm"), bakery = bm.getTemplateByName("Bakery");
