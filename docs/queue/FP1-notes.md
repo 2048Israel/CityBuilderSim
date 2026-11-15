@@ -194,3 +194,32 @@ The orchestrator accepted c9e5e7c2's move-scope and fixture delta at 14:21.
 The new dry-run go arrived at 14:27, with main still ade96cfb. The branch
 was fetched and its main ancestry checked before launch. The provisional
 marker is still present.
+
+## Final kept merge run
+
+The final normal-route dry run is kept at
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FP1-qkbYBzgy
+(Git Bash /tmp/cbs-gate-FP1-qkbYBzgy).
+
+- Branch input bb170940ecae365f0fedcbbf4f9764c34de5daf9.
+- Main input ade96cfbd2ed1074b834dbfb0bf0a93f329f841b.
+- Reviewed production code and fixtures c9e5e7c2.
+- Gate exit 0 at 15:13:58 on 2026-11-15. Suite exit 3, known reds only.
+- Retained selection is full, with nightly KeptCheck and ShortSellingCheck,
+  candidate version 0.9.116. The kept selection file records it verbatim.
+- KeptCheck ended ALL OK. Fund sections 61–63 have zero FAIL lines.
+  The formerly failing first-page case retains 97.6%, with 19 nodes made
+  and 785 handed back, above the original 90% floor.
+- Forced replacement, current click target, year folds and the warrant's
+  wrapped-to-empty move all pass.
+- Default LongPlaytest ended All checks passed. Default trace unchanged
+  by FP1's screen and pure-view changes.
+- The remaining recorded-red harnesses are DeathRecordCheck, InvestCheck,
+  MapCheck, MoneyDatesCheck and ResearchViewCheck. Unnamed output is empty.
+- Maps regenerated and Stale has zero firm findings.
+- Logs and the sealed checks are in the run's checks directory. Its
+  checks.complete, checks.sha256, main.commit and branch.commit are kept.
+
+Only these notes and the ship file advance after that run. The ship's
+gate-run comment names this kept directory for the publisher's reuse.
+The provisional marker is removed last in a commit of its own.
