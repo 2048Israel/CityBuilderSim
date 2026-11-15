@@ -1154,12 +1154,20 @@ public class Game {
 
     /** Whether a Policy lever is open in this city (R0): from the month Canada first had it, or the month a find brought it to. For the screen and the inbox. */
     public boolean isLeverOpen(PolicyDates.Lever lever) {
-        return economyManager.getTaxPolicy().isOpen(lever);
+        return PolicyDates.isMoney(lever) ? !foundedUnfitted() || PolicyDates.isOpen(lever, month) : economyManager.getTaxPolicy().isOpen(lever);
     }
 
     /** The game month a Policy lever opens in this city (R0): history's (PolicyDates), earlier where a find brought it forward, 1 where it is open from the start. */
     public int leverOpeningMonth(PolicyDates.Lever lever) {
-        return economyManager.getTaxPolicy().openingMonth(lever);
+        return PolicyDates.isMoney(lever) ? (foundedUnfitted() ? PolicyDates.openingMonth(lever) : 1) : economyManager.getTaxPolicy().openingMonth(lever);
+    }
+
+    /** The same dated Money switch at founding, both halves of the month, and after the saved books return. */
+    void moneyHearsTheMonth() {
+        int moneyMonth = foundedUnfitted() ? month : Integer.MAX_VALUE;
+        foreign.hearMoneyMonth(moneyMonth, denomination.money(ForeignAccounts.OPENING_RATE));
+        debtManager.hearMoneyMonth(moneyMonth, foreign.isCanadaGold());
+        centralBank.hearMoneyMonth(moneyMonth);
     }
 
     /**
@@ -1169,6 +1177,7 @@ public class Game {
      * buildings and their unfitted counts are back (loadGame(): the stacks do not stand yet where it says the rest).
      */
     private void policyHearsTheMonth() {
+        moneyHearsTheMonth();
         economyManager.getTaxPolicy().setMonth(month);
         labourMarket.setFloorBinding(economyManager.getTaxPolicy().isOpen(PolicyDates.Lever.MINIMUM_WAGE));
         // ...and the households what a pensioner is paid, from the first month: HouseholdAccounts opens on the 45% default, and the month's own
@@ -1879,6 +1888,7 @@ public class Game {
         takeTheDollarsGoldDates();
         // ...AND THE US'S POLICY RATE TO THE CITY, the world's price of money for everything that reads it (XR4).
         handTheUsRate();
+        moneyHearsTheMonth();
         PartnerTrade last = partnerTrade;
         economyManager.getMarkets().setWorldBand(market, last::monthExportUnits, last::monthImportUnits);
     }
@@ -2045,6 +2055,8 @@ public class Game {
         double[] annual = new double[WorldMoneys.EIGHT.size()];
         for (int k = 0; k < annual.length; k++) annual[k] = rates == null || worldQuietForTheD ? DebtManager.WORLD_BASE_RATE : rates.rate(k);
         debtManager.setMoneyRates(annual);
+        // R0f: the saved world's rate returns later than the saved dial. Inherited interest must hear that final rate too.
+        if (foundedUnfitted()) debtManager.hearMoneyMonth(month, foreign.isCanadaGold());
     }
 
     /** A money's value against the US$ in a month, a fraction: its rate before over its rate after, less one (a rate is units to the dollar, so a falling rate is a rising money). 0 for one with no rate either side. */
@@ -5930,6 +5942,7 @@ public class Game {
      * one-argument purchase does. The logs name the money.
      */
     public double buyForeignCurrency(double amount, String code) {
+        if (!isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) return 0;
         double spend = Math.max(0, Math.min(amount, cash));
         if (spend <= 0) return 0;
         treasuryPays(TreasuryLine.RESERVE_PURCHASES, spend);
@@ -5961,6 +5974,7 @@ public class Game {
      * anything; null sells from the largest holding, as the one-argument sale does. The logs name the money.
      */
     public double sellForeignCurrency(double amount, String code) {
+        if (!isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) return 0;
         double sold = foreign.sellReserves(Math.max(0, amount), code);
         if (sold <= 0) return 0;
         cash += sold;
@@ -13381,7 +13395,9 @@ public class Game {
          * when it is today's line, the inflation rule, untied: "aim at inflation instead and watch the gold go".
          */
         ForeignAccounts.Regime fxRegime = foreign.getRegime();
-        if (fxRegime == ForeignAccounts.Regime.PEG) {
+        if (!isLeverOpen(PolicyDates.Lever.POLICY_RATE) || foreign.isCanadaGold()) {
+            debtManager.setPolicyRate(debtManager.worldRate());
+        } else if (fxRegime == ForeignAccounts.Regime.PEG) {
             debtManager.setPolicyRate(debtManager.tiedRate(foreign.currencyGap()));
         } else if (fxRegime == ForeignAccounts.Regime.GOLD
                 && !(debtManager.isAutopilot() && debtManager.getAim() == DebtManager.Aim.INFLATION)) {
@@ -13939,7 +13955,7 @@ public class Game {
         // REACHES THE D$); zeros with no world.
         handTheWorldToTheD();
         double rateBeforeReprice = foreign.getRate();
-        boolean onGoldBeforeReprice = foreign.getRegime() == ForeignAccounts.Regime.GOLD;
+        boolean onGoldBeforeReprice = foreign.getRegime() == ForeignAccounts.Regime.GOLD || foreign.isCanadaGold();
         foreign.setMoneyBase(centralBank.m0());   // M0 is the gold cover's base, handed right before the reprice (GD3)
         foreign.repriceCurrency();
         /*
@@ -20892,6 +20908,7 @@ public class Game {
             // the default - six months, the constant it was.
             centralBank.setAdvancesCeilingMonths(loaded.getAdvancesCeilingMonths() != null
                     ? loaded.getAdvancesCeilingMonths() : CentralBank.DEFAULT_ADVANCES_MONTHS);
+            moneyHearsTheMonth();   // R0f: after foreign accounts and the saved policy rate, so a load keeps an exhausted gold episode.
             hotMoney.restore(loaded.getCapitalFlows());
             hotMoney.restoreStopReason(loaded.getCapitalFlowsStopReason());   // an older save has none: blank, as it was (FW6)
             hotMoney.setMonth(month);
@@ -22181,6 +22198,7 @@ public class Game {
      * @return true if the reform happened
      */
     public boolean reformCurrency(double factor) {
+        if (!isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) return false;
 
         if ((!forcedReform && !canReformCurrency()) || !denomination.canLop(factor)) return false;
 

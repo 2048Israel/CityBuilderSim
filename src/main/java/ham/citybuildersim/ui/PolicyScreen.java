@@ -3227,6 +3227,21 @@ final class PolicyScreen {
             + "people expect, not last year's prices, as every real rate here is.";
 
     void ratePage(VBox page) {
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            page.getChildren().add(muted(ui.game.getForeignAccounts().isCanadaGold()
+                    ? "On gold: the dollar is held at par by the city's reserves. Interest follows the world's, "
+                            + pct2(ui.game.getDebtManager().worldRate()) + ". If the reserves run out, the dollar floats."
+                    : "The dollar floats. The government's Advance Rate is the rate at which it lends to the banks."));
+            if (!ui.game.isLeverOpen(PolicyDates.Lever.POLICY_RATE)) addShutCard(page, PolicyDates.Lever.POLICY_RATE);
+            else if (!ui.game.getForeignAccounts().isCanadaGold()) {
+                double rate = ui.game.getDebtManager().getPolicyRate();
+                double want = staged("policy", rate);
+                page.getChildren().add(sectionHead("THE ADVANCE RATE", PolicyDates.Lever.POLICY_RATE.terms(), null));
+                page.getChildren().add(theDialCard(ui.game.getDebtManager(), ui.game.getPriceIndex(), rate, want));
+            }
+            addShutCard(page, PolicyDates.Lever.CENTRAL_BANK);
+            return;
+        }
         DebtManager market = ui.game.getDebtManager();
         PriceIndex px = ui.game.getPriceIndex();
         double rate = market.getPolicyRate();
@@ -3412,6 +3427,13 @@ final class PolicyScreen {
      */
     VBox theDialCard(DebtManager market, PriceIndex px, double rate, double want) {
         if (market.isTied()) return tiedDialCard(market, rate);
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            Ladder ladder = ownLadder("policy", rate, DebtManager.MIN_POLICY_RATE, DebtManager.MAX_POLICY_RATE, .0005, Money::pct2);
+            return dialCard(new DialCard(Icons.BANK, Palette.MONEY, "THE ADVANCE RATE", PolicyDates.Lever.POLICY_RATE.terms(), pct2(rate),
+                    "The government's rate for lending to the banks.", List.of(), ladder, want, dialEffects(rate),
+                    "It reprices no bond already sold.", REPRICE_INFO,
+                    applyFoot("policy", "Set the Advance Rate to " + pct2(want), () -> market.takeTheDial(want))), 360, true);
+        }
         Bank bank = ui.game.getBank();
         Ladder ladder = ownLadder("policy", rate, DebtManager.MIN_POLICY_RATE, DebtManager.MAX_POLICY_RATE, .0005, Money::pct2);
         double advised = px.hasRate() ? market.advisedPolicyRate(px.inflation()) : Double.NaN;
@@ -4132,6 +4154,13 @@ final class PolicyScreen {
      * dial's tie, beside dealing in dollars.
      */
     void currencyPage(VBox page) {
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            addShutCard(page, PolicyDates.Lever.CENTRAL_BANK);
+            page.getChildren().add(muted(ui.game.getForeignAccounts().isCanadaGold()
+                    ? "On gold: the city's reserves hold the dollar at par. Reserves running out ends this gold episode."
+                    : "The dollar floats until the city can choose its monetary policy."));
+            return;
+        }
         ForeignAccounts fx = ui.game.getForeignAccounts();
         ForeignAccounts.Regime now = fx.getRegime(), want = stagedRegime(now);
         // Kept (KP6): every card is a scope of its own; the peg's and the band's are keyed by whether it is in force, since a note is another card.
@@ -5278,6 +5307,13 @@ final class PolicyScreen {
      * and the wording is about ZEROS rather than about value.
      */
     void reformPage(VBox page) {
+        if (!ui.game.isLeverOpen(PolicyDates.Lever.CENTRAL_BANK)) {
+            addShutCard(page, PolicyDates.Lever.CENTRAL_BANK);
+            page.getChildren().add(muted(ui.game.getForeignAccounts().isCanadaGold()
+                    ? "On gold: the city's reserves hold the dollar at par. Reserves running out ends this gold episode."
+                    : "The dollar floats until the city can choose its monetary policy."));
+            return;
+        }
         Denomination unit = ui.game.getDenomination();
         double index = ui.game.getPriceIndex().getIndex();
         VBox head = card(cardHead(Icons.BANKNOTE, Palette.MONEY, "LOPPING THE ZEROS OFF", reformInfo(), null),

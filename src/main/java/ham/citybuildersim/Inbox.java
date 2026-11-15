@@ -266,13 +266,15 @@ public class Inbox {
         return n == 1 ? "1 person" : String.format("%,d people", n);
     }
 
-    /** The levers whose opening is told: the ones TaxPolicy holds, the minimum wage (LabourMarket's floor, which TaxPolicy dates but does not hold) and zoning (Game.setZone's gate). */
+    /** The levers whose opening is told: the ones TaxPolicy holds, the minimum wage (LabourMarket's floor, which TaxPolicy dates but does not hold) zoning (Game.setZone's gate), and the two dated Money institutions (R0f). */
     private static final PolicyDates.Lever[] NOTICED = noticed();
 
     private static PolicyDates.Lever[] noticed() {
-        PolicyDates.Lever[] all = java.util.Arrays.copyOf(TaxPolicy.GATED, TaxPolicy.GATED.length + 2);
+        PolicyDates.Lever[] all = java.util.Arrays.copyOf(TaxPolicy.GATED, TaxPolicy.GATED.length + 4);
         all[TaxPolicy.GATED.length] = PolicyDates.Lever.MINIMUM_WAGE;
         all[TaxPolicy.GATED.length + 1] = PolicyDates.Lever.ZONING;
+        all[TaxPolicy.GATED.length + 2] = PolicyDates.Lever.POLICY_RATE;
+        all[TaxPolicy.GATED.length + 3] = PolicyDates.Lever.CENTRAL_BANK;
         return all;
     }
 
@@ -280,7 +282,7 @@ public class Inbox {
      * The Policy levers history opens (R0): in the month a lever opens, one notice of Canada's first terms for it, titled "An income
      * tax: 1917", keyed "lever:" and its name so it is raised once. The month of a city's first day raises none (a lever open from the
      * start has no first day to report), and nor does a save from before R0, whose levers are all open from month 1. It is settled the
-     * month after, like any one-off, and kept two years. Only the levers TaxPolicy holds, the minimum wage and zoning; the others are raised by their own batches.
+     * month after, like any one-off, and kept two years. The levers TaxPolicy holds, the minimum wage, zoning and the two Money institutions; default founding opens Money on day one, so raises neither.
      */
     private void takeLevers(Game game, int month) {
         for (PolicyDates.Lever lever : NOTICED) {

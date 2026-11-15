@@ -11,7 +11,7 @@ package ham.citybuildersim;
  * history is the tutorial. The three income taxes open at the city's founding rate and the promises (the pensions, EI, the health premium,
  * student aid) at zero (opensAtFoundingRate(), call 16). This class is only the dates. Nothing reads it yet (R0's first slice): the gate that holds a lever shut
  * is the second slice's (TaxPolicy's effective rates and setters, the minimum wage, zoning, the save and the inbox) and the Policy screen's
- * drawing of a shut one the third's. Money's two dates are here as data; the gate on them, and the gold years between, are batch R0f's.
+ * drawing of a shut one the third's. Money's two dates are here as data; R0f gates them and the gold years between in a city founded the 1900 way.
  *
  * Pure: no state, no instances, no randomness. A lever the study dates by the year alone opens in January of that year, because a month would
  * be a claim the study does not make; one it dates to a month opens in that month.
@@ -55,7 +55,7 @@ public final class PolicyDates {
         PENSION_REPLACEMENT("old-age pension", 1927, "PL7", "the Old Age Pensions Act",
                 "up to C$20 a month at 70; income under C$365; Ottawa paid half"),
         /** Money, 11 March 1935: the Bank of Canada opens the rest of Money (the policy rate having opened in 1914). */
-        CENTRAL_BANK("central bank", 1935, 3, "PL8", "the Bank of Canada", "Bank Rate 2.5%"),
+        CENTRAL_BANK("central bank", 1935, 3, "", "the Bank of Canada", "Bank Rate 2.5%"),
         /** Taxes and Promises, 1939: the grant and the loan rate together. */
         STUDENT_AID("student aid", 1939, "PL9", "Dominion-Provincial Student Aid", "terms not found"),
         /** Taxes and Promises, 7 August 1940: the premium and the benefit together; contributions began on 1 July 1941. */
@@ -166,6 +166,23 @@ public final class PolicyDates {
         return monthOf(lever.year(), lever.monthOfYear());
     }
 
+    /** Canada's return to gold, July 1926 (research-1900.md 7.2). */
+    public static final int GOLD_RETURN = monthOf(1926, 7);
+
+    /** Canada's final departure, September 1931, following Britain; the study's 1929-31 interval ends here. */
+    public static final int GOLD_END = monthOf(1931, 9);
+
+    /** Money follows dated institutions, never a law discovery. */
+    public static boolean isMoney(Lever lever) {
+        return lever == Lever.POLICY_RATE || lever == Lever.CENTRAL_BANK;
+    }
+
+    /** The dated gold episode (1 or 2), or 0 when the dollar floats. */
+    public static int goldPeriod(int month) {
+        if (month < openingMonth(Lever.POLICY_RATE)) return 1;
+        return month >= GOLD_RETURN && month < GOLD_END ? 2 : 0;
+    }
+
     /** Whether a lever is open in a game month: from its opening month on. */
     public static boolean isOpen(Lever lever, int gameMonth) {
         return gameMonth >= openingMonth(lever);
@@ -187,7 +204,7 @@ public final class PolicyDates {
 
     /** The earliest month a law discovery may bring a lever to: MAX_EARLY_MONTHS before its opening month, never before month 1. */
     public static int earliestOpening(Lever lever) {
-        return earliestFor(openingMonth(lever));
+        return isMoney(lever) ? openingMonth(lever) : earliestFor(openingMonth(lever));
     }
 
     /** MAX_EARLY_MONTHS before an opening month, floored at month 1 (separate from the lever so the floor can be held on fixtures). */
@@ -285,6 +302,8 @@ public final class PolicyDates {
 
     /** Where a dated lever opens, as a sentence the notice finishes: the founding rate, the going unskilled wage, or zero. */
     static String opensAt(Lever lever) {
+        if (lever == Lever.POLICY_RATE) return "The Advance Rate opens at the world's rate";
+        if (lever == Lever.CENTRAL_BANK) return "The rest of Money opens for the city to choose";
         if (opensAtFoundingRate(lever)) {
             return "The tax opens at the city's founding rate, " + DecisionLog.pct(TaxPolicy.DEFAULT_INCOME_TAX);
         }

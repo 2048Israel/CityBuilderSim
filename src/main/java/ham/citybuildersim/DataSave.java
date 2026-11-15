@@ -1728,6 +1728,7 @@ public class DataSave implements Cloneable {
      * dollars, its revaluation and the debt's ride the end of the array. The
      * slots are listed at ForeignAccounts.toSaveArray().
      */
+    // R0f: includes the Canadian gold episode and its exhausted flag (ForeignAccounts slots 156-157).
     private double[] foreignAccounts;
 
     public void setForeignAccounts(double[] state) { this.foreignAccounts = state; }
