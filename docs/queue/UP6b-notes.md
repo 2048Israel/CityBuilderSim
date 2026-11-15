@@ -132,3 +132,43 @@ Orchestrator accepted the final delta in mail
 paused-notice lifecycle and unchanged guard, and granted the replacement
 normal-route dry run. The two stranger Codex reviews and this delta review
 are complete; their findings were mended before readiness.
+
+## Final kept dry run — green
+
+Normal route, on the orchestrator's go, from hidden persistent PowerShell host
+PID 18716 (which outlived every tool call):
+`sh tools/gate.sh UP6b --dry-run`.
+
+- Kept run: `/tmp/cbs-gate-UP6b-sZT3N9s3`.
+- Windows: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-UP6b-sZT3N9s3`.
+- Branch: `0f8968358679d2b69197fd85d20baeb9e309b7ec`.
+- Main: `a309bf7f131a457dab540513000efcafd8ab45b2`.
+- Publisher log: the run's `ship.log`; classified results: `checks/suite.txt`;
+  launcher log: `target/up6b/gate-launch.log` in this worktree.
+- Gate **exit 0**; suite **exit 3**, **192 harnesses: 186 passed, 6 known red**.
+  The normal ALL selection chooses its gate tier itself; no local ALL run.
+- Known-red harnesses: MoneyDatesCheck, InvestCheck, MapCheck,
+  DeathRecordCheck, PrizeCheck and ResearchViewCheck. **Zero unnamed red
+  lines**, no new covers or transfers. SaveSlotCheck, SaveFileCheck, InboxCheck
+  and LongPlaytest finish with all checks passed.
+- Five timing assertions SOFT (SaveSlotCheck 1, MapCheck 4); three path
+  assertions OBSERVED (HealthCheck 1, MapCheck 2), under the normal route.
+  Stale: 0 firm findings. `checks.complete` and `checks.sha256` are present.
+  The launcher's before/after HEAD and origin refs compare unchanged.
+
+**Default trace unchanged.** Compared the kept `checks/LongPlaytest.log`
+against `/tmp/cbs-gate-R2c-AaDf8ZRE/checks/LongPlaytest.log`, the same main
+model before the harness-only CB2 merge. The raw diff changes only the elapsed
+run header (440s vs 203s), CL3's measured window/run time (3.3s/440s vs
+2.3s/203s), and the wall-clock timestamps of two vault-purchase log lines.
+All other lines, including every model figure, decision, assertion and money
+fixture, match. After normalizing only those timing fields and the JVM-options
+banner, SHA-256 is
+`5efd1490cd87a84c32b9f711315158b70d83737a74d755de4a6b04cce83a19c1`
+for both reports. Local comparison records:
+`target/up6b/default-report.diff` and `default-report-comparison.txt`.
+No main rerun and no ensemble.
+
+No source or fixture changes after this kept run. Only these notes and the
+ship file advance. The provisional marker is removed last in its own commit
+and checked absent before the readiness message.
