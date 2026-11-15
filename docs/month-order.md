@@ -66,7 +66,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 44. **L13391** `for (double p : poolsBefore) pooledBefore += p;`
 45. **L13392** `double interestDue = economyManager.getInterestAccrued();` → [EconomyManager.getInterestAccrued](map/EconomyManager.md) (L2125)
 46. **L13394** `bank.startMonth();` → [Bank.startMonth](map/Bank.md) (L1326)
-47. **L13395** `foreign.startMonth();` → [ForeignAccounts.startMonth](map/ForeignAccounts.md) (L2781)
+47. **L13395** `foreign.startMonth();` → [ForeignAccounts.startMonth](map/ForeignAccounts.md) (L2795)
 48. **L13396** `centralBank.startMonth();` → [CentralBank.startMonth](map/CentralBank.md) (L258)
 49. **L13407** `buybackToHouseholds = buybackToHouseholdsUnsettled;`  
    _A BUYBACK BETWEEN THE PRESSES IS DECLARED HERE (0.7.1)._
@@ -75,9 +75,9 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 52. **L13410** `centralBank.settleRedemptions();` → [CentralBank.settleRedemptions](map/CentralBank.md) (L569)
 53. **L13413** `settleTheEdge();` → [Game.settleTheEdge](map/Game.md) (L6151)  
    _...and the dollars the vault took at the strong edge of a band or a peg at the last reprice are paid for here, by their payer (XR2)._
-54. **L13437** `ForeignAccounts.Regime fxRegime = foreign.getRegime();` → [ForeignAccounts.getRegime](map/ForeignAccounts.md) (L1683)  
+54. **L13437** `ForeignAccounts.Regime fxRegime = foreign.getRegime();` → [ForeignAccounts.getRegime](map/ForeignAccounts.md) (L1697)  
    _THE AUTOPILOT (0.7.0), before anything is priced: with the rule's hand on the dial, the dial goes where the rule says - DebtManager .advisedPolicyRate() on the year's inflation - and holds where it..._
-55. **L13438** `if (!isLeverOpen(PolicyDates.Lever.POLICY_RATE) \|\| foreign.isCanadaGold()) {` → [Game.isLeverOpen](map/Game.md) (L1167), [ForeignAccounts.isCanadaGold](map/ForeignAccounts.md) (L1510), [DebtManager.setPolicyRate](map/DebtManager.md) (L89), [DebtManager.worldRate](map/DebtManager.md) (L882), [DebtManager.tiedRate](map/DebtManager.md) (L238), [ForeignAccounts.currencyGap](map/ForeignAccounts.md) (L1785), [DebtManager.isAutopilot](map/DebtManager.md) (L126), [DebtManager.getAim](map/DebtManager.md) (L196), [DebtManager.goldRate](map/DebtManager.md) (L254), [Game.getGoldCover](map/Game.md) (L6071), [DebtManager.currencyRate](map/DebtManager.md) (L227), [PriceIndex.hasRate](map/PriceIndex.md) (L557), [DebtManager.mixRate](map/DebtManager.md) (L232), [PriceIndex.inflation](map/PriceIndex.md) (L549), [DebtManager.advisedPolicyRate](map/DebtManager.md) (L489)
+55. **L13438** `if (!isLeverOpen(PolicyDates.Lever.POLICY_RATE) \|\| foreign.isCanadaGold()) {` → [Game.isLeverOpen](map/Game.md) (L1167), [ForeignAccounts.isCanadaGold](map/ForeignAccounts.md) (L1524), [DebtManager.setPolicyRate](map/DebtManager.md) (L89), [DebtManager.worldRate](map/DebtManager.md) (L882), [DebtManager.tiedRate](map/DebtManager.md) (L238), [ForeignAccounts.currencyGap](map/ForeignAccounts.md) (L1799), [DebtManager.isAutopilot](map/DebtManager.md) (L126), [DebtManager.getAim](map/DebtManager.md) (L196), [DebtManager.goldRate](map/DebtManager.md) (L254), [Game.getGoldCover](map/Game.md) (L6071), [DebtManager.currencyRate](map/DebtManager.md) (L227), [PriceIndex.hasRate](map/PriceIndex.md) (L557), [DebtManager.mixRate](map/DebtManager.md) (L232), [PriceIndex.inflation](map/PriceIndex.md) (L549), [DebtManager.advisedPolicyRate](map/DebtManager.md) (L489)
 56. **L13456** `strikeTheCurve();` → [Game.strikeTheCurve](map/Game.md) (L14736)  
    _THE CURVE'S EXPECTATIONS, struck once a month after the dial is set (autopilot or not): see strikeTheCurve()._
 57. **L13463** `settleTreasury();` → [Game.settleTreasury](map/Game.md) (L19357)  
@@ -174,8 +174,8 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 117. **L13824** `strikeBankBonds();` → [Game.strikeBankBonds](map/Game.md) (L5117)
 118. **L13829** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L452), [DebtManager.firmBookRatio](map/DebtManager.md) (L2966), [DebtManager.firmBookYield](map/DebtManager.md) (L2972)  
    _The businesses' paper at today's curve, struck here as the households' book yield is a few lines below, so paper bought at this month's settle is read at its own yield and not at the short rate it ..._
-119. **L13830** `outward.takeMonth(bank.depositRate(), debtManager.worldRate(),` → [OutwardInvestment.takeMonth](map/OutwardInvestment.md) (L248), [Bank.depositRate](map/Bank.md) (L3338), [DebtManager.worldRate](map/DebtManager.md) (L882), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246)
-120. **L13834** `householdBalance.investAbroad(bank.depositRate(), debtManager.worldRate(), foreign.getRate());` → [HouseholdBalance.investAbroad](map/HouseholdBalance.md) (L3192), [Bank.depositRate](map/Bank.md) (L3338), [DebtManager.worldRate](map/DebtManager.md) (L882), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246)  
+119. **L13830** `outward.takeMonth(bank.depositRate(), debtManager.worldRate(),` → [OutwardInvestment.takeMonth](map/OutwardInvestment.md) (L248), [Bank.depositRate](map/Bank.md) (L3338), [DebtManager.worldRate](map/DebtManager.md) (L882), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)
+120. **L13834** `householdBalance.investAbroad(bank.depositRate(), debtManager.worldRate(), foreign.getRate());` → [HouseholdBalance.investAbroad](map/HouseholdBalance.md) (L3192), [Bank.depositRate](map/Bank.md) (L3338), [DebtManager.worldRate](map/DebtManager.md) (L882), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)  
    _...and the households, by the same rule, with what the owners were just paid._
 121. **L13837** `householdBalance.sellPaperForSpread(debtManager.householdBookYield(), bank.depositRate());` → [HouseholdBalance.sellPaperForSpread](map/HouseholdBalance.md) (L3528), [DebtManager.householdBookYield](map/DebtManager.md) (L2995), [Bank.depositRate](map/Bank.md) (L3338)  
    _...and the city's paper, when the spread that brought them in has gone (0.7.1): home to the bank's desk, a little a month._
@@ -186,9 +186,9 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 125. **L13892** `double hotBefore = hotMoney.getStock();` → [CapitalFlows.getStock](map/CapitalFlows.md) (L634)  
    _================================================================= AND THE MONEY THAT IS HERE BECAUSE THE RATE IS GOOD._
 126. **L13893** `hotMoney.setMonth(month);` → [CapitalFlows.setMonth](map/CapitalFlows.md) (L748)
-127. **L13896** `hotMoney.setDoubt(foreign.getDoubtShare());` → [CapitalFlows.setDoubt](map/CapitalFlows.md) (L651), [ForeignAccounts.getDoubtShare](map/ForeignAccounts.md) (L1797)  
+127. **L13896** `hotMoney.setDoubt(foreign.getDoubtShare());` → [CapitalFlows.setDoubt](map/CapitalFlows.md) (L651), [ForeignAccounts.getDoubtShare](map/ForeignAccounts.md) (L1811)  
    _The hot money takes the break chance of itself home under a peg (XR2): the share the last reprice left, 0 under every other regime._
-128. **L13897** `hotMoney.takeMonth(` → [CapitalFlows.takeMonth](map/CapitalFlows.md) (L380), [Bank.depositRate](map/Bank.md) (L3338), [DebtManager.getRate](map/DebtManager.md) (L1429), [DebtManager.worldRate](map/DebtManager.md) (L882), [DebtManager.countryPremium](map/DebtManager.md) (L1208), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2491), [ForeignAccounts.getReserves](map/ForeignAccounts.md) (L2721), [Game.yearlyDepreciation](map/Game.md) (L16399), [Bank.isInsolvent](map/Bank.md) (L1808), [DebtManager.getMonthsSinceForeignDefault](map/DebtManager.md) (L1367)
+128. **L13897** `hotMoney.takeMonth(` → [CapitalFlows.takeMonth](map/CapitalFlows.md) (L380), [Bank.depositRate](map/Bank.md) (L3338), [DebtManager.getRate](map/DebtManager.md) (L1429), [DebtManager.worldRate](map/DebtManager.md) (L882), [DebtManager.countryPremium](map/DebtManager.md) (L1208), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2491), [ForeignAccounts.getReserves](map/ForeignAccounts.md) (L2735), [Game.yearlyDepreciation](map/Game.md) (L16399), [Bank.isInsolvent](map/Bank.md) (L1808), [DebtManager.getMonthsSinceForeignDefault](map/DebtManager.md) (L1367)
 129. **L13919** `double hotMoved = hotMoney.getStock() - hotBefore;` → [CapitalFlows.getStock](map/CapitalFlows.md) (L634)  
    _THE MONEY MOVES FOR REAL, and now it moves where the audit can see it._
 130. **L13920** `if (hotMoved > 0)      bank.receiveHotMoney(hotMoved);` → [Bank.receiveHotMoney](map/Bank.md) (L1684)
@@ -199,7 +199,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 134. **L13926** `lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);` → [MoneyAudit.strike](map/MoneyAudit.md) (L519)
 135. **L13929** `ownersWipedAbroadThisMonth = 0;`  
    _Declared (0.7.14): the valuation a resolution wiped off the world's shares is a month's, whether the month's or a press's before it._
-136. **L13939** `foreign.takeMonth(lastMoneyAudit, economyManager.getMonthGdp());` → [ForeignAccounts.takeMonth](map/ForeignAccounts.md) (L2572), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2491)  
+136. **L13939** `foreign.takeMonth(lastMoneyAudit, economyManager.getMonthGdp());` → [ForeignAccounts.takeMonth](map/ForeignAccounts.md) (L2586), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2491)  
    _...AND THE SAME MONTH, READ AS A BALANCE OF PAYMENTS._
 137. **L13971** `foreign.setParity(priceIndex.getParityLevel(), world.getPriceLevel(),` → [ForeignAccounts.setParity](map/ForeignAccounts.md) (L246), [PriceIndex.getParityLevel](map/PriceIndex.md) (L512), [WorldEconomy.getPriceLevel](map/WorldEconomy.md) (L315), [PriceIndex.inflation](map/PriceIndex.md) (L549), [WorldEconomy.realisedInflation](map/WorldEconomy.md) (L362)  
    _THE CAPPED LEVEL, not the index (XR1, star 2: "Basket, rent capped")._
@@ -207,23 +207,23 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _...AND WHAT THE CITY IS PAYING TO BORROW, AGAINST THE WORLD - IN REAL TERMS (0.7.2)._
 139. **L13996** `handTheWorldToTheD();` → [Game.handTheWorldToTheD](map/Game.md) (L2364)  
    _The rate follows parity's trend, the real gap's level, the balance, the cover, the market and the interventions felt (ForeignAccounts, THE FLOAT), and since XR2 the regime holds it where it says (T..._
-140. **L13997** `double rateBeforeReprice = foreign.getRate();` → [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246)
-141. **L13998** `boolean onGoldBeforeReprice = foreign.getRegime() == ForeignAccounts.Regime.GOLD \|\| foreign.isCanadaGold();` → [ForeignAccounts.getRegime](map/ForeignAccounts.md) (L1683), [ForeignAccounts.isCanadaGold](map/ForeignAccounts.md) (L1510)
-142. **L13999** `foreign.setMoneyBase(centralBank.m0());   // M0 is the gold cover's base, handed right before the reprice (GD3)` → [ForeignAccounts.setMoneyBase](map/ForeignAccounts.md) (L1586), [CentralBank.m0](map/CentralBank.md) (L802)
-143. **L14000** `foreign.repriceCurrency();` → [ForeignAccounts.repriceCurrency](map/ForeignAccounts.md) (L908)  
+140. **L13997** `double rateBeforeReprice = foreign.getRate();` → [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)
+141. **L13998** `boolean onGoldBeforeReprice = foreign.getRegime() == ForeignAccounts.Regime.GOLD \|\| foreign.isCanadaGold();` → [ForeignAccounts.getRegime](map/ForeignAccounts.md) (L1697), [ForeignAccounts.isCanadaGold](map/ForeignAccounts.md) (L1524)
+142. **L13999** `foreign.setMoneyBase(centralBank.m0());   // M0 is the gold cover's base, handed right before the reprice (GD3)` → [ForeignAccounts.setMoneyBase](map/ForeignAccounts.md) (L1600), [CentralBank.m0](map/CentralBank.md) (L802)
+143. **L14000** `foreign.repriceCurrency();` → [ForeignAccounts.repriceCurrency](map/ForeignAccounts.md) (L913)  
    _M0 is the gold cover's base, handed right before the reprice (GD3)_
-144. **L14008** `if (foreign.brokeThisMonth()) {` → [ForeignAccounts.brokeThisMonth](map/ForeignAccounts.md) (L1799), [Expectations.pegBroke](map/Expectations.md) (L237), [GameLog.note](map/GameLog.md) (L161), [ForeignAccounts.getLastBreakCause](map/ForeignAccounts.md) (L1802), [Game.getCurrency](map/Game.md) (L2827), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246), [DebtManager.dropGoldAim](map/DebtManager.md) (L260), [Game.foundedUnfitted](map/Game.md) (L1241), [DebtManager.hearMoneyMonth](map/DebtManager.md) (L81), [ForeignAccounts.isCanadaGold](map/ForeignAccounts.md) (L1510)  
+144. **L14008** `if (foreign.brokeThisMonth()) {` → [ForeignAccounts.brokeThisMonth](map/ForeignAccounts.md) (L1813), [Expectations.pegBroke](map/Expectations.md) (L237), [GameLog.note](map/GameLog.md) (L161), [ForeignAccounts.getLastBreakCause](map/ForeignAccounts.md) (L1816), [Game.getCurrency](map/Game.md) (L2827), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255), [DebtManager.dropGoldAim](map/DebtManager.md) (L260), [Game.foundedUnfitted](map/Game.md) (L1241), [DebtManager.hearMoneyMonth](map/DebtManager.md) (L81), [ForeignAccounts.isCanadaGold](map/ForeignAccounts.md) (L1524)  
    _...AND A PEG THAT BROKE (XR2, star 4): credibility takes its dent, and the log says so - by the vault or by doubt, and where the D$ landed._
 145. **L14019** `noteTheWorldMoneys(rateBeforeReprice);` → [Game.noteTheWorldMoneys](map/Game.md) (L2371)  
    _...AND THE WORLD'S NEWS (WN4): money that ran to safety abroad, a world peg that broke._
-146. **L14027** `centralBank.dollarsSold(foreign.getDefenceLocal());` → [CentralBank.dollarsSold](map/CentralBank.md) (L685), [ForeignAccounts.getDefenceLocal](map/ForeignAccounts.md) (L864)  
+146. **L14027** `centralBank.dollarsSold(foreign.getDefenceLocal());` → [CentralBank.dollarsSold](map/CentralBank.md) (L685), [ForeignAccounts.getDefenceLocal](map/ForeignAccounts.md) (L869)  
    _...and what the vault's dollars fetched, if the reprice defended the currency: the central bank's equity line, booked here, after the audit, because no pool moves on it - a capital transaction agai..._
-147. **L14045** `economyManager.getNationalAccounts().setDebtExchangeGain(debtManager.revalueForeign(foreign.getRate()));` → [EconomyManager.getNationalAccounts](map/EconomyManager.md) (L56), [DebtManager.revalueForeign](map/DebtManager.md) (L966), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246)  
+147. **L14045** `economyManager.getNationalAccounts().setDebtExchangeGain(debtManager.revalueForeign(foreign.getRate()));` → [EconomyManager.getNationalAccounts](map/EconomyManager.md) (L56), [DebtManager.revalueForeign](map/DebtManager.md) (L966), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)  
    _CD7: the same press books the exchange gain (loss) on the dollar paper - each piece's carrying value in dollars times the move from the rate it was last valued at - on the month the strike already ..._
-148. **L14046** `foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());` → [ForeignAccounts.takeForeignDebt](map/ForeignAccounts.md) (L2675), [DebtManager.getForeignPrincipalUsd](map/DebtManager.md) (L987), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246)
-149. **L14053** `foreign.revalueVault();` → [ForeignAccounts.revalueVault](map/ForeignAccounts.md) (L3071)  
+148. **L14046** `foreign.takeForeignDebt(debtManager.getForeignPrincipalUsd(), foreign.getRate());` → [ForeignAccounts.takeForeignDebt](map/ForeignAccounts.md) (L2689), [DebtManager.getForeignPrincipalUsd](map/DebtManager.md) (L987), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)
+149. **L14053** `foreign.revalueVault();` → [ForeignAccounts.revalueVault](map/ForeignAccounts.md) (L3085)  
    _...AND THE VAULT IS WORTH WHAT IT IS WORTH, the same line in the same place (2026-09-21): the vault is kept in dollars, so the reprice just moved its local value, and this books the move as a reval..._
-150. **L14054** `debtManager.setTrade(foreign.monthlyExports(), foreign.importCover());` → [DebtManager.setTrade](map/DebtManager.md) (L1116), [ForeignAccounts.monthlyExports](map/ForeignAccounts.md) (L2548), [ForeignAccounts.importCover](map/ForeignAccounts.md) (L2529)
+150. **L14054** `debtManager.setTrade(foreign.monthlyExports(), foreign.importCover());` → [DebtManager.setTrade](map/DebtManager.md) (L1116), [ForeignAccounts.monthlyExports](map/ForeignAccounts.md) (L2562), [ForeignAccounts.importCover](map/ForeignAccounts.md) (L2543)
 151. **L14055** `debtManager.ageForeignStanding();` → [DebtManager.ageForeignStanding](map/DebtManager.md) (L1360)
 152. **L14056** `checkForeignSolvency();` → [Game.checkForeignSolvency](map/Game.md) (L12315)
 153. **L14069** `priceIndex.takeMonth(indexPrices(), indexSpends(), indexFees(), indexFeeSpends(), month);` → [PriceIndex.takeMonth](map/PriceIndex.md) (L211), [Game.indexPrices](map/Game.md) (L16177), [Game.indexSpends](map/Game.md) (L16205), [Game.indexFees](map/Game.md) (L16220), [Game.indexFeeSpends](map/Game.md) (L16236)  
@@ -232,7 +232,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _The lean is measured against what holding the target takes - the Standard rule's advice and the neutral rate - at any strictness (0.7.52, DebtManager's HOW STRICT); at Standard they are the rule's ..._
 155. **L14082** `expectations.takeMonth(priceIndex, target, debtManager.getPolicyRate(),` → [Expectations.takeMonth](map/Expectations.md) (L163), [DebtManager.getPolicyRate](map/DebtManager.md) (L87), [DebtManager.neutralRate](map/DebtManager.md) (L564), [DebtManager.holdingRate](map/DebtManager.md) (L518), [PriceIndex.hasRate](map/PriceIndex.md) (L557), [PriceIndex.inflation](map/PriceIndex.md) (L549)
 156. **L14085** `handOnExpectations();` → [Game.handOnExpectations](map/Game.md) (L16298)
-157. **L14088** `rateHistory[month % 12] = foreign.getRate();` → [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246)  
+157. **L14088** `rateHistory[month % 12] = foreign.getRate();` → [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)  
    _A year of the rate, so next year can tell a drift from a run._
 158. **L14089** `if (rateHistoryFilled < 12) rateHistoryFilled++;`
 159. **L14091** `takeTreasuryMonth();` → [Game.takeTreasuryMonth](map/Game.md) (L19029)
@@ -264,12 +264,12 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 1. **L14245** `ensureWorldMarket();` → [Game.ensureWorldMarket](map/Game.md) (L1840)  
    _THE RATE TIMES THE WORLD'S OWN PRICE LEVEL._
 2. **L14246** `world.advanceMonth(month);` → [WorldEconomy.advanceMonth](map/WorldEconomy.md) (L270)
-3. **L14247** `economyManager.strikeExchangeRate(foreign.getRate(), world.getPriceLevel());` → [EconomyManager.strikeExchangeRate](map/EconomyManager.md) (L309), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246), [WorldEconomy.getPriceLevel](map/WorldEconomy.md) (L315)
+3. **L14247** `economyManager.strikeExchangeRate(foreign.getRate(), world.getPriceLevel());` → [EconomyManager.strikeExchangeRate](map/EconomyManager.md) (L309), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255), [WorldEconomy.getPriceLevel](map/WorldEconomy.md) (L315)
 4. **L14249** `strikeTheWorldMarket();` → [Game.strikeTheWorldMarket](map/Game.md) (L1893)  
    _...AND THE WORLD'S BAND BEHIND IT (WN3): the January solve when the year has turned, then every good's floor and ceiling from last month's trade; before any market clears._
 5. **L14251** `double gold = goldUsdPerOunce(WorldMoneys.monthIndex(month));` → [Game.goldUsdPerOunce](map/Game.md) (L2217), [WorldMoneys.monthIndex](map/WorldMoneys.md) (L270)  
    _Bullion's nominal US$ path and spot exchange already include the dollar's price path (GD4)._
-6. **L14252** `if (Double.isFinite(gold) && gold > 0) {` → [EconomyManager.getMarkets](map/EconomyManager.md) (L51), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246)
+6. **L14252** `if (Double.isFinite(gold) && gold > 0) {` → [EconomyManager.getMarkets](map/EconomyManager.md) (L51), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)
 7. **L14271** `if (priceIndex.isBased()) {` → [PriceIndex.isBased](map/PriceIndex.md) (L487), [LabourMarket.updateCostOfLiving](map/LabourMarket.md) (L478), [PriceIndex.getIndex](map/PriceIndex.md) (L485), [Expectations.monthlyExpected](map/Expectations.md) (L147)  
    _...half of it from what people expect, once the basket is based (0.7.42): see LabourMarket, HALF WHAT PEOPLE EXPECT, HALF THE CHASE._
 8. **L14278** `labourMarket.followAverageWage(populationManager.getAverageWage());` → [LabourMarket.followAverageWage](map/LabourMarket.md) (L985), [PopulationManager.getAverageWage](map/PopulationManager.md) (L169)  
@@ -301,7 +301,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _The repair bill on the housing stock, before EITHER statement runs - it is an expense on one of them and revenue on the other._
 25. **L14363** `chargeFreight();` → [Game.chargeFreight](map/Game.md) (L8218)  
    _...and the freight bill on the month's trade, for exactly the same reason: an expense on eleven sets of books and revenue on a twelfth._
-26. **L14366** `outward.payCoupons(debtManager.worldRate(), foreign.getRate(), economyManager);` → [OutwardInvestment.payCoupons](map/OutwardInvestment.md) (L218), [DebtManager.worldRate](map/DebtManager.md) (L882), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1246)  
+26. **L14366** `outward.payCoupons(debtManager.worldRate(), foreign.getRate(), economyManager);` → [OutwardInvestment.payCoupons](map/OutwardInvestment.md) (L218), [DebtManager.worldRate](map/DebtManager.md) (L882), [ForeignAccounts.getRate](map/ForeignAccounts.md) (L1255)  
    _...and the coupon on the dollars its businesses hold abroad, struck as a line of their profit and kept abroad: the profit tax and the dividend see it, the till pays them (HD1, 2026-10-29; HD2, 2026..._
 27. **L14380** `ham.citybuildersim.sectors.Construction construction = getSectors().construction();` → [Game.getSectors](map/Game.md) (L3083)  
    _THE MONTH'S BUILDING WORK, AS THE STATEMENT WILL CARRY IT._

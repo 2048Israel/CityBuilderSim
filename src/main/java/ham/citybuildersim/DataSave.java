@@ -1738,7 +1738,9 @@ public class DataSave implements Cloneable {
      * cannot be recovered from the month the save was taken in; the trailing
      * import figure is an average of months that have gone; the vault's
      * dollars, its revaluation and the debt's ride the end of the array. The
-     * slots are listed at ForeignAccounts.toSaveArray().
+     * slots are listed at ForeignAccounts.toSaveArray(). XR7: this includes
+     * holdFelt (147), the support already bought under a peg or band; restoring
+     * only the held rate would charge its whole gap again the next month.
      */
     // R0f: includes the Canadian gold episode and its exhausted flag (ForeignAccounts slots 156-157).
     private double[] foreignAccounts;

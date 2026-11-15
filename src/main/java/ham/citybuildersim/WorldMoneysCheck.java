@@ -38,7 +38,8 @@ import java.util.stream.IntStream;
  *      major's and an emerging float's own swing's, within 5% of CYCLE_SIGMA / CYCLE_HALF_LIFE and the money's sigma / OWN_HALF_LIFE; printed:
  *      each one's volatility a year and the half-life an economist would fit, beside the study's table.
  *   4. PEGS HOLD AND BREAK BY THE RULE: a held peg's rate over its anchor's is its ratio; a loop holds; no board ever breaks; the breaks
- *      over the paths are the sum of ForeignAccounts.hazard(gap) over the held months, within 3 sd (Poisson).
+ *      over the paths are the sum of ForeignAccounts.hazard(gap) over the held months, within 3 sd (Poisson). XR7's floating twins expose
+ *      each signed overshoot and its fade; the real-world paths count strong and weak break landings separately.
  *   5. A RISK-OFF moves the havens up and the high yielders down by their loadings, and fades by its half-life; starts counted against RISK_OFF_RATE.
  *   6. THE TERMS OF TRADE: a January's rise of 0.1 in a commodity exporter's ln terms of trade moves its money by TOT_PASS x its commodity share
  *      x 0.1, a third in each of January, February and March, and no other money; the market's two reads (commodityShare, lnTermsOfTrade)
@@ -175,6 +176,7 @@ public class WorldMoneysCheck {
         }
         Scope fx = new Scope("fixture", WorldData.of(bytes));
         sections(fx, new Pass(fx, FIXTURE_SEEDS, null), new Pass(fx, FIXTURE_SEEDS, FIXTURE_PEGS), FIXTURE_PEGS);
+        theSignedBreaks(fx);
 
         out.println("--- the full file, when it is named ---");
         Path fullPath = WorldData.locate();
@@ -196,6 +198,45 @@ public class WorldMoneysCheck {
         out.printf("%nWorldMoneysCheck took %.1f s%n", (System.nanoTime() - start) / 1e9);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** XR7: a floating twin exposes the shadow before a peg's signed overshoot is added. */
+    static void theSignedBreaks(Scope sc) {
+        out.println("--- world pegs overshoot both ways (XR7) ---");
+        int[] found = new int[2];
+        Tally landings = new Tally(), fades = new Tally(), reloads = new Tally();
+        for (long seed = BASE_SEED; seed < BASE_SEED + 100 && (found[0] == 0 || found[1] == 0); seed++) {
+            Map<String, String> peg = Map.of("CHN", "peg:USD");
+            WorldMoneys held = sc.moneys(Nations.Path.RANDOM, seed, peg);
+            WorldMoneys free = sc.moneys(Nations.Path.RANDOM, seed, null);
+            for (int t = 1; t <= LONG_MONTHS; t++) {
+                held.step(t, null);
+                free.step(t, null);
+                if (!held.breaksThisMonth().contains("CNY")) continue;
+                double gap = held.pegGap("CNY");
+                int side = gap < 0 ? 0 : 1;
+                found[side]++;
+                double excess = ForeignAccounts.OVERSHOOT * gap;
+                landings.see(Math.abs(Math.log(held.rate("CNY") / free.rate("CNY")) - excess) <= EXACT,
+                        () -> "gap " + gap + ", excess " + Math.log(held.rate("CNY") / free.rate("CNY")));
+                WorldMoneys back = sc.moneys(Nations.Path.RANDOM, seed, peg);
+                back.restore(held.toSaveArray());
+                for (int j = 1; j <= 12; j++) {
+                    held.step(t + j, null);
+                    free.step(t + j, null);
+                    back.step(t + j, null);
+                    double expected = excess * StrictMath.pow(.5, j / WorldMoneys.OWN_HALF_LIFE);
+                    fades.see(Math.abs(Math.log(held.rate("CNY") / free.rate("CNY")) - expected) <= EXACT,
+                            () -> "gap " + gap + ", fading excess");
+                    reloads.see(Arrays.equals(held.toSaveArray(), back.toSaveArray()), () -> "saved break " + gap);
+                }
+                break;
+            }
+        }
+        assertTrue("fixtures broke with shadows on both sides: " + found[0] + " stronger, " + found[1] + " weaker", found[0] > 0 && found[1] > 0);
+        tally("every break lands OVERSHOOT of its signed gap past the floating twin's shadow", landings);
+        tally("the signed overshoot fades with the world's own swing on either side", fades);
+        tally("a world saved at either break continues the signed overshoot to the bit", reloads);
     }
 
     /** The sections both scopes run; floats is the pass over the file's own regimes, pegs the one the pegs are counted on (the fixture's with the regimes it is given). */
@@ -436,7 +477,7 @@ public class WorldMoneysCheck {
         final Acc[] own;
         final double[] sum12, sumSq12, halfLife, worst;
         final long[] n12;
-        long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks;
+        long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks, strongBreaks, weakBreaks;
         final long[] breaks;
         final double[] hazard;
         final long[] faced;
@@ -468,7 +509,7 @@ public class WorldMoneysCheck {
         final double[] sum12, sumSq12;
         final long[] n12;
         final List<List<Double>> halfLives = new ArrayList<>(), worsts = new ArrayList<>();
-        long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks;
+        long riskStarts, ratioChecked, ratioBad, boardMonths, boardBreaks, strongBreaks, weakBreaks;
         final long[] breaks, faced;
         final double[] hazard;
         final double millis;
@@ -516,6 +557,8 @@ public class WorldMoneysCheck {
                 ratioBad += part.ratioBad;
                 boardMonths += part.boardMonths;
                 boardBreaks += part.boardBreaks;
+                strongBreaks += part.strongBreaks;
+                weakBreaks += part.weakBreaks;
                 for (int j = 0; j < watch.length; j++) {
                     own[j].merge(part.own[j]);
                     sum12[j] += part.sum12[j];
@@ -565,7 +608,10 @@ public class WorldMoneysCheck {
                     } else if (held || b) {
                         p.faced[q]++;
                         p.hazard[q] += ForeignAccounts.hazard(Math.max(0, w.pegGap(c)));
-                        if (b) p.breaks[q]++;
+                        if (b) {
+                            p.breaks[q]++;
+                            if (w.pegGap(c) < 0) p.strongBreaks++; else p.weakBreaks++;
+                        }
                     }
                     if (held) {
                         p.ratioChecked++;
@@ -673,6 +719,7 @@ public class WorldMoneysCheck {
         poisson(soft + " soft pegs: the breaks over " + pass.seeds + " paths against the sum of hazard(max(0, gap)) over the " + faced + " months they were held", breaks, hazard, Math.sqrt(hazard));
         out.printf("  finding: %d of %d soft pegs on a path broke within %d years (%.1f%%); the hazard they faced was %.2f%% a month on average%n", breaks, (long) soft * pass.seeds,
                 PATH_MONTHS / 12, 100.0 * breaks / Math.max(1, (long) soft * pass.seeds), 100 * hazard / Math.max(1, faced));
+        out.printf("  finding: signed break landings: %d strong-side, %d weak-side (%s)%n", pass.strongBreaks, pass.weakBreaks, sc.name);
         if (!given) return;
         // a loop of pegs holds last month's rate, quietly: the two moneys are where they began
         WorldMoneys loop = sc.moneys(Nations.Path.RANDOM, BASE_SEED, FIXTURE_LOOP);

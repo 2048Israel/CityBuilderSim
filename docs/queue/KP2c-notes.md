@@ -141,3 +141,11 @@ The provisional ship marker remains pushed. The orchestrator orders the
 slot after XR7 then R2d; origin/main will be merged again before the dry run.
 The second review, final main/branch commits and retained launcher run
 directory will be recorded here after the orchestrator's go and verdict.
+
+Main advanced to XR7, 8083aaf33, after the local pick. Merged it before the
+launcher run. Only docs/dials.md, docs/harnesses.md and docs/map/README.md
+conflicted; all three were regenerated from the merged source. The merged
+`--fast` passes: compile, maps, zero firm Stale findings (186 soft).
+XR7 intentionally changes world-peg traces and brings its own ensemble;
+the local pre-merge report comparison above remains the UI-only evidence.
+The launcher will verify the final combined model after R2d also ships.
