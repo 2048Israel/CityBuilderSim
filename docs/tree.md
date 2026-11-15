@@ -1063,3 +1063,5 @@ adds its line here, not in `CLAUDE.md`.
 BF1: BankFailureCheck causes the hands-off bank's mill-sales, closing-debt and
 new-credit failures, distinguishes consolidations from missing shares, and
 audits 24 default Random cities for 120 months apiece.
+
+`MoneyDatesCheck.java` (R0f): founded cities cross Canada's two gold episodes, the Advance Rate and Bank of Canada dates; exhausted reserves remain off gold after JSON and the next month.

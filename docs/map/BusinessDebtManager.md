@@ -1,6 +1,6 @@
 # BusinessDebtManager.java - 3,761 lines · 246 methods · 28 constants · model
 
-`ham/citybuildersim/BusinessDebtManager.java` - generated 2026-11-14 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessDebtManager.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
 > Private-sector credit. The counterpart to DebtManager, which handles the
 > city's own borrowing.
