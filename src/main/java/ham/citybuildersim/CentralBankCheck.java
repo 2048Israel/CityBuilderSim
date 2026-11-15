@@ -1928,19 +1928,23 @@ public class CentralBankCheck {
     static final int PROBE_MONTHS = 4;
 
     /**
-     * The founding shapes very strict is measured against Standard in (CB1): the houses before the next twenty and the
-     * months played before them, as the playtest's seeds 0 to 11 found (LongPlaytest, ENSEMBLE MODE: 40 + seed % 4
-     * houses, 3 + (seed / 4) % 3 months), the probe city's among them; each is played as the probe city is to
-     * STRICT_BRANCH, and from there its very strict and Standard twins on STRICT_HORIZON months.
+     * The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with
+     * 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses.
+     * CB2 keeps CB1's twelve shapes and adds the next twelve, without selecting cities by their inflation;
+     * each is played to STRICT_BRANCH, then its very strict and Standard twins for STRICT_HORIZON months.
      */
-    static final int[][] STRICT_SHAPES = { {40, 3}, {41, 3}, {42, 3}, {43, 3}, {40, 4}, {41, 4}, {42, 4}, {43, 4},
-            {40, 5}, {41, 5}, {42, 5}, {43, 5} };
+    static final int[][] STRICT_SHAPES = { {40, 3, 20}, {41, 3, 20}, {42, 3, 20}, {43, 3, 20},
+            {40, 4, 20}, {41, 4, 20}, {42, 4, 20}, {43, 4, 20},
+            {40, 5, 20}, {41, 5, 20}, {42, 5, 20}, {43, 5, 20},
+            {40, 3, 21}, {41, 3, 21}, {42, 3, 21}, {43, 3, 21},
+            {40, 4, 21}, {41, 4, 21}, {42, 4, 21}, {43, 4, 21},
+            {40, 5, 21}, {41, 5, 21}, {42, 5, 21}, {43, 5, 21} };
 
     /**
-     * The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard (CB1): EP1 found it
-     * in 11 of 12 shapes and FR7 in 15 of 16, so a city's path reverses it in about one city in twelve; three in four
-     * lets three of the twelve reverse before the line is red, while a rule that made no difference (each city a coin's
-     * toss) would pass one time in fourteen.
+     * The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four,
+     * retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.113), with all 24 holding.
+     * The unchanged share now needs 18 of 24, allowing six reversals instead of three; lowering it to the proposed
+     * two in three is not supported by today's zero reversals. See docs/queue/CB2-notes.md for every city's reading.
      */
     static final double STRICT_SHARE = .75;
 
@@ -2184,35 +2188,35 @@ public class CentralBankCheck {
                 loosest.words, STRICT_WORLD_FALL * 100, fall.under, STRICT_HORIZON, fall.underSoon, STRICT_FALL_WINDOW, fall.over,
                 fall.past, fallTop * 100, plain.under, plain.over, plain.past);
         assertTrue("the Policy tab's preview at the step in force is the rule's own, to the bit", previewIsTheRule);
-        /* ---- very strict against Standard over twelve cities (CB1) ---- */
+        /* ---- very strict against Standard over twenty-four cities (CB2) ---- */
         // One city carried this claim, and that city was re-picked six times as batches moved its path (probeCity()): the
         // claim is the policy's, not the city's, so it is read over STRICT_SHAPES - the probe city's own twins for its
-        // shape, the other eleven founded, played to the branch and twinned the same way - at the median and in a share.
+        // shape, the other twenty-three founded, played to the branch and twinned the same way - at the median and in a share.
         GameFiles cityFiles = GameFiles.scratch("howstrict-cities");
         int shapes = STRICT_SHAPES.length;
         double[] gaps = new double[shapes];
         boolean eachAtBranch = true;
         int held = 0;
         for (int c = 0; c < shapes; c++) {
-            int houses = STRICT_SHAPES[c][0], months = STRICT_SHAPES[c][1];
+            int houses = STRICT_SHAPES[c][0], months = STRICT_SHAPES[c][1], laterHouses = STRICT_SHAPES[c][2];
             CityGap one;
             int atMonth;
-            if (houses == PROBE_HOUSES && months == PROBE_MONTHS) {
-                one = new CityGap(houses, months, probePeople, inflation[0], inflation[1]);
+            if (houses == PROBE_HOUSES && months == PROBE_MONTHS && laterHouses == 20) {
+                one = new CityGap(houses, months, laterHouses, probePeople, inflation[0], inflation[1]);
                 atMonth = city.getMonth();
             } else {
-                Game shaped = shapedCity(cityFiles, houses, months);
+                Game shaped = shapedCity(cityFiles, houses, months, false, laterHouses);
                 eachAtBranch &= shaped.getMonth() == STRICT_BRANCH && shaped.getDebtManager().isAutopilot()
                         && shaped.getDebtManager().getStrictness() == standard
                         && shaped.getDebtManager().getInflationTarget() == target;
                 double[] pair = strictAgainstStandard(shaped, cityFiles);
-                one = new CityGap(houses, months, shaped.getPopulationManager().getPopulation(), pair[0], pair[1]);
+                one = new CityGap(houses, months, laterHouses, shaped.getPopulationManager().getPopulation(), pair[0], pair[1]);
                 atMonth = shaped.getMonth();
             }
             gaps[c] = one.gap();
             if (gaps[c] < 0) held++;
-            out.printf("   %d houses, %d months: %,d people at m%d; very strict %.3f%% a year, Standard %.3f%%, %+.3f points%n",
-                    one.houses(), one.months(), one.people(), atMonth, one.strict() * 100, one.standard() * 100, one.gap() * 100);
+            out.printf("   %d houses, %d months, then %d houses: %,d people at m%d; very strict %.3f%% a year, Standard %.3f%%, %+.3f points%n",
+                    one.houses(), one.months(), one.laterHouses(), one.people(), atMonth, one.strict() * 100, one.standard() * 100, one.gap() * 100);
         }
         LongPlaytest.cleanUp(cityFiles.getDirectory().getParent());
         assertTrue("fixture: each city of the set is at its branch, on the rule, at Standard and the default target", eachAtBranch);
@@ -2227,7 +2231,7 @@ public class CentralBankCheck {
                 held >= strictNeed(shapes),
                 "");
         assertTrue("STRICT_SHARE is over a half, so a set that holds the share holds the median too", STRICT_SHARE > .5);
-        // The line itself, from both sides: the twelve gaps each made very strict's cheaper, then reversed by hand one at a
+        // The line itself, from both sides: the measured gaps each made very strict's cheaper, then reversed by hand one at a
         // time in the list's order (very strict dearer there by what it was cheaper - the city's two inflations swapped).
         double[] reversed = new double[shapes];
         boolean exactlyTheShare = true, someRed = false;
@@ -2422,7 +2426,7 @@ public class CentralBankCheck {
         // R0b call 7: the probe city's causes of 1900 held off, before a month, as are its twins and the fourth game (loaded from its save:
         // the hold is not saved). Its premise is a calm path (see above, re-picked six times), sized on today's deaths; on 1900's causes its
         // very strict twin read -4.28% in the last year where the target is 2%, and "within a full miss of the target, no spiral" failed.
-        // The eleven other shapes of the set keep the deaths of 1900: they are the policy's claim read over many cities.
+        // The other shapes of the set keep the deaths of 1900: they are the policy's claim read over many cities.
         // R0g measured the -4.28% over all twelve STRICT_SHAPES with the causes on (docs/queue/R0g-notes.md): every very strict
         // twin's last year was within a full miss (-1.47% to 4.57%; this shape's own 1.19% on R0g's tree). It was this one city's
         // path on R0b's tree, not 1900's deaths tipping the bank into a spiral; the hold stays for the calm path its premises need.
@@ -2439,6 +2443,11 @@ public class CentralBankCheck {
 
     /** ...with the causes of 1900 held off from the first month where asked (probeCity()). */
     static Game shapedCity(GameFiles files, int houses, int months, boolean causesHeldOff) {
+        return shapedCity(files, houses, months, causesHeldOff, 20);
+    }
+
+    /** ...with the second House tranche of the playtest's seed, preserving the first twelve cities at twenty. */
+    static Game shapedCity(GameFiles files, int houses, int months, boolean causesHeldOff, int laterHouses) {
         Game g = new Game(files, LongPlaytest.founding());
         if (causesHeldOff) g.holdCausesOfDeathOff();
         PrintStream was = LongPlaytest.out;
@@ -2455,7 +2464,7 @@ public class CentralBankCheck {
                 LongPlaytest.villageBuild(g, "Convenience Store", 3);
                 LongPlaytest.villageBuild(g, "Mixed Farm", 2);
                 LongPlaytest.run(g, months);
-                LongPlaytest.villageBuild(g, "House", 20);
+                LongPlaytest.villageBuild(g, "House", laterHouses);
                 LongPlaytest.run(g, 4);
                 LongPlaytest.villageBuild(g, "Convenience Store", 2);
                 LongPlaytest.villageBuild(g, "Construction Depot", 1);
@@ -2500,7 +2509,7 @@ public class CentralBankCheck {
     }
 
     /** One city's very strict and Standard inflation a year over STRICT_HORIZON, and its people at the branch. */
-    record CityGap(int houses, int months, long people, double strict, double standard) {
+    record CityGap(int houses, int months, int laterHouses, long people, double strict, double standard) {
         /** How far under Standard very strict ran, in a year's inflation: negative when it held prices lower. */
         double gap() { return strict - standard; }
     }
