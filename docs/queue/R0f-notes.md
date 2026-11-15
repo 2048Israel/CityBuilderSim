@@ -33,7 +33,7 @@ A separate whole-foreign-account equality after the next month is still red. The
 
 ### Default trace
 
-The final model (34851590; source and fixtures frozen at c4f49283) and unchanged main c0120d77 ran the full default 2,400-month LongPlaytest from isolated class directories. **All eight CSV trace files are byte-identical**, with no exclusions or normalisation. Therefore the ensemble is skipped under docs/batch.md 6. `target/checks/R0f-trace-comparison.txt` retains every matching SHA-256; traces are under `target/R0f-base/trace-*.csv` and `target/R0f-final/trace-*.csv`.
+The pre-review model (34851590; snapshot c4f49283) and unchanged main c0120d77 ran the full default 2,400-month LongPlaytest from isolated class directories. **All eight CSV trace files are byte-identical**, with no exclusions or normalisation. Therefore the ensemble is skipped under docs/batch.md 6. `target/checks/R0f-trace-comparison.txt` retains every matching SHA-256; traces are under `target/R0f-base/trace-*.csv` and `target/R0f-final/trace-*.csv`.
 
 Both playtests exit 1 only for the existing DM3-R finding: twelve of district (-1,-1)'s 4,301 boxes move at month 2389. The finding text and counts match exactly. Both runs' money fixtures finish green. Logs: `target/checks/R0f-base-playtest.txt`, `target/checks/R0f-final-playtest.txt`. This is separate from R0f-S and from any newly caused failure.
 
@@ -105,3 +105,22 @@ The delta review of 456e6c65..0f99d39b accepted the other mends and found a hist
 Orchestrator read and accepted 5a08b341's historical cut and mutation proof (20261115-015047-831-orchestrator-4131), then gave the new dry-run go after RT1b shipped (20261115-015449-252-orchestrator-ec3c). Main cd7f9dca is version 0.9.110 and still save format 52; the merged R0f contract is 53. The merge has no source conflict. Its four generated-index conflicts (dials, harnesses, GameVersion map and map README) were resolved by regeneration; the merged `./batch-check.sh --fast` exits 0 (`target/checks/R0f-second-merge-fast.txt`).
 
 RT1b's own notes record its eight default traces byte-identical to e8ac5a53 and no ensemble required. R0f's first full run was byte-identical to that same default too. The second launcher will independently capture the final merged trace under `target/R0f-ship-trace/trace-*.csv`, with only the output-prefix property added to the required Earth/world inputs. No model setting, seed or playtest duration changes.
+
+
+### Second retained ALL dry run
+
+Run directory: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0f-sYBv7jmW` (Git Bash `/tmp/cbs-gate-R0f-sYBv7jmW`). Normal `sh tools/gate.sh R0f --dry-run`, after the second coordinated go. Immutable identities:
+
+- branch: `c62a40d62e8d0fca26f53308f645b964351b5f67`
+- main: `cd7f9dcaa65ecad0ba488fac07213dc30f57a32d`
+
+Launcher transcript: `target/checks/R0f-second-gate-launch.txt`; `ship.log`, the archived `checks/` logs (including `checks/suite.txt` and every harness log), `checks.complete`, `checks.sha256` and result metadata are retained under that directory. Only notes and the ship file advance after this run. Final verdict: launcher exit 0, suite exit 3 (registered known reds only).
+
+
+## Final verification and readiness
+
+- **Normal-route versioned ALL dry run: exit 0.** The launcher selected ALL (203 registered harnesses); the normal policy executed 194, with 190 passing and four registered known-red harnesses: DeathRecordCheck, LongPlaytest, MapCheck and MoneyDatesCheck. Suite exit 3, full check 2,255 seconds. `unnamed.txt` is empty. Nine timing assertions were SOFT and five path assertions OBSERVED under the repository's normal policy; none of their floors or premises changed here. Compile, maps, Stale (0 firm findings) and tree pass. The candidate was 0.9.111; no real publish or main push was done by this builder.
+- **Every R0f-owned failure is mended.** The saved-schema, law-key, forced-reform, medical staffing/order and historical 149-slot checks all pass on the final merge. The dated fixture reports 745 audited months, 237 on dated gold, 507 floating and zero audit failures. It proves all four scheduled crossings, both exhausted episodes, in-month release of the Advance Rate and JSON persistence. The sole MoneyDatesCheck red is the unchanged hard whole-account assertion filed to R0f-S, with unchanged-main evidence above.
+- **Final default trace: all eight CSVs byte-identical**, on the reviewed model merged with shipped main cd7f9dca. The SHA-256 values are exactly those in the table above. Full traces: `target/R0f-ship-trace/trace-*.csv`; comparison: `target/checks/R0f-shipping-trace-comparison.txt`. No exclusions or normalisation. **No ensemble is required or run** under batch.md 6.
+- **Reusable run:** `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0f-sYBv7jmW`, branch `c62a40d62e8d0fca26f53308f645b964351b5f67`, main `cd7f9dcaa65ecad0ba488fac07213dc30f57a32d`. The ship file names this green run; the first failed run remains diagnostic evidence only. Its archived `checks/MoneyDatesCheck.log` retains the 745-month result and the exact accepted R0f-S line.
+- Source and fixtures are unchanged after that green run. Only this notes file and the ship file advance; the provisional marker is removed and the ship file pushed last. Ready means ready for the orchestrator's publication, not already merged or published.
