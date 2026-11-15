@@ -188,6 +188,28 @@ Two starts waited for the PC's commit charge to fall below the suite's 75%
 bar. These are information; their hard correctness laws retain their verdicts.
 
 At 21:00 Halifax, with my selected suite finished, the PC had about 10 GB
-physical and 23 GB virtual memory free and 20 logical processors. The verified
-QB1 dispatcher alone was raised from three workers to the runner's normal five
-using GNU xargs' control signals. Other sessions and MemWatch are untouched.
+physical and 23 GB virtual memory free and 20 logical processors. The requested runtime increase left only three observed active workers.
+The verified dispatcher alone was paused while ZERO_SLACK seeds 6, 7 and 8
+finished, reaching 25 completed runs; then that drained dispatcher was ended.
+`JOBS=5 RESUME=1 tools/ensemble/ensemble.sh QB1` resumes the same immutable
+snapshot with all 25 complete CSVs/times retained and 55 runs left. Five active
+workers (ZERO_SLACK 9–13) were verified. No completed simulation is repeated.
+The first segment's incomplete score is not a batch verdict; the final score
+will replace it after all 80 finish. Other sessions and MemWatch are untouched.
+
+## Published main carried before the dry run
+
+Orchestrator's 21:07 Halifax message says WN5d shipped as 0.9.105, main
+`3ca9a8bc`, with the default trace unchanged, and explicitly says QB1's
+ensemble stays valid. As instructed, merged that main into QB1 as
+`b5f88c1882ce5077d060d7ec9a680f6a3c7ee5fe`. Only the generated harness index
+and map README conflicted; regenerated them from the combined source.
+`./batch-check.sh --fast` on the merge exits 0 (38-second compile, maps,
+zero firm Stale findings). Log: `target/checks/qb1-merge-fast.txt`.
+
+★ Carry the already completed selected check and immutable ensemble model;
+the coordinated fresh-clone dry run will check the combined branch in full.
+No WN5d source file received a bespoke hunk. Against new origin/main, QB1's
+only source differences remain ForeignDebtCheck's comment, KeptCheck's
+fixture, LongPlaytest's default and ScaleCheck's month. Published QUEUE,
+changelog, gate record and GameVersion enter solely from canonical main.
