@@ -718,9 +718,9 @@ final class TradeScreen {
         String rest = cardStyle(Palette.EDGE) + " -fx-cursor: hand;";
         String over = rest.replace(Palette.EDGE + ";", Palette.ACCENT + ";");
         c.setStyle(c.isHover() ? over : rest);
-        c.setOnMouseEntered(e -> c.setStyle(over));
-        c.setOnMouseExited(e -> c.setStyle(rest));
-        c.setOnMouseClicked(e -> go.run());
+        Kept.give(c.onMouseEnteredProperty(), e -> c.setStyle(over));
+        Kept.give(c.onMouseExitedProperty(), e -> c.setStyle(rest));
+        Kept.give(c.onMouseClickedProperty(), e -> go.run());
         return c;
     }
 
@@ -1656,12 +1656,12 @@ final class TradeScreen {
         double rightBarX = W - LABEL - BAR;
 
         javafx.scene.layout.Pane face = Kept.plain();
-        face.setPrefSize(W, H);
+        Pieces.prefSize(face, W, H);
         face.setMinSize(W, H);
         face.setMaxSize(W, H);
 
         Region trunk = Kept.region();
-        trunk.setPrefSize(TRUNK, H);
+        Pieces.prefSize(trunk, TRUNK, H);
         trunk.setMinSize(TRUNK, H);
         trunk.setStyle("-fx-background-color: " + Palette.PINNED + "; -fx-background-radius: 3;");
         trunk.setLayoutX(trunkX0);
@@ -1730,7 +1730,7 @@ final class TradeScreen {
     /** One source or use bar, with its tooltip; the closing band outlined. */
     Region riverBar(Flow f, double x, double y, double w, double h) {
         Region bar = Kept.region();
-        bar.setPrefSize(w, h);
+        Pieces.prefSize(bar, w, h);
         bar.setMinSize(w, h);
         boolean closing = Palette.TEXT_SPENT.equals(f.colour());
         bar.setStyle(closing
@@ -1764,7 +1764,7 @@ final class TradeScreen {
         band.setFill(javafx.scene.paint.Color.web(colour));
         band.setStroke(null);
         // Translucent, so a ribbon crossing another still reads as two ribbons.
-        band.setOpacity(.55);
+        Kept.give(band.opacityProperty(), .55);
         return band;
     }
 
@@ -2466,14 +2466,14 @@ final class TradeScreen {
                 blocks.add(block);
                 all.add(block);
                 javafx.scene.shape.Rectangle stripe = new javafx.scene.shape.Rectangle();
-                stripe.setMouseTransparent(true);
-                stripe.setVisible(p.part().abroad());
+                Kept.give(stripe.mouseTransparentProperty(), true);
+                Kept.give(stripe.visibleProperty(), p.part().abroad());
                 stripe.setFill(SectorScreen.hatch(Palette.STAGE, .6));
                 stripes.add(stripe);
                 all.add(stripe);
                 Label label = new Label(p.part().label());
-                label.setMouseTransparent(true);
-                label.setVisible(false);
+                Kept.give(label.mouseTransparentProperty(), true);
+                Kept.give(label.visibleProperty(), false);
                 label.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD) + " -fx-background-color: "
                         + tint(Palette.STAGE, .55) + "; -fx-background-radius: 2; -fx-padding: 1 4 1 4;");
                 if (named) {
@@ -2494,8 +2494,8 @@ final class TradeScreen {
                 double wide = scale > 0 ? w * Math.max(0, pieces.get(i).amount()) / scale : 0;
                 double shown = wide > 0 ? Math.max(1, Math.min(w - x, wide - (i < n - 1 ? 1 : 0))) : 0;
                 javafx.scene.shape.Rectangle block = blocks.get(i), stripe = stripes.get(i);
-                block.setVisible(shown > 0);
-                stripe.setVisible(shown > 0 && pieces.get(i).part().abroad());
+                Kept.give(block.visibleProperty(), shown > 0);
+                Kept.give(stripe.visibleProperty(), shown > 0 && pieces.get(i).part().abroad());
                 for (javafx.scene.shape.Rectangle s : List.of(block, stripe)) {
                     s.setX(x);
                     s.setY(0);
@@ -2506,7 +2506,7 @@ final class TradeScreen {
                 if (label != null) {
                     label.applyCss();
                     double lw = label.prefWidth(-1), lh = label.prefHeight(-1);
-                    label.setVisible(shown > lw + 8);
+                    Kept.give(label.visibleProperty(), shown > lw + 8);
                     label.resizeRelocate(x + 4, Math.max(0, (BAND - lh) / 2), lw, lh);
                 }
                 x += wide;
@@ -3178,7 +3178,7 @@ final class TradeScreen {
         whatCol.setHgrow(Priority.ALWAYS);
         javafx.scene.layout.ColumnConstraints barCol = new javafx.scene.layout.ColumnConstraints(100, 220, 260);
         javafx.scene.layout.ColumnConstraints rateCol = new javafx.scene.layout.ColumnConstraints(90, 110, 140);
-        g.getColumnConstraints().addAll(stepCol, whatCol, barCol, rateCol);
+        Kept.columns(g).addAll(stepCol, whatCol, barCol, rateCol);
         g.add(muted("step"), 0, 0);
         g.add(muted("what it does"), 1, 0);
         Label heading = muted(Currency.FOREIGN_SYMBOL + "1 is");

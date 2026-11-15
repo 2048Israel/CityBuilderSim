@@ -284,7 +284,7 @@ import java.util.concurrent.TimeUnit;
  *      fund's security, Trade's six and a nation's, Policy's hub and pages with Zoning's, Infrastructure's four, Services' sub-pages, the land office,
  *      Household money (each view, every cell of the grid opened, the statement, the books stacked) and the Rankings tab (each board, money, prices and
  *      conversion, some measures (every tenth), each filter, Around you, Browse all, a pin, a place's drawer, Your cities), each with where the writes that are left come
- *      from; the writes of the screens outside the sweep (NOT_KP2B) are named and not counted;
+ *      from; every screen is counted, including the frame, Services and Infrastructure (KP2c);
  *  93. the Rankings table's picture (KP2b): a kept draw of the page writes its cursor none (the hand is in its style, which Kept leaves alone), and the band
  *      that lights the row under the pointer follows a pointer a wheel leaves still - a ScrollEvent through the table's canvas moves the page, no
  *      mouse-moved follows, and after it, and after a month's draw, the band is on the row the pointer is over now and not on the one it was over before;
@@ -328,6 +328,11 @@ import java.util.concurrent.TimeUnit;
  *      and the room; a school not built or hosting none says nothing), Government's Spending list with the Research line (the lines add up to the total, a
  *      door to Funding, who is paid), its payroll and the wage floor's naming the research staff (the floor in force shows no change of the payroll), each
  *      kept against a page built new with 92's rule.
+ * ...and the remaining kept sweep (KP2c):
+ * 102. unchanged optional state and grid constraints stay put; omitted state resets once; a foreign vitals cell gets the bar's look;
+ *      real Rankings and History redraws keep their handlers and cursors; equal raw size and margin setters are counted, guarded ones skipped;
+ *      a policy thumb holds across greying, ungreying and temporary reparenting in one drag, and releases at the player's snapped value;
+ *      comparison roots, retired pictures and no-stage scene dirty nodes are released, with a quarter of the suite heap left free.
  */
 public class KeptCheck {
 
@@ -8136,10 +8141,10 @@ public class KeptCheck {
     }
 
     /**
-     * Section 91 (KP2b): a slider greyed while the player holds it lets go. A disabled node hears no mouse event, so a slider greyed with the button down
-     * never hears its release: its held flag (and a drag's valueChanging) would stay set, a kept draw never sets the value of a held slider, and the thumb
-     * would stop following the city for good. The fixture that causes it, twice on the policy rate's dial: pressed, and pressed and dragged a step
-     * (the value changing), then greyed by hand - it is not held; ungreyed, a draw with another value staged under it puts the thumb on that value (and the
+     * Section 91 (KP2b/KP2c): a slider released elsewhere while greyed lets go. A disabled node hears no mouse event, so its scene must hear the release:
+     * otherwise its held flag (and a drag's valueChanging) stays set and the thumb stops following the city for good. The fixture causes the release
+     * twice on the policy rate's dial: pressed, and pressed and dragged a step (the value changing), greyed by hand and released at the scene.
+     * It is then not held; ungreyed, a draw with another value staged under it puts the thumb on that value (and the
      * reading with it), the page equal to a page built new, and the staged value dropped, the thumb is back at the city's.
      */
     static void greyedWhileHeld(Game g, KeptBench bench) throws Exception {
@@ -8167,8 +8172,9 @@ public class KeptCheck {
                     bar.setValueChanging(true);
                     bar.setValue(snapped + (x.want > snapped ? step : -step));
                 }
-                // Greyed with the button down: the release can no longer be heard.
+                // The node cannot hear a release while greyed, but the scene can (KP2c).
                 bar.setDisable(true);
+                KeptBench.releaseElsewhere(bar);
                 x.heldGreyed = KeptBench.held(bar);
                 x.changingGreyed = bar.isValueChanging();
                 bar.setDisable(false);
@@ -8193,7 +8199,7 @@ public class KeptCheck {
                 continue;
             }
             check("a slider " + how + " is held", r.heldPressed);
-            check("...greyed while held it lets go (held " + r.heldGreyed + (dragged ? ", value changing " + r.changingGreyed : "") + ")", !r.heldGreyed && !r.changingGreyed);
+            check("...released elsewhere while greyed it lets go (held " + r.heldGreyed + (dragged ? ", value changing " + r.changingGreyed : "") + ")", !r.heldGreyed && !r.changingGreyed);
             check("...ungreyed, a draw with another value staged puts the thumb on it (" + r.value + ", asked for " + r.want + ")",
                     r.sameBar && !r.heldAfter && Math.abs(r.value - r.want) < 1e-9);
             check("...and the page is equal to a page built new", r.differs == null);
@@ -8255,16 +8261,6 @@ public class KeptCheck {
        ===================================================================== */
 
     /**
-     * The files of the screens KP2b's sweep did not reach, whose writes section 92 names and does not count: the sweep was the list of
-     * screens Pieces, the statements, Sectors, Land, the Bank, the fund, Finances, Trade, Zoning, Policy, Household money and the Rankings tab
-     * make (KP4 to KP7), and a write on a page from one of these is another batch's mend (KP2c). Take a file out of this set as it is mended.
-     */
-    static final java.util.Set<String> NOT_KP2B = java.util.Set.of("UserInterface.java", "InfrastructureScreen.java", "ServicesScreen.java");
-
-    /** The writes from NOT_KP2B's files, over the pages of section 92 (printed at its end). */
-    static int ignoredSets = 0;
-
-    /**
      * A page home, a hand on it, drawn and laid out, drawn once more with a listener on every style, text, graphic, padding and width on
      * it (KeptBench.redrawSets), no month between: how many of them the second draw wrote, and which were the first. The conditions that
      * make it a test are the draw's own: the nodes it hands back are the first draw's, with the values the first set.
@@ -8278,7 +8274,7 @@ public class KeptCheck {
             // would find it; a draw in the middle of one writes its figure, and that is its work.
             bench.finishPageAnimations();
             bench.passes();
-            KeptBench.Sets s = bench.redrawSets(page, NOT_KP2B);
+            KeptBench.Sets s = bench.redrawSets(page);
             bench.passes();
             return s;
         });
@@ -8286,7 +8282,6 @@ public class KeptCheck {
             System.out.println("  " + name + ": " + sets.count() + " written, from:");
             for (String mover : sets.first()) System.out.println("      " + mover);
         }
-        ignoredSets += sets.ignored();
         check("a second kept draw of " + name + " in the same month sets no style, text, graphic, padding or width (" + sets.count() + ")",
                 sets.count() == 0);
     }
@@ -8450,7 +8445,7 @@ public class KeptCheck {
         kp2bHouseholdMoney(g, bench);
         letGo(bench, KeptBench::forgetHousehold);
         kp2bRankings(g, bench);
-        System.out.printf("  [%d writes from the files NOT_KP2B names were left uncounted over the pages above]%n", ignoredSets);
+        System.out.println("  [all screen writes, constraint lists, disabled state and size/margin layout requests counted]");
     }
 
     /** Section 92 on Household money (KP7, taken into KP2b): the page as it opens, each view, every cell of the grid opened, the statement and the books stacked under the grid. */
@@ -9075,6 +9070,84 @@ public class KeptCheck {
         return s.count() == 2 && words && style;
     }
 
+    /** A full KeptCheck leaves at least a quarter of its suite heap for the next pages (KP2c). */
+    static final double KEPT_HEAP_SHARE = .75;
+
+    /** Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. */
+    static void kp2cMends(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 102: unchanged state stays put, a press survives greying, retired pages are released ---");
+        fx(() -> {
+            KeptBench.Page page = bench.infrastructure();
+            bench.home(page);
+            bench.drawKept(page);
+            bench.passes();
+            bench.showFresh(page);
+            bench.restoreKeptPage();
+            return null;
+        });
+        int roots = fx(bench::comparisonRoots);
+        check("restored comparisons keep no saved page, boxes or pools (" + roots + ")", roots == 0);
+        boolean[] state = fx(bench::drawEndState);
+        check("an unchanged greyed button and grid change no property or constraint identity", state[0]);
+        check("the draw that omits optional state and constraints resets all of them", state[1]);
+        check("the following draw resets nothing again", state[2]);
+        check("a kept vitals cell from another maker receives the last cell's look on every draw", fx(bench::foreignVitalsCell));
+        boolean[] interactions = fx(bench::keptPageInteractions);
+        check("the Rankings page starts with its four row handlers and hand cursor", interactions[0]);
+        check("...two kept redraws preserve all four handlers and the same row picture's hand", interactions[1]);
+        check("History starts with its action button's hand cursor", interactions[2]);
+        check("...two kept redraws preserve that same action button's hand", interactions[3]);
+        check("the header starts with mouse-transparent sparklines", interactions[4]);
+        check("...two kept redraws preserve those same sparklines' transparency", interactions[5]);
+        check("Pieces.sparkline starts mouse-transparent when pooled directly", interactions[6]);
+        check("...two kept redraws preserve that same directly pooled sparkline's transparency", interactions[7]);
+        int[] layouts = fx(bench::sizeAndMarginSets);
+        check("an unchanged icon and HBox margin request no layout (" + layouts[0] + ")", layouts[0] == 0);
+        check("the sweep counts an equal raw Region.setPrefSize (" + layouts[1] + ")", layouts[1] > 0);
+        check("the sweep counts an equal raw HBox.setMargin (" + layouts[2] + ")", layouts[2] > 0);
+        boolean[] drag = fx(() -> {
+            KeptBench.Page p = bench.policy("the policy rate", "Money", "The policy rate");
+            bench.home(p);
+            bench.drawKept(p);
+            bench.passes();
+            javafx.scene.control.Slider bar = bench.policySliders().get(0);
+            double step = bar.getBlockIncrement(), city = bar.getValue();
+            double hand = city + (city + 2 * step <= bar.getMax() ? step : -step);
+            double next = city + 2 * (hand - city);
+            KeptBench.press(bar);
+            bar.setValueChanging(true);
+            bar.setValue(hand);
+            double held = bar.getValue();
+            double heldShown = bar.getMin() + Math.round((held - bar.getMin()) / step) * step;
+            bar.getScene().getRoot().setDisable(true);
+            bench.policyStage("policy", next);
+            bench.drawKept(p);
+            boolean grey = bar.isDisabled() && KeptBench.held(bar) && bar.getValue() == held;
+            bar.getScene().getRoot().setDisable(false);
+            bench.drawKept(p);
+            boolean active = bench.policySliders().get(0) == bar && KeptBench.held(bar) && bar.getValue() == held;
+            KeptBench.release(bar);
+            Double staged = bench.policyStaged().get("policy");
+            boolean released = !KeptBench.held(bar) && staged != null && Math.abs(staged - heldShown) < 1e-9;
+            bench.policyDrop();
+            bench.drawKept(p);
+            return new boolean[]{grey, active, released, bar.getValue() == city};
+        });
+        check("a real policy thumb holds through a greyed draw during its drag", drag[0]);
+        check("...and through un-greying and a further draw in the same drag", drag[1]);
+        check("...release commits the held value and ends the hold", drag[2]);
+        check("...dropping the staged choice follows the city again", drag[3]);
+        java.lang.ref.WeakReference<javafx.scene.layout.Pane> retired = fx(bench::retiredPicture);
+        java.lang.ref.WeakReference<javafx.scene.Node> chrome = fx(bench::retiredChrome);
+        fx(() -> { bench.release(); return null; });
+        System.gc();
+        check("the repaint counter does not keep a retired picture alive", retired.get() == null);
+        check("a no-stage chrome scene releases the fresh header after restore", chrome.get() == null);
+        long used = java.lang.management.ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
+        System.out.printf("  KeptCheck live heap after release: %.1f MiB of %d MiB%n", used / 1048576.0, AllChecks.HEAP_MB);
+        check("the full kept check leaves a quarter of AllChecks.HEAP_MB free", used < AllChecks.HEAP_MB * 1048576L * KEPT_HEAP_SHARE);
+    }
+
     public static void main(String[] args) throws Exception {
         System.out.println("=== KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sectors tab, the Bank, Finances, the city's fund, Government, Trade & the World, Policy, the drawer's bar and the construction tab kept between redraws, the speed's reading, the clock never rebuilding a rail screen, and the research screens (study UP4, UP2, KP1, KP2, KP3, KP4, KP5, KP6, KP7, UP7, R5) ===");
         String down = startJavaFx();
@@ -9285,6 +9358,7 @@ public class KeptCheck {
         kp2bRowsPicture(g, bench);
         up7Frame(g, bench);
         up7Speed(g, bench);
+        kp2cMends(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();

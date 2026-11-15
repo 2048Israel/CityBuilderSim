@@ -27,7 +27,7 @@
 > DecisionLog's; each line's values the screen's, in its stored units, with
 > the screen's own formatter to read them. This draws and listens.
 
-**Uses:** [Palette](Palette.md) (95), [ChartModel](ChartModel.md) (72), [YearBook](YearBook.md) (35), [CityCalendar](CityCalendar.md) (18), [Kept](Kept.md) (11), [DecisionLog](DecisionLog.md) (6), [HistoryScreen](HistoryScreen.md) (2), [ResearchView](ResearchView.md) (2), [UserInterface](UserInterface.md) (1), [GameLog](GameLog.md) (1)
+**Uses:** [Palette](Palette.md) (95), [ChartModel](ChartModel.md) (72), [Kept](Kept.md) (38), [YearBook](YearBook.md) (35), [CityCalendar](CityCalendar.md) (18), [DecisionLog](DecisionLog.md) (6), [Pieces](Pieces.md) (3), [HistoryScreen](HistoryScreen.md) (2), [ResearchView](ResearchView.md) (2), [UserInterface](UserInterface.md) (1), [GameLog](GameLog.md) (1)
 
 **Used by (13):** [BankScreen](BankScreen.md), [ChartFitBench](ChartFitBench.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [ResearchScreen](ResearchScreen.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md)
 

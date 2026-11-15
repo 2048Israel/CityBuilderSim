@@ -952,7 +952,7 @@ final class GovernmentScreen {
             block.getChildren().add(Kept.scope("kept", () -> {
                 Region swatch = Kept.region();
                 swatch.setMinSize(12, 8);
-                swatch.setPrefSize(12, 8);
+                Pieces.prefSize(swatch, 12, 8);
                 swatch.setMaxSize(12, 8);
                 swatch.setStyle("-fx-border-color: " + tone + "; -fx-border-width: 1.5; -fx-border-radius: 2;");
                 Label kept = words((balance >= 0 ? "kept " : "short ") + m(Math.abs(balance)), Palette.SIZE_LABEL, tone);
@@ -1052,7 +1052,7 @@ final class GovernmentScreen {
         double over = Math.max(0, value - Math.max(0, other)) * unit;
         javafx.scene.layout.Pane bar = Kept.plain();
         bar.setMinSize(w, h);
-        bar.setPrefSize(w, h);
+        Pieces.prefSize(bar, w, h);
         bar.setMaxSize(w, h);
         Region track = Kept.region();
         track.setStyle("-fx-background-color: " + Palette.EDGE + "; -fx-background-radius: 3;");
@@ -1085,7 +1085,7 @@ final class GovernmentScreen {
     /** A region held at a size, at x along a plain Pane (which sizes its children to their preferred size). */
     static void place(Region r, double x, double w, double h) {
         r.setMinSize(w, h);
-        r.setPrefSize(w, h);
+        Pieces.prefSize(r, w, h);
         r.setMaxSize(w, h);
         r.relocate(x, 0);
     }
@@ -2671,7 +2671,7 @@ final class GovernmentScreen {
     static VBox partCard(String name, String colour, String amount, String info, Node... lines) {
         Region swatch = Kept.region();
         swatch.setMinSize(10, 10);
-        swatch.setPrefSize(10, 10);
+        Pieces.prefSize(swatch, 10, 10);
         swatch.setMaxSize(10, 10);
         swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 3;");
         HBox head = Kept.row(6, swatch, caption(name, info));

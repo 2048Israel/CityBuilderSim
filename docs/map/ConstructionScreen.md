@@ -35,7 +35,7 @@
 > site. The cancel, the demolition and the buy-out ask first, with the
 > money in the dialog (UserInterface.confirm()).
 
-**Uses:** [Palette](Palette.md) (188), [Kept](Kept.md) (151), [Game](Game.md) (26), [ConstructionControl](ConstructionControl.md) (18), [BuildingManager](BuildingManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildingsStacks](BuildingsStacks.md) (4), [LandManager](LandManager.md) (4), [UserInterface](UserInterface.md) (3), [BuildersShort](BuildersShort.md) (3), [Sectors](Sectors.md) (2), [SafetyType](SafetyType.md) (2), [BuildScreen](BuildScreen.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [EducationType](EducationType.md) (1), [CareType](CareType.md) (1), [Sector](Sector.md) (1)
+**Uses:** [Palette](Palette.md) (188), [Kept](Kept.md) (160), [Game](Game.md) (26), [ConstructionControl](ConstructionControl.md) (18), [BuildingManager](BuildingManager.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (7), [BuildingsStacks](BuildingsStacks.md) (4), [LandManager](LandManager.md) (4), [UserInterface](UserInterface.md) (3), [BuildersShort](BuildersShort.md) (3), [Sectors](Sectors.md) (2), [SafetyType](SafetyType.md) (2), [BuildScreen](BuildScreen.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [EducationType](EducationType.md) (1), [CareType](CareType.md) (1), [Sector](Sector.md) (1)
 
 **Used by (2):** [KeptBench](KeptBench.md), [UserInterface](UserInterface.md)
 

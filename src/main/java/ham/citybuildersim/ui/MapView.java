@@ -558,7 +558,7 @@ final class MapView {
         canvas.setFocusTraversable(true);
         readout.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT) + " -fx-background-color: #0b1118cc;"
                 + " -fx-background-radius: 4; -fx-padding: 2 7 3 7;");
-        readout.setMouseTransparent(true);
+        Kept.give(readout.mouseTransparentProperty(), true);
         readout.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         // Within the small map (0.7.88): a street's words after whose it is may run past it, so it wraps there.
         readout.setWrapText(true);
@@ -566,7 +566,7 @@ final class MapView {
         showIf(readout, false);
         note.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_MUTED) + " -fx-background-color: #0b1118cc;"
                 + " -fx-background-radius: 6; -fx-padding: 6 12 6 12;");
-        note.setMouseTransparent(true);
+        Kept.give(note.mouseTransparentProperty(), true);
         note.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
         note.setText(DRAWING);
         showIf(note, false);
@@ -575,7 +575,7 @@ final class MapView {
         expand.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT) + " -fx-background-color: #0b1118cc;"
                 + " -fx-background-radius: 4; -fx-padding: 3 9 3 7; -fx-cursor: hand;");
         expand.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
-        expand.setOnMouseClicked(e -> { expand(); e.consume(); });
+        Kept.give(expand.onMouseClickedProperty(), e -> { expand(); e.consume(); });
         HistoryScreen.tip(expand, EXPAND_TIP);
         StackPane.setAlignment(expand, Pos.TOP_RIGHT);
         StackPane.setAlignment(readout, Pos.TOP_LEFT);
@@ -583,7 +583,7 @@ final class MapView {
         StackPane.setMargin(readout, new Insets(Palette.GAP));
         smallBox.getChildren().addAll(canvas, note, readout, expand);
         smallBox.setMinSize(SMALL_W, SMALL_H);
-        smallBox.setPrefSize(SMALL_W, SMALL_H);
+        Pieces.prefSize(smallBox, SMALL_W, SMALL_H);
         smallBox.setMaxSize(SMALL_W, SMALL_H);
         smallBox.setStyle("-fx-background-color: " + Palette.STAGE + "; -fx-background-radius: 8;");
         clip(smallBox);
@@ -3298,7 +3298,7 @@ final class MapView {
         }
         cursorFor(boxes);
         if (dotWords != null) {
-            if (!pressed) canvas.setCursor(javafx.scene.Cursor.HAND);
+            if (!pressed) Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.HAND);
             showCard(dotWords, sx, sy, globe.width(), globe.height());
             return;
         }
@@ -3410,7 +3410,7 @@ final class MapView {
             globe.keyPan(v, dt);
             follow();
         } else big.keyPan(v, dt);
-        if (card != null) card.setVisible(false);
+        if (card != null) Kept.give(card.visibleProperty(), false);
         dirty = true;
         return true;
     }
@@ -3434,24 +3434,24 @@ final class MapView {
        ===================================================================== */
 
     private void handlers() {
-        canvas.setOnMouseMoved(e -> {
+        Kept.give(canvas.onMouseMovedProperty(), e -> {
             hoverAt = new double[] { e.getX(), e.getY() };
             pointerAt = hoverAt;
             hoverShift = e.isShiftDown();
             requestDraw();
         });
-        canvas.setOnMouseExited(e -> {
+        Kept.give(canvas.onMouseExitedProperty(), e -> {
             hoverAt = null;
             pointerAt = null;
             hoverQuotes.leave();
             showIf(readout, false);
-            if (card != null) card.setVisible(false);
+            if (card != null) Kept.give(card.visibleProperty(), false);
             if (overSide >= 0) {
                 overSide = overPlace = -1;
                 requestDraw();
             }
         });
-        canvas.setOnMousePressed(e -> {
+        Kept.give(canvas.onMousePressedProperty(), e -> {
             if (replayRunsOnClick()) {      // (CM1) a replay's loaded move waits for this click
                 e.consume();
                 return;
@@ -3470,19 +3470,19 @@ final class MapView {
             boxing = pressButton == javafx.scene.input.MouseButton.PRIMARY && pressBoxes(e.getX(), e.getY(), e.isShiftDown());
             if (expanded) {
                 canvas.requestFocus();
-                canvas.setCursor(boxing ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
+                Kept.give(canvas.cursorProperty(), boxing ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
             }
         });
-        canvas.setOnMouseDragged(e -> {
+        Kept.give(canvas.onMouseDraggedProperty(), e -> {
             if (!pressed) return;
             moved = Math.max(moved, Math.hypot(e.getX() - pressX, e.getY() - pressY));
             if (boxing) {
                 boxX = e.getX();
                 boxY = e.getY();
-                if (card != null && moved >= CLICK_SLOP) card.setVisible(false);
+                if (card != null && moved >= CLICK_SLOP) Kept.give(card.visibleProperty(), false);
                 requestDraw();
             } else if (expanded) {
-                canvas.setCursor(javafx.scene.Cursor.CLOSED_HAND);
+                Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.CLOSED_HAND);
                 if (globe != null) {
                     globe.drag(lastX, lastY, e.getX(), e.getY());
                     follow();
@@ -3492,7 +3492,7 @@ final class MapView {
             lastX = e.getX();
             lastY = e.getY();
         });
-        canvas.setOnMouseReleased(e -> {
+        Kept.give(canvas.onMouseReleasedProperty(), e -> {
             // Only the press's own button lets it go; and a right or middle press never clicks (MS1).
             if (!pressed || e.getButton() != pressButton) return;
             boolean primary = pressButton == javafx.scene.input.MouseButton.PRIMARY;
@@ -3507,7 +3507,7 @@ final class MapView {
             else if (click) click(e.getX(), e.getY(), e.isShiftDown());
             else requestDraw();
         });
-        canvas.setOnScroll(e -> {
+        Kept.give(canvas.onScrollProperty(), e -> {
             if (!expanded) return;
             double notches = e.getDeltaY() / 40.0;
             if (notches == 0) return;
@@ -3516,7 +3516,7 @@ final class MapView {
                 globe.zoomNotches(e.getX(), e.getY(), notches);
                 follow();
             } else big.zoomNotches(e.getX(), e.getY(), notches);
-            if (card != null) card.setVisible(false);
+            if (card != null) Kept.give(card.visibleProperty(), false);
             requestDraw();
             e.consume();
         });
@@ -3737,7 +3737,7 @@ final class MapView {
      */
     private void cursorFor(boolean boxHere) {
         if (pressed) return;
-        canvas.setCursor(!expanded ? javafx.scene.Cursor.DEFAULT
+        Kept.give(canvas.cursorProperty(), !expanded ? javafx.scene.Cursor.DEFAULT
                 : canPick() && (boxHere || hoverShift) ? javafx.scene.Cursor.CROSSHAIR : javafx.scene.Cursor.OPEN_HAND);
     }
 
@@ -3752,7 +3752,7 @@ final class MapView {
     /** The expanded map's hover card: its lines, the first bold, by the pointer and inside the view - the hint last (CLICK_TO_BUY, CLICK_TO_PICK, CLICK_TO_DROP, and a nation's NationsMap.CLICK_FOR_CARD) in the accent's light blue. */
     private void showCard(List<String> lines, double sx, double sy, double vw, double vh) {
         if (lines.isEmpty()) {
-            card.setVisible(false);
+            Kept.give(card.visibleProperty(), false);
             return;
         }
         card.getChildren().clear();
@@ -3771,7 +3771,7 @@ final class MapView {
         if (top + ch > vh - 10) top = Math.max(10, vh - ch - 10);
         card.setTranslateX(left);
         card.setTranslateY(top);
-        card.setVisible(true);
+        Kept.give(card.visibleProperty(), true);
     }
 
     /** The most fields a hover card lists: 3 (LandMap.CARD_FIELDS since 0.7.135). */
@@ -3911,7 +3911,7 @@ final class MapView {
             hideNationCard();
             rings = List.of();
             buyBox.getChildren().setAll(ui.landScreen.mapPricingNode(LandMap.groundTitle(picks.blocks().size()), this));
-            buyBox.setVisible(true);
+            Kept.give(buyBox.visibleProperty(), true);
             layoutBuyCard();
             return;
         }
@@ -3933,7 +3933,7 @@ final class MapView {
         }
         rings = sites;
         buyBox.getChildren().setAll(ui.landScreen.mapCardNode(m, this));
-        buyBox.setVisible(true);
+        Kept.give(buyBox.visibleProperty(), true);
         layoutBuyCard();
     }
 
@@ -3944,7 +3944,7 @@ final class MapView {
         receiptShown = false;
         if (buyBox == null) return;
         buyBox.getChildren().clear();
-        buyBox.setVisible(false);
+        Kept.give(buyBox.visibleProperty(), false);
     }
 
     /** What the card was drawn from: the picks, the toggle, the cash and the vault, the month and the listing. */
@@ -4174,7 +4174,7 @@ final class MapView {
         List<int[]> offerPlaces = new ArrayList<>();
         for (int[] sp : places) if (sp[2] == 0) offerPlaces.add(new int[] { sp[0], sp[1] });
         buyBox.getChildren().setAll(ui.landScreen.mapReceiptNode(title, offerPlaces, this));
-        buyBox.setVisible(true);
+        Kept.give(buyBox.visibleProperty(), true);
         layoutBuyCard();
         requestDraw();
     }
@@ -4566,12 +4566,12 @@ final class MapView {
         Label chip = new Label(words);
         Region dot = new Region();
         dot.setMinSize(7, 7);
-        dot.setPrefSize(7, 7);
+        Pieces.prefSize(dot, 7, 7);
         dot.setMaxSize(7, 7);
         chip.setGraphic(dot);
         chip.setGraphicTextGap(5);
         chip.setMinWidth(Region.USE_PREF_SIZE);
-        chip.setOnMouseClicked(e -> {
+        Kept.give(chip.onMouseClickedProperty(), e -> {
             flip.run();
             e.consume();
         });
@@ -4992,7 +4992,7 @@ final class MapView {
         Label close = new Label("×");
         close.setStyle(Palette.words(Palette.SIZE_SECTION, Palette.TEXT_MUTED) + " -fx-cursor: hand;");
         close.setMinWidth(Region.USE_PREF_SIZE);
-        close.setOnMouseClicked(e -> {
+        Kept.give(close.onMouseClickedProperty(), e -> {
             hideNationCard();
             requestDraw();
             e.consume();
@@ -5007,7 +5007,7 @@ final class MapView {
         values.setHgrow(Priority.ALWAYS);
         values.setMinWidth(0);
         ranks.setHalignment(HPos.RIGHT);
-        grid.getColumnConstraints().addAll(labels, values, ranks);
+        Kept.columns(grid).addAll(labels, values, ranks);
         int row = 0;
         for (NationsMap.Row r : c.rows()) {
             Label k = new Label(r.label());
@@ -5051,7 +5051,7 @@ final class MapView {
             }));
         }
         nationBox.getChildren().setAll(head, distance, grid, doors);
-        nationBox.setVisible(true);
+        Kept.give(nationBox.visibleProperty(), true);
         nationBox.applyCss();
         nationBox.autosize();
         placeNationCard();
@@ -5077,7 +5077,7 @@ final class MapView {
         nationKey = null;
         if (nationBox == null) return;
         nationBox.getChildren().clear();
-        nationBox.setVisible(false);
+        Kept.give(nationBox.visibleProperty(), false);
     }
 
     /** A frame's look at the card (tick()): made again when the month moved - the year's figures and the D$ it is struck in - and put away if its nation is not shown any more (Nations off, another game). */
@@ -5116,7 +5116,7 @@ final class MapView {
         ui.showChartFullScreen(bigPane, null, this::collapse, true);
         ui.panKeysTo(this);
         setCinematic(ui.cinematicHidesChrome());     // (TR1) a replay's cinematic mode that is on holds for a map expanded in it (TR2: not the form Follow keeps)
-        canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
+        Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.OPEN_HAND);
         boolean before = big != null;
         fitPane();
         if (keepView && before) requestDraw();
@@ -5161,8 +5161,8 @@ final class MapView {
         hideBuyCard();
         hideNationCard();
         ui.closeChartFullScreen();
-        if (card != null) card.setVisible(false);
-        canvas.setCursor(javafx.scene.Cursor.DEFAULT);
+        if (card != null) Kept.give(card.visibleProperty(), false);
+        Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.DEFAULT);
         bigBox.getChildren().remove(canvas);
         smallBox.getChildren().add(0, canvas);
         canvas.setWidth(SMALL_W);
@@ -5226,20 +5226,20 @@ final class MapView {
         card.setStyle("-fx-background-color: #0b1118e6; -fx-background-radius: 6; -fx-border-color: " + Palette.EDGE
                 + "; -fx-border-radius: 6; -fx-padding: 6 9 7 9;");
         // Laid out by hand at the pointer: never managed, so the pane never stretches it.
-        card.setMouseTransparent(true);
-        card.setManaged(false);
-        card.setVisible(false);
+        Kept.give(card.mouseTransparentProperty(), true);
+        Kept.give(card.managedProperty(), false);
+        Kept.give(card.visibleProperty(), false);
         VBox legend = legend();
         StackPane.setAlignment(legend, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(legend, new Insets(Palette.GAP));
         // The buying card (0.7.137): laid out by hand beside its offer, under the hover card, never managed either.
         buyBox = new VBox();
-        buyBox.setManaged(false);
-        buyBox.setVisible(false);
+        Kept.give(buyBox.managedProperty(), false);
+        Kept.give(buyBox.visibleProperty(), false);
         // A nation's card (WN2): the same, laid out by hand beside the point clicked, under the hover card.
         nationBox = new VBox(NATION_CARD_GAP);
-        nationBox.setManaged(false);
-        nationBox.setVisible(false);
+        Kept.give(nationBox.managedProperty(), false);
+        Kept.give(nationBox.visibleProperty(), false);
         bigBox = new StackPane(legend, buyBox, nationBox, card);
         StackPane.setAlignment(card, Pos.TOP_LEFT);
         StackPane.setAlignment(buyBox, Pos.TOP_LEFT);
@@ -5267,7 +5267,7 @@ final class MapView {
         canvas.setWidth(w);
         canvas.setHeight(h);
         bigBox.setMinSize(w, h);
-        bigBox.setPrefSize(w, h);
+        Pieces.prefSize(bigBox, w, h);
         bigBox.setMaxSize(w, h);
         if (big == null) big = new MapFrame(w, h);
         else big.resize(w, h);
@@ -5375,7 +5375,7 @@ final class MapView {
         // them goes through. The box itself has no background and picks only through its head (setPickOnBounds(false)); the dark ground
         // is the head's and the body's, so the folded head is a small rounded box of its own.
         legendBody = new VBox(6, legendGrid, shipsLine, trucksLine, legendNote);
-        legendBody.setMouseTransparent(true);
+        Kept.give(legendBody.mouseTransparentProperty(), true);
         legendChevron.setMinWidth(Region.USE_PREF_SIZE);
         legendChevron.setStyle(Palette.strong(Palette.SIZE_LABEL, Palette.TEXT_LABEL));
         Label legendWord = new Label("Legend");
@@ -5383,8 +5383,8 @@ final class MapView {
         legendFoldHint.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
         legendHead = new HBox(6, legendChevron, legendWord, legendFoldHint);
         legendHead.setAlignment(Pos.CENTER_LEFT);
-        legendHead.setCursor(javafx.scene.Cursor.HAND);
-        legendHead.setOnMouseClicked(e -> {
+        Kept.give(legendHead.cursorProperty(), javafx.scene.Cursor.HAND);
+        Kept.give(legendHead.onMouseClickedProperty(), e -> {
             ui.prefs.setMapLegendFolded(!ui.prefs.isMapLegendFolded());
             ui.prefs.save(ui.game.getGameFiles());
             foldLegend();
@@ -5509,7 +5509,7 @@ final class MapView {
 
     /** Holds the canvas's cursor at none while cinematic mode is on, whatever cursorFor() or a press asks for. */
     private final javafx.beans.value.ChangeListener<javafx.scene.Cursor> cursorOff = (o, was, now) -> {
-        if (now != javafx.scene.Cursor.NONE) canvas.setCursor(javafx.scene.Cursor.NONE);
+        if (now != javafx.scene.Cursor.NONE) Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.NONE);
     };
 
     /** A pane measure as it is now: the padding's and the head's room, none in cinematic mode. */
@@ -5529,15 +5529,15 @@ final class MapView {
         canvas.cursorProperty().removeListener(cursorOff);
         if (on && expanded) {
             canvas.cursorProperty().addListener(cursorOff);
-            canvas.setCursor(javafx.scene.Cursor.NONE);
+            Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.NONE);
         } else if (expanded) {
-            canvas.setCursor(javafx.scene.Cursor.OPEN_HAND);
+            Kept.give(canvas.cursorProperty(), javafx.scene.Cursor.OPEN_HAND);
         }
         if (bigPane == null || !expanded) return;
         if (paddedStyle == null) paddedStyle = bigPane.getStyle();
         showIf(bigPane.getChildren().get(0), !on);
         if (legendHead != null && legendHead.getParent() != null) showIf(legendHead.getParent(), !on);
-        card.setOpacity(on ? 0 : 1);
+        Kept.give(card.opacityProperty(), on ? 0 : 1);
         bigPane.setStyle(on ? "-fx-background-color: " + Palette.STAGE + ";" : paddedStyle);
         // The rounded corners of the picture would show the window's ground at its four corners.
         if (on) bigBox.setClip(null); else clip(bigBox);
@@ -5643,7 +5643,7 @@ final class MapView {
         } else {
             return;
         }
-        if (card != null) card.setVisible(false);
+        if (card != null) Kept.give(card.visibleProperty(), false);
         dirty = true;
     }
 
@@ -5664,7 +5664,7 @@ final class MapView {
             else big.pan(m.dx(), m.dy());
         }
         if (globe != null) follow();
-        if (card != null) card.setVisible(false);
+        if (card != null) Kept.give(card.visibleProperty(), false);
         dirty = true;
     }
 
@@ -5729,7 +5729,7 @@ final class MapView {
         if (cam == null || !expanded || big == null) return false;
         cam.hand();
         cam.smooth().wheel(sx, sy, notches);
-        if (card != null) card.setVisible(false);
+        if (card != null) Kept.give(card.visibleProperty(), false);
         requestDraw();
         return true;
     }

@@ -1147,7 +1147,7 @@ final class HistoryScreen {
             x.setStyle(Palette.strong(Palette.SIZE_HEADING + 4, Palette.TEXT_LABEL) + " -fx-cursor: hand; -fx-padding: 0 4 0 4;");
             x.setMinWidth(Region.USE_PREF_SIZE);
             tip(x, "Puts this away.");
-            x.setOnMouseClicked(e -> {
+            Kept.give(x.onMouseClickedProperty(), e -> {
                 bookExportSaid = null;
                 bookFolder = null;
                 bookFiles.clear();
@@ -1336,7 +1336,7 @@ final class HistoryScreen {
                 + " -fx-border-width: 0 0 2 0;"
                 + Palette.words(Palette.SIZE_CAPTION,
                         on ? Palette.TEXT_HEAD : Palette.TEXT_LABEL));
-        chip.setOnMouseClicked(e -> act.run());
+        Kept.give(chip.onMouseClickedProperty(), e -> act.run());
         return chip;
     }
 
@@ -1368,7 +1368,7 @@ final class HistoryScreen {
     Label chip(String name, String text, javafx.scene.Node graphic, boolean on, Runnable act) {
         Label chip = pickChip(text, graphic, on, act);
         named.put(name, chip);
-        chip.setOnMouseClicked(e -> {
+        Kept.give(chip.onMouseClickedProperty(), e -> {
             pressed = name;
             pressedAt = chip.localToScene(0, 0).getY();
             act.run();
@@ -2349,7 +2349,7 @@ final class HistoryScreen {
         // Kept: what a card shows only sometimes (the axis, the layers chip, the range bar) is a scope of its own.
         Region swatch = Kept.region();
         swatch.setMinSize(9, 9);
-        swatch.setPrefSize(9, 9);
+        Pieces.prefSize(swatch, 9, 9);
         swatch.setMaxSize(9, 9);
         swatch.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
         Label name = Kept.label(r.label());
@@ -2415,7 +2415,7 @@ final class HistoryScreen {
         caption.setWrapText(true);
         caption.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
         card.getChildren().add(caption);
-        if (hiddenLines.contains(key)) card.setOpacity(.5);
+        if (hiddenLines.contains(key)) Kept.give(card.opacityProperty(), .5);
         card.setMaxWidth(Double.MAX_VALUE);
         card.setStyle(Palette.block(Palette.RAISED, Palette.EDGE) + " -fx-padding: 10 12 10 12;");
         return card;
@@ -2521,7 +2521,7 @@ final class HistoryScreen {
             });
         }
         // Enter hands the keys back to the page, so the window's shortcuts work again.
-        find.setOnAction(e -> { if (page != null) page.requestFocus(); });
+        Kept.give(find.onActionProperty(), e -> { if (page != null) page.requestFocus(); });
         filterField = find;
 
         Label drawn = hint(historyPicked.size() + " drawn · " + TRACES.length + " lines");
@@ -3026,9 +3026,9 @@ final class HistoryScreen {
         String over = rest + " -fx-background-color: " + Palette.CONTROL + ";";
         // Kept (KP2): the look the pointer calls for - a kept row under a still pointer is not entered afresh.
         row.setStyle(row.isHover() ? over : rest);
-        row.setOnMouseEntered(e -> row.setStyle(over));
-        row.setOnMouseExited(e -> row.setStyle(rest));
-        row.setOnMouseClicked(e -> go.run());
+        Kept.give(row.onMouseEnteredProperty(), e -> row.setStyle(over));
+        Kept.give(row.onMouseExitedProperty(), e -> row.setStyle(rest));
+        Kept.give(row.onMouseClickedProperty(), e -> go.run());
         tip(row, tipText);
     }
 
@@ -3092,7 +3092,7 @@ final class HistoryScreen {
         VBox box = details(key, caption, folds, this::showHistoryMenu, body);
         if (!box.getChildren().isEmpty() && box.getChildren().get(0) instanceof Label toggle) {
             named.put("fold:" + key, toggle);
-            toggle.setOnMouseClicked(e -> {
+            Kept.give(toggle.onMouseClickedProperty(), e -> {
                 pressed = "fold:" + key;
                 pressedAt = toggle.localToScene(0, 0).getY();
                 if (!folds.remove(key)) folds.add(key);

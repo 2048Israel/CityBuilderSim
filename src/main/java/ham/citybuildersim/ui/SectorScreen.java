@@ -495,9 +495,9 @@ final class SectorScreen {
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: ";
         // Kept (KP4): the look the pointer calls for is chosen from isHover() where it is set (a still pointer sends no mouse-entered).
         card.setStyle(rest + (card.isHover() ? Palette.ACCENT : Palette.EDGE) + ";");
-        card.setOnMouseEntered(e -> card.setStyle(rest + Palette.ACCENT + ";"));
-        card.setOnMouseExited(e -> card.setStyle(rest + Palette.EDGE + ";"));
-        card.setOnMouseClicked(e -> {
+        Kept.give(card.onMouseEnteredProperty(), e -> card.setStyle(rest + Palette.ACCENT + ";"));
+        Kept.give(card.onMouseExitedProperty(), e -> card.setStyle(rest + Palette.EDGE + ";"));
+        Kept.give(card.onMouseClickedProperty(), e -> {
             openSector = sector;
             sectorPage = SECTOR_HOME;
             ui.innerScrollAt.remove("showSectorMenu:body");
@@ -799,8 +799,8 @@ final class SectorScreen {
         HBox row = Kept.row(6, mark, line);
         row.setAlignment(Pos.TOP_LEFT);
         // ...set on both sides (KP4): a card that has a word again is handed back its icon and line as they were.
-        mark.setVisible(!blank);
-        line.setVisible(!blank);
+        Kept.give(mark.visibleProperty(), !blank);
+        Kept.give(line.visibleProperty(), !blank);
         if (blank) {
             row.setStyle("-fx-padding: 6 0 0 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;");
             return row;
@@ -810,7 +810,7 @@ final class SectorScreen {
         tip.setWrapText(true);
         tip.setMaxWidth(420);
         // Set, not added: a kept row is handed back with no handler (Kept), and given this draw's.
-        row.setOnMouseClicked(e -> {
+        Kept.give(row.onMouseClickedProperty(), e -> {
             e.consume();
             openSectorBooks(si.owner(), "Investors");
         });
@@ -989,14 +989,14 @@ final class SectorScreen {
     HBox sectorHead(Sector sector) {
         Region swatch = Kept.region();
         swatch.setMinSize(10, 10);
-        swatch.setPrefSize(10, 10);
+        Pieces.prefSize(swatch, 10, 10);
         swatch.setMaxSize(10, 10);
         swatch.setStyle("-fx-background-color: " + Palette.BUSINESS + "; -fx-background-radius: 3;");
         Label crumb = Kept.label("Sectors", swatch);
         crumb.setStyle(Palette.strong(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0; -fx-cursor: hand;");
         crumb.setMinWidth(Region.USE_PREF_SIZE);
         crumb.setGraphicTextGap(10);
-        crumb.setOnMouseClicked(e -> backToList());
+        Kept.give(crumb.onMouseClickedProperty(), e -> backToList());
         Kept.tip(crumb, "All the sectors", 1000);
         Label sep = Kept.label("›");
         sep.setStyle(Palette.words(Palette.SIZE_TITLE, Palette.TEXT_MUTED) + " -fx-padding: 8 0 2 0;");
@@ -1304,7 +1304,7 @@ final class SectorScreen {
         return Kept.scope("keyPart", () -> {
             Region sw = Kept.region();
             sw.setMinSize(10, 10);
-            sw.setPrefSize(10, 10);
+            Pieces.prefSize(sw, 10, 10);
             sw.setMaxSize(10, 10);
             sw.setStyle("-fx-background-color: " + colour + "; -fx-background-radius: 2;");
             Label n = Kept.label(name);
@@ -1574,7 +1574,7 @@ final class SectorScreen {
                             + (sector != null ? " -fx-cursor: hand;" : ""));
                     // Set, not added: a kept name is handed back with no handler or tooltip (Kept), and given this draw's.
                     if (sector != null) {
-                        name.setOnMouseClicked(e -> openInputLine(sector));
+                        Kept.give(name.onMouseClickedProperty(), e -> openInputLine(sector));
                         Kept.tip(name, "Open " + sector.label() + "'s cost of sales: the lines Freight billed it.", 1000);
                     }
                     return shipperRow(name, cells, "-fx-padding: 1 0 1 0;");
@@ -1634,9 +1634,9 @@ final class SectorScreen {
         // Kept (KP4): the underline a hover gives is chosen from isHover() where it is set, and set on both sides.
         l.setUnderline(billed && sector != null && l.isHover());
         if (billed && sector != null) {
-            l.setOnMouseClicked(e -> openInputLine(sector));
-            l.setOnMouseEntered(e -> l.setUnderline(true));
-            l.setOnMouseExited(e -> l.setUnderline(false));
+            Kept.give(l.onMouseClickedProperty(), e -> openInputLine(sector));
+            Kept.give(l.onMouseEnteredProperty(), e -> l.setUnderline(true));
+            Kept.give(l.onMouseExitedProperty(), e -> l.setUnderline(false));
             Kept.tip(l, sector.label() + ": " + word + ". Click for the line on its Income page.", 1000);
         }
         return l;
@@ -3545,7 +3545,7 @@ final class SectorScreen {
             javafx.scene.layout.ColumnConstraints cc = new javafx.scene.layout.ColumnConstraints();
             cc.setPrefWidth(w);
             cc.setMinWidth(w);
-            grid.getColumnConstraints().add(cc);
+            Kept.columns(grid).add(cc);
         }
         List<String> heading = new ArrayList<>();
         heading.add("building");
@@ -3592,7 +3592,7 @@ final class SectorScreen {
                     cell.setMinHeight(34);
                     cell.setStyle("-fx-padding: 4 0 0 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0;"
                             + " -fx-cursor: hand;");
-                    cell.setOnMouseClicked(e -> {
+                    Kept.give(cell.onMouseClickedProperty(), e -> {
                         BuildAdvice.Category c = BuildAdvice.categoryOf(template.getCategory());
                         if (c != null) ui.buildScreen.openCategory(c.name());
                     });
@@ -4115,7 +4115,7 @@ final class SectorScreen {
                 javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
                 if (w > 0) { c.setPrefWidth(w); c.setMinWidth(w * .7); }
                 else { c.setHgrow(Priority.ALWAYS); c.setMinWidth(160); }
-                grid.getColumnConstraints().add(c);
+                Kept.columns(grid).add(c);
             }
             String[] heads = { "building", "standing", "value added", "investors' estimate", "the first gate it fails" };
             Kept.scope("heads", () -> {
@@ -4178,7 +4178,7 @@ final class SectorScreen {
                         // Kept (KP4): the whole style, the hand cursor in it, set at every draw - it was the cell's own last style with the cursor added,
                         // which a cell handed back would have had added again.
                         cell.setStyle("-fx-padding: 4 0 4 0; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 1 0 0 0; -fx-cursor: hand;");
-                        cell.setOnMouseClicked(e -> {
+                        Kept.give(cell.onMouseClickedProperty(), e -> {
                             BuildAdvice.Category c = BuildAdvice.categoryOf(template.getCategory());
                             if (c != null) ui.buildScreen.openCategory(c.name());
                         });
@@ -4337,7 +4337,7 @@ final class SectorScreen {
             javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
             if (w > 0) { c.setPrefWidth(w); c.setMinWidth(w * .7); }
             else { c.setHgrow(Priority.ALWAYS); c.setMinWidth(160); }
-            grid.getColumnConstraints().add(c);
+            Kept.columns(grid).add(c);
         }
         for (int n = 0; n < rows.size(); n++) {
             final ResearchView.PieceRow r = rows.get(n);
@@ -4590,7 +4590,7 @@ final class SectorScreen {
             Label l = Kept.label(words);
             l.setStyle(Palette.words(Palette.SIZE_LABEL + 1, Palette.ACCENT) + " -fx-cursor: hand;");
             l.setMinWidth(Region.USE_PREF_SIZE);
-            l.setOnMouseClicked(e -> openFreightAt(division));
+            Kept.give(l.onMouseClickedProperty(), e -> openFreightAt(division));
             return l;
         });
     }
@@ -4901,7 +4901,7 @@ final class SectorScreen {
 
         RefineryPicture() {
             setMinSize(RefineryView.LEAST_WIDTH, RefineryView.HEIGHT);
-            setPrefSize(PAGE_WIDE, RefineryView.HEIGHT);
+            Pieces.prefSize(this, PAGE_WIDE, RefineryView.HEIGHT);
             setMaxSize(Double.MAX_VALUE, RefineryView.HEIGHT);
             widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
         }
@@ -4985,7 +4985,7 @@ final class SectorScreen {
                 : new javafx.scene.paint.LinearGradient(r.x1(), 0, r.x2(), 0, false, javafx.scene.paint.CycleMethod.NO_CYCLE,
                         new javafx.scene.paint.Stop(0, javafx.scene.paint.Color.web(r.from(), r.opacity())),
                         new javafx.scene.paint.Stop(1, javafx.scene.paint.Color.web(r.to(), r.opacity()))));
-        path.setMouseTransparent(true);
+        Kept.give(path.mouseTransparentProperty(), true);
         return path;
     }
 
@@ -5011,7 +5011,7 @@ final class SectorScreen {
             t.setWrapText(true);
             t.setMaxWidth(420);
         }
-        rect.setMouseTransparent(b.tip() == null);
+        Kept.give(rect.mouseTransparentProperty(), b.tip() == null);
         return rect;
     }
 
@@ -5021,7 +5021,7 @@ final class SectorScreen {
         s.setContent(o.path());
         s.setFill(o.fill() == null ? null : javafx.scene.paint.Color.web(o.fill(), o.opacity()));
         s.setStroke(o.stroke() == null ? null : javafx.scene.paint.Color.web(o.stroke()));
-        s.setMouseTransparent(true);
+        Kept.give(s.mouseTransparentProperty(), true);
         return s;
     }
 
@@ -5033,7 +5033,7 @@ final class SectorScreen {
         line.setEndX(l.x2());
         line.setEndY(l.y2());
         line.setStroke(javafx.scene.paint.Color.web(l.colour()));
-        line.setMouseTransparent(true);
+        Kept.give(line.mouseTransparentProperty(), true);
         return line;
     }
 
@@ -5052,7 +5052,7 @@ final class SectorScreen {
         for (javafx.scene.text.Text t : runs) {
             t.setX(x);
             t.setY(w.y());
-            t.setMouseTransparent(true);
+            Kept.give(t.mouseTransparentProperty(), true);
             if (w.halo()) out.add(halo(t, x, w.y()));
             out.add(t);
             x += t.getLayoutBounds().getWidth();
@@ -5083,7 +5083,7 @@ final class SectorScreen {
             halo.setStroke(javafx.scene.paint.Color.web(RefineryView.GROUND));
             halo.setStrokeWidth(3.5);
             halo.setStrokeLineJoin(javafx.scene.shape.StrokeLineJoin.ROUND);
-            halo.setMouseTransparent(true);
+            Kept.give(halo.mouseTransparentProperty(), true);
             return halo;
         });
     }
@@ -5151,7 +5151,7 @@ final class SectorScreen {
             RefineryView.Cell cell = cells.get(i);
             javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
             c.setPercentWidth(100.0 / cells.size());
-            grid.getColumnConstraints().add(c);
+            Kept.columns(grid).add(c);
             // Kept (KP4): a scope a product, by its name, so one that comes or goes shifts no other cell's nodes.
             grid.add(Kept.scope("cell:" + cell.name(), () -> stripCell(cell)), i, 0);
         }
@@ -5178,7 +5178,7 @@ final class SectorScreen {
         for (int i = 0; i < 3; i++) {
             javafx.scene.layout.ColumnConstraints cc = new javafx.scene.layout.ColumnConstraints();
             cc.setPercentWidth(100 * share[i]);
-            bar.getColumnConstraints().add(cc);
+            Kept.columns(bar).add(cc);
             Region seg = Kept.region();
             seg.setMinHeight(7);
             seg.setMaxWidth(Double.MAX_VALUE);
@@ -5289,7 +5289,7 @@ final class SectorScreen {
 
         IndustryPane() {
             setMinSize(IndustryPicture.LEAST_WIDTH, IndustryPicture.HEIGHT);
-            setPrefSize(PAGE_WIDE, IndustryPicture.HEIGHT);
+            Pieces.prefSize(this, PAGE_WIDE, IndustryPicture.HEIGHT);
             setMaxSize(Double.MAX_VALUE, IndustryPicture.HEIGHT);
             widthProperty().addListener((o, was, now) -> draw(now.doubleValue()));
         }
@@ -5374,7 +5374,7 @@ final class SectorScreen {
             IndustryPicture.Cell cell = cells.get(i);
             javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
             c.setPercentWidth(100.0 / cells.size());
-            grid.getColumnConstraints().add(c);
+            Kept.columns(grid).add(c);
             // Kept (KP4): a scope a cell, by its name, so one that comes or goes shifts no other cell's nodes.
             grid.add(Kept.scope("cell:" + cell.name(), () -> industryCell(cell)), i, 0);
         }
@@ -5397,7 +5397,7 @@ final class SectorScreen {
             IndustryPicture.Segment s = c.bar().get(i);
             javafx.scene.layout.ColumnConstraints cc = new javafx.scene.layout.ColumnConstraints();
             cc.setPercentWidth(100 * Math.max(0, s.share()));
-            bar.getColumnConstraints().add(cc);
+            Kept.columns(bar).add(cc);
             Region seg = Kept.region();
             seg.setMinHeight(7);
             seg.setMaxWidth(Double.MAX_VALUE);
@@ -5597,7 +5597,7 @@ final class SectorScreen {
             OilView.Figure f = figures.get(i);
             javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
             c.setPercentWidth(100.0 / figures.size());
-            grid.getColumnConstraints().add(c);
+            Kept.columns(grid).add(c);
             // Kept (KP4): a scope a tile, by its label.
             grid.add(Kept.scope("tile:" + f.label(), () -> {
                 Label label = Kept.label(f.label());
@@ -5644,7 +5644,7 @@ final class SectorScreen {
         for (int i = 0; i < 2; i++) {
             javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
             c.setPercentWidth(50);
-            cards.getColumnConstraints().add(c);
+            Kept.columns(cards).add(c);
         }
         cards.add(land, 0, 0);
         cards.add(sea, 1, 0);
@@ -5664,7 +5664,7 @@ final class SectorScreen {
         }
         javafx.scene.layout.Pane chart = Kept.plain();
         chart.setMinSize(OilView.CHART_W, OilView.CHART_HEIGHT);
-        chart.setPrefSize(OilView.CHART_W, OilView.CHART_HEIGHT);
+        Pieces.prefSize(chart, OilView.CHART_W, OilView.CHART_HEIGHT);
         chart.setMaxSize(OilView.CHART_W, OilView.CHART_HEIGHT);
         // Kept (KP4): the chart's shapes are the last draw's, in a scope of their own (paint() makes each kind in a scope of its own).
         chart.getChildren().setAll(Kept.scope("chart", () -> paint(v.chart(OilView.CHART_W, OilView.CHART_HEIGHT), ui.game.getSectors())));
@@ -5739,7 +5739,7 @@ final class SectorScreen {
                     c.setHgrow(Priority.ALWAYS);
                 }
                 c.setHalignment(right[i] ? javafx.geometry.HPos.RIGHT : javafx.geometry.HPos.LEFT);
-                g.getColumnConstraints().add(c);
+                Kept.columns(g).add(c);
                 Label h = Kept.label(heads[i].toUpperCase());
                 h.setStyle(Palette.words((int) OilView.HEAD_WORDS, Palette.TEXT_MUTED));
                 h.setMinWidth(0);
@@ -5874,7 +5874,7 @@ final class SectorScreen {
         for (int i = 0; i < 2; i++) {
             javafx.scene.layout.ColumnConstraints c = new javafx.scene.layout.ColumnConstraints();
             c.setPercentWidth(50);
-            facts.getColumnConstraints().add(c);
+            Kept.columns(facts).add(c);
         }
         List<OilView.Fact> lines = OilView.reserveFacts(v);
         for (int i = 0; i < lines.size(); i++) facts.add(oilFact(lines.get(i)), i % 2, i / 2);
@@ -6055,7 +6055,7 @@ final class SectorScreen {
             Label l = Kept.label(words);
             l.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-cursor: hand;");
             l.setMinWidth(Region.USE_PREF_SIZE);
-            l.setOnMouseClicked(e -> openFreightDivision(division));
+            Kept.give(l.onMouseClickedProperty(), e -> openFreightDivision(division));
             return l;
         });
     }
@@ -6252,9 +6252,9 @@ final class SectorScreen {
                         + (r.abroad() ? " · paid abroad" : "")
                         + (r.door() == FreightView.Division.ALL ? "" : "\n" + r.door().label() + " ›"), 200);
                 boolean opens = r.door() != FreightView.Division.ALL;
-                block.setCursor(opens ? javafx.scene.Cursor.HAND : null);
+                Kept.give(block.cursorProperty(), opens ? javafx.scene.Cursor.HAND : null);
                 final FreightView.Division opened = r.door();
-                block.setOnMouseClicked(opens ? e -> this.door.accept(opened) : null);
+                Kept.give(block.onMouseClickedProperty(), opens ? e -> this.door.accept(opened) : null);
                 Label label = labels.get(i);
                 label.setText(r.mode().label() + " " + shortNumber(r.tonnes()));
             }
@@ -6277,13 +6277,13 @@ final class SectorScreen {
                 blocks.add(block);
                 all.add(block);
                 javafx.scene.shape.Rectangle stripe = new javafx.scene.shape.Rectangle();
-                stripe.setMouseTransparent(true);
-                stripe.setVisible(rows.get(i).abroad());
+                Kept.give(stripe.mouseTransparentProperty(), true);
+                Kept.give(stripe.visibleProperty(), rows.get(i).abroad());
                 stripe.setFill(hatch(Palette.STAGE, .6));
                 stripes.add(stripe);
                 all.add(stripe);
                 Label label = new Label();
-                label.setMouseTransparent(true);
+                Kept.give(label.mouseTransparentProperty(), true);
                 label.setStyle(Palette.figure(Palette.SIZE_CAPTION, Palette.TEXT_HEAD) + " -fx-background-color: "
                         + tint(Palette.STAGE, .55) + "; -fx-background-radius: 2; -fx-padding: 1 4 1 4;");
                 labels.add(label);
@@ -6307,8 +6307,8 @@ final class SectorScreen {
                 double wide = scale > 0 ? w * Math.max(0, rows.get(i).tonnes()) / scale : 0;
                 double shown = wide > 0 ? Math.max(1, Math.min(w - x, wide - (i < n - 1 ? 1 : 0))) : 0;
                 javafx.scene.shape.Rectangle block = blocks.get(i), stripe = stripes.get(i);
-                block.setVisible(shown > 0);
-                stripe.setVisible(shown > 0 && rows.get(i).abroad());
+                Kept.give(block.visibleProperty(), shown > 0);
+                Kept.give(stripe.visibleProperty(), shown > 0 && rows.get(i).abroad());
                 for (javafx.scene.shape.Rectangle s : List.of(block, stripe)) {
                     s.setX(x);
                     s.setY(0);
@@ -6318,7 +6318,7 @@ final class SectorScreen {
                 Label label = labels.get(i);
                 label.applyCss();
                 double lw = label.prefWidth(-1), lh = label.prefHeight(-1);
-                label.setVisible(shown > lw + 8);
+                Kept.give(label.visibleProperty(), shown > lw + 8);
                 label.resizeRelocate(x + 4, Math.max(0, (BAND - lh) / 2), lw, lh);
                 x += wide;
             }
@@ -6455,7 +6455,7 @@ final class SectorScreen {
         name.setStyle(Palette.words(Palette.SIZE_LABEL + 1, sector != null ? Palette.ACCENT : Palette.TEXT_LABEL)
                 + (sector != null ? " -fx-cursor: hand;" : ""));
         name.setMinWidth(0);
-        if (sector != null) name.setOnMouseClicked(e -> openSectorBooks(sector, SECTOR_HOME));
+        if (sector != null) Kept.give(name.onMouseClickedProperty(), e -> openSectorBooks(sector, SECTOR_HOME));
         double bill = part.applyAsDouble(s);
         Label money = figure(m(bill), Palette.SIZE_LABEL + 1, Palette.TEXT_HEAD);
         money.setMinWidth(70);
@@ -6890,7 +6890,7 @@ final class SectorScreen {
                         0, List.of(), 220, 8);
                 Label toggle = Kept.label((opened ? "▾ " : "▸ ") + name);
                 toggle.setStyle(Palette.strong(Palette.SIZE_BODY, Palette.TEXT_HEAD) + " -fx-cursor: hand;");
-                toggle.setOnMouseClicked(e -> {
+                Kept.give(toggle.onMouseClickedProperty(), e -> {
                     if (!detailsOpen.remove(key)) detailsOpen.add(key);
                     ui.redraw();
                 });
