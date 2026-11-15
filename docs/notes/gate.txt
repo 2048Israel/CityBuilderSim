@@ -1,8 +1,10 @@
-# gate of Merge batch/RT1b: rT1's money review follow-ups: the holders' own ledgers keep the ulp-short hair `Debt.moved()` now snaps on Debt's side - `OutwardInvestment.java:608`, `HouseholdBalance.java:3342` and `:3361` take a holder's face pro rata with `Math.max(0, mine - face*w)`, so a full take (a principal paid, a central-bank purchase, a buyback) leaves a sector's `paperOf` or a cell's `c.paper` about 4e-16 at one price level and not the other (only `Household.java:901`'s `paper > 0` branches on it, selling the hair): route them through `Debt.moved()`; and HoldersCheck 14's "add up to the piece" half, which cannot fail (the bank's share is the rest): a fixture that runs the desk itself (`Game.desksBuysFirmPaper`), 0.9.110
+# gate of Merge batch/R0f: research: Money on Canada's dates - the D$ on gold to Aug 1914 and Jul 1926-1931, the Advance Rate opening the policy rate in Aug 1914, the Bank of Canada the rest of Money in Mar 1935 (`PolicyDates.POLICY_RATE`, `CENTRAL_BANK`); after GD2 and FM1, 0.9.111
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 191 harnesses run in 1420s: 188 passed, 3 failed
+# suite: 194 harnesses run in 2189s: 190 passed, 4 failed
+MoneyDatesCheck | exit 1
+MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 MapCheck | exit 1
 MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
@@ -13,7 +15,3 @@ DeathRecordCheck | the orphan section does not fill behind it, in any month of t
 DeathRecordCheck | 1 FAILED
 LongPlaytest | exit 1
 LongPlaytest | (no FAIL line)
-KeptCheck | exit 2
-KeptCheck | The position, Your rate: the redraw and the next equal a page built new  FAIL
-KeptCheck | the Columns on Borrow at home, asking for a sixth of the cash: each month's redraw hands back nine in ten of the pictures it had, or more (7 of 10) FAIL
-KeptCheck | 2 FAILED

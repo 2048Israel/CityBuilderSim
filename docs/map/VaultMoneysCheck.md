@@ -1,4 +1,4 @@
-# VaultMoneysCheck.java - 1,075 lines · 26 methods · 6 constants · harnesses
+# VaultMoneysCheck.java - 1,080 lines · 26 methods · 7 constants · harnesses
 
 `ham/citybuildersim/VaultMoneysCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -52,24 +52,24 @@
 > balance, so a deficit month sold and a surplus month bought and a peg moved to 1.6 on balanced trade dealt nothing; now the hold
 > deals the lift the peg and the shadow ask, so the fixtures move the peg to cause the sale or the purchase they stand on.
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (126), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (15), [WorldMoneys](WorldMoneys.md) (13), [WorldData](WorldData.md) (11), [WorldMoneysCheck](WorldMoneysCheck.md) (7), [Game](Game.md) (5), [GoldPrice](GoldPrice.md) (4), [Nations](Nations.md) (2), [CurrencyCheck](CurrencyCheck.md) (1), [PartnerTrade](PartnerTrade.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (127), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (15), [WorldMoneys](WorldMoneys.md) (13), [WorldData](WorldData.md) (11), [WorldMoneysCheck](WorldMoneysCheck.md) (7), [Game](Game.md) (5), [GoldPrice](GoldPrice.md) (4), [Nations](Nations.md) (2), [CurrencyCheck](CurrencyCheck.md) (1), [PartnerTrade](PartnerTrade.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 164 | 1. ALL US$ IS THE OLD VAULT |
-| 271 | 2. A BUY GOES IN BY THE MIX |
-| 396 | 3. A SALE COMES FROM THE LARGEST |
-| 498 | 4. THE CROSS REVALUATION |
-| 572 | 5. MATCH_TRADE'S MAPPING - on the full file |
-| 629 | 6. THE SAVE |
-| 736 | 7. IN A CITY |
-| 799 | 8. GOLD, THE NINTH |
-| 872 | 9. GOLD EARNS NOTHING |
-| 906 | 10. GOLD IS REVALUED |
-| 960 | 11. THE SAVE, WITH GOLD |
-| 1034 | 12. GOLD IN A CITY |
+| 167 | 1. ALL US$ IS THE OLD VAULT |
+| 274 | 2. A BUY GOES IN BY THE MIX |
+| 399 | 3. A SALE COMES FROM THE LARGEST |
+| 501 | 4. THE CROSS REVALUATION |
+| 575 | 5. MATCH_TRADE'S MAPPING - on the full file |
+| 632 | 6. THE SAVE |
+| 739 | 7. IN A CITY |
+| 802 | 8. GOLD, THE NINTH |
+| 875 | 9. GOLD EARNS NOTHING |
+| 909 | 10. GOLD IS REVALUED |
+| 963 | 11. THE SAVE, WITH GOLD |
+| 1039 | 12. GOLD IN A CITY |
 
 ## Constants
 
@@ -77,10 +77,11 @@
 |---:|---|---|---|
 | 61 | `VaultMoneysCheck.out` | `System.out` |  |
 | 64 | `VaultMoneysCheck.R` | `{ 1, 1.10, 0.0070, 1.27, 0.14, 0.73, 0.65, 1.12 }` | The cross rates the sections hand: US$ per unit of the US$, euro, yen, pound, yuan, Canadian and Australian dollar and franc. |
-| 67 | `VaultMoneysCheck.SLOTS` | `156` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10), the... |
-| 70 | `VaultMoneysCheck.GOLD` | `ForeignAccounts.GOLD` | Gold's index in the vault (ForeignAccounts.GOLD), and the two prices the gold sections hand it, US$ an ounce: the 1900 statute's par and Proclamation 2072's (GoldPrice). |
-| 71 | `VaultMoneysCheck.OLD_PRICE` | `GoldPrice.PAR_1900, NEW_PRICE = GoldPrice.PAR_1934` |  |
-| 73 | `VaultMoneysCheck.ALL_USD` | `ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE, W...` |  |
+| 67 | `VaultMoneysCheck.SLOTS` | `ForeignAccounts.SAVE_SLOTS` | The length of the foreign accounts' array: slots 0 to 141 and, after them, what the vault earned (142-146, XR4; InterestAbroadCheck's section 7 asserts them), the hold's support (147, XR5; CurrencyRegimeCheck 10), the... |
+| 70 | `VaultMoneysCheck.PRE_GD2_SLOTS` | `149` | The historical array length before GD2 added gold: slots 0 through 148, ending with the peg's anchor. |
+| 73 | `VaultMoneysCheck.GOLD` | `ForeignAccounts.GOLD` | Gold's index in the vault (ForeignAccounts.GOLD), and the two prices the gold sections hand it, US$ an ounce: the 1900 statute's par and Proclamation 2072's (GoldPrice). |
+| 74 | `VaultMoneysCheck.OLD_PRICE` | `GoldPrice.PAR_1900, NEW_PRICE = GoldPrice.PAR_1934` |  |
+| 76 | `VaultMoneysCheck.ALL_USD` | `ForeignAccounts.Mix.ALL_USD, MATCH_TRADE = ForeignAccounts.Mix.MATCH_TRADE, W...` |  |
 
 ## Fields (state)
 
@@ -92,91 +93,91 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 1018 | **type** `public class VaultMoneysCheck` | The vault in eight moneys (batch WN4, slice C; spec-nations 5.2-5.4): ForeignAccounts keeps a balance in each of the eight the IMF's COFER names, takes a dollar in by the reserve mix and gives one up from the largest ... |
-| 76 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 82 | 5 | `static void same(String label, double actual, double expected)` | Equal to the bit (and so a -0.0 is not a 0.0). |
-| 89 | 5 | `static void near(String label, double actual, double expected, double tol)` | Equal within a share of the expected (or an absolute 1e-12 about zero). |
-| 95 | 1 | `static boolean sameArray(double[] a, double[] b)` |  |
-| 98 | 5 | `static double beyondTheDollar(ForeignAccounts fx)` | What the vault holds beyond the US$, in each money's own units, added up (gold's too): 0 only if it holds nothing but dollars. |
-| 105 | 5 | `static double coferTotal()` | The sum of the COFER dial, which the mix normalises by. |
-| 112 | 5 | `static double[] allUsd()` | The shares of the default mix: all in the US$, the vault's nine long. |
-| 119 | 5 | `static double[] withGold(double usdAnOunce)` | The cross rates R with gold's price an ounce as the ninth entry. |
-| 126 | 6 | `static ForeignAccounts ratedWithGold()` | An empty vault, a D$ a US$, handed the eight's rates and gold at the 1900 price. |
-| 134 | 3 | `static ForeignAccounts peg()` | A settled currency on a peg at its own rate, no vault, no seed (so no doubt can break it): the fixture a month's deficit sells from and a month's surplus buys into. |
-| 139 | 5 | `static void pegMonth(ForeignAccounts fx, double exportShare)` | One month of the peg fixture's trade at this share of its imports, repriced; the deficit or surplus dealt is the vault's. |
-| 145 | 18 | `public static void main(String[] args) throws Exception` |  |
+| 58 | 1023 | **type** `public class VaultMoneysCheck` | The vault in eight moneys (batch WN4, slice C; spec-nations 5.2-5.4): ForeignAccounts keeps a balance in each of the eight the IMF's COFER names, takes a dollar in by the reserve mix and gives one up from the largest ... |
+| 79 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 85 | 5 | `static void same(String label, double actual, double expected)` | Equal to the bit (and so a -0.0 is not a 0.0). |
+| 92 | 5 | `static void near(String label, double actual, double expected, double tol)` | Equal within a share of the expected (or an absolute 1e-12 about zero). |
+| 98 | 1 | `static boolean sameArray(double[] a, double[] b)` |  |
+| 101 | 5 | `static double beyondTheDollar(ForeignAccounts fx)` | What the vault holds beyond the US$, in each money's own units, added up (gold's too): 0 only if it holds nothing but dollars. |
+| 108 | 5 | `static double coferTotal()` | The sum of the COFER dial, which the mix normalises by. |
+| 115 | 5 | `static double[] allUsd()` | The shares of the default mix: all in the US$, the vault's nine long. |
+| 122 | 5 | `static double[] withGold(double usdAnOunce)` | The cross rates R with gold's price an ounce as the ninth entry. |
+| 129 | 6 | `static ForeignAccounts ratedWithGold()` | An empty vault, a D$ a US$, handed the eight's rates and gold at the 1900 price. |
+| 137 | 3 | `static ForeignAccounts peg()` | A settled currency on a peg at its own rate, no vault, no seed (so no doubt can break it): the fixture a month's deficit sells from and a month's surplus buys into. |
+| 142 | 5 | `static void pegMonth(ForeignAccounts fx, double exportShare)` | One month of the peg fixture's trade at this share of its imports, repriced; the deficit or surplus dealt is the vault's. |
+| 148 | 18 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. ALL US$ IS THE OLD VAULT (lines 164-270)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 168 | 102 | `static void allUsdIsTheOldVault()` |  |
-
-### 2. A BUY GOES IN BY THE MIX (lines 271-395)
+### 1. ALL US$ IS THE OLD VAULT (lines 167-273)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 275 | 6 | `static ForeignAccounts rated()` |  |
-| 282 | 113 | `static void aBuyGoesInByTheMix()` |  |
+| 171 | 102 | `static void allUsdIsTheOldVault()` |  |
 
-### 3. A SALE COMES FROM THE LARGEST (lines 396-497)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 401 | 7 | `static ForeignAccounts three()` | A vault of 50,000, 30,000 and 20,000 US$ worth in euros, pounds and Canadian dollars, bought at a rate of 1 so local money and US$ are one number. |
-| 409 | 88 | `static void aSaleComesFromTheLargest()` |  |
-
-### 4. THE CROSS REVALUATION (lines 498-571)
+### 2. A BUY GOES IN BY THE MIX (lines 274-398)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 502 | 69 | `static void theCrossRevaluation()` |  |
+| 278 | 6 | `static ForeignAccounts rated()` |  |
+| 285 | 113 | `static void aBuyGoesInByTheMix()` |  |
 
-### 5. MATCH_TRADE'S MAPPING - on the full file (lines 572-628)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 576 | 52 | `static void theMapping() throws Exception` |  |
-
-### 6. THE SAVE (lines 629-735)
+### 3. A SALE COMES FROM THE LARGEST (lines 399-500)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 633 | 102 | `static void theSave()` |  |
+| 404 | 7 | `static ForeignAccounts three()` | A vault of 50,000, 30,000 and 20,000 US$ worth in euros, pounds and Canadian dollars, bought at a rate of 1 so local money and US$ are one number. |
+| 412 | 88 | `static void aSaleComesFromTheLargest()` |  |
 
-### 7. IN A CITY (lines 736-798)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 740 | 58 | `static void inACity()` |  |
-
-### 8. GOLD, THE NINTH (lines 799-871)
+### 4. THE CROSS REVALUATION (lines 501-574)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 803 | 68 | `static void goldTheNinth()` |  |
+| 505 | 69 | `static void theCrossRevaluation()` |  |
 
-### 9. GOLD EARNS NOTHING (lines 872-905)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 876 | 29 | `static void goldEarnsNothing()` |  |
-
-### 10. GOLD IS REVALUED (lines 906-959)
+### 5. MATCH_TRADE'S MAPPING - on the full file (lines 575-631)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 910 | 49 | `static void goldIsRevalued()` |  |
+| 579 | 52 | `static void theMapping() throws Exception` |  |
 
-### 11. THE SAVE, WITH GOLD (lines 960-1033)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 964 | 69 | `static void theSaveWithGold()` |  |
-
-### 12. GOLD IN A CITY (lines 1034-1075)
+### 6. THE SAVE (lines 632-738)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1038 | 37 | `static void goldInACity()` |  |
+| 636 | 102 | `static void theSave()` |  |
+
+### 7. IN A CITY (lines 739-801)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 743 | 58 | `static void inACity()` |  |
+
+### 8. GOLD, THE NINTH (lines 802-874)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 806 | 68 | `static void goldTheNinth()` |  |
+
+### 9. GOLD EARNS NOTHING (lines 875-908)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 879 | 29 | `static void goldEarnsNothing()` |  |
+
+### 10. GOLD IS REVALUED (lines 909-962)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 913 | 49 | `static void goldIsRevalued()` |  |
+
+### 11. THE SAVE, WITH GOLD (lines 963-1038)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 967 | 71 | `static void theSaveWithGold()` |  |
+
+### 12. GOLD IN A CITY (lines 1039-1080)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1043 | 37 | `static void goldInACity()` |  |
 
