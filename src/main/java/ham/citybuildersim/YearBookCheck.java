@@ -133,6 +133,12 @@ public class YearBookCheck {
         same("year 1 gdp is its twelve months added", cell(text, "gdp", 1), sum(1, 12));
         same("year 2 gdp is its twelve months added", cell(text, "gdp", 2), sum(13, 24));
         yes("gdp is marked as a flow", text.contains("gdp                   [+]"));
+        for (String ip : new String[] { "ipCharges", "ipAccrued" }) {
+            String charges = years(built(24, ip, ramp(24)));
+            same("year 1 " + ip + " adds twelve nonzero monthly bills", cell(charges, ip, 1), sum(1, 12));
+            same("year 2 " + ip + " adds twelve nonzero monthly bills", cell(charges, ip, 2), sum(13, 24));
+            yes(ip + " is marked as a flow", charges.contains(String.format("%-22s[+]", ip)));
+        }
     }
 
     /* ==================================================================

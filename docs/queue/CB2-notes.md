@@ -153,6 +153,13 @@ in finally. All cities use scratch GameFiles/TempDirs, never real save slots.
 
 ## Verification and publication
 
+After R2c shipped, merged `origin/main` **83f25ae7 (0.9.114)** before
+CB2's dry run, as the concurrent-batch rule requires. The only conflict was
+the generated docs/map/README.md; Maps regenerated it from the combined
+sources. Fast compile/maps/Stale passed on the merge. The measurements
+above remain explicitly those of RT2 main 6b898500; the retained gate checks
+the combined model with R2c. No R2c source was edited by CB2.
+
 - Initial unmodified-main `./batch-check.sh --fast`: exit 0, build/maps,
   zero firm Stale findings and LF checks, tree unchanged.
 - Post-edit fast check passed. Local serial `./batch-check.sh --pick`:
