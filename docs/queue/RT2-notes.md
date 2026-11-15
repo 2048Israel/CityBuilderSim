@@ -345,3 +345,102 @@ target/checks/rt2-final-rescore.txt (zero simulation jobs),
 target/ensemble/RT2-final/{score.md,summary.json,baseline.md}.
 The authoritative baseline is committed as docs/ensemble/RT2.md with the
 data settings and EN2 comparison, for the publisher's version naming.
+
+## Completed full dry run: fixture and main-fault classification
+
+The normal fresh-clone run of branch 29a681547e1f2413283e9388206a0195412d298c
+and main 4343a81525f831df83511ccae1cd26d5ef71c478 completed all 199 harnesses.
+Run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-final-20261115-074418.
+Launcher exit 1, suite exit 4: 47 NEW lines in seven harnesses.
+LongPlaytest, its money fixtures and KeptCheck passed. This run is diagnostic,
+not reusable as green after harness changes. All eight default trace CSVs
+are retained at its trace prefix; this remains the model reference until
+a replacement green run is kept. The existing MoneyDatesCheck, MapCheck
+and ResearchViewCheck exemptions remain separate.
+
+| Harness | NEW lines including derived counts | Classification |
+|---|---:|---|
+| BankCheck | 3 | settle month 24 to 23, unchanged 120-month window |
+| TreasuryCheck | 7 | foreign note issue month 20 to 60 |
+| EquipmentCheck | 23 | counts settle 6 to 0; steam verdict settle 6 to 2 |
+| FittingCheck | 4 | cleared/new-game/load fixture settle 6 to 4 |
+| InvestCheck | 3 | main's legacy contract loader, RT2-L |
+| DeathRecordCheck | 3 | main's paired-family law, OX1 |
+| PrizeCheck | 4 | two main assertions RT2-P; derived summary R2b-J |
+
+★ Move only months; retain all original premises and assertions. Equipment's
+counts city now observes m1-4 before bakery sales at m6-7, with its original
+two-bakery assertion and an added assertion holding counts across the share
+observation. Its steam city observes m3-4, retaining both unfitted drives
+through verdict and rank tests. A month-4 steam trial lost a drive during
+ranking; a month-2 counts trial lost an Industrial Bakery during the save
+test. Both were rejected. The final whole EquipmentCheck passes.
+Forms1900Check's default is still 6; a named-month overload serves these
+callers. FittingCheck observes m5 before the bakery sale; save, load,
+clearing and new-game assertions all pass unchanged.
+Bank's m144 endpoint legitimately pays a zero deposit rate. Settling at m23
+retains the full 120-month audit and all laws; its m143 bank pays
+0.006939073188942345. The isolated books section passes.
+Treasury's same city at m20 no longer sustains its fixed 500-times-FACTOR
+six-month note inside the export window. At m60 it does: m65 has 20.35k
+abroad, an open window, no surplus left to net, and rolls abroad. Amount,
+term, spending rule and all audit/rollover assertions stay. The whole
+isolated rolling() passes. Trials at m16,18,26,30,36,48 failed the explicit
+window premise and were rejected.
+Logs: target/rt2-probe/{equipment-final-months,bank23,treasury60}.txt;
+target/checks/rt2-equipment-repick.txt records FittingCheck's pass.
+
+### Main-code proofs and queued repairs
+
+★ Preserve a valid saved input and reproduce through main's code instead
+of changing its hard law or searching for a seed that conceals it.
+Main is 4343a815. Compile main's versions of the only five RT2 production
+classes (Sector, BusinessInvestment, FoodIndustry, CoalMining, Freight)
+into target/rt2-main/classes ahead of current classes. Every other
+production class is already main's. Temporary probes and logs are under
+target/rt2-probe, not shipped source.
+
+RT2-L: InvestCheck's older-save fixture JSON is preserved after removing
+contractRecords as target/rt2-probe/legacy-invest.json. Load that exact
+valid file through main's complete production model, on playOnLiterals()
+as the fixture requires, in scratch GameFiles. It infers one Real Estate
+contract, recovered share 0.0000625068273869; the loaded-city rule gives
+exactly zero. Both branch and main fail equality. The unchanged loader
+infers contracts before striking loaded wages; afterward the House's rebate
+threshold has been crossed. Fix load order or recomputation, preserving
+payer, value, material and rebate laws; add a threshold-crossing fixture.
+Logs: invest-main-replay.txt, invest-branch.txt.
+
+OX1: Preserve DeathRecordCheck.town(...,60) before the layoff as
+death-before.json. Load it twice through main's complete production model;
+retire every Industrial Bakery in one twin and run the original 24 months.
+Main reproduces branch to the printed digits: at-home adults 135 to 189,
+children with them 90.984, old-rule orphans 25.995 against 3.277 initially,
+greatest same-month added orphans 3.045. All premises pass; the hard
+one-orphan law fails. This is the queued family-builder/rehire fault OX1,
+now exposed by the paired m60 law too. No DeathRecordCheck edit was made.
+Keep the old m48 OX1 registry part separate; that line passes this trace.
+Log: death-main-replay.txt.
+
+RT2-P: Run original PrizeCheck.sectionTwelve() and sectionTwenty() from
+founding on main's complete production model. Both fail the same parts:
+owners raise 1017.9557536877466 against pre-month quote plus stake
+1014.5221050525304 (RT2: 1015.476826182461 against 1012.1739302492329).
+The assertion compares a post-month raise against a pre-month changing
+quote; establish the actual order's quote while retaining the financing
+cap. The second village's till reaches 406 against a six-month cost
+cushion of zero (RT2: 405 against zero), while keeping the stake and buying
+back nothing. Re-cause its operating-cost premise without weakening the
+active-lab or no-buyback laws. PrizeCheck source remains unchanged.
+Logs: prize12-main.txt, prize20-main.txt. Its prefixed derived summary is
+the already queued R2b-J classifier fault; it needs its own exact row.
+
+Final reviewed production model remains 2cb4a7b1. These harness-only month
+moves and unrelated findings do not change its completed 80-run ensemble.
+
+Treasury's kept old m25 trace records 587.54k due, 18.10k abroad,
+zero netting, but USD debt at 22 years of exports and a shut window.
+The later fixture has m65 1,107.46k due, 20.35k abroad, zero netting,
+and an open window. Thus the moved month re-causes the specific exporting
+window premise; it does not change the debt rule or erase the earlier
+closed-window rollover test. The m25 result remains recorded above.

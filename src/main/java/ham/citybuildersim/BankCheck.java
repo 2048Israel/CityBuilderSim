@@ -1444,7 +1444,9 @@ public class BankCheck {
              * refinery builds nothing here and the bank stands, as with the sectors above.
              */
             books.getBusinessInvestment().holdSector(Sectors.COPPER_REFINING);
-            books.simulateMonths(24);
+            // RT2: settle at m23: the same 120-month window ends with an earning bank
+            // paying savers; settling at m24 ends on a legitimate zero deposit rate.
+            books.simulateMonths(23);
             books.getEconomyManager().setSectorCash(Sectors.RETAIL, 250_000 * PriceLevel.FACTOR);
             books.getEconomyManager().setSectorCash(Sectors.INDUSTRY, -20_000 * PriceLevel.FACTOR);
 
