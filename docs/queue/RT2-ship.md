@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-RT2-ready2-20261115-094038 -->
 
 ## changelog
