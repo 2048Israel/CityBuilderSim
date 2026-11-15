@@ -169,3 +169,23 @@ Search 26.9 ms kept / 80.0 new and Activity 56.4 / 95.0.
 code and the model's month path are unchanged by this Search-only mend.
 The replacement fixture advances no month. Search remains lighter than
 Activity in the post-mend replay.
+
+## The warrant move's empty state
+
+The delta review returned SHIP on bfbfd182. A further isolated row-reuse
+probe then exposed the same empty wrapped-label fault in Search's move
+column, whose warrants have no move. A wrapped prior value led to a retained
+empty label at 220 × 23 against a fresh 220 × 15. The probe failed its hard
+fresh comparison in target/fp1/warrant-probe.log.
+
+The move now has separate empty and nonempty scopes, as price and held do.
+The new cheap fixture uses an independent scratch city and a loaded preferred
+block with warrants, then changes the same row from the preferred to its
+warrants. It uses pageShows' spoil-and-redraw pattern to force multiple
+wrapped lines before the move becomes empty. It asserts the row is retained,
+the current move is empty, and the signature and picture equal new.
+It creates no simulated months in the original city.
+
+The fixture passed all four assertions after the repair, exit 0, in
+target/fp1/warrant-fixture.log. The fast check passed with zero firm Stale
+findings. The orchestrator will read this small scope-and-fixture delta.

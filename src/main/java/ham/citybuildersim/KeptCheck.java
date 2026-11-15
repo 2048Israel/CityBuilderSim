@@ -4296,6 +4296,7 @@ public class KeptCheck {
         search.add(acting("...and closed", b -> { b.fundFoldsClosed(); return null; }));
         pageReshaped(g, bench, tab, 63, search);
         fundLists(g, bench, tab);
+        fundWarrantRow();
         t = took("Search and Activity", t);
 
         // A security's page, from Portfolio and from Search, with the ticket's choices.
@@ -4544,6 +4545,42 @@ public class KeptCheck {
         }
         folds.add(acting("Activity's years shut again", b -> { b.fundFoldsClosed(); return null; }));
         pageReshaped(g, bench, tab, 63, folds);
+    }
+
+    /** A loaded preferred block's warrants give a reused Search row an empty move after a wrapped value. */
+    static void fundWarrantRow() throws Exception {
+        fx(() -> {
+            Game town = new Game(GameFiles.scratch("kept-fund-warrant-row"));
+            town.newGame();
+            Bank.Preferred block = new Bank.Preferred();
+            block.par = 1;
+            block.issued = town.getMonth();
+            block.strike = 1;
+            block.warrantShares = 1;
+            block.warrantsExpire = town.getMonth() + Bank.WARRANT_TERM_MONTHS;
+            block.warrantsOut = true;
+            town.getBank().restorePreferred(List.of(block), null);
+            KeptBench bench = new KeptBench(town);
+            bench.clock(false, null);
+            KeptBench.Page page = bench.finances("Search's empty warrant move", "The city's fund", "Search");
+            bench.home(page);
+            bench.fundSearch(FundView.preferredPosition(town).name(), "All");
+            bench.drawKept(page);
+            javafx.scene.layout.HBox before = fundResultRows(bench).get(0);
+            javafx.scene.control.Label move = (javafx.scene.control.Label) before.getChildren().get(3);
+            // The spoil-and-redraw proof also used by pageShows, forcing the emptied wrapped-label cache.
+            String words = "1Y: its record is shorter than a year";
+            move.setText(words + " " + words + " " + words);
+            bench.settle();
+            check("the warrant fixture gives the previous move multiple wrapped lines", move.getHeight() > move.getFont().getSize() * 2);
+            bench.fundSearch(FundView.warrantsPosition(town).name(), "All");
+            bench.drawKept(page);
+            javafx.scene.layout.HBox after = fundResultRows(bench).get(0);
+            check("the warrants replace the preferred in the same row node", before == after);
+            check("the warrant's current move is empty", ((javafx.scene.control.Label) after.getChildren().get(3)).getText().isEmpty());
+            check("a recycled warrant row clears its wrapped move and equals a page built new", againstNew(bench, page, true) == null);
+            return null;
+        });
     }
 
     /* ----- the pictures (64) ----- */

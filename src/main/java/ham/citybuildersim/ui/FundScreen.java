@@ -1591,7 +1591,7 @@ final class FundScreen {
         tagBox.setMinWidth(86);
         tagBox.setAlignment(Pos.CENTER_LEFT);
         VBox priceBox = Kept.scope(f.price().isEmpty() ? "empty price" : "price", () -> figureCell(f.price(), null, null, 150));
-        Label mv = words(f.move(), Palette.SIZE_LABEL, Palette.TEXT_BODY);
+        Label mv = Kept.scope(f.move().isEmpty() ? "empty move" : "move", () -> words(f.move(), Palette.SIZE_LABEL, Palette.TEXT_BODY));
         mv.setMinWidth(0);
         mv.setPrefWidth(220);
         mv.setMaxWidth(220);
