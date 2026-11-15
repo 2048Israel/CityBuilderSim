@@ -538,9 +538,8 @@ public class CurveCheck {
         check("fixture: the dial is held by hand, two points under the rule at the inflation the month struck",
                 !dm.isAutopilot() && dm.isStruck()
                         && Math.abs(dm.advisedPolicyRate(dm.getStruckInflation()) - dm.getPolicyRate() - .02) < 1e-12);
-        if (!Observation.reached("fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points",
-                !curve.isFlat() && dm.curveRate(12) - dm.curveRate(1) > .005 && dm.curveRate(120) - dm.curveRate(1) > .02,
-                "section 7 issue-at-steep-curve comparisons")) return;
+        check("fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points",
+                !curve.isFlat() && dm.curveRate(12) - dm.curveRate(1) > .005 && dm.curveRate(120) - dm.curveRate(1) > .02);
         check("fixture: the city can pay for buying back any one piece it borrows (a buyback costs about what the piece raised)",
                 g.getCash() > 3 * ASK);
 
@@ -652,9 +651,7 @@ public class CurveCheck {
         BondMarket.Readings readings = g.bondReadings();
         check("fixture: the bond market is attached to the city's readings", g.getBondMarket().readings() == readings);
         DebtManager dm = g.getDebtManager();
-        if (!Observation.reached("fixture: the curve being read is the steep one, not a flat one",
-                !dm.curve().isFlat(),
-                "section 9 steep bond-market readings")) return;
+        check("fixture: the curve being read is the steep one, not a flat one", !dm.curve().isFlat());
         for (int m : new int[] {12, 120, 360}) {
             same("the bond market's benchmark at " + months(m) + " is the city's curveRate()", readings.curve(m), dm.curveRate(m));
         }

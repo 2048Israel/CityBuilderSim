@@ -445,6 +445,9 @@ public class HoldersCheck {
             back[0].getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
         });
         Game twin = back[0];
+        assertTrue("fixture: both cities hold Heavy Industry before the next settle",
+                city.getBusinessInvestment().isHeld(Sectors.HEAVY_INDUSTRY)
+                        && twin.getBusinessInvestment().isHeld(Sectors.HEAVY_INDUSTRY));
         double[] was = hb.toCellSaveArray(), is = twin.getHouseholdBalance().toCellSaveArray();
         boolean cellsSame = was.length == is.length;
         for (int i = 0; cellsSame && i < was.length; i++) cellsSame = was[i] == is[i];

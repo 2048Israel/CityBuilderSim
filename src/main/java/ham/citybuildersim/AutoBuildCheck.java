@@ -842,10 +842,8 @@ public class AutoBuildCheck {
                         + " its log the same each month, to the cent (worst %.2g%s)", months, a.getOrders(), worst,
                         first == null ? "" : ", first " + first),
                 drift == 0);
-        Observation.reached("savedAndLoaded: fixture: ...and it placed orders in those months",
-                "fixture: ...and it placed orders in those months (" + (a.getOrders() - ordersBefore) + ")",
-                a.getOrders() > ordersBefore,
-                "");
+        assertTrue("fixture: ...and it placed orders in those months (" + (a.getOrders() - ordersBefore) + ")",
+                a.getOrders() > ordersBefore);
         AutoBuilder.State st = a.toState();
         String json = new com.google.gson.Gson().toJson(st);
         AutoBuilder c = new AutoBuilder();

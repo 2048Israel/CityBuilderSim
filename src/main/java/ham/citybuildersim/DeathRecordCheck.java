@@ -31,6 +31,11 @@ public class DeathRecordCheck {
 
     /** Section 3's city: a founding with its houses, shops, mill and works stood free, 48 months played; a second one is its twin (same months, same path). */
     static Game town(java.nio.file.Path root, String data, String legacy) {
+        return town(root, data, legacy, 48);
+    }
+
+    /** The same founding at a named month, keeping the buildings and the layoff unchanged (LD3). */
+    static Game town(java.nio.file.Path root, String data, String legacy, int month) {
         Game g = new Game(new GameFiles(root.resolve(data), root.resolve(legacy)));
         quietly(() -> {
             g.run();
@@ -41,7 +46,7 @@ public class DeathRecordCheck {
             b.addStack(b.getTemplateByName("Industrial Bakery"), 6, true);
             b.addStack(b.getTemplateByName("Coal Power Plant"), 1, true);
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
-            g.simulateMonths(48);
+            g.simulateMonths(month);
         });
         return g;
     }
@@ -49,6 +54,39 @@ public class DeathRecordCheck {
     static double last(HistorySave h, String key) {
         java.util.List<? extends Number> s = h.seriesByName().get(key);
         return s == null || s.isEmpty() ? Double.NaN : s.get(s.size() - 1).doubleValue();
+    }
+
+    /** LD3 measures the twins in the same month, across the whole two-year layoff window. */
+    static void layoffsBesideTwin(java.nio.file.Path root) {
+        System.out.println("--- the layoff beside its twin, each month of two years ---");
+        // Month 60 keeps the original wave and one-orphan allowance. Month 48's rehire
+        // spike stays under its original hard law in section 3, owned by OX1.
+        Game closed = town(root, "layoff-data", "layoff-no-legacy", 60);
+        Game open = town(root, "layoff-open-data", "layoff-open-no-legacy", 60);
+        double orphansBefore = closed.getFamilies().getOrphansTotal();
+        double atHomeBefore = closed.getFamilies().getAtHomeAdults();
+        double[] peakAtHome = { atHomeBefore }, childrenAtPeak = { 0 }, oldRuleOrphans = { 0 }, mostAdded = { 0 };
+        quietly(() -> {
+            BuildingsTemplate mill = closed.getBuildingManager().getTemplateByName("Industrial Bakery");
+            closed.getBuildingManager().retire(mill, closed.getBuildingManager().getQuantity(mill.getId()));
+            for (int m = 0; m < 24; m++) {
+                closed.simulateMonths(1);
+                open.simulateMonths(1);
+                FamilyModel families = closed.getFamilies();
+                mostAdded[0] = Math.max(mostAdded[0], families.getOrphansTotal() - open.getFamilies().getOrphansTotal());
+                if (families.getAtHomeAdults() > peakAtHome[0]) {
+                    peakAtHome[0] = families.getAtHomeAdults();
+                    childrenAtPeak[0] = families.getOutsideDependantsTotal();
+                    oldRuleOrphans[0] = (peakAtHome[0] - atHomeBefore) * families.dependantsPerOutsideHousehold();
+                }
+            }
+        });
+        System.out.printf("   out of work at home %.0f to %.0f, children with them %.3f, old rule %.3f against %.3f orphans; greatest same-month excess %.3f%n",
+                atHomeBefore, peakAtHome[0], childrenAtPeak[0], oldRuleOrphans[0], orphansBefore, mostAdded[0]);
+        assertTrue("fixture: the paired city's closing put adults out of work", peakAtHome[0] > atHomeBefore);
+        assertTrue("...and the old rule would have at least doubled its orphans", oldRuleOrphans[0] > orphansBefore);
+        assertTrue("the children went with the laid-off parents", childrenAtPeak[0] > 0);
+        assertTrue("the layoff adds at most one orphan against its twin in every month of the two years", mostAdded[0] <= 1);
     }
 
     public static void main(String[] args) throws Exception {
@@ -259,6 +297,8 @@ public class DeathRecordCheck {
         double[] orphanTotal = HistorySave.runningTotal(h.aligned("deathsOrphans"));
         assertTrue("...and its running total grew with them",
                 orphanTotal[orphanTotal.length - 1] >= Math.round(orphanDeathsEver[0] * 100) / 100.0 - .1);
+
+        layoffsBesideTwin(root);
 
         System.out.println();
         System.out.println(fails == 0 ? "The dead are counted." : fails + " FAILED");

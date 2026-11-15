@@ -1545,12 +1545,10 @@ public class CurrencyRegimeCheck {
         tallyKept(keptTally, cb, tr);
         double owed = cbFx.getEdgeOwedLocal();
         out.printf("   the month after the peg: the vault bought US$%,.0fk, owed %,.0fk of local money%n", cbFx.getEdgeBoughtUsd(), owed);
-        if (!Observation.reached("theTwoPayers: fixture: money arrived and the vault bought dollars at the peg, the same in both cities",
-                "fixture: money arrived and the vault bought dollars at the peg, the same in both cities (the shadow under the peg, " + String.format("%.4f under %.4f", cbFx.getShadowRate(), cbFx.getPegRate())
+        assertTrue("fixture: money arrived and the vault bought dollars at the peg, the same in both cities (the shadow under the peg, " + String.format("%.4f under %.4f", cbFx.getShadowRate(), cbFx.getPegRate())
                     + ": the hold bought the lift), and the payer is recorded with it",
                 owed > 100 * PriceLevel.FACTOR && trFx.getEdgeOwedLocal() > 100 * PriceLevel.FACTOR
-                    && cbFx.getEdgeBoughtUsd() > 0 && cbFx.getLastPegGap() < 0,
-                "section 9 payer settlement, central-bank books and save laws")) return;
+                    && cbFx.getEdgeBoughtUsd() > 0 && cbFx.getLastPegGap() < 0);
         assertTrue("the same purchase is owed in both cities, with each payer recorded",
                 Double.compare(owed, trFx.getEdgeOwedLocal()) == 0
                         && cbFx.getEdgeOwedPayer() == ForeignAccounts.EdgePayer.CENTRAL_BANK
