@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.115 — UP6b, The autosave: UP6 review follow-ups — 2026-11-15, ready, see docs/queue/UP6b-notes.md
+Every autosave path now shares the skip's completion guard, preserving its return point after a month throws until load or new city, including close, Quit and Simulate more. The failure page, inbox and Quit explain when autosaves are off and how loading restores them. Autosave notices name the saved job's month even when reported later, and describe the possible mismatch between an older save and newer history after a failed write. The last-save-result comment distinguishes synchronous saves from reported background results. Scratch-folder SaveSlotCheck fixtures cause the failed skip, late report and mismatched files and verify background result reporting.
+
 ### CB2 — The central bank and monetary checks re-measured — 2026-11-15, ready, no tag (harness), see docs/queue/CB2-notes.md
 CentralBankCheck measures 24 founding shapes instead of 12; all hold on
 RT2 main, including seven starting under the target. Its three-in-four share
