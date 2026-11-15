@@ -48,6 +48,10 @@ import java.util.TreeSet;
  *      the planner would buy back (the freight left unserved is a first
  *      station's rung) is refused, by the distress rule as by any other, and
  *      allowed a tonne under it or with a second station standing.
+ *   10. SPARE TRACK IS COUNTED AS TRACK (RT2), even while wagon sets or
+ *      stations limit operating capacity; losses sell the most-held line
+ *      by the headroom and gradual-retirement constants, without cutting
+ *      into the track the offered freight needs.
  *
  * The fixtures are bare cities (a catalogue, a planner, a Freight with nothing
  * else), because plan() asks for nothing a city adds except the staffing,
@@ -585,10 +589,43 @@ public class RailDepotCheck {
         assertTrue("a spur, a Truck Depot and a null are no station, so none of them is a sale that would be bought back",
                 !cat.fr.wouldOrderAgain(spur) && !cat.fr.wouldOrderAgain(null) && !cat.fr.wouldOrderAgain(cat.t("Truck Depot")));
 
+        retirement();
+
         if (fails > 0) {
             System.out.printf("%n%d check(s) failed%n", fails);
             System.exit(1);
         }
         System.out.println("\nAll checks passed.");
+    }
+
+    /** The operating bottleneck must not hide spare standing track (RT2). */
+    static void retirement() {
+        System.out.println("\n--- 10. spare track counts in track tonnes, while sets or stations limit what runs ---");
+        int held = (int) Math.ceil(2 / BusinessInvestment.MAX_RETIREMENT_FRACTION);
+        for (boolean setsLimit : new boolean[] { true, false }) {
+            Fx f = new Fx().stand("Freight Line", held).stand("Rail Depot", held / 2);
+            f.offer(0, 0, setsLimit ? 1 : f.fr.setsNeeded());
+            BuildingsTemplate line = f.t("Freight Line");
+            double counted = 0;
+            for (BuildingsTemplate t : f.bm.getTemplatesBySector(f.fr.key())) counted += f.bm.getQuantity(t.getId()) * f.fr.unitsOf(t);
+            double[] measure = f.fr.retirementDemandAndCapacity(null);
+            assertTrue("fixture: the most-held kind is the line, with " + (setsLimit ? "sets" : "stations") + " limiting operating capacity",
+                    f.bm.getQuantity(line.getId()) == held && held > f.bm.getQuantity(f.t("Rail Depot").getId())
+                            && f.fr.getCapacityTonnes() > 0 && f.fr.getCapacityTonnes() < f.fr.trackTonnes()
+                            && f.fr.getCapacityTonnes() == (setsLimit ? Freight.TONNES_PER_SET : f.fr.stationTonnes()));
+            assertTrue("the buildings add up to the retirement capacity in track tonnes (sets limit=" + setsLimit + ")",
+                    measure[0] == 0 && measure[1] == counted && counted == f.fr.trackTonnes());
+            for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) f.plans.recordSectorResult(f.fr.key(), -1);
+            int allowed = Math.min((int) Math.floor(counted / line.getRailCapacity()),
+                    Math.min((int) Math.ceil(held * BusinessInvestment.MAX_RETIREMENT_FRACTION), held));
+            BusinessInvestment.Decision shed = f.plans.planRetirement(f.fr, measure[0], measure[1], 0);
+            report("the rule sells the most-held line and the share its constants allow (sets limit=" + setsLimit + ")",
+                    allowed > 0 && shed.build && shed.template == line && shed.quantity == allowed,
+                    String.format("%d of %d; track %,.0f, operating capacity %,.0f", shed.quantity, held, counted, f.fr.getCapacityTonnes()));
+            f.offer(0, counted / (1 + BusinessInvestment.TARGET_HEADROOM), setsLimit ? 1 : f.fr.setsNeeded());
+            measure = f.fr.retirementDemandAndCapacity(null);
+            assertTrue("offered freight that needs the track with TARGET_HEADROOM prevents a sale (sets limit=" + setsLimit + ")",
+                    !f.plans.planRetirement(f.fr, measure[0], measure[1], 0).build);
+        }
     }
 }

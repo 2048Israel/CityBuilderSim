@@ -80,6 +80,10 @@ import java.util.Map;
  *      the month's coal is the lift's, the ground gives it up and the audit
  *      closes.
  *
+ *   9. WORKED-OUT MINES are counted in raw nameplate, washed or not (RT2):
+ *      the buildings add up to the retirement measure, and after losses the
+ *      rule sells the share allowed, with one type exhausted and with both.
+ *
  * Every fixture causes its condition: a town founded on a coking field, its
  * thermal ground by fiat (the first type), the mines placed by hand.
  */
@@ -117,8 +121,48 @@ public class CoalMiningCheck {
         dig();
         plan();
         playedMonth();
+        retirement();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** Raw mine tonnes remain additive when washing cuts the thermal output (RT2). */
+    static void retirement() {
+        out.println("\n--- 9. worked-out mines count in raw nameplate, not the thermal output left after washing ---");
+        int held = (int) Math.ceil(2 / BusinessInvestment.MAX_RETIREMENT_FRACTION);
+        for (boolean washed : new boolean[] { false, true }) {
+            Game g = coalTown("coalminingcheck-retirement-" + washed, 3);
+            CoalMining coal = g.getSectors().coalMining();
+            BuildingManager b = g.getBuildingManager();
+            BuildingsTemplate mine = b.getTemplate(CoalMining.UNDERGROUND_MINE), plant = b.getTemplate(CoalMining.PREPARATION_PLANT);
+            b.addStack(mine, held, true);
+            double raw = held * mine.makes(Good.THERMAL_COAL);
+            if (washed) b.addStack(plant, (int) Math.ceil(raw / plant.getWash()), true);
+            LandManager land = g.getLandManager();
+            assertTrue("fixture: coking and thermal ground remain, so no mine is spare before exhaustion (washed=" + washed + ")",
+                    land.getRemaining(Resource.COAL, Deposit.FieldType.COKING) > 0
+                            && land.getRemaining(Resource.COAL, Deposit.FieldType.THERMAL) > 0
+                            && coal.retirementDemandAndCapacity(g) == null);
+            BusinessInvestment plans = g.getBusinessInvestment();
+            for (int i = 0; i < BusinessInvestment.RETIREMENT_LOSS_MONTHS; i++) plans.recordSectorResult(coal.key(), -1);
+            land.extract(Resource.COAL, Deposit.FieldType.COKING, land.getRemaining(Resource.COAL, Deposit.FieldType.COKING));
+            for (boolean all : new boolean[] { false, true }) {
+                if (all) land.extract(Resource.COAL, Deposit.FieldType.THERMAL, land.getRemaining(Resource.COAL, Deposit.FieldType.THERMAL));
+                double[] measure = coal.retirementDemandAndCapacity(g);
+                double counted = 0;
+                for (BuildingsTemplate t : b.getTemplatesBySector(coal.key())) counted += b.getQuantity(t.getId()) * coal.unitsOf(t);
+                assertTrue("the worked-out mines add up to the measure in raw tonnes (washed=" + washed + ", all=" + all + ")",
+                        measure != null && measure[0] == 0 && measure[1] == counted && counted == raw && LandCheck.wByType(land));
+                int allowed = Math.min((int) Math.floor(raw / mine.makes(Good.THERMAL_COAL)),
+                        Math.min((int) Math.ceil(held * BusinessInvestment.MAX_RETIREMENT_FRACTION), held));
+                BusinessInvestment.Decision shed = plans.planRetirement(coal, measure[0], measure[1], 0);
+                report("the rule sells the most-held mine and the share its constants allow (washed=" + washed + ", all=" + all + ")",
+                        allowed > 0 && shed.build && shed.template == mine && shed.quantity == allowed,
+                        String.format("%d of %d; measure %,.0f, raw %,.0f, thermal %,.0f", shed.quantity, held, measure[1], raw, coal.flow().thermal()));
+                assertTrue("a wash plant is not a worked-out mine (washed=" + washed + ", all=" + all + ")", !coal.mayRetire(plant));
+                if (!all) assertTrue("the thermal type still has coal and its mines may not be sold", !coal.mayRetire(b.getTemplate(CoalMining.SURFACE_MINE)));
+            }
+        }
     }
 
     /* ============================ 1. the flow ============================ */

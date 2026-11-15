@@ -90,7 +90,7 @@ public final class FoodIndustry extends Sector {
     /** The spare-capacity rule measures the mills against what the shops can serve, as it always has. */
     @Override
     public double[] retirementDemandAndCapacity(Game game) {
-        if (game == null) return super.retirementDemandAndCapacity(game);
+        if (game == null) return null;
         double demand = Math.min(buildings.getTotalStoreCoverage(),
                 game.getPopulationManager().getPopulation());
         return new double[] { demand,
