@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-QB1-QZAzECfH -->
 
 ## changelog
 ### {next} — QB1, The test player borrows at the quoted rate — 2026-11-14, ready, see docs/queue/QB1-notes.md

@@ -13,7 +13,7 @@ BF1-M and DM3-R map/planner failures remain separate from QB1's findings.
 WN5d's CityLand, LandMap, LandMarket, LandSellers, ui/MapView and
 LandNationsCheck are outside this batch's edits.
 
-Implementation, fixture attribution, selected checks and the ensemble are complete; the coordinated dry run remains.
+Complete: implementation, fixture attribution, selected checks, ensemble and coordinated dry run are accepted.
 
 ## The moved fixtures
 
@@ -234,6 +234,9 @@ Every changed verdict follows (the score file retains every baseline value):
 | ZERO_HOT T2 | FAIL, median 6,644 | PASS, median 6,644 | info; all 16 CSV traces are unchanged; the rolling baseline lowers its threshold to 4,983 |
 | SHOCK T2 | FAIL, median 34,104 | PASS, median 34,070 | info; the rolling baseline threshold is now 25,578 |
 
+In ZERO_SLACK seed 2 at month 1055, the quoted player finances one Industrial
+Bakery at home where the baseline player takes a 20-year dollar term bond.
+
 ★ Keep every score, and ship on M1/F1 alone, as Jerus decided. ZERO_SLACK's
 population fall remains visible information. AUTO2's median also falls from
 1,596,950 to 1,269,080 (79.5% retained), with T2 still PASS. ZERO_HOT's and
@@ -254,3 +257,37 @@ The default long run's adviser build-bond counter is six abroad, none at
 home, highest quoted foreign rate 3.87%, in both full traces. Its 43 borrowing
 trace rows include the other treasury issuance. The quoted rule still
 exercises foreign borrowing when the sale is cheap enough.
+
+The bounded financing prefixes through m1057 each match all 1,056 CSV rows
+of their corresponding completed full run. The old trace records the dollar
+bond for `1 x Industrial Bakery`; the quoted trace keeps foreign principal
+at zero while home principal rises. Adviser counts are home 3 / abroad 2
+against home 2 / abroad 3. Evidence: `target/checks/qb1-zero2-action-comparison.json`
+and the `qb1-zero2-{quoted,legacy}` traces. No further diagnostic JVMs are needed.
+
+## Retained coordinated dry run and readiness
+
+Orchestrator granted the exclusive slot at 21:47 Halifax; ran the normal
+`sh tools/gate.sh QB1 --dry-run` route. **Launcher exit 0; suite exit 3,
+accepted known reds only (MapCheck and LongPlaytest).** The selection is 76
+harnesses; the runner reports 82 run, 80 pass, two registered-red harnesses.
+Compile, maps, tree and Stale pass, with zero firm Stale findings. Nine soft
+timings and four played-path observations are informational. No new waiver.
+
+KeptCheck completes every section, including the final speed/header checks:
+the retained `checks/KeptCheck.log` has 4,839 lines and ends **ALL OK**; both
+debt-picture lifetime guards pass. No shortened prefix or timeout substitutes
+for that full verdict. The gate records would-be version 0.9.106 and restores
+the clone without publishing, tagging or pushing main.
+
+Kept launcher directory: `/tmp/cbs-gate-QB1-QZAzECfH`.
+Native path: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-QB1-QZAzECfH`.
+It contains `checks.complete`, `checks.sha256`, `selection`, `ship.log`,
+`checks/suite.txt` and the full individual logs. The two commits it judged:
+
+- branch: `c0bd3b5fc2812ce3f1ce471d18bf2c9e1a6df72c`
+- main: `3ca9a8bc4ee556f51225386407d97cec78905422`
+
+Only this notes file and the ship file advance after the retained run;
+the ship file names it for publisher reuse. The provisional marker is
+removed last, in the final readiness push. Only the orchestrator publishes.
