@@ -161,10 +161,10 @@ public final class EquipmentFit {
      * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
      * nothing for one that is not the template's recipe piece.
      */
-    private static double gainOf(Game game, BuildingsTemplate t, Equipment piece) {
+    private static double gainOf(Game game, BuildingsTemplate t, Equipment piece, boolean newBuilding) {
         if (!game.foundedUnfitted()) return grossGainOf(game, t, piece);
         if (t.changeNeeds(piece.getId())) {
-            double gross = grossGainOf(game, t, piece);
+            double gross = RecipeChanges.gainOf(game, t, piece, newBuilding);
             if (!t.isOwnedBySector()) return gross; // Public patent payments remain R2c-P.
             return gross - LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), gross);
         }
@@ -215,26 +215,26 @@ public final class EquipmentFit {
      * judged at a rate of 0. Reads, prices and books nothing; the month never calls it.
      */
     public static Verdict verdict(Game game, BuildingsStacks stack, Equipment piece) {
-        return priced(game, stack.getBuilding(), piece, stack.getUnfitted(piece.getId()));
+        return priced(game, stack.getBuilding(), piece, stack.getUnfitted(piece.getId()), false);
     }
 
     /**
      * The verdict on a NEW building for a piece (R1b; research-design 2.2 step 6, "New buildings come with every piece that pays"): the same
-     * figures and the same judgement as verdict() for one building that lacks the piece whatever a stack holds, so FITTED never comes back,
+     * judgement as verdict() for one building that lacks the piece, pricing scoped changes against its own paying prerequisites. FITTED never comes back,
      * only NOT_KNOWN, PAYS or NOT_YET. Game.fitWhatFinished() reads it when a building opens in a city founded the 1900 way. Reads, prices and
      * books nothing.
      */
     public static Verdict verdictForNew(Game game, BuildingsTemplate t, Equipment piece) {
-        return priced(game, t, piece, 1);
+        return priced(game, t, piece, 1, true);
     }
 
     /** verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). */
-    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted) {
+    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted, boolean newBuilding) {
         int month = game.getMonth();
         Research found = game.getResearch();
         if (settled(piece, month, unfitted, found) != null) return judge(piece, t, month, unfitted, Double.NaN, Double.NaN, 0, 0, found);
 
-        double gain = gainOf(game, t, piece);
+        double gain = gainOf(game, t, piece, newBuilding);
         double cost = cost(piece, good -> cityPrice(game, good), game.getBuildingManager().nonMaterialPricePerPoint());
         Sector sector = game.getSectors().byKey(t.getSector());
         BusinessInvestment plans = game.getBusinessInvestment();

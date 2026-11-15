@@ -2641,22 +2641,24 @@
     },
     {
      "entry": "E8",
-     "source": "research-design 4 E8 [T57]; NIST pub 820148 reports human torch-on 30%, robot 90%. R2e welding-crew proxy estimate: unskilled assembly posts, old 90/30 times modern; source does not partition the plant crew. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "source": "research-design 4 E8 [T57]; NIST pub 820148 reports human torch-on 30%, robot 90%. R2e welding-crew proxy estimate: unskilled assembly posts, old 90/30 times modern; source does not partition the plant crew. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months). Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
      "without": {
       "jobs": {
        "NO_DIPLOMA": 200
       }
      },
-     "equipment": "welding-robot"
+     "equipment": "welding-robot",
+     "after": "PE13"
     },
     {
      "entry": "B7",
-     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented.",
+     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented. Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
      "without": {
       "jobs": {
        "NO_DIPLOMA": 38.743455497382186
       }
-     }
+     },
+     "after": "PE13"
     }
    ]
   },
@@ -2723,22 +2725,24 @@
     },
     {
      "entry": "E8",
-     "source": "research-design 4 E8 [T57]; NIST pub 820148 reports human torch-on 30%, robot 90%. R2e welding-crew proxy estimate: unskilled assembly posts, old 90/30 times modern; source does not partition the plant crew. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "source": "research-design 4 E8 [T57]; NIST pub 820148 reports human torch-on 30%, robot 90%. R2e welding-crew proxy estimate: unskilled assembly posts, old 90/30 times modern; source does not partition the plant crew. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months). Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
      "without": {
       "jobs": {
        "NO_DIPLOMA": 830
       }
      },
-     "equipment": "welding-robot"
+     "equipment": "welding-robot",
+     "after": "PE13"
     },
     {
      "entry": "B7",
-     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented.",
+     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented. Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
      "without": {
       "jobs": {
        "NO_DIPLOMA": 160.78534031413608
       }
-     }
+     },
+     "after": "PE13"
     }
    ]
   },
@@ -2804,22 +2808,24 @@
     },
     {
      "entry": "E8",
-     "source": "research-design 4 E8 [T57]; NIST pub 820148 reports human torch-on 30%, robot 90%. R2e welding-crew proxy estimate: unskilled assembly posts, old 90/30 times modern; source does not partition the plant crew. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "source": "research-design 4 E8 [T57]; NIST pub 820148 reports human torch-on 30%, robot 90%. R2e welding-crew proxy estimate: unskilled assembly posts, old 90/30 times modern; source does not partition the plant crew. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months). Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
      "without": {
       "jobs": {
        "NO_DIPLOMA": 390
       }
      },
-     "equipment": "welding-robot"
+     "equipment": "welding-robot",
+     "after": "PE13"
     },
     {
      "entry": "B7",
-     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented.",
+     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented. Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
      "without": {
       "jobs": {
        "NO_DIPLOMA": 75.54973821989526
       }
-     }
+     },
+     "after": "PE13"
     }
    ]
   },
@@ -4644,13 +4650,14 @@
     },
     {
      "entry": "E2",
-     "source": "research-design 4 E2 [T32,T34], EPA ENERGY STAR Cement Guide 2013 table 1: wet 7.0 vs preheater 3.0-3.6 GJ/t. R2e midpoint/mapping estimate 3.3, applied to modern coal at unchanged output; lime tonnes proxy clinker. PE4 remains a separate additive long-kiln estimate. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "source": "research-design 4 E2 [T32,T34], EPA ENERGY STAR Cement Guide 2013 table 1: wet 7.0 vs preheater 3.0-3.6 GJ/t. R2e midpoint/mapping estimate 3.3, applied to modern coal at unchanged output; lime tonnes proxy clinker. Applies only after PE4; its independent 1900 coal figure is preserved when the long kiln is absent. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
      "without": {
       "uses": {
        "THERMAL_COAL": 3756.0606060606056
       }
      },
-     "equipment": "preheater"
+     "equipment": "preheater",
+     "after": "PE4"
     }
    ]
   },
@@ -4718,13 +4725,14 @@
     },
     {
      "entry": "E2",
-     "source": "research-design 4 E2 [T32,T34], EPA ENERGY STAR Cement Guide 2013 table 1: wet 7.0 vs preheater 3.0-3.6 GJ/t. R2e midpoint/mapping estimate 3.3, applied to modern coal at unchanged output; lime tonnes proxy clinker. PE4 remains a separate additive long-kiln estimate. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "source": "research-design 4 E2 [T32,T34], EPA ENERGY STAR Cement Guide 2013 table 1: wet 7.0 vs preheater 3.0-3.6 GJ/t. R2e midpoint/mapping estimate 3.3, applied to modern coal at unchanged output; lime tonnes proxy clinker. Applies only after PE4; its independent 1900 coal figure is preserved when the long kiln is absent. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
      "without": {
       "uses": {
        "THERMAL_COAL": 18780.30303030303
       }
      },
-     "equipment": "preheater"
+     "equipment": "preheater",
+     "after": "PE4"
     }
    ]
   },
@@ -4790,13 +4798,14 @@
     },
     {
      "entry": "E2",
-     "source": "research-design 4 E2 [T32,T34], EPA ENERGY STAR Cement Guide 2013 table 1: wet 7.0 vs preheater 3.0-3.6 GJ/t. R2e midpoint/mapping estimate 3.3, applied to modern coal at unchanged output; lime tonnes proxy clinker. PE4 remains a separate additive long-kiln estimate. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "source": "research-design 4 E2 [T32,T34], EPA ENERGY STAR Cement Guide 2013 table 1: wet 7.0 vs preheater 3.0-3.6 GJ/t. R2e midpoint/mapping estimate 3.3, applied to modern coal at unchanged output; lime tonnes proxy clinker. Applies only after PE4; its independent 1900 coal figure is preserved when the long kiln is absent. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
      "without": {
       "uses": {
        "THERMAL_COAL": 4036.363636363636
       }
      },
-     "equipment": "preheater"
+     "equipment": "preheater",
+     "after": "PE4"
     }
    ]
   },

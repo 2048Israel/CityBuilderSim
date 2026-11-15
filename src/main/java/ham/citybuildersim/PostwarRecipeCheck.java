@@ -258,6 +258,12 @@ public final class PostwarRecipeCheck {
         double gain = code.equals("E11") ? .55 - .55 * 55.5 / 62 : yield - .24;
         double expected = LicenceFees.SHARE * gain * feed
                 * (values[Good.PETROL.ordinal()] - values[Good.FUEL_OIL.ordinal()]) * rate;
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        double quoteDifference = prices.good().applyAsDouble(Good.PETROL) - prices.good().applyAsDouble(Good.FUEL_OIL);
+        double quote = LicenceFees.forNew(game, unit);
+        double expectedQuote = LicenceFees.SHARE * gain * unit.feedPerMonth() * quoteDifference * rate;
+        check(code + " new-cracker appraisal uses the same decorated catalyst stage as production",
+                expectedQuote > 0 && HistoricalLicenceCheck.near(quote, expectedQuote), quote + " vs " + expectedQuote);
         LicenceFees.Production capture = new LicenceFees.Production(game);
         for (Good good : Good.values())
             if (good.stockable() && refinery.outputRow(good) != null)
@@ -271,10 +277,84 @@ public final class PostwarRecipeCheck {
                 "feed " + feed + " capacity " + capacity);
         check("the captured " + code + " bill uses only its actual yield gain on dispatched feed",
                 HistoricalLicenceCheck.near(bill, expected), bill + " vs " + expected);
+        double atQuotePrices = bill * unit.feedPerMonth() / feed * quoteDifference
+                / (values[Good.PETROL.ordinal()] - values[Good.FUEL_OIL.ordinal()]);
+        check(code + " the appraisal equals the standing charge at the same feed and price roles",
+                bill > 0 && HistoricalLicenceCheck.near(quote, atQuotePrices), quote + " vs " + atQuotePrices);
         allExcept(game, "");
         at(game, ResearchCatalog.knownFrom(code) + LicenceFees.TERM_MONTHS);
         check("a later local find and expiry leave the earned production liability intact",
                 bill > 0 && refinery.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) == bill, "");
+    }
+
+    static void scopedStages() throws Exception {
+        out.println("--- 7. later improvements preserve the calibrated earlier process ---");
+        Game game = town("R2e-kiln-stages", true);
+        BuildingsTemplate kiln = game.getBuildingManager().getTemplateByName("Cement Plant");
+        RecipeCheck.stand(game, kiln, 4, new int[1]);
+        BuildingsStacks stack = game.getBuildingManager().getStack(kiln);
+        at(game, 1);
+        knownExcept(game, Set.of("PE4", "E2"));
+        for (Equipment piece : kiln.getEquipment()) stack.setUnfitted(piece.getId(), stack.getQuantity());
+        run(game);
+        double old = kiln.uses(Good.THERMAL_COAL);
+        check("all-missing Cement Plant keeps main's exact 1900 coal figure, 30% of cement tonnes",
+                old == kiln.makes(Good.CEMENT) * .3 && kiln.runningRecipeIds()[1].startsWith("shaft-kiln"), "coal " + old);
+        knownExcept(game, Set.of("PE4"));
+        stack.setUnfitted("preheater", 0);
+        run(game);
+        Equipment preheater = kiln.getEquipment("preheater");
+        check("finding and fitting E2 first leaves the absent long kiln's old coal and zero preheater gain",
+                kiln.uses(Good.THERMAL_COAL) == old && preheater != null
+                        && EquipmentFit.grossGainOf(game, kiln, preheater) == 0, "coal " + kiln.uses(Good.THERMAL_COAL));
+        allExcept(game, "");
+        fitted(kiln, stack);
+        run(game);
+        double e2First = kiln.uses(Good.THERMAL_COAL);
+        knownExcept(game, Set.of("E2"));
+        fitted(kiln, stack);
+        stack.setUnfitted("preheater", stack.getQuantity());
+        run(game);
+        double modern = kiln.defaultRecipe().uses().get(Good.THERMAL_COAL);
+        check("PE4 present with only E2 missing runs exactly the sourced 7.0/3.3 wet-kiln form",
+                Math.abs(kiln.uses(Good.THERMAL_COAL) - modern * 7 / 3.3) < 1e-9, "coal " + kiln.uses(Good.THERMAL_COAL));
+        allExcept(game, "");
+        fitted(kiln, stack);
+        run(game);
+        check("both kiln discovery orders reach today's exact coal use", e2First == modern && kiln.uses(Good.THERMAL_COAL) == modern, "");
+        priceForBothReaders(game, Good.THERMAL_COAL, 100);
+        stack.setUnfitted("long-kiln", stack.getQuantity());
+        stack.setUnfitted("preheater", stack.getQuantity());
+        run(game);
+        Equipment longKiln = kiln.getEquipment("long-kiln");
+        double full = preheater == null ? 0 : RecipeChanges.gain(kiln,
+                kiln.getRecipeChanges().stream().filter(c -> c.code().equals("E2")).findFirst().orElseThrow(), Recipes.pricesOf(game));
+        check("fixture: the new plant's own long kiln pays at the positive coal price",
+                EquipmentFit.verdictForNew(game, kiln, longKiln).kind() == EquipmentFit.Kind.PAYS && full > 0, "");
+        check("the absent old fleet does not suppress a new plant's paying prerequisite and preheater",
+                preheater != null && EquipmentFit.grossGainOf(game, kiln, preheater) == 0
+                        && HistoricalLicenceCheck.near(EquipmentFit.verdictForNew(game, kiln, preheater).gain(), full), "");
+        stack.setUnfitted("long-kiln", stack.getQuantity() / 2);
+        run(game);
+        check("a half-fitted long-kiln fleet gives the preheater only its available prerequisite share",
+                preheater != null && HistoricalLicenceCheck.near(EquipmentFit.grossGainOf(game, kiln, preheater), full / 2), "");
+
+        for (String name : List.of("Vehicle Works", "Assembly Plant", "Commercial Vehicle Plant")) {
+            BuildingsTemplate works = game.getBuildingManager().getTemplateByName(name);
+            RecipeCheck.stand(game, works, 2, new int[1]);
+            BuildingsStacks cars = game.getBuildingManager().getStack(works);
+            knownExcept(game, Set.of("PE13", "E8", "B7"));
+            fitted(works, cars);
+            run(game);
+            int posts = works.defaultRecipe().getJobs(JobType.NO_DIPLOMA);
+            check(name + " preserves PE13's old hand-assembly crew before all three entries",
+                    works.getJobs(JobType.NO_DIPLOMA) == Math.round(posts * 12.5 / 1.55), "posts " + works.getJobs(JobType.NO_DIPLOMA));
+            knownExcept(game, Set.of("E8", "B7"));
+            cars.setUnfitted("welding-robot", cars.getQuantity());
+            run(game);
+            check(name + " after mass assembly runs the independent robot and lean undos",
+                    works.getJobs(JobType.NO_DIPLOMA) == Math.round(posts * (3 + 26.5 / 19.1 - 1)), "posts " + works.getJobs(JobType.NO_DIPLOMA));
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -298,6 +378,7 @@ public final class PostwarRecipeCheck {
         clockAndFlows();
         licenceCapture("E11");
         licenceCapture("PE24");
+        scopedStages();
         out.println(fails == 0 ? "All PostwarRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

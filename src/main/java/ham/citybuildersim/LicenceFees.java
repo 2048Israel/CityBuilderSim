@@ -169,8 +169,9 @@ public final class LicenceFees {
         for (Equipment piece : t.getEquipment()) {
             if (!fitted.contains(piece.getId()) || !charged.add(piece.getSince()) || !piece.knownAt(game.getMonth(), game.getResearch())
                     || !payable(piece.getSince(), game.getMonth(), game.getResearch())) continue;
-            bill += onGain(piece.getSince(), accrualMonth, game.getResearch(),
-                    EquipmentFit.grossGainOf(game, t, piece)) * rate;
+            double gain = !standing && t.changeNeeds(piece.getId()) ? RecipeChanges.gainOf(game, t, piece, true)
+                    : EquipmentFit.grossGainOf(game, t, piece);
+            bill += onGain(piece.getSince(), accrualMonth, game.getResearch(), gain) * rate;
         }
         return bill;
     }
@@ -186,6 +187,8 @@ public final class LicenceFees {
         }
         Recipe recipe = Recipes.best(t, t.recipePieceId() == null || fitted.contains(t.recipePieceId()),
                 game.getMonth(), Recipes.pricesOf(game), game.getResearch());
+        recipe = RecipeChanges.decode(t, RecipeChanges.choose(t, recipe.getId(),
+                game.getMonth(), game.getResearch(), Recipes.pricesOf(game)));
         return one(game, t, owner, recipe, fitted, false, 0);
     }
 

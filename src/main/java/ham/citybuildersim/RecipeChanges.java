@@ -158,8 +158,28 @@ public final class RecipeChanges {
 
     /** Gross monthly contribution of one independent piece, before R2c's rent. */
     public static double gainOf(Game game, BuildingsTemplate t, Equipment piece) {
+        return gainOf(game, t, piece, false);
+    }
+
+    /** A new building prices prerequisites among its own paying pieces. */
+    static double gainOf(Game game, BuildingsTemplate t, Equipment piece, boolean newBuilding) {
         return t.getRecipeChanges().stream().filter(c -> piece.getId().equals(c.piece()))
-                .mapToDouble(c -> gain(t, c, Recipes.pricesOf(game))).sum();
+                .mapToDouble(c -> gain(t, c, Recipes.pricesOf(game)) * prerequisiteShare(game, t, c, newBuilding)).sum();
+    }
+
+    /** Independent equipment counts supply the available prerequisite fraction. */
+    private static double prerequisiteShare(Game game, BuildingsTemplate t, RecipeChange change, boolean newBuilding) {
+        if (change.after() == null) return 1;
+        RecipeChange prior = t.getRecipeChanges().stream().filter(c -> c.code().equals(change.after())).findFirst().orElseThrow();
+        if (!prior.knownAt(game.getMonth(), game.getResearch())) return 0;
+        if (prior.piece() == null) {
+            String choice = newBuilding ? choose(t, t.defaultRecipe().getId(), game.getMonth(), game.getResearch(), Recipes.pricesOf(game))
+                    : t.runningRecipeIds()[0];
+            return has(choice, prior.code()) ? 0 : 1;
+        }
+        if (newBuilding) return EquipmentFit.verdictForNew(game, t, t.getEquipment(prior.piece())).kind() == EquipmentFit.Kind.PAYS ? 1 : 0;
+        BuildingsStacks stack = game.getBuildingManager().getStack(t);
+        return stack == null || stack.getQuantity() == 0 ? 1 : 1 - (double) stack.getUnfitted(prior.piece()) / stack.getQuantity();
     }
 
     /** The benefit of removing this undo at the stated prices, without mutating a template. */

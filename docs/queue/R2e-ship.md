@@ -8,7 +8,8 @@ exact modern destination figures. Zeolite composes with catalytic cracking,
 keeping the thermal process and dispatched-feed licence charges consistent.
 Panel Mill opens through E19 in 1981 on FPL-GTR-59; Wood Pellet Mill through
 E20 at retained 1970, explicitly undated within FPL-RP-656's 1970s.
-Medical rows remain for R2f. Verification is recorded in the batch notes.
+The eight default traces match main byte for byte. Source, estimates and
+verification evidence are recorded in the batch notes.
 
 ## pending
 | R2e-E3 | Jack-up drilling's depth effect ({next}) | T21 dates deeper access but supplies no comparable output ratio; a model water-depth axis is missing. | docs/queue/R2e-notes.md |

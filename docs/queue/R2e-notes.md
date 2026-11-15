@@ -28,10 +28,10 @@ Each crew mapping below is an explicit estimate.
 | Entry | Earlier form, source and estimate |
 |---|---|
 | E1 | R1c/R2d already supply sourced Bessemer/open-hearth alternatives and E1's modern converter. Keep that process/price choice. |
-| E2 | Study [T32,T34], wet 7.0 vs preheater 3.0-3.6 GJ/t. Midpoint 3.3 scales modern coal. Lime tonnes proxy clinker. PE4 stays a separate additive long-kiln estimate. No source measures nonchronological combinations. |
+| E2 | Study [T32,T34], wet 7.0 vs preheater 3.0-3.6 GJ/t. Midpoint 3.3 scales modern coal. Lime tonnes proxy clinker. E2 is scoped after PE4 to preserve its calibrated 1900 total, as recorded below. |
 | E3 | [T21] gives water depth 30 vs 120-150 m, no comparable well-output ratio. Pending because the model lacks depth. |
 | E4/E5/E6/E7 | Existing building gates already open pellets, container terminal, desalination and hydrocrackers. [T12], [T53,T54], [T52], [T30,T31] respectively. Keep modern figures when available. |
-| E8 | [T57], also NIST publication 820148, torch-on 30% vs 90%. Unskilled assembly posts proxy welding crew, old x3. No source partitions the plant crew. |
+| E8 | [T57], also NIST publication 820148, torch-on 30% vs 90%. Unskilled assembly posts proxy welding crew, old x3 after PE13. No source partitions the plant crew. |
 | E9 | Study 3.1 [T4] estimates old -10% steel, +12.5% posts, +1.2 GJ/t fuel. Production bands only, same melt inputs. Fuel-oil proxy at R2d's 36 MJ/L heating-value estimate. OTA itself gives 10-12% yield improvement,10-15% less direct labour and about 1 MBtu/short ton direct energy. Use the study's named rounded undo. |
 | E10 | [T38] estimates doubled wheat yield with fertiliser. CROPS old half modern is a crop-mix estimate, additive beside PE20. Missing fertiliser good/works/prerequisite stays beside R2d-PE12. No modern fertiliser invoice exists to undo. |
 | E11 | [T26], amorphous 55.5 vs zeolite 62.0% petrol. Normalize to modern 0.55 * 55.5/62. Lost petrol remains fuel oil, a mass-balance estimate. Model has no cracker coke stream. |
@@ -149,3 +149,76 @@ A JSON-value comparison confirms every top-level numeric modern anchor is
 identical to 32ec5a5d. Original 89 catalogue entries are identical; only two
 permanent codes append. Default LongPlaytest on 005c1d9f is now running,
 serially after the focused job, under persistent host PID 31920.
+
+## First review and calibrated process stages
+
+REV-R2e-1 of005c1d9f found one new-cracker appraisal reader still passing
+an undecorated base recipe into LicenceFees.one. The standing charge
+already had the saved flags. forNew now resolves the same independent
+decisions before pricing, so PE24's pre-zeolite marginal yield is
+0.55 *55.5/62 -0.24 in both paths. New controls price the real prospective
+plant and compare its patent charge with the captured production charge
+at identical feed and price roles, for both PE24 and E11.
+
+★ Orchestrator mail175932 scopes E2 after PE4. R2d calibrated all
+missing kiln changes together to30% coal/clinker. E2 now leaves that old
+figure intact until the long-kiln process is present. Only E2 missing
+gives modern coal *7.0/3.3, both present gives modern coal exactly.
+PE4's data and R1c's shaft recipe are unchanged.
+
+★ Mail180337 accepts E8 and B7 after PE13 on the three vehicle
+templates, preserving its earlier hand-assembly crew. Machine Works B7
+is independent. E10 remains the accepted distinct wheat/corn crop-mix
+estimate beside PE20.
+
+★ PE19's row is the ratio for a distinct rolling operation,0.5 to8
+tonnes/worker-shift, with +15 modern rolling crews (R2d-notes). E9's
+continuous casting yield, direct crew and soaking/primary-rolling fuel
+saving is separately sourced by OTA. E18's thin-slab reheating saving is
+its own2.0 to0.5-0.8 MBtu/t ratio [T10,T3]. Neither earlier row calibrates
+an all-missing1900 total of that quantity as PE4 did. These operations
+therefore keep independent signed changes under mail180337's rule.
+
+★ A scoped equipment gain uses the actual available prerequisite
+fraction. Independent piece counts provide the aggregate product of
+fractions, an explicit mixed-fleet estimate since no per-unit pairing is
+saved. A new plant prices its own paying prerequisite through the existing
+verdictForNew, so an older unfitted fleet cannot suppress that new plant's
+preheater. Prospective and captured equipment fees use those same
+contexts. The default founding guard remains the first branch.
+
+The first complete branch default trace on005c1d9f exits0. All eight
+CSVs are byte-identical to main32ec5a5d. Evidence and hashes are in
+target/R2e-evidence/branch. The final gate will capture the final model's
+eight files again after these scoped historical changes.
+
+The scoped/appraisal fixtures pass102/102. The retained005c1d9f runtime
+classes and packaged data, ahead of the final classes, fail exactly9/102.
+The two PE24 appraisal failures quote9,849,080.66 instead of8,017,110.66.
+The three vehicle hand-assembly controls fail, and the all-missing Cement
+Plant consumes11,256.06 instead of its exact7,500 tonnes. The zero/partial
+prerequisite gain controls fail too.
+Evidence is target/R2e-evidence/review-before/{compile,check}.log.
+Its commit.txt names005c1d9f; only the three changed model classes and
+their packaged resources are overlaid, preserving all other classes.
+
+The scope audit preserves the separate PE19 rolling ratio and E9/E18
+operation savings. No PE4, PE13 or R1c recipe figure is changed.
+The new-cracker comparison explicitly converts the standing total to
+the proposed unit's feed and appraisal price roles before requiring
+money equality. Both actual feed and both price differences are positive.
+
+With all final scope controls included, whole main32ec5a5d fails56/98.
+The branch passes102/102; the four additional wood-candidate assertions
+run when the new catalogue entries exist. Main's baseline runtime and
+data are unchanged. The retained pre-mend overlay fails9/102.
+All ten serial named harnesses are green, including R2d's120/80 assertions.
+A final fast rebuild and four focused readers repeat after the small
+new-building prerequisite choice refinement and the explicit second kiln
+order capture.
+
+The final exact-source rebuild and serial PostwarRecipeCheck,
+EquipmentCheck, LicenceFeesCheck and FittingCheck run all pass.
+PostwarRecipeCheck remains102/102, main56/98, pre-mend9/102.
+Final --fast exits0 with zero firm Stale. Source and record files are LF.
+The scope/appraisal mends add no new pending or known-red row.

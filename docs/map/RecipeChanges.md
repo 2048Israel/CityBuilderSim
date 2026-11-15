@@ -1,4 +1,4 @@
-# RecipeChanges.java - 313 lines · 18 methods · 1 constants · model
+# RecipeChanges.java - 333 lines · 20 methods · 1 constants · model
 
 `ham/citybuildersim/RecipeChanges.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -9,7 +9,7 @@
 > Recipe decisions are saved in the existing recipe ids after "~"; fitting
 > counts are read on application, including after a construction site opens.
 
-**Uses:** [Recipe](Recipe.md) (20), [Good](Good.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (15), [Recipes](Recipes.md) (10), [RecipeChange](RecipeChange.md) (10), [JobType](JobType.md) (8), [Game](Game.md) (7), [LicenceFees](LicenceFees.md) (4), [BuildingsStacks](BuildingsStacks.md) (4), [Freight](Freight.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [Sector](Sector.md) (2), [SpreadPlanner](SpreadPlanner.md) (2), [Research](Research.md) (1), [Equipment](Equipment.md) (1), [BuildingType](BuildingType.md) (1), [Refining](Refining.md) (1), [RefineryFlow](RefineryFlow.md) (1)
+**Uses:** [Recipe](Recipe.md) (20), [BuildingsTemplate](BuildingsTemplate.md) (17), [Good](Good.md) (16), [RecipeChange](RecipeChange.md) (12), [Recipes](Recipes.md) (11), [Game](Game.md) (9), [JobType](JobType.md) (8), [BuildingsStacks](BuildingsStacks.md) (5), [LicenceFees](LicenceFees.md) (4), [Freight](Freight.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [Equipment](Equipment.md) (2), [EquipmentFit](EquipmentFit.md) (2), [Sector](Sector.md) (2), [SpreadPlanner](SpreadPlanner.md) (2), [Research](Research.md) (1), [BuildingType](BuildingType.md) (1), [Refining](Refining.md) (1), [RefineryFlow](RefineryFlow.md) (1)
 
 **Used by (8):** [BuildingsTemplate](BuildingsTemplate.md), [EquipmentFit](EquipmentFit.md), [Freight](Freight.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LicenceFees](LicenceFees.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md)
 
@@ -23,7 +23,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 15 | 299 | **type** `public final class RecipeChanges` | Composes independent discovery changes on the selected process recipe. |
+| 15 | 319 | **type** `public final class RecipeChanges` | Composes independent discovery changes on the selected process recipe. |
 | 16 | 1 | `private RecipeChanges()` |  |
 | 23 | 11 | `static String choose(BuildingsTemplate t, String base, int month, Research found, Recipes.Prices p)` | Saved recipe decisions only; equipment remains on the stack's own counts. |
 | 36 | 18 | `static Recipe decode(BuildingsTemplate t, String id)` | Resolves a saved composite recipe id without reading a new month's prices. |
@@ -33,13 +33,15 @@
 | 111 | 4 | `private static double share(RecipeChange change, Map<String, Double> absent)` | A later process improvement affects only the share running its prerequisite. |
 | 116 | 4 | `private static Recipe base(BuildingsTemplate t, String id)` |  |
 | 122 | 36 | `static boolean apply(Game game, BuildingsTemplate t, BuildingsStacks stack, String[] picked)` | Applies the complete unrounded mix; false leaves an unchanged legacy template to its driver. |
-| 160 | 4 | `public static double gainOf(Game game, BuildingsTemplate t, Equipment piece)` | Gross monthly contribution of one independent piece, before R2c's rent. |
-| 166 | 14 | `public static double gain(BuildingsTemplate t, RecipeChange c, Recipes.Prices p)` | The benefit of removing this undo at the stated prices, without mutating a template. |
-| 182 | 37 | `static double recipeFee(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, boolean standing, double rate, java.util.S...` | Imported rent on independent recipe changes actually used by this part of a stack. |
-| 221 | 6 | `private static double petrol(BuildingsTemplate template, Map<String, Double> absent)` | Petrol yield at the saved decisions, including a later catalyst's process scope. |
-| 229 | 9 | `private static double standingValue(Recipe r, Recipes.Prices p, ham.citybuildersim.sectors.SpreadPlanner.Values values, double ...` | R2c's standing price roles: dispatched goods and consumables, fixed posts and utilities. |
-| 244 | 29 | `public static void railService(Game game, ham.citybuildersim.sectors.Freight rail, double fuelEquivalent, double steamShare, bo...` | Capture PE21 where the private railway invoices its real service, before the common monthly strike. |
-| 275 | 8 | `static Map<Integer, Double> serviceFeeMemo(Game game)` | The earlier rail invoice's saved cost survives the later goods-production capture. |
-| 285 | 11 | `public static double railSteamShare(Game game)` | Capacity-weighted steam engines on the railway; default cities read no stacks. |
-| 298 | 15 | `static void declareGoods(Game game, BuildingsTemplate t)` | Each possible old recipe's goods, for the owner's declaration and reload parity. |
+| 160 | 3 | `public static double gainOf(Game game, BuildingsTemplate t, Equipment piece)` | Gross monthly contribution of one independent piece, before R2c's rent. |
+| 165 | 4 | `static double gainOf(Game game, BuildingsTemplate t, Equipment piece, boolean newBuilding)` | A new building prices prerequisites among its own paying pieces. |
+| 171 | 13 | `private static double prerequisiteShare(Game game, BuildingsTemplate t, RecipeChange change, boolean newBuilding)` | Independent equipment counts supply the available prerequisite fraction. |
+| 186 | 14 | `public static double gain(BuildingsTemplate t, RecipeChange c, Recipes.Prices p)` | The benefit of removing this undo at the stated prices, without mutating a template. |
+| 202 | 37 | `static double recipeFee(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, boolean standing, double rate, java.util.S...` | Imported rent on independent recipe changes actually used by this part of a stack. |
+| 241 | 6 | `private static double petrol(BuildingsTemplate template, Map<String, Double> absent)` | Petrol yield at the saved decisions, including a later catalyst's process scope. |
+| 249 | 9 | `private static double standingValue(Recipe r, Recipes.Prices p, ham.citybuildersim.sectors.SpreadPlanner.Values values, double ...` | R2c's standing price roles: dispatched goods and consumables, fixed posts and utilities. |
+| 264 | 29 | `public static void railService(Game game, ham.citybuildersim.sectors.Freight rail, double fuelEquivalent, double steamShare, bo...` | Capture PE21 where the private railway invoices its real service, before the common monthly strike. |
+| 295 | 8 | `static Map<Integer, Double> serviceFeeMemo(Game game)` | The earlier rail invoice's saved cost survives the later goods-production capture. |
+| 305 | 11 | `public static double railSteamShare(Game game)` | Capacity-weighted steam engines on the railway; default cities read no stacks. |
+| 318 | 15 | `static void declareGoods(Game game, BuildingsTemplate t)` | Each possible old recipe's goods, for the owner's declaration and reload parity. |
 
