@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**204 harness files, 24,158 labelled assertions.** AllChecks runs 204 of them.
+**204 harness files, 24,160 labelled assertions.** AllChecks runs 204 of them.
 
 ## Which harnesses read which class
 
@@ -30006,7 +30006,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1203 ...held there the month after
   - L1213 a city that plays on the literals has no moneys, and its D$ has no world, six months on
 
-## YearBookCheck.java - 137 labelled assertions
+## YearBookCheck.java - 139 labelled assertions
 
 > Proves the year book folds each series the way that series has to be folded,
 > and that the file says so. Not part of the game.
@@ -30030,143 +30030,145 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L133 year 1 gdp is its twelve months added
   - L134 year 2 gdp is its twelve months added
   - L135 gdp is marked as a flow
-  - L145 year 1 population is December's
-  - L146 year 2 population is December's
-  - L147 population is marked as a level
-  - L163 year 1 sick rate is the mean of its months
-  - L164 the year's worst month is kept
-  - L165 and its best
-  - L166 sickRate is marked as a rate
-  - L183 year 1
-  - L188 year 2 bankFees is its twelve months added
-  - L189 bankFees is marked as a flow
-  - L207 year 1
-  - L213 year 2
-  - L217 year 2 bankAllowance is December's
-  - L218 bankAllowance is marked as a level
-  - L237 a flow row missing months is blank
-  - L238 and the complete row is the sum
-  - L239 the file says what a blank means
-  - L250 a full year covers twelve months
-  - L251 the stub year says it is one month
-  - L252 and its flow is that one month
-  - L262 a full decade covers ten years of months
-  - L264 the stub decade carries the remainder
-  - L265 the first decade's flow is its months added
-  - L266 the decade book calls its rows decades
-  - L283 the episode list names the failure
-  - L284 and says which month it was
-  - L285 the year's own row hides it, which is why the list exists
-  - L300 a decimal point survives a French locale
-  - L301 ...and so does a small one
-  - L302 ...and a big one
-  - L303 a thousand is written without a separator
-  - L304 nothing is recorded is not zero
-  - L305 and zero is zero
-  - L318 no comma in a data row:
-  - L320 and there were data rows to look at
-  - L331 the year book sits in the game's own folder
-  - L333 so does the decade book
-  - L335 and they are not the same file
-  - L363 the history records the pool the People screen shows
-  - L370 with the pool recorded, the pool over the labour force
-  - L372 the column says what it is
-  - L376 without the pool, the labour force less the posts, over the labour force
-- **L440 the premise**
-  - L441 the fixture has somebody studying, or the two denominators are the same number
-  - L443 the fixture offers posts it has not filled, or jobs and filled posts agree by luck
-  - L453 ...so the formula this replaced actually disagrees with the model here
-- **L456 and the assertions**
-  - L476 the labour force is the model's labour force
-  - L478 the filled posts are the model's filled posts
-  - L481 unemployment is the model's own rate
-  - L492 the average wage divides the recorded wage bill by the filled posts
-  - L497 ...and the recorded wage bill is the model's, to the cent
-  - L551 the fxRate note says the city's dollars per US dollar
-  - L552 ...in the preamble and in the column's own note
-  - L554 ...and that higher is a fallen currency
-  - L555 ...and never the other way round
-  - L556 ...and never another city's money: no Danzik in Arden's book
-  - L557 ...nor the rule's placeholder, which the book writes out
-  - L593 the fixture names two episodes and no others
-  - L596 the first is the bank's
-  - L597 ...named for the year it began
-  - L599 ...from the month equity went under
-  - L600 ...to the last month it was under
-  - L601 ...and its worst is the equity it reached
-  - L603 the second is the recession
-  - L604 ...named for the year it began
-  - L606 ...from the month the year fell short of the one before
-  - L607 ...for exactly EPISODE_MIN_MONTHS months
-  - L609 ...and its worst is a fall
-  - L613 the chart shades the same recession and nothing else
-  - L615 ...from the month it began
-  - L616 ...to the month it ended
-  - L620 the book lists the crisis, one line with its months
-  - L622 ...and the recession
-- **L625 the edges**
-  - L628 a two-month dip under water is not a crisis
-  - L633 a loss that leaves one month below the year before is not a recession
-  - L635 ...and is not shaded
-  - L641 two failures a year apart are two episodes
-  - L643 ...with two names
-  - L644 ...the first for its year
-  - L645 ...the second for its own
-  - L652 two failures in one year, EPISODE_JOIN_MONTHS apart, are two episodes
-  - L654 ...and the second is the first's name, again
-  - L663 two failures with less relief than EPISODE_JOIN_MONTHS are one episode
-  - L665 ...from the first month of the first
-  - L666 ...to the last month of the second
-  - L688 a city as sick as Health.UNTREATED_RATE with no outbreak names no epidemic
-  - L698 fixture: the outbreak runs at least EPISODE_MIN_MONTHS
-  - L699 an outbreak is named from its first month to its last
-  - L703 ...its worst is the outbreak's peak
-  - L704 ...in the outbreak's words
-- **L827 the tables, read both ways**
-  - L828 the book's text is the text years() returns
-  - L829 the year book's table
-  - L830 the year book's WITHIN table
-  - L831 the decade book's table
-  - L832 the decade book's WITHIN table
-- **L834 a blank stays empty**
-  - L836 a flow row missing months is an empty field in the CSV
-  - L837 ...and the complete row is the sum, as the text writes it
-  - L838 a blank is never written as NaN
-  - L839 ...and the text's own cell there is blank, so the two agree on what a blank is
-- **L842 a French locale keeps the point**
-  - L859 under a French locale the CSV still writes 1.5 with a point
-  - L860 ...and a small one, in the WITHIN table
-  - L861 the French year CSV is the other one, byte for byte
-  - L862 ...and its WITHIN
-  - L863 ...and the decade's
-  - L864 ...and the decade's WITHIN
-  - L870 every French
-- **L874 a name that needs quotes gets them, and only then**
-  - L876 a column name with a comma is quoted in the header
-  - L878 ...and reads back as the one name
-  - L879 ...and its WITHIN columns are quoted too
-  - L881 a column name with a quote is quoted, the quote doubled
-  - L883 ...and reads back as the name
-  - L884 a line break inside a field is quoted
-  - L885 a colon or a space alone is not
-  - L886 a number goes out as the text writes it
-  - L887 and an empty cell is an empty field
-- **L889 the export, on a city that has been played**
-  - L898 the CSV path sits beside the year book:
-  - L907 the export wrote
-  - L908 ...into the export folder, beside the text:
-  - L914 six files, none written twice
-  - L915 the year's are the text, its table and its WITHIN, in that order
-  - L918 ...and the decade's
-  - L923 on disk, the year book's CSV
-  - L924 on disk, the year book's WITHIN CSV
-  - L925 on disk, the decade book's CSV
-  - L926 on disk, the decade book's WITHIN CSV
-  - L928 the text on disk is the book the city writes
-  - L934 the premise: the played city's book has a column named with a colon and a space
-  - L936 ...and it went out unquoted:
-  - L942 every header and cell on disk is plain ASCII, so Excel needs no byte-order mark
-  - L943 ...and the file opens with its header, not a mark
+  - L138 year 1
+  - L139 year 2
+  - L151 year 1 population is December's
+  - L152 year 2 population is December's
+  - L153 population is marked as a level
+  - L169 year 1 sick rate is the mean of its months
+  - L170 the year's worst month is kept
+  - L171 and its best
+  - L172 sickRate is marked as a rate
+  - L189 year 1
+  - L194 year 2 bankFees is its twelve months added
+  - L195 bankFees is marked as a flow
+  - L213 year 1
+  - L219 year 2
+  - L223 year 2 bankAllowance is December's
+  - L224 bankAllowance is marked as a level
+  - L243 a flow row missing months is blank
+  - L244 and the complete row is the sum
+  - L245 the file says what a blank means
+  - L256 a full year covers twelve months
+  - L257 the stub year says it is one month
+  - L258 and its flow is that one month
+  - L268 a full decade covers ten years of months
+  - L270 the stub decade carries the remainder
+  - L271 the first decade's flow is its months added
+  - L272 the decade book calls its rows decades
+  - L289 the episode list names the failure
+  - L290 and says which month it was
+  - L291 the year's own row hides it, which is why the list exists
+  - L306 a decimal point survives a French locale
+  - L307 ...and so does a small one
+  - L308 ...and a big one
+  - L309 a thousand is written without a separator
+  - L310 nothing is recorded is not zero
+  - L311 and zero is zero
+  - L324 no comma in a data row:
+  - L326 and there were data rows to look at
+  - L337 the year book sits in the game's own folder
+  - L339 so does the decade book
+  - L341 and they are not the same file
+  - L369 the history records the pool the People screen shows
+  - L376 with the pool recorded, the pool over the labour force
+  - L378 the column says what it is
+  - L382 without the pool, the labour force less the posts, over the labour force
+- **L446 the premise**
+  - L447 the fixture has somebody studying, or the two denominators are the same number
+  - L449 the fixture offers posts it has not filled, or jobs and filled posts agree by luck
+  - L459 ...so the formula this replaced actually disagrees with the model here
+- **L462 and the assertions**
+  - L482 the labour force is the model's labour force
+  - L484 the filled posts are the model's filled posts
+  - L487 unemployment is the model's own rate
+  - L498 the average wage divides the recorded wage bill by the filled posts
+  - L503 ...and the recorded wage bill is the model's, to the cent
+  - L557 the fxRate note says the city's dollars per US dollar
+  - L558 ...in the preamble and in the column's own note
+  - L560 ...and that higher is a fallen currency
+  - L561 ...and never the other way round
+  - L562 ...and never another city's money: no Danzik in Arden's book
+  - L563 ...nor the rule's placeholder, which the book writes out
+  - L599 the fixture names two episodes and no others
+  - L602 the first is the bank's
+  - L603 ...named for the year it began
+  - L605 ...from the month equity went under
+  - L606 ...to the last month it was under
+  - L607 ...and its worst is the equity it reached
+  - L609 the second is the recession
+  - L610 ...named for the year it began
+  - L612 ...from the month the year fell short of the one before
+  - L613 ...for exactly EPISODE_MIN_MONTHS months
+  - L615 ...and its worst is a fall
+  - L619 the chart shades the same recession and nothing else
+  - L621 ...from the month it began
+  - L622 ...to the month it ended
+  - L626 the book lists the crisis, one line with its months
+  - L628 ...and the recession
+- **L631 the edges**
+  - L634 a two-month dip under water is not a crisis
+  - L639 a loss that leaves one month below the year before is not a recession
+  - L641 ...and is not shaded
+  - L647 two failures a year apart are two episodes
+  - L649 ...with two names
+  - L650 ...the first for its year
+  - L651 ...the second for its own
+  - L658 two failures in one year, EPISODE_JOIN_MONTHS apart, are two episodes
+  - L660 ...and the second is the first's name, again
+  - L669 two failures with less relief than EPISODE_JOIN_MONTHS are one episode
+  - L671 ...from the first month of the first
+  - L672 ...to the last month of the second
+  - L694 a city as sick as Health.UNTREATED_RATE with no outbreak names no epidemic
+  - L704 fixture: the outbreak runs at least EPISODE_MIN_MONTHS
+  - L705 an outbreak is named from its first month to its last
+  - L709 ...its worst is the outbreak's peak
+  - L710 ...in the outbreak's words
+- **L833 the tables, read both ways**
+  - L834 the book's text is the text years() returns
+  - L835 the year book's table
+  - L836 the year book's WITHIN table
+  - L837 the decade book's table
+  - L838 the decade book's WITHIN table
+- **L840 a blank stays empty**
+  - L842 a flow row missing months is an empty field in the CSV
+  - L843 ...and the complete row is the sum, as the text writes it
+  - L844 a blank is never written as NaN
+  - L845 ...and the text's own cell there is blank, so the two agree on what a blank is
+- **L848 a French locale keeps the point**
+  - L865 under a French locale the CSV still writes 1.5 with a point
+  - L866 ...and a small one, in the WITHIN table
+  - L867 the French year CSV is the other one, byte for byte
+  - L868 ...and its WITHIN
+  - L869 ...and the decade's
+  - L870 ...and the decade's WITHIN
+  - L876 every French
+- **L880 a name that needs quotes gets them, and only then**
+  - L882 a column name with a comma is quoted in the header
+  - L884 ...and reads back as the one name
+  - L885 ...and its WITHIN columns are quoted too
+  - L887 a column name with a quote is quoted, the quote doubled
+  - L889 ...and reads back as the name
+  - L890 a line break inside a field is quoted
+  - L891 a colon or a space alone is not
+  - L892 a number goes out as the text writes it
+  - L893 and an empty cell is an empty field
+- **L895 the export, on a city that has been played**
+  - L904 the CSV path sits beside the year book:
+  - L913 the export wrote
+  - L914 ...into the export folder, beside the text:
+  - L920 six files, none written twice
+  - L921 the year's are the text, its table and its WITHIN, in that order
+  - L924 ...and the decade's
+  - L929 on disk, the year book's CSV
+  - L930 on disk, the year book's WITHIN CSV
+  - L931 on disk, the decade book's CSV
+  - L932 on disk, the decade book's WITHIN CSV
+  - L934 the text on disk is the book the city writes
+  - L940 the premise: the played city's book has a column named with a colon and a space
+  - L942 ...and it went out unquoted:
+  - L948 every header and cell on disk is plain ASCII, so Excel needs no byte-order mark
+  - L949 ...and the file opens with its header, not a mark
 
 ## ZoningCheck.java - 72 labelled assertions
 

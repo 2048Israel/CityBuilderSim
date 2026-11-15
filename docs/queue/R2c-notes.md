@@ -416,3 +416,11 @@ The failed ZOb3FdRH directory must never be advertised for reuse.
 The repaired YearBook passes all 724 assertions, exit 0
 (target/checks/R2c-yearbook-after.log). The economic transfer/capture model
 is unchanged; this completes the annual interpretation of its saved flows.
+
+The five affected named harnesses finish exit 3, known red only in
+ResearchViewCheck (its existing R2b-V filter assertion / R2b-J derived
+summary). YearBookCheck 724/724, WorldMoneysCheck, InterestAbroadCheck and
+LicenceFeesCheck 41/41 pass. The cascading YearBook completeness failures
+and the misclassified OK refusal lines disappear. Maps regenerate, zero
+firm Stale findings (target/checks/R2c-yearbook-focused.log). There is no
+source change after 1ed0a26a; only the generated indexes and this record.
