@@ -136,16 +136,16 @@ and a brief overlap had corrupted their output files. The final pick used
 a fresh checks directory and unique log after the process inventory showed
 those suites gone. Discarded logs remain in target/kp2c-interrupted-checks.
 Only this batch's verified process trees were ended; other sessions and
-MemWatch were left alone. No save slot was written.
+MemWatch were left alone. No player save slot was written; save fixtures used scratch folders.
 
 ## 5. Review and launcher merge verdict
 
-The provisional ship marker remains pushed. The orchestrator orders the
-slot after XR7 then R2d; origin/main will be merged again before the dry run.
-REV-KP2c-2's one follow-up is mended at b10c2a681; the orchestrator read
-that delta and accepted it at 17:18 on 2026-11-15. Final main/branch commits
-and the retained launcher run directory will be recorded after its go and
-verdict. No dry run has started.
+Both reviews are accepted, including the orchestrator's direct review of
+the b10c2a681 Sparkline follow-up. XR7 and R2d are merged. The normal
+launcher merge dry run passed at 18:08:47 local on 2026-11-15, gate exit 0
+and check-suite exit 3. The retained receipt is below. Only these notes and
+the ship file advance after the dry run; the provisional marker is removed
+in the last readiness commit, by itself.
 
 Main advanced to XR7, 8083aaf33, after the local pick. Merged it before the
 launcher run. Only docs/dials.md, docs/harnesses.md and docs/map/README.md
@@ -177,3 +177,44 @@ as authored; the source merge was automatic. Reported that audit to the
 orchestrator before launch. Merged --fast passes: compile 49 s, maps,
 zero firm/186 soft. The pushed provisional branch is now frozen for the
 normal detached tools/gate.sh KP2c --dry-run, in the default pool.
+
+## 6. Retained final launcher run
+
+Normal route: sh tools/gate.sh KP2c --dry-run, detached launcher PID 28072,
+after the orchestrator's go, default MG1 pool, no parallel override. No
+push occurred while it ran. The guardian and retained receipt completed.
+
+- Run: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-KP2c-u9Mhwx0L`
+  (Git Bash `/tmp/cbs-gate-KP2c-u9Mhwx0L`). `ship.log`, `checks/`,
+  `checks.sha256`, `checks.complete`, `selection`, and both commit files
+  are retained; the normal launcher cleaned its disposable clone.
+- Branch of the run: `7a6f0bf08a331737229ce2d5bb6b9813d2a5c2f6`.
+- Main of the run: `32ec5a5d395dbc18c794c7f4a93dd52392305d8e` (R2d).
+- Selection: full gate plus the directly selected nightly
+  CopperRefiningCheck and KeptCheck; publisher's candidate version 0.9.119.
+- Gate exit 0; check stage 2203 s, exit 3. Suite: **194 harnesses in
+  2126 s, 188 passed, six registered-red harnesses only**: DeathRecordCheck,
+  InvestCheck, KeptCheck, MapCheck, MoneyDatesCheck, ResearchViewCheck.
+  `unnamed.txt` is empty. Eleven timing assertions were soft and four path
+  observations informational. No new known-red row or transfer is needed.
+- Every section-102 law passes, including the directly pooled sparkline.
+  After the full merged-model harness, live heap is **1347.7 MiB of
+  2048**, leaving 700.3 MiB (34.2%) free. KeptCheck's sole failure is the
+  same registered KS1-UI hidden-header signature line (18 rungs).
+- Default LongPlaytest passes. Its entire normalized 486-line report is
+  identical to R2d's final retained report at
+  `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2d-final2-20261115-163523/checks/LongPlaytest.log`.
+  The exclusions are the same JDK notices, wall-clock prefixes and runtime
+  measurements described above. The SHA256 remains
+  `3deda6d14c92e4f03768e00dc2e520332698492262bc14b23960891cc6d7974c`.
+  The production model diff against that main is empty: all source changes
+  are ui/ and KeptCheck. No default-trace change and no ensemble.
+- Independent `sha256sum -c checks.sha256` from the retained run exits 0
+  (`/tmp/KP2c-receipt-sha.log`). Main was fetched after completion and is
+  still the exact recorded main. The ship file names this run for reuse.
+
+Every check used the required real files at
+`C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/earth-2.bin`
+and `C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/data/world-1.bin`.
+There is no unfinished KP2c item or batch-owned red. The publisher owns the
+version, queue removal, changelog and gate record; none is hand-edited here.

@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-KP2c-u9Mhwx0L -->
 ## changelog
 ### {next} — KP2c, The kept screens' sweep, the rest — 2026-11-15, ready, see docs/queue/KP2c-notes.md
 Kept redraws retain mouse handlers, sparkline transparency and unchanged
