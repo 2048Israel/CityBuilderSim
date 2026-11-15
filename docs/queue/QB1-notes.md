@@ -124,3 +124,46 @@ AUTO2's difference was established. The extra partial ZERO_SLACK seed 2
 proof process was stopped by its own PIDs; its `NO DONE` progress line is
 that interrupted proof, and the ordinary runner will replace its partial
 CSV in the single completed 80-run set. No completed run is discarded.
+
+## KeptCheck's moved debt-picture fixture
+
+The first selected suite finds only two new assertions, both section 64:
+PathChart and BuybackLadder redraw in zero of six watched months. The census
+found each picture, but both watches start with zero pictures on the page.
+This is QB1's moved fixture, not a UI fault to waive: the unchanged main
+prefix through section 64 with `quotedBorrowing=false` passes both (one
+picture, six redraws and six pictures handed back each). Its only two reds
+are the already registered KS1-UI Your rate signature and Borrow Columns
+retention lines. Evidence: `target/checks/qb1-kept-main-prefix.log`, exit 2.
+The prefix is main's KeptCheck with an early stop after section 64 and
+diagnostic prints only; every earlier action and assertion remains.
+
+On the quoted path all six sellPaper sales at m2085 are refused. The census
+at m2200 selects an existing InflationLinkedBond due m2212. Other picture
+watches consume eighteen months before PathChart, whose watch begins m2218;
+Close it now begins m2224. Their captured identity has matured even though
+the live book now has replacement paper. The complete unchanged quoted
+prefix reproduces exactly those two reds, and captures the city before the
+paper sales and before the census. `target/checks/qb1-kept-quoted-capture.log`,
+exit 2; state retained in `target/qb1-kept-fixture/`.
+
+★ Each independent debt-picture watch now selects the live book's longest
+paper at its own start and asserts that its maturity is beyond the entire
+PICTURE_MONTHS window. Its label, page, month hand, six-month watch, 90%
+retention law, active redraw, no wasted repaint, quiet second redraw and
+fresh-page equality laws all stay intact. The city and financial transactions
+do not change. No extra months are played. All other picture kinds are untouched.
+
+The same captured m2200 city replayed with the original section 64 fails
+exactly the two original lines (`target/checks/qb1-money-before.log`, exit 2).
+With the repair, the same replay passes every section-64 assertion and both
+lifetime guards (`target/checks/qb1-money-after.log`, exit 0): one picture
+each, all six redraw months, all six pictures handed back, zero wasted
+repaints and zero page differences. The full quoted prefix itself is the
+before-fix regression fixture; the existing full harness retains it.
+
+The first capture attempt and initial pick's maps/stale tail collided with
+an in-place compile, so their class-load errors are discarded, not waived.
+The completed diagnostic uses the ensemble's immutable model classes; the
+final selected suite will run with source and classes frozen. The final
+ensemble does not read KeptCheck, and its model snapshot is unchanged.
