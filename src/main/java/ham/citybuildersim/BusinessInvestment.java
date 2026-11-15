@@ -1407,10 +1407,16 @@ public class BusinessInvestment {
     }
 
     private java.util.function.ToDoubleFunction<BuildingsTemplate> licenceCost = t -> 0;
+    private java.util.function.ToDoubleFunction<BuildingsTemplate> standingLicenceCost = t -> 0;
 
     /** Game supplies patent rent; a bare planner reads zero. */
     public void setLicenceCost(java.util.function.ToDoubleFunction<BuildingsTemplate> cost) {
         licenceCost = cost == null ? t -> 0 : cost;
+    }
+
+    /** The corresponding royalty for an installed building's standing valuation. */
+    public void setStandingLicenceCost(java.util.function.ToDoubleFunction<BuildingsTemplate> cost) {
+        standingLicenceCost = cost == null ? t -> 0 : cost;
     }
 
     /**
@@ -1419,13 +1425,22 @@ public class BusinessInvestment {
      * income statement, because the first mine in a city has no sector to read.
      */
     public double runningCostOf(BuildingsTemplate t) {
+        return runningCostOf(t, licenceCost);
+    }
+
+    /** The same operating costs with the installed entry's standing royalty (R2c). */
+    public double standingRunningCostOf(BuildingsTemplate t) {
+        return runningCostOf(t, standingLicenceCost);
+    }
+
+    private double runningCostOf(BuildingsTemplate t, java.util.function.ToDoubleFunction<BuildingsTemplate> royalty) {
         double[] rates = economyManager.getWageRates();
         double payroll = 0;
         for (JobType type : JobType.values()) {
             int slot = type.ordinal();
             if (slot < rates.length) payroll += t.getJobs(type) * rates[slot];
         }
-        double fee = licenceCost.applyAsDouble(t);
+        double fee = royalty.applyAsDouble(t);
         if (fee != 0) payroll += fee;
         return payroll
                 + t.getElectricityConsumption() * economyManager.getPricePerWatt()

@@ -359,6 +359,7 @@ public class Game {
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setLicenceCost(t -> LicenceFees.forNew(this, t));
+        businessInvestment.setStandingLicenceCost(t -> LicenceFees.forStanding(this, t));
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
         businessInvestment.setOrderWaitOutput(this::orderWaitOutput);   // and an order's wait is read at the month the builders and their contractor can give it (BA1)
         businessInvestment.setDeepWaterPrice((t, n, factor) -> {   // and a floating platform's deep-water works (DW1)
@@ -712,6 +713,7 @@ public class Game {
         equipmentForms.clear();
         // ...and the recipes chosen (R1c): the last city's choices, for templates this city does not have.
         recipes.clear();
+        licenceFees = java.util.Map.of();
         // ...and the fittings on site (R1b): jobs for the last city's buildings.
         fittings.clear();
         // ...and the city's research (R3): the last city's grants, posts, work piled and discoveries. This Game's Research outlives buildWorld() (the field is final), as the forms do.
@@ -1195,6 +1197,22 @@ public class Game {
 
     /** The recipes each template's buildings run, chosen in a city founded the 1900 way and saved there (R1c): nothing in any other. */
     private final Recipes recipes = new Recipes();
+
+    /** The last dispatched royalty per building, immutable and saved because production rows do not survive a load (R2c). */
+    private volatile java.util.Map<Integer, Double> licenceFees = java.util.Map.of();
+
+    public double getLicenceFee(int templateId) { return licenceFees.getOrDefault(templateId, 0.0); }
+
+    java.util.Map<Integer, Double> licenceFeesForSave() { return new java.util.TreeMap<>(licenceFees); }
+
+    /** Publish a complete capture or restore its saved memo; it is a cost reading, never a second payment. */
+    void restoreLicenceFees(java.util.Map<Integer, Double> saved) {
+        java.util.Map<Integer, Double> kept = new java.util.TreeMap<>();
+        if (saved != null) for (var e : saved.entrySet()) {
+            if (e.getKey() != null && e.getValue() != null && Double.isFinite(e.getValue()) && e.getValue() > 0) kept.put(e.getKey(), e.getValue());
+        }
+        licenceFees = java.util.Map.copyOf(kept);
+    }
 
     /** The recipes' driver, for the harnesses and the screens that read which way each template runs (R1c). */
     public Recipes getRecipes() { return recipes; }
@@ -17003,6 +17021,7 @@ public class Game {
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
+        dataSave.setLicenceFees(licenceFeesForSave());
         // ...and the fittings on site, only where there is a job (R1b).
         dataSave.setFittings(fittings.view());
         // ...and the city's research with the month's bill, only where it holds anything (R3; none in a city that never funded any).
@@ -21159,6 +21178,7 @@ public class Game {
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
+            restoreLicenceFees(loaded.getLicenceFees());
             recipes.apply(this);
             equipmentForms.apply(this);
 
@@ -21856,6 +21876,9 @@ public class Game {
              * is not restoration when the thing being derived is a flow.
              */
             economyManager.restoreSectorBills(restoredFlows.getSectors());
+            // The rebuild dispatches a notional month. Standing readers need
+            // the saved production's royalty, just as the ledgers need its bill.
+            restoreLicenceFees(restoredFlows.getLicenceFees());
 
             // And the utility's bill, which is read off those statements, has
             // to be re-struck now that they are the carried ones rather than
@@ -22299,6 +22322,9 @@ public class Game {
         // ...and the strategic reserve's book and its month's trades (0.7.85).
         reserve.redenominate(scale);
         oldMetal.scale(scale);
+        java.util.Map<Integer, Double> scaledLicenceFees = new java.util.TreeMap<>(licenceFees);
+        scaledLicenceFees.replaceAll((id, fee) -> fee * scale);
+        restoreLicenceFees(scaledLicenceFees);
         ownersWipedAbroadThisMonth *= scale;
         // The last closed month is what the next dividend is paid on.
         sectorBooks.redenominate(scale);

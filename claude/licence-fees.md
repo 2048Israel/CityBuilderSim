@@ -14,7 +14,9 @@ production accrues nothing.
 The payment is an imported service named IP charges. The firm's monthly
 statement settles its cash, the money audit names the trade outflow, and the
 foreign current account takes the same reconciled month. The saved statement
-and the monthly history keep the flow for later readers. Default-founded
+and the monthly history keep paid and accrued flows for later readers.
+Standing planners subtract the captured per-building fee, saved through a
+load without recomputing it from the next run or prices. Default-founded
 cities keep their previous path.
 
 R2c is the private-firm path. The orchestrator queued R2c-P for the city's own

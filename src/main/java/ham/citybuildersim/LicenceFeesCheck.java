@@ -169,6 +169,57 @@ public final class LicenceFeesCheck {
         System.out.printf("   dispatched %.9f, paid %.9f, next run %.3f, residual %.12f%n", bill, paid, ref.runShare(), audit.residual);
     }
 
+    static void standingValue() throws Exception {
+        System.out.println("--- 6. an installed furnace earns at home while another would lose (REV-R2c-3) ---");
+        Game g = town("licence-standing-furnace", true);
+        quietly(() -> {
+            g.buildStack(g.getBuildingManager().getTemplateByName("Machine Works"), 1, true);
+            MaterialsCheck.handWorkers(g);
+            // Hold quantities, so the demand is really served by this one
+            // installed furnace. Its customer still produces and buys steel.
+            g.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
+            g.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
+            GoodsMarket steel = g.getMarkets().get(Good.STEEL), machinery = g.getMarkets().get(Good.MACHINERY);
+            steel.setWorldPrices(1000 * Good.STEEL.worldImportPrice(), .000001 * Good.STEEL.worldExportPrice());
+            steel.setLocalPrice(500 * Good.STEEL.worldImportPrice() * g.getMarkets().getExchangeRate());
+            machinery.setWorldPrices(1e6 * Good.MACHINERY.worldImportPrice(), 1e6 * Good.MACHINERY.worldExportPrice());
+            machinery.setLocalPrice(1e6 * Good.MACHINERY.worldExportPrice() * g.getMarkets().getExchangeRate());
+        });
+        var firm = g.getSectors().heavyIndustry();
+        BuildingsTemplate furnace = g.getBuildingManager().getTemplate(11);
+        boolean reached = false;
+        for (int n = 0; n < 24 && !reached; n++) {
+            quietly(() -> g.simulateMonths(1));
+            reached = firm.output(Good.STEEL).soldLocal > 0 && firm.lastEarns(furnace) > 0
+                    && firm.estimatedMonthlyProfit(furnace, g.getBusinessInvestment()) < 0;
+        }
+        double standing = firm.lastEarns(furnace), addition = firm.estimatedMonthlyProfit(furnace, g.getBusinessInvestment());
+        double bill = firm.pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        check("fixture: the installed patented furnace really supplies local steel at a positive standing gain, while one more loses",
+                reached && LicenceFees.payable("PE1", g.getMonth(), g.getResearch()));
+        check("the installed furnace accrues positive royalties on that standing gain despite the losing additional-unit appraisal",
+                reached && bill > 0);
+        // A standing planner also loses the standing royalty. Removing only
+        // patent status must raise that read even though the prospective
+        // appraisal already has a loss and therefore carries no royalty.
+        Map<Integer, Double> captured = g.licenceFeesForSave();
+        g.restoreLicenceFees(Map.of());
+        double freeStanding = firm.lastEarns(furnace);
+        g.restoreLicenceFees(captured);
+        double netStanding = firm.lastEarns(furnace);
+        check("the standing planner nets a positive standing royalty while the prospective extra unit still loses",
+                reached && freeStanding > netStanding && near(freeStanding - netStanding, captured.getOrDefault(11, 0.0))
+                && firm.estimatedMonthlyProfit(furnace, g.getBusinessInvestment()) < 0);
+        quietly(() -> g.simulateMonths(1));
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        double paid = firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        check("its saved standing-value bill is paid exactly as a service import and both accounts close", reached && bill > 0
+                && near(paid, bill) && near(paid, audit.figure("- " + Sectors.HEAVY_INDUSTRY + " IP charges"))
+                && Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved())
+                && near(g.getForeignAccounts().currentAccount(), audit.currentAccount()));
+        System.out.printf("   standing %.9f, addition %.9f, accrued %.9f, paid %.9f%n", standing, addition, bill, paid);
+    }
+
     static void planners() throws Exception {
         System.out.println("--- 3. equal gross alternatives are ranked after the patent rent ---");
         Game g = town("licence-planner", true);
@@ -272,25 +323,57 @@ public final class LicenceFeesCheck {
                 near(during, EquipmentFit.verdictForNew(plain, steel, hearth).gain()));
     }
 
-    /** Nonzero statement and history through the actual save objects, with no slot written. */
+    /** A full normal save/load between capture and a standing read; only scratch slot 10. */
+    private static boolean standingRoundTrip(Game g) {
+        double standingBefore = g.getSectors().heavyIndustry().lastEarns(g.getBuildingManager().getTemplate(11));
+        Game loadedGame = new Game(g.getGameFiles());
+        boolean written = g.saveGame(10, "IP service flow").ok;
+        quietly(() -> {
+            loadedGame.loadGameSave(10);
+        });
+        double standingAfter = loadedGame.getSectors().heavyIndustry().lastEarns(loadedGame.getBuildingManager().getTemplate(11));
+        boolean fullLoadKept = written && near(standingBefore, standingAfter) && g.getLicenceFee(11) > 0
+                && g.getLicenceFee(11) == loadedGame.getLicenceFee(11);
+        if (!fullLoadKept) System.out.printf("   load standing %.12f -> %.12f; memo %.12f -> %.12f; written %s%n",
+                standingBefore, standingAfter, g.getLicenceFee(11), loadedGame.getLicenceFee(11), written);
+        return fullLoadKept;
+    }
+
+    /** Nonzero statement and history through JSON and scratch slot 10's normal load path. */
     static boolean saveChecks() throws Exception {
         Game g = town("licence-save", true);
         quietly(() -> g.simulateMonths(2));
         double paid = LicenceFees.paid(g);
         SaveWriter.Job job = g.prepareSaveForChecks(10, "IP service flow");
         Gson gson = new Gson();
+        boolean fullLoadKept = standingRoundTrip(g);
         DataSave saved = gson.fromJson(gson.toJson(job.data()), DataSave.class);
         SectorState state = saved.getSectors().stream().filter(s -> Sectors.HEAVY_INDUSTRY.equals(s.key)).findFirst().orElseThrow();
         Sector firm = g.getSectors().heavyIndustry();
         quietly(() -> firm.restore(state));
+        double memo = g.getLicenceFee(11);
+        g.restoreLicenceFees(Map.of());
+        // Production rows are not restored by a load. The standing cost must
+        // come back from the saved memo even with those rows empty.
+        Sector.Output row = firm.output(Good.STEEL);
+        row.produced = row.exportBound = row.captive = 0;
+        g.restoreLicenceFees(saved.getLicenceFees());
+        boolean standingKept = memo > 0 && near(g.getLicenceFee(11), memo)
+                && near(LicenceFees.forStanding(g, g.getBuildingManager().getTemplate(11)), memo);
         HistorySave back = gson.fromJson(gson.toJson(job.history()), HistorySave.class);
         HistorySave loaded = new HistorySave();
         loaded.restoreFrom(back);
         boolean settled = paid > 0 && near(paid, firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0))
                 && near(loaded.recentTotal("ipCharges", 1), Math.round(paid * 100.0) / 100.0);
         double pending = state.ledger.otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        boolean accruedKept = near(loaded.recentTotal("ipAccrued", 1), Math.round(pending * 100.0) / 100.0);
+        // A later fill of the live DTO cannot change the snapshot handed to
+        // the writer, including the memo's map.
+        g.liveSaveForChecks().setLicenceFees(Map.of(11, memo * 2));
+        boolean frozen = near(job.data().getLicenceFees().getOrDefault(11, 0.0), memo);
         quietly(firm::strike);
-        return settled && pending > 0 && near(pending, firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0));
+        return settled && standingKept && fullLoadKept && accruedKept && frozen && pending > 0
+                && near(pending, firm.statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0));
     }
 
     /** Repeated pricing and saved-flow reads leave every fingerprinted money pool unchanged. */
@@ -299,23 +382,33 @@ public final class LicenceFeesCheck {
         quietly(() -> g.simulateMonths(2));
         double paid = LicenceFees.paid(g);
         double pending = g.getSectors().heavyIndustry().pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0);
+        double memo = g.getLicenceFee(11);
         Map<String, Double> before = NewGameCheck.snapshot(g);
+        boolean loadKept = standingRoundTrip(g);
         for (int n = 0; n < 30; n++) {
             LicenceFees.paid(g);
             g.getHistorySave().recentTotal("ipCharges", 1);
             g.getBusinessInvestment().estimatedMonthlyProfit(Sectors.HEAVY_INDUSTRY, g.getBuildingManager().getTemplate(11));
+            g.getSectors().heavyIndustry().lastEarns(g.getBuildingManager().getTemplate(11));
         }
-        return paid > 0 && pending > 0 && before.equals(NewGameCheck.snapshot(g)) && LicenceFees.paid(g) == paid
-                && g.getSectors().heavyIndustry().pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) == pending;
+        return loadKept && paid > 0 && pending > 0 && before.equals(NewGameCheck.snapshot(g)) && LicenceFees.paid(g) == paid
+                && g.getSectors().heavyIndustry().pending().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) == pending
+                && g.getLicenceFee(11) == memo;
     }
 
     public static void main(String[] args) throws Exception {
+        if (args.length == 1 && args[0].equals("standing")) {
+            standingValue();
+            System.out.printf("%d passed, %d FAILED%n", passes, fails);
+            System.exit(fails == 0 ? 0 : 1);
+        }
         payment();
         exemptions();
         planners();
         reviewRegressions();
         dispatchedGain();
-        System.out.println("--- 6. the nonzero flow survives saves and reads ---");
+        standingValue();
+        System.out.println("--- 7. the nonzero flow survives saves and reads ---");
         check("DataSave and HistorySave JSON and the load restorers keep the paid flow", saveChecks());
         check("repeated screen and planner reads keep the paid flow and every money pool still", readChecks());
         System.out.printf("%d passed, %d FAILED%n", passes, fails);
