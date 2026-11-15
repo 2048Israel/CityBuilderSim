@@ -437,6 +437,32 @@ public class ReplayCheck {
         helper("...and a month played on the copy writes no month into the recording",
                 Arrays.equals(rec.months(), have));
         replay.loadWhole(middle);
+        // CM2: a whole load during preparation must leave the earlier epoch and its painted map intact.
+        replay.beginMove();
+        Game epochGame = replay.game();
+        CityMap epochGameMap = epochGame.getCityMap();
+        CityLand epochGameLand = epochGame.getCityLand();
+        Game.ReplayMap epochGameToken = epochGame.keepReplayMap();
+        helper("a loaded move retains a whole-load epoch separately from its first month",
+                replay.loadWhole(middle + 1) == null && replay.game() != epochGame && replay.preparedMonths() == 2
+                        && epochGame.getCityMap() == epochGameMap && epochGame.getCityLand() == epochGameLand);
+        Game later = replay.game();
+        Path hiddenMonth = rec.monthFile(middle).resolveSibling("cm2-held-month.bin");
+        Files.move(rec.monthFile(middle), hiddenMonth);
+        try {
+            helper("a prepared month switches back to its own context and exact map even with its recording file absent",
+                    replay.stepQuick(middle) && replay.game() == epochGame && replay.game().getCityMap() == epochGameMap
+                            && replay.game().getCityLand() == epochGameLand && !replay.wholeMonth());
+            helper("a prepared map cannot be given to another copy or to the normal game",
+                    !later.replayMap(epochGameToken) && !g.replayMap(epochGameToken) && g.keepReplayMap() == null);
+            replay.endMove();
+            helper("releasing a move drops its months and restores the ordinary file-reading step",
+                    replay.preparedMonths() == 0 && !replay.stepQuick(middle));
+        } finally {
+            replay.endMove();
+            Files.move(hiddenMonth, rec.monthFile(middle));
+        }
+        replay.loadWhole(middle);
         String hurt = firstDifference(playerBefore, hashes(files.getDirectory()));
         helper("the player's folder (the saves and the recording in it) is byte for byte what it was" + (hurt == null ? "" : " - " + hurt), hurt == null);
 

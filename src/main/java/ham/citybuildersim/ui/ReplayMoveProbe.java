@@ -70,9 +70,12 @@ import java.util.stream.Stream;
  * deleted when the JVM exits; the replay's copy is on its own scratch folder (ReplayCity); the window's preferences are
  * read from the scratch folder, never from %APPDATA%; the only file written outside is the recording folder it is given.
  *
- * THE WINDOW IS OFF EVERY SCREEN unless -Dcbs.probe.onscreen=true: the primary screen's size, undecorated, left of the
+ * THE WINDOW IS OFF EVERY SCREEN unless -Dcbs.probe.onscreen=true: by default the primary screen's size, undecorated, left of the
  * leftmost screen, so a run does not cover the PC's screen while someone works on it (CM1, 2026-11-03). It still draws
  * every frame; it does take the keyboard's focus when it opens, until another window is clicked.
+ * With -Dcbs.probe.film=true the main() measure uses a 1920 x 1080 cinematic canvas, even on a smaller desktop (CM2).
+ * -Dcbs.probe.moves=M6 runs only that move; a comma-separated list selects several. -Dcbs.replay.stepProfile=true logs
+ * each month's read, decode, whole load or prepared switch to stderr, with the move's LOAD/RUN boundaries.
  *
  * Where JavaFX cannot start - no display, a headless JVM, the jars missing - it says so in one line and exits 0.
  *
@@ -216,12 +219,20 @@ public final class ReplayMoveProbe {
             cam = ui.replayCamera();
             cam.setGlideSeconds(GLIDE_S);
             canvas = (Canvas) get(canvasField, map);
+            if (Boolean.getBoolean("cbs.probe.film")) {
+                call(method(ReplayMode.class, "setCinematic", boolean.class), mode, true);
+                stage.setWidth(ReplayMode.FILM_W);
+                stage.setHeight(ReplayMode.FILM_H);
+            }
             return null;
         });
         CameraPath.View whole = waitForWhole();
         cityLat = whole.a();
         cityLon = whole.b();
         waitForCanvas();
+        if (Boolean.getBoolean("cbs.probe.film") && fx(() -> canvas.getWidth() != ReplayMode.FILM_W || canvas.getHeight() != ReplayMode.FILM_H)) {
+            throw new IllegalStateException("the film probe needs a 1920 x 1080 canvas");
+        }
 
         double street = GlobeFrame.leastKmPx();
         double handoff = GlobeFrame.HANDOFF_KM;
@@ -450,7 +461,10 @@ public final class ReplayMoveProbe {
      * Ready runs nothing.
      */
     private static void move(String heading, Runnable start, boolean glide) throws Exception {
+        String selected = System.getProperty("cbs.probe.moves");
+        if (selected != null && !java.util.Arrays.asList(selected.split(",")).contains(heading.substring(0, 2))) return;
         MapView.MoveTally tally = map.moveTally();
+        if (Boolean.getBoolean("cbs.replay.stepProfile")) System.err.println(heading + " LOAD");
         long t0 = System.nanoTime();
         fx(() -> {
             start.run();
@@ -479,6 +493,7 @@ public final class ReplayMoveProbe {
             return;
         }
         report.printf("  loaded in %.1f s, %d plan views, heap %d MB: %s%n", loadS, views, heap, words);
+        if (Boolean.getBoolean("cbs.replay.stepProfile")) System.err.println(heading + " RUN");
         t0 = System.nanoTime();
         fx(() -> {
             tally.reset();
