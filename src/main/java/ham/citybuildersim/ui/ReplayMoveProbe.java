@@ -548,16 +548,20 @@ public final class ReplayMoveProbe {
     public record Moved(String name, boolean ready, double loadSeconds, int planViews, int passed, boolean heldWhileReady,
                         int pinnedWhileReady, String ranBy, boolean taken, String phaseAfterTrigger, double runSeconds,
                         long frames, long unpaintedFrames, long asks, long evicted, Map<String, Long> levelFrames,
-                        boolean heldAfter, int pinnedAfter, double letGoAfterS, long offPlan) { }
+                        boolean heldAfter, int pinnedAfter, double letGoAfterS, long offPlan, int preparedMonths, int preparedContexts) { }
 
     /** Escape pressed while a glide loads: whether it was loading, whether the key was taken, and where the camera and the map were left. */
     public record Cancelled(boolean wasLoading, boolean taken, String phaseAfter, boolean heldAfter, int pinnedAfter) { }
+
+    /** Leaving a Ready move, measured in the same FX call before a detached canvas could tick again (CM2). */
+    public record Left(boolean ready, int preparedBefore, boolean replayAfter, boolean heldAfter, int pinnedAfter,
+                       int preparedAfter, long chartPoints, long chartMissed) { }
 
     /**
      * What check() measured. {@code cannot} is non-null, and nothing else, when JavaFX cannot start here; {@code globe} whether the
      * window's map was the Earth's (else a generated world's plane).
      */
-    public record Checked(String cannot, boolean globe, Normal normal, Moved zoomOut, Moved months, Cancelled escape) { }
+    public record Checked(String cannot, boolean globe, Normal normal, Moved zoomOut, Moved months, Cancelled escape, Left left) { }
 
     /**
      * CM1's check, run by ReplayCheck 5d (2026-11-03): the window off screen on a game of its own (windowFiles), first as the normal
@@ -568,7 +572,7 @@ public final class ReplayMoveProbe {
      */
     public static Checked check(Path recordingFolder, GameFiles windowFiles, double glideSeconds) throws Exception {
         String cannot = startJavaFx();
-        if (cannot != null) return new Checked(cannot, false, null, null, null, null);
+        if (cannot != null) return new Checked(cannot, false, null, null, null, null, null);
         PrintStream was = System.out;
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
         silent = true;
@@ -688,7 +692,8 @@ public final class ReplayMoveProbe {
         // Escape while a glide loads.
         markMonths(first, last);
         Cancelled escape = cancelWhileLoading();
-        return new Checked(null, !plane, normal, zoomOut, months, escape);
+        Left left = leaveWhileReady();
+        return new Checked(null, !plane, normal, zoomOut, months, escape, left);
     }
 
     /** M6's marks: the last month at `last` is B, the first month at `first` is A, and the view is settled on A. */
@@ -746,10 +751,12 @@ public final class ReplayMoveProbe {
             if (m.find()) passed = Integer.parseInt(m.group(1));
         }
         String by = byKey ? "key" : "click";
-        if (!ready) return new Moved(name, false, loadS, views, passed, false, 0, by, false, phase, 0, 0, 0, 0, 0, Map.of(), false, 0, -1, 0);
+        if (!ready) return new Moved(name, false, loadS, views, passed, false, 0, by, false, phase, 0, 0, 0, 0, 0, Map.of(), false, 0, -1, 0, 0, 0);
         Thread.sleep(300);      // it waits: nothing runs it, nothing lets go of what it loaded
         boolean held = fx(() -> map.moveHeld() && cam.ready());
         int pinned = fx(() -> map.cachesPinned());
+        int preparedMonths = fx(() -> cam.moveCity().preparedMonths());
+        int preparedContexts = fx(() -> cam.moveCity().preparedContexts());
 
         // Run it as the window does: the click is fired at the canvas, the key goes to ReplayMode.key() as UserInterface's filter sends it.
         double cx = canvas.getWidth() / 2, cy = canvas.getHeight() / 2;
@@ -797,7 +804,36 @@ public final class ReplayMoveProbe {
         @SuppressWarnings("unchecked")
         Map<String, Long> levels = (Map<String, Long>) figures[4];
         return new Moved(name, true, loadS, views, passed, held, pinned, by, taken, after, runS, (Long) figures[0], (Long) figures[1],
-                (Long) figures[2], (Long) figures[3], levels, heldAfter, pinnedAfter, letGo, (Long) figures[5]);
+                (Long) figures[2], (Long) figures[3], levels, heldAfter, pinnedAfter, letGo, (Long) figures[5], preparedMonths, preparedContexts);
+    }
+
+    /** Test the actual chartNodes range while a real move is retained, then leave without yielding another FX frame. */
+    private static Left leaveWhileReady() throws Exception {
+        fx(() -> { cam.glide(); return null; });
+        long began = System.nanoTime();
+        while (fx(() -> cam.loading()) && (System.nanoTime() - began) / 1e9 < CHECK_LOAD_MAX_S) Thread.sleep(25);
+        return fx(() -> {
+            boolean ready = cam.ready() && map.moveHeld();
+            ham.citybuildersim.ReplayCity city = cam.moveCity();
+            int preparedBefore = city.preparedMonths();
+            GlobeFrame view = new GlobeFrame(ReplayMode.FILM_W, ReplayMode.FILM_H, 42.507, 1.522);
+            view.set(42.507, 1.522, (GlobeFrame.HANDOFF_KM + GlobeFrame.PICTURE_FROM_KM) / 2);
+            long[] range = (long[]) call(method(MapView.class, "chartNodes", GlobeFrame.class), map, view);
+            double step = ((Number) get(field(MapView.class, "NODE_SAMPLE_PX"), null)).doubleValue();
+            long points = 0, missed = 0;
+            double[] xy = new double[2];
+            for (double y = .5; y < view.height(); y += step) for (double x = .5; x < view.width(); x += step) {
+                if (!view.onPlanet(x, y) || view.drawsHold(x, y)) continue;
+                points++;
+                if (!view.chartAt(x, y, xy)) { missed++; continue; }
+                long nx = (long) Math.floor(xy[0] / ham.citybuildersim.MapFrame.NODE_PX);
+                long ny = (long) Math.floor(xy[1] / ham.citybuildersim.MapFrame.NODE_PX);
+                if (range == null || range[0] != ham.citybuildersim.MapFrame.nodePlotsAt(view.planeScale()) || range[1] != view.chart().id()
+                        || nx < range[2] || nx > range[3] || ny < range[4] || ny > range[5]) missed++;
+            }
+            mode.leave();
+            return new Left(ready, preparedBefore, ui.replayOn(), map.moveHeld(), map.cachesPinned(), city.preparedMonths(), points, missed);
+        });
     }
 
     /** A glide set up from the marks and, once the map has begun to load it, Escape sent to ReplayMode.key(); then where it all stands. */

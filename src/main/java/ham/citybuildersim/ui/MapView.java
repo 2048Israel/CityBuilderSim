@@ -622,6 +622,7 @@ final class MapView {
 
     /** A new city or a load: everything drawn is another city's. */
     void forget() {
+        endMove();      // CM2: a detached canvas cannot tick again to release its prepared replay contexts
         // FM1: the trade chip's tip names the city's money, and the city has changed.
         if (tradeChip != null && Kept.tipOf(tradeChip) != null) Kept.tipOf(tradeChip).setText(tradeTip());
         backFromFunding = false;

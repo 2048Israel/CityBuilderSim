@@ -52,6 +52,11 @@ public final class ReplayCity {
     /** The distinct months held by the loaded move, for ReplayCheck's fixture. */
     public int preparedMonths() { return prepared == null ? 0 : prepared.size(); }
 
+    /** The distinct land contexts actually retained, for the real land-change glide fixture (CM2). */
+    public int preparedContexts() {
+        return prepared == null ? 0 : (int) prepared.values().stream().map(Prepared::game).distinct().count();
+    }
+
     private void keepMonth(int month) {
         if (prepared != null) prepared.put(month, new Prepared(game, game.keepReplayMap()));
     }
