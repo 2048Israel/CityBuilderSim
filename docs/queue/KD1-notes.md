@@ -22,11 +22,7 @@
 
 The orchestrator supplied the existing RT1b dry run, /tmp/cbs-gate-RT1b-ylIvHZQ9, for MG1's before measurement. It tested branch 3f755a84084cdb47226ee0dfef90151c13c58ed0 against main e8ac5a53b1bbc604ce984dbe7b366a69d00e3fff on the preceding runner. checks/suite.txt reports 191 harnesses in 1,420 seconds, 188 passed and three known-red harnesses. No start-hold line was printed. ship.log records 1,483 seconds for the complete check step. Another builder's single JVM ran beside it.
 
-MemWatch history-2026-11-15.csv at 01:26?01:50 gives commitment 41.04?46.24 GiB, mean 43.15, against a 63.26 GiB limit. Free commitment ranged 17.02?22.22 GiB. RAM use was 68.4?82.4%, mean 73.51%. CPU was 17.1?75.0%, mean 47.23%. These are the minute samples, with the old guard's 75% commitment threshold. The after measurement will use KD1's retained launcher dry run under its own recorded load.
-
-## Pending verification
-
-The orchestrator queued KD1's ensemble and dry run after R0f and RT2. Before its slot, merge landed main so the first data-backed baseline represents main's current model. The final baseline scores, process line count, retained run identities and after figures will be added when those runs finish.
+MemWatch history-2026-11-15.csv at 01:26?01:50 gives commitment 41.04?46.24 GiB, mean 43.15, against a 63.26 GiB limit. Free commitment ranged 17.02?22.22 GiB. RAM use was 68.4?82.4%, mean 73.51%. CPU was 17.1?75.0%, mean 47.23%. These are the minute samples, with the old guard's 75% commitment threshold.
 
 ## Final lightweight verification before review
 
@@ -34,7 +30,6 @@ Final batch-check.sh --fast exited 0. EnsembleCheck then exited 0, including EN2
 
 The publisher also rejects newly added numeric docs/ensemble/<version>.md files in ship.sh lines 182?183, so the orchestrator's EN2.md fallback is required. Its version comparison retires EN2 as soon as a newer numeric baseline is committed. The orchestrator was informed of both publisher guards.
 
-Pre-baseline one-in, one-out count from git diff --numstat origin/main over docs/batch.md, tools/ensemble and the four changed runner/check sources is 447 added and 426 removed. Generated dials, harness index and maps add 489 and remove 546. Across that process scope including the generated session indexes, 936 lines are added and 972 removed. Own notes/ship and the future baseline are excluded. Recompute against main after its pending merges before readiness.
 
 ## Review REV-KD1-1
 
@@ -58,7 +53,7 @@ The ensemble finished at 06:04, exit 0, 80/80 runs, no missing or short runs, 83
 
 New score is 23/26 against the prior baseline's 22/26, with all 10 hard criteria passing. ZERO_SLACK T2 changed from informational FAIL to PASS, median final population 513,902 [100,209 to 1,932,923]. The three remaining informational failures match the baseline readings and verdicts. AUTO2 A1 inflation is 3.15% [2.62% to 3.69%], four of sixteen seeds in band. AUTO2 A2's runaway spell is 22 [12 to 36] months. ZERO_HOT H2 is -0.36% [-5.42% to 4.53%], nine of sixteen below the earlier excess. M1 and F1 pass for all policies.
 
-At 05:30 the orchestrator reported R2b shipped on main d8e9c12b, with all eight default traces byte-identical, and confirmed this baseline remains valid. Main will be merged before the launcher dry run, as requested.
+At 05:30 the orchestrator reported R2b shipped on main d8e9c12b, with all eight default traces byte-identical, and confirmed this baseline remains valid. Main was merged before the launcher dry run, as requested.
 
 ## Final main integration and process count
 
@@ -67,3 +62,24 @@ Merged main d8e9c12b before the dry run. The only conflicts were generated docs/
 Final git diff --numstat origin/main over docs/batch.md, tools/ensemble and the four changed runner/check sources gives 461 added and 426 removed. Generated dials, harness index and maps add 491 and remove 546. Combined process and session-index scope is 952 added, 972 removed. Own notes, ship and ensemble score are excluded. The core rows are 75/103 batch checklist, 141/48 AllChecks, 25/64 EnsembleCheck, 45/1 KnownRedsCheck, 8/60 TimingCheck, 10/49 ensemble driver, 62/90 ensemble README, 32/10 runner and 63/1 runner/scorer self-tests.
 
 The orchestrator granted the no-tag dry run at 06:05 after main integration and a pushed provisional ship file, with RT2's single ensemble beside it under the revised scheduling rule. No other heavy job runs for KD1.
+
+## Retained launcher run
+
+The normal route is sh tools/gate.sh KD1 --dry-run --no-tag, started at 06:08. Its retained directory is /tmp/cbs-gate-KD1-8gf7LpIs. It tests branch 4259c05569ba09d21a1fb5715ac491a0eb0ba662 against main d8e9c12b98ffcc50fb7c0bbbad7d9c32f1064477. The worktree wrapper log is target/checks/kd1-gate-launch.txt and the retained publisher log is ship.log.
+
+An early Win32_Process snapshot confirmed three simultaneous direct harness children of the actual suite runner, CentralBankCheck, LongPlaytest and MapCheck, matching AllChecks.PARALLEL. This is a measured live run alongside RT2's one ensemble under the granted slot.
+
+### Final verdict and after measurement
+
+Launcher exit 0 at 06:45. Its full normal selection was ALL, 203 registered harnesses, with the gate tier and directly selected BridgeMapCheck producing 189 runs. AllChecks reports 184 passed and five failed in 2,075 seconds. The complete build/check step took 2,148 seconds and exited 3. All five were registered known-red harnesses, MoneyDatesCheck, MapCheck, DeathRecordCheck, LongPlaytest and ResearchViewCheck. There are zero [NEW] tags. Maps regenerated and Stale reported zero firm findings. The local changed-script self-tests had passed all three CLI tests. checks.complete is retained with the run.
+
+Thirty-six starts waited for CPU, including two during its initial sampling window and 34 with measured six-second CPU averages from 80.4% to 89.6%. Commit and RAM each held zero starts. No process-start memory error or harness timeout was reported. The suite reached its three-harness cap. Summed harness time was 5,908.0 seconds, against 4,184.1 seconds in the before run.
+
+| run | suite seconds | complete check seconds | harnesses | starts held | other load |
+|---|---:|---:|---:|---|---|
+| Before, RT1b's retained run | 1,420 | 1,483 | 191 | 0 | one builder JVM |
+| After, KD1's retained run | 2,075 | 2,148 | 189 | 36 CPU, 0 commit, 0 RAM | RT2's five-worker ensemble |
+
+MemWatch's 06:09–06:44 minute samples give commitment 43.18–48.81 GiB, mean 45.96, against a 63.26 GiB limit. Free commitment is 14.45–20.08 GiB, mean 17.30. RAM use is 73.1–90.1%, mean 80.29%. CPU is 44.4–80.5%, mean 60.46%. The admission log's CPU figures use the guard's two-second samples over six seconds. The before figures and its two commit identities are above. Both workload selections and the shared-PC load are recorded for this comparison.
+
+After the kept run, only this notes file and KD1-ship.md advance. The ship file names /tmp/cbs-gate-KD1-8gf7LpIs for reuse. Remote main remained d8e9c12b98ffcc50fb7c0bbbad7d9c32f1064477 at the final check. The readiness marker is removed in the final ship-only commit.
