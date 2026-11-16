@@ -477,6 +477,14 @@ public class Exchange {
     private final double[] quoteBefore = new double[n];
     /** The month's lending fee, money, by who was paid: this month's, cleared by startMonth(). */
     private final double[] feeToCells = new double[n], feeToFund = new double[n];
+    /**
+     * What a company with no shares in issue took away from the world this month (LF1c), money at the month-end quote, for MoneyAudit: the world's own
+     * shares in it, wiped for nothing ("+ desk WorldSharesWiped", a valuation in the city's favour, as the bank resolution's owners wiped abroad),
+     * and the short it had open there, closed for nothing, the world keeping what it was paid ("- desk ShortClosedForNothing", a valuation
+     * against the city: its holders' claim on the world's short is gone). Cleared by startMonth(); not saved, as the resolution's figure is not:
+     * the audit that reads it is struck in the month that made it.
+     */
+    private double worldSharesWiped, shortClosedForNothing;
     /** What a load read of the short's dividends over the city's life, per company, until attach() hands it to the register (EM2). Null when nothing waits. */
     private double[] restoredShortPays;
     /** Over the city's life: shares sold short and their value, covered and their value, company-months an ask was posted and a short was open, margin calls and recalls, fees paid. */
@@ -529,6 +537,7 @@ public class Exchange {
             betweenHouseholdsTrades[c] = 0;
             feeToCells[c] = 0; feeToFund[c] = 0;
         }
+        worldSharesWiped = shortClosedForNothing = 0;
         ownBoughtThisMonth = 0;
         ownSoldThisMonth = 0;
     }
@@ -1185,9 +1194,16 @@ public class Exchange {
     /**
      * A company with no shares in issue and a short open: every share still held is one the world sold short and nobody issued, so
      * the cells', the desk's, the world's and the fund's market book go for nothing (Equity.cancelHeld()), the fund's cost written
-     * off in its ledger. No money moves: the buyers lose a valuation, and the world keeps what it was paid.
+     * off in its ledger. No money moves: the buyers lose a valuation, and the world keeps what it was paid. Two valuations cross the border
+     * and are declared to the audit (LF1c), at the quote the month ended at - quoteBefore, struck before the step withdrew the books, the one the
+     * position carried the world's shares at, not the last trade the empty book falls back to: the world's own shares in it, which the position
+     * counted as what the world holds here and are gone without a dollar, and the short the world had open there, closed for nothing - what it
+     * owed the buyers, which the position never held.
      */
     private void cancelShortHeld(int c) {
+        double q = quoteBefore[c] > 0 ? quoteBefore[c] : price(c);
+        worldSharesWiped += register.getForeignShares(c) * q;
+        shortClosedForNothing += shortShares[c] * q;
         if (households != null) households.surrenderShares(c);
         double fundHeld = register.cancelHeld(c);
         if (fund != null && fundHeld > OrderBook.DUST) fund.getLedger().sharesGone(Equity.COMPANIES[c], month);
@@ -2351,6 +2367,9 @@ public class Exchange {
     /** ...and in all companies, for MoneyAudit: the fund's part is cash in a pool, the cells' goes to their savings. */
     public double getLendingFeeToFund()              { return sum(feeToFund); }
     public double getLendingFeeToCells()             { return sum(feeToCells); }
+    /** What a company with no shares in issue wiped of the world's shares this month, and the short it closed there for nothing, money at the quote: MoneyAudit's two valuation lines (LF1c). */
+    public double getWorldSharesWiped()              { return worldSharesWiped; }
+    public double getShortClosedForNothing()         { return shortClosedForNothing; }
     /** Over the city's life: shares sold short and what they fetched, shares covered and what that cost, company-months an ask was posted and a short stood open, margin calls and recalls, and the fees paid. */
     public double getLifeShortSold()                 { return lifeShortSold; }
     public double getLifeShortSoldValue()            { return lifeShortSoldValue; }
@@ -2621,6 +2640,7 @@ public class Exchange {
             shortCollateral[c] *= scale; quoteBefore[c] *= scale;
             feeToCells[c] *= scale; feeToFund[c] *= scale;
         }
+        worldSharesWiped *= scale; shortClosedForNothing *= scale;
         fundBondsValue *= scale;
         lastPostedSellValue *= scale; lastFilledValue *= scale;
         lifePostedSellValue *= scale; lifeFilledValue *= scale; lifeBetweenHouseholds *= scale; lifeTurnover *= scale;

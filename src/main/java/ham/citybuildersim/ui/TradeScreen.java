@@ -1555,8 +1555,7 @@ final class TradeScreen {
             hand.add(Kept.scope("sold", () -> chipInfo("the treasury sold " + d(fx.getSoldThisMonth()) + " of foreign money", Palette.MONEY, HAND_INFO)));
         }
         if (Math.abs(fx.valuationChange()) > .005) {
-            hand.add(Kept.scope("written off", () -> chipInfo("claims written off " + d(Math.abs(fx.valuationChange())), Palette.TEXT_LABEL,
-                    String.format(VALUATION_INFO, d(Math.abs(fx.valuationChange()))))));
+            hand.add(Kept.scope("written off", () -> chipInfo(valuationChip(fx.valuationChange(), d(Math.abs(fx.valuationChange()))), Palette.TEXT_LABEL, valuationInfo(fx.valuationChange(), d(Math.abs(fx.valuationChange()))))));
         }
         if (!hand.isEmpty()) c.getChildren().add(Kept.scope("hand", () -> chips(hand.toArray(new Node[0]))));
         return c;
@@ -1583,6 +1582,43 @@ final class TradeScreen {
     static final String VALUATION_INFO = "%s of foreign claims were written off this month. It improves what the city owes "
             + "the world and it is NOT a dollar earned — nobody paid it, so it never crossed the edge and it is not drawn "
             + "above. It changes the position, which is what a valuation change is.";
+
+    /**
+     * ...and the valuation that goes against the city (LF1c): a short closed for nothing leaves its buyers with a claim on the world gone, the world
+     * let off, so a month's valuation can net under nothing. The words said a gain only ("improves what the city owes the world").
+     */
+    static final String VALUATION_LOSS_INFO = "%s of the city's claims abroad were lost this month - a short closed for nothing, which its buyers "
+            + "held a claim on, is one. It counts against the city and it is NOT a dollar paid out - nobody paid it, so it never crossed the edge "
+            + "and it is not drawn above. It is a valuation change, which is why it is only here.";
+
+    /** The chip for the month's valuation change, by its sign: claims written off in the city's favour, or lost against it. */
+    static String valuationChip(double change, String shown) {
+        return (change >= 0 ? "claims written off " : "claims lost abroad ") + shown;
+    }
+
+    /** The sentence behind that chip. */
+    static String valuationInfo(double change, String shown) {
+        return String.format(change >= 0 ? VALUATION_INFO : VALUATION_LOSS_INFO, shown);
+    }
+
+    /** The note under the statement's "Claims written off" line, by the sign of the month's valuation change. */
+    static String valuationNote(double change) {
+        return change >= 0 ? "What foreign creditors gave up on. It improves the position and it is not a dollar earned, so it is below the line and out of the river."
+                : "What the city's holders lost a claim on abroad. It counts against the city and it is not a dollar paid out, so it is below the line and out of the river.";
+    }
+
+    /** The chip for what has been written off since founding, by its sign: forgiven or settled in the city's favour, or net against it. */
+    static String forgivenChip(double forgiven, String shown) {
+        return (forgiven > 0 ? "forgiven or settled " : "written off against the city ") + shown;
+    }
+
+    /** The sentence behind that chip. */
+    static String forgivenInfo(double forgiven) {
+        return forgiven > 0
+                ? "Claims the world has written off since founding - a failed bank's foreign creditors, a resolution, a default. It improved the position without a dollar being earned."
+                : "Claims written off since founding come to a loss for the city, net of what the world forgave it: what its holders lost a claim on abroad - a short closed for nothing - "
+                + "was more. It counted against the city without a dollar crossing the edge.";
+    }
 
     /* ------------------------------ the river ------------------------------ */
 
@@ -1928,9 +1964,7 @@ final class TradeScreen {
         if (Math.abs(fx.valuationChange()) > .005) {
             column.getChildren().add(statementLine("Claims written off", signedTight(fx.valuationChange(), false),
                     Palette.TEXT_MUTED));
-            column.getChildren().add(statementNote(
-                    "What foreign creditors gave up on. It improves the position and it is "
-                    + "not a dollar earned, so it is below the line and out of the river."));
+            column.getChildren().add(statementNote(valuationNote(fx.valuationChange())));
         }
 
         OutwardInvestment sectorsAbroad = ui.game.getOutwardInvestment();
@@ -2125,9 +2159,7 @@ final class TradeScreen {
                             + "bank's defence and the land office have taken out, in the local money each cost or fetched."));
         }
         if (fx.getForgiven() != 0) {
-            also.add(chipInfo("forgiven or settled " + d(fx.getForgiven()), Palette.TEXT_LABEL,
-                    "Claims the world has written off since founding - a failed bank's foreign creditors, a resolution, "
-                            + "a default. It improved the position without a dollar being earned."));
+            also.add(chipInfo(forgivenChip(fx.getForgiven(), d(Math.abs(fx.getForgiven()))), Palette.TEXT_LABEL, forgivenInfo(fx.getForgiven())));
         }
         if (fx.getRepudiated() > 0) {
             also.add(chipInfo("walked away from " + d(fx.getRepudiated()), Palette.BAD,
