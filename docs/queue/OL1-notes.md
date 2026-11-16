@@ -33,7 +33,7 @@ Built 2026-11-16 by a Claude session (Sonnet 5.5) on `batch/OL1`, cut from
   hand-off note" (the note still exists and still holds it); `day.sh`'s
   "the morning" (a replacement orchestrator starts from it the same way);
   `docs/notes/batch-history.md` (its one BP1 line on `day.sh` is history, and
-  no longer story is left over: the measurement is in the PC note and below).
+  no longer story was left over: the measurement is in the PC note and below).
 
 ## The process count (One in, one out)
 
@@ -45,11 +45,10 @@ No batch-history line was added, to keep the count even.
 
 | brief said | true today | source |
 |---|---|---|
-| orchestrator compacts at `CLAUDE_CODE_AUTO_COMPACT_WINDOW=150000` | 300000 since 11-09 08:2x; compaction fires about 33k under it | PC note `orchestrator-handoff.md`, "The rule", lines 13 |
+| orchestrator compacts at `CLAUDE_CODE_AUTO_COMPACT_WINDOW=150000` | 300000 since 11-09 08:2x; compaction fires about 33k under it | PC note `orchestrator-handoff.md`, "The rule", line 13 |
 | replaced if it starts above ~100k after a compaction | above ~115k (~95k after a compaction is normal) | same note, line 16 |
 | CLAUDE.md: the orchestrator compacts at 150k | CLAUDE.md already says Opus compacts at 300k; nothing to write | CLAUDE.md, "Sessions" |
 | WHY: 150k averages ~110k a wake against ~185k for a hand-over | first 11 h (11-08, 158 calls) at 150000 cost ~13% more than the daily hand-over; from 180000 about even; the reason is continuity, not cost | same note, line 12 |
-| hooks "print" in any session | act only under `CBS_ORCHESTRATOR=1`, nothing in a worktree | same note, line 14 |
 
 The brief's cost WHY is not written into the docs, since it no longer holds;
 the paragraph's WHY is the incident (the daily hand-over did not happen, CX2).
