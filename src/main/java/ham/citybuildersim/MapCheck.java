@@ -430,6 +430,8 @@ import java.util.Map;
  * fixtures that need his mines - 8's runs' marks on his city x 1 and its
  * rail yards - on his city x 1 again where its square holds iron
  * (Squares.ironX1, dryPlace(w, side)). The copies stand at the dry place.
+ *  24. (FA1) Actual frontage marks crossing a founding avenue away from its origin: both slopes and phases,
+ *      every band continuous, four roads signalled, and the four tiles agree at a crossing on their shared corner.
  */
 public class MapCheck {
 
@@ -574,6 +576,7 @@ public class MapCheck {
         boughtInsideBuiltDistrict();
         aStoreLeaves();
         aDepotLeavesTheYardsDistrict();
+        frontageDrawn(sq.types);
         depositsZoomedOut(city);
         fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -9528,10 +9531,10 @@ public class MapCheck {
     /** Frames of the keys' second: 60, the pump's (a sixtieth each). */
     static final int KEY_FRAMES = 60;
 
-    /** How far a second of the keys may miss KEY_PX_A_SECOND, in pixels: a thousandth (★E9) - on the plane it is exact; on the globe each frame's drag keeps the point grabbed under the pointer to GlobeCheck's POINTER_PX. */
+    /** How far a second of the keys may miss KEY_PX_A_SECOND, in pixels: a thousandth (â˜…E9) - on the plane it is exact; on the globe each frame's drag keeps the point grabbed under the pointer to GlobeCheck's POINTER_PX. */
     static final double KEY_SLOP_PX = 1e-3;
 
-    /** The composed matrix's worst against the camera's and the plane's own projections, in plots: a millionth (★E9; measured 4e-10). */
+    /** The composed matrix's worst against the camera's and the plane's own projections, in plots: a millionth (â˜…E9; measured 4e-10). */
     static final double MATRIX_PLOTS = 1e-6;
 
     static void globeOnScreen(Squares sq) throws Exception {
@@ -11577,19 +11580,19 @@ public class MapCheck {
         out.printf("      the hover's lines over a block: \"%s\" / \"%s\" / price %s%n", LandMap.ONE_BLOCK, kinds, LandMap.usd(quote.getPriceUsd()));
         check("the hover card's words over a block that may be picked: its area by kind, led by its area, fresh or sea water only where the block holds some, and its price as the office"
                         + " would list it now - a quote keeps no id and drafts nothing",
-                kinds.startsWith(LandMap.area(quote.getKm2()) + " · ") && kinds.contains(" dry") && kinds.contains(" fresh") == (quote.getKm2(CityLand.FRESH) > 0)
+                kinds.startsWith(LandMap.area(quote.getKm2()) + " Â· ") && kinds.contains(" dry") && kinds.contains(" fresh") == (quote.getKm2(CityLand.FRESH) > 0)
                         && kinds.contains(" sea") == (quote.getKm2(CityLand.SEA) > 0) && quote.getId() == 0 && quote.getPriceUsd() > 0 && market.getDrafts().size() == draftsBefore);
         check("...over a picked block what is picked in all (\"" + LandMap.pickedWords(0, 12) + "\", \"" + LandMap.pickedWords(3, 1) + "\"), and the hover's one-block line and the hint last are the brief's",
                 LandMap.pickedWords(0, 12).equals("Your ground - 12 blocks picked") && LandMap.pickedWords(0, 1).equals("Your ground - 1 block picked")
                         && LandMap.pickedWords(3, 1).equals("3 offers and 1 block picked") && LandMap.pickedWords(1, 2).equals("1 offer and 2 blocks picked")
                         && LandMap.ONE_BLOCK.equals("Your ground: one block") && LandMap.CLICK_TO_PICK.equals("Click to pick it, drag to pick more"));
-        // the "Your ground" chip's ×: every draft dropped one after another, as the card's one chip does (MapView.dropGround()), takes every block it was cut from
+        // the "Your ground" chip's Ã—: every draft dropped one after another, as the card's one chip does (MapView.dropGround()), takes every block it was cut from
         long[] c2 = chainFrom(land, market, level, new LinkedHashSet<>(List.of(f1, f2, LandMap.blockKey(c1[0] + 2 * c1[2], c1[1] + 2 * c1[3]))));
         if (c2 != null) {
             picks.toggleBlock(g, LandMap.blockKey(c2[0], c2[1]));
             List<Integer> chip = new ArrayList<>(picks.draftIds());
             for (int id : chip) picks.drop(id);
-            check("two separate pickings are two drafts, and dropping each draft's id in turn (the one chip's ×) leaves no block, no draft and no pick", chip.size() == 2
+            check("two separate pickings are two drafts, and dropping each draft's id in turn (the one chip's Ã—) leaves no block, no draft and no pick", chip.size() == 2
                     && picks.blocks().isEmpty() && picks.live(g).isEmpty() && market.getDrafts().isEmpty());
         }
         picks.clear();
@@ -14759,7 +14762,7 @@ public class MapCheck {
                 String first = LandMap.hoverWords(vland, null, x, y).get(0);
                 if (World.salt(g) || !World.dry(g)) { land &= first.equals(LandMap.groundWords(g)) || World.salt(g); continue; }
                 String name = g == World.FOREST ? LandMap.FOREST_ON_WORDS[r] : r == World.FLAT ? LandMap.groundWords(g) : LandMap.RELIEF_NAMES[r];
-                land &= first.equals(name + " · " + LandMap.GRADE_WORDS[r]) && first.equals(LandMap.plotGroundWords(vland, g, x, y)) && first.equals(LandMap.groundWords(g, r, -1));
+                land &= first.equals(name + " Â· " + LandMap.GRADE_WORDS[r]) && first.equals(LandMap.plotGroundWords(vland, g, x, y)) && first.equals(LandMap.groundWords(g, r, -1));
                 said[r]++;
             }
         }
@@ -14804,8 +14807,8 @@ public class MapCheck {
             String first = LandMap.pointGroundWords(vw.earthTerrain(), d, at[0], at[1]);
             globe &= words.get(0).equals(first) && words.get(1).equals(LandMap.NOT_THE_CITYS);
         }
-        globe &= LandMap.pointGroundWords(vw.earthTerrain(), drawn[0], at[0], at[1]).equals(LandMap.FOREST_ON_WORDS[World.STEEP] + " · " + LandMap.GRADE_WORDS[World.STEEP])
-                && LandMap.pointGroundWords(vw.earthTerrain(), drawn[1], at[0], at[1]).equals(LandMap.RELIEF_NAMES[World.VERY_STEEP] + " · " + LandMap.GRADE_WORDS[World.VERY_STEEP])
+        globe &= LandMap.pointGroundWords(vw.earthTerrain(), drawn[0], at[0], at[1]).equals(LandMap.FOREST_ON_WORDS[World.STEEP] + " Â· " + LandMap.GRADE_WORDS[World.STEEP])
+                && LandMap.pointGroundWords(vw.earthTerrain(), drawn[1], at[0], at[1]).equals(LandMap.RELIEF_NAMES[World.VERY_STEEP] + " Â· " + LandMap.GRADE_WORDS[World.VERY_STEEP])
                 && LandMap.pointGroundWords(vw.earthTerrain(), drawn[2], at[0], at[1]).equals(LandMap.groundWords(World.ICE))
                 && LandMap.pointGroundWords(vw.earthTerrain(), drawn[3], at[0], at[1]).startsWith(LandMap.groundWords(World.SALT));
         check("the globe's hover past the plane says the ground it drew by its code: the class and its grade, ice as it is, the sea with its depth", globe);
@@ -15629,4 +15632,72 @@ public class MapCheck {
             }
         }
     }
+
+    /* =====================================================================
+       24. FRONTAGE CROSSINGS AWAY FROM THE FOUNDING ORIGIN (FA1)
+       ===================================================================== */
+
+    /** Actual plan marks, with only their avenue streets, cause the newly possible diagonal crossing in the raster. */
+    static void frontageDrawn(BuildingVisual.Type[] types) {
+        out.println("\n--- 24. frontage avenues crossing another avenue away from the founding origin: both strokes and one junction ---");
+        int n = DistrictPlan.FRAME, tile = World.TILE;
+        int fixtures = 0, samples = 0, missing = 0, signals = 0, disagreements = 0, nondeterministic = 0;
+        for (int offset : new int[] { PlanCheck.FRONTAGE_OFFSET - 1, PlanCheck.FRONTAGE_OFFSET }) {
+            for (boolean reflected : new boolean[] { false, true }) {
+                DistrictPlan.Input pin = PlanCheck.flatMix(types, PlanCheck.FULL_FILL, true, false);
+                for (int x = 0; x < n; x++) for (int c = 0; c < 2; c++) {
+                    int y = x - offset - c;
+                    if (y >= 0 && y < n) pin.fixed[(reflected ? n - 1 - y : y) * n + x] = DistrictPlan.FIXED_HIGHWAY;
+                }
+                DistrictPlan plan = DistrictPlan.make(pin);
+                int hub = (int) pin.hubX, dy = reflected ? -1 : 1, heading = reflected ? 3 : 0;
+                for (int side : new int[] { -1, 1 }) {
+                    int line = (reflected ? n - 1 + offset : offset) + side * DistrictPlan.FRONTAGE_GAP;
+                    int cx = reflected ? (line + 1) / 2 : (line + 2 * hub + 1) / 2;
+                    int cy = reflected ? line - cx : cx - line;
+                    int shared = plan.avenue[cy * n + cx] & 255;
+                    int prev = plan.avenue[(cy - dy) * n + cx - 1] & 255, next = plan.avenue[(cy + dy) * n + cx + 1] & 255;
+                    if (shared != 0 && (shared >> CityRuns.M_DIAG_SHIFT & 3) != heading
+                            && (prev >> CityRuns.M_DIAG_SHIFT & 3) == heading && (next >> CityRuns.M_DIAG_SHIFT & 3) == heading
+                            && Math.abs(cx - hub) >= DistrictPlan.LATTICE) fixtures++;
+                    for (int at : new int[] { tile / 2, tile }) {
+                        int cutX = cx - at, cutY = cy - at;
+                        JunctionCheck.Streets marks = (x, y) -> {
+                            int xx = x + cutX, yy = y + cutY;
+                            return xx >= 0 && yy >= 0 && xx < n && yy < n ? plan.avenue[yy * n + xx] & 255 : 0;
+                        };
+                        JunctionCheck.Streets streets = (x, y) -> marks.at(x, y) != 0 ? JunctionCheck.ARTERIAL : 0;
+                        for (int px : new int[] { 4, 8 }) {
+                            int[] img = JunctionCheck.fourTilesWithAvenue(streets, marks, hub - cutX, hub - cutY, px);
+                            int w = 2 * tile * px;
+                            for (int sample = 0; sample < 3 * AV_SAMPLES; sample++) {
+                                double f = sample / (double) AV_SAMPLES;
+                                int x = (int) Math.floor((cx - 0.5 + f - cutX) * px);
+                                int y = (int) Math.floor((cy - dy + 0.5 + dy * f - cutY) * px);
+                                int colour = img[y * w + x];
+                                samples++;
+                                if (!streetColour(colour) && colour != TileRaster.JUNCTION_BOX && colour != TileRaster.ZEBRA) missing++;
+                            }
+                            java.util.List<int[]> reads = new java.util.ArrayList<>();
+                            boolean signal = false;
+                            for (int ty = 0; ty < 2; ty++) for (int tx = 0; tx < 2; tx++) {
+                                TilePainter.Input in = JunctionCheck.inputWithAvenue(tx, ty, streets, marks, hub - cutX, hub - cutY);
+                                java.util.List<int[]> crossings = JunctionCheck.readBy(in, tx, ty);
+                                reads.addAll(crossings);
+                                for (int[] c : crossings) if (c[0] <= at && c[2] >= at && c[1] <= at && c[3] >= at && c[4] == 4 && c[5] == 0) signal = true;
+                            }
+                            if (signal) signals++;
+                            disagreements += JunctionCheck.unlike(reads);
+                            if (!Arrays.equals(img, JunctionCheck.fourTilesWithAvenue(streets, marks, hub - cutX, hub - cutY, px))) nondeterministic++;
+                        }
+                    }
+                }
+            }
+        }
+        out.printf("      %d real crossings, %d line samples, %d missing; %d four-road signals, %d unlike tile reads, %d unequal redraws%n", fixtures, samples, missing, signals, disagreements, nondeterministic);
+        check("fixture: both frontage sides cross a founding arm away from its origin, both slopes and both staircase phases", fixtures == 8);
+        check("both avenue strokes are continuous through every crossing, also on a tile corner (" + missing + " missing of " + samples + ")", samples > 0 && missing == 0);
+        check("each four-road avenue crossing is a signal, every tile agreeing, and the same pixels on redraw", signals == 32 && disagreements == 0 && nondeterministic == 0);
+    }
+
 }
