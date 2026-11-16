@@ -180,7 +180,7 @@ public final class RecipeChanges {
         Map<String, Integer> before = new TreeMap<>(stack.getUnfittedView()), after = new TreeMap<>(before);
         after.put(piece.getId(), stack.getUnfitted(piece.getId()) - 1);
         Recipes.Prices prices = Recipes.pricesOf(game);
-        String[] ids = !t.hasRunningRecipes() || t.getRecipeChanges().isEmpty() ? newChoices(game, t, prices) : t.runningRecipeIds();
+        String[] ids = t.hasRunningRecipes() ? t.runningRecipeIds() : newChoices(game, t, prices);
         return netDifferenceAt(game, t, after, before, stack.getQuantity(), ids, prices);
     }
 
@@ -231,7 +231,7 @@ public final class RecipeChanges {
     }
 
     private static String[] newChoices(Game game, BuildingsTemplate t, Recipes.Prices prices) {
-        if (!t.getRecipeChanges().isEmpty() && t.hasRunningRecipes()) {
+        if (t.hasRunningRecipes()) {
             String[] saved = game.getRecipes().chosen(t.getId());
             return saved == null ? new String[] {t.defaultRecipe().getId(), t.defaultRecipe().getId()} : saved;
         }

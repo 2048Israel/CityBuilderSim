@@ -5079,6 +5079,12 @@ public class BuildingManager {
 
     /** The city's live knowledge (R2b); a standalone catalogue keeps every template available. */
     private java.util.function.Predicate<BuildingsTemplate> templateKnown = t -> true;
+    private java.util.function.UnaryOperator<BuildingsTemplate> newTemplate = java.util.function.UnaryOperator.identity();
+
+    /** The same proposed recipe used by the city's new-building appraisals. */
+    public void setNewTemplate(java.util.function.UnaryOperator<BuildingsTemplate> proposal) {
+        newTemplate = java.util.Objects.requireNonNull(proposal);
+    }
 
     /** Supplied by Game once, reading the current month and local discoveries on every query. */
     public void setTemplateKnown(java.util.function.Predicate<BuildingsTemplate> known) {
@@ -7412,7 +7418,8 @@ public class BuildingManager {
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             if (!t.getSector().equals(sector)) continue;
-            total += stack.getUnderConstruction() * getter.applyAsDouble(t);
+            if (stack.getUnderConstruction() <= 0) continue;
+            total += stack.getUnderConstruction() * getter.applyAsDouble(newTemplate.apply(t));
         }
         return total;
     }

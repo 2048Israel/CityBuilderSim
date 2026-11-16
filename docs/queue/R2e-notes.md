@@ -427,3 +427,59 @@ PostwarRecipe216, HistoricalRecipe120, HistoricalLicence80,
 LicenceFees43, Recipe, Equipment, Research207, Discovery, BuildingData,
 Fitting, Bank and BuildCard. Each ran serially. The build entry's quote
 canonicalization also preserves its existing null-template path.
+
+## Fifth review and complete prospective-reader audit
+
+REV-R2e-5 of309131486 found the saved-choice exemption for templates
+without independent changes and the main Build card's old staffing figures.
+★ Every recipe list now uses its saved monthly process after its first
+production application. A replaced list is fresh until its first application.
+The Pulp Mill control freezes kraft, moves residue prices to favour
+newly priced groundwood and compares the quote with the saved production.
+The vehicle control creates a genuine staffing boundary between100 and300
+posts with arrivals closed, then asks the card, investor gate and order bar.
+
+The audit used git grep for getJobs, staffing, staffableCount, runningCostOf,
+estimatedMonthlyProfit, getElectricityConsumption and getLandSqFt across
+model and UI readers. Standing production, payroll and stock totals keep
+their installed figures. The future-building routes are listed below.
+
+| Reader | Route to the proposed physical recipe |
+|---|---|
+| RecipeChanges, EquipmentFit | All lists share the saved-process rule. Selection and one-count refits compare whole net physical states. |
+| LicenceFees.forNew | The selected equipment set and saved process supply the new-unit royalty. Captured standing rent uses the production state. |
+| BusinessInvestment.estimatedMonthlyProfit, estimatedMakerProfit, runningCostOf | templateForNew resolves the physical inputs, output, jobs and utility draw. wageBillFor is pure and reads the supplied snapshot. |
+| Bank's new-branch fee gate and reasons | A runtime supplier from BusinessInvestment applies the same prospective B1/B3 clerk-cost adjustment. Later-branch booked costs and branch closures retain the cached standing cost. |
+| Sector.estimatedMonthlyProfit | Receives templateForNew before maker and freight valuation. |
+| Sector.staffing, staffableCount, staffingWithOwnSites, staffingWithCrewsSpare | The common private staffing function resolves templateForNew. This covers every sector planner, order count and held-staff report. WantedPosts consumes those same band vectors. |
+| ProcessingSector.appraise and weigh, SpreadPlanner candidates | weigh resolves the snapshot before feed, value, fleet, staffing, land and money gates. Returned candidates retain the canonical template. SpreadPlanner.city.running reaches the same planner running cost, city.staff reaches Sector.staffing. |
+| ExtractionSector estimates and candidates | The profit path resolves templateForNew and the staff gate reaches Sector.staffing. Resource/type, nameplate output and fleet cost stay equal across the equipment choices in this batch. |
+| Automotive, Agriculture, Manufacturing, Food, Retail, Restaurants, Luxury and BusinessServices plans | Their value reads reach BusinessInvestment or Sector estimates and their staffing/count gates reach Sector.staffing. Vehicle robots and store scanners change crew. Their feed, coverage and construction metadata stay equal. |
+| RealEstate, Mortgage, housing/land orders | The batch supplies no housing recipe, dwellings or financing-term change. Their shared new estimate and staffing doors remain in place. |
+| Game.consider and its slices | The investment estimate reaches BusinessInvestment. Staffing/counts reach Sector, licencesNeededFor resolves templateForNew. Money gates consume that new estimate. |
+| Game build entry | Quote snapshots are canonicalized before a site or stack is created. Licence checks use the prospective licensed posts. Construction cash/material/points and footprints are unchanged by all current recipe deltas. |
+| BuildingManager.underConstructionBySector, postsOnSite, Sector pipeline | A runtime resolver supplies the proposed template to future-capacity getters. Finished-building totals and jobs read the installed template. |
+| BuildCard.of, investors, gate, appraise, weighed, power, valueAdded, runningCost, worksValue, verdict | Each public future-building door resolves templateForNew. Figures carry the quote recipe for display. Appraisal and candidate ordering identities stay canonical. |
+| BuildAdvice.unit, suggestion candidates, lifetime/orderLife, future running cost | The candidate is resolved before units, staff scarcity, wages and lifetime value. Suggestions return canonical ordering templates. |
+| BuildAdvice.figure, supplyDemand, needs(Game,order) | Positive future additions are resolved. The existing needs(Map) remains the pure supplied-template arithmetic. Negative removals keep their installed figures. |
+| WorksValue.of and pendingPowerLoad | New jobs/payroll, output relief and queued electrical draw resolve the prospective recipe. Existing consumption starts with the actual services ledger. |
+| AutoBuilder | Consumes BuildAdvice's canonical suggestions and WorksValue's proposed-unit costs/needs. Its cut and ground-price reads use construction metadata, whose fields are equal across these recipes. |
+| Land, GroundPlan, ConstructionControl, quote/invoice costs | All current recipe changes have zero land delta and preserve cash, materials and construction points. WorksValue and card callers already supply their snapshot. Ground allocation and contractual invoices retain canonical templates. |
+| BuildScreen needsWords | Reads the proposed Figures.template through the existing public getters. |
+| BuildScreen statCover and order bar | Mail205140 grants exactly these two UI hunks. The cover reads Figures.template and the order bar calls needs(Game,order). Node writes and order actions retain their existing paths. |
+| SectorScreen's proposal row | Its public BuildCard.valueAdded and investors getters resolve the proposed figures. Installed-plant and fit sections retain current production figures. |
+
+★ Mail205140 is the bounded exception to the original keep-out-ui brief.
+Only BuildScreen's two read-only call sites change. KeptCheck remains
+unchanged and the gate judges the actual screen lifecycle.
+
+Final prospective-reader controls pass224/224. All309131486 Java sources
+were compiled into target/R2e-evidence/review5-before, with unchanged
+catalogue data, and the identical fixture fails5/224 there. Both the saved
+kraft premise and the100-versus300 staffing boundary hold on each model.
+The five failures are the prospective bank-fee gate, Pulp recipe, main
+card figures/running bill, actual staffing gate and the two-plant600-post
+order bar. The bank fee-income boundary is explicitly synthetic and sits
+between the real cached crew cost and the proposed extra-clerk cost.
+Evidence is review5-before/model-compile.log, review5-before/check.log and
+focused/PostwarRecipeCheck.log under target/R2e-evidence.

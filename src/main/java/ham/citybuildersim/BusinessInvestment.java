@@ -1366,7 +1366,17 @@ public class BusinessInvestment {
 
     /** The bank, so the advisor can see when credit has got dear. */
     private Bank bank;
-    public void setBank(Bank bank) { this.bank = bank; }
+    public void setBank(Bank bank) {
+        this.bank = bank;
+        if (bank != null) bank.setNewBranchCost(() -> branchCostForNew(templateForNew(buildingManager.getTemplateByName("Commercial Bank"))));
+    }
+
+    private double branchCostForNew(BuildingsTemplate t) {
+        double cost = bank.laterBranchCost();
+        if (cost > 0 && t != null && t.isRecipeSnapshot())
+            cost += wageBillFor(t) - wageBillFor(buildingManager.getTemplate(t.getId()));
+        return cost;
+    }
 
     /** What one of these would cost to staff, at what the city pays today. */
     public double wageBillFor(BuildingsTemplate t) {
@@ -1392,10 +1402,8 @@ public class BusinessInvestment {
         if (bank != null && t != null && "Commercial Bank".equals(t.getName())) {
             // ...at what a branch past the charter carries, its operating cost
             // with it (revised 0.7.19: the charter is exempt from that).
-            double cost = bank.laterBranchCost();
+            double cost = branchCostForNew(t);
             if (cost <= 0) cost = wageBillFor(t) + t.getUpkeep();
-            else if (t.isRecipeSnapshot())
-                cost += wageBillFor(t) - wageBillFor(buildingManager.getTemplate(t.getId()));
             return bank.feesPerBranchWithAnother(buildingManager.countByName("Commercial Bank")) - cost;
         }
 

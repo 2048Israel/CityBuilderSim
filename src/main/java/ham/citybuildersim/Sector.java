@@ -587,6 +587,7 @@ public abstract class Sector {
 
     private Staffing staffing(BuildingsTemplate t, int count, boolean crewsSpokenFor, boolean ownSitesInCount) {
         if (t == null || game == null) return Staffing.ANY;
+        t = game.getBusinessInvestment().templateForNew(t);
         PopulationManager people = game.getPopulationManager();
         double[] posts  = people.staffablePostsByBand();
         if (posts == null) return Staffing.ANY;

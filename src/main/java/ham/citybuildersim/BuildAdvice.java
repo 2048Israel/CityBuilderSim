@@ -372,7 +372,7 @@ public final class BuildAdvice {
        needs fewer of them. A building with no posts is fully staffed.
        ===================================================================== */
 
-    /** Σ posts x fill / Σ posts over a building's own posts; 1 with none - BuildingManager's per-building weighting. */
+    /** Î£ posts x fill / Î£ posts over a building's own posts; 1 with none - BuildingManager's per-building weighting. */
     public static double staffing(BuildingsTemplate t, double[] fill) {
         double posts = 0, staffed = 0;
         for (JobType job : JobType.values()) {
@@ -385,7 +385,7 @@ public final class BuildAdvice {
     }
 
     /**
-     * The posts of a building the city likely cannot fill: Σ posts x (1 -
+     * The posts of a building the city likely cannot fill: Î£ posts x (1 -
      * the city's fill rate for that job) over its own posts, 0 with none.
      * The Build card's short-staffed bar reads it per 10,000 of what the
      * building serves (0.7.24: Jerus's pick after the PC check, in place of
@@ -419,6 +419,7 @@ public final class BuildAdvice {
      * getCareCapacity() is the plots the model counts); a crematorium is.
      */
     public static double unit(Game game, Measure m, BuildingsTemplate t) {
+        t = game.getBusinessInvestment().templateForNew(t);
         // The streets' candidates are every road and line but a highway, which gives no access (FR7).
         if (!m.serves(t) && !(m.kind() == Kind.ROADS && t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway())) return 0;
         double[] fill = game.getPopulationManager().getJobFillRate();
@@ -552,6 +553,7 @@ public final class BuildAdvice {
 
     /** ...against the demand `p` says (0.7.51): today's times p.scale() - projected and padded - on the demand side only. */
     public static double figure(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
+        added = prospective(game, added);
         double[] fill = game.getPopulationManager().getJobFillRate();
         BuildingManager bm = game.getBuildingManager();
         double k = p.scale();
@@ -559,7 +561,7 @@ public final class BuildAdvice {
             case POWER:
             case WATER: {
                 // UtilitiesHandler: production = (built + base) x the utilities'
-                // pooled fill, Σ fill x jobs / Σ jobs over both utilities' posts.
+                // pooled fill, Î£ fill x jobs / Î£ jobs over both utilities' posts.
                 UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
                 boolean power = m.kind() == Kind.POWER;
                 long[] je = bm.getJobArrayPerCategory(BuildingType.ELECTRICITY);
@@ -657,6 +659,7 @@ public final class BuildAdvice {
 
     /** ...against the demand `p` says (0.7.51), as figure() reads it: the supply side unchanged. */
     public static double[] supplyDemand(Game game, Measure m, Map<BuildingsTemplate, Integer> added, Ahead p) {
+        added = prospective(game, added);
         double[] fill = game.getPopulationManager().getJobFillRate();
         BuildingManager bm = game.getBuildingManager();
         double k = p.scale();
@@ -1018,6 +1021,22 @@ public final class BuildAdvice {
         return out;
     }
 
+    /** Posts and land of a proposed order on the recipes its new buildings would run. */
+    public static double[] needs(Game game, Map<BuildingsTemplate, Integer> order) {
+        return needs(prospective(game, order));
+    }
+
+    /** Future additions use proposed recipes; removals retain the installed figures. */
+    static Map<BuildingsTemplate, Integer> prospective(Game game, Map<BuildingsTemplate, Integer> changes) {
+        if (!game.foundedUnfitted()) return changes;
+        Map<BuildingsTemplate, Integer> result = new LinkedHashMap<>();
+        for (var entry : changes.entrySet()) {
+            BuildingsTemplate template = entry.getValue() > 0 ? game.getBusinessInvestment().templateForNew(entry.getKey()) : entry.getKey();
+            result.merge(template, entry.getValue(), Integer::sum);
+        }
+        return result;
+    }
+
     /**
      * What an order of several buildings costs all in (0.7.34): each one's
      * Game.quoteBuild() total, as its own card quotes it and its own Build
@@ -1034,7 +1053,7 @@ public final class BuildAdvice {
      * ...and of the overview's suggestions (0.7.38): each one's own quote,
      * its price(), which is Game.quoteBuild() as its card shows it and its
      * Build charges it, added in their order. WHAT WOULD HELP MOST's "all
-     * three ≈ $X" read it until 0.7.51; it reads the run's invoice now
+     * three â‰ˆ $X" read it until 0.7.51; it reads the run's invoice now
      * (Game.buildRunInvoice() of run()), what placing them in turn charges.
      * Reads; changes nothing.
      */
@@ -1334,6 +1353,7 @@ public final class BuildAdvice {
             boolean candidate = m.kind() == Kind.ROADS
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway() : m.serves(t);
             if (!candidate || skip.contains(t)) continue;
+            t = game.getBusinessInvestment().templateForNew(t);
             double unit = unit(game, m, t);
             if (maintain && roadKind(m) && unit <= 0) unit = built(game, m, t);
             // A building the city cannot staff at all, or one that does not
@@ -1396,6 +1416,8 @@ public final class BuildAdvice {
                 : Lost.DEARER;
 
         int n = best.count();
+        BuildingsTemplate ordered = game.getBuildingManager().getTemplate(best.t().getId());
+        BuildingsTemplate alternative = next == null ? null : game.getBuildingManager().getTemplate(next.t().getId());
         if (best.paving()) {
             // A paving (0.7.70): its quote, its gravel roads gone, and the
             // ground it frees taken off the land the ones after it see.
@@ -1403,11 +1425,11 @@ public final class BuildAdvice {
             boolean credit = q.total > cashLeft;
             Map<BuildingsTemplate, Integer> done = times(site, pavingStep(game), n);
             double freed = pavingFrees(game) * (double) n;
-            return new Suggestion(need, m, best.t(), n, q.total, before, whenOnSite, figure(game, m, done),
+            return new Suggestion(need, m, ordered, n, q.total, before, whenOnSite, figure(game, m, done),
                     figure(game, m, done, new Ahead(best.ahead().months(), best.ahead().k(), 0)),
                     best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
                     -freed, -landValue(game, freed, landLeft), 0,
-                    next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
+                    alternative, next == null ? Double.NaN : next.per(), lost,
                     credit ? q.total - Math.max(0, cashLeft) : 0, true, best.value(), next == null ? null : next.value());
         }
         Game.BuildQuote q = game.quoteBuild(best.t(), n);
@@ -1415,11 +1437,11 @@ public final class BuildAdvice {
         double after = figure(game, m, plus(site, best.t(), n));
         double atOpening = figure(game, m, plus(site, best.t(), n), new Ahead(best.ahead().months(), best.ahead().k(), 0));
         double sq = best.t().getLandSqFt() * (double) n;
-        return new Suggestion(need, m, best.t(), n, q.total, before, whenOnSite, after, atOpening,
+        return new Suggestion(need, m, ordered, n, q.total, before, whenOnSite, after, atOpening,
                 best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
                 sq, best.value().land(),
                 Math.max(0, game.landNeededFor(best.t(), n) - availableGround(game, best.t(), landLeft)),
-                next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
+                alternative, next == null ? Double.NaN : next.per(), lost,
                 credit ? q.total - Math.max(0, cashLeft) : 0, false, best.value(), next == null ? null : next.value());
     }
 
@@ -1621,6 +1643,7 @@ public final class BuildAdvice {
      * on quiet streets a gravel road's are, to the bit.
      */
     public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Integer> site, boolean added) {
+        if (added) t = game.getBusinessInvestment().templateForNew(t);
         double utilisation = roads(game, added ? plus(site, t, 1) : site).getUtilisation();
         double riders = roads(game, plus(site, t, 1)).getTransitRiders() - roads(game, site).getTransitRiders();
         return runningCostAt(game, t, utilisation) - riders * game.getEconomyManager().getTaxPolicy().monthlyFare();
@@ -1685,6 +1708,7 @@ public final class BuildAdvice {
 
     /** A road's or a line's cost over its life (0.7.70): its quote for one, its ground at landValue() on the land left, and lifeFactor() months of running(). */
     public static double lifetime(Game game, BuildingsTemplate t, double landLeft, Map<BuildingsTemplate, Integer> site) {
+        t = game.getBusinessInvestment().templateForNew(t);
         return game.quoteBuild(t, 1).total + landValue(game, t.getLandSqFt(), landLeft)
                 + running(game, t, site) * lifeFactor(game);
     }
@@ -1873,6 +1897,7 @@ public final class BuildAdvice {
     /** An order of `count` of t over its life (0.7.101): its quote for the count, its ground at landValue() on the land left, and lifeFactor() months of running() for each. */
     public static double orderLife(Game game, BuildingsTemplate t, int count, double landLeft,
                                    Map<BuildingsTemplate, Integer> site) {
+        t = game.getBusinessInvestment().templateForNew(t);
         return game.quoteBuild(t, count).total + landValue(game, t.getLandSqFt() * (double) count, landLeft)
                 + count * running(game, t, site) * lifeFactor(game);
     }

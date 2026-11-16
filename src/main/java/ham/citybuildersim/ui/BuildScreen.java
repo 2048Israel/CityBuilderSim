@@ -2543,14 +2543,15 @@ final class BuildScreen {
      * the cover asks for no height of its own and the card's stack stretches
      * it over the face.
      */
-    VBox statCover(BuildingsTemplate t, BuildCard.Figures f) {
+    VBox statCover(BuildingsTemplate ordered, BuildCard.Figures f) {
+        BuildingsTemplate t = f.template();
 
         // Kept (KP3): the sentences, the figures, the wages and the investors' estimate are a scope each (the sentences
         // vary in number, the wages and the estimate come and go), and a figure is a scope keyed by its label.
         VBox body = Kept.column(1);
         body.setStyle("-fx-padding: 8 10 8 10;");
 
-        Label title = Kept.label(t.getName().toUpperCase());
+        Label title = Kept.label(ordered.getName().toUpperCase());
         title.setWrapText(true);
         title.setMaxWidth(NEED_CARD - 46);
         title.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.ACCENT) + " -fx-font-weight: bold;");
@@ -4374,7 +4375,7 @@ final class BuildScreen {
         what.setWrapText(true);
         Label price = Kept.label(money(total) + " all in, of your " + money(game.getCash()));
         price.setStyle(Palette.figure(Palette.SIZE_LABEL, total > game.getCash() ? Palette.WARN : Palette.TEXT_LABEL));
-        double[] needs = BuildAdvice.needs(order);
+        double[] needs = BuildAdvice.needs(game, order);
         StringBuilder staff = new StringBuilder();
         for (JobType job : JobType.values()) {
             double n = needs[job.ordinal()];

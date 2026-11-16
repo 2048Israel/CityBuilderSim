@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**209 harness files, 24,468 labelled assertions.** AllChecks runs 209 of them.
+**209 harness files, 24,476 labelled assertions.** AllChecks runs 209 of them.
 
 ## Which harnesses read which class
 
@@ -19,7 +19,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, SaveSlotCheck, WorksFinanceCheck |
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
-| [Bank](map/Bank.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, MonetaryCheck, MortgageCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
+| [Bank](map/Bank.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, MonetaryCheck, MortgageCheck, PolicyPreviewCheck, PostwarRecipeCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
 | [BankScreen](map/BankScreen.md) | **none** |
 | [BoatSchedule](map/BoatSchedule.md) | FreightViewCheck, LongPlaytest, MapCheck, PartnerCallsCheck, PortCheck, QuayCraneCheck, ReadPathCheck |
 | [BondMarket](map/BondMarket.md) | BankFailureCheck, BondCheck, CurveCheck, FundCheck, FundLedgerCheck, LongPlaytest, MortgageCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
@@ -30,7 +30,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BridgeView](map/BridgeView.md) | BridgeCheck, EarthFoundingCheck, IslandLinkCheck, ReadPathCheck |
 | [BridgeWorks](map/BridgeWorks.md) | BridgeCheck, BuildCardCheck, PriceLevelCheck, SaveSlotCheck |
 | [Bridges](map/Bridges.md) | BridgeCheck, IslandLinkCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
-| [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandmassCheck, LongPlaytest, ReadPathCheck, ResearchCheck, RoadCheck, SectorFlowCheck, WaterCheck, WorksFinanceCheck |
+| [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandmassCheck, LongPlaytest, PostwarRecipeCheck, ReadPathCheck, ResearchCheck, RoadCheck, SectorFlowCheck, WaterCheck, WorksFinanceCheck |
 | [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, HistoricalRecipeCheck, HousingCheck, HydroCheck, LandmassCheck, LongPlaytest, OilCheck, PortCheck, PostwarRecipeCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildScreen](map/BuildScreen.md) | **none** |
@@ -360,7 +360,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HydroCheck, LongPlaytest, MaterialsCheck, PriceLevelCheck, QuarryingCheck, ReadPathCheck, ResearchCheck, WaterCheck, WoodProductsCheck, WorksFinanceCheck |
 | [VaultTable](map/VaultTable.md) | **none** |
 | [VaultView](map/VaultView.md) | PartnersCheck |
-| [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, EducationCheck, EssentialWorksCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck, ZoningCheck |
+| [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, EducationCheck, EssentialWorksCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, OutsideCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PostwarRecipeCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck, ZoningCheck |
 | [WageLadder](map/WageLadder.md) | LabourCheck, PrizeCheck, WageLadderCheck |
 | [WantedPosts](map/WantedPosts.md) | WantedPostsCheck |
 | [Where](map/Where.md) | KeptCheck |
@@ -22963,7 +22963,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2328 ...and never falls as the tonnes rise nor leaves 0 to 1; with step() the kind at its berths' month shows full
   - L2344 painting the large box's picture (a full container yard, RAIL \| OPEN_LOW \| TRAIN) takes no more than HarbourYard.PICTURE_MS (0.5 ms)
 
-## PostwarRecipeCheck.java - 59 labelled assertions
+## PostwarRecipeCheck.java - 67 labelled assertions
 
 > The postwar engineering and business discoveries run their sourced earlier
 > figures, compose in either order, retain saved decisions and leave default
@@ -23038,12 +23038,21 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L801 ordering through a proposed quote keeps the stack on its real template
   - L816 fixture: a fitted bank's next branch rejects both machines and needs positive extra clerk wages over its cached cost
   - L818 the bank's special new-branch estimate includes the selected recipe's extra clerks
-  - L825 default founding reaches zero appraisal copies across its entire catalogue
-  - L828 matching new and standing vehicle recipes reuse the original template
-- **L843 2. two entries compose in either fitting or discovery order**
-  - L844 Vehicle Works
-  - L845 Steel Mini-Mill
-  - L846 Commercial Bank
+  - L829 synthetic branch-fee boundary covers the cached crew but falls below the selected new crew's cost
+  - L832 the branch-opening fee gate also prices the selected new clerks
+  - L838 default founding reaches zero appraisal copies across its entire catalogue
+  - L841 matching new and standing vehicle recipes reuse the original template
+- **L854 13. the saved process and staffing rule reaches every proposed-building reader**
+  - L867 fixture: a Pulp Mill with no independent changes saved kraft, while moved residue prices now prefer groundwood
+  - L869 the new Pulp Mill quote keeps the same saved physical recipe as production
+  - L893 fixture: positive-priced rejected robot, fitted fleet100, proposed300, with a real staffing pass/fail boundary and arrivals closed
+  - L899 the main Build card carries the proposed300-post figures and their running bill
+  - L901 the Build card and investor summary fail the new plant's actual staffing gate
+  - L905 the order bar counts600 unskilled posts for two proposed plants while the installed fleet keeps100
+- **L921 2. two entries compose in either fitting or discovery order**
+  - L922 Vehicle Works
+  - L923 Steel Mini-Mill
+  - L924 Commercial Bank
 
 ## PriceLevelCheck.java - 75 labelled assertions
 
