@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-R6-G-mAh55lFD -->
 ## changelog
 ### R6-G — the catalogue's years 1996-2024, a study — 2026-11-16, ready, no tag (docs)
