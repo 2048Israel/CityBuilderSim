@@ -562,3 +562,34 @@ On the merged R0h model all sixteen named readers above also exit0.
 The merged fast rebuild exits0 after74s compile, with zero firm Stale.
 No R2e source change follows the accepted fitting commit beyond the
 explicit upstream R0h merge. The final ALL check is the launcher dry run.
+
+## First launcher run and catalogue-fixture mends
+
+The normal dry run at /tmp/cbs-gate-R2e-final-20261115-223819 tests branch
+64135e8b488920b1e382510e2b2ade7aedc484fa against main
+a3fb38c06de26cf44e462597e48278413b31300a. It runs207 harnesses in2850s,
+with199 passed and8 failed. Six red harnesses contain only existing known
+lines. ResearchPreviewCheck and ResearchViewCheck add R2e-owned reds.
+Publisher exit1 follows check exit4. No source or branch moves during it.
+LongPlaytest and Postwar210 pass. All eight closed CSVs match the supplied
+R0h reference byte for byte, as retained in trace-complete-early.txt.
+
+★ Mail233036 approves two fixture-only mends. The study's1979 city must
+still have exactly E17 open in engineering before comparison with5.4's
+published rates. Its four study discoveries and their dates stay fixed.
+E19/E20, added after that study, are restored as founding knowledge at
+FIRST_MONTH. The fixture explicitly asserts that setup. Its piles, posts,
+month, random seed, means and three-standard-error bounds stay fixed.
+
+The numeric-year origin law uses its own probe with since1980 and asserts
+that literal numeric since. January remains month961 and the ABROAD,
+null-entry, zero-years-ahead and NEW_MONTHS boundaries stay fixed. The
+production Panel Mill remains E19/1981 and is checked by PostwarRecipeCheck.
+
+The following fast rebuild passes with zero firm Stale. The two named
+readers are sequential. ResearchPreviewCheck passes all94 assertions,
+including the one-open-problem premise and published rates. ResearchViewCheck
+has exactly its existing sector-filter failure,1 of217, and no added red.
+The failed full-run logs remain retained, and the mended logs are
+ResearchPreviewCheck-mended.log and ResearchViewCheck-mended.log in
+target/R2e-evidence. No new red is covered or transferred.

@@ -726,11 +726,13 @@ public class ResearchViewCheck {
         check("an undated row has none either", ResearchView.origin(three, r, 10_000, probe) == null);
 
         // A year: ABROAD at its January, from both sides of it.
+        probe.setSince(1980); // The year-only law's own specimen, independent of catalogue entries such as E19.
         int january = PolicyDates.monthOf(1980, 1);
-        ResearchView.Origin before = ResearchView.origin(CAT, new Research(), january - 1, panel);
-        ResearchView.Origin on = ResearchView.origin(CAT, new Research(), january, panel);
-        check("a since that is a year is ABROAD at its January: the Panel Mill (1980) none in month " + (january - 1) + ", in month " + january + " ABROAD, no entry, 0 years ahead",
-                before == null && on != null && on.source() == Source.ABROAD && on.month() == january && on.entry() == null && on.yearsAhead() == 0);
+        ResearchView.Origin before = ResearchView.origin(CAT, new Research(), january - 1, probe);
+        ResearchView.Origin on = ResearchView.origin(CAT, new Research(), january, probe);
+        check("a numeric since1980 specimen is ABROAD at its January: none in month " + (january - 1) + ", in month " + january + " ABROAD, no entry, 0 years ahead",
+                probe.getSinceText().equals("1980") && before == null && on != null && on.source() == Source.ABROAD
+                        && on.month() == january && on.entry() == null && on.yearsAhead() == 0);
         check("...and new for NEW_MONTHS - 1 months after it and not at NEW_MONTHS",
                 ResearchView.isNew(on, january + ResearchView.NEW_MONTHS - 1) && !ResearchView.isNew(on, january + ResearchView.NEW_MONTHS) && !ResearchView.isNew((ResearchView.Origin) null, january));
         probe.setSince(1900);

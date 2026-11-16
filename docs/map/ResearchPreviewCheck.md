@@ -1,4 +1,4 @@
-# ResearchPreviewCheck.java - 726 lines · 34 methods · 3 constants · harnesses
+# ResearchPreviewCheck.java - 731 lines · 34 methods · 3 constants · harnesses
 
 `ham/citybuildersim/ResearchPreviewCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -38,7 +38,7 @@
 > of the as-is researchers over the open problems (the share the last month() would have left; Research.waterFill() is the study's), the wages chosen
 > so that a post costs what the study's does. The study's game months are the study's plus 600 (the game's epoch is 1900, the study's 1950).
 
-**Uses:** [ResearchPreview](ResearchPreview.md) (74), [ResearchView](ResearchView.md) (48), [Research](Research.md) (37), [JobType](JobType.md) (11), [Dials](Dials.md) (5), [PolicyDates](PolicyDates.md) (2), [ResearchCatalog](ResearchCatalog.md) (1)
+**Uses:** [ResearchPreview](ResearchPreview.md) (74), [ResearchView](ResearchView.md) (52), [Research](Research.md) (37), [JobType](JobType.md) (11), [Dials](Dials.md) (5), [PolicyDates](PolicyDates.md) (2), [ResearchCatalog](ResearchCatalog.md) (1)
 
 **Used by (1):** [ResearchViewCheck](ResearchViewCheck.md)
 
@@ -47,17 +47,17 @@
 | line | section |
 |---:|---|
 | 78 | THE FIXTURES: the study's two cities as a Research |
-| 174 | main |
-| 237 | 1. the posts' cost |
-| 248 | 2. the young city |
-| 302 | 3. the big city |
-| 357 | 3b. the study's model, written again |
-| 464 | 4. the step |
-| 536 | 5. the draw |
-| 586 | 6. reproducible and cached |
-| 637 | 7. the answer's shape |
-| 678 | 8. the words |
-| 703 | 9. the cost |
+| 177 | main |
+| 240 | 1. the posts' cost |
+| 251 | 2. the young city |
+| 305 | 3. the big city |
+| 362 | 3b. the study's model, written again |
+| 469 | 4. the step |
+| 541 | 5. the draw |
+| 591 | 6. reproducible and cached |
+| 642 | 7. the answer's shape |
+| 683 | 8. the words |
+| 708 | 9. the cost |
 
 ## Constants
 
@@ -73,18 +73,18 @@
 |---:|---|---|
 | 52 | `static int fails` |  |
 | 53 | `static int passes` |  |
-| 467 | `static int stepFinds, stepMonths` | The number of finds and of months compared, for the printout. |
+| 472 | `static int stepFinds, stepMonths` | The number of finds and of months compared, for the printout. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 677 | **type** `public class ResearchPreviewCheck` | The preview each dial card on Policy > Research shows: what a set of dials would find here over ten years (R3b, slice A: ResearchPreview, and the words and the cache in ResearchView; docs/studies/research-design.md 5.... |
+| 50 | 682 | **type** `public class ResearchPreviewCheck` | The preview each dial card on Policy > Research shows: what a set of dials would find here over ten years (R3b, slice A: ResearchPreview, and the words and the cache in ResearchView; docs/studies/research-design.md 5.... |
 | 55 | 4 | `static void check(String label, boolean ok)` |  |
 | 61 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 | 66 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
 
-### THE FIXTURES: the study's two cities as a Research (lines 78-173)
+### THE FIXTURES: the study's two cities as a Research (lines 78-176)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -94,85 +94,85 @@
 | 111 | 20 | **type** `record City(String name, int month, Map<String, Double> piles, Map<String, Integer> found, EnumMap<Field, D...` | A city's state: the month, what is piled and found, and the researchers it has as it is. |
 | 114 | 16 | `Research research(EnumMap<Field, Double> prize)` _(in ResearchPreviewCheck.City)_ | A Research restored to the state, with the prizes given, and the city's share of each problem the water fill of the as-is researchers over the open problems. |
 | 133 | 12 | `static City young()` | The young city of research-design 5.4: June 1955 (game month 666), one University since 1953, nothing found here, the study's piles. |
-| 147 | 14 | `static City big()` | The big city of 5.4: June 1979 (game month 954), four finds here, the study's piles. |
-| 163 | 6 | `static Research copyOf(Research r)` | A copy of a research with everything the preview and the month read: grants, posts, piles, finds, prizes, pots, the labs' piles and the city's shares. |
-| 170 | 3 | `static ResearchPreview.Result run(City city, EnumMap<Field, Double> people, EnumMap<Field, Double> prize)` |  |
+| 147 | 17 | `static City big()` | The big city of 5.4: June 1979, four study finds and the study's piles, with later catalogue additions already resolved. |
+| 166 | 6 | `static Research copyOf(Research r)` | A copy of a research with everything the preview and the month read: grants, posts, piles, finds, prizes, pots, the labs' piles and the city's shares. |
+| 173 | 3 | `static ResearchPreview.Result run(City city, EnumMap<Field, Double> people, EnumMap<Field, Double> prize)` |  |
 
-### main (lines 174-236)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 178 | 14 | `public static void main(String[] args)` |  |
-| 194 | 3 | `static void against(String label, double game, double gameSe, double study, double studySe, double printedUnit)` | One figure of the study against the game's: within three standard errors of the two (and half a unit of the study's last printed place). |
-| 199 | 6 | `static void against(String label, double game, double gameSe, double study, double studySe, double printedUnit, int sigmas)` | The same within `sigmas` standard errors of the two. |
-| 207 | 3 | `static double binomial(double p, int draws)` | The binomial standard error of a share. |
-| 211 | 3 | `static void finds(String label, ResearchPreview.Result game, Field f, double study, double studySe)` |  |
-| 215 | 3 | `static void chance(String label, ResearchPreview.Result game, Field f, double study)` |  |
-| 219 | 3 | `static void all(String label, ResearchPreview.Result game, double study, double studySe)` |  |
-| 224 | 5 | `static List<String> codes(List<Entry> entries)` | The codes of a list of entries. |
-| 231 | 5 | `static double chaseRoom(Research r, Field f, int month, double[] wages)` | The room a field's chase leaves the labs: what each problem on it can still take of its team cap, less the city's share (what Research.labsWanted() sums). |
-
-### 1. the posts' cost (lines 237-247)
+### main (lines 177-239)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 239 | 8 | `static void sectionOne()` |  |
+| 181 | 14 | `public static void main(String[] args)` |  |
+| 197 | 3 | `static void against(String label, double game, double gameSe, double study, double studySe, double printedUnit)` | One figure of the study against the game's: within three standard errors of the two (and half a unit of the study's last printed place). |
+| 202 | 6 | `static void against(String label, double game, double gameSe, double study, double studySe, double printedUnit, int sigmas)` | The same within `sigmas` standard errors of the two. |
+| 210 | 3 | `static double binomial(double p, int draws)` | The binomial standard error of a share. |
+| 214 | 3 | `static void finds(String label, ResearchPreview.Result game, Field f, double study, double studySe)` |  |
+| 218 | 3 | `static void chance(String label, ResearchPreview.Result game, Field f, double study)` |  |
+| 222 | 3 | `static void all(String label, ResearchPreview.Result game, double study, double studySe)` |  |
+| 227 | 5 | `static List<String> codes(List<Entry> entries)` | The codes of a list of entries. |
+| 234 | 5 | `static double chaseRoom(Research r, Field f, int month, double[] wages)` | The room a field's chase leaves the labs: what each problem on it can still take of its team cap, less the city's share (what Research.labsWanted() sums). |
 
-### 2. the young city (lines 248-301)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 250 | 46 | `static void sectionTwo()` |  |
-| 298 | 3 | `static double w2(Field f)` | The cost of a post of the field at the study's wages. |
-
-### 3. the big city (lines 302-356)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 304 | 52 | `static void sectionThree()` |  |
-
-### 3b. the study's model, written again (lines 357-463)
+### 1. the posts' cost (lines 240-250)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 365 | 77 | `static double[][] studyForward(City city, EnumMap<Field, Double> people, int draws, long seed)` | research_model.py forward() as the study wrote it (no prize), on the study's 40 discoveries: the 1951-1995 catalogue, every other of the game's (before 1950 and L5, the 1900 study's) being known, or out of the ten yea... |
-| 443 | 20 | `static void sectionThreeB()` |  |
+| 242 | 8 | `static void sectionOne()` |  |
 
-### 4. the step (lines 464-535)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 473 | 35 | `static String partsAt(City city, EnumMap<Field, Double> people, EnumMap<Field, Double> prize, long seed)` | Plays a research the way the game does for the preview's ten years, with the sizes of one city's seed: Research.month() each month with the researchers held, the labs wanted as Research.labsWanted() would ask them at ... |
-| 509 | 14 | `static void stepCase(String label, City city, EnumMap<Field, Double> people, EnumMap<Field, Double> prize, int seeds)` |  |
-| 524 | 11 | `static void sectionFour()` |  |
-
-### 5. the draw (lines 536-585)
+### 2. the young city (lines 251-304)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 538 | 47 | `static void sectionFive()` |  |
+| 253 | 46 | `static void sectionTwo()` |  |
+| 301 | 3 | `static double w2(Field f)` | The cost of a post of the field at the study's wages. |
 
-### 6. reproducible and cached (lines 586-636)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 588 | 48 | `static void sectionSix()` |  |
-
-### 7. the answer's shape (lines 637-677)
+### 3. the big city (lines 305-361)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 639 | 38 | `static void sectionSeven()` |  |
+| 307 | 54 | `static void sectionThree()` |  |
 
-### 8. the words (lines 678-702)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 680 | 22 | `static void sectionEight()` |  |
-
-### 9. the cost (lines 703-726)
+### 3b. the study's model, written again (lines 362-468)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 705 | 21 | `static void sectionNine()` |  |
+| 370 | 77 | `static double[][] studyForward(City city, EnumMap<Field, Double> people, int draws, long seed)` | research_model.py forward() as the study wrote it (no prize), on the study's 40 discoveries: the 1951-1995 catalogue, every other of the game's (before 1950 and L5, the 1900 study's) being known, or out of the ten yea... |
+| 448 | 20 | `static void sectionThreeB()` |  |
+
+### 4. the step (lines 469-540)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 478 | 35 | `static String partsAt(City city, EnumMap<Field, Double> people, EnumMap<Field, Double> prize, long seed)` | Plays a research the way the game does for the preview's ten years, with the sizes of one city's seed: Research.month() each month with the researchers held, the labs wanted as Research.labsWanted() would ask them at ... |
+| 514 | 14 | `static void stepCase(String label, City city, EnumMap<Field, Double> people, EnumMap<Field, Double> prize, int seeds)` |  |
+| 529 | 11 | `static void sectionFour()` |  |
+
+### 5. the draw (lines 541-590)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 543 | 47 | `static void sectionFive()` |  |
+
+### 6. reproducible and cached (lines 591-641)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 593 | 48 | `static void sectionSix()` |  |
+
+### 7. the answer's shape (lines 642-682)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 644 | 38 | `static void sectionSeven()` |  |
+
+### 8. the words (lines 683-707)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 685 | 22 | `static void sectionEight()` |  |
+
+### 9. the cost (lines 708-731)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 710 | 21 | `static void sectionNine()` |  |
 
