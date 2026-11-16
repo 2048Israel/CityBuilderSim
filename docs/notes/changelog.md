@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### R6-G — the catalogue's years 1996-2024, a study — 2026-11-16, ready, no tag (docs)
+`docs/studies/research-1996-2024.md`: the research catalogue's rows between the online shop (B8, 1995) and the
+near future, as research-1900 was for 1900-1950. Thirty rows of fifty-seven subjects gathered, each a first
+commercial use with its date, a measured effect and a source that could be read: twelve engineering (GM crops to
+the electric long-haul truck), twelve medicine (PCV7 to the RSV vaccine), two business and four law, on Canada's
+dates. Thirteen have something in the game today and are queued as R6e (eight engineering rows) and R6f (five
+medicine, business and law rows); the other seventeen wait on MED1, PW2 or PW3, a storage batch, HO4, HT1 and
+FM1's batch (R6-G-P). Most of the period's medicine acts on causes the game stops counting in 1980. Six calls,
+each recommended (R6-G-K). Docs only: no row in research.json, and the trace is main's. See
+docs/queue/R6-G-notes.md.
+
 ### 0.9.128 — LF1b, the cells' share trades with the world, in the financial account — 2026-11-16, ready, see docs/queue/LF1b-notes.md
 The households' cells selling shares to the world and buying them from it are declared to the money audit as the
 cells' bonds have been: a sale abroad a financial inflow into their savings, a purchase a financial outflow out of
