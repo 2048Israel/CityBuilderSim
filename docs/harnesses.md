@@ -2,7 +2,7 @@
 
 Generated 2026-11-15 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**209 harness files, 24,451 labelled assertions.** AllChecks runs 209 of them.
+**209 harness files, 24,468 labelled assertions.** AllChecks runs 209 of them.
 
 ## Which harnesses read which class
 
@@ -13137,7 +13137,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L782 ...and a year on, both have folded the next year alike
   - L787 a history from before 0.7.55 has no folded years: every entry a month
 
-## HoldersCheck.java - 443 labelled assertions
+## HoldersCheck.java - 460 labelled assertions
 
 > Proves who holds the city's own paper (0.7.1): that the households buy it at
 > the settle, are paid on it, sell it back, and are paid when it is bought
@@ -13475,140 +13475,157 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1675 ...having paid the world for it, abroad
   - L1676 every month on the way the two books agreed
   - L1677 ...M0 moved by exactly the money made, the audit's MONEY lines the same, the world's purchase among it
-  - L1861 a fresh line's settle re-strikes nothing
-  - L1863 ...its equity's movement leaves nothing unexplained
-  - L1864 ...and its equity's two parts and the preferred still add up to its equity, as they did
-  - L1872 fixture: the twin is the same city going in
-  - L1881 the second sale reopens the same line, whose households held part going in
-  - L1883 fixture: ...the households' own discount is something to keep: it is on the line before the reopening
-  - L1884 the reopening did not re-blend the households' own discount per face of the line (BK2)
-  - L1888 fixture: ...and the twin's line was reopened to the same face and the same price
-  - L1916 the households took their share of the reopening at the settle
-  - L1918 the reopened settle re-strikes nothing: each holder's own discount moved with its own face and its own price
-  - L1920 ...so the movement's own re-strike is nothing
-  - L1921 ...and the gains on the city's paper are the twin's
-  - L1923 ...the twin, which books no re-strike, booked none
-  - L1924 ...so the month's movement leaves nothing unexplained
-  - L1925 ...and its equity's two parts and the preferred add up to its equity
-  - L1926 ...the twin, which books no re-strike, closes too: its split is nothing
-  - L1928 ...and its movement's residual is nothing
-  - L1930 fixture: at the settle the bank took a material part of the sale's face and the households took more of the line
-  - L1933 the households' own discount per face of the line is what it was before the reopening, going into the settle
-  - L1935 ...the households' own discount rose by the face they took less what they paid for it
-  - L1937 the bank's book rose by exactly the face it took at the settle
-  - L1939 ...and the bank's own discount on the line rose by that face less what it paid for it
-  - L1941 the audit closed on the settle month
-  - L1942 ...and on the twin's
-  - L1968 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-  - L1970 three months on, the movement left nothing unexplained and the split still added up to the equity, every month
-  - L1971 ...and the twin's split stayed shut too, every month
-  - L2044 fixture: ...the bank's unearned discount is the book's going in, in the city
-  - L2045 fixture: ...and the twin's is the same city
-  - L2058 the premium sale reopens the same line with positive face
-  - L2062 fixture: ...the premium is the unsettled sale's discount, below nothing: its face less what it raised
-  - L2064 fixture: ...so the line's discount left did not move at the sale: the premium is nobody's until the settle
-  - L2066 fixture: ...and the twin's line was reopened to the same face, price and discount
-  - L2072 nothing was re-struck at the sale: the premium waits for the settle
-  - L2073 ...the bank's own discount on the line did not move
-  - L2074 ...nor did the book's figure for the bank
-  - L2075 the bank's unearned discount is the book's
-  - L2076 ...its equity's movement leaves nothing unexplained
-  - L2077 ...and its equity's two parts and the preferred add up to its equity
-  - L2078 ...the twin, which books none, booked none
-  - L2079 ...and carries the book's figure too: nothing was re-struck for the two to differ by
-  - L2083 the statement's net income, tax and gains on the city's paper are the twin's, at once
-  - L2106 fixture: the bank paid more than the face it took at the settle: a premium
-  - L2107 the bank's premium came off its own discount on the line, floored at nothing
-  - L2109 ...so the settle re-strikes nothing but the shortfall of that discount under the premium (nothing, where it covers it)
-  - L2111 the month's movement leaves nothing unexplained
-  - L2112 ...and its equity's two parts and the preferred add up to its equity
-  - L2113 ...the audit closed on the month
-  - L2114 ...and on the twin's
-  - L2115 ...the twin, which books none, closes as the city's re-strike leaves it: its split is that, and nothing else
-  - L2117 ...and its movement left only that unexplained
-  - L2121 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-  - L2141 fixture: the second sale reopened the same line and it is unsettled: the market owes for it
-  - L2146 fixture: ...and the households hold part of the line, all the paper they hold
-  - L2152 fixture: the bank's unearned discount is the book's going in
-  - L2167 fixture: the desk bought some of the households' paper of the line, in the city and in its twin
-  - L2169 fixture: ...and the households' own discount is not the line's pool per face: far over what the movement's tolerance would pass
-  - L2171 fixture: ...and the two books of the households' paper still agree
-  - L2172 the book's figure for the bank rose by exactly the households' own discount on the face the desk bought
-  - L2174 ...and the households' own discount per face of what they keep did not move
-  - L2181 the bank's unearned discount is the book's
-  - L2182 ...nothing is re-struck: the desk was handed the households' own discount, and the book's figure rose by that
-  - L2184 ...its equity's movement leaves nothing unexplained
-  - L2185 ...and its equity's two parts and the preferred add up to its equity
-  - L2186 ...the twin, which books none, booked none
-  - L2187 ...and carries the book's figure too: nothing was re-struck for the two to differ by
-  - L2191 the statement's net income, tax and gains on the city's paper are the twin's, at once
-  - L2202 the settle re-strikes nothing: the month's re-strike is nothing
-  - L2203 ...so the month's movement leaves nothing unexplained
-  - L2204 ...and its equity's two parts and the preferred add up to its equity
-  - L2205 ...the audit closed on the month
-  - L2206 ...and on the twin's
-  - L2207 ...the twin, which books none, closes too: its split is nothing
-  - L2209 ...and its movement's residual is nothing
-  - L2212 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-  - L2271 fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance
-  - L2273 fixture: ...the bank has existing paid paper and discount exceeding the cancelled sale's
-  - L2275 fixture: ...cancelled straight back whole, with no paid bank face, and off the books
-  - L2277 fixture: ...and the twin's the same, bit for bit
-  - L2279 the buyback re-struck nothing
-  - L2284 two months on, the cancellation has preserved the bank's equity split
-  - L2286 ...and the twin's (main before BK1) too
-  - L2291 ...the audit closed on both months, in the city and in the twin
-  - L2294 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
-- **L2304 14. a holder left within HOLDING_ROUNDING of the face moved holds none, and one left more holds it (RT1)**
-  - L2312 fixture: the businesses hold exactly the face the desk takes all but an ulp or two of
-  - L2313 fixture: the old rule would have left them a hair above nothing, and the hair is under the floor on the face moved
-  - L2316 a sale meant to take all a holder holds, struck an ulp short, leaves it none
-  - L2321 a sale of part of a holding leaves the rest, exactly: not snapped
-  - L2330 a remainder of ten times the floor stays: above nothing, and within an ulp of the
-  - L2332 ...and one of half the floor, built the same way, is snapped to none
-  - L2340 the same holds for the households
-  - L2341 ...and the central bank
-  - L2342 ...and the world
-  - L2343 ...and for a buyback that takes the businesses' paper by the same ulp-short face (retirePart)
-  - L2349 fixture: scaled by the founding's FACTOR the old rule still leaves a hair above nothing
-  - L2351 at the founding's price level as at today's, the ulp-short sale leaves the businesses none: the floor is a share of the face moved
-  - L2353 fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped
-  - L2355 ...yet it stays, because the floor is a share of the face moved
-  - L2373 fixture: a full sector take leaves a positive ulp on main's subtraction
-  - L2409 fixture: a full cell take leaves a positive ulp on main's subtraction
-- **L2507 15. each holder's discount is its own, at the price it paid (BK2)**
-  - L2517 fixture: the treasury sold a twenty-year bond between the presses, and the fixture's settle of it was watched at both edges
-  - L2521 fixture: ...a new line, all of it unsettled going in, and no holder's discount on it yet
-  - L2523 fixture: ...the sale's discount is the unsettled sale's: its face less what it raised
-  - L2525 fixture: ...the households and the bank each took part of it, and the central bank none
-  - L2534 BANK: its own discount is the face it took less what it paid, the residual buyer's
-  - L2536 CENTRAL_BANK: it took none, so it has none of the discount
-  - L2537 ...and the line's discount left is the five owners' sum
-  - L2538 ...with nothing of the sale left unsettled
-  - L2539 ...and the five together are the sale's whole discount: its face less what it raised
-  - L2549 fixture: the second sale reopened the same line at a discount and is unsettled: the market owes for it
-  - L2553 a reopening at another price moves no owner's discount at the sale: the five are what they were, bit for bit
-  - L2554 ...the unsettled sales' discount is the reopening's face less what it raised
-  - L2558 after its settle the owners' sum, with nothing unsettled, is the line's discount left
-  - L2560 ...nothing of the sale is left unsettled
-  - L2561 ...and at the settle the owners' sum rose by the sale's discount, whole
-  - L2567 fixture: the households hold part of the line, and own discount on it
-  - L2571 the bank is handed the households' own discount times the face over their holding
-  - L2572 ...the bank's own discount rose by exactly that
-  - L2573 ...the households' fell by exactly that
-  - L2574 ...and the households' discount per face of what they keep did not move
-  - L2578 the bank handing face to the households hands them its own discount per face on it, whatever they paid
-  - L2580 ...the households' own rose by exactly that
-  - L2581 ...and the bank's discount per face of what it keeps did not move
-  - L2588 fixture: months are left past the last, and nothing is unsettled: the old pool's step is its discount over the months left
-  - L2597 the step the line returns is the bank's: the one income books
-  - L2598 ...and the five steps add up to the old pool's step: its discount left over the months left, the city's accretion unchanged
-  - L2612 fixture: the five holders' discounts per face are five different figures
-  - L2613 fixture: ...and together they are the discount of what was sold: 1,110 of face less the 1,001 it raised
-  - L2621 principal repaid moves no owner's discount: the five are what they were, bit for bit
-  - L2642 CENTRAL_BANK: the central bank does not sell, so its own discount stays, bit for bit
-  - L2651 fixture: a sale unsettled, and every owner has discount
-  - L2656 the unsettled sales' discount scales by it too
+  - L1866 a fresh line's settle re-strikes nothing
+  - L1868 ...its equity's movement leaves nothing unexplained
+  - L1869 ...and its equity's two parts and the preferred still add up to its equity, as they did
+  - L1877 fixture: the twin is the same city going in
+  - L1886 the second sale reopens the same line, whose households held part going in
+  - L1888 fixture: ...the households' own discount is something to keep: it is on the line before the reopening
+  - L1889 the reopening did not re-blend the households' own discount per face of the line (BK2)
+  - L1893 fixture: ...and the twin's line was reopened to the same face and the same price
+  - L1921 the households took their share of the reopening at the settle
+  - L1923 the reopened settle re-strikes nothing: each holder's own discount moved with its own face and its own price
+  - L1925 ...so the movement's own re-strike is nothing
+  - L1926 ...and the gains on the city's paper are the twin's
+  - L1928 ...the twin, which books no re-strike, booked none
+  - L1929 ...so the month's movement leaves nothing unexplained
+  - L1930 ...and its equity's two parts and the preferred add up to its equity
+  - L1931 ...the twin, which books no re-strike, closes too: its split is nothing
+  - L1933 ...and its movement's residual is nothing
+  - L1935 fixture: at the settle the bank took a material part of the sale's face and the households took more of the line
+  - L1938 the households' own discount per face of the line is what it was before the reopening, going into the settle
+  - L1940 ...the households' own discount rose by the face they took less what they paid for it
+  - L1942 the bank's book rose by exactly the face it took at the settle
+  - L1944 ...and the bank's own discount on the line rose by that face less what it paid for it
+  - L1946 the audit closed on the settle month
+  - L1947 ...and on the twin's
+  - L1973 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+  - L1975 three months on, the movement left nothing unexplained and the split still added up to the equity, every month
+  - L1976 ...and the twin's split stayed shut too, every month
+  - L2050 fixture: ...the bank's unearned discount is the book's going in, in the city
+  - L2051 fixture: ...and the twin's is the same city
+  - L2064 the premium sale reopens the same line with positive face
+  - L2068 fixture: ...the premium is the unsettled sale's discount, below nothing: its face less what it raised
+  - L2070 fixture: ...so the line's discount left did not move at the sale: the premium is nobody's until the settle
+  - L2072 fixture: ...and the twin's line was reopened to the same face, price and discount
+  - L2078 nothing was re-struck at the sale: the premium waits for the settle
+  - L2079 ...the bank's own discount on the line did not move
+  - L2080 ...nor did the book's figure for the bank
+  - L2081 the bank's unearned discount is the book's
+  - L2082 ...its equity's movement leaves nothing unexplained
+  - L2083 ...and its equity's two parts and the preferred add up to its equity
+  - L2084 ...the twin, which books none, booked none
+  - L2085 ...and carries the book's figure too: nothing was re-struck for the two to differ by
+  - L2089 the statement's net income, tax and gains on the city's paper are the twin's, at once
+  - L2112 fixture: the bank paid more than the face it took at the settle: a premium
+  - L2113 the bank's premium came off its own discount on the line, floored at nothing
+  - L2115 ...so the settle re-strikes nothing but the shortfall of that discount under the premium (nothing, where it covers it)
+  - L2117 the month's movement leaves nothing unexplained
+  - L2118 ...and its equity's two parts and the preferred add up to its equity
+  - L2119 ...the audit closed on the month
+  - L2120 ...and on the twin's
+  - L2121 ...the twin, which books none, closes as the city's re-strike leaves it: its split is that, and nothing else
+  - L2123 ...and its movement left only that unexplained
+  - L2127 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+  - L2138 fixture: both small first sales made a settled line
+  - L2141 fixture: the bank owns positive discount before the premium sale
+  - L2143 fixture: both markets reopen the same line at a premium
+  - L2156 fixture: the bank bought face and paid a premium larger than its positive own discount
+  - L2158 the settle exhausts the bank's own discount on this line
+  - L2159 the premium beyond its own discount is booked as discountRestruck
+  - L2161 ...and the equity movement names exactly that re-strike
+  - L2163 the re-strike goes to retained earnings against the twin that books none
+  - L2165 the bank's carried unearned discount agrees with the holders' book
+  - L2167 the equity movement closes with the premium loss named
+  - L2168 the bank's equity split is known
+  - L2169 paid-in capital, retained earnings and preferred foot to equity
+  - L2170 the twin's movement exposes precisely the unbooked premium loss
+  - L2172 the twin's split exposes precisely the missing retained loss
+  - L2174 income, tax, dividends, paper gains, treasury cash and equity agree with the twin bit for bit
+  - L2176 the premium city's audit closes
+  - L2177 ...and the twin's audit closes
+  - L2196 fixture: the second sale reopened the same line and it is unsettled: the market owes for it
+  - L2201 fixture: ...and the households hold part of the line, all the paper they hold
+  - L2207 fixture: the bank's unearned discount is the book's going in
+  - L2222 fixture: the desk bought some of the households' paper of the line, in the city and in its twin
+  - L2224 fixture: ...and the households' own discount is not the line's pool per face: far over what the movement's tolerance would pass
+  - L2226 fixture: ...and the two books of the households' paper still agree
+  - L2227 the book's figure for the bank rose by exactly the households' own discount on the face the desk bought
+  - L2229 ...and the households' own discount per face of what they keep did not move
+  - L2236 the bank's unearned discount is the book's
+  - L2237 ...nothing is re-struck: the desk was handed the households' own discount, and the book's figure rose by that
+  - L2239 ...its equity's movement leaves nothing unexplained
+  - L2240 ...and its equity's two parts and the preferred add up to its equity
+  - L2241 ...the twin, which books none, booked none
+  - L2242 ...and carries the book's figure too: nothing was re-struck for the two to differ by
+  - L2246 the statement's net income, tax and gains on the city's paper are the twin's, at once
+  - L2257 the settle re-strikes nothing: the month's re-strike is nothing
+  - L2258 ...so the month's movement leaves nothing unexplained
+  - L2259 ...and its equity's two parts and the preferred add up to its equity
+  - L2260 ...the audit closed on the month
+  - L2261 ...and on the twin's
+  - L2262 ...the twin, which books none, closes too: its split is nothing
+  - L2264 ...and its movement's residual is nothing
+  - L2267 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+  - L2326 fixture: a new piece was sold between the presses, all of it unsettled, its discount far over the tolerance
+  - L2328 fixture: ...the bank has existing paid paper and discount exceeding the cancelled sale's
+  - L2330 fixture: ...cancelled straight back whole, with no paid bank face, and off the books
+  - L2332 fixture: ...and the twin's the same, bit for bit
+  - L2334 the buyback re-struck nothing
+  - L2339 two months on, the cancellation has preserved the bank's equity split
+  - L2341 ...and the twin's (main before BK1) too
+  - L2346 ...the audit closed on both months, in the city and in the twin
+  - L2349 the city's and its twin's net income, tax, dividends, gains on paper, cash and equity were the same, bit for bit,
+- **L2359 14. a holder left within HOLDING_ROUNDING of the face moved holds none, and one left more holds it (RT1)**
+  - L2367 fixture: the businesses hold exactly the face the desk takes all but an ulp or two of
+  - L2368 fixture: the old rule would have left them a hair above nothing, and the hair is under the floor on the face moved
+  - L2371 a sale meant to take all a holder holds, struck an ulp short, leaves it none
+  - L2376 a sale of part of a holding leaves the rest, exactly: not snapped
+  - L2385 a remainder of ten times the floor stays: above nothing, and within an ulp of the
+  - L2387 ...and one of half the floor, built the same way, is snapped to none
+  - L2395 the same holds for the households
+  - L2396 ...and the central bank
+  - L2397 ...and the world
+  - L2398 ...and for a buyback that takes the businesses' paper by the same ulp-short face (retirePart)
+  - L2404 fixture: scaled by the founding's FACTOR the old rule still leaves a hair above nothing
+  - L2406 at the founding's price level as at today's, the ulp-short sale leaves the businesses none: the floor is a share of the face moved
+  - L2408 fixture: ten times the floor at that scale is under HOLDING_ROUNDING itself, which a fixed floor would have snapped
+  - L2410 ...yet it stays, because the floor is a share of the face moved
+  - L2466 fixture: a full sector take leaves a positive ulp on main's subtraction
+  - L2502 fixture: a full cell take leaves a positive ulp on main's subtraction
+- **L2600 15. each holder's discount is its own, at the price it paid (BK2)**
+  - L2610 fixture: the treasury sold a twenty-year bond between the presses, and the fixture's settle of it was watched at both edges
+  - L2614 fixture: ...a new line, all of it unsettled going in, and no holder's discount on it yet
+  - L2616 fixture: ...the sale's discount is the unsettled sale's: its face less what it raised
+  - L2618 fixture: ...the households and the bank each took part of it, and the central bank none
+  - L2627 BANK: its own discount is the face it took less what it paid, the residual buyer's
+  - L2629 CENTRAL_BANK: it took none, so it has none of the discount
+  - L2630 ...and the line's discount left is the five owners' sum
+  - L2631 ...with nothing of the sale left unsettled
+  - L2632 ...and the five together are the sale's whole discount: its face less what it raised
+  - L2642 fixture: the second sale reopened the same line at a discount and is unsettled: the market owes for it
+  - L2646 a reopening at another price moves no owner's discount at the sale: the five are what they were, bit for bit
+  - L2647 ...the unsettled sales' discount is the reopening's face less what it raised
+  - L2651 after its settle the owners' sum, with nothing unsettled, is the line's discount left
+  - L2653 ...nothing of the sale is left unsettled
+  - L2654 ...and at the settle the owners' sum rose by the sale's discount, whole
+  - L2660 fixture: the households hold part of the line, and own discount on it
+  - L2664 the bank is handed the households' own discount times the face over their holding
+  - L2665 ...the bank's own discount rose by exactly that
+  - L2666 ...the households' fell by exactly that
+  - L2667 ...and the households' discount per face of what they keep did not move
+  - L2671 the bank handing face to the households hands them its own discount per face on it, whatever they paid
+  - L2673 ...the households' own rose by exactly that
+  - L2674 ...and the bank's discount per face of what it keeps did not move
+  - L2681 fixture: months are left past the last, and nothing is unsettled: the old pool's step is its discount over the months left
+  - L2690 the step the line returns is the bank's: the one income books
+  - L2691 ...and the five steps add up to the old pool's step: its discount left over the months left, the city's accretion unchanged
+  - L2705 fixture: the five holders' discounts per face are five different figures
+  - L2706 fixture: ...and together they are the discount of what was sold: 1,110 of face less the 1,001 it raised
+  - L2714 principal repaid moves no owner's discount: the five are what they were, bit for bit
+  - L2735 CENTRAL_BANK: the central bank does not sell, so its own discount stays, bit for bit
+  - L2744 fixture: a sale unsettled, and every owner has discount
+  - L2749 the unsettled sales' discount scales by it too
 
 ## HomeRailCheck.java - 43 labelled assertions
 

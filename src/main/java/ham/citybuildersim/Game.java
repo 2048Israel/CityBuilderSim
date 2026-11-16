@@ -11146,7 +11146,7 @@ public class Game {
      * (LandManager.canAllocateOn()), not the linked pool's; every other order is asked what it always was.
      */
     public BuildResult buildStack(BuildingsTemplate template, int quantity, boolean noConstruction, int asked){
-        if (template.isRecipeSnapshot()) template = buildingManager.getTemplate(template.getId());
+        if (template != null && template.isRecipeSnapshot()) template = buildingManager.getTemplate(template.getId());
         if (!buildingManager.isTemplateKnown(template)) {
             this.hasNewReceipt = false;
             return BuildResult.NOT_KNOWN;

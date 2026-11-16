@@ -410,3 +410,20 @@ clerks. Logs remain in target/R2e-evidence/review4-before/check.log and
 focused/PostwarRecipeCheck.log. The default-founded catalogue reaches
 zero copies, and matching historical vehicle figures reuse their original
 template. The fast rebuild exits0 with zero firm Stale.
+
+Main01402a54 (BK2b,0.9.120) is merged. Its Debt/HoldersCheck change,
+Game comment and publication records are accepted unchanged. Generated
+indexes are regenerated with the next fast rebuild.
+
+The next named-reader run found one LicenceFeesCheck regression in its
+unchanged synthetic caster. setRecipes invalidates the old running ids,
+but the saved-choice reader was still taking the city's old choice for
+the replaced list. The source now reads fresh choices until that list
+has reached production. Once it has, the saved monthly process is frozen.
+This preserves the existing caller and its one-fee premise.
+
+All twelve named harnesses are green after that source correction:
+PostwarRecipe216, HistoricalRecipe120, HistoricalLicence80,
+LicenceFees43, Recipe, Equipment, Research207, Discovery, BuildingData,
+Fitting, Bank and BuildCard. Each ran serially. The build entry's quote
+canonicalization also preserves its existing null-template path.
