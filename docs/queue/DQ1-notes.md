@@ -205,4 +205,8 @@ nobody has decided on it; it is here for whoever reads the bank's desk next.
 - Trace: `-Dplaytest.trace` on this branch against `cbs-trace-main-08c8727d` (main has no source change since
   08c8727d): all eight files identical to the byte (2,405 lines each, the borrow file 39). No ensemble: the
   trace did not move.
-- Pick: (below).
+- Pick: `./batch-check.sh --pick` is ALL (`AllChecks.java` changed: 211 harnesses), review "not needed - no money,
+  saves or threading in the diff". Exit 4 on one line: CentralBankCheck "timed out after 1740 s", cut off at its
+  23rd founding while 35 harness starts were held for memory (RAM down to 2.7 GB, other batches running). It
+  reads none of the files changed here, and the model is main's; run alone (`./batch-check.sh CentralBankCheck`)
+  it passed, exit 0. Every other harness passed; the timing assertions were soft, as off the gate.
