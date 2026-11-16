@@ -587,7 +587,6 @@ public abstract class Sector {
 
     private Staffing staffing(BuildingsTemplate t, int count, boolean crewsSpokenFor, boolean ownSitesInCount) {
         if (t == null || game == null) return Staffing.ANY;
-        t = game.getBusinessInvestment().templateForNew(t);
         PopulationManager people = game.getPopulationManager();
         double[] posts  = people.staffablePostsByBand();
         if (posts == null) return Staffing.ANY;
@@ -3379,7 +3378,6 @@ public abstract class Sector {
 
     /** What one of its templates would clear a month, for the interest test. See BusinessInvestment. */
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
-        t = plans.templateForNew(t);
         double maker = plans.estimatedMakerProfit(this, t);
         /*
          * ...WEIGHED WITH ITS FREIGHT (FR2, 2026-10-19): its BULK legs at the

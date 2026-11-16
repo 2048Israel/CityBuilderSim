@@ -359,8 +359,6 @@ public class Game {
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setLicenceCost(t -> LicenceFees.forNew(this, t));
-        businessInvestment.setNewTemplate(t -> RecipeChanges.forNew(this, t));
-        buildingManager.setNewTemplate(businessInvestment::templateForNew);
         businessInvestment.setStandingLicenceCost(t -> LicenceFees.forStanding(this, t));
         businessInvestment.setRunWorksCost(this::runWorksCost);   // a railway line's cuts, viaducts and tunnels are in its price (ET4)
         businessInvestment.setOrderWaitOutput(this::orderWaitOutput);   // and an order's wait is read at the month the builders and their contractor can give it (BA1)
@@ -10308,7 +10306,6 @@ public class Game {
 
     /** Spare licences the city holds against what this order would need staffed. */
     public double licencesNeededFor(BuildingsTemplate template, int quantity) {
-        template = businessInvestment.templateForNew(template);
         if (template == null || template.getRequiresLicence() == null) return 0;
         return template.getLicensedPosts() * Math.max(1, quantity) * LICENCE_COVER_TO_OPEN;
     }
@@ -11148,7 +11145,6 @@ public class Game {
      * (LandManager.canAllocateOn()), not the linked pool's; every other order is asked what it always was.
      */
     public BuildResult buildStack(BuildingsTemplate template, int quantity, boolean noConstruction, int asked){
-        if (template != null && template.isRecipeSnapshot()) template = buildingManager.getTemplate(template.getId());
         if (!buildingManager.isTemplateKnown(template)) {
             this.hasNewReceipt = false;
             return BuildResult.NOT_KNOWN;

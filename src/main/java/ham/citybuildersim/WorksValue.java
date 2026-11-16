@@ -40,7 +40,6 @@ public final class WorksValue {
     /** The same comparison after earlier cards have used some of the treasury. */
     public static Value of(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
                            BuildingsTemplate t, int count, double landLeft, double cashLeft) {
-        t = g.getBusinessInvestment().templateForNew(t);
         if (count <= 0) return new Value(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
         Game.BuildQuote q = g.quoteBuild(t, count);
         double lead = Double.isFinite(q.months) ? Math.max(0, q.months) : 0;
@@ -265,7 +264,7 @@ public final class WorksValue {
     private static Map<BuildingsTemplate, Integer> pendingLoads(Game g) {
         Map<BuildingsTemplate, Integer> loads = new LinkedHashMap<>();
         for (BuildingsStacks stack : g.getBuildingManager().getStacksUnderConstruction()) {
-            BuildingsTemplate t = g.getBusinessInvestment().templateForNew(stack.getBuilding());
+            BuildingsTemplate t = stack.getBuilding();
             if (t.getCategory() != BuildingType.ELECTRICITY && t.getElectricityConsumption() > 0)
                 loads.put(t, stack.getUnderConstruction());
         }
@@ -275,7 +274,7 @@ public final class WorksValue {
     private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months) {
         double load = 0;
         for (Map.Entry<BuildingsTemplate, Integer> e : completedAt(g, schedule, months).entrySet())
-            load += e.getValue() * (double) g.getBusinessInvestment().templateForNew(e.getKey()).getElectricityConsumption();
+            load += e.getValue() * (double) e.getKey().getElectricityConsumption();
         return load;
     }
 

@@ -5405,16 +5405,9 @@ public class Bank {
      */
     public boolean feesWouldCoverAnother() { return feesWouldCoverAnother(branches); }
     public boolean feesWouldCoverAnother(double standing) {
-        double cost = newBranchCost();
+        double cost = laterBranchCost();
         return cost > 0 && accountFees + lastUpkeepPerLater >= (standing + 1) * cost;
     }
-
-    private transient java.util.function.DoubleSupplier newBranchCost;
-
-    /** The planner's current crew adjustment for a branch that has yet to open. */
-    public void setNewBranchCost(java.util.function.DoubleSupplier cost) { newBranchCost = cost; }
-
-    private double newBranchCost() { return newBranchCost == null ? laterBranchCost() : newBranchCost.getAsDouble(); }
 
     /**
      * What a LATER branch cost last month (revised 0.7.19): a branch's share
@@ -5479,7 +5472,7 @@ public class Bank {
         if (!feesWouldCoverAnother(standing)) {
             return String.format("another branch's customers would pay %s a month in fees against the %s a branch costs",
                     Currency.writing().write(String.format("%,.1fk", feesPerBranchWithAnother(standing))),
-                    Currency.writing().write(String.format("%,.1fk", newBranchCost())));
+                    Currency.writing().write(String.format("%,.1fk", laterBranchCost())));
         }
         return null;
     }
@@ -5489,7 +5482,7 @@ public class Bank {
         if (standing <= 0) return "nowhere in the city to bank - its credit comes from outside, at the window's price";
         return String.format("%,.0f customers - another branch's fees of %s a month would cover the %s it costs",
                 customers, Currency.writing().write(String.format("%,.1fk", feesPerBranchWithAnother(standing))),
-                Currency.writing().write(String.format("%,.1fk", newBranchCost())));
+                Currency.writing().write(String.format("%,.1fk", laterBranchCost())));
     }
 
     /* ----------------- a branch whose fees do not cover it is closed (0.7.19) -----------------

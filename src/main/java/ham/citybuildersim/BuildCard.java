@@ -412,7 +412,6 @@ public final class BuildCard {
      * flow (sectors.CoalMining.madeBy()).
      */
     public static double valueAdded(Game game, BuildingsTemplate t) {
-        t = game.getBusinessInvestment().templateForNew(t);
         double v = 0;
         for (Map.Entry<Good, Double> e : ham.citybuildersim.sectors.Refining.madeBy(t).entrySet()) {
             double p = priceOf(game, e.getKey());
@@ -506,7 +505,6 @@ public final class BuildCard {
 
     /** What one costs to keep a month: upkeep and filled posts at today's wages, as the utility and government books pay them. */
     public static double runningCost(Game game, BuildingsTemplate t) {
-        t = game.getBusinessInvestment().templateForNew(t);
         double[] wages = game.getPopulationManager().getWagesPerType();
         double[] fill = game.getPopulationManager().getJobFillRate();
         double bill = 0;
@@ -520,7 +518,6 @@ public final class BuildCard {
 
     /** The same full-horizon sum the advice uses, exposed to every city work's card (HW1). */
     public static WorksValue.Value worksValue(Game game, BuildingsTemplate t, BuildAdvice.Measure m) {
-        t = game.getBusinessInvestment().templateForNew(t);
         BuildAdvice.Measure on = m != null && m.serves(t) ? m : cityMeasure(t);
         if (on == null) return null;
         return WorksValue.of(game, on, BuildAdvice.onSite(game, on), t, 1,
@@ -538,7 +535,6 @@ public final class BuildCard {
      * (m), or with m null its first ring; a market building with m ignored.
      */
     public static Figures of(Game game, BuildingsTemplate t, BuildAdvice.Measure m) {
-        t = game.getBusinessInvestment().templateForNew(t);
         Kind kind = kindOf(t);
         Game.BuildQuote one = game.quoteBuild(t, 1);
         double price = one.total, sticker = one.sticker;
@@ -1178,7 +1174,6 @@ public final class BuildCard {
     }
 
     public static Investors investors(Game game, BuildingsTemplate t) {
-        t = game.getBusinessInvestment().templateForNew(t);
         String slot = slot(t);
         Sector owner = ownerOf(game, t);
         BuildingsStacks stack = game.getBuildingManager().getStack(t);
@@ -1199,7 +1194,6 @@ public final class BuildCard {
 
     /** The first gate investors would stop this building at now, in buildStack()'s order and then the planners': null when it passes them all. */
     static Gate gate(Game game, BuildingsTemplate t, Sector owner, double estimate) {
-        t = game.getBusinessInvestment().templateForNew(t);
         LandManager ground = game.getLandManager();
         if (!game.hasDepositFor(t, 1)) {
             // ...on its own resource's sites (0.7.62), named in `why`: "iron" or "oil" - a land well's dry ones (0.7.84).
@@ -1287,8 +1281,6 @@ public final class BuildCard {
 
     /** Every gate investors would ask this building at now, and what one would earn, cost and be paid for with. */
     public static Appraisal appraise(Game game, BuildingsTemplate t) {
-        BuildingsTemplate original = t;
-        t = game.getBusinessInvestment().templateForNew(t);
         Sector owner = ownerOf(game, t);
         double estimate = game.getBusinessInvestment().estimatedMonthlyProfit(owner.key(), t);
         LandManager ground = game.getLandManager();
@@ -1334,7 +1326,7 @@ public final class BuildCard {
                 : lender == null ? new GateMark(GateKind.LENDER, Mark.PASS, null)
                 : new GateMark(GateKind.LENDER, Mark.FAIL, lender));
         double[] f = game.financingOf(owner.key(), t);
-        return new Appraisal(original, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3],
+        return new Appraisal(t, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3],
                 weighed(game, t));
     }
 
@@ -1504,7 +1496,6 @@ public final class BuildCard {
      * and does not weigh.
      */
     public static Weighed weighed(Game game, BuildingsTemplate t) {
-        t = game.getBusinessInvestment().templateForNew(t);
         Sector owner = t == null ? null : game.getSectors().ownerOf(t);
         BusinessInvestment plans = game.getBusinessInvestment();
         double vans = ham.citybuildersim.sectors.ProcessingSector.vansFor(t);
@@ -1547,7 +1538,6 @@ public final class BuildCard {
     public record Power(double gen, double draw, double bought, double sold, double soldValue) { }
 
     public static Power power(Game game, BuildingsTemplate t) {
-        t = game.getBusinessInvestment().templateForNew(t);
         if (t == null || !(t.getGen() > 0)) return null;
         Sector owner = game.getSectors().ownerOf(t);
         double tariff = owner instanceof ham.citybuildersim.sectors.ProcessingSector p ? p.tariff() : Double.NaN;
@@ -1912,7 +1902,6 @@ public final class BuildCard {
     }
 
     public static Verdict verdict(Game game, BuildingsTemplate t, int n) {
-        t = game.getBusinessInvestment().templateForNew(t);
         Game.BuildQuote q = game.quoteBuild(t, n);
         if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0, Game.siteOf(t));
         if (!game.hasCoastFor(t, n, Landmasses.CHOSEN)) return new Verdict(VerdictKind.NO_COAST, q, 0);

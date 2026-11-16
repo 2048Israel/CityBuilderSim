@@ -272,60 +272,18 @@ public final class RecipeChanges {
         return absent;
     }
 
-    /** The proposed building's physical figures, without changing the city's live fleet. */
-    public static BuildingsTemplate forNew(Game game, BuildingsTemplate t) {
-        if (t == null || !game.foundedUnfitted() || t.isRecipeSnapshot() || LicenceFees.pricing()
-                || !t.hasRecipeChoice()) return t;
-        java.util.Set<String> fitted = EquipmentFit.fittedForNew(game, t);
-        return snapshotAt(game, t, counts(t, fitted), 1, newChoices(game, t, Recipes.pricesOf(game)));
-    }
-
-    static BuildingsTemplate snapshotAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids) {
-        Map<String, Double> absent = absencesAt(game, t, counts, quantity, ids);
-        int unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0));
-        Recipe recipe = compose(t, base(t, ids[0]), quantity - unfitted, base(t, ids[1]), unfitted, absent, ids[0]);
-        double production = t.recipeProduction(), land = t.recipeLand(), steam = 0, petrol = .55;
-        double dig = t.recipeSite() == null ? 0 : t.recipeSite().dig();
-        for (RecipeChange change : t.getRecipeChanges()) {
-            double share = share(change, absent);
-            production += share * change.production();
-            land += share * change.land();
-            steam += share * change.steamRail();
-            petrol += share * change.crackerPetrol();
-            dig += share * change.dig();
-        }
-        boolean extras = !t.getRecipeChanges().isEmpty();
-        if (sameFigures(t, recipe) && (!extras || t.getProduction1() == production && t.getLandSqFt() == land
-                && t.steamRailShare() == steam && t.crackerPetrol() == petrol
-                && (t.site() == null || t.site().dig() == dig))) return t;
-        BuildingsTemplate copy = t.recipeSnapshot(recipe);
-        if (extras) copy.runRecipeExtras(production, land, steam, petrol, dig);
-        return copy;
-    }
-
-    private static boolean sameFigures(BuildingsTemplate t, Recipe recipe) {
-        if (!t.goodsMade().equals(recipe.makes()) || !t.goodsUsed().equals(recipe.uses())
-                || t.getElectricityConsumption() != recipe.getElectricity() || t.getGen() != recipe.getGen()
-                || t.getWaterConsumption() != recipe.getWater() || t.getConsumables() != recipe.getConsumables()) return false;
-        for (JobType job : JobType.values()) if (t.getJobs(job) != recipe.getJobs(job)) return false;
-        return true;
-    }
-
     /** Every royalty on the same rounded physical state used to judge a fitting. */
     static double feesAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids) {
         if (!t.isOwnedBySector()) return 0;
         java.util.Set<String> charged = new java.util.HashSet<>();
-        charged.add(t.getSinceText());
-        Sector owner = game.getSectors().byKey(t.getSector());
-        BuildingsTemplate snapshot = snapshotAt(game, t, counts, quantity, ids);
-        double bill = owner == null ? 0 : LicenceFees.buildingFee(game, snapshot, owner, false, 1) * quantity;
+        double bill = 0;
         Recipes.Prices prices = Recipes.pricesOf(game);
         int unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0));
         for (int part = 0; part < 2; part++) {
             Recipe recipe = base(t, ids[part]);
             int n = part == 0 ? quantity - unfitted : unfitted;
             // Both parts can bear the same process patent, each on its own count.
-            if (n > 0 && !recipe.getSince().equals(t.getSinceText()))
+            if (n > 0)
                 bill += LicenceFees.recipeFee(t, recipe, game.getMonth(), prices, game.getResearch()) * n;
             if (n > 0) charged.add(recipe.getSince());
         }
@@ -345,7 +303,7 @@ public final class RecipeChanges {
             without.put(piece.getId(), quantity);
             double benefit = t.changeNeeds(piece.getId()) || piece.getEnds() == null && piece.getId().equals(t.recipePieceId())
                     ? differenceAt(game, t, counts, without, quantity, ids, prices)
-                    : EquipmentFit.grossGainOf(game, snapshot, piece) * (quantity - counts.getOrDefault(piece.getId(), 0));
+                    : EquipmentFit.grossGainOf(game, t, piece) * (quantity - counts.getOrDefault(piece.getId(), 0));
             bill += LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), benefit);
         }
         return bill;

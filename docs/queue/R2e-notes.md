@@ -5,6 +5,11 @@ No known-reds entry names R2e at the fork.
 
 ## Built and design calls
 
+The final scope keeps physical research changes and fitting. The attempted
+new-building quote alignment and its reader audit below are historical
+work transferred to QN1 by mail213002. The source now contains no copied
+template or prospective-reader rewiring.
+
 27 signed changes use R2d's immutable modern anchor, saved missing-change
 flags, unfitted equipment counts and one rounding. E19/E20 open Panel Mill
 and Wood Pellet Mill. The 91-entry catalogue appends both permanent codes.
@@ -483,3 +488,50 @@ order bar. The bank fee-income boundary is explicitly synthetic and sits
 between the real cached crew cost and the proposed extra-clerk cost.
 Evidence is review5-before/model-compile.log, review5-before/check.log and
 focused/PostwarRecipeCheck.log under target/R2e-evidence.
+
+The expanded BuildAdviceCheck found one identity regression in4c33a68d:
+its two deliberately supplied clinic templates were being canonicalized
+through their copied catalogue id. That replaced the chosen custom
+clinic in the returned suggestion. Its unchanged whole-plan law failed.
+The failure is retained in target/R2e-evidence/review6-advice-before.log.
+
+★ Each quote now retains its actual source reference, and orderTemplate()
+returns that source. Normal caller-supplied templates retain their own
+identity. Suggestions, candidates, Build-card appraisals, the bank wage
+delta and the build entry share this canonicalization. The reference is
+transient on the ephemeral quote and introduces no saved selection.
+The two-clinic fixture and its premises stay unchanged.
+
+## Final scope after REV-R2e-6
+
+★ Mail213002 splits main's existing prospective quote mismatch into QN1.
+All copied-template code, quote reader rewiring, both BuildScreen hunks
+and quote-only fixtures are removed from R2e. docs/queue/QN1.md records
+the reader audit, all review traps and each removed control's figures.
+The ship file queues QN1.
+
+R2e retains the worst-failure selector at fitting time, the uniform saved
+monthly process after a recipe list first runs, full per-entry net gains,
+the one-building rounded refit increment and the synthetic patent control.
+Game's only source hunk consumes that selected set at completion.
+
+★ Mail213417 takes the building-existence cancellation rule. The building
+stands on both sides of a fitting, so its existence royalty cancels. Sum
+equipment, free-change and legacy-process entry fees on each physical
+state. A piece still bears its entry fee when that code is also the
+building's patent. A new Large Cement control causes imported PE4 shared
+by building and long kiln, local E2 fitted, positive actual production,
+one entry fee in each fitting increment and one shared code in the real
+production-bill function.
+
+The removed Bank fee-boundary fixture also encoded the old multiplication
+of new clerk costs across all standing branches. QN1 explicitly replaces
+its oracle with N*C + C_new minus the charter exemption.
+
+Final fitting-only PostwarRecipeCheck passes210/210. Its identical source
+fails7/210 against the exact retained46c321bbd fitting model. Those failures
+cover the coupled selector, fresh changed-input set, synthetic patent,
+rounded next refit and standing fleet, imported dependent rent and saved
+steel process. The added shared-PE4 Large Cement control passes with real
+positive cement production and one positive billed code. No copied
+BuildingsTemplate API or prospective-reader callback remains in source.

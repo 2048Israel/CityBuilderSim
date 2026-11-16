@@ -689,15 +689,6 @@ public final class PostwarRecipeCheck {
                 fleetExpected > 0 && HistoricalLicenceCheck.near(fleetFee, fleetExpected), fleetFee + " vs " + fleetExpected);
     }
 
-    static BuildingsTemplate proposal(Game game, BuildingsTemplate template) throws Exception {
-        try {
-            var method = BusinessInvestment.class.getMethod("templateForNew", BuildingsTemplate.class);
-            return (BuildingsTemplate) method.invoke(game.getBusinessInvestment(), template);
-        } catch (NoSuchMethodException before) {
-            return template;
-        }
-    }
-
     static void wholeNetAndSavedProcess() throws Exception {
         out.println("--- 12. every fee, the saved production process and a new plant's own recipe ---");
         Game kiln = HistoricalLicenceCheck.town("R2e-all-set-fees", true);
@@ -768,142 +759,47 @@ public final class PostwarRecipeCheck {
         check("the completion boundary fits against that saved process and production retains the same choice",
                 shop.getUnfitted("open-hearth") == 1 && java.util.Arrays.equals(oxygen.runningRecipeIds(), saved), "");
 
-        Game cars = HistoricalLicenceCheck.town("R2e-new-plant-figures", true);
-        allExcept(cars, "");
-        at(cars, ResearchCatalog.knownFrom("E8"));
-        BuildingsTemplate works = HistoricalLicenceCheck.stand(cars, "Vehicle Works", 1);
-        BuildingsStacks carStack = cars.getBuildingManager().getStack(works);
-        run(cars);
-        for (int step = 0; step < 120 && proposedPieces(cars, works).contains("welding-robot"); step++)
-            priceForBothReaders(cars, Good.MACHINERY, .01 * Math.pow(1.5, step));
-        carStack.setUnfitted("welding-robot", 1);
-        run(cars);
-        double actualNew = cars.getBusinessInvestment().estimatedMonthlyProfit(works.getSector(), works);
-        int unfittedPosts = works.getJobs(JobType.NO_DIPLOMA);
-        carStack.setUnfitted("welding-robot", 0);
-        run(cars);
-        BuildingsTemplate quoted = proposal(cars, works);
-        double quotedProfit = cars.getBusinessInvestment().estimatedMonthlyProfit(works.getSector(), works);
-        BuildCard.Appraisal card = BuildCard.appraise(cars, works);
-        check("fixture: the existing vehicle works has100 posts but the known robot is rejected for the next plant's300",
-                works.getJobs(JobType.NO_DIPLOMA) == 100 && unfittedPosts == 300
-                        && !proposedPieces(cars, works).contains("welding-robot")
-                        && Recipes.pricesOf(cars).wages()[JobType.NO_DIPLOMA.ordinal()] > 0, "");
-        check("the shared new-plant recipe has300 posts and leaves the fitted fleet's100 untouched",
-                quoted != works && quoted.getJobs(JobType.NO_DIPLOMA) == unfittedPosts && works.getJobs(JobType.NO_DIPLOMA) == 100, "");
-        check("the investor estimate and Build card quote the selected new recipe's actual profit",
-                HistoricalLicenceCheck.near(quotedProfit, actualNew) && HistoricalLicenceCheck.near(card.estimate(), actualNew),
-                quotedProfit + ", " + card.estimate() + " vs " + actualNew);
-        check("the Build card carries the real catalogue template for an eventual order", card.template() == works, "");
-        silent(() -> cars.setCashForTest(Founding.WEALTHY_CASH * 100));
-        Game.BuildResult[] built = new Game.BuildResult[1];
-        silent(() -> built[0] = cars.buildStack(quoted, 1, true));
-        check("ordering through a proposed quote keeps the stack on its real template",
-                built[0] == Game.BuildResult.SUCCESS && cars.getBuildingManager().getStack(works).getBuilding() == works, String.valueOf(built[0]));
+        Game shared = HistoricalLicenceCheck.town("R2e-large-shared-PE4", true);
+        allExcept(shared, "PE4");
+        at(shared, ResearchCatalog.knownFrom("PE4"));
+        BuildingsTemplate large = HistoricalLicenceCheck.stand(shared, "Large Cement Plant", 1);
+        priceForBothReaders(shared, Good.CEMENT, 10000);
+        silent(() -> shared.simulateMonths(2));
+        BuildingsStacks largeStack = shared.getBuildingManager().getStack(large);
+        fitted(large, largeStack);
+        priceForBothReaders(shared, Good.THERMAL_COAL, 1);
+        priceForBothReaders(shared, Good.MACHINERY, .000001);
+        largeStack.setUnfitted("long-kiln", 1);
+        run(shared);
+        Recipes.Prices largePrices = Recipes.pricesOf(shared);
+        double before = actualValue(large, largePrices);
+        Equipment sharedKiln = large.getEquipment("long-kiln");
+        EquipmentFit.Verdict largeRefit = EquipmentFit.verdict(shared, largeStack, sharedKiln);
+        EquipmentFit.Verdict largeNew = EquipmentFit.verdictForNew(shared, large, sharedKiln);
+        largeStack.setUnfitted("long-kiln", 0);
+        run(shared);
+        double gross = actualValue(large, largePrices) - before;
+        double once = gross - LicenceFees.onGain("PE4", shared.getMonth(), shared.getResearch(), gross);
+        var producer = shared.getSectors().cementConcrete();
+        check("fixture: the Large Cement Plant and its kiln share imported PE4, with local E2 fitted and positive real production",
+                large.getSinceText().equals("PE4") && sharedKiln.getSince().equals("PE4")
+                        && large.getEquipment("preheater") != null && largeStack.getUnfitted("preheater") == 0
+                        && LicenceFees.payable("PE4", shared.getMonth(), shared.getResearch())
+                        && !LicenceFees.payable("E2", shared.getMonth(), shared.getResearch())
+                        && gross > 0 && producer.output(Good.CEMENT).produced > 0, "gross " + gross);
+        check("the shared PE4 code loses one entry fee in both fitting increments",
+                HistoricalLicenceCheck.near(largeRefit.gain(), once) && HistoricalLicenceCheck.near(largeNew.gain(), once),
+                largeRefit.gain() + ", " + largeNew.gain() + " vs " + once);
+        var bill = LicenceFees.class.getDeclaredMethod("stackBill", Game.class, BuildingsStacks.class, Sector.class, double.class);
+        var buildingBill = LicenceFees.class.getDeclaredMethod("buildingFee", Game.class, BuildingsTemplate.class, Sector.class, boolean.class, double.class);
+        bill.setAccessible(true);
+        buildingBill.setAccessible(true);
+        double rate = producer.getOperatingRate();
+        double real = (double) bill.invoke(null, shared, largeStack, producer, rate);
+        double existence = (double) buildingBill.invoke(null, shared, large, producer, true, rate);
+        check("the positive real bill charges the shared PE4 code once",
+                rate > 0 && real > 0 && HistoricalLicenceCheck.near(real, existence), real + " vs " + existence);
 
-        BuildingsTemplate branch = cars.getBuildingManager().getTemplateByName("Commercial Bank");
-        fitted(branch, cars.getBuildingManager().getStack(branch));
-        priceForBothReaders(cars, Good.MACHINERY, 1e9);
-        run(cars);
-        Recipe earlierBank = RecipeChanges.compose(branch, branch.defaultRecipe(), Map.of("B1", 1.0, "B3", 1.0), "fixture-bank");
-        double extraClerks = 0;
-        for (JobType job : JobType.values()) extraClerks += (earlierBank.getJobs(job) - branch.getJobs(job))
-                * Recipes.pricesOf(cars).wages()[job.ordinal()];
-        double lastBranchCost = cars.getBank().laterBranchCost();
-        double branchExpected = cars.getBank().feesPerBranchWithAnother(cars.getBuildingManager().countByName("Commercial Bank"))
-                - lastBranchCost - extraClerks;
-        double branchQuote = cars.getBusinessInvestment().estimatedMonthlyProfit(branch.getSector(), branch);
-        check("fixture: a fitted bank's next branch rejects both machines and needs positive extra clerk wages over its cached cost",
-                lastBranchCost > 0 && extraClerks > 0 && proposedPieces(cars, branch).isEmpty(), "extra wages " + extraClerks);
-        check("the bank's special new-branch estimate includes the selected recipe's extra clerks",
-                HistoricalLicenceCheck.near(branchQuote, branchExpected), branchQuote + " vs " + branchExpected);
-        // Synthetic fee-income boundary, derived from the real two crew costs.
-        // It keeps the old cached branch affordable and the proposed branch unaffordable.
-        var accountFees = Bank.class.getDeclaredField("accountFees");
-        var charterExemption = Bank.class.getDeclaredField("lastUpkeepPerLater");
-        accountFees.setAccessible(true);
-        charterExemption.setAccessible(true);
-        int branches = cars.getBuildingManager().countByName("Commercial Bank");
-        double between = (branches + 1) * (lastBranchCost + extraClerks / 2);
-        accountFees.setDouble(cars.getBank(), between - charterExemption.getDouble(cars.getBank()));
-        check("synthetic branch-fee boundary covers the cached crew but falls below the selected new crew's cost",
-                between >= (branches + 1) * lastBranchCost && between < (branches + 1) * (lastBranchCost + extraClerks)
-                        && cars.getBank().getAccountFees() > 0, "");
-        check("the branch-opening fee gate also prices the selected new clerks", !cars.getBank().feesWouldCoverAnother(branches), "");
-
-        Game modern = town("R2e-default-no-proposal-copies", false);
-        int copies = 0;
-        for (BuildingsTemplate template : modern.getBuildingManager().getTemplates())
-            if (proposal(modern, template) != template) copies++;
-        check("default founding reaches zero appraisal copies across its entire catalogue", copies == 0, "copies " + copies);
-        priceForBothReaders(cars, Good.MACHINERY, .000001);
-        run(cars);
-        check("matching new and standing vehicle recipes reuse the original template", proposal(cars, works) == works, "");
-    }
-
-    static double[] prospectiveNeeds(Game game, Map<BuildingsTemplate, Integer> order) throws Exception {
-        try {
-            var method = BuildAdvice.class.getMethod("needs", Game.class, Map.class);
-            return (double[]) method.invoke(null, game, order);
-        } catch (NoSuchMethodException before) {
-            return BuildAdvice.needs(order);
-        }
-    }
-
-    static void allFutureReaders() throws Exception {
-        out.println("--- 13. the saved process and staffing rule reaches every proposed-building reader ---");
-        Game pulp = HistoricalLicenceCheck.town("R2e-saved-pulp-quote", true);
-        allExcept(pulp, "");
-        at(pulp, PolicyDates.monthOf(2000, 1));
-        BuildingsTemplate mill = HistoricalLicenceCheck.stand(pulp, "Pulp Mill", 1);
-        priceForBothReaders(pulp, Good.PULPWOOD, 1000);
-        priceForBothReaders(pulp, Good.RESIDUES, .001);
-        run(pulp);
-        String saved = mill.runningRecipeIds()[0];
-        priceForBothReaders(pulp, Good.RESIDUES, 1e6);
-        Recipe fresh = Recipes.best(mill, true, pulp.getMonth(), Recipes.pricesOf(pulp), pulp.getResearch());
-        silent(() -> pulp.getRecipes().apply(pulp));
-        BuildingsTemplate quotedMill = proposal(pulp, mill);
-        check("fixture: a Pulp Mill with no independent changes saved kraft, while moved residue prices now prefer groundwood",
-                mill.getRecipeChanges().isEmpty() && saved.equals("kraft") && fresh.getId().equals("groundwood"), saved + " -> " + fresh.getId());
-        check("the new Pulp Mill quote keeps the same saved physical recipe as production",
-                figures(quotedMill).equals(figures(mill)) && quotedMill.uses(Good.RESIDUES) == 21500, "residues " + quotedMill.uses(Good.RESIDUES));
-
-        Game cars = HistoricalLicenceCheck.town("R2e-future-staffing-readers", true);
-        allExcept(cars, "");
-        at(cars, ResearchCatalog.knownFrom("E8"));
-        BuildingsTemplate works = HistoricalLicenceCheck.stand(cars, "Vehicle Works", 1);
-        priceForBothReaders(cars, Good.MACHINERY, 1e9);
-        run(cars);
-        BuildingsTemplate hundred = works.recipeSnapshot(Recipe.topLevelOf(works));
-        BuildingsTemplate threeHundred = proposal(cars, works);
-        var owner = cars.getSectors().automotive();
-        for (WageBand band : WageBand.values()) cars.getMigration().holdArrivals(band);
-        double[] existing = cars.getPopulationManager().staffablePostsByBand();
-        double[] qualified = existing.clone();
-        for (JobType job : JobType.values()) qualified[WageBand.of(job).ordinal()] += threeHundred.getJobs(job);
-        qualified[WageBand.NONE.ordinal()] = 0;
-        cars.getPopulationManager().restoreSkilledHeads(qualified);
-        int skilled = (int) Math.ceil(java.util.Arrays.stream(qualified).sum());
-        boolean boundary = false;
-        for (int workers = skilled; workers <= skilled + existing[WageBand.NONE.ordinal()] + 2000 && !boundary; workers += 5) {
-            cars.getPopulationManager().restoreWorkforce(workers);
-            boundary = owner.staffing(hundred).passes() && !owner.staffing(threeHundred).passes();
-        }
-        check("fixture: positive-priced rejected robot, fitted fleet100, proposed300, with a real staffing pass/fail boundary and arrivals closed",
-                boundary && works.getJobs(JobType.NO_DIPLOMA) == 100 && threeHundred.getJobs(JobType.NO_DIPLOMA) == 300
-                        && !proposedPieces(cars, works).contains("welding-robot"), "boundary " + boundary);
-        BuildCard.Figures card = BuildCard.of(cars, works, null);
-        BuildCard.Investors investors = BuildCard.investors(cars, works);
-        double expectedRunning = BuildCard.runningCost(cars, threeHundred);
-        check("the main Build card carries the proposed300-post figures and their running bill",
-                card.template().getJobs(JobType.NO_DIPLOMA) == 300 && HistoricalLicenceCheck.near(card.running(), expectedRunning), "posts " + card.template().getJobs(JobType.NO_DIPLOMA));
-        check("the Build card and investor summary fail the new plant's actual staffing gate",
-                !owner.staffing(works).passes() && investors.own() != null && investors.own().kind() == BuildCard.GateKind.STAFFING
-                        && card.staffableWithArrivals() == owner.staffing(threeHundred).share, "");
-        double[] needs = prospectiveNeeds(cars, Map.of(works, 2));
-        check("the order bar counts600 unskilled posts for two proposed plants while the installed fleet keeps100",
-                needs[JobType.NO_DIPLOMA.ordinal()] == 600 && works.getJobs(JobType.NO_DIPLOMA) == 100, "posts " + needs[JobType.NO_DIPLOMA.ordinal()]);
     }
 
     public static void main(String[] args) throws Exception {
@@ -933,7 +829,6 @@ public final class PostwarRecipeCheck {
         newCementPlant();
         chosenSetAndRefit(data);
         wholeNetAndSavedProcess();
-        allFutureReaders();
         out.println(fails == 0 ? "All PostwarRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }
