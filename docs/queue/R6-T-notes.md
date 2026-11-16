@@ -87,5 +87,12 @@ Taken here, each with its reason:
 ## Checks
 
 `./batch-check.sh --fast` (JDK_JAVA_OPTIONS naming data/earth-2.bin and
-data/world-1.bin): see below. The dry run: below, with its kept log and the two
-commits it was of.
+data/world-1.bin) at 4d255994: exit 0; compile OK, maps regenerated with
+nothing changed, Stale 0 firm (186 soft), tree 0 changed.
+
+The dry run, `sh tools/gate.sh R6-T --dry-run --no-tag`, 07:12-07:14 on
+2026-11-16: gate exit 0, of branch 4d255994c008 and main 1e88c5466f76; its
+check fast exit 0 in 92 s, Stale 0 firm, the tree's nine changes the ship's own
+records and this batch's files, nothing kept. The kept run is
+`/tmp/cbs-gate-R6-T-FlE3jWXO` (`ship.log`, `unnamed.txt`), named on the ship
+file's first line. After it only these notes and the ship file changed.

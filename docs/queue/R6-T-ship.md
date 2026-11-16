@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-R6-T-FlE3jWXO -->
 <!-- readiness: provisional -->
 ## changelog
 ### R6-T — the speculative tier 2030-2060, a study — 2026-11-16, ready, no tag (docs)
