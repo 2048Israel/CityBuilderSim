@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0h-NrRv6F33 -->
 ## changelog
 ### {next} — R0h, The 1918 influenza's sick counted once — 2026-11-15, ready, see docs/queue/R0h-notes.md
 The influenza's acute sick now stay beside the long-sickness ring, so they are

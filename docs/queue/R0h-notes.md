@@ -1,5 +1,10 @@
 # R0h - the 1918 influenza's sick counted once
 
+**Final checks complete.** Launcher exit 0 (suite exit 3, five inherited known-red
+harnesses), traced playtest exit 0, sealed report equivalent, no trace difference
+before January 1919. The main-proven seed-12 housing finding is queued as HN1;
+its raw ensemble F1 failures remain recorded and it has no standing gate exemption.
+
 ## What changed
 
 Health exposes its capped sick rate without influenza. Sickness meets that rate
@@ -81,7 +86,7 @@ the generator's existing Markdown hard-break whitespace.
 
 The selection is ALL (Game.java has 171 readers, 207 harnesses in this main),
 so no local full suite or local ALL pick is run. The normal launcher dry run
-will execute and judge that full selection. Ensemble and dry run pending. The default trace
+will execute and judge that full selection. The final ensemble, launcher and trace results are recorded below. The default trace
 changes because it crosses 1918; an ensemble is required. No current known-reds
 entry names R0h. No process machinery was changed, so the one-in/one-out count
 does not apply.
@@ -225,3 +230,70 @@ main-proven F1 acceptance stands; this narrows the records, not the watch.
 Dry-run authorization also confirmed our source patch-id is identical to the
 accepted 4a6f3ebf source, apart from merged main. The baseline was committed
 before the launcher. No push is made while the dry run is active.
+
+## Kept launcher and full default trace
+
+Normal route: sh tools/gate.sh R0h --dry-run, detached and awaited, default
+suite resource pool, native Earth/world properties, no serial override.
+**Launcher exit 0; suite exit 3 in 1,989 seconds.** The default gate selection
+ran 194 harnesses in 1,915 seconds: 189 passed, five inherited known-red harnesses
+(DeathRecordCheck, InvestCheck, MapCheck, MoneyDatesCheck, ResearchViewCheck).
+No NEW/unnamed lines: unnamed.txt is empty. LongPlaytest and every changed harness
+pass. Fourteen timing assertions are soft and three played-path premises are
+OBSERVED, as the normal gate reports; Stale has zero firm findings.
+
+Kept run (for reuse):
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0h-NrRv6F33
+
+The two inputs are:
+- branch: **8e09577ab11e7d0e27a7cd1f9cedc27576e640cc**
+- main: **01402a54e58881a5283a84933e766a38b5f1a089**
+
+Only this notes file and the ship file advance after that run. The kept
+checks/generated SHA256 manifest verifies before and after the trace work
+(exit 0); all trace artifacts are in the separate traces/ folder.
+
+The trace flag was omitted from the launcher environment. The orchestrator
+reserved one sequential traced LongPlaytest after ALL. The initial helper found
+that gate.sh deletes the successful clone, including its classes, and stopped
+before Java. The orchestrator authorized the final-fast worktree classes from
+identical pinned source instead: git diff 8e09577ab HEAD -- src and git status
+--porcelain -- src are both empty (traces/source-diff.txt and source-status.txt).
+The source tree/commit manifests are beside them. This build says 0.9.120 while
+the publisher's dry merge says 0.9.121; the model source/resources are the same.
+
+The one actual traced playtest exits 0. Its full report equals the sealed
+checks/LongPlaytest.log in all **480 lines** after removing the JDK banner,
+wall-clock prefixes, the same two runtime measurements used by BK2b, and the
+two build-version strings. Normalized SHA256, both reports:
+4f7636e21e472d8c99bfb3ceabb4b835c0975a15e5162d15c4b897c8385c051a
+
+The native standalone stdout used CP1252 (AllChecks explicitly requests UTF-8).
+It is preserved as traces/LongPlaytest.cp1252.log and losslessly transcoded to
+UTF-8 as LongPlaytest.log and LongPlaytest.utf8.log before comparison. No model
+value, assertion, or other report text is normalized. equivalence.py,
+equivalence.json and the empty equivalence.diff retain the exact check.
+The orchestrator was told as soon as the JVM exited, freeing FA1's slot.
+
+All eight CSVs compare against the orchestrator's current main reference:
+C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-XR7/target/checks/XR7-postmerge/trace-*.csv
+R2d, KP2c, ER1 and BK2b preserve that reference. The first moved month is:
+
+| CSV | First changed month |
+|---|---|
+| bank | 230 - February 1919 |
+| bonds | 229 - January 1919 |
+| borrow | 273 - September 1922 |
+| build | 229 - January 1919 |
+| house | 229 - January 1919 |
+| labour | 230 - February 1919 |
+| month | 229 - January 1919 |
+| pop | 229 - January 1919 |
+
+Nothing moves before the influenza or during its initial 1918 sick/work months.
+The first demographic/money change is the corrected delayed ring mortality in
+January 1919. Borrowing first exposes the later changed rate at 273. The seven
+monthly series each contain 2,405 CSV rows including the header; borrowing has
+52 baseline rows and 55 current rows. All eight files, exact per-file hashes,
+byte/row counts and first differing columns are retained in traces/comparison.json.
+There was no rerun of main. The raw 80-run score and HN1 disposition stand.
