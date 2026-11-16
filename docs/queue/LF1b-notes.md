@@ -33,3 +33,64 @@ account's net (-508,400): declared, that era's financial account turns from a de
 After m1200 the hot money and the bonds dwarf the shares and the pair is noise. Expectation, before building: the currency
 stronger through m400-m1200, the trace moved from m32 (the first month a cell sold a share abroad, for 0.000017), the late run as it was
 in kind if not to the byte.
+
+## 2. What was built
+
+**The pair (`MoneyAudit`)**, beside the fund's share lines, the same four as the cells' bonds have had since 0.7.12:
+
+| line | scope | what |
+|---|---|---|
+| `+ shares HouseholdsSoldAbroad` | FINANCIAL (in) | a cell's share sold to the world: dollars in |
+| `- shares HouseholdsSoldAbroad (into their savings)` | DOMESTIC (out) | ...into the cells' savings, outside the pools |
+| `+ shares HouseholdsBoughtAbroad (from their savings)` | DOMESTIC (in) | a share bought from the world (its long, its short, the month's leavers) out of the savings |
+| `- shares HouseholdsBoughtAbroad` | FINANCIAL (out) | ...the dollars out |
+
+Read off `Exchange.getHouseholdsSoldAbroad()`/`getHouseholdsBoughtAbroad()`, the month's sums the settle has kept since 0.7.12 round 2
+(`cellSells && worldBuys`, `abroadSells && cellBuys`; the world's short and the emigrants count as abroad, as the desk's own lines count
+them). Each pair cancels in the cash identity, so the residual is unchanged, and `ForeignAccounts.takeMonth` reads `financialIn`/
+`financialOut` as it always has: nothing else changed. Exchange's getter javadoc names the pair.
+
+★ **The signs follow the bonds, not the brief's words.** The brief says "the sale into the cells' savings DOMESTIC in and FINANCIAL out,
+the purchase the other way"; read as scopes that puts the world's payment for a cell's share on the financial *outflow*, against the
+bonds' pair it says to copy (`+ bonds HouseholdsSoldAbroad` FINANCIAL, `- bonds HouseholdsSoldAbroad (into their savings)` DOMESTIC) and
+against every other line where the world buys (`+ desk SharesSoldAbroad`, `+ fund SharesSoldAbroad`, `+ equity SubscribedAbroad`, all
+FINANCIAL credits). I took the bonds' signs: a sale abroad is money arriving, the purchase money leaving.
+
+★ **No save field, no format bump.** The exchange's two figures are month flows cleared by `startMonth()` and unsaved, like LF1c's two; the
+audit that reads them is struck in the month that made them, and what the next month's screens read, `ForeignAccounts`' financial in and
+out, is already saved (its state's 40 and 41). An old save loads as it did: nothing is read differently.
+
+★ **No screen change.** The Trade screen's "capital in"/"capital out" tips list examples ("borrowed abroad, money parked here, the world
+buying the businesses' bonds"), not a breakdown that must add up; their totals now hold the cells' shares. Left as they are.
+
+## 3. The check (`ShortSellingCheck`, section 9 and section 7)
+
+There is no `MoneyAuditCheck`; of the brief's two the section went in `ShortSellingCheck`, beside LF1c's valuation pairs.
+
+**Section 9, `theCellsAbroad()`** (the 48-month town of sections 2-5): the company the ordinary cells hold most of by value
+(Construction) and the cell holding most of it. Inside the real month, through `Game.settleProbeForTest` (after the exchange's
+`startMonth`, before its step and the audit; CentralBankCheck, FloatLinkCheck and AuctionCheck use it the same way), the fixture rests a
+world bid inside the spread the month finds and the cell sells half its holding into it, then a world ask at the same price and the same
+cell buys half of that back with what it was paid (the town's savers are poor beside its shares: the richest cell's savings bought 11,
+under the month's own financial outflow, so the purchase could not have shown on it). The town makes no cell-to-world trade by itself
+(a 24-month probe, none), and the step after the fixture added none. It reads: the shares filled, the exchange's two figures risen by
+`q x p`, the cell's savings up by the sale and down by the purchase, the world's holding up by the difference; the four lines equal to the
+figures; the residual 0; the sale (175.0) over ten times the month before's whole financial inflow (0.0006) and the purchase (87.5) over
+ten times its outflow (5.96); `financialIn >= sale` and `financialOut >= purchase`; `ForeignAccounts`' month equal to the audit's. 21
+assertions.
+
+**The control, by hand:** with the four lines commented out of `MoneyAudit` the section shows six failures, the residual still 0 (both
+sides are outside the pools, which is why the lines are read directly):
+
+    the audit's line for the cells' sale abroad is the exchange's figure      FAIL  0.000000000 != 174.984697487
+    ...with its half into their savings, the same size                        FAIL  0.000000000 != 174.984697487
+    the audit's line for the cells' purchase abroad is the exchange's figure  FAIL  0.000000000 != 87.492348744
+    ...with its half out of their savings, the same size                      FAIL  0.000000000 != 87.492348744
+    the balance of payments' financial inflow holds the sale: $0.0307         FAIL
+    ...and its financial outflow the purchase: $17.0178                       FAIL
+
+Restored, 21 of 21.
+
+**Section 7** (the playtest's city, 1,000 months, shorts on) now counts the months the cells traded shares with the world and reads the
+four lines against the two figures every month: sold to the world in 336 months (27,702), bought from it in 7 (217,245), no month's
+lines off. ShortSellingCheck whole through `batch-check.sh`: exit 0, all checks passed (its two HS1 known reds did not show in this run).
