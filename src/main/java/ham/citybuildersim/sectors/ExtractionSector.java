@@ -199,6 +199,7 @@ public abstract class ExtractionSector extends Sector {
      */
     @Override
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+        t = plans.templateForNew(t);
         // The maker's estimate itself (not Sector's, which would weigh the legs a second time): its freight below.
         if (t == null) return super.estimatedMonthlyProfit(t, plans);
         double maker = plans.estimatedMakerProfit(this, t);

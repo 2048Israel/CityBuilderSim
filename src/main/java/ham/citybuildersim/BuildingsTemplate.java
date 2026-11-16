@@ -24,7 +24,7 @@ package ham.citybuildersim;
  *
  * @author Jerus
  */
-public class BuildingsTemplate {
+public class BuildingsTemplate implements Cloneable {
     String name;
 
     /** What the buyer pays in cash, in THOUSANDS. 30 is $30,000. See above. */
@@ -645,6 +645,23 @@ public class BuildingsTemplate {
     }
 
     private volatile String runsFitted, runsUnfitted;
+
+    private boolean recipeSnapshot;
+
+    /** A read-only appraisal's own figures, sharing immutable catalogue metadata. */
+    BuildingsTemplate recipeSnapshot(Recipe recipe) {
+        try {
+            BuildingsTemplate copy = (BuildingsTemplate) super.clone();
+            copy.jobsByEducation = jobsByEducation.clone();
+            copy.recipeSnapshot = true;
+            copy.runRecipes(recipe, 1, recipe, 0);
+            return copy;
+        } catch (CloneNotSupportedException impossible) {
+            throw new AssertionError(impossible);
+        }
+    }
+
+    boolean isRecipeSnapshot() { return recipeSnapshot; }
 
     /**
      * Gives this building its recipes, in the order given; a copy, and null or empty is none (the one implicit default, its top level). Needs its

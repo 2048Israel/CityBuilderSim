@@ -1035,6 +1035,7 @@ public class BusinessInvestment {
      * mills to buy it IS the export price.
      */
     public double estimatedMakerProfit(Sector sector, BuildingsTemplate t) {
+        t = templateForNew(t);
         return estimatedMakerProfit(sector, t, t.goodsMade());
     }
 
@@ -1045,6 +1046,7 @@ public class BusinessInvestment {
      * order - for every other building the template's own map, to the bit.
      */
     public double estimatedMakerProfit(Sector sector, BuildingsTemplate t, java.util.Map<Good, Double> made) {
+        t = templateForNew(t);
         Markets markets = economyManager.getMarkets();
         double gross = 0;
         for (java.util.Map.Entry<Good, Double> e : made.entrySet()) {
@@ -1385,12 +1387,15 @@ public class BusinessInvestment {
      * other building is priced by its sector.
      */
     public double estimatedMonthlyProfit(String sector, BuildingsTemplate t) {
+        t = templateForNew(t);
 
         if (bank != null && t != null && "Commercial Bank".equals(t.getName())) {
             // ...at what a branch past the charter carries, its operating cost
             // with it (revised 0.7.19: the charter is exempt from that).
             double cost = bank.laterBranchCost();
             if (cost <= 0) cost = wageBillFor(t) + t.getUpkeep();
+            else if (t.isRecipeSnapshot())
+                cost += wageBillFor(t) - wageBillFor(buildingManager.getTemplate(t.getId()));
             return bank.feesPerBranchWithAnother(buildingManager.countByName("Commercial Bank")) - cost;
         }
 
@@ -1409,6 +1414,15 @@ public class BusinessInvestment {
 
     private java.util.function.ToDoubleFunction<BuildingsTemplate> licenceCost = t -> 0;
     private java.util.function.ToDoubleFunction<BuildingsTemplate> standingLicenceCost = t -> 0;
+    private java.util.function.UnaryOperator<BuildingsTemplate> newTemplate = java.util.function.UnaryOperator.identity();
+
+    /** Game supplies the physical recipe and equipment one new building would run. */
+    public void setNewTemplate(java.util.function.UnaryOperator<BuildingsTemplate> proposal) {
+        newTemplate = proposal == null ? java.util.function.UnaryOperator.identity() : proposal;
+    }
+
+    /** A fresh appraisal snapshot, or the original in a default-founded city. */
+    public BuildingsTemplate templateForNew(BuildingsTemplate template) { return newTemplate.apply(template); }
 
     /** Game supplies patent rent; a bare planner reads zero. */
     public void setLicenceCost(java.util.function.ToDoubleFunction<BuildingsTemplate> cost) {
@@ -1426,7 +1440,7 @@ public class BusinessInvestment {
      * income statement, because the first mine in a city has no sector to read.
      */
     public double runningCostOf(BuildingsTemplate t) {
-        return runningCostOf(t, licenceCost);
+        return runningCostOf(templateForNew(t), licenceCost);
     }
 
     /** The same operating costs with the installed entry's standing royalty (R2c). */

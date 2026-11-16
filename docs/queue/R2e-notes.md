@@ -361,3 +361,52 @@ DiscoveryCheck, BuildingDataCheck and FittingCheck are also green on the
 same final classes. The unchanged RecipeCheck now passes its fresh-price
 break-even experiment. All jobs ran serially with the default settings.
 The selection is ALL209; the launcher dry run is the ALL verification.
+
+## Fourth review, whole net value and quote-only recipes
+
+REV-R2e-4 of821726694 found three further mismatches. A local long kiln
+activates imported E2 rent, so deducting only the target's patent overstates
+its net gain. New equipment was choosing again at completion although the
+production driver applies the saved monthly choice. A robot-fitted fleet's
+100 posts were also being priced for a new plant that rejects the robot
+and needs300.
+
+★ The marginal reader now compares full physical value less every
+applicable process, free-change, equipment and building royalty on each
+side. Independent-change templates use the saved monthly process in both
+new and refit appraisals. Legacy caller-only recipes keep their established
+fresh-best read.
+
+★ The shared new-template reader provides a quote-only copy when its
+chosen figures differ from the live template. It owns its jobs array and
+shares immutable catalogue metadata. Matching figures return the original.
+Default founding exits before any recipe or copy work. Investor estimates,
+the Build card model and the refit comparison share that reader.
+Processing candidates and Build cards keep the real template for orders;
+the build entry canonicalizes a supplied quote to the real template.
+No copy is installed in the building manager or written to a save.
+
+Game.consider reaches this historical-only valuation through its existing
+estimate call. Its order of operations is unchanged. The gate will compare
+all eight traces against the once-captured main32ec5a5d evidence.
+
+The vehicle quote fixture uses the first rejecting machinery price. An
+unbounded very high price made repairs so large that relative tolerance
+hid the payroll difference on the old model. The retained counterfactual
+now quotes profit5.8193 against the selected new plant's loss0.8401.
+The earlier rejected-robot fixture establishes the monthly PE13 choice
+before finding that price, preserving its rejection and positive-wage
+premises under the saved-process rule.
+
+The bank's special cached-branch-cost estimate needs the same marginal
+crew change. A quote-only B1/B3 recipe adds its current extra clerk wages
+to the established cached-cost formula. A positive cached-cost fixture
+pins that adjustment while both machines fail the new-branch money gate.
+
+The final whole-net/quote controls pass216/216. Exact821726694 classes
+fail5/216, covering imported dependent rent, the saved open-hearth process,
+the new300-post snapshot, investor/Build card profit and the bank's extra
+clerks. Logs remain in target/R2e-evidence/review4-before/check.log and
+focused/PostwarRecipeCheck.log. The default-founded catalogue reaches
+zero copies, and matching historical vehicle figures reuse their original
+template. The fast rebuild exits0 with zero firm Stale.

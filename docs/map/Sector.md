@@ -1,4 +1,4 @@
-# Sector.java - 3,899 lines · 274 methods · 20 constants · model
+# Sector.java - 3,900 lines · 274 methods · 20 constants · model
 
 `ham/citybuildersim/Sector.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -102,23 +102,23 @@
 | 2827 | CAPTIVE USE (0.7.112, batch I2; docs/studies/spec-materials.md 2.7) |
 | 2870 | THE ORDER (WN3, 2026-10-29; the ensemble's negative GDP in months |
 | 3330 | PLANNING - the decision to grow, and to shrink |
-| 3437 | THE SCREENS |
-| 3657 | SAVE AND RESTORE |
-| 3871 | THE POWER, FOR THE PICTOGRAMS (0.7.141, batch I11; IndustryView) |
+| 3438 | THE SCREENS |
+| 3658 | SAVE AND RESTORE |
+| 3872 | THE POWER, FOR THE PICTOGRAMS (0.7.141, batch I11; IndustryView) |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 3447 | `Sector.Line.Kind.HEAD` |  |
-| 3447 | `Sector.Line.Kind.LINE` |  |
-| 3447 | `Sector.Line.Kind.NOTE` |  |
-| 3448 | `Sector.Line.Tone.NONE` |  |
-| 3448 | `Sector.Line.Tone.GOOD` |  |
-| 3448 | `Sector.Line.Tone.WARN` |  |
-| 3448 | `Sector.Line.Tone.BAD` |  |
-| 3448 | `Sector.Line.Tone.MUTED` |  |
-| 3448 | `Sector.Line.Tone.HEAD` |  |
+| 3448 | `Sector.Line.Kind.HEAD` |  |
+| 3448 | `Sector.Line.Kind.LINE` |  |
+| 3448 | `Sector.Line.Kind.NOTE` |  |
+| 3449 | `Sector.Line.Tone.NONE` |  |
+| 3449 | `Sector.Line.Tone.GOOD` |  |
+| 3449 | `Sector.Line.Tone.WARN` |  |
+| 3449 | `Sector.Line.Tone.BAD` |  |
+| 3449 | `Sector.Line.Tone.MUTED` |  |
+| 3449 | `Sector.Line.Tone.HEAD` |  |
 
 ## Constants
 
@@ -263,7 +263,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 3821 | **type** `public abstract class Sector` | One business in the city, and the template every sector extends. |
+| 79 | 3822 | **type** `public abstract class Sector` | One business in the city, and the template every sector extends. |
 
 ### IDENTITY AND DECLARATION (lines 81-163)
 
@@ -643,7 +643,7 @@
 | 3319 | 1 | `public void endOfMonth(Game game)` | After every market has cleared and every good is made: anything the month still needs. |
 | 3328 | 1 | `protected void afterClearing(Good g)` | One good's market has cleared this month and its fills are booked (0.7.85; Markets.clear()), told to each of its buyers: a sector whose month reads what it bought says so here - the refiners' run, held to their crude ... |
 
-### PLANNING - the decision to grow, and to shrink (lines 3330-3436)
+### PLANNING - the decision to grow, and to shrink (lines 3330-3437)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -651,56 +651,56 @@
 | 3355 | 5 | `public Good planningGood()` | The good the generic planner sizes the sector by: its first stockable output, else its first output. |
 | 3368 | 1 | `public double firstPlantUtilisation()` | The share of a plant's nameplate the city has to be taking, a month, before this sector sinks its FIRST plant. |
 | 3377 | 1 | `public double visibleDemandOver(double months, EconomyManager economy)` | What the sector can SEE it will sell a month over the next `months`, when its customers' orders are on a book - a ceiling on the demand the maker's rule reads off the trend, since a trend read off a boom runs on after... |
-| 3380 | 17 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one of its templates would clear a month, for the interest test. |
-| 3412 | 7 | `public double[] retirementDemandAndCapacity(Game game)` | The demand the spare-capacity rule measures the sector against, and the capacity it measures. |
-| 3421 | 4 | `public double unitsOf(BuildingsTemplate t)` | What one of these contributes to the measure the sector is judged on. |
-| 3427 | 1 | `public boolean mayRetire(BuildingsTemplate t)` | Whether a holding of this template may be sold back this month. |
-| 3430 | 1 | `public int limitSpareRetirement(BuildingsTemplate t, int quantity, double keepAtLeast)` | Limit a spare-capacity sale to what still leaves keepAtLeast units usable; additive sectors need no further limit. |
-| 3433 | 3 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything. |
+| 3380 | 18 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one of its templates would clear a month, for the interest test. |
+| 3413 | 7 | `public double[] retirementDemandAndCapacity(Game game)` | The demand the spare-capacity rule measures the sector against, and the capacity it measures. |
+| 3422 | 4 | `public double unitsOf(BuildingsTemplate t)` | What one of these contributes to the measure the sector is judged on. |
+| 3428 | 1 | `public boolean mayRetire(BuildingsTemplate t)` | Whether a holding of this template may be sold back this month. |
+| 3431 | 1 | `public int limitSpareRetirement(BuildingsTemplate t, int quantity, double keepAtLeast)` | Limit a spare-capacity sale to what still leaves keepAtLeast units usable; additive sectors need no further limit. |
+| 3434 | 3 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything. |
 
-### THE SCREENS (lines 3437-3656)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3446 | 11 | **type** `public record Line(Kind kind, String label, String value, Tone tone)` | One line of the operations page. |
-| 3447 | 1 | **type** `public enum Kind` _(in Sector.Line)_ |  |
-| 3448 | 1 | **type** `public enum Tone` _(in Sector.Line)_ |  |
-| 3450 | 1 | `public static Line head(String text)` _(in Sector.Line)_ |  |
-| 3451 | 1 | `public static Line note(String text)` _(in Sector.Line)_ |  |
-| 3453 | 1 | `public static Line note(String shown, String whole)` _(in Sector.Line)_ | A note in two layers (0.7.21): `shown` on the page, and `whole` one click away, behind an (i). |
-| 3454 | 1 | `public static Line of(String label, String value)` _(in Sector.Line)_ |  |
-| 3455 | 1 | `public static Line of(String label, String value, Tone tone)` _(in Sector.Line)_ |  |
-| 3464 | 1 | `public SectorStatements.Format statementFormat()` | What kind of business its formal statements read as (0.7.74; the project's spec-sector-statements.md, 4.6): the words of its revenue, its cost of sales and its middle line - the bottom three are the model's in every f... |
-| 3467 | 9 | `public String inputLabel()` | What the sector's direct-cost line is called on its income statement. |
-| 3493 | 1 | `public Map<String, Double> otherRevenueParts()` | The parts of this sector's revenue that are not the sale of a good, named, for the lines inside an opened Revenue. |
-| 3503 | 1 | `public Map<String, Double> otherInputParts()` | ...and the same for the cost line: what is in Inputs that is not a good. |
-| 3523 | 5 | `protected Map<String, Double> nameOtherRevenue()` | ...and where those names come from, read off the sector's LIVE fields at the moment the month is struck. |
-| 3544 | 5 | `public List<Line> operations(Game game)` | The operations page, as data: the factory's block (plantLines()) when the sector keeps it, then the sector's own lines (ownLines()). |
-| 3551 | 1 | `public boolean hasPlantBlock()` | Whether its operations page opens on the factory's block (0.7.30): false for the seven sectors whose page is all their own. |
-| 3554 | 1 | `public List<Line> ownLines(Game game)` | The sector's own lines, after the factory's block (0.7.30): none unless it says more. |
-| 3562 | 94 | `public List<Line> plantLines(Game game)` | The factory's block (0.7.30; operations() itself until then): the plant - staffed, running at, and the five ratios - then a block per good it makes and per good it buys. |
-
-### SAVE AND RESTORE (lines 3657-3870)
+### THE SCREENS (lines 3438-3657)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3662 | 56 | `public SectorState toState()` | Everything about this sector that a save has to carry. |
-| 3719 | 67 | `public void restore(SectorState s)` |  |
-| 3788 | 14 | `public void restoreBills(SectorState s)` | The bills of the month back, over whatever a rebuild re-derived. |
-| 3804 | 1 | `private static Double ratioToSave(double r)` | A ratio for the save: itself, or null when it is not a number - Gson writes no NaN, and the load then derives it. |
-| 3807 | 1 | `protected void saveExtras(Map<String, Double> extras)` | A sector with state of its own - a price it walks, an order book - writes it here by name. |
-| 3810 | 1 | `protected void restoreExtras(Map<String, Double> extras)` | ...and reads it back. |
-| 3813 | 27 | `public void reset()` | Everything back to a founding sector. |
-| 3841 | 1 | `protected void resetExtras()` |  |
-| 3847 | 18 | `public void redenominate(double scale)` | Its money in the new unit. |
-| 3866 | 1 | `protected void redenominateExtras(double scale)` |  |
-| 3869 | 1 | `public String toString()` |  |
+| 3447 | 11 | **type** `public record Line(Kind kind, String label, String value, Tone tone)` | One line of the operations page. |
+| 3448 | 1 | **type** `public enum Kind` _(in Sector.Line)_ |  |
+| 3449 | 1 | **type** `public enum Tone` _(in Sector.Line)_ |  |
+| 3451 | 1 | `public static Line head(String text)` _(in Sector.Line)_ |  |
+| 3452 | 1 | `public static Line note(String text)` _(in Sector.Line)_ |  |
+| 3454 | 1 | `public static Line note(String shown, String whole)` _(in Sector.Line)_ | A note in two layers (0.7.21): `shown` on the page, and `whole` one click away, behind an (i). |
+| 3455 | 1 | `public static Line of(String label, String value)` _(in Sector.Line)_ |  |
+| 3456 | 1 | `public static Line of(String label, String value, Tone tone)` _(in Sector.Line)_ |  |
+| 3465 | 1 | `public SectorStatements.Format statementFormat()` | What kind of business its formal statements read as (0.7.74; the project's spec-sector-statements.md, 4.6): the words of its revenue, its cost of sales and its middle line - the bottom three are the model's in every f... |
+| 3468 | 9 | `public String inputLabel()` | What the sector's direct-cost line is called on its income statement. |
+| 3494 | 1 | `public Map<String, Double> otherRevenueParts()` | The parts of this sector's revenue that are not the sale of a good, named, for the lines inside an opened Revenue. |
+| 3504 | 1 | `public Map<String, Double> otherInputParts()` | ...and the same for the cost line: what is in Inputs that is not a good. |
+| 3524 | 5 | `protected Map<String, Double> nameOtherRevenue()` | ...and where those names come from, read off the sector's LIVE fields at the moment the month is struck. |
+| 3545 | 5 | `public List<Line> operations(Game game)` | The operations page, as data: the factory's block (plantLines()) when the sector keeps it, then the sector's own lines (ownLines()). |
+| 3552 | 1 | `public boolean hasPlantBlock()` | Whether its operations page opens on the factory's block (0.7.30): false for the seven sectors whose page is all their own. |
+| 3555 | 1 | `public List<Line> ownLines(Game game)` | The sector's own lines, after the factory's block (0.7.30): none unless it says more. |
+| 3563 | 94 | `public List<Line> plantLines(Game game)` | The factory's block (0.7.30; operations() itself until then): the plant - staffed, running at, and the five ratios - then a block per good it makes and per good it buys. |
 
-### THE POWER, FOR THE PICTOGRAMS (0.7.141, batch I11; IndustryView) (lines 3871-3899)
+### SAVE AND RESTORE (lines 3658-3871)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3884 | 4 | `public double getPowerMade()` | kW its buildings make themselves, at nameplate: every billed building's gen (BuildingsTemplate.getGen()) - nothing until a works makes power. |
-| 3890 | 4 | `public double getPowerDrawn()` | ...and kW they draw, at nameplate, before what they make: every billed building's whole draw. |
-| 3896 | 3 | `public double getGridDraw()` | ...and kW they draw from the grid past what they make: the net draw its bill is struck on (setElectricityConsumption()), beside the surplus it sells (getPowerSurplus()). |
+| 3663 | 56 | `public SectorState toState()` | Everything about this sector that a save has to carry. |
+| 3720 | 67 | `public void restore(SectorState s)` |  |
+| 3789 | 14 | `public void restoreBills(SectorState s)` | The bills of the month back, over whatever a rebuild re-derived. |
+| 3805 | 1 | `private static Double ratioToSave(double r)` | A ratio for the save: itself, or null when it is not a number - Gson writes no NaN, and the load then derives it. |
+| 3808 | 1 | `protected void saveExtras(Map<String, Double> extras)` | A sector with state of its own - a price it walks, an order book - writes it here by name. |
+| 3811 | 1 | `protected void restoreExtras(Map<String, Double> extras)` | ...and reads it back. |
+| 3814 | 27 | `public void reset()` | Everything back to a founding sector. |
+| 3842 | 1 | `protected void resetExtras()` |  |
+| 3848 | 18 | `public void redenominate(double scale)` | Its money in the new unit. |
+| 3867 | 1 | `protected void redenominateExtras(double scale)` |  |
+| 3870 | 1 | `public String toString()` |  |
+
+### THE POWER, FOR THE PICTOGRAMS (0.7.141, batch I11; IndustryView) (lines 3872-3900)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3885 | 4 | `public double getPowerMade()` | kW its buildings make themselves, at nameplate: every billed building's gen (BuildingsTemplate.getGen()) - nothing until a works makes power. |
+| 3891 | 4 | `public double getPowerDrawn()` | ...and kW they draw, at nameplate, before what they make: every billed building's whole draw. |
+| 3897 | 3 | `public double getGridDraw()` | ...and kW they draw from the grid past what they make: the net draw its bill is struck on (setElectricityConsumption()), beside the surplus it sells (getPowerSurplus()). |
 

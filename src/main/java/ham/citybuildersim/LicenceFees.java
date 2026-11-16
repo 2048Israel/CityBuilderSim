@@ -74,7 +74,9 @@ public final class LicenceFees {
     // thread, so simultaneous screen reads still price their own licences.
     private static final ThreadLocal<Boolean> pricing = ThreadLocal.withInitial(() -> false);
 
-    private static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing, double rate) {
+    static boolean pricing() { return pricing.get(); }
+
+    static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing, double rate) {
         int accrualMonth = game.getMonth();
         if (!payable(t.getSinceText(), accrualMonth, game.getResearch())
                 || (standing && !game.getResearch().known(t.getSinceText(), game.getMonth()))) return 0;

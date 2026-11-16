@@ -3378,6 +3378,7 @@ public abstract class Sector {
 
     /** What one of its templates would clear a month, for the interest test. See BusinessInvestment. */
     public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans) {
+        t = plans.templateForNew(t);
         double maker = plans.estimatedMakerProfit(this, t);
         /*
          * ...WEIGHED WITH ITS FREIGHT (FR2, 2026-10-19): its BULK legs at the

@@ -1281,6 +1281,8 @@ public final class BuildCard {
 
     /** Every gate investors would ask this building at now, and what one would earn, cost and be paid for with. */
     public static Appraisal appraise(Game game, BuildingsTemplate t) {
+        BuildingsTemplate original = t;
+        t = game.getBusinessInvestment().templateForNew(t);
         Sector owner = ownerOf(game, t);
         double estimate = game.getBusinessInvestment().estimatedMonthlyProfit(owner.key(), t);
         LandManager ground = game.getLandManager();
@@ -1326,7 +1328,7 @@ public final class BuildCard {
                 : lender == null ? new GateMark(GateKind.LENDER, Mark.PASS, null)
                 : new GateMark(GateKind.LENDER, Mark.FAIL, lender));
         double[] f = game.financingOf(owner.key(), t);
-        return new Appraisal(t, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3],
+        return new Appraisal(original, owner, gates, estimate, f[0], estimate > 0 ? f[0] / estimate : Double.NaN, f[1], f[2], f[3],
                 weighed(game, t));
     }
 
@@ -1496,6 +1498,7 @@ public final class BuildCard {
      * and does not weigh.
      */
     public static Weighed weighed(Game game, BuildingsTemplate t) {
+        t = game.getBusinessInvestment().templateForNew(t);
         Sector owner = t == null ? null : game.getSectors().ownerOf(t);
         BusinessInvestment plans = game.getBusinessInvestment();
         double vans = ham.citybuildersim.sectors.ProcessingSector.vansFor(t);

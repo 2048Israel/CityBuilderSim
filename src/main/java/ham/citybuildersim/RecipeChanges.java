@@ -174,14 +174,14 @@ public final class RecipeChanges {
     }
 
     /** The next actual one-building refit, over the fleet's same rounded figures as payroll. */
-    static double gainForRefit(Game game, BuildingsTemplate t, Equipment piece) {
+    static double netGainForRefit(Game game, BuildingsTemplate t, Equipment piece) {
         BuildingsStacks stack = game.getBuildingManager().getStack(t);
         if (stack == null || stack.getQuantity() <= 0 || stack.getUnfitted(piece.getId()) <= 0) return 0;
         Map<String, Integer> before = new TreeMap<>(stack.getUnfittedView()), after = new TreeMap<>(before);
         after.put(piece.getId(), stack.getUnfitted(piece.getId()) - 1);
         Recipes.Prices prices = Recipes.pricesOf(game);
         String[] ids = t.getRecipeChanges().isEmpty() ? newChoices(game, t, prices) : t.runningRecipeIds();
-        return differenceAt(game, t, after, before, stack.getQuantity(), ids, prices);
+        return netDifferenceAt(game, t, after, before, stack.getQuantity(), ids, prices);
     }
 
     /** The whole actual production fleet's benefit from the pieces it really has. */
@@ -195,12 +195,27 @@ public final class RecipeChanges {
 
     /** One proposed building, with exactly the chosen pieces, compared with the same set lacking this piece. */
     static double gainForSet(Game game, BuildingsTemplate t, Equipment piece, java.util.Set<String> fitted) {
+        return gainForSet(game, t, piece, fitted, false);
+    }
+
+    static double netGainForSet(Game game, BuildingsTemplate t, Equipment piece, java.util.Set<String> fitted) {
+        return gainForSet(game, t, piece, fitted, true);
+    }
+
+    private static double gainForSet(Game game, BuildingsTemplate t, Equipment piece, java.util.Set<String> fitted, boolean net) {
         java.util.Set<String> with = new java.util.HashSet<>(fitted), without = new java.util.HashSet<>(fitted);
         with.add(piece.getId());
         without.remove(piece.getId());
         Recipes.Prices prices = Recipes.pricesOf(game);
         String[] ids = newChoices(game, t, prices);
-        return differenceAt(game, t, counts(t, with), counts(t, without), 1, ids, prices);
+        return net ? netDifferenceAt(game, t, counts(t, with), counts(t, without), 1, ids, prices)
+                : differenceAt(game, t, counts(t, with), counts(t, without), 1, ids, prices);
+    }
+
+    private static double netDifferenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without,
+                                          int quantity, String[] ids, Recipes.Prices prices) {
+        return differenceAt(game, t, with, without, quantity, ids, prices)
+                - feesAt(game, t, with, quantity, ids) + feesAt(game, t, without, quantity, ids);
     }
 
     private static double differenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without,
@@ -216,13 +231,17 @@ public final class RecipeChanges {
     }
 
     private static String[] newChoices(Game game, BuildingsTemplate t, Recipes.Prices prices) {
+        if (!t.getRecipeChanges().isEmpty()) {
+            String[] saved = game.getRecipes().chosen(t.getId());
+            return saved == null ? new String[] {t.defaultRecipe().getId(), t.defaultRecipe().getId()} : saved;
+        }
         String first = Recipes.best(t, true, game.getMonth(), prices, game.getResearch()).getId();
         String second = Recipes.best(t, false, game.getMonth(), prices, game.getResearch()).getId();
         return new String[] {choose(t, first, game.getMonth(), game.getResearch(), prices),
                 choose(t, second, game.getMonth(), game.getResearch(), prices)};
     }
 
-    private static Map<String, Integer> counts(BuildingsTemplate t, java.util.Set<String> fitted) {
+    static Map<String, Integer> counts(BuildingsTemplate t, java.util.Set<String> fitted) {
         Map<String, Integer> counts = new TreeMap<>();
         for (Equipment piece : t.getEquipment()) if (!fitted.contains(piece.getId())) counts.put(piece.getId(), 1);
         return counts;
@@ -230,6 +249,16 @@ public final class RecipeChanges {
 
     private static double valueAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity,
                                   String[] ids, Recipes.Prices prices) {
+        Map<String, Double> absent = absencesAt(game, t, counts, quantity, ids);
+        int unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0));
+        Recipe recipe = compose(t, base(t, ids[0]), quantity - unfitted, base(t, ids[1]), unfitted, absent, ids[0]);
+        double value = Recipes.value(recipe, prices);
+        for (RecipeChange change : t.getRecipeChanges())
+            value += share(change, absent) * extraValue(t, change, prices, t.feedPerMonth());
+        return value * quantity;
+    }
+
+    private static Map<String, Double> absencesAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids) {
         int unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0));
         Map<String, Double> absent = new TreeMap<>();
         for (RecipeChange change : t.getRecipeChanges()) {
@@ -240,11 +269,86 @@ public final class RecipeChanges {
                     + unfitted * (has(ids[1], change.code()) ? 1.0 : 0)) / quantity;
             absent.put(change.code(), missing);
         }
+        return absent;
+    }
+
+    /** The proposed building's physical figures, without changing the city's live fleet. */
+    public static BuildingsTemplate forNew(Game game, BuildingsTemplate t) {
+        if (t == null || !game.foundedUnfitted() || t.isRecipeSnapshot() || LicenceFees.pricing()
+                || !t.hasRecipeChoice()) return t;
+        java.util.Set<String> fitted = EquipmentFit.fittedForNew(game, t);
+        return snapshotAt(game, t, counts(t, fitted), 1, newChoices(game, t, Recipes.pricesOf(game)));
+    }
+
+    static BuildingsTemplate snapshotAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids) {
+        Map<String, Double> absent = absencesAt(game, t, counts, quantity, ids);
+        int unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0));
         Recipe recipe = compose(t, base(t, ids[0]), quantity - unfitted, base(t, ids[1]), unfitted, absent, ids[0]);
-        double value = Recipes.value(recipe, prices);
-        for (RecipeChange change : t.getRecipeChanges())
-            value += share(change, absent) * extraValue(t, change, prices, t.feedPerMonth());
-        return value * quantity;
+        double production = t.recipeProduction(), land = t.recipeLand(), steam = 0, petrol = .55;
+        double dig = t.recipeSite() == null ? 0 : t.recipeSite().dig();
+        for (RecipeChange change : t.getRecipeChanges()) {
+            double share = share(change, absent);
+            production += share * change.production();
+            land += share * change.land();
+            steam += share * change.steamRail();
+            petrol += share * change.crackerPetrol();
+            dig += share * change.dig();
+        }
+        boolean extras = !t.getRecipeChanges().isEmpty();
+        if (sameFigures(t, recipe) && (!extras || t.getProduction1() == production && t.getLandSqFt() == land
+                && t.steamRailShare() == steam && t.crackerPetrol() == petrol
+                && (t.site() == null || t.site().dig() == dig))) return t;
+        BuildingsTemplate copy = t.recipeSnapshot(recipe);
+        if (extras) copy.runRecipeExtras(production, land, steam, petrol, dig);
+        return copy;
+    }
+
+    private static boolean sameFigures(BuildingsTemplate t, Recipe recipe) {
+        if (!t.goodsMade().equals(recipe.makes()) || !t.goodsUsed().equals(recipe.uses())
+                || t.getElectricityConsumption() != recipe.getElectricity() || t.getGen() != recipe.getGen()
+                || t.getWaterConsumption() != recipe.getWater() || t.getConsumables() != recipe.getConsumables()) return false;
+        for (JobType job : JobType.values()) if (t.getJobs(job) != recipe.getJobs(job)) return false;
+        return true;
+    }
+
+    /** Every royalty on the same rounded physical state used to judge a fitting. */
+    static double feesAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids) {
+        if (!t.isOwnedBySector()) return 0;
+        java.util.Set<String> charged = new java.util.HashSet<>();
+        charged.add(t.getSinceText());
+        Sector owner = game.getSectors().byKey(t.getSector());
+        BuildingsTemplate snapshot = snapshotAt(game, t, counts, quantity, ids);
+        double bill = owner == null ? 0 : LicenceFees.buildingFee(game, snapshot, owner, false, 1) * quantity;
+        Recipes.Prices prices = Recipes.pricesOf(game);
+        int unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0));
+        for (int part = 0; part < 2; part++) {
+            Recipe recipe = base(t, ids[part]);
+            int n = part == 0 ? quantity - unfitted : unfitted;
+            // Both parts can bear the same process patent, each on its own count.
+            if (n > 0 && !recipe.getSince().equals(t.getSinceText()))
+                bill += LicenceFees.recipeFee(t, recipe, game.getMonth(), prices, game.getResearch()) * n;
+            if (n > 0) charged.add(recipe.getSince());
+        }
+        Map<String, Double> absent = absencesAt(game, t, counts, quantity, ids);
+        for (RecipeChange change : t.getRecipeChanges()) {
+            if (change.piece() != null || absent.getOrDefault(change.code(), 0.0) >= 1
+                    || !change.knownAt(game.getMonth(), game.getResearch()) || !charged.add(change.since())) continue;
+            double benefit = gain(t, change, absent,
+                    missing -> compose(t, base(t, ids[0]), quantity - unfitted, base(t, ids[1]), unfitted, missing, ids[0]),
+                    recipe -> Recipes.value(recipe, prices), c -> extraValue(t, c, prices, t.feedPerMonth())) * quantity;
+            bill += LicenceFees.onGain(change.since(), game.getMonth(), game.getResearch(), benefit);
+        }
+        for (Equipment piece : t.getEquipment()) {
+            if (counts.getOrDefault(piece.getId(), 0) >= quantity || !piece.knownAt(game.getMonth(), game.getResearch())
+                    || !charged.add(piece.getSince())) continue;
+            Map<String, Integer> without = new TreeMap<>(counts);
+            without.put(piece.getId(), quantity);
+            double benefit = t.changeNeeds(piece.getId()) || piece.getEnds() == null && piece.getId().equals(t.recipePieceId())
+                    ? differenceAt(game, t, counts, without, quantity, ids, prices)
+                    : EquipmentFit.grossGainOf(game, snapshot, piece) * (quantity - counts.getOrDefault(piece.getId(), 0));
+            bill += LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), benefit);
+        }
+        return bill;
     }
 
     /** The missing fractions in the actual fleet or a new building's known process. */

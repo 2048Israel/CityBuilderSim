@@ -167,35 +167,8 @@ public final class EquipmentFit {
         if (!game.foundedUnfitted()) return grossGainOf(game, t, piece);
         boolean recipePiece = piece.getId().equals(t.recipePieceId());
         if (t.changeNeeds(piece.getId()) || piece.getEnds() == null && recipePiece) {
-            double gross = proposed == null ? RecipeChanges.gainForRefit(game, t, piece)
-                    : RecipeChanges.gainForSet(game, t, piece, proposed);
-            double net = gross;
-            String recipeCode = null;
-            if (recipePiece) {
-                Recipe fitted, without;
-                if (proposed == null && t.getRecipeChanges().isEmpty()) {
-                    Recipes.Prices prices = Recipes.pricesOf(game);
-                    fitted = Recipes.best(t, true, game.getMonth(), prices, game.getResearch());
-                    without = Recipes.best(t, false, game.getMonth(), prices, game.getResearch());
-                } else if (proposed == null) {
-                    String[] ids = t.runningRecipeIds();
-                    fitted = t.getRecipe(ids[0]);
-                    without = t.getRecipe(ids[1]);
-                } else {
-                    Set<String> with = new java.util.HashSet<>(proposed), missing = new java.util.HashSet<>(proposed);
-                    with.add(piece.getId());
-                    missing.remove(piece.getId());
-                    fitted = RecipeChanges.recipeForNew(game, t, with);
-                    without = RecipeChanges.recipeForNew(game, t, missing);
-                }
-                Recipes.Prices prices = Recipes.pricesOf(game);
-                net -= LicenceFees.recipeFee(t, fitted, game.getMonth(), prices, game.getResearch())
-                        - LicenceFees.recipeFee(t, without, game.getMonth(), prices, game.getResearch());
-                recipeCode = fitted.getSince();
-            }
-            if (t.isOwnedBySector() && !piece.getSince().equals(recipeCode))
-                net -= LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), gross);
-            return net;
+            return proposed == null ? RecipeChanges.netGainForRefit(game, t, piece)
+                    : RecipeChanges.netGainForSet(game, t, piece, proposed);
         }
         if (piece.getEnds() == null) return 0;
         double gross = grossGainOf(game, t, piece);

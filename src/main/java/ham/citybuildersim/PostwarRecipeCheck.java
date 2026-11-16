@@ -579,6 +579,7 @@ public final class PostwarRecipeCheck {
         at(cars, assemblyDate);
         BuildingsTemplate works = HistoricalLicenceCheck.stand(cars, "Vehicle Works", 1);
         Equipment robot = works.getEquipment("welding-robot");
+        run(cars);
         boolean rejected = false;
         for (int step = 0; step < 120 && !rejected; step++) {
             priceForBothReaders(cars, Good.MACHINERY, .01 * Math.pow(1.5, step));
@@ -688,6 +689,145 @@ public final class PostwarRecipeCheck {
                 fleetExpected > 0 && HistoricalLicenceCheck.near(fleetFee, fleetExpected), fleetFee + " vs " + fleetExpected);
     }
 
+    static BuildingsTemplate proposal(Game game, BuildingsTemplate template) throws Exception {
+        try {
+            var method = BusinessInvestment.class.getMethod("templateForNew", BuildingsTemplate.class);
+            return (BuildingsTemplate) method.invoke(game.getBusinessInvestment(), template);
+        } catch (NoSuchMethodException before) {
+            return template;
+        }
+    }
+
+    static void wholeNetAndSavedProcess() throws Exception {
+        out.println("--- 12. every fee, the saved production process and a new plant's own recipe ---");
+        Game kiln = HistoricalLicenceCheck.town("R2e-all-set-fees", true);
+        allExcept(kiln, "E2");
+        at(kiln, ResearchCatalog.knownFrom("E2"));
+        BuildingsTemplate cement = HistoricalLicenceCheck.stand(kiln, "Cement Plant", 1);
+        BuildingsStacks cementStack = kiln.getBuildingManager().getStack(cement);
+        priceForBothReaders(kiln, Good.THERMAL_COAL, 10);
+        priceForBothReaders(kiln, Good.MACHINERY, .000001);
+        cementStack.setUnfitted("long-kiln", 1);
+        run(kiln);
+        Recipes.Prices prices = Recipes.pricesOf(kiln);
+        double withoutLong = actualValue(cement, prices);
+        Equipment longKiln = cement.getEquipment("long-kiln");
+        EquipmentFit.Verdict refit = EquipmentFit.verdict(kiln, cementStack, longKiln);
+        EquipmentFit.Verdict fresh = EquipmentFit.verdictForNew(kiln, cement, longKiln);
+        cementStack.setUnfitted("long-kiln", 0);
+        run(kiln);
+        double withLong = actualValue(cement, prices);
+        cementStack.setUnfitted("preheater", 1);
+        run(kiln);
+        double withoutHeat = actualValue(cement, prices);
+        double heatGain = withLong - withoutHeat;
+        double rent = LicenceFees.onGain("E2", kiln.getMonth(), kiln.getResearch(), heatGain);
+        double expected = withLong - withoutLong - rent;
+        check("fixture: a local long kiln activates positive imported preheater rent on the same saved rotary process",
+                rent > 0 && expected > 0 && kiln.getResearch().known("PE4", kiln.getMonth())
+                        && LicenceFees.payable("E2", kiln.getMonth(), kiln.getResearch())
+                        && cement.runningRecipeIds()[0].startsWith("rotary"), "rent " + rent);
+        check("both the refit and the proposed long kiln lose the dependent preheater's extra royalty",
+                HistoricalLicenceCheck.near(refit.gain(), expected) && HistoricalLicenceCheck.near(fresh.gain(), expected),
+                refit.gain() + ", " + fresh.gain() + " vs " + expected);
+
+        Game steel = HistoricalLicenceCheck.town("R2e-saved-completion-process", true);
+        allExcept(steel, "");
+        at(steel, ResearchCatalog.knownFrom("E9"));
+        BuildingsTemplate oxygen = HistoricalLicenceCheck.stand(steel, "Oxygen Steel Shop", 1);
+        BuildingsStacks shop = steel.getBuildingManager().getStack(oxygen);
+        priceForBothReaders(steel, Good.PIG_IRON, 1000);
+        priceForBothReaders(steel, Good.SCRAP, .001);
+        priceForBothReaders(steel, Good.THERMAL_COAL, .00001);
+        priceForBothReaders(steel, Good.MACHINERY, .000001);
+        run(steel);
+        String[] saved = oxygen.runningRecipeIds();
+        priceForBothReaders(steel, Good.THERMAL_COAL, 1000000);
+        Recipes.Prices steelPrices = Recipes.pricesOf(steel);
+        Recipe now = Recipes.best(oxygen, true, steel.getMonth(), steelPrices, steel.getResearch());
+        shop.setUnfitted("open-hearth", 1);
+        silent(() -> steel.getRecipes().apply(steel));
+        double noHearth = actualValue(oxygen, steelPrices);
+        Equipment hearth = oxygen.getEquipment("open-hearth");
+        EquipmentFit.Verdict savedQuote = EquipmentFit.verdictForNew(steel, oxygen, hearth);
+        shop.setUnfitted("open-hearth", 0);
+        silent(() -> steel.getRecipes().apply(steel));
+        double savedGain = actualValue(oxygen, steelPrices) - noHearth;
+        check("fixture: the month's saved open hearth crosses to fresh oxygen prices before completion, with positive wages",
+                saved[0].startsWith("open-hearth") && saved[1].startsWith("basic-oxygen")
+                        && now.getId().equals("basic-oxygen") && savedGain < 0
+                        && steelPrices.wages()[JobType.NO_DIPLOMA.ordinal()] > 0,
+                java.util.Arrays.toString(saved) + " -> " + now.getId() + ", gain " + savedGain);
+        check("new equipment prices the saved process the production apply will run",
+                HistoricalLicenceCheck.near(savedQuote.gain(), savedGain), savedQuote.gain() + " vs " + savedGain);
+        fitted(oxygen, shop);
+        silent(() -> {
+            steel.fitWhatFinished(List.of(new BuildingManager.Completion(oxygen.getName(), 1)));
+            steel.getRecipes().apply(steel);
+        });
+        check("the completion boundary fits against that saved process and production retains the same choice",
+                shop.getUnfitted("open-hearth") == 1 && java.util.Arrays.equals(oxygen.runningRecipeIds(), saved), "");
+
+        Game cars = HistoricalLicenceCheck.town("R2e-new-plant-figures", true);
+        allExcept(cars, "");
+        at(cars, ResearchCatalog.knownFrom("E8"));
+        BuildingsTemplate works = HistoricalLicenceCheck.stand(cars, "Vehicle Works", 1);
+        BuildingsStacks carStack = cars.getBuildingManager().getStack(works);
+        run(cars);
+        for (int step = 0; step < 120 && proposedPieces(cars, works).contains("welding-robot"); step++)
+            priceForBothReaders(cars, Good.MACHINERY, .01 * Math.pow(1.5, step));
+        carStack.setUnfitted("welding-robot", 1);
+        run(cars);
+        double actualNew = cars.getBusinessInvestment().estimatedMonthlyProfit(works.getSector(), works);
+        int unfittedPosts = works.getJobs(JobType.NO_DIPLOMA);
+        carStack.setUnfitted("welding-robot", 0);
+        run(cars);
+        BuildingsTemplate quoted = proposal(cars, works);
+        double quotedProfit = cars.getBusinessInvestment().estimatedMonthlyProfit(works.getSector(), works);
+        BuildCard.Appraisal card = BuildCard.appraise(cars, works);
+        check("fixture: the existing vehicle works has100 posts but the known robot is rejected for the next plant's300",
+                works.getJobs(JobType.NO_DIPLOMA) == 100 && unfittedPosts == 300
+                        && !proposedPieces(cars, works).contains("welding-robot")
+                        && Recipes.pricesOf(cars).wages()[JobType.NO_DIPLOMA.ordinal()] > 0, "");
+        check("the shared new-plant recipe has300 posts and leaves the fitted fleet's100 untouched",
+                quoted != works && quoted.getJobs(JobType.NO_DIPLOMA) == unfittedPosts && works.getJobs(JobType.NO_DIPLOMA) == 100, "");
+        check("the investor estimate and Build card quote the selected new recipe's actual profit",
+                HistoricalLicenceCheck.near(quotedProfit, actualNew) && HistoricalLicenceCheck.near(card.estimate(), actualNew),
+                quotedProfit + ", " + card.estimate() + " vs " + actualNew);
+        check("the Build card carries the real catalogue template for an eventual order", card.template() == works, "");
+        silent(() -> cars.setCashForTest(Founding.WEALTHY_CASH * 100));
+        Game.BuildResult[] built = new Game.BuildResult[1];
+        silent(() -> built[0] = cars.buildStack(quoted, 1, true));
+        check("ordering through a proposed quote keeps the stack on its real template",
+                built[0] == Game.BuildResult.SUCCESS && cars.getBuildingManager().getStack(works).getBuilding() == works, String.valueOf(built[0]));
+
+        BuildingsTemplate branch = cars.getBuildingManager().getTemplateByName("Commercial Bank");
+        fitted(branch, cars.getBuildingManager().getStack(branch));
+        priceForBothReaders(cars, Good.MACHINERY, 1e9);
+        run(cars);
+        Recipe earlierBank = RecipeChanges.compose(branch, branch.defaultRecipe(), Map.of("B1", 1.0, "B3", 1.0), "fixture-bank");
+        double extraClerks = 0;
+        for (JobType job : JobType.values()) extraClerks += (earlierBank.getJobs(job) - branch.getJobs(job))
+                * Recipes.pricesOf(cars).wages()[job.ordinal()];
+        double lastBranchCost = cars.getBank().laterBranchCost();
+        double branchExpected = cars.getBank().feesPerBranchWithAnother(cars.getBuildingManager().countByName("Commercial Bank"))
+                - lastBranchCost - extraClerks;
+        double branchQuote = cars.getBusinessInvestment().estimatedMonthlyProfit(branch.getSector(), branch);
+        check("fixture: a fitted bank's next branch rejects both machines and needs positive extra clerk wages over its cached cost",
+                lastBranchCost > 0 && extraClerks > 0 && proposedPieces(cars, branch).isEmpty(), "extra wages " + extraClerks);
+        check("the bank's special new-branch estimate includes the selected recipe's extra clerks",
+                HistoricalLicenceCheck.near(branchQuote, branchExpected), branchQuote + " vs " + branchExpected);
+
+        Game modern = town("R2e-default-no-proposal-copies", false);
+        int copies = 0;
+        for (BuildingsTemplate template : modern.getBuildingManager().getTemplates())
+            if (proposal(modern, template) != template) copies++;
+        check("default founding reaches zero appraisal copies across its entire catalogue", copies == 0, "copies " + copies);
+        priceForBothReaders(cars, Good.MACHINERY, .000001);
+        run(cars);
+        check("matching new and standing vehicle recipes reuse the original template", proposal(cars, works) == works, "");
+    }
+
     public static void main(String[] args) throws Exception {
         fails = checks = 0;
         RecipeCheck.out = out;
@@ -714,6 +854,7 @@ public final class PostwarRecipeCheck {
         kilnAccounting();
         newCementPlant();
         chosenSetAndRefit(data);
+        wholeNetAndSavedProcess();
         out.println(fails == 0 ? "All PostwarRecipeCheck assertions passed (" + checks + ")." : fails + " FAILED of " + checks);
         System.exit(fails == 0 ? 0 : 1);
     }

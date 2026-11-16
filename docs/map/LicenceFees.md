@@ -1,4 +1,4 @@
-# LicenceFees.java - 333 lines · 25 methods · 4 constants · model
+# LicenceFees.java - 335 lines · 26 methods · 4 constants · model
 
 `ham/citybuildersim/LicenceFees.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
 
@@ -29,42 +29,43 @@
 
 | line | field | says |
 |---:|---|---|
-| 205 | `private final Game game` |  |
-| 206 | `private final Map<Sector, List<BuildingsStacks>> owned` |  |
-| 207 | `private final Map<Ground, Double> beforeGround` |  |
-| 208 | `private final List<Bill> bills` |  |
+| 207 | `private final Game game` |  |
+| 208 | `private final Map<Sector, List<BuildingsStacks>> owned` |  |
+| 209 | `private final Map<Ground, Double> beforeGround` |  |
+| 210 | `private final List<Bill> bills` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 308 | **type** `public final class LicenceFees` | The patent rent on discoveries imported by a city founded the 1900 way. |
+| 26 | 310 | **type** `public final class LicenceFees` | The patent rent on discoveries imported by a city founded the 1900 way. |
 | 27 | 1 | `private LicenceFees()` |  |
 | 37 | 6 | `public static boolean payable(String code, int month, Research found)` | A patent is payable from history's month, excluding its twentieth anniversary. |
 | 45 | 3 | `public static double onGain(String code, int month, Research found, double gain)` | A loss, year, unknown code or unpatented entry costs nothing. |
 | 54 | 11 | `public static double recipeFee(BuildingsTemplate t, Recipe r, int month, Recipes.Prices p, Research found)` | The gain over the earlier way this entry replaces, at the same prices. |
 | 67 | 3 | `public static double recipeValue(BuildingsTemplate t, Recipe r, int month, Recipes.Prices p, Research found)` | The recipe's spread after the licence, for selection and fitting alike. |
-| 77 | 14 | `private static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing, double rate)` |  |
-| 93 | 12 | `private static double installedBuildingGain(Game game, BuildingsTemplate t, Sector owner, double rate)` | Every installed kind uses removal/standing values, never an additional-building appraisal. |
-| 107 | 9 | `private static double productionRate(BuildingsTemplate t, Sector owner)` | The common dispatch share of these outputs, including direct exports and captive production. |
-| 118 | 8 | `private static double standingRecipeValue(Recipe recipe, Recipes.Prices p, SpreadPlanner.Values values, double rate)` | A running recipe's value under the standing output/input price roles. |
-| 127 | 12 | `private static double standingRecipeFee(Game game, BuildingsTemplate t, Recipe recipe, Recipes.Prices p, double rate)` |  |
-| 146 | 9 | `private static double installedUnitGain(Game game, BuildingsTemplate t, Refining ref)` | What this installed conversion unit adds on the feed it actually takes. |
-| 157 | 21 | `private static double one(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Set<String> fitted, boolean standing, do...` | One building with this recipe and these pieces, at its owner's run rate. |
-| 180 | 8 | `public static double forNew(Game game, BuildingsTemplate t)` | A new building's licence cost, included in every planner's running cost. |
-| 190 | 5 | `public static double forStanding(Game game, BuildingsTemplate t)` | The installed building's saved share of the last production's captured royalty. |
-| 202 | 78 | **type** `static final class Production` | One market pass's production record, confined to that pass. |
-| 203 | 1 | **type** `private record Ground(Resource resource, Deposit.FieldType type)` _(in LicenceFees.Production)_ |  |
-| 204 | 1 | **type** `private record Bill(Sector owner, int id, int quantity, double amount)` _(in LicenceFees.Production)_ |  |
-| 210 | 7 | `Production(Game game)` _(in LicenceFees.Production)_ |  |
-| 219 | 3 | `private static boolean stockPhase(BuildingsTemplate t)` _(in LicenceFees.Production)_ | A conversion unit makes streams in the refinery's stock phase. |
-| 223 | 4 | `private Ground ground(ExtractionSector owner, BuildingsTemplate t)` _(in LicenceFees.Production)_ |  |
-| 229 | 10 | `void before(Sector owner, boolean stock)` _(in LicenceFees.Production)_ | Flow mines/cutters remove the ground inside production. |
-| 241 | 16 | `private double flowExtractionRate(ExtractionSector owner, BuildingsTemplate t)` _(in LicenceFees.Production)_ | The real typed lift divided among the works that made it, including a field's last dispatch. |
-| 259 | 9 | `void made(Sector owner, boolean stock)` _(in LicenceFees.Production)_ | Called directly after this sector's output loop; capture all money inputs before any other producer or next-month choice. |
-| 270 | 9 | `void finish()` _(in LicenceFees.Production)_ | Book immutable production bills once, into the pending imported-service ledger for the next strike. |
-| 281 | 9 | `private static double stackBill(Game game, BuildingsStacks stack, Sector owner, double rate)` |  |
-| 291 | 28 | `private static double rawStackBill(Game game, BuildingsStacks stack, Sector owner, double rate)` |  |
-| 321 | 5 | `public static double paid(Game game)` | Read the settled flow from saved statements, never from end-of-month prices. |
-| 328 | 5 | `public static double accrued(Game game)` | Production's accrued bill, already saved in the pending imported-service ledger. |
+| 77 | 1 | `static boolean pricing()` |  |
+| 79 | 14 | `static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing, double rate)` |  |
+| 95 | 12 | `private static double installedBuildingGain(Game game, BuildingsTemplate t, Sector owner, double rate)` | Every installed kind uses removal/standing values, never an additional-building appraisal. |
+| 109 | 9 | `private static double productionRate(BuildingsTemplate t, Sector owner)` | The common dispatch share of these outputs, including direct exports and captive production. |
+| 120 | 8 | `private static double standingRecipeValue(Recipe recipe, Recipes.Prices p, SpreadPlanner.Values values, double rate)` | A running recipe's value under the standing output/input price roles. |
+| 129 | 12 | `private static double standingRecipeFee(Game game, BuildingsTemplate t, Recipe recipe, Recipes.Prices p, double rate)` |  |
+| 148 | 9 | `private static double installedUnitGain(Game game, BuildingsTemplate t, Refining ref)` | What this installed conversion unit adds on the feed it actually takes. |
+| 159 | 21 | `private static double one(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Set<String> fitted, boolean standing, do...` | One building with this recipe and these pieces, at its owner's run rate. |
+| 182 | 8 | `public static double forNew(Game game, BuildingsTemplate t)` | A new building's licence cost, included in every planner's running cost. |
+| 192 | 5 | `public static double forStanding(Game game, BuildingsTemplate t)` | The installed building's saved share of the last production's captured royalty. |
+| 204 | 78 | **type** `static final class Production` | One market pass's production record, confined to that pass. |
+| 205 | 1 | **type** `private record Ground(Resource resource, Deposit.FieldType type)` _(in LicenceFees.Production)_ |  |
+| 206 | 1 | **type** `private record Bill(Sector owner, int id, int quantity, double amount)` _(in LicenceFees.Production)_ |  |
+| 212 | 7 | `Production(Game game)` _(in LicenceFees.Production)_ |  |
+| 221 | 3 | `private static boolean stockPhase(BuildingsTemplate t)` _(in LicenceFees.Production)_ | A conversion unit makes streams in the refinery's stock phase. |
+| 225 | 4 | `private Ground ground(ExtractionSector owner, BuildingsTemplate t)` _(in LicenceFees.Production)_ |  |
+| 231 | 10 | `void before(Sector owner, boolean stock)` _(in LicenceFees.Production)_ | Flow mines/cutters remove the ground inside production. |
+| 243 | 16 | `private double flowExtractionRate(ExtractionSector owner, BuildingsTemplate t)` _(in LicenceFees.Production)_ | The real typed lift divided among the works that made it, including a field's last dispatch. |
+| 261 | 9 | `void made(Sector owner, boolean stock)` _(in LicenceFees.Production)_ | Called directly after this sector's output loop; capture all money inputs before any other producer or next-month choice. |
+| 272 | 9 | `void finish()` _(in LicenceFees.Production)_ | Book immutable production bills once, into the pending imported-service ledger for the next strike. |
+| 283 | 9 | `private static double stackBill(Game game, BuildingsStacks stack, Sector owner, double rate)` |  |
+| 293 | 28 | `private static double rawStackBill(Game game, BuildingsStacks stack, Sector owner, double rate)` |  |
+| 323 | 5 | `public static double paid(Game game)` | Read the settled flow from saved statements, never from end-of-month prices. |
+| 330 | 5 | `public static double accrued(Game game)` | Production's accrued bill, already saved in the pending imported-service ledger. |
 

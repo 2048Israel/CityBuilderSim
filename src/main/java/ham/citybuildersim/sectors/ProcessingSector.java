@@ -336,10 +336,14 @@ public abstract class ProcessingSector extends Sector {
 
     /** One of `t` weighed by this sector at the city's values: its feed's share and price, and its freight, with it. */
     private SpreadPlanner.Candidate weigh(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city) {
+        BuildingsTemplate original = t;
+        if (game != null) t = game.getBusinessInvestment().templateForNew(t);
         double share = feedShare(t);
         double rate = share == 1 ? city.rate() : city.rate() * share;
-        return estimate(t, v, city, exchangeFactor(), tariff(), feedRefusal(t), share,
+        SpreadPlanner.Candidate quote = estimate(t, v, city, exchangeFactor(), tariff(), feedRefusal(t), share,
                 offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()), fleetCapital(t, v));
+        return original == t ? quote : new SpreadPlanner.Candidate(original, quote.earns(), quote.cost(), quote.failed(),
+                quote.why(), quote.refusals(), quote.with());
     }
 
     /*
