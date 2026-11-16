@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PD1b-20261115-2210 -->
 
 ## changelog
