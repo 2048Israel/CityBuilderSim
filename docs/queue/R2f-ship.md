@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-R2f-ZrCQW0dE -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — R2f, Research: the medical rows — 2026-11-16, ready, see docs/queue/R2f-notes.md
 The catalogue's sixteen medical rows now act in a city founded the 1900 way (research-design Q17). A row found here
