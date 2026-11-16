@@ -8263,8 +8263,24 @@ public final class GameVersion {
      *     and its accretion income stop for the life of every line it holds.
      *     It is refused, naming the build that still opens it. No conversion
      *     is written.
+     *
+     * 54 - WORLD PRICES CHAINED (batch CU2; docs/studies/spec-world-prices.md
+     *     9): the world market's January solves the goods inputs first, a made
+     *     good priced off what its inputs cost each nation plus its own part,
+     *     a root anchored so the reference city's band stands on its path
+     *     (WorldChain, WorldMarket). No field is added.
+     *
+     *     THE FLOOR RISES TO 54 WITH IT (the rule): a save of format 53 or
+     *     older would load WRONGLY. Its saved world prices and supply scales
+     *     are the unchained solve's: a made good's price is its own path's,
+     *     not its inputs' cost, and a root's lambda is not the anchored one, so
+     *     the restored market (restore, no re-solve) prices rod, wire, steel
+     *     and fuels apart from what they are made of until the next January,
+     *     and that January starts from a state the chained solve never left.
+     *     It is refused, naming the build that still opens it. No conversion
+     *     is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 53;
+    public static final int SAVE_FORMAT = 54;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8274,8 +8290,10 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 51 since batch BK2 (EACH HOLDER'S OWN DISCOUNT above: a save's pieces
-     * carry one pool of discount, and every holder would read none of it).
+     * 54 since batch CU2 (WORLD PRICES CHAINED above: a save's world prices
+     * and scales are the unchained solve's). 51 from batch BK2 (EACH HOLDER'S
+     * OWN DISCOUNT above: a save's pieces carry one pool of discount, and
+     * every holder would read none of it).
      * 50 from batch EP1 (THE GAME STARTS IN 1900 above: a save's calendar
      * years would read a century ahead and its dollars 38 times its world's).
      * 49 from batch WN4 (THE WORLD'S MONEYS above: a save's dollar walked
@@ -8313,7 +8331,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 53;
+    public static final int OLDEST_LOADABLE_FORMAT = 54;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

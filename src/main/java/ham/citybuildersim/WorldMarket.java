@@ -43,7 +43,13 @@ import java.util.Random;
  * p-hat and one world supply scale lambda that holds the mean mill price to the
  * good's real price path (section 2). The city moves its own prices by the
  * month's step (section 4) at its volume, so the solve is a pure function of
- * (file, path, seed, year) and harness cities on one world share it.
+ * (file, path, seed, year) and harness cities on one world share it. CU2 chains
+ * it (WorldChain; docs/studies/spec-world-prices.md 3): the goods are solved
+ * inputs first, a root is solved and then anchored so the reference city's band
+ * stands on the path, and a made good's price in a nation is its inputs' cost
+ * landed there plus its own part, solved on the manufactures index, less the
+ * copper charge where it carries one; its makers supply what they sell at that
+ * price, so the market clears by construction.
  *
  * THE BASE is everything that is the file's: the pairs in two layouts, the
  * freight table, the nodes, the calibration. It is immutable, built once a
@@ -129,6 +135,33 @@ public final class WorldMarket {
 
     /** The freight scale a world with no good that calibrates stands on (est.: the file's reference freight as it is). */
     static final double PHI_FALLBACK = 1;
+
+    /** The two charges the literals were set on (treatment and refining), over that year's copper price: 2024's benchmark over 2024's price (CU1 section 5; call star 6 (a)). */
+    static final double CHARGE_LITERAL = .054;
+
+    /** The refining charge's part of the two charges (2024's benchmark: 8.0 of 22.2 cents a pound); anode carries this part, concentrate both. */
+    static final double REFINING_PART = .36;
+
+    /** The least a charge leaves of the copper in a good (a charge is taken off the copper's cost before the floor). */
+    static final double CHARGE_LEAVES = .05;
+
+    /** The least a made good's price ratio may be: a price is floored above zero. */
+    static final double PRICE_FLOOR = 1e-6;
+
+    /** The anchor's root-find stops within this of its target, in logs, or after ANCHOR_READS reads of the reference band, whichever comes first. */
+    static final double ANCHOR_TOL = 1e-10;
+
+    /** The most reads of the reference band one root's anchor takes. */
+    static final int ANCHOR_READS = 40;
+
+    /** The most steps the anchor takes while its bracket is open, each at most ANCHOR_STEP in the log of the move. */
+    static final int ANCHOR_OPEN_STEPS = 12;
+
+    /** The most the anchor moves the prices in one step of its search, in logs (a factor of e cubed). */
+    static final double ANCHOR_STEP = 3;
+
+    /** What the anchor's search reads where the band's side is not above 0 (a price below its freight): this far below the target, in logs, so the prices are moved up. */
+    static final double ANCHOR_LOW = -50;
 
     /** How a good came by its price scale and freight scale. */
     public enum Fit {
@@ -310,6 +343,17 @@ public final class WorldMarket {
         final int[] areaSeller;
         final Traded[] traded;
         final int[] indexOf;
+        /** The chain: which goods are made of which, their shares, and the order the January solves them in (CU2). */
+        final WorldChain chain;
+        /** The manufactures index's good (machinery) among the modelled, -1 if it is not modelled: a made good's own part follows its price path. */
+        final int muv;
+        /**
+         * What the calibration leaves for the January's anchor and charge: each good's Historical price level in REFERENCE_YEAR over the base year (the
+         * level the literals stand on), the same for copper and for the manufactures index (1 if not modelled), and the freight scale the plain pass gave
+         * each good (for the check). Set by calibrate.
+         */
+        double[] refLevel, plainPhi;
+        double refCopper = 1, refMuv = 1;
         final int refHost;
         final Legs reference;
         final long buildMillis;
@@ -397,6 +441,8 @@ public final class WorldMarket {
                 list.add(t);
             }
             traded = list.toArray(new Traded[0]);
+            chain = new WorldChain(traded, indexOf);
+            muv = indexOf[Good.MACHINERY.ordinal()];
             refHost = hostOf(REFERENCE_LAT, REFERENCE_LON);
             reference = legs(REFERENCE_LAT, REFERENCE_LON, false, refHost);
             calibrate(data);
@@ -595,13 +641,26 @@ public final class WorldMarket {
          * Sets every good's (sigma, phi): the reference city (Halifax, no berth) in REFERENCE_YEAR on the Historical path, trading nothing, sees
          * floor = the literal export price and ceiling = the literal import price. The ceiling over the floor rises with phi from 1, so phi is
          * found by a scan and a bisection on its log and sigma follows; one-sided goods and goods that will not calibrate take their class's median.
+         *
+         * TWO PASSES (CU2; spec-world-prices 3.8). The plain pass solves each good alone on its own price path and fixes the freight scale of the
+         * goods that do not calibrate (a made good reads its input's freight scale, and a class median is only known at the end). The chained pass then
+         * goes in the chain's order and solves nothing: a root's prices are the plain pass's (the anchor is the identity in the reference year), a made
+         * good's own part is the plain pass's prices times the two levels' ratio (a uniform move is another lambda, spec section 2), the rest of its
+         * price is its inputs' cost, with the charge at the literal; the fit is the same, on those prices, and a good that does not calibrate keeps the
+         * plain pass's freight scale.
          */
         private void calibrate(WorldData data) {
             Nations hist = new Nations(data, Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
             double[] gHat = growth(hist, REFERENCE_YEAR, baseYear, n);
             int[] priceIdx = priceIndices(hist, traded);
+            refLevel = new double[traded.length];
+            for (int gi = 0; gi < traded.length; gi++) refLevel[gi] = level(hist, priceIdx[gi], REFERENCE_YEAR, baseYear);
+            int copper = indexOf[Good.COPPER.ordinal()];
+            refCopper = copper < 0 ? 1 : refLevel[copper];
+            refMuv = muv < 0 ? 1 : refLevel[muv];
             Work work = new Work(n);
             double[][] kept = new double[traded.length][];
+            double[][] plain = new double[traded.length][];
             double[] phat = new double[n];
             double[] p = new double[n];
             double[] lam = new double[1];
@@ -609,24 +668,66 @@ public final class WorldMarket {
                 Traded t = traded[gi];
                 Arrays.fill(phat, 1);
                 lam[0] = 1;
-                solve(t, gHat, null, true, level(hist, priceIdx[gi], REFERENCE_YEAR, baseYear), SOLVE_TOL, phat, lam, 0, work);
+                solve(t, gHat, null, true, refLevel[gi], SOLVE_TOL, phat, lam, 0, work);
+                plain[gi] = phat.clone();
                 for (int i = 0; i < n; i++) p[i] = t.v * phat[i];
-                Good g = t.good;
-                boolean imp = g.importable(), exp = g.exportable();
-                if (imp && exp) {
-                    double target = g.worldImportPrice() / g.worldExportPrice();
-                    double rho = target > 1 ? findRho(t, p, target) : Double.NaN;
-                    if (rho > 0) {
-                        t.phi = rho;
-                        t.fit = Fit.CALIBRATED;
-                    } else {
-                        t.fit = Fit.CLASS_MEDIAN;
-                    }
-                } else {
-                    t.fit = imp || exp ? Fit.ONE_SIDED : Fit.NONE;
-                }
+                fit(t, p);
                 kept[gi] = p.clone();
             }
+            scale(kept);
+            plainPhi = new double[traded.length];
+            for (int gi = 0; gi < traded.length; gi++) plainPhi[gi] = traded[gi].phi;
+            for (Traded t : traded) {
+                t.phi = t.sigma = t.refFloor = t.refCeiling = Double.NaN;
+                t.fit = Fit.NONE;
+            }
+            Arrays.fill(fits, 0);
+            double[] flat = new double[traded.length * n];
+            Arrays.fill(flat, 1);
+            double[][] cache = new double[traded.length][];
+            for (int gi : chain.order) {
+                Traded t = traded[gi];
+                double[] slice = plain[gi];
+                if (chain.made(gi)) {
+                    if (chain.own[gi] > 0) {
+                        double k = refLevel[ownLevelGood(gi)] / refLevel[gi];
+                        for (int i : t.makers) slice[i] *= k;
+                    }
+                    price(gi, slice, flat, cache, hist, REFERENCE_YEAR, true);
+                }
+                System.arraycopy(slice, 0, flat, gi * n, n);
+                for (int i = 0; i < n; i++) p[i] = t.v * slice[i];
+                fit(t, p);
+                if (t.fit != Fit.CALIBRATED && t.fit != Fit.NONE && plainPhi[gi] > 0) t.phi = plainPhi[gi];
+                kept[gi] = p.clone();
+            }
+            scale(kept);
+            for (Traded t : traded) fits[t.fit.ordinal()]++;
+        }
+
+        /** One good's fit on its reference prices p (US$ a tonne): both sides calibrate its freight scale, one side leaves it to the class's median, none leaves it nothing. */
+        private void fit(Traded t, double[] p) {
+            Good g = t.good;
+            boolean imp = g.importable(), exp = g.exportable();
+            if (imp && exp) {
+                double target = g.worldImportPrice() / g.worldExportPrice();
+                double rho = target > 1 ? findRho(t, p, target) : Double.NaN;
+                if (rho > 0) {
+                    t.phi = rho;
+                    t.fit = Fit.CALIBRATED;
+                } else {
+                    t.fit = Fit.CLASS_MEDIAN;
+                }
+            } else {
+                t.fit = imp || exp ? Fit.ONE_SIDED : Fit.NONE;
+            }
+        }
+
+        /**
+         * Every good's freight scale where it has none (its class's median of the goods that calibrated, the overall median where its class has none),
+         * then its price scale and the reference floor and ceiling, from the reference prices kept (US$ a tonne, good by good).
+         */
+        private void scale(double[][] kept) {
             Map<String, Double> medians = new HashMap<>();
             Map<String, List<Double>> byClass = new HashMap<>();
             List<Double> all = new ArrayList<>();
@@ -641,7 +742,7 @@ public final class WorldMarket {
             for (int gi = 0; gi < traded.length; gi++) {
                 Traded t = traded[gi];
                 if (t.fit == Fit.NONE) continue;
-                if (t.fit != Fit.CALIBRATED) t.phi = medians.getOrDefault(t.goodClass, overall);
+                if (t.fit != Fit.CALIBRATED && !(t.phi > 0)) t.phi = medians.getOrDefault(t.goodClass, overall);
                 double[] fl = referenceBand(t, kept[gi], t.phi);
                 Good g = t.good;
                 if (t.fit == Fit.CALIBRATED) {
@@ -659,7 +760,6 @@ public final class WorldMarket {
                 t.refFloor = t.sigma * Math.max(0, fl[0]);
                 t.refCeiling = t.sigma * Math.max(Math.max(0, fl[0]), fl[1]);
             }
-            for (Traded t : traded) fits[t.fit.ordinal()]++;
         }
 
         /** The reference city's {floor, ceiling} in US$ a tonne at freight scale rho, for prices p (makers' mill prices): the best netback and the cheapest landed cost, with nothing traded. */
@@ -709,6 +809,221 @@ public final class WorldMarket {
         private double ratio(Traded t, double[] p, double rho) {
             double[] b = referenceBand(t, p, rho);
             return b[0] > 0 ? b[1] / b[0] : Double.POSITIVE_INFINITY;
+        }
+
+        /* ----- the chain's January (CU2; docs/studies/spec-world-prices.md 3) ----- */
+
+        /** The good whose price path a good's own part follows: its own, or for a made good with an own part the manufactures index's (machinery's); the good itself where machinery is not modelled. */
+        int ownLevelGood(int gi) {
+            return chain.made(gi) && chain.own[gi] > 0 && muv >= 0 ? muv : gi;
+        }
+
+        /**
+         * What good pg costs each nation over what it cost it in the base year, from the good's finished prices in flat (goods x nations, as phat): the
+         * cheapest maker's mill price landed there, over the same at base-year prices (the good as one commodity with one price and a freight: what the
+         * city itself pays). 1 where no maker reaches the nation. The freight scale is the good's, PHI_FALLBACK where it has none.
+         */
+        double[] seen(int pg, double[] flat) {
+            Traded t = traded[pg];
+            int at = pg * n;
+            double phi = t.phi > 0 ? t.phi : PHI_FALLBACK;
+            double[] out = new double[n];
+            for (int i = 0; i < n; i++) {
+                double now = Double.POSITIVE_INFINITY, then = Double.POSITIVE_INFINITY;
+                for (int m : t.makers) {
+                    double f = phi * freight[m * n + i];
+                    now = Math.min(now, t.v * flat[at + m] + f);
+                    then = Math.min(then, t.v + f);
+                }
+                out[i] = now < Double.POSITIVE_INFINITY && then > 0 ? now / then : 1;
+            }
+            return out;
+        }
+
+        /** The price number of a good in a path's price layer (1-based), 0 where it has none. */
+        private static int priceNumber(Nations nations, Good g) {
+            for (int k = 1; k <= nations.goodCount(); k++) if (nations.goodKey(k).equals(g.name())) return k;
+            return 0;
+        }
+
+        /**
+         * The charge off a unit of copper in good g, in the copper's base-year price; 0 for a good that carries none. Concentrate carries both the
+         * treatment and the refining charge, anode the refining charge (REFINING_PART of the two). The charge is money, not a share of the copper: a
+         * smelter's fee, priced as every conversion is (on the manufactures index) times the swing of Nations.copperChargeSwing, or where the path has a
+         * record of the year (Nations.copperChargeRecorded; the table is empty today) that year's share of the copper price. The calibration reads the
+         * charge the literals were set on (CHARGE_LITERAL, 2024's benchmark), not the reference year's own.
+         */
+        double charge(Good g, Nations nations, int year, boolean calibrating) {
+            double part = g == Good.COPPER_CONC ? 1 : g == Good.ANODE ? REFINING_PART : 0;
+            if (part == 0) return 0;
+            if (calibrating) return part * CHARGE_LITERAL * refCopper;
+            int from = nations.path() == Nations.Path.HISTORICAL ? baseYear : baseYear - standInYears;
+            if (nations.copperChargeRecorded(year)) return part * nations.copperChargeRecord(year) * levelOf(nations, Good.COPPER, year, from);
+            return part * nations.copperChargeSwing(year) * levelOf(nations, Good.MACHINERY, year, from) / refMuv * refCopper;
+        }
+
+        /** A modelled good's price level in a year over the base year read, 1 where the good is not modelled. */
+        private double levelOf(Nations nations, Good g, int year, int from) {
+            return indexOf[g.ordinal()] < 0 ? 1 : level(nations, priceNumber(nations, g), year, from);
+        }
+
+        /**
+         * Makes a made good's price in slice (its makers' mill prices over the base year's; its own solved part on entry, its price on leaving): in each
+         * maker's nation the sum of each input's share times what the input costs there (seen, kept in cache for the year: a parent is finished before a
+         * child asks, the chain's order sees to it), less the charge where the good carries one (never below CHARGE_LEAVES of its inputs' cost), plus its
+         * own share of its own part. A price is floored above zero. flat is every good's finished prices (goods x nations).
+         */
+        void price(int gi, double[] slice, double[] flat, double[][] cache, Nations nations, int year, boolean calibrating) {
+            Traded t = traded[gi];
+            double[] cost = new double[n];
+            for (int k = 0; k < chain.parent[gi].length; k++) {
+                int pg = chain.parent[gi][k];
+                if (cache[pg] == null) cache[pg] = seen(pg, flat);
+                for (int i : t.makers) cost[i] += chain.share[gi][k] * cache[pg][i];
+            }
+            double chi = charge(t.good, nations, year, calibrating), own = chain.own[gi];
+            for (int i : t.makers) {
+                double in = chi > 0 ? Math.max(CHARGE_LEAVES * cost[i], cost[i] - chi) : cost[i];
+                double v = in + (own > 0 ? own * slice[i] : 0);
+                slice[i] = v > PRICE_FLOOR && Double.isFinite(v) ? v : PRICE_FLOOR;
+            }
+        }
+
+        /**
+         * A solve's start, moved as one onto the year's level: last year's answer left a root off its mean (the anchor) and a made good on its chained
+         * price, so every maker's price is scaled by target over the makers' w-weighted mean, and a root's lambda by the same move's power (a uniform move
+         * with the supply scale beside it is the same equilibrium; a made good's lambda is its own part's and stays). Only a root, or a made good with an
+         * own part, moves. Nothing is kept beside the saved prices and scales, so a city read back starts where it would have.
+         */
+        void moveOntoLevel(int gi, double[] slice, double[] lam, int lamAt, double target) {
+            boolean made = chain.made(gi);
+            if (made && !(chain.own[gi] > 0)) return;
+            Traded t = traded[gi];
+            double mean = 0;
+            for (int i : t.makers) mean += t.w[i] * slice[i];
+            double k = target / mean;
+            if (!(k > 0) || !Double.isFinite(k)) return;
+            for (int i : t.makers) slice[i] *= k;
+            if (!made) lam[lamAt] *= exp(-(SUPPLY_ELASTICITY + DEMAND_ELASTICITY) * log(k));
+        }
+
+        /**
+         * How far the reference city's band stands off target with the makers' prices (slice) moved as one by exp(x): the log of the band over the band
+         * the calibration left (the literals where a side calibrated, 1 in the reference year) less the log of target, a two-sided good read by the
+         * geometric middle of its sides and a one-sided one by its calibrated side. NaN where a side read is not a number, negative infinity where it
+         * is not above 0.
+         */
+        private double off(Traded t, double[] slice, double x, double[] p, double target) {
+            double k = exp(x);
+            for (int i = 0; i < n; i++) p[i] = t.v * slice[i] * k;
+            double[] fl = referenceBand(t, p, t.phi);
+            if (t.fit == Fit.CALIBRATED) {
+                double f = t.sigma * fl[0] / t.refFloor, ce = t.sigma * fl[1] / t.refCeiling;
+                if (Double.isNaN(f) || Double.isNaN(ce)) return Double.NaN;
+                if (!(f > 0 && Double.isFinite(f) && ce > 0 && Double.isFinite(ce))) return Double.NEGATIVE_INFINITY;
+                return log(Math.sqrt(f * ce) / target);
+            }
+            double s = t.good.importable() ? t.sigma * fl[1] / t.refCeiling : t.sigma * fl[0] / t.refFloor;
+            if (Double.isNaN(s)) return Double.NaN;
+            return s > 0 && Double.isFinite(s) ? log(s / target) : Double.NEGATIVE_INFINITY;
+        }
+
+        /**
+         * A root's anchor (CU1's star 5, spec-world-prices 3.5): after its solve, its makers' prices are moved as one, its supply scale with them (a
+         * uniform move with lambda times exp(-(ES + ED) x) is the same equilibrium), until the reference city's band with nothing traded, over the band
+         * the calibration left it, equals the path's level over the level the literals stand on (levelNow over refLevel). The band does not move one
+         * for one with the prices (the freight does not move), so the move x, in logs, is found by a bracketed root-find, from xStart (last year's move:
+         * the band moves with the prices, so a first step of one for one lands near, and the bracket then opens by doubling steps if it has not closed).
+         * At most ANCHOR_READS reads of the band in all. Returns the move applied, 0 where there is none: a good with no scales, a year the band cannot be
+         * read in (a side not above 0, or not a number, at the solve's own prices: a price below its freight, which is left as the solve had it), or a
+         * bracket that does not close.
+         */
+        double anchor(int gi, double[] slice, double[] lam, int lamAt, double levelNow, double xStart) {
+            Traded t = traded[gi];
+            if (refLevel == null || !(t.sigma > 0) || !(t.phi > 0)) return 0;
+            double target = levelNow / refLevel[gi];
+            if (!(target > 0) || !Double.isFinite(target)) return 0;
+            double[] p = new double[n];
+            double f0 = off(t, slice, 0, p, target);
+            int reads = 1;
+            if (!Double.isFinite(f0)) return 0;
+            double bx = 0, bf = f0, x = 0, f = f0;
+            if (Double.isFinite(xStart) && xStart != 0) {
+                x = xStart;
+                f = off(t, slice, x, p, target);
+                reads++;
+                if (Double.isNaN(f)) return 0;
+                f = Math.max(f, ANCHOR_LOW);
+                if (Math.abs(f) < Math.abs(bf)) {
+                    bx = x;
+                    bf = f;
+                }
+            }
+            double lo = Double.NaN, hi = Double.NaN, flo = 0, fhi = 0;
+            if (f > 0) {
+                hi = x;
+                fhi = f;
+            } else {
+                lo = x;
+                flo = f;
+            }
+            double step = Math.max(-ANCHOR_STEP, Math.min(ANCHOR_STEP, -f));
+            for (int open = 0; open < ANCHOR_OPEN_STEPS && Math.abs(bf) >= ANCHOR_TOL && (Double.isNaN(lo) || Double.isNaN(hi)) && reads < ANCHOR_READS; open++) {
+                x += step;
+                f = off(t, slice, x, p, target);
+                reads++;
+                if (Double.isNaN(f)) return 0;
+                f = Math.max(f, ANCHOR_LOW);
+                if (Math.abs(f) < Math.abs(bf)) {
+                    bx = x;
+                    bf = f;
+                }
+                if (f > 0) {
+                    hi = x;
+                    fhi = f;
+                } else {
+                    lo = x;
+                    flo = f;
+                }
+                step = Math.max(-ANCHOR_STEP, Math.min(ANCHOR_STEP, 2 * step));
+            }
+            if (Math.abs(bf) >= ANCHOR_TOL) {
+                if (Double.isNaN(lo) || Double.isNaN(hi)) return 0;
+                // the secant kept inside the bracket (Illinois: an end that stays twice running has its value halved), a bisection where the low end is
+                // the floor reading
+                int kept = 0;
+                while (reads < ANCHOR_READS) {
+                    boolean secant = flo > ANCHOR_LOW + 10;
+                    double xn = secant ? hi - fhi * (hi - lo) / (fhi - flo) : .5 * (lo + hi);
+                    if (!(xn > lo && xn < hi)) xn = .5 * (lo + hi);
+                    if (xn == lo || xn == hi) break;
+                    double fn = off(t, slice, xn, p, target);
+                    reads++;
+                    if (Double.isNaN(fn)) break;
+                    fn = Math.max(fn, ANCHOR_LOW);
+                    if (Math.abs(fn) < Math.abs(bf)) {
+                        bx = xn;
+                        bf = fn;
+                    }
+                    if (fn > 0) {
+                        hi = xn;
+                        fhi = fn;
+                        if (kept == -1 && secant) flo *= .5;
+                        kept = -1;
+                    } else {
+                        lo = xn;
+                        flo = fn;
+                        if (kept == 1) fhi *= .5;
+                        kept = 1;
+                    }
+                    if (Math.abs(fn) < ANCHOR_TOL) break;
+                }
+            }
+            if (bx == 0) return 0;
+            double k = exp(bx);
+            for (int i : t.makers) slice[i] *= k;
+            lam[lamAt] *= exp(-(SUPPLY_ELASTICITY + DEMAND_ELASTICITY) * bx);
+            return bx;
         }
 
         private static double median(List<Double> values) {
@@ -766,6 +1081,9 @@ public final class WorldMarket {
     static final class Work {
         final double[] u, a, phi, h, x, g, lnMake;
         final Accel accel;
+        /** The plain step from the last pass whose error was a number, and whether there is one: what the guard puts back (see solve). */
+        double[] good;
+        boolean have;
         /** The worst clearing error and the level error at the last pass, for the log. */
         double worst, levelError;
 
@@ -800,6 +1118,20 @@ public final class WorldMarket {
      */
     static int solve(Traded t, double[] gHat, double[] carve, boolean pin, double level, double tol,
                      double[] phat, double[] lam, int lamAt, Work work) {
+        return solve(t, gHat, null, carve, pin, level, tol, phat, lam, lamAt, work);
+    }
+
+    /**
+     * The same solve with each maker's supply growth given apart from its nation's output (supplyGrowth, nullable: null is gHat, the nation's output
+     * over the base year's; demand reads gHat either way). A made good's makers supply what they sell at the chained price (CU2), a scale a maker.
+     *
+     * THE GUARD. Anderson's acceleration can throw an iterate out of the numbers, and every pass after it is not a number either: before the guard the
+     * solve ran to its sweeps and the next January started from the same prices (on drawn worlds 9 and 10 crude's solve left the numbers in 2165 and
+     * 2191 and never came back; spec-world-prices 3.7). A pass whose size is not finite puts back the plain step from the last pass whose size was
+     * (or the base year's prices and scale, log 0, if none), resets the acceleration and counts as a sweep; guards() counts them for the process.
+     */
+    static int solve(Traded t, double[] gHat, double[] supplyGrowth, double[] carve, boolean pin, double level, double tol,
+                     double[] phat, double[] lam, int lamAt, Work work) {
         final double eps = t.eps, kap = (eps + 1 - DEMAND_ELASTICITY) / eps, rho = 1 + 1 / eps, coef = eps + 1 + SUPPLY_ELASTICITY;
         final double levelPower = SUPPLY_ELASTICITY + DEMAND_ELASTICITY;
         final int[] makers = t.makers, users = t.users;
@@ -811,11 +1143,12 @@ public final class WorldMarket {
         Arrays.fill(phi, 0);
         for (int k = 0; k < mk; k++) {
             x[k] = log(phat[makers[k]]);
-            lnMake[k] = log(t.make[makers[k]] * gHat[makers[k]]);
+            lnMake[k] = log(t.make[makers[k]] * (supplyGrowth == null ? gHat[makers[k]] : supplyGrowth[makers[k]]));
         }
         final double fixedLnLambda = log(lam[lamAt]);
         if (pin) x[mk] = fixedLnLambda;
         work.accel.reset();
+        work.have = false;
         int pass = 0;
         double lastWorst = Double.POSITIVE_INFINITY;
         while (true) {
@@ -866,6 +1199,19 @@ public final class WorldMarket {
                 break;
             }
             double size = Math.max(worst, levelError);
+            if (!Double.isFinite(size)) {
+                if (work.have) System.arraycopy(work.good, 0, x, 0, dim);
+                else Arrays.fill(x, 0, dim, 0);
+                work.have = false;
+                work.accel.reset();
+                lastWorst = Double.POSITIVE_INFINITY;
+                GUARDS.incrementAndGet();
+                pass++;
+                continue;
+            }
+            if (work.good == null || work.good.length < dim) work.good = new double[dim];
+            System.arraycopy(g, 0, work.good, 0, dim);
+            work.have = true;
             if (size > ACCEL_BACK * lastWorst) work.accel.reset();
             lastWorst = size;
             work.accel.mix(x, g, dim);
@@ -874,6 +1220,12 @@ public final class WorldMarket {
         if (pin) lam[lamAt] = exp(x[mk]);
         return pass;
     }
+
+    /** How many passes the solve's guard has put back, this process (see solve): 0 on a solve that never left the numbers. */
+    static final java.util.concurrent.atomic.AtomicLong GUARDS = new java.util.concurrent.atomic.AtomicLong();
+
+    /** How many times the solve's guard has put an iterate back in this process. */
+    static long guards() { return GUARDS.get(); }
 
     /**
      * Anderson acceleration of a fixed-point iteration x -> g(x): it keeps the last few steps and moves x to the point their linear model says has no
@@ -1443,6 +1795,11 @@ public final class WorldMarket {
      * Solves every good for a year, from the last year solved (or from p-hat = 1 and lambda = 1 for the first), and reads the band structures at the
      * site. A year already solved is left alone. The answer is a pure function of (file, path, seed, year, the state it started from): a process-wide
      * cache of SOLVES_KEPT answers returns what a fresh solve from the same start would.
+     *
+     * CU2: the goods go in the chain's order (WorldChain), each finished before a good made of it reads it. A root's start is moved onto the year's level,
+     * it is solved as always and then anchored (Base.anchor), so the reference city's band stands on its path whatever the makers' spread. A made good with
+     * an own part is solved on the manufactures index's level, and every made good is then priced off its inputs (Base.price: what they cost each nation
+     * landed, less the copper charge where the good carries one, plus its own part); its makers supply what they sell at that price (deriveSolution).
      */
     public void solveYear(int year) {
         if (year == this.year) return;
@@ -1460,11 +1817,33 @@ public final class WorldMarket {
             lambda = hit.scales().clone();
             passes = hit.passes().clone();
         } else {
-            for (int gi = 0; gi < goodCount; gi++) {
-                double target = level(nations, priceIdx[gi], year, baseYearRead());
+            // the chain's order: a root is solved and anchored, a made good is its inputs' cost plus its own part, and each is finished (copied into phat)
+            // before a good made of it reads it
+            WorldChain chain = base.chain;
+            double[][] seenCache = new double[goodCount][];
+            for (int gi : chain.order) {
+                Traded t = base.traded[gi];
+                double target = level(nations, priceIdx[base.ownLevelGood(gi)], year, baseYearRead());
                 double[] slice = new double[n];
                 System.arraycopy(phat, gi * n, slice, 0, n);
-                passes[gi] = solve(base.traded[gi], g, null, true, target, SOLVE_TOL, slice, lambda, gi, work);
+                if (!chain.made(gi)) {
+                    // last year's anchor move: the saved prices are last year's anchored ones, their mean over last year's level
+                    double xStart = 0;
+                    if (warm >= 0) {
+                        double mean = 0;
+                        for (int i : t.makers) mean += t.w[i] * slice[i];
+                        double move = log(mean / level(nations, priceIdx[gi], warm, baseYearRead()));
+                        xStart = Double.isFinite(move) ? move : 0;
+                        base.moveOntoLevel(gi, slice, lambda, gi, target);
+                    }
+                    passes[gi] = solve(t, g, null, true, target, SOLVE_TOL, slice, lambda, gi, work);
+                    base.anchor(gi, slice, lambda, gi, target, xStart);
+                } else {
+                    boolean ownPart = chain.own[gi] > 0;
+                    if (warm >= 0 && ownPart) base.moveOntoLevel(gi, slice, lambda, gi, target);
+                    passes[gi] = ownPart ? solve(t, g, null, true, target, SOLVE_TOL, slice, lambda, gi, work) : 0;
+                    base.price(gi, slice, phat, seenCache, nations, year, false);
+                }
                 System.arraycopy(slice, 0, phat, gi * n, n);
             }
             synchronized (SOLVES) {
@@ -1538,10 +1917,19 @@ public final class WorldMarket {
             }
             System.arraycopy(a, 0, aSolved[gi], 0, n);
             System.arraycopy(phi, 0, phiSolved[gi], 0, n);
+            // a root's makers supply as the solve has it; a made good's supply what they sell at the chained price (capacity follows the price to cost),
+            // in the tonnes a year the sales buy: so its market clears by construction and a reload derives the same with no new saved field
+            boolean made = base.chain.made(gi);
             for (int i : t.makers) {
                 double ph = phat[gi * n + i];
                 price[gi][i] = t.v * ph;
-                supply[gi][i] = t.s0[i] * gHat[i] * lambda[gi] * exp(SUPPLY_ELASTICITY * log(ph));
+                if (made) {
+                    double sales = t.ownX[i] * spending[i];
+                    for (int q = t.sStart[i]; q < t.sStart[i + 1]; q++) sales += t.sX[q] * spending[t.sBuyer[q]];
+                    supply[gi][i] = a[i] * sales * 1000 / (t.v * ph);
+                } else {
+                    supply[gi][i] = t.s0[i] * gHat[i] * lambda[gi] * exp(SUPPLY_ELASTICITY * log(ph));
+                }
             }
         }
     }
@@ -1852,6 +2240,21 @@ public final class WorldMarket {
     /** The mean mill price's target for a good this year. */
     double levelTarget(int gi) { return level(nations, priceIdx[gi], year, baseYearRead()); }
 
+    /** A good's makers' supply this year, tonnes a year, a copy: what they sell at the solved price, a root's as the solve has it. */
+    double[] supply(int gi) { return supply[gi].clone(); }
+
+    /** The charge this year's copper carries into a good (Base.charge): 0 for a good that carries none. */
+    double charge(Good g) { return base.charge(g, nations, year, false); }
+
+    /** The level of the price path a good's own part follows this year (the manufactures index's for a made good with an own part): the target of its solve. */
+    double ownLevelTarget(int gi) { return level(nations, priceIdx[base.ownLevelGood(gi)], year, baseYearRead()); }
+
+    /** The level a root's reference band is anchored to this year: its path's level over the level the literals stand on. */
+    double anchorTarget(int gi) { return levelTarget(gi) / base.refLevel[gi]; }
+
+    /** The manufactures index's good (machinery) among the modelled, -1 if it is not modelled. */
+    int muv() { return base.muv; }
+
     /** A nation's use of a good this year (1-based), tonnes a year. */
     double demand(int gi, int nation) { return demand[gi][nation - 1]; }
 
@@ -1963,9 +2366,18 @@ public final class WorldMarket {
         }
         double[] start = new double[n];
         System.arraycopy(phat, gi * n, start, 0, n);
-        double[] lam1 = { lambda[gi] };
+        // a made good's makers each supply what they sell at its chained price (a scale a maker, lambda 1), so the start clears exactly
+        double[] lam1 = { lambda[gi] }, growth = null;
+        if (base.chain.made(gi)) {
+            lam1[0] = 1;
+            growth = new double[n];
+            for (int i : t.makers) {
+                double ph = phat[gi * n + i];
+                growth[i] = supply[gi][i] * t.v * ph / 1000 / (t.make[i] * exp((1 + SUPPLY_ELASTICITY) * log(ph)));
+            }
+        }
         Work w = new Work(n);
-        int sweeps = solve(t, gHat, carve, false, 1, RESOLVE_TOL, start, lam1, 0, w);
+        int sweeps = solve(t, gHat, growth, carve, false, 1, RESOLVE_TOL, start, lam1, 0, w);
         double[] p = new double[n];
         for (int i = 0; i < n; i++) p[i] = t.v * start[i];
         double[] fc = legs.fc(), fp = legs.fp();

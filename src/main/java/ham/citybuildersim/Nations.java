@@ -467,6 +467,67 @@ public final class Nations {
         return goodMarks.get(reach(year))[g];
     }
 
+    /* ----- the copper charge (CU2) ----- */
+
+    /**
+     * The middle of the copper charge's swing, over the reference year's copper price at the reference year's manufactures: the two charges together
+     * (treatment and refining) as the record has them over the manufactures index, 2000-2024, run 3.2 to 7.8% (docs/studies/spec-world-prices.md 3.6).
+     */
+    static final double CHARGE_MID = .055;
+
+    /** The swing's half-height, over the same price: the charge runs between about 3% and 8%. */
+    static final double CHARGE_HALF = .022;
+
+    /** The years between two large peaks of the swing (the record's 1997, 2006, 2015 and 2024 stand nine years apart). */
+    static final double CHARGE_YEARS = 9;
+
+    /** The year the Historical path's large peaks stand on, and every CHARGE_YEARS after it (the record's 1997, 2006, 2015, 2024). */
+    static final int CHARGE_PEAK_YEAR = 1997;
+
+    /** The slower turn beside the main one runs at one over this many times the main turn's rate, so no two swings are the same height. */
+    static final double CHARGE_SLOW = 2.7;
+
+    /** The weight of the main turn in the swing, and of the slower turn beside it (est.: the two make the peaks differ by about a third). */
+    static final double CHARGE_MAIN_WEIGHT = .75, CHARGE_SLOW_WEIGHT = .45;
+
+    /** The slower turn's phase against the main one, radians. */
+    static final double CHARGE_SLOW_PHASE = 1;
+
+    /** Added to a path's seed, before the mix, for the draw of a path's phase (the draw's "what"): a path off the record has its peaks where this puts them. */
+    static final long CHARGE_DRAW = 0x7C2CL;
+
+    /** The first year of CHARGE_RECORD. */
+    static final int CHARGE_RECORD_FROM = 2000;
+
+    /**
+     * The two charges together over the copper price, each year from CHARGE_RECORD_FROM on the Historical path. EMPTY: no yearly record of the charge
+     * may ship (WP1-C is open, Pending; star 4 (a) would fill this table with the benchmark over that year's copper price, and a licences.md row). With it
+     * empty every year is the swing's, and a record added here is the one place the game reads it from.
+     */
+    static final double[] CHARGE_RECORD = {};
+
+    /** Whether the Historical path has the record's figure for a year (never, while CHARGE_RECORD is empty). */
+    public boolean copperChargeRecorded(int year) {
+        return path == Path.HISTORICAL && year >= CHARGE_RECORD_FROM && year < CHARGE_RECORD_FROM + CHARGE_RECORD.length;
+    }
+
+    /** The record's two charges over the copper price in a year; NaN where copperChargeRecorded says there is none. */
+    public double copperChargeRecord(int year) {
+        return copperChargeRecorded(year) ? CHARGE_RECORD[year - CHARGE_RECORD_FROM] : Double.NaN;
+    }
+
+    /**
+     * The copper charge in a year off the record, over the reference year's copper price at the reference year's manufactures index (the game prices
+     * a charge as it prices every conversion, on that index): CHARGE_MID plus or minus CHARGE_HALF, a large peak every CHARGE_YEARS and a slower turn
+     * beside it. The Historical path's peaks stand on CHARGE_PEAK_YEAR's; any other path's phase is drawn from its seed. A pure function of the path,
+     * the seed and the year: nothing is saved.
+     */
+    public double copperChargeSwing(int year) {
+        double phase = path == Path.HISTORICAL ? -CHARGE_PEAK_YEAR : CHARGE_YEARS * new Random(World.mix(seed + CHARGE_DRAW)).nextDouble();
+        double x = 2 * Math.PI * (year + phase) / CHARGE_YEARS;
+        return Math.max(0, CHARGE_MID + CHARGE_HALF * (CHARGE_MAIN_WEIGHT * StrictMath.cos(x) + CHARGE_SLOW_WEIGHT * StrictMath.cos(x / CHARGE_SLOW + CHARGE_SLOW_PHASE)));
+    }
+
     /** The year of the city's calendar a game month is in (CityCalendar.yearOf), so a caller asks for the city's year. */
     public static int yearOf(int gameMonth) { return CityCalendar.yearOf(gameMonth); }
 
