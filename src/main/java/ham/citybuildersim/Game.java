@@ -1495,6 +1495,11 @@ public class Game {
         return t.knownAt(month, research);
     }
 
+    /** The medical rows this city knows (R2f): its research in a city founded the 1900 way, MedicalRows.TODAY in any other. */
+    public MedicalRows medicalRows() {
+        return MedicalRows.of(research, foundedUnfitted());
+    }
+
     /** The suppliers' sales tax credited on a local draw, weighted exactly as Markets.draw() divides their stock (R1d). */
     private double fittingSupplierRate(Good good) {
         double held = 0, taxed = 0;
@@ -15197,6 +15202,19 @@ public class Game {
         // ...and the service keeps the three, so a screen shows the coverage
         // the month read rather than one it worked out from the beds.
         healthcare.noteCoverage(childcareCoverage, generalCoverage, seniorCoverage);
+        /*
+         * ...AND THE MEDICINE THE CITY KNOWS (R2f, research-design Q17). A
+         * city founded the 1900 way lacks each medical row until history's
+         * month or its own find: general care cures less before the stays
+         * rows, the year-or-more sick recover slower before the TB drugs and
+         * the served long sick die more before the breathing machine
+         * (Sickness), and a row found ahead of the world brings its step on
+         * a cause of death forward (CausesOfDeath.ahead()). Any other city
+         * is MedicalRows.TODAY, which changes nothing. Derived from the
+         * research each month, so nothing is saved.
+         */
+        MedicalRows medicalRows = medicalRows();
+        sickness.setMedicine(medicalRows, month, generalCoverage);
 
         // What the beds could do; the service takes the priced-out off it.
         double[] served = new double[CareType.values().length];
@@ -15292,7 +15310,7 @@ public class Game {
          */
         double[][] causeRates = causesOfDeath.rates(month, inBand, mortalityFactors,
                 getWaterRatio(), householdBalance.getHungerRate(), generalCoverage,
-                health.getOutbreakSeverity(), cohorts.getLastBirths());
+                health.getOutbreakSeverity(), cohorts.getLastBirths(), medicalRows);
         double[] causeTotals = CausesOfDeath.bandTotals(causeRates);
         // ...held off for a harness fixture (R0b call 7): no cause, and the swing whole.
         for (AgeBand b : AgeBand.values()) {

@@ -119,6 +119,69 @@ public class Sickness {
         return RECOVERY_UNTREATED + (RECOVERY_SERVED - RECOVERY_UNTREATED) * clamp(generalCoverage);
     }
 
+    /* ===================================================================
+       THE MEDICAL ROWS (R2f) - what a 1900 city's sick lack until each is known
+       =================================================================== */
+
+    /*
+     * Research-design Q17: each medical row moves the constants of a mechanism
+     * the game has. The figures above are today's, so a row's constant is
+     * today's from the month the row is known (history's month, or the month
+     * the city found it) and its value before the row until then; only a city
+     * founded the 1900 way can be before one (MedicalRows.TODAY knows them all,
+     * and every reading below is then the arithmetic of before R2f, to the
+     * bit). See docs/queue/R2f-notes.md for each figure's call.
+     */
+
+    /** Before the TB drugs (M1) the sick of a year or more get better at this share of the month's recovery: Canadian TB stays fell from 362 to 224 days with them [M-S1]. */
+    public static final double LONG_RECOVERY_BEFORE_M1 = 224 / 362.0;
+
+    /**
+     * Before the breathing machine (M2) the long sick general care serves die
+     * this much more often: it took respiratory polio's deaths from 87% to 22%
+     * [M-M5], on the respiratory share of deaths, pneumonia's 55 of about 900
+     * per 100,000 in Canada, 1946-50 (est.) [SC-B35].
+     */
+    public static final double SERVED_DEATHS_BEFORE_M2 = 55 / 900.0 * (87 / 22.0 - 1);
+
+    /** General care's part of the recovery before penicillin (PM5) is this share of its part after: Canada's general-hospital stay fell from 11.0 to 10.0 days, 1945-50 (observed, not proven causal) [SC-B285]. */
+    public static final double STAYS_BEFORE_PM5 = 10 / 11.0;
+
+    /**
+     * ...and before each of the four later rows that shorten a stay (M5, M6,
+     * M9, M10), this share: they split the fall from 1950's 10.0 days to
+     * 2022-23's 7.3 [SC-B285], [CIHI-LOS] evenly (est.).
+     */
+    public static final double STAYS_BEFORE_LATER_ROW = Math.pow(7.3 / 10.0, 1 / 4.0);
+
+    /** The later rows that shorten general care's stays, each taking STAYS_BEFORE_LATER_ROW off until it is known. */
+    public static final java.util.List<String> LATER_STAYS_ROWS = java.util.List.of("M5", "M6", "M9", "M10");
+
+    /** General care's part of the recovery in a month, as a share of today's: 1 once PM5 and the later stays rows are known. */
+    public static double staysFactor(MedicalRows rows, int month) {
+        if (rows == null || rows.isToday()) return 1;
+        double f = 1;
+        if (!rows.known("PM5", month)) f *= STAYS_BEFORE_PM5;
+        for (String code : LATER_STAYS_ROWS) if (!rows.known(code, month)) f *= STAYS_BEFORE_LATER_ROW;
+        return f;
+    }
+
+    /** The year-or-more slot's share of the month's recovery: 1 once M1 is known. */
+    public static double longRecoveryFactor(MedicalRows rows, int month) {
+        return rows == null || rows.known("M1", month) ? 1 : LONG_RECOVERY_BEFORE_M1;
+    }
+
+    /** How much more often the served long sick die, per unit of general coverage: 0 once M2 is known. */
+    public static double servedDeathsBefore(MedicalRows rows, int month) {
+        return rows == null || rows.known("M2", month) ? 0 : SERVED_DEATHS_BEFORE_M2;
+    }
+
+    /** The share of the sick who get better this month, general care's part times the stays factor: recovery(generalCoverage) itself where it is 1. */
+    public static double recovery(double generalCoverage, double staysFactor) {
+        if (staysFactor == 1) return recovery(generalCoverage);
+        return RECOVERY_UNTREATED + (RECOVERY_SERVED - RECOVERY_UNTREATED) * staysFactor * clamp(generalCoverage);
+    }
+
     /* ------------------------------ state ------------------------------ */
 
     private final double[][] ring = new double[AgeBand.values().length][RING];
@@ -126,6 +189,41 @@ public class Sickness {
     private final double[] acute = new double[AgeBand.values().length];
     private boolean seeded;
     private double lastRecovery = RECOVERY_SERVED;
+
+    /*
+     * This month's medical rows (R2f), set by Game before the month reads the
+     * ring and derived from the city's research, so never saved: general
+     * care's part of the recovery, the year-or-more slot's share of it, and
+     * how much more often the long sick die (the served share's lift before
+     * M2). Today's (1, 1, 0) until set, and in every city that knows the rows.
+     */
+    private double staysFactor = 1;
+    private double longRecovery = 1;
+    private double deathLift = 0;
+
+    /**
+     * The month's medical rows (R2f): what the city knows this month, and
+     * general care's coverage, the share of the long sick the breathing
+     * machine would serve. Game calls it in the demographics, before
+     * deathRates() and the month's advanceMonth().
+     */
+    public void setMedicine(MedicalRows rows, int month, double generalCoverage) {
+        staysFactor = staysFactor(rows, month);
+        longRecovery = longRecoveryFactor(rows, month);
+        deathLift = servedDeathsBefore(rows, month) * clamp(generalCoverage);
+    }
+
+    /** General care's part of the recovery this month, as a share of today's (R2f). */
+    public double getStaysFactor()   { return staysFactor; }
+    /** The year-or-more slot's share of the month's recovery (R2f). */
+    public double getLongRecovery()  { return longRecovery; }
+    /** How much more often the long sick die this month than deathChance() says (R2f). */
+    public double getDeathLift()     { return deathLift; }
+
+    /** A band's monthly chance of dying once sick past two months, this month: deathChance() raised by the lift before M2. */
+    public double chanceThisMonth(AgeBand band) {
+        return deathLift == 0 ? deathChance(band) : deathChance(band) * (1 + deathLift);
+    }
 
     /** The dead the pyramid booked to sickness last month, by band - set by Game. */
     private final double[] lastDeaths = new double[AgeBand.values().length];
@@ -141,7 +239,7 @@ public class Sickness {
     public double[] deathRates() {
         double[] out = new double[AgeBand.values().length];
         for (AgeBand b : AgeBand.values()) {
-            out[b.ordinal()] = pastTwoMonths(b) * deathChance(b);
+            out[b.ordinal()] = pastTwoMonths(b) * chanceThisMonth(b);
         }
         return out;
     }
@@ -166,15 +264,17 @@ public class Sickness {
             seed(cityRate, withoutInfluenza, generalCoverage, childcareCoverage, seniorCoverage);
             return;
         }
-        double r = recovery(generalCoverage);
+        double r = recovery(generalCoverage, staysFactor);
+        double rLast = longRecovery == 1 ? r : r * longRecovery;       // the year or more, before M1 (R2f)
         lastRecovery = r;
         for (AgeBand b : AgeBand.values()) {
             double[] slot = ring[b.ordinal()];
-            double h = deathChance(b);
+            double h = chanceThisMonth(b);
             double[] next = new double[RING];
             for (int k = 0; k < RING; k++) {
                 double left = slot[k] * (k >= DEADLY_FROM ? 1 - h : 1);   // the dead come out
-                next[Math.min(k + 1, RING - 1)] += left * (1 - r);          // the rest are a month longer
+                double got = k == RING - 1 ? rLast : r;
+                next[Math.min(k + 1, RING - 1)] += left * (1 - got);        // the rest are a month longer
             }
             double still = 0;
             for (double v : next) still += v;
@@ -210,23 +310,43 @@ public class Sickness {
     /** Seeds the chronic steady state, carrying the month's acute shares beside it. */
     public void seed(double cityRate, double withoutInfluenza, double generalCoverage,
                      double childcareCoverage, double seniorCoverage) {
-        double r = recovery(generalCoverage);
+        double r = recovery(generalCoverage, staysFactor);
+        double rLast = longRecovery == 1 ? r : r * longRecovery;       // the year or more, before M1 (R2f)
         lastRecovery = r;
         for (AgeBand b : AgeBand.values()) {
             double[] slot = ring[b.ordinal()];
             double share = shareFor(b, withoutInfluenza, childcareCoverage, seniorCoverage);
             acute[b.ordinal()] = Math.max(0, shareFor(b, cityRate, childcareCoverage, seniorCoverage) - share);
-            double q = (1 - deathChance(b)) * (1 - r);
-            double total = 1 + (1 - r) + (1 - r) * (1 - r) / (1 - q);
-            double n = share / total;
-            slot[0] = n;
-            slot[1] = n * (1 - r);
-            double c = n * (1 - r) * (1 - r);
-            for (int k = DEADLY_FROM; k < RING - 1; k++) {
-                slot[k] = c;
-                c *= q;
+            double h = chanceThisMonth(b);
+            double q = (1 - h) * (1 - r);
+            if (rLast == r) {
+                double total = 1 + (1 - r) + (1 - r) * (1 - r) / (1 - q);
+                double n = share / total;
+                slot[0] = n;
+                slot[1] = n * (1 - r);
+                double c = n * (1 - r) * (1 - r);
+                for (int k = DEADLY_FROM; k < RING - 1; k++) {
+                    slot[k] = c;
+                    c *= q;
+                }
+                slot[RING - 1] = c / (1 - q);
+            } else {
+                // Before M1 the last slot keeps (1-h)(1-rLast) of itself, not q:
+                // its tail has its own sum, and the total is added slot by slot.
+                double[] unit = new double[RING];
+                unit[0] = 1;
+                unit[1] = 1 - r;
+                double c = (1 - r) * (1 - r);
+                for (int k = DEADLY_FROM; k < RING - 1; k++) {
+                    unit[k] = c;
+                    c *= q;
+                }
+                unit[RING - 1] = c / (1 - (1 - h) * (1 - rLast));
+                double total = 0;
+                for (double v : unit) total += v;
+                double n = share / total;
+                for (int k = 0; k < RING; k++) slot[k] = n * unit[k];
             }
-            slot[RING - 1] = c / (1 - q);
         }
         seeded = true;
     }
