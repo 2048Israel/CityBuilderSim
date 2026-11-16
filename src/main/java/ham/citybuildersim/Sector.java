@@ -363,6 +363,8 @@ public abstract class Sector {
         private final BuildingsTemplate template;
         private final long count;
         private final double[] wantedCopy, spareCopy, drawnCopy;
+        // The refusals tied with this one at its share, in the order the planner met them (TQ1; held()); empty for none.
+        private final List<Staffing> tiedWith;
 
         /** Always staffable: a building with no posts, or nobody to ask. */
         static final Staffing ANY = new Staffing(1, 1, new double[0], new double[0], new double[0], new boolean[0],
@@ -397,6 +399,23 @@ public abstract class Sector {
                 if (wanted[b] > 0 && nobodyCanFill(spare[b], above[b], comeFor[b])) none = WageBand.values()[b];
             }
             this.unfillable = none;
+            this.tiedWith = List.of();
+        }
+
+        /** This refusal again, with {@code tied} met at the same share added to the refusals tied with it (TQ1; held()). */
+        private Staffing(Staffing kept, Staffing tied) {
+            this.owner = kept.owner;
+            this.template = kept.template;
+            this.count = kept.count;
+            this.wantedCopy = kept.wantedCopy;
+            this.spareCopy = kept.spareCopy;
+            this.drawnCopy = kept.drawnCopy;
+            this.share = kept.share;
+            this.shareNow = kept.shareNow;
+            this.unfillable = kept.unfillable;
+            List<Staffing> all = new ArrayList<>(kept.tiedWith);
+            all.addAll(tied.alike());
+            this.tiedWith = List.copyOf(all);
         }
 
         /** The sector that asked, or null for the always-staffable answer. */
@@ -460,14 +479,43 @@ public abstract class Sector {
             return why(template == null ? null : template.getName());
         }
 
+        /* ----- A TIE AT THE GATE IS SHARED (TQ1, 2026-11-16) -----
+         * A planner whose buildings the gate refused all hands one hold to WantedPosts (LD1), the refusal nearest to
+         * passing: the larger share. Refusals at the same share are tied, and the tie is shared: the hold keeps every
+         * one of them (alike()), Game.noteStaffingHold() notes each, and each asks for its part of its posts, one of
+         * as many as tied (WantedPosts.Ask.part()). The words name the first the planner met; nothing priced does.
+         *
+         * WHY. In a city with no spare, every template at or below the diploma band shares drawn/posts, snapped to
+         * DRAWN_SHARE_GRID (GW1), so the refused templates tie exactly, and the strict > the thirteen planners each
+         * wrote gave every hold to the template listed first. Measured on main 0.9.129's default playtest: a tie
+         * decided 638 of its 3,502 holds, 278 of Construction's 305 (a Builders' Yard's 20 posts priced, never the
+         * Construction Depot's 50), 226 of Restaurants' 467, 103 of Manufacturing's 522, and in 636 of the 638 the
+         * first listed was the smallest, so the founding's wage was bid on the smallest building of each tie. Before
+         * the snap, float noise broke the tie as it fell, and GW1's run that way (c3ca14fb) had none of the costs its
+         * snapped run had: H2 vacuous, a deflating founding, A2's longer spells (docs/queue/GW1-notes.md, 5).
+         * Shared is that noise's expectation, every month, and the order a sector lists its buildings in decides
+         * nothing. docs/queue/TQ1-notes.md has the other ways (the fewest posts, the most, the planner's own score).
+         */
+
         /**
-         * Of the refusals a planner has met so far and the one it meets now, the one it keeps as its hold (TQ1): the
-         * thirteen planners that hand a hold to WantedPosts (LD1) all keep it here. Null for none so far.
+         * Of the refusals a planner has met so far and the one it meets now, the one it keeps as its hold: the
+         * larger share, and at the same share both, tied (above). The thirteen planners that hand a hold to
+         * WantedPosts (LD1) all keep it here. Null for none so far.
          */
         public static Staffing held(Staffing kept, Staffing refused) {
             if (kept == null) return refused;
             if (refused == null) return kept;
-            return refused.share > kept.share ? refused : kept;
+            if (refused.share > kept.share) return refused;
+            return refused.share == kept.share ? new Staffing(kept, refused) : kept;
+        }
+
+        /** This refusal and those tied with it at its share (held()), this one first: a list of one for no tie. */
+        public List<Staffing> alike() {
+            if (tiedWith.isEmpty()) return List.of(this);
+            List<Staffing> all = new ArrayList<>(tiedWith.size() + 1);
+            all.add(this);
+            all.addAll(tiedWith);
+            return Collections.unmodifiableList(all);
         }
 
         /** The window the gate counts, in words: "a year's arrivals" at GATE_DRAW_MONTHS of 12 (GW1). */
