@@ -668,9 +668,13 @@ public abstract class Debt {
      * over today's yield) has the negative rate it truly costs. PV falls as the
      * rate rises, so it cannot get lost. Nothing owed or nothing raised has no
      * rate: 0. The one place an effective rate is solved: openBooks(),
-     * reopen() and addOnForCentralBank() all call it. getYieldToMaturity() is
-     * left as it was (its bracket stops at nothing, and the buyback screens
-     * read it).
+     * reopen() and addOnForCentralBank() all call it. getYieldToMaturity()
+     * (the buyback screens read it) is the same bisection with its bracket
+     * split at a price equal to the payments' total (CD9): 80 steps on [0, 5]
+     * for a price up to the total, on [EFFECTIVE_RATE_FLOOR, 0] over it, and
+     * exactly 0 at it. This one searches the whole [EFFECTIVE_RATE_FLOOR,
+     * EFFECTIVE_RATE_CEILING] in 100 steps, so the two agree to the precision
+     * a percentage on a screen can use.
      */
     static double effectiveRateOf(double[] flows, double price) {
         if (flows == null || flows.length == 0 || !(price > 0)) return 0;

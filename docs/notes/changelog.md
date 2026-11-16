@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### CD9b — CD9's review follow-ups (the foreign debt's) — 2026-11-16, ready, no tag (harness), see docs/queue/CD9b-notes.md
+Debt.effectiveRateOf's javadoc now says what getYieldToMaturity() does since CD9
+(its bracket split at a price equal to the payments' total). CurrencyCheck's two
+extreme-rate sections no longer build a bare ledger and assert revalueForeign's own
+formula back: they drive a real city's ledger through the extreme rate and assert the
+booked exchange line CD7 keeps (NationalAccounts' debtExchangeGain), red when the
+revaluation is skipped. No game or save format change.
+
 ### SR1 — A city stocked complete in bulk reloads with its cash drifting — 2026-11-16, ready, no tag (harness), see docs/queue/SR1-notes.md
 The bulk-stocked causes-of-death fixture now plays beside its reload at
 months 3, 12 and 60, and through January–March 1919 alongside the existing

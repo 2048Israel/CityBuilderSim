@@ -2,7 +2,7 @@
 
 Generated 2026-11-16 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**209 harness files, 24,522 labelled assertions.** AllChecks runs 209 of them.
+**209 harness files, 24,534 labelled assertions.** AllChecks runs 209 of them.
 
 ## Which harnesses read which class
 
@@ -257,7 +257,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PriceIndex](map/PriceIndex.md) | CurrencyCheck, ExchangeRateCheck, ExpectationsCheck, GroceryCheck, LabourCheck, LongPlaytest, MonetaryCheck, PassThroughCheck, ReadPathCheck, SaveFileCheck, ScaleCheck |
-| [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, FundCheck, GoldPriceCheck, GroceryCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NationsCheck, OilCheck, OrderBookCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [PriceLevel](map/PriceLevel.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BridgeCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DenominationCheck, DeskCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FloatLinkCheck, FoodProcessingCheck, ForeignDebtCheck, ForestryCheck, FundCheck, GoldPriceCheck, GroceryCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NationsCheck, OilCheck, OrderBookCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RestaurantsCheck, RestructureCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, TreasuryCheck, VanCheck, WaterCheck, WoodProductsCheck, WorldDataCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [PrisonerHousehold](map/PrisonerHousehold.md) | CrimeCheck, EducationCheck |
 | [ProcessingSector](map/ProcessingSector.md) | BuildCardCheck, CementConcreteCheck, CopperRefiningCheck, HaulageCheck, IndustryViewCheck, LicenceFeesCheck, MaterialsCheck, RecipeCheck, WoodProductsCheck |
 | [Quarrying](map/Quarrying.md) | BuildCardCheck, BuildingDataCheck, CementConcreteCheck, IndustryViewCheck, QuarryingCheck |
@@ -5973,7 +5973,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L514 a gravel and a paved street's reach in MAX_BRIDGE is STREET_BRIDGE
   - L515 the highway's and the railway's reach is 1,020 m: 34 plots of World.PLOT_M
 
-## CurrencyCheck.java - 128 labelled assertions
+## CurrencyCheck.java - 140 labelled assertions
 
 > Proves the currency under a central bank (0.7.2): the rate answers to the
 > real rate, the vault is spent defending it, and the dial and the carry
@@ -5989,140 +5989,152 @@ _(this harness does not label its checks through a helper - it prints its findin
 > its currency fall 40% a year by rule, whatever its central bank did - the
 > ...
 
-- **L160 1. the real rate holds the currency at a level, and the inflation differential reaches it only through parity's trend**
-  - L188 fixture: past settling, trade in balance, the vault empty
-  - L190 fixture: ...and the whole economy trades, so openness is one
-  - L193 fixture: the market is quiet, and the empty vault costs the whole risk premium
-  - L211 after 120 months,
-  - L215 paying over the world in real terms strengthens the rate
-  - L216 paying under it weakens the rate
-  - L220 at the world's real rate the rate is parity's trend times the cover's premium alone
-  - L223 ...and parity's trend is the parity it was handed, held for 120 months
-  - L228 ...so the inflation differential reaches the rate only through the parity it raises
-- **L234 2. ten months of inflation move the rate with parity's trend and no further**
-  - L265 fixture: ten months with no push and no deficit
-  - L268 each month the rate is parity's trend, and nothing else moved it
-  - L271 ...and after ten months it is above where it began: it followed the inflation
-- **L329 3. the defence sells the vault's dollars, and what it sells lifts the D$**
-  - L363 fixture: the trailing deficit pushes the currency weaker
-  - L364 fixture: the month's own accounts show a US$2M deficit
-  - L365 fixture: the vault is at six months' cover
-  - L366 fixture: ...so its capacity is the most there is
-  - L367 fixture: the treasury bought nothing this month
-  - L370 fixture: the rate has dealt with nothing, and the fall is large: the need exceeds absorption() x the deficit, which the vault holds
-  - L376 fixture: the month's move before the defence weakens the D$
-  - L377 fixture: ...and is what the fixture's figures make it
-  - L383 the central bank sells absorption() x the deficit, to the cent
-  - L385 ...which is what the lean sells: the need, at most absorption() x the deficit, at most the vault
-  - L387 ...and the vault falls by exactly that
-  - L388 ...at the month's rate, which is what it fetches
-  - L389 ...and comes off the treasury's intervention record, as a sale does
-  - L391 the realised absorption is what the sale met of the deficit
-  - L396 the sale lifted the D$ by INTERVENTION_IMPACT x what it fetched over a year's GDP: nothing was felt before, so the intervention's move is minus the lift
-  - L398 ...and the move that reached the rate is the fall less the lift
-  - L400 ...which is less than absorption() of the fall: the deficit's cap held the sale back
-  - L402 ...and cover fell
-  - L403 ...to what is left, at the new rate
-  - L405 the dollars sold since founding count it
-  - L413 fixture: the fall is small: the need to take back absorption() of it is under absorption() x the deficit and under the vault
-  - L420 a small fall is sold into to take back absorption() of it, to the cent: the need
-  - L422 ...which is what the lean sells from the constants and the getters
-  - L424 ...under absorption() x the deficit
-  - L425 ...and the lift takes back absorption() of the fall, exactly
-  - L426 ...so the move that reached the rate is the fall less absorption() of it
-  - L433 fixture: the month's move before the defence weakens the D$, with nothing to sell
-  - L435 an empty vault sells nothing
-  - L436 ...damps nothing
-  - L437 ...lifts nothing: the intervention's move is nothing
-  - L439 ...and the whole push reaches the rate
-  - L445 fixture: a month in surplus, pushed stronger
-  - L448 ...and the surplus month's would-be move strengthens it
-  - L449 a surplus month sells nothing
-  - L450 ...and buys nothing: the vault is what it was
-  - L451 ...not by the treasury either
-  - L453 ...and the rise reaches the rate in full
-  - L455 ...which rose
-  - L469 fixture: the vault's capacity would sell more than it holds
-  - L472 fixture: ...and so would the need to take back absorption() of the fall
-  - L475 fixture: the month's move before the defence weakens the D$
-  - L476 fixture: ...and is what the fixture's figures make it
-  - L479 a US$500k vault against a US$2M deficit sells all of it
-  - L480 ...and is empty
-  - L481 ...and damps 500k / 2M
-  - L482 ...not absorption()
-  - L484 ...which is what the lean sells: the need, the deficit's cap and the vault, whichever is least
-  - L489 ...and it lifted the D$ by what it fetched, over a year of the GDP: minus the lift
-  - L491 ...so the move that reached the rate is the fall less the lift
-- **L497 4. and what the dollars fetch is the central bank's capital spent, not money destroyed**
-  - L519 fixture: the bank has made money and owes a remittance
-  - L528 fixture: the defence sold
-  - L529 M0 did not move
-  - L530 ...nothing issued
-  - L531 ...and nothing retired
-  - L532 equity fell by exactly what the dollars fetched, at the rate they were sold at
-  - L534 ...which is exactly what the vault fell by, at that rate
-  - L536 the remittance is untouched
-  - L537 ...the loss carried
-  - L538 ...and the month's profit: it is capital spent, not a loss to recover
-  - L540 the balance sheet's line says why: spent defending the currency
-  - L542 ...this month
-  - L599 every month, Game handed the currency the real rate differential
-  - L601 fixture: the currency was defended in a real city
-  - L609 fixture: the treasury neither bought nor sold
-  - L622 the sale is what takes back the vault's capacity of the month's new fall, at most that capacity times the month's own deficit and at most the vault
-  - L625 ...the vault fell by exactly it
-  - L626 ...and it fetched the dollars at the month's rate
-  - L627 the central bank booked it the month it was sold
-  - L628 ...as spent defending the currency since founding
-  - L629 equity fell by it: its move, less the rest of the sheet's, less the revaluation
-  - L651 a save keeps the month's sale
-  - L652 ...what it fetched
-  - L653 ...the dollars sold since founding
-  - L654 ...the vault
-  - L655 ...what the central bank spent on it
-  - L656 ...its equity
-  - L657 ...and the real rate the reprice was handed
-  - L683 the defence fires in a real city more than once
-  - L684 ...and the equity line is every month's sale at its own month's rate
-  - L686 in every one of those months: M0 moved by the money made alone
-  - L687 ...nothing retired but what the named operations took back
-  - L688 ...the audit closed, and declared nothing for the defence
-  - L689 ...the remittance was the month's profit, the sale not in it
-  - L690 ...and the central bank kept nothing: its equity less the vault is what it owes
-  - L732 M0 moved by the money made and nothing else,
-  - L733 ...nothing retired but what the named operations took back
-  - L734 ...the audit closed, and declared nothing for the defence
-  - L735 ...the remittance is the month's profit, the sale not in it
-  - L736 ...and equity less the vault is what the bank owes: nothing kept
-- **L742 5. the dial, the rule and the appetite are uncapped**
-  - L746 the dial takes 60%
-  - L748 ...and stops at MAX_POLICY_RATE, where a typo would have taken it
-  - L750 the rule is advised unclamped past the old stop
-  - L785 fixture: the city reads a year of 45% inflation
-  - L792 the autopilot sets the rule's rate
-  - L794 ...past the old stop of the dial
-  - L804 the appetite at twenty points is larger than at six: it no longer stops there
-  - L806 ...it is twenty points' worth
-  - L807 ...and it stops at MAX_SPREAD
-  - L810 a month at twenty points is pulled by all twenty
-  - L811 ...toward the stock twenty points want
-- **L839 6. the rate goes where parity's trend takes it: the guards are a billion either way**
-  - L856 fixture: past settling, trade in balance, the vault empty, the whole economy trading
-  - L859 fixture: the market is quiet
-  - L874 a month's trend past the old guard of 100 takes the rate beyond it, not held at 100: the trend arrived
-  - L878 ...a rate under the old guard crosses it
-  - L879 ...and every month is the trend and the levels, never the guard
-  - L880 ...and the dollar debt is worth the dollars at it
-  - L886 ...the month's revaluation the whole of the move
-  - L907 a month's trend past the old floor of .01 takes the rate under it, not held at .01: the trend arrived
-  - L909 a rate over the old floor crosses it
-  - L910 ...and the dollar debt is worth the dollars at it
-  - L914 ...the month's revaluation the whole of the move, a gain
-  - L927 three zeros off: the rate a thousandth
-  - L928 ...the guard above it a thousandth of MAX_RATE
-  - L930 ...and the one below a thousandth of MIN_RATE
-  - L942 ...and the push moves it as it moves the unreformed one, a thousandth the size
-  - L946 a city founded in the new unit carries the guards in it
+- **L161 1. the real rate holds the currency at a level, and the inflation differential reaches it only through parity's trend**
+  - L189 fixture: past settling, trade in balance, the vault empty
+  - L191 fixture: ...and the whole economy trades, so openness is one
+  - L194 fixture: the market is quiet, and the empty vault costs the whole risk premium
+  - L212 after 120 months,
+  - L216 paying over the world in real terms strengthens the rate
+  - L217 paying under it weakens the rate
+  - L221 at the world's real rate the rate is parity's trend times the cover's premium alone
+  - L224 ...and parity's trend is the parity it was handed, held for 120 months
+  - L229 ...so the inflation differential reaches the rate only through the parity it raises
+- **L235 2. ten months of inflation move the rate with parity's trend and no further**
+  - L266 fixture: ten months with no push and no deficit
+  - L269 each month the rate is parity's trend, and nothing else moved it
+  - L272 ...and after ten months it is above where it began: it followed the inflation
+- **L330 3. the defence sells the vault's dollars, and what it sells lifts the D$**
+  - L364 fixture: the trailing deficit pushes the currency weaker
+  - L365 fixture: the month's own accounts show a US$2M deficit
+  - L366 fixture: the vault is at six months' cover
+  - L367 fixture: ...so its capacity is the most there is
+  - L368 fixture: the treasury bought nothing this month
+  - L371 fixture: the rate has dealt with nothing, and the fall is large: the need exceeds absorption() x the deficit, which the vault holds
+  - L377 fixture: the month's move before the defence weakens the D$
+  - L378 fixture: ...and is what the fixture's figures make it
+  - L384 the central bank sells absorption() x the deficit, to the cent
+  - L386 ...which is what the lean sells: the need, at most absorption() x the deficit, at most the vault
+  - L388 ...and the vault falls by exactly that
+  - L389 ...at the month's rate, which is what it fetches
+  - L390 ...and comes off the treasury's intervention record, as a sale does
+  - L392 the realised absorption is what the sale met of the deficit
+  - L397 the sale lifted the D$ by INTERVENTION_IMPACT x what it fetched over a year's GDP: nothing was felt before, so the intervention's move is minus the lift
+  - L399 ...and the move that reached the rate is the fall less the lift
+  - L401 ...which is less than absorption() of the fall: the deficit's cap held the sale back
+  - L403 ...and cover fell
+  - L404 ...to what is left, at the new rate
+  - L406 the dollars sold since founding count it
+  - L414 fixture: the fall is small: the need to take back absorption() of it is under absorption() x the deficit and under the vault
+  - L421 a small fall is sold into to take back absorption() of it, to the cent: the need
+  - L423 ...which is what the lean sells from the constants and the getters
+  - L425 ...under absorption() x the deficit
+  - L426 ...and the lift takes back absorption() of the fall, exactly
+  - L427 ...so the move that reached the rate is the fall less absorption() of it
+  - L434 fixture: the month's move before the defence weakens the D$, with nothing to sell
+  - L436 an empty vault sells nothing
+  - L437 ...damps nothing
+  - L438 ...lifts nothing: the intervention's move is nothing
+  - L440 ...and the whole push reaches the rate
+  - L446 fixture: a month in surplus, pushed stronger
+  - L449 ...and the surplus month's would-be move strengthens it
+  - L450 a surplus month sells nothing
+  - L451 ...and buys nothing: the vault is what it was
+  - L452 ...not by the treasury either
+  - L454 ...and the rise reaches the rate in full
+  - L456 ...which rose
+  - L470 fixture: the vault's capacity would sell more than it holds
+  - L473 fixture: ...and so would the need to take back absorption() of the fall
+  - L476 fixture: the month's move before the defence weakens the D$
+  - L477 fixture: ...and is what the fixture's figures make it
+  - L480 a US$500k vault against a US$2M deficit sells all of it
+  - L481 ...and is empty
+  - L482 ...and damps 500k / 2M
+  - L483 ...not absorption()
+  - L485 ...which is what the lean sells: the need, the deficit's cap and the vault, whichever is least
+  - L490 ...and it lifted the D$ by what it fetched, over a year of the GDP: minus the lift
+  - L492 ...so the move that reached the rate is the fall less the lift
+- **L498 4. and what the dollars fetch is the central bank's capital spent, not money destroyed**
+  - L520 fixture: the bank has made money and owes a remittance
+  - L529 fixture: the defence sold
+  - L530 M0 did not move
+  - L531 ...nothing issued
+  - L532 ...and nothing retired
+  - L533 equity fell by exactly what the dollars fetched, at the rate they were sold at
+  - L535 ...which is exactly what the vault fell by, at that rate
+  - L537 the remittance is untouched
+  - L538 ...the loss carried
+  - L539 ...and the month's profit: it is capital spent, not a loss to recover
+  - L541 the balance sheet's line says why: spent defending the currency
+  - L543 ...this month
+  - L600 every month, Game handed the currency the real rate differential
+  - L602 fixture: the currency was defended in a real city
+  - L610 fixture: the treasury neither bought nor sold
+  - L623 the sale is what takes back the vault's capacity of the month's new fall, at most that capacity times the month's own deficit and at most the vault
+  - L626 ...the vault fell by exactly it
+  - L627 ...and it fetched the dollars at the month's rate
+  - L628 the central bank booked it the month it was sold
+  - L629 ...as spent defending the currency since founding
+  - L630 equity fell by it: its move, less the rest of the sheet's, less the revaluation
+  - L652 a save keeps the month's sale
+  - L653 ...what it fetched
+  - L654 ...the dollars sold since founding
+  - L655 ...the vault
+  - L656 ...what the central bank spent on it
+  - L657 ...its equity
+  - L658 ...and the real rate the reprice was handed
+  - L684 the defence fires in a real city more than once
+  - L685 ...and the equity line is every month's sale at its own month's rate
+  - L687 in every one of those months: M0 moved by the money made alone
+  - L688 ...nothing retired but what the named operations took back
+  - L689 ...the audit closed, and declared nothing for the defence
+  - L690 ...the remittance was the month's profit, the sale not in it
+  - L691 ...and the central bank kept nothing: its equity less the vault is what it owes
+  - L733 M0 moved by the money made and nothing else,
+  - L734 ...nothing retired but what the named operations took back
+  - L735 ...the audit closed, and declared nothing for the defence
+  - L736 ...the remittance is the month's profit, the sale not in it
+  - L737 ...and equity less the vault is what the bank owes: nothing kept
+- **L743 5. the dial, the rule and the appetite are uncapped**
+  - L747 the dial takes 60%
+  - L749 ...and stops at MAX_POLICY_RATE, where a typo would have taken it
+  - L751 the rule is advised unclamped past the old stop
+  - L786 fixture: the city reads a year of 45% inflation
+  - L793 the autopilot sets the rule's rate
+  - L795 ...past the old stop of the dial
+  - L805 the appetite at twenty points is larger than at six: it no longer stops there
+  - L807 ...it is twenty points' worth
+  - L808 ...and it stops at MAX_SPREAD
+  - L811 a month at twenty points is pulled by all twenty
+  - L812 ...toward the stock twenty points want
+- **L900 6. the rate goes where parity's trend takes it: the guards are a billion either way**
+  - L917 fixture: past settling, trade in balance, the vault empty, the whole economy trading
+  - L920 fixture: the market is quiet
+  - L934 a month's trend past the old guard of 100 takes the rate beyond it, not held at 100: the trend arrived
+  - L938 ...a rate under the old guard crosses it
+  - L939 ...and every month is the trend and the levels, never the guard
+  - L940 ...and the dollar debt is worth the dollars at it
+  - L948 fixture: the real city owes dollars, on one piece
+  - L952 fixture: the city's debt was valued at a rate past the old guard of 100, as the load path leaves it
+  - L953 fixture: the month moved the rate, so there is a revaluation to book
+  - L954 ...the month's revaluation the whole of the move: the booked line is the dollars carried times the rate it left
+  - L956 ...and it is a gain, the D$ having risen from the extreme (the debt costs fewer of it)
+  - L957 ...the pieces were told the rate the month ended on
+  - L958 ...and the dollar debt is worth the dollars at it, in the city's books
+  - L960 ...the history's series holds that month's line (to its two decimals), the only one the city has booked
+  - L979 a month's trend past the old floor of .01 takes the rate under it, not held at .01: the trend arrived
+  - L981 a rate over the old floor crosses it
+  - L982 ...and the dollar debt is worth the dollars at it
+  - L986 fixture: the city's debt was valued at a rate under the old floor of .01, as the load path leaves it
+  - L987 fixture: the month moved the rate, so there is a revaluation to book
+  - L988 ...the month's revaluation the whole of the move, the mirror: the booked line is the dollars carried times the rate it left
+  - L990 ...and it is a loss, the D$ having fallen from the extreme (the debt costs more of it)
+  - L991 ...the pieces were told the rate the month ended on
+  - L992 ...and since founding the city has booked both months' lines (to the history's two decimals)
+  - L1005 three zeros off: the rate a thousandth
+  - L1006 ...the guard above it a thousandth of MAX_RATE
+  - L1008 ...and the one below a thousandth of MIN_RATE
+  - L1020 ...and the push moves it as it moves the unreformed one, a thousandth the size
+  - L1024 a city founded in the new unit carries the guards in it
 
 ## CurrencyRegimeCheck.java - 338 labelled assertions
 
