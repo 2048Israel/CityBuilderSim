@@ -142,8 +142,9 @@ regenerated from the merged sources after the ensemble, before the dry run.
 
 80/80 runs completed, none short or missing, in 92.0 minutes. Snapshot 4a6f3ebf7,
 label R0h, Earth earth-2.bin and world-1.bin at the instructed native paths,
-default five jobs, no parallelism override. Raw score: **18/25**, against the
-newest main baseline docs/ensemble/0.9.117.md. The raw score, every changed verdict
+default five jobs, no parallelism override. Raw score: **18/25**, against
+**23/25** on the newest main baseline docs/ensemble/0.9.117.md (hard 8/10
+against its 10/10). The raw score, every changed verdict
 and full summary are committed in docs/ensemble/R0h.md before the dry run.
 
 M1 passes for all five policies: no failed or unread money audits. Raw hard
