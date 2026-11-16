@@ -72,3 +72,12 @@ same picture at 3 months, to SHADE_LEVELS (2)`, BF1-K; `the kept header's signat
 short, at every rung`, KS1-UI): `known red only - KeptCheck`, nothing of this batch's. Maps regenerated and committed
 (`docs/map/CurrencyCheck.md`, `Debt.md`, `PriceLevel.md` - CurrencyCheck now uses `PriceLevel.FACTOR` - `README.md`, the
 harness and dial indexes); Stale 0 firm findings.
+
+## The dry run
+
+`sh tools/gate.sh CD9b --dry-run --no-tag` (the gate's fresh clone, default pool), 2026-11-16 04:19-04:57: **exit 0**. It was of
+branch `7ec809a1a822658507caee2c1e3522fc152bf00a` on main `50026a3dcbd2defd6e548f7f74be051fcf426f6a` (main had not moved, so
+no merge into the branch was needed). The full suite finished in 2,265 s, exit 3: `known red only - 6 harnesses`
+(DeathRecordCheck, InvestCheck, KeptCheck, MapCheck, MoneyDatesCheck, ResearchViewCheck - all main's recorded reds in
+`docs/notes/known-reds.txt`, none this batch's); `unnamed.txt` is empty. Kept directory: `/tmp/cbs-gate-CD9b-X1wtPzgv`
+(`ship.log` in it). Nothing but this note and the ship file changes after it.

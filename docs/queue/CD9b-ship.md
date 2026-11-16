@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-CD9b-X1wtPzgv -->
 ## changelog
 ### CD9b — CD9's review follow-ups (the foreign debt's) — 2026-11-16, ready, no tag (harness), see docs/queue/CD9b-notes.md
 Debt.effectiveRateOf's javadoc now says what getYieldToMaturity() does since CD9
