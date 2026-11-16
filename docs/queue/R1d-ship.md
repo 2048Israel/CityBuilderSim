@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — R1d, Research: the 1900 city switched on, with R0d's 1901 wages — 2026-11-16, ready, see docs/queue/R1d-notes.md
 The founding screen offers a 1900 city beside "All fitted", and opens on All fitted: research known as of 1900, the known
