@@ -94,3 +94,29 @@ Restored, 21 of 21.
 **Section 7** (the playtest's city, 1,000 months, shorts on) now counts the months the cells traded shares with the world and reads the
 four lines against the two figures every month: sold to the world in 336 months (27,702), bought from it in 7 (217,245), no month's
 lines off. ShortSellingCheck whole through `batch-check.sh`: exit 0, all checks passed (its two HS1 known reds did not show in this run).
+
+## 4. The trace, and how far the rate moved
+
+The default playtest on the branch at 816ac0e3 (with the uncommitted size probe; it moves nothing, section 1), `-Dplaytest.trace`, against
+main's reference (R0h's, `cbs-gate-R0h-NrRv6F33/traces/`): **all eight CSVs differ**, each from month 37-64 on (month from m37, bank
+m39, house m39, bonds m41, build m42, labour m52, pop m64; borrow from its second row, 39 papers where main issued 55), the first months
+after the cells' first sale abroad (m32, 0.000017). The playtest itself passed (exit 0, no FAIL).
+
+The rate (`trace-month.csv`'s `rate`, local money per dollar: lower is a stronger currency), branch against main:
+
+| months | mean | range |
+|---|---|---|
+| 1-400 | -0.7% | -7.8% (m169) to +23.0% (m400) |
+| 401-800 | **-53.2%** | -75.7% (m785) to +24.0% (m402) |
+| 801-1200 | +5.3% | -75.0% (m801) to +131.4% (m1152) |
+| 1201-1600 | +107.8% | up to +284.8% (m1536) |
+| 1601-2000 | +44.8% | -17.4% (m1996) to +151.8% (m1632) |
+| 2001-2400 | -71.7% | down to -81.7% (m2311) |
+
+The first 300 months are the direct effect, small: the rate within a few per cent (m100 1.0209 against 1.0233, m300 1.0642 against
+1.0876), the town the same size. By m400 the two cities have parted (population 2,896 against 3,647) and after that the ratio is mostly
+the path, not the line: main's city boomed through m400-m800 with its currency falling from 1.28 to 21.0 (population 3,647 to 36,872);
+the branch's, whose financial account now held the cells' sales abroad of that era (section 1), kept a stronger currency (1.58 to 5.29)
+and grew slowly (2,896 to 5,681), then overtook it from about m1100 and ended at m2405 with 1,393,358 people against 471,729, the rate at
+125.4 against 605.1 and the price index 9,395 against 46,342. On the branch the cells sold shares abroad in 1,086 months and bought in
+111 (main: 968 and 112). One run is the weather plus the change; the ensemble (section 5) is what judges it.
