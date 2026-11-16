@@ -1,7 +1,16 @@
 # LF1b - notes: the cells' share trades with the world, in the financial account (2026-11-16)
 
 The brief: [LF1b.md](LF1b.md), queued 2026-11-08 by LF1 (its notes, 2). Built by a Claude session (Opus 5.5) from main 0f4ebb9c
-(0.9.125, LF1c just shipped), after the night's Codex builders ran out of plan; one session, no slices.
+(0.9.125, LF1c just shipped), after the night's Codex builders ran out of plan; one session, no slices. Main's R1d (0.9.126, its
+trace unmoved) was merged in before the final checks.
+
+**This changes how the game plays.** The exchange rate reads the balance of payments' financial account (`ForeignAccounts`:
+`-BALANCE_WEIGHT * (current + financial) / GDP`, a 12-month mean). Until now a household selling its shares to the world brought dollars
+in that the rate never saw; now it sees them, as it has always seen the households' bonds. In a city whose households sell shares abroad
+heavily - on main's default playtest, months 401-800, where those sales were a fifth of all the capital coming in - the currency stays
+markedly stronger: the rate 53% lower in the mean month of that era, and with it a different city (it grew slowly while main's boomed on a
+falling currency, then overtook it: 1.39M people at m2405 against 0.47M). A city whose households trade little abroad is as it was.
+Section 4 has the figures, section 5 the ensemble's verdicts across 80 runs.
 
 ## 1. The size, before anything was built
 
