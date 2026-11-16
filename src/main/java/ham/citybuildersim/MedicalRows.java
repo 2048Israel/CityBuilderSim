@@ -27,8 +27,8 @@ public final class MedicalRows {
 
     /** The medical rows in the catalogue's order, as research.json has them; MedicineCheck holds the file to this list. */
     public static final List<String> CODES = List.of(
-            "PM1", "PM2", "PM3", "PM4", "PM5", "PM6",
-            "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10");
+            "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8", "M9", "M10",
+            "PM1", "PM2", "PM3", "PM4", "PM5", "PM6");
 
     /** The city's research, or null for TODAY. */
     private final Research research;
