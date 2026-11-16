@@ -854,6 +854,8 @@ public class Game {
          * and state their own settings over. An older save keeps whatever it
          * saved: the dial's hand (DataSave.getPolicyAutopilot(), off when the
          * key is missing), and the rollover as MANUAL - see the load path.
+         * In a city founded the 1900 way the rule waits for the central bank
+         * (March 1935, R0f) and takes the dial then (DebtManager.isAutopilotAtOpening()).
          */
         debtManager.setAutopilot(true);
         rollover.setMode(Rollover.Mode.SAME_STRUCTURE);
@@ -17215,7 +17217,7 @@ public class Game {
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setStruckRate(economyManager.getStruckRate());   // ...and the D$ it was struck at (AN1)
         dataSave.setPolicyRate(debtManager.getPolicyRate());
-        dataSave.setPolicyAutopilot(debtManager.isAutopilot());
+        dataSave.setPolicyAutopilot(debtManager.isAutopilot() || debtManager.isAutopilotAtOpening());   // the saved key carries a rule still waiting for its bank (R1d), which the load's setAutopilot() and moneyHearsTheMonth() put back to waiting
         // ...and what the autopilot aims at and the spread the dial stands at under a peg (XR2).
         dataSave.setPolicyAim(debtManager.getAim().name());
         dataSave.setPegSpread(debtManager.getPegSpread());
