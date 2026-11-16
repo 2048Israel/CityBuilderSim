@@ -31,5 +31,5 @@ account's net (-508,400): declared, that era's financial account turns from a de
 740-800 sold 536,900 against an inflow of 681,800. The rate reads `-BALANCE_WEIGHT * (current + financial) / GDP` over a 12-month mean
 (`ForeignAccounts.COVER_WINDOW`), so that spell alone moves its input by about a tenth of a month's GDP where the balance stood at 3%.
 After m1200 the hot money and the bonds dwarf the shares and the pair is noise. Expectation, before building: the currency
-stronger through m400-m1200, the trace moved from about m280 (the first month a cell sold abroad more than a cent), the late run as it was
+stronger through m400-m1200, the trace moved from m32 (the first month a cell sold a share abroad, for 0.000017), the late run as it was
 in kind if not to the byte.
