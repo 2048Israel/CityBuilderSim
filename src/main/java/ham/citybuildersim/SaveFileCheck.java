@@ -1421,18 +1421,19 @@ public class SaveFileCheck {
          */
         full.simulateMonths(150);
 
-        // ...A BANK THAT HAS PAID A YEAR RUNNING, NOT ONE THAT PAID ONCE (GW1): the staffing gate counts the
-        // draw, so the businesses of this young city build and borrow earlier and the bank's book is worse
-        // for it.
+        // ...A BANK THAT STANDS AND PAYS ITS SAVERS, a month on at least. GW1 waited for a year of paying (the
+        // staffing gate counting the draw, this young city's businesses built and borrowed earlier and its bank
+        // paid once and failed); DQ1 released it (2026-11-16): on 0.9.128 a paying month is enough for every
+        // line below.
         /*
          * ...AND A FAILED BANK THE PLAYER HAS RESOLVED (WG2, {next}, 2026-11-10): senior care no longer lifts the jobs' draw, and this
          * city's bank, standing at month 150 in the GW1 note above, now failed twice before month 51 (1,966 people at month 21) and was
          * frozen at month 151 (equity -215), the treasury on its BUTTON setting that waits for the player: a frozen bank earns its way
          * out only while its equity climbs, and this one's fell (-176 at month 162, -892 at month 382), so the 240 months below never
          * saw it open. The city resolves it as the Bank tab's button does, when it stands failed (resolveBank(), the model's own
-         * call, the shares to the city), and the loop waits for the year of paying as before.
+         * call, the shares to the city), and the loop waits for it to pay.
          */
-        final int MONTHS_PAYING_BEFORE_THE_SQUEEZE = 12;
+        final int MONTHS_PAYING_BEFORE_THE_SQUEEZE = 1;
         int payingFor = 0;
         for (int extra = 0; extra < 240 && payingFor < MONTHS_PAYING_BEFORE_THE_SQUEEZE; extra++) {
             if (full.canResolveBank()) full.resolveBank();
