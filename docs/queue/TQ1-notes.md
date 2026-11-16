@@ -25,7 +25,7 @@ whose kept refusal had a tie at its share: a hold the tie decided.
 | Luxury Retail | 26 | 6 | 2, 0, 4 | 4 to 7 |
 | Agriculture | 414 | 3 | 0, 0, 3 | 805 to 874 |
 | Food Processing | 561 | 3 | 0, 1, 2 | 156 to 874 |
-| eight more (Automotive, Cement & Concrete, Copper Refining, Freight, Heavy Industry, Industry, Materials, Wood Products) | 870 | 0 | | |
+| eight more (Automotive, Cement & Concrete, Copper Refining, Freight, Heavy Industry, Industry, Materials, Wood Products) | 670 | 0 | | |
 | **all** | **3,502** | **638 (18%)** | 509, 20, 109 | |
 
 Most fall in the founding: of the 638, 435 in months 0-239 (Restaurants 185, Construction 122, Manufacturing 102,
