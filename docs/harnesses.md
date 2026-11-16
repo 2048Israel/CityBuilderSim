@@ -2,7 +2,7 @@
 
 Generated 2026-11-16 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**209 harness files, 24,573 labelled assertions.** AllChecks runs 209 of them.
+**209 harness files, 24,581 labelled assertions.** AllChecks runs 209 of them.
 
 ## Which harnesses read which class
 
@@ -248,7 +248,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, KeptCheck, ResearchViewCheck |
-| [PolicyDates](map/PolicyDates.md) | BusinessServicesCheck, DiscoveryCheck, EquipmentCheck, ForestryCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, KeptCheck, LandmassCheck, ManufacturingCheck, MoneyDatesCheck, PolicyDatesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, WageLadderCheck, ZoningViewCheck |
+| [PolicyDates](map/PolicyDates.md) | BusinessServicesCheck, DiscoveryCheck, EquipmentCheck, ForestryCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, KeptCheck, LandmassCheck, ManufacturingCheck, MoneyDatesCheck, NewGameCheck, PolicyDatesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, WageLadderCheck, ZoningViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, GovernmentViewCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
@@ -20365,7 +20365,7 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L664 what Random counts across all the nations (full)**
   - L678 some nation-years fell more than 5% and not all of them: the share is between 1% and 20%
 
-## NewGameCheck.java - 166 labelled assertions
+## NewGameCheck.java - 174 labelled assertions
 
 > Does "Start New Game" actually start a new game?
 > 
@@ -20493,82 +20493,90 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1003 ...and the plant is ordered
   - L1012 ...and built
   - L1013 ...and every month of it the audit closed
-- **L1057 12. the dial and the rollover a player founds with**
-  - L1061 \"Found with defaults\": the dial is the autopilot's
-  - L1062 ...and the treasury rolls what falls due in the same structure
-  - L1067 the founding screen's own city, likewise
-  - L1071 a city built bare keeps the hand on the dial and rolls nothing, for its builder to state
-  - L1075 fixture: a month played on the autopilot
-  - L1077 fixture: the player's hand takes the dial
-  - L1078 saved
-  - L1081 a save with the hand on the dial reloads with the hand on it
+- **L1067 12. the dial and the rollover a player founds with**
+  - L1071 \"Found with defaults\" (founded with today's money): the dial is the autopilot's
+  - L1072 ...and the treasury rolls what falls due in the same structure
+  - L1077 the founding screen's own city (founded with today's money), likewise
+  - L1081 a city built bare keeps the hand on the dial and rolls nothing, for its builder to state
+  - L1085 fixture: a month played on the autopilot
+  - L1087 fixture: the player's hand takes the dial
   - L1088 saved
-  - L1090 ...one on the autopilot reloads on it
-  - L1091 ...and its rollover as it was set
-  - L1095 fixture: the save carried both keys
-  - L1101 fixture: the older save loads
-  - L1102 a save from before either key loads with the hand on the dial
-  - L1104 ...and rolls nothing, as it was played
-- **L1125 13. the ground a city stands on**
-  - L1136 the defaults, every preset and a custom city: the default world
-  - L1138 ...and a city founded on the defaults stands on it
-  - L1144 fixture: a founding on world
-  - L1147 a city founded on another world stands on it
-  - L1149 ...and its World is that seed's, the one every asker shares
-  - L1152 ...and its land is on it: a centre round that world's founding site (0.7.57)
-  - L1155 ...while the founding's other choices are as they were
-  - L1159 saved
-  - L1162 the save carries the seed
-  - L1164 ...and the city it loads stands on the same world
-  - L1174 fixture: the save without the seed loads
-  - L1175 a save from before 0.7.56 reads the seed its name, treasury, ground and month make
-  - L1177 ...the same one on every load
-  - L1178 saved
-  - L1179 ...and its next save keeps it
-  - L1181 a save one month on derives another: the month is in it
-  - L1186 Start New Game after a city on world
-  - L1196 the dice rolls 1 to ROLLED_SEED_MAX (
-  - L1197 a typed seed is a whole number: 4127, 1,234, -5
-  - L1201 ...and nothing else: a word, a fraction, nothing, past a long
-- **L1227 14. the real Earth**
-  - L1235 the defaults and every preset stand on a generated world: no spot, no data
-  - L1238 onEarth() puts a founding on the Earth round a spot, the game's data, its seed and choices kept
-  - L1244 fixture: EarthCheck's fixture is beside the classes
-  - L1250 fixture: Rotterdam's spot on the fixture has no problem
-  - L1253 a city founded on the Earth stands on it: its World the key's, its land the snap's site
-  - L1256 ...its record the spot and the data
-  - L1259 saved
-  - L1261 the save carries the kind, the spot and the data
-  - L1265 ...and the city it loads stands on the same Earth
-  - L1270 a spot in the sea is a problem, in the founding card's words
-  - L1278 ...which the game will not found, the city on screen left as it was
-  - L1282 Start New Game after an Earth city founds on the default generated world
-- **L1325 15. a new city after a reformed one founds at the founding unit (FX4)**
-  - L1330 the fixture: the first city is reformed, its unit no longer 1
-  - L1333 the new city founds at the founding unit
-  - L1339 ...and reads the parity a city never reformed reads
-  - L1341 ...and its rate is not pulled away from that city's
-- **L1354 16. the name on the Found-a-city page: blank, a place searched, or the player's own (FN1)**
-  - L1356 the page opens blank, not on
-  - L1358 ...and a blank name is the model's refusal, so the start button waits with its hint
-  - L1362 a place picked from the search names the blank city
-  - L1364 ...and the city then founds, its money named after the place
-  - L1367 the field echoing the name the search set is not the player's edit
-  - L1368 the next place searched replaces a name the search filled
-  - L1371 a player who changes the name the search filled owns it
-  - L1372 ...and a place searched afterwards leaves it alone
-  - L1376 a name typed before any search is the player's
-  - L1377 ...and a place searched leaves it, however many are
-  - L1379 the player clearing the field leaves it nobody's
-  - L1380 ...so the next place searched fills it again
-  - L1382 spaces alone are not a name the player wrote
-  - L1386 the page opening afresh blanks a typed name too, and the next place fills it
-  - L1391 a place's name longer than a city may have is cut to fit, and passes the model's check
-  - L1394 a place with no name that will do leaves the city blank
-  - L1400 fixture: EarthCheck's fixture is beside the classes
-  - L1405 fixture: the search finds Rotterdam
-  - L1408 a place the Earth search found names the city with its own name, trimmed
-  - L1420 ...and every place's name in a sample of
+  - L1091 a save with the hand on the dial reloads with the hand on it
+  - L1098 saved
+  - L1100 ...one on the autopilot (founded with today's money) reloads on it
+  - L1101 ...and its rollover as it was set
+  - L1105 fixture: the save carried both keys
+  - L1111 fixture: the older save loads
+  - L1112 a save from before either key loads with the hand on the dial
+  - L1114 ...and rolls nothing, as it was played
+  - L1119 fixture: a city founded on the defaults is founded the 1900 way
+  - L1120 a 1900 city founded on the defaults: the bank is closed, so the dial is nobody's yet and the rule waits for it
+  - L1122 ...and it rolls in the same structure
+  - L1123 saved
+  - L1125 a save before the bank opens reloads with the rule still waiting
+  - L1128 the month the bank opens, the rule takes the dial
+  - L1135 fixture: the Advance Rate is open and the player's hand took the dial at 4%
+  - L1138 a player whose hand took the Advance Rate keeps it when the bank opens
+- **L1161 13. the ground a city stands on**
+  - L1172 the defaults, every preset and a custom city: the default world
+  - L1174 ...and a city founded on the defaults stands on it
+  - L1180 fixture: a founding on world
+  - L1183 a city founded on another world stands on it
+  - L1185 ...and its World is that seed's, the one every asker shares
+  - L1188 ...and its land is on it: a centre round that world's founding site (0.7.57)
+  - L1191 ...while the founding's other choices are as they were
+  - L1195 saved
+  - L1198 the save carries the seed
+  - L1200 ...and the city it loads stands on the same world
+  - L1210 fixture: the save without the seed loads
+  - L1211 a save from before 0.7.56 reads the seed its name, treasury, ground and month make
+  - L1213 ...the same one on every load
+  - L1214 saved
+  - L1215 ...and its next save keeps it
+  - L1217 a save one month on derives another: the month is in it
+  - L1222 Start New Game after a city on world
+  - L1232 the dice rolls 1 to ROLLED_SEED_MAX (
+  - L1233 a typed seed is a whole number: 4127, 1,234, -5
+  - L1237 ...and nothing else: a word, a fraction, nothing, past a long
+- **L1263 14. the real Earth**
+  - L1271 the defaults and every preset stand on a generated world: no spot, no data
+  - L1274 onEarth() puts a founding on the Earth round a spot, the game's data, its seed and choices kept
+  - L1280 fixture: EarthCheck's fixture is beside the classes
+  - L1286 fixture: Rotterdam's spot on the fixture has no problem
+  - L1289 a city founded on the Earth stands on it: its World the key's, its land the snap's site
+  - L1292 ...its record the spot and the data
+  - L1295 saved
+  - L1297 the save carries the kind, the spot and the data
+  - L1301 ...and the city it loads stands on the same Earth
+  - L1306 a spot in the sea is a problem, in the founding card's words
+  - L1314 ...which the game will not found, the city on screen left as it was
+  - L1318 Start New Game after an Earth city founds on the default generated world
+- **L1361 15. a new city after a reformed one founds at the founding unit (FX4)**
+  - L1366 the fixture: the first city is reformed, its unit no longer 1
+  - L1369 the new city founds at the founding unit
+  - L1375 ...and reads the parity a city never reformed reads
+  - L1377 ...and its rate is not pulled away from that city's
+- **L1390 16. the name on the Found-a-city page: blank, a place searched, or the player's own (FN1)**
+  - L1392 the page opens blank, not on
+  - L1394 ...and a blank name is the model's refusal, so the start button waits with its hint
+  - L1398 a place picked from the search names the blank city
+  - L1400 ...and the city then founds, its money named after the place
+  - L1403 the field echoing the name the search set is not the player's edit
+  - L1404 the next place searched replaces a name the search filled
+  - L1407 a player who changes the name the search filled owns it
+  - L1408 ...and a place searched afterwards leaves it alone
+  - L1412 a name typed before any search is the player's
+  - L1413 ...and a place searched leaves it, however many are
+  - L1415 the player clearing the field leaves it nobody's
+  - L1416 ...so the next place searched fills it again
+  - L1418 spaces alone are not a name the player wrote
+  - L1422 the page opening afresh blanks a typed name too, and the next place fills it
+  - L1427 a place's name longer than a city may have is cut to fit, and passes the model's check
+  - L1430 a place with no name that will do leaves the city blank
+  - L1436 fixture: EarthCheck's fixture is beside the classes
+  - L1441 fixture: the search finds Rotterdam
+  - L1444 a place the Earth search found names the city with its own name, trimmed
+  - L1456 ...and every place's name in a sample of
 
 ## ObservationCheck.java - 5 labelled assertions
 

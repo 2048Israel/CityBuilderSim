@@ -1,4 +1,4 @@
-# NewGameCheck.java - 1,430 lines · 18 methods · 5 constants · harnesses
+# NewGameCheck.java - 1,466 lines · 18 methods · 5 constants · harnesses
 
 `ham/citybuildersim/NewGameCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -52,7 +52,7 @@
 > name field opens blank, a place searched fills it unless the player has
 > typed a name, and a blank name is the model's refusal.
 
-**Uses:** [Game](Game.md) (153), [Founding](Founding.md) (147), [Currency](Currency.md) (41), [WorldEconomy](WorldEconomy.md) (26), [World](World.md) (13), [FoundingName](FoundingName.md) (10), [GameFiles](GameFiles.md) (8), [Nations](Nations.md) (7), [Rollover](Rollover.md) (6), [EarthData](EarthData.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [DebtQuote](DebtQuote.md) (5), [EarthCheck](EarthCheck.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [MoneyAudit](MoneyAudit.md) (3), [EarthSite](EarthSite.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [Denomination](Denomination.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1), [GoodsMarket](GoodsMarket.md) (1)... and 7 more
+**Uses:** [Game](Game.md) (158), [Founding](Founding.md) (149), [Currency](Currency.md) (41), [WorldEconomy](WorldEconomy.md) (26), [World](World.md) (13), [FoundingName](FoundingName.md) (10), [GameFiles](GameFiles.md) (8), [Nations](Nations.md) (7), [Rollover](Rollover.md) (7), [PolicyDates](PolicyDates.md) (6), [EarthData](EarthData.md) (6), [ForeignAccounts](ForeignAccounts.md) (5), [DebtQuote](DebtQuote.md) (5), [EarthCheck](EarthCheck.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [LongTermBond](LongTermBond.md) (3), [MoneyAudit](MoneyAudit.md) (3), [EarthSite](EarthSite.md) (3), [Sector](Sector.md) (2), [Good](Good.md) (2), [Denomination](Denomination.md) (2), [EconomyManager](EconomyManager.md) (1), [PopulationManager](PopulationManager.md) (1), [Retail](Retail.md) (1), [RealEstate](RealEstate.md) (1), [ServicesManager](ServicesManager.md) (1), [Construction](Construction.md) (1), [BuildingManager](BuildingManager.md) (1), [NationalAccounts](NationalAccounts.md) (1), [Statement](Statement.md) (1)... and 8 more
 
 **Used by (3):** [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [ReadPathCheck](ReadPathCheck.md)
 
@@ -79,20 +79,20 @@
 | 795 | · · 10 |
 | 826 | · · 11 |
 | 1039 | 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) |
-| 1107 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
-| 1207 | 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 |
-| 1307 | 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) |
-| 1345 | 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30). Jerus: "remove |
+| 1143 | 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) |
+| 1243 | 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 |
+| 1343 | 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) |
+| 1381 | 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30). Jerus: "remove |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 267 | `NewGameCheck.USED_HOUSES` | `120` | The Houses the used city is founded with (0.7.113; 200 until then): fewer than its people need, so its landlords build and borrow. |
-| 1293 | `NewGameCheck.REAL_OUT` | `System.out` |  |
-| 1294 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
-| 1320 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
-| 1322 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
+| 1329 | `NewGameCheck.REAL_OUT` | `System.out` |  |
+| 1330 | `NewGameCheck.QUIET` | `new java.io.PrintStream(java.io.OutputStream.nullOutputStream())` |  |
+| 1356 | `NewGameCheck.AFTER_REFORM_MONTHS` | `24` |  |
+| 1358 | `NewGameCheck.AFTER_REFORM_BAND` | `0.05` | How far apart, as a ratio, the two cities' parity and rate may sit: the runaway put them a hundredfold apart. |
 
 ## Fields (state)
 
@@ -104,7 +104,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 1372 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
+| 59 | 1408 | **type** `public class NewGameCheck` | Does "Start New Game" actually start a new game? |
 | 63 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 68 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 76 | 189 | `static Map<String, Double> snapshot(Game g)` | Everything a previous city could possibly leave behind. |
@@ -120,37 +120,37 @@
 | 1023 | 8 | `static boolean isDefault(Game g)` | Everything a founding on the defaults is, and nothing a previous city was. |
 | 1033 | 5 | `static boolean audited(Game g)` | The month's money audit closed, and nothing moved after it struck - LongPlaytest's two tests. |
 
-### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 1039-1106)
+### 12. THE DIAL AND THE ROLLOVER A PLAYER FOUNDS WITH (0.7.13) (lines 1039-1142)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1056 | 50 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
+| 1066 | 76 | `static void theDialAndTheRollover(GameFiles files) throws Exception` |  |
 
-### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 1107-1206)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1124 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
-
-### 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 (lines 1207-1306)
+### 13. THE GROUND IT STANDS ON (0.7.56, batch J1a) (lines 1143-1242)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1226 | 59 | `static void theRealEarth(GameFiles files) throws Exception` |  |
-| 1286 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 1297 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
-| 1302 | 4 | `static void quietly(Runnable work)` |  |
+| 1160 | 82 | `static void theWorldsSeed(GameFiles files) throws Exception` |  |
 
-### 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) (lines 1307-1344)
+### 14. THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 2 (lines 1243-1342)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1324 | 20 | `static void aNewCityAfterAReform(GameFiles files)` |  |
+| 1262 | 59 | `static void theRealEarth(GameFiles files) throws Exception` |  |
+| 1322 | 6 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 1333 | 4 | `static<T> T quietly(java.util.function.Supplier<T> work)` | Runs a piece of the city with the game's own narration off. |
+| 1338 | 4 | `static void quietly(Runnable work)` |  |
 
-### 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30). Jerus: "remove (lines 1345-1430)
+### 15. A NEW CITY AFTER A REFORMED ONE (FX4, 2026-10-19) (lines 1343-1380)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1353 | 69 | `static void theNameOnThePage() throws Exception` |  |
-| 1423 | 7 | `static void cleanUp(Path root)` |  |
+| 1360 | 20 | `static void aNewCityAfterAReform(GameFiles files)` |  |
+
+### 16. THE NAME ON THE FOUND-A-CITY PAGE (FN1, 2026-10-30). Jerus: "remove (lines 1381-1466)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1389 | 69 | `static void theNameOnThePage() throws Exception` |  |
+| 1459 | 7 | `static void cleanUp(Path root)` |  |
 
