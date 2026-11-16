@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-OL1-NxLTKZgh -->
 ## changelog
 ### OL1 — one long-lived orchestrator — 2026-11-16, ready, no tag (process), see docs/queue/OL1-notes.md
 `docs/orchestrator.md`, "The day", says the orchestrator is one session from the

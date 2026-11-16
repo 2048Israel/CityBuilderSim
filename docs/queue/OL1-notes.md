@@ -70,4 +70,17 @@ the paragraph's WHY is the incident (the daily hand-over did not happen, CX2).
 ## Checks
 
 `./batch-check.sh --fast`: exit 0; compile OK, maps regenerated (tree: 0
-changed), Stale 0 firm findings. Dry run: see below once it has run.
+changed), Stale 0 firm findings.
+
+**The dry run** (2026-11-16 05:12-05:14, `sh tools/gate.sh OL1 --dry-run
+--no-tag`, pick none): **gate exit 0**. A docs-only diff, so the gate ran
+`batch-check.sh --fast` alone (compile OK, Stale 0 firm, 74 s); no review
+needed; records "OL1's block on top, 0 Pending row(s), its Queued row out".
+The run is kept at `/tmp/cbs-gate-OL1-NxLTKZgh` (`ship.log` and `unnamed.txt`
+there; the shell's log was `target/OL1-dry.txt`). It was of the branch tip
+**4d82115ac** and main **437e05a2a** (0.9.124).
+
+**One thing for the orchestrator:** the dry run's merge subject is the QUEUE row
+text, "the orchestrator is one long-lived session that compacts in place at
+150k ...", the brief's stale figure (the window is 300k). I may not edit
+QUEUE.md; edit the row before the real merge if the subject should say 300k.
