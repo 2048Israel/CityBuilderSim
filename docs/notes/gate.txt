@@ -1,8 +1,8 @@
-# gate of Merge batch/R2f: research: the medical rows - each M and PM entry mapped to the constants it moves (research-design Q17), with R1c-R's X-ray and antitoxin, 0.9.127
+# gate of Merge batch/LF1b: the cells' share trades with the world as a FINANCIAL/DOMESTIC pair in MoneyAudit, as BondMarket books the cells' bonds: the financial account leaves their shares out today; moves the exchange rate and the trace, so the size first and the ensemble (LF1's notes, 2), 0.9.128
 # date: 2026-11-16
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 197 harnesses run in 1788s: 193 passed, 4 failed
+# suite: 198 harnesses run in 998s: 194 passed, 4 failed
 InvestCheck | exit 1
 InvestCheck | an older save's contract on site is read as its template's owner's - the landlords', for Houses, with the share of the tax a House of theirs gets back, which is not all of it FAIL
 InvestCheck | 1 FAILED
@@ -15,7 +15,7 @@ DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 PrizeCheck | exit 2
-PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1023.2885862097916 of 1019.694508614861)
+PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1023.2880964439267 of 1019.6940354153619)
 PrizeCheck | FAIL ...and its till (at most 410) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284
 KeptCheck | exit 2

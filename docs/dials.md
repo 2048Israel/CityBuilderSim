@@ -1663,7 +1663,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.127"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.128"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `53` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `53` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -7916,12 +7916,12 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 87 | `ShortSellingCheck.INDUSTRY` | `Equity.indexOf(Sectors.INDUSTRY)` |  |
-| 147 | `ShortSellingCheck.W` | `ExchangeCheck.W` |  |
-| 148 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
-| 231 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
-| 345 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
-| 1035 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
+| 91 | `ShortSellingCheck.INDUSTRY` | `Equity.indexOf(Sectors.INDUSTRY)` |  |
+| 151 | `ShortSellingCheck.W` | `ExchangeCheck.W` |  |
+| 152 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
+| 235 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
+| 350 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
+| 1040 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
 
 ### SlopeCheck.java ([map](map/SlopeCheck.md))
 

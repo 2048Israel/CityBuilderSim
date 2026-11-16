@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.128 — LF1b, the cells' share trades with the world, in the financial account — 2026-11-16, ready, see docs/queue/LF1b-notes.md
+The households' cells selling shares to the world and buying them from it are declared to the money audit as the
+cells' bonds have been: a sale abroad a financial inflow into their savings, a purchase a financial outflow out of
+them, each a pair the cash identity cancels (`+ shares HouseholdsSoldAbroad` with its DOMESTIC half, and the
+purchase the other way). The balance of payments' financial account held the cells' bonds and left out their shares;
+it holds both, so the exchange rate reads them. In the default playtest the cells sold shares abroad in 968 months,
+21% of the financial inflow in months 401-800, so the currency and the trace move; ShortSellingCheck causes the trade
+in a real month and reads the lines.
+
 ### RE3 — the landlords' payroll with the rent: the trap is gone on main — 2026-11-16, ready, no tag (docs)
 RE1's probe on main 0.9.126, eight AUTO2 runs (seeds 1, 3, 11 and 13, with and without the data files): RE2's trap is
 gone. Seed 3 unnamed, the brief's fixture, has no loss month and no down-payment hold over two months (RE2's model: 125

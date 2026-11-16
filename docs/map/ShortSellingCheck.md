@@ -1,4 +1,4 @@
-# ShortSellingCheck.java - 1,255 lines · 48 methods · 6 constants · harnesses
+# ShortSellingCheck.java - 1,375 lines · 49 methods · 6 constants · harnesses
 
 `ham/citybuildersim/ShortSellingCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -31,7 +31,8 @@
 >   6. A SAVE IN THE MIDDLE OF A SHORT: the shorts, their lenders, their collateral and their fees round-trip a save and a load, and the month after
 >      is the month a city that never saved would have had.
 >   7. HOW OFTEN: over a real run, the months a short opened, the months one was covered and the bubbles the quote stood against, counted - a
->      mechanic that never fires proves nothing.
+>      mechanic that never fires proves nothing. LF1b: and the months the cells traded shares with the world, each month's audit lines for
+>      them read against the exchange's figures.
 >   8. THE FEE ON THE LENDERS' BOOKS (LF1): the households' fee is a pair of lines in the audit, income from the world and banked; the fund's is
 >      its own income counter and a row in its ledger; the fee is charged on the shares the lenders hold and no more; emigrants are not dropped
 >      while a short is open; a short at a company with no shares in issue takes what it sold with it; a short at a company worth nothing is
@@ -39,126 +40,138 @@
 >      the two claims it takes across the border, the world's own shares in the company and the short closed for nothing, are valuation lines of
 >      the audit ("forgiven" counts them, the books still foot); the Fund screen says a fee's row, a share's write-off and the income a share
 >      lot's page holds in words.
+>   9. THE CELLS' SHARES ABROAD (LF1b): a cell selling a share to the world and buying one from it, in the real month, are each a pair of
+>      lines in the audit, a financial flow and its domestic half, as the cells' bonds are: the month foots, and the balance of payments'
+>      financial inflow holds the sale and its outflow the purchase.
 > 
 > Every claim is CAUSED: a book emptied and given one trade, then the orders a line names and no others; a bid or an ask put on it by a participant
 > with the means to stand behind it.
 
-**Uses:** [Exchange](Exchange.md) (100), [OrderBook](OrderBook.md) (32), [Equity](Equity.md) (31), [MarketCheck](MarketCheck.md) (23), [KeptBench](KeptBench.md) (21), [FundLedger](FundLedger.md) (19), [ExchangeCheck](ExchangeCheck.md) (17), [Game](Game.md) (17), [FundView](FundView.md) (15), [Household](Household.md) (12), [MoneyAudit](MoneyAudit.md) (12), [LongPlaytest](LongPlaytest.md) (9), [HouseholdBalance](HouseholdBalance.md) (6), [TreasuryFund](TreasuryFund.md) (4), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Exchange](Exchange.md) (105), [Equity](Equity.md) (36), [OrderBook](OrderBook.md) (36), [MarketCheck](MarketCheck.md) (23), [KeptBench](KeptBench.md) (21), [FundLedger](FundLedger.md) (19), [Game](Game.md) (18), [MoneyAudit](MoneyAudit.md) (18), [ExchangeCheck](ExchangeCheck.md) (17), [Household](Household.md) (15), [FundView](FundView.md) (15), [LongPlaytest](LongPlaytest.md) (9), [HouseholdBalance](HouseholdBalance.md) (7), [TreasuryFund](TreasuryFund.md) (4), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1), [OwnerHousehold](OwnerHousehold.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 143 | THE BENCH (sections 2 to 5): the same market as Table, but valued on its record, with holders to lend and a fund to b... |
-| 237 | · 1. the quote |
-| 332 | THE LINES OF SECTIONS 2 TO 5 |
+| 147 | THE BENCH (sections 2 to 5): the same market as Table, but valued on its record, with holders to lend and a fund to b... |
+| 241 | · 1. the quote |
+| 337 | THE LINES OF SECTIONS 2 TO 5 |
+| 1249 | THE CELLS' SHARES ABROAD (LF1b), SECTION 9 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 87 | `ShortSellingCheck.INDUSTRY` | `Equity.indexOf(Sectors.INDUSTRY)` |  |
-| 147 | `ShortSellingCheck.W` | `ExchangeCheck.W` |  |
-| 148 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
-| 231 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
-| 345 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
-| 1035 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
+| 91 | `ShortSellingCheck.INDUSTRY` | `Equity.indexOf(Sectors.INDUSTRY)` |  |
+| 151 | `ShortSellingCheck.W` | `ExchangeCheck.W` |  |
+| 152 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
+| 235 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
+| 350 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
+| 1040 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 54 | `static int fails` |  |
-| 55 | `static int checks` |  |
-| 56 | `static PrintStream out` |  |
-| 57 | `static PrintStream quiet` |  |
-| 76 | `static int sectionStart` |  |
-| 95 | `final Equity reg` |  |
-| 96 | `final HouseholdBalance town` |  |
-| 97 | `final Bank bank` |  |
-| 98 | `final Exchange ex` |  |
-| 99 | `final String cell` |  |
-| 158 | `final MarketCheck.City city` |  |
-| 159 | `final Equity reg` |  |
-| 160 | `final Exchange ex` |  |
-| 161 | `final HouseholdBalance hb` |  |
-| 162 | `final Household poor, rich` |  |
-| 163 | `final TreasuryFund fund` |  |
-| 164 | `final double fair` |  |
-| 515 | `final Game city` |  |
-| 516 | `final int firm` |  |
-| 1039 | `Exchange ex` |  |
-| 1040 | `Equity reg` |  |
-| 1041 | `int months, auditBad, driftBad, shortCompanyMonths, bubbleMonths, bankBubbleMonths` |  |
-| 1042 | `double worstAudit, worstDrift, mostShort` |  |
-| 1043 | `String worstWhere` |  |
-| 1044 | `long seconds` |  |
+| 58 | `static int fails` |  |
+| 59 | `static int checks` |  |
+| 60 | `static PrintStream out` |  |
+| 61 | `static PrintStream quiet` |  |
+| 80 | `static int sectionStart` |  |
+| 99 | `final Equity reg` |  |
+| 100 | `final HouseholdBalance town` |  |
+| 101 | `final Bank bank` |  |
+| 102 | `final Exchange ex` |  |
+| 103 | `final String cell` |  |
+| 162 | `final MarketCheck.City city` |  |
+| 163 | `final Equity reg` |  |
+| 164 | `final Exchange ex` |  |
+| 165 | `final HouseholdBalance hb` |  |
+| 166 | `final Household poor, rich` |  |
+| 167 | `final TreasuryFund fund` |  |
+| 168 | `final double fair` |  |
+| 520 | `final Game city` |  |
+| 521 | `final int firm` |  |
+| 1044 | `Exchange ex` |  |
+| 1045 | `Equity reg` |  |
+| 1046 | `int months, auditBad, driftBad, shortCompanyMonths, bubbleMonths, bankBubbleMonths` |  |
+| 1047 | `double worstAudit, worstDrift, mostShort` |  |
+| 1049 | `int abroadSoldMonths, abroadBoughtMonths, abroadLinesBad` | ...and the cells' share trades with the world (LF1b): the months each was made, what it came to, and the months a line was not its figure. |
+| 1050 | `double abroadSold, abroadBought` |  |
+| 1051 | `String worstWhere` |  |
+| 1052 | `long seconds` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 1204 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
-| 59 | 5 | `static void assertTrue(String label, boolean ok)` |  |
-| 65 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 78 | 4 | `static void section(String title)` |  |
-| 83 | 3 | `static void sectionEnd()` |  |
-| 94 | 48 | **type** `static final class Table` | A one-company market on a table: the register with the company listed (200 shares to each of a hundred households, $1 a share), a bank for the desk, an exchange stepped once at month 1 so that fair value is struck - a... |
-| 101 | 6 | `Table()` _(in ShortSellingCheck.Table)_ |  |
-| 108 | 1 | `double fair()` _(in ShortSellingCheck.Table)_ |  |
-| 111 | 5 | `Table trade(double price)` _(in ShortSellingCheck.Table)_ | One share changes hands at this price, the cell's to the world's bid: the book's last trade, and nothing left resting. |
-| 118 | 4 | `Table bid(double price)` _(in ShortSellingCheck.Table)_ | A bid rests at this price: the world's, which can stand behind any. |
-| 124 | 4 | `Table ask(double price)` _(in ShortSellingCheck.Table)_ | An ask rests at this price: a cell's, which holds the shares. |
-| 130 | 4 | `Table clockAt(int month)` _(in ShortSellingCheck.Table)_ | The exchange's clock moved on to this month, its book left alone. |
-| 135 | 1 | `double price()` _(in ShortSellingCheck.Table)_ |  |
-| 136 | 1 | `double bestBid()` _(in ShortSellingCheck.Table)_ |  |
-| 137 | 1 | `double bestAsk()` _(in ShortSellingCheck.Table)_ |  |
-| 138 | 1 | `double lastTrade()` _(in ShortSellingCheck.Table)_ |  |
-| 139 | 1 | `boolean noBid()` _(in ShortSellingCheck.Table)_ |  |
-| 140 | 1 | `boolean noAsk()` _(in ShortSellingCheck.Table)_ |  |
+| 56 | 1320 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
+| 63 | 5 | `static void assertTrue(String label, boolean ok)` |  |
+| 69 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 82 | 4 | `static void section(String title)` |  |
+| 87 | 3 | `static void sectionEnd()` |  |
+| 98 | 48 | **type** `static final class Table` | A one-company market on a table: the register with the company listed (200 shares to each of a hundred households, $1 a share), a bank for the desk, an exchange stepped once at month 1 so that fair value is struck - a... |
+| 105 | 6 | `Table()` _(in ShortSellingCheck.Table)_ |  |
+| 112 | 1 | `double fair()` _(in ShortSellingCheck.Table)_ |  |
+| 115 | 5 | `Table trade(double price)` _(in ShortSellingCheck.Table)_ | One share changes hands at this price, the cell's to the world's bid: the book's last trade, and nothing left resting. |
+| 122 | 4 | `Table bid(double price)` _(in ShortSellingCheck.Table)_ | A bid rests at this price: the world's, which can stand behind any. |
+| 128 | 4 | `Table ask(double price)` _(in ShortSellingCheck.Table)_ | An ask rests at this price: a cell's, which holds the shares. |
+| 134 | 4 | `Table clockAt(int month)` _(in ShortSellingCheck.Table)_ | The exchange's clock moved on to this month, its book left alone. |
+| 139 | 1 | `double price()` _(in ShortSellingCheck.Table)_ |  |
+| 140 | 1 | `double bestBid()` _(in ShortSellingCheck.Table)_ |  |
+| 141 | 1 | `double bestAsk()` _(in ShortSellingCheck.Table)_ |  |
+| 142 | 1 | `double lastTrade()` _(in ShortSellingCheck.Table)_ |  |
+| 143 | 1 | `boolean noBid()` _(in ShortSellingCheck.Table)_ |  |
+| 144 | 1 | `boolean noAsk()` _(in ShortSellingCheck.Table)_ |  |
 
-### THE BENCH (sections 2 to 5): the same market as Table, but valued on its record, with holders to lend and a fund to b... (lines 143-331)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 157 | 59 | **type** `static final class Bench` | A thousand shares of one company with a year of earnings on its record, so the world and the cells value it on it (EM1) and the shorts may sell it; a fair value the first step strikes; and holders who say what they ho... |
-| 166 | 20 | `Bench(double poorHolds, double richHolds, double worldHolds, double fundHolds, double fundCash)` _(in ShortSellingCheck.Bench)_ |  |
-| 187 | 1 | `String poorName()` _(in ShortSellingCheck.Bench)_ |  |
-| 188 | 1 | `String richName()` _(in ShortSellingCheck.Bench)_ |  |
-| 189 | 1 | `double price()` _(in ShortSellingCheck.Bench)_ |  |
-| 190 | 1 | `double lastTrade()` _(in ShortSellingCheck.Bench)_ |  |
-| 191 | 1 | `double shortShares()` _(in ShortSellingCheck.Bench)_ |  |
-| 194 | 3 | `double holdings()` _(in ShortSellingCheck.Bench)_ | What everybody holds, the cells, the desk, the world and the fund: the shares in issue plus what the world is short, to the drift the register allows. |
-| 199 | 5 | `Bench print(double price)` _(in ShortSellingCheck.Bench)_ | One share of the poor cell's changes hands at this price, to the world's bid: the book's last trade, and nothing resting. |
-| 206 | 6 | `double open(String buyer, double price, double q)` _(in ShortSellingCheck.Bench)_ | The world sells this many shares short at this price to this buyer's bid: the short's ask rests, the buyer's bid takes it. |
-| 214 | 1 | `double shortAsk()` _(in ShortSellingCheck.Bench)_ | The world's short asks at fair value plus SHORT_BAND. |
-| 217 | 5 | `static double filled(java.util.List<OrderBook.Fill> fills)` |  |
-| 224 | 5 | `static double rateAt(double utilisation)` | The fee a year the lenders are paid at this many shares short of this many lendable (Exchange.lendingRate()), as the dials say. |
-| 233 | 98 | `public static void main(String[] args) throws Exception` |  |
-
-### THE LINES OF SECTIONS 2 TO 5 (lines 332-1255)
+### THE BENCH (sections 2 to 5): the same market as Table, but valued on its record, with holders to lend and a fund to b... (lines 147-336)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 337 | 7 | `static Bench bubble(boolean shorts)` | A bench with every share in one cell under its cushion, the desk bidding near value and holding none, and one print at 100 times fair value. |
-| 347 | 50 | `static void theBubble()` |  |
-| 399 | 1 | `static Bench standard()` | A thousand-share bench, the holders as in the sections below: poor 300, rich 400, the world 200 and the fund 100. |
-| 401 | 81 | `static void theRegister() throws Exception` |  |
-| 484 | 21 | `static Game town(String label, int months)` | The playtest's town, as FundLedgerCheck builds it, `months` months old. |
-| 506 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
-| 514 | 5 | **type** `static final class Shorted` | A town with the world short of one company (openShort()): the town, and the company's index. |
-| 517 | 1 | `Shorted(Game city, int firm)` _(in ShortSellingCheck.Shorted)_ |  |
-| 525 | 39 | `static Shorted openShort(String label)` | The playtest's town, 48 months old, with the world short of the company that pays a dividend and has most in the households' hands: the fund comes to hold 4% of it, bought from the cell that holds most, and the world ... |
-| 566 | 68 | `static void theCity()` | A whole month of a city, with a short open, a dividend paid on it and the lending fee: the audit balances. |
-| 641 | 76 | `static void theWipe(Game city, int firm)` | A company with no shares in issue and no book, with a short open and the world holding some of it, in the real month (LF1c): the month's listing finds no book and leaves it unlisted, the exchange's step cancels what t... |
-| 723 | 35 | `static void theWords(Game city, int firm, double feesRowed)` | The Fund screen's words for what the short's lending fee added to the fund's record (LF1c): the row of the month's fees says what it is instead of its kind's name, a share's write-off is not a bond's ("its face gone")... |
-| 760 | 9 | `static double lineOf(String detail, String label)` | The number a line of the audit's detail ends in (its label, then the amount at two places), 0 when the month has no such line. |
-| 770 | 76 | `static void theLender()` |  |
-| 847 | 88 | `static void theCalls()` |  |
-| 940 | 33 | `static void sameShort(String when, Game live, Game back, int f, double tol)` | Section 6's two cities, the saved and the loaded, read the same way: every figure of the short the exchange carries (Exchange.State), on the company the world is short of and over all of them, to this tolerance of eac... |
-| 974 | 60 | `static void theSave() throws Exception` |  |
-| 1038 | 8 | **type** `static final class Run` | What a run of the playtest's city counted. |
-| 1051 | 52 | `static Run play(boolean shorts, String label)` | The playtest's city (the default founding, its player's rhythm) played to RUN_MONTHS, with the world's shorts on or off, every month audited and every company's register checked: the holdings against the shares in iss... |
-| 1110 | 121 | `static void theBooks() throws Exception` | Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's review found at EM2's gate, each caused by a fixture first: the fee charged on shar... |
-| 1232 | 23 | `static void howOften()` |  |
+| 161 | 59 | **type** `static final class Bench` | A thousand shares of one company with a year of earnings on its record, so the world and the cells value it on it (EM1) and the shorts may sell it; a fair value the first step strikes; and holders who say what they ho... |
+| 170 | 20 | `Bench(double poorHolds, double richHolds, double worldHolds, double fundHolds, double fundCash)` _(in ShortSellingCheck.Bench)_ |  |
+| 191 | 1 | `String poorName()` _(in ShortSellingCheck.Bench)_ |  |
+| 192 | 1 | `String richName()` _(in ShortSellingCheck.Bench)_ |  |
+| 193 | 1 | `double price()` _(in ShortSellingCheck.Bench)_ |  |
+| 194 | 1 | `double lastTrade()` _(in ShortSellingCheck.Bench)_ |  |
+| 195 | 1 | `double shortShares()` _(in ShortSellingCheck.Bench)_ |  |
+| 198 | 3 | `double holdings()` _(in ShortSellingCheck.Bench)_ | What everybody holds, the cells, the desk, the world and the fund: the shares in issue plus what the world is short, to the drift the register allows. |
+| 203 | 5 | `Bench print(double price)` _(in ShortSellingCheck.Bench)_ | One share of the poor cell's changes hands at this price, to the world's bid: the book's last trade, and nothing resting. |
+| 210 | 6 | `double open(String buyer, double price, double q)` _(in ShortSellingCheck.Bench)_ | The world sells this many shares short at this price to this buyer's bid: the short's ask rests, the buyer's bid takes it. |
+| 218 | 1 | `double shortAsk()` _(in ShortSellingCheck.Bench)_ | The world's short asks at fair value plus SHORT_BAND. |
+| 221 | 5 | `static double filled(java.util.List<OrderBook.Fill> fills)` |  |
+| 228 | 5 | `static double rateAt(double utilisation)` | The fee a year the lenders are paid at this many shares short of this many lendable (Exchange.lendingRate()), as the dials say. |
+| 237 | 99 | `public static void main(String[] args) throws Exception` |  |
+
+### THE LINES OF SECTIONS 2 TO 5 (lines 337-1248)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 342 | 7 | `static Bench bubble(boolean shorts)` | A bench with every share in one cell under its cushion, the desk bidding near value and holding none, and one print at 100 times fair value. |
+| 352 | 50 | `static void theBubble()` |  |
+| 404 | 1 | `static Bench standard()` | A thousand-share bench, the holders as in the sections below: poor 300, rich 400, the world 200 and the fund 100. |
+| 406 | 81 | `static void theRegister() throws Exception` |  |
+| 489 | 21 | `static Game town(String label, int months)` | The playtest's town, as FundLedgerCheck builds it, `months` months old. |
+| 511 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 519 | 5 | **type** `static final class Shorted` | A town with the world short of one company (openShort()): the town, and the company's index. |
+| 522 | 1 | `Shorted(Game city, int firm)` _(in ShortSellingCheck.Shorted)_ |  |
+| 530 | 39 | `static Shorted openShort(String label)` | The playtest's town, 48 months old, with the world short of the company that pays a dividend and has most in the households' hands: the fund comes to hold 4% of it, bought from the cell that holds most, and the world ... |
+| 571 | 68 | `static void theCity()` | A whole month of a city, with a short open, a dividend paid on it and the lending fee: the audit balances. |
+| 646 | 76 | `static void theWipe(Game city, int firm)` | A company with no shares in issue and no book, with a short open and the world holding some of it, in the real month (LF1c): the month's listing finds no book and leaves it unlisted, the exchange's step cancels what t... |
+| 728 | 35 | `static void theWords(Game city, int firm, double feesRowed)` | The Fund screen's words for what the short's lending fee added to the fund's record (LF1c): the row of the month's fees says what it is instead of its kind's name, a share's write-off is not a bond's ("its face gone")... |
+| 765 | 9 | `static double lineOf(String detail, String label)` | The number a line of the audit's detail ends in (its label, then the amount at two places), 0 when the month has no such line. |
+| 775 | 76 | `static void theLender()` |  |
+| 852 | 88 | `static void theCalls()` |  |
+| 945 | 33 | `static void sameShort(String when, Game live, Game back, int f, double tol)` | Section 6's two cities, the saved and the loaded, read the same way: every figure of the short the exchange carries (Exchange.State), on the company the world is short of and over all of them, to this tolerance of eac... |
+| 979 | 60 | `static void theSave() throws Exception` |  |
+| 1043 | 11 | **type** `static final class Run` | What a run of the playtest's city counted. |
+| 1059 | 61 | `static Run play(boolean shorts, String label)` | The playtest's city (the default founding, its player's rhythm) played to RUN_MONTHS, with the world's shorts on or off, every month audited and every company's register checked: the holdings against the shares in iss... |
+| 1127 | 121 | `static void theBooks() throws Exception` | Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's review found at EM2's gate, each caused by a fixture first: the fee charged on shar... |
+
+### THE CELLS' SHARES ABROAD (LF1b), SECTION 9 (lines 1249-1375)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1261 | 85 | `static void theCellsAbroad()` | Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month (Game.settleProbeForTest: after the exchange's month has opened, before its step and the a... |
+| 1347 | 28 | `static void howOften()` |  |
 
