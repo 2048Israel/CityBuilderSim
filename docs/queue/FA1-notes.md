@@ -90,3 +90,19 @@ The model is unchanged; its eight default trace files will be captured by
 the mandatory gate and compared with the orchestrator's current-main
 reference (XR7-postmerge, current main 01402a54e). No ensemble unless that
 comparison actually moves the trace.
+
+## Main advanced during the first dry run
+
+The first normal gate was of branch `dfb430660d0f91c23416d6425538ee0e43e83f57`
+and main `01402a54e58881a5283a84933e766a38b5f1a089`, retained at
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FA1-YE7FRJtp`. The orchestrator
+shipped R0h while it ran and instructed cancellation. Stopped through
+`tools/gate.sh --stop`: exit 130, not reusable. The launcher checked its
+collected process tree exited; a subsequent Win32 query found neither the
+old native gate root 43928 nor detached host 8180.
+
+Merged new main `a3fb38c06de26cf44e462597e48278413b31300a` (0.9.121).
+Only generated harness and file indexes conflicted; the merged fast check
+rebuilt them, compiled and passed Stale. No FA1 implementation or fixture
+changed. The new trace reference is the orchestrator's R0h run:
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0h-NrRv6F33/traces/trace-*.csv`.

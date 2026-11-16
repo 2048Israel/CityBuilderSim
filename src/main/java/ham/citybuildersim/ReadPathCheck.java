@@ -1562,6 +1562,11 @@ public class ReadPathCheck {
             causeBook.getLastDeaths(cause); causeBook.getYearDeaths(cause); causeBook.getTotalDeaths(cause);
         }
         g.getHealth().getInfluenzaRate();
+        g.getHealth().getSickRateWithoutInfluenza();
+        g.getSickness().getAcuteShares();
+        g.getSickness().peopleSick(g.getCohorts());
+        g.getSickness().peoplePastTwoMonths(g.getCohorts());
+        for (AgeBand band : AgeBand.values()) g.getSickness().share(band);
         HouseholdBalance people = g.getHouseholdBalance();
         people.getHungryAtFullShelves(); people.getHungryPeople(); people.getDeliveredShare(); people.toSaveArray();
         for (int r = 0; r < Household.ROWS; r++) { people.getDisposable(r); people.getFixedCosts(r); }
@@ -1937,11 +1942,39 @@ public class ReadPathCheck {
 
         onEarth(files);
         onTheWorldMarket(root);
+        acuteSicknessReads();
 
         cleanUp(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** R0h: cause acute sickness before exercising its readers; empty 1900 shares cannot catch a mutating read. */
+    static void acuteSicknessReads() {
+        out.println("\n--- reading acute influenza shares leaves them and the ring alone (R0h) ---");
+        Game city = new Game(GameFiles.scratch("readpath-acute"));
+        System.setOut(quiet);
+        try { city.run(); } finally { System.setOut(out); }
+        Health health = city.getHealth();
+        health.advanceMonth(0, 1000, CausesOfDeath.INFLUENZA_FIRST);
+        Sickness sickness = city.getSickness();
+        sickness.seed(health.getSickRate(), health.getSickRateWithoutInfluenza(), 0, .25, .75);
+        double[] acute = sickness.getAcuteShares(), ring = sickness.getState(), healthState = health.getState();
+        assertTrue("fixture: influenza acute shares and chronic sickness are both present",
+                java.util.Arrays.stream(acute).allMatch(v -> v > 0) && sickness.pastTwoMonths(AgeBand.ADULT) > 0);
+        for (int n = 0; n < 50; n++) {
+            health.getSickRateWithoutInfluenza();
+            sickness.getAcuteShares()[0] = 0; // a reader must not hand out the mutable saved state
+            sickness.peopleSick(city.getCohorts());
+            sickness.peoplePastTwoMonths(city.getCohorts());
+            sickness.deathRates();
+            for (int k = 0; k < Sickness.RING; k++) sickness.peopleInSlot(city.getCohorts(), k);
+            for (AgeBand band : AgeBand.values()) { sickness.share(band); sickness.pastTwoMonths(band); }
+        }
+        assertTrue("fifty reads leave every acute share, ring slot and Health component unchanged",
+                java.util.Arrays.equals(acute, sickness.getAcuteShares()) && java.util.Arrays.equals(ring, sickness.getState())
+                && java.util.Arrays.equals(healthState, health.getState()));
     }
 
     /** The build advice's reads (0.7.51), each a figure: what readEverything() reads, and afterALoad() compares. */
