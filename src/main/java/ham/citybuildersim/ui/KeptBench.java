@@ -2735,6 +2735,41 @@ public final class KeptBench {
         return out;
     }
 
+    /* ----- the fund's words, read without a window (LF1c): a harness reads them on a played city ----- */
+
+    /** What the fund's Activity page says on each line of its record, newest first, the rule's folded lines opened. */
+    public static List<String> fundActivityWords(Game g) {
+        List<String> out = new ArrayList<>();
+        for (FundScreen.Act a : FundScreen.acts(g, "All", null, 0)) {
+            out.add(a.what());
+            for (FundScreen.Act in : a.inside()) out.add(in.what());
+        }
+        return out;
+    }
+
+    /** The label and the figure on each line of a security's YOUR POSITION, by its lot key. */
+    public static List<String[]> fundPositionLines(Game g, String key) {
+        List<String[]> out = new ArrayList<>();
+        for (FundScreen.PositionLine l : FundScreen.position(g, key)) out.add(new String[] { l.label(), l.value() });
+        return out;
+    }
+
+    /** What the INCOME LAST MONTH card says under its figure on this city's fund. */
+    public static String fundHeroIncomeNote(Game g) { return FundScreen.hero(g, null).incomeNote(); }
+
+    /** ...and the note itself, by the transfer last month and the income: how much it covered, or with no transfer to cover what the income is made of. */
+    public static String fundIncomeNote(double transferLastMonth, double incomeLastMonth) { return FundScreen.incomeNote(transferLastMonth, incomeLastMonth); }
+
+    /** The label of a lot's income on its page, by the lot's kind (FundView.SHARE, RESCUE, BOND, PREFERRED, WARRANTS). */
+    public static String fundIncomeLabel(String kind) { return FundScreen.incomeLabel(kind); }
+
+    /** The record's line for a security written off with what it was: a bond's face, or a company's shares. */
+    public static String fundWrittenOffWords(String name, boolean bond) { return FundScreen.writtenOffWords(name, bond); }
+
+    /** The Trade screen's words for a valuation change (the month's) and for what has been written off since founding: the chip, the sentence behind it, and the statement's note (LF1c). */
+    public static String[] tradeValuationWords(double change, String shown) { return new String[] { TradeScreen.valuationChip(change, shown), TradeScreen.valuationInfo(change, shown), TradeScreen.valuationNote(change) }; }
+    public static String[] tradeForgivenWords(double forgiven, String shown) { return new String[] { TradeScreen.forgivenChip(forgiven, shown), TradeScreen.forgivenInfo(forgiven) }; }
+
     /** The lots the fund holds, by key. */
     public List<String> fundHoldings() {
         List<String> out = new ArrayList<>();
