@@ -97,7 +97,7 @@ A row whose every share is within .015 of the file stands as the study ran it. T
 
 ## The pick: fixtures the chained prices moved
 
-The pick (`./batch-check.sh --pick`, ALL, since WorldMarket is shared) found NEW reds in eight harnesses. The
+The pick (`./batch-check.sh --pick`, ALL, since WorldMarket is shared) found NEW reds in nine harnesses. The
 model code they read is not CU2's: the chained prices changed the fixture cities. Each fixture now causes its
 condition again, with its premise unchanged.
 
@@ -127,13 +127,25 @@ condition again, with its premise unchanged.
   digit (the wage, the rent, and the food, materials, ore, ground and share prices). Worst real gaps now
   5.7e-14, 3.1e-11, 3.2e-13 and 1.5e-13 in sections 6-9; HistoryCheck passes.
 
+- **WageLadderCheck 6** (the played 1900 village), **restated: a call for the reviewer**. "Its unskilled wage
+  still under half of today's after two years' scarcity" held the share main's village reached (.34 at month
+  24, .45 at its most), not a bound the model keeps. On the chained prices the village grows to 2,501 people
+  in the two years (main's 1,358, already 689 against 519 at month 3). Its shortage lifts the unskilled wage
+  to .60 of today's at month 13 and .556 at month 24, 2.33 times 1901's base (.238 of today's); the cost of
+  living stays 1. The check now holds what the ladder keeps: at most `LabourMarket.MAX_MULTIPLE` (4) of 1901's
+  base with the cost of living, and under today's. The share is printed. This widens the bound from .5 to .95
+  of today's. The old `roundSig` gives the same .556, so the cause is the prices.
+
 Passed by name, in code CU2 does not touch, each with its fix queued (the ship file's `## known-reds`):
 
 - **MapCheck**, "at the widest view every pixel a highway or the track crosses is drawn as it, and no
   other" → **FB9**. The chained prices grow a different played city (256 plots across, main's 296). At 1,024
   plots a pixel, the harness's own run pixels and `MapTiles.lastRun()` disagree on it.
-- **KeptCheck**, "most months make no node at all (12 of 25)" on Policy, Promises' Food page → **FB2**.
-  The page makes a node in 13 of its 25 months, at most one in any month. Every unchanged draw makes none.
+- **KeptCheck**, "no month makes more than a tenth of the nodes the first draw made (the most made in one:
+  45 of 400; 3 of 25 months made none)" on the Government Overview → **FB2**. Main records the same page's
+  class at 47 of 378 and 40 of 384: the unchanged Government code recreates transient fiscal rows. (Before the
+  `roundSig` fix the played city differed, and the red was instead Policy, Promises' Food page, 12 quiet months
+  of 25; it passes now.)
 
 ## WN4: what moved
 

@@ -29692,7 +29692,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L417 ...and finite
   - L418 ...with the rent and the floor positive and finite
   - L419 ...the city still on 1901's ladder, its allocator's bases unchanged
-  - L422 ...and its unskilled wage still under half of today's after two years' scarcity
+  - L430 ...and its unskilled wage still on 1901's base after two years' scarcity: at most the curve's MAX_MULTIPLE of it, under today's
 
 ## WantedPostsCheck.java - 145 labelled assertions
 
