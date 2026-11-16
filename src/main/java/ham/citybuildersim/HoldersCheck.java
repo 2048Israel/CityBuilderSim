@@ -631,6 +631,7 @@ public class HoldersCheck {
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
             city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             // ...AND EVERY OTHER SECTOR HELD, SO THE HOUSEHOLDS' PURSE IS STILL THERE AT THE SETTLE (GW1).
+            // DQ1 tried it free (2026-11-16): the two-step clearing's fixture was not reached and its laws skipped. Held.
             for (String key : Sectors.KEYS) city.getBusinessInvestment().holdSector(key);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
@@ -1731,7 +1732,7 @@ public class HoldersCheck {
             city.getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
             city.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);   // EP1: see main(), where the town is built first
             // ...AND EVERY OTHER SECTOR HELD, SO THE SALES ARE THE SIZE THE SECTIONS BELOW ARE WRITTEN FOR
-            // (GW1).
+            // (GW1). DQ1 tried it free (2026-11-16): the line's discount fell outside 0.0213-0.0300 and eight lines failed. Held.
             for (String key : Sectors.KEYS) city.getBusinessInvestment().holdSector(key);
             city.buildStack(template(city, "Gravel Road"), 6, true);
             city.buildStack(template(city, "House"), 300, false);
