@@ -41,7 +41,9 @@ final class WorldChain {
     /**
      * The forty rows: each good a works makes, on that works' inputs at the shares buildings.json gives at the literals' mid-band prices (the rest of its
      * price is its conversion, on the manufactures index), and each good the price file prices off another with no works between them wholly on it
-     * (spec-world-prices.md 3.3); a dial, and WorldMarketCheck holds every row's works to its share.
+     * (spec-world-prices.md 3.3); a dial, and WorldMarketCheck holds every row's works to its share. Seven shares are the file's, not the study's
+     * table (CU2): the prototype counted pulpwood and residues at 0.9 of their price (their tonnes to the cubic metre, which weighs freight, not
+     * money), and priced the Blast Furnace's coke and the kilns' limestone off the file's; a row within .015 of the file stands as the study ran it.
      */
     static final List<Row> RECIPE = List.of(
             row(COPPER_CONC, null, in(COPPER, 1)),
@@ -52,7 +54,7 @@ final class WorldChain {
             row(PELLETS, "Pelletising Plant", in(IRON, .70), in(THERMAL_COAL, .01)),
             row(COKING_COAL, null, in(THERMAL_COAL, 1)),
             row(MET_COKE, "Coke Ovens", in(COKING_COAL, .74)),
-            row(PIG_IRON, "Blast Furnace", in(IRON, .36), in(MET_COKE, .33)),
+            row(PIG_IRON, "Blast Furnace", in(IRON, .36), in(MET_COKE, .29)),
             row(SCRAP, null, in(PIG_IRON, 1)),
             row(STEEL, "Oxygen Steel Shop", in(PIG_IRON, .66), in(SCRAP, .16)),
             row(FABRICATED_STEEL, "Fabrication Works", in(STEEL, .38)),
@@ -61,8 +63,8 @@ final class WorldChain {
             row(VANS, "Commercial Vehicle Plant", in(FABRICATED_STEEL, .11), in(MACHINERY, .09)),
             row(ROLLING_STOCK, "Locomotive Works", in(MACHINERY, .09), in(FABRICATED_STEEL, .08)),
             row(TRUCKS, "Heavy Truck Plant", in(MACHINERY, .10), in(FABRICATED_STEEL, .07)),
-            row(CEMENT, "Cement Plant", in(LIMESTONE, .34), in(THERMAL_COAL, .12), in(AGGREGATE, .04)),
-            row(LIME, "Lime Kiln", in(LIMESTONE, .21), in(THERMAL_COAL, .07)),
+            row(CEMENT, "Cement Plant", in(LIMESTONE, .39), in(THERMAL_COAL, .11), in(AGGREGATE, .05)),
+            row(LIME, "Lime Kiln", in(LIMESTONE, .23), in(THERMAL_COAL, .06)),
             row(BITUMEN, "Crude Unit", in(CRUDE, .85)),
             row(COKE, "Crude Unit", in(CRUDE, .85)),
             row(DIESEL, "Crude Unit", in(CRUDE, .85)),
@@ -75,10 +77,10 @@ final class WorldChain {
             row(PULPWOOD, null, in(SAWLOGS, 1)),
             row(RESIDUES, null, in(SAWLOGS, 1)),
             row(LUMBER, "Sawmill", in(SAWLOGS, .52)),
-            row(PANELS, "Panel Mill", in(PULPWOOD, .31)),
-            row(PULP, "Pulp Mill", in(PULPWOOD, .21), in(RESIDUES, .08)),
+            row(PANELS, "Panel Mill", in(PULPWOOD, .34)),
+            row(PULP, "Pulp Mill", in(PULPWOOD, .23), in(RESIDUES, .09)),
             row(PAPER, "Paper Mill", in(PULP, .74), in(FUEL_OIL, .07)),
-            row(WOOD_PELLETS, "Wood Pellet Mill", in(RESIDUES, .32)),
+            row(WOOD_PELLETS, "Wood Pellet Mill", in(RESIDUES, .36)),
             row(PROCESSED_MEAT, "Meat Works", in(MEAT, .40)),
             row(READY_MEALS, "Meat Works", in(MEAT, .40)),
             row(BREAD, "Bakery", in(CROPS, .24)),
