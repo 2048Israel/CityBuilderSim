@@ -879,12 +879,12 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 500 | `Debt.HOLDING_ROUNDING` | `1e-12` | The share of the face moved under which what a holder is left with is the subtraction's rounding, and none (RT1). |
-| 643 | `Debt.EFFECTIVE_RATE_FLOOR` | `- 0.5` | The lowest effective rate effectiveRateOf() will report: a premium so deep it costs the issuer less than nothing, a year. |
-| 646 | `Debt.EFFECTIVE_RATE_CEILING` | `5.0` | The highest, as getYieldToMaturity()'s bracket always was: 500% a year. |
-| 813 | `Debt.AUCTION` | `"auction"` | How a sale at auction reads on the piece. |
-| 816 | `Debt.CENTRAL_BANK_AT_PAR` | `"the central bank, at its par"` | ...the central bank's own par, rolled into a line or a new piece at issue. |
-| 819 | `Debt.CENTRAL_BANK_ADD_ON` | `"the central bank's add-on"` | ...and its non-competitive add-on to a sale. |
-| 822 | `Debt.ROLLOVER` | `"the rollover"` | ...and the treasury's rollover of what fell due. |
+| 647 | `Debt.EFFECTIVE_RATE_FLOOR` | `- 0.5` | The lowest effective rate effectiveRateOf() will report: a premium so deep it costs the issuer less than nothing, a year. |
+| 650 | `Debt.EFFECTIVE_RATE_CEILING` | `5.0` | The highest, as getYieldToMaturity()'s bracket always was: 500% a year. |
+| 817 | `Debt.AUCTION` | `"auction"` | How a sale at auction reads on the piece. |
+| 820 | `Debt.CENTRAL_BANK_AT_PAR` | `"the central bank, at its par"` | ...the central bank's own par, rolled into a line or a new piece at issue. |
+| 823 | `Debt.CENTRAL_BANK_ADD_ON` | `"the central bank's add-on"` | ...and its non-competitive add-on to a sale. |
+| 826 | `Debt.ROLLOVER` | `"the rollover"` | ...and the treasury's rollover of what fell due. |
 
 ### DebtManager.java ([map](map/DebtManager.md))
 
@@ -1638,7 +1638,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.119"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.120"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `53` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `53` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -6649,8 +6649,8 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 1271 | `HoldersCheck.CENT` | `MoneyAudit.CENT` | The audit's tolerance for a figure read from it: the model's own cent, MoneyAudit.CENT (EP2). |
 | 1683 | `HoldersCheck.MATERIAL_PART` | `.01` | A holder took part of a sale, and not the rounding left when the others paid in full, when it holds over this share of the face sold (GW1: the bank's 3.2e-14 of a face of 54 passed "took face" on n... |
-| 1830 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
-| 2004 | `HoldersCheck.PREMIUM_RISE` | `.04` | 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. |
+| 1835 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
+| 2009 | `HoldersCheck.PREMIUM_RISE` | `.04` | 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. |
 
 ### HomeRailCheck.java ([map](map/HomeRailCheck.md))
 

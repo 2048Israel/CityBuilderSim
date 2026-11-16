@@ -11993,7 +11993,7 @@ public class Game {
         Auction.Result r = quote.auction();
         Debt line = r != null && !r.ask().isNewLine() ? debtManager.benchmarkLine(years, quote.callable()) : null;
         if (line instanceof LongTermBond bond && Math.abs(bond.couponRate() - r.ask().lineCoupon()) < 1e-12) {
-            // BD1: a premium eats the line's discount left, the settled part's too; the book's figure for the bank moves with no trade behind it.
+            // BK2: the premium stays with the unsettled sale until the settle; each holder's own discount is unchanged here.
             double bankCarriedBefore = bank.getUnearnedDiscount(), bankBookBefore = debtManager.bankUnearnedDiscount();
             line.reopen(quote.faceValue(), quote.cashReceived(), quote.marketRate(), month, saleHow);
             restrikeBankDiscountCarried(bankCarriedBefore, bankBookBefore);
