@@ -11,5 +11,4 @@ save and the load, and its homes, posts and places are its quantity times the te
 main's int). Below the ceiling nothing moves: the default playtest's eight trace files are main's, byte for byte.
 
 ## known-reds
-Harness | part of the red line | queued fix | date | cause
 KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 46 of 400; | FB2 | 2026-11-16 | Main 08c8727d's own classes, run from this worktree before any SQ1 change reaches them (AllChecks -f KeptCheck), reproduce 46 of 400 with 6 of 25 months made none in section 69, the Government Overview's transient rows; the recorded 47 of 378 and 40 of 384 are the same fault at the counts the trace had before LF1b moved it. Nothing of SQ1 draws a node
