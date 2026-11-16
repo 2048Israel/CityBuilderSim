@@ -71,7 +71,8 @@ import java.nio.file.Path;
  *      to have it exceed otherwise one can just ignore once at 100." A parity
  *      of 150 takes the rate there as the trend arrives - past 100, where
  *      the old guard held it - and the dollar debt's revaluation follows the
- *      rate that far. The same the other way past .01, at a parity of .005.
+ *      rate that far: a real city's month, put at the extreme, books the whole
+ *      of the move as CD7's line (CD9b). The same the other way past .01, at a parity of .005.
  *      And a reform still scales the guards, now a billion either way, with
  *      the unit - and the reformed currency moves exactly as the unreformed
  *      one would.
@@ -835,7 +836,67 @@ public class CurrencyCheck {
         fx.repriceCurrency();
     }
 
-    static void unguarded() {
+    /** How many pieces the ledger carries in a foreign money. */
+    static int foreignPieces(DebtManager books) {
+        int n = 0;
+        for (Debt d : books.getDebt()) if (d.isForeign()) n++;
+        return n;
+    }
+
+    /** A real city (as section 4 builds one) that owes one US$ bond, sold through Game.handleForeignLogic() as the player's Borrow abroad sells it: its books opened on what the sale raised, the piece valued at the rate of the day. */
+    static Game dollarCity() throws Exception {
+        Path root = TempDirs.create("currencycheck-debt");
+        Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
+        System.setOut(quiet);
+        try {
+            city.run();
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            city.getLandManager().setOwnedSqFt(30_000_000);
+            city.buildStack(ForeignCheck.template(city, "House"), 400, false);
+            city.buildStack(ForeignCheck.template(city, "Convenience Store"), 6, false);
+            city.simulateMonths(24);
+            String booked = city.handleForeignLogic("Term", 20_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR, false);
+            if (!booked.startsWith("Issued abroad")) out.println("   (the sale was refused: " + booked + ")");
+            city.getDebtManager().setAutopilot(false);
+        } finally {
+            System.setOut(out);
+        }
+        return city;
+    }
+
+    /** One real month of a city's: the rate it began on, the rate it ended on, the line it booked, and the line the pieces say it should be. */
+    record Month(double start, double end, double booked, double expected, double unlearned) { }
+
+    /** The history keeps a month's figure to the cent, so a sum of its months is read to within half a cent of each. */
+    static final double HISTORY_CENT = .006;
+
+    /**
+     * The city's currency put at {@code start} the way a save puts it (its debt told the same rate, as the load path does: the
+     * pieces were last valued where the currency stood), one whole month played, and then read: the booked line NationalAccounts keeps
+     * (CD7), and what every foreign piece's own carrying value in its money says the move came to - the dollars carried times the
+     * rate it began on less the rate it ended on, a gain positive - to be asserted against it.
+     */
+    static Month extremeMonth(Game city, double start) {
+        ForeignAccounts fx = city.getForeignAccounts();
+        DebtManager books = city.getDebtManager();
+        double[] saved = fx.toSaveArray();
+        saved[3] = start;
+        fx.restore(saved);
+        double began = fx.getRate();   // what the currency took, the guards past which a rate no longer stops
+        books.setExchangeRate(began);
+        System.setOut(quiet);
+        try { city.simulateMonths(1); } finally { System.setOut(out); }
+        double end = fx.getRate(), carried = 0, unlearned = 0;
+        for (Debt d : books.getDebt()) {
+            if (!d.isForeign()) continue;
+            carried += d.carryingInCurrency();
+            unlearned = Math.max(unlearned, Math.abs(d.getExchangeRate() - end));
+        }
+        return new Month(began, end, city.getEconomyManager().getNationalAccounts().getDebtExchangeGain(),
+                carried * (began - end), unlearned);
+    }
+
+    static void unguarded() throws Exception {
         out.println("\n--- 6. the rate goes where parity's trend takes it: the guards are a billion either way ---");
 
         // RESTATED FOR XR1 (spec 3.2). The old section drove the rate past the guards
@@ -857,10 +918,9 @@ public class CurrencyCheck {
                 high.balanceTarget() == 0 && high.getReservesUsd() == 0 && high.getOpenness() == 1);
         // New in XR1: the market is quiet (a bare ForeignAccounts is unseeded).
         assertTrue("fixture: the market is quiet", !high.isMarketSeeded());
-        double before = high.getRate(), first = 0, worst = 0;
+        double first = 0, worst = 0;
         int months = 0;
         while (high.getRate() <= OLD_MAX_RATE && months < most) {
-            before = high.getRate();
             month(high, target, 0);
             high.takeForeignDebt(usdOwed, high.getRate());
             worst = Math.max(worst, Math.abs(high.getRate() - high.getFairLevel()) / high.getRate());
@@ -878,24 +938,36 @@ public class CurrencyCheck {
         assertTrue("...a rate under the old guard crosses it", first < OLD_MAX_RATE);
         close("...and every month is the trend and the levels, never the guard", worst, 0, 1e-9);
         close("...and the dollar debt is worth the dollars at it", high.getForeignDebt(), usdOwed * high.getRate(), 1e-6);
-        // CD9 (CD8-R, 2026-11-08): ForeignAccounts keeps no revaluation now; the month's is CD7's booked line (DebtManager.revalueForeign, a gain
-        // positive, so a rate that rose is a loss), here on a bare ledger holding one US$ bond of the same US$ - the premise stays: the whole of the move.
-        DebtManager highBook = new DebtManager();
-        Debt highBond = highBook.addLongTermBond(usdOwed, 120, 0, .05, true);
-        highBook.setExchangeRate(before);
-        close("...the month's revaluation the whole of the move", highBook.revalueForeign(high.getRate()),
-                highBond.carryingInCurrency() * (before - high.getRate()), 1e-6);
+        // CD9b (2026-11-16): ForeignAccounts keeps no revaluation since CD9; the month's is CD7's booked line
+        // (DebtManager.revalueForeign(), which Game's month strikes and NationalAccounts keeps). CD9's first lines here built a bare
+        // ledger and asserted revalueForeign's formula back, which no skipped revaluation in the month could turn red. So a real city,
+        // owing a dollar bond it sold the way a player's Borrow abroad sells one, is put at the extreme rate and plays the month.
+        Game city = dollarCity();
+        DebtManager books = city.getDebtManager();
+        out.printf("   the real city owes US$%,.2fk in %d foreign piece(s)%n", books.getForeignPrincipalUsd(), foreignPieces(books));
+        assertTrue("fixture: the real city owes dollars, on one piece", books.getForeignPrincipalUsd() > 0 && foreignPieces(books) == 1);
+        Month hi = extremeMonth(city, target);
+        out.printf("   the real city's month: %.4f -> %.4f, the line it booked: %,.4f (the pieces' own: %,.4f)%n",
+                hi.start, hi.end, hi.booked, hi.expected);
+        assertTrue("fixture: the city's debt was valued at a rate past the old guard of 100, as the load path leaves it", hi.start > OLD_MAX_RATE);
+        assertTrue("fixture: the month moved the rate, so there is a revaluation to book", hi.end != hi.start);
+        close("...the month's revaluation the whole of the move: the booked line is the dollars carried times the rate it left",
+                hi.booked, hi.expected, 1e-9 * Math.max(1, Math.abs(hi.expected)));
+        assertTrue("...and it is a gain, the D$ having risen from the extreme (the debt costs fewer of it)", hi.end < hi.start && hi.booked > 0);
+        close("...the pieces were told the rate the month ended on", hi.unlearned, 0, 1e-12 * Math.max(1, hi.end));
+        close("...and the dollar debt is worth the dollars at it, in the city's books",
+                books.getForeignPrincipal(), books.getForeignPrincipalUsd() * hi.end, 1e-9 * Math.max(1, books.getForeignPrincipal()));
+        close("...the history's series holds that month's line (to its two decimals), the only one the city has booked",
+                city.debtExchangeSinceFounding(), hi.booked, HISTORY_CENT);
 
         /* UNDER A HUNDREDTH, the mirror: parity at 1/200, the trend falling past the old floor. */
         final double low = .005;
         ForeignAccounts dear = at(1);
         dear.takeForeignDebt(usdOwed, 1);
         month(dear, 1.0, 0);
-        before = dear.getRate();
         double firstDown = 0;
         months = 0;
         while (dear.getRate() >= OLD_MIN_RATE && months < most) {
-            before = dear.getRate();
             month(dear, low, 0);
             dear.takeForeignDebt(usdOwed, dear.getRate());
             if (++months == 1) firstDown = dear.getRate();
@@ -908,11 +980,17 @@ public class CurrencyCheck {
                 dear.getRate() < OLD_MIN_RATE);
         assertTrue("a rate over the old floor crosses it", firstDown > OLD_MIN_RATE);
         close("...and the dollar debt is worth the dollars at it", dear.getForeignDebt(), usdOwed * dear.getRate(), 1e-9);
-        DebtManager dearBook = new DebtManager();   // (CD9: the same bare ledger, the booked line, as above)
-        Debt dearBond = dearBook.addLongTermBond(usdOwed, 120, 0, .05, true);
-        dearBook.setExchangeRate(before);
-        close("...the month's revaluation the whole of the move, a gain", dearBook.revalueForeign(dear.getRate()),
-                dearBond.carryingInCurrency() * (before - dear.getRate()), 1e-9);
+        Month lo = extremeMonth(city, low);   // the same real city, put at the other extreme
+        out.printf("   the real city's month: %.6f -> %.6f, the line it booked: %,.4f (the pieces' own: %,.4f)%n",
+                lo.start, lo.end, lo.booked, lo.expected);
+        assertTrue("fixture: the city's debt was valued at a rate under the old floor of .01, as the load path leaves it", lo.start < OLD_MIN_RATE);
+        assertTrue("fixture: the month moved the rate, so there is a revaluation to book", lo.end != lo.start);
+        close("...the month's revaluation the whole of the move, the mirror: the booked line is the dollars carried times the rate it left",
+                lo.booked, lo.expected, 1e-9 * Math.max(1, Math.abs(lo.expected)));
+        assertTrue("...and it is a loss, the D$ having fallen from the extreme (the debt costs more of it)", lo.end > lo.start && lo.booked < 0);
+        close("...the pieces were told the rate the month ended on", lo.unlearned, 0, 1e-12);
+        close("...and since founding the city has booked both months' lines (to the history's two decimals)",
+                city.debtExchangeSinceFounding(), hi.booked + lo.booked, 2 * HISTORY_CENT);
 
         /*
          * A REFORM SCALES THE GUARDS WITH THE UNIT. Three zeros off a currency
