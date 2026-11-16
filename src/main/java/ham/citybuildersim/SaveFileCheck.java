@@ -516,7 +516,7 @@ public class SaveFileCheck {
         Path cityDir = root.resolve("city");
         GameFiles cityFiles = new GameFiles(cityDir, root.resolve("no-legacy"));
 
-        Game city = new Game(cityFiles, Founding.defaults().withUnfitted(false));
+        Game city = new Game(cityFiles);
         city.run();
         // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): the depots' ordered size below was found against a city
         // that taxes and pays its wage floor from its first month (WN3: its builders' capacity at month 91), and a city on history's dates
@@ -636,7 +636,7 @@ public class SaveFileCheck {
         Path warnedDir = root.resolve("warned");
         GameFiles warnedFiles = new GameFiles(warnedDir, root.resolve("no-legacy"));
 
-        Game warned = new Game(warnedFiles, Founding.defaults().withUnfitted(false));
+        Game warned = new Game(warnedFiles);
         warned.run();
         warned.toggleReports();      // eight months of city reports is not the point
         warned.toggleGraphs();
@@ -708,7 +708,7 @@ public class SaveFileCheck {
         Path freshCityDir = root.resolve("fresh-city");
         GameFiles freshFiles = new GameFiles(freshCityDir, root.resolve("no-legacy"));
 
-        Game brandNew = new Game(freshFiles, Founding.defaults().withUnfitted(false));
+        Game brandNew = new Game(freshFiles);
         brandNew.run();
         brandNew.buildStack(template(brandNew, "Construction Depot"), 1, false);
 
@@ -997,7 +997,7 @@ public class SaveFileCheck {
         Path growingDir = root.resolve("growing");
         GameFiles growingFiles = new GameFiles(growingDir, root.resolve("no-legacy"));
 
-        Game growing = new Game(growingFiles, Founding.defaults().withUnfitted(false));
+        Game growing = new Game(growingFiles);
         growing.run();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
@@ -1099,7 +1099,7 @@ public class SaveFileCheck {
         Path debtDir = root.resolve("indebted");
         GameFiles debtFiles = new GameFiles(debtDir, root.resolve("no-legacy"));
 
-        Game indebted = new Game(debtFiles, Founding.defaults().withUnfitted(false));
+        Game indebted = new Game(debtFiles);
         indebted.run();
         indebted.buildStack(template(indebted, "House"), 80, false);
         indebted.buildStack(template(indebted, "Convenience Store"), 3, false);
@@ -1204,7 +1204,7 @@ public class SaveFileCheck {
         System.out.println("\n--- and a city with dollars owed abroad ---");
 
         GameFiles abroadFiles = new GameFiles(root.resolve("abroad"), root.resolve("no-legacy"));
-        Game abroad = new Game(abroadFiles, Founding.defaults().withUnfitted(false));
+        Game abroad = new Game(abroadFiles);
         java.io.PrintStream shown = System.out;
         System.setOut(new java.io.PrintStream(java.io.OutputStream.nullOutputStream()));
         try {
@@ -1318,7 +1318,7 @@ public class SaveFileCheck {
 
         // Founded on a path that is not the default's (WN1): a default read back on both sides would pass without the save carrying anything.
         Game full = new Game(new GameFiles(root.resolve("everything"), root.resolve("no-legacy")),
-                Founding.defaults().withUnfitted(false).withPath(OTHER_PATH, 2_026_102_8L));   // its forecourts, journal and movers need today's city (R1d)
+                Founding.defaults().withPath(OTHER_PATH, 2_026_102_8L));
         full.run();
         // THE LEVERS OPENED IN THE FIXTURE (R0): this city's premise is a city with its dials set - taxes paying for the repairs and the
         // subsidies, a health premium collected, an income-tax squeeze below - and a city on history's dates has none of them in 1900-1912
@@ -2467,7 +2467,7 @@ public class SaveFileCheck {
          * office, because a city stacked with addStack() stands on ground the
          * ledger never allocated. AW2 tests that discrepancy separately below.
          */
-        Game early = new Game(new GameFiles(root.resolve("early"), root.resolve("no-legacy")), Founding.defaults().withUnfitted(false));
+        Game early = new Game(new GameFiles(root.resolve("early"), root.resolve("no-legacy")));
         early.run();
         // THE LEVERS OPENED IN THE FIXTURE (R0, diagnostic - see the batch notes): the price index bases on the 24th month with a household's
         // rent and groceries in it, and the fixture runs it 26 months; on history's dates the city has no taxes or wage floor to 1916-1918.
@@ -2535,7 +2535,7 @@ public class SaveFileCheck {
          * track laid here - played until the trains run, saved, and both
          * pressed once.
          */
-        Game hauls = new Game(new GameFiles(root.resolve("railway"), root.resolve("no-legacy")), Founding.defaults().withUnfitted(false));
+        Game hauls = new Game(new GameFiles(root.resolve("railway"), root.resolve("no-legacy")));
         hauls.run();
         hauls.setCashForTest(Founding.WEALTHY_CASH);
         hauls.getBusinessInvestment().holdSector(Sectors.FREIGHT);
@@ -2661,7 +2661,7 @@ public class SaveFileCheck {
          * (measured with the other copied across). Held to the bit: a twin's
          * month is the same arithmetic as the month it was saved from.
          */
-        Game college = new Game(new GameFiles(root.resolve("college"), root.resolve("no-legacy")), Founding.defaults().withUnfitted(false));
+        Game college = new Game(new GameFiles(root.resolve("college"), root.resolve("no-legacy")));
         college.run();
         // THE LEVERS OPENED IN THE FIXTURE (R0): the students' loans are what this section carries across a save, and the treasury makes
         // none before student aid opens (1939). Every lever opened and the defaults put back, before a month has run.
@@ -2723,7 +2723,7 @@ public class SaveFileCheck {
          * month did - the town played on until its households own cars and
          * drive them.
          */
-        Game buses = new Game(new GameFiles(root.resolve("buses"), root.resolve("no-legacy")), Founding.defaults().withUnfitted(false));
+        Game buses = new Game(new GameFiles(root.resolve("buses"), root.resolve("no-legacy")));
         buses.run();
         buses.setCashForTest(Founding.WEALTHY_CASH);
         buses.getLandManager().setOwnedSqFt(buses.getLandManager().getOwnedSqFt() + 100_000_000L);
@@ -2783,7 +2783,7 @@ public class SaveFileCheck {
          * fields alone). The fixture plays a city three months with it on, so the keys are written by a city that
          * recorded and not set by hand, and takes the keys out of a copy of its save to read the older shape.
          */
-        Game recorded = new Game(new GameFiles(root.resolve("recorded"), root.resolve("no-legacy")), Founding.defaults().withUnfitted(false));
+        Game recorded = new Game(new GameFiles(root.resolve("recorded"), root.resolve("no-legacy")));
         recorded.run();
         recorded.buildStack(template(recorded, "House"), 20, true);
         recorded.setRecording(true);
@@ -4084,7 +4084,7 @@ public class SaveFileCheck {
             boolean[] unitsMatch = { true };
             int[] drawsBeyondTheTally = { 0 };
             quietly(() -> {
-                city.newGame(Founding.defaults().withUnfitted(false).withWorldSeed(2_026_102_8L));   // a chosen reserve mix needs today's money (R1d)
+                city.newGame(Founding.defaults().withWorldSeed(2_026_102_8L));
                 city.setCashForTest(Founding.WEALTHY_CASH);
                 city.buildStack(template(city, "House"), 120, true);
                 city.buildStack(template(city, "Convenience Store"), 2, true);
@@ -4371,7 +4371,7 @@ public class SaveFileCheck {
     static void landLoadFallbacks() throws Exception {
         System.out.println("--- current-format land repair and refusal ---");
         GameFiles files = GameFiles.scratch("ha1-current-land");
-        Game live = new Game(files, Founding.defaults().withUnfitted(false));
+        Game live = new Game(files);
         java.io.PrintStream console = System.out;
         try (java.io.PrintStream silence = new java.io.PrintStream(java.io.OutputStream.nullOutputStream())) {
             System.setOut(silence);
@@ -4487,7 +4487,7 @@ public class SaveFileCheck {
         /** A city with something of everything in it, so every law has something to test. */
         static Game city(Path root, String name, int months) throws Exception {
             GameFiles files = new GameFiles(root.resolve(name), root.resolve("no-legacy"));
-            Game g = new Game(files, Founding.defaults().withUnfitted(false));
+            Game g = new Game(files);
             System.setOut(quiet);
             try {
                 g.run();
@@ -4588,7 +4588,7 @@ public class SaveFileCheck {
              * indistinguishable from one in a fresh process, and that is what this
              * says.
              */
-            Game virgin = new Game(new GameFiles(root.resolve("virgin"), root.resolve("no-legacy")), Founding.defaults().withUnfitted(false));
+            Game virgin = new Game(new GameFiles(root.resolve("virgin"), root.resolve("no-legacy")));
             System.setOut(quiet);
             try {
                 virgin.run();

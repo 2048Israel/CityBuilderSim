@@ -291,7 +291,7 @@ public class NewGameCheck {
         /* ==================== 2. live in one, hard ==================== */
         System.out.println("\n--- and one that has been lived in ---");
 
-        Game used = new Game(files, Founding.defaults().withUnfitted(false)); // cause the insured-mortgage/old-assets premise before resetting into the new historical default
+        Game used = new Game(files);
         used.run();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the
@@ -1053,28 +1053,25 @@ public class NewGameCheck {
            before either key - no autopilot, no rollover - loads with the
            hand on the dial and rolling nothing, as it was played.
 
-       R1d made every new city a 1900 city, whose central bank opens in March
-       1935 (R0f), so the rule a game founds on cannot hold the dial yet.
-       The cities above are founded with today's money (withUnfitted(false)),
-       the bank open from the start, and their assertions mean what they did.
-       A city founded the 1900 way (the defaults) is the other case: its
-       dial is nobody's, the rule waits for the bank (DebtManager.
-       isAutopilotAtOpening()) and takes the dial the month the bank opens -
-       unless the player's hand took the Advance Rate first - and a save
-       before the opening reloads with the rule still waiting.
+       A city founded the 1900 way - as the founding screen opens since R1d -
+       has its central bank shut until March 1935 (R0f), so the rule it founds
+       on cannot hold the dial yet: the dial is nobody's, the rule waits for
+       the bank (DebtManager.isAutopilotAtOpening()) and takes the dial the
+       month the bank opens, unless the player's hand took the Advance Rate
+       first, and a save before the opening reloads with the rule waiting.
        ===================================================================== */
     static void theDialAndTheRollover(GameFiles files) throws Exception {
         System.out.println("\n--- 12. the dial and the rollover a player founds with ---");
 
         Game defaults = new Game(files);
-        quietly(() -> defaults.newGame(Founding.defaults().withUnfitted(false)));
-        assertTrue("\"Found with defaults\" (founded with today's money): the dial is the autopilot's", defaults.getDebtManager().isAutopilot());
+        quietly(() -> defaults.newGame());
+        assertTrue("\"Found with defaults\": the dial is the autopilot's", defaults.getDebtManager().isAutopilot());
         assertTrue("...and the treasury rolls what falls due in the same structure",
                 defaults.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
         Game chosen = new Game(files);
         quietly(() -> chosen.newGame(Founding.named("Arden", Founding.Preset.LEAN,
-                WorldEconomy.DEFAULT_MEAN_INFLATION).withUnfitted(false)));
-        assertTrue("the founding screen's own city (founded with today's money), likewise",
+                WorldEconomy.DEFAULT_MEAN_INFLATION)));
+        assertTrue("the founding screen's own city, likewise",
                 chosen.getDebtManager().isAutopilot() && chosen.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
         Game bare = new Game(files);
         quietly(bare::run);
@@ -1093,11 +1090,11 @@ public class NewGameCheck {
                         && Math.abs(back[0].getDebtManager().getPolicyRate() - .04) < 1e-12);
 
         Game onIt = new Game(files);
-        quietly(() -> onIt.newGame(Founding.defaults().withUnfitted(false)));
+        quietly(() -> onIt.newGame());
         onIt.setRolloverMode(Rollover.Mode.TWELVE_MONTH_BILL);
         assertTrue("saved", onIt.saveGame(10, "the autopilot").ok);
         quietly(() -> { back[0] = new Game(files); back[0].loadGameSave(10); });
-        assertTrue("...one on the autopilot (founded with today's money) reloads on it", back[0].getDebtManager().isAutopilot());
+        assertTrue("...one on the autopilot reloads on it", back[0].getDebtManager().isAutopilot());
         assertTrue("...and its rollover as it was set", back[0].getRolloverMode() == Rollover.Mode.TWELVE_MONTH_BILL);
 
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
@@ -1113,11 +1110,12 @@ public class NewGameCheck {
                 !back[0].getDebtManager().isAutopilot());
         assertTrue("...and rolls nothing, as it was played", back[0].getRolloverMode() == Rollover.Mode.MANUAL);
 
-        // R1d: a city founded the 1900 way has its central bank shut at the founding, so the rule waits for it.
+        // R1d: the founding screen's own city as it opens, the 1900 way: its central bank is shut, so the rule waits for it.
+        Founding opened = Founding.named("Arden", Founding.Preset.LEAN, WorldEconomy.DEFAULT_MEAN_INFLATION).withUnfitted(true);
         Game old = new Game(files);
-        quietly(() -> old.newGame());
-        assertTrue("fixture: a city founded on the defaults is founded the 1900 way", old.foundedUnfitted());
-        assertTrue("a 1900 city founded on the defaults: the bank is closed, so the dial is nobody's yet and the rule waits for it",
+        quietly(() -> old.newGame(opened));
+        assertTrue("fixture: the founding screen's city founded the 1900 way, as the screen opens", old.foundedUnfitted());
+        assertTrue("a 1900 city: the bank is closed, so the dial is nobody's yet and the rule waits for it",
                 !old.getDebtManager().isAutopilot() && old.getDebtManager().isAutopilotAtOpening());
         assertTrue("...and it rolls in the same structure", old.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);
         assertTrue("saved", old.saveGame(10, "a rule waiting for its bank").ok);
@@ -1129,7 +1127,7 @@ public class NewGameCheck {
                 old.getDebtManager().isAutopilot() && !old.getDebtManager().isAutopilotAtOpening());
 
         Game handed = new Game(files);
-        quietly(() -> handed.newGame());
+        quietly(() -> handed.newGame(opened));
         handed.getDebtManager().hearMoneyMonth(PolicyDates.openingMonth(PolicyDates.Lever.POLICY_RATE), false);
         handed.getDebtManager().takeTheDial(.04);
         assertTrue("fixture: the Advance Rate is open and the player's hand took the dial at 4%",

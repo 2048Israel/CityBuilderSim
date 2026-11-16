@@ -880,7 +880,7 @@ public class DiscoveryCheck {
     static Game cityWithSchools(String label, boolean the1900Way, boolean lawSchool) {
         FittingCheck.quiet = quiet;
         EquipmentCheck.quiet = quiet;
-        Game g = FittingCheck.village(label, the1900Way ? Founding.defaults().withUnfitted(true) : Founding.defaults().withUnfitted(false), false, false);
+        Game g = FittingCheck.village(label, the1900Way ? Founding.defaults().withUnfitted(true) : Founding.defaults(), false, false);
         quietly(() -> {
             BuildingManager b = g.getBuildingManager();
             g.buildStack(b.getTemplateByName("University"), 1, true);

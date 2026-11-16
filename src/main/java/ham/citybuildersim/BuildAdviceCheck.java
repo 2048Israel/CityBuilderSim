@@ -150,7 +150,7 @@ public class BuildAdviceCheck {
     /** ...without the buildings named in `without` (section 9: the short city with no university). */
     static Game shortCity(Path root, String name, boolean onSiteClinic, Set<String> without) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
-        Game g = new Game(files, Founding.defaults().withUnfitted(false));   // R1d: today's city, as before 1900 became the default: its Industrial Bakery and Walk-in Clinic are researched after 1900
+        Game g = new Game(files);
         quietly(() -> {
             g.run();
             // THE LEVERS OPENED IN THE FIXTURE (R0): this city is calibrated as the pre-R0 city played it (every lever open from month 1),
@@ -191,7 +191,7 @@ public class BuildAdviceCheck {
      */
     static Game servedCity(Path root, String name) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
-        Game g = new Game(files, Founding.defaults().withUnfitted(false));   // R1d: today's city, as before 1900 became the default: its Bus Network, Light Rail Line and Walk-in Clinic are researched after 1900
+        Game g = new Game(files);
         quietly(() -> {
             g.run();
             g.setCashForTest(Founding.WEALTHY_CASH);
@@ -1203,7 +1203,7 @@ public class BuildAdviceCheck {
 
     /** The default playtest's founding (LongPlaytest's own: Standard, its first houses, shops and fields), played to `month`. */
     static Game founded(Path root, String name, int month) {
-        Game g = new Game(new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy")), LongPlaytest.founding().withUnfitted(false));   // R1d: today's playtest city, whose month-9 classes section 9 reads (a 1900 city sends none to a university by then)
+        Game g = new Game(new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy")), LongPlaytest.founding());
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
         try {

@@ -151,7 +151,7 @@ public class ChildcareCheck {
      */
     static Game town(Path root, String name, int k) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
-        Game g = new Game(files, Founding.defaults().withUnfitted(false)); // cause the calibrated care/automatic-building fixture on its existing wages and equipment
+        Game g = new Game(files);
         quietly(() -> {
             g.run();
             // Its callers (AutoBuildCheck, AuctionCheck, HydroCheck) need a town whose automatic builder orders in its months; on history's

@@ -1047,7 +1047,7 @@ public class Game {
          * On the defaults (0.7.10), because the save carries its own founding
          * and loadGame() puts it back - an old save's as Founding.legacy().
          */
-        buildWorld(Founding.defaults().withUnfitted(false)); // neutral load scaffold; the saved flag and recipes are restored below (R1d)
+        buildWorld(Founding.defaults());
 
         // buildWorld() made a new BuildingManager, so the templates have to be
         // reloaded into it - and initialize() is guarded, so the flag has to
@@ -1243,11 +1243,11 @@ public class Game {
     /* ===== THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6) =====
      *
      * R1 made a piece of equipment a count of the buildings still without it, empty in every played city: a building that finishes came
-     * fitted. A city founded the 1900 way (Founding.isUnfitted(), off by default until R1d) starts with every piece its buildings can carry
+     * fitted. A city founded the 1900 way (Founding.isUnfitted(): the founding screen's "1900" chip and the playtest's flag since R1d) starts with every piece its buildings can carry
      * unfitted, and a building that finishes in it comes with a piece only where the piece pays for a new building. A city founded the
      * default way calls nothing here: every building finishes fitted, as it did. */
 
-    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): true for new cities since R1d, with an explicit all-fitted alternative. */
+    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): the founding screen's "1900" chip and the playtest's flag since R1d. */
     public boolean foundedUnfitted() { return founding.isUnfitted(); }
 
     /**

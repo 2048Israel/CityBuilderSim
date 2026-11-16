@@ -408,7 +408,7 @@ public class CurrencyRegimeCheck {
     static void leanIsTodaysFloat() {
         out.println("--- 0. Lean is today's float, to the cent ---");
 
-        Founding standard = Founding.defaults().withUnfitted(false);   // the player's regimes: a 1900 city has none to choose before 1935 (R0f)
+        Founding standard = Founding.defaults();
         Game plain = town("xr2-lean-plain", standard);
         Game twin = town("xr2-lean-twin", standard);
         quietly(() -> {
@@ -591,8 +591,7 @@ public class CurrencyRegimeCheck {
      * year held, with no draw in it: the same world whatever the key. A fixture causes its condition; the assertions' premises stand.
      */
     static Founding steady() {
-        // ...and founded with today's money (R1d): the regimes here are the player's choice, which a city founded the 1900 way has only from 1935 (R0f).
-        return Founding.defaults().withUnfitted(false).withPath(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
+        return Founding.defaults().withPath(Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
     }
 
     /**
@@ -1333,7 +1332,7 @@ public class CurrencyRegimeCheck {
         out.println("\n--- 7. under a peg the dial is the US's rate plus the spread; the aim ---");
 
         // Two depots stand beside the four ordered (PT1-M4): see town(); without them the price index has no rate at month 60.
-        Game g = town("xr2-dial", Founding.defaults().withUnfitted(false), 2);   // the player's dial and regimes, open from the founding (R1d)
+        Game g = town("xr2-dial", Founding.defaults(), 2);
         play(g, 60);
         ForeignAccounts fx = g.getForeignAccounts();
         DebtManager dm = g.getDebtManager();
@@ -1836,7 +1835,7 @@ public class CurrencyRegimeCheck {
     static void aRealRun() {
         out.println("\n--- 11. a real run, counted ---");
 
-        Game g = town("xr2-run", Founding.defaults().withUnfitted(false));   // the player's regimes, open from the founding (R1d)
+        Game g = town("xr2-run", Founding.defaults());
         quietly(() -> g.setCurrencyRegime(PEG));
         ForeignAccounts fx = g.getForeignAccounts();
         CapitalFlows hot = g.getCapitalFlows();
@@ -2586,7 +2585,7 @@ public class CurrencyRegimeCheck {
     /** A real player-chosen peg carrying nonzero support and a large unpaid purchase, for save/read checks (XR7). */
     static Game supportedTown(String label) {
         if (quiet == null) quiet = new PrintStream(OutputStream.nullOutputStream());
-        Game city = town(label, Founding.defaults().withUnfitted(false), 2); // this fixture needs a live chosen peg, not the historical gold rule
+        Game city = town(label, Founding.defaults(), 2);
         play(city, 60);
         ForeignAccounts fx = city.getForeignAccounts();
         double annual = 12 * fx.getGdpTrailing();

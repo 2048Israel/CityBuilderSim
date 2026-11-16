@@ -181,7 +181,7 @@ public class RoadCheck {
     /** ...or on `n` roads of another kind: three Paved Roads carry what the four gravel roads do, and leave nothing to pave. */
     static Game town(Path root, String name, String road, int n) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
-        Game g = new Game(files, Founding.defaults().withUnfitted(false));   // R1d: today's town, as before 1900 became the default: its streets' traffic and the care plans WorksFinanceCheck builds on it are today's
+        Game g = new Game(files);
         // R0b call 7: the causes of 1900 held off, before a month. The gravel town's busy street is calibrated at the traffic today's deaths
         // leave (section 9 needs the paving to beat a new Paved Road); on 1900's causes it carried 379 vehicles a day on its 5 gravel roads
         // and the advice's first road move was a new gravel road, where the player's paved one.

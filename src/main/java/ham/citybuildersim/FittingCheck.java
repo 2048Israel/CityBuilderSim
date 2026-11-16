@@ -24,7 +24,7 @@ import java.util.Set;
  *      and the shares equal to the bit
  *   2. CLEARED ON A NEW GAME AND ON A LOAD: a Game with counts drives forms; a save with no counts loaded into it drives the same as the same
  *      save loaded into a fresh Game; clear() forgets what was driven; a new game on the same object drives none and has every share at 0
- *   3. THE 1900 FOUNDING, OFF BY DEFAULT: Founding.defaults().withUnfitted(false) is not unfitted and a default founding unfits nothing; a founding withUnfitted(true)
+ *   3. THE 1900 FOUNDING, OFF BY DEFAULT: Founding.defaults() is not unfitted and a default founding unfits nothing; a founding withUnfitted(true)
  *      is, every other choice kept through every withX, saved with the founding (a default city writes no key) and read back; the buildings it
  *      stands up are unfitted for every piece their templates carry (the tractor's too), the forms set from them before the first press, and
  *      the flag and the counts come back after a save and a load. The founding Bank has its B1/B3 pieces wholly unfitted (R2e),
@@ -245,12 +245,12 @@ public class FittingCheck {
         check("clear() forgets which shares were driven", g.getEquipmentForms().driven().isEmpty(), g.getEquipmentForms().driven().toString());
         step(g, 1);
         check("fixture: the counts drive them again from the next month", !g.getEquipmentForms().driven().isEmpty());
-        quietly(() -> g.newGame(Founding.defaults().withUnfitted(false)));
+        quietly(() -> g.newGame(Founding.defaults()));
         check("a new game on the same object drives none", g.getEquipmentForms().driven().isEmpty(), g.getEquipmentForms().driven().toString());
         check("...with every steam share and the horse shares at 0", EquipmentCheck.maxSteam(g) == 0 && g.getSectors().agriculture().getHorseShare() == 0
                 && g.getSectors().freight().haulage().getHorseShare() == 0 && !EquipmentCheck.anyUnfitted(g), shares(g));
         Game founded = new Game(GameFiles.scratch("fitting-cleared-fresh"));
-        quietly(() -> founded.newGame(Founding.defaults().withUnfitted(false)));
+        quietly(() -> founded.newGame(Founding.defaults()));
         check("...as a fresh Game's new game has", shares(g).equals(shares(founded)) && founded.getEquipmentForms().driven().equals(g.getEquipmentForms().driven()));
     }
 
@@ -298,17 +298,17 @@ public class FittingCheck {
     }
 
     static void sectionThree() throws Exception {
-        out.println("\n--- 3. the 1900 founding, now the default: the flag, its copies, its save, and the buildings the founding stands up ---");
-        Founding historical = Founding.defaults();
-        check("Founding.defaults() starts the 1900 city", historical.isUnfitted());
-        boolean everyPreset = true;
-        for (Founding.Preset p : Founding.Preset.values())
-            if (p != Founding.Preset.CUSTOM) everyPreset &= Founding.named("Danzik", p, historical.getMeanInflation()).isUnfitted();
-        check("every new preset and custom city starts in 1900; legacy saves keep their fitted founding", everyPreset
-                && Founding.custom("Danzik", Founding.MIN_CASH, 0, historical.getMeanInflation()).isUnfitted()
-                && !Founding.legacy(historical.getMeanInflation()).isUnfitted());
-        // The all-fitted alternative must still round-trip and leave the historical counts behind.
-        Founding def = historical.withUnfitted(false);
+        out.println("\n--- 3. the 1900 founding, off by default: the flag, its copies, its save, and the buildings the founding stands up ---");
+        Founding def = Founding.defaults();
+        check("Founding.defaults() is not founded the 1900 way", !def.isUnfitted());
+        boolean noPreset = true;
+        for (Founding.Preset p : Founding.Preset.values()) if (p != Founding.Preset.CUSTOM && Founding.named("Danzik", p, def.getMeanInflation()).isUnfitted()) noPreset = false;
+        check("...nor is any preset, a custom founding, the legacy one, nor the bare constructors'", noPreset
+                && !Founding.custom("Danzik", Founding.MIN_CASH, 0, def.getMeanInflation()).isUnfitted()
+                && !Founding.legacy(def.getMeanInflation()).isUnfitted()
+                && !new Founding("Danzik", Currency.DANZIK, Founding.MIN_CASH, 0, def.getMeanInflation()).isUnfitted()
+                && !new Founding("Danzik", Currency.DANZIK, Founding.MIN_CASH, 0, def.getMeanInflation(), 99).isUnfitted());
+
         Founding wanted = def.withUnfitted(true);
         check("withUnfitted(true) is founded the 1900 way, and withUnfitted(false) of it is not", wanted.isUnfitted() && !wanted.withUnfitted(false).isUnfitted());
         check("...keeping every other choice: the name, the money, the treasury, the vault, the inflation, the world and the path",
@@ -454,7 +454,7 @@ public class FittingCheck {
     }
 
     static void newBuildings(String label, boolean unfittedCity, int which) {
-        Game g = builtVillage(label, unfittedCity ? Founding.defaults().withUnfitted(true) : Founding.defaults().withUnfitted(false));
+        Game g = builtVillage(label, unfittedCity ? Founding.defaults().withUnfitted(true) : Founding.defaults());
         String what = unfittedCity ? "a city founded the 1900 way" : "a default city";
         check("fixture: " + what + " is " + (unfittedCity ? "" : "not ") + "founded the 1900 way, with nothing unfitted and Industry and Agriculture held",
                 g.foundedUnfitted() == unfittedCity && !EquipmentCheck.anyUnfitted(g)
@@ -562,7 +562,7 @@ public class FittingCheck {
      * held: it may order, as it does in a played city.
      */
     static Game fitTown(String label, int unfitted) {
-        Game g = village(label, Founding.defaults().withUnfitted(false), true, false);
+        Game g = village(label, Founding.defaults(), true, false);
         quietly(() -> {
             g.buildStack(g.getBuildingManager().getTemplateByName("Construction Depot"), 4, true);
             g.simulateMonths(Forms1900Check.SETTLE);
@@ -1269,7 +1269,7 @@ public class FittingCheck {
     /** R1d: the power restriction belongs to the electric share, and the tractor buys more than a fuel invoice. */
     static void steamAndTractor() {
         out.println("\n--- 15. steam survives a grid brownout; a tractor earns back horse feed and hands ---");
-        Game g = village("fitting-historical-gains", Founding.defaults(), true, false);
+        Game g = village("fitting-historical-gains", Founding.defaults().withUnfitted(true), true, false);
         g.unfitTheFounding();
         Sector industry = g.getSectors().industry();
         industry.setEnergyRatio(1);
@@ -1302,7 +1302,7 @@ public class FittingCheck {
     /** An opened sales tax is a caused premise, and its capital credit must actually reach the owner (R1d). */
     static void taxedFitting() {
         out.println("\n--- 16. a fitting quotes sales tax and credits the owner's capital purchase ---");
-        Game g = village("fitting-vat", Founding.defaults().withUnfitted(false), true, false);
+        Game g = village("fitting-vat", Founding.defaults(), true, false);
         holdAll(g);
         g.getEconomyManager().getTaxPolicy().reset();
         g.getEconomyManager().getTaxPolicy().openAll();
@@ -1341,7 +1341,7 @@ public class FittingCheck {
     /** R1d review: compare one real fitted tractor against mixed-stack Agriculture at its world date. */
     static void mixedFarmTractor() throws Exception {
         out.println("\n--- 17. one tractor in mixed farm stacks earns the actual sector savings; PE14 is free in the catalogue ---");
-        Game g = village("fitting-mixed-tractor", Founding.defaults(), true, false);
+        Game g = village("fitting-mixed-tractor", Founding.defaults().withUnfitted(true), true, false);
         holdAll(g);
         g.unfitTheFounding();
         java.lang.reflect.Field clock = Game.class.getDeclaredField("month");
