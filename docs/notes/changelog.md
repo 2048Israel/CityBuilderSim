@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### R6-T — the speculative tier 2030-2060, a study — 2026-11-16, ready, no tag (docs)
+`docs/studies/research-speculative.md`: the research catalogue past the evidence (Jerus, 2026-11-09: "Keep to
+2060"), each row on a builder's, a government's or a trial's own target for its date and its effect, projected
+and held in R6b's window. Eight rows, all 2030-2035: the tuberculosis vaccine, the sodium reactor with heat
+storage, driverless field work, the 30% tandem module, electrolysis at 46 kWh a kilogram, the fusion plant,
+superhot rock geothermal and power from orbit. The record runs out about 2035, and business and law give no row.
+The slip allowance is staged by what had been shown: +1 being built, +3 shown but not building, +5 with the
+deciding test unread. Four calls, each recommended (R6-T-K); R6d queued for FE8 and FE10; the other six rows wait
+on PW2-PW4, FE3's batch and R2f (R6-T-P). Docs only: no row in research.json, and the trace is main's. See
+docs/queue/R6-T-notes.md.
+
 ### 0.9.126 — R1d, Research: the 1900 city switched on, with R0d's 1901 wages — 2026-11-16, ready, see docs/queue/R1d-notes.md
 The founding screen offers a 1900 city beside "All fitted", and opens on All fitted: research known as of 1900, the known
 equipment unfitted, 1901's wages, the dated arrivals, basket, money and licences. The playtest plays it under
