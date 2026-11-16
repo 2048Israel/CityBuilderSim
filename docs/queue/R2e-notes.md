@@ -593,3 +593,21 @@ has exactly its existing sector-filter failure,1 of217, and no added red.
 The failed full-run logs remain retained, and the mended logs are
 ResearchPreviewCheck-mended.log and ResearchViewCheck-mended.log in
 target/R2e-evidence. No new red is covered or transferred.
+
+## PD1b merge and final named readers
+
+Mail001937 grants the next launcher run after main a316d19b (PD1b,0.9.122).
+The merge accepts its Game comment and OilCheck changes unchanged. Its
+published trace comparison also matches R0h, which remains the supplied
+reference. Generated harness/index conflicts are regenerated.
+
+The merged fast rebuild and eighteen sequential named readers pass with
+only ResearchViewCheck's existing sector-filter line,1 of217. Postwar210,
+Preview94 and the fifteen other direct readers exit0. The final merged
+logs are in target/R2e-evidence/final-main and focused/readers.log.
+The incoming strengthened OilCheck is also run before the launcher.
+
+The incoming strengthened OilCheck also passes unchanged, including its
+rebuilt load-path probe and positive lamp-oil/coal footing. All nineteen
+named readers therefore finish with only the existing View sector-filter
+line. The merged compile takes49s and Stale reports zero firm findings.

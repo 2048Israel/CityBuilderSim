@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.122 — PD1b, PD1's review follow-ups (the drivers' petrol, OilCheck 20) — 2026-11-16, ready, see docs/queue/PD1b-notes.md
+
+OilCheck reads rebuilt shopping and fuel before the saved household statement
+overwrites them, and a missing-petrol control proves the comparison detects a
+mismatch. Its footing includes the homes' lamp oil and coal, exercised with a
+nonzero bill. Game's comment explains the saved Motoring bill's month offset;
+the model and the month's order are unchanged.
+The normal launcher dry run passed (exit 0; --pick exit 3, known reds only).
+All eight default trace CSVs match R0h's reference byte for byte.
+
 ### 0.9.121 — R0h, The 1918 influenza's sick counted once — 2026-11-15, ready, see docs/queue/R0h-notes.md
 The influenza's acute sick now stay beside the long-sickness ring, so they are
 counted in People's sick by age and Services' youngest sick bar while only the

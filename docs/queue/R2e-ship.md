@@ -1,7 +1,7 @@
 <!-- readiness: provisional -->
 
 ## changelog
-### {next} — R2e, Research: the 1951-2000 entries undone — 2026-11-15, ready, see docs/queue/R2e-notes.md
+### {next} — R2e, Research: the 1951-2000 entries undone — 2026-11-16, ready, see docs/queue/R2e-notes.md
 The postwar engineering and business catalogue now removes 27 sourced changes
 from unfitted templates, with independent fitting, saved process decisions and
 exact modern destination figures. Completion fitting selects one paying

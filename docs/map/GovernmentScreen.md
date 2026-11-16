@@ -1,6 +1,6 @@
 # GovernmentScreen.java - 2,788 lines · 120 methods · 42 constants · interface
 
-`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/GovernmentScreen.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > The government tab: where the city's money came from and went, the road
 > from what it EARNED through the budget's SURPLUS to what the cash BANKED,

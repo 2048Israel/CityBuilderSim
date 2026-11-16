@@ -1,6 +1,6 @@
 # CausesOfDeath.java - 606 lines · 30 methods · 25 constants · model
 
-`ham/citybuildersim/CausesOfDeath.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CausesOfDeath.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > The causes of death of 1900, and how history and the city take them away.
 > 

@@ -1,6 +1,6 @@
 # RecipeChange.java - 68 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/RecipeChange.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RecipeChange.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > One discovery's signed undo, relative to a template's immutable modern figures.
 > 

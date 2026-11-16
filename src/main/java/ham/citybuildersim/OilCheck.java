@@ -809,6 +809,11 @@ public class OilCheck {
         return Math.abs(a - b) <= 1e-9 * Math.max(Math.abs(a), Math.abs(b));
     }
 
+    /** The load's rebuilt totals, read before the saved household statement replaces them. */
+    static boolean rebuiltLinesAgree(double[] rebuilt, double shopping, double fuel) {
+        return near(rebuilt[0], shopping) && near(rebuilt[1], fuel);
+    }
+
     /**
      * R0c's review found the drivers' petrol in two lines of the households'
      * books: Retail books each litre as a sale of PETROL to the households,
@@ -843,7 +848,7 @@ public class OilCheck {
 
         double petrol = petrolAtHome(pump);
         double salesToHouseholds = pump.statement().salesToHouseholds;
-        double homeFuel = g.getHomeFuel().getBill();
+        double homeFuel = hb.getHomeFuel();
         report("fixture: the drivers bought petrol at the pump, in the grocers' book and in the households' fuel line",
                 bill > 0 && petrol > 0 && hb.getFuel() > 0,
                 String.format("%d months, petrol sold $%,.6fk, the fuel line $%,.6fk", months[0], petrol, hb.getFuel()));
@@ -856,8 +861,8 @@ public class OilCheck {
         report("the households' shopping is the grocers' sales to them less the petrol (and less the homes' lamp oil and coal)",
                 near(shopping, expected),
                 String.format("$%,.6fk against $%,.6fk, over by $%,.6fk (the petrol $%,.6fk)", shopping, expected, shopping - expected, petrol));
-        double lines = shopping + hb.getFuel(), took = salesToHouseholds + duty;
-        report("...so the shopping and the fuel line foot to who took the money: the grocers' sales to the households and the treasury's duty",
+        double lines = shopping + hb.getFuel() + homeFuel, took = salesToHouseholds + duty;
+        report("...so shopping, drivers' fuel and home fuel foot to who took the money: the grocers' sales to the households and the treasury's duty",
                 near(lines, took),
                 String.format("$%,.6fk against $%,.6fk, over by $%,.6fk (the petrol $%,.6fk)", lines, took, lines - took, petrol));
 
@@ -871,16 +876,61 @@ public class OilCheck {
         report("the rows' shopping add to the shopping, and each row's fees settled hold its fuel: the cells pay the petrol once, in their fees",
                 near(rows, shopping) && fees, String.format("rows $%,.6fk of $%,.6fk", rows, shopping));
 
-        // Across a save: the load path strikes the same books.
+        // Across a save: capture the rebuild through the load's existing refresh seam, before restoreStatement can hide it.
+        // Retail's statement and the saved households' shopping are the same month; the saved Motoring bill is the next month's.
         GameFiles files = FILES.get(g);
         quietly(() -> g.saveGame(10, "petrol-once"));
-        Game twin = new Game(files);
+        double savedBill = mo.getFuelBill();
+        double[] rebuilt = { Double.NaN, Double.NaN };
+        Game twin = new Game(files) {
+            @Override void refreshHouseholdAccounts() {
+                super.refreshHouseholdAccounts();
+                rebuilt[0] = getHouseholds().getShopping();
+                rebuilt[1] = getHouseholds().getFuel();
+            }
+        };
         quietly(() -> twin.loadGameSave(10));
-        report("the load path agrees: a twin loaded from the save reads the same shopping and the same fuel line",
-                twin.getLoadFailure() == null && near(twin.getHouseholds().getShopping(), shopping) && near(twin.getHouseholds().getFuel(), hb.getFuel()),
-                String.format("shopping $%,.6fk against $%,.6fk, fuel $%,.6fk against $%,.6fk", twin.getHouseholds().getShopping(), shopping,
-                        twin.getHouseholds().getFuel(), hb.getFuel()));
+        report("the load path rebuilds the saved shopping and Motoring's saved bill before restoring the households' statement",
+                twin.getLoadFailure() == null && rebuiltLinesAgree(rebuilt, shopping, savedBill),
+                String.format("shopping $%,.6fk against $%,.6fk, rebuilt fuel $%,.6fk against saved bill $%,.6fk",
+                        rebuilt[0], shopping, rebuilt[1], savedBill));
+        report("...then restores the saved household lines: their fuel is a month behind Motoring's bill in this fixture",
+                !near(savedBill, hb.getFuel()) && near(twin.getHouseholds().getShopping(), shopping) && near(twin.getHouseholds().getFuel(), hb.getFuel()),
+                String.format("household fuel $%,.6fk against saved $%,.6fk, Motoring $%,.6fk", twin.getHouseholds().getFuel(), hb.getFuel(), savedBill));
+
+        // Negative control: the saved households still carry their real shopping, but Retail's petrol detail is missing.
+        // The old post-restore check passes this broken save; the same rebuilt comparison above must reject it, by exactly the petrol.
+        Sector.Split petrolSale = pump.statement().sold.remove(Good.PETROL);
+        try {
+            quietly(() -> g.saveGame(10, "missing-petrol-control"));
+        } finally {
+            if (petrolSale != null) pump.statement().sold.put(Good.PETROL, petrolSale);
+        }
+        rebuilt[0] = rebuilt[1] = Double.NaN;
+        quietly(() -> twin.loadGameSave(10));
+        report("fixture: missing saved petrol detail leaves the restored household lines unchanged but raises rebuilt shopping by the petrol",
+                twin.getLoadFailure() == null && near(twin.getHouseholds().getShopping(), shopping) && near(twin.getHouseholds().getFuel(), hb.getFuel())
+                        && near(rebuilt[0] - shopping, petrol) && near(rebuilt[1], savedBill),
+                String.format("rebuilt shopping $%,.6fk, saved $%,.6fk, gap $%,.6fk, petrol $%,.6fk", rebuilt[0], shopping, rebuilt[0] - shopping, petrol));
+        report("...and the load-path comparison rejects that mismatch before the saved statement masks it",
+                !rebuiltLinesAgree(rebuilt, shopping, savedBill), "missing petrol detail, same comparison as the intact save");
         report("...and the audit closed in those months", worst < 1e-10, String.format("worst %.2e", worst));
+
+        // The footing must also work when the homes pay for both lamp oil and coal, not only while that line is zero.
+        HomeFuel homes = g.getHomeFuel();
+        homes.setLampShare(1);
+        homes.setCoalShare(1);
+        quietly(() -> g.simulateMonths(1));
+        double homeBill = homes.getBill(), lampOil = homes.getLitres(), coal = homes.getTonnes();
+        duty = pump.getFuelDuty();
+        quietly(() -> g.simulateMonths(1));
+        report("fixture: the homes bought lamp oil and coal, and the households pay that sale's bill a month later",
+                lampOil > 0 && coal > 0 && homeBill > 0 && near(hb.getHomeFuel(), homeBill),
+                String.format("lamp oil %,.6f L, coal %,.6f t, bill $%,.6fk, household line $%,.6fk", lampOil, coal, homeBill, hb.getHomeFuel()));
+        lines = hb.getShopping() + hb.getFuel() + hb.getHomeFuel();
+        took = pump.statement().salesToHouseholds + duty;
+        report("shopping, drivers' fuel and nonzero home fuel foot to the grocers' sales and the treasury's duty",
+                near(lines, took), String.format("$%,.6fk against $%,.6fk, home fuel $%,.6fk", lines, took, hb.getHomeFuel()));
     }
 
     /* ============================ 13. THE PHASE-1 BUYERS (0.7.83) ============================ */
