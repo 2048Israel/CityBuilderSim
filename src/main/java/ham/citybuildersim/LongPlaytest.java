@@ -6369,6 +6369,9 @@ public class LongPlaytest {
         return build(g, name, quantity);
     }
 
+    /** The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. */
+    static final String[] COPPER_WORKS = {"Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill", "Wire & Cable Works"};
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -8055,6 +8058,12 @@ public class LongPlaytest {
                     credit.getBlockedMonths(sector),
                     streaks.getOrDefault(sector, 0));
         }
+
+        // CU2: the copper works standing at the end, by name (spec-world-prices.md 5: main's seeds 1-3 stood 363 to 446 Rod Mills at m2400 on
+        // rod priced apart from its cathode); CopperRefiningCheck's played count reads this line
+        BuildingManager works = g.getBuildingManager();
+        out.printf("  copper works at the end: %s%n", String.join(", ", java.util.Arrays.stream(COPPER_WORKS)
+                .map(name -> name + " " + works.countByName(name)).toList()));
 
         out.println("\n--- what the advisor tried, and what happened ---\n");
         refusals.entrySet().stream()
