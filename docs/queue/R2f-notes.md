@@ -159,3 +159,9 @@ it finds the rows itself.
   milk's step on TB forward: the factor in the month played is below 1".
   The 164 that stayed green are the default city, the no-find twins and the
   mapping table, which the skip leaves true.
+- **The trace** (the default playtest with `-Dplaytest.trace`, 2,400
+  months, all checks passed, at f6f1a90bd): the eight CSVs (bank, bonds,
+  borrow, build, house, labour, month, pop) are byte-identical to the gate's
+  `cbs-gate-R0h-NrRv6F33/traces/` (2,405 lines each, borrow 55). Size of the
+  move: none, as designed (a default city is `MedicalRows.TODAY`, and every
+  new path falls back to main's arithmetic), so no ensemble.
