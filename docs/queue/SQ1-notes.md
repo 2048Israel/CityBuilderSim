@@ -142,4 +142,10 @@ three were the widening, one was main's.
 `tools/known-reds.sh` reads that row as a malformed record (its third field has a space) and `batch-check.sh` stops
 with "malformed known-reds row" and exit 1. This ship file has the rows only.
 
+**The stranger's review (a saved field changed type, so it came before the dry run).** REV-SQ1-1 (Opus): SHIP, no
+findings, two notes, both queued in the ship file as SQ1b: (1) `Game.drawMaterials`' `(int) Math.round(units)`
+(Game.java:9318, main's) wraps a month's draw of material past 2^31 units at ten-billion scale; (2) `Game.buildStack`
+(its quote, its land, its finance) has no harness past 2^31: BuildingStackCheck section 6 orders through
+`BuildingManager.addStack`. The process fault above is queued as KR1.
+
 **The dry run.** (filled when it has run)
