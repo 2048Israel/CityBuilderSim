@@ -149,7 +149,7 @@ public final class OldMetal {
     }
 
     /** `n` of a building pulled down, its steel - and since 0.7.133 its copper - its owner's (`owner`, a sector's key). */
-    public void demolished(BuildingsTemplate t, int n, String owner) {
+    public void demolished(BuildingsTemplate t, long n, String owner) {
         if (t == null || n <= 0) return;
         arise(Source.DEMOLITIONS, owner, t.getConstructionMaterials() * (double) n * STEEL_A_MATERIALS_UNIT);
         copper.arise(Source.DEMOLITIONS, owner, t.getConstructionMaterials() * (double) n * COPPER_A_MATERIALS_UNIT);

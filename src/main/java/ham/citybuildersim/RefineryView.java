@@ -92,7 +92,7 @@ public final class RefineryView {
      * @param tonnes tonnes of the month's run credited to it: the run times its share of what was bought (★ O11-2)
      * @param grades its crude's grades, each one's share in Deposit.Grade's order
      */
-    public record Source(SourceKind kind, int count, double bought, double tonnes, double[] grades) {
+    public record Source(SourceKind kind, long count, double bought, double tonnes, double[] grades) {
         /** The run's litres credited to it. */
         public double litres() { return tonnes * Refining.CRUDE_LITRES_PER_TONNE; }
     }
@@ -111,7 +111,7 @@ public final class RefineryView {
      * @param gate       one more of its kind weighed by the planner: the size that passes and earns most on its cost, or the
      *                   smallest's refusal; null with no template
      */
-    public record Unit(Kind kind, int standing, int onSite, double feed, double run, double share, double spread,
+    public record Unit(Kind kind, long standing, long onSite, double feed, double run, double share, double spread,
                        double citySpread, SpreadPlanner.Candidate gate) {
         /** Whether it stood and took nothing: no feed spare, or a spread of nothing or less - or, since 0.7.105, a month the crude units ran nothing (Refining's THE RUN), which the picture does not draw. */
         public boolean idle() { return standing > 0 && Double.isFinite(run) && !(run > 0); }
@@ -201,7 +201,7 @@ public final class RefineryView {
      *                   counted, else the one the next month will run - already in `rate`
      * @param run        why it runs what it runs: the run's verdict on the month's prices (Refining.runVerdict())
      */
-    public record View(boolean standing, boolean counted, int crudeUnits, double rate, RefineryFlow.Flow flow,
+    public record View(boolean standing, boolean counted, long crudeUnits, double rate, RefineryFlow.Flow flow,
                        double[] mix, List<Source> sources, List<Unit> units, List<Product> products,
                        List<Buyer> buyers, List<Link> links, double burned, double runShare, Refining.RunVerdict run) {
 
@@ -242,13 +242,13 @@ public final class RefineryView {
     public static View of(Game game) {
         Refining r = game.getSectors().refining();
         BuildingManager b = game.getBuildingManager();
-        int crudeUnits = 0;
-        int[] standing = new int[Kind.values().length], onSite = new int[Kind.values().length];
+        long crudeUnits = 0;
+        long[] standing = new long[Kind.values().length], onSite = new long[Kind.values().length];
         Map<Kind, List<BuildingsTemplate>> templates = new EnumMap<>(Kind.class);
         for (BuildingsTemplate t : b.getTemplatesBySector(Sectors.REFINING)) {
-            int q = b.getQuantity(t.getId());
+            long q = b.getQuantity(t.getId());
             BuildingsStacks stack = b.getStack(t);
-            int site = stack == null ? 0 : stack.getUnderConstruction();
+            long site = stack == null ? 0 : stack.getUnderConstruction();
             if (Refining.isCrudeUnit(t)) crudeUnits += q;
             else if (Refining.isConversionUnit(t)) {
                 Kind k = t.refineryUnit();
@@ -399,7 +399,7 @@ public final class RefineryView {
                 Collections.unmodifiableList(buyers), trace(flow, rate), flow.burned() * rate, runShare, verdict);
     }
 
-    private static void addSource(List<Source> to, SourceKind kind, int count, double bought, double tonnes, double[] grades) {
+    private static void addSource(List<Source> to, SourceKind kind, long count, double bought, double tonnes, double[] grades) {
         if (bought > 0) to.add(new Source(kind, count, bought, tonnes, grades.clone()));
     }
 

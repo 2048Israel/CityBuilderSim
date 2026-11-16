@@ -79,7 +79,7 @@ public final class EssentialWorksCheck {
                         || BuildAdvice.maintained(g, m, Map.of(), BuildAdvice.NOW)) continue;
                 for (BuildingsTemplate t : bm.getTemplates()) {
                     if (!m.serves(t) || !(BuildAdvice.unit(g, m, t) > 0) || t.isHydro()) continue;
-                    int count = BuildAdvice.count(g, m, Map.of(), Map.of(t, 1),
+                    long count = BuildAdvice.count(g, m, Map.of(), Map.of(t, 1L),
                             BuildAdvice.NOW, BuildAdvice.MOST, true)[0];
                     if (count > 0) quietly(() -> g.buildStack(t, count, true));
                     break;
@@ -149,7 +149,7 @@ public final class EssentialWorksCheck {
         Game g = town(root, "schools-police");
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (t.getTeaches() == EducationType.NONE && t.getSafety() != SafetyType.POLICE) continue;
-            int n = g.getBuildingManager().getQuantity(t.getId());
+            long n = g.getBuildingManager().getQuantity(t.getId());
             if (n > 0) quietly(() -> g.getBuildingManager().retire(t, n));
         }
         quietly(() -> g.simulateMonths(1));
@@ -195,7 +195,7 @@ public final class EssentialWorksCheck {
                         .anyMatch(s -> s.statement().revenue > s.statement().inputs));
         WorksValue.Value value = WorksValue.of(g, power, Map.of(), coal, 1, g.getLandManager().getAvailableSqFt());
         check("a plant that relieves rationing prevents a positive output loss", value.avoided() > 0);
-        double already = WorksValue.avoided(g, power, Map.of(coal, 1000), Map.of(coal, 1), 0);
+        double already = WorksValue.avoided(g, power, Map.of(coal, 1000L), Map.of(coal, 1L), 0);
         check("a plant beyond all the horizon's demand claims no prevented rationing loss", already == 0);
         check("the card exposes the same component sum, including land, prevented output and payroll",
                 BuildCard.worksValue(g, coal, power).words().contains("prevented output loss")
@@ -216,7 +216,7 @@ public final class EssentialWorksCheck {
     static void serveStreets(Game g) {
         BuildAdvice.Measure streets = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
         BuildingsTemplate paved = g.getBuildingManager().getTemplateByName("Paved Road");
-        int[] n = BuildAdvice.count(g, streets, Map.of(), Map.of(paved, 1),
+        long[] n = BuildAdvice.count(g, streets, Map.of(), Map.of(paved, 1L),
                 g.getAutoBuilder().target(), BuildAdvice.MOST, true);
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
@@ -264,7 +264,7 @@ public final class EssentialWorksCheck {
         BuildAdvice.Measure m = BuildAdvice.Measure.school(type);
         BuildingManager bm = g.getBuildingManager();
         for (BuildingsTemplate t : bm.getTemplates()) if (t.getTeaches() == type) {
-            int n = bm.getQuantity(t.getId());
+            long n = bm.getQuantity(t.getId());
             if (n > 0) quietly(() -> bm.retire(t, n));
         }
         g.setCashForTest(1e12);
@@ -350,7 +350,7 @@ public final class EssentialWorksCheck {
         BuildingManager bm = g.getBuildingManager();
         BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
         for (BuildingsTemplate t : bm.getTemplates()) {
-            int n = bm.getQuantity(t.getId());
+            long n = bm.getQuantity(t.getId());
             if (care.serves(t) && n > 0) quietly(() -> bm.retire(t, n));
         }
         BuildingsTemplate clinic = bm.getTemplateByName("Walk-in Clinic");
@@ -362,7 +362,7 @@ public final class EssentialWorksCheck {
         if (standing > 0) quietly(() -> g.buildStack(clinic, standing, true));
         BuildingsTemplate hospital = bm.getTemplateByName("General Hospital");
         quietly(() -> g.buildStack(hospital, 1, false));
-        Map<BuildingsTemplate, Integer> raw = BuildAdvice.onSite(g, care);
+        Map<BuildingsTemplate, Long> raw = BuildAdvice.onSite(g, care);
         double first = BuildAdvice.firstCompletion(g, care, raw);
         check("fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier",
                 !BuildAdvice.maintained(g, care, Map.of(), BuildAdvice.NOW)
@@ -419,20 +419,20 @@ public final class EssentialWorksCheck {
         BuildingsTemplate rail = g.getBuildingManager().getTemplateByName("Light Rail Line");
         double fare = g.getEconomyManager().getTaxPolicy().monthlyFare();
         double base = BuildAdvice.roads(g, Map.of()).getTransitRiders();
-        double one = BuildAdvice.roads(g, Map.of(rail, 1)).getTransitRiders() - base;
-        double two = BuildAdvice.roads(g, Map.of(rail, 2)).getTransitRiders() - base;
+        double one = BuildAdvice.roads(g, Map.of(rail, 1L)).getTransitRiders() - base;
+        double two = BuildAdvice.roads(g, Map.of(rail, 2L)).getTransitRiders() - base;
         check("fixture: two lines share the same riders and the fare is positive",
                 fare > 0 && one > 0 && two < 2 * one);
         double gross = BuildAdvice.running(g, rail, Map.of()) + one * fare;
-        double actual = BuildAdvice.runningChange(g, Map.of(), Map.of(rail, 2), BuildAdvice.NOW);
-        double expected = 2 * gross - two * fare + existingWear(g, Map.of(rail, 2));
+        double actual = BuildAdvice.runningChange(g, Map.of(), Map.of(rail, 2L), BuildAdvice.NOW);
+        double expected = 2 * gross - two * fare + existingWear(g, Map.of(rail, 2L));
         check("two lines collect the full network's fares once",
                 Math.abs(actual - expected) < 1e-9 * Math.max(1, Math.abs(expected))
-                        && actual - existingWear(g, Map.of(rail, 2))
+                        && actual - existingWear(g, Map.of(rail, 2L))
                                 > 2 * BuildAdvice.running(g, rail, Map.of()));
         BuildingsTemplate gravel = g.getBuildingManager().getTemplateByName("Gravel Road");
         double single = BuildAdvice.running(g, gravel, Map.of());
-        double complete = BuildAdvice.runningChange(g, Map.of(), Map.of(gravel, 2), BuildAdvice.NOW);
+        double complete = BuildAdvice.runningChange(g, Map.of(), Map.of(gravel, 2L), BuildAdvice.NOW);
         check("the whole two-road order pays wear at its own relieved traffic",
                 complete < 2 * single);
         BuildingsTemplate paved = g.getBuildingManager().getTemplateByName("Paved Road");
@@ -447,16 +447,16 @@ public final class EssentialWorksCheck {
         streams[Traffic.GOODS.ordinal()] = load;
         g.getInfrastructureManager().setLoad(load);
         g.getInfrastructureManager().setBreakdown(streams);
-        double savedWear = existingWear(g, Map.of(paved, 1));
+        double savedWear = existingWear(g, Map.of(paved, 1L));
         check("fixture: existing gravel roads cost less to repair with the new paved road",
                 g.getBuildingManager().getQuantity(gravel.getId()) > 0 && savedWear < 0);
         double pavedCost = BuildAdvice.running(g, paved, Map.of());
-        double changed = BuildAdvice.runningChange(g, Map.of(), Map.of(paved, 1), BuildAdvice.NOW);
+        double changed = BuildAdvice.runningChange(g, Map.of(), Map.of(paved, 1L), BuildAdvice.NOW);
         check("the new work includes the changed repair bill of the existing gravel stock",
                 Math.abs(changed - (pavedCost + savedWear)) < 1e-9 * Math.max(1, Math.abs(changed)));
     }
 
-    static double existingWear(Game g, Map<BuildingsTemplate, Integer> order) {
+    static double existingWear(Game g, Map<BuildingsTemplate, Long> order) {
         BuildingsTemplate gravel = g.getBuildingManager().getTemplateByName("Gravel Road");
         double materials = Math.max(0, g.getBuildingManager().getConstructionMaterialPrice());
         double basis = g.getEconomyManager().withBuildersTax(g.getBuildingManager().nonMaterialCost(gravel)
@@ -510,7 +510,7 @@ public final class EssentialWorksCheck {
         BuildAdvice.Measure school = BuildAdvice.Measure.school(EducationType.ELEMENTARY);
         BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
         for (BuildingsTemplate t : bm.getTemplates()) {
-            int n = bm.getQuantity(t.getId());
+            long n = bm.getQuantity(t.getId());
             if (n > 0 && (school.serves(t) || care.serves(t))) quietly(() -> bm.retire(t, n));
         }
         BuildingsTemplate clinic = bm.getTemplateByName("Walk-in Clinic");
@@ -618,14 +618,14 @@ public final class EssentialWorksCheck {
         BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
         BuildingManager bm = g.getBuildingManager();
         for (BuildingsTemplate t : bm.getTemplates()) if (t.getCare() == CareType.GENERAL) {
-            int n = bm.getQuantity(t.getId());
+            long n = bm.getQuantity(t.getId());
             if (n > 0) quietly(() -> bm.retire(t, n));
         }
         BuildingsTemplate clinic = bm.getTemplateByName("Community Health Centre");
         double demand = BuildAdvice.supplyDemand(g, care, Map.of())[1];
-        int count = 1 + (int) Math.ceil((demand + g.getHealthcare().getPricedOut(CareType.GENERAL))
+        long count = 1 + (int) Math.ceil((demand + g.getHealthcare().getPricedOut(CareType.GENERAL))
                 / BuildAdvice.unit(g, care, clinic));
-        Map<BuildingsTemplate, Integer> order = Map.of(clinic, count);
+        Map<BuildingsTemplate, Long> order = Map.of(clinic, count);
         double before = BuildAdvice.cover(g, care, Map.of()), after = BuildAdvice.cover(g, care, order);
         check("fixture: only founding care remains short of the city, and the order restores full coverage",
                 bm.getCareCapacity(CareType.GENERAL) == Healthcare.foundingCapacity(CareType.GENERAL)
@@ -716,7 +716,7 @@ public final class EssentialWorksCheck {
         g.getBusinessInvestment().restorePopulationHistory(java.util.List.of());
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * 1.1);
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, power);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, power);
         double first = Math.ceil(g.onSiteMonths(coal));
         double windLead = g.quoteBuild(wind, 1).months;
         check("fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind",
@@ -820,10 +820,10 @@ public final class EssentialWorksCheck {
         double lead = g.quoteBuild(wind, 1).months;
         check("fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal",
                 Double.isFinite(ahead) && lead > 0 && lead + BuildAdvice.LIFE_MONTHS < ahead);
-        double first = BuildAdvice.firstCompletion(g, power, Map.of(coal, 20));
+        double first = BuildAdvice.firstCompletion(g, power, Map.of(coal, 20L));
         check("the first coal quote retains the entire earlier priority delay", first >= ahead);
-        double actual = WorksValue.avoided(g, power, BuildAdvice.onSite(g, power), Map.of(wind, 1), lead);
-        double withoutCoal = WorksValue.avoided(g, power, Map.of(wind, 1), Map.of(wind, 1), lead);
+        double actual = WorksValue.avoided(g, power, BuildAdvice.onSite(g, power), Map.of(wind, 1L), lead);
+        double withoutCoal = WorksValue.avoided(g, power, Map.of(wind, 1L), Map.of(wind, 1L), lead);
         check("coal that cannot open inside the horizon erases none of the earlier wind's physical benefit",
                 withoutCoal > 0 && Math.abs(actual - withoutCoal) < 1e-9 * Math.max(1, withoutCoal));
     }
@@ -859,8 +859,8 @@ public final class EssentialWorksCheck {
                 gap > 1 && gap < 6 && lead > 0 && Double.isFinite(lead)
                         && lead + gap < BuildAdvice.LIFE_MONTHS
                         && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
-                        && BuildAdvice.maintained(g, power, Map.of(coal, 1), BuildAdvice.NOW));
-        WorksValue.Value value = WorksValue.of(g, power, Map.of(coal, 1), wind, 1,
+                        && BuildAdvice.maintained(g, power, Map.of(coal, 1L), BuildAdvice.NOW));
+        WorksValue.Value value = WorksValue.of(g, power, Map.of(coal, 1L), wind, 1,
                 g.getLandManager().getAvailableSqFt());
         check("the sub-six-month service window has positive relief and avoided output loss",
                 value.used() > 0 && value.avoided() > 0);

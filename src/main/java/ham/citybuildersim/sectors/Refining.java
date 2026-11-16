@@ -1837,7 +1837,7 @@ public final class Refining extends Sector {
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
         String sector = key();
         // No crude unit while one is on site (0.7.105, R3; ONE ORDER IN FLIGHT, below): the refiners' own count, kept in BA1.
-        int crudeOnSite = crudeUnitsOnSite();
+        long crudeOnSite = crudeUnitsOnSite();
         Outlook o = outlook(plans);
         List<BuildingsTemplate> templates = new ArrayList<>(buildings.getTemplatesBySector(sector));
         if (crudeOnSite > 0) templates.removeIf(Refining::isCrudeUnit);
@@ -1906,8 +1906,8 @@ public final class Refining extends Sector {
      */
 
     /** The crude units on site, anyone's order (R3). */
-    int crudeUnitsOnSite() {
-        int n = 0;
+    long crudeUnitsOnSite() {
+        long n = 0;
         if (buildings == null) return 0;
         for (ham.citybuildersim.BuildingsStacks s : buildings.getStacksUnderConstruction()) {
             if (isCrudeUnit(s.getBuilding()) && s.getUnderConstruction() > 0) n += s.getUnderConstruction();

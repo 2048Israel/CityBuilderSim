@@ -910,7 +910,7 @@ public class ScaleCheck {
         PopulationManager people = g.getPopulationManager();
         long byStack = 0, homesByStack = 0, placesByStack = 0;
         for (BuildingsTemplate t : bm.getTemplates()) {
-            int quantity = bm.getQuantity(t.getId());
+            long quantity = bm.getQuantity(t.getId());
             for (JobType j : JobType.values()) byStack += (long) quantity * t.getJobs(j);
             if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
             int per = t.getDwellings() > 0 ? t.getDwellings() : Math.max(1, t.getCapacity() / 4);
@@ -1145,7 +1145,7 @@ public class ScaleCheck {
         int orders, passed, heldForDownPayment, declinedOnRent;
 
         @Override
-        public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash,
+        public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash,
                               double noiPerUnit, double annualRate, Mortgage.Decision found) {
             orders++;
             if (found.quantity() > 0) passed++;
@@ -1161,12 +1161,12 @@ public class ScaleCheck {
 
     /** Every order the free copy decides: how big, and how many times it asked the bond desk (the order's size reads no wait since BA1). */
     static final class Orders implements BusinessInvestment.OrderWatch {
-        int invested, mortgaged, largestInvested, largestMortgage, mostDesk;
+        int invested, mortgaged, mostDesk; long largestInvested, largestMortgage;
         int overDesk;
         final Lender lender = new Lender();
 
         /** The largest order decided, whichever way it is judged: what a sector's shortfall asked for and the plots allowed (BusinessInvestment.orderSize()), the size the old "needed" counted. */
-        int largestNeeded() { return Math.max(largestInvested, largestMortgage); }
+        long largestNeeded() { return Math.max(largestInvested, largestMortgage); }
 
         @Override
         public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found) {
@@ -1177,7 +1177,7 @@ public class ScaleCheck {
         }
 
         @Override
-        public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash,
+        public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash,
                               double noiPerUnit, double annualRate, Mortgage.Decision found) {
             mortgaged++;
             largestMortgage = Math.max(largestMortgage, asked);
@@ -1235,7 +1235,7 @@ public class ScaleCheck {
 
         long byStack = 0, homesByStack = 0, placesByStack = 0;
         for (BuildingsTemplate t : bm.getTemplates()) {
-            int quantity = bm.getQuantity(t.getId());
+            long quantity = bm.getQuantity(t.getId());
             for (JobType j : JobType.values()) byStack += (long) quantity * t.getJobs(j);
             if (t.getCategory() != BuildingType.RESIDENTIAL) continue;
             int per = t.getDwellings() > 0 ? t.getDwellings() : Math.max(1, t.getCapacity() / 4);

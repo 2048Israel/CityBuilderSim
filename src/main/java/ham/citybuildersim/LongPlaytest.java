@@ -262,7 +262,7 @@ public class LongPlaytest {
     /** ...the first month each stood, 0 for never. */
     static final int[] byYearFirst = new int[BY_YEAR.length];
     /** ...and how many stood at months 1,000, 2,000 and 3,000. */
-    static final int[][] byYearAt = new int[BY_YEAR.length][3];
+    static final long[][] byYearAt = new long[BY_YEAR.length][3];
     /** ...and NEEDS YOU read once a year: the looks, those listing the streets, the highways, and both (FR7 2.1). */
     static int needsLooks = 0, needsStreets = 0, needsHighways = 0, needsBoth = 0, needsBothFirst = 0;
 
@@ -408,9 +408,9 @@ public class LongPlaytest {
         claimsRun += cr.getInsuredWrittenOffThisMonth();
         houseReasons.merge(houseReason(g.getLastInvestment(g.getSectors().realEstate().key())), 1, Integer::sum);
     }
-    static int salvageBuildingsDistress, salvageBuildingsSpare;
+    static long salvageBuildingsDistress, salvageBuildingsSpare;
     /** ...the spare-capacity rule's by the seller (RT1: how often a farm or a food plant retires in a real run, which until RT1 no city at the founding's level did). */
-    static final Map<String, Integer> salvageSpareBySector = new java.util.TreeMap<>();
+    static final Map<String, Long> salvageSpareBySector = new java.util.TreeMap<>();
     static double salvageUnits, salvageUnitsBought, salvagePaid, salvagePaidDistress, salvageUsed;
 
     /* ===== RETIREMENT'S POSTS OVER A YEAR (RT3) =====
@@ -492,7 +492,7 @@ public class LongPlaytest {
      * each one opened - and closed. Plus a row of <prefix>-bank.csv a month
      * when the trace is on.
      */
-    static int leverageMonths, levBankMonths, branchesOpened, branchesClosedSeen, lastBranches = -1;
+    static int leverageMonths, levBankMonths, branchesOpened, lastBranches = -1; static long branchesClosedSeen;
     static final java.util.Map<String, Integer> openedByStance = new java.util.TreeMap<>();
     static double lowestLeverage = Double.MAX_VALUE;
     static int lowestLeverageMonth;
@@ -630,7 +630,7 @@ public class LongPlaytest {
         for (String s : g.getRefusedOnPrice()) refusedOnPrice.merge(s, 1, Integer::sum);
         for (Game.Salvage s : g.getSalvageThisMonth()) {
             if (s.distress()) { salvageBuildingsDistress += s.buildings(); salvagePaidDistress += s.paid(); }
-            else { salvageBuildingsSpare += s.buildings(); salvageSpareBySector.merge(s.seller(), s.buildings(), Integer::sum); }
+            else { salvageBuildingsSpare += s.buildings(); salvageSpareBySector.merge(s.seller(), s.buildings(), Long::sum); }
             salvageUnits += s.units();
             salvageUnitsBought += s.unitsBought();
             salvagePaid += s.paid();
@@ -1722,7 +1722,7 @@ public class LongPlaytest {
             }
             StringBuilder bl = new StringBuilder(String.format("   BUILT m%-4d", g.getMonth()));
             for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
-                int q = g.getBuildingManager().getQuantity(t.getId());
+                long q = g.getBuildingManager().getQuantity(t.getId());
                 if (q > 0) bl.append(' ').append(t.getName()).append('=').append(q);
             }
             out.println(bl);
@@ -1908,7 +1908,7 @@ public class LongPlaytest {
         homeBilledRun += homeRail.getHomeBill();
         // The roads and the rails by year (FR7): see THE ROADS AND THE RAILS BY YEAR.
         for (int k = 0; k < BY_YEAR.length; k++) {
-            int n = qty(g, BY_YEAR[k]);
+            long n = qty(g, BY_YEAR[k]);
             if (n > 0 && byYearFirst[k] == 0) byYearFirst[k] = g.getMonth();
             int at = g.getMonth() / 1000 - 1;
             if (g.getMonth() % 1000 == 0 && at >= 0 && at < 3) byYearAt[k][at] = n;
@@ -2260,7 +2260,7 @@ public class LongPlaytest {
     static final Map<String, Integer> worksLow = new LinkedHashMap<>();
     static final Map<String, Double> worksMin = new LinkedHashMap<>();
     static final Map<String, Integer> worksReasons = new LinkedHashMap<>();
-    static final Map<String, Integer> worksPowerOrders = new LinkedHashMap<>();
+    static final Map<String, Long> worksPowerOrders = new LinkedHashMap<>();
     static final Map<String, Integer> worksLowLater = new LinkedHashMap<>();
     /** Jerus's HW1 bar: near full service, with the length and cause of every dip visible. */
     static final double WORKS_NEAR = .90;
@@ -2296,7 +2296,7 @@ public class LongPlaytest {
         if (on && over && g.getAutoBuilder().getOrders() == ordersBefore) worksDebtIdleMonths++;
         for (AutoBuilder.Step s : g.getAutoBuilder().steps()) {
             if (s.measure().kind() == BuildAdvice.Kind.POWER && s.ordered() > 0)
-                worksPowerOrders.merge(s.building(), s.ordered(), Integer::sum);
+                worksPowerOrders.merge(s.building(), s.ordered(), Long::sum);
             if (s.measure().kind() == BuildAdvice.Kind.HIGHWAYS || s.measure().kind() == BuildAdvice.Kind.ROADS
                     || s.measure().kind() == BuildAdvice.Kind.POLICE) {
                 worksReasons.merge(s.measure().label() + " " + s.outcome() + "/" + s.cut(), 1, Integer::sum);
@@ -2801,7 +2801,7 @@ public class LongPlaytest {
         PopulationManager p = g.getPopulationManager();
         ham.citybuildersim.sectors.Construction c = g.getSectors().construction();
         String reKey = g.getSectors().realEstate().key();
-        int reOnSite = 0;
+        long reOnSite = 0;
         double reOwed = 0, banked = 0;
         for (BuildingsStacks s : b.getStacksUnderConstruction()) {
             if (!reKey.equals(s.getBuilding().getSector())) continue;
@@ -3275,7 +3275,7 @@ public class LongPlaytest {
                 g.getLandManager().getAvailableSqFt());
         if (s == null || !build(g, s.template().getName(), s.count())) return null;
         childcareOrders++;
-        childcareBuilt.merge(s.template().getName(), s.count(), Integer::sum);
+        childcareBuilt.merge(s.template().getName(), s.count(), Long::sum);
         return s;
     }
 
@@ -3369,13 +3369,13 @@ public class LongPlaytest {
     /** What the childcare flag has ordered: orders, and buildings by name. */
     static int childcareOrders = 0;
     /** ...the buildings, by name. */
-    static final java.util.Map<String, Integer> childcareBuilt = new java.util.TreeMap<>();
+    static final java.util.Map<String, Long> childcareBuilt = new java.util.TreeMap<>();
 
     /** What the flag has ordered of each school, so one under construction is not ordered twice. */
     static final java.util.Map<String, Integer> schoolsOrdered = new java.util.HashMap<>();
 
     static void ensure(Game g, String name, int want) {
-        int have = Math.max(qty(g, name), schoolsOrdered.getOrDefault(name, 0));
+        long have = Math.max(qty(g, name), schoolsOrdered.getOrDefault(name, 0));
         if (have < want && build(g, name, want - have)) schoolsOrdered.put(name, want);
     }
 
@@ -4014,11 +4014,11 @@ public class LongPlaytest {
 
     /** Over the run (0.7.62): the drivers' and the railway's fuel, what of it was bought abroad, the first well and refinery, and the most refineries standing. */
     static double fuelBillRun, fuelAbroadRun;
-    static int firstWellMonth, firstRefineryMonth, mostRefineries;
+    static int firstWellMonth, firstRefineryMonth; static long mostRefineries;
 
     /** ...and the wells' decline over the run (0.7.84, batch O7; spec-oil 2.6): the crude they lifted and the most standing. */
     static double crudeLiftedRun;
-    static int mostWells;
+    static long mostWells;
 
     /** ...and the refinery's products over the run (0.7.76, batch O1): made, by product, and what of them its tanks could not hold (spec-oil 6's joint-products risk). */
     static final java.util.Map<Good, Double> refinedRun = new java.util.EnumMap<>(Good.class);
@@ -4075,7 +4075,7 @@ public class LongPlaytest {
             refinedRun.merge(p, o.produced + o.exportBound, Double::sum);
             refinedWrittenOff += o.writtenOff;
         }
-        int wells = qty(g, "Oil Well"), refineries = qty(g, "Oil Refinery");
+        long wells = qty(g, "Oil Well"), refineries = qty(g, "Oil Refinery");
         if (firstWellMonth == 0 && wells > 0) firstWellMonth = g.getMonth();
         mostWells = Math.max(mostWells, wells);
         Sector.Output lifted = g.getSectors().oil().outputRow(Good.CRUDE);
@@ -4161,8 +4161,8 @@ public class LongPlaytest {
     }
 
     /** The sea terminals standing, all kinds. */
-    static int terminalsStanding(Game g) {
-        int n = 0;
+    static long terminalsStanding(Game g) {
+        long n = 0;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (Ports.isPort(t)) n += g.getBuildingManager().getQuantity(t.getId());
         return n;
     }
@@ -4224,23 +4224,23 @@ public class LongPlaytest {
      * kind has stood idle six months, which the spare-capacity rule sells
      * first.
      */
-    static final java.util.Map<String, Integer> refinersOpened = new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>();
+    static final java.util.Map<String, Long> refinersOpened = new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>();
     /**
      * Each refiner's count last month, by template id (R1d): the refiners' known templates grow as a 1900 city
      * researches them, so a count kept by the list's index ran past the first month's list (month 157 of the default
      * playtest, once 1900 became the default founding).
      */
-    static final java.util.Map<Integer, Integer> refinersLast = new java.util.HashMap<>();
-    static int mostCrudeUnits, mostConversionUnits, firstRefinerMonth;
+    static final java.util.Map<Integer, Long> refinersLast = new java.util.HashMap<>();
+    static long mostCrudeUnits, mostConversionUnits; static int firstRefinerMonth;
 
     static void countRefiners(Game g) {
         BuildingManager b = g.getBuildingManager();
-        int crude = 0, units = 0;
+        long crude = 0, units = 0;
         for (BuildingsTemplate t : b.getTemplatesBySector(Sectors.REFINING)) {
-            int q = b.getQuantity(t.getId()), last = refinersLast.getOrDefault(t.getId(), 0);
+            long q = b.getQuantity(t.getId()), last = refinersLast.getOrDefault(t.getId(), 0L);
             if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) crude += q; else units += q;
-            if (q > last) refinersOpened.merge(t.getName(), q - last, Integer::sum);
-            if (q < last) refinersSold.merge(t.getName(), last - q, Integer::sum);
+            if (q > last) refinersOpened.merge(t.getName(), q - last, Long::sum);
+            if (q < last) refinersSold.merge(t.getName(), last - q, Long::sum);
             refinersLast.put(t.getId(), q);
         }
         if (firstRefinerMonth == 0 && crude + units > 0) firstRefinerMonth = g.getMonth();
@@ -5153,7 +5153,7 @@ public class LongPlaytest {
             line++;
         }
         for (BuildAdvice.Suggestion s : roadAdvice) {
-            int n = s.count();
+            long n = s.count();
             if (s.paving()) {
                 moves.add(new Move("paved gravel", lost * (1 - moves.size() * 1e-6), () -> pave(g, n)));
             } else {
@@ -5201,7 +5201,7 @@ public class LongPlaytest {
      * with the long bond build() borrows on, sized to what the cash is short
      * of, when the city can service it (canService()).
      */
-    static boolean pave(Game g, int n) {
+    static boolean pave(Game g, long n) {
         Game.BuildQuote q = g.quotePave(n);
         if (q == null) return false;
         if (q.total > g.getCash()) {
@@ -5218,7 +5218,7 @@ public class LongPlaytest {
     }
 
     /** Over the run (0.7.70): the pavings ordered and the gravel roads in them. */
-    static int pavings, roadsPaved;
+    static int pavings; static long roadsPaved;
 
     /**
      * Adds one building as a way of relieving a constraint worth `lost` a month.
@@ -5306,13 +5306,13 @@ public class LongPlaytest {
         return t != null && g.getBusinessInvestment().estimatedMonthlyProfit(sector, t) > 0;
     }
 
-    static int qty(Game g, String name) {
+    static long qty(Game g, String name) {
         BuildingsTemplate t = template(g, name);
         return t == null ? 0 : g.getBuildingManager().getQuantity(t.getId());
     }
 
     /** ...of a building by its permanent id (0.7.71: the childcare ids, renamed). */
-    static int qtyOf(Game g, int id) {
+    static long qtyOf(Game g, int id) {
         return g.getBuildingManager().getQuantity(id);
     }
 
@@ -5323,8 +5323,8 @@ public class LongPlaytest {
     }
 
     /** The city's home buildings standing, every RESIDENTIAL type (0.7.71: what childcare is counted against). */
-    static int homeBuildings(Game g) {
-        int n = 0;
+    static long homeBuildings(Game g) {
+        long n = 0;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (t.getCategory() == BuildingType.RESIDENTIAL) n += g.getBuildingManager().getQuantity(t.getId());
         }
@@ -5340,12 +5340,12 @@ public class LongPlaytest {
      * Orders a building the way the screens do: check land, buy some if short,
      * borrow if the treasury cannot cover it, then place the order.
      */
-    static boolean build(Game g, String name, int quantity) {
+    static boolean build(Game g, String name, long quantity) {
         return build(g, name, quantity, true);
     }
 
     /** ...without the linked ground bought first (`buyGround` false): an island link's terminal stands on the island's own room, and no ground of the linked pool is wanted for it (AL1). */
-    static boolean build(Game g, String name, int quantity, boolean buyGround) {
+    static boolean build(Game g, String name, long quantity, boolean buyGround) {
 
         BuildingsTemplate t = template(g, name);
         if (t == null) return false;
@@ -7965,7 +7965,7 @@ public class LongPlaytest {
                                     portLastQuote[k.ordinal()] * 1000 / Math.max(1e-9, g.getPriceIndex().getIndex())) : "no quote"));
         }
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
-            int n = Ports.isPort(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;
+            long n = Ports.isPort(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;
             if (n > 0) berthsStanding.append(t.getName()).append(" x").append(n).append(", ");
         }
         out.printf("  Ports division: %shandling billed $%,.0fk and port dues paid $%,.0fk over the run; the best month of"

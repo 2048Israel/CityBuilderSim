@@ -716,12 +716,12 @@ public class BuildingsTemplate {
      * posts, which are whole numbers, the weighted mean rounded to the nearest. EXACTLY a recipe's figures when one part is empty or both run the
      * same recipe (no arithmetic: the default's are the top level to the bit). The maps are replaced, not changed (see the fields).
      */
-    public void runRecipes(Recipe fitted, int fittedBuildings, Recipe unfitted, int unfittedBuildings) {
+    public void runRecipes(Recipe fitted, long fittedBuildings, Recipe unfitted, long unfittedBuildings) {
         Recipe a = fitted != null ? fitted : defaultRecipe();
         Recipe b = unfitted != null ? unfitted : defaultRecipe();
         runsFitted = a.getId();
         runsUnfitted = b.getId();
-        int na = Math.max(0, fittedBuildings), nb = Math.max(0, unfittedBuildings);
+        long na = Math.max(0, fittedBuildings), nb = Math.max(0, unfittedBuildings);
         if (na + nb == 0) na = 1;
         if (nb == 0 || a.getId().equals(b.getId())) {
             setFigures(a);

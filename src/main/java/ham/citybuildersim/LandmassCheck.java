@@ -798,21 +798,21 @@ public class LandmassCheck {
 
         // The closure, unit-tested.
         out.println("  the closure of the linked set:");
-        TreeMap<Integer, Integer> ports = new TreeMap<>();
+        TreeMap<Integer, Long> ports = new TreeMap<>();
         SortedSet<Integer> c0 = Landmasses.closure(1, ports, Landmasses.Joins.NONE);
-        ports.put(648, 1);
+        ports.put(648, 1L);
         SortedSet<Integer> c1 = Landmasses.closure(1, ports, Landmasses.Joins.NONE);
-        ports.put(1, 1);
+        ports.put(1, 1L);
         SortedSet<Integer> c2 = Landmasses.closure(1, ports, Landmasses.Joins.NONE);
-        ports.put(432, 2);
-        ports.put(5164, 1);
+        ports.put(432, 2L);
+        ports.put(5164, 1L);
         SortedSet<Integer> c3 = Landmasses.closure(1, ports, Landmasses.Joins.NONE);
-        TreeMap<Integer, Integer> alone = new TreeMap<>(Map.of(648, 1, 432, 1));
+        TreeMap<Integer, Long> alone = new TreeMap<>(Map.of(648, 1L, 432, 1L));
         SortedSet<Integer> c4 = Landmasses.closure(1, alone, Landmasses.Joins.NONE);
-        SortedSet<Integer> c5 = Landmasses.closure(1, new TreeMap<>(Map.of(1, 0, 648, 0)), Landmasses.Joins.NONE);
+        SortedSet<Integer> c5 = Landmasses.closure(1, new TreeMap<>(Map.of(1, 0L, 648, 0L)), Landmasses.Joins.NONE);
         Landmasses.Joins bridge = id -> id == 1 ? new int[] { 77 } : id == 77 ? new int[] { 1, 88 } : new int[0];
         SortedSet<Integer> c6 = Landmasses.closure(1, new TreeMap<>(), bridge);
-        SortedSet<Integer> c7 = Landmasses.closure(1, new TreeMap<>(Map.of(88, 1, 648, 1)), bridge);
+        SortedSet<Integer> c7 = Landmasses.closure(1, new TreeMap<>(Map.of(88, 1L, 648, 1L)), bridge);
         check("no ports: the closure is home alone", c0.equals(java.util.Set.of(1)));
         check("a port on an island and none at home links nothing: two ports make a route, one makes none", c1.equals(java.util.Set.of(1)));
         check("a port at home and one on the island link the island", c2.equals(java.util.Set.of(1, 648)));
@@ -1505,9 +1505,9 @@ public class LandmassCheck {
     /** A template as this city has it (a city's templates are its own; another city's object is never handed to its buildings). */
     static BuildingsTemplate own(City c, BuildingsTemplate t) { return c.g.getBuildingManager().getTemplate(t.getId()); }
 
-    static int standing(City c, BuildingsTemplate t) { return c.g.getBuildingManager().getQuantity(t.getId()); }
+    static long standing(City c, BuildingsTemplate t) { return c.g.getBuildingManager().getQuantity(t.getId()); }
 
-    static int onSite(City c, BuildingsTemplate t) {
+    static long onSite(City c, BuildingsTemplate t) {
         BuildingsStacks s = c.g.getBuildingManager().getStack(own(c, t));
         return s == null ? 0 : s.getUnderConstruction();
     }
@@ -1703,14 +1703,14 @@ public class LandmassCheck {
         double roomR = lr.portRoomSqFt(648);
         int past = (int) Math.floor(roomR / land) + 1;
         check("an order past the island's room is NO_LAND, and nothing is placed", orderOn(r, gc, past, true, 648) == Game.BuildResult.NO_LAND && !r.books().hasPlacements());
-        int a = (int) Math.floor(roomR / bulk.getLandSqFt());
+        long a = (int) Math.floor(roomR / bulk.getLandSqFt());
         report("premise: the island holds several bulk terminals, the linked pool not even two - so what is placed on the island below was admitted by the island's room, not the pool's",
                 a >= 3 && r.lm.getAvailableSqFt() < 2 * bulk.getLandSqFt(), String.format("%d bulk terminals on %,.0f sq ft; the pool %,.0f", a, roomR, r.lm.getAvailableSqFt()));
         double rest = roomR - a * bulk.getLandSqFt();
-        int b = (int) Math.floor(rest / box.getLandSqFt()) + 1;
+        long b = (int) Math.floor(rest / box.getLandSqFt()) + 1;
         r.g.choosePortLandmass(bulk, 648);
         r.g.choosePortLandmass(box, 648);
-        java.util.Map<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
+        java.util.Map<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
         run.put(bulk, a);
         run.put(box, b);
         report("premise: each order alone fits the island, together they do not",
@@ -1720,7 +1720,7 @@ public class LandmassCheck {
         // As many bulk terminals fewer as the container terminal's ground takes (one, while a bulk terminal was the larger; SL1 made the container terminal the larger).
         int fewer = (int) Math.ceil(box.getLandSqFt() / bulk.getLandSqFt());
         run.put(bulk, a - fewer);
-        run.put(box, 1);
+        run.put(box, 1L);
         report("premise: " + fewer + " bulk terminals fewer and one container terminal fit the island's room",
                 a - fewer >= 1 && (a - fewer) * bulk.getLandSqFt() + box.getLandSqFt() <= roomR,
                 String.format("%d bulk (%,.0f) and 1 container (%,.0f) on %,.0f", a - fewer, (a - fewer) * bulk.getLandSqFt(), box.getLandSqFt(), roomR));
@@ -1871,13 +1871,13 @@ public class LandmassCheck {
 
     /** What Landmasses reads of the buildings, for a unit test of the rule: one terminal template and fixed counts. */
     static final class StubStock implements Landmasses.Stock {
-        int standing, onSite, shell;
+        long standing, onSite, shell;
         @Override public int[] portTemplates() { return new int[] { 97 }; }
         @Override public boolean known(int template) { return template == 97; }
-        @Override public int standing(int template) { return standing; }
-        @Override public int onSite(int template) { return onSite; }
-        @Override public int shell(int template) { return shell; }
-        @Override public List<int[]> demolitions(int template) { return List.of(); }
+        @Override public long standing(int template) { return standing; }
+        @Override public long onSite(int template) { return onSite; }
+        @Override public long shell(int template) { return shell; }
+        @Override public List<long[]> demolitions(int template) { return List.of(); }
         @Override public double landSqFt(int template) { return 107_639; }
         @Override public int cargo(int template) { return Ports.Cargo.GENERAL.ordinal(); }
     }
@@ -2024,7 +2024,7 @@ public class LandmassCheck {
         Game bare = new Game(c.files);
         quietly(() -> bare.loadGameSave(4));
         Landmasses lbare = bare.getLandManager().getLandmasses();
-        int standingNow = bare.getBuildingManager().getQuantity(id) - bare.getBuildingManager().getControl().closingOf(id);
+        long standingNow = bare.getBuildingManager().getQuantity(id) - bare.getBuildingManager().getControl().closingOf(id);
         check("a save without the key loads - it is not refused - and reads every terminal at home: none placed, none on the island, the island unlinked",
                 bare.getLoadFailure() == null && lbare.portsOn(648)[Ports.Cargo.GENERAL.ordinal()] == 0 && !lbare.hasPlacements() && bare.getLandManager().landmassState() == null
                         && !lbare.linked(648) && lbare.portsOn(home)[Ports.Cargo.GENERAL.ordinal()] == standingNow);
@@ -2947,9 +2947,9 @@ public class LandmassCheck {
         if (st != null) {
             for (Landmasses.PortRow row : st.ports) {
                 BuildingsTemplate t = bm.getTemplate(row.template);
-                int counted = Math.max(0, bm.getQuantity(row.template) - bm.getControl().closingOf(row.template));
+                long counted = Math.max(0, bm.getQuantity(row.template) - bm.getControl().closingOf(row.template));
                 BuildingsStacks stack = t == null ? null : bm.getStack(t);
-                int site = stack == null ? 0 : stack.getUnderConstruction();
+                long site = stack == null ? 0 : stack.getUnderConstruction();
                 ConstructionControl.Shell shell = bm.getControl().shellOf(row.template);
                 if (row.standing.length != counted || row.onSite.length != site || row.shell.length != (shell == null ? 0 : shell.buildings)) {
                     bad.append(String.format("%s: placements %d/%d/%d, buildings %d/%d/%d; ", t == null ? "template " + row.template : t.getName(), row.standing.length, row.onSite.length,
@@ -2970,9 +2970,9 @@ public class LandmassCheck {
         // A landmass off home is linked only if a terminal stands on it and one at home.
         for (Landmasses.Row r : lms.rows()) {
             if (r.home() || !r.linked()) continue;
-            int onSum = 0, atSum = 0;
-            for (int v : lms.portsOn(r.id())) onSum += v;
-            for (int v : lms.portsOn(lms.home())) atSum += v;
+            long onSum = 0, atSum = 0;
+            for (long v : lms.portsOn(r.id())) onSum += v;
+            for (long v : lms.portsOn(lms.home())) atSum += v;
             if (onSum == 0 || atSum == 0) bad.append("landmass " + r.id() + " is linked without a terminal standing on it and one at home; ");
         }
         // No works stands on a field across the water. The sites usable are counted here piece by piece, from the plot each field is centred on (Landmasses.fieldLandmass(), the read the gate shares), not from the gate's own counters: getSites() must be them, and the works standing, on site or ordered, on each sited resource fit them.
@@ -3022,8 +3022,8 @@ public class LandmassCheck {
     }
 
     /** The buildings standing, every template's. */
-    static int buildingsOf(Game g) {
-        int n = 0;
+    static long buildingsOf(Game g) {
+        long n = 0;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) n += g.getBuildingManager().getQuantity(t.getId());
         return n;
     }
@@ -3067,7 +3067,7 @@ public class LandmassCheck {
         int unlinkedMonths = 0, month648 = -1;
         // ...what the 24 months have to move for "stays unlinked" to mean something: the city builds (ground allocated, buildings standing). The island holds no field of a sited resource in the fixture (the island city below owns one across the water).
         double allocated0 = c.lm.getAllocatedSqFt();
-        int buildings0 = buildingsOf(g);
+        long buildings0 = buildingsOf(g);
         // AL1 (2026-11-09): the auto-builder is on for these months and no longer never links: Jerus, "autobuild will build bridges and ports if sees that land is low and there is
         // something unlinked". It orders the island's link only in a pass in which an order lacked ground (AutoBuilder.groundShort()); the months are counted, and the island's
         // staying unlinked is held to that cue below, and the cue caused in a twin (grownShort()). The card's-path orders after them keep their premise: no terminal is on site yet.
@@ -3163,7 +3163,7 @@ public class LandmassCheck {
         for (Resource r : Resource.values()) if (r.inFields()) sitesAcross += d.lm.getCityLand().totalSites(r) - d.lm.getSites(r);
         quietly(() -> d.g.getAutoBuilder().setOn(true, d.g.getDecisions()));
         double dAllocated0 = d.lm.getAllocatedSqFt();
-        int dBuildings0 = buildingsOf(d.g), dLooks = 0, dBad = 0;
+        long dBuildings0 = buildingsOf(d.g), dLooks = 0, dBad = 0;
         String dFirst = null;
         for (int m = 0; m < 24; m++) {
             quietly(() -> d.g.simulateMonths(1));

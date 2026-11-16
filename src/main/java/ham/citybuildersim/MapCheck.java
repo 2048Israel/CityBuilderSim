@@ -8335,7 +8335,7 @@ public class MapCheck {
                 j == null ? 0 : j.x(), j == null ? 0 : j.y(), j == null ? 0 : j.wells(), km, pp == null ? 0 : pp.x1(), pp == null ? 0 : pp.y1());
         check("THE OIL AT SEA: the game hands the map its platform - the jacket amid its slotted sites, its wells on them - and its pipe from the"
                         + " jacket to the founding site, whole", j != null && a.jackets().size() == 1 && Math.abs(j.x() - cx) < 1e-9
-                && Math.abs(j.y() - cy) < 1e-9 && j.wellPlots().equals(wellsAt.subList(0, Math.min(j.wells(), slots))) && pp != null
+                && Math.abs(j.y() - cy) < 1e-9 && j.wellPlots().equals(wellsAt.subList(0, (int) Math.min(j.wells(), slots))) && pp != null
                 && pp.x0() == j.x() && pp.y0() == j.y() && Math.abs(pp.x1() - (g.getCityLand().siteX() + 0.5)) < 1e-9
                 && Math.abs(pp.y1() - (g.getCityLand().siteY() + 0.5)) < 1e-9 && m.atSea().equals(a));
         // Every tile the jacket's ring and the pipe cross, painted: each drawn once.
@@ -14057,7 +14057,7 @@ public class MapCheck {
         // ----- 6b. The chain's early exit (batch UP5, slice A) -----
         boolean carryFixture = false, jobsCounted = true;
         for (Redraw w : new Redraw[] { x1, x80 }) {
-            int carryMonths = 0, quietMonths = 0, reuseMonths = 0, months = 0, failed = 0;
+            int carryMonths = 0, quietMonths = 0, reuseMonths = 0, months = 0; long failed = 0;
             long plansMade = 0, linksTaken = 0, wasted = 0;
             for (RedrawMonth r : w.all) {
                 if (r.kind == SETTLE) continue;

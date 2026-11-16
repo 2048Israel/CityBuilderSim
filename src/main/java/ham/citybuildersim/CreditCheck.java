@@ -1106,7 +1106,7 @@ public class CreditCheck {
          * in flight, and retail sat on "already building" for years.)
          */
         BuildingsTemplate shop = template(banned, "Convenience Store");
-        int standing = banned.getBuildingManager().getQuantity(shop.getId());
+        long standing = banned.getBuildingManager().getQuantity(shop.getId());
         if (standing > 1) banned.getBuildingManager().retire(shop, standing - 1);
 
         int loansBefore = ledger.getLoanCount(sector), interimCountBefore = ledger.getInterimCount(sector);

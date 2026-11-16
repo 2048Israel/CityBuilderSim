@@ -95,7 +95,7 @@ public class DataSave implements Cloneable {
 
     //save variables
     private double cash;
-    private int[] buildings;
+    private long[] buildings;
     private int month = 1;
     private JsonArray debts;
 
@@ -125,7 +125,7 @@ public class DataSave implements Cloneable {
      * depots part-built reloaded to find the work gone.
      */
     private double[] constructionProgressById;
-    private int[] underConstructionById;
+    private long[] underConstructionById;
     /** Material the sites still have to draw, by id. Absent on a save from before the crews drew as they built. */
     private double[] materialsOwedById;
     /** The builders' contract still on each template's sites, by id. Absent on a save from before the book was kept per stack. */
@@ -966,10 +966,10 @@ public class DataSave implements Cloneable {
     }
 
     public void setBuildingNum(int i) {
-        buildings = new int[i];
+        buildings = new long[i];
     }
 
-    public void setBuildingQuantity(int index, int quantity) {
+    public void setBuildingQuantity(int index, long quantity) {
         if (index < 0 || index >= buildings.length) {
             throw new IllegalArgumentException("Invalid building index: " + index);
         }
@@ -1171,7 +1171,7 @@ public class DataSave implements Cloneable {
     public void setStackOrder(int[] templateIds) { this.stackOrder = templateIds; }
     public int[] getStackOrder() { return stackOrder; }
 
-    public void setConstructionById(int[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue) {
+    public void setConstructionById(long[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue) {
         this.underConstructionById = underConstruction;
         this.constructionProgressById = progress;
         this.materialsOwedById = materialsOwed;
@@ -1183,14 +1183,14 @@ public class DataSave implements Cloneable {
      * only for the stacks that have any: null, or empty, is every building fitted. A save from before R1 has no key, which Gson leaves alone, and
      * so reads as every building fitted, as it ran: no format bump.
      */
-    private java.util.Map<Integer, java.util.Map<String, Integer>> unfittedById;
+    private java.util.Map<Integer, java.util.Map<String, Long>> unfittedById;
 
-    public void setUnfittedById(java.util.Map<Integer, java.util.Map<String, Integer>> byId) {
+    public void setUnfittedById(java.util.Map<Integer, java.util.Map<String, Long>> byId) {
         this.unfittedById = byId == null || byId.isEmpty() ? null : byId;
     }
 
     /** The unfitted counts the save carries by template id, or an empty map for a save with none (every building fitted). */
-    public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById() {
+    public java.util.Map<Integer, java.util.Map<String, Long>> getUnfittedById() {
         return unfittedById == null ? java.util.Map.of() : unfittedById;
     }
 
@@ -1398,7 +1398,7 @@ public class DataSave implements Cloneable {
         return (underConstructionById == null) ? 0 : underConstructionById.length;
     }
 
-    public int getUnderConstructionById(int templateId) {
+    public long getUnderConstructionById(int templateId) {
         return (underConstructionById == null
                 || templateId < 0
                 || templateId >= underConstructionById.length)
@@ -2886,7 +2886,7 @@ public class DataSave implements Cloneable {
         return month;
     }
     
-    public int getBuildingQuantity(int index){
+    public long getBuildingQuantity(int index){
         return buildings[index];
     }
     

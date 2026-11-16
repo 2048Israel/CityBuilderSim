@@ -618,9 +618,9 @@ public class ResearchViewCheck {
             BuildingsStacks stack = town.getBuildingManager().getStack(use.template());
             plain &= !use.recipe().isDefault() && use.recipe().knownAt(month, town.getResearch()) && use.template().hasRecipeChoice();
             String piece = use.template().recipePieceId();
-            int unfitted = piece == null ? 0 : Math.min(stack.getQuantity(), stack.getUnfitted(piece));
+            long unfitted = piece == null ? 0 : Math.min(stack.getQuantity(), stack.getUnfitted(piece));
             String[] picked = town.getRecipes().chosen(use.template().getId());
-            int expected = (picked != null && picked[0].equals(use.recipe().getId()) ? stack.getQuantity() - unfitted : 0) + (picked != null && picked[1].equals(use.recipe().getId()) ? unfitted : 0);
+            long expected = (picked != null && picked[0].equals(use.recipe().getId()) ? stack.getQuantity() - unfitted : 0) + (picked != null && picked[1].equals(use.recipe().getId()) ? unfitted : 0);
             counts &= use.buildings() == stack.getQuantity() && use.running() == expected && use.running() >= 0 && use.running() <= use.buildings();
         }
         check("the town has recipes in use: " + uses.size() + " rows", listed);
@@ -637,7 +637,7 @@ public class ResearchViewCheck {
                 horses != null && horses.recipe().getId().equals(picked[1]) && horses.running() == farms.getQuantity() && horses.buildings() == farms.getQuantity() && horses.from() == null);
 
         // The parts' sizes: one farm with the tractor, one without.
-        int total = farms.getQuantity();
+        long total = farms.getQuantity();
         farms.setUnfitted("tractor", total - 1);
         ResearchView.RecipeUse oneLeft = ResearchView.recipesInUse(town).stream().filter(u -> u.template() == mixed).findFirst().orElse(null);
         check("with one farm of " + total + " fitted, the unfitted part is " + (total - 1) + " and the horses run on that many",
@@ -650,7 +650,7 @@ public class ResearchViewCheck {
         String[] pulpPicked = town.getRecipes().chosen(pulp.getId());
         List<ResearchView.RecipeUse> pulpUses = new ArrayList<>();
         for (ResearchView.RecipeUse use : uses) if (use.template() == pulp) pulpUses.add(use);
-        int running = 0, listedWays = 0;
+        long running = 0; int listedWays = 0;
         for (Recipe r : pulp.getRecipes()) if (!r.isDefault() && r.knownAt(month, town.getResearch())) listedWays++;
         for (ResearchView.RecipeUse use : pulpUses) running += use.running();
         check("a template with no recipe piece is all one part: the Pulp Mill (" + mills.getQuantity() + " mills, no piece) lists its " + listedWays + " known non-default ways, its choice runs on every mill and the others on none",
@@ -1114,12 +1114,12 @@ public class ResearchViewCheck {
         check("medicine by a Medical School and the Universities, business and law by the Universities alone (a school of the field first, the Universities after)",
                 o.fields().get(1).schoolsWords().equals("1 Medical School, 2 Universities") && o.fields().get(2).schoolsWords().equals("2 Universities")
                         && o.fields().get(3).schoolsWords().equals("2 Universities"), o.fields().get(1).schoolsWords() + " / " + o.fields().get(2).schoolsWords());
-        int hosted = 0;
+        long hosted = 0;
         for (BuildingsStacks s : g.getBuildingManager().getStacksView()) {
             if (s.getQuantity() > 0 && s.getBuilding().getTeaches() != null && Research.staffByField(s.getBuilding().getTeaches(), null).containsKey(Field.ENGINEERING)) hosted += s.getQuantity();
         }
         check("...the engineering count is every standing school the model's staffByField() gives it a share of: " + hosted,
-                hosted == o.fields().get(0).schools().stream().mapToInt(ResearchView.SchoolCount::count).sum());
+                hosted == o.fields().get(0).schools().stream().mapToLong(ResearchView.SchoolCount::count).sum());
 
         // The words, on their own.
         check("\"nothing in reach\" for none, \"1 in reach: rail\" for one, \"2 in reach: a; b\" for two, the count alone where the texts are blank",

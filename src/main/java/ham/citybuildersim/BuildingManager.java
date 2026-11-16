@@ -5035,7 +5035,7 @@ public class BuildingManager {
         for (BuildingsStacks stack : stacks) stack.setOnScrap(s -> onScrap.accept(s));
     }
 
-    public void addStack(BuildingsTemplate template, int quantity, boolean noConstruction) {
+    public void addStack(BuildingsTemplate template, long quantity, boolean noConstruction) {
 
         if (template.getName() == null) {
             System.out.println("error");
@@ -5244,7 +5244,7 @@ public class BuildingManager {
         double[] owed = new double[n + 1 + d];
         for (int k = 0; k < n; k++) {
             BuildingsStacks s = stacks.get(k);
-            int building = s.getUnderConstruction();
+            long building = s.getUnderConstruction();
             double points = s.getBuilding().getConstructionPoints();
             if (extra != null && extraCount > 0 && s.getBuilding() == extra) {
                 extraHasStack = true;
@@ -5332,12 +5332,12 @@ public class BuildingManager {
      * size (BusinessInvestment.leadTime(), orderSize()) and the build quote
      * (Game.quoteMonths()). MAX_VALUE with no output.
      */
-    public double waitFor(BuildingsTemplate t, int quantity, double siteOutput) {
+    public double waitFor(BuildingsTemplate t, long quantity, double siteOutput) {
         return waitFor(t, quantity, 0, siteOutput);
     }
 
     /** ...with `extraPoints` more owed on the order's site than its buildings' own (ET2: a foothill pad's preparation, SitePreparation); waitFor() exactly for none. */
-    public double waitFor(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
+    public double waitFor(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (t == null || quantity < 1) return 0;
         return priorityWait(waitWith(t, quantity, extraPoints, siteOutput), siteOutput);
     }
@@ -5356,7 +5356,7 @@ public class BuildingManager {
     }
 
     /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone - and `extraPoints` more owed on its site (ET2). */
-    private double waitWith(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
+    private double waitWith(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         // ...the first group's, with a depot served first on site or a depot
         // weighed that would be (0.7.130).
@@ -5370,18 +5370,18 @@ public class BuildingManager {
     }
 
     /** The points an order of `quantity` owes: its buildings' own, and `extraPoints` more on its site (ET2) - the buildings' alone, to the bit, for none. */
-    private static double orderPoints(BuildingsTemplate t, int quantity, double extraPoints) {
+    private static double orderPoints(BuildingsTemplate t, long quantity, double extraPoints) {
         double points = quantity * (double) t.getConstructionPoints();
         return extraPoints > 0 ? points + extraPoints : points;
     }
 
     /** The crews' rule's own wait, held steady, for an order of `quantity` - none, for what is on site alone: waitWith() before 0.7.130, and still, with no depot served first - and `extraPoints` more owed on its site (ET2). */
-    private double ruleWait(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
+    private double ruleWait(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         double others = 0, aheadOwed = 0;
-        int aheadUnits = 0;
+        long aheadUnits = 0;
         for (BuildingsStacks s : stacks) {
-            int on = s.getUnderConstruction();
+            long on = s.getUnderConstruction();
             if (on <= 0) continue;
             if (s.getBuilding() == t) {
                 aheadUnits = on;
@@ -5634,11 +5634,11 @@ public class BuildingManager {
         /** The builders' own sites served off the top of the month (0.7.130), in the stacks' order; empty when none is on site. */
         public final java.util.List<String> buildersFirst;
         /** ...and the buildings on them: the depots the line counts. */
-        public final int buildersOnSite;
+        public final long buildersOnSite;
         Plan(java.util.List<String> keys, double output, double[] owed, double[] rule, double[] share, double[] work,
              java.util.List<ConstructionControl.Overtime> overtime, double overtimePoints,
              java.util.List<String> deathCareFirst, double unburied,
-             java.util.List<String> buildersFirst, int buildersOnSite) {
+             java.util.List<String> buildersFirst, long buildersOnSite) {
             this.keys = keys; this.output = output; this.owed = owed; this.rule = rule; this.share = share;
             this.work = work; this.overtime = overtime; this.overtimePoints = overtimePoints;
             this.deathCareFirst = java.util.Collections.unmodifiableList(deathCareFirst);
@@ -5734,7 +5734,7 @@ public class BuildingManager {
         // site by the rule, and the city's part of it in the player's order.
         java.util.List<String> first = firstGroup();
         java.util.List<String> builders = new java.util.ArrayList<>();
-        int buildersOn = 0;
+        long buildersOn = 0;
         if (!first.isEmpty()) {
             share = firstOffTheTop(siteOutput, weight, owed, keys, first);
             if (control.isPrioritySet()) {
@@ -6080,10 +6080,10 @@ public class BuildingManager {
     }
 
     /** Whether the city could staff n of the builders' depots, by their own plan's test (Sector.staffing(), MIN_STAFFABLE_TO_ORDER), as Game hands it; null - a bare manager - says yes. */
-    private java.util.function.BiPredicate<BuildingsTemplate, Integer> buildersCouldStaff;
+    private java.util.function.BiPredicate<BuildingsTemplate, Long> buildersCouldStaff;
 
     /** Told by Game: how the builders' planner tests a depot's posts against the city's workers (0.7.130). */
-    public void setBuildersCouldStaff(java.util.function.BiPredicate<BuildingsTemplate, Integer> couldStaff) {
+    public void setBuildersCouldStaff(java.util.function.BiPredicate<BuildingsTemplate, Long> couldStaff) {
         this.buildersCouldStaff = couldStaff;
     }
 
@@ -6204,15 +6204,15 @@ public class BuildingManager {
      * expand at (ruleWait() past BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING,
      * at their month for the sites with every post offered). Never anything else.
      */
-    public boolean goesFirst(BuildingsTemplate t, int extra) {
+    public boolean goesFirst(BuildingsTemplate t, long extra) {
         return goesFirst(t, extra, null);
     }
 
     /** The same eligibility and starvation test on a quoted queue, before first-unit progress replaces full-site points. */
-    private boolean goesFirst(BuildingsTemplate t, int extra, java.util.Map<String, double[]> projected) {
+    private boolean goesFirst(BuildingsTemplate t, long extra, java.util.Map<String, double[]> projected) {
         if (!buildersFirstOn || !addsToTheBuilders(t)) return false;
         BuildingsStacks s = getStack(t);
-        int n = Math.max(0, extra) + (s == null ? 0 : Math.max(0, s.getUnderConstruction()));
+        long n = Math.max(0, extra) + (s == null ? 0 : Math.max(0, s.getUnderConstruction()));
         if (n < 1) return false;
         if (buildersCouldStaff != null && !buildersCouldStaff.test(t, n)) return false;
         if (sitesAtEveryPost == null) return true;
@@ -6369,10 +6369,10 @@ public class BuildingManager {
     private void retirePaved(BuildingsStacks stack) {
         if (stack.getLastFinished() <= 0 || control.paving() <= 0
                 || !ConstructionControl.PAVE_TO.equals(stack.getBuilding().getName())) return;
-        int paved = control.pavedOf(stack.getLastFinished());
+        long paved = control.pavedOf(stack.getLastFinished());
         if (paved <= 0) return;
         BuildingsTemplate gravel = getTemplateByName(ConstructionControl.PAVE_FROM);
-        int retired = retire(gravel, paved);
+        long retired = retire(gravel, paved);
         double freed = (gravel == null ? 0 : gravel.getLandSqFt() * (double) retired)
                 - stack.getBuilding().getLandSqFt() * (double) paved;
         controlEvents.paved.add(new ConstructionControl.Paved(retired, freed));
@@ -6453,11 +6453,11 @@ public class BuildingManager {
      * with it. Reads the same first-group, priority and overtime arithmetic
      * as siteMonths(), with only the target's points changed (HW1).
      */
-    public double siteUnitMonths(BuildingsTemplate t, int units, double siteOutput) {
+    public double siteUnitMonths(BuildingsTemplate t, long units, double siteOutput) {
         BuildingsStacks s = t == null ? null : getStack(t);
         if (s == null || s.getUnderConstruction() <= 0 || units <= 0) return 0;
         if (!(siteOutput > 0)) return Double.NaN;
-        int on = s.getUnderConstruction();
+        long on = s.getUnderConstruction();
         double owed = Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress());
         double points = Math.max(0, Math.min(units, on) * (double) t.getConstructionPoints()
                 - s.getConstructionProgress());
@@ -6472,13 +6472,13 @@ public class BuildingManager {
     }
 
     /** Completion of currently pending units after one additional city order, with its full preparation points. */
-    public double siteUnitMonthsAfter(BuildingsTemplate t, int units, double siteOutput,
-                                      BuildingsTemplate additional, int quantity, double additionalPoints) {
+    public double siteUnitMonthsAfter(BuildingsTemplate t, long units, double siteOutput,
+                                      BuildingsTemplate additional, long quantity, double additionalPoints) {
         if (additional == null || quantity <= 0) return siteUnitMonths(t, units, siteOutput);
         BuildingsStacks stack = t == null ? null : getStack(t);
         if (stack == null || stack.getUnderConstruction() <= 0 || units <= 0) return 0;
         if (!(siteOutput > 0)) return Double.NaN;
-        int on = stack.getUnderConstruction();
+        long on = stack.getUnderConstruction();
         double firstPoints = Math.min(units, on) * (double) t.getConstructionPoints() - stack.getConstructionProgress();
         if (additional == t) firstPoints += additionalPoints - quantity * (double) t.getConstructionPoints();
         firstPoints = Math.max(0, firstPoints);
@@ -6507,12 +6507,12 @@ public class BuildingManager {
      * t's site where it stands, or a new city site at the bottom of the
      * order. MAX_VALUE with no output.
      */
-    public double cityOrderWait(BuildingsTemplate t, int quantity, double siteOutput) {
+    public double cityOrderWait(BuildingsTemplate t, long quantity, double siteOutput) {
         return cityOrderWait(t, quantity, 0, siteOutput);
     }
 
     /** ...with `extraPoints` more owed on its site than its buildings' own (ET2: a foothill pad's preparation, SitePreparation); cityOrderWait() exactly for none. */
-    public double cityOrderWait(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
+    public double cityOrderWait(BuildingsTemplate t, long quantity, double extraPoints, double siteOutput) {
         if (t == null || quantity < 1) return 0;
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         double points = orderPoints(t, quantity, extraPoints);
@@ -6533,7 +6533,7 @@ public class BuildingManager {
      * the rule as waitFor() times an order, or as the hand times it, as
      * cityOrderWait(). MAX_VALUE with no output.
      */
-    public double restartWait(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
+    public double restartWait(BuildingsTemplate t, long n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
         if (firstOn(t, n)) return priorityWait(firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), true, siteOutput), siteOutput);
@@ -6555,7 +6555,7 @@ public class BuildingManager {
      * serves them or waits behind the death care on site (0.7.129). Null
      * when the rule times it.
      */
-    private double[] joined(BuildingsTemplate t, int n, double owed) {
+    private double[] joined(BuildingsTemplate t, long n, double owed) {
         BuildingsStacks s = getStack(t);
         boolean onSite = s != null && s.getUnderConstruction() > 0;
         if (onSite && !s.isCitysOwn()) return null;
@@ -6563,7 +6563,7 @@ public class BuildingManager {
         // ...or the dead wait, and it serves them or waits behind the death care on site (0.7.129).
         boolean deadFirst = unburiedNow() > 0 && (servesTheDead(t) || !deathCareFirst().isEmpty());
         if (!control.isPrioritySet() && !(onSite && control.isRushed(key)) && !deadFirst) return null;
-        int on = onSite ? s.getUnderConstruction() : 0;
+        long on = onSite ? s.getUnderConstruction() : 0;
         double aheadOwed = onSite
                 ? Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress()) : 0;
         return new double[] { weightOf(t, on + n), aheadOwed + owed };
@@ -6579,7 +6579,7 @@ public class BuildingManager {
      * everything the city has on site, since a new site of the city's joins
      * the bottom of its order (handWait()). MAX_VALUE with no output.
      */
-    public double waitForDemolition(int n, double points, double siteOutput) {
+    public double waitForDemolition(long n, double points, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (!(points > 0) || n < 1) return 0;
         ConstructionControl.Demolition probe = new ConstructionControl.Demolition();
@@ -6596,16 +6596,16 @@ public class BuildingManager {
      * already, as waitFor() times an order. The rule's arithmetic; the
      * hand's is restartWait(). MAX_VALUE with no output.
      */
-    public double siteMonthsWith(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
+    public double siteMonthsWith(BuildingsTemplate t, long n, double owedPoints, double siteOutput) {
         return priorityWait(siteMonthsWithRaw(t, n, owedPoints, siteOutput), siteOutput);
     }
 
-    private double siteMonthsWithRaw(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
+    private double siteMonthsWithRaw(BuildingsTemplate t, long n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
         if (firstOn(t, n)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), false, siteOutput);
         BuildingsStacks s = getStack(t);
-        int ahead = s == null ? 0 : s.getUnderConstruction();
+        long ahead = s == null ? 0 : s.getUnderConstruction();
         double aheadOwed = s == null || ahead <= 0 ? 0
                 : Math.max(0, ahead * (double) t.getConstructionPoints() - s.getConstructionProgress());
         double others = 0;
@@ -6622,10 +6622,10 @@ public class BuildingManager {
     }
 
     /** Full pending crew weights and points after one quoted additional city order. */
-    private java.util.Map<String, double[]> quotedSites(BuildingsTemplate additional, int quantity, double points) {
+    private java.util.Map<String, double[]> quotedSites(BuildingsTemplate additional, long quantity, double points) {
         java.util.Map<String, double[]> by = new java.util.LinkedHashMap<>();
         for (BuildingsStacks s : stacks) {
-            int on = s.getUnderConstruction();
+            long on = s.getUnderConstruction();
             if (on <= 0) continue;
             double o = Math.max(0, on * (double) s.getBuilding().getConstructionPoints() - s.getConstructionProgress());
             by.put(ConstructionControl.keyOf(s.getBuilding()), new double[] { weightOf(s.getBuilding(), on), o });
@@ -6636,7 +6636,7 @@ public class BuildingManager {
         if (additional != null && quantity > 0) {
             String extraKey = ConstructionControl.keyOf(additional);
             BuildingsStacks stack = getStack(additional);
-            int on = stack == null ? 0 : Math.max(0, stack.getUnderConstruction());
+            long on = stack == null ? 0 : Math.max(0, stack.getUnderConstruction());
             double owed = by.containsKey(extraKey) ? by.get(extraKey)[1] : 0;
             by.put(extraKey, new double[] {weightOf(additional, (long) on + quantity), owed + Math.max(0, points)});
         }
@@ -6661,7 +6661,7 @@ public class BuildingManager {
     }
 
     private double handWait(String key, double[] mine, boolean isNew, double siteOutput,
-                            BuildingsTemplate additional, int quantity, double points) {
+                            BuildingsTemplate additional, long quantity, double points) {
         java.util.Map<String, double[]> by = quotedSites(additional, quantity, points);
         if (mine != null) by.put(key, mine);
         double[] me = by.get(key);
@@ -6717,7 +6717,7 @@ public class BuildingManager {
     }
 
     /** Whether a wait is the first group's (0.7.130): a depot of the builders' on site served first, or `quantity` more of `t` that would be. */
-    private boolean firstOn(BuildingsTemplate t, int quantity) {
+    private boolean firstOn(BuildingsTemplate t, long quantity) {
         if (!buildersFirstOn) return false;
         if (!buildersOwnOnSite().isEmpty()) return true;
         return quantity > 0 && goesFirst(t, quantity);
@@ -6725,7 +6725,7 @@ public class BuildingManager {
 
     /** Builders promoted by the complete prospective queue, including depots starved only by the additional reserve. */
     private java.util.Set<String> buildersFirstAfter(java.util.Map<String, double[]> projected,
-                                                    BuildingsTemplate additional, int quantity) {
+                                                    BuildingsTemplate additional, long quantity) {
         java.util.Set<String> group = new java.util.HashSet<>();
         for (String key : projected.keySet()) {
             int id = ConstructionControl.templateIdOf(key);
@@ -6736,9 +6736,9 @@ public class BuildingManager {
     }
 
     /** t's site with n more of it owing `owed` more points on it: {its crew's weight, its points owed}. */
-    private double[] withMore(BuildingsTemplate t, int n, double owed) {
+    private double[] withMore(BuildingsTemplate t, long n, double owed) {
         BuildingsStacks s = getStack(t);
-        int on = s == null ? 0 : Math.max(0, s.getUnderConstruction());
+        long on = s == null ? 0 : Math.max(0, s.getUnderConstruction());
         double aheadOwed = on > 0 ? Math.max(0, on * (double) t.getConstructionPoints() - s.getConstructionProgress()) : 0;
         return new double[] { weightOf(t, (long) on + n), aheadOwed + owed };
     }
@@ -6762,7 +6762,7 @@ public class BuildingManager {
     }
 
     private double firstWait(String key, double[] mine, boolean isNew, boolean cityOrder, double siteOutput,
-                             BuildingsTemplate additional, int quantity, double points) {
+                             BuildingsTemplate additional, long quantity, double points) {
         if (!(siteOutput > 0)) return Double.NaN;
         java.util.Map<String, double[]> by = quotedSites(additional, quantity, points);
         boolean prospective = additional != null && quantity > 0;
@@ -6778,7 +6778,7 @@ public class BuildingManager {
                 int id = ConstructionControl.templateIdOf(key);
                 BuildingsTemplate t = id < 0 ? null : getTemplate(id);
                 BuildingsStacks st = t == null ? null : getStack(t);
-                int n = t == null ? 0 : (int) Math.round(mine[0] / Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT));
+                long n = t == null ? 0 : Math.round(mine[0] / Math.pow(t.getConstructionPoints(), CREW_SCALE_EXPONENT));
                 group.remove(key);
                 if (goesFirst(t, n - (st == null ? 0 : Math.max(0, st.getUnderConstruction())))) group.add(key);
             }
@@ -6923,9 +6923,9 @@ public class BuildingManager {
     public static final class Completion {
 
         public final String building;
-        public final int quantity;
+        public final long quantity;
 
-        Completion(String building, int quantity) {
+        Completion(String building, long quantity) {
             this.building = building;
             this.quantity = quantity;
         }
@@ -6941,8 +6941,8 @@ public class BuildingManager {
     //getters
 
     /** How many finished buildings of this name the city has. */
-    public int countByName(String name) {
-        int total = 0;
+    public long countByName(String name) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getName().equals(name)) total += stack.getQuantity();
         }
@@ -6959,8 +6959,8 @@ public class BuildingManager {
      * and no bank at all came to sit at the punitive rate for four thousand
      * months without ever ordering the building that would fix it.
      */
-    public int underConstructionByName(String name) {
-        int total = 0;
+    public long underConstructionByName(String name) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getName().equals(name)) total += stack.getUnderConstruction();
         }
@@ -7015,7 +7015,7 @@ public class BuildingManager {
     public double getRemainingConstructionPoints() {
         double total = 0;
         for (BuildingsStacks stack : stacks) {
-            int building = stack.getUnderConstruction();
+            long building = stack.getUnderConstruction();
             if (building <= 0) continue;
 
             double perUnit = stack.getBuilding().getConstructionPoints();
@@ -7429,8 +7429,8 @@ public class BuildingManager {
      * How many finished buildings, in every sector, have a template this accepts
      * (FR7): Freight counts the bulk works a spur could be laid into.
      */
-    public int standingWhere(java.util.function.Predicate<BuildingsTemplate> which) {
-        int total = 0;
+    public long standingWhere(java.util.function.Predicate<BuildingsTemplate> which) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             if (which.test(stack.getBuilding())) total += stack.getQuantity();
         }
@@ -7449,8 +7449,8 @@ public class BuildingManager {
     }
 
     /** Orders on site for a sector, in buildings. */
-    public int getUnderConstructionBySector(String sector) {
-        int total = 0;
+    public long getUnderConstructionBySector(String sector) {
+        long total = 0;
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getSector().equals(sector)) total += stack.getUnderConstruction();
         }
@@ -8131,7 +8131,7 @@ public class BuildingManager {
     }
 
     /** How many of template id {@code i} are finished and standing. */
-    public int getQuantity(int i) {
+    public long getQuantity(int i) {
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getId() == i) {
                 return stack.getQuantity();
@@ -8231,7 +8231,7 @@ public class BuildingManager {
      *
      * @return how many were actually scrapped, which may be fewer than asked
      */
-    public int retire(BuildingsTemplate template, int quantity) {
+    public long retire(BuildingsTemplate template, long quantity) {
 
         if (template == null || quantity <= 0) {
             return 0;
@@ -8240,7 +8240,7 @@ public class BuildingManager {
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getId() == template.getId()) {
 
-                int scrapped = Math.min(quantity, stack.getQuantity());
+                long scrapped = Math.min(quantity, stack.getQuantity());
                 if (scrapped > 0) {
                     stack.removeQuantity(scrapped);
                 }
@@ -8268,8 +8268,8 @@ public class BuildingManager {
      * unfitted counts): only the templates with any, so a city with none unfitted writes none and an old save, which has none, reads as every
      * building fitted. A fresh map, not the stacks' own.
      */
-    public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById() {
-        java.util.Map<Integer, java.util.Map<String, Integer>> out = new java.util.TreeMap<>();
+    public java.util.Map<Integer, java.util.Map<String, Long>> getUnfittedById() {
+        java.util.Map<Integer, java.util.Map<String, Long>> out = new java.util.TreeMap<>();
         for (BuildingsStacks stack : stacks) {
             if (stack.hasUnfitted()) out.put(stack.getBuilding().getId(), new java.util.TreeMap<>(stack.getUnfittedView()));
         }
@@ -8281,22 +8281,22 @@ public class BuildingManager {
      * longer has, a stack the save did not put up and a piece the template no longer carries are skipped: a count for a piece nobody can fit
      * would hold a form's share up for ever. Null restores nothing.
      */
-    public void restoreUnfitted(java.util.Map<Integer, java.util.Map<String, Integer>> byId) {
+    public void restoreUnfitted(java.util.Map<Integer, java.util.Map<String, Long>> byId) {
         if (byId == null) return;
-        for (java.util.Map.Entry<Integer, java.util.Map<String, Integer>> e : byId.entrySet()) {
+        for (java.util.Map.Entry<Integer, java.util.Map<String, Long>> e : byId.entrySet()) {
             if (e.getKey() == null || e.getValue() == null) continue;
             BuildingsTemplate t = getTemplate(e.getKey());
             BuildingsStacks stack = t == null ? null : getStack(t);
             if (stack == null) continue;
-            for (java.util.Map.Entry<String, Integer> piece : e.getValue().entrySet()) {
+            for (java.util.Map.Entry<String, Long> piece : e.getValue().entrySet()) {
                 if (piece.getKey() == null || piece.getValue() == null || t.getEquipment(piece.getKey()) == null) continue;
                 stack.setUnfitted(piece.getKey(), piece.getValue());
             }
         }
     }
 
-    public int[] getUnderConstructionArray() {
-        int[] progress = new int[stacks.size()];
+    public long[] getUnderConstructionArray() {
+        long[] progress = new long[stacks.size()];
 
         for (int i = 0; i < stacks.size(); i++) {
             progress[i] = stacks.get(i).getUnderConstruction();
@@ -8348,8 +8348,8 @@ public class BuildingManager {
         return out;
     }
 
-    public int[] getUnderConstructionById() {
-        int[] out = new int[getMaxTemplateId() + 1];
+    public long[] getUnderConstructionById() {
+        long[] out = new long[getMaxTemplateId() + 1];
         for (BuildingsStacks stack : stacks) {
             int id = stack.getBuilding().getId();
             if (id >= 0 && id < out.length) {
@@ -8495,7 +8495,7 @@ public class BuildingManager {
      * and a restore that quietly conjures a stack for an id the save no longer
      * recognises would hide a real problem. Returns false in that case instead.
      */
-    public boolean restoreConstruction(int templateId, int underConstruction,
+    public boolean restoreConstruction(int templateId, long underConstruction,
                                        double progress, double materialsOwed, double contractValue) {
         for (BuildingsStacks stack : stacks) {
             if (stack.getBuilding().getId() == templateId) {

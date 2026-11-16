@@ -205,9 +205,9 @@ public final class Recipes {
         for (BuildingsTemplate t : buildings.getTemplates()) {
             if (!t.hasRecipeChoice()) continue;
             BuildingsStacks stack = buildings.getStack(t);
-            int quantity = stack == null ? 0 : stack.getQuantity();
+            long quantity = stack == null ? 0 : stack.getQuantity();
             String piece = t.recipePieceId();
-            int unfitted = piece == null || stack == null ? 0 : Math.min(quantity, stack.getUnfitted(piece));
+            long unfitted = piece == null || stack == null ? 0 : Math.min(quantity, stack.getUnfitted(piece));
             String[] picked = chosen.get(t.getId());
             Recipe fitted = picked == null ? null : t.getRecipe(picked[0]);
             Recipe without = picked == null ? null : t.getRecipe(picked[1]);

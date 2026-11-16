@@ -150,7 +150,7 @@ public class FittingCheck {
         String industryKey = a.getSectors().industry().key();
         BuildingManager bm = a.getBuildingManager();
         BuildingsStacks bakery = stack(a, "Bakery"), industrial = stack(a, "Industrial Bakery"), grain = stack(a, "Grain Farm");
-        int standing = bakery.getQuantity();
+        long standing = bakery.getQuantity();
         // One of the Bakeries, the whole Industrial Bakery stack and the whole Grain Farm stack are without their pieces...
         bakery.setUnfitted(DRIVE, 1);
         industrial.setUnfitted(DRIVE, industrial.getQuantity());
@@ -403,8 +403,8 @@ public class FittingCheck {
     static final int BAKERY_MONTHS = 60;
 
     /** Presses the clock until nothing is on site on this stack (at most `most` months); how many buildings opened over them. */
-    static int pressUntilOpen(Game g, BuildingsStacks s, int most) {
-        int opened = 0;
+    static long pressUntilOpen(Game g, BuildingsStacks s, int most) {
+        long opened = 0;
         for (int i = 0; i < most && s.getUnderConstruction() > 0; i++) {
             step(g, 1);
             opened += s.getLastFinished();
@@ -413,17 +413,17 @@ public class FittingCheck {
     }
 
     /** Counts actual quantity increases each month, so a bakery-only premise is observed. */
-    static int pressUntilOpenAlone(Game g, BuildingsStacks target, int most, int[] unrelated) {
-        int opened = 0;
+    static long pressUntilOpenAlone(Game g, BuildingsStacks target, int most, long[] unrelated) {
+        long opened = 0;
         for (int i = 0; i < most && target.getUnderConstruction() > 0; i++) {
-            java.util.Map<Integer, Integer> before = new java.util.HashMap<>();
+            java.util.Map<Integer, Long> before = new java.util.HashMap<>();
             for (BuildingsStacks stack : g.getBuildingManager().getStacksView())
                 before.put(stack.getBuilding().getId(), stack.getQuantity());
             step(g, 1);
             opened += target.getLastFinished();
             for (BuildingsStacks stack : g.getBuildingManager().getStacksView())
                 if (stack != target) unrelated[0] += Math.max(0,
-                        stack.getQuantity() - before.getOrDefault(stack.getBuilding().getId(), 0));
+                        stack.getQuantity() - before.getOrDefault(stack.getBuilding().getId(), 0L));
         }
         return opened;
     }
@@ -472,7 +472,7 @@ public class FittingCheck {
         boolean movedUp = EquipmentCheck.priceCoalAt(g, even * 3);
         check("fixture: the city's coal price moved to three times the break-even, where the drive pays for a new building",
                 movedUp && EquipmentFit.verdictForNew(g, t, drive).kind() == EquipmentFit.Kind.PAYS, EquipmentFit.verdictForNew(g, t, drive).toString());
-        int before = bakery.getUnfitted(DRIVE);
+        long before = bakery.getUnfitted(DRIVE);
         double cash = g.getCash();
         Game.BuildResult[] ordered = new Game.BuildResult[1];
         Game.BuildQuote quoted = g.quoteBuildOn(t, 2, Landmasses.CHOSEN);
@@ -483,8 +483,8 @@ public class FittingCheck {
         quietly(() -> ordered[0] = g.buildStack(t, 2, false));
         ORDER_COST[which] = cash - g.getCash();
         check("fixture: two Bakeries are on site", ordered[0] == Game.BuildResult.SUCCESS && bakery.getUnderConstruction() == 2, String.valueOf(ordered[0]));
-        int[] unrelated = { 0 };
-        int opened = pressUntilOpenAlone(g, bakery, BAKERY_MONTHS, unrelated);
+        long[] unrelated = { 0 };
+        long opened = pressUntilOpenAlone(g, bakery, BAKERY_MONTHS, unrelated);
         check("fixture: no other building completed while the two Bakeries opened", unrelated[0] == 0,
                 "other completions " + unrelated[0]);
         check("at that price the Bakeries that finished came fitted: the count of the drive unfitted is as it was", opened == 2 && bakery.getUnfitted(DRIVE) == before,
@@ -501,7 +501,7 @@ public class FittingCheck {
         check("fixture: the coal price moved to three tenths of the break-even, where the drive does not pay for a new building",
                 movedDown && EquipmentFit.verdictForNew(g, t, drive).kind() == EquipmentFit.Kind.NOT_YET, EquipmentFit.verdictForNew(g, t, drive).toString());
         before = bakery.getUnfitted(DRIVE);
-        final int heldBefore = before;
+        final long heldBefore = before;
         quietly(() -> ordered[0] = g.buildStack(t, 2, false));
         check("fixture: two more Bakeries are on site", ordered[0] == Game.BuildResult.SUCCESS && bakery.getUnderConstruction() == 2, String.valueOf(ordered[0]));
         opened = pressUntilOpen(g, bakery, BAKERY_MONTHS);
@@ -520,10 +520,10 @@ public class FittingCheck {
         // A farm finishing: the tractor is not known before PE14's month (June 1917), whatever the prices.
         BuildingsStacks grain = stack(g, "Grain Farm");
         Equipment tractor = grain.getBuilding().getEquipment(TRACTOR);
-        final int tractorBefore = grain.getUnfitted(TRACTOR);
+        final long tractorBefore = grain.getUnfitted(TRACTOR);
         quietly(() -> ordered[0] = g.buildStack(grain.getBuilding(), 1, false));
         check("fixture: a Grain Farm is on site", ordered[0] == Game.BuildResult.SUCCESS && grain.getUnderConstruction() == 1, String.valueOf(ordered[0]));
-        int farmsOpened = pressUntilOpen(g, grain, 36);
+        long farmsOpened = pressUntilOpen(g, grain, 36);
         check("the verdict for a new farm's tractor is NOT_KNOWN before PE14's June 1917, whatever the prices", EquipmentFit.verdictForNew(g, grain.getBuilding(), tractor).kind() == EquipmentFit.Kind.NOT_KNOWN);
         if (unfittedCity) {
             check("a farm that finished came without its tractor: the count of the tractor unfitted is up by what finished", farmsOpened == 1
@@ -1198,7 +1198,7 @@ public class FittingCheck {
         double left = g.getFittings().pointsOwed();
         check("fixture: its work has begun and is not done", left > 0 && left < each);
         double cash = g.getCash(), earned = builders.getFittingThisMonth();
-        int standing = bakery.getQuantity();
+        long standing = bakery.getQuantity();
         bakery.removeQuantity(1);
         check("fixture: the scrap took an unfitted bakery (the unfitted first), one still without the drive",
                 bakery.getQuantity() == standing - 1 && bakery.getUnfitted(DRIVE) == 1);
@@ -1228,7 +1228,7 @@ public class FittingCheck {
                 && g.getFittings().isEmpty() && g.getFittings().pointsOwed() == 0);
         check("...and neither scrap refunded anything: the city's cash and the builders' fitting revenue as they were",
                 g.getCash() == cash && builders.getFittingThisMonth() == earned);
-        int fitted = bakery.getQuantity() - bakery.getUnfitted(DRIVE);
+        long fitted = bakery.getQuantity() - bakery.getUnfitted(DRIVE);
         g.workTheFittings();
         check("the cancelled work fits nothing: the bakeries standing keep the drive they had", g.getFittings().isEmpty()
                 && bakery.getQuantity() - bakery.getUnfitted(DRIVE) == fitted);
@@ -1237,7 +1237,7 @@ public class FittingCheck {
         check("a bakery left without the drive needs a fresh paid order", g.fitForCity(bakery.getBuilding(), DRIVE) == null
                 && g.getFittings().pointsOwed() == each && g.getCash() < cash);
         g.workTheFittings();
-        int stillUnfitted = bakery.getUnfitted(DRIVE);
+        long stillUnfitted = bakery.getUnfitted(DRIVE);
         double afterPayment = g.getCash();
         g.run();
         check("running an initialized city again keeps its purchased fitting and money", bakery.getUnfitted(DRIVE) == stillUnfitted

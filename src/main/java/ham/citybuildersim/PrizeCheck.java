@@ -158,8 +158,8 @@ public class PrizeCheck {
         return m;
     }
 
-    static EnumMap<Field, Integer> counts(Field f, int n) {
-        EnumMap<Field, Integer> m = new EnumMap<>(Field.class);
+    static EnumMap<Field, Long> counts(Field f, long n) {
+        EnumMap<Field, Long> m = new EnumMap<>(Field.class);
         m.put(f, n);
         return m;
     }
@@ -177,7 +177,7 @@ public class PrizeCheck {
         final Research r = new Research();
         final long seed;
         final EnumMap<Field, Double> city = new EnumMap<>(Field.class), room = new EnumMap<>(Field.class), labPeople = new EnumMap<>(Field.class);
-        final EnumMap<Field, Integer> labs = new EnumMap<>(Field.class);
+        final EnumMap<Field, Long> labs = new EnumMap<>(Field.class);
         double[] wages = W, fill = FULL;
         double drawn;
         // what stood before the month's work: the piles, the labs' part, the pots, the chase of each field
@@ -189,7 +189,7 @@ public class PrizeCheck {
 
         Sim city(Field f, double n) { city.put(f, n); return this; }
 
-        Sim labs(Field f, int n, double people) { labs.put(f, n); labPeople.put(f, people); return this; }
+        Sim labs(Field f, long n, double people) { labs.put(f, n); labPeople.put(f, people); return this; }
 
         Sim room(Field f, double n) { room.put(f, n); return this; }
 
@@ -980,8 +980,8 @@ public class PrizeCheck {
         Research shed = new Research();
         for (int month = 1; month <= Research.LAB_IDLE_MONTHS + 1; month++) shed.idleMonth(null, counts(f, 1), map(f, 100.0));
         Field other = f == Field.LAW ? Field.BUSINESS : Field.LAW;
-        EnumMap<Field, Integer> twoFields = counts(f, 1);
-        twoFields.put(other, 1);
+        EnumMap<Field, Long> twoFields = counts(f, 1);
+        twoFields.put(other, 1L);
         EnumMap<Field, Double> twoPeople = map(f, 100.0);
         twoPeople.put(other, 100.0);
         Research both = new Research();
@@ -1210,8 +1210,8 @@ public class PrizeCheck {
         return m;
     }
 
-    static EnumMap<Field, Integer> everyLab(int each) {
-        EnumMap<Field, Integer> m = new EnumMap<>(Field.class);
+    static EnumMap<Field, Long> everyLab(long each) {
+        EnumMap<Field, Long> m = new EnumMap<>(Field.class);
         for (Field f : Field.values()) m.put(f, each);
         return m;
     }
@@ -1427,8 +1427,8 @@ public class PrizeCheck {
     }
 
     /** The labs the city has in all fields, standing and on site. */
-    static int labsInAll(Game g) {
-        int n = 0;
+    static long labsInAll(Game g) {
+        long n = 0;
         for (Field f : Field.values()) n += g.labsStanding(f) + g.labsOnSite(f);
         return n;
     }
@@ -1607,11 +1607,11 @@ public class PrizeCheck {
         Sector.Staffing staffsALab = d.getSectors().businessServices().staffing(d.labTemplate(Field.MEDICINE));
         check("fixture: the village, handed its heads, can staff a medical lab", staffsALab.passes(), staffsALab.why("lab"));
         playHandedMore(d, 1);
-        int first = d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
+        long first = d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
         check("...yet the investors order one that month, never two: at most one lab a field a month", first == 1, labsOf(d));
         int wantedNext = rd.labsWanted(Field.MEDICINE, d.getMonth() + 1, d.getPopulationManager().getWagesPerType().clone());
         playHandedMore(d, 1);
-        int second =d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
+        long second =d.labsOnSite(Field.MEDICINE) + d.labsStanding(Field.MEDICINE);
         check("...and the next month one more only if the model still wants more than the one it has (wanted " + wantedNext + "): " + second + " labs", second - first <= 1 && (wantedNext > first ? second == first + 1 : second == first), labsOf(d));
     }
 

@@ -869,7 +869,7 @@ final class BuildScreen {
     final java.util.Set<String> pinnedStats = new java.util.HashSet<>();
 
     /** How many of each the player has dialled up, by building name. */
-    final java.util.Map<String, Integer> orderQty = new java.util.HashMap<>();
+    final java.util.Map<String, Long> orderQty = new java.util.HashMap<>();
 
     /**
      * One building as a card, on a city category's page (its picked ring's
@@ -945,7 +945,7 @@ final class BuildScreen {
         // The border turns the building colour while an order is pending, and the discovery's violet while the building is NEW (R5) and none is.
         Runnable dress = () -> card.setStyle("-fx-background-color: " + Palette.RAISED + ";"
                 + " -fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: "
-                + (orderQty.getOrDefault(key, 0) > 0 ? Palette.BUILDING : showNew ? Palette.DISCOVERY : Palette.EDGE) + ";");
+                + (orderQty.getOrDefault(key, 0L) > 0 ? Palette.BUILDING : showNew ? Palette.DISCOVERY : Palette.EDGE) + ";");
         Order order = Kept.scope("order", () -> orderControls(template, key, c.name(), c.types(), dress));
         repriced[0] = order.reprice();
         face.getChildren().addAll(order.steps(), order.build(), order.quoted());
@@ -1113,7 +1113,7 @@ final class BuildScreen {
     /* ----- PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70) ----- */
 
     /** How many gravel roads the card's paving is set to: apart from orderQty, so Enter and the order bar never place it. */
-    int paveQty;
+    long paveQty;
 
     /**
      * PAVE THEM (0.7.70; ConstructionControl, F). Jerus: "make it an option
@@ -1168,7 +1168,7 @@ final class BuildScreen {
         Button less = stepper("−", 26, () -> { paveQty = Math.max(0, paveQty - 1); reprice.run(); });
         Button more = stepper("+", 26, () -> { paveQty++; reprice.run(); });
         Button ten = stepper("+10", 36, () -> { paveQty += 10; reprice.run(); });
-        Button all = stepper("all", 30, () -> { paveQty = Integer.MAX_VALUE; reprice.run(); });
+        Button all = stepper("all", 30, () -> { paveQty = Long.MAX_VALUE; reprice.run(); });
         HBox steps = Kept.row(4, less, count, more, ten, all, of);
         steps.setAlignment(Pos.CENTER_LEFT);
         pave.onPress(() -> {
@@ -1204,7 +1204,7 @@ final class BuildScreen {
      * reads them): {what one does and costs, its figure over its life
      * against a new Paved Road's, the quote's line for n, "of N to pave"}.
      */
-    String[] pavingWords(BuildCard.Paving p, int n) {
+    String[] pavingWords(BuildCard.Paving p, long n) {
         String does = "Each adds " + formatter.format(Math.round(p.unit())) + " trips off the road and frees "
                 + LandManager.areaWords(p.frees()) + " · " + money(p.one().total) + " a road.";
         String against = "Over its life " + money(p.perTrip()) + " a trip, against " + money(p.pavedPerTrip())
@@ -1227,7 +1227,7 @@ final class BuildScreen {
      * the cash - paving is paid out of the treasury (Game.paveRoads()). A
      * pure read.
      */
-    Pieces.Press pavePress(BuildCard.Paving p, int n) {
+    Pieces.Press pavePress(BuildCard.Paving p, long n) {
         if (p.paveable() <= 0) return new Pieces.Press(Pieces.Look.HELD, "None to pave",
                 p.paving() > 0 ? "every gravel road is being paved" : "no gravel road standing");
         if (n <= 0) return new Pieces.Press(Pieces.Look.CHOOSE, "Pave", "choose how many");
@@ -1271,13 +1271,13 @@ final class BuildScreen {
      */
     HBox cardHead(BuildCard.Figures f, String svg, String dot, boolean afford, boolean showNew) {
         BuildingsTemplate t = f.template();
-        int owned = f.owned();
+        long owned = f.owned();
         Label name = Kept.label(t.getName());
         name.setWrapText(true);
         name.setStyle(Palette.strong(Palette.SIZE_HEADING + 1, afford ? Palette.TEXT_HEAD : Palette.TEXT_FAINT));
         javafx.scene.text.Text have = textRun(owned > 0 ? "you have " + formatter.format(owned) : "none built",
                 null, Palette.SIZE_LABEL, owned > 0 ? Palette.ACCENT : Palette.TEXT_LABEL);
-        int onSite = f.onSite();
+        long onSite = f.onSite();
         javafx.scene.text.TextFlow haveLine = Kept.of(javafx.scene.text.TextFlow.class, javafx.scene.text.TextFlow::new);
         if (onSite > 0) {
             javafx.scene.text.Text coming = textRun(" · " + formatter.format(onSite) + " on site · "
@@ -2303,7 +2303,7 @@ final class BuildScreen {
         final javafx.scene.Node[] resetHolder = new javafx.scene.Node[1];
         final HBox[] stepsHolder = new HBox[1];
         Runnable reprice = () -> {
-            int n = orderQty.getOrDefault(key, 0);
+            long n = orderQty.getOrDefault(key, 0L);
             count.setText(String.valueOf(n));
             count.setStyle(Palette.figure(Palette.SIZE_BODY, n > 0 ? Palette.BUILDING : Palette.TEXT_HEAD));
             // Kept (KP3): the ↺ is in the row only while there is an order to clear. A button hidden with showIf() keeps the
@@ -2350,7 +2350,7 @@ final class BuildScreen {
             reprice.run();
         });
         Button more = stepper("+", 26, () -> {
-            orderQty.merge(key, 1, Integer::sum);
+            orderQty.merge(key, 1L, Long::sum);
             reprice.run();
         });
         /*
@@ -2361,11 +2361,11 @@ final class BuildScreen {
          * larger is a decision worth making a hundred at a time anyway.
          */
         Button ten = stepper("+10", 36, () -> {
-            orderQty.merge(key, 10, Integer::sum);
+            orderQty.merge(key, 10L, Long::sum);
             reprice.run();
         });
         Button hundred = stepper("+100", 42, () -> {
-            orderQty.merge(key, 100, Integer::sum);
+            orderQty.merge(key, 100L, Long::sum);
             reprice.run();
         });
         /*
@@ -2379,10 +2379,10 @@ final class BuildScreen {
         Kept.tip(reset, "Back to none", 300);
         resetHolder[0] = reset;
         build.onPress(() -> {
-            int n = orderQty.getOrDefault(key, 0);
+            long n = orderQty.getOrDefault(key, 0L);
             // From none, a press chooses one and prices it; it never orders.
             if (n <= 0) {
-                orderQty.put(key, 1);
+                orderQty.put(key, 1L);
                 reprice.run();
                 return;
             }
@@ -2444,12 +2444,12 @@ final class BuildScreen {
      * of land - why, on the button, and the way out under it, which the
      * press's page offers. A pure read: no node, so a probe reads it.
      */
-    Pieces.Press orderPress(BuildCard.Verdict v, int n) {
+    Pieces.Press orderPress(BuildCard.Verdict v, long n) {
         return orderPress(v, n, null);
     }
 
     /** ...for the building ordered (ET5): once the city owns ground on more than one landmass a sea terminal's NO_COAST names the landmass it was asked for ("No shore on Island 2"), a plant's the linked ground; `t` null, or a city on one landmass, is the old words. */
-    Pieces.Press orderPress(BuildCard.Verdict v, int n, BuildingsTemplate t) {
+    Pieces.Press orderPress(BuildCard.Verdict v, long n, BuildingsTemplate t) {
         if (n <= 0 || v == null) return new Pieces.Press(Pieces.Look.CHOOSE, "Build", "choose how many");
         String count = formatter.format(n), total = money(v.quote().total);
         switch (v.kind()) {
@@ -2667,7 +2667,7 @@ final class BuildScreen {
      * and a suggestion's Build is its one caller: a card's own Build, the
      * order bar and Enter hand placeRun() their orders themselves.
      */
-    boolean placeOrder(BuildingsTemplate template, int quantity,
+    boolean placeOrder(BuildingsTemplate template, long quantity,
                             String menuTitle, EnumSet<BuildingType> categories) {
         return placeRun(runOf(template, quantity), new RunFrom(menuTitle, categories, false));
     }
@@ -2718,9 +2718,9 @@ final class BuildScreen {
      * there was anything to build, which is when the key is spent.
      */
     boolean buildPending() {
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
         for (PageCard card : pageCards) {
-            int n = orderQty.getOrDefault(card.template().getName(), 0);
+            long n = orderQty.getOrDefault(card.template().getName(), 0L);
             if (n > 0) run.putIfAbsent(card.template(), n);
         }
         if (run.isEmpty()) return false;
@@ -2737,7 +2737,7 @@ final class BuildScreen {
     boolean clearPending() {
         boolean cleared = false;
         for (PageCard card : pageCards) {
-            Integer n = orderQty.remove(card.template().getName());
+            Long n = orderQty.remove(card.template().getName());
             if (n == null) continue;
             if (n > 0) cleared = true;
             card.reprice().run();
@@ -2753,7 +2753,7 @@ final class BuildScreen {
     void showPendingHint() {
         boolean any = false;
         for (PageCard card : pageCards) {
-            if (orderQty.getOrDefault(card.template().getName(), 0) > 0) {
+            if (orderQty.getOrDefault(card.template().getName(), 0L) > 0) {
                 any = true;
                 break;
             }
@@ -3012,8 +3012,8 @@ final class BuildScreen {
     }
 
     /** Buildings on site in a category, for anybody's order (the Strategic Reserve in Infrastructure's, not Industry's: Category.holds()). */
-    int onSiteIn(BuildAdvice.Category c) {
-        int n = 0;
+    long onSiteIn(BuildAdvice.Category c) {
+        long n = 0;
         for (BuildingsStacks s : ui.game.getBuildingManager().getStacksUnderConstruction()) {
             if (c.holds(s.getBuilding())) n += s.getUnderConstruction();
         }
@@ -3021,15 +3021,15 @@ final class BuildScreen {
     }
 
     /** ...and standing. */
-    int standingIn(BuildAdvice.Category c) {
+    long standingIn(BuildAdvice.Category c) {
         BuildingManager bm = ui.game.getBuildingManager();
-        int n = 0;
+        long n = 0;
         for (BuildingsTemplate t : BuildAdvice.templatesOf(c, bm)) n += bm.getQuantity(t.getId());
         return n;
     }
 
     /** A crane and "N on site", in the building colour, or a quiet word when there is nothing. */
-    HBox onSiteLine(int n, String none) {
+    HBox onSiteLine(long n, String none) {
         Label words = Kept.label(n > 0 ? formatter.format(n) + " on site" : none);
         words.setStyle(Palette.words(Palette.SIZE_LABEL, n > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
         HBox line = Kept.row(5);
@@ -3076,7 +3076,7 @@ final class BuildScreen {
         HBox middle = Kept.row(10, ring(s.arc(), tone, JOB_RING, 6, s.figure(), 13), words);
         middle.setAlignment(Pos.CENTER_LEFT);
 
-        int onSite = onSiteIn(c);
+        long onSite = onSiteIn(c);
         String none = worst == null ? "nothing needed" : "nothing on site";
         VBox tile = Kept.column(10, top, middle,
                 Kept.scope("on site", () -> onSiteLine(onSite, none)));
@@ -3148,7 +3148,7 @@ final class BuildScreen {
     Pieces.Press allPress(List<BuildAdvice.Suggestion> cards) {
         Game g = ui.game;
         List<BuildAdvice.Suggestion> advice = BuildAdvice.builds(cards);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = BuildAdvice.run(advice);
+        java.util.LinkedHashMap<BuildingsTemplate, Long> run = BuildAdvice.run(advice);
         String all = advice.size() == 3 ? "Build all three" : "Build both";
         int ahead = g.buildRunAhead(run);
         if (ahead < run.size()) {
@@ -3202,7 +3202,7 @@ final class BuildScreen {
     }
 
     /** A measure's gauge with these buildings standing as well, as its ring writes it (0.7.41): what a served measure serves, else figureText() of its figure. */
-    String gaugeText(BuildAdvice.Measure m, java.util.Map<BuildingsTemplate, Integer> added) {
+    String gaugeText(BuildAdvice.Measure m, java.util.Map<BuildingsTemplate, Long> added) {
         return BuildAdvice.isServed(m) ? CityNeeds.servedPct(BuildAdvice.served(ui.game, m, added))
                 : figureText(m, BuildAdvice.figure(ui.game, m, added));
     }
@@ -3811,7 +3811,7 @@ final class BuildScreen {
         name.setMinWidth(0);
         Label standing = Kept.label(formatter.format(standingIn(c)));
         standing.setStyle(Palette.figure(Palette.SIZE_HEADING + 1, Palette.TEXT_HEAD));
-        int onSite = onSiteIn(c);
+        long onSite = onSiteIn(c);
         Label under = Kept.label(onSite > 0 ? formatter.format(onSite) + " on site" : "standing");
         under.setStyle(wordsAt(9.5, onSite > 0 ? Palette.BUILDING : Palette.TEXT_MUTED));
         VBox words = Kept.column(0, name, standing, under);
@@ -4101,7 +4101,7 @@ final class BuildScreen {
      * places, and what is on site with its wait. measureCard() draws it; a
      * probe can read it without the toolkit.
      */
-    record RingWords(String figure, double arc, String tone, String shortLine, String onSite, int units,
+    record RingWords(String figure, double arc, String tone, String shortLine, String onSite, long units,
                      CityNeeds.Need need) { }
 
     RingWords ringWords(BuildAdvice.Measure m, List<CityNeeds.Need> all) {
@@ -4202,8 +4202,8 @@ final class BuildScreen {
                 shortLine = says + (gap >= .5 ? "short by " + people(gap) + " " + unitWords(m) : "everyone has a place");
             }
         }
-        java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
-        int units = BuildAdvice.units(site);
+        java.util.Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(game, m);
+        long units = BuildAdvice.units(site);
         double soonest = Double.NaN;
         for (BuildingsTemplate t : site.keySet()) {
             double months = game.onSiteMonths(t);
@@ -4218,7 +4218,7 @@ final class BuildScreen {
         RingWords w = ringWords(m, all);
         String figure = w.figure(), tone = w.tone(), shortLine = w.shortLine(), onSite = w.onSite();
         double arc = w.arc();
-        int units = w.units();
+        long units = w.units();
         CityNeeds.Need need = w.need();
 
         String tip = m.label() + ": " + shortLine + (need != null ? "\nNEEDS YOU: " + need.label().toLowerCase()
@@ -4338,9 +4338,9 @@ final class BuildScreen {
         if (orderBar == null || (orderMeasure == null && !orderMarket)) return;
         barFills++;
         Game game = ui.game;
-        java.util.Map<BuildingsTemplate, Integer> order = new java.util.LinkedHashMap<>();
+        java.util.Map<BuildingsTemplate, Long> order = new java.util.LinkedHashMap<>();
         for (PageCard card : pageCards) {
-            int n = orderQty.getOrDefault(card.template().getName(), 0);
+            long n = orderQty.getOrDefault(card.template().getName(), 0L);
             if (n > 0) order.put(card.template(), n);
         }
         // Kept (KP3): drawn by a page, the bar's parts are its scope's (the page calls this once, after the last card); called by
@@ -4363,7 +4363,7 @@ final class BuildScreen {
 
         int units = 0;
         StringBuilder names = new StringBuilder();
-        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : order.entrySet()) {
+        for (java.util.Map.Entry<BuildingsTemplate, Long> e : order.entrySet()) {
             units += e.getValue();
             if (names.length() > 0) names.append(" + ");
             names.append(formatter.format(e.getValue())).append(" × ").append(e.getKey().getName());
@@ -4420,14 +4420,14 @@ final class BuildScreen {
         final BuildAdvice.Measure ring = m;
         final int ordered = units;
         orderBar.getChildren().add(Kept.scope("ring bar", () -> {
-            java.util.Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, ring);
-            java.util.Map<BuildingsTemplate, Integer> withOrder = BuildAdvice.plus(site, order);
+            java.util.Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(game, ring);
+            java.util.Map<BuildingsTemplate, Long> withOrder = BuildAdvice.plus(site, order);
             double now = BuildAdvice.cover(game, ring, java.util.Map.of());
             double whenOpen = BuildAdvice.cover(game, ring, site);
             double with = BuildAdvice.cover(game, ring, withOrder);
             Label measure = Kept.label(ring.label().toLowerCase());
             measure.setStyle(Palette.words(Palette.SIZE_LABEL, Palette.TEXT_MUTED));
-            int onSiteUnits = BuildAdvice.units(site);
+            long onSiteUnits = BuildAdvice.units(site);
             // SERVED (0.7.41): a served measure's three figures are what it serves, "served 92% now · ...", and
             // they turn green when the order leaves it enough (the one verdict) - not merely off NEEDS YOU's list.
             CityNeeds.Served withServed = BuildAdvice.verdict(game, ring, withOrder);
@@ -5334,7 +5334,7 @@ final class BuildScreen {
      * One purchase, as the receipt shows it: what and how many, what it cost
      * all in, the sales tax in that, and when.
      */
-    record Receipt(int serial, String name, int quantity, double total, double salesTax, int month) { }
+    record Receipt(int serial, String name, long quantity, double total, double salesTax, int month) { }
 
     /** How many purchases the receipt keeps. */
     static final int RECEIPTS = 5;
@@ -5551,14 +5551,14 @@ final class BuildScreen {
      * cash, the land office's funding page, sized to it, as before. The land
      * office still lists every offer.
      */
-    void showNoDepositMenu(BuildingsTemplate selected, int quantity,
+    void showNoDepositMenu(BuildingsTemplate selected, long quantity,
                                    String menuTitle, EnumSet<BuildingType> categories) {
         ui.keepMenu("showNoDepositMenu", () -> showNoDepositMenu(selected, quantity, menuTitle, categories), pool,
                 () -> drawNoDeposit(selected, quantity, menuTitle, categories));
     }
 
     /** The no-deposit page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
-    void drawNoDeposit(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+    void drawNoDeposit(BuildingsTemplate selected, long quantity, String menuTitle, EnumSet<BuildingType> categories) {
         Kept.scope("showNoDepositMenu", () -> {
             Resource site = Game.siteOf(selected) == null ? Resource.IRON : Game.siteOf(selected);
             // ...counted against its own kind (0.7.91, Game.committedFor()): a land well the land wells, a platform's well the slots;
@@ -5609,7 +5609,7 @@ final class BuildScreen {
      * measures them): the title, the WHY section's five lines, the reserve
      * line and the Buy's sub-line.
      */
-    static String[] noDepositPage(Resource site, String building, int quantity, int owned, int committed, double left) {
+    static String[] noDepositPage(Resource site, String building, long quantity, long owned, long committed, double left) {
         boolean oil = site == Resource.OIL;
         String word = BuildCard.depositWord(site);
         return new String[] {
@@ -5631,7 +5631,7 @@ final class BuildScreen {
      * could still take or the slots standing; `left` the offshore pool's
      * tonnes (0.7.93).
      */
-    static String[] noDepositAtSea(boolean platform, String building, int quantity, int owned, int committed, double left) {
+    static String[] noDepositAtSea(boolean platform, String building, long quantity, long owned, long committed, double left) {
         return new String[] {
             "NO OIL DEPOSIT",
             platform ? quantity + " x " + building + " needs a sea field with room."
@@ -5689,14 +5689,14 @@ final class BuildScreen {
      * and since 0.7.61 buys it (THE BUILD SHORTCUT), or sends the player to
      * the land office.
      */
-    void showNoCoastMenu(BuildingsTemplate selected, int quantity,
+    void showNoCoastMenu(BuildingsTemplate selected, long quantity,
                          String menuTitle, EnumSet<BuildingType> categories) {
         ui.keepMenu("showNoCoastMenu", () -> showNoCoastMenu(selected, quantity, menuTitle, categories), pool,
                 () -> drawNoCoast(selected, quantity, menuTitle, categories));
     }
 
     /** The no-coast page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
-    void drawNoCoast(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+    void drawNoCoast(BuildingsTemplate selected, long quantity, String menuTitle, EnumSet<BuildingType> categories) {
         Kept.scope("showNoCoastMenu", () -> {
             LandParcel coast = ui.game.bestOffer(Game.LandNeed.coast());
 
@@ -5758,14 +5758,14 @@ final class BuildScreen {
      * short of a river, and the only thing that fixes that is ground with one on it - a drop is read from the
      * banks of a river the city owns (HydroSites), so no loan would help, and the page says so.
      */
-    void showNoRiverMenu(BuildingsTemplate selected, int quantity,
+    void showNoRiverMenu(BuildingsTemplate selected, long quantity,
                          String menuTitle, EnumSet<BuildingType> categories) {
         ui.keepMenu("showNoRiverMenu", () -> showNoRiverMenu(selected, quantity, menuTitle, categories), pool,
                 () -> drawNoRiver(selected, quantity, menuTitle, categories));
     }
 
     /** The no-river page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
-    void drawNoRiver(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+    void drawNoRiver(BuildingsTemplate selected, long quantity, String menuTitle, EnumSet<BuildingType> categories) {
         Kept.scope("showNoRiverMenu", () -> {
             BuildCard.Hydro h = BuildCard.hydro(ui.game, selected);
             Label title = refusalTitle("NO RIVER WITH A DROP");
@@ -5798,14 +5798,14 @@ final class BuildScreen {
      * on a linked one, no longer than a bridge can be - and the only thing that fixes that is other ground or another landmass,
      * so no loan would help, and the page says so in the survey's own words.
      */
-    void showNoBridgeMenu(BuildingsTemplate selected, int quantity,
+    void showNoBridgeMenu(BuildingsTemplate selected, long quantity,
                           String menuTitle, EnumSet<BuildingType> categories) {
         ui.keepMenu("showNoBridgeMenu", () -> showNoBridgeMenu(selected, quantity, menuTitle, categories), pool,
                 () -> drawNoBridge(selected, quantity, menuTitle, categories));
     }
 
     /** The no-way-across page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
-    void drawNoBridge(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+    void drawNoBridge(BuildingsTemplate selected, long quantity, String menuTitle, EnumSet<BuildingType> categories) {
         Kept.scope("showNoBridgeMenu", () -> {
             Label title = refusalTitle("NO WAY ACROSS THE WATER");
 
@@ -5834,14 +5834,14 @@ final class BuildScreen {
      * and the sentence that matters is the last one: this is not a money
      * problem, so the screen must not offer a bond to fix it.
      */
-    void showNoLicenceMenu(BuildingsTemplate selected, int quantity,
+    void showNoLicenceMenu(BuildingsTemplate selected, long quantity,
                                    String menuTitle, EnumSet<BuildingType> categories) {
         ui.keepMenu("showNoLicenceMenu", () -> showNoLicenceMenu(selected, quantity, menuTitle, categories), pool,
                 () -> drawNoLicence(selected, quantity, menuTitle, categories));
     }
 
     /** The no-licence page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
-    void drawNoLicence(BuildingsTemplate selected, int quantity, String menuTitle, EnumSet<BuildingType> categories) {
+    void drawNoLicence(BuildingsTemplate selected, long quantity, String menuTitle, EnumSet<BuildingType> categories) {
         Kept.scope("showNoLicenceMenu", () -> {
             JobType licence = selected.getRequiresLicence();
             double need = ui.game.licencesNeededFor(selected, quantity);
@@ -5897,7 +5897,7 @@ final class BuildScreen {
      * its "Buying N costs roughly" line, priced a block at a time, went with
      * the blocks. Its areas in square kilometres since 0.7.64.
      */
-    void showNoLandMenu(BuildingsTemplate selected, int quantity,
+    void showNoLandMenu(BuildingsTemplate selected, long quantity,
                                 String prevTitle, EnumSet<BuildingType> prevCats) {
         // Kept (KP3): the refusal pages are drawn over last time's nodes on a redraw (a month landing), each in a scope of its own.
         ui.keepMenu("showNoLandMenu", () -> showNoLandMenu(selected, quantity, prevTitle, prevCats), pool,
@@ -5905,7 +5905,7 @@ final class BuildScreen {
     }
 
     /** The no-land page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
-    void drawNoLand(BuildingsTemplate selected, int quantity, String prevTitle, EnumSet<BuildingType> prevCats) {
+    void drawNoLand(BuildingsTemplate selected, long quantity, String prevTitle, EnumSet<BuildingType> prevCats) {
         Kept.scope("showNoLandMenu", () -> {
             LandManager land = ui.game.getLandManager();
             double needed = ui.game.landNeededFor(selected, quantity);
@@ -6061,16 +6061,16 @@ final class BuildScreen {
     record RunFrom(String title, EnumSet<BuildingType> categories, boolean cards) { }
 
     /** One order as a run of one. */
-    static java.util.LinkedHashMap<BuildingsTemplate, Integer> runOf(BuildingsTemplate t, int n) {
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
+    static java.util.LinkedHashMap<BuildingsTemplate, Long> runOf(BuildingsTemplate t, long n) {
+        java.util.LinkedHashMap<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
         run.put(t, n);
         return run;
     }
 
     /** The first `n` orders of a run. */
-    static java.util.LinkedHashMap<BuildingsTemplate, Integer> firstOf(java.util.Map<BuildingsTemplate, Integer> run, int n) {
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> part = new java.util.LinkedHashMap<>();
-        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+    static java.util.LinkedHashMap<BuildingsTemplate, Long> firstOf(java.util.Map<BuildingsTemplate, Long> run, int n) {
+        java.util.LinkedHashMap<BuildingsTemplate, Long> part = new java.util.LinkedHashMap<>();
+        for (java.util.Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
             if (part.size() >= n) break;
             part.put(e.getKey(), e.getValue());
         }
@@ -6078,9 +6078,9 @@ final class BuildScreen {
     }
 
     /** A run's orders in words, the order bar's way: "5 × Walk-in Clinic + 3 × Paved Road". */
-    static String runNames(java.util.Map<BuildingsTemplate, Integer> run) {
+    static String runNames(java.util.Map<BuildingsTemplate, Long> run) {
         StringBuilder names = new StringBuilder();
-        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+        for (java.util.Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
             if (names.length() > 0) names.append(" + ");
             names.append(formatter.format(e.getValue())).append(" × ").append(e.getKey().getName());
         }
@@ -6093,7 +6093,7 @@ final class BuildScreen {
      * as they always were. True when every order was placed and the page is
      * drawn again.
      */
-    boolean placeRun(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
+    boolean placeRun(java.util.Map<BuildingsTemplate, Long> run, RunFrom from) {
         if (run.isEmpty()) return false;
         Game g = ui.game;
         int ahead = g.buildRunAhead(run);
@@ -6123,14 +6123,14 @@ final class BuildScreen {
      *
      * @param paper the loan just issued for the run, in words ("20-year bond"), or null for none
      */
-    private boolean goAhead(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from, String paper) {
+    private boolean goAhead(java.util.Map<BuildingsTemplate, Long> run, RunFrom from, String paper) {
         Placed p = placeInTurn(run, from);
         if (p.stop() == Game.BuildResult.SUCCESS) {
             handleAllBuildingMenus(from.title(), from.categories());
             return true;
         }
         BuildingsTemplate t = p.left().keySet().iterator().next();
-        int n = p.left().get(t);
+        long n = p.left().get(t);
         switch (p.stop()) {
             case NO_LAND    -> showNoLandMenu(t, n, from.title(), from.categories());
             case NO_DEPOSIT -> showNoDepositMenu(t, n, from.title(), from.categories());
@@ -6147,16 +6147,16 @@ final class BuildScreen {
     }
 
     /** What placing a run in turn did: the orders placed, the orders left - the one that stopped it first - and buildStack()'s answer there, SUCCESS when nothing stopped it. */
-    record Placed(java.util.LinkedHashMap<BuildingsTemplate, Integer> built,
-                  java.util.LinkedHashMap<BuildingsTemplate, Integer> left, Game.BuildResult stop) { }
+    record Placed(java.util.LinkedHashMap<BuildingsTemplate, Long> built,
+                  java.util.LinkedHashMap<BuildingsTemplate, Long> left, Game.BuildResult stop) { }
 
     /** goAhead()'s placing, without the page it then draws (a probe runs it): each order through buildStack() until one is not placed, each placed one's receipt noted and, from the cards, its card emptied. */
-    Placed placeInTurn(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> built = new java.util.LinkedHashMap<>();
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> left = new java.util.LinkedHashMap<>(run);
-        for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+    Placed placeInTurn(java.util.Map<BuildingsTemplate, Long> run, RunFrom from) {
+        java.util.LinkedHashMap<BuildingsTemplate, Long> built = new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<BuildingsTemplate, Long> left = new java.util.LinkedHashMap<>(run);
+        for (java.util.Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
             BuildingsTemplate t = e.getKey();
-            int n = e.getValue();
+            long n = e.getValue();
             // The quote it will be charged on, for the receipt's sales tax (see noteReceipt).
             Game.BuildQuote quote = ui.game.quoteBuild(t, n);
             Game.BuildResult result = ui.game.buildStack(t, n, false);
@@ -6176,13 +6176,13 @@ final class BuildScreen {
      * part for it, the gap in money, the offers' button, and - when the run
      * stops at an order the city would refuse - which and why.
      */
-    record RunWords(java.util.LinkedHashMap<BuildingsTemplate, Integer> funded, double invoice, double gap,
+    record RunWords(java.util.LinkedHashMap<BuildingsTemplate, Long> funded, double invoice, double gap,
                     String priceLine, String heldWords, double held, String shortBy, String button, String stops) { }
 
-    RunWords runWords(java.util.Map<BuildingsTemplate, Integer> run) {
+    RunWords runWords(java.util.Map<BuildingsTemplate, Long> run) {
         Game g = ui.game;
         int ahead = g.buildRunAhead(run);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> funded = firstOf(run, ahead);
+        java.util.LinkedHashMap<BuildingsTemplate, Long> funded = firstOf(run, ahead);
         double invoice = g.buildRunInvoice(funded);
         double gap = g.buildFundingGap(funded);
         double cash = g.getCash();
@@ -6191,9 +6191,9 @@ final class BuildScreen {
                 : funded.size() + " orders") + " · " + money(invoice);
         String stops = null;
         if (ahead < run.size()) {
-            java.util.Map.Entry<BuildingsTemplate, Integer> at = null;
+            java.util.Map.Entry<BuildingsTemplate, Long> at = null;
             int i = 0;
-            for (java.util.Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+            for (java.util.Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
                 if (i++ == ahead) { at = e; break; }
             }
             String why = switch (g.buildRunStop(run)) {
@@ -6226,7 +6226,7 @@ final class BuildScreen {
      * exactly its quote (the call quotes it again, at the same cap,
      * identically), then places the whole run.
      */
-    List<RunOffer> runOffers(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
+    List<RunOffer> runOffers(java.util.Map<BuildingsTemplate, Long> run, RunFrom from) {
         Game g = ui.game;
         RunWords w = runWords(run);
         double gap = w.gap();
@@ -6389,7 +6389,7 @@ final class BuildScreen {
      * ahead, goes back to the page the run came from, its orders still on
      * their cards, rather than quoting a loan of nothing.
      */
-    void showBuildFunding(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
+    void showBuildFunding(java.util.Map<BuildingsTemplate, Long> run, RunFrom from) {
         RunWords w = runWords(run);
         if (w.funded().isEmpty() || !(w.gap() > 0)) {
             handleAllBuildingMenus(from.title(), from.categories());
@@ -6407,7 +6407,7 @@ final class BuildScreen {
      * it came from; the run must have something to fund (showBuildFunding() sends a run with none back to its
      * page). The cap chips (fundChips) redraw through fundingAgain, which the entry sets.
      */
-    void drawFunding(java.util.Map<BuildingsTemplate, Integer> run, RunFrom from) {
+    void drawFunding(java.util.Map<BuildingsTemplate, Long> run, RunFrom from) {
         Kept.scope("showBuildFunding", () -> {
             RunWords w = runWords(run);
             VBox page = widePage();
@@ -6483,7 +6483,7 @@ final class BuildScreen {
      * heading, then what was built, what was not and what it is still
      * short of - the model's gap for the orders left, as it stands now.
      */
-    String[] fellShortWords(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left,
+    String[] fellShortWords(java.util.Map<BuildingsTemplate, Long> built, java.util.Map<BuildingsTemplate, Long> left,
                             RunFrom from, String paper) {
         double still = ui.game.buildFundingGap(left);
         StringBuilder s = new StringBuilder("The " + paper + " was issued and its cash is in the treasury. ");
@@ -6507,7 +6507,7 @@ final class BuildScreen {
      * and something not built, is one the player CAN end up in and must be
      * told about.
      */
-    void showBuildFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left,
+    void showBuildFellShort(java.util.Map<BuildingsTemplate, Long> built, java.util.Map<BuildingsTemplate, Long> left,
                             RunFrom from, String paper) {
         // Kept (KP3): drawn over last time's nodes on a redraw (a month landing), as the land office's "Not bought" is.
         ui.keepMenu("showBuildFellShort", () -> showBuildFellShort(built, left, from, paper), pool,
@@ -6518,7 +6518,7 @@ final class BuildScreen {
      * The fell-short card itself, put in the window through setPage(): what keepMenu runs as a kept draw from the
      * pool, and what KeptBench runs kept and built new for KeptCheck.
      */
-    void drawFellShort(java.util.Map<BuildingsTemplate, Integer> built, java.util.Map<BuildingsTemplate, Integer> left,
+    void drawFellShort(java.util.Map<BuildingsTemplate, Long> built, java.util.Map<BuildingsTemplate, Long> left,
                        RunFrom from, String paper) {
         Kept.scope("showBuildFellShort", () -> {
             String[] w = fellShortWords(built, left, from, paper);

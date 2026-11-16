@@ -1173,9 +1173,9 @@ public class AuctionCheck {
         return n;
     }
 
-    static int siteCount(Game g) {
-        int n = 0;
-        for (int v : g.getBuildingManager().getUnderConstructionById()) n += v;
+    static long siteCount(Game g) {
+        long n = 0;
+        for (long v : g.getBuildingManager().getUnderConstructionById()) n += v;
         return n;
     }
 
@@ -1468,7 +1468,7 @@ public class AuctionCheck {
             snap[2 + i] = a.getDebtManager().getAllPrincipal();
             if (!after) monthAt[0] = a.getMonth(); else { snap[4] = AutoBuilder.spendable(a); snap[5] = a.getCash() - AutoBuilder.reserve(a); }
         };
-        int sites0 = siteCount(a);
+        long sites0 = siteCount(a);
         String log1 = month(a, false);
         a.autoBuildProbeForTest = null;
         List<AutoBuilder.OpenAsk> asks = ab.asks();
@@ -1560,7 +1560,7 @@ public class AuctionCheck {
         for (AutoBuilder.OpenAsk k : bb.asks()) costs += k.cost();
         AutoBuilder.OpenAsk streetsB = bb.askFor(streets);
         double raisedB = streetsB == null ? Double.NaN : streetsB.raised();
-        int openB = bb.asks().size(), bondsB = bb.getBonds(), sitesB = siteCount(b);
+        long openB = bb.asks().size(), bondsB = bb.getBonds(), sitesB = siteCount(b);
         double principalB = b.getDebtManager().getAllPrincipal();
         useUpTheRoom(b);
         // HW1 keeps working after an ask opens: fund the subsequent essential orders too.
@@ -1578,7 +1578,7 @@ public class AuctionCheck {
         /* THE MONTH'S BILLS DRAW THE MONEY: the paper is not sold twice, and the order waits for the cash. */
         Game p = load(saved);
         AutoBuilder pb = p.getAutoBuilder();
-        int openP = pb.asks().size(), sitesP = siteCount(p);
+        long openP = pb.asks().size(), sitesP = siteCount(p);
         p.getBank().setDepositRate(deposit);
         roomTo(p, 1e9);
         p.setCashForTest(AutoBuilder.reserve(p));

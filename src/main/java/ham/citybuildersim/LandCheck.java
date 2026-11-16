@@ -3656,7 +3656,7 @@ public class LandCheck {
 
         // A coal mine on every coal site: coal is dug, and iron, with no mine, is still flagged.
         quietly(() -> b.addStack(b.getTemplate(ham.citybuildersim.sectors.CoalMining.SURFACE_MINE), 1, true));
-        int taken = g.committedOn(Resource.COAL);
+        long taken = g.committedOn(Resource.COAL);
         assertTrue("fixture: a surface coal mine stands on " + taken + " of the coal sites", taken >= 1 && taken < coal.deposits());
         quietly(() -> land.restoreSites(Resource.COAL, taken, taken * Resource.COAL.amountPerSite()));
         coal = OreView.ores(g).stream().filter(o -> o.resource() == Resource.COAL).findFirst().orElse(null);
@@ -3669,7 +3669,7 @@ public class LandCheck {
 
         // An iron mine on every iron site: iron is dug too, and its words are the same ones.
         quietly(() -> b.addStack(b.getTemplate(Mining.IRON_MINE), 1, true));
-        int ironTaken = g.committedOn(Resource.IRON);
+        long ironTaken = g.committedOn(Resource.IRON);
         assertTrue("fixture: an iron mine stands on " + ironTaken + " of the three iron sites", ironTaken >= 1 && ironTaken < 3);
         quietly(() -> land.restoreSites(Resource.IRON, ironTaken, ironTaken * Resource.IRON.amountPerSite()));
         ironCard = ironLine(screen);

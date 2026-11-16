@@ -1075,7 +1075,7 @@ public class BankCheck {
         Path lonely = TempDirs.create("bankcheck-advisor");
         Game unattended = new Game(new GameFiles(lonely.resolve("data"), lonely.resolve("no-legacy")));
         System.setOut(quiet);
-        int branchesBuilt;
+        long branchesBuilt;
         try {
             unattended.run();
             // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
@@ -1250,7 +1250,7 @@ public class BankCheck {
         Path solvent = TempDirs.create("bankcheck-solvent");
         Game trading = new Game(new GameFiles(solvent.resolve("data"), solvent.resolve("no-legacy")));
         System.setOut(quiet);
-        int builtWhenAffordable;
+        long builtWhenAffordable;
         double windowShareWhenNew;
         try {
             trading.run();
@@ -2862,14 +2862,14 @@ public class BankCheck {
         int charterMonths = 0, charterStood = 0;
         double auditAfterResidual = Double.NaN, auditAfterRelative = Double.NaN;
         double feesBefore;
-        int closedBefore, standingAfter, closedAfter, placed;
+        long closedBefore, standingAfter, closedAfter, placed;
         double coverPlaced;
         double operatingAfter, operatingOne;
         int coveredMonths = 0, twoStood = 0, invariantMonths = 0;
         double worstCover = Double.MAX_VALUE;
         final int riseMonth = 6;
         int coveredBeforeRise = 0, twoBeforeRise = 0, shortMonths = 0, shortThenClosed = 0;
-        int standingAtRise = 0, standingAfterRise = 0;
+        long standingAtRise = 0, standingAfterRise = 0;
         double coverAtRise = Double.NaN;
         try {
             town.run();
@@ -2949,7 +2949,7 @@ public class BankCheck {
 
             // 3. Two years after: the cost held still, then risen after the
             // rule has kept the branches (the lag), and the month after.
-            int prevStanding = town.getBuildingManager().countByName("Commercial Bank");
+            long prevStanding = town.getBuildingManager().countByName("Commercial Bank");
             boolean prevShort = false;
             for (int m = 0; m < 24; m++) {
                 if (m == riseMonth) {
@@ -2965,7 +2965,7 @@ public class BankCheck {
                     branch.setUpkeep(Math.max(0, 1.6 * b.getAccountFees() - 2 * repairsEach));
                 }
                 town.simulateMonths(1);
-                int standing = town.getBuildingManager().countByName("Commercial Bank");
+                long standing = town.getBuildingManager().countByName("Commercial Bank");
                 if (prevShort && standing < prevStanding) shortThenClosed++;
                 prevShort = false;
                 if (standing >= 2) {
@@ -4474,7 +4474,7 @@ public class BankCheck {
         town.getLandManager().release(branch.getLandSqFt());
         branch.setJobs(JobType.UNIV_FINANCE, 50_000);
         Bank bank = town.getBank();
-        int standing = town.getBuildingManager().countByName("Commercial Bank");
+        long standing = town.getBuildingManager().countByName("Commercial Bank");
         Sector.Staffing staffing = town.getSectors().retail().staffing(branch);
         String statusBefore = bank.status();
         double bookBefore = bank.getWeightedBook();

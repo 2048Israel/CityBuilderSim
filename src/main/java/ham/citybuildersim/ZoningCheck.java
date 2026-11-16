@@ -235,7 +235,7 @@ public class ZoningCheck {
         assertTrue("a shop is refused: Retail has no ground the zone does not hold", !shop && land.getAllocatedSqFt() == allocated);
         assertTrue("...the city's own works too (Build's refusal: no ground for anyone)",
                 g.buildStack(LongPlaytest.template(g, "Walk-in Clinic"), 1, true) == Game.BuildResult.NO_LAND);
-        int stores = g.getBuildingManager().countByName("Convenience Store");
+        long stores = g.getBuildingManager().countByName("Convenience Store");
         boolean dinerBuilt = g.buildFor(g.getSectorInvestor(Sectors.RESTAURANTS), diner, 2);
         assertTrue("two diners stand on the zone's ground, and it records them as used",
                 dinerBuilt && stores == g.getBuildingManager().countByName("Convenience Store")
@@ -466,7 +466,7 @@ public class ZoningCheck {
         out.println("\n--- 8. zoned fields do not yield to homes: short of homes, the fields build in their zone alone ---");
         // Somebody sleeping outside: most of the houses bought out and demolished.
         BuildingsTemplate house = LongPlaytest.template(g, "House");
-        int houses = g.getBuildingManager().countByName("House");
+        long houses = g.getBuildingManager().countByName("House");
         g.setCashForTest(g.getCash() + 10_000_000);
         quietly(() -> {
             g.buyOutAndDemolish(house, houses * 9 / 10);

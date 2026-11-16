@@ -509,12 +509,12 @@ public class RefineryCheck {
 
         // The units on site are its pipeline: the flow with them less the flow without.
         BuildingsTemplate reformer = g.getBuildingManager().getTemplateByName("Small Reformer");
-        int onSite = g.getBuildingManager().getStack(reformer).getUnderConstruction();
+        long onSite = g.getBuildingManager().getStack(reformer).getUnderConstruction();
         quietly(() -> {
             g.setCashForTest(g.getCash() + 1e9);
             g.buildStack(reformer, 1, false);
         });
-        int after = g.getBuildingManager().getStack(reformer).getUnderConstruction();
+        long after = g.getBuildingManager().getStack(reformer).getUnderConstruction();
         double[] with = feed.clone();
         with[Kind.REFORMER.ordinal()] += reformer.feedPerMonth();
         RefineryFlow.Flow future = RefineryFlow.solve(with, 8300, refiners.getCrudeMix(), refiners.flowValues());

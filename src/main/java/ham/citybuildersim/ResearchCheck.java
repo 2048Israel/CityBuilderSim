@@ -830,9 +830,9 @@ public class ResearchCheck {
         check("the instant-build route refuses it too", g.buildStack(arc, 1, true) != Game.BuildResult.SUCCESS && b.getStack(arc) == null);
         check("a funded private order also refuses it before charging its payer", !g.buildFor(payer, arc, 1)
                 && b.getStack(arc) == null && g.getCash() == cash && payer.getCash() == payerCash);
-        check("the run's preflight refuses an unknown order too", g.buildRunStop(Map.of(arc, 1)) != Game.BuildResult.SUCCESS);
+        check("the run's preflight refuses an unknown order too", g.buildRunStop(Map.of(arc, 1L)) != Game.BuildResult.SUCCESS);
         atMonth(g, ResearchCatalog.knownFrom(arc.getSinceText()));
-        int onSite = b.getStack(arc) == null ? 0 : b.getStack(arc).getUnderConstruction();
+        long onSite = b.getStack(arc) == null ? 0 : b.getStack(arc).getUnderConstruction();
         check("on its date the direct order succeeds and puts the building on site", g.buildStack(arc, 1, false) == Game.BuildResult.SUCCESS
                 && b.getStack(arc) != null && b.getStack(arc).getUnderConstruction() == onSite + 1);
         check("on its date the private order also succeeds and charges its payer", g.buildFor(payer, arc, 1) && payer.getCash() < payerCash);
