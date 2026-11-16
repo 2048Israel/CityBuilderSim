@@ -84,7 +84,7 @@ public final class BankFailureCheck {
         investor.setAccessible(true);
         Method retire = Game.class.getDeclaredMethod("retire", BusinessInvestment.Decision.class, Investor.class, boolean.class);
         retire.setAccessible(true);
-        int gone = (int) retire.invoke(g, new BusinessInvestment.Decision(wood.key(), mill, 1, "BF1 fixture", true),
+        long gone = (long) retire.invoke(g, new BusinessInvestment.Decision(wood.key(), mill, 1, "BF1 fixture", true),
                 investor.invoke(g, wood.key()), true);
         g.getEconomyManager().settleInsolvency();
         close("the demolished shed's stock is written off before creditors value it", wood.unitsWrittenOff(Good.WOOD_PELLETS), doomed);

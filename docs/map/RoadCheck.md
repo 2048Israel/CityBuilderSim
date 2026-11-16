@@ -185,7 +185,7 @@
 |---:|---:|---|---|
 | 875 | 79 | `static void player(Path root)` |  |
 | 956 | 6 | `static BuildAdvice.Suggestion roadCard(Game g)` | The advice's card for the road, the transit lines left out of its ranking as the player leaves them: BuildAdvice.suggestFor() at its own slack, the cash and the free ground as they stand. |
-| 964 | 4 | `static int standingAndOnSite(Game g, BuildingsTemplate t)` | A building's count standing and on site. |
+| 964 | 4 | `static long standingAndOnSite(Game g, BuildingsTemplate t)` | A building's count standing and on site. |
 | 973 | 13 | `static boolean firstRoad(Game g, double[][] base, double f, String want)` | The test player's first road move at the land office's prices x f, against the advice's ranking recomputed: the least of the three roads over its life a trip, and the paving where it beats a new Paved Road and is less. |
 
 ### 10. THE THROUGH TRIPS, WITH NO HIGHWAY (lines 987-1088)

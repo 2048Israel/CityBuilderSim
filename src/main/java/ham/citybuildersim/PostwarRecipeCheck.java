@@ -503,7 +503,7 @@ public final class PostwarRecipeCheck {
         check("fixture: a real new Cement Plant was ordered onto a site in the partial calibration window",
                 ordered[0] == Game.BuildResult.SUCCESS && stack != null && stack.getUnderConstruction() == 1, String.valueOf(ordered[0]));
         if (stack == null) return;
-        int opened = FittingCheck.pressUntilOpen(game, stack, 120);
+        long opened = FittingCheck.pressUntilOpen(game, stack, 120);
         check("the completed plant takes the paying rotary kiln and leaves the losing PE4 and unknown E2 off",
                 opened == 1 && stack.getQuantity() >= 1 && stack.getUnfitted("rotary-kiln") == 0
                         && stack.getUnfitted("long-kiln") == stack.getQuantity()

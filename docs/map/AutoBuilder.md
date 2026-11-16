@@ -127,8 +127,8 @@
 | 295 | `public int month` |  |
 | 296 | `public String measure` |  |
 | 297 | `public String building` |  |
-| 298 | `public int count` |  |
-| 300 | `public int wanted` | What the advice's card asked for; more than count when the builders, the ground, the payback (the budget until 0.7.104) or the limit cut it. |
+| 298 | `public long count` |  |
+| 300 | `public long wanted` | What the advice's card asked for; more than count when the builders, the ground, the payback (the budget until 0.7.104) or the limit cut it. |
 | 301 | `public double cost` |  |
 | 303 | `public double borrowed` | What the funding page's bond brought for it; 0 out of the cash. |
 | 304 | `public boolean paving` |  |
@@ -167,7 +167,7 @@
 | 2205 | `public String building` |  |
 | 2206 | `public int templateId` |  |
 | 2207 | `public boolean paving` |  |
-| 2208 | `public int count` |  |
+| 2208 | `public long count` |  |
 | 2209 | `public double cost` |  |
 | 2210 | `public double raised` |  |
 | 2211 | `public double toRaise` |  |
@@ -225,12 +225,12 @@
 | 294 | 54 | **type** `public static final class Entry implements Cloneable` | One order it placed, and why. |
 | 311 | 1 | `public Entry()` _(in AutoBuilder.Entry)_ |  |
 | 314 | 7 | `Entry copy()` _(in AutoBuilder.Entry)_ | A copy that shares nothing with this entry: toState()'s, for the autosave (UP1). |
-| 322 | 12 | `Entry(int month, String measure, String building, int count, int wanted, double cost, double borrowed, boolean paving, String why)` _(in AutoBuilder.Entry)_ |  |
+| 322 | 12 | `Entry(int month, String measure, String building, long count, long wanted, double cost, double borrowed, boolean paving, String...` _(in AutoBuilder.Entry)_ |  |
 | 335 | 1 | `public int month()` _(in AutoBuilder.Entry)_ |  |
 | 336 | 1 | `public String measure()` _(in AutoBuilder.Entry)_ |  |
 | 337 | 1 | `public String building()` _(in AutoBuilder.Entry)_ |  |
-| 338 | 1 | `public int count()` _(in AutoBuilder.Entry)_ |  |
-| 339 | 1 | `public int wanted()` _(in AutoBuilder.Entry)_ |  |
+| 338 | 1 | `public long count()` _(in AutoBuilder.Entry)_ |  |
+| 339 | 1 | `public long wanted()` _(in AutoBuilder.Entry)_ |  |
 | 340 | 1 | `public double cost()` _(in AutoBuilder.Entry)_ |  |
 | 341 | 1 | `public double borrowed()` _(in AutoBuilder.Entry)_ |  |
 | 342 | 1 | `public boolean paving()` _(in AutoBuilder.Entry)_ |  |
@@ -265,7 +265,7 @@
 | 471 | 6 | `public static boolean inRemit(BuildingsTemplate t)` | A remit building: one of the city's five Build categories - utilities, infrastructure, healthcare, education, safety. |
 | 479 | 6 | `static CityNeeds.Need rowFor(List<CityNeeds.Need> all, BuildAdvice.Measure m)` | NEEDS YOU's row for exactly this measure (the dead, not the plots, for death care), or null for none. |
 | 499 | 7 | `static boolean kept(Game game, BuildAdvice.Measure m, List<CityNeeds.Need> all)` | Whether a measure is one the pass keeps this month: transit never (the road's candidates carry it), and a school only when its demand warrants a work (HW1: thirty percent of the smallest, including professional school... |
-| 508 | 11 | `static int serving(Game game, BuildAdvice.Measure m)` | Buildings that serve a measure, standing and on site. |
+| 508 | 11 | `static long serving(Game game, BuildAdvice.Measure m)` | Buildings that serve a measure, standing and on site. |
 | 526 | 5 | `public static boolean firstOfAKind(Game game, BuildAdvice.Measure m)` | Whether an order for a measure is a FIRST OF A KIND WHERE THERE IS NONE (0.7.101): a school down the ladder, a police station or a prison - the buildings that waited for half their worth until then - with none standin... |
 | 541 | 3 | `public static boolean orderable(BuildingsTemplate t)` | A building the pass may order (FR3): a remit building (inRemit()) or a sea terminal, a berth of a port measure. |
 | 546 | 23 | `public static List<BuildAdvice.Measure> remit(Game game, List<CityNeeds.Need> all)` | Current essential shortages by preventable output loss and missing share, then reserve expansion and other works. |
@@ -307,8 +307,8 @@
 |---:|---:|---|---|
 | 837 | 12 | **type** `public enum Outcome` | What the pass did for one measure. |
 | 851 | 1 | **type** `public enum Cut` | Why a count was cut or an order held: PAYBACK (0.7.104) what pays back over its life, for a building the treasury runs that is not an essential service - BUDGET, what the year's revenue left to run it, until then; DEB... |
-| 862 | 15 | **type** `public record Step(BuildAdvice.Measure measure, Outcome outcome, String building, int wanted, int ordered, ...` | One measure at the last pass: what it did, and why - and since 0.7.77 the ground its order lacked when it was weighed (landShort, square feet past what was free), the offers it bought for it and their price in local m... |
-| 865 | 4 | `Step(BuildAdvice.Measure measure, Outcome outcome, String building, int wanted, int ordered, Cut cut, double cost, double borro...` _(in AutoBuilder.Step)_ |  |
+| 862 | 15 | **type** `public record Step(BuildAdvice.Measure measure, Outcome outcome, String building, long wanted, long ordered...` | One measure at the last pass: what it did, and why - and since 0.7.77 the ground its order lacked when it was weighed (landShort, square feet past what was free), the offers it bought for it and their price in local m... |
+| 865 | 4 | `Step(BuildAdvice.Measure measure, Outcome outcome, String building, long wanted, long ordered, Cut cut, double cost, double bor...` _(in AutoBuilder.Step)_ |  |
 | 871 | 5 | `public double landSqFt()` _(in AutoBuilder.Step)_ | The dry ground it bought, in square feet. |
 | 881 | 1 | `public List<String> powerValues()` |  |
 | 888 | 2 | **type** `public record LinkStep(int month, int landmass, BuildAdvice.LinkKind kind, Outcome outcome, String building...` | What the pass did to link an island (AL1): the month, the island's id, how it is linked (BuildAdvice.LinkKind), ORDERED or HELD, the orders' buildings as the log words them, their price (thousands) and the line - the ... |
@@ -320,28 +320,28 @@
 | 1049 | 16 | `public double costs(Game game, BuildAdvice.Measure m)` | What each resident already costs the city a month (0.7.104, star P2b-3 - A BUILDING THAT HELPS THE CITY GROW ONLY WITH OTHERS): its running spend - all it spends but buildings and land, and but the arrears it paid dow... |
 | 1077 | 8 | `double running(Game game, BuildingsTemplate t)` | A month of running one (BuildAdvice.running(), held at nothing), read once a month: its wages, prices and fares are the month's, and what a pass orders goes on site, not into the network a line's fares are read on - s... |
 | 1087 | 3 | `static boolean ownMeasure(BuildAdvice.Measure m, BuildingsTemplate t)` | Whether t is one of the measure's own buildings (0.7.104): a road's or a line's, any of the Infrastructure category's roads and lines; otherwise those that serve it. |
-| 1102 | 14 | `static double[] need(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added, BuildAdvice.Ahead at)` | A measure's need and its shortfall, in its own unit, with these buildings standing as well, at `at`'s demand (0.7.104): {need, short}. |
-| 1129 | 21 | `public static double coveredOverLife(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site, Map<BuildingsTempl...` | The residents an order covers, a month on average over its life (0.7.104, star P2b-2): each of its LIFE_YEARS years read at its middle month as the advice reads what an order serves (servedOverLife()) - from its openi... |
+| 1102 | 14 | `static double[] need(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added, BuildAdvice.Ahead at)` | A measure's need and its shortfall, in its own unit, with these buildings standing as well, at `at`'s demand (0.7.104): {need, short}. |
+| 1129 | 21 | `public static double coveredOverLife(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate...` | The residents an order covers, a month on average over its life (0.7.104, star P2b-2): each of its LIFE_YEARS years read at its middle month as the advice reads what an order serves (servedOverLife()) - from its openi... |
 | 1158 | 9 | **type** `public record Payback(double runs, double covered, double paid, double costs, double prevented)` | An order's payback (0.7.104), a month on average over its life at today's prices: what it costs to run (runs: running() for each), the residents it covers (coveredOverLife()), what each pays the city (paid()) and what... |
 | 1159 | 1 | `public Payback(double runs, double covered, double paid, double costs)` _(in AutoBuilder.Payback)_ |  |
 | 1161 | 1 | `public double net()` _(in AutoBuilder.Payback)_ | What the residents it covers pay the city a month past what they already cost it. |
 | 1163 | 1 | `public boolean paysBack()` _(in AutoBuilder.Payback)_ | Whether it pays back: net() at least runs. |
 | 1165 | 1 | `public double share()` _(in AutoBuilder.Payback)_ | net() over runs, nothing under nothing: 1 or more pays back. |
-| 1169 | 9 | `public Payback payback(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, int n)` | n of a suggestion's building, weighed for its payback at the demand its count is sized to (its ahead()). |
+| 1169 | 9 | `public Payback payback(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, long n)` | n of a suggestion's building, weighed for its payback at the demand its count is sized to (its ahead()). |
 | 1180 | 1 | `public List<Step> steps()` | The last pass, a step a measure (not saved: a harness reads it the month it is made). |
 | 1183 | 1 | `public List<LinkStep> linkSteps()` | The island links the last pass ordered or held (AL1), a LinkStep each; empty where nothing is short of ground or nothing is unlinked. |
 | 1186 | 1 | `public boolean groundShort()` | Whether the last pass met an order short of ground (AL1): what sets the island links going. |
-| 1192 | 19 | `public Map<BuildingsTemplate, Integer> pendingCapacity(Game game, BuildAdvice.Measure m)` | Pending capacity stops covering an operating shortage after its original quote expires. |
+| 1192 | 19 | `public Map<BuildingsTemplate, Long> pendingCapacity(Game game, BuildAdvice.Measure m)` | Pending capacity stops covering an operating shortage after its original quote expires. |
 | 1212 | 15 | `private void rememberPending(Game game, BuildAdvice.Measure m, boolean newOrder)` |  |
 | 1232 | 88 | `public void pass(Game game)` | The month's pass (see the header): nothing while it is off. |
-| 1321 | 1 | **type** `private record CrewLimit(int count, String service)` |  |
+| 1321 | 1 | **type** `private record CrewLimit(long count, String service)` |  |
 | 1323 | 3 | `private static String crewWords(BuildAdvice.Measure measure, String service)` |  |
 | 1327 | 15 | `private CrewLimit crewLimit(Game game, List<BuildAdvice.Measure> kept, BuildAdvice.Measure measure, BuildAdvice.Suggestion sugg...` |  |
 | 1343 | 32 | `private String pendingDelay(Game game, List<BuildAdvice.Measure> kept, BuildAdvice.Measure measure, BuildAdvice.Suggestion sugg...` |  |
-| 1377 | 1 | **type** `private record Refused(BuildAdvice.Suggestion s, Cut cut, int wanted, String line, Payback payback)` | A card the money or the ground could not pay for one of (0.7.101), or none of which would pay back (0.7.104): the suggestion, why, how many it asked for, the inbox's line for it, and the payback weighed for one (null ... |
+| 1377 | 1 | **type** `private record Refused(BuildAdvice.Suggestion s, Cut cut, long wanted, String line, Payback payback)` | A card the money or the ground could not pay for one of (0.7.101), or none of which would pay back (0.7.104): the suggestion, why, how many it asked for, the inbox's line for it, and the payback weighed for one (null ... |
 | 1394 | 149 | `private void step(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, BuildAdvice.Measure m)` | One measure's order, cut and placed. |
 | 1549 | 9 | `private static String groundWords(Game game, BuildingsTemplate t)` | Why no ground can be had for one (0.7.77; 0.7.101): no bare ground on offer to buy for it - or a city whose buildings already stand on more ground than it owns, where an order on ground of its own could not be placed ... |
-| 1568 | 98 | `private boolean place(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, String name, int wanted, int n, Cut cut, Grou...` | Places n of a suggestion, its ground bought first (0.7.77), borrowing what the spendable cash does not cover, and writes it down; false where it could not (the order is then held, and an ask stays open). |
+| 1568 | 98 | `private boolean place(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, String name, long wanted, long n, Cut cut, Gr...` | Places n of a suggestion, its ground bought first (0.7.77), borrowing what the spendable cash does not cover, and writes it down; false where it could not (the order is then held, and an ask stays open). |
 
 ### THE ISLAND LINKS (AL1, 2026-11-09) (lines 1667-1867)
 
@@ -354,7 +354,7 @@
 | 1832 | 6 | `private static String linkReason(Game game, Landmasses lms, BuildAdvice.Link l)` | Why this link and not another, for the log: the crossing a bridge is surveyed over, or the terminals that stand in for one. |
 | 1840 | 3 | `private static String refusedName(BuildAdvice.Suggestion s)` | A refused card's building as its words name it: its own name, or the gravel roads a paving paves. |
 | 1845 | 3 | `private static String money(double thousands)` | Thousands of local money as the decision log writes them ("$1.2M"). |
-| 1856 | 11 | `private static String boughtWords(BuildAdvice.Measure m, String name, int n, List<LandParcel> got, double landCost, double land...` | The inbox's line for ground bought (0.7.77): which offers, how much and at what price, the order it was for and what that order lacked - and which of the shortcut's rules picked it: one bare offer covering the shortfa... |
+| 1856 | 11 | `private static String boughtWords(BuildAdvice.Measure m, String name, long n, List<LandParcel> got, double landCost, double lan...` | The inbox's line for ground bought (0.7.77): which offers, how much and at what price, the order it was for and what that order lacked - and which of the shortcut's rules picked it: one bare offer covering the shortfa... |
 
 ### THE GROUND ITS ORDERS NEED (0.7.77, batch N5) (lines 1868-2125)
 
@@ -362,23 +362,23 @@
 |---:|---:|---|---|
 | 1904 | 11 | **type** `public record Ground(List<LandParcel> offers, double cash, boolean covers)` | The ground an order lacks, as the offers it would buy for it in turn, the cash that takes, and whether one offer covers it all. |
 | 1909 | 5 | `public double sqFt()` _(in AutoBuilder.Ground)_ | Their dry ground, in square feet. |
-| 1917 | 6 | `public static Ground groundFor(Game game, BuildingsTemplate t, int n)` | The ground n of a building lack past what is free, as groundFor() plans it: NONE when it fits, null when no bare ground on offer covers it - or (0.7.101) when the city's buildings already stand on more ground than it ... |
+| 1917 | 6 | `public static Ground groundFor(Game game, BuildingsTemplate t, long n)` | The ground n of a building lack past what is free, as groundFor() plans it: NONE when it fits, null when no bare ground on offer covers it - or (0.7.101) when the city's buildings already stand on more ground than it ... |
 | 1925 | 16 | `static Ground groundFor(Game game, double lack, Set<Integer> alreadyTaken)` | The same whole-parcel selection for a projected shortage, omitting already bought offers. |
 | 1943 | 3 | `private static double linkedSqFt(LandParcel o)` | An offer's dry ground that is room for the order, square feet: its whole dry ground (getSizeSqFt()) less what of it is on a landmass the city has not linked (ET5; LandParcel.getUnlinkedDryKm2()); the whole of it for a... |
-| 1960 | 4 | `public static double lacks(Game game, BuildingsTemplate t, int n)` | The ground n of a building lack, in square feet: what they need past what is free (0.7.101) - only the order's own ground. |
+| 1960 | 4 | `public static double lacks(Game game, BuildingsTemplate t, long n)` | The ground n of a building lack, in square feet: what they need past what is free (0.7.101) - only the order's own ground. |
 | 1966 | 4 | `public static double overFull(Game game)` | How much more ground the city's buildings stand on than it owns, in square feet (0.7.101): 0 for a city within its ground. |
 | 1979 | 21 | `public static LandParcel shortcutOffer(Game game, double lackSqFt, Set<Integer> taken)` | The offer Build's land shortcut would buy for `lackSqFt` of dry ground, the offers in `taken` passed over, bare ground only: the cheapest whose dry ground covers it, the nearer on a tie (Game.bestOffer()'s shortfall r... |
-| 2002 | 4 | `static double wait(Game game, BuildAdvice.Suggestion s, int n)` | An order's wait for n: a paving's on the Paved Road site, a building's in the queue (a sea terminal's quoted on the landmass the rule gives it, as buildStack() is asked, ET5). |
-| 2008 | 4 | `static double total(Game game, BuildAdvice.Suggestion s, int n)` | What n of the order costs: Game.quoteBuildOn() by the rule (ET5; Game.quoteBuild() for everything but a sea terminal), or Game.quotePave() for a paving. |
-| 2013 | 5 | `private void hold(BuildAdvice.Measure m, BuildAdvice.Suggestion s, Cut cut, int wanted, String line, Payback pb)` |  |
+| 2002 | 4 | `static double wait(Game game, BuildAdvice.Suggestion s, long n)` | An order's wait for n: a paving's on the Paved Road site, a building's in the queue (a sea terminal's quoted on the landmass the rule gives it, as buildStack() is asked, ET5). |
+| 2008 | 4 | `static double total(Game game, BuildAdvice.Suggestion s, long n)` | What n of the order costs: Game.quoteBuildOn() by the rule (ET5; Game.quoteBuild() for everything but a sea terminal), or Game.quotePave() for a paving. |
+| 2013 | 5 | `private void hold(BuildAdvice.Measure m, BuildAdvice.Suggestion s, Cut cut, long wanted, String line, Payback pb)` |  |
 | 2023 | 5 | `public static String gdpShare(double share)` | A share of GDP as the card writes it: "262%", "7%", "0%", and a place under a tenth: "0.4%", "7.2%". |
 | 2030 | 3 | `private String debtWords(Game game, BuildAdvice.Suggestion s, Ground ground)` | Why the money pays for none: one more and (0.7.77) the ground it lacks - over the limit, or a bond that would cross it (0.7.81). |
 | 2035 | 25 | `private String debtWords(Game game, java.util.function.DoubleSupplier price, String what, Ground ground)` | ...for an order that is not a suggestion's (AL1: an island's link): its price, asked only where the words need it, and what it is called ("one", "the link"). |
 | 2062 | 6 | `private String firstWords(Game game, BuildAdvice.Suggestion s, Ground ground)` | Why the cash pays for no first of a kind (0.7.101): built from the cash alone, and the cash over a month's tax short of one and its ground. |
 | 2078 | 9 | `static String paybackWords(Payback p)` | Why one would not pay back (0.7.104), with its figure: what each of the residents it would cover pays the city a month and what each already costs it, on average over its life, and what that leaves against its running... |
 | 2089 | 10 | `static String nothingWords(Game game, BuildAdvice.Measure m)` | Why nothing the city could build moves a measure short of its margin: water past the fresh water it owns with no sea, or no building it could staff. |
-| 2100 | 11 | `static String cutWords(Cut cut, int wanted, int n)` |  |
-| 2113 | 12 | `public static String reading(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added)` | A measure's figure as the Build tab reads it: served for a served gauge, its own reading for the rest. |
+| 2100 | 11 | `static String cutWords(Cut cut, long wanted, long n)` |  |
+| 2113 | 12 | `public static String reading(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added)` | A measure's figure as the Build tab reads it: served for a served gauge, its own reading for the rest. |
 
 ### THE CAP AND THE OPEN ASKS (CD2, slice 6; D28 and D30) (lines 2126-2510)
 
@@ -391,7 +391,7 @@
 | 2216 | 1 | `public String measure()` _(in AutoBuilder.OpenAsk)_ |  |
 | 2217 | 1 | `public String building()` _(in AutoBuilder.OpenAsk)_ |  |
 | 2218 | 1 | `public boolean paving()` _(in AutoBuilder.OpenAsk)_ |  |
-| 2219 | 1 | `public int count()` _(in AutoBuilder.OpenAsk)_ |  |
+| 2219 | 1 | `public long count()` _(in AutoBuilder.OpenAsk)_ |  |
 | 2221 | 1 | `public double cost()` _(in AutoBuilder.OpenAsk)_ | What the order costs, its ground with it, as last priced. |
 | 2223 | 1 | `public double raised()` _(in AutoBuilder.OpenAsk)_ | What its bond sales have raised for it. |
 | 2225 | 1 | `public double toRaise()` _(in AutoBuilder.OpenAsk)_ | What is still to raise. |

@@ -35,14 +35,14 @@ public class DemolitionLog {
     public static class Entry {
 
         public final String building;
-        public final int quantity;
+        public final long quantity;
         public final String sector;
         public final int month;
 
         /** What the city paid for the plot - a business's bought back, or since 0.7.22 a bought-out building's ground - or 0: abandoned, or the city's own. */
         public final double proceeds;
 
-        Entry(String building, int quantity, String sector, int month, double proceeds) {
+        Entry(String building, long quantity, String sector, int month, double proceeds) {
             this.building = building;
             this.quantity = quantity;
             this.sector = sector;
@@ -70,7 +70,7 @@ public class DemolitionLog {
 
     private final List<Entry> entries = new ArrayList<>();
 
-    public void record(String building, int quantity, String sector,
+    public void record(String building, long quantity, String sector,
                        int month, double proceeds) {
 
         if (building == null || quantity <= 0) {

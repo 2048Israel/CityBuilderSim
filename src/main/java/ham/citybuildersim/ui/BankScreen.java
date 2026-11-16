@@ -3678,7 +3678,7 @@ final class BankScreen {
      */
     VBox branchesCard(Bank bank) {
         BuildingsTemplate branch = ui.game.getBuildingManager().getTemplateByName("Commercial Bank");
-        int standing = ui.game.getBuildingManager().countByName("Commercial Bank");
+        long standing = ui.game.getBuildingManager().countByName("Commercial Bank");
         double per = bank.customersPerBranch();
         double share = per / Bank.CUSTOMERS_PER_BRANCH;
         Region ring = ring(Math.min(1, share), Palette.MONEY, 72, 8,
@@ -3842,7 +3842,7 @@ final class BankScreen {
 
         /* ---------------------------- its branches ---------------------------- */
         BuildingsTemplate branch = ui.game.getBuildingManager().getTemplateByName("Commercial Bank");
-        int standing = ui.game.getBuildingManager().countByName("Commercial Bank");
+        long standing = ui.game.getBuildingManager().countByName("Commercial Bank");
         column.getChildren().add(statementHead("Its branches"));
         column.getChildren().add(statementLine("Standing", formatter.format(standing)));
         column.getChildren().add(statementLine("Its customers, the households paying its fee",

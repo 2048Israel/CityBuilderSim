@@ -43,7 +43,7 @@
 | 40 | 3 | **type** `private static final class Weight` | What a form scales over a set of stacks: the whole, and the part of it that lacks the equipment. |
 | 45 | 45 | `public void apply(Game game)` | Sets every form's share from the counts. |
 | 95 | 9 | `private double drive(Equipment.Form form, String sectorKey, Weight w)` | The share to set for one form of one sector, or -1 for none to set: set when some of it is unfitted or was last time (then to what the counts say, 0 when they are gone), and remembered as driven only while some is. |
-| 106 | 8 | `private static int unfitted(BuildingsStacks stack, Equipment.Form form)` | How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). |
+| 106 | 8 | `private static long unfitted(BuildingsStacks stack, Equipment.Form form)` | How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). |
 | 116 | 3 | `public void clear()` | Forgets which shares were driven: Game.buildWorld() calls it, so that a city founded or loaded into a Game that played another city with counts sets nothing to 0 it never drove. |
 | 121 | 3 | `public Set<String> driven()` | The shares this has set and not yet set back to 0, as "FORM:sector key", sorted: for the harnesses. |
 

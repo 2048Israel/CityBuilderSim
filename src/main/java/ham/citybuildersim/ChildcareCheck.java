@@ -206,14 +206,14 @@ public class ChildcareCheck {
     }
 
     /** One centre weighed as suggestFor() weighs it: its count at the demand it opens to, and its figure. */
-    record Weighed(BuildingsTemplate t, int count, BuildAdvice.Ahead p, double per, double net) { }
+    record Weighed(BuildingsTemplate t, long count, BuildAdvice.Ahead p, double per, double net) { }
 
     static Weighed weigh(Game g, BuildingsTemplate t) {
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, CHILDCARE);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, CHILDCARE);
         double landLeft = g.getLandManager().getAvailableSqFt();
-        int[] today = BuildAdvice.count(g, CHILDCARE, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
+        long[] today = BuildAdvice.count(g, CHILDCARE, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
         BuildAdvice.Ahead p = BuildAdvice.opening(g, g.quoteBuild(t, Math.max(1, today[0])).months);
-        int n = BuildAdvice.count(g, CHILDCARE, site, t, p)[0];
+        long n = BuildAdvice.count(g, CHILDCARE, site, t, p)[0];
         WorksValue.Value value = WorksValue.of(g, CHILDCARE, site, t, n, landLeft);
         return new Weighed(t, n, p, value.perUsed(), value.net());
     }
@@ -428,7 +428,7 @@ public class ChildcareCheck {
         CityNeeds.Need need = BuildAdvice.needFor(all, CHILDCARE);
         assertTrue("fixture: NEEDS YOU lists the town's childcare", need != null && CityNeeds.biting(all).contains(need));
         BuildAdvice.Suggestion card = advice(g);
-        int[] before = new int[3];
+        long[] before = new long[3];
         for (int i = 0; i < 3; i++) {
             BuildingsStacks st = g.getBuildingManager().getStack(byId(g, SMALL + i));
             before[i] = st == null ? 0 : st.getUnderConstruction();
@@ -451,7 +451,7 @@ public class ChildcareCheck {
         BuildAdvice.Suggestion[] none = new BuildAdvice.Suggestion[1];
         quietly(() -> none[0] = LongPlaytest.orderChildcare(full));
         LongPlaytest.out = was;
-        int site = 0;
+        long site = 0;
         for (int id : new int[] { SMALL, CENTRE, LARGE }) {
             BuildingsStacks st = full.getBuildingManager().getStack(byId(full, id));
             site += st == null ? 0 : st.getUnderConstruction();

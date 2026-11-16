@@ -275,7 +275,7 @@ public class Mortgage extends BusinessDebt {
      *                   mortgage is written at this month, less expected inflation
      *                   (BusinessInvestment.realTestRate(), in Game.considerOnMortgage())
      */
-    public static Decision decide(int asked, java.util.function.IntToDoubleFunction costOf,
+    public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf,
                                   double cash, double noiPerUnit, double annualRate) {
         return decide(asked, costOf, cash, noiPerUnit, annualRate, n -> 1);
     }
@@ -286,19 +286,19 @@ public class Mortgage extends BusinessDebt {
      * front, earning nothing until the builders reach it (THE INTEREST ON THE WAIT). The down payment and the outright
      * purchase are asked of the cost as before. {@code n -> 1} is the test without it.
      */
-    public static Decision decide(int asked, java.util.function.IntToDoubleFunction costOf,
+    public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf,
                                   double cash, double noiPerUnit, double annualRate,
-                                  java.util.function.IntToDoubleFunction carryOf) {
+                                  java.util.function.LongToDoubleFunction carryOf) {
         if (asked < 1) return new Decision(0, null, false, Double.NaN, Double.NaN);
         // What trimmed it is what failed first on the way down: the whole order.
         Slice top = Slice.of(asked, costOf, cash, noiPerUnit, annualRate, carryOf);
         String trimmedBy = top.failedOn();
         // The largest that passes, by halving: passing is a run from one up
         // (THE LANDLORD'S ORDER IS A RUN FROM ONE, below).
-        int pass = 0, fail = asked;
+        long pass = 0, fail = asked;
         if (top.passes()) pass = asked;
         else while (fail - pass > 1) {
-            int mid = (int) (((long) pass + fail) >>> 1);
+            long mid = ((long) pass + fail) >>> 1;
             if (Slice.of(mid, costOf, cash, noiPerUnit, annualRate, carryOf).passes()) pass = mid; else fail = mid;
         }
         if (pass >= 2) return new Decision(pass, trimmedBy, false, Double.NaN, Double.NaN);
@@ -350,9 +350,9 @@ public class Mortgage extends BusinessDebt {
     private record Slice(boolean outright, double own, boolean shortOfDown, double coverage, String failedOn) {
         boolean passes() { return failedOn == null; }
 
-        static Slice of(int n, java.util.function.IntToDoubleFunction costOf,
+        static Slice of(long n, java.util.function.LongToDoubleFunction costOf,
                         double cash, double noiPerUnit, double annualRate,
-                        java.util.function.IntToDoubleFunction carryOf) {
+                        java.util.function.LongToDoubleFunction carryOf) {
             double cost = costOf.applyAsDouble(n);
             // Its own funds buy it outright: no lender to ask.
             if (cash >= cost) return new Slice(true, Double.NaN, false, Double.NaN, null);
@@ -375,7 +375,7 @@ public class Mortgage extends BusinessDebt {
      * when not even one passed, whether one was short of
      * its down payment, the funds one needs, and the coverage one gives.
      */
-    public record Decision(int quantity, String trimmedBy, boolean shortOfDown,
+    public record Decision(long quantity, String trimmedBy, boolean shortOfDown,
                            double ownFundsForOne, double coverageOfOne) {
 
         /** Trimmed, or refused, because its own funds could not put the down payment on it. */
@@ -409,7 +409,7 @@ public class Mortgage extends BusinessDebt {
         }
 
         /** ...and the words for an order cut down from what was asked, or nothing when it was not. */
-        public String trimmed(int asked) {
+        public String trimmed(long asked) {
             if (quantity <= 0 || quantity >= asked) return "";
             return DOWN_PAYMENT.equals(trimmedBy)
                     ? String.format(" (trimmed from %,d - its own funds put the %.0f%% down on %,d)",

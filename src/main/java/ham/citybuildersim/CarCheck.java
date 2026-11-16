@@ -1042,11 +1042,11 @@ public class CarCheck {
         LongPlaytest.Move buses = null;
         for (LongPlaytest.Move m : moves) if (m.label().equals("buses")) buses = m;
         BuildingManager jb = jam.getBuildingManager();
-        int busesBefore = jb.getQuantity(bus.getId()) + (jb.getStack(bus) == null ? 0 : jb.getStack(bus).getUnderConstruction());
+        long busesBefore = jb.getQuantity(bus.getId()) + (jb.getStack(bus) == null ? 0 : jb.getStack(bus).getUnderConstruction());
         final LongPlaytest.Move busMove = buses;
         boolean[] acted = new boolean[1];
         if (busMove != null) quietly(() -> acted[0] = busMove.act().getAsBoolean());
-        int ordered = jb.getQuantity(bus.getId()) + (jb.getStack(bus) == null ? 0 : jb.getStack(bus).getUnderConstruction()) - busesBefore;
+        long ordered = jb.getQuantity(bus.getId()) + (jb.getStack(bus) == null ? 0 : jb.getStack(bus).getUnderConstruction()) - busesBefore;
         report("the bus move orders no more Bus Networks than the riders would fill",
                 busMove != null && acted[0] && ordered >= 1 && ordered <= fill,
                 String.format("%d ordered, %d at most", ordered, fill));

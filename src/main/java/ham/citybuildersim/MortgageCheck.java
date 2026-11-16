@@ -347,7 +347,7 @@ public class MortgageCheck {
         out.println("\n--- 3. the down payment: short of it on one, the landlord holds, and says so ---");
 
         double one = 300;
-        java.util.function.IntToDoubleFunction costOf = n -> one * n;
+        java.util.function.LongToDoubleFunction costOf = n -> one * n;
         double need = Mortgage.ownFundsFor(one);
         Mortgage.Decision shortOne = Mortgage.decide(5, costOf, need - .01, 1_000, .04);
         assertTrue("a till a cent short of the down payment on one buys none", shortOne.quantity() == 0 && shortOne.shortOfDown());
@@ -409,7 +409,7 @@ public class MortgageCheck {
         out.println("\n--- 4. the lender's test at its line: MORTGAGE_DEBT_COVERAGE passes, a hair under does not ---");
 
         double one = 300, rate = .05;
-        java.util.function.IntToDoubleFunction costOf = n -> one * n;
+        java.util.function.LongToDoubleFunction costOf = n -> one * n;
         double till = Mortgage.ownFundsFor(one);
         double payment = level(Mortgage.loanFor(one - till) * (1 + scheduleRate()), rate,
                 Mortgage.MORTGAGE_AMORTIZATION_MONTHS);
@@ -1073,17 +1073,17 @@ public class MortgageCheck {
             g.getLandManager().allocate(branch.getLandSqFt() * 6);
         });
         Bank bank = g.getBank();
-        int closedAt = -1, before = -1, after = -1, firstCostKnown = -1, closedIn = -1;
+        int closedAt = -1, firstCostKnown = -1, closedIn = -1; long before = -1, after = -1;
         double equityResidual = Double.NaN, audit = Double.NaN, capitalisedBefore = 0, capitalisedAfter = 0;
         String said = null;
         for (int m = 0; m < 90 && closedAt < 0; m++) {
-            int standing = g.getBuildingManager().countByName("Commercial Bank");
+            long standing = g.getBuildingManager().countByName("Commercial Bank");
             double capitalised = bank.getBranchesCapitalised();
             // The rule reads what a branch cost the month before; a bank that
             // has closed no month with its branches standing has none to read.
             if (firstCostKnown < 0 && bank.runningCostPerBranch() > 0) firstCostKnown = m;
             quietly(() -> g.simulateMonths(1));
-            int now = g.getBuildingManager().countByName("Commercial Bank");
+            long now = g.getBuildingManager().countByName("Commercial Bank");
             if (now < standing) {
                 closedIn = m;
                 closedAt = g.getMonth();

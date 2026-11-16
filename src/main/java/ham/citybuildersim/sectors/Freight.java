@@ -1116,7 +1116,7 @@ public final class Freight extends Sector {
     }
 
     /** How many bulk works stand in the city (FR7; isBulkWorks()): the most spurs worth laying, a siding to each. */
-    public int bulkWorks() {
+    public long bulkWorks() {
         return buildings == null ? 0 : buildings.standingWhere(Freight::isBulkWorks);
     }
 
@@ -1735,7 +1735,7 @@ public final class Freight extends Sector {
         boolean haveStation = inPlay > 0;
         double spurs = buildings.totalBySector(sector, t -> t.isSiding() ? 1 : 0)
                 + buildings.underConstructionBySector(sector, t -> t.isSiding() ? 1 : 0);
-        int works = bulkWorks();
+        long works = bulkWorks();
 
         BuildingsTemplate best = null;
         double bestScore = 0;
@@ -1869,13 +1869,13 @@ public final class Freight extends Sector {
      * a goods yard. The offered mix is what remains after the ships' first cut.
      */
     @Override
-    public int limitSpareRetirement(BuildingsTemplate t, int quantity, double keepAtLeast) {
+    public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast) {
         if (t == null) return 0;
         double track = trackTonnes(), stations = stationTonnes(), sidings = sidingTonnes(), sets = fleet();
         double goodsToKeep = rTonnes > 0 ? Math.max(0, rTonnes - rBulkOffered) * (keepAtLeast / rTonnes) : 0;
-        int low = 0, high = quantity;
+        long low = 0, high = quantity;
         while (low < high) {
-            int n = low + (high - low + 1) / 2;
+            long n = low + (high - low + 1) / 2;
             double stationRoom = Math.max(0, stations - n * t.getStationTonnes());
             double capacity = capacityOf(Math.max(0, track - n * t.getRailCapacity()), sets,
                     stationRoom,

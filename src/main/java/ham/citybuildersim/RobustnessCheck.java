@@ -308,7 +308,7 @@ public class RobustnessCheck {
         BuildingsTemplate house = template(flagged, "House");
         ham.citybuildersim.sectors.Construction crew = flagged.getSectors().construction();
 
-        int standingBefore = flagged.getBuildingManager().getQuantity(house.getId());
+        long standingBefore = flagged.getBuildingManager().getQuantity(house.getId());
         double crewBacklogBefore = crew.getBacklogPoints();
         double crewUnearnedBefore = crew.getUnearnedRevenue();
         double cashBefore = flagged.getCash();
@@ -327,7 +327,7 @@ public class RobustnessCheck {
                         - house.getCashCost() * 10) < 1e-9);
 
         // The ordinary order, for contrast: queued, not standing.
-        int standingNow = flagged.getBuildingManager().getQuantity(house.getId());
+        long standingNow = flagged.getBuildingManager().getQuantity(house.getId());
         flagged.buildStack(house, 10, false);
 
         assertTrue("an ordinary order is NOT standing yet",

@@ -43,7 +43,7 @@
 |---:|---|---|
 | 42 | `public final String building` |  |
 | 43 | `public final int month` |  |
-| 46 | `public int quantity` | Not final: completions of the same building in the same month merge. |
+| 46 | `public long quantity` | Not final: completions of the same building in the same month merge. |
 | 81 | `private final List<Entry> entries` |  |
 
 ## Methods, in file order
@@ -52,11 +52,11 @@
 |---:|---:|---|---|
 | 32 | 131 | **type** `public class BuildLog` | What the city has gained, and when. |
 | 40 | 40 | **type** `public static class Entry implements Cloneable` |  |
-| 48 | 5 | `Entry(String building, int quantity, int month)` _(in BuildLog.Entry)_ |  |
+| 48 | 5 | `Entry(String building, long quantity, int month)` _(in BuildLog.Entry)_ |  |
 | 59 | 7 | `Entry copy()` _(in BuildLog.Entry)_ | A copy to hand the autosave's writer thread (UP1, 2026-10-22): the live entry's quantity grows when the same building completes again in its month. |
 | 68 | 3 | `public int monthsAgo(int currentMonth)` _(in BuildLog.Entry)_ | How long ago, in months. |
 | 73 | 6 | `public String when(int currentMonth)` _(in BuildLog.Entry)_ | "this month", "last month", "3 months ago". |
-| 83 | 25 | `public void record(String building, int quantity, int month)` |  |
+| 83 | 25 | `public void record(String building, long quantity, int month)` |  |
 | 115 | 13 | `public List<Entry> recent(int currentMonth)` | What to show right now: everything within KEEP_MONTHS, newest first. |
 | 130 | 5 | `public List<Entry> all()` | Every entry ever kept, newest first. |
 | 144 | 10 | `public void restore(List<Entry> saved)` | Puts a saved log back, in the order it was written. |

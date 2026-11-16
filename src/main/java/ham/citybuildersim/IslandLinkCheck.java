@@ -507,7 +507,7 @@ public class IslandLinkCheck {
                         && LandmassCheck.onSite(c, road) == 1 && LandmassCheck.standing(c, road) == 0 && !lms.linked(island) && lms.anyUnlinked());
         int month = ab.getLastPass();
         double entryCost = 0;
-        int entries = 0, entryUnits = 0;
+        int entries = 0; long entryUnits = 0;
         AutoBuilder.Entry entry = null;
         for (AutoBuilder.Entry e : ab.log()) {
             if (e.month() != month) continue;
@@ -561,7 +561,7 @@ public class IslandLinkCheck {
                 ab.groundShort() && step != null && step.outcome() == AutoBuilder.Outcome.ORDERED && step.kind() == BuildAdvice.LinkKind.PORT && step.landmass() == island && step.cost() > 0
                         && step.building().contains(want.orders().get(0).template().getName()) && step.building().contains(want.orders().get(1).template().getName()),
                 step == null ? "no link step (" + ab.linkSteps().size() + ")" : step.line());
-        int onSiteIsland = lms.portsAt(island), onSiteHome = lms.portsAt(home);
+        long onSiteIsland = lms.portsAt(island), onSiteHome = lms.portsAt(home);
         BuildingsTemplate t0 = want.orders().get(0).template(), t1 = want.orders().get(1).template();
         int wantedOnSite = t0.getId() == t1.getId() ? 2 : 1;
         check("...a terminal is on site on the island and one at home, none stands, and the island is unlinked",

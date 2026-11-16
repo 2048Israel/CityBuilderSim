@@ -5,7 +5,7 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.function.IntToDoubleFunction;
+import java.util.function.LongToDoubleFunction;
 
 /**
  * The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1).
@@ -417,7 +417,7 @@ public class OrderSearchCheck {
             for (int b = 0; b <= q; b++) {
                 final int line = b;
                 asks[0] = 0;
-                int found = Game.largestSlice(q, n -> { asks[0]++; return n <= line; });
+                long found = Game.largestSlice(q, n -> { asks[0]++; return n <= line; });
                 boundaries++;
                 most = Math.max(most, asks[0]);
                 if (asks[0] > Game.deskCallsMost(q)) over++;
@@ -431,7 +431,7 @@ public class OrderSearchCheck {
                 if (b < 0) continue;
                 final long line = b;
                 asks[0] = 0;
-                int found = Game.largestSlice(q, n -> { asks[0]++; return n <= line; });
+                long found = Game.largestSlice(q, n -> { asks[0]++; return n <= line; });
                 boundaries++;
                 most = Math.max(most, asks[0]);
                 if (asks[0] > Game.deskCallsMost(q)) over++;
@@ -455,14 +455,14 @@ public class OrderSearchCheck {
             for (int j = rng.nextInt(4); j > 0; j--) pass.set(1 + rng.nextInt(q));
             int byCount = 0;
             for (int n = q; n >= 1; n--) if (pass.get(n)) { byCount = n; break; }
-            int found = Game.largestSlice(q, pass::get);
+            long found = Game.largestSlice(q, n -> pass.get((int) n));
             tried++;
             if (q - byCount < Game.COUNTDOWN_SLICES) {
                 insideCounted++;
                 if (found != byCount) insideWrong++;
             } else {
                 if (found != byCount) differed++;
-                if (found > 0 ? !pass.get(found) || (found < q && pass.get(found + 1)) : byCount != 0 && found != 0) boundaryWrong++;
+                if (found > 0 ? !pass.get((int) found) || (found < q && pass.get((int) found + 1)) : byCount != 0 && found != 0) boundaryWrong++;
             }
         }
         out.printf("      %,d tests that pass, fail and pass again: %,d decided inside the counted slices; of the rest,"
@@ -484,16 +484,16 @@ public class OrderSearchCheck {
         // BA1: the shortfall is grown by the order's carry, which is at least 1 and rises with the order (BusinessInvestment,
         // THE WAIT GROWS WITH THE ORDER): none, a gentle one that starts above nothing, and a steep one that grows with the
         // square root of the order. The search halves because the test stays a run from one under any of them.
-        IntToDoubleFunction[] carries = {
+        LongToDoubleFunction[] carries = {
                 n -> 1,
                 n -> Math.pow(1 + .04 / 12, 3 + .7 * n),
                 n -> Math.pow(1 + .09 / 12, 12 * Math.sqrt(n)) };
-        for (IntToDoubleFunction carryOf : carries)
+        for (LongToDoubleFunction carryOf : carries)
         for (double a : new double[] { 300, 1234.5 })
         for (double b : new double[] { 0, 50 })
         for (double m : new double[] { 1, 3 })
         for (double y : new double[] { 0, 10, 100 }) {
-            IntToDoubleFunction costOf = n -> a * n + b * Math.max(0, m * n - y);
+            LongToDoubleFunction costOf = n -> a * n + b * Math.max(0, m * n - y);
             double c1 = costOf.applyAsDouble(1);
             double[] tills = { -50, 0, 1, Mortgage.ownFundsFor(c1) - .01, Mortgage.ownFundsFor(c1),
                     .3 * c1, .2 * costOf.applyAsDouble(5), costOf.applyAsDouble(20),
@@ -505,7 +505,7 @@ public class OrderSearchCheck {
                 for (int asked : new int[] { 1, 2, 3, 7, 16, 50, 200 }) {
                     double noi = noiTimes * one;
                     long[] reads = { 0 };
-                    IntToDoubleFunction counted = n -> { reads[0]++; return costOf.applyAsDouble(n); };
+                    LongToDoubleFunction counted = n -> { reads[0]++; return costOf.applyAsDouble(n); };
                     Mortgage.Decision found = Mortgage.decide(asked, counted, cash, noi, rate, carryOf);
                     readBySearch += reads[0];
                     reads[0] = 0;
@@ -595,7 +595,7 @@ public class OrderSearchCheck {
         BusinessInvestment plans = g.getBusinessInvestment();
         String sector = store.getSector();
         double one = plans.getCostOf(store, 1);
-        int cases = 0, windows = 0, differ = 0, overDesk = 0, widest = 0;
+        int cases = 0, windows = 0, differ = 0, overDesk = 0; long widest = 0;
         String first = null;
         for (int till : WINDOW_TILLS) {
             for (int room : WINDOW_ROOMS) {
@@ -636,7 +636,7 @@ public class OrderSearchCheck {
                 for (int width = 1; width <= 40 && till + width <= q - Game.COUNTDOWN_SLICES; width++) {
                     final int lo = till + 1, hi = till + width;
                     asks[0] = 0;
-                    int found = Game.largestSlice(q, n -> { asks[0]++; return n >= lo && n <= hi; }, () -> lo);
+                    long found = Game.largestSlice(q, n -> { asks[0]++; return n >= lo && n <= hi; }, () -> lo);
                     tests++;
                     if (found != hi) windowWrong++;
                     if (asks[0] > Game.deskCallsMost(q)) over++;
@@ -656,7 +656,7 @@ public class OrderSearchCheck {
                 final int line = b;
                 for (int borrows : new int[] { 0, 1, b / 2 + 1, b, b + 1, q + 1 }) {
                     asks[0] = 0;
-                    int found = Game.largestSlice(q, n -> { asks[0]++; return n <= line; }, () -> borrows);
+                    long found = Game.largestSlice(q, n -> { asks[0]++; return n <= line; }, () -> borrows);
                     runs++;
                     if (found != b || asks[0] > Game.deskCallsMost(q)) wrong++;
                 }
@@ -748,9 +748,9 @@ public class OrderSearchCheck {
 
     static final class Watch implements BusinessInvestment.OrderWatch {
         final Game g;
-        int invested, investedDiffer, trimmed, refused, searched, deepest, largestInvested;
+        int invested, investedDiffer, trimmed, refused, searched; long deepest, largestInvested;
         int mostDeskCalls, mostCountDeskCalls, overBound;
-        int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused, largestMortgage;
+        int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused; long largestMortgage;
         /** BA1: orders whose whole size carried an interest over its cost's own (the carry over 1), judged on their interest and on a mortgage; the most the carry grew a cost by. */
         int carried, mortgageCarried;
         double mostCarry = 1;
@@ -792,11 +792,11 @@ public class OrderSearchCheck {
         }
 
         @Override
-        public void mortgaged(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit,
+        public void mortgaged(long asked, LongToDoubleFunction costOf, double cash, double noiPerUnit,
                               double annualRate, Mortgage.Decision found) {
             mortgaged++;
             largestMortgage = Math.max(largestMortgage, asked);
-            IntToDoubleFunction carryOf = carryOfTheOrder(asked, costOf);
+            LongToDoubleFunction carryOf = carryOfTheOrder(asked, costOf);
             if (carryOf == null) {
                 // ...no single building by those costs: the order is judged without a carry, and counted, for the fixture to refuse.
                 mortgageUnnamed++;
@@ -819,7 +819,7 @@ public class OrderSearchCheck {
          * template whose cost of one, of two and of the order is the hook's, to the bit; null where none is, or where
          * several are that carry differently. The costs are the game's own at this moment, nothing having been built yet.
          */
-        IntToDoubleFunction carryOfTheOrder(int asked, IntToDoubleFunction costOf) {
+        LongToDoubleFunction carryOfTheOrder(long asked, LongToDoubleFunction costOf) {
             BusinessInvestment plans = g.getBusinessInvestment();
             double insured = g.getEconomyManager().getBusinessDebtManager().getInsuredMortgageRate();
             double one = costOf.applyAsDouble(1), two = costOf.applyAsDouble(2), all = costOf.applyAsDouble(asked);
@@ -874,12 +874,12 @@ public class OrderSearchCheck {
     }
 
     /** Mortgage.decide()'s count: down from what was asked, the lender's test on the shortfall grown by the order's carry (BA1; n -> 1 for none). */
-    static Mortgage.Decision decidedByCount(int asked, IntToDoubleFunction costOf,
-                                            double cash, double noiPerUnit, double annualRate, IntToDoubleFunction carryOf) {
+    static Mortgage.Decision decidedByCount(long asked, LongToDoubleFunction costOf,
+                                            double cash, double noiPerUnit, double annualRate, LongToDoubleFunction carryOf) {
         String trimmedBy = null;
         double ownForOne = Double.NaN, coverageOfOne = Double.NaN;
         boolean shortForOne = false;
-        for (int n = asked; n >= 1; n--) {
+        for (long n = asked; n >= 1; n--) {
             double cost = costOf.applyAsDouble(n);
             if (cash >= cost) return new Mortgage.Decision(n, trimmedBy, false, ownForOne, coverageOfOne);
             double own = Mortgage.ownFundsFor(cost);
@@ -910,10 +910,10 @@ public class OrderSearchCheck {
         BusinessInvestment plans = g.getBusinessInvestment();
         BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
         boolean banned = credit.isBorrowingBlocked(decision.sector);
-        int affordable = 0, deskCalls = 0;
+        long affordable = 0; int deskCalls = 0;
         boolean atPrime = false;
         double firstRate = Double.NaN;
-        for (int n = decision.quantity; n >= 1; n--) {
+        for (long n = decision.quantity; n >= 1; n--) {
             double cost = plans.getCostOf(decision.template, n);
             double borrowed = Math.max(cost - cash, 0);
             if (banned && borrowed > 0) continue;

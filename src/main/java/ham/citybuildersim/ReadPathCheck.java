@@ -1261,7 +1261,7 @@ public class ReadPathCheck {
         g.getConstructionOutput();
         g.quoteBuild(template(g, "House"), 1);
         // ...and an order bar's several at once, its Build button's total (0.7.34)
-        BuildAdvice.quoteTotal(g, Map.of(template(g, "House"), 3, template(g, "Water Treatment Plant"), 1));
+        BuildAdvice.quoteTotal(g, Map.of(template(g, "House"), 3L, template(g, "Water Treatment Plant"), 1L));
         // ...and the overview's suggestions added up (0.7.38)
         BuildAdvice.quoteTotal(BuildAdvice.suggest(g));
         // ...and every gauge as served, with its one verdict (0.7.41): the owners' getters, each row's,
@@ -1302,9 +1302,9 @@ public class ReadPathCheck {
         g.buildFundingGap(template(g, "House"), 1);
         g.buildFundingGap(template(g, "Water Treatment Plant"), 1_000);
         // ...and a run of orders, which its funding page is sized to since 0.7.40
-        Map<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
-        run.put(template(g, "House"), 3);
-        run.put(template(g, "Water Treatment Plant"), 1_000);
+        Map<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
+        run.put(template(g, "House"), 3L);
+        run.put(template(g, "Water Treatment Plant"), 1_000L);
         g.buildRunInvoice(run);
         g.buildFundingGap(run);
         g.buildRunAhead(run);

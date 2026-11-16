@@ -70,7 +70,7 @@ final class ConstructionScreen {
     /* The Demolish tab's staging: what is picked - a template's name, or a shell's - and how many. */
     String pick;
     boolean pickShell;
-    int count = 1;
+    long count = 1;
     String filter = "";
 
     /** The page, on the tab it was left on. */
@@ -177,7 +177,7 @@ final class ConstructionScreen {
         int output = g.getBuildingOutput();
         double atEveryPost = g.getBuildingOutputAtEveryPost();
         double owed = bm.pointsOwedOnSite();
-        int sites = 0, buildings = 0;
+        int sites = 0; long buildings = 0;
         for (BuildingsStacks s : bm.getStacksUnderConstruction()) { sites++; buildings += s.getUnderConstruction(); }
         for (ConstructionControl.Demolition d : bm.getControl().demolitions()) { sites++; buildings += d.buildings; }
         double queue = atEveryPost > 0 ? owed / atEveryPost : Double.NaN;
@@ -186,7 +186,7 @@ final class ConstructionScreen {
         double theirs = g.getBusinessInvestment().monthsOfWorkOnSite(Sectors.REAL_ESTATE, atEveryPost);
 
         // Kept (KP3): each cell of the bar is a scope of its own (limitCell() makes its nodes in the scope it is called in).
-        final int siteCount = sites, buildingCount = buildings;
+        final long siteCount = sites, buildingCount = buildings;
         VBox builders = Kept.scope("builders", () -> limitCell("BUILDERS", String.format("%,d pts", output), "a month, after the repairs",
                 Palette.TEXT_HEAD));
         VBox onSite = Kept.scope("owed", () -> limitCell("OWED ON SITE", String.format("%,.0f pts", owed),
@@ -449,7 +449,7 @@ final class ConstructionScreen {
         });
 
         // ---- progress: done of total, and the work ----
-        int done, total;
+        long done, total;
         double fraction;
         String doneWord;
         if (demolition != null) {
@@ -876,7 +876,7 @@ final class ConstructionScreen {
         List<Node> city = new ArrayList<>(), theirs = new ArrayList<>(), shells = new ArrayList<>();
         for (BuildingsTemplate t : bm.getTemplates()) {
             if (t == null) continue;
-            int n = g.demolishable(t);
+            long n = g.demolishable(t);
             if (n <= 0 || (!f.isEmpty() && !t.getName().toLowerCase().contains(f))) continue;
             if (g.isCitysToDemolish(t)) city.add(pickRow(t.getName(), n, false));
             else if (g.isBuyOutable(t)) theirs.add(pickRow(t.getName(), n, false));
@@ -905,7 +905,7 @@ final class ConstructionScreen {
         return l;
     }
 
-    private Node pickRow(String name, int n, boolean shell) {
+    private Node pickRow(String name, long n, boolean shell) {
         // Kept (KP3): a row is a scope keyed by its building (a shell's apart from the standing buildings').
         return Kept.scope((shell ? "shell:" : "building:") + name, () -> {
             boolean on = name.equals(pick) && shell == pickShell;
@@ -958,9 +958,9 @@ final class ConstructionScreen {
         Game g = ui.game;
         List<Node> out = new ArrayList<>();
         boolean buyOut = !pickShell && g.isBuyOutable(t);
-        int most = pickShell ? shell.buildings : g.demolishable(t);
+        long most = pickShell ? shell.buildings : g.demolishable(t);
         count = Math.max(1, Math.min(count, most));
-        int n = pickShell ? shell.buildings : count;
+        long n = pickShell ? shell.buildings : count;
 
         out.add(Kept.scope("head", () -> {
             Label title = Kept.label((buyOut ? "Buy out and demolish " : "Demolish ") + t.getName()
@@ -1151,7 +1151,7 @@ final class ConstructionScreen {
                 lines, "Stop it", () -> { g.cancelSite(key, true); draw(); });
     }
 
-    private void confirmDemolition(BuildingsTemplate t, int n, Game.DemolitionQuote q) {
+    private void confirmDemolition(BuildingsTemplate t, long n, Game.DemolitionQuote q) {
         Game g = ui.game;
         List<String[]> lines = new ArrayList<>();
         lines.add(new String[] { "Cost to clear", money(q.price().total) });
@@ -1167,7 +1167,7 @@ final class ConstructionScreen {
                 });
     }
 
-    private void confirmBuyOut(BuildingsTemplate t, int n, Game.BuyOutQuote q) {
+    private void confirmBuyOut(BuildingsTemplate t, long n, Game.BuyOutQuote q) {
         Game g = ui.game;
         List<String[]> lines = new ArrayList<>();
         lines.add(new String[] { "To " + payerLabel(g, q.sector()), money(q.compensation()) });

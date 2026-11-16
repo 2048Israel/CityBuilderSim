@@ -33,7 +33,7 @@
 |---:|---:|---|---|
 | 29 | 43 | **type** `public final class OreView` | The land office's Ore card as the model reads it (batch I13-L): for each ore the city's ground holds, its deposits, the tonnes still in the ground, the sites the mines on it take and whether ore lies undug - and the i... |
 | 31 | 1 | `private OreView()` |  |
-| 44 | 5 | **type** `public record Ore(Resource resource, String words, String sector, int deposits, double tonnes, int mines, b...` | One ore. |
+| 44 | 5 | **type** `public record Ore(Resource resource, String words, String sector, int deposits, double tonnes, long mines, ...` | One ore. |
 | 47 | 1 | `public boolean hasDigger()` _(in OreView.Ore)_ | Whether an industry digs it at all: the card's click goes to its page. |
 | 51 | 12 | `public static List<Ore> ores(Game game)` | The ores the card lists, in Resource's order: iron always, then each of stone, coal, copper and uranium the city owns a site of. |
 | 65 | 6 | `public static String diggerOf(Game game, Resource r)` | The key of the extraction sector whose resource this is, or null. |

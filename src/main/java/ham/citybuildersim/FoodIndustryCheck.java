@@ -42,7 +42,7 @@ public class FoodIndustryCheck {
                         && bm.getQuantity(mill.getId()) == heldMill && heldBakery > heldMill);
         double counted = 0, heads = 0, bread = 0;
         for (BuildingsTemplate t : bm.getTemplatesBySector(industry.key())) {
-            int held = bm.getQuantity(t.getId());
+            long held = bm.getQuantity(t.getId());
             counted += held * industry.unitsOf(t);
             heads += held * (t.makes(Good.BREAD) + t.makes(Good.BAKERY)) / Agriculture.BAKED_KG_A_HEAD;
             bread += held * t.makes(Good.BREAD);

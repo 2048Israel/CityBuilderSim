@@ -41,7 +41,7 @@ public final class OreView {
      * @param mines    the sites the mines on it take, standing, on site or ordered (Game.committedOn())
      * @param undug    whether a deposit has no mine on it: fewer sites taken than owned - the page's flag (ExtractionSector.ownLines())
      */
-    public record Ore(Resource resource, String words, String sector, int deposits, double tonnes, int mines, boolean undug) {
+    public record Ore(Resource resource, String words, String sector, int deposits, double tonnes, long mines, boolean undug) {
 
         /** Whether an industry digs it at all: the card's click goes to its page. */
         public boolean hasDigger() { return sector != null; }
@@ -55,7 +55,7 @@ public final class OreView {
             if (r == Resource.OIL || !r.inFields()) continue;
             int deposits = land.getSites(r);
             if (r != Resource.IRON && deposits <= 0) continue;
-            int mines = game.committedOn(r);
+            long mines = game.committedOn(r);
             out.add(new Ore(r, ExtractionSector.oreWords(r, null), diggerOf(game, r), deposits, land.getRemaining(r), mines, mines < deposits));
         }
         return out;

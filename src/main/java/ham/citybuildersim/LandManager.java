@@ -1201,7 +1201,7 @@ public class LandManager {
         return kept;
     }
 
-    public boolean hasUnminedDeposit(int minesStanding) {
+    public boolean hasUnminedDeposit(long minesStanding) {
         return minesStanding < getIronDeposits() && getIronReserveTonnes() > 0;
     }
 
@@ -1355,12 +1355,12 @@ public class LandManager {
      * and when the purchases alone hold more than the reserve, the extraction
      * says how much of theirs is gone. What the harnesses' cities are given.
      */
-    public void restoreIron(int deposits, double reserveTonnes) {
+    public void restoreIron(long deposits, double reserveTonnes) {
         restoreSites(Resource.IRON, deposits, reserveTonnes);
     }
 
     /** ...the same for any resource in fields (0.7.62): a fixture's oil, as restoreIron() is its ore. */
-    public void restoreSites(Resource r, int deposits, double reserveTonnes) {
+    public void restoreSites(Resource r, long deposits, double reserveTonnes) {
         CityLand l = land();
         int sites = (int) Math.max(0, Math.max(0, deposits) - l.purchasedSites(r));
         double bought = l.purchasedAmount(r);
@@ -1696,7 +1696,7 @@ public class LandManager {
     }
 
     /** Standing works on a resource's sites, for fits(): the type they stand on (null for ANY), the sites each takes, and how many stand. */
-    public record Claim(Deposit.FieldType type, int sites, int count) { }
+    public record Claim(Deposit.FieldType type, int sites, long count) { }
 
     /**
      * Whether a works of `extra` sites on `type` (null for ANY) fits on the

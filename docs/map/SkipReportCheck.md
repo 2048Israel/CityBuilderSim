@@ -39,7 +39,7 @@
 | 16 | 308 | **type** `public class SkipReportCheck` | Verifies the fast-forward summary. |
 | 20 | 6 | `static void check(String label, double actual, double expected)` |  |
 | 27 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 32 | 7 | `static Map<String, Integer> buildings(Object...pairs)` |  |
+| 32 | 7 | `static Map<String, Long> buildings(Object...pairs)` |  |
 | 40 | 217 | `public static void main(String[] args)` |  |
 | 266 | 57 | `static void emptyTreasury()` | Jerus, of the time skip: "Same rule as play: the central bank covers the treasury, and the skip only stops for the things that already stop it." An Insane city - nothing in the treasury, no revenue behind it - skipped... |
 

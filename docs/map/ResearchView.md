@@ -100,10 +100,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 193 | 13 | **type** `public record PieceRow(BuildingsTemplate template, Equipment piece, int buildings, int unfitted, int onSite...` | One piece of equipment on one stack, as the Investors page and the Found page list it: how many of the stack's buildings there are, how many lack the piece, how many are being fitted now, the verdict on the piece (the... |
-| 197 | 3 | `public int fitted()` _(in ResearchView.PieceRow)_ | The buildings that carry the piece: the buildings less those that lack it. |
+| 193 | 13 | **type** `public record PieceRow(BuildingsTemplate template, Equipment piece, long buildings, long unfitted, long onS...` | One piece of equipment on one stack, as the Investors page and the Found page list it: how many of the stack's buildings there are, how many lack the piece, how many are being fitted now, the verdict on the piece (the... |
+| 197 | 3 | `public long fitted()` _(in ResearchView.PieceRow)_ | The buildings that carry the piece: the buildings less those that lack it. |
 | 202 | 3 | `public double share()` _(in ResearchView.PieceRow)_ | The share of the stack that carries the piece, 0 to 1 (the bar on the Found page): fitted() over the buildings, 0 where there are none. |
-| 208 | 1 | **type** `private record Standing(BuildingsStacks stack, Equipment piece, int buildings, int unfitted)` | One stack's piece, before it is judged: what both equipment() and fittedShare() read. |
+| 208 | 1 | **type** `private record Standing(BuildingsStacks stack, Equipment piece, long buildings, long unfitted)` | One stack's piece, before it is judged: what both equipment() and fittedShare() read. |
 | 211 | 18 | `private static List<Standing> standing(Game game, String sectorKey)` | The pieces standing in the city's stacks, known at the city's month, in the templates' order and each template's pieces' order; `sectorKey` null is the whole city. |
 | 235 | 11 | `public static List<PieceRow> equipment(Game game, String sectorKey)` | The equipment standing in the city, in a city founded the 1900 way: for each template with a stack of buildings (the sector's own when `sectorKey` is not null, the whole city's when it is), in the templates' order, a ... |
 | 252 | 9 | `public static double fittedShare(Game game)` | The share of the equipment standing that is fitted, 0 to 1: over every row of equipment(game, null), the buildings that carry the piece over the buildings. |
@@ -113,7 +113,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 278 | 7 | **type** `public record RecipeUse(BuildingsTemplate template, Recipe recipe, int running, int buildings, Discovery from)` | A way of running a template other than its default, known in the city: how many of the template's `buildings` run it now (the fitted part and the unfitted part that chose it, as Recipes.apply() weighs them; 0 for one ... |
+| 278 | 7 | **type** `public record RecipeUse(BuildingsTemplate template, Recipe recipe, long running, long buildings, Discovery ...` | A way of running a template other than its default, known in the city: how many of the template's `buildings` run it now (the fitted part and the unfitted part that chose it, as Recipes.apply() weighs them; 0 for one ... |
 | 281 | 3 | `public double share()` _(in ResearchView.RecipeUse)_ | The share of the stack that runs the recipe, 0 to 1 (the bar on the Found page): running over the buildings, 0 where there are none. |
 | 293 | 39 | `public static List<RecipeUse> recipesInUse(Game game)` | The recipes in use, in a city founded the 1900 way: for each template with a choice of recipes and a stack of buildings, each of its recipes other than the default that is known at the city's month, resolving selected... |
 
@@ -142,7 +142,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 437 | 1 | **type** `public record SchoolCount(String name, int count)` | A school standing that hosts a field's research, by its template's name and how many of it stand. |
+| 437 | 1 | **type** `public record SchoolCount(String name, long count)` | A school standing that hosts a field's research, by its template's name and how many of it stand. |
 | 443 | 23 | **type** `public record FieldReach(Field field, double researchers, double labResearchers, double idle, int inReach, ...` | One field on the Overview page: its researchers (the city's own and the labs'), the idle among them, the problems open to them and what those touch, what the field has found here and had come from abroad, and the scho... |
 | 447 | 3 | `public double total()` _(in ResearchView.FieldReach)_ | Everyone at the field's research this month: the city's researchers and the labs'. |
 | 452 | 3 | `public double working()` _(in ResearchView.FieldReach)_ | The people at work on a problem: everyone less the idle. |
@@ -181,7 +181,7 @@
 | 668 | 3 | `static double roomOf(Pieces p, Field f)` | The posts a field's schools have room for (Research.room() of their university-band staff), and nothing where none stands. |
 | 673 | 3 | `static double facultyOf(Pieces p, Field f)` | The researcher-FTE a field's faculty give this month (Research.faculty() of the staffed staff). |
 | 682 | 11 | `static double labThreshold(Research research, int month, Field f, double[] wages)` | The least prize that would bring a lab to a field (the core): the least remaining work of an open problem that a team at its limit could finish before the world, times twelve researcher-years and a post's cost (the pu... |
-| 695 | 10 | `static Funding funding(Pieces p, Field f, int labsStanding, int labsOnSite)` | One field's dial card as it stands (the core), the labs being the ones standing and on site. |
+| 695 | 10 | `static Funding funding(Pieces p, Field f, long labsStanding, long labsOnSite)` | One field's dial card as it stands (the core), the labs being the ones standing and on site. |
 | 707 | 3 | `public static Funding funding(Game game, Field f)` | One field's dial card as it stands in the city. |
 | 717 | 8 | `static AtGrant atGrant(Pieces p, Field f, double grant)` | What a grant in a field would do (the core): the posts Research.posts() says it and the field's pot buy at the wages now within the room, those the grant alone buys, the researchers the filled ones give at the fill th... |
 | 727 | 3 | `public static AtGrant atGrant(Game game, Field f, double grant)` | What a staged grant in a field would do in the city. |
@@ -213,7 +213,7 @@
 | 872 | 6 | `static double niceFloor(double x)` | The greatest of 1, 2 and 5 times a power of ten that is not above `x` (0 for x not above nothing). |
 | 889 | 6 | `static double niceCeil(double x)` | The least of 1, 2 and 5 times a power of ten that is not below `x` (0 for x not above nothing). |
 | 900 | 7 | `public static Dial prizeDial(Funding f)` | The prize dial of a field: from nothing to a round number (1, 2 or 5 times a power of ten) that reaches PRIZE_DIAL_YEARS researcher-years of a post's cost, twice the least prize that brings a lab (PRIZE_REACH) and the... |
-| 909 | 3 | `public static int labPosts(int labs)` | The researchers that `labs` Research Labs give once they are staffed: Research.LAB_POSTS posts each. |
+| 909 | 3 | `public static long labPosts(long labs)` | The researchers that `labs` Research Labs give once they are staffed: Research.LAB_POSTS posts each. |
 | 914 | 5 | **type** `public record Budget(double before, double after)` | THE BUDGET a month before and after what is staged: the balance as the accounts booked it and the same less what the staged grants' posts would add to the research bill. |
 | 915 | 3 | `public double change()` _(in ResearchView.Budget)_ |  |
 | 924 | 12 | `public static Budget budget(Game game, Staged staged)` | The balance with the staged grants in place of the ones in force: a staged grant buys the posts atGrant() says, and their bill replaces the bill of the posts struck. |
@@ -234,6 +234,6 @@
 | 1005 | 3 | `public static boolean hostsResearch(EducationType kind)` | Whether a kind of school hosts research in any field (the University, and the Institute of technology, Medical, Business and Law schools). |
 | 1010 | 14 | `static EnumMap<Field, Double> staffOfKind(Game game, EducationType kind)` | The nominal university-band staff a kind of school stands up in each field, as Game.researchStaff(null) sums them over every kind. |
 | 1030 | 15 | `public static List<SchoolPosts> schoolPosts(Game game, EducationType kind)` | What a kind of school carries of the city's research posts: posts are struck by field and not by school, so a kind has its share of each field it hosts - the posts struck there and the researchers they give, by the ki... |
-| 1047 | 1 | **type** `public record SchoolRow(EducationType kind, String name, int count, List<SchoolPosts> posts)` | A hosting kind of school standing in the city, as the Overview lists it: its name, how many stand and what it carries. |
+| 1047 | 1 | **type** `public record SchoolRow(EducationType kind, String name, long count, List<SchoolPosts> posts)` | A hosting kind of school standing in the city, as the Overview lists it: its name, how many stand and what it carries. |
 | 1050 | 15 | `public static List<SchoolRow> schoolRows(Game game)` | The kinds of school that host research and stand in the city, in the education kinds' order. |
 

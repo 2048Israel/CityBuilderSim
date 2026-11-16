@@ -121,8 +121,8 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 247 | 3 | `public double getPotentialOutput()` | What its buildings could lift this month if the ground allowed it. |
-| 252 | 3 | `public int sitesOwned()` | The sites of its resource the city owns: how many of its buildings can stand. |
-| 257 | 3 | `public int sitesWorked()` | ...and those its buildings stand on, standing, on site or ordered (Game.committedOn()). |
+| 252 | 3 | `public long sitesOwned()` | The sites of its resource the city owns: how many of its buildings can stand. |
+| 257 | 3 | `public long sitesWorked()` | ...and those its buildings stand on, standing, on site or ordered (Game.committedOn()). |
 
 ### the plan (lines 261-457)
 

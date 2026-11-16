@@ -486,10 +486,10 @@ public class ResearchPreviewCheck {
         Research copy = copyOf(base);
         int end = city.month() + ResearchPreview.YEARS * Research.MONTHS_A_YEAR;
         for (int m = city.month() + 1; m <= end; m++) {
-            EnumMap<Field, Integer> labs = new EnumMap<>(Field.class);
+            EnumMap<Field, Long> labs = new EnumMap<>(Field.class);
             EnumMap<Field, Double> labPeople = new EnumMap<>(Field.class);
             for (Field f : Field.values()) {
-                int n = copy.prize(f) > 0 ? copy.labsWanted(f, m, w) : 0;
+                long n = copy.prize(f) > 0 ? copy.labsWanted(f, m, w) : 0;
                 labs.put(f, n);
                 labPeople.put(f, n * (double) Research.LAB_POSTS);
             }

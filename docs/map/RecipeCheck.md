@@ -102,7 +102,7 @@
 |---:|---:|---|---|
 | 146 | 12 | `static String differs(BuildingsTemplate t, Recipe r)` | Why a template's live figures are not a recipe's (every figure, to the bit), or null when they are. |
 | 159 | 1 | `static boolean runs(BuildingsTemplate t, Recipe r)` |  |
-| 162 | 12 | `static String notMixWithChanges(Game g, BuildingsTemplate t, Recipe fitted, int nf, Recipe unfitted, int nu)` | R2d: the original process-mix law, with every independent equipment undo composed on it. |
+| 162 | 12 | `static String notMixWithChanges(Game g, BuildingsTemplate t, Recipe fitted, long nf, Recipe unfitted, long nu)` | R2d: the original process-mix law, with every independent equipment undo composed on it. |
 | 176 | 3 | `static Recipe composedChoice(Game g, BuildingsTemplate t, Recipe base, Recipes.Prices prices)` | The process id with its independently chosen recipe undos, as saved by the driver. |
 | 182 | 3 | `static String differs(BuildingsTemplate a, BuildingsTemplate b)` | Two templates' live figures alike, to the bit: the first difference, or null. |
 | 190 | 10 | `static Recipe like(Recipe base, String id, String since, String needs, double makesTimes, double usesTimes, int noDiploma, int ...` | A recipe like `base`, not the default, with the changes asked for: makes and uses times a factor, the posts of NO_DIPLOMA, the draw and what it makes itself (a negative figure leaves it as the base's). |

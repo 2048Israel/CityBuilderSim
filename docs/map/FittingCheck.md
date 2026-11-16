@@ -127,8 +127,8 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 406 | 8 | `static int pressUntilOpen(Game g, BuildingsStacks s, int most)` | Presses the clock until nothing is on site on this stack (at most `most` months); how many buildings opened over them. |
-| 416 | 14 | `static int pressUntilOpenAlone(Game g, BuildingsStacks target, int most, int[] unrelated)` | Counts actual quantity increases each month, so a bakery-only premise is observed. |
+| 406 | 8 | `static long pressUntilOpen(Game g, BuildingsStacks s, int most)` | Presses the clock until nothing is on site on this stack (at most `most` months); how many buildings opened over them. |
+| 416 | 14 | `static long pressUntilOpenAlone(Game g, BuildingsStacks target, int most, long[] unrelated)` | Counts actual quantity increases each month, so a bakery-only premise is observed. |
 | 440 | 15 | `static Game builtVillage(String label, Founding founding)` | A village on the goods' literals (the moved prices hold through the months), the builders' depots standing and the sectors that would build on their own held. |
 | 456 | 82 | `static void newBuildings(String label, boolean unfittedCity, int which)` |  |
 | 539 | 17 | `static void sectionFour()` |  |

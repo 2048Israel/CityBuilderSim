@@ -4140,7 +4140,7 @@ final class SectorScreen {
                         w.setAlignment(Pos.CENTER_LEFT);
                         return w;
                     });
-                    int owned = bm.getQuantity(template.getId());
+                    long owned = bm.getQuantity(template.getId());
                     VBox have = Kept.scope("have", () -> {
                         VBox h = Kept.column(0, caption("you have " + String.format("%,d", owned), Palette.TEXT_BODY));
                         if (inv.onSite() > 0) {

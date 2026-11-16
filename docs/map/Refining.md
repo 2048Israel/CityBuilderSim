@@ -286,7 +286,7 @@
 | 1812 | 3 | `static String a(String name)` | "a Small Coker", "an Oil Refinery". |
 | 1817 | 11 | `static String named(SpreadPlanner.Candidate c)` | A candidate named, with the units it was weighed with: "an Oil Refinery with a Small Lube Plant and a Small Coker behind it". |
 | 1837 | 45 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to build, and what (THE SPREAD PLANNER): of the refiners' buildings that pass the gates, the one that earns most on its cost, no crude unit while one is on site; with none, ground if ground was all that stood ... |
-| 1909 | 8 | `int crudeUnitsOnSite()` | The crude units on site, anyone's order (R3). |
+| 1909 | 8 | `long crudeUnitsOnSite()` | The crude units on site, anyone's order (R3). |
 | 1919 | 7 | `public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans)` | One building of the refiners' weighed now (THE SPREAD PLANNER), at this month's outlook and the game's gates. |
 | 1934 | 8 | `public double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one more building of the refiners' would earn its owner a month (THE SPREAD PLANNER): a conversion unit's earnings on the feed it would find, and a crude unit's share of its package's earnings by cost - what Game... |
 

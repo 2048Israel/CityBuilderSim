@@ -121,7 +121,7 @@
 |---:|---:|---|---|
 | 80 | 7 | **type** `public interface Joins` | Which landmasses a landmass joins, other than by a port: nothing in ET5, and since ET6 the standing long bridges (Bridges), and any ferry when it comes. |
 | 82 | 1 | `int[] joinedTo(int id)` _(in Landmasses.Joins)_ | The landmasses this one is joined to (the ids it can reach in one join); empty for none. |
-| 94 | 18 | `public static SortedSet<Integer> closure(int home, SortedMap<Integer, Integer> standingPorts, Joins joins)` | The landmasses the city's buildings may stand on, home included, ids ascending (ET5 D10): home; every landmass a join reaches from one already in; and, when some landmass in has a port standing, every landmass with on... |
+| 94 | 18 | `public static SortedSet<Integer> closure(int home, SortedMap<Integer, Long> standingPorts, Joins joins)` | The landmasses the city's buildings may stand on, home included, ids ascending (ET5 D10): home; every landmass a join reaches from one already in; and, when some landmass in has a port standing, every landmass with on... |
 
 ### THE BOOKS BY LANDMASS (lines 113-227)
 
@@ -177,10 +177,10 @@
 | 638 | 25 | **type** `public interface Stock` | What Landmasses reads of the buildings: Game wires it; a bare one has none, and then no port is placed and every one reads as home. |
 | 640 | 1 | `int[] portTemplates()` _(in Landmasses.Stock)_ | The ids of the sea terminals' templates. |
 | 643 | 1 | `boolean known(int template)` _(in Landmasses.Stock)_ | Whether the template is one of them (a saved row of any other is passed over). |
-| 646 | 1 | `int standing(int template)` _(in Landmasses.Stock)_ | The finished terminals of a template that no demolition has been ordered for. |
-| 649 | 1 | `int onSite(int template)` _(in Landmasses.Stock)_ | ...those under construction. |
-| 652 | 1 | `int shell(int template)` _(in Landmasses.Stock)_ | ...those a stopped order left standing as a shell. |
-| 655 | 1 | `List<int[]> demolitions(int template)` _(in Landmasses.Stock)_ | The demolitions on site of a template, each as {the demolition's id, its buildings}. |
+| 646 | 1 | `long standing(int template)` _(in Landmasses.Stock)_ | The finished terminals of a template that no demolition has been ordered for. |
+| 649 | 1 | `long onSite(int template)` _(in Landmasses.Stock)_ | ...those under construction. |
+| 652 | 1 | `long shell(int template)` _(in Landmasses.Stock)_ | ...those a stopped order left standing as a shell. |
+| 655 | 1 | `List<long[]> demolitions(int template)` _(in Landmasses.Stock)_ | The demolitions on site of a template, each as {the demolition's id, its buildings}. |
 | 658 | 1 | `double landSqFt(int template)` _(in Landmasses.Stock)_ | The land one terminal of the template takes, square feet. |
 | 661 | 1 | `int cargo(int template)` _(in Landmasses.Stock)_ | The template's cargo, as Ports.Cargo's ordinal. |
 | 665 | 3 | **type** `private static final class Segments` | One template's units by where they stand, each list the landmass ids of its units, oldest first. |
@@ -195,23 +195,23 @@
 | 706 | 1 | `void setStock(Stock stock)` | Wires the buildings' counts (Game, once). |
 | 709 | 1 | `void setJoins(Joins joins)` | Wires the joins the closure reads besides the ports (ET6: LandManager's Bridges, once); null, none. |
 | 712 | 1 | `public boolean hasPlacements()` | Whether any terminal has a place of its own: a row, or a demolition taking some down. |
-| 714 | 3 | `private static void fill(List<Integer> list, int id, int n)` |  |
+| 714 | 3 | `private static void fill(List<Integer> list, int id, long n)` |  |
 | 718 | 5 | `private static int count(List<Integer> list, int id)` |  |
 | 724 | 4 | `private boolean allHome(List<Integer> list)` |  |
-| 730 | 4 | `private void fit(List<Integer> list, int n)` | Fits a list to n units: short, home at the oldest end; long, the newest dropped. |
-| 736 | 14 | `void ordered(int template, int landmass, int n, boolean instant)` | An order of n terminals of a template was placed on a landmass, after the stack took it (`instant`: built at once, no construction). |
-| 752 | 11 | `void demolishing(int template, int n, int demolition)` | A demolition of n of a template's standing units was ordered (id `demolition`), the units' count already off standing: the n newest whose loss unlinks nothing go to leaving. |
+| 730 | 4 | `private void fit(List<Integer> list, long n)` | Fits a list to n units: short, home at the oldest end; long, the newest dropped. |
+| 736 | 14 | `void ordered(int template, int landmass, long n, boolean instant)` | An order of n terminals of a template was placed on a landmass, after the stack took it (`instant`: built at once, no construction). |
+| 752 | 11 | `void demolishing(int template, long n, int demolition)` | A demolition of n of a template's standing units was ordered (id `demolition`), the units' count already off standing: the n newest whose loss unlinks nothing go to leaving. |
 | 765 | 8 | `void shellDemolishing(int template, int demolition)` | A template's shell was ordered demolished (id `demolition`): its units go to leaving. |
 | 775 | 6 | `void restarted(int template)` | A template's shell was put back on site: its units go to the oldest end of on site (they were ordered first). |
 | 783 | 3 | `void demolished(int demolition)` | A demolition finished: its units no longer hold their ground. |
 | 793 | 19 | `void reconcile()` | Fits every template's lists to the buildings' own counts (at the month's settle and at a load), then works the linked set out again: a completion has taken the oldest unit on site to standing, a stop the newest to the... |
 | 813 | 16 | `private void fitRow(int template, Segments s)` |  |
 | 831 | 6 | `boolean settle()` | The month's settle (Game.settleConstructionControl()): the choices are forgotten (one order's), the lists fitted. |
-| 839 | 14 | `SortedMap<Integer, Integer> standingPorts()` | The ports standing on each landmass, by id (a template with no row stands at home): what closure() links by. |
-| 855 | 17 | `private int unitsOn(int template, int id)` | A template's units on a landmass, wherever they are: standing, on site, stopped, or being demolished. |
+| 839 | 14 | `SortedMap<Integer, Long> standingPorts()` | The ports standing on each landmass, by id (a template with no row stands at home): what closure() links by. |
+| 855 | 17 | `private long unitsOn(int template, int id)` | A template's units on a landmass, wherever they are: standing, on site, stopped, or being demolished. |
 | 874 | 7 | `private List<Integer> standingUnits(int template, boolean raw)` | The standing terminals of a template as landmass ids, oldest first: fitted to the buildings' count unless `raw` (an event's, whose count has already moved). |
 | 883 | 15 | `private List<Integer> removable(int template, boolean raw)` | The indices of a template's standing units (into the list standingUnits() gives) that may go, newest first: each is judged with the ones taken before it gone, and stays if its going would take a landmass out of the li... |
-| 904 | 5 | `public int freeToGo(int template)` | How many of a template's standing terminals the city may demolish: those whose loss leaves every landmass it links linked (ET5 D11 - unlinking is refused, the builders'-last-depot shape). |
+| 904 | 5 | `public long freeToGo(int template)` | How many of a template's standing terminals the city may demolish: those whose loss leaves every landmass it links linked (ET5 D11 - unlinking is refused, the builders'-last-depot shape). |
 | 911 | 10 | `public String linkedBy(int template)` | The landmasses that would leave the linked set were all of a template's standing terminals gone, named for a sentence ("Island 2"); empty when they link nothing. |
 | 923 | 1 | `public void choose(int template, int landmass)` | The card's pick of a landmass for a template's next order (ONE order's); portLandmass() uses it if the landmass will do. |
 | 926 | 1 | `public int chosen(int template)` | The landmass the card picked for a template, NO_LANDMASS for none. |
@@ -222,8 +222,8 @@
 | 968 | 5 | `public boolean linkedShore()` | Whether some landmass the city has linked has shore it owns - the desalination plant's coast (ET5 D9): home's if it has any, else a linked island's. |
 | 981 | 4 | `public static int fieldLandmass(World world, long x, long y)` | The landmass a works field centred on plot (x, y) stands on (ET5 D9): the plot's 15" cell resolved as a dry plot's is (World.landmassOfPlot()), so a field centred on a lake plot of an island is on the island and not o... |
 | 987 | 6 | `public List<Row> portChoices()` | The landmasses the card offers for a sea terminal: those the city owns shore on, home first and then as rows() lists them; empty for a city on one landmass. |
-| 995 | 15 | `public int portsAt(int id)` | The sea terminals standing or on site on a landmass, every port template (not a stopped shell, not one being demolished; a template with no row stands at home). |
-| 1012 | 11 | `public int[] portsOn(int id)` | The ports standing on a landmass, by Ports.Cargo's ordinal (a template with no row stands at home). |
+| 995 | 15 | `public long portsAt(int id)` | The sea terminals standing or on site on a landmass, every port template (not a stopped shell, not one being demolished; a template with no row stands at home). |
+| 1012 | 11 | `public long[] portsOn(int id)` | The ports standing on a landmass, by Ports.Cargo's ordinal (a template with no row stands at home). |
 | 1029 | 7 | `public double padSqFt(int id, double sqFt, double aheadSqFt)` | The foothill an island's terminals are cut into when they stand on more than its flat ground, square feet (the pad a building on foothill is charged, ET2): the rise in max(0, ports - flat) that `sqFt` more would make,... |
 | 1042 | 1 | **type** `public record Picture(int home, int[] linked, long[] portsByTypeAndLandmass, long stamp)` | What the map is handed (slice C): home, the linked ids ascending, the standing terminals by template and landmass as triples {template id, landmass id, units} in one array, and a stamp that changes when the linked set... |
 | 1045 | 29 | `public Picture picture()` | The picture of the linked set and the terminals on it; null while the city owns nothing off home. |

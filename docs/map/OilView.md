@@ -128,17 +128,17 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 75 | 3 | `public static double barrelsADay(double tonnes)` | Barrels a day of crude lifted at `tonnes` a month: its litres (Refining.CRUDE_LITRES_PER_TONNE) over a barrel a day's month. |
-| 90 | 1 | **type** `public record Platform(String name, double depth, int km, int wells, int slots, int oldest, double lifted)` | One platform as it stands. |
+| 90 | 1 | **type** `public record Platform(String name, double depth, int km, long wells, int slots, int oldest, double lifted)` | One platform as it stands. |
 | 102 | 1 | **type** `public record Series(String name, String colour, double now, double[] ahead)` | A series of the wells' chart: the land wells, a platform, or the platforms past PLATFORMS_LISTED together. |
-| 121 | 4 | **type** `public record UnitRow(Kind kind, int standing, int onSite, double feed, double run, double share, double ci...` | One row of the units table: a kind of conversion unit, or the crude units (kind null). |
+| 121 | 4 | **type** `public record UnitRow(Kind kind, long standing, long onSite, double feed, double run, double share, double ...` | One row of the units table: a kind of conversion unit, or the crude units (kind null). |
 | 123 | 1 | `public boolean crude()` _(in OilView.UnitRow)_ |  |
 | 141 | 2 | **type** `public record Product(Good good, double price, double world, double ladder, double made, double used, doubl...` | One product's month, and crude's. |
 | 145 | 1 | **type** `public record Taker(String name, double units)` | A taker of a product in its row: a name, and the units it took. |
-| 165 | 9 | **type** `public record Reserve(int standing, double room, double held, double book, double fill, double release, dou...` | The city's strategic reserve (StrategicReserve), and its levers' reach. |
+| 165 | 9 | **type** `public record Reserve(long standing, double room, double held, double book, double fill, double release, do...` | The city's strategic reserve (StrategicReserve), and its levers' reach. |
 | 168 | 1 | `public double roomLeft()` _(in OilView.Reserve)_ | Tonnes of room the tanks have left. |
 | 170 | 1 | `public double releaseMost()` _(in OilView.Reserve)_ | The most a release may be set to: what it holds, or what is set already. |
 | 172 | 1 | `public boolean shown()` _(in OilView.Reserve)_ | Whether there is a reserve to show: one standing, or crude still held. |
-| 213 | 43 | **type** `public record View(boolean counted, int month, double rate, int landWells, int platformWells, List<Platform...` | The page. |
+| 213 | 43 | **type** `public record View(boolean counted, int month, double rate, long landWells, long platformWells, List<Platfo...` | The page. |
 | 222 | 5 | `public double lifted()` _(in OilView.View)_ | The month's lift, tonnes: the two pools'; NaN not counted. |
 | 229 | 1 | `public double liftedOnGround()` _(in OilView.View)_ | ...the land wells' alone. |
 | 232 | 1 | `public double left()` _(in OilView.View)_ | Tonnes left in both pools. |
@@ -199,7 +199,7 @@
 |---:|---:|---|---|
 | 833 | 1 | **type** `public record Figure(String label, String value, String line, String colour, String tip)` | One of the four figures over the page. |
 | 839 | 37 | `public static List<Figure> figures(View v)` | LIFTED HERE, RESERVES LEFT, CRUDE IMPORTED, PRODUCTS ACROSS THE EDGE. |
-| 878 | 3 | `static String countWords(int n, String noun)` | "160 wells", "1 well". |
+| 878 | 3 | `static String countWords(long n, String noun)` | "160 wells", "1 well". |
 
 ### the wells by type (mockup 2's two cards) (lines 882-999)
 

@@ -28,7 +28,7 @@
 | 23 | 15 | `static String choose(BuildingsTemplate t, String base, int month, Research found, Recipes.Prices p)` | Saved recipe decisions only; equipment remains on the stack's own counts. |
 | 40 | 18 | `static Recipe decode(BuildingsTemplate t, String id)` | Resolves a saved composite recipe id without reading a new month's prices. |
 | 60 | 3 | `public static Recipe compose(BuildingsTemplate t, Recipe base, Map<String, Double> absent, String id)` | A fresh recipe with the stated fractions of each undo. |
-| 65 | 44 | `public static Recipe compose(BuildingsTemplate t, Recipe a, int na, Recipe b, int nb, Map<String, Double> absent, String id)` | Mixes the unrounded process contributions and independent undos, then rounds once. |
+| 65 | 44 | `public static Recipe compose(BuildingsTemplate t, Recipe a, long na, Recipe b, long nb, Map<String, Double> absent, String id)` | Mixes the unrounded process contributions and independent undos, then rounds once. |
 | 110 | 3 | `private static boolean has(String id, String code)` |  |
 | 115 | 4 | `private static double share(RecipeChange change, Map<String, Double> absent)` | A later process improvement affects only the share running its prerequisite. |
 | 120 | 4 | `private static Recipe base(BuildingsTemplate t, String id)` |  |
@@ -42,19 +42,19 @@
 | 207 | 3 | `static double gainForSet(Game game, BuildingsTemplate t, Equipment piece, java.util.Set<String> fitted)` | One proposed building, with exactly the chosen pieces, compared with the same set lacking this piece. |
 | 211 | 3 | `static double netGainForSet(Game game, BuildingsTemplate t, Equipment piece, java.util.Set<String> fitted)` |  |
 | 215 | 9 | `private static double gainForSet(Game game, BuildingsTemplate t, Equipment piece, java.util.Set<String> fitted, boolean net)` |  |
-| 225 | 4 | `private static double netDifferenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without, ...` |  |
-| 230 | 5 | `private static double netDifferenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without, ...` |  |
-| 236 | 4 | `private static double differenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without, int...` |  |
-| 241 | 4 | `private static double differenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without, int...` |  |
+| 225 | 4 | `private static double netDifferenceAt(Game game, BuildingsTemplate t, Map<String, Long> with, Map<String, Long> without, long q...` |  |
+| 230 | 5 | `private static double netDifferenceAt(Game game, BuildingsTemplate t, Map<String, Long> with, Map<String, Long> without, long q...` |  |
+| 236 | 4 | `private static double differenceAt(Game game, BuildingsTemplate t, Map<String, Long> with, Map<String, Long> without, long quan...` |  |
+| 241 | 4 | `private static double differenceAt(Game game, BuildingsTemplate t, Map<String, Long> with, Map<String, Long> without, long quan...` |  |
 | 246 | 6 | `static Recipe recipeForNew(Game game, BuildingsTemplate t, java.util.Set<String> fitted)` |  |
 | 253 | 10 | `private static String[] newChoices(Game game, BuildingsTemplate t, Recipes.Prices prices)` |  |
-| 264 | 5 | `static Map<String, Integer> counts(BuildingsTemplate t, java.util.Set<String> fitted)` |  |
-| 270 | 10 | `private static double valueAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids, Recipes....` |  |
-| 282 | 26 | `private static double horseCostAt(Game game, BuildingsTemplate target, Map<String, Integer> counts, int quantity, Recipe recipe...` | Agriculture's actual form uses one land-weighted share on the whole sector's crops and rounded posts (R1d review). |
-| 309 | 6 | `private static int missingHorses(BuildingsTemplate t, Map<String, Integer> counts, int quantity)` |  |
-| 316 | 13 | `private static Map<String, Double> absencesAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String...` |  |
-| 331 | 3 | `static double feesAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids)` | Every royalty on the same rounded physical state used to judge a fitting. |
-| 335 | 35 | `private static double feesAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids, boolean p...` |  |
+| 264 | 5 | `static Map<String, Long> counts(BuildingsTemplate t, java.util.Set<String> fitted)` |  |
+| 270 | 10 | `private static double valueAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity, String[] ids, Recipes.Pr...` |  |
+| 282 | 26 | `private static double horseCostAt(Game game, BuildingsTemplate target, Map<String, Long> counts, long quantity, Recipe recipe, ...` | Agriculture's actual form uses one land-weighted share on the whole sector's crops and rounded posts (R1d review). |
+| 309 | 6 | `private static long missingHorses(BuildingsTemplate t, Map<String, Long> counts, long quantity)` |  |
+| 316 | 13 | `private static Map<String, Double> absencesAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity, String[]...` |  |
+| 331 | 3 | `static double feesAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity, String[] ids)` | Every royalty on the same rounded physical state used to judge a fitting. |
+| 335 | 35 | `private static double feesAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity, String[] ids, boolean pro...` |  |
 | 372 | 23 | `private static Map<String, Double> absences(Game game, BuildingsTemplate t, boolean newBuilding)` | The missing fractions in the actual fleet or a new building's known process. |
 | 397 | 7 | `private static Recipe running(Game game, BuildingsTemplate t, Map<String, Double> absent)` | Recompose the unrounded process mix at the counterfactual missing fractions. |
 | 406 | 3 | `public static double gain(BuildingsTemplate t, RecipeChange c, Recipes.Prices p)` | The benefit of removing this undo at the stated prices, without mutating a template. |

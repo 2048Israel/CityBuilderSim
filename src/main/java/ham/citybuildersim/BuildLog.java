@@ -43,9 +43,9 @@ public class BuildLog {
         public final int month;
 
         /** Not final: completions of the same building in the same month merge. */
-        public int quantity;
+        public long quantity;
 
-        Entry(String building, int quantity, int month) {
+        Entry(String building, long quantity, int month) {
             this.building = building;
             this.quantity = quantity;
             this.month = month;
@@ -80,7 +80,7 @@ public class BuildLog {
 
     private final List<Entry> entries = new ArrayList<>();
 
-    public void record(String building, int quantity, int month) {
+    public void record(String building, long quantity, int month) {
 
         if (building == null || quantity <= 0) {
             return;

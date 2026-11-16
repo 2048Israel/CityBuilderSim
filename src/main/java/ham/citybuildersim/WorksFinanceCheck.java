@@ -287,7 +287,7 @@ public final class WorksFinanceCheck {
                 close(plan.planValue(), oracle[0]) && close(plan.value().used(), oracle[1]));
     }
 
-    static double addedPoints(Game.BuildQuote quote, BuildingsTemplate t, int count) {
+    static double addedPoints(Game.BuildQuote quote, BuildingsTemplate t, long count) {
         return count * (double) t.getConstructionPoints()
                 + quote.prepPoints + quote.worksPoints + quote.bridgePoints + quote.deepWaterPoints;
     }
@@ -313,7 +313,7 @@ public final class WorksFinanceCheck {
             double output = g.getBuildingOutputAtEveryPost();
             Game.BuildQuote quote = g.quoteBuild(road, 4);
             double cash = g.getCash(), debt = AutoBuilder.debt(g);
-            int sites = bm.getUnderConstructionById()[road.getId()];
+            long sites = bm.getUnderConstructionById()[road.getId()];
             double predicted = bm.siteUnitMonthsAfter(jail, 1, output, road, 4, addedPoints(quote, road, 4));
             check("prospective quote places no order or cash flow, mode " + mode,
                     g.getCash() == cash && AutoBuilder.debt(g) == debt
@@ -346,7 +346,7 @@ public final class WorksFinanceCheck {
         for (BuildingsTemplate t : bm.getTemplates()) if (care.serves(t) && bm.getQuantity(t.getId()) > 0)
             EssentialWorksCheck.quietly(() -> bm.retire(t, bm.getQuantity(t.getId())));
         BuildingsTemplate centre = bm.getTemplateByName("Community Health Centre");
-        int required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1), auto.target(), BuildAdvice.MOST, true)[0];
+        long required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1L), auto.target(), BuildAdvice.MOST, true)[0];
         EssentialWorksCheck.quietly(() -> g.buildStack(centre, required, false));
         // One street candidate isolates a reserve order which cannot escape through a different crew weight.
         List<BuildingsTemplate> catalogue = new ArrayList<>(bm.getTemplates());
@@ -456,7 +456,7 @@ public final class WorksFinanceCheck {
         long people = g.getPopulationManager().getPopulation();
         g.getBusinessInvestment().restorePopulationHistory(List.of(people, people));
         BuildingsTemplate centre = bm.getTemplateByName("Community Health Centre");
-        int required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1),
+        long required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1L),
                 g.getAutoBuilder().target(), BuildAdvice.MOST, true)[0];
         EssentialWorksCheck.quietly(() -> g.buildStack(centre, required, false));
         RoadCheck.scale(g, RoadCheck.noGroundFree(g), 1);
@@ -533,7 +533,7 @@ public final class WorksFinanceCheck {
             check("fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic",
                     BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW) && reserve != null
                             && !BuildAdvice.maintained(g, through, Map.of(), BuildAdvice.NOW)
-                            && BuildAdvice.maintained(g, through, Map.of(highway, 1), auto.target()));
+                            && BuildAdvice.maintained(g, through, Map.of(highway, 1L), auto.target()));
             if (reserve == null) return;
             double output = g.getBuildingOutputAtEveryPost();
             BuildingsStacks h = bm.getStack(highway), r = bm.getStack(street);
@@ -578,7 +578,7 @@ public final class WorksFinanceCheck {
         BuildingsTemplate road = bm.getTemplateByName("Paved Road");
         for (BuildingsTemplate t : bm.getTemplates()) if (care.serves(t) && bm.getQuantity(t.getId()) > 0)
             EssentialWorksCheck.quietly(() -> bm.retire(t, bm.getQuantity(t.getId())));
-        int required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1),
+        long required = BuildAdvice.count(g, care, Map.of(), Map.of(centre, 1L),
                 g.getAutoBuilder().target(), BuildAdvice.MOST, true)[0];
         EssentialWorksCheck.quietly(() -> {
             g.buildStack(centre, required, false);
@@ -642,7 +642,7 @@ public final class WorksFinanceCheck {
                     step != null && step.ordered() < reserve.count() && step.cut() == AutoBuilder.Cut.BUILDERS
                             && g.getMonth() + Math.ceil(bm.siteUnitMonths(centre, 1, output) - 1e-9) <= due);
             // Complete the original reserve counterfactual only after checking the real guarded pass.
-            int remaining = Math.max(0, reserve.count() - (step == null ? 0 : step.ordered()));
+            long remaining = Math.max(0, reserve.count() - (step == null ? 0 : step.ordered()));
             double predicted = bm.siteUnitMonthsAfter(centre, 1, output, road, remaining,
                     addedPoints(g.quoteBuild(road, remaining), road, remaining));
             EssentialWorksCheck.quietly(() -> g.buildStack(road, remaining, false));

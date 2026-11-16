@@ -2257,7 +2257,7 @@ public class KeptCheck {
         if (names.size() < 2) return;
         final String first = names.get(0), second = names.get(1);
         KeptBench.Page overview = fx(() -> bench.build("the Build Overview", BuildAdvice.OVERVIEW, java.util.Map.of()));
-        KeptBench.Page ordered = fx(() -> bench.build("Build, " + cat + ", orders dialled up, a card pinned", cat, java.util.Map.of(first, 3, second, 2), java.util.Set.of(first)));
+        KeptBench.Page ordered = fx(() -> bench.build("Build, " + cat + ", orders dialled up, a card pinned", cat, java.util.Map.of(first, 3L, second, 2L), java.util.Set.of(first)));
         String words = "3 × " + first + " + 2 × " + second;
         boolean bar = fx(() -> {
             bench.home(ordered);
@@ -2292,7 +2292,7 @@ public class KeptCheck {
         check("a market category has cards to dial an order on (" + marketCat + ": " + marketNames.size() + ")", marketNames.size() >= 2);
         if (marketNames.size() >= 2) {
             KeptBench.Page marketPage = fx(() -> bench.build("Build, " + marketCat + ", orders dialled up, a card pinned", marketCat,
-                    java.util.Map.of(marketNames.get(0), 4, marketNames.get(1), 1), java.util.Set.of(marketNames.get(0))));
+                    java.util.Map.of(marketNames.get(0), 4L, marketNames.get(1), 1L), java.util.Set.of(marketNames.get(0))));
             fx(() -> {
                 bench.home(marketPage);
                 bench.drawKept(marketPage);
@@ -8629,7 +8629,7 @@ public class KeptCheck {
         System.out.println("\n--- 94: the drawer's bar and the construction tab are kept ---");
         BuildingManager buildings = g.getBuildingManager();
         List<BuildingsStacks> stacks = buildings.getStacksView();
-        int[] held = new int[stacks.size()];
+        long[] held = new long[stacks.size()];
         for (int i = 0; i < held.length; i++) held[i] = stacks.get(i).getUnderConstruction();
         check("the city has stacks enough to put three on site (" + held.length + ")", held.length >= SITE_COUNTS[SITE_COUNTS.length - 1]);
 
