@@ -1,8 +1,9 @@
 # LF1b - notes: the cells' share trades with the world, in the financial account (2026-11-16)
 
 The brief: [LF1b.md](LF1b.md), queued 2026-11-08 by LF1 (its notes, 2). Built by a Claude session (Opus 5.5) from main 0f4ebb9c
-(0.9.125, LF1c just shipped), after the night's Codex builders ran out of plan; one session, no slices. Main's R1d (0.9.126, its
-trace unmoved) was merged in before the final checks.
+(0.9.125, LF1c just shipped), after the night's Codex builders ran out of plan; one session, no slices. Main's R1d (0.9.126) was
+merged in before the final checks and R2f (0.9.127) before the ensemble, neither moving the trace. The PC went offline at 08:15 with
+the ensemble a quarter run; LF1bc, a second Claude session (Opus 5.5), took the batch over and ran the merge, the ensemble and the gate.
 
 **This changes how the game plays.** The exchange rate reads the balance of payments' financial account (`ForeignAccounts`:
 `-BALANCE_WEIGHT * (current + financial) / GDP`, a 12-month mean). Until now a household selling its shares to the world brought dollars
@@ -134,3 +135,32 @@ the branch's, whose financial account now held the cells' sales abroad of that e
 and grew slowly (2,896 to 5,681), then overtook it from about m1100 and ended at m2405 with 1,393,358 people against 471,729, the rate at
 125.4 against 605.1 and the price index 9,395 against 46,342. On the branch the cells sold shares abroad in 1,086 months and bought in
 111 (main: 968 and 112). One run is the weather plus the change; the ensemble (section 5) is what judges it.
+
+## 5. The ensemble (80 runs, on the merged code)
+
+`tools/ensemble/ensemble.sh LF1b` on 4fb141a6 (0.9.127, R2f merged): 80 of 80 runs in 61.1 min, exit 0, scored against
+`docs/ensemble/0.9.121.md` (R0h's, main's newest; R1d and R2f since change only a 1900 city). The first run, on b0308c95, was cut at 18
+runs by the shutdown and deleted unused. Committed as [docs/ensemble/LF1b.md](../ensemble/LF1b.md).
+
+**The stops pass.** M1, the money audit: 0 failed months (0 unread) in every policy. F1, the findings: 0/16 runs with a LongPlaytest
+finding in every policy, where main's baseline had 1/16 in AUTO2 and in ZERO_SLACK ("households with no home"), so those two verdicts
+change FAIL -> PASS. Batch verdict PASS, hard criteria 10/10, criteria 22/25 (H2 vacuous and H1 retired, as on main).
+
+**The rest, information.** Two more changed verdicts, both FAIL -> PASS: T2, the final population, in AUTO2 (median 1,578,924 against
+1,351,154) and ZERO_SLACK (984,883 against 636,553). Unchanged: A1-A3 FAIL as on main (A1's inflation 3.04% a year against 3.13%, 8 of
+16 seeds in band against 5), S1, K1, K2 and R1-R3 PASS, within a point of main's medians (R1 -4.22% against -4.91%).
+
+**How far the rate moved** (`fx`, each run against main's run of the same policy and seed in R0h's CSVs; the median of the sixteen
+seeds, their range in brackets; ZERO_HOT and HIGH end before m801):
+
+| policy | m1-400 | m401-800 | m801-1200 | m1201-end | last month |
+|---|---|---|---|---|---|
+| AUTO2 | -0.2% [-3.4 to +3.0] | -4.6% [-27.9 to +40.5] | -0.0% [-58.6 to +115.5] | -10.8% [-61.1 to +48.1] | -20.1% [-79.1 to +63.2] |
+| ZERO_SLACK | -0.2% [-3.4 to +3.0] | -4.6% [-27.9 to +40.5] | -0.0% [-58.6 to +115.5] | -7.1% [-57.4 to +47.8] | -25.1% [-75.1 to +85.8] |
+| ZERO_HOT | -0.2% [-6.0 to +4.3] | -3.4% [-31.2 to +13.7] | - | - | -2.7% [-31.3 to +13.5] |
+| SHOCK | -0.2% [-3.4 to +3.0] | -4.5% [-26.9 to +23.6] | -21.2% [-59.4 to +95.1] | - | -15.5% [-61.0 to +90.9] |
+| HIGH | -0.2% [-3.4 to +3.0] | -0.2% [-21.6 to +24.5] | - | - | -8.1% [-41.3 to +100.7] |
+
+The direct effect is small and one way: the currency a little stronger in the median city, within a few per cent through m800 and
+within 0.2% through m400. After that the cities part and the range is mostly the path, both ways. The default playtest's -53.2% in
+m401-800 (section 4) lies outside the sixteen AUTO2 seeds' range there (-27.9% to +40.5%): it is the heavy case, not the usual one.
