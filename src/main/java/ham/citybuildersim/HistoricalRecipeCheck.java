@@ -158,7 +158,7 @@ public final class HistoricalRecipeCheck {
         BuildingsTemplate t = g.getBuildingManager().getTemplateByName("Grain Farm");
         RecipeCheck.stand(g, t, 4, new int[1]);
         BuildingsStacks stack = g.getBuildingManager().getStack(t);
-        int n = stack.getQuantity();
+        long n = stack.getQuantity();
         check("fixture: exactly four farms stand, so two missing pieces are half", n == 4, "quantity " + n);
         fitted(t, stack);
         run(g);
@@ -365,8 +365,8 @@ public final class HistoricalRecipeCheck {
         check("fixture: a real Machine Works order went onto a construction site",
                 order[0] == Game.BuildResult.SUCCESS && stack != null && stack.getUnderConstruction() == 1, String.valueOf(order[0]));
         if (stack == null) return;
-        int[] unrelated = { 0 };
-        int opened = FittingCheck.pressUntilOpenAlone(g, stack, 180, unrelated);
+        long[] unrelated = { 0 };
+        long opened = FittingCheck.pressUntilOpenAlone(g, stack, 180, unrelated);
         int date = ResearchCatalog.knownFrom("PE22");
         check("fixture: that works really completed before carbide tools were known",
                 opened == 1 && g.getMonth() < date && stack.getQuantity() == 1, "opened " + opened + ", month " + g.getMonth());

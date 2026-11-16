@@ -493,7 +493,7 @@ public class ConstructionTrapCheck {
         close("the depot's order is priced at the contractor's: its work FOREIGN_PRICE times the template's", q.sticker,
                 bm.nonMaterialCost(depot) * BuildersShort.FOREIGN_PRICE, 1e-12);
         double bookBefore = c.getForeignBook();
-        int depotsBefore = bm.countByName(DEPOT);
+        long depotsBefore = bm.countByName(DEPOT);
         long nameplateBefore = bm.getTotalConstructionCapacity();
         boolean[] ordered = new boolean[1];
         quietly(() -> {
@@ -561,7 +561,7 @@ public class ConstructionTrapCheck {
         out.println("\n--- 5. the city climbs out and the contractor stops: depots open, the sites climb, the book is worked off ---");
         BuildingManager bm = g.getBuildingManager();
         Construction c = g.getSectors().construction();
-        int depotsAtTheTrap = bm.countByName(DEPOT) - 1;
+        long depotsAtTheTrap = bm.countByName(DEPOT) - 1;
         long nameplateAtTheTrap = bm.getTotalConstructionCapacity() - Math.round(template(g, DEPOT).getConstructionPoints());
         g.getBusinessInvestment().releaseSector(BUILDERS);
         int first = rows.size(), quietMonths = 0;

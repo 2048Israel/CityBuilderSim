@@ -91,15 +91,15 @@ public final class Fittings {
      * month), so unlike a site's contract (ConstructionControl, CANCEL) there is no unearned balance for a refund to come out of; the goods
      * were bought and the work begun. The loss is one fitting's price at most a job, and only when the last unfitted building goes.
      */
-    public void scrapped(int templateId, java.util.function.ToIntFunction<String> unfittedLeft) {
-        java.util.Map<String, Integer> excess = new java.util.HashMap<>();
-        for (Job j : jobs) if (j.templateId == templateId) excess.merge(j.pieceId, 1, Integer::sum);
+    public void scrapped(int templateId, java.util.function.ToLongFunction<String> unfittedLeft) {
+        java.util.Map<String, Long> excess = new java.util.HashMap<>();
+        for (Job j : jobs) if (j.templateId == templateId) excess.merge(j.pieceId, 1L, Long::sum);
         if (excess.isEmpty()) return;
-        excess.replaceAll((piece, onSite) -> onSite - Math.max(0, unfittedLeft.applyAsInt(piece)));
+        excess.replaceAll((piece, onSite) -> onSite - Math.max(0, unfittedLeft.applyAsLong(piece)));
         for (int i = jobs.size() - 1; i >= 0; i--) {
             Job j = jobs.get(i);
             if (j.templateId != templateId) continue;
-            int over = excess.getOrDefault(j.pieceId, 0);
+            long over = excess.getOrDefault(j.pieceId, 0L);
             if (over <= 0) continue;
             jobs.remove(i);
             excess.put(j.pieceId, over - 1);

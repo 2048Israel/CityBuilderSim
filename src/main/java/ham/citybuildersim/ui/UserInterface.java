@@ -5424,7 +5424,7 @@ public class UserInterface extends Application {
         // less than its crews could do is capped at. See BuildingManager,
         // EVERY BUILDING GETS THE CREW IT CAN USE.
         int forSites = game.getBuildingOutput();
-        int buildingsOnSite = 0;
+        long buildingsOnSite = 0;
         for (BuildingsStacks s : sites) buildingsOnSite += s.getUnderConstruction();
 
         // ...and the crews kept on, when the builders have laid some off
@@ -5467,7 +5467,7 @@ public class UserInterface extends Application {
             return;
         }
 
-        final int sitesOnShow = siteCount, onSite = buildingsOnSite;
+        final long sitesOnShow = siteCount, onSite = buildingsOnSite;
         Label split = Kept.scope("split", () -> monoLabel(sitesOnShow + " site(s), " + formatter.format(onSite)
                 + " building(s): " + formatter.format(forSites) + " after repairs, crews by what each building can use"));
         split.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-text-fill: " + Palette.TEXT_MUTED + ";");
@@ -5523,8 +5523,8 @@ public class UserInterface extends Application {
     private VBox siteRow(BuildingsStacks site, BuildingManager.Plan sitePlan, int forSites) {
         {
 
-            int remaining = site.getUnderConstruction();
-            int built = site.getQuantity();
+            long remaining = site.getUnderConstruction();
+            long built = site.getQuantity();
             int pointsEach = site.getBuilding().getConstructionPoints();
             double progress = site.getConstructionProgress();
 

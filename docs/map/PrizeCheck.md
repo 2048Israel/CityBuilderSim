@@ -119,7 +119,7 @@
 | 177 | `final Research r` |  |
 | 178 | `final long seed` |  |
 | 179 | `final EnumMap<Field, Double> city` |  |
-| 180 | `final EnumMap<Field, Integer> labs` |  |
+| 180 | `final EnumMap<Field, Long> labs` |  |
 | 181 | `double[] wages` |  |
 | 182 | `double drawn` |  |
 | 184 | `Map<String, Double> pilesBefore` | what stood before the month's work: the piles, the labs' part, the pots, the chase of each field |
@@ -155,13 +155,13 @@
 | 146 | 3 | `static double cover(Entry e, double pile)` | The prize that just covers a problem with that pile: its remaining work times twelve times the post's cost, by Research's own statics. |
 | 151 | 3 | `static double prizeFor(Field f, double work)` | The prize that covers a problem of that much typical work, untouched. |
 | 155 | 5 | `static EnumMap<Field, Double> map(Field f, double v)` |  |
-| 161 | 5 | `static EnumMap<Field, Integer> counts(Field f, int n)` |  |
+| 161 | 5 | `static EnumMap<Field, Long> counts(Field f, long n)` |  |
 | 167 | 1 | `static int indexOf(Entry e)` |  |
 | 169 | 5 | `static List<String> codes(List<Entry> list)` |  |
 | 176 | 36 | **type** `static final class Sim` | One city's research month by month, in the game's order: the posts are struck, the pots pay their bill, then the month's work is done. |
 | 188 | 1 | `Sim(long seed)` _(in PrizeCheck.Sim)_ |  |
 | 190 | 1 | `Sim city(Field f, double n)` _(in PrizeCheck.Sim)_ |  |
-| 192 | 1 | `Sim labs(Field f, int n, double people)` _(in PrizeCheck.Sim)_ |  |
+| 192 | 1 | `Sim labs(Field f, long n, double people)` _(in PrizeCheck.Sim)_ |  |
 | 194 | 1 | `Sim room(Field f, double n)` _(in PrizeCheck.Sim)_ |  |
 | 196 | 11 | `void step(int m)` _(in PrizeCheck.Sim)_ |  |
 | 208 | 3 | `void run(int from, int to)` _(in PrizeCheck.Sim)_ |  |
@@ -244,7 +244,7 @@
 | 1167 | 5 | `boolean isOpen(Entry e, int m)` _(in PrizeCheck.Reference)_ |  |
 | 1173 | 32 | `void month(int m, long seed, EnumMap<Field, Double> researchers)` _(in PrizeCheck.Reference)_ |  |
 | 1207 | 5 | `static EnumMap<Field, Double> everyone(double each)` |  |
-| 1213 | 5 | `static EnumMap<Field, Integer> everyLab(int each)` |  |
+| 1213 | 5 | `static EnumMap<Field, Long> everyLab(long each)` |  |
 | 1220 | 18 | `static String against(Research r, int variant, long seed, EnumMap<Field, Double> staff)` | Runs a Research against the reference over all history; the first disagreement, or null. |
 | 1239 | 35 | `static void sectionTen()` |  |
 
@@ -264,7 +264,7 @@
 | 1396 | 16 | `static double justWantsALab(Game g, Field f)` | The least prize at which Research wants a lab in the field in the city's next month: the least of the open problems' covers (coverNow()) at which Research.labsWanted() is one or more. |
 | 1414 | 7 | `static void pileJustUnder(Game g, Entry e)` | DiscoveryCheck.pileJustUnder() with the prizes, the pots, the labs' piles, the shares and the idle counts kept: it restores the research from its grants, posts, piles and finds alone, which clears them. |
 | 1423 | 5 | `static String labsOf(Game g)` | The labs of every field standing and on site, as one string: "ENGINEERING 1+0 MEDICINE 0+0 ...". |
-| 1430 | 5 | `static int labsInAll(Game g)` | The labs the city has in all fields, standing and on site. |
+| 1430 | 5 | `static long labsInAll(Game g)` | The labs the city has in all fields, standing and on site. |
 
 ### 11. the labs are buildings (lines 1436-1528)
 

@@ -20,8 +20,8 @@ final class AdviceValueOracle {
         BuildingsTemplate t = s.template();
         BuildAdvice.Measure measure = s.measure();
         boolean power = measure.kind() == BuildAdvice.Kind.POWER;
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, measure);
-        Map<BuildingsTemplate, Integer> order = BuildAdvice.added(g, s);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, measure);
+        Map<BuildingsTemplate, Long> order = BuildAdvice.added(g, s);
         Game.BuildQuote quote = s.paving() ? g.quotePave(s.count()) : g.quoteBuild(t, s.count());
         double opening = Double.isFinite(quote.months) ? Math.max(0, quote.months) : 0;
         double monthly = Math.max(0, BuildAdvice.lifeRate(g)) / 12;
@@ -48,7 +48,7 @@ final class AdviceValueOracle {
         double returned = perUnitReturned * openFactor * Math.pow(1 + monthly, -opening);
         perUnitReturned /= s.count();
         double capitalLater = 0, financing = initialFinance, operating = 0, saved = 0, units = 0, weights = 0, unitMonths = 0;
-        int additions = 0;
+        long additions = 0;
         double nextLead = g.quoteBuild(t, 1).months;
         if (!Double.isFinite(nextLead)) nextLead = 0;
         double powerPotential = 0;
@@ -56,7 +56,7 @@ final class AdviceValueOracle {
             Sector.Statement book = sector.statement();
             powerPotential += sector.perPointOfGrid(Math.max(0, book.revenue - book.inputs - book.electricity - book.water));   // steam needs no grid (R1d)
         }
-        Map<BuildingsTemplate, Integer> loads = new LinkedHashMap<>();
+        Map<BuildingsTemplate, Long> loads = new LinkedHashMap<>();
         if (power) for (BuildingsStacks stack : g.getBuildingManager().getStacksUnderConstruction()) {
             BuildingsTemplate load = stack.getBuilding();
             if (load.getCategory() != BuildingType.ELECTRICITY && load.getElectricityConsumption() > 0)
@@ -67,13 +67,13 @@ final class AdviceValueOracle {
             double duration = Math.min(block, openMonths - start);
             double date = opening + start + duration / 2;
             BuildAdvice.Ahead future = new BuildAdvice.Ahead(date, BuildAdvice.lifeTrend(g, date), 0);
-            Map<BuildingsTemplate, Integer> base = power ? ready(g, site, date) : site;
-            Map<BuildingsTemplate, Integer> planned = BuildAdvice.plus(BuildAdvice.plus(base, order), Map.of(t, additions));
+            Map<BuildingsTemplate, Long> base = power ? ready(g, site, date) : site;
+            Map<BuildingsTemplate, Long> planned = BuildAdvice.plus(BuildAdvice.plus(base, order), Map.of(t, additions));
             BuildAdvice.Ahead target = new BuildAdvice.Ahead(date, future.k(), g.getAutoBuilder().getSlack());
             if (!maintained(g, measure, planned, target, loads)) {
-                int limit = t.isHydro() ? Math.max(0, g.hydroSlotsFree(t) - s.count() - additions) : BuildAdvice.MOST;
-                int extra = power ? powerCount(g, planned, t, target, limit, loads)
-                        : BuildAdvice.count(g, measure, planned, Map.of(t, 1), target, limit, true)[0];
+                long limit = t.isHydro() ? Math.max(0, g.hydroSlotsFree(t) - s.count() - additions) : BuildAdvice.MOST;
+                long extra = power ? powerCount(g, planned, t, target, limit, loads)
+                        : BuildAdvice.count(g, measure, planned, Map.of(t, 1L), target, limit, true)[0];
                 if (extra > 0) {
                     double build = g.quoteBuild(t, extra).total;
                     double free = Math.max(0, usableLand - footprint - additions * (double) t.getLandSqFt());
@@ -100,7 +100,7 @@ final class AdviceValueOracle {
             if (power) {
                 double present = g.getServicesManager().getUtilitiesHandler().getConsumption();
                 double pendingLoad = 0;
-                for (Map.Entry<BuildingsTemplate, Integer> load : ready(g, loads, date).entrySet())
+                for (Map.Entry<BuildingsTemplate, Long> load : ready(g, loads, date).entrySet())
                     pendingLoad += load.getValue() * (double) load.getKey().getElectricityConsumption();
                 double demand = present * future.scale() + pendingLoad;
                 before = new double[] {before[0], demand + (before[1] - present)};
@@ -115,8 +115,8 @@ final class AdviceValueOracle {
         return new double[] {cost - Math.max(0, saved) - payrollReturned, weights > 0 ? units / weights : 0};
     }
 
-    private static boolean maintained(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> stock,
-                                      BuildAdvice.Ahead at, Map<BuildingsTemplate, Integer> loads) {
+    private static boolean maintained(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> stock,
+                                      BuildAdvice.Ahead at, Map<BuildingsTemplate, Long> loads) {
         if (m.kind() != BuildAdvice.Kind.POWER) return BuildAdvice.maintained(g, m, stock, at);
         double smallest = Double.POSITIVE_INFINITY;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates())
@@ -128,13 +128,13 @@ final class AdviceValueOracle {
         return !(sd[1] > 0) || sd[0] >= sd[1];
     }
 
-    private static int powerCount(Game g, Map<BuildingsTemplate, Integer> stock, BuildingsTemplate t,
-                                  BuildAdvice.Ahead at, int limit, Map<BuildingsTemplate, Integer> loads) {
+    private static long powerCount(Game g, Map<BuildingsTemplate, Long> stock, BuildingsTemplate t,
+                                  BuildAdvice.Ahead at, long limit, Map<BuildingsTemplate, Long> loads) {
         double[] before = powerService(g, stock, at, loads);
         double previous = before[0] - before[1];
-        int count = 0;
+        long count = 0;
         while (count < limit) {
-            Map<BuildingsTemplate, Integer> next = BuildAdvice.plus(stock, Map.of(t, count + 1));
+            Map<BuildingsTemplate, Long> next = BuildAdvice.plus(stock, Map.of(t, count + 1));
             if (maintained(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), next, at, loads)) return count + 1;
             double[] sd = powerService(g, next, at, loads);
             double margin = sd[0] - sd[1];
@@ -146,8 +146,8 @@ final class AdviceValueOracle {
     }
 
     /** Independent utility pooling and pending electrical draw, including the demand used by sizing. */
-    private static double[] powerService(Game g, Map<BuildingsTemplate, Integer> stock,
-                                         BuildAdvice.Ahead at, Map<BuildingsTemplate, Integer> loads) {
+    private static double[] powerService(Game g, Map<BuildingsTemplate, Long> stock,
+                                         BuildAdvice.Ahead at, Map<BuildingsTemplate, Long> loads) {
         UtilitiesHandler utility = g.getServicesManager().getUtilitiesHandler();
         long[] powerJobs = g.getBuildingManager().getJobArrayPerCategory(BuildingType.ELECTRICITY);
         long[] waterJobs = g.getBuildingManager().getJobArrayPerCategory(BuildingType.WATER);
@@ -156,12 +156,12 @@ final class AdviceValueOracle {
         double filled = utility.getAverageUtilityFill() * posts;
         double nameplate = utility.getBaseProduction();
         double demand = utility.getConsumption() * at.scale();
-        if (at.months() > 0) for (Map.Entry<BuildingsTemplate, Integer> e : ready(g, loads, at.months()).entrySet())
+        if (at.months() > 0) for (Map.Entry<BuildingsTemplate, Long> e : ready(g, loads, at.months()).entrySet())
             demand += e.getValue() * (double) e.getKey().getElectricityConsumption();
         double[] fill = g.getPopulationManager().getJobFillRate();
-        for (Map.Entry<BuildingsTemplate, Integer> e : stock.entrySet()) {
+        for (Map.Entry<BuildingsTemplate, Long> e : stock.entrySet()) {
             BuildingsTemplate t = e.getKey();
-            int count = e.getValue();
+            long count = e.getValue();
             if (t.getCategory() == BuildingType.ELECTRICITY) nameplate += count * t.getProduction1();
             demand += count * t.getElectricityConsumption();
             if (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER)
@@ -226,11 +226,11 @@ final class AdviceValueOracle {
         }
     }
 
-    private static Map<BuildingsTemplate, Integer> ready(Game g, Map<BuildingsTemplate, Integer> orders, double month) {
-        Map<BuildingsTemplate, Integer> result = new LinkedHashMap<>();
-        for (Map.Entry<BuildingsTemplate, Integer> entry : orders.entrySet()) {
-            int count = 0;
-            for (int unit = 1; unit <= entry.getValue(); unit++) {
+    private static Map<BuildingsTemplate, Long> ready(Game g, Map<BuildingsTemplate, Long> orders, double month) {
+        Map<BuildingsTemplate, Long> result = new LinkedHashMap<>();
+        for (Map.Entry<BuildingsTemplate, Long> entry : orders.entrySet()) {
+            long count = 0;
+            for (long unit = 1; unit <= entry.getValue(); unit++) {
                 double date = g.getBuildingManager().siteUnitMonths(entry.getKey(), unit, g.getBuildingOutputAtEveryPost());
                 if (Double.isFinite(date) && date <= month) count++;
             }
@@ -249,17 +249,17 @@ final class AdviceValueOracle {
         return repairs + utilities + BuildCard.runningCost(g, t);
     }
 
-    private static double running(Game g, Map<BuildingsTemplate, Integer> before,
-                                  Map<BuildingsTemplate, Integer> after, BuildAdvice.Ahead date) {
+    private static double running(Game g, Map<BuildingsTemplate, Long> before,
+                                  Map<BuildingsTemplate, Long> after, BuildAdvice.Ahead date) {
         InfrastructureManager old = BuildAdvice.roads(g, before, date.scale()), next = BuildAdvice.roads(g, after, date.scale());
-        Map<BuildingsTemplate, Integer> delta = new LinkedHashMap<>(after);
-        for (Map.Entry<BuildingsTemplate, Integer> entry : before.entrySet()) delta.merge(entry.getKey(), -entry.getValue(), Integer::sum);
+        Map<BuildingsTemplate, Long> delta = new LinkedHashMap<>(after);
+        for (Map.Entry<BuildingsTemplate, Long> entry : before.entrySet()) delta.merge(entry.getKey(), -entry.getValue(), Long::sum);
         double result = 0;
-        for (Map.Entry<BuildingsTemplate, Integer> entry : delta.entrySet()) if (entry.getValue() != 0)
+        for (Map.Entry<BuildingsTemplate, Long> entry : delta.entrySet()) if (entry.getValue() != 0)
             result += entry.getValue() * gross(g, entry.getKey(), entry.getValue() > 0 ? next.getUtilisation() : old.getUtilisation());
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (ConstructionControl.paves(t)) {
-            int retained = g.getBuildingManager().getQuantity(t.getId())
-                    + Math.min(before.getOrDefault(t, 0), after.getOrDefault(t, 0));
+            long retained = g.getBuildingManager().getQuantity(t.getId())
+                    + Math.min(before.getOrDefault(t, 0L), after.getOrDefault(t, 0L));
             result += retained * (gross(g, t, next.getUtilisation()) - gross(g, t, old.getUtilisation()));
         }
         return result - (next.getTransitRiders() - old.getTransitRiders())
@@ -270,8 +270,8 @@ final class AdviceValueOracle {
         return service[1] > 0 ? Math.max(0, Math.min(1, service[0] / service[1])) : 1;
     }
 
-    private static double restored(Game g, BuildAdvice.Measure measure, Map<BuildingsTemplate, Integer> before,
-                                   Map<BuildingsTemplate, Integer> after, BuildAdvice.Ahead date) {
+    private static double restored(Game g, BuildAdvice.Measure measure, Map<BuildingsTemplate, Long> before,
+                                   Map<BuildingsTemplate, Long> after, BuildAdvice.Ahead date) {
         double pre = fraction(BuildAdvice.supplyDemand(g, measure, before, date));
         double post = fraction(BuildAdvice.supplyDemand(g, measure, after, date));
         double loss = 0;

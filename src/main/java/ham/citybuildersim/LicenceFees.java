@@ -202,7 +202,7 @@ public final class LicenceFees {
      */
     static final class Production {
         private record Ground(Resource resource, Deposit.FieldType type) { }
-        private record Bill(Sector owner, int id, int quantity, double amount) { }
+        private record Bill(Sector owner, int id, long quantity, double amount) { }
         private final Game game;
         private final Map<Sector, List<BuildingsStacks>> owned = new HashMap<>();
         private final Map<Ground, Double> beforeGround = new HashMap<>();
@@ -293,9 +293,9 @@ public final class LicenceFees {
         BuildingsTemplate t = stack.getBuilding();
         double total = 0;
         String[] ids = t.runningRecipeIds();
-        int without = t.recipePieceId() == null ? 0 : stack.getUnfitted(t.recipePieceId());
+        long without = t.recipePieceId() == null ? 0 : stack.getUnfitted(t.recipePieceId());
         for (int part = 0; part < 2; part++) {
-            int count = part == 0 ? stack.getQuantity() - without : without;
+            long count = part == 0 ? stack.getQuantity() - without : without;
             if (count <= 0) continue;
             Recipe recipe = t.getRecipe(ids[part]);
             Set<String> fitted = new HashSet<>();
@@ -308,7 +308,7 @@ public final class LicenceFees {
             if (piece.getId().equals(t.recipePieceId()) || piece.getSince().equals(t.getSinceText())
                     || !piece.knownAt(game.getMonth(), game.getResearch())
                     || !payable(piece.getSince(), game.getMonth(), game.getResearch())) continue;
-            int count = stack.getQuantity() - stack.getUnfitted(piece.getId());
+            long count = stack.getQuantity() - stack.getUnfitted(piece.getId());
             double gain = t.changeNeeds(piece.getId()) ? RecipeChanges.gainForStanding(game, t, piece)
                     : EquipmentFit.grossGainOf(game, t, piece) * count;
             double bill = onGain(piece.getSince(), game.getMonth(), game.getResearch(), gain)

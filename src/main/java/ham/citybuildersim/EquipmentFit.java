@@ -113,7 +113,7 @@ public final class EquipmentFit {
     }
 
     /** FITTED when no building of the stack lacks the piece, NOT_KNOWN when it is not known at the game month, else null: the two verdicts that price nothing. */
-    private static Kind settled(Equipment piece, int month, int unfitted, Research found) {
+    private static Kind settled(Equipment piece, int month, long unfitted, Research found) {
         if (unfitted <= 0) return Kind.FITTED;
         return piece.knownAt(month, found) ? null : Kind.NOT_KNOWN;
     }
@@ -127,13 +127,13 @@ public final class EquipmentFit {
      * @param annualRealRate the real rate a year the annuity is struck at
      * @param hurdle         what a month's gain must reach to pass the money gate (0 for none)
      */
-    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, int unfitted, double gain, double cost,
+    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, long unfitted, double gain, double cost,
                                 double annualRealRate, double hurdle) {
         return judge(piece, t, month, unfitted, gain, cost, annualRealRate, hurdle, null);
     }
 
     /** The same in a city whose research may have found the piece's code before history's month (R3: Equipment.knownAt(int, Research)); no research (null) reads history's. */
-    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, int unfitted, double gain, double cost,
+    public static Verdict judge(Equipment piece, BuildingsTemplate t, int month, long unfitted, double gain, double cost,
                                 double annualRealRate, double hurdle, Research found) {
         Kind early = settled(piece, month, unfitted, found);
         if (early != null) {
@@ -260,7 +260,7 @@ public final class EquipmentFit {
     }
 
     /** verdict()'s and verdictForNew()'s one pricing: the template, the piece and how many of the buildings asked about lack it (0 for none: FITTED). */
-    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, int unfitted, Set<String> proposed) {
+    private static Verdict priced(Game game, BuildingsTemplate t, Equipment piece, long unfitted, Set<String> proposed) {
         int month = game.getMonth();
         Research found = game.getResearch();
         if (settled(piece, month, unfitted, found) != null) return judge(piece, t, month, unfitted, Double.NaN, Double.NaN, 0, 0, found);

@@ -268,7 +268,7 @@ public final class Forestry extends ExtractionSector {
         if (plans == null) return 0;
         double cost = 0, m3 = 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-            int n = buildings.getQuantity(t.getId());
+            long n = buildings.getQuantity(t.getId());
             if (n <= 0 || !isCrew(t)) continue;
             cost += n * crewRunning(t, plans);
             m3 += n * cutOf(t);

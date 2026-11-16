@@ -190,7 +190,7 @@ public final class FreightView {
     /** One kind of berth on the Ports page: the terminals standing, the tonnes against their room, the handling quote, the dues and the calls. */
     public record Berth(
             Ports.Cargo kind,
-            int berths,           // terminals standing
+            long berths,          // terminals standing
             double capacity,      // tonnes a month they handle
             double onSite,        // ...and those on site
             double tonnes,        // sea tonnes handled in the month billed
@@ -207,7 +207,7 @@ public final class FreightView {
     /** The Ports page: berths by kind, the month's handling billed and dues paid, the dial and the calls. */
     public record PortsPage(
             List<Berth> kinds,
-            int berths,           // terminals standing, all kinds
+            long berths,          // terminals standing, all kinds
             double capacity,      // their tonnes a month
             double tonnes,        // sea tonnes handled
             double handlingBilled,// the handling billed to the shippers (Freight's "Port handling billed")
@@ -294,11 +294,12 @@ public final class FreightView {
     static PortsPage portsPage(Game game, Freight fr, Ports ports, BuildingManager buildings) {
         PortDivision pd = fr.portDivision();
         double[] capacity = Ports.berths(buildings), onSite = Ports.berthsOnSite(buildings);
-        int[] counts = Ports.berthCounts(buildings);
+        long[] counts = Ports.berthCounts(buildings);
         double dial = fin(pd.dial());
         BoatSchedule boats = ports == null || game.getWorld() == null ? null : game.boats(List.of());
         List<Berth> kinds = new ArrayList<>();
-        int berths = 0, calls = 0;
+        long berths = 0;
+        int calls = 0;
         double cap = 0, tonnes = 0;
         for (Ports.Cargo kind : Ports.Cargo.values()) {
             int k = kind.ordinal();

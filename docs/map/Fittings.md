@@ -42,7 +42,7 @@
 | 68 | 4 | `public boolean hasOnSite(String payer)` | Whether this payer has a fitting on site: a sector fits one at a time. |
 | 74 | 1 | `public boolean isEmpty()` | Whether nothing is on site. |
 | 77 | 5 | `public double pointsOwed()` | The points of work still owed on every fitting on site. |
-| 94 | 14 | `public void scrapped(int templateId, java.util.function.ToIntFunction<String> unfittedLeft)` | After buildings of a template were scrapped (R1d; BuildingsStacks.lowerUnfitted(), the unfitted ones first): of each piece, the jobs past the count of its buildings still unfitted, `unfittedLeft`, are cancelled, the n... |
+| 94 | 14 | `public void scrapped(int templateId, java.util.function.ToLongFunction<String> unfittedLeft)` | After buildings of a template were scrapped (R1d; BuildingsStacks.lowerUnfitted(), the unfitted ones first): of each piece, the jobs past the count of its buildings still unfitted, `unfittedLeft`, are cancelled, the n... |
 | 115 | 15 | `public List<Job> work(double points)` | Works `points` off the jobs in the order placed: the first job's remainder first, then the next, and so on until the points are gone. |
 | 132 | 1 | `public void clear()` | Forgets every job: Game.buildWorld() calls it, as it clears the forms, so a city founded or loaded into a Game that played another starts with none on site. |
 | 135 | 5 | `public List<Job> view()` | The jobs on site, in the order placed, as copies: for the save and for the harnesses. |

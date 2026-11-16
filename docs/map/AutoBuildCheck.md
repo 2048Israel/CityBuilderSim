@@ -148,8 +148,8 @@
 |---:|---:|---|---|
 | 351 | 155 | `static Game decades(Path root)` |  |
 | 508 | 18 | `static java.util.function.Consumer<Boolean> passReader(Game g)` | The decades' reading of a pass, before and after it, by look() (0.7.102: a function, so the copy that borrows is read the same). |
-| 528 | 9 | `static int[] standingAndOnSite(Game g)` | Every template's standing and on-site count, by id. |
-| 539 | 84 | `static void look(Game g, AutoBuilder ab, int[] before, double[] snap)` | One pass, read: what rose, what it did measure by measure, the debt, the cash and (0.7.104) the payback. |
+| 528 | 9 | `static long[] standingAndOnSite(Game g)` | Every template's standing and on-site count, by id. |
+| 539 | 84 | `static void look(Game g, AutoBuilder ab, long[] before, double[] snap)` | One pass, read: what rose, what it did measure by measure, the debt, the cash and (0.7.104) the payback. |
 | 635 | 22 | `static boolean holdIsTrue(Game g, AutoBuilder ab, AutoBuilder.Step s)` | A hold, checked after the pass against the city as the pass left it. |
 | 659 | 13 | `static boolean noneOtherPays(Game g, AutoBuilder ab, BuildAdvice.Measure m)` | The advice's ranking for a measure walked as the pass walks it (0.7.101), on the city as the pass left it: none of its buildings pays back (0.7.104; is run by the budget until then) and is paid for one of, its ground ... |
 | 674 | 13 | `static boolean paysForOne(Game g, AutoBuilder ab, BuildAdvice.Measure m, BuildAdvice.Suggestion c, boolean fromCash)` | Whether one of a card pays back where the payback holds it (0.7.104; is run by the budget until then) and is paid for, its ground and all: at or under the limit by the cash over the reserve and past it a bond that kee... |
@@ -181,8 +181,8 @@
 |---:|---:|---|---|
 | 1139 | 10 | `static void youngMonths(Game g, int months)` | The test player's game for some months: the pass, the economy, and (every LOOK_MONTHS) its moves. |
 | 1151 | 35 | `static Game youngCity(GameFiles files)` | The young city: the test player's founding and rhythm as decades() plays them, automatic building on, played to YOUNG_MONTH (LongPlaytest.AUTOBUILD set by the caller). |
-| 1188 | 11 | `static int retireServing(Game g, BuildAdvice.Measure m)` | Every building that serves a measure retired, and how many were: the city short of that service (deficitTown() does as much to a town). |
-| 1201 | 8 | `static int onSite(Game g, BuildAdvice.Measure m)` | How many of a measure's buildings are on site, not yet open (AutoBuilder.serving() less what stands). |
+| 1188 | 11 | `static long retireServing(Game g, BuildAdvice.Measure m)` | Every building that serves a measure retired, and how many were: the city short of that service (deficitTown() does as much to a town). |
+| 1201 | 8 | `static long onSite(Game g, BuildAdvice.Measure m)` | How many of a measure's buildings are on site, not yet open (AutoBuilder.serving() less what stands). |
 | 1211 | 7 | `static AutoBuilder.Step firstRefused(AutoBuilder ab)` | The first step of a pass that was held for the money, none ordered ahead of it: the order the pass would place, were the money there. |
 | 1224 | 7 | `static double oneOf(Game g, AutoBuilder.Step s)` | One of a step's building, its ground and all, as the pass weighs it before it holds or walks on (total(), groundFor()): a hold's step carries no cost (the pass holds before it prices an order), so it is priced here, o... |
 | 1260 | 153 | `static void youngRefused(Path root)` | A YOUNG CITY REFUSED FOR A SMALL SUM KEEPS BUILDING (FW4). |
@@ -209,5 +209,5 @@
 | 1961 | 46 | `static void careOfEveryKind(Path root)` | Care of every kind is essential (CC1-S), and a school is not: a town spending past its revenue, short of general care, of senior care or of childcare, orders that kind with nothing weighed for its payback; the same so... |
 | 2013 | 13 | `static Game deficitTown(Path root, String name, BuildAdvice.Measure retired)` | ChildcareCheck's town with every building that serves a measure retired, the auto-builder on and the town spending past its revenue - every service's bill as section 5's deficit town has it, and as much again: short o... |
 | 2027 | 4 | `static AutoBuilder.Step stepFor(AutoBuilder ab, BuildAdvice.Measure m)` |  |
-| 2032 | 5 | `static int siteCount(Game g)` |  |
+| 2032 | 5 | `static long siteCount(Game g)` |  |
 

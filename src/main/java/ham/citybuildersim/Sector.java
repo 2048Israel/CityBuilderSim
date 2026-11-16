@@ -361,7 +361,7 @@ public abstract class Sector {
         // template, how many of it, and the posts and the spare workers per band.
         private final Sector owner;
         private final BuildingsTemplate template;
-        private final int count;
+        private final long count;
         private final double[] wantedCopy, spareCopy, drawnCopy;
 
         /** Always staffable: a building with no posts, or nobody to ask. */
@@ -383,7 +383,7 @@ public abstract class Sector {
          * @param drawn    the workers per band migration would bring for the order within GATE_DRAW_MONTHS
          */
         Staffing(double share, double shareNow, double[] wanted, double[] spare, double[] above, boolean[] comeFor,
-                 double[] drawn, Sector owner, BuildingsTemplate template, int count) {
+                 double[] drawn, Sector owner, BuildingsTemplate template, long count) {
             this.owner = owner;
             this.template = template;
             this.count = count;
@@ -406,7 +406,7 @@ public abstract class Sector {
         public BuildingsTemplate template() { return template; }
 
         /** How many of it were asked about at once (0 for the always-staffable answer). */
-        public int count() { return count; }
+        public long count() { return count; }
 
         /** The posts the order has per band (a copy). */
         public double[] wanted() { return wantedCopy.clone(); }
@@ -525,10 +525,16 @@ public abstract class Sector {
      * depend on it, so the answer is found by halving.
      */
     public int staffableCount(BuildingsTemplate t, int wanted) {
+        // never more than wanted, so it fits the int it came in as
+        return (int) staffableCount(t, (long) wanted);
+    }
+
+    /** ...for an order or a stack that may pass 2^31 (SQ1). */
+    public long staffableCount(BuildingsTemplate t, long wanted) {
         if (wanted <= 0 || !staffing(t, 1).passes()) return 0;
-        int lo = 1, hi = wanted;
+        long lo = 1, hi = wanted;
         while (lo < hi) {
-            int mid = (lo + hi + 1) >>> 1;
+            long mid = (lo + hi + 1) >>> 1;
             if (staffing(t, mid).passes()) lo = mid; else hi = mid - 1;
         }
         return lo;
@@ -554,7 +560,7 @@ public abstract class Sector {
     static final double DRAWN_SHARE_GRID = 1e-9;
 
     /** The same test for {@code count} of these at once. */
-    public Staffing staffing(BuildingsTemplate t, int count) {
+    public Staffing staffing(BuildingsTemplate t, long count) {
         return staffing(t, count, true, false);
     }
 
@@ -566,7 +572,7 @@ public abstract class Sector {
      * in months 8 to 10 of FoundingYardCheck's village, 0.46 to 0.76 before BA1), the builders-first rule stayed off and
      * the village's depot opened in month 49 against main's 22.
      */
-    public Staffing staffingWithOwnSites(BuildingsTemplate t, int count) {
+    public Staffing staffingWithOwnSites(BuildingsTemplate t, long count) {
         return staffing(t, count, true, true);
     }
 
@@ -581,11 +587,11 @@ public abstract class Sector {
      * test passes is one a working builder's crews, or another sector's
      * withheld posts, caused.
      */
-    public Staffing staffingWithCrewsSpare(BuildingsTemplate t, int count) {
+    public Staffing staffingWithCrewsSpare(BuildingsTemplate t, long count) {
         return staffing(t, count, false, false);
     }
 
-    private Staffing staffing(BuildingsTemplate t, int count, boolean crewsSpokenFor, boolean ownSitesInCount) {
+    private Staffing staffing(BuildingsTemplate t, long count, boolean crewsSpokenFor, boolean ownSitesInCount) {
         if (t == null || game == null) return Staffing.ANY;
         PopulationManager people = game.getPopulationManager();
         double[] posts  = people.staffablePostsByBand();
@@ -622,7 +628,7 @@ public abstract class Sector {
             double[] withSites = posts.clone();
             // ...less t's own on site where they are among the count asked (staffingWithOwnSites()).
             BuildingsStacks own = ownSitesInCount ? bm.getStack(t) : null;
-            int ownOnSite = own == null ? 0 : Math.max(0, own.getUnderConstruction());
+            long ownOnSite = own == null ? 0 : Math.max(0, own.getUnderConstruction());
             for (JobType job : JobType.values()) {
                 withSites[WageBand.of(job).ordinal()] += bm.postsOnSite(key(), job) - (double) t.getJobs(job) * ownOnSite;
             }
@@ -810,12 +816,12 @@ public abstract class Sector {
     public double getHealthRatio()  { return healthRatio; }
 
     /** How many of its buildings stand, finished (0.7.30): none is "no plant standing" on its pages, not a rate. */
-    public int buildingsStanding() {
-        return buildings == null ? 0 : (int) Math.round(buildings.totalBySector(key, t -> 1));
+    public long buildingsStanding() {
+        return buildings == null ? 0 : Math.round(buildings.totalBySector(key, t -> 1));
     }
 
     /** ...and how many are on site, for anyone's order (0.7.30). */
-    public int buildingsOnSite() {
+    public long buildingsOnSite() {
         return buildings == null ? 0 : buildings.getUnderConstructionBySector(key);
     }
 
@@ -3448,7 +3454,7 @@ public abstract class Sector {
     public boolean mayRetire(BuildingsTemplate t) { return true; }
 
     /** Limit a spare-capacity sale to what still leaves keepAtLeast units usable; additive sectors need no further limit. */
-    public int limitSpareRetirement(BuildingsTemplate t, int quantity, double keepAtLeast) { return quantity; }
+    public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast) { return quantity; }
 
     /** Why nothing could be sold, when mayRetire() refused everything. */
     public String noRetirementReason(boolean distress) {

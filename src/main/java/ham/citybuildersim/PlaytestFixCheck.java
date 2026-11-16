@@ -104,7 +104,7 @@ public class PlaytestFixCheck {
         Game city = new Game(files);
         quietly(city::newGame);
 
-        int standing = city.getBankBranchesStanding();
+        long standing = city.getBankBranchesStanding();
         check("premise: a founded city has a Commercial Bank standing, and the bank has opened no branch",
                 standing >= 1 && city.getMonth() <= 1 && city.getBank().getBranches() == 0);
         CityNeeds.Need unopened = bankRow(city);
@@ -114,7 +114,7 @@ public class PlaytestFixCheck {
                 unopened.level() == 0 && !bankIsListed(city));
 
         BuildingsTemplate branch = template(city, "Commercial Bank");
-        int scrapped = city.getBuildingManager().retire(branch, standing);
+        long scrapped = city.getBuildingManager().retire(branch, standing);
         check("premise for a city with no bank: the standing branches are scrapped, none open, none standing",
                 scrapped == standing && city.getBankBranchesStanding() == 0 && city.getBank().getBranches() == 0);
         CityNeeds.Need none = bankRow(city);

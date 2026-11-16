@@ -71,15 +71,15 @@ public final class LandmassView {
 
     /** Whether a landmass has a port standing on it: some terminal of any kind (Landmasses.portsOn()). */
     public static boolean hasPort(Landmasses lms, int id) {
-        int n = 0;
-        for (int v : lms.portsOn(id)) n += v;
+        long n = 0;
+        for (long v : lms.portsOn(id)) n += v;
         return n > 0;
     }
 
     /** The terminals standing on a landmass, all kinds together. */
-    public static int terminalsOn(Landmasses lms, int id) {
-        int n = 0;
-        for (int v : lms.portsOn(id)) n += v;
+    public static long terminalsOn(Landmasses lms, int id) {
+        long n = 0;
+        for (long v : lms.portsOn(id)) n += v;
         return n;
     }
 
@@ -179,7 +179,7 @@ public final class LandmassView {
 
     /** The terminals standing on a landmass by kind, "1 general cargo, 2 containers", or "none". */
     public static String portsWords(Landmasses lms, int id) {
-        int[] by = lms.portsOn(id);
+        long[] by = lms.portsOn(id);
         StringBuilder s = new StringBuilder();
         Ports.Cargo[] kinds = Ports.Cargo.values();
         for (int i = 0; i < by.length && i < kinds.length; i++) {
@@ -514,7 +514,7 @@ public final class LandmassView {
     public static String reportLine(Landmasses lms) {
         if (lms == null || lms.single()) return null;
         StringBuilder s = new StringBuilder("ITS LANDMASSES AT THE END: ");
-        int off = 0;
+        long off = 0;
         boolean first = true;
         for (Landmasses.Row r : lms.rows()) {
             if (!first) s.append(", ");

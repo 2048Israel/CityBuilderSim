@@ -63,7 +63,7 @@
 | 27 | `static PrintStream out, quiet` |  |
 | 2018 | `final Game g` |  |
 | 2019 | `int judged, cleared, clearedAhead` |  |
-| 2020 | `int largestCleared` |  |
+| 2020 | `long largestCleared` |  |
 | 2021 | `String largestSector` |  |
 | 2022 | `final java.util.Set<Integer> monthsJudged` |  |
 | 2023 | `final java.util.Map<String, Integer> aheadBySector` |  |
@@ -125,8 +125,8 @@
 |---:|---:|---|---|
 | 2017 | 38 | **type** `static final class AheadWatch implements BusinessInvestment.OrderWatch` |  |
 | 2025 | 1 | `AheadWatch(Game g)` _(in InvestCheck.AheadWatch)_ |  |
-| 2027 | 16 | `void saw(String sector, int quantity, int built, boolean mortgage)` _(in InvestCheck.AheadWatch)_ |  |
+| 2027 | 16 | `void saw(String sector, long quantity, long built, boolean mortgage)` _(in InvestCheck.AheadWatch)_ |  |
 | 2045 | 3 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in InvestCheck.AheadWatch)_ |  |
-| 2050 | 4 | `public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRa...` _(in InvestCheck.AheadWatch)_ |  |
+| 2050 | 4 | `public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annual...` _(in InvestCheck.AheadWatch)_ |  |
 | 2056 | 17 | `static void howOftenInARun(Path root)` |  |
 

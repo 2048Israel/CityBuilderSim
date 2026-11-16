@@ -446,7 +446,7 @@ public class EquipmentCheck {
         check("fixture: two Bakeries, an Industrial Bakery and a Grain Farm stand", bakery.getQuantity() == 2 && industrial.getQuantity() >= 1
                 && grain.getQuantity() >= 1, bakery.getQuantity() + "/" + industrial.getQuantity() + "/" + grain.getQuantity());
         // One of the two Bakeries, the whole of the Industrial Bakery stack and of the Grain Farm stack.
-        int industrialAll = industrial.getQuantity(), grainAll = grain.getQuantity();
+        long industrialAll = industrial.getQuantity(), grainAll = grain.getQuantity();
         bakery.setUnfitted(DRIVE, 1);
         industrial.setUnfitted(DRIVE, industrialAll);
         grain.setUnfitted(TRACTOR, grainAll);
@@ -469,7 +469,7 @@ public class EquipmentCheck {
 
         Haulage haulage = c.getSectors().freight().haulage();
         BuildingsStacks depot = stack(c, "Truck Depot");
-        int q = depot.getQuantity();
+        long q = depot.getQuantity();
         check("fixture: depots stand in the cart town", q >= 2, "quantity " + q);
         depot.setUnfitted(TRUCK, 1);
         double carted = cartShare(c);
@@ -569,11 +569,11 @@ public class EquipmentCheck {
 
         // ...and through the city's own paths: the order the player or the investor places, and a retirement.
         BuildingsStacks live = stack(g, "Bakery");
-        int before = live.getQuantity();
+        long before = live.getQuantity();
         live.setUnfitted(DRIVE, 1);
         quietly(() -> g.buildStack(bakery, 1, true));
         check("a Bakery bought into the city (buildStack) leaves the stack's count as it was", live.getQuantity() == before + 1 && live.getUnfitted(DRIVE) == 1);
-        int scrapped = g.getBuildingManager().retire(bakery, live.getQuantity());
+        long scrapped = g.getBuildingManager().retire(bakery, live.getQuantity());
         check("every Bakery retired by the city takes the count with it", scrapped == before + 1 && live.getQuantity() == 0 && !live.hasUnfitted());
         quietly(() -> g.buildStack(bakery, before, true));
     }
@@ -587,7 +587,7 @@ public class EquipmentCheck {
 
     static boolean throwsOnPut(BuildingsStacks s) {
         try {
-            s.getUnfittedView().put("x", 1);
+            s.getUnfittedView().put("x", 1L);
             return false;
         } catch (UnsupportedOperationException e) {
             return true;
@@ -613,7 +613,7 @@ public class EquipmentCheck {
         // The counts: one of two Bakeries, the Industrial Bakery stack and the Grain Farm stack whole; then a month, so the shares stand as the city has them.
         // The counts as set are kept: the month may put up another building on a stack (the investors build), which comes fitted and moves the
         // quantity, not the count.
-        final int industrialSet = stack(g, "Industrial Bakery").getQuantity(), grainSet = stack(g, "Grain Farm").getQuantity();
+        final long industrialSet = stack(g, "Industrial Bakery").getQuantity(), grainSet = stack(g, "Grain Farm").getQuantity();
         stack(g, "Bakery").setUnfitted(DRIVE, 1);
         stack(g, "Industrial Bakery").setUnfitted(DRIVE, industrialSet);
         stack(g, "Grain Farm").setUnfitted(TRACTOR, grainSet);
@@ -622,9 +622,9 @@ public class EquipmentCheck {
         play(g, 1);
         check("fixture: the counts stand after the month and the forms are up", anyUnfitted(g) && g.getSectors().industry().getSteamShare() > 0
                 && g.getSectors().agriculture().getHorseShare() > 0);
-        Map<Integer, Map<String, Integer>> saved = g.getBuildingManager().getUnfittedById();
+        Map<Integer, Map<String, Long>> saved = g.getBuildingManager().getUnfittedById();
         check("the save's view is each template's id and its counts, only where a stack has any", saved.size() == 3
-                && saved.get(stack(g, "Bakery").getBuilding().getId()).equals(Map.of(DRIVE, 1))
+                && saved.get(stack(g, "Bakery").getBuilding().getId()).equals(Map.of(DRIVE, 1L))
                 && saved.get(stack(g, "Industrial Bakery").getBuilding().getId()).equals(Map.of(DRIVE, industrialSet))
                 && saved.get(stack(g, "Grain Farm").getBuilding().getId()).equals(Map.of(TRACTOR, grainSet)), saved.toString());
 

@@ -286,7 +286,7 @@ public class SaveFileCheck {
         assertEquals("cash survived", read.getCash(), 123456.75);
         assertEquals("month survived", read.getMonth(), 87);
         assertEquals("population survived", read.getPopulation(), 1904L);
-        assertEquals("buildings survived", read.getBuildingQuantity(0), 141);
+        assertEquals("buildings survived", read.getBuildingQuantity(0), 141L);
         assertEquals("household savings survived", read.getHouseholdSavings(), -2200.5);
         assertEquals("land survived", read.getLandOwned(), 4000000.0);
         assertEquals("tax rates survived", read.getPropertyTaxRate(), .015);
@@ -558,8 +558,8 @@ public class SaveFileCheck {
         assertTrue("fixture: the twenty depots were ordered (" + depotOrder + ")", depotOrder == Game.BuildResult.SUCCESS);
         city.simulateMonths(1);
 
-        int depotsUnderWay = city.getBuildingManager().getUnderConstructionById()[depot.getId()];
-        int storesUnderWay = city.getBuildingManager().getUnderConstructionById()[store.getId()];
+        long depotsUnderWay = city.getBuildingManager().getUnderConstructionById()[depot.getId()];
+        long storesUnderWay = city.getBuildingManager().getUnderConstructionById()[store.getId()];
         double depotProgress = city.getBuildingManager()
                 .getConstructionProgressById()[depot.getId()];
         double footprint = city.getBuildingManager().getTotalLandFootprint();
@@ -713,15 +713,15 @@ public class SaveFileCheck {
         brandNew.buildStack(template(brandNew, "Construction Depot"), 1, false);
 
         assertEquals("nothing is finished yet",
-                brandNew.getBuildingManager().getQuantity(depot.getId()), 0);
+                brandNew.getBuildingManager().getQuantity(depot.getId()), 0L);
         assertEquals("but one is being built",
-                brandNew.getBuildingManager().getUnderConstructionById()[depot.getId()], 1);
+                brandNew.getBuildingManager().getUnderConstructionById()[depot.getId()], 1L);
         assertTrue("saved", brandNew.saveGame(2).ok);
 
         Game reopened = new Game(freshFiles);
         reopened.loadGameSave(2);
         assertEquals("it did not vanish",
-                reopened.getBuildingManager().getUnderConstructionById()[depot.getId()], 1);
+                reopened.getBuildingManager().getUnderConstructionById()[depot.getId()], 1L);
 
         /* ============ 8b. a stack emptied keeps its place (0.7.103) ============ */
         System.out.println("\n--- and a building whose last one went keeps its place in the queue ---");
@@ -3398,11 +3398,11 @@ public class SaveFileCheck {
         } finally { ChildcareCheck.quiet = oldQuiet; }
         // Cause a private shortage: leave no shops, rather than hoping a planner expands.
         BuildingsTemplate shop = template(live, "Convenience Store");
-        int removed = live.getBuildingManager().retire(shop, live.getBuildingManager().countByName(shop.getName()));
+        long removed = live.getBuildingManager().retire(shop, live.getBuildingManager().countByName(shop.getName()));
         live.getLandManager().release(removed * shop.getLandSqFt(), shop.getSector(), Game.groundUse(shop));
         // Free workers for the private order; this services fixture otherwise has nobody available to staff a shop.
         BuildingsTemplate school = template(live, "Medical School");
-        int closed = live.getBuildingManager().retire(school, live.getBuildingManager().countByName(school.getName()));
+        long closed = live.getBuildingManager().retire(school, live.getBuildingManager().countByName(school.getName()));
         live.getLandManager().release(closed * school.getLandSqFt(), school.getSector(), Game.groundUse(school));
         quietly(() -> live.simulateMonths(1)); // Settle staffing and output after the fixture's closures, with its planners still held.
         for (String sector : Sectors.KEYS) live.getBusinessInvestment().releaseSector(sector);
@@ -3425,15 +3425,15 @@ public class SaveFileCheck {
         loaded.getForeignAccounts().pinRate(rate);
         int autoBefore = live.getAutoBuilder().getOrders();
         int boughtBefore = live.getAutoBuilder().getLandOffers();
-        int privateOrders = 0;
+        long privateOrders = 0;
         for (int month = 0; month < 12; month++) {
-            java.util.Map<Integer, Integer> before = new java.util.HashMap<>();
+            java.util.Map<Integer, Long> before = new java.util.HashMap<>();
             for (BuildingsTemplate t : live.getBuildingManager().getTemplates()) before.put(t.getId(), standingAndOnSite(live, t));
             quietly(() -> live.simulateMonths(1));
             quietly(() -> loaded.simulateMonths(1));
             boolean ordersMatch = true;
             for (BuildingsTemplate t : live.getBuildingManager().getTemplates()) {
-                int count = standingAndOnSite(live, t);
+                long count = standingAndOnSite(live, t);
                 ordersMatch &= count == standingAndOnSite(loaded, loaded.getBuildingManager().getTemplate(t.getId()));
                 if (!AutoBuilder.inRemit(t) && java.util.Arrays.asList(Sectors.KEYS).contains(t.getSector())) {
                     privateOrders += Math.max(0, count - before.get(t.getId()));
@@ -3458,7 +3458,7 @@ public class SaveFileCheck {
                 live.getAutoBuilder().getLandOffers() > boughtBefore && live.getLandManager().getOwnedSqFt() > owned);
     }
 
-    private static int standingAndOnSite(Game game, BuildingsTemplate template) {
+    private static long standingAndOnSite(Game game, BuildingsTemplate template) {
         BuildingsStacks stack = game.getBuildingManager().getStack(template);
         return stack == null ? 0 : stack.getQuantity() + stack.getUnderConstruction();
     }
@@ -3486,7 +3486,7 @@ public class SaveFileCheck {
         BuildingsTemplate highest = bm.getTemplate(bm.getMaxTemplateId());
         // ...the highest id is the Builders' Yard (id 143) since PT1-M4 and the founding stands one: the city stands two of it by
         // adding the one more, not two more (the founding's land is allocated already).
-        int more = Math.max(0, 2 - bm.getQuantity(highest.getId()));
+        long more = Math.max(0, 2 - bm.getQuantity(highest.getId()));
         if (more > 0) {
             bm.addStack(highest, more, true);
             city.getLandManager().allocate(highest.getLandSqFt() * more);
@@ -3499,15 +3499,15 @@ public class SaveFileCheck {
         bm.getTemplates().remove(dropped);
         assertTrue("fixture: the highest id, " + highest.getName() + "'s, lies past the template count",
                 bm.getMaxTemplateId() >= bm.getTemplateCount());
-        assertEquals("fixture: two of it stand", bm.getQuantity(highest.getId()), 2);
-        int[] before = new int[bm.getMaxTemplateId() + 1];
+        assertEquals("fixture: two of it stand", bm.getQuantity(highest.getId()), 2L);
+        long[] before = new long[bm.getMaxTemplateId() + 1];
         for (int id = 0; id < before.length; id++) before[id] = bm.getTemplate(id) == null ? 0 : bm.getQuantity(id);
         assertTrue("fixture: the city saved", quietlyGet(() -> city.saveGame(1, "ids")).ok);
 
         Game back = new Game(files);
         quietly(() -> back.loadGameSave(1));
         BuildingManager after = back.getBuildingManager();
-        assertEquals("the highest id's buildings came back", after.getQuantity(highest.getId()), 2);
+        assertEquals("the highest id's buildings came back", after.getQuantity(highest.getId()), 2L);
         boolean all = true;
         for (int id = 0; id < before.length; id++) {
             if (after.getTemplate(id) != null && after.getQuantity(id) != before[id]) all = false;

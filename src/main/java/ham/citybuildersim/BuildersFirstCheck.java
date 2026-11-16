@@ -354,7 +354,7 @@ public class BuildersFirstCheck {
         BuildingManager a = without.getBuildingManager(), b = with.getBuildingManager();
         ham.citybuildersim.sectors.Construction builders = with.getSectors().construction();
         long startA = a.getTotalConstructionCapacity(), startB = b.getTotalConstructionCapacity();
-        int depotsA = a.countByName(DEPOT), depotsB = b.countByName(DEPOT), yardsB = b.countByName(YARD);
+        long depotsA = a.countByName(DEPOT), depotsB = b.countByName(DEPOT), yardsB = b.countByName(YARD);
         double trap = with.getBuildingOutput();
         int points = template(with, DEPOT).getConstructionPoints();
         int bound = (int) Math.ceil(points / trap) + 1;
@@ -362,10 +362,10 @@ public class BuildersFirstCheck {
         int firstOpened = 0, holdingWithout = 0, holdingWith = 0, streak = 0, longestAfter = 0;
         boolean orderedAfter = false;
         for (int m = 1; m <= RUN_MONTHS; m++) {
-            int before = b.countByName(DEPOT);
+            long before = b.countByName(DEPOT);
             month(without);
             month(with);
-            int now = b.countByName(DEPOT);
+            long now = b.countByName(DEPOT);
             String plan = with.getLastInvestment(BUILDERS);
             // The month's plan runs before its sites advance (runPrivateInvestment(),
             // then simulateMonth()): the month after a depot opens is the first that
@@ -474,7 +474,7 @@ public class BuildersFirstCheck {
         BuildingManager bm = gated.getBuildingManager();
         BuildingsTemplate depot = template(gated, DEPOT);
         String key = ConstructionControl.keyOf(depot);
-        int onSite = bm.underConstructionByName(DEPOT);
+        long onSite = bm.underConstructionByName(DEPOT);
         ham.citybuildersim.sectors.Construction builders = gated.getSectors().construction();
         Sector.Staffing staffing = builders.staffing(depot, onSite);
         out.printf("  %,d people; %d depots on site, the town could staff %.0f%% of their posts%n",
@@ -497,7 +497,7 @@ public class BuildersFirstCheck {
             month(gated);
             month(ungated);
         }
-        int onSiteNow = bm.underConstructionByName(DEPOT);
+        long onSiteNow = bm.underConstructionByName(DEPOT);
         Sector.Staffing staffingNow = builders.staffing(depot, onSiteNow);
         out.printf("  after %d founding months: %,d people, %d homes, the builders' fill %.2f; %d depots open and %d on site,"
                         + " the town could staff %.0f%% of their posts; the sites get %,d a month%n",
@@ -517,14 +517,14 @@ public class BuildersFirstCheck {
         // on), and the twins' builders differ, so the Houses already on site are not the same in both; the check tops the
         // twin with fewer up to the one with more (and both to LANDLORDS_HOUSES at least), so they are alike as they were.
         String houses = ConstructionControl.keyOf(template(gated, "House"));
-        int mostHouses = LANDLORDS_HOUSES;
+        long mostHouses = LANDLORDS_HOUSES;
         for (Game g : new Game[] { gated, ungated }) {
             BuildingsStacks s = g.getBuildingManager().stackOfKey(houses);
             mostHouses = Math.max(mostHouses, s == null ? 0 : s.getUnderConstruction());
         }
         for (Game g : new Game[] { gated, ungated }) {
             BuildingsStacks s = g.getBuildingManager().stackOfKey(houses);
-            final int topUp = mostHouses - (s == null ? 0 : s.getUnderConstruction());
+            final long topUp = mostHouses - (s == null ? 0 : s.getUnderConstruction());
             if (topUp <= 0) continue;
             BuildingsTemplate house = template(g, "House");
             double price = g.quoteBuild(house, topUp).total;
@@ -539,7 +539,7 @@ public class BuildersFirstCheck {
                         && bu.stackOfKey(houses) != null
                         && bu.stackOfKey(houses).getUnderConstruction() == bm.stackOfKey(houses).getUnderConstruction());
         long homesAtStart = bm.getTotalHomes();
-        int openAtStart = bm.countByName(DEPOT), openAtStartU = bu.countByName(DEPOT);
+        long openAtStart = bm.countByName(DEPOT), openAtStartU = bu.countByName(DEPOT);
         double floorG = Double.MAX_VALUE, floorU = Double.MAX_VALUE;
         int firstG = 0, firstU = 0, played = 0;
         // ...then the twins are compared until the one told it could staff them opens a depot, or for at most NEW_TOWN_MONTHS.

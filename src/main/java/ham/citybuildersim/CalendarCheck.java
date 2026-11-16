@@ -227,7 +227,7 @@ public class CalendarCheck {
         java.util.List<BuildLog.Entry> live = g.getBuildLog().recent(g.getMonth());
         assertTrue("the city logged what it finished", !live.isEmpty());
 
-        int houses = 0;
+        long houses = 0;
         for (BuildLog.Entry e : live) {
             if ("House".equals(e.building)) houses += e.quantity;
         }

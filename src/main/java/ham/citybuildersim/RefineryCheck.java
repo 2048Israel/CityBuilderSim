@@ -509,12 +509,12 @@ public class RefineryCheck {
 
         // The units on site are its pipeline: the flow with them less the flow without.
         BuildingsTemplate reformer = g.getBuildingManager().getTemplateByName("Small Reformer");
-        int onSite = g.getBuildingManager().getStack(reformer).getUnderConstruction();
+        long onSite = g.getBuildingManager().getStack(reformer).getUnderConstruction();
         quietly(() -> {
             g.setCashForTest(g.getCash() + 1e9);
             g.buildStack(reformer, 1, false);
         });
-        int after = g.getBuildingManager().getStack(reformer).getUnderConstruction();
+        long after = g.getBuildingManager().getStack(reformer).getUnderConstruction();
         double[] with = feed.clone();
         with[Kind.REFORMER.ordinal()] += reformer.feedPerMonth();
         RefineryFlow.Flow future = RefineryFlow.solve(with, 8300, refiners.getCrudeMix(), refiners.flowValues());
@@ -1107,7 +1107,7 @@ public class RefineryCheck {
         report("...with no ground free the same month it is refused at the ground and the land office hears of it (landBlocked)",
                 noGround != null && !noGround.build && noGround.landBlocked && noGround.reason.startsWith("no land"),
                 noGround == null ? "" : noGround.reason);
-        report("...and with ground the order went on site", d != null && (Integer) seen[5] == 1
+        report("...and with ground the order went on site", d != null && (Long) seen[5] == 1
                         && b.getStack(d.template).getUnderConstruction() + b.getQuantity(d.template.getId()) >= 1,
                 g.getLastInvestment(Sectors.REFINING));
         BuildingsTemplate crude = b.getTemplateByName("Crude Unit");

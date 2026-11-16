@@ -410,7 +410,7 @@ public class ConstructionControlCheck {
         BuildingsStacks.Contract c = null;
         for (BuildingsStacks.Contract x : s.getContracts()) if ("City".equals(x.payer)) c = x;
         double v0 = c.getValue(), a0 = c.getAllowance();
-        int onSite = s.getUnderConstruction();
+        long onSite = s.getUnderConstruction();
         double owed0 = onSite * (double) t.getConstructionPoints() - s.getConstructionProgress();
         double progress0 = s.getConstructionProgress(), materials0 = s.getMaterialsOwed();
         double footprint0 = bm.getTotalLandFootprint(), allocated0 = g.getLandManager().getAllocatedSqFt();
@@ -434,7 +434,7 @@ public class ConstructionControlCheck {
                 - builders.getOvertimeThisMonth();
         close("the builders' book fell by the month's work and by the refund, no more",
                 builders.getUnearnedRevenue(), unearned0 - work - r.value(), 1e-9);
-        int finished = s.getLastFinished();
+        long finished = s.getLastFinished();
         ConstructionControl.Shell shell = bm.getControl().shellOf(t.getId());
         assertTrue("a shell stands", shell != null);
         assertTrue("...with the buildings that were on site", shell.buildings == onSite - finished);
@@ -456,7 +456,7 @@ public class ConstructionControlCheck {
         close("...its material what the shell has still to draw", q.materialsNeeded, shell.materialsOwed, 0);
         close("...priced by the builders' rule, the tax in it", q.total,
                 q.sticker / (1 - rB) + q.allowance, 1e-9);
-        int n = shell.buildings;
+        long n = shell.buildings;
         double p = shell.progress, cash0 = g.getCash(), book0 = builders.getUnearnedRevenue();
         double[] restart = handMoves(g, () -> g.restartShell(t.getId()));
         close("a restart moves the money from the treasury to the builders' book, no more",
@@ -475,7 +475,7 @@ public class ConstructionControlCheck {
         Game g = city(root, "demolish");
         BuildingManager bm = g.getBuildingManager();
         BuildingsTemplate t = template(g, "Elementary School");
-        int standing = bm.getQuantity(t.getId());
+        long standing = bm.getQuantity(t.getId());
         assertTrue("fixture: the city has three schools standing", standing == 3);
         assertTrue("the city's own to demolish; a landlords' House is not", g.isCitysToDemolish(t)
                 && !g.isCitysToDemolish(template(g, "House")) && !g.isCitysToDemolish(template(g, "Commercial Bank")));
@@ -596,7 +596,7 @@ public class ConstructionControlCheck {
                 fmt(owner.statement().operatingIncome));
         double till0 = owner.getCash(), cash0 = g.getCash();
         double debt0 = g.getEconomyManager().getBusinessDebtManager().getPrincipal(RE);
-        long homes0 = bm.getTotalHomes(); int houses0 = bm.getQuantity(t.getId());
+        long homes0 = bm.getTotalHomes(); long houses0 = bm.getQuantity(t.getId());
         double households0 = g.getFamilies().totalHouseholds(), people0 = g.getCohorts().total();
         out.printf("      %d homes stand, %.1f needed, %.1f households%n", homes0, g.getFamilies().homesNeeded(),
                 households0);

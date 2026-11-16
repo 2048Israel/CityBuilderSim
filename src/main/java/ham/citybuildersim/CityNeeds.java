@@ -87,7 +87,7 @@ public final class CityNeeds {
     public record Need(String label, String reading, int level, double near,
                        Kind kind, Go go, CareType care, EducationType school,
                        double value, double yellow, double red, boolean higherWorse,
-                       int onSite, double onSiteMonths, double a, double b) {
+                       long onSite, double onSiteMonths, double a, double b) {
 
         /** A need the city answers with a building of its own (BuildAdvice): roads, care, schools, police, cells, power and water. */
         public boolean cityBuilds() {
@@ -129,7 +129,7 @@ public final class CityNeeds {
             return s == null || s.level() < 0 ? level : s.level();
         }
 
-        Need withOnSite(String moreReading, int units, double months, int newLevel) {
+        Need withOnSite(String moreReading, long units, double months, int newLevel) {
             return new Need(label, reading + moreReading, newLevel, near, kind, go, care, school,
                     value, yellow, red, higherWorse, units, months, a, b);
         }
@@ -891,7 +891,7 @@ public final class CityNeeds {
     static void onTheWay(Game game, Words w, List<Need> out, int at,
                          java.util.function.Predicate<BuildingsTemplate> serves) {
         if (at < 0 || at >= out.size()) return;
-        int units = 0;
+        long units = 0;
         double soonest = Double.NaN;
         for (BuildingsStacks site : game.getBuildingManager().getStacksUnderConstruction()) {
             if (!serves.test(site.getBuilding())) continue;

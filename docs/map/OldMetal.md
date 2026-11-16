@@ -137,7 +137,7 @@
 |---:|---:|---|---|
 | 141 | 3 | `public void arise(Source source, String seller, double tonnes)` | `tonnes` of steel thrown out by `seller` from `source`, of which RECOVERY comes back as old steel; nothing for none, or for nobody. |
 | 146 | 4 | `public void carsScrapped(double cars)` | Cars the households scrapped (Motoring, at the top of the month): their steel, and since 0.7.133 their copper. |
-| 152 | 5 | `public void demolished(BuildingsTemplate t, int n, String owner)` | `n` of a building pulled down, its steel - and since 0.7.133 its copper - its owner's (`owner`, a sector's key). |
+| 152 | 5 | `public void demolished(BuildingsTemplate t, long n, String owner)` | `n` of a building pulled down, its steel - and since 0.7.133 its copper - its owner's (`owner`, a sector's key). |
 | 159 | 3 | `public void fabricated(String maker, double tonnes)` | `tonnes` of fabricated steel made by `maker` this month: its offcuts. |
 | 164 | 3 | `public void setsRetired(String railway, double sets)` | `sets` of rolling stock worn out by `railway` this month. |
 | 169 | 1 | `public double available()` | Tonnes of old steel standing to be bought now: arisen since the yards last bought. |

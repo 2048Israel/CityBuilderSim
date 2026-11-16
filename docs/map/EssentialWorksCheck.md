@@ -47,7 +47,7 @@
 | 342 | 39 | `static void interimCare(Path root)` |  |
 | 382 | 33 | `static void stagedCosts(Path root)` |  |
 | 416 | 42 | `static void completeRunning(Path root)` |  |
-| 459 | 10 | `static double existingWear(Game g, Map<BuildingsTemplate, Integer> order)` |  |
+| 459 | 10 | `static double existingWear(Game g, Map<BuildingsTemplate, Long> order)` |  |
 | 470 | 27 | `static void currentLossPriority(Path root)` |  |
 | 498 | 88 | `static void fundingPriority(Path root, boolean spareCare) throws Exception` |  |
 | 587 | 27 | `static void filledPostCosts(Path root)` |  |

@@ -8630,7 +8630,7 @@ public final class CityMap {
        ===================================================================== */
 
     /** A platform as the map draws it: its jacket's middle in plots, its wells, and the plots its wells stand on (each x << 32 | y). */
-    public record Jacket(double x, double y, int wells, List<Long> wellPlots) { }
+    public record Jacket(double x, double y, long wells, List<Long> wellPlots) { }
 
     /** A pipe as the map draws it: from its field's middle (x0, y0) toward the founding site, to (x1, y1), in plots - its kilometres standing. */
     public record Pipe(double x0, double y0, double x1, double y1) { }

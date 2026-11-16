@@ -1903,12 +1903,12 @@ public final class KeptBench {
      * pinned open, and no ring picked. The shared state a page leaves on the screen (the order bar, the keyboard's cards) is the last
      * page drawn's: a kept draw sets it right before a stepper is used.
      */
-    public Page build(String name, String start, java.util.Map<String, Integer> orders) {
+    public Page build(String name, String start, java.util.Map<String, Long> orders) {
         return build(name, start, orders, java.util.Set.of());
     }
 
     /** ...with the stat cards of these buildings pinned open. */
-    public Page build(String name, String start, java.util.Map<String, Integer> orders, java.util.Set<String> pins) {
+    public Page build(String name, String start, java.util.Map<String, Long> orders, java.util.Set<String> pins) {
         BuildScreen s = ui.buildScreen;
         return new Page(name, "handleAllBuildingMenus", () -> s.pool, pool -> {
             String at = BuildAdvice.category(s.buildCategory) == null ? BuildAdvice.OVERVIEW : s.buildCategory;
@@ -2048,8 +2048,8 @@ public final class KeptBench {
     }
 
     /** The count a building has dialled up on its card. */
-    public int buildOrdered(String building) {
-        return ui.buildScreen.orderQty.getOrDefault(building, 0);
+    public long buildOrdered(String building) {
+        return ui.buildScreen.orderQty.getOrDefault(building, 0L);
     }
 
     /** The count on the face of a card's stepper, as the page shows it now; null when the page has no such card. */
@@ -2215,7 +2215,7 @@ public final class KeptBench {
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (t == null) continue;
             for (int q : new int[]{1, 10, 100, 1_000, 10_000}) {
-                java.util.LinkedHashMap<BuildingsTemplate, Integer> run = BuildScreen.runOf(t, q);
+                java.util.LinkedHashMap<BuildingsTemplate, Long> run = BuildScreen.runOf(t, q);
                 int ahead = g.buildRunAhead(run);
                 if (ahead > 0 && g.buildFundingGap(BuildScreen.firstOf(run, ahead)) > 0) return new Object[]{t, q};
             }

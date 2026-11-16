@@ -188,7 +188,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 488 | 2 | **type** `public record Paving(int paveable, int paving, Game.BuildQuote one, double unit, double frees, double perTr...` | PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70; ConstructionControl, F): the gravel roads the city could pave and those being paved, the quote for one (Game.quotePave()), the trips one paving takes off the road (BuildAdvic... |
+| 488 | 2 | **type** `public record Paving(long paveable, long paving, Game.BuildQuote one, double unit, double frees, double per...` | PAVING, ON THE GRAVEL ROAD'S CARD (0.7.70; ConstructionControl, F): the gravel roads the city could pave and those being paved, the quote for one (Game.quotePave()), the trips one paving takes off the road (BuildAdvic... |
 | 491 | 14 | `public static Paving paving(Game game, BuildingsTemplate t)` |  |
 | 507 | 11 | `public static double runningCost(Game game, BuildingsTemplate t)` | What one costs to keep a month: upkeep and filled posts at today's wages, as the utility and government books pay them. |
 | 520 | 6 | `public static WorksValue.Value worksValue(Game game, BuildingsTemplate t, BuildAdvice.Measure m)` | The same full-horizon sum the advice uses, exposed to every city work's card (HW1). |
@@ -246,7 +246,7 @@
 | 1134 | 11 | **type** `public record Gate(GateKind kind, double a, double b, JobType licence, String why, Game.InterestTest test, ...` | One gate: DEPOSIT {deposits the city owns, mines committed} with the resource's word in `why` (depositWord(); DRY_OIL for a land Oil Well since 0.7.103); LICENCE {licences one needs, spare licences} with the licence; ... |
 | 1138 | 3 | `public Gate(GateKind kind, double a, double b, JobType licence, String why, Game.InterestTest test)` _(in BuildCard.Gate)_ | INTEREST: the model's test. |
 | 1143 | 1 | `public Gate(GateKind kind, double a, double b, JobType licence, String why)` _(in BuildCard.Gate)_ | Every gate but INTEREST and LENDER: no test of its own. |
-| 1161 | 14 | **type** `public record Investors(String building, String slot, Sector owner, boolean theirs, boolean yoursToo, int o...` | The investors' line's figures. |
+| 1161 | 14 | **type** `public record Investors(String building, String slot, Sector owner, boolean theirs, boolean yoursToo, long ...` | The investors' line's figures. |
 | 1165 | 1 | `public boolean showOwn()` _(in BuildCard.Investors)_ | "this one:" is said when there is a gate, no investor is already building it, and the word does not already name it. |
 | 1173 | 1 | `public boolean showPlanned()` _(in BuildCard.Investors)_ | ...and for a materials building the planner's gate is said in its place (0.7.142): the first its sector asks, in SpreadPlanner's words, on the same terms - when it fails one, no investor is building it and the word do... |
 | 1176 | 18 | `public static Investors investors(Game game, BuildingsTemplate t)` |  |
@@ -270,10 +270,10 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 1382 | 5 | `public static boolean materials(Game game, BuildingsTemplate t)` | Whether a building is one of the nine materials industries' (0.7.142): its owner a ProcessingSector or an ExtractionSector. |
-| 1403 | 6 | **type** `public record Stands(Resource resource, Deposit.FieldType type, int sites, int owned, int committed, double...` | Where a building on a typed resource's sites stands (0.7.142): its resource and the type of field it needs (null for ANY - a quarry), the sites one takes, the city's sites of its type and those spoken for (Game.sitesF... |
+| 1403 | 6 | **type** `public record Stands(Resource resource, Deposit.FieldType type, int sites, long owned, long committed, doub...` | Where a building on a typed resource's sites stands (0.7.142): its resource and the type of field it needs (null for ANY - a quarry), the sites one takes, the city's sites of its type and those spoken for (Game.sitesF... |
 | 1407 | 1 | `public boolean anyType()` _(in BuildCard.Stands)_ | Whether it stands on its resource's fields of either type (a Quarry, a Large Quarry). |
 | 1411 | 15 | `public static Stands stands(Game game, BuildingsTemplate t)` | ...for a building on a typed resource's sites (iron, coal, copper, stone); null for any other. |
-| 1432 | 1 | **type** `public record Hydro(int free, int slots, int sites, double widthM, double headM)` | Where a Hydro Station stands (HY1): the slots free of the stations the city's linked hydro sites hold in all (Game.hydroSlotsFree(), hydroSlots()), how many sites that is, and the best linked site's river width and he... |
+| 1432 | 1 | **type** `public record Hydro(long free, long slots, int sites, double widthM, double headM)` | Where a Hydro Station stands (HY1): the slots free of the stations the city's linked hydro sites hold in all (Game.hydroSlotsFree(), hydroSlots()), how many sites that is, and the best linked site's river width and he... |
 | 1440 | 1 | **type** `public record Bridge(BridgeSurvey.Result survey, String farName, Game.BridgeSpan span, double landings)` | Where a long bridge would go (ET6): the crossing the model surveyed toward the landmass the card picked (Game.bridgeSurvey()), the far landmass's name as the card says it, one bridge's span (Game.bridgeSpan(): its dol... |
 | 1443 | 8 | `public static Bridge bridge(Game game, BuildingsTemplate t)` | ...for a bridge; null for any other building and for a game with no city. |
 | 1453 | 7 | `public static Hydro hydro(Game game, BuildingsTemplate t)` | ...for a hydro station; null for any other building. |
@@ -322,5 +322,5 @@
 | 1897 | 1 | **type** `public enum VerdictKind` |  |
 | 1900 | 3 | **type** `public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure, Resource site)` | The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait - and, refused for a deposit, whose sites it needs (0.7.62; null otherwise). |
 | 1901 | 1 | `public Verdict(VerdictKind kind, Game.BuildQuote quote, double figure)` _(in BuildCard.Verdict)_ |  |
-| 1904 | 11 | `public static Verdict verdict(Game game, BuildingsTemplate t, int n)` |  |
+| 1904 | 11 | `public static Verdict verdict(Game game, BuildingsTemplate t, long n)` |  |
 
