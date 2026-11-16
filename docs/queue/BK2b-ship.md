@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /c/Users/Jerus/AppData/Local/Temp/cbs-gate-BK2b-20261115-1920 -->
 ## changelog
 ### {next} — BK2b, BK2's review follow-ups (each holder's own discount) — 2026-11-15, ready, see docs/queue/BK2b-notes.md
