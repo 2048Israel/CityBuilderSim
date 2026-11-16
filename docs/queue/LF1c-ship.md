@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-LF1c-7jBjE1Uz -->
 ## changelog
 ### {next} — LF1c, LF1's review follow-ups (the short's lending fee) — 2026-11-16, ready, see docs/queue/LF1c-notes.md
