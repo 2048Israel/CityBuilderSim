@@ -883,8 +883,10 @@ public final class MoneyAudit {
          * cash identity whole. And the short is closed for nothing, the world
          * keeping what it was paid: what it owed the buyers is gone, a valuation
          * AGAINST the city (valuationOut), the debit for the balance of payments
-         * and the credit the other half. Neither moves a pool; both are what the
-         * position figure lost or gained with no line.
+         * and the credit the other half. Neither moves a pool. Only the wipe moves
+         * the position figure (what the world holds here carried its shares, and
+         * the short was never on it); the close is a valuation the balance of
+         * payments counts against the city and the position never held.
          */
         in += credit.apply("+ desk WorldSharesWiped", g.getExchange().getWorldSharesWiped(), Scope.VALUATION);
         in += credit.apply("+ desk ShortClosedForNothing (no cash)", g.getExchange().getShortClosedForNothing(), Scope.DOMESTIC);

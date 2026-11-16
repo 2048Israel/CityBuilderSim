@@ -478,7 +478,7 @@ public class Exchange {
     /** The month's lending fee, money, by who was paid: this month's, cleared by startMonth(). */
     private final double[] feeToCells = new double[n], feeToFund = new double[n];
     /**
-     * What a company with no shares in issue took away from the world this month (LF1c), money at the quote, for MoneyAudit: the world's own
+     * What a company with no shares in issue took away from the world this month (LF1c), money at the month-end quote, for MoneyAudit: the world's own
      * shares in it, wiped for nothing ("+ desk WorldSharesWiped", a valuation in the city's favour, as the bank resolution's owners wiped abroad),
      * and the short it had open there, closed for nothing, the world keeping what it was paid ("- desk ShortClosedForNothing", a valuation
      * against the city: its holders' claim on the world's short is gone). Cleared by startMonth(); not saved, as the resolution's figure is not:
@@ -1195,11 +1195,13 @@ public class Exchange {
      * A company with no shares in issue and a short open: every share still held is one the world sold short and nobody issued, so
      * the cells', the desk's, the world's and the fund's market book go for nothing (Equity.cancelHeld()), the fund's cost written
      * off in its ledger. No money moves: the buyers lose a valuation, and the world keeps what it was paid. Two valuations cross the border
-     * and are declared to the audit (LF1c), at the quote the company stood at: the world's own shares in it, which the position counted as what
-     * the world holds here and are gone without a dollar, and the short the world had open there, closed for nothing - what it owed the buyers.
+     * and are declared to the audit (LF1c), at the quote the month ended at - quoteBefore, struck before the step withdrew the books, the one the
+     * position carried the world's shares at, not the last trade the empty book falls back to: the world's own shares in it, which the position
+     * counted as what the world holds here and are gone without a dollar, and the short the world had open there, closed for nothing - what it
+     * owed the buyers, which the position never held.
      */
     private void cancelShortHeld(int c) {
-        double q = price(c);
+        double q = quoteBefore[c] > 0 ? quoteBefore[c] : price(c);
         worldSharesWiped += register.getForeignShares(c) * q;
         shortClosedForNothing += shortShares[c] * q;
         if (households != null) households.surrenderShares(c);

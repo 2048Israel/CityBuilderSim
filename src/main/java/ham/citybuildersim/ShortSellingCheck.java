@@ -675,9 +675,10 @@ public class ShortSellingCheck {
         for (Household h : hb.cells()) h.shares[u] = 0;
         reg.moveForeign(u, abroad);
         reg.moveDesk(u, sold - abroad);
+        ex.tradeForCheck(u, Exchange.WORLD, OrderBook.Side.BUY, 1.5 * q, 1);   // the month-end quote over the last trade: the one the figures are struck at
         double quoted = ex.price(u);
         assertTrue("fixture: " + Equity.COMPANIES[u] + " has no shares in issue, the world holds " + String.format("%,.0f", abroad) + " of what a short sold " + String.format("%,.0f", sold)
-                + " and the desk the rest, at $" + String.format("%.4f", quoted), reg.getShares(u) == 0 && reg.getForeignShares(u) == abroad && quoted > 0
+                + " and the desk the rest, at $" + String.format("%.4f", quoted) + " over the last trade's", reg.getShares(u) == 0 && reg.getForeignShares(u) == abroad && quoted > 1.4 * q
                 && hb.sharesHeld(u) == 0 && Math.abs(reg.getDealerShares(u) + abroad - sold) <= 1e-6 * sold);
         ForeignAccounts fx = city.getForeignAccounts();
         double forgivenBefore = fx.getForgiven();
@@ -700,6 +701,18 @@ public class ShortSellingCheck {
         close("the balance of payments' valuation in is the wipe: nothing else was written off that month", a.valuationIn, ex.getWorldSharesWiped(), MoneyAudit.CENT);
         close("...and its valuation out the closed short", a.valuationOut, ex.getShortClosedForNothing(), MoneyAudit.CENT);
         close("ForeignAccounts' forgiven counts the two: it moved by the wipe less the short closed", fx.getForgiven() - forgivenBefore, ex.getWorldSharesWiped() - ex.getShortClosedForNothing(), MoneyAudit.CENT);
+        // ...and the Trade screen says what that month was: a valuation against the city, not a gain (the words said a gain only).
+        assertTrue("fixture: the month's valuation nets under nothing, the short closed being more than the world's shares wiped: " + String.format("%.2f", fx.valuationChange()),
+                fx.valuationChange() < -MoneyAudit.CENT);
+        String[] loss = KeptBench.tradeValuationWords(fx.valuationChange(), "D$" + String.format("%.2f", -fx.valuationChange()));
+        assertTrue("the Trade screen's chip for it says the claims were lost, not written off in the city's favour: " + loss[0], loss[0].startsWith("claims lost abroad ")
+                && !loss[1].contains("improves") && loss[1].contains("against the city") && !loss[2].contains("improves the position") && loss[2].contains("against the city"));
+        String[] gain = KeptBench.tradeValuationWords(5, "D$5");
+        assertTrue("...a month that wrote claims off in its favour still says it improves what the city owes: " + gain[0], gain[0].equals("claims written off D$5")
+                && gain[1].contains("improves what the city owes") && gain[2].contains("improves the position"));
+        assertTrue("...and the chip for what was written off since founding says forgiven or settled for a gain and against the city for a loss",
+                KeptBench.tradeForgivenWords(3, "D$3")[0].equals("forgiven or settled D$3") && KeptBench.tradeForgivenWords(-3, "D$3")[0].equals("written off against the city D$3")
+                        && !KeptBench.tradeForgivenWords(-3, "D$3")[1].contains("improved"));
     }
 
     /**
@@ -1173,7 +1186,11 @@ public class ShortSellingCheck {
         gone.reg.retire(INDUSTRY, gone.reg.getShares(INDUSTRY), 0);
         // The month's order (docs/month-order.md: payDividends' listIfUnlisted, then tradeShares' step): a company with a book is listed again before
         // the step finds it empty, so the cancelling is for one with NO book - listed against nothing, it stays at no shares in issue, as here (LF1c).
+        // The quote the position carried the world's shares at is the month-end mid, not the last trade the step's emptied book falls back to: a bid
+        // rests over the last trade, so a figure struck after the books were withdrawn would be the wrong one (LF1c, review).
+        gone.ex.tradeForCheck(INDUSTRY, Exchange.WORLD, OrderBook.Side.BUY, 1.5 * gone.price(), 1);
         double worldBefore = gone.reg.getForeignShares(INDUSTRY), quoted = gone.price();
+        assertTrue("fixture: the quote is over the last trade, " + String.format("%.4f", quoted) + " against " + String.format("%.4f", gone.lastTrade()), quoted > 1.4 * gone.lastTrade());
         assertTrue("fixture: the month's listing comes first and finds no book to list against, so the company is still with no shares in issue, the world holding "
                 + String.format("%,.0f", worldBefore) + " of it", !gone.reg.listIfUnlisted(INDUSTRY, 0, gone.hb) && gone.reg.getShares(INDUSTRY) == 0 && worldBefore > 0);
         gone.city.step(0);

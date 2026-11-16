@@ -23,7 +23,8 @@ The brief's `:431` and `:674` were the rescue sub-line (kept, as above) and the 
 "dividends and coupons" (`:400`) was the third spot it had in mind.
 
 **The words are proven in ShortSellingCheck** (`theWords`, in section 3's city: the real city's fund has the fee rows), not in KeptCheck:
-`FundScreen` is package-private in `ui/`, so `KeptBench` (public, KeptCheck's own door to the screens) gained five static readers
+`FundScreen` is package-private in `ui/`, so `KeptBench` (public, KeptCheck's own door to the screens) gained static readers, six for the
+Fund and two for Trade's valuation words (section 4)
 (`fundActivityWords`, `fundPositionLines`, `fundHeroIncomeNote`, `fundIncomeNote`, `fundIncomeLabel`, `fundWrittenOffWords`). The check
 reads the Activity page's lines off the city's fund (one fee line per ledger row, none saying LENDING_FEE), the market lot's position
 labels, the income card's own note equal to the note the model's two figures give, and a share's write-off. KeptCheck is picked by the diff
@@ -37,8 +38,8 @@ things the audit could not see, and the second was EM2's before LF1 (the zero-sh
 
 | what | the position it moves | declared now |
 |---|---|---|
-| the world's own shares in the company (`Equity.cancelHeld`: `foreignShares = 0`), at the quote | `Game.getSharesHeldAbroad()`, "what the world holds here": falls by `foreignShares x price` with no dollar | `+ desk WorldSharesWiped` (VALUATION, in the city's favour) with `- desk WorldSharesWiped (no cash)` (DOMESTIC), as the bank resolution's `OwnersWipedAbroad` pair |
-| the short closed for nothing, the world keeping what it was paid: the shares it owed the buyers, at the quote | the buyers' claim on the world's short, lost | `- desk ShortClosedForNothing` (VALUATION out, **against** the city) with `+ desk ShortClosedForNothing (no cash)` (DOMESTIC) |
+| the world's own shares in the company (`Equity.cancelHeld`: `foreignShares = 0`), at the month-end quote | `Game.getSharesHeldAbroad()`, "what the world holds here": falls by `foreignShares x quote` with no dollar | `+ desk WorldSharesWiped` (VALUATION, in the city's favour) with `- desk WorldSharesWiped (no cash)` (DOMESTIC), as the bank resolution's `OwnersWipedAbroad` pair |
+| the short closed for nothing, the world keeping what it was paid: the shares it owed the buyers, at the month-end quote | none: the position never held the short; the balance of payments' valuation counts it against the city | `- desk ShortClosedForNothing` (VALUATION out, **against** the city) with `+ desk ShortClosedForNothing (no cash)` (DOMESTIC) |
 
 The exchange keeps the two as month tallies (`worldSharesWiped`, `shortClosedForNothing`), taken in `cancelShortHeld()` before it
 zeroes anything, at `price(c)`; cleared by `startMonth()`, scaled by `redenominate()`, read by `MoneyAudit` through two getters.
@@ -55,14 +56,16 @@ against it because the screens say "improves what the city owes the world" of a 
 ★ **Not saved.** The two tallies are month figures like `Game.ownersWipedAbroadThisMonth` (also unsaved); the audit that reads them is
 struck in the month that made them, and the next `startMonth()` clears them. No `State`, `DataSave` or format change.
 
-★ **Valued at `price(c)`,** the same quote `getSharesHeldAbroad()` carries the position at, so the wipe takes out of the position exactly
-what the position held. (`fair[c]` is already `foundingPrice` at the point it runs; `price(c)` is the last trade.)
+★ **Valued at `quoteBefore[c]`,** the quote struck before the step withdrew the books - the month-end mid `getSharesHeldAbroad()` carried
+the world's shares at - falling back to `price(c)` only when it is 0. (First draft: `price(c)` after `withdrawAll()`, which is the last
+trade of the emptied book: the stranger's review, REV-LF1c-1, note 2.) Both fixtures rest a world bid over the last trade so the two
+quotes differ; with the line put back to `price(c)` section 8's Bench shows two failures (144 against 216, 28.8 against 43.2).
 
 **The fixture** (`ShortSellingCheck.theWipe`, the real town of section 3, one more month): a company the town never listed (Heavy Industry:
 no shares, no book, so the month's `payDividends` listing leaves it so) is listed by hand against a book of 5,000, a short is sold at it to
 a cell (the lenders and the room `shortRoom()` needs exist only while it has shares), every share is retired and bought from the founders'
 cell, the buyer sells half of what it bought to the world and half to the desk (no cell holds one to carry abroad, so `followEmigrants` cannot
-move the world's count), then `city.simulateMonths(1)`. It reads: the exchange's two figures against the shares times the quote; the audit's
+move the world's count), a world bid rests over the last trade (so the month-end quote is not the last trade), then `city.simulateMonths(1)`. It reads: the exchange's two figures against the shares times the quote; the audit's
 four lines equal to them and to each other's halves; the month's residual 0; `valuationIn`/`valuationOut` equal to the exchange's figures
 (nothing else was written off); `ForeignAccounts.getForgiven()` moved by the wipe less the short closed. Both figures are over the audit's
 cent so a missing line shows. **Control:** with the two VALUATION figures in `MoneyAudit` set to 0 (the "no cash" halves left) the section
@@ -88,9 +91,12 @@ company that has been bought out entirely; if it is ever wanted it is a batch of
 
 ## 4. Seen on the way
 
-- `ForeignAccounts.getForgiven()` read -0.66 in the 48-month town before any short wipe, so a net-negative month of "Claims written off" on
-  Trade is already reachable; its words (`TradeScreen` `VALUATION_INFO`, "improves what the city owes the world") say a gain only. Not this
-  batch's screen and not touched; with B a debit it would read slightly wrong in a month that only closed a short. No row queued.
+- `ForeignAccounts.getForgiven()` read -0.66 in the 48-month town before any short wipe, so a net-negative valuation was already
+  reachable; the Trade screen's words said a gain only ("improves what the city owes the world"). **Fixed here** (review note 3, a few
+  lines): `TradeScreen.valuationChip/valuationInfo/valuationNote` and `forgivenChip/forgivenInfo` take the sign - a gain reads as it did
+  ("claims written off", "forgiven or settled"), a loss "claims lost abroad ... counts against the city" and "written off against the
+  city" - and are read through `KeptBench.tradeValuationWords/tradeForgivenWords`; `theWipe` asserts them after a month whose valuation
+  nets under nothing (the wipe .5 S q in, the close S q out), and the gain wording unchanged beside them. No Pending row.
 - The per-lot income is one figure: a market share lot's `income()` holds dividends and fees together, so the label names both for every
   market-book share lot, paid a fee or not. Splitting the lot's income would be a saved field and a ledger change for a label.
 

@@ -2766,6 +2766,10 @@ public final class KeptBench {
     /** The record's line for a security written off with what it was: a bond's face, or a company's shares. */
     public static String fundWrittenOffWords(String name, boolean bond) { return FundScreen.writtenOffWords(name, bond); }
 
+    /** The Trade screen's words for a valuation change (the month's) and for what has been written off since founding: the chip, the sentence behind it, and the statement's note (LF1c). */
+    public static String[] tradeValuationWords(double change, String shown) { return new String[] { TradeScreen.valuationChip(change, shown), TradeScreen.valuationInfo(change, shown), TradeScreen.valuationNote(change) }; }
+    public static String[] tradeForgivenWords(double forgiven, String shown) { return new String[] { TradeScreen.forgivenChip(forgiven, shown), TradeScreen.forgivenInfo(forgiven) }; }
+
     /** The lots the fund holds, by key. */
     public List<String> fundHoldings() {
         List<String> out = new ArrayList<>();
