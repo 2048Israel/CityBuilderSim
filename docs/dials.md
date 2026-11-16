@@ -1593,11 +1593,11 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 14591 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
 | 14602 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
 | 14642 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 16372 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 16775 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 17408 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 17411 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 17414 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 16373 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 16776 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 17410 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 17413 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 17416 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1638,7 +1638,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.120"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.121"` | Bump on release. |
 | 8267 | `GameVersion.SAVE_FORMAT` | `53` | The save shape. |
 | 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `53` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -3201,12 +3201,12 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 43 | `Sickness.RING` | `13` | Slots in each band's ring: 0 is under a month, 12 is a year or more. |
-| 51 | `Sickness.DEADLY_FROM` | `2` | The first slot that can die: sick for more than two months. |
-| 61 | `Sickness.EXTRA_SICKNESS` | `1.0` | How much sicker babies and seniors are than the city, with none of their own care: twice. |
-| 64 | `Sickness.RECOVERY_UNTREATED` | `.5` | The share of the sick who get better in a month, with no general care... |
-| 67 | `Sickness.RECOVERY_SERVED` | `.9` | ...and with general care for everybody. |
-| 70 | `Sickness.MAX_SHARE` | `Health.MAX_SICK_RATE` | No band has more of itself sick than the city rate may. |
+| 48 | `Sickness.RING` | `13` | Slots in each band's ring: 0 is under a month, 12 is a year or more. |
+| 56 | `Sickness.DEADLY_FROM` | `2` | The first slot that can die: sick for more than two months. |
+| 66 | `Sickness.EXTRA_SICKNESS` | `1.0` | How much sicker babies and seniors are than the city, with none of their own care: twice. |
+| 69 | `Sickness.RECOVERY_UNTREATED` | `.5` | The share of the sick who get better in a month, with no general care... |
+| 72 | `Sickness.RECOVERY_SERVED` | `.9` | ...and with general care for everybody. |
+| 75 | `Sickness.MAX_SHARE` | `Health.MAX_SICK_RATE` | No band has more of itself sick than the city rate may. |
 
 ### SitePreparation.java ([map](map/SitePreparation.md))
 
@@ -5887,13 +5887,13 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 53 | `CausesOfDeathCheck.CAUSES` | `Cause.values()` |  |
-| 54 | `CausesOfDeathCheck.BANDS` | `AgeBand.values()` |  |
-| 55 | `CausesOfDeathCheck.BABY` | `AgeBand.BABY.ordinal()` |  |
-| 56 | `CausesOfDeathCheck.CHILD` | `AgeBand.CHILD.ordinal()` |  |
-| 57 | `CausesOfDeathCheck.TEEN` | `AgeBand.TEEN.ordinal()` |  |
-| 58 | `CausesOfDeathCheck.ADULT` | `AgeBand.ADULT.ordinal()` |  |
-| 61 | `CausesOfDeathCheck.CITY` | `100_000` | The people in the 1900 city. |
+| 54 | `CausesOfDeathCheck.CAUSES` | `Cause.values()` |  |
+| 55 | `CausesOfDeathCheck.BANDS` | `AgeBand.values()` |  |
+| 56 | `CausesOfDeathCheck.BABY` | `AgeBand.BABY.ordinal()` |  |
+| 57 | `CausesOfDeathCheck.CHILD` | `AgeBand.CHILD.ordinal()` |  |
+| 58 | `CausesOfDeathCheck.TEEN` | `AgeBand.TEEN.ordinal()` |  |
+| 59 | `CausesOfDeathCheck.ADULT` | `AgeBand.ADULT.ordinal()` |  |
+| 62 | `CausesOfDeathCheck.CITY` | `100_000` | The people in the 1900 city. |
 
 ### CementConcreteCheck.java ([map](map/CementConcreteCheck.md))
 
@@ -7792,7 +7792,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 33 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nations.Path.R...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 3967 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 4004 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ### SaveSlotCheck.java ([map](map/SaveSlotCheck.md))
 

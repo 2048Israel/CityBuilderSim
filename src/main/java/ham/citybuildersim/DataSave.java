@@ -2562,6 +2562,9 @@ public class DataSave implements Cloneable {
      */
     private double[] sickness;
 
+    /** Acute influenza shares by saved age band, beside the mortality ring (R0h); null means none. */
+    private double[] sicknessAcute;
+
     /**
      * Crime and the prisons (2026-09-11): six monthly cohorts of prisoners,
      * the month as it was struck - the rate next month's migration reads, the
@@ -2713,6 +2716,8 @@ public class DataSave implements Cloneable {
     public double[] getUnemployment()       { return unemployment; }
     public void setSickness(double[] a)     { this.sickness = a; }
     public double[] getSickness()           { return sickness; }
+    public void setSicknessAcute(double[] a) { this.sicknessAcute = a; }
+    public double[] getSicknessAcute()       { return sicknessAcute; }
     public void setCrime(double[] a)        { this.crime = a; }
     public double[] getCrime()              { return crime; }
     public void setHealth(double[] a)   { this.health = a; }
