@@ -80,6 +80,13 @@ public final class Fittings {
         return owed;
     }
 
+    /** Scrapping takes the oldest unfitted buildings first, including their jobs. Delivered goods and paid work are sunk costs (R1d). */
+    public void scrapped(int templateId, int quantity) {
+        java.util.Map<String, Integer> removed = new java.util.HashMap<>();
+        jobs.removeIf(job -> job.templateId == templateId
+                && removed.merge(job.pieceId, 1, Integer::sum) <= quantity);
+    }
+
     /**
      * Works `points` off the jobs in the order placed: the first job's remainder first, then the next, and so on until the points are gone. A
      * job whose points reach nothing is finished and taken off the list; a job of no points finishes at the first call, whatever `points` is.

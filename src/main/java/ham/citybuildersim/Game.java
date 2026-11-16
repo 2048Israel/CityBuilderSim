@@ -357,6 +357,7 @@ public class Game {
                 && !(debtManager.isAutopilot() && debtManager.getAim() == DebtManager.Aim.INFLATION)));   // a peg ties the dial to the US's, and the curve is priced on the tied path (XR5); so does the gold, unless the autopilot aims at inflation (GD3)
         debtManager.setTieMoneySource(() -> foreign.getRegime() == ForeignAccounts.Regime.GOLD ? "USD" : foreign.getPegAnchorCode());   // ...to its anchor's rate: the money the peg is kept in (WN4b), the US$ unless the player chose another; the gold's is always the US$ (GD3)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
+        buildingManager.setOnScrap((t, n) -> fittings.scrapped(t.getId(), n));
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setLicenceCost(t -> LicenceFees.forNew(this, t));
         businessInvestment.setStandingLicenceCost(t -> LicenceFees.forStanding(this, t));
@@ -1497,6 +1498,28 @@ public class Game {
      * A piece that ends CART_HORSES delivers its trucks into Freight's fleet (Freight.deliverTrucks()), because they are Haulage's trucks and the
      * fleet would otherwise buy them a second time. The count of unfitted does not move until the work is done.
      */
+    /** The suppliers' sales tax credited on a local draw, weighted exactly as Markets.draw() divides their stock (R1d). */
+    private double fittingSupplierRate(Good good) {
+        double held = 0, taxed = 0;
+        for (Sector supplier : getSectors().all()) {
+            if (!supplier.isMaker(good) || !(supplier.getStock(good) > 0)) continue;
+            double stock = supplier.getStock(good);
+            held += stock;
+            taxed += stock * economyManager.getTaxPolicy().effectiveSalesRate(supplier);
+        }
+        return held > 0 ? taxed / held : 0;
+    }
+
+    /** A fitting's exact goods and work quote, including builders' sales tax and their suppliers' input credits (R1d). */
+    public double quoteFitting(Equipment piece) {
+        double net = piece.getWork() * buildingManager.nonMaterialPricePerPoint();
+        for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) {
+            Markets.Draw draw = getMarkets().quote(e.getKey(), e.getValue(), getSectors());
+            net += draw.cost() - draw.localCost() * fittingSupplierRate(e.getKey());
+        }
+        return net / (1 - buildersSalesRate());
+    }
+
     public String fit(Investor payer, BuildingsStacks stack, Equipment piece) {
         if (payer == null || stack == null || piece == null) return "nothing to fit";
         BuildingsTemplate t = stack.getBuilding();
@@ -1511,8 +1534,7 @@ public class Game {
 
         ham.citybuildersim.sectors.Construction builders = getSectors().construction();
         double work = piece.getWork() * buildingManager.nonMaterialPricePerPoint();
-        double quoted = work;
-        for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) quoted += getMarkets().quote(e.getKey(), e.getValue(), getSectors()).cost();
+        double quoted = quoteFitting(piece);
         if (!(quoted >= 0) || !Double.isFinite(quoted)) return "the " + piece.getName().toLowerCase(Locale.ROOT) + " cannot be priced";
         double short_ = quoted - payer.getCash();
         if (short_ > SHORTFALL_DUST * Math.max(1, quoted) && !payer.canBorrow(short_)) {
@@ -1523,19 +1545,22 @@ public class Game {
 
         double goods = 0;
         for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) {
+            double inputRate = fittingSupplierRate(e.getKey());
             Markets.Draw d = getMarkets().draw(e.getKey(), builders, null, e.getValue(), getSectors());
-            goods += d.cost();
+            goods += d.cost() - d.localCost() * inputRate;
             if (piece.getEnds() == Equipment.Form.CART_HORSES && e.getKey() == Good.TRUCKS) getSectors().freight().deliverTrucks(d.units());
         }
-        double total = goods + work;
+        double total = (goods + work) / (1 - buildersSalesRate());
         double over = total - payer.getCash();
         if (over > SHORTFALL_DUST * Math.max(1, total)) payer.borrow(over, month);
         if (payer == government) {
             // The city's own money goes out through its journal, as the player's buildings do (processBuildOrder()): a capital line.
-            treasuryPays(TreasuryLine.BUILDINGS, total);
+            total = treasuryPays(TreasuryLine.BUILDINGS, total);
             cityCapitalSpending += total;
         } else {
             payer.spend(total);
+            Sector owner = getSectors().byKey(payer.getName());
+            if (owner != null) owner.recordCapitalPurchase(builders.key(), total);
         }
         builders.earnFitting(total);
         fittings.add(t.getId(), id, payer.getName(), piece.getWork());
@@ -8034,8 +8059,9 @@ public class Game {
 
     /** ...and what that leaves for the sites after the repairs: getBuildingOutput() with every post offered. */
     public int getBuildingOutputAtEveryPost() {
-        return (int) Math.max(0,
+        int afterRepairs = (int) Math.max(0,
                 Math.round(getConstructionOutputAtEveryPost() - getMaintenancePoints()));
+        return afterRepairs - fittingPoints(afterRepairs);
     }
 
     /**

@@ -5027,6 +5027,14 @@ public class BuildingManager {
         stacks.addAll(ordered);
     }
 
+    private java.util.function.BiConsumer<BuildingsTemplate, Integer> onScrap = (t, n) -> { };
+
+    /** The fitting queue follows all stack removals; installed again by Game when its world is rebuilt (R1d). */
+    public void setOnScrap(java.util.function.BiConsumer<BuildingsTemplate, Integer> listener) {
+        onScrap = listener;
+        for (BuildingsStacks stack : stacks) stack.setOnScrap(n -> onScrap.accept(stack.getBuilding(), n));
+    }
+
     public void addStack(BuildingsTemplate template, int quantity, boolean noConstruction) {
 
         if (template.getName() == null) {
@@ -5052,6 +5060,7 @@ public class BuildingManager {
 
         // Stack does not exist
         BuildingsStacks newStack = new BuildingsStacks(template, 0);
+        newStack.setOnScrap(n -> onScrap.accept(template, n));
         stacks.add(newStack);
 
         if (noConstruction) {
