@@ -2874,20 +2874,13 @@ public class BankCheck {
         try {
             town.run();
             /*
-             * MANUFACTURING ASKS TO BUILD NOTHING HERE (EP1 on IC1, 2026-11-01), for the premise that the bank stands. An idle
-             * builder's laid-off crews are spare for the staffing gate since IC1, so the planners order what the gate held, and in
-             * this town on EP1's 1900 world Manufacturing's company is worth 0.184 a share at month 33 and 0.005 at month 34: the
-             * bank's desk, holding its shares, marks 3,431 off 3,898 in the month, its equity goes from 2,500 to -1,269 and it is in
-             * resolution (Bank.branchesToClose() is 0 in resolution), so the rule closed none of the five branches below. That is so
-             * at every price level, today's included (equity 96,587 to -49,028 at 1), so it is the path and not the factor. Held
-             * out, as IC1 held Freight and Copper Refining in the fixture above, the town's bank stands (equity 733 at month 34).
+             * EVERY SECTOR FREE TO ORDER (DQ1, 2026-11-16). EP1 held Manufacturing here (2026-11-01: its company's shares
+             * fell from 0.184 to 0.005 at month 34, the bank's desk marked them down and the bank went into resolution), and
+             * GW1 held Wood Products, Cement & Concrete and Materials (their defaults put the bank in resolution at month
+             * 44), for the premise that the bank stands. DQ1 released all four: on 0.9.128 this town's bank stands with
+             * nothing held - YoungBankCheck runs this town ten years, its Lime Kiln's default and all, and the bank is
+             * never in resolution.
              */
-            town.getBusinessInvestment().holdSector(Sectors.MANUFACTURING);
-            // ...AND WOOD PRODUCTS, CEMENT & CONCRETE AND MATERIALS (GW1), for the same premise.
-            // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so these three sectors' works came earlier and their defaults put the bank in resolution; held out, they build nothing here and the bank stands.
-            town.getBusinessInvestment().holdSector(Sectors.WOOD_PRODUCTS);
-            town.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
-            town.getBusinessInvestment().holdSector(Sectors.MATERIALS);
             town.setCashForTest(Founding.WEALTHY_CASH);
             town.getForeignAccounts().pinRate(1.0);
             town.getLandManager().setOwnedSqFt(30_000_000);
