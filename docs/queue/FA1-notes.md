@@ -182,3 +182,37 @@ speed nightly. The plan and screen budgets are unchanged.
 The final gate follows this merge. Its eight trace files use a distinct
 prefix so BJZZNAHT's evidence stays intact. The orchestrator confirmed
 R2e's trace is identical to R0h's and named the same R0h reference again.
+
+## The final dry run, and who wrote these records
+
+The Codex builder stopped at its plan's end (02:15, the batch done but for
+its records); a Claude session (FA1c, Sonnet 5.5) wrote this section and the
+ship file below, with no JVM and no checks.
+
+The final launcher dry run, `sh tools/gate.sh FA1 --dry-run`, was of branch
+`69673c048f0d58294fa2e8136071ebff865d409b` (FA1 with PD1b and R2e merged) on
+main `32869da2811788dd0c9c627ddc4b6452a1cc85e4` (0.9.123). Kept run:
+`/tmp/cbs-gate-FA1-LlVP5m4q` (`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FA1-LlVP5m4q`).
+Gate exit 0, `unnamed.txt` empty, `checks.complete` present. Its ship.log:
+28 of 209 harnesses picked, no review needed (no money, saves or threading),
+records `{next}`=0.9.124, compile OK in 71 s, the suite finished in 2,187 s
+with exit 3: known red only, five harnesses: DeathRecordCheck, InvestCheck,
+MapCheck, MoneyDatesCheck, ResearchViewCheck. Their `checks/reds.txt` lines
+are the ones already on record: MapCheck's three (DM3's monthly map totals,
+the one-network and the surface-accounting lines), InvestCheck's older-save
+contract, MoneyDatesCheck's exhausted-gold twin, DeathRecordCheck's layoff
+orphan and ResearchViewCheck's sector filter; none is FA1's. Fourteen timing
+assertions soft, three path assertions observed, five starts held for CPU
+(none changed a result). Stale: 0 firm findings. The dry run left the tree
+as it was.
+
+Trace equality: the eight CSVs this run captured
+(`target/FA1-final-trace-32869da2-{bank,bonds,borrow,build,house,labour,month,pop}.csv`)
+are byte-identical to main's reference, the orchestrator's R0h run
+(`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0h-NrRv6F33/traces/trace-*.csv`);
+confirmed here with `cmp`, eight of eight the same. No ensemble: the trace
+did not move.
+
+After this kept run only this file, `FA1-ship.md` and `known-reds.txt` may
+advance; this commit changes only the first two, and a final commit alone
+removes the provisional marker.

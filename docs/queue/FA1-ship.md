@@ -1,4 +1,6 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-FA1-LlVP5m4q -->
+
 ## changelog
 ### {next} — FA1, frontage avenues beside diagonal highways — 2026-11-16, ready, see docs/queue/FA1-notes.md
 Diagonal highways gain a frontage avenue just outside each verge, using the
@@ -8,5 +10,5 @@ and frontage uses only available plots that keep junction spacing. Streets
 still pass beneath the highway. The painter keeps both strokes and their
 width where avenues cross, including across tile edges. PlanCheck and
 MapCheck guard strip use, both headings, late-city use against main, retained
-grid and boxes, the junction floor and the new crossings. Map only; no model
-or save-format change.
+grid and boxes, the junction floor and the new crossings. The launcher dry
+run passed and the eight traces match main's. Map only; no model or save-format change.
