@@ -121,11 +121,6 @@ public class BondCheck {
 
     /** A city with households who save, a bank, sectors that owe it and sectors that do not: founded, built, played two years. */
     static Game city(Path root, String name, int months) {
-        return city(root, name, months, false);
-    }
-
-    /** The same city; holdIssuer keeps ISSUER from ordering a building in it, so it owes nothing (7c). */
-    static Game city(Path root, String name, int months, boolean holdIssuer) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
         // The world this fixture is written against: the constant world rate (XR4). Under the US's rate (3.25% at m25 on the
@@ -154,7 +149,6 @@ public class BondCheck {
             LongPlaytest.build(g, "Commercial Bank", 1);
             // The food plants the fixture keeps, as ConservationCheck's does.
             g.setAutoSubsidised(Sectors.INDUSTRY, true);
-            if (holdIssuer) g.getBusinessInvestment().holdSector(ISSUER);
             g.simulateMonths(months);
         });
         return g;
@@ -190,12 +184,10 @@ public class BondCheck {
         Game g = city(root, "market", 24);
         bookbuilding(g);
         theChoice(g);
-        /* 7c in a city of its own, Construction held (GW1). Since the staffing gate counts the workers an order's own posts would draw
-           (Sector.GATE_DRAW_MONTHS), Construction orders in the young town and borrows for it: at m24 it held cash 199 and owed 111 (Retail 212 and
-           36), so "idle cash and owes nothing" was gone - a fact of the city's path, not of the bond market's rule. Held from the start it
-           owes nothing, as on the path this was written against. The market city above is not held: 5c and 5d are on the path they were
-           re-caused on (held there, Manufacturing has an order on site and the second branch's fixture fails). */
-        companies(city(root, "companies", 24, true));
+        /* 7c in a city of its own. GW1 held Construction there: with the staffing gate counting a year's draw
+           (Sector.GATE_DRAW_MONTHS) it ordered in the young town and borrowed, owing 111 at m24, so "idle cash and owes nothing" was gone.
+           DQ1 released it (2026-11-16): on 0.9.128 Construction owes nothing at m24 with nothing held, and 7c's fixture is reached. */
+        companies(city(root, "companies", 24));
         CorporateBond bond = issuedInTheMonth(g);
         boolean paperIssued = Observation.reached("fixture: the played city issued a corporate bond",
                 bond != null,
