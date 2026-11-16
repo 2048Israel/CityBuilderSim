@@ -1136,7 +1136,8 @@ public class HistorySave {
     /** A price per founding share to SHARE_PRICE_DIGITS significant figures; 0 stays 0, and a figure that is not a number is kept as 0, as finite() keeps the rest (JSON holds no NaN). */
     static double roundSig(double v) {
         if (v == 0 || !Double.isFinite(v)) return finite(v);
-        return new BigDecimal(v).round(new MathContext(SHARE_PRICE_DIGITS)).doubleValue();
+        // CU2: six figures of the value at today's prices, scaled back: the grid is the same real size at every price level, so the bank's volatility (Game.bankVolatility) and the warrants it prices read one history.
+        return new BigDecimal(v / PriceLevel.FACTOR).round(new MathContext(SHARE_PRICE_DIGITS)).doubleValue() * PriceLevel.FACTOR;
     }
     /** Six places, for a price in thousands that four would round to a dime - and to nothing after a reform (0.7.45: the shelf). */
     private static double round6(double v) { return Math.round(v * 1_000_000.0) / 1_000_000.0; }

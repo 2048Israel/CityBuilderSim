@@ -2636,83 +2636,83 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1664 a Quarry's card: either type, and one more stands on limestone - it makes the row's tonnes of limestone,
   - L1670 ...and where it goes is limestone's buyers
   - L1687 fixture: a Pelletising Plant in a town that digs no ore - its feed imported - fails only the money gate
-  - L1692 its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant
-  - L1699 the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already
-  - L1718 ...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;
-  - L1725 fixture: a Scrap Yard standing in the town
-  - L1727 its card buys the city's old steel: its intake (oldMetal()), Iron & Steel's price - PAY_SHARE of scrap's
-  - L1736 ...and with less old steel arising past the yards standing than one more takes, its sector's feed gate
-  - L1742 a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare
-  - L1767 every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at
-  - L1776 a Copper Smelter's acid goes to copper's leach plants and gold's mill at nameplate; its anode to its
-  - L1783 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
-  - L1804 each of the ten industries' pages says who here buys each good it makes, or that it ships
-  - L1817 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
-  - L1820 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
-  - L1827 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
-  - L1854 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
-  - L1863 an offer on the
-  - L1878 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
-  - L1884 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
-  - L1886 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
-  - L1891 Build's payback on the magnetite offer is its by-type earnings
-- **L1923 13. a berth's payback, the owner and the depot's line (FR4)**
-  - L1970 A SEA TERMINAL'S CARD HAS A PAYBACK AND NO OTHER BUILDING'S - the Strategic Reserve's, the Tank Farm's and a
-  - L1977 fixture: no cargo of any kind has crossed the boundary (a new city), the dues dial at its default
-  - L1987 A KIND WITH NO CARGO READS NO PAYBACK: NO_CARGO, no years, no tonnes carried and no dues, for every terminal
-  - L1988 ...and not a NaN or an infinity in any other figure the card prints (the years alone are NaN, the sentinel for none)
-  - L1989 ...the price is the one the Build button charges
-  - L1994 fixture: the city buys an offer that runs out to the sea
-  - L2000 AT A BERTH'S WORTH_A_BERTH OF TONNES: the Bulk Berth's card PAYS BACK, and the Bulk Terminal's is SHORT of tonnes
-  - L2002 ...and the card says what the advice does (portTerminal() orders the Bulk Berth, not the Terminal)
-  - L2004 ...it carries the tonnes uncovered, all of them, a month
-  - L2005 ...at the advice's uncovered tonnes
-  - L2006 ...the tonnes the advice waits for are WORTH_A_BERTH over the dial of its month
-  - L2007 ...its dues are the tonnes it carries at the rate struck a tonne
-  - L2008 ...its years are its price over a year's dues less its upkeep
-  - L2009 ...a payback of years above nothing
-  - L2010 ...the shortfall's figures: the Terminal's tonnes needed are the Berth's scaled by their months, its years NaN
-  - L2014 A HAIR UNDER IT: the Bulk Berth is SHORT too, and the card agrees with the advice
-  - L2019 AT THE TERMINAL'S WORTH_A_BERTH: both cards pay back, each judged alone, as portTerminal() asks them with the other
-  - L2021 ...the Bulk Berth carries its whole month (the tonnes uncovered are more)
-  - L2022 ...MORE TONNES CARRIED, FEWER YEARS: the Berth at its full month pays back in fewer years than at 60% of it
-  - L2028 fixture: half the threshold is no berth's worth at the default dial
-  - L2031 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth pays back, and the card agrees with the advice
-  - L2036 THE DIAL AT 0 - NO DUES, NO PAYBACK: NO_DUES for every terminal however many tonnes, no NaN but the years
-  - L2047 A BERTH WHOSE UPKEEP IS MORE THAN ITS DUES is UPKEEP, no years - the break-even does not see its upkeep, the card does
-  - L2057 THE DUES RATE IS THE PORT DUES' OWN: PortDivision.duesRateOf() with the berth standing is the rate the card struck for
-  - L2061 ONE BERTH STANDING FOR TONNES THAT FILL HALF OF IT: COVERED for the Berth and the Terminal - cargo crosses, none is
-  - L2083 THE RAIL AND DEPOT CARDS ARE OWNED BY FREIGHT - the owner the card names, its investors' line's and the slot the
-  - L2091 ...and Build's source no longer says \"Owned by the rail sector\" (the card's owner line reads the owner's key)
-  - L2094 could not read Build's source:
-  - L2102 only the Truck Depot has the line: a Rail Spur, a House and the Strategic Reserve have none
-  - L2106 fixture: no Truck Depot stands or is on site, and the margin is a fraction of a depot's room
-  - L2109 the line's trucks are Haulage's
-  - L2110 ...its depots' room
-  - L2111 ...the trucks past the room, on the street
-  - L2112 ...what it waits for is DEPOT_ORDER_MARGIN of the depot's room
-  - L2113 ...and it would build one exactly when Haulage would order this depot (depotToOrder())
-  - L2118 with the fleet raised past the margin and no depot standing, every truck is on the street
-  - L2119 ...and the line says Freight would build one exactly when the order's own test does, and here that test says yes
-  - L2124 with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet
-- **L2163 14. the landlords' card: the mortgage lender's test, the last gate of a landlord's home (I13-L)**
-  - L2188 ...so a Bakery's door to the lender's test is closed
-  - L2202 fixture: the landlords' owners are not asked for the down payment, and a House costs more than its down payment
-  - L2213 fixture: from a till of twice its down payment a House needs a lender, which reads a rent too small for the payment
-  - L2218 THE LENDER REFUSES IT ON ITS RENT: the card's first gate is the lender's, the last, and the INTEREST gate is none
-  - L2221 ...with the cover the rent gives the payment and the cover the lender asks, the test itself beside them
-  - L2226 ...in the lender's words, with what it lends, the payment and the cover against what it asks
-  - L2233 THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \"
-  - L2236 ...and no House is ordered
-  - L2242 fixture: a till of half the down payment leaves the landlord short of the down payment, and the lender reads no cover
-  - L2245 SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment
-  - L2250 ...in the lender's words: what it wants of its own and what it would put in
-  - L2255 ...and the order holds for it, in the same line: \"
-  - L2262 fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment
-  - L2264 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
-  - L2277 ...so the card fails it at the lender's gate, the cover now the rate's
-  - L2281 ...and the order is declined in the cover the card read, at the dearer rate: \"
-  - L2292 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
+  - L1694 its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant
+  - L1701 the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already
+  - L1720 ...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;
+  - L1727 fixture: a Scrap Yard standing in the town
+  - L1729 its card buys the city's old steel: its intake (oldMetal()), Iron & Steel's price - PAY_SHARE of scrap's
+  - L1738 ...and with less old steel arising past the yards standing than one more takes, its sector's feed gate
+  - L1744 a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare
+  - L1769 every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at
+  - L1778 a Copper Smelter's acid goes to copper's leach plants and gold's mill at nameplate; its anode to its
+  - L1785 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
+  - L1806 each of the ten industries' pages says who here buys each good it makes, or that it ships
+  - L1819 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
+  - L1822 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
+  - L1829 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
+  - L1856 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
+  - L1865 an offer on the
+  - L1880 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
+  - L1886 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
+  - L1888 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
+  - L1893 Build's payback on the magnetite offer is its by-type earnings
+- **L1925 13. a berth's payback, the owner and the depot's line (FR4)**
+  - L1972 A SEA TERMINAL'S CARD HAS A PAYBACK AND NO OTHER BUILDING'S - the Strategic Reserve's, the Tank Farm's and a
+  - L1979 fixture: no cargo of any kind has crossed the boundary (a new city), the dues dial at its default
+  - L1989 A KIND WITH NO CARGO READS NO PAYBACK: NO_CARGO, no years, no tonnes carried and no dues, for every terminal
+  - L1990 ...and not a NaN or an infinity in any other figure the card prints (the years alone are NaN, the sentinel for none)
+  - L1991 ...the price is the one the Build button charges
+  - L1996 fixture: the city buys an offer that runs out to the sea
+  - L2002 AT A BERTH'S WORTH_A_BERTH OF TONNES: the Bulk Berth's card PAYS BACK, and the Bulk Terminal's is SHORT of tonnes
+  - L2004 ...and the card says what the advice does (portTerminal() orders the Bulk Berth, not the Terminal)
+  - L2006 ...it carries the tonnes uncovered, all of them, a month
+  - L2007 ...at the advice's uncovered tonnes
+  - L2008 ...the tonnes the advice waits for are WORTH_A_BERTH over the dial of its month
+  - L2009 ...its dues are the tonnes it carries at the rate struck a tonne
+  - L2010 ...its years are its price over a year's dues less its upkeep
+  - L2011 ...a payback of years above nothing
+  - L2012 ...the shortfall's figures: the Terminal's tonnes needed are the Berth's scaled by their months, its years NaN
+  - L2016 A HAIR UNDER IT: the Bulk Berth is SHORT too, and the card agrees with the advice
+  - L2021 AT THE TERMINAL'S WORTH_A_BERTH: both cards pay back, each judged alone, as portTerminal() asks them with the other
+  - L2023 ...the Bulk Berth carries its whole month (the tonnes uncovered are more)
+  - L2024 ...MORE TONNES CARRIED, FEWER YEARS: the Berth at its full month pays back in fewer years than at 60% of it
+  - L2030 fixture: half the threshold is no berth's worth at the default dial
+  - L2033 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth pays back, and the card agrees with the advice
+  - L2038 THE DIAL AT 0 - NO DUES, NO PAYBACK: NO_DUES for every terminal however many tonnes, no NaN but the years
+  - L2049 A BERTH WHOSE UPKEEP IS MORE THAN ITS DUES is UPKEEP, no years - the break-even does not see its upkeep, the card does
+  - L2059 THE DUES RATE IS THE PORT DUES' OWN: PortDivision.duesRateOf() with the berth standing is the rate the card struck for
+  - L2063 ONE BERTH STANDING FOR TONNES THAT FILL HALF OF IT: COVERED for the Berth and the Terminal - cargo crosses, none is
+  - L2085 THE RAIL AND DEPOT CARDS ARE OWNED BY FREIGHT - the owner the card names, its investors' line's and the slot the
+  - L2093 ...and Build's source no longer says \"Owned by the rail sector\" (the card's owner line reads the owner's key)
+  - L2096 could not read Build's source:
+  - L2104 only the Truck Depot has the line: a Rail Spur, a House and the Strategic Reserve have none
+  - L2108 fixture: no Truck Depot stands or is on site, and the margin is a fraction of a depot's room
+  - L2111 the line's trucks are Haulage's
+  - L2112 ...its depots' room
+  - L2113 ...the trucks past the room, on the street
+  - L2114 ...what it waits for is DEPOT_ORDER_MARGIN of the depot's room
+  - L2115 ...and it would build one exactly when Haulage would order this depot (depotToOrder())
+  - L2120 with the fleet raised past the margin and no depot standing, every truck is on the street
+  - L2121 ...and the line says Freight would build one exactly when the order's own test does, and here that test says yes
+  - L2126 with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet
+- **L2165 14. the landlords' card: the mortgage lender's test, the last gate of a landlord's home (I13-L)**
+  - L2190 ...so a Bakery's door to the lender's test is closed
+  - L2204 fixture: the landlords' owners are not asked for the down payment, and a House costs more than its down payment
+  - L2215 fixture: from a till of twice its down payment a House needs a lender, which reads a rent too small for the payment
+  - L2220 THE LENDER REFUSES IT ON ITS RENT: the card's first gate is the lender's, the last, and the INTEREST gate is none
+  - L2223 ...with the cover the rent gives the payment and the cover the lender asks, the test itself beside them
+  - L2228 ...in the lender's words, with what it lends, the payment and the cover against what it asks
+  - L2235 THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \"
+  - L2238 ...and no House is ordered
+  - L2244 fixture: a till of half the down payment leaves the landlord short of the down payment, and the lender reads no cover
+  - L2247 SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment
+  - L2252 ...in the lender's words: what it wants of its own and what it would put in
+  - L2257 ...and the order holds for it, in the same line: \"
+  - L2264 fixture: with nine tenths of a House in the till the lender is still asked, and the rent covers the payment
+  - L2266 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
+  - L2279 ...so the card fails it at the lender's gate, the cover now the rate's
+  - L2283 ...and the order is declined in the cover the card read, at the dearer rate: \"
+  - L2294 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
 
 ## BuildMenuCheck.java - 0 labelled assertions
 
@@ -6735,36 +6735,36 @@ _(this harness does not label its checks through a helper - it prints its findin
 > its own cause.
 
 - **L61 the layoff beside its twin, each month of two years**
-  - L86 fixture: the paired city's closing put adults out of work
-  - L87 ...and the old rule would have at least doubled its orphans
-  - L88 the children went with the laid-off parents
-  - L89 the layoff adds at most one orphan against its twin in every month of the two years
-- **L94 1. who among the dead**
-  - L108 a tenth of the babies orphaned, at forty times the rate: their share of the dead
-  - L110 a tenth of the adults with no home, at 3.7 times: their share
-  - L115 the sick die alike across the band, so an orphan takes a tenth of the babies' illness deaths
-  - L117 ...and the unhoused a tenth of the adults'
-  - L121 a city with no orphans and nobody unhoused attributes none of its dead to them
-- **L124 2. the running total**
-  - L128 months before a series was recorded stay unrecorded
-  - L130 ...then it sums
-  - L131 ...carries across a gap
-  - L132 ...and goes on
-- **L134 3. a city whose employer closes**
-  - L148 the graph holds this month's dead:
-  - L152 ...and the bands add up to the month's dead
-  - L156 the running total is every month's dead since the founding
-  - L157 fixture: the city has buried somebody
-- **L159 CLOSING THE MILL USED TO ORPHAN CHILDREN, AND IT NO LONGER DOES.**
-  - L247 fixture: the closing put adults out of work
-  - L262 ...and big enough that the old rule would have at least doubled the orphans
-  - L285 the orphan section does not fill behind it, in any month of the two years
-  - L288 ...because the children went with their parents
-  - L290 fixture: the city still has orphans for the record to count
-  - L292 ...and some of them died
-  - L293 the graph holds this month's orphans who died
-  - L295 ...and this month's dead with no home
-  - L298 ...and its running total grew with them
+  - L94 fixture: the paired city's closing put adults out of work: more at home than its twin in the same month
+  - L95 ...and the old rule would have at least doubled its orphans
+  - L96 the children went with the laid-off parents
+  - L97 the layoff adds at most one orphan against its twin in every month of the two years
+- **L102 1. who among the dead**
+  - L116 a tenth of the babies orphaned, at forty times the rate: their share of the dead
+  - L118 a tenth of the adults with no home, at 3.7 times: their share
+  - L123 the sick die alike across the band, so an orphan takes a tenth of the babies' illness deaths
+  - L125 ...and the unhoused a tenth of the adults'
+  - L129 a city with no orphans and nobody unhoused attributes none of its dead to them
+- **L132 2. the running total**
+  - L136 months before a series was recorded stay unrecorded
+  - L138 ...then it sums
+  - L139 ...carries across a gap
+  - L140 ...and goes on
+- **L142 3. a city whose employer closes**
+  - L156 the graph holds this month's dead:
+  - L160 ...and the bands add up to the month's dead
+  - L164 the running total is every month's dead since the founding
+  - L165 fixture: the city has buried somebody
+- **L167 CLOSING THE MILL USED TO ORPHAN CHILDREN, AND IT NO LONGER DOES.**
+  - L255 fixture: the closing put adults out of work
+  - L270 ...and big enough that the old rule would have at least doubled the orphans
+  - L293 the orphan section does not fill behind it, in any month of the two years
+  - L296 ...because the children went with their parents
+  - L298 fixture: the city still has orphans for the record to count
+  - L300 ...and some of them died
+  - L301 the graph holds this month's orphans who died
+  - L303 ...and this month's dead with no home
+  - L306 ...and its running total grew with them
 
 ## DebtExchangeCheck.java - 125 labelled assertions
 
@@ -12644,37 +12644,37 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1302 a mine that ships its ore abroad is billed for the tonnes it shipped, at the share in force and the quote: the exporter pays
   - L1314 ...so an Iron Mine there is weighed with its ore's leg at the share the city exports, and its diesel's vans
   - L1320 ...and the mining sector's own weighing agrees with the pure one, the leg in it and no truck in its capital
-- **L1392 11. the deal: the fleet's room dealt per sector, the newest demand last**
-  - L1411 fixture: with the fleet full every sector with legs is dealt a literal 1 and its whole need is its standing demand, and there are others than the giant's
-  - L1418 fixture: the landing at least doubles the giant's own need and leaves every other sector's as it was
-  - L1424 a giant works lands in a town whose fleet is full: the city's share is the fleet over the whole need, the one share the old rule gave every sector
-  - L1428 ...but the giant's own sector alone is short: its share is what it was carried over what it now asks
-  - L1438 ...every other sector's share is exactly what it was, a literal 1, and so is its haulage ratio: the one share would have slowed it
-  - L1441 ...and the giant's sector runs at MIN_VAN_RATE + (1 - MIN_VAN_RATE) x its own share
-  - L1445 ...the fleet covered what every sector was carried, so the whole shortfall is the newest demand's: the standing share is a literal 1
-- **L1451 ...and the deal is saved, and a reload deals the next haul as the live city does, to the bit**
-  - L1472 the deal is saved: a share for every sector but Freight, a dealt tonnage for every one dealt any, the newest share and the standing share
-  - L1479 ...and a fresh city restored from those keys has every sector's share and dealt tonnage, the newest and the standing share to the bit
-  - L1487 ...a save from before the deal has none of them: no sector dealt, and every sector reads the city's share it ran at
-  - L1498 a reloaded city has dealt every sector what the live city did: each one's share and standing demand, the newest and the standing share
-  - L1504 ...and the next haul on the reloaded city strikes the same shares and standing demands as on the live one, to the bit
-- **L1510 ...and a town whose fleet has room for the landing leaves every sector whole**
-  - L1519 fixture: the same landing at least doubles the giant's need, in a town that has a fleet for the whole of the new need
-  - L1530 with the fleet at the whole of the new need or more, every sector is dealt a literal 1 and its whole need is carried
-  - L1535 ...and none is slowed: every sector's haulage ratio is a literal 1, the giant's too
-- **L1541 ...the growth is served pro rata from what room is left, and a sector's first works is growth at the haul after it stands**
-  - L1559 fixture: two sectors with plant standing grow, and a third that asked nothing at the last haul (dealt a whole 1) has its first works stand before this one:
-  - L1564 the growth over what the sectors were carried is served pro rata from the room left: the newest share is the room over the growth
-  - L1575 ...and each growing sector's share is what it was carried plus the newest share of its growth, over what it now asks
-  - L1577 ...a sector new at the haul, carried nothing before, is dealt the newest share itself
-  - L1580 ...and only no sector at all (null) reads the city's share, while two sectors' own shares are their own
-  - L1589 a sector that asked nothing at the haul is dealt a whole 1, and its first works, standing after the haul, runs whole until the next
-  - L1594 ...and the next haul deals those legs as the newest demand: the farms' share is the newest share, and they run on it
-- **L1601 ...a fleet that cannot cover what the sectors were carried cuts the largest and leaves the smaller whole**
-  - L1610 fixture: the town has smaller standing demands than its largest, and the shortfall is smaller than that largest
-  - L1615 a fleet short of what the sectors were carried is a standing shortfall: the standing share is the fleet over their standing demand
-  - L1627 ...the smallest standing demands are served first and whole: every sector but the largest keeps a literal 1 and runs at one
-  - L1630 ...and the largest is cut by the whole shortfall: its share is what it was carried less the shortfall, over what it asks
+- **L1400 11. the deal: the fleet's room dealt per sector, the newest demand last**
+  - L1419 fixture: with the fleet full every sector with legs is dealt a literal 1 and its whole need is its standing demand, and there are others than the giant's
+  - L1426 fixture: the landing at least doubles the giant's own need and leaves every other sector's as it was
+  - L1432 a giant works lands in a town whose fleet is full: the city's share is the fleet over the whole need, the one share the old rule gave every sector
+  - L1436 ...but the giant's own sector alone is short: its share is what it was carried over what it now asks
+  - L1446 ...every other sector's share is exactly what it was, a literal 1, and so is its haulage ratio: the one share would have slowed it
+  - L1449 ...and the giant's sector runs at MIN_VAN_RATE + (1 - MIN_VAN_RATE) x its own share
+  - L1453 ...the fleet covered what every sector was carried, so the whole shortfall is the newest demand's: the standing share is a literal 1
+- **L1459 ...and the deal is saved, and a reload deals the next haul as the live city does, to the bit**
+  - L1480 the deal is saved: a share for every sector but Freight, a dealt tonnage for every one dealt any, the newest share and the standing share
+  - L1487 ...and a fresh city restored from those keys has every sector's share and dealt tonnage, the newest and the standing share to the bit
+  - L1495 ...a save from before the deal has none of them: no sector dealt, and every sector reads the city's share it ran at
+  - L1506 a reloaded city has dealt every sector what the live city did: each one's share and standing demand, the newest and the standing share
+  - L1512 ...and the next haul on the reloaded city strikes the same shares and standing demands as on the live one, to the bit
+- **L1518 ...and a town whose fleet has room for the landing leaves every sector whole**
+  - L1527 fixture: the same landing at least doubles the giant's need, in a town that has a fleet for the whole of the new need
+  - L1538 with the fleet at the whole of the new need or more, every sector is dealt a literal 1 and its whole need is carried
+  - L1543 ...and none is slowed: every sector's haulage ratio is a literal 1, the giant's too
+- **L1549 ...the growth is served pro rata from what room is left, and a sector's first works is growth at the haul after it stands**
+  - L1567 fixture: two sectors with plant standing grow, and a third that asked nothing at the last haul (dealt a whole 1) has its first works stand before this one:
+  - L1572 the growth over what the sectors were carried is served pro rata from the room left: the newest share is the room over the growth
+  - L1583 ...and each growing sector's share is what it was carried plus the newest share of its growth, over what it now asks
+  - L1585 ...a sector new at the haul, carried nothing before, is dealt the newest share itself
+  - L1588 ...and only no sector at all (null) reads the city's share, while two sectors' own shares are their own
+  - L1597 a sector that asked nothing at the haul is dealt a whole 1, and its first works, standing after the haul, runs whole until the next
+  - L1602 ...and the next haul deals those legs as the newest demand: the farms' share is the newest share, and they run on it
+- **L1609 ...a fleet that cannot cover what the sectors were carried cuts the largest and leaves the smaller whole**
+  - L1618 fixture: the town has smaller standing demands than its largest, and the shortfall is smaller than that largest
+  - L1623 a fleet short of what the sectors were carried is a standing shortfall: the standing share is the fleet over their standing demand
+  - L1635 ...the smallest standing demands are served first and whole: every sector but the largest keeps a literal 1 and runs at one
+  - L1638 ...and the largest is cut by the whole shortfall: its share is what it was carried less the shortfall, over what it asks
 
 ## HealthCheck.java - 229 labelled assertions
 
