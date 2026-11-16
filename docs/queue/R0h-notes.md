@@ -213,3 +213,15 @@ Final merged fast check: **exit 0**, compile, regenerated indexes and zero firm
 Stale findings (target/r0h-pre-gate.log), against main 01402a54. Its model trace
 is unchanged from the main used by the ensemble, as recorded above. The pick is
 ALL and is reserved for the normal launcher dry run; no local full suite ran.
+
+★7 Before the dry run, the orchestrator removed the broad LongPlaytest
+"households with no home" exemption from the ship file. The ensemble is not
+judged through known-reds and the default gate seed does not print this line;
+a registry row would exempt any later cause until HN1 ships. Keep HN1 queued
+and the raw F1 evidence, with no standing registry cover. If the default gate
+actually prints it, report that specific line for disposition. The conditional
+main-proven F1 acceptance stands; this narrows the records, not the watch.
+
+Dry-run authorization also confirmed our source patch-id is identical to the
+accepted 4a6f3ebf source, apart from merged main. The baseline was committed
+before the launcher. No push is made while the dry run is active.
