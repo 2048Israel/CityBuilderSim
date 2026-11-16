@@ -153,7 +153,8 @@ public final class FoundingScreen {
     private String worldSeed = String.valueOf(Founding.DEFAULT_WORLD_SEED);
     /** The path of the world beyond the city (WN1): Historical or Random. */
     private Nations.Path path = Nations.DEFAULT_PATH;
-    private boolean historicalEquipment = true;
+    /** The equipment chosen (R1d): the "1900" chip or "All fitted", which the page opens on until the 1900 city grows (R1g; R1d call 2). */
+    private boolean historicalEquipment = false;
     /** The path's seed, as typed or rolled: not the ground's (WN1). */
     private String pathSeed = String.valueOf(Nations.DEFAULT_SEED);
 
@@ -211,7 +212,7 @@ public final class FoundingScreen {
         worldSeed = String.valueOf(Founding.rollWorldSeed());
         // ...and the path of the world beyond it (WN1): the default (Random since WN3), and a path seed rolled as the ground's is.
         path = Nations.DEFAULT_PATH;
-        historicalEquipment = true;
+        historicalEquipment = false;
         pathSeed = String.valueOf(Founding.rollWorldSeed());
         // The Earth, when its data is here (0.7.121): looked for off the screen's thread, the page redrawn when it is known.
         spotLat = spotLon = Double.NaN;
@@ -952,7 +953,7 @@ public final class FoundingScreen {
         return new String[] { line, whole, first };
     }
 
-    /** The historical default and the fully equipped alternative, kept in the founding record (R1d). */
+    /** The 1900 founding and the all-fitted one, the page's default (R1d call 2), kept in the founding record. */
     private VBox equipmentBlock() {
         Button historical = kindChip("1900", historicalEquipment, true, true);
         historical.setOnAction(e -> { historicalEquipment = true; draw(); });
