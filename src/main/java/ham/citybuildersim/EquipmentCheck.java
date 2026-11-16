@@ -1149,22 +1149,27 @@ public class EquipmentCheck {
         out.println("\n--- 11. the verdict changes nothing: twin cities with the same counts, one asked everything every month for six months, are equal to the bit ---");
         Game a = Forms1900Check.town("equipment-twin-a"), b = Forms1900Check.town("equipment-twin-b");
         for (Game g : new Game[]{a, b}) {
-            FittingCheck.holdAll(g); // keep paid fitting decisions outside this pure-read comparison
             stack(g, "Bakery").setUnfitted(DRIVE, 1);
             stack(g, "Industrial Bakery").setUnfitted(DRIVE, stack(g, "Industrial Bakery").getQuantity());
             stack(g, "Grain Farm").setUnfitted(TRACTOR, stack(g, "Grain Farm").getQuantity());
         }
         check("fixture: the twins start equal, with the same counts and nothing asked", Forms1900Check.firstDifference(a, b) == null && formsAndCounts(a).equals(formsAndCounts(b))
                 && anyUnfitted(a));
-        String diff = twinsAfter(a, b, 6, false);
+        // Since R1d the twins buy and work their drives' fittings (they pay), so the steam share falls as the drives go in: it is read each month.
+        String diff = null;
+        boolean steamFirst = false;
+        for (int m = 0; m < 6 && diff == null; m++) {
+            diff = twinsAfter(a, b, 1, false);
+            if (diff != null) diff = "month " + (m + 1) + " of six: " + diff;
+            else if (m == 0) steamFirst = a.getSectors().industry().getSteamShare() > 0;
+        }
         check("six months, asked every verdict and every rank before and after each: the treasury, every sector's books and rates, the shares and the counts are equal",
                 diff == null, diff);
-        check("...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both",
-                a.getSectors().industry().getSteamShare() > 0 && a.getSectors().industry().getSteamShare() == b.getSectors().industry().getSteamShare());
+        check("...and the forms were set from the counts the whole time (the question did not stop the month): Industry's steam share is up in both after the first",
+                diff == null && steamFirst);
 
         Game ca = cartTown("equipment-twin-carts-a"), cb = cartTown("equipment-twin-carts-b");
         for (Game g : new Game[]{ca, cb}) {
-            FittingCheck.holdAll(g);
             stack(g, "Truck Depot").setUnfitted(TRUCK, 1);
         }
         check("fixture: the cart twins start equal with a depot unfitted", Forms1900Check.firstDifference(ca, cb) == null && anyUnfitted(ca) && anyUnfitted(cb));

@@ -165,7 +165,9 @@ public final class EquipmentFit {
     private static double gainOf(Game game, BuildingsTemplate t, Equipment piece, Set<String> proposed) {
         if (!game.foundedUnfitted()) return grossGainOf(game, t, piece);
         boolean recipePiece = piece.getId().equals(t.recipePieceId());
-        if (t.changeNeeds(piece.getId()) || recipePiece) {
+        // A piece that ends a form keeps its form's gain though a recipe needs it (R1c; RecipeCheck 6), but the horse form's gain is a recipe
+        // change, the feed and hands it saves less the tractor's fuel (R1d call 7), so the tractor is judged on that comparison, its rent with it.
+        if (t.changeNeeds(piece.getId()) || recipePiece && (piece.getEnds() == null || piece.getEnds() == Equipment.Form.FARM_HORSES)) {
             return proposed == null ? RecipeChanges.netGainForRefit(game, t, piece)
                     : RecipeChanges.netGainForSet(game, t, piece, proposed);
         }
