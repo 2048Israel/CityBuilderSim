@@ -60,7 +60,7 @@
 |---:|---|
 | 142 | 1. the shares at rest |
 | 209 | 2. cleared on a new game and on a load |
-| 257 | 3. the 1900 founding, now the default |
+| 257 | 3. the 1900 founding, off by default |
 | 396 | 4. what a new building comes with |
 | 557 | the fixtures of 5 to 12 |
 | 628 | 5. the order ranked with the buildings |
@@ -115,7 +115,7 @@
 |---:|---:|---|---|
 | 211 | 45 | `static void sectionTwo()` |  |
 
-### 3. the 1900 founding, now the default (lines 257-395)
+### 3. the 1900 founding, off by default (lines 257-395)
 
 | line | len | member | says |
 |---:|---:|---|---|

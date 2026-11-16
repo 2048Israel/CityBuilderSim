@@ -20521,7 +20521,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1108 fixture: the older save loads
   - L1109 a save from before either key loads with the hand on the dial
   - L1111 ...and rolls nothing, as it was played
-  - L1117 fixture: the founding screen's city founded the 1900 way, as the screen opens
+  - L1117 fixture: the founding screen's city founded the 1900 way, on its \"1900\" chip
   - L1118 a 1900 city: the bank is closed, so the dial is nobody's yet and the rule waits for it
   - L1120 ...and it rolls in the same structure
   - L1121 saved
