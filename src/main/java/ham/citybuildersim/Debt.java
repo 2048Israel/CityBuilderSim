@@ -559,12 +559,16 @@ public abstract class Debt {
 
     /**
      * The unaccreted discount that rides on this much of a holder's face - the part it gives up, or takes on, when that face changes
-     * hands (pass()): its own discount pro rata to the face it holds. The bank's holding is its paid face (bankPrincipalPaid()).
+     * hands (pass()): its own discount pro rata to the face it holds, or all of it when the face kept is within HOLDING_ROUNDING
+     * of the face moved, so a partial buyback leaves no discount on no face. The bank's holding is its paid face (bankPrincipalPaid()).
      */
     public double unaccretedOn(Holder h, double face) {
         if (foreign || h == null || !(face > 0)) return 0;
         double held = heldBy(h);
-        return held > 0 ? discountOf(h) * Math.min(1, face / held) : 0;
+        if (!(held > 0)) return 0;
+        double share = Math.min(1, face / held);
+        if (held - face <= HOLDING_ROUNDING * face) share = 1;
+        return discountOf(h) * share;
     }
 
     /**
