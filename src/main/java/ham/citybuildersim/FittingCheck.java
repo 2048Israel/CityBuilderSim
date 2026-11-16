@@ -254,7 +254,7 @@ public class FittingCheck {
         check("...as a fresh Game's new game has", shares(g).equals(shares(founded)) && founded.getEquipmentForms().driven().equals(g.getEquipmentForms().driven()));
     }
 
-    /* ============================ 3. the 1900 founding, now the default ============================ */
+    /* ============================ 3. the 1900 founding, off by default ============================ */
 
     /** A village the way the playtest places one after newGame(): roads, homes, groceries, farms, bakeries, power and water, placed without construction (and, if asked, depots). */
     static Game village(String label, Founding founding, boolean literals, boolean depots) {

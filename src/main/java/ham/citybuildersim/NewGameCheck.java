@@ -1053,7 +1053,7 @@ public class NewGameCheck {
            before either key - no autopilot, no rollover - loads with the
            hand on the dial and rolling nothing, as it was played.
 
-       A city founded the 1900 way - as the founding screen opens since R1d -
+       A city founded the 1900 way - the founding screen's "1900" chip since R1d -
        has its central bank shut until March 1935 (R0f), so the rule it founds
        on cannot hold the dial yet: the dial is nobody's, the rule waits for
        the bank (DebtManager.isAutopilotAtOpening()) and takes the dial the
@@ -1110,11 +1110,11 @@ public class NewGameCheck {
                 !back[0].getDebtManager().isAutopilot());
         assertTrue("...and rolls nothing, as it was played", back[0].getRolloverMode() == Rollover.Mode.MANUAL);
 
-        // R1d: the founding screen's own city as it opens, the 1900 way: its central bank is shut, so the rule waits for it.
+        // R1d: the founding screen's own city on its "1900" chip: its central bank is shut, so the rule waits for it.
         Founding opened = Founding.named("Arden", Founding.Preset.LEAN, WorldEconomy.DEFAULT_MEAN_INFLATION).withUnfitted(true);
         Game old = new Game(files);
         quietly(() -> old.newGame(opened));
-        assertTrue("fixture: the founding screen's city founded the 1900 way, as the screen opens", old.foundedUnfitted());
+        assertTrue("fixture: the founding screen's city founded the 1900 way, on its \"1900\" chip", old.foundedUnfitted());
         assertTrue("a 1900 city: the bank is closed, so the dial is nobody's yet and the rule waits for it",
                 !old.getDebtManager().isAutopilot() && old.getDebtManager().isAutopilotAtOpening());
         assertTrue("...and it rolls in the same structure", old.getRolloverMode() == Rollover.Mode.SAME_STRUCTURE);

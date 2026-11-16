@@ -133,7 +133,7 @@ public class DebtManager {
     public boolean isAutopilot()              { return autopilot; }
     /**
      * Whether the rule has been asked for but the central bank is still shut, so it waits and takes the dial the month the bank opens (hearMoneyMonth()).
-     * R1d made every new city a 1900 city, whose bank opens in March 1935 (R0f), and Jerus ruled in 0.7.13 that a game starts on the automatic,
+     * R1d offers the 1900 city on the founding screen (its "1900" chip), whose bank opens in March 1935 (R0f), and Jerus ruled in 0.7.13 that a game starts on the automatic,
      * "not your hand": the rule asked for at the founding waits for the bank rather than being dropped, unless the player's hand (takeTheDial()) took the dial first.
      */
     private boolean autopilotAtOpening;

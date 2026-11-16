@@ -98,7 +98,7 @@ public class Forms1900Check {
     static Game town(String label, int settle) {
         Game g = new Game(GameFiles.scratch(label));
         quietly(() -> {
-            g.newGame(Founding.defaults());
+            g.run();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
             BuildingManager b = g.getBuildingManager();
@@ -416,7 +416,7 @@ public class Forms1900Check {
         out.println("\n--- 5. a works that already burns coal adds the steam coal to it: Cement & Concrete ---");
         Game g = new Game(GameFiles.scratch("forms1900-cement"));
         quietly(() -> {
-            g.newGame(Founding.defaults());
+            g.run();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
             g.buildStack(g.getBuildingManager().getTemplate(CementConcrete.CEMENT_PLANT), 1, true);
