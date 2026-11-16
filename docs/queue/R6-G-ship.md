@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-R6-G-mAh55lFD -->
 ## changelog
 ### R6-G — the catalogue's years 1996-2024, a study — 2026-11-16, ready, no tag (docs)
 `docs/studies/research-1996-2024.md`: the research catalogue's rows between the online shop (B8, 1995) and the

@@ -95,3 +95,13 @@ as R6b does.
 changed, Stale 0 firm findings (186 soft), and the tree clean apart from the
 notes and the ship file. `git diff --name-only origin/main` lists only `.md`
 files. No harness reads what changed, so no `--pick`.
+
+## The dry run
+
+At the orchestrator's go, main was merged first. It had nothing new and was
+still at 08c8727d. Then `sh tools/gate.sh R6-G --dry-run --no-tag` ran by the
+gate's normal route. It took about a minute and exited 0. Inside it, the fast
+check exited 0, `unnamed.txt` was empty, and the tree was as it was. The kept
+run is `/tmp/cbs-gate-R6-G-mAh55lFD`, with its log at
+`/tmp/cbs-gate-R6-G-mAh55lFD/ship.log`. It ran on branch 9d0c79c27 over main
+08c8727d1. Since then only the notes and the ship file have changed.
