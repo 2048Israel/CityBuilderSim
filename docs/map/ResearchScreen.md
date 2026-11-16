@@ -153,7 +153,7 @@
 | 474 | 5 | `static String grantSub(ResearchView.Funding fu)` | Under the grant dial: the room, and what a post costs. |
 | 481 | 5 | `static String prizeSub(ResearchView.Funding fu, boolean researching)` | Under the prize dial: where labs come, and that it is paid only on a find. |
 | 488 | 21 | `static List<Effect> rowsOf(ResearchView.Card c)` | A card's rows, now against after: the researchers, the posts, the labs, what it costs a month, the prize and what the field would find here first. |
-| 511 | 3 | `static String labsWords(int labs)` | "2 labs". |
+| 511 | 3 | `static String labsWords(long labs)` | "2 labs". |
 | 516 | 37 | `static String sayWords(ResearchView.Card c)` | The sentence a card ends in, chosen among the cases the model's reads make (no arithmetic here): what holds the field back, or what the dials would do. |
 | 555 | 6 | `static VBox sayBox(String text)` | A card's closing sentence, in a box of its own. |
 
@@ -175,7 +175,7 @@
 | 694 | 3 | `static String fromWords(Discovery d)` | ...and "known since the founding" for what no discovery made known. |
 | 699 | 6 | `static String dotWords(Discovery d)` | A dot's tooltip: the name, its field and how the city came to know it, what it touches and what it does. |
 | 707 | 3 | `static String aheadWords(Discovery d)` | "+1.5y": how many years ahead of the world a find was, one decimal. |
-| 712 | 3 | `static String ofWords(int n, int of, String what)` | "12 of 20 buildings". |
+| 712 | 3 | `static String ofWords(long n, long of, String what)` | "12 of 20 buildings". |
 | 717 | 8 | `static String verdictWords(EquipmentFit.Kind kind)` | The sector's verdict on a piece, in words. |
 | 727 | 7 | `static String verdictColour(EquipmentFit.Kind kind)` | ...and its colour: a verdict says what to do, never how big. |
 

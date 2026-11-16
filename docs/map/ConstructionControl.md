@@ -89,7 +89,7 @@
 | 379 | `public int months` | Consecutive months worked on overtime so far. |
 | 395 | `public int templateId` |  |
 | 396 | `public String building` |  |
-| 397 | `public int buildings` |  |
+| 397 | `public long buildings` |  |
 | 399 | `public double progress` | The points of work it holds. |
 | 401 | `public double materialsOwed` | Units of material it has still to draw - what a restart quotes for. |
 | 403 | `public double refunded` | What came back to the city when it stopped. |
@@ -97,7 +97,7 @@
 | 420 | `public int id` |  |
 | 421 | `public int templateId` |  |
 | 422 | `public String building` |  |
-| 423 | `public int buildings` |  |
+| 423 | `public long buildings` |  |
 | 425 | `public double points` | The points of work it is, all told: DEMOLITION_SHARE of the work it holds. |
 | 426 | `public double progress` |  |
 | 428 | `public double salvageUnits` | Units of construction material salvaged when it completes, as quoted: SALVAGE_SHARE of what the buildings hold since 0.7.106 (all of it until then). |
@@ -111,17 +111,17 @@
 | 466 | `public int month` |  |
 | 467 | `public int templateId` |  |
 | 468 | `public String building` |  |
-| 469 | `public int buildings` |  |
+| 469 | `public long buildings` |  |
 | 470 | `public String sector` |  |
 | 471 | `public double buildingValue` |  |
 | 472 | `public double ground` |  |
 | 473 | `public double businessLoss` |  |
 | 475 | `public double months` | The months a replacement would have taken, which the business loss was paid for. |
 | 492 | `public int templateId` |  |
-| 493 | `public int built` |  |
+| 493 | `public long built` |  |
 | 494 | `public double billed` |  |
-| 514 | `public int roads` |  |
-| 516 | `public int ahead` | Paved Roads on the site ahead of this paving, which open first. |
+| 514 | `public long roads` |  |
+| 516 | `public long ahead` | Paved Roads on the site ahead of this paving, which open first. |
 | 518 | `public int month` | The month it was ordered. |
 | 533 | `public boolean prioritySet` |  |
 | 534 | `public java.util.List<String> order` |  |
@@ -240,7 +240,7 @@
 | 714 | 1 | `void clearCancelling()` | Every cancel settled at the month's end, stopped or moot. |
 | 716 | 1 | `public java.util.List<Shell> shells()` |  |
 | 718 | 4 | `public Shell shellOf(int templateId)` |  |
-| 724 | 14 | `Shell addShell(BuildingsTemplate t, int buildings, double progress, double materialsOwed, int month)` | A stopped order's buildings, onto the shell of that building - a second stop joins the first. |
+| 724 | 14 | `Shell addShell(BuildingsTemplate t, long buildings, double progress, double materialsOwed, int month)` | A stopped order's buildings, onto the shell of that building - a second stop joins the first. |
 | 739 | 1 | `void removeShell(Shell s)` |  |
 
 ### D. the demolitions (lines 741-777)
@@ -249,8 +249,8 @@
 |---:|---:|---|---|
 | 743 | 1 | `public java.util.List<Demolition> demolitions()` |  |
 | 745 | 4 | `public Demolition demolitionOf(String key)` |  |
-| 750 | 18 | `Demolition addDemolition(BuildingsTemplate t, int buildings, double points, double salvageUnits, double landSqFt, double paid, ...` |  |
-| 770 | 5 | `public int closingOf(int templateId)` | Buildings of this kind ordered demolished that still stand until the month starts. |
+| 750 | 18 | `Demolition addDemolition(BuildingsTemplate t, long buildings, double points, double salvageUnits, double landSqFt, double paid,...` |  |
+| 770 | 5 | `public long closingOf(int templateId)` | Buildings of this kind ordered demolished that still stand until the month starts. |
 | 776 | 1 | `void removeDemolition(Demolition d)` |  |
 
 ### E. the buy-outs (lines 778-783)
@@ -265,9 +265,9 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 786 | 1 | `public java.util.List<Paving> pavings()` |  |
-| 789 | 5 | `public int paving()` | Gravel roads being paved: on the Paved Road site, standing until their paving opens. |
-| 796 | 8 | `Paving addPaving(int roads, int ahead, int month)` | A paving of n roads, behind the `ahead` Paved Roads already on the site. |
-| 810 | 14 | `int pavedOf(int finished)` | Of `finished` Paved Roads opening this month off the front of the site, the ones that are pavings', each paving moved up the site by them: the gravel roads to retire. |
+| 789 | 5 | `public long paving()` | Gravel roads being paved: on the Paved Road site, standing until their paving opens. |
+| 796 | 8 | `Paving addPaving(long roads, long ahead, int month)` | A paving of n roads, behind the `ahead` Paved Roads already on the site. |
+| 810 | 14 | `long pavedOf(long finished)` | Of `finished` Paved Roads opening this month off the front of the site, the ones that are pavings', each paving moved up the site by them: the gravel roads to retire. |
 
 ### each stack's run (lines 825-846)
 
@@ -288,14 +288,14 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 869 | 2 | **type** `public record Overtime(String key, String building, int month, double share, double work, double perPoint, ...` | A rushed site worked on overtime this month: its share, its work, the builders' wage bill a point it was struck at, the premium on its crews, before the tax, and the part of its share the city's own crews worked (FC1b... |
-| 878 | 2 | **type** `public record Refund(int templateId, String building, int buildings, double value, double allowance, double...` | An order stopped at the month's end: what comes back to the city, the material allowance in it, the points of work it was for, the shell it left, and whether it was a depot of the builders' served first (BuildingManag... |
+| 878 | 2 | **type** `public record Refund(int templateId, String building, long buildings, double value, double allowance, doubl...` | An order stopped at the month's end: what comes back to the city, the material allowance in it, the points of work it was for, the shell it left, and whether it was a depot of the builders' served first (BuildingManag... |
 | 887 | 11 | **type** `public static final class Completed` | A demolition finished this month - and, once Game has sold it, its own sale: the units the builders bought and what they paid, which the inbox reads off the site rather than by its name (after the docs pass: two of on... |
 | 890 | 1 | `public Completed(Demolition site)` _(in ConstructionControl.Completed)_ |  |
 | 891 | 1 | `public Demolition site()` _(in ConstructionControl.Completed)_ |  |
 | 893 | 1 | `public double unitsSold()` _(in ConstructionControl.Completed)_ | Units of its material the builders bought. |
 | 895 | 1 | `public double paid()` _(in ConstructionControl.Completed)_ | ...and what they paid for them. |
 | 896 | 1 | `void sold(double units, double money)` _(in ConstructionControl.Completed)_ |  |
-| 900 | 1 | **type** `public record Paved(int roads, double landFreedSqFt)` | F. |
+| 900 | 1 | **type** `public record Paved(long roads, double landFreedSqFt)` | F. |
 | 903 | 8 | **type** `public static final class Events` | The month's events, as the advance left them. |
 | 909 | 1 | `public boolean isEmpty()` _(in ConstructionControl.Events)_ |  |
 

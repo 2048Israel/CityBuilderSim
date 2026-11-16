@@ -107,9 +107,11 @@
 | 72 | `static PrintStream out` |  |
 | 73 | `static PrintStream quiet` |  |
 | 750 | `final Game g` |  |
-| 751 | `int invested, investedDiffer, trimmed, refused, searched, deepest, largestInvested` |  |
+| 751 | `int invested, investedDiffer, trimmed, refused, searched` |  |
+| 751 | `long deepest, largestInvested` |  |
 | 752 | `int mostDeskCalls, mostCountDeskCalls, overBound` |  |
-| 753 | `int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused, largestMortgage` |  |
+| 753 | `int mortgaged, mortgagedDiffer, mortgagedTrimmed, mortgagedRefused` |  |
+| 753 | `long largestMortgage` |  |
 | 755 | `int carried, mortgageCarried` | BA1: orders whose whole size carried an interest over its cost's own (the carry over 1), judged on their interest and on a mortgage; the most the carry grew a cost by. |
 | 756 | `double mostCarry` |  |
 | 758 | `int mortgageUnnamed` | BA1: landlords' orders whose building the hook's costs did not name to one template. |
@@ -162,8 +164,8 @@
 | 749 | 109 | **type** `static final class Watch implements BusinessInvestment.OrderWatch` |  |
 | 763 | 1 | `Watch(Game g)` _(in OrderSearchCheck.Watch)_ |  |
 | 766 | 27 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in OrderSearchCheck.Watch)_ |  |
-| 795 | 20 | `public void mortgaged(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, Mortgage.Decisi...` _(in OrderSearchCheck.Watch)_ |  |
-| 822 | 15 | `IntToDoubleFunction carryOfTheOrder(int asked, IntToDoubleFunction costOf)` _(in OrderSearchCheck.Watch)_ | The carry the game grew the landlord's shortfall by (Game.lenderReads(): BusinessInvestment.carryOf() of the building at the insured rate). |
+| 795 | 20 | `public void mortgaged(long asked, LongToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, Mortgage.Deci...` _(in OrderSearchCheck.Watch)_ |  |
+| 822 | 15 | `LongToDoubleFunction carryOfTheOrder(long asked, LongToDoubleFunction costOf)` _(in OrderSearchCheck.Watch)_ | The carry the game grew the landlord's shortfall by (Game.lenderReads(): BusinessInvestment.carryOf() of the building at the insured rate). |
 | 838 | 1 | `void note(String s)` _(in OrderSearchCheck.Watch)_ |  |
 | 840 | 11 | `void report(String what)` _(in OrderSearchCheck.Watch)_ |  |
 | 852 | 5 | `void verdicts(String what)` _(in OrderSearchCheck.Watch)_ |  |
@@ -173,6 +175,6 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 868 | 7 | `static int sizedByCount(BusinessInvestment plans, BuildingsTemplate template, double shortfall, double capacityPerUnit)` | BusinessInvestment.orderSize()'s count (BA1): up from one, the first number of buildings whose capacity covers the shortfall, never more than the plots, and one for a building with no capacity to count. |
-| 877 | 23 | `static Mortgage.Decision decidedByCount(int asked, IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRat...` | Mortgage.decide()'s count: down from what was asked, the lender's test on the shortfall grown by the order's carry (BA1; n -> 1 for none). |
+| 877 | 23 | `static Mortgage.Decision decidedByCount(long asked, LongToDoubleFunction costOf, double cash, double noiPerUnit, double annualR...` | Mortgage.decide()'s count: down from what was asked, the lender's test on the shortfall grown by the order's carry (BA1; n -> 1 for none). |
 | 909 | 35 | `static Game.Afford investedByCount(Game g, BusinessInvestment.Decision decision, double cash, double perUnitProfit)` | Game.consider()'s countdown: down from the whole order, the bond desk asked for every slice that borrows - and since 0.7.113 each slice asked the test on what the game's rule tests (Game.orderGate()): its whole cost, ... |
 

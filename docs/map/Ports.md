@@ -172,7 +172,7 @@
 | 201 | 1 | `public static boolean isPort(BuildingsTemplate t)` | Whether a building is a sea terminal: a PORTS building with a berth (BuildingsTemplate.isPort()). |
 | 204 | 1 | `public static double berthMonth(BuildingsTemplate t)` | Tonnes a month one terminal's berth handles: its year over twelve. |
 | 207 | 10 | `public static double[] berths(BuildingManager buildings)` | Tonnes a month the terminals standing handle, by kind (Cargo order). |
-| 219 | 10 | `public static int[] berthCounts(BuildingManager buildings)` | How many terminals stand, by kind (Cargo order): the count behind berths()' tonnes, for the Freight screens (FR4, FreightView). |
+| 219 | 10 | `public static long[] berthCounts(BuildingManager buildings)` | How many terminals stand, by kind (Cargo order): the count behind berths()' tonnes, for the Freight screens (FR4, FreightView). |
 | 231 | 9 | `public static double[] berthsOnSite(BuildingManager buildings)` | ...and the terminals on site, by kind, for anyone's order. |
 | 261 | 3 | `public static boolean berthPaysBack(double uncovered, double berthMonth, double dial)` | Whether a berth PAYS BACK (FR3, docs/queue/FR3.md 1 and 3; the finding of spec-freight-and-infrastructure 9.5, "ports earn nothing and are never advised"): the kind's uncovered tonnes a month - what could go by sea an... |
 | 286 | 10 | `public static int payingCount(double uncovered, double berthMonth, double dial)` | How many of a terminal the uncovered tonnes pay back (SL1, 2026-10-28): each counted after the ones before it, so the largest n with |
