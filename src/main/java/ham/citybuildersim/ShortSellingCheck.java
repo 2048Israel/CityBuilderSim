@@ -37,7 +37,8 @@ import java.util.List;
  *   6. A SAVE IN THE MIDDLE OF A SHORT: the shorts, their lenders, their collateral and their fees round-trip a save and a load, and the month after
  *      is the month a city that never saved would have had.
  *   7. HOW OFTEN: over a real run, the months a short opened, the months one was covered and the bubbles the quote stood against, counted - a
- *      mechanic that never fires proves nothing.
+ *      mechanic that never fires proves nothing. LF1b: and the months the cells traded shares with the world, each month's audit lines for
+ *      them read against the exchange's figures.
  *   8. THE FEE ON THE LENDERS' BOOKS (LF1): the households' fee is a pair of lines in the audit, income from the world and banked; the fund's is
  *      its own income counter and a row in its ledger; the fee is charged on the shares the lenders hold and no more; emigrants are not dropped
  *      while a short is open; a short at a company with no shares in issue takes what it sold with it; a short at a company worth nothing is
@@ -45,6 +46,9 @@ import java.util.List;
  *      the two claims it takes across the border, the world's own shares in the company and the short closed for nothing, are valuation lines of
  *      the audit ("forgiven" counts them, the books still foot); the Fund screen says a fee's row, a share's write-off and the income a share
  *      lot's page holds in words.
+ *   9. THE CELLS' SHARES ABROAD (LF1b): a cell selling a share to the world and buying one from it, in the real month, are each a pair of
+ *      lines in the audit, a financial flow and its domestic half, as the cells' bonds are: the month foots, and the balance of payments'
+ *      financial inflow holds the sale and its outflow the purchase.
  *
  * Every claim is CAUSED: a book emptied and given one trade, then the orders a line names and no others; a bid or an ask put on it by a participant
  * with the means to stand behind it.
@@ -323,6 +327,7 @@ public class ShortSellingCheck {
         theCalls();
         theSave();
         theBooks();
+        theCellsAbroad();
         howOften();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -1040,6 +1045,9 @@ public class ShortSellingCheck {
         Equity reg;
         int months, auditBad, driftBad, shortCompanyMonths, bubbleMonths, bankBubbleMonths;
         double worstAudit, worstDrift, mostShort;
+        // ...and the cells' share trades with the world (LF1b): the months each was made, what it came to, and the months a line was not its figure.
+        int abroadSoldMonths, abroadBoughtMonths, abroadLinesBad;
+        double abroadSold, abroadBought;
         String worstWhere = "";
         long seconds;
     }
@@ -1081,6 +1089,15 @@ public class ShortSellingCheck {
             MoneyAudit.Result a = g.getLastMoneyAudit();
             r.worstAudit = Math.max(r.worstAudit, Math.abs(a.residual));
             if (Math.abs(a.residual) > MoneyAudit.CENT && a.relative() > 1e-7) r.auditBad++;
+            double sold = r.ex.getHouseholdsSoldAbroad(), bought = r.ex.getHouseholdsBoughtAbroad(), lineTol = 1e-9 * Math.max(1, sold + bought);
+            if (sold > 0) r.abroadSoldMonths++;
+            if (bought > 0) r.abroadBoughtMonths++;
+            r.abroadSold += sold;
+            r.abroadBought += bought;
+            if (Math.abs(a.figures.getOrDefault("+ shares HouseholdsSoldAbroad", 0.0) - sold) > lineTol
+                    || Math.abs(a.figures.getOrDefault("- shares HouseholdsSoldAbroad (into their savings)", 0.0) - sold) > lineTol
+                    || Math.abs(a.figures.getOrDefault("- shares HouseholdsBoughtAbroad", 0.0) - bought) > lineTol
+                    || Math.abs(a.figures.getOrDefault("+ shares HouseholdsBoughtAbroad (from their savings)", 0.0) - bought) > lineTol) r.abroadLinesBad++;
             for (int c = 0; c < n; c++) {
                 double s = r.ex.shortShares(c);
                 double holdings = g.getHouseholdBalance().sharesHeld(c) + r.reg.getDealerShares(c) + r.reg.getForeignShares(c) + r.reg.getCityShares(c);
@@ -1229,6 +1246,104 @@ public class ShortSellingCheck {
         sectionEnd();
     }
 
+    /* =======================================================================
+       THE CELLS' SHARES ABROAD (LF1b), SECTION 9
+       ======================================================================= */
+
+    /**
+     * Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month
+     * (Game.settleProbeForTest: after the exchange's month has opened, before its step and the audit) at a price inside the spread, so that
+     * no other order on the book fills. The cells and the world are both outside the pools, so neither trade moves a pool and the month
+     * foots with no line at all; the audit declares each as a pair all the same, as it does the cells' bonds (+ bonds HouseholdsSoldAbroad):
+     * the sale a financial inflow into the cells' savings, the purchase a financial outflow out of them, so the balance of payments'
+     * financial account, which the rate reads, holds the cells' shares beside their bonds.
+     */
+    static void theCellsAbroad() {
+        section("9. the cells' share trades with the world: each a pair of lines in the audit, a financial flow and its domestic half (LF1b)");
+        Game city = town("shortsellingcheck-abroad", 48);
+        Equity reg = city.getEquity();
+        Exchange ex = city.getExchange();
+        HouseholdBalance hb = city.getHouseholdBalance();
+        MoneyAudit.Result monthBefore = city.getLastMoneyAudit();
+        // The company the cells hold most of by value, and the ordinary cell holding most of it: it sells half to the world and buys a quarter
+        // back with what it was paid (the town's savers are poor beside what its shares are worth, and the purchase has to show on the outflow).
+        int c = -1;
+        double most = 0;
+        for (int k = 0; k < Equity.COMPANIES.length; k++) {
+            double v = hb.sharesHeld(k) * ex.price(k);
+            if (k != Equity.BANK && reg.getShares(k) > 0 && v > most) { most = v; c = k; }
+        }
+        assertTrue("fixture: the town's cells hold shares in a company", c >= 0);
+        if (c < 0) { sectionEnd(); return; }
+        final int f = c;
+        Household seller = null;
+        for (Household h : hb.cells()) {
+            if (h instanceof OwnerHousehold || h.households() <= 0) continue;
+            if (h.shares[f] > 0 && (seller == null || h.shares[f] * h.households() > seller.shares[f] * seller.households())) seller = h;
+        }
+        assertTrue("fixture: an ordinary cell holds " + Equity.COMPANIES[f], seller != null);
+        if (seller == null) { sectionEnd(); return; }
+        final Household cell = seller;
+        // [0, 1] the month's two figures before the fixture's trades; [2, 3] the shares each filled; [4, 5] the figures' rise; [6, 7] the cell's
+        // savings' change at the sale and at the purchase; [8] the world's holding's; [9] the price; [10, 11] the quantities asked.
+        double[] seen = new double[12];
+        city.settleProbeForTest = after -> {
+            if (after) return;
+            seen[0] = ex.getHouseholdsSoldAbroad();
+            seen[1] = ex.getHouseholdsBoughtAbroad();
+            // Inside the spread as the month finds the book (or beside the one side that rests), so the world's order is the best and fills.
+            double bid = ex.bestBid(f), ask = ex.bestAsk(f);
+            double p = !Double.isNaN(bid) && !Double.isNaN(ask) ? (bid + ask) / 2
+                    : !Double.isNaN(bid) ? 1.05 * bid : !Double.isNaN(ask) ? .95 * ask : ex.price(f);
+            double q1 = .5 * cell.shares[f] * cell.households(), q2 = .5 * q1;
+            double savings = cell.savings, abroad = reg.getForeignShares(f);
+            ex.tradeForCheck(f, Exchange.WORLD, OrderBook.Side.BUY, p, q1);
+            seen[2] = filled(ex.tradeForCheck(f, Exchange.CELL + cell.key(), OrderBook.Side.SELL, p, q1));
+            seen[6] = (cell.savings - savings) * cell.households();
+            savings = cell.savings;
+            ex.tradeForCheck(f, Exchange.WORLD, OrderBook.Side.SELL, p, q2);
+            seen[3] = filled(ex.tradeForCheck(f, Exchange.CELL + cell.key(), OrderBook.Side.BUY, p, q2));
+            seen[7] = (cell.savings - savings) * cell.households();
+            seen[4] = ex.getHouseholdsSoldAbroad() - seen[0];
+            seen[5] = ex.getHouseholdsBoughtAbroad() - seen[1];
+            seen[8] = reg.getForeignShares(f) - abroad;
+            seen[9] = p;
+            seen[10] = q1;
+            seen[11] = q2;
+        };
+        PrintStream real = System.out;
+        System.setOut(quiet);
+        try { city.simulateMonths(1); } finally { System.setOut(real); city.settleProbeForTest = null; }
+        MoneyAudit.Result a = city.getLastMoneyAudit();
+        double p = seen[9], q1 = seen[10], q2 = seen[11];
+        assertTrue("fixture: no cell had traded a share with the world that month before the fixture's two trades", seen[0] == 0 && seen[1] == 0);
+        close("fixture: a cell sold the world half its " + Equity.COMPANIES[f] + " at $" + String.format("%.4f", p) + ", inside the spread", seen[2], q1, 1e-9 * q1);
+        close("...and the exchange's sale abroad rose by it, at that price", seen[4], q1 * p, 1e-9 * q1 * p);
+        close("...the money in its savings", seen[6], q1 * p, 1e-9 * q1 * p);
+        close("fixture: the same cell bought half of that back from the world, at the same price", seen[3], q2, 1e-9 * q2);
+        close("...and the exchange's purchase abroad rose by it", seen[5], q2 * p, 1e-9 * q2 * p);
+        close("...the money out of its savings", seen[7], -q2 * p, 1e-9 * q2 * p);
+        close("...the world holding what it bought less what it sold", seen[8], q1 - q2, 1e-9 * q1);
+        double sold = ex.getHouseholdsSoldAbroad(), bought = ex.getHouseholdsBoughtAbroad();
+        out.printf("   sold abroad $%,.4f, bought $%,.4f (the step after the fixture's added $%,.4f and $%,.4f); the month before's financial account in $%,.4f, out $%,.4f%n",
+                sold, bought, sold - seen[4], bought - seen[5], monthBefore.financialIn, monthBefore.financialOut);
+        assertTrue("the month's two figures hold the fixture's trades", sold >= seen[4] * (1 - 1e-12) && bought >= seen[5] * (1 - 1e-12));
+        assertTrue("fixture: both trades are over the audit's cent, so a line that was left out would show", seen[4] > MoneyAudit.CENT && seen[5] > MoneyAudit.CENT);
+        assertTrue("the month foots with both declared: residual " + String.format("%.6f", a.residual), Math.abs(a.residual) <= .001);
+        double tol = 1e-9 * Math.max(1, sold + bought);
+        close("the audit's line for the cells' sale abroad is the exchange's figure", a.figures.getOrDefault("+ shares HouseholdsSoldAbroad", 0.0), sold, tol);
+        close("...with its half into their savings, the same size", a.figures.getOrDefault("- shares HouseholdsSoldAbroad (into their savings)", 0.0), sold, tol);
+        close("the audit's line for the cells' purchase abroad is the exchange's figure", a.figures.getOrDefault("- shares HouseholdsBoughtAbroad", 0.0), bought, tol);
+        close("...with its half out of their savings, the same size", a.figures.getOrDefault("+ shares HouseholdsBoughtAbroad (from their savings)", 0.0), bought, tol);
+        assertTrue("fixture: the sale is over ten times the town's whole financial inflow the month before, the purchase ten times its outflow",
+                seen[4] > 10 * monthBefore.financialIn && seen[5] > 10 * monthBefore.financialOut);
+        assertTrue("the balance of payments' financial inflow holds the sale: $" + String.format("%,.4f", a.financialIn), a.financialIn >= sold - MoneyAudit.CENT);
+        assertTrue("...and its financial outflow the purchase: $" + String.format("%,.4f", a.financialOut), a.financialOut >= bought - MoneyAudit.CENT);
+        ForeignAccounts fx = city.getForeignAccounts();
+        close("ForeignAccounts' month, which the rate reads, is that financial account", fx.financialAccount(), a.financialAccount(), 0);
+        sectionEnd();
+    }
+
     static void howOften() {
         section("7. how often, in a real run: " + RUN_MONTHS + " months of the playtest's city, every month audited and every register checked");
         Run on = play(true, "shortsellingcheck-run");
@@ -1239,6 +1354,11 @@ public class ShortSellingCheck {
                 on.ex.getLifeShortSold(), on.ex.getLifeShortSoldValue(), on.ex.getLifeShortCovered(), on.ex.getLifeShortCoveredValue(),
                 on.ex.getLifeMarginCalls(), on.ex.getLifeRecalls());
         out.printf("   lending fees paid $%,.2f; dividends paid on what was short $%,.2f%n", on.ex.getLifeLendingFees(), on.reg.getLifetimeShortPays());
+        out.printf("   months the cells sold shares to the world: %d, for $%,.2f; bought from it (its long, its short or the leavers): %d, for $%,.2f%n",
+                on.abroadSoldMonths, on.abroadSold, on.abroadBoughtMonths, on.abroadBought);
+        assertTrue("the cells traded shares with the world in the real run: they sold to it in " + on.abroadSoldMonths + " months and bought from it in "
+                + on.abroadBoughtMonths, on.abroadSoldMonths > 0 && on.abroadBoughtMonths > 0);
+        assertTrue("...and every month the audit's four lines for them were the exchange's two figures (" + on.abroadLinesBad + " months not)", on.abroadLinesBad == 0);
         out.printf("   company-months the quote stood over 10 times fair value: %d, and %d in the bank's own shares, which are never shorted%n",
                 on.bubbleMonths, on.bankBubbleMonths);
         assertTrue("every month passed the audit: worst residual $" + String.format("%.6f", on.worstAudit) + " over " + on.months + " months", on.auditBad == 0);

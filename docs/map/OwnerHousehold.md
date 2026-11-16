@@ -31,7 +31,7 @@
 
 **Uses:** [Household](Household.md) (1), [PayTier](PayTier.md) (1)
 
-**Used by (4):** [Exchange](Exchange.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [OwnerCheck](OwnerCheck.md)
+**Used by (5):** [Exchange](Exchange.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [OwnerCheck](OwnerCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Constants
 

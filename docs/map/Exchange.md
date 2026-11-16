@@ -441,7 +441,7 @@
 | 2247 | 1 | `public double getBuybackToHouseholds(int c)` |  |
 | 2248 | 1 | `public double getBuybackToDesk(int c)` |  |
 | 2249 | 1 | `public double getBuybackAbroad(int c)` |  |
-| 2251 | 1 | `public double getHouseholdsBoughtAbroad(int c)` | The households' cells bought from the world or from leavers this month (0.7.12 round 2): their savings out, a financial outflow. |
+| 2251 | 1 | `public double getHouseholdsBoughtAbroad(int c)` | The households' cells bought from the world or from leavers this month (0.7.12 round 2): their savings out, a financial outflow (MoneyAudit's pair since LF1b). |
 | 2253 | 1 | `public double getHouseholdsSoldAbroad(int c)` | ...and sold to the world: a financial inflow into their savings. |
 | 2255 | 1 | `public double getBetweenHouseholds(int c)` | What one cell paid another for shares this month: a transfer inside the households. |
 | 2256 | 1 | `public int getBetweenHouseholdsTrades(int c)` |  |

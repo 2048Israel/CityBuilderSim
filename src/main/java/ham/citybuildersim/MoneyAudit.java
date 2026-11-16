@@ -809,6 +809,20 @@ public final class MoneyAudit {
         in += credit.apply("+ fund SharesSoldToHouseholds", g.getExchange().getFundSoldToHouseholds(), Scope.DOMESTIC);
         in += credit.apply("+ fund SharesSoldAbroad", g.getExchange().getFundSoldAbroad(), Scope.FINANCIAL);
         /*
+         * ...AND THE HOUSEHOLDS' CELLS TRADING SHARES WITH THE WORLD (LF1b),
+         * as they trade bonds with it (+ bonds HouseholdsSoldAbroad): the cells
+         * and the world are both outside the pools, so a cell selling to the
+         * world, or buying from it (its long, its short or the month's
+         * leavers), moves no pool and needs no line to foot. But the dollars
+         * cross the border all the same, so each is a pair the cash identity
+         * cancels and the balance of payments reads: a sale abroad a financial
+         * inflow into the cells' savings, a purchase a financial outflow out
+         * of them. Until LF1b the financial account held the cells' bonds and
+         * left out their shares. See Exchange.getHouseholdsSoldAbroad().
+         */
+        in += credit.apply("+ shares HouseholdsSoldAbroad", g.getExchange().getHouseholdsSoldAbroad(), Scope.FINANCIAL);
+        in += credit.apply("+ shares HouseholdsBoughtAbroad (from their savings)", g.getExchange().getHouseholdsBoughtAbroad(), Scope.DOMESTIC);
+        /*
          * THE WORLD'S SHORT (EM2). Two payments it makes that no pool's cash
          * shows, each income from outside, and both owed to the city's holders
          * for shares the world is short of. The dividend on them: the holders
@@ -1227,6 +1241,9 @@ public final class MoneyAudit {
         // ...and the city's fund buying (0.7.14), the same two ways.
         out += debit.apply("- fund SharesBoughtFromHouseholds", g.getExchange().getFundBoughtFromHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- fund SharesBoughtFromAbroad", g.getExchange().getFundBoughtAbroad(), Scope.FINANCIAL);
+        // ...and the cells' trades with the world (LF1b), the other halves of the pair above.
+        out += debit.apply("- shares HouseholdsSoldAbroad (into their savings)", g.getExchange().getHouseholdsSoldAbroad(), Scope.DOMESTIC);
+        out += debit.apply("- shares HouseholdsBoughtAbroad", g.getExchange().getHouseholdsBoughtAbroad(), Scope.FINANCIAL);
         // ...and the world's shares wiped out at a resolution (0.7.14): the
         // other half of the pair above, no cash.
         out += debit.apply("- bank OwnersWipedAbroad (no cash)", g.getOwnersWipedAbroadThisMonth(), Scope.DOMESTIC);

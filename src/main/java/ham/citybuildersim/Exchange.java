@@ -2247,7 +2247,7 @@ public class Exchange {
     public double getBuybackToHouseholds(int c)  { return buybackToHouseholds[c]; }
     public double getBuybackToDesk(int c)        { return buybackToDesk[c]; }
     public double getBuybackAbroad(int c)        { return buybackAbroad[c]; }
-    /** The households' cells bought from the world or from leavers this month (0.7.12 round 2): their savings out, a financial outflow. */
+    /** The households' cells bought from the world or from leavers this month (0.7.12 round 2): their savings out, a financial outflow (MoneyAudit's pair since LF1b). */
     public double getHouseholdsBoughtAbroad(int c) { return householdsBoughtAbroad[c]; }
     /** ...and sold to the world: a financial inflow into their savings. */
     public double getHouseholdsSoldAbroad(int c) { return householdsSoldAbroad[c]; }

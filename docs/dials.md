@@ -7867,12 +7867,12 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 87 | `ShortSellingCheck.INDUSTRY` | `Equity.indexOf(Sectors.INDUSTRY)` |  |
-| 147 | `ShortSellingCheck.W` | `ExchangeCheck.W` |  |
-| 148 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
-| 231 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
-| 345 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
-| 1035 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
+| 91 | `ShortSellingCheck.INDUSTRY` | `Equity.indexOf(Sectors.INDUSTRY)` |  |
+| 151 | `ShortSellingCheck.W` | `ExchangeCheck.W` |  |
+| 152 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
+| 235 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
+| 350 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
+| 1040 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
 
 ### SlopeCheck.java ([map](map/SlopeCheck.md))
 
