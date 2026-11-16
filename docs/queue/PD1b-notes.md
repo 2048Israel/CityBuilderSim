@@ -68,5 +68,42 @@ Every monetary expectation comes from the model's own figures.
   The automatic review line says no money, saves or threading in the diff;
   a load-path review is nevertheless requested explicitly as the brief
   requires, because the check now observes the save rebuild.
-- The launcher result and eight trace comparisons will be recorded below.
+- Final sh tools/gate.sh PD1b --dry-run: launcher exit 0, inner
+  ./batch-check.sh --pick exit 3. 194 gate-tier harnesses ran in 2,607
+  seconds: 188 passed, six failed only on existing known-red lines
+  (DeathRecordCheck, InvestCheck, KeptCheck, MapCheck, MoneyDatesCheck,
+  ResearchViewCheck). OilCheck passed, including every new fixture.
+  unnamed.txt is empty; Stale has 0 firm findings. The suite used its default
+  pool. Eleven timing assertions were soft and four existing path assertions
+  observed, as the normal gate reports.
 - No known-reds entry named PD1b when this batch began; no transfer is needed.
+
+
+## Final launcher and trace (2026-11-16)
+
+Kept run: C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PD1b-20261115-2210.
+The two tested commits are branch
+37618a1528eae06cbe909ff0eb4288cdf373f024 and main
+a3fb38c06de26cf44e462597e48278413b31300a. The fresh-clone launcher ran from
+a detached hidden Git Bash process, native root PID 27432, which survived
+the launching tool call. tools/wait.sh waited through completion. No branch
+push occurred during the run.
+
+ship.log, checks/, the eight trace-*.csv files and trace-compare.txt are
+kept there. evidence/ also keeps the unchanged-main diagnostic source and
+both main logs, plus the focused-check log. The launcher completed its
+checks in 2,680 seconds and exited 0. Its full inner --pick run was the
+batch's ALL run; no local ALL run or main playtest was repeated.
+
+Every CSV is byte-identical to
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0h-NrRv6F33/traces/trace-*.csv:
+bank, bonds, borrow, build, house, labour, month and pop, eight of eight,
+zero mismatches. The default trace did not move, so no ensemble was needed.
+
+The orchestrator read and accepted fdd6ae7e on 2026-11-15: the load path is
+unchanged and Game changes only its comment, so no additional Codex review
+was required. Before the dry run, origin/main was fetched and merged again:
+already up to date at a3fb38c06. The final go explicitly retained the
+existing named results because neither main nor the source had moved.
+After the run only these notes and the ship file advance; the provisional
+marker is removed last in its own commit.
