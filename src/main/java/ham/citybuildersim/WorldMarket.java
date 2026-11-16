@@ -350,9 +350,10 @@ public final class WorldMarket {
         /**
          * What the calibration leaves for the January's anchor and charge: each good's Historical price level in REFERENCE_YEAR over the base year (the
          * level the literals stand on), the same for copper and for the manufactures index (1 if not modelled), and the freight scale the plain pass gave
-         * each good (for the check). Set by calibrate.
+         * each good and the fit it gave it (for the check). Set by calibrate.
          */
         double[] refLevel, plainPhi;
+        Fit[] plainFit;
         double refCopper = 1, refMuv = 1;
         final int refHost;
         final Legs reference;
@@ -644,10 +645,10 @@ public final class WorldMarket {
          *
          * TWO PASSES (CU2; spec-world-prices 3.8). The plain pass solves each good alone on its own price path and fixes the freight scale of the
          * goods that do not calibrate (a made good reads its input's freight scale, and a class median is only known at the end). The chained pass then
-         * goes in the chain's order and solves nothing: a root's prices are the plain pass's (the anchor is the identity in the reference year), a made
-         * good's own part is the plain pass's prices times the two levels' ratio (a uniform move is another lambda, spec section 2), the rest of its
-         * price is its inputs' cost, with the charge at the literal; the fit is the same, on those prices, and a good that does not calibrate keeps the
-         * plain pass's freight scale.
+         * goes in the chain's order: a root's prices are the plain pass's (the anchor is the identity in the reference year), a made good's own part
+         * is solved on the manufactures index's level from nothing, as the January from nothing solves it (scaling the plain pass's prices by the two
+         * levels' ratio is the same equilibrium, spec section 2, but meets the January's only to SOLVE_TOL), the rest of its price is its inputs' cost,
+         * with the charge at the literal; the fit is the same, on those prices, and a good that does not calibrate keeps the plain pass's freight scale.
          */
         private void calibrate(WorldData data) {
             Nations hist = new Nations(data, Nations.Path.HISTORICAL, Nations.DEFAULT_SEED);
@@ -676,7 +677,11 @@ public final class WorldMarket {
             }
             scale(kept);
             plainPhi = new double[traded.length];
-            for (int gi = 0; gi < traded.length; gi++) plainPhi[gi] = traded[gi].phi;
+            plainFit = new Fit[traded.length];
+            for (int gi = 0; gi < traded.length; gi++) {
+                plainPhi[gi] = traded[gi].phi;
+                plainFit[gi] = traded[gi].fit;
+            }
             for (Traded t : traded) {
                 t.phi = t.sigma = t.refFloor = t.refCeiling = Double.NaN;
                 t.fit = Fit.NONE;
@@ -689,9 +694,13 @@ public final class WorldMarket {
                 Traded t = traded[gi];
                 double[] slice = plain[gi];
                 if (chain.made(gi)) {
-                    if (chain.own[gi] > 0) {
-                        double k = refLevel[ownLevelGood(gi)] / refLevel[gi];
-                        for (int i : t.makers) slice[i] *= k;
+                    if (chain.own[gi] > 0 && ownLevelGood(gi) != gi) {
+                        // its own part solved as the January solves it from nothing (every price 1, lambda 1, at the manufactures index's level), so
+                        // the reference year's January reads the band this pass fits to the bit, not to SOLVE_TOL
+                        slice = new double[n];
+                        Arrays.fill(slice, 1);
+                        lam[0] = 1;
+                        solve(t, gHat, null, true, refLevel[ownLevelGood(gi)], SOLVE_TOL, slice, lam, 0, work);
                     }
                     price(gi, slice, flat, cache, hist, REFERENCE_YEAR, true);
                 }
