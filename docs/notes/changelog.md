@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### RE3 — the landlords' payroll with the rent: the trap is gone on main — 2026-11-16, ready, no tag (docs)
+RE1's probe on main 0.9.126, eight AUTO2 runs (seeds 1, 3, 11 and 13, with and without the data files): RE2's trap is
+gone. Seed 3 unnamed, the brief's fixture, has no loss month and no down-payment hold over two months (RE2's model: 125
+and 59 in a row). Seeds 3 and 11 unnamed stand at 25,000-33,000 for over 1,000 months, held by jobs: no works pays and
+the landlords are rich. Seed 13 named comes nearest: a jobs-led fall, 25 loss months, then a 35-month hold. The call:
+no code; the ensemble keeps watching the trap (RE1-T's way (d)), and a study of the jobs-held towns waits on Jerus
+(RE3-J). Docs only; the trace is main's. See docs/queue/RE3-notes.md.
+
 ### 0.9.127 — R2f, Research: the medical rows — 2026-11-16, ready, see docs/queue/R2f-notes.md
 The catalogue's sixteen medical rows now act in a city founded the 1900 way (research-design Q17). A row found here
 before the world brings its step on a cause of death forward by the months it was ahead: milk and streptomycin on TB,
