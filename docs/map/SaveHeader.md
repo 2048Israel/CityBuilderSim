@@ -1,6 +1,6 @@
 # SaveHeader.java - 119 lines · 20 methods · 0 constants · model
 
-`ham/citybuildersim/SaveHeader.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveHeader.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > Just enough of a save to label it on the slot list.
 > 

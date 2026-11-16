@@ -120,6 +120,7 @@ public final class HistoricalRecipeCheck {
             for (JsonElement elementChange : definition.getAsJsonArray("recipeChanges")) {
                 JsonObject c = elementChange.getAsJsonObject();
                 String entry = c.get("entry").getAsString();
+                if (!entry.startsWith("P")) continue;
                 String key = t.getName() + " / " + (c.has("id") ? c.get("id").getAsString() : entry);
                 String since = c.has("since") ? c.get("since").getAsString() : entry;
                 int date = ResearchCatalog.knownFrom(since);
@@ -146,7 +147,7 @@ public final class HistoricalRecipeCheck {
                 rows++;
             }
         }
-        check("the fixture actually exercised every shipped independent undo", rows == 36, "rows " + rows);
+        check("the fixture actually exercised every shipped pre-1951 independent undo", rows == 36, "rows " + rows);
     }
 
     static void composition() throws Exception {

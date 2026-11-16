@@ -1,6 +1,6 @@
 # Recipe.java - 198 lines · 24 methods · 2 constants · model
 
-`ham/citybuildersim/Recipe.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Recipe.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > A way a building runs: what it uses, what it makes, who it needs and what it draws, and when it is known and what piece of equipment it needs.
 > Immutable; read from buildings.json's "recipes" (BuildingCatalog.readRecipes()) and held by the template (BuildingsTemplate.getRecipes()).
@@ -24,7 +24,7 @@
 
 **Uses:** [Good](Good.md) (11), [JobType](JobType.md) (5), [Equipment](Equipment.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ResearchCatalog](ResearchCatalog.md) (1), [Research](Research.md) (1)
 
-**Used by (14):** [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentFit](EquipmentFit.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [ResearchCheck](ResearchCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [Sector](Sector.md)
+**Used by (15):** [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentFit](EquipmentFit.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [ResearchCheck](ResearchCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [Sector](Sector.md)
 
 ## Constants
 

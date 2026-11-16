@@ -1,6 +1,6 @@
 # RefineryFlow.java - 431 lines · 38 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/RefineryFlow.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/RefineryFlow.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > The refinery as a campus of units, and a month's flow through them (0.7.80,
 > batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into its
@@ -62,7 +62,7 @@
 
 **Uses:** [Good](Good.md) (56), [Refining](Refining.md) (12), [Deposit](Deposit.md) (3)
 
-**Used by (22):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [ReadPathCheck](ReadPathCheck.md), [RecipeChanges](RecipeChanges.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [ResearchCheck](ResearchCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (23):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildingCatalog](BuildingCatalog.md), [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [ReadPathCheck](ReadPathCheck.md), [RecipeChanges](RecipeChanges.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [ResearchCheck](ResearchCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

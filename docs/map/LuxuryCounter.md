@@ -1,6 +1,6 @@
 # LuxuryCounter.java - 160 lines · 10 methods · 0 constants · model
 
-`ham/citybuildersim/LuxuryCounter.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LuxuryCounter.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > The households' discretionary spending: the boutiques and the restaurants,
 > each striking its price against the queue.

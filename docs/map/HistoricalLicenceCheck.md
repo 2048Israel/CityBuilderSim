@@ -1,6 +1,6 @@
 # HistoricalLicenceCheck.java - 577 lines · 20 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HistoricalLicenceCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistoricalLicenceCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > R2d's independent discoveries meet R2c's captured patent service.
 > WHY (R2d): a net fitting estimate could charge for a patent whose real
@@ -9,7 +9,7 @@
 
 **Uses:** [HistoricalRecipeCheck](HistoricalRecipeCheck.md) (80), [LicenceFees](LicenceFees.md) (57), [Good](Good.md) (49), [Game](Game.md) (31), [ResearchCatalog](ResearchCatalog.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (14), [ResearchCheck](ResearchCheck.md) (12), [RecipeChanges](RecipeChanges.md) (12), [FittingCheck](FittingCheck.md) (11), [SectorState](SectorState.md) (8), [EquipmentFit](EquipmentFit.md) (7), [LicenceFeesCheck](LicenceFeesCheck.md) (7), [RecipeCheck](RecipeCheck.md) (6), [Founding](Founding.md) (6), [MoneyAudit](MoneyAudit.md) (6), [Recipes](Recipes.md) (6), [RefineryFlow](RefineryFlow.md) (5), [BuildingsStacks](BuildingsStacks.md) (5), [Resource](Resource.md) (4), [Freight](Freight.md) (4), [EquipmentCheck](EquipmentCheck.md) (4), [Forms1900Check](Forms1900Check.md) (4), [Equipment](Equipment.md) (3), [DataSave](DataSave.md) (3), [MaterialsCheck](MaterialsCheck.md) (2), [Trade](Trade.md) (2), [NewGameCheck](NewGameCheck.md) (2), [LandManager](LandManager.md) (1), [Refining](Refining.md) (1), [Sector](Sector.md) (1)... and 1 more
 
-**Used by (2):** [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (3):** [PostwarRecipeCheck](PostwarRecipeCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Fields (state)
 

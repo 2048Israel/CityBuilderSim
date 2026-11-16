@@ -156,3 +156,29 @@ The strengthened permanent fixture on the original painter also reports
 strings retain their original UTF-8 bytes (verified in the final diff).
 The updated pick selects 28 harnesses, not ALL; review is not needed (no
 money, saves or threading in the diff). The final selected run follows.
+
+## Final integration after PD1b and R2e
+
+The final pre-integration `--pick` selected 28 harness names and ran 33
+harnesses in 847 seconds: 32 passed, MapCheck alone known red, exit 3.
+Indexes regenerated, zero firm Stale findings and a clean tree. Source was
+frozen at `7f947f3188ea77e1089e53da7deb4fc6826fbcb1` while the orchestrator
+held the shared slot for PD1b and R2e. Both have now shipped; main is
+`32869da2` (0.9.123). No standing instruction file changed in that merge.
+Only generated dials, harness and file indexes conflicted; all regenerated.
+
+As requested at go, reran MapCheck, PlanCheck and JunctionCheck on that
+merged main (BridgeMapCheck is selected by the MapCheck name too): four
+harnesses, 518 seconds, three green and MapCheck's existing three known
+lines, exit 3. All new PlanCheck 20 and MapCheck 24 laws pass; no change to
+any of FA1's four source files since the accepted mend. No budget moved.
+
+The preceding completed gate's loaded-PC PlanCheck figures versus main's
+retained R0h gate, in its two timed fixtures: median 25.77/14.06 ms against
+17.21/13.37 ms, most 58.87/17.71 against 21.92/17.35. These are informational
+runs under differing load, not a paired timing verdict; the project judges
+speed nightly. The plan and screen budgets are unchanged.
+
+The final gate follows this merge. Its eight trace files use a distinct
+prefix so BJZZNAHT's evidence stays intact. The orchestrator confirmed
+R2e's trace is identical to R0h's and named the same R0h reference again.

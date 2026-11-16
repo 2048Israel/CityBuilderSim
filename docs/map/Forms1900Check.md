@@ -1,6 +1,6 @@
 # Forms1900Check.java - 999 lines · 39 methods · 5 constants · harnesses
 
-`ham/citybuildersim/Forms1900Check.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Forms1900Check.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > The farm's horses, the factory's steam, road freight's horse and wagon and the homes' lamp oil and coal, as forms a share of a sector or of the homes runs.
 > 
@@ -46,7 +46,7 @@
 
 **Uses:** [Good](Good.md) (81), [Game](Game.md) (39), [Sector](Sector.md) (26), [Haulage](Haulage.md) (17), [Agriculture](Agriculture.md) (10), [Retail](Retail.md) (9), [HouseholdAccounts](HouseholdAccounts.md) (7), [MoneyAudit](MoneyAudit.md) (6), [HomeFuel](HomeFuel.md) (6), [Household](Household.md) (5), [Freight](Freight.md) (4), [HydroSites](HydroSites.md) (4), [GameFiles](GameFiles.md) (3), [BuildingManager](BuildingManager.md) (3), [CementConcrete](CementConcrete.md) (3), [HaulageCheck](HaulageCheck.md) (3), [Founding](Founding.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [GoodsMarket](GoodsMarket.md) (2), [TaxPolicy](TaxPolicy.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Statement](Statement.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (6):** [BasketYearCheck](BasketYearCheck.md), [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [RecipeCheck](RecipeCheck.md)
+**Used by (7):** [BasketYearCheck](BasketYearCheck.md), [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeCheck](RecipeCheck.md)
 
 ## Sections
 

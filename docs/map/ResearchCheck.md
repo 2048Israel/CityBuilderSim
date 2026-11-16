@@ -1,18 +1,18 @@
-# ResearchCheck.java - 908 lines · 23 methods · 6 constants · harnesses
+# ResearchCheck.java - 910 lines · 23 methods · 6 constants · harnesses
 
-`ham/citybuildersim/ResearchCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses
 > what is not a discovery (R2, slice A: ResearchCatalog and research.json; docs/studies/research-design.md 4, research-1900.md 8).
 > 
-> WHY. research.json is 89 entries typed from two studies' tables, and a wrong figure in it is no error anywhere: a discovery a year late is an
+> WHY. research.json is 91 entries typed from two studies' tables, and a wrong figure in it is no error anywhere: a discovery a year late is an
 > oxygen converter that arrives in 1953, and nobody sees it until the ensemble moves. So the dates, the needs, the work and the fees are held to
 > the studies' tables here, with spot values typed out below as the specification and not read back from the class under test; the law rows are
 > held to PolicyDates, whose dates the Policy gate already reads, so the catalogue and the gate cannot disagree about when a lever opens.
 > 
 > What it has to prove:
 > 
->   1. THE FILE READS. The packaged file gives 89 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
+>   1. THE FILE READS. The packaged file gives 91 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
 >      unique and in the studies' order; the counts by prefix and by field are the studies'; every entry has a name, a world, a touches and an
 >      effect; the kinds, the kind notes and the names of a few are the tables'.
 >   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 26
@@ -30,8 +30,8 @@
 >      yes and no of a few engineering, medicine and business entries are as typed.
 >   7. BUILDINGS.JSON'S CODES (slice B). Every "since" that is not a year, on a template, a recipe or a piece, is a code in the catalogue: a
 >      template's one that unlocks a building, a piece's one that unlocks equipment, a recipe's one that is not a building alone. The
->      code-dated templates are exactly research-1900.md 1.2's list typed out by id (29), the Oxygen Steel Shop is dated 1900, the Panel Mill 1980
->      and the Wood Pellet Mill 1970, every other row undated or 1900; every building entry opens a template but PE12 and B8; a template's year
+>      code-dated templates are exactly research-1900.md 1.2's list typed out by id (31), the Oxygen Steel Shop is dated 1900, the Panel Mill E19 1981
+>      and the Wood Pellet Mill E20 1970, every other row undated or 1900; every building entry opens a template but PE12 and B8; a template's year
 >      is its entry's. A building file read from text keeps a code as written, reports one the catalogue lacks and never knows it.
 >   8. KNOWN FROM HISTORY'S MONTH. The tractor's piece and recipe are known from PE14's month and not the month before, the oxygen converter's
 >      recipe from E1's (November 1952), the Container Terminal from E5's, the Electric Arc Furnace from PE1's December 1900, the Pulp Mill's kraft
@@ -72,7 +72,7 @@
 | 90 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Sp...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
 | 135 | `ResearchCheck.MONTH_KNOWN` | `30` | The entries whose World column names a month: the table's count. |
 | 138 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has. |
-| 139 | `ResearchCheck.PREFIX_COUNTS` | `{ 18, 10, 8, 5, 27, 6, 3, 12 }` |  |
+| 139 | `ResearchCheck.PREFIX_COUNTS` | `{ 20, 10, 8, 5, 27, 6, 3, 12 }` |  |
 | 142 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
 | 527 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map....` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 
@@ -87,7 +87,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 68 | 841 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
+| 68 | 843 | **type** `public class ResearchCheck` | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what is not a discovery (R2, slice A: ResearchCatalog and research.json; d... |
 | 73 | 4 | `static void check(String label, boolean ok)` |  |
 | 79 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 
@@ -135,12 +135,12 @@
 | 739 | 5 | `static void atMonth(Game g, int month) throws Exception` | Set the clock at an exact boundary without playing decades of unrelated economics. |
 | 745 | 125 | `static void buildingsOnDates() throws Exception` |  |
 
-### helpers (lines 871-908)
+### helpers (lines 871-910)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 873 | 5 | `static List<String> codes(ResearchCatalog c)` |  |
-| 880 | 9 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5. |
-| 891 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
-| 901 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
+| 880 | 11 | `static List<String> orderOf()` | The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E20. |
+| 893 | 9 | `static boolean allLaw(ResearchCatalog c, String prefix, String note)` | Whether every entry whose code starts with a prefix and a digit is a recipe with that kind note. |
+| 903 | 7 | `static boolean drugs(ResearchCatalog c)` |  |
 

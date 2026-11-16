@@ -1,6 +1,6 @@
 # MonetaryCheck.java - 1,004 lines · 14 methods · 8 constants · harnesses
 
-`ham/citybuildersim/MonetaryCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MonetaryCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > Money: what a basket costs, what the world charges, and what the rate does.
 > 

@@ -1,6 +1,6 @@
 # ResearchCatalog.java - 339 lines · 22 methods · 10 constants · model
 
-`ham/citybuildersim/ResearchCatalog.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchCatalog.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > The research catalogue (R2): every discovery the city's schools can make, read out of research.json: its code, the field that researches it,
 > what it unlocks (a building, a piece of equipment, a recipe, a drug), history's date, the discoveries it needs first and the work it takes.
@@ -18,7 +18,7 @@
 
 **Uses:** [PolicyDates](PolicyDates.md) (2), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (31):** [BuildCardCheck](BuildCardCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Research](Research.md), [ResearchCheck](ResearchCheck.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [YearBook](YearBook.md)
+**Used by (32):** [BuildCardCheck](BuildCardCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HistorySave](HistorySave.md), [Inbox](Inbox.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PrizeCheck](PrizeCheck.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Research](Research.md), [ResearchCheck](ResearchCheck.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 

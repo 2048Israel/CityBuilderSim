@@ -1,6 +1,6 @@
 # PolicyDates.java - 314 lines · 33 methods · 5 constants · model
 
-`ham/citybuildersim/PolicyDates.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyDates.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > When Canada first had each of the Policy tab's levers, as pure data: the game month each one opens in a city founded in January 1900, the
 > study's entry for it, what Canada first did and on what terms, and how far a law discovery may bring it forward (R0, research-1900.md 7).
@@ -19,7 +19,7 @@
 
 **Uses:** [CityCalendar](CityCalendar.md) (4), [DecisionLog](DecisionLog.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
-**Used by (28):** [BusinessServicesCheck](BusinessServicesCheck.md), [CentralBank](CentralBank.md), [DebtManager](DebtManager.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [ForeignAccounts](ForeignAccounts.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GovernmentPlayerCheck](GovernmentPlayerCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [ManufacturingCheck](ManufacturingCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyScreen](PolicyScreen.md), [RecipeCheck](RecipeCheck.md), [ResearchCatalog](ResearchCatalog.md), [ResearchCheck](ResearchCheck.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [TaxPolicy](TaxPolicy.md), [TradeScreen](TradeScreen.md), [WageLadderCheck](WageLadderCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (29):** [BusinessServicesCheck](BusinessServicesCheck.md), [CentralBank](CentralBank.md), [DebtManager](DebtManager.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [ForeignAccounts](ForeignAccounts.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [GovernmentPlayerCheck](GovernmentPlayerCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [ManufacturingCheck](ManufacturingCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [PolicyDatesCheck](PolicyDatesCheck.md), [PolicyScreen](PolicyScreen.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchCatalog](ResearchCatalog.md), [ResearchCheck](ResearchCheck.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [TaxPolicy](TaxPolicy.md), [TradeScreen](TradeScreen.md), [WageLadderCheck](WageLadderCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 

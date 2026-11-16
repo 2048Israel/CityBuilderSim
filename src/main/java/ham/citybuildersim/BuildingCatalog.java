@@ -526,6 +526,11 @@ public class BuildingCatalog {
                 System.out.println(FILE_NAME + ": " + name + " recipe change skipped: " + bad.getMessage());
             }
         }
+        changes.removeIf(change -> {
+            if (change.after() == null || changes.stream().anyMatch(prior -> prior.code().equals(change.after()) && prior.after() == null)) return false;
+            System.out.println(FILE_NAME + ": " + name + " recipe change skipped: missing independent prerequisite " + change.after());
+            return true;
+        });
         template.setRecipeChanges(changes);
     }
 

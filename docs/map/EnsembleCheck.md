@@ -1,6 +1,6 @@
 # EnsembleCheck.java - 470 lines · 25 methods · 10 constants · harnesses
 
-`ham/citybuildersim/EnsembleCheck.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EnsembleCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > Checks the ensemble runner, driver compilation, policy names and stored baseline.
 > 

@@ -1,6 +1,6 @@
 # ProcessingSector.java - 582 lines · 45 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/ProcessingSector.java` - generated 2026-11-15 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/ProcessingSector.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
 > A sector that turns goods into other goods in works it builds by what
 > pays: the template every processing industry of the materials chains
