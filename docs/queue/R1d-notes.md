@@ -106,9 +106,15 @@ stood). A Claude session (R1dc) then judged, mended and finished it, from
     founds the screen's own city with the "1900" chip.
 12. ★ **The harness cities are main's again.** This replaces the first
     version's `withUnfitted(false)` on the harness cities written on
-    today's city, which call 1 made needless. The fixtures written for 1900 name it:
-    `Forms1900Check`, `FittingCheck`'s 1900 villages, `NewGameCheck` 12 and
-    `ReadPathCheck`'s own city. Two of main's fixtures assumed a 1900 town
+    today's city, which call 1 made needless; `Forms1900Check`'s two towns
+    found by `run()` again, as on main (REV-R1d-2 2). The fixtures written
+    for 1900 name it: `Forms1900Check`, `FittingCheck`'s 1900 villages,
+    `NewGameCheck` 12, `ReadPathCheck`'s own city and `MoneyDatesCheck`'s
+    towns. Since R1d, `run()` on a 1900 founding lays 1901's ladder and
+    basket and unfits it, which main's `run()` never did, so
+    `MoneyDatesCheck`'s towns (`custom(..).withUnfitted(true)`, then
+    `run()`) are now the 1900 city they name: green in the named run, and
+    the dry run is to show only its known red (REV-R1d-2 1). Two of main's fixtures assumed a 1900 town
     that R1d now builds differently, and are mended to it:
     - `ResearchViewCheck` 6's town has a Fabrication Shop by month 14
       (Manufacturing, its pieces fitted at completion) and orders its
@@ -219,7 +225,12 @@ month order and threading clean. Its findings were mended as follows:
   true round trip is `FittingCheck` 3's ("...and loaded: the flag is
   back") and `WageLadderCheck`'s.
 
-REV-R1d-2 reads the delta from 82ba734c5.
+REV-R1d-2 (Opus, on d417e6fc0) found money, saves, month order, the
+defaults, `FACTOR` and threading clean. Its findings were mended as
+follows: 1, `MoneyDatesCheck` is named in call 12; 2, `Forms1900Check`'s
+towns are `g.run()` again; 3, the stale prose of the revoked default is
+made true (`NewGameCheck`'s header, comment and label; `DebtManager`'s
+waiting rule; `FittingCheck` 3's banner).
 
 ## Checks
 
