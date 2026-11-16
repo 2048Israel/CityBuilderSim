@@ -652,8 +652,8 @@ public class ShortSellingCheck {
         // fixture's, and the month's own listing finds the town's, which is nothing. Then every share is retired: the company is left with none.
         HouseholdBalance hb = city.getHouseholdBalance();
         assertTrue("fixture: " + Equity.COMPANIES[u] + " is listed, by hand, against a book of 5,000 and its founders", reg.listIfUnlisted(u, 5_000, hb));
-        double q = ex.fair(u), world = .5 * reg.getShares(u), asked = .05 * reg.getShares(u);
-        // ...the world holds half of it, taken from the founders' cell so the register is whole, and a cell with savings buys what the short sells.
+        double q = ex.fair(u), founded = reg.getShares(u), asked = .05 * founded;
+        // ...a cell with savings buys what the short sells; the founders' cell holds the shares in issue.
         Household founders = null, buyer = null;
         for (Household h : hb.cells()) {
             if (h.households() > 0 && h.shares[u] > 0 && (founders == null || h.shares[u] * h.households() > founders.shares[u] * founders.households())) founders = h;
@@ -663,28 +663,31 @@ public class ShortSellingCheck {
         }
         assertTrue("fixture: a cell holds the founders' shares and a cell has savings to buy a short", founders != null && buyer != null && buyer != founders);
         if (founders == null || buyer == null || buyer == founders) return;
-        founders.shares[u] -= world / founders.households();
-        reg.moveForeign(u, world);
         ex.tradeForCheck(u, Exchange.WORLD_SHORT, OrderBook.Side.SELL, q, asked);
         double sold = filled(ex.tradeForCheck(u, Exchange.CELL + buyer.key(), OrderBook.Side.BUY, q, asked));
         ex.bookOf(u).withdrawAll();
-        double heldBefore = hb.sharesHeld(u);
-        assertTrue("fixture: the register is whole with the short open: the cells hold the shares in issue less the world's and plus the short, " + String.format("%,.0f", heldBefore),
-                sold > 0 && ex.shortShares(u) == sold && Math.abs(heldBefore + world - (reg.getShares(u) + sold)) <= 1e-6 * reg.getShares(u));
-        reg.retire(u, reg.getShares(u), 0);
+        assertTrue("fixture: the register is whole with the short open: the cells hold the shares in issue plus the short, " + String.format("%,.0f", hb.sharesHeld(u)),
+                sold > 0 && ex.shortShares(u) == sold && Math.abs(hb.sharesHeld(u) - (founded + sold)) <= 1e-6 * founded);
+        // Every share in issue is bought from the founders and retired; the buyer sells half of what the short sold it to the world and the rest to the
+        // desk, so no cell holds any to carry abroad this month (edge 2) and the holdings still add to the shares in issue, none, plus the short.
+        reg.retire(u, founded, 0);
+        double abroad = .5 * sold;
+        for (Household h : hb.cells()) h.shares[u] = 0;
+        reg.moveForeign(u, abroad);
+        reg.moveDesk(u, sold - abroad);
         double quoted = ex.price(u);
-        assertTrue("fixture: " + Equity.COMPANIES[u] + " has no shares in issue, the world holds " + String.format("%,.0f", world) + " of it and is short "
-                + String.format("%,.0f", sold) + ", sold to a cell, at $" + String.format("%.4f", quoted),
-                reg.getShares(u) == 0 && reg.getForeignShares(u) == world && quoted > 0);
+        assertTrue("fixture: " + Equity.COMPANIES[u] + " has no shares in issue, the world holds " + String.format("%,.0f", abroad) + " of what a short sold " + String.format("%,.0f", sold)
+                + " and the desk the rest, at $" + String.format("%.4f", quoted), reg.getShares(u) == 0 && reg.getForeignShares(u) == abroad && quoted > 0
+                && hb.sharesHeld(u) == 0 && Math.abs(reg.getDealerShares(u) + abroad - sold) <= 1e-6 * sold);
         ForeignAccounts fx = city.getForeignAccounts();
         double forgivenBefore = fx.getForgiven();
         PrintStream real = System.out;
         System.setOut(quiet);
         try { city.simulateMonths(1); } finally { System.setOut(real); }
         MoneyAudit.Result a = city.getLastMoneyAudit();
-        assertTrue("the short is closed, what it sold gone with the company, the cells' and the world's shares with them", ex.shortShares(u) == 0
-                && hb.sharesHeld(u) == 0 && reg.getForeignShares(u) == 0 && reg.getShares(u) == 0);
-        close("the exchange's wipe is the world's shares at the quote", ex.getWorldSharesWiped(), world * quoted, 1e-9 * world * quoted);
+        assertTrue("the short is closed, what it sold gone with the company, the desk's and the world's shares with them", ex.shortShares(u) == 0
+                && reg.getDealerShares(u) == 0 && reg.getForeignShares(u) == 0 && reg.getShares(u) == 0);
+        close("the exchange's wipe is the world's shares at the quote", ex.getWorldSharesWiped(), abroad * quoted, 1e-9 * abroad * quoted);
         close("...and its closed short the shares it owed at the quote", ex.getShortClosedForNothing(), sold * quoted, 1e-9 * sold * quoted);
         assertTrue("fixture: both are above the audit's cent, so a line that was left out would show", ex.getWorldSharesWiped() > MoneyAudit.CENT && ex.getShortClosedForNothing() > MoneyAudit.CENT);
         out.printf("   the wipe $%,.2f in the city's favour, the short $%,.2f against it; the audit's residual %.6f%n", ex.getWorldSharesWiped(), ex.getShortClosedForNothing(), a.residual);
