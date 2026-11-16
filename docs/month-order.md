@@ -587,5 +587,5 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 3. **L753** `initialize();` → [Game.initialize](map/Game.md) (L759)
 4. **L754** `foundingBank();` → [Game.foundingBank](map/Game.md) (L902)
 5. **L755** `foundingYard();` → [Game.foundingYard](map/Game.md) (L988)
-6. **L756** `if (starting && founding.isUnfitted()) unfitTheFounding();` → [Founding.isUnfitted](map/Founding.md) (L417), [Game.unfitTheFounding](map/Game.md) (L1260)
+6. **L756** `if (starting && founding.isUnfitted()) unfitTheFounding();` → [Founding.isUnfitted](map/Founding.md) (L420), [Game.unfitTheFounding](map/Game.md) (L1260)
 

@@ -46,7 +46,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 78 | `WageLadderCheck.DEFAULT` | `Founding.defaults().withUnfitted(false)` |  |
+| 78 | `WageLadderCheck.DEFAULT` | `Founding.defaults()` |  |
 | 79 | `WageLadderCheck.THE_1900_WAY` | `Founding.defaults().withUnfitted(true)` |  |
 
 ## Fields (state)

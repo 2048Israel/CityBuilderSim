@@ -62,7 +62,7 @@
 > 
 > Every fixture causes its condition.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (41), [CareType](CareType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (22), [Game](Game.md) (22), [CityNeeds](CityNeeds.md) (15), [AgeBand](AgeBand.md) (12), [GameFiles](GameFiles.md) (7), [JobType](JobType.md) (6), [BuildingManager](BuildingManager.md) (6), [BuildingVisual](BuildingVisual.md) (6), [PopulationCohorts](PopulationCohorts.md) (6), [LongPlaytest](LongPlaytest.md) (5), [Founding](Founding.md) (4), [BuildingType](BuildingType.md) (4), [Health](Health.md) (4), [BuildCard](BuildCard.md) (3), [Healthcare](Healthcare.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [WorksValue](WorksValue.md) (2), [Sector](Sector.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (41), [CareType](CareType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (22), [Game](Game.md) (22), [CityNeeds](CityNeeds.md) (15), [AgeBand](AgeBand.md) (12), [GameFiles](GameFiles.md) (7), [JobType](JobType.md) (6), [BuildingManager](BuildingManager.md) (6), [BuildingVisual](BuildingVisual.md) (6), [PopulationCohorts](PopulationCohorts.md) (6), [LongPlaytest](LongPlaytest.md) (5), [BuildingType](BuildingType.md) (4), [Health](Health.md) (4), [Founding](Founding.md) (3), [BuildCard](BuildCard.md) (3), [Healthcare](Healthcare.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [WorksValue](WorksValue.md) (2), [Sector](Sector.md) (1), [TempDirs](TempDirs.md) (1)
 
 **Used by (6):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
