@@ -1,4 +1,4 @@
-# WorksValue.java - 416 lines · 25 methods · 0 constants · model
+# WorksValue.java - 419 lines · 25 methods · 0 constants · model
 
 `ham/citybuildersim/WorksValue.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -6,7 +6,7 @@
 > WHY. A plant's cheap used kW hid its land and a shortage's lost work. These
 > are comparisons at today's prices, never entries in the city's money books.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (59), [BuildingsTemplate](BuildingsTemplate.md) (40), [Game](Game.md) (22), [Sector](Sector.md) (10), [DecisionLog](DecisionLog.md) (9), [Health](Health.md) (5), [Crime](Crime.md) (4), [AutoBuilder](AutoBuilder.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [ConstructionControl](ConstructionControl.md) (2), [Statement](Statement.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [DebtQuote](DebtQuote.md) (1), [LandParcel](LandParcel.md) (1), [LandManager](LandManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [BuildingType](BuildingType.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (60), [BuildingsTemplate](BuildingsTemplate.md) (40), [Game](Game.md) (22), [Sector](Sector.md) (10), [DecisionLog](DecisionLog.md) (9), [Health](Health.md) (5), [Crime](Crime.md) (4), [AutoBuilder](AutoBuilder.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [ConstructionControl](ConstructionControl.md) (2), [Statement](Statement.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [DebtQuote](DebtQuote.md) (1), [LandParcel](LandParcel.md) (1), [LandManager](LandManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [BuildingType](BuildingType.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
 
 **Used by (7):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
@@ -22,7 +22,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 406 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
+| 11 | 409 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
 | 12 | 1 | `private WorksValue()` |  |
 | 15 | 19 | **type** `public record Value(double capital, double land, double futureCapital, int futureUnits, double financing, d...` | Present values in local thousands; jobs and payroll are shown separately from their tax return. |
 | 18 | 1 | `public double cost()` _(in WorksValue.Value)_ |  |
@@ -53,5 +53,5 @@
 | 332 | 3 | `private static double cover(double[] sd)` |  |
 | 336 | 10 | `private static Map<Sector, double[]> traffic(Game g, BuildAdvice.Measure m)` |  |
 | 348 | 11 | `static double shortageLoss(Game g, BuildAdvice.Measure m)` | The current monthly output loss that a fully serving available work could relieve. |
-| 361 | 55 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> before, Map<BuildingsTemplate, Inte...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
+| 361 | 58 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> before, Map<BuildingsTemplate, Inte...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
 

@@ -42,9 +42,11 @@ public final class WageLadder {
     /**
      * What one 1901 census dollar is in founding money: one. Founding money is 1900's price level (PriceLevel.FACTOR); the US CPI is the same in
      * 1900 and 1901 (8.333) and the Canadian dollar stood at par with the US dollar on gold, so the census's dollar is the founding dollar,
-     * converted here and nowhere else.
+     * converted here and nowhere else. Written as the factor over 1900's own (R1d), exactly 1 in the game: PriceLevelCheck's twin founded at
+     * today's prices (cbs.priceLevel=1) found 1901's wages fixed at 1900's dollars there, 38.6 times under every other anchor, once the
+     * playtest it twins was founded the 1900 way.
      */
-    public static final double FOUNDING_PER_CENSUS_DOLLAR = 1.0;
+    public static final double FOUNDING_PER_CENSUS_DOLLAR = PriceLevel.FACTOR / PriceLevel.HISTORICAL_FACTOR;
 
     /** The months in the census's year of earnings. */
     public static final double MONTHS_A_YEAR = 12;

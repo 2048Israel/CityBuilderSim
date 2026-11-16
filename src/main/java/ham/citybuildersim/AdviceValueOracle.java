@@ -52,9 +52,9 @@ final class AdviceValueOracle {
         double nextLead = g.quoteBuild(t, 1).months;
         if (!Double.isFinite(nextLead)) nextLead = 0;
         double powerPotential = 0;
-        for (Sector sector : g.getSectors().all()) if (sector.getEnergyRatio() > 0) {
+        for (Sector sector : g.getSectors().all()) {
             Sector.Statement book = sector.statement();
-            powerPotential += Math.max(0, book.revenue - book.inputs - book.electricity - book.water) / sector.getEnergyRatio();
+            powerPotential += sector.perPointOfGrid(Math.max(0, book.revenue - book.inputs - book.electricity - book.water));   // steam needs no grid (R1d)
         }
         Map<BuildingsTemplate, Integer> loads = new LinkedHashMap<>();
         if (power) for (BuildingsStacks stack : g.getBuildingManager().getStacksUnderConstruction()) {

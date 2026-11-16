@@ -284,7 +284,7 @@ public class Ensemble {
         Game g;
         System.setOut(quiet);
         try {
-            g = new Game(files, LongPlaytest.founding());
+            g = new Game(files, LongPlaytest.played(null));
             g.run();
         } finally {
             System.setOut(real);

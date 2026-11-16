@@ -168,7 +168,7 @@ public final class WorksValue {
         if (power) for (Sector sector : g.getSectors().all()) {
             Sector.Statement book = sector.statement();
             double valueAdded = Math.max(0, book.revenue - book.inputs - book.electricity - book.water);
-            if (sector.getEnergyRatio() > 0) powerPotential += valueAdded / sector.getEnergyRatio();
+            powerPotential += sector.perPointOfGrid(valueAdded);   // the steam share runs without the grid (R1d)
         }
         double horizon = BuildAdvice.LIFE_MONTHS;
         double futureCapital = 0, futureMonths = 0, financingCost = 0, runningCost = 0;
@@ -409,7 +409,10 @@ public final class WorksValue {
                 default: continue;
             }
             // A zero observed factor gives no defensible book-based potential; no invented output or multiplier.
-            if (oldFactor > 0) result += valueAdded / oldFactor * at.k() * Math.max(0, b - a);
+            if (m.kind() == BuildAdvice.Kind.POWER) {
+                double perPoint = sector.perPointOfGrid(valueAdded);   // steam needs no grid (R1d)
+                if (perPoint > 0) result += perPoint * at.k() * Math.max(0, b - a);
+            } else if (oldFactor > 0) result += valueAdded / oldFactor * at.k() * Math.max(0, b - a);
         }
         return result;
     }

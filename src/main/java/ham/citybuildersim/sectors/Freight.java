@@ -1348,6 +1348,9 @@ public final class Freight extends Sector {
         return markets.draw(Good.CROPS, this, key(), tonnes, sectors);
     }
 
+    /** Capital hire only: the city pays its own carters and buys the feed separately (R1d). */
+    void hireTeams(double amount) { bookImportedService(Haulage.TEAM_HIRE, amount); }
+
     /** Haulage's bill, as this sector's other revenue; named "Haulage billed" (nameOtherRevenue()). */
     void bookHaulage(double amount) { bookOtherRevenue(amount); }
 
