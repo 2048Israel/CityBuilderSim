@@ -242,15 +242,22 @@ reds (`WaterCheck`, `PartnersCheck`, `VaultMoneysCheck`, `BuildCardCheck`,
 
 ## The playtest and the ensemble
 
-The gate's playtest is today's city, as on main; its trace should stay
-main's (the final dry run checks this). There is no ensemble in R1d (the
-orchestrator, 04:52): the ensemble on 1900 moves to R1g.
+The gate's playtest is today's city, as on main, and its trace did not
+move: all eight CSVs of the final dry run are byte-identical to main's
+reference (`cbs-gate-R0h-NrRv6F33/traces`). There is no ensemble in R1d
+(the orchestrator, 04:52): the ensemble on 1900 moves to R1g.
 
 ## The dry runs
 
 Discovery, at 82ba734c5 with every founding 1900: exit 1, 847 lines in 90
 harnesses, 1,821 s (`cbs-gate-R1d-rM7GeEb2`). This led to call 1's
 revision.
+
+Final, at eceeb35cf (main 0f4ebb9c, 0.9.125, merged): exit 0, the suite in
+2,660 s, known red only, in five harnesses whose entries are other
+batches' (DeathRecordCheck, InvestCheck, KeptCheck, MapCheck, PrizeCheck),
+none unnamed; MoneyDatesCheck green. The playtest trace was byte-identical
+to main's (`cbs-gate-R1d-Q7uVtXzB`).
 
 ## Process lines
 
