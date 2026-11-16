@@ -197,7 +197,7 @@ public class InterestAbroadCheck {
 
     /** A trading town on the default founding, as WorldMoneysCheck builds it, on a scratch folder; quieted for the D$ or on the literals where asked (before its first month). */
     static Game town(String label, boolean quietForTheD, boolean onLiterals) {
-        Game city = new Game(GameFiles.scratch(label), Founding.defaults());
+        Game city = new Game(GameFiles.scratch(label), Founding.defaults().withUnfitted(false));   // R1d: today's money, as before 1900 became the default: a 1900 city's dial and pegs are shut until 1914 and 1935 (R0f)
         if (quietForTheD) city.quietTheWorldForTheD();
         if (onLiterals) city.playOnLiterals();
         quietly(() -> {

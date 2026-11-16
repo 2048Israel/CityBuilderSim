@@ -148,7 +148,7 @@ public class MortgageCheck {
      */
     static Game landlordCity(Path root, String name, boolean worksStanding, int depotsStanding) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
-        Game g = new Game(files);
+        Game g = new Game(files, Founding.defaults().withUnfitted(false));   // R1d: today's city, as before 1900 became the default: the landlords' insured mortgages and the founding depots' staffing are today's (BuildersFirstCheck 6)
         quietly(() -> {
             g.run();
             // THE TREASURY THIS FIXTURE IS WRITTEN AGAINST: its works are
