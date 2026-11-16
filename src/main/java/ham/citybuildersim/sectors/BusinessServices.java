@@ -149,7 +149,6 @@ public final class BusinessServices extends Sector {
         BuildingsTemplate best = null;
         double bestScore = 0;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
         boolean sawLicenceWall = false;
         JobType wanted = null;
         double shortBy = 0;
@@ -177,10 +176,7 @@ public final class BusinessServices extends Sector {
             Staffing staffing = staffing(t);
             double staffable = staffing.share;
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
 
@@ -202,7 +198,7 @@ public final class BusinessServices extends Sector {
                         Math.ceil(shortBy), licenceLabel(wanted)));
             }
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             }
             return BusinessInvestment.Decision.no(sector,
                     "the wage bill is above what the world pays for the work");

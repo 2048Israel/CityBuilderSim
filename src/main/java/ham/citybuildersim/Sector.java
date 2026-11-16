@@ -455,6 +455,21 @@ public abstract class Sector {
                             share * 100, a, building, arrivalsWords(), MIN_STAFFABLE_TO_ORDER * 100);
         }
 
+        /** Why not, for the building it was asked about (TQ1: a hold names its own template). */
+        public String why() {
+            return why(template == null ? null : template.getName());
+        }
+
+        /**
+         * Of the refusals a planner has met so far and the one it meets now, the one it keeps as its hold (TQ1): the
+         * thirteen planners that hand a hold to WantedPosts (LD1) all keep it here. Null for none so far.
+         */
+        public static Staffing held(Staffing kept, Staffing refused) {
+            if (kept == null) return refused;
+            if (refused == null) return kept;
+            return refused.share > kept.share ? refused : kept;
+        }
+
         /** The window the gate counts, in words: "a year's arrivals" at GATE_DRAW_MONTHS of 12 (GW1). */
         public static String arrivalsWords() {
             return GATE_DRAW_MONTHS == 12 ? "a year's arrivals" : GATE_DRAW_MONTHS + " months' arrivals";

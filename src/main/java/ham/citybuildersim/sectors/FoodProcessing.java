@@ -230,7 +230,6 @@ public final class FoodProcessing extends Sector {
         String unprofitable = null;
         boolean unprofitableEatsMeat = false;
         Staffing staffingHold = null;
-        String staffingHoldName = null;
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
 
@@ -242,10 +241,7 @@ public final class FoodProcessing extends Sector {
             // ...and one the city could staff (0.7.18; see Sector.staffing()).
             Staffing staffing = staffing(t);
             if (!staffing.passes()) {
-                if (staffingHold == null || staffing.share > staffingHold.share) {
-                    staffingHold = staffing;
-                    staffingHoldName = t.getName();
-                }
+                staffingHold = Staffing.held(staffingHold, staffing);
                 continue;
             }
 
@@ -276,7 +272,7 @@ public final class FoodProcessing extends Sector {
                                 + "it would get for what it makes", unprofitable));
             }
             if (staffingHold != null) {
-                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why(staffingHoldName));
+                return BusinessInvestment.Decision.unstaffed(sector, staffingHold, staffingHold.why());
             }
             if (fullest != null) {
                 return BusinessInvestment.Decision.no(sector, String.format(
