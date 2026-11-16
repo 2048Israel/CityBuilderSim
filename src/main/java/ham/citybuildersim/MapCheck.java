@@ -430,6 +430,8 @@ import java.util.Map;
  * fixtures that need his mines - 8's runs' marks on his city x 1 and its
  * rail yards - on his city x 1 again where its square holds iron
  * (Squares.ironX1, dryPlace(w, side)). The copies stand at the dry place.
+ *  24. (FA1) Actual frontage marks crossing a founding avenue away from its origin: both slopes and phases,
+ *      every band continuous, four roads signalled, and the four tiles agree at a crossing on their shared corner.
  */
 public class MapCheck {
 
@@ -574,6 +576,7 @@ public class MapCheck {
         boughtInsideBuiltDistrict();
         aStoreLeaves();
         aDepotLeavesTheYardsDistrict();
+        frontageDrawn(sq.types);
         depositsZoomedOut(city);
         fullCopy(sq);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -15629,4 +15632,82 @@ public class MapCheck {
             }
         }
     }
+
+    /* =====================================================================
+       24. FRONTAGE CROSSINGS AWAY FROM THE FOUNDING ORIGIN (FA1)
+       ===================================================================== */
+
+    /** Actual plan marks, with only their avenue streets, cause the newly possible diagonal crossing in the raster. */
+    static void frontageDrawn(BuildingVisual.Type[] types) {
+        out.println("\n--- 24. frontage avenues crossing another avenue away from the founding origin: both strokes and one junction ---");
+        int n = DistrictPlan.FRAME, tile = World.TILE;
+        int fixtures = 0, samples = 0, missing = 0, sidesMissing = 0, signals = 0, disagreements = 0, nondeterministic = 0;
+        for (int offset : new int[] { PlanCheck.FRONTAGE_OFFSET - 1, PlanCheck.FRONTAGE_OFFSET }) {
+            for (boolean reflected : new boolean[] { false, true }) {
+                DistrictPlan.Input pin = PlanCheck.flatMix(types, PlanCheck.FULL_FILL, true, false);
+                for (int x = 0; x < n; x++) for (int c = 0; c < 2; c++) {
+                    int y = x - offset - c;
+                    if (y >= 0 && y < n) pin.fixed[(reflected ? n - 1 - y : y) * n + x] = DistrictPlan.FIXED_HIGHWAY;
+                }
+                DistrictPlan plan = DistrictPlan.make(pin);
+                int hub = (int) pin.hubX, dy = reflected ? -1 : 1, heading = reflected ? 3 : 0;
+                for (int side : new int[] { -1, 1 }) {
+                    int line = (reflected ? n - 1 + offset : offset) + side * DistrictPlan.FRONTAGE_GAP;
+                    int cx = reflected ? (line + 1) / 2 : (line + 2 * hub + 1) / 2;
+                    int cy = reflected ? line - cx : cx - line;
+                    int shared = plan.avenue[cy * n + cx] & 255;
+                    int prev = plan.avenue[(cy - dy) * n + cx - 1] & 255, next = plan.avenue[(cy + dy) * n + cx + 1] & 255;
+                    if (shared != 0 && (shared >> CityRuns.M_DIAG_SHIFT & 3) != heading
+                            && prev != 0 && next != 0 && (prev & CityRuns.M_CORNER) == 0 && (next & CityRuns.M_CORNER) == 0
+                            && (prev >> CityRuns.M_DIAG_SHIFT & 3) == heading && (next >> CityRuns.M_DIAG_SHIFT & 3) == heading
+                            && Math.abs(cx - hub) >= DistrictPlan.LATTICE) fixtures++;
+                    for (int at : new int[] { tile / 2, tile }) {
+                        int cutX = cx - at, cutY = cy - at;
+                        JunctionCheck.Streets marks = (x, y) -> {
+                            int xx = x + cutX, yy = y + cutY;
+                            return xx >= 0 && yy >= 0 && xx < n && yy < n ? plan.avenue[yy * n + xx] & 255 : 0;
+                        };
+                        JunctionCheck.Streets streets = (x, y) -> marks.at(x, y) != 0 ? JunctionCheck.ARTERIAL : 0;
+                        for (int px : new int[] { 4, 8 }) {
+                            int[] img = JunctionCheck.fourTilesWithAvenue(streets, marks, hub - cutX, hub - cutY, px);
+                            int w = 2 * tile * px;
+                            for (int sample = 0; sample < 3 * AV_SAMPLES; sample++) {
+                                double f = sample / (double) AV_SAMPLES;
+                                int x = (int) Math.floor((cx - 0.5 + f - cutX) * px);
+                                int y = (int) Math.floor((cy - dy + 0.5 + dy * f - cutY) * px);
+                                int colour = img[y * w + x];
+                                samples++;
+                                if (!streetColour(colour) && colour != TileRaster.JUNCTION_BOX && colour != TileRaster.ZEBRA) missing++;
+                                int width = (JunctionCheck.ARTERIAL >> TilePainter.S_WIDTH_SHIFT) & 3;
+                                double inset = Math.max(0, Math.round(TileRaster.SURFACE[width] * px) / 2.0 - 1) / px / Math.sqrt(2);
+                                for (int edge : new int[] { -1, 1 }) {
+                                    int sx = (int) Math.floor((cx - 0.5 + f - cutX - edge * dy * inset) * px);
+                                    int sy = (int) Math.floor((cy - dy + 0.5 + dy * f - cutY + edge * inset) * px);
+                                    int c = img[sy * w + sx];
+                                    if (!streetColour(c) && c != TileRaster.JUNCTION_BOX && c != TileRaster.ZEBRA) sidesMissing++;
+                                }
+                            }
+                            java.util.List<int[]> reads = new java.util.ArrayList<>();
+                            boolean signal = false;
+                            for (int ty = 0; ty < 2; ty++) for (int tx = 0; tx < 2; tx++) {
+                                TilePainter.Input in = JunctionCheck.inputWithAvenue(tx, ty, streets, marks, hub - cutX, hub - cutY);
+                                java.util.List<int[]> crossings = JunctionCheck.readBy(in, tx, ty);
+                                reads.addAll(crossings);
+                                for (int[] c : crossings) if (c[0] <= at && c[2] >= at && c[1] <= at && c[3] >= at && c[4] == 4 && c[5] == 0) signal = true;
+                            }
+                            if (signal) signals++;
+                            disagreements += JunctionCheck.unlike(reads);
+                            if (!Arrays.equals(img, JunctionCheck.fourTilesWithAvenue(streets, marks, hub - cutX, hub - cutY, px))) nondeterministic++;
+                        }
+                    }
+                }
+            }
+        }
+        out.printf("      %d real crossings, %d line samples, %d missing; %d four-road signals, %d unlike tile reads, %d unequal redraws%n", fixtures, samples, missing, signals, disagreements, nondeterministic);
+        check("fixture: both frontage sides cross a founding arm away from its origin, both slopes and both staircase phases", fixtures == 8);
+        check("both avenue strokes are continuous through every crossing, also on a tile corner (" + missing + " missing of " + samples + ")", samples > 0 && missing == 0);
+        check("the crossing keeps each band wide to its street width less a pixel (" + sidesMissing + " missing side samples)", sidesMissing == 0);
+        check("each four-road avenue crossing is a signal, every tile agreeing, and the same pixels on redraw", signals == 32 && disagreements == 0 && nondeterministic == 0);
+    }
+
 }

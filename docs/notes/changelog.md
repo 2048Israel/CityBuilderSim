@@ -18,6 +18,27 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### SR1 — A city stocked complete in bulk reloads with its cash drifting — 2026-11-16, ready, no tag (harness), see docs/queue/SR1-notes.md
+The bulk-stocked causes-of-death fixture now plays beside its reload at
+months 3, 12 and 60, and through January–March 1919 alongside the existing
+playtest-founded twin, comparing cash, every audit pool and the full death
+and sickness state to the bit. Its original cash drift is reproduced on
+R0g's model and traced to unallocated fixture ground being reconstructed
+on load; AW2 already saved the live land ledger and cured it. The fixture
+is kept unchanged and founded()'s comment now tells that history. No game
+or save format changes.
+
+### 0.9.124 — FA1, frontage avenues beside diagonal highways — 2026-11-16, ready, see docs/queue/FA1-notes.md
+Diagonal highways gain a frontage avenue just outside each verge, using the
+avenue planner with separate origins and dated highway plots. New cells
+build along them; existing cells retain their grid and standing buildings,
+and frontage uses only available plots that keep junction spacing. Streets
+still pass beneath the highway. The painter keeps both strokes and their
+width where avenues cross, including across tile edges. PlanCheck and
+MapCheck guard strip use, both headings, late-city use against main, retained
+grid and boxes, the junction floor and the new crossings. The launcher dry
+run passed and the eight traces match main's. Map only; no model or save-format change.
+
 ### 0.9.123 — R2e, Research: the 1951-2000 entries undone — 2026-11-16, ready, see docs/queue/R2e-notes.md
 The postwar engineering and business catalogue now removes 27 sourced changes
 from unfitted templates, with independent fitting, saved process decisions and

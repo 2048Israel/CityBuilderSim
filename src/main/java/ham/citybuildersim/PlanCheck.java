@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.List;
 
@@ -183,8 +184,9 @@ import java.util.List;
  *      which the painter draws from, and the harness's own staircase agree - as the same reserve there from the start has none;
  *      what the plan took up of the streets the plan before it had in the box is the avenue's alone (the cells' own stand, FX7);
  *      the avenue stands on both sides of the reserve and counts what it does not lay there (avenueBroken) as the same reserve
- *      from the start does; no building off the reserve moves; every check holds. (D2, a diagonal highway through a full
- *      district, is a probe, docs/queue/MF2/MF2DiagonalProbe, compiled by hand, while the plan lays no frontage avenue.)
+ *      from the start does; no building off the reserve moves; every check holds.
+ *  20. frontage avenues beside a diagonal highway: MF2's original strip-use and verge-end fixture, plus the
+ *      plan laws, both diagonal headings, dated arrival on built cells and deterministic replay.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -394,6 +396,7 @@ public class PlanCheck {
         firstExclusion(types);
         wallPurchaseMonth(types);
         interchangeAvenue(types);
+        diagonalFrontage(types);
         for (String s : saves) save(Path.of(s));
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -601,6 +604,7 @@ public class PlanCheck {
                 boolean[] laid = new boolean[area];
                 for (int q = 0; q < area; q++) laid[q] = (p.avenue[q] & CityRuns.M_DIAG) != 0;
                 for (int a = 0; a < 4; a++) f.avenueBad += floorBad(junctions(p, stairsIn, a, laid, null));
+                f.avenueBad += frontageFloorBad(p);
             }
         }
         return f;
@@ -5104,4 +5108,243 @@ public class PlanCheck {
         }
     }
 
+
+    /** How far from the verge the strip reaches, in plots beyond it: 8, the width of one block of the lattice (TilePainter.JUNCTION_APART). */
+    static final int STRIP = TilePainter.JUNCTION_APART;
+
+    /**
+     * The most the highway may cost the strip, in share of its plots (a building or a street) used, against the same district with no highway (the same
+     * fill, the same arrivals; the verge, which H5 bars to buildings, is counted out of both): 0.02, 139 of the strip's 6,936 plots. A frontage street
+     * along the verge would leave each block it cuts one corner triangle, at most LATTICE x LATTICE / 2 = 32 plots, and the strip holds about 108 blocks
+     * (6,936 / 64) of which a corner triangle is empty in a few; 0.02 is four of them. Main loses 0.085, some 590 plots of the blocks the
+     * highway cuts, with nothing on them. (The cells' own spread of the used share is 0.20: one cell differs from the next by far more, so the margin is
+     * not drawn from it.)
+     */
+    static final double STRIP_MARGIN = 0.02;
+
+    /** The highway's offset, in plots: its staircase is the plots with y = x - OFFSET and y = x - OFFSET - 1, off the avenues' arms (which lie on x - y = 0). */
+    static final int FRONTAGE_OFFSET = 37;
+
+    /** Used strip plots on main 01402a54e in this section's identical late-run fixture (2026-11-15), 4373/6936. */
+    static final long MAIN_LATE_STRIP_USED = 4373;
+
+    /** MF2's unchanged probe, now the next permanent section (FA1). */
+    static void diagonalFrontage(BuildingVisual.Type[] types) {
+        out.println("\n--- 20. frontage avenues along a diagonal highway: the wedges built and the grid streets joined ---");
+        final int n = DistrictPlan.FRAME;
+        DistrictPlan.Input in = flatMix(types, FULL_FILL, true, false);
+        int highwayPlots = 0;
+        for (int x = 0; x < n; x++) {
+            for (int dy = 0; dy <= 1; dy++) {
+                int y = x - FRONTAGE_OFFSET - dy;
+                if (y < 0 || y >= n) continue;
+                in.fixed[y * n + x] = DistrictPlan.FIXED_HIGHWAY;
+                highwayPlots++;
+            }
+        }
+        DistrictPlan p = DistrictPlan.make(in);
+        // The same district with no highway: what the strip's plots hold when nothing cuts them.
+        DistrictPlan control = DistrictPlan.make(flatMix(types, FULL_FILL, true, false));
+        // Chebyshev distance to the highway's plots (8-connected BFS from them): 0 on it, 1 on its verge, 2 to 1 + STRIP the strip.
+        int[] d = new int[DistrictPlan.AREA];
+        Arrays.fill(d, Integer.MAX_VALUE);
+        ArrayDeque<Integer> queue = new ArrayDeque<>();
+        for (int q = 0; q < DistrictPlan.AREA; q++) if (in.fixed[q] == DistrictPlan.FIXED_HIGHWAY) { d[q] = 0; queue.add(q); }
+        while (!queue.isEmpty()) {
+            int q = queue.poll(), x = q % n, y = q / n;
+            for (int yy = Math.max(0, y - 1); yy <= Math.min(n - 1, y + 1); yy++) {
+                for (int xx = Math.max(0, x - 1); xx <= Math.min(n - 1, x + 1); xx++) {
+                    int a = yy * n + xx;
+                    if (d[a] != Integer.MAX_VALUE) continue;
+                    d[a] = d[q] + 1;
+                    queue.add(a);
+                }
+            }
+        }
+        // The plots a building covers.
+        boolean[] built = new boolean[DistrictPlan.AREA];
+        for (int i = 0; i < p.buildings; i++) for (int y = p.by[i]; y < p.by[i] + p.bh[i]; y++) for (int x = p.bx[i]; x < p.bx[i] + p.bw[i]; x++) built[y * n + x] = true;
+        boolean[] builtControl = new boolean[DistrictPlan.AREA];
+        for (int i = 0; i < control.buildings; i++) for (int y = control.by[i]; y < control.by[i] + control.bh[i]; y++) for (int x = control.bx[i]; x < control.bx[i] + control.bw[i]; x++) builtControl[y * n + x] = true;
+        long stripOwned = 0, stripUsed = 0, restOwned = 0, restUsed = 0, controlUsed = 0;
+        final int cells = DistrictPlan.CELLS_A_SIDE, cell = DistrictPlan.CELL;
+        long[] cellOwned = new long[DistrictPlan.CELLS], cellUsed = new long[DistrictPlan.CELLS];
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            int x = q % n, y = q / n;
+            if (!in.owned[q] || d[q] <= 1 || !inOpenBox(p, x, y)) continue;
+            boolean used = built[q] || p.isStreet(q);
+            if (d[q] <= 1 + STRIP) { stripOwned++; if (used) stripUsed++; if (builtControl[q] || control.isStreet(q)) controlUsed++; }
+            else {
+                restOwned++;
+                if (used) restUsed++;
+                int c = Math.min(cells - 1, x / cell) + cells * Math.min(cells - 1, y / cell);
+                cellOwned[c]++;
+                if (used) cellUsed[c]++;
+            }
+        }
+        double stripShare = stripOwned == 0 ? 0 : (double) stripUsed / stripOwned, restShare = restOwned == 0 ? 0 : (double) restUsed / restOwned;
+        // What the highway costs the strip: its plots' used share in the same district with no highway, less what they hold with it.
+        double controlShare = stripOwned == 0 ? 0 : (double) controlUsed / stripOwned, lost = controlShare - stripShare;
+        // THE STREETS THAT END AT THE VERGE: the street plots within the strip's inner two rings (distance 2 and 3 from the highway), 4-connected into
+        // pieces; a piece is a frontage street when it is as long as two blocks (2 x LATTICE plots) - a grid street's own plots there are two or three.
+        // Every other piece that has a plot at distance 2 and a street plot at distance 4 beside one of its own is a grid street that runs to the verge
+        // and meets no street along it.
+        int[] piece = new int[DistrictPlan.AREA];
+        int pieces = 0, frontage = 0, ends = 0, reaching = 0;
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            if ((d[q] != 2 && d[q] != 3) || !p.isStreet(q) || p.kindAt(q) == DistrictPlan.UNDER || piece[q] != 0) continue;
+            pieces++;
+            int size = 0;
+            boolean atVerge = false, arrives = false;
+            ArrayDeque<Integer> walk = new ArrayDeque<>();
+            piece[q] = pieces;
+            walk.add(q);
+            while (!walk.isEmpty()) {
+                int u = walk.poll(), ux = u % n, uy = u / n;
+                size++;
+                if (d[u] == 2) atVerge = true;
+                for (int k = 0; k < 4; k++) {
+                    int a = (uy + TilePainter.DY[k]) * n + ux + TilePainter.DX[k];
+                    if (a < 0 || a >= DistrictPlan.AREA || !p.isStreet(a) || p.kindAt(a) == DistrictPlan.UNDER) continue;
+                    if (d[a] == 4) arrives = true;
+                    if ((d[a] == 2 || d[a] == 3) && piece[a] == 0) { piece[a] = pieces; walk.add(a); }
+                }
+            }
+            if (size >= 2 * TilePainter.JUNCTION_APART) { frontage++; continue; }
+            if (atVerge && arrives) ends++;
+            if (atVerge) reaching++;
+        }
+        out.printf("      the plan: %,d buildings, %d cells open, %d highway plots; the strip (%d plots beyond the verge): %,d owned plots, %.1f%% used; the rest %,d plots, %.1f%% used; the same plots with no highway %.1f%% (lost %.1f points)%n",
+                p.buildings, p.cellsOpen, highwayPlots, STRIP, stripOwned, 100 * stripShare, restOwned, 100 * restShare, 100 * controlShare, 100 * lost);
+        out.printf("      street pieces in the strip's inner rings: %d, %d of them as long as two blocks (a street along the highway); %d reach the verge, %d of those a grid street arriving from away and meeting none%n",
+                pieces, frontage, reaching, ends);
+        check("fixture: the district is full (every cell open) and the highway runs through it across its cells, with ground on both sides of it", p.cellsOpen == DistrictPlan.CELLS && stripOwned > 1000 && restOwned > 1000);
+        check("the strips beside the highway's verge are used as the same district uses them with no highway: " + String.format("%.1f%% against %.1f%% (the rest of the district %.1f%%)", 100 * stripShare, 100 * controlShare, 100 * restShare)
+                + ", the loss within STRIP_MARGIN (" + STRIP_MARGIN + ")", lost <= STRIP_MARGIN);
+        check("no grid street runs to the verge and ends there without a street along the highway to join (" + ends + " of the " + reaching + " pieces that reach it)", ends == 0);
+        // A late run across a fully built district must not use the final fixed array in its first batch.
+        Log log = new Log();
+        for (int t = 0; t < control.overflow.length; t++) {
+            int count = in.counts[t];
+            if (count > 0) log.add(0, t, count);
+        }
+        log.batch();
+        DistrictPlan.Input beforeIn = log.attach(flatMix(types, FULL_FILL, true, false));
+        DistrictPlan before = DistrictPlan.make(beforeIn);
+        Runs lateRun = new Runs();
+        for (int q = 0; q < DistrictPlan.AREA; q++) if (in.fixed[q] == DistrictPlan.FIXED_HIGHWAY) lateRun.lay(1, q % n, q / n, 1, 1, DistrictPlan.FIXED_HIGHWAY);
+        DistrictPlan.Input lateIn = lateRun.into(log.attach(flatMix(types, FULL_FILL, true, false)), 1, true);
+        lateIn.month = 1;
+        DistrictPlan late = DistrictPlan.make(lateIn);
+        int lostGrid = 0;
+        for (int q = 0; q < DistrictPlan.AREA; q++) if (before.isStreet(q) && !late.isStreet(q)) lostGrid++;
+        out.printf("      late highway: %d buildings, %d moved off its ground, %d old street plots lost, %d frontage floor breaches%n", late.buildings, late.movedOff, lostGrid, frontageFloorBad(late));
+        check("a late diagonal highway preserves every existing grid street", lostGrid == 0);
+        check("late frontage keeps every plan law", figures(late, lateIn).holds(late, lateIn));
+        int offRunMoved = 0, lateMarks = 0, omitted = 0;
+        java.util.Set<Long> lateBoxes = boxes(late);
+        for (int i = 0; i < before.buildings; i++) {
+            boolean onVerge = false;
+            for (int y = before.by[i]; y < before.by[i] + before.bh[i]; y++) for (int x = before.bx[i]; x < before.bx[i] + before.bw[i]; x++) if (d[y * n + x] <= 1) onVerge = true;
+            if (!onVerge && !lateBoxes.contains(boxKey(before, i))) offRunMoved++;
+        }
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            int t = q % n - q / n;
+            if (t != FRONTAGE_OFFSET - DistrictPlan.FRONTAGE_GAP && t != FRONTAGE_OFFSET - DistrictPlan.FRONTAGE_GAP + 1
+                    && t != FRONTAGE_OFFSET + DistrictPlan.FRONTAGE_GAP && t != FRONTAGE_OFFSET + DistrictPlan.FRONTAGE_GAP + 1) continue;
+            if (late.avenue != null && late.avenue[q] != 0) lateMarks++; else omitted++;
+        }
+        check("fixture: the late run actually meets standing buildings and leaves frontage gaps (" + lateMarks + " laid, " + omitted + " omitted)", before.cellsOpen == DistrictPlan.CELLS && late.movedOff > 0 && lateMarks > 0 && omitted > 0);
+        check("the late frontage moves no box beyond the highway's own verge (" + offRunMoved + ")", offRunMoved == 0);
+        int newEnds = 0, lateUsed = 0;
+        boolean[] lateBuilt = new boolean[DistrictPlan.AREA];
+        for (int i = 0; i < late.buildings; i++) for (int y = late.by[i]; y < late.by[i] + late.bh[i]; y++) for (int x = late.bx[i]; x < late.bx[i] + late.bw[i]; x++) lateBuilt[y * n + x] = true;
+        for (int q = 0; q < DistrictPlan.AREA; q++) {
+            int x = q % n, y = q / n;
+            if (d[q] > 1 && d[q] <= 1 + STRIP && (lateBuilt[q] || late.isStreet(q))) lateUsed++;
+            if (!late.isStreet(q) || before.isStreet(q) || x == 0 || y == 0 || x == n - 1 || y == n - 1) continue;
+            int neighbours = 0;
+            for (int dir = 0; dir < 4; dir++) if (late.isStreet(q + TilePainter.DX[dir] + n * TilePainter.DY[dir])) neighbours++;
+            if (neighbours < 2) newEnds++;
+        }
+        out.printf("      late frontage: %d new dead ends, strip %.1f%% used (%d/%d), %d of %d frontage plots omitted%n", newEnds, 100.0 * lateUsed / stripOwned, lateUsed, stripOwned, omitted, omitted + lateMarks);
+        check("omitting a late frontage crossing leaves no new street dead end", newEnds == 0);
+        check("the late frontage uses at least main 01402a54e's strip plots on the identical dated city (" + lateUsed + " against " + MAIN_LATE_STRIP_USED + ")", lateUsed >= MAIN_LATE_STRIP_USED);
+        DistrictPlan.Input reflectedIn = flatMix(types, FULL_FILL, true, false);
+        for (int q = 0; q < DistrictPlan.AREA; q++) reflectedIn.fixed[(n - 1 - q / n) * n + q % n] = in.fixed[q];
+        DistrictPlan reflected = DistrictPlan.make(reflectedIn);
+        check("the opposite diagonal has frontage and keeps every plan law", reflected.avenuePlots > control.avenuePlots && figures(reflected, reflectedIn).holds(reflected, reflectedIn));
+
+        check("the same dated input replays to the identical boxes, street codes and avenue marks", samePlan(late, DistrictPlan.make(lateIn)));
+
+        int atGrade = 0, underneath = 0;
+        for (int q = 0; q < DistrictPlan.AREA; q++) if (in.fixed[q] == DistrictPlan.FIXED_HIGHWAY && p.isStreet(q)) {
+            if (p.kindAt(q) == DistrictPlan.UNDER) underneath++; else atGrade++;
+        }
+        check("the grid still passes beneath the diagonal highway, never across it at grade", underneath > 0 && atGrade == 0);
+        frontageGrowth(types);
+        Figures f = figures(p, in);
+        int frontageBad = frontageFloorBad(p);
+        check("the + floor also holds along each frontage arm with its own origin (" + frontageBad + ")", frontageBad == 0);
+        out.printf("      plan laws: pieces %d closest + %d, reach %d, on street %d, highway verge %d, avenue floor %d%n", f.pieces, f.closestPlus, f.outOfReach, f.onStreet, f.besideHighway, f.avenueBad);
+        check("the frontage district keeps every existing plan law", f.holds(p, in));
+    }
+
+    /** Later arrivals open more frontage cells without disturbing the cells already built. */
+    static void frontageGrowth(BuildingVisual.Type[] types) {
+        int house = pick(types,1,t->t.category()==BuildingType.RESIDENTIAL&&!t.outer()&&t.site()==null);
+        int shop = pick(types,1,t->t.category()==BuildingType.COMMERCIAL&&!t.outer()&&t.site()==null);
+        int works = pick(types,9,t->t.cls()==BuildingVisual.INDUSTRY&&!t.outer()&&t.site()==null&&t.campusGroup()==BuildingVisual.NO_GROUP);
+        int farm = pick(types,1,t->t.category()==BuildingType.AGRICULTURE&&t.outer()&&t.site()==null);
+        Log log=runsLog(house,shop,works,farm,pavedRoad(types),8);
+        DistrictPlan previous=null;
+        int moved = 0, lostGrid = 0, bad = 0, opened = 0;
+        for(int m=0;m<=8;m++) {
+            DistrictPlan.Input in=log.until(m).into(flat(types));
+            int n=DistrictPlan.FRAME;
+            for(int x=0;x<n;x++)for(int c=0;c<2;c++){int y=x-37-c;if(y>=0&&y<n)in.fixed[y*n+x]=DistrictPlan.FIXED_HIGHWAY;}
+            DistrictPlan p=DistrictPlan.make(in);
+            if (previous != null) {
+                moved += missing(previous, p);
+                for (int q = 0; q < DistrictPlan.AREA; q++) if (previous.isStreet(q) && previous.roleAt(q) != DistrictPlan.ROLE_JOIN && !p.isStreet(q)) lostGrid++;
+                if (p.cellsOpen > previous.cellsOpen) opened++;
+            }
+            if (!figures(p, in).holds(p, in)) bad++;
+            previous=p;
+        }
+        check("fixture: later arrivals open further frontage cells", opened > 0);
+        check("later frontage cells keep all standing boxes, old grid plots and plan laws (" + moved + ", " + lostGrid + ", " + bad + ")", moved == 0 && lostGrid == 0 && bad == 0);
+    }
+
+    /** The extra arms' lines read independently from the painted staircase marks, with the existing junction law. */
+    static int frontageFloorBad(DistrictPlan p) {
+        if (p.avenue == null) return 0;
+        java.util.Set<Integer> lines = new java.util.TreeSet<>();
+        int n = DistrictPlan.FRAME, bad = 0;
+        boolean[] laid = new boolean[DistrictPlan.AREA];
+        for (int q = 0; q < laid.length; q++) {
+            int mark = p.avenue[q] & 255, code = mark >> CityRuns.M_DIAG_SHIFT & 3;
+            laid[q] = mark != 0;
+            if (mark == 0 || code != 0 && code != 3) continue;
+            int dy = ARM_DY[code], line = q % n - dy * (q / n) - ((mark & CityRuns.M_CORNER) == 0 ? 0 : 1);
+            lines.add((line + 2 * n) * 2 + (code == 3 ? 1 : 0));
+        }
+        for (int key : lines) {
+            int code = key % 2 == 0 ? 0 : 3, line = key / 2 - 2 * n;
+            Stairs s = new Stairs();
+            s.ox = 0;
+            s.oy = -ARM_DY[code] * line;
+            s.from[code] = 0;
+            s.to[code] = n;
+            System.arraycopy(p.avenue, 0, s.mark, 0, s.mark.length);
+            for (int q = 0; q < laid.length; q++) {
+                int mark = p.avenue[q] & 255;
+                laid[q] = mark != 0 && (mark >> CityRuns.M_DIAG_SHIFT & 3) == code
+                        && q % n - ARM_DY[code] * (q / n) - ((mark & CityRuns.M_CORNER) == 0 ? 0 : 1) == line;
+            }
+            int[] js = junctions(p, s, code, laid, null);
+            bad += floorBad(js);
+        }
+        return bad;
+    }
 }
