@@ -85,7 +85,7 @@ public class AllChecks {
     static final int CPU_SAMPLES = 3;
 
     /** Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). */
-    static final List<String> LONGEST_FIRST = List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "EarthTerrainCheck");
+    static final List<String> LONGEST_FIRST = List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "CopperRefiningCheck", "EarthTerrainCheck");
 
     /** Runs nightly, and at the gate only when a direct pick names it (HA1). */
     static final List<String> NIGHTLY = List.of(
