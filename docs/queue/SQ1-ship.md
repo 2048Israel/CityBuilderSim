@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-SQ1-cIAvNoDp -->
 ## changelog
 ### {next} — SQ1, a building stack past 2^31 — 2026-11-16, ready, see docs/queue/SQ1-notes.md
 A building type's units merge into one stack, and the stack kept its quantity, its on-site count and its unfitted

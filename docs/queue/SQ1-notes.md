@@ -148,4 +148,10 @@ findings, two notes, both queued in the ship file as SQ1b: (1) `Game.drawMateria
 (its quote, its land, its finance) has no harness past 2^31: BuildingStackCheck section 6 orders through
 `BuildingManager.addStack`. The process fault above is queued as KR1.
 
-**The dry run.** (filled when it has run)
+**The dry run.** `sh tools/gate.sh SQ1 --dry-run` (the gate's fresh clone, its own data paths), exit 0, 2026-11-16
+18:02 to 19:14. Kept as `/tmp/cbs-gate-SQ1-cIAvNoDp` (`ship.log`, `unnamed.txt` empty). It was of the branch at
+`a1e2b25fa` (the notes and the ship file's queued rows were the last commits before it) merged into main at
+`bdb28a46c` (0.9.128 with R6-G's docs), nine commits of batch/SQ1, nothing kept: "suite known red only - 5 harnesses":
+DeathRecordCheck, InvestCheck, KeptCheck, MapCheck, PrizeCheck, all on the registry's recorded lines (KeptCheck's
+46 of 400 by this ship file's row). LandNationsCheck's worker line did not come back. After it only this file and the
+ship file changed (the gate-run line, then the marker dropped in a commit of its own).
