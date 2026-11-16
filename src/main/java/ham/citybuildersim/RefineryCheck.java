@@ -1107,7 +1107,7 @@ public class RefineryCheck {
         report("...with no ground free the same month it is refused at the ground and the land office hears of it (landBlocked)",
                 noGround != null && !noGround.build && noGround.landBlocked && noGround.reason.startsWith("no land"),
                 noGround == null ? "" : noGround.reason);
-        report("...and with ground the order went on site", d != null && (Integer) seen[5] == 1
+        report("...and with ground the order went on site", d != null && (Long) seen[5] == 1
                         && b.getStack(d.template).getUnderConstruction() + b.getQuantity(d.template.getId()) >= 1,
                 g.getLastInvestment(Sectors.REFINING));
         BuildingsTemplate crude = b.getTemplateByName("Crude Unit");

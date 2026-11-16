@@ -863,7 +863,7 @@ public final class Landmasses {
             if (at == home) n += count(s.standing, 0) + count(s.onSite, 0) + count(s.shell, 0);
         }
         for (long[] d : stock.demolitions(template)) {
-            Leave l = leaving.get(d[0]);
+            Leave l = leaving.get((int) d[0]);   // d[0] is a demolition id, not a count: the key is an int
             if (l == null) { if (at == home) n += d[1]; }
             else n += count(l.landmasses, at) + (at == home ? count(l.landmasses, 0) : 0);
         }
