@@ -1,6 +1,22 @@
 # RE3 - notes
 
-## Main's table (0.9.126, fb378433), before any code: stopped for the orchestrator's call
+## The call: nothing in code, the notes alone (orchestrator, 2026-11-16 10:34)
+
+RE3 ships no code, untagged, docs only; the trace is main's. The reasons, as given:
+
+- RE2's trap is gone on main: seed 3 unnamed, the brief's fixture, has no loss month and no
+  down-payment hold over 2 months (RE2's model: 125 loss months, 59 months held in a row).
+- The brief's done-condition for the landlords is met on main: no hold of a year or more on
+  seed 3, either way it is run.
+- The ensemble already watches the trap (RE1-T's way (d)).
+- A seed-3 guard run to m2400 in the suite would cost minutes for a watch the ensemble keeps.
+
+What the table found instead goes to Jerus as RE3-J (Pending): seeds 3 and 11 unnamed stand
+at 25,000-33,000 for over 1,000 months held by jobs, and seed 13 named has a jobs-led fall
+before its loss months and its 35-month hold. Recommended (a): a study of why no works pays in
+those towns before any fix, beside ER1-F's Rotterdam stall. No queued row.
+
+## Main's table (0.9.126, fb378433)
 
 RE1's probe (`docs/queue/RE1/probe-main.patch`) on a copy of `tools/ensemble/Ensemble.java`
 in target/re3 (uncommitted), AUTO2, one JVM at a time, books from m600; RE2's trap table
