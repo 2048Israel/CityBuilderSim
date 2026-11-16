@@ -1,4 +1,4 @@
-# FittingCheck.java - 1,367 lines · 42 methods · 3 constants · harnesses
+# FittingCheck.java - 1,403 lines · 42 methods · 3 constants · harnesses
 
 `ham/citybuildersim/FittingCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -50,7 +50,7 @@
 > sectors build nothing on their own. Figures are asserted against the stacks' own quantities and counts, the templates' getters and the model's
 > verdicts, never numbers copied from the brief.
 
-**Uses:** [Game](Game.md) (69), [EquipmentFit](EquipmentFit.md) (56), [EquipmentCheck](EquipmentCheck.md) (54), [BuildingsStacks](BuildingsStacks.md) (30), [Good](Good.md) (30), [Founding](Founding.md) (22), [Equipment](Equipment.md) (22), [Sector](Sector.md) (16), [BusinessInvestment](BusinessInvestment.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (10), [GameFiles](GameFiles.md) (8), [Fittings](Fittings.md) (8), [Forms1900Check](Forms1900Check.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [DataSave](DataSave.md) (6), [MoneyAudit](MoneyAudit.md) (6), [RecipeChanges](RecipeChanges.md) (4), [BuildingManager](BuildingManager.md) (3), [Observation](Observation.md) (3), [GoodsMarket](GoodsMarket.md) (3), [World](World.md) (2), [Nations](Nations.md) (2), [Sectors](Sectors.md) (2), [Construction](Construction.md) (2), [Recipes](Recipes.md) (2), [JobType](JobType.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1), [Landmasses](Landmasses.md) (1)... and 6 more
+**Uses:** [Game](Game.md) (69), [EquipmentFit](EquipmentFit.md) (56), [EquipmentCheck](EquipmentCheck.md) (54), [BuildingsStacks](BuildingsStacks.md) (30), [Good](Good.md) (30), [Founding](Founding.md) (22), [Equipment](Equipment.md) (22), [Sector](Sector.md) (16), [BusinessInvestment](BusinessInvestment.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (10), [Fittings](Fittings.md) (9), [GameFiles](GameFiles.md) (8), [Forms1900Check](Forms1900Check.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [DataSave](DataSave.md) (6), [MoneyAudit](MoneyAudit.md) (6), [RecipeChanges](RecipeChanges.md) (4), [BuildingManager](BuildingManager.md) (3), [Observation](Observation.md) (3), [Construction](Construction.md) (3), [GoodsMarket](GoodsMarket.md) (3), [World](World.md) (2), [Nations](Nations.md) (2), [Sectors](Sectors.md) (2), [Recipes](Recipes.md) (2), [JobType](JobType.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1), [Landmasses](Landmasses.md) (1)... and 6 more
 
 **Used by (11):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [KeptCheck](KeptCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [WageLadderCheck](WageLadderCheck.md)
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1308 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
+| 60 | 1344 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
 | 68 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 73 | 1 | `static void check(String label, boolean ok)` |  |
 | 76 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
@@ -188,16 +188,16 @@
 | 1094 | 8 | `static String stateLine(Game g)` | Every sector's cash and the treasury, the counts and the jobs, as one line: two cities are alike when their lines are equal. |
 | 1103 | 55 | `static void sectionEleven() throws Exception` |  |
 
-### 12. a default city orders none (lines 1159-1367)
+### 12. a default city orders none (lines 1159-1403)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1161 | 20 | `static void sectionTwelve()` |  |
-| 1182 | 28 | `static void scrappedMidFitting()` | R1d: demolition really removes a building while its paid job is partly worked. |
-| 1212 | 20 | `static void actualPayment()` | R1d: the dust exemption admits the order, while the bound treasury can pay less than its quote. |
-| 1234 | 31 | `static void steamAndTractor()` | R1d: the power restriction belongs to the electric share, and the tractor buys more than a fuel invoice. |
-| 1267 | 26 | `static void taxedFitting()` | An opened sales tax is a caused premise, and its capital credit must actually reach the owner (R1d). |
-| 1295 | 9 | `static double farmContribution(Game g)` | Value the live sector's crop, input and job getters; a tractor changes these three and no utility draw. |
-| 1306 | 34 | `static void mixedFarmTractor() throws Exception` | R1d review: compare one real fitted tractor against mixed-stack Agriculture at its world date. |
-| 1342 | 24 | `static void foreignWhileFitting()` | Repairs can occupy all local crews while the foreign contractor still advances sites (R1d review). |
+| 1182 | 64 | `static void scrappedMidFitting()` | R1d: demolition really removes a building while its paid job is partly worked. |
+| 1248 | 20 | `static void actualPayment()` | R1d: the dust exemption admits the order, while the bound treasury can pay less than its quote. |
+| 1270 | 31 | `static void steamAndTractor()` | R1d: the power restriction belongs to the electric share, and the tractor buys more than a fuel invoice. |
+| 1303 | 26 | `static void taxedFitting()` | An opened sales tax is a caused premise, and its capital credit must actually reach the owner (R1d). |
+| 1331 | 9 | `static double farmContribution(Game g)` | Value the live sector's crop, input and job getters; a tractor changes these three and no utility draw. |
+| 1342 | 34 | `static void mixedFarmTractor() throws Exception` | R1d review: compare one real fitted tractor against mixed-stack Agriculture at its world date. |
+| 1378 | 24 | `static void foreignWhileFitting()` | Repairs can occupy all local crews while the foreign contractor still advances sites (R1d review). |
 

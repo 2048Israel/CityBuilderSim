@@ -1180,26 +1180,62 @@ public class FittingCheck {
     }
     /** R1d: demolition really removes a building while its paid job is partly worked. */
     static void scrappedMidFitting() {
-        out.println("\n--- 13. scrapping a building mid-fitting cancels its work, with no refund or transfer ---");
-        Game g = fitTown("fitting-scrap", 2);
+        out.println("\n--- 13. a building scrapped mid-fitting: its job goes on while an unfitted building is left for it, and with none left"
+                + " is cancelled, the newest first, with no refund and no transfer ---");
+        Game g = fitTown("fitting-scrap", 4);
         BuildingsStacks bakery = stack(g, "Bakery");
+        int id = bakery.getBuilding().getId();
         Equipment piece = bakery.getBuilding().getEquipment(DRIVE);
+        ham.citybuildersim.sectors.Construction builders = g.getSectors().construction();
+        double each = piece.getWork();
+
+        // (a) one job, two unfitted bakeries: a scrap leaves one unfitted for it.
         g.getFittings().clear();
         bakery.setUnfitted(DRIVE, 2);
-        check("fixture: the city pays for a fitting on two unfitted bakeries", g.fitForCity(bakery.getBuilding(), DRIVE) == null);
-        double orderedPoints = g.getFittings().pointsOwed();
-        g.getFittings().work(orderedPoints / 2);
-        check("fixture: work has begun and remains on site", g.getFittings().pointsOwed() > 0 && g.getFittings().pointsOwed() < orderedPoints);
-        double cash = g.getCash(), earned = g.getSectors().construction().getFittingThisMonth();
+        check("fixture: the city pays for a fitting on one of two unfitted bakeries", g.fitForCity(bakery.getBuilding(), DRIVE) == null
+                && g.getFittings().onSite(id, DRIVE) == 1 && each > 0);
+        g.getFittings().work(each / 2);
+        double left = g.getFittings().pointsOwed();
+        check("fixture: its work has begun and is not done", left > 0 && left < each);
+        double cash = g.getCash(), earned = builders.getFittingThisMonth();
+        int standing = bakery.getQuantity();
         bakery.removeQuantity(1);
-        check("the scrapped building's job disappears at demolition", g.getFittings().isEmpty());
-        check("the surviving unfitted bakery receives none of that work", bakery.getUnfitted(DRIVE) == 1);
+        check("fixture: the scrap took an unfitted bakery (the unfitted first), one still without the drive",
+                bakery.getQuantity() == standing - 1 && bakery.getUnfitted(DRIVE) == 1);
+        check("an unfitted bakery is left for the job: it goes on, its points as they were", g.getFittings().onSite(id, DRIVE) == 1
+                && g.getFittings().pointsOwed() == left);
+        check("...and the scrap moved no money: the city's cash and the builders' fitting revenue as they were",
+                g.getCash() == cash && builders.getFittingThisMonth() == earned);
+        for (int m = 0; m < 12 && !g.getFittings().isEmpty(); m++) g.workTheFittings();
+        check("the job, worked out, fits the bakery left: none without the drive", g.getFittings().isEmpty() && bakery.getUnfitted(DRIVE) == 0);
+
+        // (b) two jobs, two unfitted bakeries: each scrap leaves one fewer unfitted than jobs.
+        bakery.setUnfitted(DRIVE, 2);
+        check("fixture: the city pays for fittings on both of two unfitted bakeries", g.fitForCity(bakery.getBuilding(), DRIVE) == null
+                && g.fitForCity(bakery.getBuilding(), DRIVE) == null && g.getFittings().onSite(id, DRIVE) == 2);
+        g.getFittings().work(each / 2);
+        java.util.List<Fittings.Job> jobs = g.getFittings().view();
+        double older = jobs.get(0).pointsLeft;
+        check("fixture: the older job is part worked, the newer not begun", jobs.size() == 2 && older < each && jobs.get(1).pointsLeft == each);
+        cash = g.getCash();
+        earned = builders.getFittingThisMonth();
+        bakery.removeQuantity(1);
+        jobs = g.getFittings().view();
+        check("one unfitted bakery for two jobs: the newest is cancelled, the part-worked older one goes on", bakery.getUnfitted(DRIVE) == 1
+                && jobs.size() == 1 && jobs.get(0).pointsLeft == older);
+        bakery.removeQuantity(1);
+        check("the last unfitted bakery scrapped: its job, with no building left to fit, is cancelled", bakery.getUnfitted(DRIVE) == 0
+                && g.getFittings().isEmpty() && g.getFittings().pointsOwed() == 0);
+        check("...and neither scrap refunded anything: the city's cash and the builders' fitting revenue as they were",
+                g.getCash() == cash && builders.getFittingThisMonth() == earned);
+        int fitted = bakery.getQuantity() - bakery.getUnfitted(DRIVE);
         g.workTheFittings();
-        check("working the next month cannot fit the survivor with the cancelled job", bakery.getUnfitted(DRIVE) == 1);
-        check("the delivered fitting is sunk: neither payer nor builders receives a refund", g.getCash() == cash
-                && g.getSectors().construction().getFittingThisMonth() == earned);
-        check("the survivor needs a fresh paid order", g.fitForCity(bakery.getBuilding(), DRIVE) == null
-                && g.getFittings().pointsOwed() == piece.getWork() && g.getCash() < cash);
+        check("the cancelled work fits nothing: the bakeries standing keep the drive they had", g.getFittings().isEmpty()
+                && bakery.getQuantity() - bakery.getUnfitted(DRIVE) == fitted);
+
+        bakery.setUnfitted(DRIVE, 1);
+        check("a bakery left without the drive needs a fresh paid order", g.fitForCity(bakery.getBuilding(), DRIVE) == null
+                && g.getFittings().pointsOwed() == each && g.getCash() < cash);
         g.workTheFittings();
         int stillUnfitted = bakery.getUnfitted(DRIVE);
         double afterPayment = g.getCash();

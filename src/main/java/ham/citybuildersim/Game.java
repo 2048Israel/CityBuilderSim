@@ -357,7 +357,7 @@ public class Game {
                 && !(debtManager.isAutopilot() && debtManager.getAim() == DebtManager.Aim.INFLATION)));   // a peg ties the dial to the US's, and the curve is priced on the tied path (XR5); so does the gold, unless the autopilot aims at inflation (GD3)
         debtManager.setTieMoneySource(() -> foreign.getRegime() == ForeignAccounts.Regime.GOLD ? "USD" : foreign.getPegAnchorCode());   // ...to its anchor's rate: the money the peg is kept in (WN4b), the US$ unless the player chose another; the gold's is always the US$ (GD3)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
-        buildingManager.setOnScrap((t, n) -> fittings.scrapped(t.getId(), n));
+        buildingManager.setOnScrap(stack -> fittings.scrapped(stack.getBuilding().getId(), stack::getUnfitted));
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setLicenceCost(t -> LicenceFees.forNew(this, t));
         businessInvestment.setStandingLicenceCost(t -> LicenceFees.forStanding(this, t));
@@ -1566,8 +1566,11 @@ public class Game {
             cityCapitalSpending += total;
         } else {
             payer.spend(total);
+            // ...and the share of the builders' tax on it the owner gets back, by the build orders' own rule (buildFor(): a business's credit,
+            // a landlord's rebate), so the credit is struck on that share and no more (R1d).
             Sector owner = getSectors().byKey(payer.getName());
-            if (owner != null) owner.recordCapitalPurchase(builders.key(), total);
+            if (owner != null) owner.recordCapitalPurchase(builders.key(),
+                    total * economyManager.taxRecoveredShare(payer.getName(), t, total * buildersSalesRate()));
         }
         builders.earnFitting(total);
         fittings.add(t.getId(), id, payer.getName(), piece.getWork());

@@ -81,6 +81,13 @@ public class DebtManager {
     public void hearMoneyMonth(int month, boolean onGold) {
         rateOpen = PolicyDates.isOpen(PolicyDates.Lever.POLICY_RATE, month) && !onGold;
         moneyOpen = PolicyDates.isOpen(PolicyDates.Lever.CENTRAL_BANK, month);
+        if (!moneyOpen && autopilot) {          // a rule held while the bank is shut (a load's setAutopilot() before this month is heard) goes back to waiting
+            autopilot = false;
+            autopilotAtOpening = true;
+        } else if (moneyOpen && autopilotAtOpening) {   // the bank opens: the waiting rule takes the dial, with no decision line
+            autopilot = true;
+            autopilotAtOpening = false;
+        }
         if (!rateOpen) setPolicyRate(worldRate());
     }
 
@@ -124,8 +131,19 @@ public class DebtManager {
     private boolean autopilot;
 
     public boolean isAutopilot()              { return autopilot; }
+    /**
+     * Whether the rule has been asked for but the central bank is still shut, so it waits and takes the dial the month the bank opens (hearMoneyMonth()).
+     * R1d made every new city a 1900 city, whose bank opens in March 1935 (R0f), and Jerus ruled in 0.7.13 that a game starts on the automatic,
+     * "not your hand": the rule asked for at the founding waits for the bank rather than being dropped, unless the player's hand (takeTheDial()) took the dial first.
+     */
+    private boolean autopilotAtOpening;
+
+    public boolean isAutopilotAtOpening()     { return autopilotAtOpening; }
     public void setAutopilot(boolean on) {
-        if (!moneyOpen) return;
+        if (!moneyOpen) {
+            autopilotAtOpening = on;
+            return;
+        }
         if (on != autopilot) {
             decided(DecisionLog.CENTRAL_BANK, on ? "Central bank rate handed to the rule"
                                                  : "Central bank rate taken back by hand");
@@ -271,6 +289,7 @@ public class DebtManager {
         boolean wasRule = autopilot;
         double was = baseRate;
         autopilot = false;
+        autopilotAtOpening = false;             // the player's hand took the dial before the bank opened: no rule waits for it
         setPolicyRate(rate);
         if (wasRule || DecisionLog.moved(was, baseRate)) {
             decided(DecisionLog.CENTRAL_BANK, "Central bank rate to " + DecisionLog.pct2(baseRate));

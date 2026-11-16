@@ -476,6 +476,8 @@ public class Forms1900Check {
         String audit = "";
         /** What Freight's statement booked of crops at home and abroad (-1: no line), and of trucks. */
         double cropsHome = -1, cropsAbroad = -1, trucksBought, hire, hirePerTeam;
+        /** The rate the world's prices were struck at that month (Markets.getExchangeRate()). */
+        double struck;
     }
 
     /** HaulageCheck's city (mines and a pelletising plant that lands its coal and ships its pellets, trade both ways, the goods' literals) with Haulage's horse share set before the first month. */
@@ -505,6 +507,7 @@ public class Forms1900Check {
             r.diesel = h.getDiesel();
             r.teams = h.getTeams();
             r.hirePerTeam = h.teamHirePerMonth();
+            r.struck = g.getMarkets().getExchangeRate();
             r.hire = fr.statement().otherInputs.getOrDefault(Haulage.TEAM_HIRE, 0.0);
             r.feedTonnes = h.getFeedTonnes();
             r.feedTonnesImported = h.getFeedTonnesImported();
@@ -589,6 +592,11 @@ public class Forms1900Check {
         check("the team capital hire is a real named imported service, charged once per team", allMonths(f,
                 m -> m.teams > 0 && m.hire > 0 && Math.abs(m.hire - m.teams * m.hirePerTeam) <= 1e-9 * Math.max(1, m.hire)));
         check("a city carried only by trucks hires no horse capital", allMonths(z, m -> m.hire == 0));
+        // R1d: TEAM_CAPITAL_1900 is a figure in 1900's dollars, which are the founding's money at its price level: struck at the month's
+        // world rate it is that figure again, not today's equivalent of it (a hire priced at today's level is HISTORICAL_FACTOR too dear).
+        near("a team's hire is the capital of TEAM_CAPITAL_1900 at the founding's price level, struck at the month's rate, over its life and the fleet's return",
+                f[1].hirePerTeam / f[1].struck / (1.0 / Haulage.TEAM_LIFE_MONTHS + Freight.TARGET_RETURN),
+                Haulage.TEAM_CAPITAL_1900 * ham.citybuildersim.PriceLevel.FACTOR / ham.citybuildersim.PriceLevel.HISTORICAL_FACTOR, 1e-9);
         check("h = 0 draws no feed at all", allMonths(z, m -> m.feedTonnes == 0 && m.teams == 0 && m.teamTonnes == 0));
 
         // ---- the farms ----

@@ -282,15 +282,14 @@ public class BuildingsStacks {
         return !unfitted.isEmpty();
     }
 
-    private java.util.function.IntConsumer onScrap = n -> { };
+    private java.util.function.Consumer<BuildingsStacks> onScrap = s -> { };
 
-    /** The city's fitting queue hears every removal, including retirement and immediate harness removals (R1d). */
-    void setOnScrap(java.util.function.IntConsumer listener) { onScrap = listener; }
+    /** The city's fitting queue hears every removal, retirement and a harness's immediate removal included, after the counts are lowered (R1d). */
+    void setOnScrap(java.util.function.Consumer<BuildingsStacks> listener) { onScrap = listener; }
 
     /** After the quantity fell from `before`: the buildings scrapped were the unfitted ones first (the older plants), and no count stays above what stands. */
     private void lowerUnfitted(int before) {
         int removed = before - quantity;
-        onScrap.accept(removed);
         java.util.Iterator<java.util.Map.Entry<String, Integer>> it = unfitted.entrySet().iterator();
         while (it.hasNext()) {
             java.util.Map.Entry<String, Integer> e = it.next();
@@ -298,6 +297,8 @@ public class BuildingsStacks {
             if (n <= 0) it.remove();
             else e.setValue(n);
         }
+        // ...and then the fittings on site, which may now have fewer unfitted buildings than jobs (Fittings.scrapped()).
+        onScrap.accept(this);
     }
 
     // for immediate add

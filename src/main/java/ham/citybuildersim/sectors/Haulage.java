@@ -935,11 +935,16 @@ public final class Haulage {
     /** The named imported service already carried by the sector's saved statement (R1d). */
     public static final String TEAM_HIRE = "Horse teams hired";
 
-    /** A team's capital hire at the current money/price factor, paying wear and the same return as the fleet (R1d). */
+    /**
+     * A team's capital hire a month, paying wear and the same return as the fleet (R1d): TEAM_CAPITAL_1900 at the founding's price level
+     * (today's equivalent, over PriceLevel.HISTORICAL_FACTOR, times PriceLevel.FACTOR, as GOLD's 1900 par is struck), moved since by the
+     * rate the world's prices are struck at (Markets.getExchangeRate(): the D$ times the world's price level, 1 at the founding). A hired
+     * service from abroad follows the world's prices, as a truck bought from it does.
+     */
     public double teamHirePerMonth() {
         Markets markets = freight.markets();
-        double factor = markets == null ? ham.citybuildersim.PriceLevel.FACTOR : markets.getExchangeRate();
-        return TEAM_CAPITAL_1900 / ham.citybuildersim.PriceLevel.FACTOR * factor
+        double struck = markets == null ? 1 : markets.getExchangeRate();
+        return TEAM_CAPITAL_1900 / ham.citybuildersim.PriceLevel.HISTORICAL_FACTOR * ham.citybuildersim.PriceLevel.FACTOR * struck
                 * (1.0 / TEAM_LIFE_MONTHS + Freight.TARGET_RETURN);
     }
 

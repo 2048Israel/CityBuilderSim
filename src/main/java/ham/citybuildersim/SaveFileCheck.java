@@ -1318,7 +1318,7 @@ public class SaveFileCheck {
 
         // Founded on a path that is not the default's (WN1): a default read back on both sides would pass without the save carrying anything.
         Game full = new Game(new GameFiles(root.resolve("everything"), root.resolve("no-legacy")),
-                Founding.defaults().withPath(OTHER_PATH, 2_026_102_8L));
+                Founding.defaults().withUnfitted(false).withPath(OTHER_PATH, 2_026_102_8L));   // its forecourts, journal and movers need today's city (R1d)
         full.run();
         // THE LEVERS OPENED IN THE FIXTURE (R0): this city's premise is a city with its dials set - taxes paying for the repairs and the
         // subsidies, a health premium collected, an income-tax squeeze below - and a city on history's dates has none of them in 1900-1912
@@ -4084,7 +4084,7 @@ public class SaveFileCheck {
             boolean[] unitsMatch = { true };
             int[] drawsBeyondTheTally = { 0 };
             quietly(() -> {
-                city.newGame(Founding.defaults().withWorldSeed(2_026_102_8L));
+                city.newGame(Founding.defaults().withUnfitted(false).withWorldSeed(2_026_102_8L));   // a chosen reserve mix needs today's money (R1d)
                 city.setCashForTest(Founding.WEALTHY_CASH);
                 city.buildStack(template(city, "House"), 120, true);
                 city.buildStack(template(city, "Convenience Store"), 2, true);

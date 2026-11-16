@@ -821,8 +821,28 @@ public abstract class Sector {
 
     /** How much of nameplate actually runs: staffing times the five ratios, the fifth being its freight (getFreightRatio()). */
     public double getOperatingRate() {
-        double power = steamShare > 0 ? steamShare + (1 - steamShare) * energyRatio : energyRatio;
-        return averageFill * power * waterRatio * roadRatio * healthRatio * getFreightRatio();
+        return averageFill * getPowerRatio() * waterRatio * roadRatio * healthRatio * getFreightRatio();
+    }
+
+    /**
+     * The share of the plant its power lets run (R1d, R0c star 8): the grid's ratio on the electric share, and the steam share whole, since a
+     * boiler burning its own coal does not wait on the grid. getEnergyRatio() with no steam, to the bit.
+     */
+    public double getPowerRatio() {
+        return steamShare > 0 ? steamShare + (1 - steamShare) * energyRatio : energyRatio;
+    }
+
+    /** The share of the plant on the grid, 1 - getSteamShare(): what a point more of the grid's ratio adds to getPowerRatio() (R1d; WorksValue's power). */
+    public double getElectricShare() { return steamShare > 0 ? 1 - steamShare : 1; }
+
+    /**
+     * What the plant's value added would be at a whole grid, per point of the grid's ratio (R1d): value added over the power ratio, times the
+     * electric share; valueAdded / getEnergyRatio() with no steam, to the bit. 0 when the plant runs on no power at all.
+     */
+    public double perPointOfGrid(double valueAdded) {
+        double power = getPowerRatio();
+        if (!(power > 0)) return 0;
+        return steamShare > 0 ? valueAdded * (1 - steamShare) / power : valueAdded / power;
     }
 
     /** Charged for what was DELIVERED, not asked for - the utility books the same slice. */

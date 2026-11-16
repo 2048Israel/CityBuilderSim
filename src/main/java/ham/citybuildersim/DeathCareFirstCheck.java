@@ -209,7 +209,8 @@ public class DeathCareFirstCheck {
      */
     static Game city(Path root, String name) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
-        Game g = new Game(files);
+        // ...founded with today's equipment and wages (R1d): its Wind Farms and Industrial Bakeries are not known to a city founded the 1900 way.
+        Game g = new Game(files, Founding.defaults().withUnfitted(false));
         quietly(() -> {
             g.run();
             // Its callers (BuildersFirstCheck, ConstructionTrapCheck) need the builders' month the fixture was sized on (a site output of
