@@ -34,7 +34,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 17. **L13313** `fund.startMonth();` → [TreasuryFund.startMonth](map/TreasuryFund.md) (L741)
 18. **L13316** `equity.startMonth();` → [Equity.startMonth](map/Equity.md) (L370)  
    _The register's month: nothing offered, nothing paid, until it is._
-19. **L13317** `exchange.startMonth(month);` → [Exchange.startMonth](map/Exchange.md) (L514)
+19. **L13317** `exchange.startMonth(month);` → [Exchange.startMonth](map/Exchange.md) (L522)
 20. **L13318** `bondMarket.startMonth();` → [BondMarket.startMonth](map/BondMarket.md) (L1123)
 21. **L13319** `economyManager.clearEquityFlows();` → [EconomyManager.clearEquityFlows](map/EconomyManager.md) (L1661)
 22. **L13337** `treasuryOpening = treasuryRecorded ? treasuryClosing : cash;`  
@@ -61,7 +61,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 39. **L13387** `salvageThisMonth.clear();`
 40. **L13388** `salvageBySector.clear();`
 41. **L13389** `salvageUsedThisMonth = 0;`
-42. **L13390** `double[] poolsBefore = MoneyAudit.pools(this);` → [MoneyAudit.pools](map/MoneyAudit.md) (L344)
+42. **L13390** `double[] poolsBefore = MoneyAudit.pools(this);` → [MoneyAudit.pools](map/MoneyAudit.md) (L347)
 43. **L13391** `double pooledBefore = 0;`
 44. **L13392** `for (double p : poolsBefore) pooledBefore += p;`
 45. **L13393** `double interestDue = economyManager.getInterestAccrued();` → [EconomyManager.getInterestAccrued](map/EconomyManager.md) (L2125)
@@ -169,7 +169,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 114. **L13804** `tradeShares();` → [Game.tradeShares](map/Game.md) (L4911)
 115. **L13814** `settleThePreferred();` → [Game.settleThePreferred](map/Game.md) (L5485)  
    _...and the city's preferred (0.7.14): every block at its third anniversary repaid whole at par with its unpaid dividends, from the bank's capital over its target and the rest by an offering of new ..._
-116. **L13824** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1154), [Exchange.cityMarketValue](map/Exchange.md) (L1837)  
+116. **L13824** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1154), [Exchange.cityMarketValue](map/Exchange.md) (L1851)  
    _...AND THE BONDS TRADE (0.7.12): the month's coupons paid to their holders, last month's orders withdrawn, every bond valued and every participant's orders posted again - after the shares, and befo..._
 117. **L13825** `strikeBankBonds();` → [Game.strikeBankBonds](map/Game.md) (L5118)
 118. **L13830** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L452), [DebtManager.firmBookRatio](map/DebtManager.md) (L2966), [DebtManager.firmBookYield](map/DebtManager.md) (L2972)  
@@ -196,7 +196,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 132. **L13923** `bank.setForeignDeposits(hotMoney.getStock());` → [Bank.setForeignDeposits](map/Bank.md) (L1672), [CapitalFlows.getStock](map/CapitalFlows.md) (L634)
 133. **L13925** `worldPaperLeavesWithTheMoney(hotBefore);` → [Game.worldPaperLeavesWithTheMoney](map/Game.md) (L18201)  
    _...and the city's paper the world holds leaves with it (CD2, slice 5): sold to the bank's desk, inside the window._
-134. **L13927** `lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);` → [MoneyAudit.strike](map/MoneyAudit.md) (L519)
+134. **L13927** `lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);` → [MoneyAudit.strike](map/MoneyAudit.md) (L522)
 135. **L13930** `ownersWipedAbroadThisMonth = 0;`  
    _Declared (0.7.14): the valuation a resolution wiped off the world's shares is a month's, whether the month's or a press's before it._
 136. **L13940** `foreign.takeMonth(lastMoneyAudit, economyManager.getMonthGdp());` → [ForeignAccounts.takeMonth](map/ForeignAccounts.md) (L2586), [EconomyManager.getMonthGdp](map/EconomyManager.md) (L2491)  
@@ -239,7 +239,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 160. **L14094** `dataSave.setCash(cash);` → [DataSave.setCash](map/DataSave.md) (L960)
 161. **L14128** `postAuditDrift = 0;`  
    _================================================================= NOTHING AFTER THE AUDIT MAY MOVE A POOL._
-162. **L14129** `if (lastMoneyAudit != null && lastMoneyAudit.poolsAtClose != null) {` → [MoneyAudit.pools](map/MoneyAudit.md) (L344)
+162. **L14129** `if (lastMoneyAudit != null && lastMoneyAudit.poolsAtClose != null) {` → [MoneyAudit.pools](map/MoneyAudit.md) (L347)
 163. **L14148** `printEndOfTurn();` → [Game.printEndOfTurn](map/Game.md) (L19286)
 164. **L14150** `deferBorrowingCosts();` → [Game.deferBorrowingCosts](map/Game.md) (L3734)  
    _What each business's borrowing cost it up front this month, deferred to be expensed (0.7.102, A16)._

@@ -1,4 +1,4 @@
-# MoneyAudit.java - 1,342 lines · 30 methods · 5 constants · model
+# MoneyAudit.java - 1,363 lines · 30 methods · 5 constants · model
 
 `ham/citybuildersim/MoneyAudit.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -56,29 +56,29 @@
 
 | line | section |
 |---:|---|
-| 406 | HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) |
+| 409 | HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 316 | `MoneyAudit.Scope.DOMESTIC` |  |
-| 316 | `MoneyAudit.Scope.TRADE` |  |
-| 316 | `MoneyAudit.Scope.INCOME` |  |
-| 316 | `MoneyAudit.Scope.FINANCIAL` |  |
-| 316 | `MoneyAudit.Scope.VALUATION` |  |
-| 316 | `MoneyAudit.Scope.RESERVE` |  |
-| 316 | `MoneyAudit.Scope.MONEY` |  |
+| 319 | `MoneyAudit.Scope.DOMESTIC` |  |
+| 319 | `MoneyAudit.Scope.TRADE` |  |
+| 319 | `MoneyAudit.Scope.INCOME` |  |
+| 319 | `MoneyAudit.Scope.FINANCIAL` |  |
+| 319 | `MoneyAudit.Scope.VALUATION` |  |
+| 319 | `MoneyAudit.Scope.RESERVE` |  |
+| 319 | `MoneyAudit.Scope.MONEY` |  |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 54 | `MoneyAudit.Result.NONE` | `new Result(0, 0, 0, 0, 0, 0)` |  |
-| 331 | `MoneyAudit.POOL_NAMES` | `poolNames()` | The pools, by name: the city, every sector in the registry's order, the builders' order book, the bank, and since 0.7.14 the city's fund (on the end, so every other pool keeps its place). |
-| 463 | `MoneyAudit.CENT` | `.01 * PriceLevel.FACTOR` | A harness's cent: 0.01 of a unit of a thousand dollars at today's prices, times PriceLevel.FACTOR - the least a money comparison has allowed, priced at the founding's level (EP1, the ship gate's review: the cent staye... |
-| 466 | `MoneyAudit.RELATIVE_TOLERANCE` | `1e-12` | ...and the share of the figures compared that their own rounding is allowed past it: a part in a trillion. |
-| 479 | `MoneyAudit.ULP_STEPS` | `64` | ...and the least a floor allows, in a double's steps at the size of the figures compared (0.7.64; 8 in 0.7.63): the most an identity held to a floor under a cent was measured to miss by, in steps of the figures it is ... |
+| 334 | `MoneyAudit.POOL_NAMES` | `poolNames()` | The pools, by name: the city, every sector in the registry's order, the builders' order book, the bank, and since 0.7.14 the city's fund (on the end, so every other pool keeps its place). |
+| 466 | `MoneyAudit.CENT` | `.01 * PriceLevel.FACTOR` | A harness's cent: 0.01 of a unit of a thousand dollars at today's prices, times PriceLevel.FACTOR - the least a money comparison has allowed, priced at the founding's level (EP1, the ship gate's review: the cent staye... |
+| 469 | `MoneyAudit.RELATIVE_TOLERANCE` | `1e-12` | ...and the share of the figures compared that their own rounding is allowed past it: a part in a trillion. |
+| 482 | `MoneyAudit.ULP_STEPS` | `64` | ...and the least a floor allows, in a double's steps at the size of the figures compared (0.7.64; 8 in 0.7.63): the most an identity held to a floor under a cent was measured to miss by, in steps of the figures it is ... |
 
 ## Fields (state)
 
@@ -111,7 +111,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 1293 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
+| 50 | 1314 | **type** `public final class MoneyAudit` | Where the money went this month, and whether it all went somewhere. |
 | 53 | 182 | **type** `public static final class Result` | One month's strike. |
 | 122 | 1 | `public double moneyMade()` _(in MoneyAudit.Result)_ | What the month did to M0, as the audit saw it cross the edge. |
 | 125 | 1 | `public double tradeBalance()` _(in MoneyAudit.Result)_ | Exports less imports. |
@@ -134,20 +134,20 @@
 | 225 | 4 | `public double relative()` _(in MoneyAudit.Result)_ | Residual as a share of what moved, so a $3 leak in a $3B city reads as 0. |
 | 230 | 4 | `public String toString()` _(in MoneyAudit.Result)_ |  |
 | 236 | 1 | `private MoneyAudit()` |  |
-| 316 | 1 | **type** `public enum Scope` | WHICH SIDE OF WHICH BOUNDARY A FLOW CROSSES. |
-| 319 | 3 | **type** `private interface Tagged` | Label, amount and scope, for one line of the month. |
-| 320 | 1 | `double apply(String label, double amount, Scope scope)` _(in MoneyAudit.Tagged)_ |  |
-| 333 | 9 | `private static String[] poolNames()` |  |
-| 344 | 61 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
+| 319 | 1 | **type** `public enum Scope` | WHICH SIDE OF WHICH BOUNDARY A FLOW CROSSES. |
+| 322 | 3 | **type** `private interface Tagged` | Label, amount and scope, for one line of the month. |
+| 323 | 1 | `double apply(String label, double amount, Scope scope)` _(in MoneyAudit.Tagged)_ |  |
+| 336 | 9 | `private static String[] poolNames()` |  |
+| 347 | 61 | `public static double[] pools(Game g)` | The pools, in POOL_NAMES order. |
 
-### HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) (lines 406-1342)
+### HOW CLOSE IS CLOSE ENOUGH, AT ANY SIZE (0.7.54) (lines 409-1363)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 482 | 3 | `public static double tolerance(double scale)` | How far two money figures of about this size may miss and still agree: CENT, or RELATIVE_TOLERANCE of the size, whichever is more. |
-| 493 | 6 | `public static double tolerance(double floor, double scale)` | ...for a comparison held to a floor of its own: the floor while RELATIVE_TOLERANCE of the size is under a cent, and past that the larger of the two - and since 0.7.63 the floor never under ULP_STEPS of a double's step... |
-| 505 | 5 | `public static double pooled(Game g)` | Every dollar in the pools: the city's, its businesses', the builders' order book, and the bank's - plus what it owes the window, less what it owes for the city's paper - and the city's fund's (0.7.14). |
-| 519 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
-| 524 | 808 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
-| 1334 | 8 | `static double oldMetalBoughtOfHouseholds(Sectors sectors)` | What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. |
+| 485 | 3 | `public static double tolerance(double scale)` | How far two money figures of about this size may miss and still agree: CENT, or RELATIVE_TOLERANCE of the size, whichever is more. |
+| 496 | 6 | `public static double tolerance(double floor, double scale)` | ...for a comparison held to a floor of its own: the floor while RELATIVE_TOLERANCE of the size is under a cent, and past that the larger of the two - and since 0.7.63 the floor never under ULP_STEPS of a double's step... |
+| 508 | 5 | `public static double pooled(Game g)` | Every dollar in the pools: the city's, its businesses', the builders' order book, and the bank's - plus what it owes the window, less what it owes for the city's paper - and the city's fund's (0.7.14). |
+| 522 | 3 | `static Result strike(Game g, double before, double interestDue)` | Strikes the month. |
+| 527 | 826 | `static Result strike(Game g, double before, double[] poolsBefore, double interestDue)` | As above, and with the opening pools the result can say which pool moved unexplained. |
+| 1355 | 8 | `static double oldMetalBoughtOfHouseholds(Sectors sectors)` | What the Scrap Yards' struck statements bought of the households' old steel (0.7.123; OldMetal): their input billed by Trade.HOUSEHOLDS, which nothing else is. |
 
