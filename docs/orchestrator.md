@@ -9,15 +9,16 @@ by letter (a-f) are `docs/notes/batch-history.md`. Split out of
 
 ## The day
 
-**A fresh orchestrator each day** (BP1, 2026-10-23: one two days deep was ~500k
-tokens, a fresh one ~70k, and every wake-up re-sends all of it). At the end of
-its day it CronDeletes its hourly check-in, then overwrites the PC memory note
-`orchestrator-handoff.md`, at most 40 lines: its own session id, the lanes,
-each running session's name and id, the gates waiting, Jerus's open questions,
-the screen-check session's id. The next one archives the session that note
-names, arms its own check-in, then starts from the note, `sh tools/day.sh` and
-the top of `docs/notes/changelog.md`, and reads nothing else until a session
-needs it.
+**One orchestrator, compacting in place** (OL1, 2026-11-08: BP1's fresh one a day
+did not happen on 11-06 or 11-07). One session from the app environment "CBS
+orchestrator" (main checkout, no worktree, `CBS_ORCHESTRATOR=1`,
+`CLAUDE_CODE_AUTO_COMPACT_WINDOW=300000`); its hooks (`.claude/settings.local.json`,
+not in git, only under that variable) print the summary's instructions before a
+compaction and put back the PC note `orchestrator-handoff.md`, kept current at every
+decision. Replaced only if a turn fails beyond carrying on, a compaction loses
+something that mattered, it starts above ~115k after one or Jerus says so: the old
+one CronDeletes its check-in and brings the note current, the new one reads it and
+`sh tools/day.sh`, archives the old once its gate has tagged and arms its own.
 
 `sh tools/day.sh` is the morning in about fifteen lines: main's `VERSION`
 against the last version tag, main's recorded reds (`docs/notes/gate.txt`), the
@@ -31,16 +32,16 @@ the orchestrator not being woken after many automated turns). A CronCreate job
 at minute 7 (`7 * * * *`) whose prompt is: run `sh tools/day.sh --due`, and if
 it prints nothing, end the turn with no other call (`--due` prints only the
 ready and the stuck branches, bar the nightly below). It lives in the session
-that made it, so each orchestrator arms its own and deletes yesterday's: left,
-it wakes yesterday's whole context hourly, and two orchestrators may gate one
-branch. Between 01:00 and 07:00 `--due` also says `nightly due`, once a day: the
+that made it, so a replaced orchestrator deletes it: left, it wakes the old
+context hourly, and two orchestrators may gate one branch.
+Between 01:00 and 07:00 `--due` also says `nightly due`, once a day: the
 check-in then runs `sh tools/nightly.sh` in the background (GT1: the gate plays
 2,400 months, the full 4,000 once a night on main's tip; a red one is in the
 next morning's `day.sh` and the next gate's `gate.txt`).
 
 **The ready-branch wait** (GP1, 2026-10-27: a gate started a median ~60
-minutes after the ship file, because the check-in was what found it). Each day,
-once, as a background Bash command (`run_in_background`):
+minutes after the ship file, because the check-in was what found it). Once, as
+a background Bash command (`run_in_background`):
 
 ```
 sh tools/wait.sh --ship [--skip HELD...]
