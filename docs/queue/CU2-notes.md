@@ -34,28 +34,31 @@ anchor, wire at 70% rod; ★5 (b) money; ★6 (a) the literals stand for 2024's 
 Refining with no works that pays on imports; ★8 (a) a study of Manufacturing's and Automotive's margins (see
 the ensemble below). ★4 is built as (b) and waits on Jerus as WP1-C.
 
-## Seven recipe shares are the file's, not the study's table
+## Six rows' shares are the file's, not the study's table
 
-WorldMarketCheck's recipe section computes each works' input cost over its sales at mid-band prices. It found
-four rows more than .03 off the study's table. Two causes:
+WorldMarketCheck's recipe section computes each works' input cost over its sales at mid-band prices
+(`RECIPE_TOL` .03). It found rows off the study's table. Two causes:
 
 - The prototype counted pulpwood and residues at 0.9 of their price (tonnes to the cubic metre: freight, not money).
 - It priced the Blast Furnace's coke and the kilns' limestone off the file's.
 
-Seven shares were set to the file's:
+Six rows, ten shares in all, were set to the file's:
 
-| works | input | share |
-|---|---|---|
-| Blast Furnace (pig iron) | iron | .36 |
-| Blast Furnace (pig iron) | coke | .29 |
-| Cement Plant | limestone | .39 |
-| Lime Kiln | limestone | .23 |
-| Panel Mill | pulpwood | .34 |
-| Pulp Mill | pulpwood | .23 |
-| Pulp Mill | residues | .09 |
-| Wood Pellet Mill | residues | .36 |
+| works | input | the study | CU2 (the file) |
+|---|---|---|---|
+| Blast Furnace (pig iron) | coke | .33 | .29 |
+| Cement Plant | limestone | .34 | .39 |
+| Cement Plant | coal | .12 | .11 |
+| Cement Plant | aggregate | .04 | .05 |
+| Lime Kiln | limestone | .21 | .23 |
+| Lime Kiln | coal | .07 | .06 |
+| Panel Mill | pulpwood | .31 | .34 |
+| Pulp Mill | pulpwood | .21 | .23 |
+| Pulp Mill | residues | .08 | .09 |
+| Wood Pellet Mill | residues | .32 | .36 |
 
-A row within .015 of the file stands as the study ran it.
+A row whose every share is within .015 of the file stands as the study ran it. The Blast Furnace's iron share,
+.36, is the same in both.
 
 ## The checks
 
@@ -91,6 +94,46 @@ A row within .015 of the file stands as the study ran it.
   ln) and anode −0.028. What stands, and is asserted now, is that each good is one number across every maker
   (measured spread exactly 0), so no nation's price moves against another's. The move is printed as a
   finding. On the full file the widest base-year terms of trade is Eritrea's −0.078; on the fixture, 0.0024.
+
+## The pick: fixtures the chained prices moved
+
+The pick (`./batch-check.sh --pick`, ALL, since WorldMarket is shared) found NEW reds in eight harnesses. The
+model code they read is not CU2's: the chained prices changed the fixture cities. Each fixture now causes its
+condition again, with its premise unchanged.
+
+- **BuildCardCheck** (the money gate). The pellet plant now earns (main: it loses D$79.6k a month), so the
+  planner's words name its bar, and the bar holds BA1's interest on the wait for the plant. The check now
+  asks `City.money(t, ...)` for the plant, as the planner does. Before, the two calls agreed only because
+  neither named a bar.
+- **HaulageCheck.** The growth town's investors raised a Manufacturing works of their own in its sixteen
+  months. The town now holds Manufacturing.
+- **DeathRecordCheck** (LD3). The town stands 351 out of work at month 60, and its open twin's count moves as
+  far. The wave is now read against the twin in the same month: 155 more out of work at the peak. Its two OX1
+  lines stay red, as on main.
+- **AutoBuildCheck** (the walk). Childcare ranks the Large Childcare Centre (D$276k) second, above the Small
+  one (D$71k) that main ranks second. The fixture looked one card down. It now walks the ranking as the pass
+  does (`AutoBuilder`'s skip): with the cash for one Small Childcare Centre, the pass refuses the Childcare
+  Centre and the Large one and orders the Small.
+- **ResearchViewCheck and KeptCheck 96** (the research town). The village's two Mixed Farms and the two
+  Pulp Mills the fixture stands were retired by month 14 (main kept a farm and both mills). The town now
+  holds their sectors, so they neither build nor retire. ResearchViewCheck: all 217 ok, including main's
+  recorded FB10 line, which the same fixture had left red.
+- **PriceLevelCheck 8** (the played twin). The twins parted at month 107 through `HistorySave.roundSig`,
+  which rounded to six decimal figures at both price levels, so on two grids. The bank's share-price history
+  rounded apart, and the warrant buyback read two volatilities (`Game.bankVolatility`): 1.9e-12 in the rate
+  at month 107, and 1.2e-9 in processed meat's imports by month 114, past `TWIN_REAL_TOLERANCE` (1e-9).
+  `roundSig` now rounds the value at today's prices and scales it back, as PartnerTrade's money grid does
+  (DZ1). This is a **model change**: at the factor, every series recorded to six figures moves by its last
+  digit (the wage, the rent, and the food, materials, ore, ground and share prices). Worst real gaps now
+  5.7e-14, 3.1e-11, 3.2e-13 and 1.5e-13 in sections 6-9; HistoryCheck passes.
+
+Passed by name, in code CU2 does not touch, each with its fix queued (the ship file's `## known-reds`):
+
+- **MapCheck**, "at the widest view every pixel a highway or the track crosses is drawn as it, and no
+  other" → **FB9**. The chained prices grow a different played city (256 plots across, main's 296). At 1,024
+  plots a pixel, the harness's own run pixels and `MapTiles.lastRun()` disagree on it.
+- **KeptCheck**, "most months make no node at all (12 of 25)" on Policy, Promises' Food page → **FB2**.
+  The page makes a node in 13 of its 25 months, at most one in any month. Every unchanged draw makes none.
 
 ## WN4: what moved
 

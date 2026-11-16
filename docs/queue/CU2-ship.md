@@ -9,7 +9,10 @@ the Historical path in 2024 (the record, ★4, waits on Jerus as WP1-C); a guard
 (main's 61); at 2100 on the Historical path DR Congo's terms of trade are +0.07 (main's -0.44), Zambia's +0.28,
 Chile's +0.28. Checks: WorldMarketCheck's chain, recipe, guard and charge; CopperRefiningCheck 10-11 (a mine and
 a smelter that pay, the cycle seen; seed 1's Rod Mills played); SaveFileCheck's and WorldMoneysCheck's fixtures
-restated for the chain. Seven recipe shares are the file's, not the study's. Saves: format 54, and the floor
+restated for the chain. Six rows' recipe shares are the file's, not the study's. Saves: format 54, and the floor
 with it, so older cities no longer open.
 ## queued
 | CY1 | The planner appraises a processing works over its cycle: SpreadPlanner reads one month's margin as lasting, so a sector builds at the copper charge's peak and is left at the trough owing more than it holds, its own borrowing lifting the hurdle past every later build (DS1's answer, CU2: seed 2's five smelters from m1598, 30.44% and an 82-month loss streak at m2400; seed 1's Scrap Copper Refinery on a one-month spike). Read the margin over the charge's swing or a trailing year, and look at a sector whose rate has outrun its works' earnings; any processing sector can be left this way | [CU2's notes, DS1](docs/queue/CU2-notes.md) |
+## known-reds
+MapCheck | at the widest view every pixel a highway or the track crosses is drawn as it, and no other | FB9 | 2026-11-16 | CU2's chained prices grow a different played city (256 plots across, main's 296); at 1,024 plots a pixel MapCheck's own run pixels and the unchanged MapTiles.lastRun() disagree on it, in map code CU2 does not touch
+KeptCheck | most months make no node at all (12 of 25) | FB2 | 2026-11-16 | Policy, Promises' Food page on CU2's played city makes a node in 13 of its 25 months (at most one; every unchanged draw none), the kept screen's retention in UI code CU2 does not touch

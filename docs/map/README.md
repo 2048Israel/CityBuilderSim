@@ -4,7 +4,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 581 files, 633,761 lines, 27,632 methods, 6,067 constants. `GameVersion.VERSION` is "0.9.128", `SAVE_FORMAT` 54.
+**The tree:** 581 files, 633,779 lines, 27,632 methods, 6,067 constants. `GameVersion.VERSION` is "0.9.128", `SAVE_FORMAT` 54.
 
 ## model (267 files)
 
@@ -379,7 +379,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AllChecks.java](AllChecks.md) | 583 | 28 | Runs every harness, one JVM each, and says which failed. | 7 |
 | [ArrivalMixCheck.java](ArrivalMixCheck.md) | 375 | 21 | The skill mix of the arrivals by year (R0d slice 2): the year's mix in a city founded the 1900 way, and WageBand's ceilings in every other city. | 0 |
 | [AuctionCheck.java](AuctionCheck.md) | 1,744 | 43 | The city's paper sold at auction: one clearing yield, and what it costs. | 1 |
-| [AutoBuildCheck.java](AutoBuildCheck.md) | 2,037 | 46 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 2 |
+| [AutoBuildCheck.java](AutoBuildCheck.md) | 2,052 | 46 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 2 |
 | [BankCheck.java](BankCheck.md) | 4,513 | 24 | The commercial bank, and the families it discharges. | 1 |
 | [BankFailureCheck.java](BankFailureCheck.md) | 475 | 15 | The hands-off bank's failures, caused separately and counted across Random cities. | 0 |
 | [BasketYearCheck.java](BasketYearCheck.md) | 775 | 36 | The household's basket by year (R0e slice 1): the year's basket in a city founded the 1900 way, today's in every other. | 0 |
@@ -546,7 +546,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ReplayCheck.java](ReplayCheck.md) | 1,780 | 37 | Replay of a recorded city (batch TR1, 2026-10-31): the recorder, the throwaway copy, the input log, and what recording costs; and Follow (batch TR2... | 1 |
 | [ResearchCheck.java](ResearchCheck.md) | 910 | 23 | The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses what... | 2 |
 | [ResearchPreviewCheck.java](ResearchPreviewCheck.md) | 731 | 34 | The preview each dial card on Policy > Research shows: what a set of dials would find here over ten years (R3b, slice A: ResearchPreview, and the w... | 1 |
-| [ResearchViewCheck.java](ResearchViewCheck.md) | 1,727 | 48 | What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()). | 1 |
+| [ResearchViewCheck.java](ResearchViewCheck.md) | 1,730 | 48 | What the research screens read (R5, slice A: ResearchView, three series in HistorySave, ChartModel.flags(log, more), Recipes.chosen()). | 1 |
 | [RestaurantsCheck.java](RestaurantsCheck.md) | 575 | 6 | A meal out is food, and it is the same food. | 0 |
 | [RestructureCheck.java](RestructureCheck.md) | 409 | 5 | Buying the city's own debt back, at what the paper is actually worth. | 2 |
 | [RoadCheck.java](RoadCheck.md) | 1,209 | 35 | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to the... | 1 |

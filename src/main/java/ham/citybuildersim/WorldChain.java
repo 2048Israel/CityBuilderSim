@@ -41,7 +41,7 @@ final class WorldChain {
     /**
      * The forty rows: each good a works makes, on that works' inputs at the shares buildings.json gives at the literals' mid-band prices (the rest of its
      * price is its conversion, on the manufactures index), and each good the price file prices off another with no works between them wholly on it
-     * (spec-world-prices.md 3.3); a dial, and WorldMarketCheck holds every row's works to its share. Seven shares are the file's, not the study's
+     * (spec-world-prices.md 3.3); a dial, and WorldMarketCheck holds every row's works to its share. Six rows (ten shares) are the file's, not the study's
      * table (CU2): the prototype counted pulpwood and residues at 0.9 of their price (their tonnes to the cubic metre, which weighs freight, not
      * money), and priced the Blast Furnace's coke and the kilns' limestone off the file's; a row within .015 of the file stands as the study ran it.
      */
