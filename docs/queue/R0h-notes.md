@@ -145,7 +145,7 @@ label R0h, Earth earth-2.bin and world-1.bin at the instructed native paths,
 default five jobs, no parallelism override. Raw score: **18/25**, against
 **23/25** on the newest main baseline docs/ensemble/0.9.117.md (hard 8/10
 against its 10/10). The raw score, every changed verdict
-and full summary are committed in docs/ensemble/R0h.md before the dry run.
+and full summary are committed in docs/ensemble/{next}.md before the dry run.
 
 M1 passes for all five policies: no failed or unread money audits. Raw hard
 verdict: **8/10, FAIL**, exit 4, because AUTO2 F1 and ZERO_SLACK F1 each have one
@@ -159,3 +159,57 @@ Informational PASS-to-FAIL changes: AUTO2 A3, AUTO2 T2 and ZERO_SLACK T2.
 They retain their raw values in the baseline; the only shipping criteria are
 M1 and F1. Logs: target/r0h-ensemble.log; score, times, all CSVs and snapshot:
 target/ensemble/R0h/. No main ensemble was rerun.
+
+## Same-state F1 probe
+
+Authorized after the ensemble, one job with sequential JVMs, exit 0. Replayed
+AUTO2 seed 12 to m748 with a checkpoint taken at m743. **Every CSV field of the
+whole replayed prefix equals the kept 80-run ensemble's prefix**, so taking the
+checkpoint did not move its premise. From the same checkpoint, R0h's accepted
+model and main **6114b00f's complete model** load and play 744-748 identically.
+
+The main runtime uses the original Health, Sickness, Game (including its nested
+classes) and DataSave sources from 6114b00f. These are the only four changed model
+classes between main and the accepted 4a6f3ebf snapshot; every other source
+difference is a harness/registration (source-diff.txt). Thus this is the whole
+main model, with its original saved field list and original handovers. It is
+not the temporary negative-control bridge used for the unit fixture.
+
+| Month | Main unplaced households | R0h unplaced households | Homes |
+|---|---:|---:|---:|
+| 743 (load) | 0 | 0 | 3,044 |
+| 744 | 3.592771208418526 | 3.592771208418526 | 3,044 |
+| 745 | 7.848705090851581 | 7.848705090851581 | 3,044 |
+| 746 | 12.491581939075331 | 12.491581939075331 | 3,044 |
+| 747 | 17.197984450481272 | 17.197984450481272 | 3,044 |
+| 748 | 0 | 0 | 3,107 |
+
+The original >1 homeless watch fires on main in all four months. Fingerprints,
+all money pools, full family state, sickness rings, cohorts, Health and causes
+are equal to the bit in every one of the five months. The saved acute shares
+and Health influenza rate are all zero at 743. Both AUTO2 and ZERO_SLACK have
+the exact same first finding at 744, before their policies diverge.
+
+★6 Following the orchestrator's conditional disposition, this is main's latent
+housing fault reached by R0h's path, not a defect in the acute share. Queue **HN1**
+(batch-id.sh accepted, exit 0) to diagnose housing/placement and the late matching
+homes. Its brief and ship-file queue/known-reds rows retain the hard watch; raw
+F1 failures stay in the baseline. No housing model, fixture premise or tolerance
+was changed. No main ensemble was rerun.
+
+Full evidence: target/r0h-homeless/result.log, capture.log, fixed.log, main.log,
+replayed.csv, fixed-state.txt, main-state.txt, source-diff.txt, src/, snapshot/.
+The one-seed prefix took 69.9 seconds; the main and fixed replays are five months
+each. Data settings are the same named Earth/world files as the ensemble.
+
+Main then moved to **01402a54 (0.9.120, BK2b)** and was merged at c9fb4bd0.
+BK2b's notes section "Full merge gate and trace" records identical normalized
+playtest logs (SHA256 01a23171750932ce03e3ee4f8920d4a3c542fa39bec532b1c58ed9716533ffe4).
+Its rounding repair, Game comment and HoldersCheck do not move the default trace;
+the orchestrator explicitly retained the ensemble and allowed the 6114 model
+for the counterfactual. The final fast check regenerates all merged indexes.
+
+Final merged fast check: **exit 0**, compile, regenerated indexes and zero firm
+Stale findings (target/r0h-pre-gate.log), against main 01402a54. Its model trace
+is unchanged from the main used by the ensemble, as recorded above. The pick is
+ALL and is reserved for the normal launcher dry run; no local full suite ran.
