@@ -38,7 +38,7 @@
 
 **Uses:** [Recipe](Recipe.md) (16), [BuildingsTemplate](BuildingsTemplate.md) (12), [Research](Research.md) (6), [Game](Game.md) (5), [Good](Good.md) (4), [RecipeChanges](RecipeChanges.md) (4), [LicenceFees](LicenceFees.md) (3), [JobType](JobType.md) (2), [Markets](Markets.md) (1), [EconomyManager](EconomyManager.md) (1), [SpreadPlanner](SpreadPlanner.md) (1), [BuildingManager](BuildingManager.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Sector](Sector.md) (1)
 
-**Used by (11):** [DiscoveryCheck](DiscoveryCheck.md), [EquipmentFit](EquipmentFit.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md)
+**Used by (12):** [DiscoveryCheck](DiscoveryCheck.md), [EquipmentFit](EquipmentFit.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md)
 
 ## Sections
 

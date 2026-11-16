@@ -98,7 +98,7 @@ public class Forms1900Check {
     static Game town(String label, int settle) {
         Game g = new Game(GameFiles.scratch(label));
         quietly(() -> {
-            g.run();
+            g.newGame(Founding.defaults().withUnfitted(false));
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
             BuildingManager b = g.getBuildingManager();
@@ -416,7 +416,7 @@ public class Forms1900Check {
         out.println("\n--- 5. a works that already burns coal adds the steam coal to it: Cement & Concrete ---");
         Game g = new Game(GameFiles.scratch("forms1900-cement"));
         quietly(() -> {
-            g.run();
+            g.newGame(Founding.defaults().withUnfitted(false));
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000L);
             g.buildStack(g.getBuildingManager().getTemplate(CementConcrete.CEMENT_PLANT), 1, true);
@@ -475,7 +475,7 @@ public class Forms1900Check {
         boolean quoteKnown, auditCloses;
         String audit = "";
         /** What Freight's statement booked of crops at home and abroad (-1: no line), and of trucks. */
-        double cropsHome = -1, cropsAbroad = -1, trucksBought;
+        double cropsHome = -1, cropsAbroad = -1, trucksBought, hire, hirePerTeam;
     }
 
     /** HaulageCheck's city (mines and a pelletising plant that lands its coal and ships its pellets, trade both ways, the goods' literals) with Haulage's horse share set before the first month. */
@@ -504,6 +504,8 @@ public class Forms1900Check {
             r.litres = h.getDieselLitres();
             r.diesel = h.getDiesel();
             r.teams = h.getTeams();
+            r.hirePerTeam = h.teamHirePerMonth();
+            r.hire = fr.statement().otherInputs.getOrDefault(Haulage.TEAM_HIRE, 0.0);
             r.feedTonnes = h.getFeedTonnes();
             r.feedTonnesImported = h.getFeedTonnesImported();
             r.feed = h.getFeed();
@@ -584,6 +586,9 @@ public class Forms1900Check {
         near("...and the feed per tonne carried is half of h = 1's", b.feedTonnes / b.carried, 0.5 * c.feedTonnes / c.carried, 1e-9);
         near("...the feed itself being the teams' (h x carried / TONNES_A_TEAM_MONTH) x HORSES_A_TEAM x HORSE_FEED_TONNES_A_MONTH", b.feedTonnes,
                 0.5 * b.carried / Haulage.TONNES_A_TEAM_MONTH * perTeam, 1e-9);
+        check("the team capital hire is a real named imported service, charged once per team", allMonths(f,
+                m -> m.teams > 0 && m.hire > 0 && Math.abs(m.hire - m.teams * m.hirePerTeam) <= 1e-9 * Math.max(1, m.hire)));
+        check("a city carried only by trucks hires no horse capital", allMonths(z, m -> m.hire == 0));
         check("h = 0 draws no feed at all", allMonths(z, m -> m.feedTonnes == 0 && m.teams == 0 && m.teamTonnes == 0));
 
         // ---- the farms ----
@@ -698,9 +703,9 @@ public class Forms1900Check {
         double wage = full.getEconomyManager().getWageRates()[k];
         GoodsMarket cropsMarket = fr.markets().get(Good.CROPS);
         double crops = cropsMarket != null && Double.isFinite(cropsMarket.landedPrice()) ? cropsMarket.landedPrice() : Good.CROPS.worldImportPrice();
-        // The formula, from the model's own dials and getters: a team's feed at the crops' price and its carters' month, over the tonnes a team carries.
+        // The formula, from the model's own dials and getters: a team's feed at the crops' price, its carters' month and its capital hire, over the tonnes a team carries.
         double formula = (Haulage.HORSES_A_TEAM * Haulage.HORSE_FEED_TONNES_A_MONTH * crops
-                + Haulage.CARTERS_A_TEAM * wage) / Haulage.TONNES_A_TEAM_MONTH;
+                + Haulage.CARTERS_A_TEAM * wage + hl.teamHirePerMonth()) / Haulage.TONNES_A_TEAM_MONTH;
         check("fixture: the crops have a price and a carter a wage", crops > 0 && wage > 0, String.format("crops D$%.6f, wage D$%.4f", crops, wage));
         hl.setHorseShare(0);
         double today = hl.estimate();

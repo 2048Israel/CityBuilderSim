@@ -2585,7 +2585,7 @@ public class CurrencyRegimeCheck {
     /** A real player-chosen peg carrying nonzero support and a large unpaid purchase, for save/read checks (XR7). */
     static Game supportedTown(String label) {
         if (quiet == null) quiet = new PrintStream(OutputStream.nullOutputStream());
-        Game city = town(label, Founding.defaults(), 2);
+        Game city = town(label, Founding.defaults().withUnfitted(false), 2); // this fixture needs a live chosen peg, not the historical gold rule
         play(city, 60);
         ForeignAccounts fx = city.getForeignAccounts();
         double annual = 12 * fx.getGdpTrailing();

@@ -742,7 +742,7 @@ public class DataSave implements Cloneable {
         }
         f = f.withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED);
         // The 1900 way (R1b): a save without the key was founded the default way.
-        if (Boolean.TRUE.equals(foundedUnfitted)) f = f.withUnfitted(true);
+        f = f.withUnfitted(Boolean.TRUE.equals(foundedUnfitted));
         return f;
     }
 

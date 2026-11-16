@@ -156,7 +156,7 @@ public class HaulageCheck {
     static Game base(GameFiles files, boolean plant, boolean literals) {
         Game g = new Game(files);
         quietly(() -> {
-            g.newGame();
+            g.newGame(Founding.defaults().withUnfitted(false)); // the fleet fixture needs today's plant and driver ladder
             if (literals) g.playOnLiterals();
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getForeignAccounts().pinRate(1.0);

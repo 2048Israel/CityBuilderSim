@@ -153,6 +153,7 @@ public final class FoundingScreen {
     private String worldSeed = String.valueOf(Founding.DEFAULT_WORLD_SEED);
     /** The path of the world beyond the city (WN1): Historical or Random. */
     private Nations.Path path = Nations.DEFAULT_PATH;
+    private boolean historicalEquipment = true;
     /** The path's seed, as typed or rolled: not the ground's (WN1). */
     private String pathSeed = String.valueOf(Nations.DEFAULT_SEED);
 
@@ -210,6 +211,7 @@ public final class FoundingScreen {
         worldSeed = String.valueOf(Founding.rollWorldSeed());
         // ...and the path of the world beyond it (WN1): the default (Random since WN3), and a path seed rolled as the ground's is.
         path = Nations.DEFAULT_PATH;
+        historicalEquipment = true;
         pathSeed = String.valueOf(Founding.rollWorldSeed());
         // The Earth, when its data is here (0.7.121): looked for off the screen's thread, the page redrawn when it is known.
         spotLat = spotLon = Double.NaN;
@@ -422,7 +424,7 @@ public final class FoundingScreen {
         VBox panel;
         if (two) {
             // On Earth (0.7.121): the city's choices on the left, the world's on the right.
-            VBox left = new VBox(22, nameBlock, startBlock, pathBlock);
+            VBox left = new VBox(22, nameBlock, startBlock, equipmentBlock(), pathBlock);
             left.setPrefWidth(LEFT);
             left.setMinWidth(LEFT);
             left.setMaxWidth(LEFT);
@@ -432,7 +434,7 @@ public final class FoundingScreen {
             HBox columns = new HBox(COLUMN_GAP, left, groundBlock);
             panel = new VBox(22, title, columns, bar, whyNot);
         } else {
-            panel = new VBox(22, title, nameBlock, startBlock, groundBlock, pathBlock, bar, whyNot);
+            panel = new VBox(22, title, nameBlock, startBlock, groundBlock, equipmentBlock(), pathBlock, bar, whyNot);
         }
         panel.setPrefWidth(panelWidth);
         panel.setMinWidth(panelWidth);
@@ -950,7 +952,22 @@ public final class FoundingScreen {
         return new String[] { line, whole, first };
     }
 
-    /** The caption, the row (the two chips, the seed's field and its dice) and the line of words for the path chosen. */
+    /** The historical default and the fully equipped alternative, kept in the founding record (R1d). */
+    private VBox equipmentBlock() {
+        Button historical = kindChip("1900", historicalEquipment, true, true);
+        historical.setOnAction(e -> { historicalEquipment = true; draw(); });
+        Button fitted = kindChip("All fitted", !historicalEquipment, false, true);
+        fitted.setOnAction(e -> { historicalEquipment = false; draw(); });
+        HBox row = new HBox(0, historical, fitted);
+        String words = historicalEquipment
+                ? "Start on 1901's wages, with equipment fitted only when it pays. The household basket follows the year."
+                : "Start with today's wages, equipment and recipes. The household basket stays today's.";
+        double wide = earth ? LEFT : PANEL - 2 * PANEL_PAD;
+        return new VBox(8, caption("YOUR CITY'S EQUIPMENT"), row,
+                infoLine(words, words, false, Palette.SIZE_SECTION - 1, Palette.TEXT_MUTED, wide));
+    }
+
+    /** The two path chips, its seed and the words for the path chosen. */
     private VBox pathBlock() {
         double wide = earth ? LEFT : PANEL - 2 * PANEL_PAD;
         Button historical = kindChip("Historical", path == Nations.Path.HISTORICAL, true, true);
@@ -1081,7 +1098,8 @@ public final class FoundingScreen {
         Long pathSeed = pathSeed();
         Founding f = Founding.custom(cityName, cash(), reserveUsd(), WorldEconomy.DEFAULT_MEAN_INFLATION)
                 .withWorldSeed(seed != null ? seed : Founding.DEFAULT_WORLD_SEED)
-                .withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED);
+                .withPath(path, pathSeed != null ? pathSeed : Nations.DEFAULT_SEED)
+                .withUnfitted(historicalEquipment);
         return ownCurrency ? f.withCurrency(currency()) : f;
     }
 

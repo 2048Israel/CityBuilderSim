@@ -397,6 +397,7 @@ public class Game {
         // ...and the builders' month for the sites with every post offered, which
         // says whether the crews' rule would starve a depot (0.7.130).
         buildingManager.setSitesAtEveryPost(this::getBuildingOutputAtEveryPost);
+        buildingManager.setPriorityWork(fittings::pointsOwed);
         // ...and their whole month, every post offered, which with the sites' says how short they are:
         // the scarcity price of a point and the foreign contractor's orders (FC1; BuildersShort).
         buildingManager.setOutputAtEveryPost(this::getConstructionOutputAtEveryPost);
@@ -744,9 +745,15 @@ public class Game {
     }
 
     public void run() {
+        boolean starting = !initialized;
+        if (starting) {
+            layTheLadder(true);
+            basketHearsTheYear();
+        }
         initialize();
         foundingBank();
         foundingYard();
+        if (starting && founding.isUnfitted()) unfitTheFounding();
     }
         
     private void initialize() {
@@ -1038,7 +1045,7 @@ public class Game {
          * On the defaults (0.7.10), because the save carries its own founding
          * and loadGame() puts it back - an old save's as Founding.legacy().
          */
-        buildWorld(Founding.defaults());
+        buildWorld(Founding.defaults().withUnfitted(false)); // neutral load scaffold; the saved flag and recipes are restored below (R1d)
 
         // buildWorld() made a new BuildingManager, so the templates have to be
         // reloaded into it - and initialize() is guarded, so the flag has to
@@ -1238,14 +1245,14 @@ public class Game {
      * unfitted, and a building that finishes in it comes with a piece only where the piece pays for a new building. A city founded the
      * default way calls nothing here: every building finishes fitted, as it did. */
 
-    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): false for every city a player or a harness founds until R1d. */
+    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): true for new cities since R1d, with an explicit all-fitted alternative. */
     public boolean foundedUnfitted() { return founding.isUnfitted(); }
 
     /**
      * Every building standing without every piece of equipment its template carries, and the forms set from it, so that the first month opens on
      * them (R1b): on every stack, each piece's unfitted count is the stack. The tractor's too: a 1900 farm cannot have one before its discovery
-     * (its "since" is PE14, June 1917 in research.json: NOT_KNOWN before that month, and no gain written for it yet), so its farms stay on horses. newGame() calls it after the
-     * buildings the founding stands up are placed (the bank, the yard: neither carries a piece, so today it sets nothing); package-private so that a
+     * (its "since" is PE14, June 1917 in research.json: NOT_KNOWN before that month, and its gain including the horse form's saved feed and hands), so its farms stay on horses. newGame() calls it after the
+     * buildings the founding stands up are placed (the bank's later pieces remain unknown in 1900); package-private so that a
      * harness, which places its village by hand after newGame() as the playtest does, can say it over that village.
      */
     void unfitTheFounding() {
@@ -1486,18 +1493,6 @@ public class Game {
         return t.knownAt(month, research);
     }
 
-    /**
-     * Orders the fitting of ONE building of `stack` with `piece`, for `payer` (R1b): refuses with the reason in words and nothing drawn or paid, or
-     * returns null once it is ordered. Refused when the piece is not on the stack's template, not known at the city's month, or no building of the
-     * stack is left to fit (the unfitted count less the fittings already on site).
-     *
-     * The money is asked BEFORE any good is drawn, on the exact quote of each good (Markets.quote(): the split a draw makes, so the quote is what is
-     * charged) and the work at the builders' price a point (BuildingManager.nonMaterialPricePerPoint(), what EquipmentFit.verdict() prices it at):
-     * a shortfall over the payer's cash is borrowed if the payer can (buildFor()'s rule, SHORTFALL_DUST included) and refuses the order if it
-     * cannot. The cost is what the draws came to, not the quote; the payer pays it, and the builders earn it (no sales tax in this batch).
-     * A piece that ends CART_HORSES delivers its trucks into Freight's fleet (Freight.deliverTrucks()), because they are Haulage's trucks and the
-     * fleet would otherwise buy them a second time. The count of unfitted does not move until the work is done.
-     */
     /** The suppliers' sales tax credited on a local draw, weighted exactly as Markets.draw() divides their stock (R1d). */
     private double fittingSupplierRate(Good good) {
         double held = 0, taxed = 0;
@@ -1520,6 +1515,18 @@ public class Game {
         return net / (1 - buildersSalesRate());
     }
 
+    /**
+     * Orders the fitting of ONE building of `stack` with `piece`, for `payer` (R1b): refuses with the reason in words and nothing drawn or paid, or
+     * returns null once it is ordered. Refused when the piece is not on the stack's template, not known at the city's month, or no building of the
+     * stack is left to fit (the unfitted count less the fittings already on site).
+     *
+     * The money is asked BEFORE any good is drawn, on the exact quote of each good (Markets.quote(): the split a draw makes, so the quote is what is
+     * charged) and the work at the builders' price a point (BuildingManager.nonMaterialPricePerPoint(), what EquipmentFit.verdict() prices it at):
+     * a shortfall over the payer's cash is borrowed if the payer can (buildFor()'s rule, SHORTFALL_DUST included) and refuses the order if it
+     * cannot. The cost is what the draws came to, not the quote; the payer pays it, and the builders earn what was paid, including sales tax and local input credits (R1d).
+     * A piece that ends CART_HORSES delivers its trucks into Freight's fleet (Freight.deliverTrucks()), because they are Haulage's trucks and the
+     * fleet would otherwise buy them a second time. The count of unfitted does not move until the work is done.
+     */
     public String fit(Investor payer, BuildingsStacks stack, Equipment piece) {
         if (payer == null || stack == null || piece == null) return "nothing to fit";
         BuildingsTemplate t = stack.getBuilding();
@@ -8057,11 +8064,10 @@ public class Game {
                 * servicesManager.getRoadRatio() * health.getWorkRatio());
     }
 
-    /** ...and what that leaves for the sites after the repairs: getBuildingOutput() with every post offered. */
+    /** ...and what that leaves for the sites after repairs with every post offered; fittings add a finite priority delay to the wait, not a permanent capacity loss (R1d). */
     public int getBuildingOutputAtEveryPost() {
-        int afterRepairs = (int) Math.max(0,
+        return (int) Math.max(0,
                 Math.round(getConstructionOutputAtEveryPost() - getMaintenancePoints()));
-        return afterRepairs - fittingPoints(afterRepairs);
     }
 
     /**
@@ -9837,10 +9843,10 @@ public class Game {
         // The yard's share to the sites now, free, as the quote priced it; the
         // rest drawn as the crews build - see processBuildOrder().
         double fromYard = deliverYardToSites(t, q.materialsNeeded);
-        buildingManager.bookContract(t, "City", 0, q.total, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
-        treasuryPays(TreasuryLine.BUILDINGS, q.total);
-        cityCapitalSpending += q.total;
-        getSectors().construction().bill(q.total, pointsLeft);
+        double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
+        buildingManager.bookContract(t, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        cityCapitalSpending += paid;
+        getSectors().construction().bill(paid, pointsLeft);
         decisions.record(DecisionLog.CONSTRUCTION, "Restarted " + t.getName() + " for " + DecisionLog.money(q.total));
         GameLog.note(String.format("The city restarted %d %s, for %s.", shell.buildings, t.getName(),
                 cityK("%,.0fk", q.total)));
@@ -9932,10 +9938,10 @@ public class Game {
         double fromYard = deliverYardToSites(to, q.materialsNeeded);
         // ...and the surface's bitumen, bought by the builders with it (0.7.83; drawBitumen()).
         drawBitumen(q.bitumenNeeded);
-        buildingManager.bookContract(to, "City", 0, q.total, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
-        treasuryPays(TreasuryLine.BUILDINGS, q.total);
-        cityCapitalSpending += q.total;
-        getSectors().construction().bill(q.total, to.getConstructionPoints() * (double) n);
+        double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
+        buildingManager.bookContract(to, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        cityCapitalSpending += paid;
+        getSectors().construction().bill(paid, to.getConstructionPoints() * (double) n);
         buildingManager.getControl().addPaving(n, ahead, month);
         decisions.record(DecisionLog.CONSTRUCTION, "Paved " + n + " " + from.getName()
                 + (n == 1 ? "" : "s") + " for " + DecisionLog.money(q.total));
@@ -10214,6 +10220,7 @@ public class Game {
         }
 
         if (totalCost <= cash) {
+            totalCost = treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             if (island) landManager.allocateOn(landmass, landNeeded);
             else landManager.allocate(landNeeded, selected.getSector(), works);
             this.hasNewReceipt = true;
@@ -10273,7 +10280,6 @@ public class Game {
             }
 
             // 4. Subtract everything at once
-            treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             cityCapitalSpending += totalCost;
 
             // ...and it lands somewhere now. The construction sector did the
@@ -22525,4 +22531,4 @@ public class Game {
 
 
  
-   
+

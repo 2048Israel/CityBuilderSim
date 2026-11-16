@@ -5339,7 +5339,7 @@ public class BuildingManager {
     /** ...with `extraPoints` more owed on the order's site than its buildings' own (ET2: a foothill pad's preparation, SitePreparation); waitFor() exactly for none. */
     public double waitFor(BuildingsTemplate t, int quantity, double extraPoints, double siteOutput) {
         if (t == null || quantity < 1) return 0;
-        return waitWith(t, quantity, extraPoints, siteOutput);
+        return priorityWait(waitWith(t, quantity, extraPoints, siteOutput), siteOutput);
     }
 
     /**
@@ -5352,7 +5352,7 @@ public class BuildingManager {
      */
     public double waitOnSite(BuildingsTemplate t, double siteOutput) {
         if (t == null) return 0;
-        return waitWith(t, 0, 0, siteOutput);
+        return priorityWait(waitWith(t, 0, 0, siteOutput), siteOutput);
     }
 
     /** waitFor()'s arithmetic, for an order of `quantity` - none, for what is on site alone - and `extraPoints` more owed on its site (ET2). */
@@ -6093,6 +6093,24 @@ public class BuildingManager {
     /** Told by Game: where the builders' month for the sites, every post offered, is read from (0.7.130). */
     public void setSitesAtEveryPost(java.util.function.DoubleSupplier sites) { this.sitesAtEveryPost = sites; }
 
+    /** Finite work done ahead of sites, rather than a permanent reduction in throughput (R1d review). */
+    private java.util.function.DoubleSupplier priorityWork = () -> 0;
+
+    public void setPriorityWork(java.util.function.DoubleSupplier points) { priorityWork = points; }
+
+    private double priorityPoints() { return Math.max(0, priorityWork.getAsDouble()); }
+
+    /** The local crews alone fit equipment; a foreign contractor cannot work this delay off. */
+    private double priorityWait(double wait, double siteOutput) {
+        double points = priorityPoints();
+        if (!(points > 0) || !(wait > 0) || wait == Double.MAX_VALUE) return wait;
+        double local = Math.min(siteOutput, Math.max(0, sitesAtEveryPost == null ? siteOutput : sitesAtEveryPost.getAsDouble()));
+        if (!(local > 0)) return wait; // foreign crews keep building while local crews cannot fit anything
+        double foreign = Math.max(0, siteOutput - local);
+        double delay = foreign > 0 ? Math.min(points / siteOutput, wait * local / foreign) : points / local;
+        return Math.min(Double.MAX_VALUE, wait + delay);
+    }
+
     /** The builders' whole month with every post offered, before the repairs, as Game hands it (Game.getConstructionOutputAtEveryPost(), FC1); null - a bare manager - reads none, and the premium and the foreign contractor are off. */
     private java.util.function.DoubleSupplier outputAtEveryPost;
 
@@ -6115,7 +6133,7 @@ public class BuildingManager {
     /** The months of work queued at the pace the builders leave the sites (BuildersShort.monthsQueued(): the queue as it stands over the sites' month, every post offered); 0 with no month to read. */
     public double monthsQueued() {
         if (!buildersMonthKnown()) return 0;
-        return BuildersShort.monthsQueued(getRemainingConstructionPoints(), sitesAtEveryPost.getAsDouble());
+        return BuildersShort.monthsQueued(getRemainingConstructionPoints() + priorityPoints(), sitesAtEveryPost.getAsDouble());
     }
 
     /**
@@ -6151,7 +6169,7 @@ public class BuildingManager {
         double sites = sitesAtEveryPost.getAsDouble(), output = outputAtEveryPost.getAsDouble();
         if (!(output > 0)) return 1;
         boolean foreign = BuildersShort.foreignTakesOrders(sites, output);
-        double queue = getRemainingConstructionPoints() + Math.max(0, pointsAhead);
+        double queue = getRemainingConstructionPoints() + priorityPoints() + Math.max(0, pointsAhead);
         // (Not foreign, the sites have at least FOREIGN_FLOOR of the month: a step in months is a finite number.)
         return BuildersShort.multiplier(foreign ? 0 : BuildersShort.monthsQueued(queue, sites),
                 foreign ? 0 : Math.max(0, pointsEach) / sites, n, foreign);
@@ -6423,10 +6441,10 @@ public class BuildingManager {
         BuildingsStacks s = d == null ? stackOfKey(key) : null;
         if (d == null && (s == null || s.getUnderConstruction() <= 0)) return 0;
         // ...the first group's, with a depot on site (0.7.130).
-        if (firstOn(null, 0)) return firstWait(key, null, false, false, siteOutput);
+        if (firstOn(null, 0)) return priorityWait(firstWait(key, null, false, false, siteOutput), siteOutput);
         // The rule's wait, to the bit, with the player's hand off the site.
-        if (s != null && !handOn(key)) return waitWith(s.getBuilding(), 0, 0, siteOutput);
-        return handWait(key, null, false, siteOutput);
+        if (s != null && !handOn(key)) return priorityWait(waitWith(s.getBuilding(), 0, 0, siteOutput), siteOutput);
+        return priorityWait(handWait(key, null, false, siteOutput), siteOutput);
     }
 
     /**
@@ -6450,7 +6468,7 @@ public class BuildingManager {
         if (firstOn(null, 0)) wait = firstWait(key, mine, false, false, siteOutput);
         else if (handOn(key)) wait = handWait(key, mine, false, siteOutput);
         else wait = waitWith(t, 0, 0, siteOutput) * points / owed;
-        return wait == Double.MAX_VALUE ? Double.NaN : wait;
+        return wait == Double.MAX_VALUE ? Double.NaN : priorityWait(wait, siteOutput);
     }
 
     /** Completion of currently pending units after one additional city order, with its full preparation points. */
@@ -6479,7 +6497,7 @@ public class BuildingManager {
             for (double[] site : projected.values()) totalWeight += site[0];
             wait = mine[0] > 0 ? firstPoints * totalWeight / (siteOutput * mine[0]) : Double.NaN;
         }
-        return wait == Double.MAX_VALUE ? Double.NaN : wait;
+        return wait == Double.MAX_VALUE ? Double.NaN : priorityWait(wait, siteOutput);
     }
 
     /**
@@ -6501,12 +6519,12 @@ public class BuildingManager {
         // ...the first group's, with a depot served first on site or a depot
         // quoted that would be (0.7.130).
         if (firstOn(t, quantity)) {
-            return firstWait(ConstructionControl.keyOf(t), withMore(t, quantity, points),
-                    !isOnSite(t), true, siteOutput);
+            return priorityWait(firstWait(ConstructionControl.keyOf(t), withMore(t, quantity, points),
+                    !isOnSite(t), true, siteOutput), siteOutput);
         }
         double[] mine = joined(t, quantity, points);
         if (mine == null) return waitFor(t, quantity, extraPoints, siteOutput);
-        return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
+        return priorityWait(handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput), siteOutput);
     }
 
     /**
@@ -6518,10 +6536,10 @@ public class BuildingManager {
     public double restartWait(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
-        if (firstOn(t, n)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), true, siteOutput);
+        if (firstOn(t, n)) return priorityWait(firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), true, siteOutput), siteOutput);
         double[] mine = joined(t, n, owedPoints);
         if (mine == null) return siteMonthsWith(t, n, owedPoints, siteOutput);
-        return handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput);
+        return priorityWait(handWait(ConstructionControl.keyOf(t), mine, !isOnSite(t), siteOutput), siteOutput);
     }
 
     private boolean isOnSite(BuildingsTemplate t) {
@@ -6552,7 +6570,7 @@ public class BuildingManager {
     }
 
     /** Points owed on every site, demolitions included: everything owed. */
-    public double pointsOwedOnSite() { return getRemainingConstructionPoints(); }
+    public double pointsOwedOnSite() { return getRemainingConstructionPoints() + priorityPoints(); }
 
     /**
      * Months a demolition of `points` over n buildings would take if ordered
@@ -6568,8 +6586,8 @@ public class BuildingManager {
         probe.buildings = n;
         probe.points = points;
         double[] mine = { demolitionWeight(probe), points };
-        if (firstOn(null, 0)) return firstWait("D?", mine, true, true, siteOutput);
-        return handWait("D?", mine, true, siteOutput);
+        if (firstOn(null, 0)) return priorityWait(firstWait("D?", mine, true, true, siteOutput), siteOutput);
+        return priorityWait(handWait("D?", mine, true, siteOutput), siteOutput);
     }
 
     /**
@@ -6579,6 +6597,10 @@ public class BuildingManager {
      * hand's is restartWait(). MAX_VALUE with no output.
      */
     public double siteMonthsWith(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
+        return priorityWait(siteMonthsWithRaw(t, n, owedPoints, siteOutput), siteOutput);
+    }
+
+    private double siteMonthsWithRaw(BuildingsTemplate t, int n, double owedPoints, double siteOutput) {
         if (!(siteOutput > 0)) return Double.MAX_VALUE;
         if (t == null || n < 1 || !(owedPoints > 0)) return 0;
         if (firstOn(t, n)) return firstWait(ConstructionControl.keyOf(t), withMore(t, n, owedPoints), !isOnSite(t), false, siteOutput);

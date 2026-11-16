@@ -283,13 +283,11 @@ public final class Founding {
     /** The seed that draws the path (WN1; spec-nations 7.3) - not worldSeed, which is the ground's. */
     private final long pathSeed;
     /**
-     * The city founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false in every constructor and preset,
-     * on only by withUnfitted().
+     * The city founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): true for every new city (R1d); withUnfitted(false) preserves an already fitted city or an explicit fixture.
      *
      * WHY (R1b, 2026-11-05; research-1900.md 3: "A 1900 building starts without them and fits them when they pay"). R1 made a piece of equipment
      * a count of the buildings still without it (BuildingsStacks.getUnfitted()), empty in every played city; a city founded this way starts
-     * with the counts full and its new buildings come with a piece only where it pays (Game.fitWhatFinished()). Off by default until R1d
-     * switches it on with R0d's 1901 ladder, so no city a player or a harness founds moves. Saved with the founding (DataSave.foundedUnfitted).
+     * with the counts full and its new buildings come with a piece only where it pays (Game.fitWhatFinished()). R1d switches it on with R0d's 1901 ladder. Existing saves restore their own founding flag. Saved with the founding (DataSave.foundedUnfitted).
      */
     private final boolean unfitted;
 
@@ -314,7 +312,7 @@ public final class Founding {
         this.worldKey = World.Key.generated(worldSeed);
         this.path = Nations.DEFAULT_PATH;
         this.pathSeed = Nations.DEFAULT_SEED;
-        this.unfitted = false;
+        this.unfitted = true;
     }
 
     /** A founding as given on the world a key names (0.7.115): its seed the key's. */
@@ -392,7 +390,7 @@ public final class Founding {
 
     /** What a save from before 0.7.10 was founded with. See the class header. */
     public static Founding legacy(double meanInflation) {
-        return new Founding(DEFAULT_CITY_NAME, Currency.DANZIK, WEALTHY_CASH, WEALTHY_RESERVE_USD, meanInflation);
+        return new Founding(DEFAULT_CITY_NAME, Currency.DANZIK, WEALTHY_CASH, WEALTHY_RESERVE_USD, meanInflation).withUnfitted(false);
     }
 
     private static String clean(String name) { return name == null ? "" : name.trim(); }
@@ -415,7 +413,7 @@ public final class Founding {
     public Nations.Path getPath()      { return path; }
     /** The seed that draws the path (WN1; spec-nations 7.3) - not getWorldSeed(), the ground's. */
     public long getPathSeed()          { return pathSeed; }
-    /** Whether the city is founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): false unless withUnfitted() said so. */
+    /** Whether the city is founded the 1900 way, its buildings' equipment unfitted (R1b; Game.unfitTheFounding()): true for new cities, with an explicit fitted alternative. */
     public boolean isUnfitted()        { return unfitted; }
     /** Which world it stands on (0.7.121): GENERATED, or EARTH. */
     public World.Kind getWorldKind()   { return worldKey.kind(); }

@@ -100,7 +100,7 @@ public class BasketYearCheck {
         return FittingCheck.village(label, founding, false, false);
     }
 
-    static final Founding DEFAULT = Founding.defaults();
+    static final Founding DEFAULT = Founding.defaults().withUnfitted(false);
     static final Founding THE_1900_WAY = Founding.defaults().withUnfitted(true);
 
     /** The months a village is played before anything is asked of its shops and homes (Forms1900Check.SETTLE). */

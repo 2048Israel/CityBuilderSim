@@ -42,7 +42,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 75 | `ArrivalMixCheck.DEFAULT` | `Founding.defaults()` |  |
+| 75 | `ArrivalMixCheck.DEFAULT` | `Founding.defaults().withUnfitted(false)` |  |
 | 76 | `ArrivalMixCheck.THE_1900_WAY` | `Founding.defaults().withUnfitted(true)` |  |
 | 78 | `ArrivalMixCheck.NONE` | `WageBand.NONE.ordinal()` |  |
 | 79 | `ArrivalMixCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |

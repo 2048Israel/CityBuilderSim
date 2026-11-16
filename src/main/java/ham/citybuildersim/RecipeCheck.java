@@ -246,7 +246,7 @@ public class RecipeCheck {
 
     /** A town on the goods' literals with its sectors held, founded the 1900 way (every piece unfitted) or the default way. */
     static Game town(String label, boolean unfitted) {
-        Game g = FittingCheck.village(label, unfitted ? Founding.defaults().withUnfitted(true) : Founding.defaults(), true, true);
+        Game g = FittingCheck.village(label, unfitted ? Founding.defaults().withUnfitted(true) : Founding.defaults().withUnfitted(false), true, true);
         if (unfitted) quietly(g::unfitTheFounding);
         FittingCheck.holdAll(g);
         return g;

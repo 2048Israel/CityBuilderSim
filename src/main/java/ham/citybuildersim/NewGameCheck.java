@@ -291,7 +291,7 @@ public class NewGameCheck {
         /* ==================== 2. live in one, hard ==================== */
         System.out.println("\n--- and one that has been lived in ---");
 
-        Game used = new Game(files);
+        Game used = new Game(files, Founding.defaults().withUnfitted(false)); // cause the insured-mortgage/old-assets premise before resetting into the new historical default
         used.run();
         // THE TREASURY THIS FIXTURE WAS WRITTEN AGAINST (0.7.10): its build list
         // is bought out of cash, and a city founds on D$100M since 0.7.10, not the

@@ -821,7 +821,8 @@ public abstract class Sector {
 
     /** How much of nameplate actually runs: staffing times the five ratios, the fifth being its freight (getFreightRatio()). */
     public double getOperatingRate() {
-        return averageFill * energyRatio * waterRatio * roadRatio * healthRatio * getFreightRatio();
+        double power = steamShare > 0 ? steamShare + (1 - steamShare) * energyRatio : energyRatio;
+        return averageFill * power * waterRatio * roadRatio * healthRatio * getFreightRatio();
     }
 
     /** Charged for what was DELIVERED, not asked for - the utility books the same slice. */

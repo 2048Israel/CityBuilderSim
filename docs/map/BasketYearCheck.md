@@ -51,7 +51,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 103 | `BasketYearCheck.DEFAULT` | `Founding.defaults()` |  |
+| 103 | `BasketYearCheck.DEFAULT` | `Founding.defaults().withUnfitted(false)` |  |
 | 104 | `BasketYearCheck.THE_1900_WAY` | `Founding.defaults().withUnfitted(true)` |  |
 | 107 | `BasketYearCheck.SETTLE` | `Forms1900Check.SETTLE` | The months a village is played before anything is asked of its shops and homes (Forms1900Check.SETTLE). |
 | 255 | `BasketYearCheck.Y1` | `1910, Y2 = 1920, Y3 = 1930` | The synthetic file's three knots, a decade apart (the harness's own figures, not the packaged file's): lamp share, coal share, cars. |

@@ -75,7 +75,7 @@ public class WageLadderCheck {
         return FittingCheck.village(label, founding, false, false);
     }
 
-    static final Founding DEFAULT = Founding.defaults();
+    static final Founding DEFAULT = Founding.defaults().withUnfitted(false);
     static final Founding THE_1900_WAY = Founding.defaults().withUnfitted(true);
 
     public static void main(String[] args) throws Exception {

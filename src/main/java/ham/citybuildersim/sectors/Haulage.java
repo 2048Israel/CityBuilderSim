@@ -532,6 +532,9 @@ public final class Haulage {
      */
     void closeMonth(Sectors sectors) {
 
+        double teamHire = horseShare > 0 ? teams * teamHirePerMonth() : 0;
+        if (teamHire > 0) freight.hireTeams(teamHire);
+
         /* ---- the diesel, drawn as the railway draws its own ---- */
 
         // ...on the tonnes the trucks carried: all of them, to the bit, unless the horse form puts a share on teams.
@@ -624,7 +627,7 @@ public final class Haulage {
                         * (freight.getMaintenanceExpense() + freight.getPropertyTaxExpense())
                 + Math.max(0, diesel) + worn * p + recover
                 // ...and the horses' feed, which the carters (in the payroll above) are paid beside (THE HORSE FORM).
-                + (horseShare > 0 ? Math.max(0, feed) : 0);
+                + (horseShare > 0 ? Math.max(0, feed) + teamHire : 0);
         // ...the rate base on the balance sheet's own count, buildings on site included (Freight.haulageShareOfSites()).
         double rateBase = freight.haulageShareOfSites(BuildingsTemplate::getCashCost) * Math.max(0, freight.getBuildingsValue())
                 + freight.haulageShareOfSites(BuildingsTemplate::getLandSqFt) * Math.max(0, freight.getLandValue())
@@ -894,8 +897,7 @@ public final class Haulage {
      *   - THE TRUCKS CARRY (1 - h) of each sector's legs, at the share the fleet was dealt it (FR8): the diesel is
      *     drawn on those tonnes alone (truckTonnes), and the fleet is seeded, bid for and priced toward (1 - h) of
      *     the need (truckPart()): a horse city buys fewer trucks, and the depots and drivers that follow them.
-     *   - THE TEAMS CARRY h, whole: teams are hired, not bought (the horses' and wagons' capital is left out of
-     *     R0c), so there are always as many as the share needs, h x carried / TONNES_A_TEAM_MONTH for the month's
+     *   - THE TEAMS CARRY h, whole: teams are hired, not bought (R1d prices their capital hire as an imported service), so there are always as many as the share needs, h x carried / TONNES_A_TEAM_MONTH for the month's
      *     bill and h x need / TONNES_A_TEAM_MONTH for the posts. A team is HORSES_A_TEAM horses.
      *   - THE HORSES EAT CROPS: teams x HORSES_A_TEAM x HORSE_FEED_TONNES_A_MONTH tonnes a month, drawn through
      *     the market on Freight's books exactly as the diesel is (Freight.drawFeed(): the farms' shelf first, the
@@ -923,6 +925,23 @@ public final class Haulage {
 
     /** Carters a team employs: one (a carter needed no diploma; Montreal had 1,429 carters heading households in 1901, research-1900 section 2.3). */
     public static final double CARTERS_A_TEAM = 1;
+
+    /** Assumed capital of a pair and wagon in thousands of 1900 dollars; hired abroad rather than a new traded good (R1d, estimate). */
+    public static final double TEAM_CAPITAL_1900 = 0.3;
+
+    /** Estimated blended working life of a hired pair and wagon, in months (R1d). */
+    public static final int TEAM_LIFE_MONTHS = 120;
+
+    /** The named imported service already carried by the sector's saved statement (R1d). */
+    public static final String TEAM_HIRE = "Horse teams hired";
+
+    /** A team's capital hire at the current money/price factor, paying wear and the same return as the fleet (R1d). */
+    public double teamHirePerMonth() {
+        Markets markets = freight.markets();
+        double factor = markets == null ? ham.citybuildersim.PriceLevel.FACTOR : markets.getExchangeRate();
+        return TEAM_CAPITAL_1900 / ham.citybuildersim.PriceLevel.FACTOR * factor
+                * (1.0 / TEAM_LIFE_MONTHS + Freight.TARGET_RETURN);
+    }
 
     /** The share of the city-leg tonnes carried by horse and wagon, 0 to 1: 0 until a harness or R1 sets it; not saved. */
     private double horseShare;
@@ -983,7 +1002,7 @@ public final class Haulage {
 
     /**
      * What a tonne's city leg costs by horse and wagon at today's prices with no history behind it: a team's feed
-     * and its carters' month over the tonnes a team carries. The crops' price is the market's landed price, else
+     * and its carters' month plus its capital hire over the tonnes a team carries. The crops' price is the market's landed price, else
      * the world's; the carters' wage is the NO_DIPLOMA tier's. Finite and not below zero whatever the markets say.
      */
     public double horseEstimate() {
@@ -994,7 +1013,8 @@ public final class Haulage {
             if (cropsMarket != null) c = cropsMarket.landedPrice();
         }
         c = Double.isFinite(c) ? Math.max(0, c) : 0;
-        double e = (HORSES_A_TEAM * HORSE_FEED_TONNES_A_MONTH * c + CARTERS_A_TEAM * freight.noDiplomaWage()) / TONNES_A_TEAM_MONTH;
+        double e = (HORSES_A_TEAM * HORSE_FEED_TONNES_A_MONTH * c + CARTERS_A_TEAM * freight.noDiplomaWage()
+                + teamHirePerMonth()) / TONNES_A_TEAM_MONTH;
         return Double.isFinite(e) ? Math.max(0, e) : 0;
     }
 

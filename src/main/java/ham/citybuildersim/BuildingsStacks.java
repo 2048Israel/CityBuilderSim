@@ -282,12 +282,12 @@ public class BuildingsStacks {
         return !unfitted.isEmpty();
     }
 
-    /** After the quantity fell from `before`: the buildings scrapped were the unfitted ones first (the older plants), and no count stays above what stands. */
     private java.util.function.IntConsumer onScrap = n -> { };
 
     /** The city's fitting queue hears every removal, including retirement and immediate harness removals (R1d). */
     void setOnScrap(java.util.function.IntConsumer listener) { onScrap = listener; }
 
+    /** After the quantity fell from `before`: the buildings scrapped were the unfitted ones first (the older plants), and no count stays above what stands. */
     private void lowerUnfitted(int before) {
         int removed = before - quantity;
         onScrap.accept(removed);
