@@ -15,8 +15,8 @@ The brief asked for whichever changes less and reads more plainly. A long.
   belong to one stack, not to a ceiling's worth of it. That is a new rule in every reader.
 - **A long** is one type change that the compiler follows: no formula moves, the sums that were already
   `(long) stack.getQuantity() * per` become plain, and a saved int array reads into a long array with no
-  conversion (Gson). It cost 58 non-harness files' types and 60 harness files' (the diff is
-  1,046 and 711 lines of `int` to `long`, `Integer` to `Long`, `IntToDoubleFunction` to `LongToDoubleFunction`;
+  conversion (Gson). It cost 58 non-harness files' types and 60 harness files' (the diff, new check aside, is
+  1,046 and 441 lines of `int` to `long`, `Integer` to `Long`, `IntToDoubleFunction` to `LongToDoubleFunction`;
   `git diff -U0` less the type tokens leaves about a hundred lines, section 4).
 
 ## 2. What is a long now
@@ -115,4 +115,31 @@ is a long, two `int standing` locals widened), `DataSave.java` (the saved arrays
 
 ## 7. The pick, the dry run
 
-(filled at the end)
+**Runtime traps the compiler cannot see.** The first `./batch-check.sh --pick` (ALL, 211 harnesses) found four NEW reds:
+three were the widening, one was main's.
+
+- `LandmassCheck`: `ClassCastException: Integer cannot be cast to Long`. `Landmasses.unitsOn` read
+  `leaving.get(d[0])`, `leaving` a `TreeMap<Integer, Leave>`, and `d` the `{demolition id, buildings}` array that
+  the stock interface now hands as a `long[]`: `d[0]`, an id, boxed to a Long. Now `leaving.get((int) d[0])`.
+- `BankFailureCheck`, `RefineryCheck`: `(int) retire.invoke(...)` on the private `Game.retire`, which returns a
+  long now, and `(Integer) seen[5]` of a captured `found.quantity()`: both reflective or boxed casts, now `long`/`Long`.
+- `KeptCheck`: "no month makes more than a tenth of the nodes the first draw made (the most made in one: 46 of 400;"
+  is **main's**: `AllChecks -f KeptCheck` on main's own classes (this worktree before SQ1's first edit, 08c8727d, run
+  here) prints the same line and counts, and the known-reds file has the same fault at 47 of 378 and 40 of 384, the
+  counts the trace had before LF1b moved it. It is in the ship file's `## known-reds` against FB2, the fix queued.
+- To look for the same trap everywhere, `target/sq1scan/Sq1Scan.java` (a throwaway, not committed) walks every source
+  with the compiler's tree API and reports any `Map.get/containsKey/remove/getOrDefault`, `Collection.contains/remove`,
+  `indexOf` or `equals` whose argument boxes to a different numeric type than the key (a `long` against an `Integer`
+  key returns null from a HashMap and throws from a TreeMap). It found the one above and nothing else; the
+  reflective call sites (67) were read against the changed signatures: only `Game.retire`.
+- The second full pick, on the fixed code: one NEW red, `LandNationsCheck`, "The real quote did not release its
+  worker" (a thread the fixture waits for, under a suite at 80-98% CPU). Alone it passes (`./batch-check.sh
+  LandNationsCheck`, exit 0) and it passed in the first full pick: a load flake, not SQ1's (nothing in it reads a stack).
+  The other runs: `LandmassCheck`, `RefineryCheck`, `BankFailureCheck` and `BuildingStackCheck` together, exit 0.
+
+**One fault in the process, for the orchestrator (not fixed here).** `docs/batch.md` step 5's template writes the
+`## known-reds` section with a header row, `Harness | part of the red line | queued fix | date | cause`, and
+`tools/known-reds.sh` reads that row as a malformed record (its third field has a space) and `batch-check.sh` stops
+with "malformed known-reds row" and exit 1. This ship file has the rows only.
+
+**The dry run.** (filled when it has run)
