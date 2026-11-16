@@ -2,7 +2,7 @@
 
 Generated 2026-11-16 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**208 harness files, 24,442 labelled assertions.** AllChecks runs 208 of them.
+**209 harness files, 24,495 labelled assertions.** AllChecks runs 209 of them.
 
 ## Which harnesses read which class
 
@@ -37,11 +37,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck |
 | [BuildingCatalog](map/BuildingCatalog.md) | BridgeMapCheck, BuildingDataCheck, CrossingCheck, DiscoveryCheck, EarthTerrainCheck, EquipmentCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, PriceLevelCheck, PrizeCheck, RailDrawCheck, RecipeCheck, ResearchCheck, SlopeCheck, WellCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
-| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MonetaryCheck, NewGameCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SupplierCreditCheck, TradeCostCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalRecipeCheck, HouseholdCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, TruckRouteCheck, WoodProductsCheck, WorksFinanceCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
-| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
-| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, PostwarRecipeCheck, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
+| [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GatewayCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, TradeCostCheck, TreasuryCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CreditCheck, FittingCheck, FundLedgerCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck |
 | [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, HaulageCheck, HousingCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MortgageCheck, OilCheck, OrderSearchCheck, PolicyCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
@@ -83,7 +83,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Credits](map/Credits.md) | CreditsCheck |
 | [Crime](map/Crime.md) | BuildAdviceCheck, CrimeCheck, EssentialWorksCheck, LongPlaytest, ScaleCheck |
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, MoneySignCheck, MoneyWordsCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
-| [DataSave](map/DataSave.md) | CurrencyRegimeCheck, EarthTerrainCheck, FittingCheck, GoldMiningCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LandmassCheck, LicenceFeesCheck, MapCheck, MoneyDatesCheck, MoneySignCheck, PopulationCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
+| [DataSave](map/DataSave.md) | CurrencyRegimeCheck, EarthTerrainCheck, FittingCheck, GoldMiningCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LandmassCheck, LicenceFeesCheck, MapCheck, MoneyDatesCheck, MoneySignCheck, PopulationCheck, PostwarRecipeCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, SectorStatementCheck, TreasuryCheck, WorksFinanceCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, HoldersCheck, HousingCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MortgageCheck, OwnerCheck, PartnersCheck, PegAnchorCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, BuybackCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, WorksFinanceCheck |
@@ -102,8 +102,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CreditCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, GdpCheck, GovernmentViewCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
-| [Equipment](map/Equipment.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
-| [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
+| [Equipment](map/Equipment.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
+| [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, EquipmentCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CarCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, GovernmentViewCheck, HistoryCheck, HouseholdCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MortgageCheck, OwnerCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck |
 | [Exchange](map/Exchange.md) | BankCheck, BankFailureCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, LongPlaytest, MarketCheck, OwnerCheck, PrizeCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
@@ -123,7 +123,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, ForeignCheck, ForeignDebtCheck, GoldMiningCheck, GoldStandardCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FoodProcessingCheck, FormatsCheck, LandCheck, MoneySignCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, TradeCostCheck, WellCheck, ZoningCheck |
-| [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
+| [Founding](map/Founding.md) | ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BridgeMapCheck, BuildAdviceCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, DeathCareFirstCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, ExchangeRateCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GridCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HouseholdCheck, HousingCheck, HydroCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OutsideCheck, PartnerCallsCheck, PartnersCheck, PassThroughCheck, PlanCheck, PolicyDatesCheck, PolicyPreviewCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDrawCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WellCheck, WorldCheck, WorldMoneysCheck, ZoningCheck, ZoningViewCheck |
 | [FoundingName](map/FoundingName.md) | NewGameCheck |
 | [FoundingScreen](map/FoundingScreen.md) | **none** |
 | [Freight](map/Freight.md) | BuildCardCheck, EquipmentCheck, FittingCheck, Forms1900Check, FreightViewCheck, GdpCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, OilCheck, PortCheck, RailCheck, RailDepotCheck, RefineryCheck, RefineryViewCheck, SaveFileCheck, TradeBandCheck, TruckRouteCheck, WorldDataCheck |
@@ -132,7 +132,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
-| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GdpCheck, GoldMiningCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HydroCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorldMoneysCheck, YearBookCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | MapCheck, TruckRouteCheck |
@@ -144,7 +144,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GoldMining](map/GoldMining.md) | BuildingDataCheck, GoldMiningCheck |
 | [GoldPrice](map/GoldPrice.md) | GoldMiningCheck, GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, TradeCostCheck, VaultMoneysCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, EquipmentCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HomeRailCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GdpCheck, GoldMiningCheck, InfrastructureCheck, InvestCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentPlayer](map/GovernmentPlayer.md) | GovernmentPlayerCheck, LongPlaytest |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
@@ -181,7 +181,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [IslandChip](map/IslandChip.md) | **none** |
 | [IslandRailRenders](map/IslandRailRenders.md) | **none** |
 | [JavaScan](map/JavaScan.md) | **none** |
-| [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ER1Check, EducationCheck, EquipmentCheck, EssentialWorksCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
+| [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ER1Check, EducationCheck, EquipmentCheck, EssentialWorksCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyDatesCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck |
 | [Kept](map/Kept.md) | **none** |
 | [KeptBench](map/KeptBench.md) | KeptCheck, MoneyWordsCheck |
 | [KnownReds](map/KnownReds.md) | KnownRedsCheck |
@@ -203,7 +203,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [LandmassView](map/LandmassView.md) | LandmassCheck, LongPlaytest, ReadPathCheck |
 | [Landmasses](map/Landmasses.md) | BridgeCheck, BuildAdviceCheck, CapitalFlowCheck, FittingCheck, IslandLinkCheck, IslandRailCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [Levers](map/Levers.md) | **none** |
-| [LicenceFees](map/LicenceFees.md) | HistoricalLicenceCheck, LicenceFeesCheck |
+| [LicenceFees](map/LicenceFees.md) | HistoricalLicenceCheck, LicenceFeesCheck, PostwarRecipeCheck |
 | [LongTermBond](map/LongTermBond.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CreditCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, FundCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, TreasuryCheck |
 | [LuxuryCounter](map/LuxuryCounter.md) | **none** |
 | [LuxuryRetail](map/LuxuryRetail.md) | **none** |
@@ -248,7 +248,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdMemoryCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, KeptCheck, ResearchViewCheck |
-| [PolicyDates](map/PolicyDates.md) | BusinessServicesCheck, DiscoveryCheck, EquipmentCheck, ForestryCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, KeptCheck, LandmassCheck, ManufacturingCheck, MoneyDatesCheck, PolicyDatesCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, WageLadderCheck, ZoningViewCheck |
+| [PolicyDates](map/PolicyDates.md) | BusinessServicesCheck, DiscoveryCheck, EquipmentCheck, ForestryCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, KeptCheck, LandmassCheck, ManufacturingCheck, MoneyDatesCheck, PolicyDatesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, WageLadderCheck, ZoningViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, GovernmentViewCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
@@ -267,13 +267,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [RankingsScreen](map/RankingsScreen.md) | **none** |
 | [RealDollar](map/RealDollar.md) | PriceLevelCheck, RankingsCheck, RealDollarCheck |
 | [RealEstate](map/RealEstate.md) | DiscoveryCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, PopulationCheck, ReadPathCheck, RoadCheck, StaffingDrawCheck, WageLadderCheck |
-| [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, LicenceFeesCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
-| [RecipeChange](map/RecipeChange.md) | RecipeCheck |
-| [RecipeChanges](map/RecipeChanges.md) | HistoricalLicenceCheck, RecipeCheck |
-| [Recipes](map/Recipes.md) | DiscoveryCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, RecipeCheck, ResearchCheck |
+| [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, LicenceFeesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
+| [RecipeChange](map/RecipeChange.md) | PostwarRecipeCheck, RecipeCheck |
+| [RecipeChanges](map/RecipeChanges.md) | HistoricalLicenceCheck, PostwarRecipeCheck, RecipeCheck |
+| [Recipes](map/Recipes.md) | DiscoveryCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck |
 | [Recording](map/Recording.md) | ReplayCheck, SaveFileCheck |
 | [Reenactor](map/Reenactor.md) | **none** |
-| [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, SaveFileCheck |
+| [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, OilCheck, OilViewCheck, PostwarRecipeCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, SaveFileCheck |
 | [RefineryView](map/RefineryView.md) | HistoricalRecipeCheck, IndustryViewCheck, KeptCheck, OilViewCheck, RefineryCheck, RefineryViewCheck |
 | [Refining](map/Refining.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, LongPlaytest, OilCheck, OilViewCheck, PortCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck |
 | [ReliefRenders](map/ReliefRenders.md) | **none** |
@@ -284,7 +284,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ReplayMode](map/ReplayMode.md) | **none** |
 | [ReplayMoveProbe](map/ReplayMoveProbe.md) | ReplayCheck |
 | [Research](map/Research.md) | DiscoveryCheck, KeptCheck, LandCheck, LicenceFeesCheck, PolicyPreviewCheck, PrizeCheck, ResearchPreviewCheck, ResearchViewCheck |
-| [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, EquipmentCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, PolicyPreviewCheck, PrizeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, EquipmentCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, PolicyPreviewCheck, PostwarRecipeCheck, PrizeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [ResearchPreview](map/ResearchPreview.md) | KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [ResearchScreen](map/ResearchScreen.md) | **none** |
 | [ResearchView](map/ResearchView.md) | HistoricalRecipeCheck, KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
@@ -304,7 +304,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SavedCities](map/SavedCities.md) | RankingsCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck, PartnerCallsCheck |
-| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyWordsCheck, NewGameCheck, OilCheck, OilViewCheck, PassThroughCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck |
+| [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EquipmentCheck, EssentialWorksCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GdpCheck, GoldMiningCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HousingCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, MoneyWordsCheck, NewGameCheck, OilCheck, OilViewCheck, PassThroughCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PostwarRecipeCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, StaffingDrawCheck, SupplierCreditCheck, TruckRouteCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, ZoningCheck |
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CapitalFlowCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, ManufacturingCheck, MortgageCheck, PolicyPreviewCheck, PrizeCheck, ReloadCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, KeptCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorScreen](map/SectorScreen.md) | **none** |
@@ -9462,169 +9462,169 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L335 ...whose save has no foundedUnfitted key, and which loads as not unfitted
   - L338 ...and the loaded one is not founded the 1900 way
   - L342 a city founded withUnfitted(true) knows it
-  - L349 the founding's own buildings (the bank, the builders' yard) carry no piece, and a village placed after it without construction comes as placed
-  - L354 unfitTheFounding(), over that village: on every stack whose template carries a piece every building is unfitted for every piece
-  - L356 ...the tractor's too: the Grain Farm's whole stack, which stays on horses (NOT_KNOWN before PE14's June 1917)
-  - L363 fixture: some of Industry's draw is unfitted (bakeries among its buildings)
-  - L364 before the first press Industry's steam share is its unfitted part of the grid draw, worked out here from the stacks
-  - L365 ...the farms' horse share the unfitted part of their land
-  - L366 ...and Haulage's the unfitted part of the depots' truck room
-  - L367 ...with the forms driven set
-  - L371 one press later Industry's steam share is still the counts' (the month's end said it again)
-  - L376 the city founded the 1900 way saved, with the flag in the file
-  - L379 ...and loaded: the flag is back and so are the counts
-  - L382 ...and the shares the counts set are the saved city's
-  - L444 fixture:
-  - L451 a new building's verdict for the drive is priced in 1900 (PAYS or NOT_YET) and is never FITTED
-  - L454 fixture: the break-even price of coal for the drive on a new building is a price
-  - L458 fixture: the city's coal price moved to three times the break-even, where the drive pays for a new building
-  - L470 fixture: two Bakeries are on site
-  - L473 fixture: no other building completed while the two Bakeries opened
-  - L475 at that price the Bakeries that finished came fitted: the count of the drive unfitted is as it was
-  - L478 ...and nothing was unfitted by it: Industry's steam share is 0
-  - L486 fixture: the coal price moved to three tenths of the break-even, where the drive does not pay for a new building
-  - L491 fixture: two more Bakeries are on site
-  - L494 below it the Bakeries that finished came unfitted: the count of the drive unfitted is up by what finished
-  - L496 ...and the forms at rest are the counts': Industry's steam share is the unfitted part of its draw
-  - L498 ...and it is up (the share is more than nothing)
-  - L500 in a default city the Bakeries that finished came fitted at that price too: no count, no share
-  - L510 fixture: a Grain Farm is on site
-  - L512 the verdict for a new farm's tractor is NOT_KNOWN before PE14's June 1917, whatever the prices
-  - L514 a farm that finished came without its tractor: the count of the tractor unfitted is up by what finished
-  - L516 ...and the farms' horse share is the unfitted part of their land
-  - L517 ...which is more than nothing
-  - L519 in a default city a farm that finished came fitted: no count of the tractor
-- **L525 4. what a new building comes with: the pieces that pay, at the finish; none of the others; a default city's buildings all fitted**
-  - L526 fitting-new-1900
-  - L527 fitting-new-default
-  - L532 the order costs what it costs: in each city the two Bakeries are charged exactly what the model quoted for them just before, in a city founded the 1900 way a...
-  - L535 ...the template's whole cost at that city's builders: the sticker is the cash cost at the city's wages, times two, times the builders' multiple on the city's...
-  - L538 ...and the template is the same in both: the Bakery's cash cost (the order's own part) is the same figure in the city founded the 1900 way and in the default...
-- **L615 5. the order ranked with the buildings: the fitting when the plan builds nothing or earns less on its cost, the plan's own decision other...**
-  - L624 fixture: one Bakery lacks its drive, Industry may order, nothing is on site, and the break-even price of coal is a price
-  - L628 fixture: neither decision of the plan carries a piece
-  - L631 fixture: the city's price of coal moves to half the break-even
-  - L633 ...where the drive does not pay
-  - L634 the plan's own decision comes back, the very object, when the drive does not pay: for a plan that builds nothing and for one that builds
-  - L638 fixture: the price of coal moves to three times the break-even
-  - L640 ...where the drive pays
-  - L642 the plan builds nothing: the month's decision is to fit the drive to a Bakery, one, and it builds (it spends)
-  - L645 ...its reason in the planner's words: the piece, the building, what it earns a month on what it costs at the city's prices, and the rate a month
-  - L661 the plan builds a Bakery and the fitting earns more on its cost: the month's decision is the fitting, and not the plan's
-  - L662 fixture: the price of coal moves to one and a half times the break-even
-  - L671 ...where the drive still pays but earns less on its cost than a Bakery would
-  - L673 the plan builds a Bakery and the building earns more on its cost: the plan's own decision comes back, the very object
-  - L674 ...but the plan that builds nothing still gets the fitting that pays, however little
-  - L677 a tie keeps the one listed first (the building is listed first): SpreadPlanner.best() on equal earnings on cost
-  - L682 a sector with a fitting on site of its own gets the plan's decision, the very object, though the drive pays
-  - L685 ...with none on site the drive is the choice again
-  - L687 the city's own job takes the only Bakery that lacks the drive: it is not Industry's fitting, but there is none left to fit, and the plan's decision comes back
-  - L691 no stack unfitted: the plan's own decision comes back
-  - L695 a sector whose only unfitted piece is not known (Agriculture's tractor) gets its plan's decision
-  - L703 fixture: the price of coal moves to ten times the break-even and the drive pays; two Bakeries lack it, one has a long job of the city's ahead
-  - L708 one month of the real round: Industry's line says it Fitted the drive
-  - L710 ...a job of its own is on site behind the city's, the drive on the Bakery, with all its work still to do (the crews' points went to the job ahead), and the c...
-  - L714 the next round orders no second while that job is on site: still one of Industry's, and not another Fitted line
-- **L721 6. the money and the goods: the goods drawn by the builders at the city's market, the payer pays, the builders are paid, the work at the ...**
-  - L734 fixture: the drive buys machinery and nothing else, and has work; the builders are paid a point
-  - L737 fixture: two Bakeries lack the drive, and what it should cost is a price
-  - L746 Industry orders the fitting: taken (no reason given)
-  - L747 with cash above the total its cash falls by the total: the quote's goods and the work at the builders' price a point
-  - L748 ...and nothing is borrowed
-  - L749 the market's draw of machinery is the piece's units
-  - L751 ...the builders are the buyer in the market's own records, for the same units
-  - L752 ...local fills and imports together are those units (the makers' stock down, or the import up)
-  - L754 an electric drive delivers nothing into Freight's fleet: only the motor truck does
-  - L755 the builders' fitting revenue this month is the total
-  - L756 ...and the total is the draws' cost in the market's records plus the work at the price a point
-  - L758 a job is on site for it: the Bakery, the drive, Industry's, with the piece's work to do, and the count has not moved
-  - L767 with cash under the total the second order is taken too (the second Bakery lacks it)
-  - L768 ...the shortfall borrowed: the sector's debt rose and its till, after paying the whole total, is empty to a rounding
-  - L770 ...and the builders were paid the whole total
-  - L776 a third order is refused: no Bakery lacking the drive is left that is not being fitted
-  - L777 ...with nothing drawn, nothing paid and no job added
-  - L780 a piece not known in the city's year is refused, with a reason in words (the tractor)
-  - L782 a piece not on the stack's template is refused
-  - L783 ...with nothing drawn, nothing paid and no job added
-  - L792 the press after two orders: the money audit closes (what the payer spent is in the builders' pool, in the order book, until their strike banks it)
-  - L795 ...the builders' statement names the equipment fitted, at what they were paid for it
-  - L796 ...and the parts it names add up to its other revenue
-  - L797 the national accounts' construction investment is the work recognised plus the equipment fitted, once, on the builders' side
-  - L799 ...and the ledger is banked: nothing is booked for the next strike
-- **L805 7. the work: the crews work the fittings after the repairs and before the sites, in the order placed; the count falls in the month the po...**
-  - L812 the list: 3 jobs, 130 points owed, two of a on template 1 and one of b on 2, X has some on site and Z has none
-  - L814 working 60 points finishes none: the first job is worked first
-  - L816 working 40 more finishes the first and only it: the second is not touched while the points are gone (30 left)
-  - L819 working 30 more finishes the second, and the job of no points behind it with the same call, in the order placed
-  - L822 a job of no points finishes at the first call, whatever the points
-  - L826 the view is a copy: changing it moves nothing
-  - L829 restore() puts back what view() gave, and replaces what was there
-  - L832 restore(null) and clear() leave none
-  - L845 fixture: the twins stand alike, with twelve Bakeries on site each to take every point the sites are given, and the sites are offered output after the repairs
-  - L850 fixture: the city orders one drive in A
-  - L851 the output between the presses reads what the next advance will give the sites: the repairs' left less the fittings' points, whole
-  - L855 one press on: the sites in A were given exactly the points the fitting took fewer than the sites in B, the piece's work
-  - L857 ...the repairs the same in both, and the job done in the month: its count down by one and nothing left on site
-  - L859 ...and with no job on site the output is the repairs' left, to the bit, as it always was
-  - L883 fixture: a Fabrication Works stands and lacks its drive, and fitting it is more work than a month's output after the repairs
-  - L889 fixture: the city orders the Works' drive first and a Bakery's second
-  - L891 fixture: the Works' share of steam is up (a building in it lacks its drive)
-  - L908 each press worked exactly what the month left the crews after the repairs, or what was owed if less
-  - L909 the Works' drive took more than one press, as the work exceeds a month's output
-  - L910 ...its count fell only in the month its points were done, not before, and the job placed second had not been touched while the first was worked
-  - L911 ...and then both are fitted, in the order placed: the Works and the Bakery, nothing left on site
-  - L913 ...and the Works' steam share went with its count, at the month's end: the counts' at rest (nothing in its sector lacks a drive now)
-- **L920 8. one at a time: a sector with a fitting on site orders no second, and a stack whose unfitted are all on site is left out of the rank**
-  - L928 fixture: the drive pays at three times the break-even coal price, two Bakeries lack it and Industry has no job on site
-  - L931 with none on site the rank holds the drive
-  - L934 one of the two is on site: the rank still holds the other (the unfitted count less the fittings on site is 1)
-  - L936 ...but the sector has a fitting on site and orders no second: its plan's decision comes back
-  - L939 three months of the real round on, the sector still orders no second: nothing Fitted and the one job is all there is
-  - L944 a stack whose unfitted are all on site (two lack it, two are being fitted by the city) is left out of the rank, and the sector orders none
-  - L947 ...and ordering one is refused
-  - L949 ...two months of the real round on, still none ordered
-- **L955 9. the depot's trucks: the trucks a fitting buys are delivered into Freight's fleet and the builders' draw of them is the same**
-  - L964 fixture: a Truck Depot lacks its trucks, the piece buys trucks and nothing else, a month is played and the carts' horse share is up
-  - L973 Freight orders the trucks: taken
-  - L974 Freight's trucks held rose by the piece's TRUCKS, added to what it held
-  - L975 the builders' draw of TRUCKS is the same units, in the market's own count
-  - L976 ...and in the market's records: the builders are the buyer
-  - L977 Freight paid the draws' cost, and the piece has no work
-  - L978 the depot is not yet fitted (a job of no points is on site): the horse share has not moved
-  - L981 the next press works it (no points): the depot is fitted and the carts' horse share is 0
-- **L988 10. the player's Fit: the city pays whatever the verdict says, not limited to one at a time, refused with nothing drawn and nothing paid**
-  - L1005 fixture: three Bakeries lack the drive and, with the city's coal at half the break-even, it does not pay (NOT_YET), and the treasury can pay
-  - L1011 the player's Fit is taken though the verdict is NOT_YET: it is the player's money
-  - L1012 ...the treasury fell by the total: the goods at the market and the work at the builders' price a point
-  - L1013 ...a \"City\" job is on site, and the count has not moved
-  - L1015 ...the units drawn are the piece's
-  - L1016 ...and the builders earned the total
-  - L1018 it is not limited to one at a time: a second goes on site beside the first
-  - L1027 a treasury short of the total refuses it (the city does not borrow for it), with a reason that names the treasury
-  - L1028 ...nothing drawn, nothing paid, no job added
-  - L1038 the tractor is refused: it is not known in the city's year
-  - L1039 ...nothing drawn, nothing paid, no job added
-  - L1044 the third Bakery is taken, and then every one that lacks the drive is on site
-  - L1049 a fourth is refused: every unfitted building of the stack is on site
-  - L1050 ...nothing drawn, nothing paid, no job added
-  - L1051 a template with no stack, or a piece it does not carry, is refused
-  - L1056 the press after the city's three orders: the money audit closes
-  - L1057 ...the national accounts' construction investment carries the three, once
-- **L1074 11. the save: no job, no key; the jobs saved are the jobs loaded, and a loaded city and the one it was saved from stay equal to the bit**
-  - L1085 a city with no job on site saves no fittings key
-  - L1089 ...and loads with none on site
-  - L1092 fixture: two jobs on site (the Works' first), ordered between two presses so that the builders' ledger holds their revenue
-  - L1096 a city with jobs on site saves them (the key is in the file)
-  - L1102 ...and loads without a failure, in the same month, with the same jobs in the same order, every field to the bit
-  - L1105 ...the builders' fitting revenue booked in the ledger is back, so that its strike names it
-  - L1107 the twin and the loaded city are equal to the bit in the treasury, every sector's cash, the counts and the jobs, before any press
-  - L1120 ...and equal to the bit after each press until the jobs are worked
-  - L1121 ...the jobs worked in both, the counts equal and down by one each
-  - L1126 ...and two presses beyond, equal still
-- **L1132 12. a default city orders none: a town founded the default way, played 24 months, has no job ever on site and no decision with a piece**
-  - L1147 fixture: nothing is unfitted in the town in any of the 24 months
-  - L1148 no job is on site in any of the 24 months, and the builders were paid no fitting
-  - L1149 no sector's line says Fitted in any month, and the choice hands every sector's plan back, the very object, every month
+  - L350 the founding Bank is wholly unfitted for B1/B3, while the hand-placed village comes fitted
+  - L359 unfitTheFounding(), over that village: on every stack whose template carries a piece every building is unfitted for every piece
+  - L361 ...the tractor's too: the Grain Farm's whole stack, which stays on horses (NOT_KNOWN before PE14's June 1917)
+  - L368 fixture: some of Industry's draw is unfitted (bakeries among its buildings)
+  - L369 before the first press Industry's steam share is its unfitted part of the grid draw, worked out here from the stacks
+  - L370 ...the farms' horse share the unfitted part of their land
+  - L371 ...and Haulage's the unfitted part of the depots' truck room
+  - L372 ...with the forms driven set
+  - L376 one press later Industry's steam share is still the counts' (the month's end said it again)
+  - L381 the city founded the 1900 way saved, with the flag in the file
+  - L384 ...and loaded: the flag is back and so are the counts
+  - L387 ...and the shares the counts set are the saved city's
+  - L453 fixture:
+  - L460 a new building's verdict for the drive is priced in 1900 (PAYS or NOT_YET) and is never FITTED
+  - L463 fixture: the break-even price of coal for the drive on a new building is a price
+  - L467 fixture: the city's coal price moved to three times the break-even, where the drive pays for a new building
+  - L479 fixture: two Bakeries are on site
+  - L482 fixture: no other building completed while the two Bakeries opened
+  - L484 at that price the Bakeries that finished came fitted: the count of the drive unfitted is as it was
+  - L487 ...and nothing was unfitted by it: Industry's steam share is 0
+  - L495 fixture: the coal price moved to three tenths of the break-even, where the drive does not pay for a new building
+  - L500 fixture: two more Bakeries are on site
+  - L503 below it the Bakeries that finished came unfitted: the count of the drive unfitted is up by what finished
+  - L505 ...and the forms at rest are the counts': Industry's steam share is the unfitted part of its draw
+  - L507 ...and it is up (the share is more than nothing)
+  - L509 in a default city the Bakeries that finished came fitted at that price too: no count, no share
+  - L519 fixture: a Grain Farm is on site
+  - L521 the verdict for a new farm's tractor is NOT_KNOWN before PE14's June 1917, whatever the prices
+  - L523 a farm that finished came without its tractor: the count of the tractor unfitted is up by what finished
+  - L525 ...and the farms' horse share is the unfitted part of their land
+  - L526 ...which is more than nothing
+  - L528 in a default city a farm that finished came fitted: no count of the tractor
+- **L534 4. what a new building comes with: the pieces that pay, at the finish; none of the others; a default city's buildings all fitted**
+  - L535 fitting-new-1900
+  - L536 fitting-new-default
+  - L541 the order costs what it costs: in each city the two Bakeries are charged exactly what the model quoted for them just before, in a city founded the 1900 way a...
+  - L544 ...the template's whole cost at that city's builders: the sticker is the cash cost at the city's wages, times two, times the builders' multiple on the city's...
+  - L547 ...and the template is the same in both: the Bakery's cash cost (the order's own part) is the same figure in the city founded the 1900 way and in the default...
+- **L624 5. the order ranked with the buildings: the fitting when the plan builds nothing or earns less on its cost, the plan's own decision other...**
+  - L633 fixture: one Bakery lacks its drive, Industry may order, nothing is on site, and the break-even price of coal is a price
+  - L637 fixture: neither decision of the plan carries a piece
+  - L640 fixture: the city's price of coal moves to half the break-even
+  - L642 ...where the drive does not pay
+  - L643 the plan's own decision comes back, the very object, when the drive does not pay: for a plan that builds nothing and for one that builds
+  - L647 fixture: the price of coal moves to three times the break-even
+  - L649 ...where the drive pays
+  - L651 the plan builds nothing: the month's decision is to fit the drive to a Bakery, one, and it builds (it spends)
+  - L654 ...its reason in the planner's words: the piece, the building, what it earns a month on what it costs at the city's prices, and the rate a month
+  - L670 the plan builds a Bakery and the fitting earns more on its cost: the month's decision is the fitting, and not the plan's
+  - L671 fixture: the price of coal moves to one and a half times the break-even
+  - L680 ...where the drive still pays but earns less on its cost than a Bakery would
+  - L682 the plan builds a Bakery and the building earns more on its cost: the plan's own decision comes back, the very object
+  - L683 ...but the plan that builds nothing still gets the fitting that pays, however little
+  - L686 a tie keeps the one listed first (the building is listed first): SpreadPlanner.best() on equal earnings on cost
+  - L691 a sector with a fitting on site of its own gets the plan's decision, the very object, though the drive pays
+  - L694 ...with none on site the drive is the choice again
+  - L696 the city's own job takes the only Bakery that lacks the drive: it is not Industry's fitting, but there is none left to fit, and the plan's decision comes back
+  - L700 no stack unfitted: the plan's own decision comes back
+  - L704 a sector whose only unfitted piece is not known (Agriculture's tractor) gets its plan's decision
+  - L712 fixture: the price of coal moves to ten times the break-even and the drive pays; two Bakeries lack it, one has a long job of the city's ahead
+  - L717 one month of the real round: Industry's line says it Fitted the drive
+  - L719 ...a job of its own is on site behind the city's, the drive on the Bakery, with all its work still to do (the crews' points went to the job ahead), and the c...
+  - L723 the next round orders no second while that job is on site: still one of Industry's, and not another Fitted line
+- **L730 6. the money and the goods: the goods drawn by the builders at the city's market, the payer pays, the builders are paid, the work at the ...**
+  - L743 fixture: the drive buys machinery and nothing else, and has work; the builders are paid a point
+  - L746 fixture: two Bakeries lack the drive, and what it should cost is a price
+  - L755 Industry orders the fitting: taken (no reason given)
+  - L756 with cash above the total its cash falls by the total: the quote's goods and the work at the builders' price a point
+  - L757 ...and nothing is borrowed
+  - L758 the market's draw of machinery is the piece's units
+  - L760 ...the builders are the buyer in the market's own records, for the same units
+  - L761 ...local fills and imports together are those units (the makers' stock down, or the import up)
+  - L763 an electric drive delivers nothing into Freight's fleet: only the motor truck does
+  - L764 the builders' fitting revenue this month is the total
+  - L765 ...and the total is the draws' cost in the market's records plus the work at the price a point
+  - L767 a job is on site for it: the Bakery, the drive, Industry's, with the piece's work to do, and the count has not moved
+  - L776 with cash under the total the second order is taken too (the second Bakery lacks it)
+  - L777 ...the shortfall borrowed: the sector's debt rose and its till, after paying the whole total, is empty to a rounding
+  - L779 ...and the builders were paid the whole total
+  - L785 a third order is refused: no Bakery lacking the drive is left that is not being fitted
+  - L786 ...with nothing drawn, nothing paid and no job added
+  - L789 a piece not known in the city's year is refused, with a reason in words (the tractor)
+  - L791 a piece not on the stack's template is refused
+  - L792 ...with nothing drawn, nothing paid and no job added
+  - L801 the press after two orders: the money audit closes (what the payer spent is in the builders' pool, in the order book, until their strike banks it)
+  - L804 ...the builders' statement names the equipment fitted, at what they were paid for it
+  - L805 ...and the parts it names add up to its other revenue
+  - L806 the national accounts' construction investment is the work recognised plus the equipment fitted, once, on the builders' side
+  - L808 ...and the ledger is banked: nothing is booked for the next strike
+- **L814 7. the work: the crews work the fittings after the repairs and before the sites, in the order placed; the count falls in the month the po...**
+  - L821 the list: 3 jobs, 130 points owed, two of a on template 1 and one of b on 2, X has some on site and Z has none
+  - L823 working 60 points finishes none: the first job is worked first
+  - L825 working 40 more finishes the first and only it: the second is not touched while the points are gone (30 left)
+  - L828 working 30 more finishes the second, and the job of no points behind it with the same call, in the order placed
+  - L831 a job of no points finishes at the first call, whatever the points
+  - L835 the view is a copy: changing it moves nothing
+  - L838 restore() puts back what view() gave, and replaces what was there
+  - L841 restore(null) and clear() leave none
+  - L854 fixture: the twins stand alike, with twelve Bakeries on site each to take every point the sites are given, and the sites are offered output after the repairs
+  - L859 fixture: the city orders one drive in A
+  - L860 the output between the presses reads what the next advance will give the sites: the repairs' left less the fittings' points, whole
+  - L864 one press on: the sites in A were given exactly the points the fitting took fewer than the sites in B, the piece's work
+  - L866 ...the repairs the same in both, and the job done in the month: its count down by one and nothing left on site
+  - L868 ...and with no job on site the output is the repairs' left, to the bit, as it always was
+  - L892 fixture: a Fabrication Works stands and lacks its drive, and fitting it is more work than a month's output after the repairs
+  - L898 fixture: the city orders the Works' drive first and a Bakery's second
+  - L900 fixture: the Works' share of steam is up (a building in it lacks its drive)
+  - L917 each press worked exactly what the month left the crews after the repairs, or what was owed if less
+  - L918 the Works' drive took more than one press, as the work exceeds a month's output
+  - L919 ...its count fell only in the month its points were done, not before, and the job placed second had not been touched while the first was worked
+  - L920 ...and then both are fitted, in the order placed: the Works and the Bakery, nothing left on site
+  - L922 ...and the Works' steam share went with its count, at the month's end: the counts' at rest (nothing in its sector lacks a drive now)
+- **L929 8. one at a time: a sector with a fitting on site orders no second, and a stack whose unfitted are all on site is left out of the rank**
+  - L937 fixture: the drive pays at three times the break-even coal price, two Bakeries lack it and Industry has no job on site
+  - L940 with none on site the rank holds the drive
+  - L943 one of the two is on site: the rank still holds the other (the unfitted count less the fittings on site is 1)
+  - L945 ...but the sector has a fitting on site and orders no second: its plan's decision comes back
+  - L948 three months of the real round on, the sector still orders no second: nothing Fitted and the one job is all there is
+  - L953 a stack whose unfitted are all on site (two lack it, two are being fitted by the city) is left out of the rank, and the sector orders none
+  - L956 ...and ordering one is refused
+  - L958 ...two months of the real round on, still none ordered
+- **L964 9. the depot's trucks: the trucks a fitting buys are delivered into Freight's fleet and the builders' draw of them is the same**
+  - L973 fixture: a Truck Depot lacks its trucks, the piece buys trucks and nothing else, a month is played and the carts' horse share is up
+  - L982 Freight orders the trucks: taken
+  - L983 Freight's trucks held rose by the piece's TRUCKS, added to what it held
+  - L984 the builders' draw of TRUCKS is the same units, in the market's own count
+  - L985 ...and in the market's records: the builders are the buyer
+  - L986 Freight paid the draws' cost, and the piece has no work
+  - L987 the depot is not yet fitted (a job of no points is on site): the horse share has not moved
+  - L990 the next press works it (no points): the depot is fitted and the carts' horse share is 0
+- **L997 10. the player's Fit: the city pays whatever the verdict says, not limited to one at a time, refused with nothing drawn and nothing paid**
+  - L1014 fixture: three Bakeries lack the drive and, with the city's coal at half the break-even, it does not pay (NOT_YET), and the treasury can pay
+  - L1020 the player's Fit is taken though the verdict is NOT_YET: it is the player's money
+  - L1021 ...the treasury fell by the total: the goods at the market and the work at the builders' price a point
+  - L1022 ...a \"City\" job is on site, and the count has not moved
+  - L1024 ...the units drawn are the piece's
+  - L1025 ...and the builders earned the total
+  - L1027 it is not limited to one at a time: a second goes on site beside the first
+  - L1036 a treasury short of the total refuses it (the city does not borrow for it), with a reason that names the treasury
+  - L1037 ...nothing drawn, nothing paid, no job added
+  - L1047 the tractor is refused: it is not known in the city's year
+  - L1048 ...nothing drawn, nothing paid, no job added
+  - L1053 the third Bakery is taken, and then every one that lacks the drive is on site
+  - L1058 a fourth is refused: every unfitted building of the stack is on site
+  - L1059 ...nothing drawn, nothing paid, no job added
+  - L1060 a template with no stack, or a piece it does not carry, is refused
+  - L1065 the press after the city's three orders: the money audit closes
+  - L1066 ...the national accounts' construction investment carries the three, once
+- **L1083 11. the save: no job, no key; the jobs saved are the jobs loaded, and a loaded city and the one it was saved from stay equal to the bit**
+  - L1094 a city with no job on site saves no fittings key
+  - L1098 ...and loads with none on site
+  - L1101 fixture: two jobs on site (the Works' first), ordered between two presses so that the builders' ledger holds their revenue
+  - L1105 a city with jobs on site saves them (the key is in the file)
+  - L1111 ...and loads without a failure, in the same month, with the same jobs in the same order, every field to the bit
+  - L1114 ...the builders' fitting revenue booked in the ledger is back, so that its strike names it
+  - L1116 the twin and the loaded city are equal to the bit in the treasury, every sector's cash, the counts and the jobs, before any press
+  - L1129 ...and equal to the bit after each press until the jobs are worked
+  - L1130 ...the jobs worked in both, the counts equal and down by one each
+  - L1135 ...and two presses beyond, equal still
+- **L1141 12. a default city orders none: a town founded the default way, played 24 months, has no job ever on site and no decision with a piece**
+  - L1156 fixture: nothing is unfitted in the town in any of the 24 months
+  - L1157 no job is on site in any of the 24 months, and the builders were paid no fitting
+  - L1158 no sector's line says Fitted in any month, and the choice hands every sector's plan back, the very object, every month
 
 ## FloatLinkCheck.java - 251 labelled assertions
 
@@ -12934,76 +12934,76 @@ _(this harness does not label its checks through a helper - it prints its findin
 > also compiles against pre-R2d code, so its before failures are model failures.
 
 - **L111 1. each row crosses its own date, on the affected template**
-  - L149 the fixture actually exercised every shipped independent undo
-- **L153 2. binder beside tractor, in both fitting orders and at partial counts**
-  - L161 fixture: exactly four farms stand, so two missing pieces are half
-  - L171 fixture: both old ways run before either fit, order
-  - L178 first fit changes only its own contribution, order
-  - L185 both orders reach the identical modern figures
-  - L188 half the farm stacks without binders add half the sourced 4.5 crews, rounded once
-  - L195 saved choices plus independent unfitted counts replay the same figures, without a save slot
-- **L199 3. default founding keeps modern figures and no saved recipe choice**
-  - L207 three real months and an explicit driver call keep every default template byte-for-byte modern
-- **L212 4. the real month calls the change at its boundary**
-  - L224 the standing camp ran the half-yield axe recipe before the month and the chainsaw recipe on the clock
-- **L231 5. the actual railway invoice changes coal to diesel**
-  - L253 fixture: actual boundary tonnes were offered and hauled, diesel
-  - L255 actual rail fuel is
-- **L262 17. the depot's rail capacity also runs steam before PE21**
-  - L282 fixture: a real depot-only railway invoices positive boundary tonnes
-  - L284 before PE21 the depot's own capacity runs steam and its real invoice draws coal only
-  - L296 after PE21 and fitting, the same depot restores modern diesel fuel
-- **L301 6. actual refinery flow changes thermal to catalytic cracking**
-  - L319 fixture: both real process flows actually crack the same positive gas-oil feed
-  - L323 the chosen process changes the actual flow by 0.31 L petrol per litre, with the same fuel-oil balance
-- **L329 7. the later oxygen converter supersedes an old open-hearth piece**
-  - L341 fixture: at the actual ranking prices oxygen conversion earns more than either old process
-  - L347 the modern oxygen recipe is available with and without the old furnace once every entry is known
-  - L350 where prices favour oxygen conversion, all known and fitted means exactly today's seven figures
-- **L356 8. an actual Machine Works completion before PE22 and a later refit**
-  - L364 fixture: a real Machine Works order went onto a construction site
-  - L370 fixture: that works really completed before carbide tools were known
-  - L372 the completed works left carbide tools off and runs its 1900 cutting figures
-  - L379 knowledge alone did not fit the completed works
-  - L382 fixture: the known carbide-tools refit was ordered and paid for
-  - L384 the actual refit completed, and only then removed the carbide undo
-- **L391 9. a saved independent price choice survives JSON and changed prices**
-  - L405 fixture: thermal cracking is chosen at dear fuel-oil prices, and its independent id survives the real save JSON
-  - L413 applying restored choices does not choose again at the changed prices
-  - L416 the next choice at those prices runs catalytic cracking at exactly main's modern yield
-- **L422 10. utility fitting gains use the price of the output's own unit**
-  - L429 fixture: water and power both have positive, distinct unit prices
-- **L451 11. process and equipment contributions round together once**
-  - L472 fixture: seven mines, three missing cutters and two missing loaders cause a nonintegral process mix
-  - L475 unskilled posts round once after adding the loader contribution
-- **L480 12. gravity recovery changes output, with the same actual ore depletion**
-  - L493 fixture: a standing sulphide mill has ample actual copper-in-ground for both extractions
-  - L502 the gravity recipe really recovers three quarters of modern concentrate from the field
-  - L504 its lower recovery still takes the same ore feed from the actual field
-  - L511 flotation restores exactly modern output and dig, while depleting that same ore feed
-- **L517 13. mixed sizes on the modern process keep an exact bounded yield**
-  - L535 fixture: one small and five large cracking units all run the modern recipe
-  - L539 their feed-weighted modern yield is exactly 0.55 and the actual flow solver accepts it
-- **L544 14. thermal-cracker export discounts use its actual petrol yield**
-  - L581 fixture: positive thermal feed and an export discount leave a profitable candidate
-  - L583 its appraisal discounts 0.24 L petrol per litre, preserving that profitable order
-- **L616 15. a thermal cracker's card, margins and ribbons read the solved process**
-  - L630 fixture: before PE24 a real standing unit's solved thermal process has positive feed
-  - L637 the build card lists the actual thermal products
-  - L642 the build card values exactly those thermal products
-  - L649 both view models use the solved thermal yields for their city-valued margins
-  - L654 the oil table's yield words show thermal petrol 24, rather than the modern 55
-  - L660 the actual petrol ribbon is 0.24 times the feed that really ran
-  - L662 all fuel-oil ribbons foot to the actual solved fuel oil, including the unconverted petrol
-  - L668 fixture: these prices idle the thermal process while the modern definition has a positive spread
-  - L674 both city-margin readers retain the actual negative thermal margin
-  - L677 the oil planner's spare-feed read preserves gas oil left by that idle thermal unit
-- **L685 16. the research model reads saved composite choices and independent known pieces**
-  - L692 fixture: standing horse farms have a saved independent pre-hybrid choice
-  - L697 the research recipe row resolves the saved choice, its figures and all running farms
-  - L701 the composed way has the discovery's human name
-  - L707 the composite row still counts only the unfitted part after one tractor is fitted
-  - L710 the known 1900 binder is shown beside the unknown tractor and combine, which remain hidden
+  - L150 the fixture actually exercised every shipped pre-1951 independent undo
+- **L154 2. binder beside tractor, in both fitting orders and at partial counts**
+  - L162 fixture: exactly four farms stand, so two missing pieces are half
+  - L172 fixture: both old ways run before either fit, order
+  - L179 first fit changes only its own contribution, order
+  - L186 both orders reach the identical modern figures
+  - L189 half the farm stacks without binders add half the sourced 4.5 crews, rounded once
+  - L196 saved choices plus independent unfitted counts replay the same figures, without a save slot
+- **L200 3. default founding keeps modern figures and no saved recipe choice**
+  - L208 three real months and an explicit driver call keep every default template byte-for-byte modern
+- **L213 4. the real month calls the change at its boundary**
+  - L225 the standing camp ran the half-yield axe recipe before the month and the chainsaw recipe on the clock
+- **L232 5. the actual railway invoice changes coal to diesel**
+  - L254 fixture: actual boundary tonnes were offered and hauled, diesel
+  - L256 actual rail fuel is
+- **L263 17. the depot's rail capacity also runs steam before PE21**
+  - L283 fixture: a real depot-only railway invoices positive boundary tonnes
+  - L285 before PE21 the depot's own capacity runs steam and its real invoice draws coal only
+  - L297 after PE21 and fitting, the same depot restores modern diesel fuel
+- **L302 6. actual refinery flow changes thermal to catalytic cracking**
+  - L320 fixture: both real process flows actually crack the same positive gas-oil feed
+  - L324 the chosen process changes the actual flow by 0.31 L petrol per litre, with the same fuel-oil balance
+- **L330 7. the later oxygen converter supersedes an old open-hearth piece**
+  - L342 fixture: at the actual ranking prices oxygen conversion earns more than either old process
+  - L348 the modern oxygen recipe is available with and without the old furnace once every entry is known
+  - L351 where prices favour oxygen conversion, all known and fitted means exactly today's seven figures
+- **L357 8. an actual Machine Works completion before PE22 and a later refit**
+  - L365 fixture: a real Machine Works order went onto a construction site
+  - L371 fixture: that works really completed before carbide tools were known
+  - L373 the completed works left carbide tools off and runs its 1900 cutting figures
+  - L380 knowledge alone did not fit the completed works
+  - L383 fixture: the known carbide-tools refit was ordered and paid for
+  - L385 the actual refit completed, and only then removed the carbide undo
+- **L392 9. a saved independent price choice survives JSON and changed prices**
+  - L406 fixture: thermal cracking is chosen at dear fuel-oil prices, and its independent id survives the real save JSON
+  - L414 applying restored choices does not choose again at the changed prices
+  - L417 the next choice at those prices runs catalytic cracking at exactly main's modern yield
+- **L423 10. utility fitting gains use the price of the output's own unit**
+  - L430 fixture: water and power both have positive, distinct unit prices
+- **L452 11. process and equipment contributions round together once**
+  - L473 fixture: seven mines, three missing cutters and two missing loaders cause a nonintegral process mix
+  - L476 unskilled posts round once after adding the loader contribution
+- **L481 12. gravity recovery changes output, with the same actual ore depletion**
+  - L494 fixture: a standing sulphide mill has ample actual copper-in-ground for both extractions
+  - L503 the gravity recipe really recovers three quarters of modern concentrate from the field
+  - L505 its lower recovery still takes the same ore feed from the actual field
+  - L512 flotation restores exactly modern output and dig, while depleting that same ore feed
+- **L518 13. mixed sizes on the modern process keep an exact bounded yield**
+  - L536 fixture: one small and five large cracking units all run the modern recipe
+  - L540 their feed-weighted modern yield is exactly 0.55 and the actual flow solver accepts it
+- **L545 14. thermal-cracker export discounts use its actual petrol yield**
+  - L582 fixture: positive thermal feed and an export discount leave a profitable candidate
+  - L584 its appraisal discounts 0.24 L petrol per litre, preserving that profitable order
+- **L617 15. a thermal cracker's card, margins and ribbons read the solved process**
+  - L631 fixture: before PE24 a real standing unit's solved thermal process has positive feed
+  - L638 the build card lists the actual thermal products
+  - L643 the build card values exactly those thermal products
+  - L650 both view models use the solved thermal yields for their city-valued margins
+  - L655 the oil table's yield words show thermal petrol 24, rather than the modern 55
+  - L661 the actual petrol ribbon is 0.24 times the feed that really ran
+  - L663 all fuel-oil ribbons foot to the actual solved fuel oil, including the unconverted petrol
+  - L669 fixture: these prices idle the thermal process while the modern definition has a positive spread
+  - L675 both city-margin readers retain the actual negative thermal margin
+  - L678 the oil planner's spare-feed read preserves gas oil left by that idle thermal unit
+- **L686 16. the research model reads saved composite choices and independent known pieces**
+  - L693 fixture: standing horse farms have a saved independent pre-hybrid choice
+  - L698 the research recipe row resolves the saved choice, its figures and all running farms
+  - L702 the composed way has the discovery's human name
+  - L708 the composite row still counts only the unfitted part after one tractor is fitted
+  - L711 the known 1900 binder is shown beside the unknown tractor and combine, which remain hidden
 
 ## HistoryCheck.java - 97 labelled assertions
 
@@ -22974,6 +22974,82 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2328 ...and never falls as the tonnes rise nor leaves 0 to 1; with step() the kind at its berths' month shows full
   - L2344 painting the large box's picture (a full container yard, RAIL \| OPEN_LOW \| TRAIN) takes no more than HarbourYard.PICTURE_MS (0.5 ms)
 
+## PostwarRecipeCheck.java - 53 labelled assertions
+
+> The postwar engineering and business discoveries run their sourced earlier
+> figures, compose in either order, retain saved decisions and leave default
+> founding modern.
+> WHY (R2e): knowing a catalogue date did not remove its modern productivity
+> from an unfitted city. Every transition stands the affected template and
+> crosses the real entry month. The identical fixture also runs on main's
+> compiled model and data, using this branch's source JSON as its oracle.
+
+- **L39 1. every postwar undo on its standing template crosses its own month**
+  - L81 all 27 postwar template changes were exercised
+- **L117 3. zeolite affects catalytic cracking and leaves thermal cracking at 0.24**
+  - L130 thermal before both discoveries stays at 0.24, order
+  - L134 first discovery has only its process-scoped yield, order
+  - L145 saved missing-stage flags replay the same process, order
+  - L148 both catalyst discovery orders restore modern 0.55 exactly, order
+  - L161 an absent catalytic process pays neither catalytic nor zeolite rent
+- **L165 4. wood entries carry their date evidence and default founding keeps modern figures**
+  - L191 default founding keeps every template figure and saves no recipe flags
+- **L196 5. the normal clock and real refinery flows run the postwar figures**
+  - L207 the actual next month moves the standing works from old lean staffing to modern staffing
+  - L229 fixture: both catalyst flows really process identical positive feed
+  - L233 zeolite changes the actual petrol stream by the normalized sourced yield and closes fuel oil
+- **L239 6. the postwar catalyst pays on actual production, frozen before the clock changes**
+  - L274 fixture:
+  - L278 the captured
+  - L286 a later local find and expiry leave the earned production liability intact
+- **L291 7. later improvements preserve the calibrated earlier process**
+  - L301 all-missing Cement Plant keeps main's exact 1900 coal figure, 30% of cement tonnes
+  - L307 finding and fitting E2 first leaves the absent long kiln's old coal and zero preheater gain
+  - L319 PE4 present with only E2 missing runs exactly the sourced 7.0/3.3 wet-kiln form
+  - L324 both kiln discovery orders reach today's exact coal use
+  - L332 fixture: the new plant's own long kiln pays at the positive coal price
+  - L334 the absent old fleet does not suppress a new plant's paying prerequisite and preheater
+  - L339 a half-fitted long-kiln fleet gives the preheater only its available prerequisite share
+- **L378 8. every scoped pair prices its actual transition in both learning orders**
+  - L425 all ten scoped template pairs ran in both learning orders
+- **L429 9. lime uses its own sourced figures and a rotary-first cement loss earns no royalty**
+  - L443 E2's cement-only source adds no lime preheater or lime recipe change
+  - L445 Lime Kiln PE4 credits exactly its real positive transition, 5400 to3600 coal tonnes
+  - L463 fixture: the shipped rotary-first calibration rises from6160 to the exact7106.06 wet form
+  - L466 PE4's fitting gain is that real negative difference, including the activated E2 undo
+  - L470 the losing rotary-first refit is refused and the new plant appraises the same loss
+  - L481 positive real cement production in PE4's patent period pays no rent on the losing refit
+- **L487 10. an actually completed new plant leaves the losing long kiln unfitted**
+  - L503 fixture: a real new Cement Plant was ordered onto a site in the partial calibration window
+  - L507 the completed plant takes the paying rotary kiln and leaves the losing PE4 and unknown E2 off
+  - L511 that new plant runs6160 coal tonnes, avoiding the946.06-tonne increase
+- **L534 11. new-plant selection, patent appraisal and the next actual refit share their physical sets**
+  - L561 fixture: full PE4 passes but rejected E2 leaves a real marginal gain below the same life/money gates
+  - L566 the set selector re-evaluates PE4 after E2 goes and leaves both out
+  - L569 the rejected new-plant set accrues no equipment patent appraisal
+  - L572 a later read at changed inputs chooses the paying set afresh, without carrying a plan
+  - L600 fixture: real PE13 is known with B7, the robot is known and rejected, and the no-robot gain saves506 paid posts
+  - L607 real PE13's new-building royalty follows its catalogue's unpatented flag
+  - L637 synthetic patented PE13-shaped control has an active fee code and a rejected known dependent
+  - L640 synthetic patented recipe pays on the chosen no-robot set's real gain
+  - L657 fixture: two stores stand with PB2 known, one scanner fitted and positive crew wages
+  - L664 the next one-store scanner refit credits the fleet's real zero rounded-payroll change and is refused
+  - L684 fixture: one robot among three vehicles plants saves201 rounded posts in an active imported patent
+  - L688 the installed robot's royalty uses the actual rounded fleet saving
+- **L693 12. every fee, the saved production process and a new plant's own recipe**
+  - L717 fixture: a local long kiln activates positive imported preheater rent on the same saved rotary process
+  - L721 both the refit and the proposed long kiln lose the dependent preheater's extra royalty
+  - L747 fixture: the month's saved open hearth crosses to fresh oxygen prices before completion, with positive wages
+  - L752 new equipment prices the saved process the production apply will run
+  - L759 the completion boundary fits against that saved process and production retains the same choice
+  - L784 fixture: the Large Cement Plant and its kiln share imported PE4, with local E2 fitted and positive real production
+  - L790 the shared PE4 code loses one entry fee in both fitting increments
+  - L800 the positive real bill charges the shared PE4 code once
+- **L817 2. two entries compose in either fitting or discovery order**
+  - L818 Vehicle Works
+  - L819 Steel Mini-Mill
+  - L820 Commercial Bank
+
 ## PriceLevelCheck.java - 75 labelled assertions
 
 > A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus
@@ -24979,24 +25055,24 @@ _(this harness does not label its checks through a helper - it prints its findin
 > The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses
 > what is not a discovery (R2, slice A: ResearchCatalog and research.json; docs/studies/research-design.md 4, research-1900.md 8).
 > 
-> WHY. research.json is 89 entries typed from two studies' tables, and a wrong figure in it is no error anywhere: a discovery a year late is an
+> WHY. research.json is 91 entries typed from two studies' tables, and a wrong figure in it is no error anywhere: a discovery a year late is an
 > oxygen converter that arrives in 1953, and nobody sees it until the ensemble moves. So the dates, the needs, the work and the fees are held to
 > the studies' tables here, with spot values typed out below as the specification and not read back from the class under test; the law rows are
 > held to PolicyDates, whose dates the Policy gate already reads, so the catalogue and the gate cannot disagree about when a lever opens.
 > 
 > What it has to prove:
 > 
->   1. THE FILE READS. The packaged file gives 89 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
+>   1. THE FILE READS. The packaged file gives 91 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
 >      unique and in the studies' order; the counts by prefix and by field are the studies'; every entry has a name, a world, a touches and an
 > ...
 
 - **L214 1. the file reads**
-  - L218 the file has 89 entries and the catalogue read
-  - L219 a fresh reading of the file's text reads all 89 and writes nothing to the log
+  - L218 the file has 91 entries and the catalogue read
+  - L219 a fresh reading of the file's text reads all 91 and writes nothing to the log
   - L220 nothing was skipped: the fresh reading has the same codes, in the same order, as the file
-  - L223 the 89 codes are unique
-  - L224 the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5
-  - L232 ENGINEERING has 45, MEDICINE 16, BUSINESS 11 and LAW 17 (
+  - L223 the 91 codes are unique
+  - L224 the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E20
+  - L232 ENGINEERING has 47, MEDICINE 16, BUSINESS 11 and LAW 17 (
   - L245 the field follows the code: E and PE engineering, M and PM medicine, B and PB business, L and PL law
   - L250 every entry has a name, a world, a touches, an effect and the study it comes from
   - L251 the fields are read by the school that researches them
@@ -25071,9 +25147,9 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L571 every template whose since is not a year has a code that is a discovery in the catalogue unlocking a building, and the template's year is the entry's (
   - L573 ...every piece of equipment whose since is a code has one that unlocks equipment (
   - L574 ...and every recipe whose since is a code has one that is not a building alone (
-  - L575 the templates dated by a code are exactly research-1900.md 1.2's list, 29 of them, each by the entry that opens it
+  - L575 the templates dated by a code are exactly research-1900.md 1.2's list, 31 of them, each by the entry that opens it
   - L579 the Oxygen Steel Shop is dated 1900 (its Bessemer and open-hearth recipes are its 1900 ways; E1 dates its recipe, not the building)
-  - L581 the Panel Mill stays 1980 and the Wood Pellet Mill 1970, years: research-1900.md's words, no entry yet (Q13)
+  - L581 the Panel Mill is E19 at sourced 1981 and the Wood Pellet Mill E20 at retained 1970 (Q13, R2e)
   - L589 every other template is undated or 1900
   - L598 every discovery that unlocks a building (
   - L616 fixture: a file of four buildings, a code, a year, none and a ghost code, reads all four
@@ -25148,98 +25224,98 @@ _(this harness does not label its checks through a helper - it prints its findin
 > What this has to prove:
 > ...
 
-- **L240 1. the wages of the study's cities make a post cost what the study's does**
-  - L242 an engineering post costs D$ 18,169.4 a month
-  - L243 a medical post costs D$ 23,775
-  - L244 a business post costs D$ 12,250
-  - L245 a law post costs D$ 16,000
-- **L251 2. the young city, June 1955: 5.4's previews against the study's run of them**
-  - L259 fixture: engineering has six open problems (E5 to E10), medicine two (M4, M5), business and law none (5.4)
-  - L265 as is
-  - L266 as is
-  - L270 engineering grant
-  - L274 medical grant
-  - L275 medical grant
-  - L286 the chase is E10 and E7 (the cheapest the purse pays for and a team could finish before the world), cheapest first
-  - L287 ...its room is the study's 395.13 researchers
-  - L288 ...so the investors want 4 labs in the first month, in the model's own question and in the preview's
-  - L290 ...and no other field wants one (no prize there)
-  - L291 engineering prize
-  - L292 engineering prize
-  - L293 engineering prize expected purse (D$ M)
-  - L294 ...and the purse is the prize times the finds
-- **L305 3. the big city, June 1979: 5.4's table against the study's run of it**
-  - L312 fixture: engineering has one open problem (E17, rail), medicine two (M9, M10), business one (B6) and law one (L3) (5.4)
-  - L315 fixture: the four finds are known here and nothing else of the piles is
-  - L319 as is
-  - L320 as is
-  - L321 as is
-  - L322 as is
-  - L323 as is
-  - L327 medicine +63, business to room
-  - L328 medicine +63, business to room
-  - L329 medicine +63, business to room
-  - L333 law grant
-  - L337 engineering cut
-  - L338 engineering cut
-  - L349 the chase is M9 alone (keyhole surgery)
-  - L350 ...its room is the study's 362.7 researchers
-  - L351 ...so the investors want 4 labs in the first month, in the model's own question and in the preview's
-  - L353 medical prize
-  - L354 medical prize expected purse (D$ M)
-- **L444 3b. the preview and the study's model written again (research_model.py forward(), no prize), many draws of each**
-- **L525 4. the step: the preview's path and Research.month(), over the same sizes**
-  - L527 young city, researchers in every field, no prize
-  - L528 young city, the same with an engineering prize and a medical one
-  - L529 young city as is with the engineering prize (the labs do the finding)
-  - L530 big city, researchers four times as is, no prize
-  - L531 big city, as is, with a medical prize and an engineering one
-  - L532 big city, a prize in every field and half the researchers
-- **L539 5. a size is drawn above the pile on it, from the same distribution as plain redrawing**
-  - L551 every size drawn is above its pile, from a pile of nothing to twelve times the work
-  - L562 with no pile the mean size is the typical work (the draw has mean 1)
-- **L589 6. the same inputs give the same answer, another seed another, and ResearchView does not run it twice**
-  - L597 the same inputs and seed give exactly the same finds, errors, chances and purses
-  - L599 another seed gives other draws (the medical finds differ)
-  - L605 the first read runs the preview once
-  - L607 the same month and inputs again return the very same Result without running
-  - L609 ...a copy of the research in the same state is the same inputs
-  - L611 a new month runs again
-  - L613 a researcher more runs again
-  - L615 a prize runs again
-  - L619 a change of wage runs again
-  - L625 a pile that moved runs again
-  - L627 another seed runs again
-  - L628 ...and the first inputs are still kept: no run
-  - L633 a small cache: after forty others the first is run again
-  - L634 ...and the last of them is still kept
-- **L640 7. the answer: purse = prize x finds, a chance is a share, the fields add up, nothing to find gives nothing**
-  - L653 a chance is between 0 and 1 and never above the expected finds (a find is a whole one)
-  - L654 the purse of a field is its prize times its finds, and of the city the sum
-  - L655 the fields' finds add to the city's
-  - L656 the draws are the draws asked for
-  - L660 a city that has every discovery to its name (month 5000) has nothing to find and nothing to ask of the investors
-  - L663 no researchers and no prize find nothing in ten years
-  - L665 researchers that are not a number, below nothing or not finite count as none (as Research.month() reads them)
-  - L667 no wages, no cost of a post, no chase: the prize brings no lab (as Research.month() with none)
-  - L669 labs nobody works in still are wanted, and do no work
-  - L675 the labs wanted in the first month are what Research.labsWanted() answers for the month, field by field
-- **L681 8. the words: a chance below one expected find, a count above**
-  - L682 a chance when both expected counts are under 1
-  - L683 the larger of the two decides: one at 1 makes it a count, whichever side it is on
-  - L685 ...and just under 1 on both sides is still a chance
-  - L686 a chance of exactly nothing is \"none\", NaN too
-  - L687 a chance above nothing that rounds to 0% is \"under 1%\", up to 0.4999%
-  - L690 ...and one that rounds to 1% is \"1%\", from 0.5%
-  - L691 a chance is a whole percent: 25.4% is \"25%\", 25.5% \"26%\"
-  - L692 a certain chance is \"100%\"
-  - L693 a count of exactly nothing is \"none\", NaN too
-  - L694 a count above nothing that shows as 0.00 is \"under 0.01\", up to 0.00499
-  - L696 ...and one that rounds to 0.01 is \"0.01\", from 0.005
-  - L697 a count is to two places: 1.102 is \"1.10\", 1.053 \"1.05\", 2.739 \"2.74\", 1 \"1.00\"
-  - L700 the count is used whatever the chance when the card says so (a count of 0.6 is \"0.60\", not a percent)
-- **L706 9. what 400 draws take**
-  - L724 the preview of 400 draws is made, as is and with a prize, in well under a second (timing is printed, not judged)
+- **L243 1. the wages of the study's cities make a post cost what the study's does**
+  - L245 an engineering post costs D$ 18,169.4 a month
+  - L246 a medical post costs D$ 23,775
+  - L247 a business post costs D$ 12,250
+  - L248 a law post costs D$ 16,000
+- **L254 2. the young city, June 1955: 5.4's previews against the study's run of them**
+  - L262 fixture: engineering has six open problems (E5 to E10), medicine two (M4, M5), business and law none (5.4)
+  - L268 as is
+  - L269 as is
+  - L273 engineering grant
+  - L277 medical grant
+  - L278 medical grant
+  - L289 the chase is E10 and E7 (the cheapest the purse pays for and a team could finish before the world), cheapest first
+  - L290 ...its room is the study's 395.13 researchers
+  - L291 ...so the investors want 4 labs in the first month, in the model's own question and in the preview's
+  - L293 ...and no other field wants one (no prize there)
+  - L294 engineering prize
+  - L295 engineering prize
+  - L296 engineering prize expected purse (D$ M)
+  - L297 ...and the purse is the prize times the finds
+- **L308 3. the big city, June 1979: 5.4's table against the study's run of it**
+  - L315 fixture: engineering has one open problem (E17, rail), medicine two (M9, M10), business one (B6) and law one (L3) (5.4)
+  - L318 fixture: the four study finds and founding knowledge of E19/E20 are restored, and nothing else of the piles is
+  - L324 as is
+  - L325 as is
+  - L326 as is
+  - L327 as is
+  - L328 as is
+  - L332 medicine +63, business to room
+  - L333 medicine +63, business to room
+  - L334 medicine +63, business to room
+  - L338 law grant
+  - L342 engineering cut
+  - L343 engineering cut
+  - L354 the chase is M9 alone (keyhole surgery)
+  - L355 ...its room is the study's 362.7 researchers
+  - L356 ...so the investors want 4 labs in the first month, in the model's own question and in the preview's
+  - L358 medical prize
+  - L359 medical prize expected purse (D$ M)
+- **L449 3b. the preview and the study's model written again (research_model.py forward(), no prize), many draws of each**
+- **L530 4. the step: the preview's path and Research.month(), over the same sizes**
+  - L532 young city, researchers in every field, no prize
+  - L533 young city, the same with an engineering prize and a medical one
+  - L534 young city as is with the engineering prize (the labs do the finding)
+  - L535 big city, researchers four times as is, no prize
+  - L536 big city, as is, with a medical prize and an engineering one
+  - L537 big city, a prize in every field and half the researchers
+- **L544 5. a size is drawn above the pile on it, from the same distribution as plain redrawing**
+  - L556 every size drawn is above its pile, from a pile of nothing to twelve times the work
+  - L567 with no pile the mean size is the typical work (the draw has mean 1)
+- **L594 6. the same inputs give the same answer, another seed another, and ResearchView does not run it twice**
+  - L602 the same inputs and seed give exactly the same finds, errors, chances and purses
+  - L604 another seed gives other draws (the medical finds differ)
+  - L610 the first read runs the preview once
+  - L612 the same month and inputs again return the very same Result without running
+  - L614 ...a copy of the research in the same state is the same inputs
+  - L616 a new month runs again
+  - L618 a researcher more runs again
+  - L620 a prize runs again
+  - L624 a change of wage runs again
+  - L630 a pile that moved runs again
+  - L632 another seed runs again
+  - L633 ...and the first inputs are still kept: no run
+  - L638 a small cache: after forty others the first is run again
+  - L639 ...and the last of them is still kept
+- **L645 7. the answer: purse = prize x finds, a chance is a share, the fields add up, nothing to find gives nothing**
+  - L658 a chance is between 0 and 1 and never above the expected finds (a find is a whole one)
+  - L659 the purse of a field is its prize times its finds, and of the city the sum
+  - L660 the fields' finds add to the city's
+  - L661 the draws are the draws asked for
+  - L665 a city that has every discovery to its name (month 5000) has nothing to find and nothing to ask of the investors
+  - L668 no researchers and no prize find nothing in ten years
+  - L670 researchers that are not a number, below nothing or not finite count as none (as Research.month() reads them)
+  - L672 no wages, no cost of a post, no chase: the prize brings no lab (as Research.month() with none)
+  - L674 labs nobody works in still are wanted, and do no work
+  - L680 the labs wanted in the first month are what Research.labsWanted() answers for the month, field by field
+- **L686 8. the words: a chance below one expected find, a count above**
+  - L687 a chance when both expected counts are under 1
+  - L688 the larger of the two decides: one at 1 makes it a count, whichever side it is on
+  - L690 ...and just under 1 on both sides is still a chance
+  - L691 a chance of exactly nothing is \"none\", NaN too
+  - L692 a chance above nothing that rounds to 0% is \"under 1%\", up to 0.4999%
+  - L695 ...and one that rounds to 1% is \"1%\", from 0.5%
+  - L696 a chance is a whole percent: 25.4% is \"25%\", 25.5% \"26%\"
+  - L697 a certain chance is \"100%\"
+  - L698 a count of exactly nothing is \"none\", NaN too
+  - L699 a count above nothing that shows as 0.00 is \"under 0.01\", up to 0.00499
+  - L701 ...and one that rounds to 0.01 is \"0.01\", from 0.005
+  - L702 a count is to two places: 1.102 is \"1.10\", 1.053 \"1.05\", 2.739 \"2.74\", 1 \"1.00\"
+  - L705 the count is used whatever the chance when the card says so (a count of 0.6 is \"0.60\", not a percent)
+- **L711 9. what 400 draws take**
+  - L729 the preview of 400 draws is made, as is and with a prize, in well under a second (timing is printed, not judged)
 
 ## ResearchViewCheck.java - 217 labelled assertions
 
@@ -25345,155 +25421,155 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L722 ...a code history dates AT FIRST_MONTH (T1) was known at the founding: no origin in any month
   - L724 a code the catalogue lacks is never known, so never an origin
   - L726 an undated row has none either
-  - L732 a since that is a year is ABROAD at its January: the Panel Mill (1980) none in month
-  - L734 ...and new for NEW_MONTHS - 1 months after it and not at NEW_MONTHS
-  - L737 a year of the founding's January (1900) is known at the founding: none
-  - L742 the four labs are labs, and a school (the University), a house and nothing at all are not
-- **L775 9. the series: the researchers, the spend and the share fitted, every month as the model says, through a save, the year book and a reform**
-  - L819 fixture:
-  - L830 each field's researchers are recorded every month, the same length as the axis (
-  - L833 ...the lab's are in them: in the month the lab first worked, engineering's
-  - L838 researchSpend is every month's own figure, the month's research bill and prize paid, in each of the
-  - L839 ...in the find's month it is the bill and the prize together,
-  - L844 equipmentFitted is the share of the equipment fitted, between 0 and 1, in each month, as the stacks say (the last
-  - L851 a load restores the history whole: the three kinds of series, the same length and the same figures
-  - L854 ...and a month recorded on it follows: every series is still the axis' length
-  - L860 the year book rules each: the researchers are levels, the spend a flow, the share fitted a rate, each with a note, and nothing in the history is left without...
-  - L872 a reform of the money halves the spend and leaves the researchers and the share fitted alone
-  - L910 fixture: no equipment stands, so the share fitted is not a number
-  - L915 two months with nothing to count: the share fitted has not begun (no series), while the researchers and the spend have, month for month
-  - L926 a bakery built, it begins at the first month with equipment: NaN (not counting) in the
-  - L932 a cut at a month before the series began leaves no such series (not an empty one), the others kept; a cut at the end keeps it whole
-  - L940 through a save it comes back as it began: the same months blank, the same figures
-  - L948 every bakery pulled down, the month after records 0 on the series that has begun (a gap cannot be kept: the series lines up with the axis' end)
-- **L956 10. researchTown(): each of its guarantees**
-  - L958 founded the 1900 way, in month
-  - L962 (a) a discovery found HERE and at least two from ABROAD are on the timeline:
-  - L964 ...the find is PE1 at month 3, the world's are PE2 (month 6) and PE3 (month 13), in that order of months
-  - L976 (b) a stack stands with a known piece some of its buildings lack, and its sector's equipment lists it with a verdict that is not FITTED:
-  - L987 (c) a template is NEW, its origin within NEW_MONTHS of the month:
-  - L996 (d) a recipe is in use on a template with a recipe piece (the farms' horses) and on one with none (the Pulp Mill's):
-- **L1047 11. the Overview: each field's row is the model's own reads, and the words say them**
-  - L1050 fixture: a 1900 city with schools and grants that bought posts in engineering, medicine and business, none in law, and the posts struck at a fill
-  - L1055 a row for each field, in the enum's order
-  - L1081 each field's researchers, lab researchers, idle (the city's and the labs'), problems in reach, what they touch, and finds here and from abroad are the model'...
-  - L1083 fixture: some field has problems in reach and some has none, so \"nothing in reach\" and \"N in reach\" are both on the page
-  - L1084 the page's totals: found here and from abroad are the timeline's, and the rows add up
-  - L1094 the researchers of all the fields are the model's (the city's and the labs')
-  - L1095 ...and the idle among them
-  - L1096 ...the researchers at work are above nothing (the faculty and the filled posts)
-  - L1097 the money a month: the research bill is the economy's
-  - L1098 ...and is above nothing, the grants having bought posts the labour market filled
-  - L1099 ...the prizes paid the labs are Game.getPrizePaid() (none: no prize is set)
-  - L1101 researchers to each 1,000 at work: the researchers over the jobs filled, times 1,000 (
-  - L1103 ...and none where nobody works, whatever the researchers
-  - L1107 engineering is hosted by an Institute of Technology and two Universities: \"
-  - L1110 medicine by a Medical School and the Universities, business and law by the Universities alone (a school of the field first, the Universities after)
-  - L1117 ...the engineering count is every standing school the model's staffByField() gives it a share of:
-  - L1121 \"nothing in reach\" for none, \"1 in reach: rail\" for one, \"2 in reach: a; b\" for two, the count alone where the texts are blank
-  - L1125 the schools' words: none is \"no school\", one is singular, many plural (\"Universities\", \"Institutes of Technology\", \"Law Schools\")
-- **L1136 12. the Funding card: grant, prize, posts, room, researchers, bill, unspent grant, labs and the least prize that brings one, at the grant...**
-  - L1162 each field's card is the model's: grant, prize, posts struck and the grant's own (no pot here), room, post cost, the grant that fills the room, researchers
-  - L1164 the cards' bills add to the economy's research bill: the whole month's bill is the posts'
-  - L1165 some of a grant is unspent: a grant of half a post over its whole posts leaves most of that half unspent, never more than the grant
-  - L1168 law has no grant and the card says so: no posts, nothing unspent, and the room its Universities give it
-  - L1178 a field whose pot bought posts beyond the grant says so: the posts are the grant's and the pot's, the potPosts the difference, and the unspent grant is the g...
-  - L1206 the least prize that brings a lab to a field: at it the field's chase has a problem, a unit under it none, and none where no open problem could be finished b...
-  - L1208 fixture: some field has such a prize and some has none (
-  - L1209 no wages, no cost of a post, no threshold
-  - L1232 a staged grant buys the posts Research.posts() says within the room (none for none, the room's whole posts for a grant past it), gives the faculty and the fi...
-  - L1237 fixture: the catalogue has a Research Lab for medicine
-  - L1241 a lab built is a lab standing in its field's card, and only there:
-- **L1263 13. the preview through the game: the model's researchers, ResearchPreview's draws, cached, and a staged dial equal to the one in force i...**
-  - L1268 the first read of the preview runs it once
-  - L1269 the as-is preview is ResearchPreview's over the researchers the model has now and the prizes set, from ResearchPreview.DRAWS draws of ResearchPreview.SEED
-  - L1271 ...and finds something to say: the small problems of a young century are found in a good share of its draws (
-  - L1273 read again with nothing staged, or a null stage: the very same Result, no run
-  - L1283 a staged grant runs the preview once, with that field's researchers the faculty and the filled posts it buys (
-  - L1285 ...and the as-is is still kept: no run
-  - L1286 ...and the same stage read again is kept too
-  - L1290 a staged grant of nothing leaves the faculty alone to research (
-  - L1293 more researchers in a field find no less in it, fewer no more, from the same draws, and the three differ
-  - L1299 a staged grant equal to the grant in force is the as-is answer itself, kept, with no run
-  - L1306 a staged prize is the field's prize in the model's question, and runs once more
-  - L1308 ...and a prize pays: the field's purse is the prize times its finds
-  - L1314 a new month runs the preview again
-- **L1320 14. R5's gate review: the found-here and abroad counts laid on History's months, what is still to come, the bars' shares**
-  - L1325 fixture: the history has an axis of at least two months and the timeline has finds both ways
-  - L1337 the counts laid on History's months are, at each month of its axis, the discoveries at or before it, here and from abroad (
-  - L1338 ...and the last of them is the timeline's counts
-  - L1340 an axis with gaps is read at each of its own months: 3, 5, 6 and 40 (PE1 found in 3, PE2 abroad in 6, PE3 abroad in 13)
-  - L1344 an empty axis is empty, one month is one entry, and an axis that runs backwards is not a number throughout
-  - L1350 what is still to come is the catalogue's entries the city does not yet know (
-  - L1352 ...and the pure core subtracts and never goes below none
-  - L1368 the equipment bars' share is the fitted buildings over the buildings, 0 to 1, for each of the
-  - L1370 ...and a stack of no buildings has the share 0 on either bar, and a whole one 1
-- **L1379 15. a city founded the default way: nothing in reach, nothing to find, no lab to come, though the catalogue's dates say otherwise of the ...**
-  - L1389 fixture: founded the default way, with a University and a grant that bought posts; the catalogue, read by the date, would have problems open in engineering
-  - L1397 the Overview has nothing in reach, nothing found and nothing from abroad, and every researcher idle (the posts are jobs and the faculty is there, with nothin...
-  - L1399 ...and the Funding cards have no lab threshold
-  - L1401 ...the posts a grant buys are still the model's (the grant is paid and the posts are jobs)
-  - L1403 the preview has nothing to find, as is and staged
-  - L1405 what is still to come is none, the city having known them all at its founding
-- **L1415 16. the figures across the top and the dials' ranges: the sums, the words, the posts the room holds, and a range that reaches past what i...**
-  - L1423 the researchers at work are everyone less the idle, field by field
-  - L1424 ...and no more than all of them, and above nothing in the town
-  - L1425 the problems in reach are the fields' added (
-  - L1433 in reach by field: \"engineering 6 · medicine 2 · business and law none\" for two with some
-  - L1442 ...\"law none\" for one with none, no \"none\" for all with some, \"nothing in reach in any field\" for none
-  - L1446 ...and the town's own: it names the fields with something in reach with their counts
-  - L1455 the room in whole posts is the room floored, field by field
-  - L1460 ...58.7 is 58 whole posts (Research.posts() floors, so a grant that fills the room buys 58), none is none, and what is not a number is none
-  - L1475 the grant dial runs from nothing in round steps (1, 2 or 5 times a power of ten, not above a post's cost and over two fifths of it), a whole number of them, ...
-  - L1479 ...a grant in force beyond what the room asks for is still on the dial (2,500 posts), 20% past the room otherwise (100 posts: 120), and a post with no cost i...
-  - L1483 niceFloor: the greatest of 1, 2 and 5 times a power of ten not above the figure; a step stays put while the cost walks (0.5158 and 0.53 are both 0.5; 0.99 is...
-  - L1488 ...so a month's wages moving a post's cost by a little leave the grant dial's step where it was (
-  - L1492 niceCeil: the least of 1, 2 and 5 times a power of ten not below the figure
-  - L1505 the prize dial runs from nothing to a round number that reaches
-  - L1509 ...a prize in force past it, and a threshold past it, are on the dial
-  - L1511 the researchers in labs are the posts of a lab for each, none for none or fewer
-- **L1518 17. the card: nothing staged is the same figure on both sides; a staged grant and prize are the model's posts, bill, labs and preview**
-  - L1533 nothing staged: every row has the same figure on both sides, the grant and the prize are the ones in force
-  - L1534 ...and the preview's words are one on both sides
-  - L1540 the card's \"now\" is the Funding read and the Overview's: researchers = the faculty and the posts' (
-  - L1543 ...and the preview's figures for the field are the Result's: finds
-  - L1553 a staged grant: the card is moved, the grant shown is the staged one, the prize is not
-  - L1554 ...its posts, researchers and bill are atGrant()'s (
-  - L1557 ...the unspent is what the grant leaves of the posts' pay (the grant less the grant's posts' bill, never below none)
-  - L1559 ...and the preview is the staged Result's, the \"now\" the one in force
-  - L1561 ...and the grant in force staged is no change (nothing is moved by staging what is set)
-  - L1568 a grant past the room buys the room's posts (
-  - L1570 ...and what it leaves unspent is above nothing (the grant over the posts' pay), the card says so
-  - L1571 ...and a card with a hundredth of a dollar unspent says nothing of it
-  - L1576 fixture: engineering has a least prize that brings a lab in this town (
-  - L1581 a staged prize: the card is moved by the prize alone, the labs are the staged preview's first month (
-  - L1584 ...whatever labs it brings are a lab's posts each (
-  - L1587 ...and the card without a prize move keeps the labs the town has (
-  - L1591 a chance under one is a percent and a count from one up: asChance() of the pair, and previewWords() says \"none\", \"under 1%\", \"25%\", \"1.10\"
-- **L1599 18. the schools' research posts: a kind's share of each field's posts by its share of the room, and THE BUDGET with the staged grants' posts**
-  - L1621 the kinds of school together stand up the game's own staff in each field (Game.researchStaff()), and give it their rooms' sum as the field's room
-  - L1622 ...the posts struck, over the kinds that carry them, are the research's own (
-  - L1625 the University hosts all four fields (
-  - L1628 ...the Medical School, with the Universities, carries medicine's posts between them: its share is its room over the field's
-  - L1630 a kind of school that hosts none (a high school, a college), and one of which none stands (a Law school), carries nothing
-  - L1633 the kinds that host research are the University, the Institute of technology and the Medical, Business and Law schools, and no other
-  - L1638 the Overview's schools are the hosting kinds that stand, with how many: the University (2), the Medical School (1) and the Institute of technology (1) - in t...
-  - L1645 THE BUDGET with nothing staged is the books' balance on both sides (
-  - L1650 a staged grant adds its posts' bill to the research bill and takes it off the balance:
-  - L1652 ...a prize moves nothing (it is paid on a find), and two grants together move it by the two bills
-- **L1671 20. a city founded the default way with a University and no grant now: its researchers are the faculty's own, and they survive a save**
-  - L1680 fixture: founded the default way with a University, its grant taken away a month ago, its faculty at research (
-  - L1682 the Overview counts no post where no grant bought one (
-  - L1683 the research has nothing of its own (empty) and still has the month's counts to show
-  - L1686 the city is saved
-  - L1688 ...with its research written for the faculty's counts alone
-  - L1691 loaded without a failure
-  - L1692 the loaded city reads the same counts in every field before it plays a month:
-  - L1695 ...so its Overview (and the hub's card) show the same researchers and idle (
-- **L1702 19. a lab standing: the card counts it and its researchers, and the same lab is on both sides of a card that moves a grant**
-  - L1711 fixture: an Engineering Research Lab stands and its researchers are counted (
-  - L1713 the card counts the lab and its researchers with the field's: researchers
-  - L1719 a grant staged lower moves the field's researchers and not the lab's: the lab is on both sides (
+  - L733 a numeric since1980 specimen is ABROAD at its January: none in month
+  - L736 ...and new for NEW_MONTHS - 1 months after it and not at NEW_MONTHS
+  - L739 a year of the founding's January (1900) is known at the founding: none
+  - L744 the four labs are labs, and a school (the University), a house and nothing at all are not
+- **L777 9. the series: the researchers, the spend and the share fitted, every month as the model says, through a save, the year book and a reform**
+  - L821 fixture:
+  - L832 each field's researchers are recorded every month, the same length as the axis (
+  - L835 ...the lab's are in them: in the month the lab first worked, engineering's
+  - L840 researchSpend is every month's own figure, the month's research bill and prize paid, in each of the
+  - L841 ...in the find's month it is the bill and the prize together,
+  - L846 equipmentFitted is the share of the equipment fitted, between 0 and 1, in each month, as the stacks say (the last
+  - L853 a load restores the history whole: the three kinds of series, the same length and the same figures
+  - L856 ...and a month recorded on it follows: every series is still the axis' length
+  - L862 the year book rules each: the researchers are levels, the spend a flow, the share fitted a rate, each with a note, and nothing in the history is left without...
+  - L874 a reform of the money halves the spend and leaves the researchers and the share fitted alone
+  - L912 fixture: no equipment stands, so the share fitted is not a number
+  - L917 two months with nothing to count: the share fitted has not begun (no series), while the researchers and the spend have, month for month
+  - L928 a bakery built, it begins at the first month with equipment: NaN (not counting) in the
+  - L934 a cut at a month before the series began leaves no such series (not an empty one), the others kept; a cut at the end keeps it whole
+  - L942 through a save it comes back as it began: the same months blank, the same figures
+  - L950 every bakery pulled down, the month after records 0 on the series that has begun (a gap cannot be kept: the series lines up with the axis' end)
+- **L958 10. researchTown(): each of its guarantees**
+  - L960 founded the 1900 way, in month
+  - L964 (a) a discovery found HERE and at least two from ABROAD are on the timeline:
+  - L966 ...the find is PE1 at month 3, the world's are PE2 (month 6) and PE3 (month 13), in that order of months
+  - L978 (b) a stack stands with a known piece some of its buildings lack, and its sector's equipment lists it with a verdict that is not FITTED:
+  - L989 (c) a template is NEW, its origin within NEW_MONTHS of the month:
+  - L998 (d) a recipe is in use on a template with a recipe piece (the farms' horses) and on one with none (the Pulp Mill's):
+- **L1049 11. the Overview: each field's row is the model's own reads, and the words say them**
+  - L1052 fixture: a 1900 city with schools and grants that bought posts in engineering, medicine and business, none in law, and the posts struck at a fill
+  - L1057 a row for each field, in the enum's order
+  - L1083 each field's researchers, lab researchers, idle (the city's and the labs'), problems in reach, what they touch, and finds here and from abroad are the model'...
+  - L1085 fixture: some field has problems in reach and some has none, so \"nothing in reach\" and \"N in reach\" are both on the page
+  - L1086 the page's totals: found here and from abroad are the timeline's, and the rows add up
+  - L1096 the researchers of all the fields are the model's (the city's and the labs')
+  - L1097 ...and the idle among them
+  - L1098 ...the researchers at work are above nothing (the faculty and the filled posts)
+  - L1099 the money a month: the research bill is the economy's
+  - L1100 ...and is above nothing, the grants having bought posts the labour market filled
+  - L1101 ...the prizes paid the labs are Game.getPrizePaid() (none: no prize is set)
+  - L1103 researchers to each 1,000 at work: the researchers over the jobs filled, times 1,000 (
+  - L1105 ...and none where nobody works, whatever the researchers
+  - L1109 engineering is hosted by an Institute of Technology and two Universities: \"
+  - L1112 medicine by a Medical School and the Universities, business and law by the Universities alone (a school of the field first, the Universities after)
+  - L1119 ...the engineering count is every standing school the model's staffByField() gives it a share of:
+  - L1123 \"nothing in reach\" for none, \"1 in reach: rail\" for one, \"2 in reach: a; b\" for two, the count alone where the texts are blank
+  - L1127 the schools' words: none is \"no school\", one is singular, many plural (\"Universities\", \"Institutes of Technology\", \"Law Schools\")
+- **L1138 12. the Funding card: grant, prize, posts, room, researchers, bill, unspent grant, labs and the least prize that brings one, at the grant...**
+  - L1164 each field's card is the model's: grant, prize, posts struck and the grant's own (no pot here), room, post cost, the grant that fills the room, researchers
+  - L1166 the cards' bills add to the economy's research bill: the whole month's bill is the posts'
+  - L1167 some of a grant is unspent: a grant of half a post over its whole posts leaves most of that half unspent, never more than the grant
+  - L1170 law has no grant and the card says so: no posts, nothing unspent, and the room its Universities give it
+  - L1180 a field whose pot bought posts beyond the grant says so: the posts are the grant's and the pot's, the potPosts the difference, and the unspent grant is the g...
+  - L1208 the least prize that brings a lab to a field: at it the field's chase has a problem, a unit under it none, and none where no open problem could be finished b...
+  - L1210 fixture: some field has such a prize and some has none (
+  - L1211 no wages, no cost of a post, no threshold
+  - L1234 a staged grant buys the posts Research.posts() says within the room (none for none, the room's whole posts for a grant past it), gives the faculty and the fi...
+  - L1239 fixture: the catalogue has a Research Lab for medicine
+  - L1243 a lab built is a lab standing in its field's card, and only there:
+- **L1265 13. the preview through the game: the model's researchers, ResearchPreview's draws, cached, and a staged dial equal to the one in force i...**
+  - L1270 the first read of the preview runs it once
+  - L1271 the as-is preview is ResearchPreview's over the researchers the model has now and the prizes set, from ResearchPreview.DRAWS draws of ResearchPreview.SEED
+  - L1273 ...and finds something to say: the small problems of a young century are found in a good share of its draws (
+  - L1275 read again with nothing staged, or a null stage: the very same Result, no run
+  - L1285 a staged grant runs the preview once, with that field's researchers the faculty and the filled posts it buys (
+  - L1287 ...and the as-is is still kept: no run
+  - L1288 ...and the same stage read again is kept too
+  - L1292 a staged grant of nothing leaves the faculty alone to research (
+  - L1295 more researchers in a field find no less in it, fewer no more, from the same draws, and the three differ
+  - L1301 a staged grant equal to the grant in force is the as-is answer itself, kept, with no run
+  - L1308 a staged prize is the field's prize in the model's question, and runs once more
+  - L1310 ...and a prize pays: the field's purse is the prize times its finds
+  - L1316 a new month runs the preview again
+- **L1322 14. R5's gate review: the found-here and abroad counts laid on History's months, what is still to come, the bars' shares**
+  - L1327 fixture: the history has an axis of at least two months and the timeline has finds both ways
+  - L1339 the counts laid on History's months are, at each month of its axis, the discoveries at or before it, here and from abroad (
+  - L1340 ...and the last of them is the timeline's counts
+  - L1342 an axis with gaps is read at each of its own months: 3, 5, 6 and 40 (PE1 found in 3, PE2 abroad in 6, PE3 abroad in 13)
+  - L1346 an empty axis is empty, one month is one entry, and an axis that runs backwards is not a number throughout
+  - L1352 what is still to come is the catalogue's entries the city does not yet know (
+  - L1354 ...and the pure core subtracts and never goes below none
+  - L1370 the equipment bars' share is the fitted buildings over the buildings, 0 to 1, for each of the
+  - L1372 ...and a stack of no buildings has the share 0 on either bar, and a whole one 1
+- **L1381 15. a city founded the default way: nothing in reach, nothing to find, no lab to come, though the catalogue's dates say otherwise of the ...**
+  - L1391 fixture: founded the default way, with a University and a grant that bought posts; the catalogue, read by the date, would have problems open in engineering
+  - L1399 the Overview has nothing in reach, nothing found and nothing from abroad, and every researcher idle (the posts are jobs and the faculty is there, with nothin...
+  - L1401 ...and the Funding cards have no lab threshold
+  - L1403 ...the posts a grant buys are still the model's (the grant is paid and the posts are jobs)
+  - L1405 the preview has nothing to find, as is and staged
+  - L1407 what is still to come is none, the city having known them all at its founding
+- **L1417 16. the figures across the top and the dials' ranges: the sums, the words, the posts the room holds, and a range that reaches past what i...**
+  - L1425 the researchers at work are everyone less the idle, field by field
+  - L1426 ...and no more than all of them, and above nothing in the town
+  - L1427 the problems in reach are the fields' added (
+  - L1435 in reach by field: \"engineering 6 · medicine 2 · business and law none\" for two with some
+  - L1444 ...\"law none\" for one with none, no \"none\" for all with some, \"nothing in reach in any field\" for none
+  - L1448 ...and the town's own: it names the fields with something in reach with their counts
+  - L1457 the room in whole posts is the room floored, field by field
+  - L1462 ...58.7 is 58 whole posts (Research.posts() floors, so a grant that fills the room buys 58), none is none, and what is not a number is none
+  - L1477 the grant dial runs from nothing in round steps (1, 2 or 5 times a power of ten, not above a post's cost and over two fifths of it), a whole number of them, ...
+  - L1481 ...a grant in force beyond what the room asks for is still on the dial (2,500 posts), 20% past the room otherwise (100 posts: 120), and a post with no cost i...
+  - L1485 niceFloor: the greatest of 1, 2 and 5 times a power of ten not above the figure; a step stays put while the cost walks (0.5158 and 0.53 are both 0.5; 0.99 is...
+  - L1490 ...so a month's wages moving a post's cost by a little leave the grant dial's step where it was (
+  - L1494 niceCeil: the least of 1, 2 and 5 times a power of ten not below the figure
+  - L1507 the prize dial runs from nothing to a round number that reaches
+  - L1511 ...a prize in force past it, and a threshold past it, are on the dial
+  - L1513 the researchers in labs are the posts of a lab for each, none for none or fewer
+- **L1520 17. the card: nothing staged is the same figure on both sides; a staged grant and prize are the model's posts, bill, labs and preview**
+  - L1535 nothing staged: every row has the same figure on both sides, the grant and the prize are the ones in force
+  - L1536 ...and the preview's words are one on both sides
+  - L1542 the card's \"now\" is the Funding read and the Overview's: researchers = the faculty and the posts' (
+  - L1545 ...and the preview's figures for the field are the Result's: finds
+  - L1555 a staged grant: the card is moved, the grant shown is the staged one, the prize is not
+  - L1556 ...its posts, researchers and bill are atGrant()'s (
+  - L1559 ...the unspent is what the grant leaves of the posts' pay (the grant less the grant's posts' bill, never below none)
+  - L1561 ...and the preview is the staged Result's, the \"now\" the one in force
+  - L1563 ...and the grant in force staged is no change (nothing is moved by staging what is set)
+  - L1570 a grant past the room buys the room's posts (
+  - L1572 ...and what it leaves unspent is above nothing (the grant over the posts' pay), the card says so
+  - L1573 ...and a card with a hundredth of a dollar unspent says nothing of it
+  - L1578 fixture: engineering has a least prize that brings a lab in this town (
+  - L1583 a staged prize: the card is moved by the prize alone, the labs are the staged preview's first month (
+  - L1586 ...whatever labs it brings are a lab's posts each (
+  - L1589 ...and the card without a prize move keeps the labs the town has (
+  - L1593 a chance under one is a percent and a count from one up: asChance() of the pair, and previewWords() says \"none\", \"under 1%\", \"25%\", \"1.10\"
+- **L1601 18. the schools' research posts: a kind's share of each field's posts by its share of the room, and THE BUDGET with the staged grants' posts**
+  - L1623 the kinds of school together stand up the game's own staff in each field (Game.researchStaff()), and give it their rooms' sum as the field's room
+  - L1624 ...the posts struck, over the kinds that carry them, are the research's own (
+  - L1627 the University hosts all four fields (
+  - L1630 ...the Medical School, with the Universities, carries medicine's posts between them: its share is its room over the field's
+  - L1632 a kind of school that hosts none (a high school, a college), and one of which none stands (a Law school), carries nothing
+  - L1635 the kinds that host research are the University, the Institute of technology and the Medical, Business and Law schools, and no other
+  - L1640 the Overview's schools are the hosting kinds that stand, with how many: the University (2), the Medical School (1) and the Institute of technology (1) - in t...
+  - L1647 THE BUDGET with nothing staged is the books' balance on both sides (
+  - L1652 a staged grant adds its posts' bill to the research bill and takes it off the balance:
+  - L1654 ...a prize moves nothing (it is paid on a find), and two grants together move it by the two bills
+- **L1673 20. a city founded the default way with a University and no grant now: its researchers are the faculty's own, and they survive a save**
+  - L1682 fixture: founded the default way with a University, its grant taken away a month ago, its faculty at research (
+  - L1684 the Overview counts no post where no grant bought one (
+  - L1685 the research has nothing of its own (empty) and still has the month's counts to show
+  - L1688 the city is saved
+  - L1690 ...with its research written for the faculty's counts alone
+  - L1693 loaded without a failure
+  - L1694 the loaded city reads the same counts in every field before it plays a month:
+  - L1697 ...so its Overview (and the hub's card) show the same researchers and idle (
+- **L1704 19. a lab standing: the card counts it and its researchers, and the same lab is on both sides of a card that moves a grant**
+  - L1713 fixture: an Engineering Research Lab stands and its researchers are counted (
+  - L1715 the card counts the lab and its researchers with the field's: researchers
+  - L1721 a grant staged lower moves the field's researchers and not the lab's: the lab is on both sides (
 
 ## RestaurantsCheck.java - 36 labelled assertions
 

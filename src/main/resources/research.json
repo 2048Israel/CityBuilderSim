@@ -1,7 +1,7 @@
 {
  "_readme": [
   "The research catalogue (R2): every discovery the city's schools can make, which field researches it, what it unlocks, history's date, what it needs first and what the work costs.",
-  "Read by ResearchCatalog. The file is packaged with the game, so a change here needs a rebuild. 89 entries: the first study's 40 (research-design.md 4), the 1900 study's 48 (research-1900.md 8.1-8.4) and L5 (research-1900.md 8.6).",
+  "Read by ResearchCatalog. The file is packaged with the game, so a change here needs a rebuild. 91 entries: the original 89, the first study's 40 (research-design.md 4), the 1900 study's 48 (research-1900.md 8.1-8.4) and L5 (research-1900.md 8.6), plus E19/E20 (research-1900 Q13, R2e-notes).",
   "",
   "CODE IS PERMANENT. buildings.json's \"since\" names a discovery by its code (\"E1\", \"PE14\") and saves will key by it. Never renumber or reuse a code; a new discovery takes the next free number in its field.",
   "Reordering entries is safe. The order here is the order the studies print them in.",
@@ -33,7 +33,7 @@
     "fee": true, "feeNote": "", "work": 444, "study": "research-design 4" },
   { "code": "E2", "name": "Preheater kiln", "field": "ENGINEERING", "kind": ["equipment"], "size": "equipment",
     "year": 1953, "month": 6, "monthKnown": false, "world": "1953, Beckum",
-    "touches": "Cement Plant, Lime Kiln",
+    "touches": "Cement Plant, Large Cement Plant",
     "effect": "fuel 7.0 GJ (wet) to 3.0-3.6 GJ a tonne of clinker", "sources": ["T32", "T34"],
     "needs": [], "requires": "dry raw meal",
     "fee": true, "feeNote": "", "work": 467, "study": "research-design 4" },
@@ -558,6 +558,54 @@
     "touches": "Taxes: the pension contribution",
     "effect": "1.8% from the worker, 1.8% from the employer", "sources": ["CPP-W"],
     "needs": [], "requires": "",
-    "fee": false, "feeNote": "", "work": 457, "study": "research-1900 8.6" }
+    "fee": false, "feeNote": "", "work": 457, "study": "research-1900 8.6" },
+  {
+   "field": "ENGINEERING",
+   "kind": [
+    "building"
+   ],
+   "size": "building",
+   "month": 1,
+   "monthKnown": false,
+   "needs": [],
+   "requires": "",
+   "fee": true,
+   "feeNote": "patentability estimate; no claim about a specific patent",
+   "study": "research-1900 Q13; R2-notes call 7; R2e-notes",
+   "code": "E19",
+   "name": "Oriented strand board",
+   "year": 1981,
+   "world": "1981, commercial OSB (FPL-GTR-59)",
+   "touches": "Panel Mill",
+   "effect": "structural strand panels from pulpwood; opens the modern Panel Mill",
+   "sources": [
+    "FPL-GTR-59 https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr59.pdf"
+   ],
+   "work": 1983
+  },
+  {
+   "field": "ENGINEERING",
+   "kind": [
+    "building"
+   ],
+   "size": "building",
+   "month": 1,
+   "monthKnown": false,
+   "needs": [],
+   "requires": "",
+   "fee": true,
+   "feeNote": "patentability estimate; no claim about a specific patent",
+   "study": "research-1900 Q13; R2-notes call 7; R2e-notes",
+   "code": "E20",
+   "name": "Wood fuel pellets",
+   "year": 1970,
+   "world": "1970 (model year retained; source dates only the 1970s)",
+   "touches": "Wood Pellet Mill",
+   "effect": "wood fuel pellets from residues; opens the modern Wood Pellet Mill",
+   "sources": [
+    "FPL-RP-656 https://www.fpl.fs.usda.gov/documnts/fplrp/fpl_rp656.pdf; no source dates the exact year 1970"
+   ],
+   "work": 1124
+  }
  ]
 }

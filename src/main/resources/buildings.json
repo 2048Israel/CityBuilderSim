@@ -213,7 +213,8 @@
   "production1 changes utility output; dig is field tonnes per output; steamRail is the steam-engine share; crackerPetrol is the petrol-per-feed difference.",
   "Each source names every figure and every estimate. Recipe alternatives and these independent changes compose before whole jobs and draw are rounded.",
   "id and since override the change key and known date for a known-1900 step. The tilde is reserved for saved composite recipe ids.",
-  "Only a city founded unfitted applies the undos. The modern top level stays the default city's figures."
+  "Only a city founded unfitted applies the undos. The modern top level stays the default city's figures.",
+  "R2e: optional after names another change on this template. Its undo applies only while that earlier change is present (E11 zeolite requires PE24 catalytic cracking); saved missing-change flags retain both decisions."
  ],
  "nextId": 153,
  "buildings": [
@@ -322,6 +323,29 @@
        "NO_DIPLOMA": 1.1219653179190754
       }
      }
+    },
+    {
+     "entry": "B5",
+     "source": "research-design 4 B5 [M-B4], Basker AEJ Applied 2012: store payroll -5.35% (study figure). R2e fixed-band-mix estimate: old posts modern/0.9465, rounded once with all undos. Tiny 3/5-post templates can round to the same staffing; no minimum saving invented. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 0.11304807184363463,
+       "DIPLOMA": 0.16957210776545195
+      }
+     },
+     "equipment": "barcode-scanner"
+    }
+   ],
+   "equipment": [
+    {
+     "id": "barcode-scanner",
+     "name": "Barcode scanner",
+     "since": "B5",
+     "buys": {
+      "MACHINERY": 8.246
+     },
+     "work": 12,
+     "lifeMonths": 300
     }
    ]
   },
@@ -371,6 +395,30 @@
        "NO_DIPLOMA": 3.739884393063584
       }
      }
+    },
+    {
+     "entry": "B5",
+     "source": "research-design 4 B5 [M-B4], Basker AEJ Applied 2012: store payroll -5.35% (study figure). R2e fixed-band-mix estimate: old posts modern/0.9465, rounded once with all undos. Tiny 3/5-post templates can round to the same staffing; no minimum saving invented. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 0.8478605388272598,
+       "DIPLOMA": 0.5652403592181732,
+       "COLLEGE_BUSINESS": 0.11304807184363463
+      }
+     },
+     "equipment": "barcode-scanner"
+    }
+   ],
+   "equipment": [
+    {
+     "id": "barcode-scanner",
+     "name": "Barcode scanner",
+     "since": "B5",
+     "buys": {
+      "MACHINERY": 64.888
+     },
+     "work": 80,
+     "lifeMonths": 300
     }
    ]
   },
@@ -628,7 +676,38 @@
    },
    "uses": {
     "SCRAP": 1320
-   }
+   },
+   "equipment": [
+    {
+     "id": "continuous-caster",
+     "name": "Continuous caster",
+     "since": "E9",
+     "buys": {
+      "MACHINERY": 419.235
+     },
+     "work": 140,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "E9",
+     "source": "research-design 3.1 E9 [T4], OTA 1979: ingot casting less yield, 10-15% more direct labour and about 1 MBtu/short ton fuel. Use study estimates -10% steel, +12.5% production posts and 1.2 GJ/t; fuel oil at R2d heating-value estimate 36 MJ/L. Other bands fixed; same melt input. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "makes": {
+       "STEEL": -120.0
+      },
+      "jobs": {
+       "NO_DIPLOMA": 2.75,
+       "DIPLOMA": 1.5
+      },
+      "uses": {
+       "FUEL_OIL": 40000.0
+      }
+     },
+     "equipment": "continuous-caster"
+    }
+   ]
   },
   {
    "id": 12,
@@ -655,7 +734,58 @@
    },
    "uses": {
     "SCRAP": 6600
-   }
+   },
+   "equipment": [
+    {
+     "id": "continuous-caster",
+     "name": "Continuous caster",
+     "since": "E9",
+     "buys": {
+      "MACHINERY": 1676.567
+     },
+     "work": 900,
+     "lifeMonths": 300
+    },
+    {
+     "id": "thin-slab-caster",
+     "name": "Thin-slab caster",
+     "since": "E18",
+     "buys": {
+      "MACHINERY": 1676.567
+     },
+     "work": 900,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "E9",
+     "source": "research-design 3.1 E9 [T4], OTA 1979: ingot casting less yield, 10-15% more direct labour and about 1 MBtu/short ton fuel. Use study estimates -10% steel, +12.5% production posts and 1.2 GJ/t; fuel oil at R2d heating-value estimate 36 MJ/L. Other bands fixed; same melt input. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "makes": {
+       "STEEL": -600.0
+      },
+      "jobs": {
+       "NO_DIPLOMA": 8.75,
+       "DIPLOMA": 5.625
+      },
+      "uses": {
+       "FUEL_OIL": 200000.0
+      }
+     },
+     "equipment": "continuous-caster"
+    },
+    {
+     "entry": "E18",
+     "source": "research-design 4 E18 [T10,T3]: reheating 2.0->0.5-0.8 MBtu/t. R2e midpoint estimate 0.65, direct fuel difference 1.35 MBtu per metric tonne proxy, 1055.056 MJ/MBtu, fuel oil 36 MJ/L (R2d heating-value estimate). Modern top level already includes its modern energy; add only missing saving. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "uses": {
+       "FUEL_OIL": 237387.60000000003
+      }
+     },
+     "equipment": "thin-slab-caster"
+    }
+   ]
   },
   {
    "id": 10,
@@ -1399,7 +1529,52 @@
     "UNIV_LAW": 1
    },
    "land": 45000,
-   "roadLoad": 60
+   "roadLoad": 60,
+   "equipment": [
+    {
+     "id": "business-computer",
+     "name": "Business computer",
+     "since": "B1",
+     "buys": {
+      "MACHINERY": 105.989
+     },
+     "work": 420,
+     "lifeMonths": 300
+    },
+    {
+     "id": "cash-machine",
+     "name": "Cash machine",
+     "since": "B3",
+     "buys": {
+      "MACHINERY": 105.989
+     },
+     "work": 420,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "B1",
+     "source": "research-design 4 B1 [M-B1c,M-B1d], BLS Bulletin 1276: affected-unit employment -25%; SRI ERMA accounts/hour is not whole-office productivity. R2e clerk proxy estimate: DIPLOMA/COLLEGE_BUSINESS old /0.75. Survey median 29 new computer staff has no per-template office scale; no invented subtraction of 29 from small branches. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 2.999999999999999,
+       "COLLEGE_BUSINESS": 4.333333333333332
+      }
+     },
+     "equipment": "business-computer"
+    },
+    {
+     "entry": "B3",
+     "source": "research-design 4 B3 [M-B3a], Bessen IMF F&D March 2015: branch tellers 20->13. R2e teller proxy estimate: DIPLOMA posts old *20/13, branch count growth is not a productivity factor. B1 clerk change composes additively. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 4.846153846153847
+      }
+     },
+     "equipment": "cash-machine"
+    }
+   ]
   },
   {
    "id": 46,
@@ -1423,7 +1598,32 @@
    "roadLoad": 240,
    "makes": {
     "SUPPORT_WORK": 300
-   }
+   },
+   "equipment": [
+    {
+     "id": "business-computer",
+     "name": "Business computer",
+     "since": "B1",
+     "buys": {
+      "MACHINERY": 304.757
+     },
+     "work": 324,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "B1",
+     "source": "research-design 4 B1 [M-B1c,M-B1d], BLS Bulletin 1276: affected-unit employment -25%; SRI ERMA accounts/hour is not whole-office productivity. R2e clerk proxy estimate: DIPLOMA/COLLEGE_BUSINESS old /0.75. Survey median 29 new computer staff has no per-template office scale; no invented subtraction of 29 from small branches. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 11.999999999999996,
+       "COLLEGE_BUSINESS": 2.999999999999999
+      }
+     },
+     "equipment": "business-computer"
+    }
+   ]
   },
   {
    "id": 47,
@@ -1447,7 +1647,32 @@
    "roadLoad": 240,
    "makes": {
     "BACK_OFFICE_WORK": 300
-   }
+   },
+   "equipment": [
+    {
+     "id": "business-computer",
+     "name": "Business computer",
+     "since": "B1",
+     "buys": {
+      "MACHINERY": 304.757
+     },
+     "work": 324,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "B1",
+     "source": "research-design 4 B1 [M-B1c,M-B1d], BLS Bulletin 1276: affected-unit employment -25%; SRI ERMA accounts/hour is not whole-office productivity. R2e clerk proxy estimate: DIPLOMA/COLLEGE_BUSINESS old /0.75. Survey median 29 new computer staff has no per-template office scale; no invented subtraction of 29 from small branches. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "jobs": {
+       "DIPLOMA": 29.999999999999993,
+       "COLLEGE_BUSINESS": 59.999999999999986
+      }
+     },
+     "equipment": "business-computer"
+    }
+   ]
   },
   {
    "id": 48,
@@ -1631,6 +1856,15 @@
       }
      },
      "equipment": "carbide-tools"
+    },
+    {
+     "entry": "B7",
+     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 11.623036649214654
+      }
+     }
     }
    ]
   },
@@ -1797,6 +2031,15 @@
        "CROPS": -8.737991266375545
       }
      }
+    },
+    {
+     "entry": "E10",
+     "source": "research-design 4 E10 [T38]: semi-dwarf wheat yields about doubled with fertiliser (study estimate). R2e crop-mix proxy estimate: CROPS old half modern, independent of PE20 hybrid-corn delta. No modern fertiliser invoice exists; fertiliser good/works remains PE12 pending.",
+     "without": {
+      "makes": {
+       "CROPS": -34.5
+      }
+     }
     }
    ]
   },
@@ -1900,6 +2143,15 @@
      "without": {
       "makes": {
        "CROPS": -63.31877729257644
+      }
+     }
+    },
+    {
+     "entry": "E10",
+     "source": "research-design 4 E10 [T38]: semi-dwarf wheat yields about doubled with fertiliser (study estimate). R2e crop-mix proxy estimate: CROPS old half modern, independent of PE20 hybrid-corn delta. No modern fertiliser invoice exists; fertiliser good/works remains PE12 pending.",
+     "without": {
+      "makes": {
+       "CROPS": -250.0
       }
      }
     }
@@ -2355,6 +2607,16 @@
      },
      "work": 726,
      "lifeMonths": 300
+    },
+    {
+     "id": "welding-robot",
+     "name": "Welding robot",
+     "since": "E8",
+     "buys": {
+      "MACHINERY": 1231.343
+     },
+     "work": 726,
+     "lifeMonths": 300
     }
    ],
    "recipeChanges": [
@@ -2376,6 +2638,27 @@
        "NO_DIPLOMA": 706.4516129032259
       }
      }
+    },
+    {
+     "entry": "E8",
+     "source": "research-design 4 E8 [T57]; NIST pub 820148 reports human torch-on 30%, robot 90%. R2e welding-crew proxy estimate: unskilled assembly posts, old 90/30 times modern; source does not partition the plant crew. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months). Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 200
+      }
+     },
+     "equipment": "welding-robot",
+     "after": "PE13"
+    },
+    {
+     "entry": "B7",
+     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented. Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 38.743455497382186
+      }
+     },
+     "after": "PE13"
     }
    ]
   },
@@ -2418,6 +2701,16 @@
      },
      "work": 2430,
      "lifeMonths": 300
+    },
+    {
+     "id": "welding-robot",
+     "name": "Welding robot",
+     "since": "E8",
+     "buys": {
+      "MACHINERY": 4123.134
+     },
+     "work": 2430,
+     "lifeMonths": 300
     }
    ],
    "recipeChanges": [
@@ -2429,6 +2722,27 @@
        "NO_DIPLOMA": 2931.774193548387
       }
      }
+    },
+    {
+     "entry": "E8",
+     "source": "research-design 4 E8 [T57]; NIST pub 820148 reports human torch-on 30%, robot 90%. R2e welding-crew proxy estimate: unskilled assembly posts, old 90/30 times modern; source does not partition the plant crew. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months). Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 830
+      }
+     },
+     "equipment": "welding-robot",
+     "after": "PE13"
+    },
+    {
+     "entry": "B7",
+     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented. Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 160.78534031413608
+      }
+     },
+     "after": "PE13"
     }
    ]
   },
@@ -2470,6 +2784,16 @@
      },
      "work": 1450,
      "lifeMonths": 300
+    },
+    {
+     "id": "welding-robot",
+     "name": "Welding robot",
+     "since": "E8",
+     "buys": {
+      "MACHINERY": 2462.687
+     },
+     "work": 1450,
+     "lifeMonths": 300
     }
    ],
    "recipeChanges": [
@@ -2481,6 +2805,27 @@
        "NO_DIPLOMA": 1377.5806451612902
       }
      }
+    },
+    {
+     "entry": "E8",
+     "source": "research-design 4 E8 [T57]; NIST pub 820148 reports human torch-on 30%, robot 90%. R2e welding-crew proxy estimate: unskilled assembly posts, old 90/30 times modern; source does not partition the plant crew. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months). Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 390
+      }
+     },
+     "equipment": "welding-robot",
+     "after": "PE13"
+    },
+    {
+     "entry": "B7",
+     "source": "research-design 4 B7 [T58,M-B5a], Krafcik 1988: 26.5->19.1 hours/vehicle. R2e proxy estimate: unskilled production posts, including Machine Works as catalogue requests. Inventory 96->81 days has no per-template inventory dial; no stock amount invented. Applies only to the mass-assembly process after PE13, preserving the earlier hand-assembly crew.",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 75.54973821989526
+      }
+     },
+     "after": "PE13"
     }
    ]
   },
@@ -2817,6 +3162,14 @@
      "without": {
       "crackerPetrol": -0.31
      }
+    },
+    {
+     "entry": "E11",
+     "source": "research-design 4 E11 [T26], Sadeghbeigi FCC Handbook: amorphous 55.5 vs zeolite 62.0% petrol. R2e normalization estimate: modern game 0.55 times 55.5/62; lost petrol remains fuel oil, other cuts fixed. Applies only to catalytic PE24, so thermal remains 0.24. Coke is not a model cracker stream.",
+     "without": {
+      "crackerPetrol": -0.05766129032258066
+     },
+     "after": "PE24"
     }
    ]
   },
@@ -2849,6 +3202,14 @@
      "without": {
       "crackerPetrol": -0.31
      }
+    },
+    {
+     "entry": "E11",
+     "source": "research-design 4 E11 [T26], Sadeghbeigi FCC Handbook: amorphous 55.5 vs zeolite 62.0% petrol. R2e normalization estimate: modern game 0.55 times 55.5/62; lost petrol remains fuel oil, other cuts fixed. Applies only to catalytic PE24, so thermal remains 0.24. Coke is not a model cracker stream.",
+     "without": {
+      "crackerPetrol": -0.05766129032258066
+     },
+     "after": "PE24"
     }
    ]
   },
@@ -3089,7 +3450,32 @@
    },
    "land": 43056,
    "roadLoad": 10,
-   "pump": 350000
+   "pump": 350000,
+   "equipment": [
+    {
+     "id": "barcode-scanner",
+     "name": "Barcode scanner",
+     "since": "B5",
+     "buys": {
+      "MACHINERY": 5.634
+     },
+     "work": 8,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "B5",
+     "source": "research-design 4 B5 [M-B4], Basker AEJ Applied 2012: store payroll -5.35% (study figure). R2e fixed-band-mix estimate: old posts modern/0.9465, rounded once with all undos. Tiny 3/5-post templates can round to the same staffing; no minimum saving invented. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 0.11304807184363463,
+       "DIPLOMA": 0.05652403592181732
+      }
+     },
+     "equipment": "barcode-scanner"
+    }
+   ]
   },
   {
    "id": 92,
@@ -3529,6 +3915,16 @@
      },
      "work": 69231,
      "lifeMonths": 300
+    },
+    {
+     "id": "continuous-caster",
+     "name": "Continuous caster",
+     "since": "E9",
+     "buys": {
+      "MACHINERY": 25832.351
+     },
+     "work": 69231,
+     "lifeMonths": 300
     }
    ],
    "recipes": [
@@ -3582,6 +3978,23 @@
       }
      },
      "equipment": "strip-mill"
+    },
+    {
+     "entry": "E9",
+     "source": "research-design 3.1 E9 [T4], OTA 1979: ingot casting less yield, 10-15% more direct labour and about 1 MBtu/short ton fuel. Use study estimates -10% steel, +12.5% production posts and 1.2 GJ/t; fuel oil at R2d heating-value estimate 36 MJ/L. Other bands fixed; same melt input. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "makes": {
+       "STEEL": -29000.0
+      },
+      "jobs": {
+       "NO_DIPLOMA": 121.5,
+       "DIPLOMA": 78.75
+      },
+      "uses": {
+       "FUEL_OIL": 9666666.666666666
+      }
+     },
+     "equipment": "continuous-caster"
     }
    ]
   },
@@ -3610,7 +4023,58 @@
    "uses": {
     "SCRAP": 137500
    },
-   "since": "E13"
+   "since": "E13",
+   "equipment": [
+    {
+     "id": "continuous-caster",
+     "name": "Continuous caster",
+     "since": "E9",
+     "buys": {
+      "MACHINERY": 17221.455
+     },
+     "work": 46154,
+     "lifeMonths": 300
+    },
+    {
+     "id": "thin-slab-caster",
+     "name": "Thin-slab caster",
+     "since": "E18",
+     "buys": {
+      "MACHINERY": 17221.455
+     },
+     "work": 46154,
+     "lifeMonths": 300
+    }
+   ],
+   "recipeChanges": [
+    {
+     "entry": "E9",
+     "source": "research-design 3.1 E9 [T4], OTA 1979: ingot casting less yield, 10-15% more direct labour and about 1 MBtu/short ton fuel. Use study estimates -10% steel, +12.5% production posts and 1.2 GJ/t; fuel oil at R2d heating-value estimate 36 MJ/L. Other bands fixed; same melt input. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "makes": {
+       "STEEL": -12500.0
+      },
+      "jobs": {
+       "NO_DIPLOMA": 27.0,
+       "DIPLOMA": 17.5
+      },
+      "uses": {
+       "FUEL_OIL": 4166666.6666666665
+      }
+     },
+     "equipment": "continuous-caster"
+    },
+    {
+     "entry": "E18",
+     "source": "research-design 4 E18 [T10,T3]: reheating 2.0->0.5-0.8 MBtu/t. R2e midpoint estimate 0.65, direct fuel difference 1.35 MBtu per metric tonne proxy, 1055.056 MJ/MBtu, fuel oil 36 MJ/L (R2d heating-value estimate). Modern top level already includes its modern energy; add only missing saving. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "uses": {
+       "FUEL_OIL": 4945575.0
+      }
+     },
+     "equipment": "thin-slab-caster"
+    }
+   ]
   },
   {
    "id": 108,
@@ -3857,6 +4321,16 @@
      },
      "work": 30770,
      "lifeMonths": 300
+    },
+    {
+     "id": "longwall-shields",
+     "name": "Longwall shields",
+     "since": "E15",
+     "buys": {
+      "MACHINERY": 11481.194
+     },
+     "work": 30770,
+     "lifeMonths": 300
     }
    ],
    "recipes": [
@@ -3889,6 +4363,17 @@
       }
      },
      "equipment": "coal-loader"
+    },
+    {
+     "entry": "E15",
+     "source": "research-design 4 E15 [T17,T20], US Bureau of Mines IC 9316: 30->149 t/face-worker/day, 60->80% recovery. R2e proxy estimate: unskilled posts are face crew at fixed output; old field tonnes per output 1/0.6 vs modern 1/0.8. Cutter/loader remain independent. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "jobs": {
+       "NO_DIPLOMA": 952.0
+      },
+      "dig": 0.41666666666666674
+     },
+     "equipment": "longwall-shields"
     }
    ]
   },
@@ -4115,6 +4600,16 @@
      },
      "work": 4616,
      "lifeMonths": 300
+    },
+    {
+     "id": "preheater",
+     "name": "Preheater",
+     "since": "E2",
+     "buys": {
+      "MACHINERY": 1722.313
+     },
+     "work": 4616,
+     "lifeMonths": 300
     }
    ],
    "recipes": [
@@ -4152,6 +4647,17 @@
       }
      },
      "equipment": "long-kiln"
+    },
+    {
+     "entry": "E2",
+     "source": "research-design 4 E2 [T32,T34], EPA ENERGY STAR Cement Guide 2013 table 1: wet 7.0 vs preheater 3.0-3.6 GJ/t. R2e midpoint/mapping estimate 3.3, applied to modern coal at unchanged output; lime tonnes proxy clinker. Applies only after PE4; its independent 1900 coal figure is preserved when the long kiln is absent. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "uses": {
+       "THERMAL_COAL": 3756.0606060606056
+      }
+     },
+     "equipment": "preheater",
+     "after": "PE4"
     }
    ]
   },
@@ -4194,6 +4700,16 @@
      },
      "work": 19231,
      "lifeMonths": 300
+    },
+    {
+     "id": "preheater",
+     "name": "Preheater",
+     "since": "E2",
+     "buys": {
+      "MACHINERY": 7175.746
+     },
+     "work": 19231,
+     "lifeMonths": 300
     }
    ],
    "recipeChanges": [
@@ -4206,6 +4722,17 @@
       }
      },
      "equipment": "long-kiln"
+    },
+    {
+     "entry": "E2",
+     "source": "research-design 4 E2 [T32,T34], EPA ENERGY STAR Cement Guide 2013 table 1: wet 7.0 vs preheater 3.0-3.6 GJ/t. R2e midpoint/mapping estimate 3.3, applied to modern coal at unchanged output; lime tonnes proxy clinker. Applies only after PE4; its independent 1900 coal figure is preserved when the long kiln is absent. Capital/life: R1c call 10 estimate (25% cashCost / MACHINERY 13.4, 10% constructionPoints, 300 months).",
+     "without": {
+      "uses": {
+       "THERMAL_COAL": 18780.30303030303
+      }
+     },
+     "equipment": "preheater",
+     "after": "PE4"
     }
    ]
   },
@@ -4785,7 +5312,7 @@
    "uses": {
     "PULPWOOD": 27750
    },
-   "since": 1980
+   "since": "E19"
   },
   {
    "id": 136,
@@ -4922,7 +5449,7 @@
    "uses": {
     "RESIDUES": 13200
    },
-   "since": 1970
+   "since": "E20"
   },
   {
    "id": 139,

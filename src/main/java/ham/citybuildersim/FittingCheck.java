@@ -27,7 +27,7 @@ import java.util.Set;
  *   3. THE 1900 FOUNDING, OFF BY DEFAULT: Founding.defaults() is not unfitted and a default founding unfits nothing; a founding withUnfitted(true)
  *      is, every other choice kept through every withX, saved with the founding (a default city writes no key) and read back; the buildings it
  *      stands up are unfitted for every piece their templates carry (the tractor's too), the forms set from them before the first press, and
- *      the flag and the counts come back after a save and a load. The founding's own buildings (the bank, the builders' yard) carry no piece,
+ *      the flag and the counts come back after a save and a load. The founding Bank has its B1/B3 pieces wholly unfitted (R2e),
  *      so the harness places a village by hand after newGame(), as the playtest does, and says unfitTheFounding() over it: a village placed
  *      without construction is not hooked, and comes as placed until that is said
  *   4. WHAT A NEW BUILDING COMES WITH: in a city founded the 1900 way, bakeries ordered on site that finish come fitted with the electric
@@ -340,14 +340,19 @@ public class FittingCheck {
         // The 1900 founding.
         Game g = village("fitting-1900-founding", wanted, false, true);
         check("a city founded withUnfitted(true) knows it", g.foundedUnfitted() && g.getFounding().isUnfitted());
-        boolean standingCarryNone = true;
+        BuildingsStacks foundingBank = stack(g, "Commercial Bank");
+        boolean placedFitted = true;
         for (BuildingsStacks s : g.getBuildingManager().getStacksView()) {
-            if (s.getBuilding().getEquipment().isEmpty()) continue;
-            // the village, placed after the founding without construction, is fitted as placed: only the founding's own buildings (the bank, the yard) were there to unfit
-            standingCarryNone &= !s.hasUnfitted();
+            if (s == foundingBank || s.getBuilding().getEquipment().isEmpty()) continue;
+            // Hand placement after founding leaves the village fitted; the Bank stood at founding.
+            placedFitted &= !s.hasUnfitted();
         }
-        check("the founding's own buildings (the bank, the builders' yard) carry no piece, and a village placed after it without construction comes as placed",
-                standingCarryNone && !EquipmentCheck.anyUnfitted(g) && g.getEquipmentForms().driven().isEmpty());
+        check("the founding Bank is wholly unfitted for B1/B3, while the hand-placed village comes fitted",
+                foundingBank.getQuantity() > 0 && foundingBank.getBuilding().getEquipment("business-computer") != null
+                        && foundingBank.getBuilding().getEquipment("cash-machine") != null
+                        && foundingBank.getUnfitted("business-computer") == foundingBank.getQuantity()
+                        && foundingBank.getUnfitted("cash-machine") == foundingBank.getQuantity()
+                        && placedFitted && g.getEquipmentForms().driven().isEmpty());
         quietly(g::unfitTheFounding);
         int[] counted = { 0 };
         String fault = unfittedWholly(g, counted);
@@ -429,6 +434,10 @@ public class FittingCheck {
     static Game builtVillage(String label, Founding founding) {
         Game g = village(label, founding, true, false);
         quietly(() -> {
+            // R2e: isolate the Bakery test with its stated all-fitted opening state.
+            // Section 3 separately proves the real Bank's B1/B3 founding counts.
+            BuildingsStacks bank = stack(g, "Commercial Bank");
+            for (Equipment piece : bank.getBuilding().getEquipment()) bank.setUnfitted(piece.getId(), 0);
             // R2d: cause this fixture's global no-other-unfitted premise.
             // An unheld Manufacturing order used to finish a future carbide piece here.
             holdAll(g);

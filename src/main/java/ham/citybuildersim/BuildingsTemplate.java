@@ -776,6 +776,9 @@ public class BuildingsTemplate {
         return new String[] { runsFitted == null ? fallback : runsFitted, runsUnfitted == null ? fallback : runsUnfitted };
     }
 
+    /** Whether this recipe list has reached production since it was installed. */
+    boolean hasRunningRecipes() { return runsFitted != null && runsUnfitted != null; }
+
     /* ----- WHEN IT FIRST EXISTED (0.7.123, batch I4; R2, 2026-11-05; research-design.md 2.1, 7) -----
        The research study (Jerus's start year 1900, 2026-10-10) asks every
        building after the start to say when it came ("since" in

@@ -1307,8 +1307,9 @@ public class Game {
             BuildingsTemplate t = buildingManager.getTemplateByName(done.building);
             BuildingsStacks stack = t == null || t.getEquipment().isEmpty() ? null : buildingManager.getStack(t);
             if (stack == null || done.quantity <= 0) continue;
+            java.util.Set<String> fitted = EquipmentFit.fittedForNew(this, t);
             for (Equipment piece : t.getEquipment()) {
-                if (EquipmentFit.verdictForNew(this, t, piece).kind() == EquipmentFit.Kind.PAYS) continue;
+                if (fitted.contains(piece.getId())) continue;
                 stack.setUnfitted(piece.getId(), stack.getUnfitted(piece.getId()) + done.quantity);
             }
         }
