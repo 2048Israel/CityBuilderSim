@@ -535,3 +535,24 @@ rounded next refit and standing fleet, imported dependent rent and saved
 steel process. The added shared-PE4 Large Cement control passes with real
 positive cement production and one positive billed code. No copied
 BuildingsTemplate API or prospective-reader callback remains in source.
+
+All sixteen named readers pass on the fitting-only5a9dd894 model:
+Postwar210, BuildAdvice, AutoBuild, WantedPosts, StaffingDraw,
+LicenceFees43, Fitting, HistoricalRecipe120, HistoricalLicence80,
+Recipe, Equipment, Research207, Discovery, BuildingData, Bank and BuildCard.
+
+## Upstream R0h and the final default trace reference
+
+Mail215239 directs merging main a3fb38c0 (R0h,0.9.121). R0h's health
+change intentionally moves the default trace from1918. The original
+once-captured32ec5a5d evidence and pre-R0h eight-file equality remain
+retained. The orchestrator supplies R0h's kept traces as the new final
+reference at C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0h-NrRv6F33/traces.
+Those eight files are copied unchanged into target/R2e-evidence/R0h-main
+with SHA256SUMS. R2e's final gate will compare against that supplied
+upstream reference. An R2e-only divergence still stops the batch.
+
+R0h's Health, Sickness, DataSave, load path, checks and publication records
+merge without a source conflict. Generated-index conflicts are regenerated
+by the following fast rebuild. The historical pre-R0h model dependencies
+are retained with the46c321bbd counterfactual to keep its control exact.

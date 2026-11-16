@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.121 — R0h, The 1918 influenza's sick counted once — 2026-11-15, ready, see docs/queue/R0h-notes.md
+The influenza's acute sick now stay beside the long-sickness ring, so they are
+counted in People's sick by age and Services' youngest sick bar while only the
+influenza's own cause books their deaths. The acute shares cross saves by age
+band; an older save without them loads none. Unit, save/load and read fixtures
+cover the split, and September 1918 twins prove the January-April 1919 excess
+ring deaths are zero after their measured chronic drift.
+
 ### 0.9.120 — BK2b, BK2's review follow-ups (each holder's own discount) — 2026-11-15, ready, see docs/queue/BK2b-notes.md
 A partial buyback taking all but rounding-level face now takes the seller's whole unearned discount, as a transfer already does, leaving no discount dust on no face. HoldersCheck causes the ulp-short case for every seller at two price levels and covers the existing retained loss when the bank pays a premium beyond its own discount. The reopening comment now describes each holder keeping its own discount until settlement. HoldersCheck and BuybackCheck pass. The fresh-clone merge dry run is green (launcher exit 0; suite exit 3, known reds only); the default playtest trace is unchanged.
 

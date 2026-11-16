@@ -1,8 +1,8 @@
-# gate of Merge batch/BK2b: bK2's review follow-ups (each holder's own discount): a stale comment at `Game.java:11732`; `Debt.retirePart` leaving a seller's sub-cent discount on no face when what it keeps is within `HOLDING_ROUNDING` (`pass()`'s rule wanted); and a HoldersCheck case for the one path still booking a re-strike, the bank paying a premium past its own discount (BK2's gate review, 2026-11-08: SHIP + FOLLOW-UP), 0.9.120
+# gate of Merge batch/R0h: the 1918 influenza's sick counted once: they also die through `Sickness`'s ring, about 7 more dead on the influenza's 63 (11%), mostly January to April 1919; carry its share beside the ring, 0.9.121
 # date: 2026-11-15
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 195 harnesses run in 3437s: 189 passed, 6 failed
+# suite: 194 harnesses run in 1915s: 189 passed, 5 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 InvestCheck | exit 1
@@ -13,15 +13,15 @@ MapCheck | at every 30th month the map draws exactly what the city has: each typ
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
 MapCheck | 3 FAILED
-KeptCheck | exit 1
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 ResearchViewCheck | exit 1
 ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 1 rows, Agriculture: 3 of 6), and the sectors' rows add up to the city's
 ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217
+KeptCheck | exit 1
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+KeptCheck | 1 FAILED
 PrizeCheck | exit 2
 PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1011.1291940951232 of 1004.6942298626966)
 PrizeCheck | FAIL ...and its till (at most 388) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified

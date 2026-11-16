@@ -15221,7 +15221,8 @@ public class Game {
          * or nobody could die of sickness for two months. See Sickness.
          */
         if (!sickness.isSeeded()) {
-            sickness.seed(health.getSickRate(), generalCoverage, childcareCoverage, seniorCoverage);
+            sickness.seed(health.getSickRate(), health.getSickRateWithoutInfluenza(),
+                    generalCoverage, childcareCoverage, seniorCoverage);
         }
         double[] illness = sickness.deathRates();
         /*
@@ -15678,8 +15679,8 @@ public class Game {
          *    a month longer, and whoever fell ill this month joins. Next month's
          *    deaths are struck from what this leaves.
          */
-        sickness.advanceMonth(health.getSickRate(), generalCoverage,
-                childcareCoverage, seniorCoverage);
+        sickness.advanceMonth(health.getSickRate(), health.getSickRateWithoutInfluenza(),
+                generalCoverage, childcareCoverage, seniorCoverage);
     }
 
     /* =====================================================================
@@ -17281,6 +17282,7 @@ public class Game {
         dataSave.setMigration(migration.toSaveArray());
         dataSave.setUnemployment(unemployment.toSaveArray());
         dataSave.setSickness(sickness.getState());
+        dataSave.setSicknessAcute(sickness.getAcuteShares());
         dataSave.setCrime(crime.getState());
         dataSave.setHealth(health.getState());
         dataSave.setCausesOfDeath(causesOfDeath.getState());
@@ -21670,6 +21672,7 @@ public class Game {
             migration.restore(restoredFlows.getMigration());
             unemployment.restore(restoredFlows.getUnemployment());
             sickness.restore(savedBands, restoredFlows.getSickness());
+            sickness.restoreAcute(savedBands, restoredFlows.getSicknessAcute());
             // The prisoners are out of the supply on the load path as on the
             // monthly one, like the students below - or a reloaded city has
             // more workers than the live one until its first month.

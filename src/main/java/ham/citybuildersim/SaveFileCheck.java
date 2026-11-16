@@ -3239,11 +3239,48 @@ public class SaveFileCheck {
 
         cleanUp(root);
 
+        acuteSicknessCrossesASave();
         landLoadFallbacks();
         LoadConservation.run(args);
         fails += LoadConservation.fails;
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** R0h: nonzero acute shares cross JSON and the actual load, and a missing old field clears them. */
+    static void acuteSicknessCrossesASave() throws IOException {
+        System.out.println("\n--- acute influenza shares beside the saved sickness ring (R0h) ---");
+        Game city = new Game(GameFiles.scratch("savecheck-acute"));
+        quietly(city::run);
+        Health health = city.getHealth();
+        // Strike an influenza month's health explicitly; no intervening month can replace the flow before saving.
+        health.advanceMonth(0, 1000, CausesOfDeath.INFLUENZA_FIRST);
+        city.getSickness().seed(health.getSickRate(), health.getSickRateWithoutInfluenza(), 0, .25, .75);
+        double[] acute = city.getSickness().getAcuteShares();
+        assertTrue("fixture: each age band has an acute influenza share to save",
+                java.util.Arrays.stream(acute).allMatch(v -> v > 0));
+        assertTrue("the acute fixture saved", quietlyGet(() -> city.saveGame(10, "acute")).ok);
+        Path file = city.getGameFiles().saveFile(10);
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(Files.readString(file)).getAsJsonObject();
+        assertTrue("the acute shares are written separately from the ring", json.has("sicknessAcute")
+                && json.getAsJsonArray("sicknessAcute").size() == AgeBand.values().length);
+        Game back = new Game(city.getGameFiles());
+        quietly(() -> back.loadGameSave(10));
+        assertTrue("every acute share and every ring slot cross the actual load to the bit",
+                java.util.Arrays.equals(acute, back.getSickness().getAcuteShares())
+                && java.util.Arrays.equals(city.getSickness().getState(), back.getSickness().getState()));
+        for (AgeBand band : AgeBand.values()) {
+            same("...the visible sick share of " + band.getLabel(), back.getSickness().share(band), city.getSickness().share(band));
+        }
+        same("...the youngest sick bar", back.getSickness().peopleInSlot(back.getCohorts(), 0),
+                city.getSickness().peopleInSlot(city.getCohorts(), 0));
+        same("...the chronic Health rate", back.getHealth().getSickRateWithoutInfluenza(), health.getSickRateWithoutInfluenza());
+        json.remove("sicknessAcute");
+        Files.writeString(file, new com.google.gson.Gson().toJson(json));
+        quietly(() -> back.loadGameSave(10));
+        assertTrue("an old save without acute shares loads none, even over a city that had them",
+                java.util.Arrays.stream(back.getSickness().getAcuteShares()).allMatch(v -> v == 0)
+                && java.util.Arrays.equals(city.getSickness().getState(), back.getSickness().getState()));
     }
 
     static BuildingsTemplate template(Game game, String name) {
