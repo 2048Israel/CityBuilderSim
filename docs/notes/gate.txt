@@ -1,8 +1,8 @@
-# gate of Merge batch/R1d: research: the 1900 city switched on, with R0d's 1901 wages - founded with the known equipment unfitted, judged on a 1900 city: the carters' sizing and the team's price (R0c ★6-7), steam in the brownout ratio (★8), the electric drive's fitting work (R1 notes, found), the ensemble; and R1b's gate review (2026-11-05): a building scrapped while its fitting is on site (`Game.java:1325`: the job keeps its points and fits another unfitted building or none, the builders keep the money; refund or not, and a harness), and `fit()` crediting the builders the quote rather than what `treasuryPays()` paid (`Game.java:1270`, at most `SHORTFALL_DUST`; the build paths do the same), 0.9.126
+# gate of Merge batch/R2f: research: the medical rows - each M and PM entry mapped to the constants it moves (research-design Q17), with R1c-R's X-ray and antitoxin, 0.9.127
 # date: 2026-11-16
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 208 harnesses run in 2580s: 203 passed, 5 failed
+# suite: 197 harnesses run in 1788s: 193 passed, 4 failed
 InvestCheck | exit 1
 InvestCheck | an older save's contract on site is read as its template's owner's - the landlords', for Houses, with the share of the tax a House of theirs gets back, which is not all of it FAIL
 InvestCheck | 1 FAILED
@@ -11,14 +11,14 @@ MapCheck | at every 30th month the map draws exactly what the city has: each typ
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
 MapCheck | 3 FAILED
-KeptCheck | exit 2
-KeptCheck | the kept page and the new page are the same picture at 3 months, to SHADE_LEVELS (2) FAIL
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 2 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 PrizeCheck | exit 2
-PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1024.9603884263051 of 1021.3278039553579)
+PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1023.2885862097916 of 1019.694508614861)
 PrizeCheck | FAIL ...and its till (at most 410) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284
+KeptCheck | exit 2
+KeptCheck | the kept page and the new page are the same picture at 3 months, to SHADE_LEVELS (2) FAIL
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+KeptCheck | 2 FAILED

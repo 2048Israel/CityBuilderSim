@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import java.util.List;
+
 /**
  * The causes of death of 1900, and how history and the city take them away.
  *
@@ -294,6 +296,112 @@ public class CausesOfDeath {
     }
 
     /* ===================================================================
+       THE MEDICAL ROWS' STEPS (R2f) - history's, brought forward by a find
+       =================================================================== */
+
+    /*
+     * R0b call 3: "R2 turns the named steps into the city's finds". Each step
+     * below is one catalogue row's part of a cause, with the factor it leaves
+     * and when history took it (a straight ramp, as the knots are). History's
+     * path already holds every step on its date, so a city that finds nothing
+     * here, and every city founded the default way, dies on that path to the
+     * bit. A city that found a row N months before the world takes its step N
+     * months early: the cause is history's times (1 - (1 - factor) x the city's
+     * ramp) over (1 - (1 - factor) x history's), which is 1 again once
+     * history's ramp is done. Only the rows the knots name, and the two whose
+     * figures the studies give, have a step; see docs/queue/R2f-notes.md for
+     * the rows with nothing behind them.
+     */
+
+    /** Pasteurised milk (PM1) leaves TB at this factor: about 15% of TB cases came from dairy, c.1900 [MOH-MILK]. */
+    public static final double MILK_TB = .85;
+
+    /** The milk's step starts in history at Toronto's by-law, June 1914 [TOR-MILK]... */
+    public static final double MILK_FROM = 1914 + 5 / 12.0;
+
+    /** ...and takes this many years, a city's milk being pasteurised within a year of its by-law (est.). */
+    public static final double MILK_YEARS = 1;
+
+    /**
+     * The diphtheria toxoid (PM3) leaves the childhood outbreaks at this factor:
+     * diphtheria killed 40.3 per 100,000 in the US in 1900 [MMWR99], of the
+     * outbreaks' RATE_1900, and three doses cut its cases at least 90%
+     * (Toronto) [CON-R].
+     */
+    public static final double TOXOID_OUTBREAK = 1 - .9 * 40.3 / RATE_1900[Cause.OUTBREAK.ordinal()];
+
+    /** The toxoid's step starts in history with Connaught's trials, September 1925 [CON-D]... */
+    public static final double TOXOID_FROM = 1925 + 8 / 12.0;
+
+    /** ...and ends with Hamilton's 5 cases and no deaths in 1931 [CON-D]. */
+    public static final double TOXOID_YEARS = 1931 - TOXOID_FROM;
+
+    /** Sulfa (PM4) leaves pneumonia at this factor: deaths -17% to -32%, US 1937-43, -25% taken [JLS]; the PNEUMONIA knots' 1937 to 1940. */
+    public static final double SULFA_PNEUMONIA = .75;
+
+    /** Sulfa leaves mothers' deaths at this factor: -24% to -36%, -30% taken [JLS]; the CHILDBIRTH knots' 1937 to 1940. */
+    public static final double SULFA_CHILDBIRTH = .7;
+
+    /** Sulfa's step starts in history in 1937, when Canada had it [SULF]... */
+    public static final double SULFA_FROM = 1937;
+
+    /** ...and takes the knots' three years. */
+    public static final double SULFA_YEARS = 3;
+
+    /** Penicillin (PM5) leaves mothers' deaths at this factor: 2.8 per 1,000 births in 1944 against sulfa's 1940 level [SC-B51]; the CHILDBIRTH knots' 1940 to 1944. */
+    public static final double PENICILLIN_CHILDBIRTH = 2.8 / (5.8 * .7);
+
+    /** Penicillin's step starts in history in 1940, the knot before 1944's... */
+    public static final double PENICILLIN_FROM = 1940;
+
+    /** ...and takes the knots' four years. */
+    public static final double PENICILLIN_YEARS = 4;
+
+    /** Streptomycin (PM6) leaves TB at this factor: deaths within six months 27% to 7% (MRC trial, 1946-48), .26 taken [STREP]; the TB knots' 1948 to 1952. */
+    public static final double STREPTOMYCIN_TB = .26;
+
+    /** Streptomycin's step starts in history in 1948, when Canada had it [R4]... */
+    public static final double STREPTOMYCIN_FROM = 1948;
+
+    /** ...and takes the knots' four years. */
+    public static final double STREPTOMYCIN_YEARS = 4;
+
+    /** One row's step on one cause: the row's code, the cause, the factor it leaves, and history's ramp (its start, a decimal year, and its length in years). */
+    public record Step(String code, Cause cause, double factor, double from, double years) {}
+
+    /** Every step, in the catalogue's order. */
+    public static final List<Step> STEPS = List.of(
+            new Step("PM1", Cause.TB, MILK_TB, MILK_FROM, MILK_YEARS),
+            new Step("PM3", Cause.OUTBREAK, TOXOID_OUTBREAK, TOXOID_FROM, TOXOID_YEARS),
+            new Step("PM4", Cause.PNEUMONIA, SULFA_PNEUMONIA, SULFA_FROM, SULFA_YEARS),
+            new Step("PM4", Cause.CHILDBIRTH, SULFA_CHILDBIRTH, SULFA_FROM, SULFA_YEARS),
+            new Step("PM5", Cause.CHILDBIRTH, PENICILLIN_CHILDBIRTH, PENICILLIN_FROM, PENICILLIN_YEARS),
+            new Step("PM6", Cause.TB, STREPTOMYCIN_TB, STREPTOMYCIN_FROM, STREPTOMYCIN_YEARS));
+
+    /**
+     * What a city's finds ahead of the world make of a cause's history in a
+     * game month: the product over the cause's steps of (1 - (1 - factor) x q)
+     * over (1 - (1 - factor) x p), p history's ramp and q the city's, which is
+     * history's moved earlier by the months the city found the row ahead. 1
+     * exactly where the city found none of them ahead (every city founded the
+     * default way, MedicalRows.TODAY, and a null).
+     */
+    public static double ahead(Cause cause, int month, MedicalRows rows) {
+        if (cause == null || rows == null || rows.isToday()) return 1;
+        double year = CityCalendar.yearOf(month) + (CityCalendar.monthOfYear(month) - 1) / 12.0;
+        double f = 1;
+        for (Step s : STEPS) {
+            if (s.cause() != cause) continue;
+            int monthsAhead = rows.monthsAhead(s.code());
+            if (monthsAhead <= 0) continue;
+            double p = clamp01((year - s.from()) / s.years());
+            double q = clamp01((year - s.from() + monthsAhead / 12.0) / s.years());
+            f *= (1 - (1 - s.factor()) * q) / (1 - (1 - s.factor()) * p);
+        }
+        return f;
+    }
+
+    /* ===================================================================
        RATES AND SPLITS - what a cause was in 1900, band by band
        =================================================================== */
 
@@ -450,6 +558,18 @@ public class CausesOfDeath {
     public double[][] rates(int month, double[] people, double[] mortalityFactor,
                             double pipedWater, double hungry, double generalCoverage,
                             double outbreakSeverity, double lastBirths) {
+        return rates(month, people, mortalityFactor, pipedWater, hungry, generalCoverage,
+                outbreakSeverity, lastBirths, null);
+    }
+
+    /**
+     * The same, with the medical rows the city found ahead of the world (R2f):
+     * each cause's history times ahead(), which is 1 exactly, and not applied,
+     * where the city found none of its rows ahead. A null is history's path.
+     */
+    public double[][] rates(int month, double[] people, double[] mortalityFactor,
+                            double pipedWater, double hungry, double generalCoverage,
+                            double outbreakSeverity, double lastBirths, MedicalRows rows) {
         double[][] out = new double[CAUSES.length][BANDS.length];
         lastTbSick = 0;
         if (heldOff) return out;
@@ -464,6 +584,8 @@ public class CausesOfDeath {
         for (Cause c : CAUSES) {
             int ci = c.ordinal();
             double history = history(c, month);
+            double found = ahead(c, month, rows);
+            if (found != 1) history *= found;
             if (c == Cause.TYPHOID || c == Cause.DIARRHOEA) history = piped * history + (1 - piped);
             double season = season(c, month);
             double ratio = c == Cause.OUTBREAK ? severity / OUTBREAK_MEAN_SEVERITY : 1;

@@ -28,6 +28,8 @@
 
 **Uses:** [CausesOfDeath](CausesOfDeath.md) (123), [AgeBand](AgeBand.md) (44), [Game](Game.md) (27), [Sickness](Sickness.md) (7), [Health](Health.md) (6), [MoneyAudit](MoneyAudit.md) (5), [PopulationCohorts](PopulationCohorts.md) (4), [Healthcare](Healthcare.md) (3), [CareType](CareType.md) (3), [GameFiles](GameFiles.md) (2), [DeterminismCheck](DeterminismCheck.md) (2), [CityCalendar](CityCalendar.md) (1), [BuildingManager](BuildingManager.md) (1), [Founding](Founding.md) (1), [Notice](Notice.md) (1), [LongPlaytest](LongPlaytest.md) (1)
 
+**Used by (1):** [MedicineCheck](MedicineCheck.md)
+
 ## Sections
 
 | line | section |

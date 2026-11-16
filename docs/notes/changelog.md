@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.127 — R2f, Research: the medical rows — 2026-11-16, ready, see docs/queue/R2f-notes.md
+The catalogue's sixteen medical rows now act in a city founded the 1900 way (research-design Q17). A row found here
+before the world brings its step on a cause of death forward by the months it was ahead: milk and streptomycin on TB,
+the diphtheria toxoid on the childhood outbreaks, sulfa on pneumonia and mothers, penicillin on mothers. A city that
+finds nothing dies on history's path as before. Until a row is known its constant is the one before it: general care
+cures less before penicillin and the four rows that shorten a stay (76.5% of the fully served a month until 1943,
+against today's 90%), the sick of a year or more recover at 62% of the rate before the TB drugs, and the served long
+sick die 18% more often before the breathing machine. Insulin, the polio vaccine, dialysis and angioplasty have nothing
+in the game to act on and wait for a health study; the X-ray and the antitoxin predate 1900. A city founded the
+default way, and the playtest, are unchanged. MedicineCheck proves each row.
+
 ### R6-T — the speculative tier 2030-2060, a study — 2026-11-16, ready, no tag (docs)
 `docs/studies/research-speculative.md`: the research catalogue past the evidence (Jerus, 2026-11-09: "Keep to
 2060"), each row on a builder's, a government's or a trial's own target for its date and its effect, projected

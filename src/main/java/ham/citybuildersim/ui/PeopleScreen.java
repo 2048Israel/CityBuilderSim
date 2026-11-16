@@ -744,7 +744,7 @@ final class PeopleScreen {
                                     + "without care rather than without food.",
                                     people(service.getPricedOut(CareType.GENERAL)))
                             : ".",
-                    Sickness.recovery(health.getCoverage()) * 100,
+                    sickness.recoveryAt(health.getCoverage()) * 100,
                     people(sickness.peoplePastTwoMonths(cohorts)), flowText(sickness.getLastDeaths()), illness);
         }
         if (m.kind() == BuildAdvice.Kind.CARE) {
