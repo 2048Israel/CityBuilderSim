@@ -71,10 +71,11 @@ they are not a cell's retained grid. New frontage is subject to the same
 water bridge-length law as the founding arms. Junction keys use 32 bits for
 the step and 32 for the arm, avoiding the old four-arm key's bound.
 
-The painter already reads heading and corner bits, not an arm number or a
-shared origin; its existing arbitrary-line avenue bands need no code change.
-All implementation changes are confined to DistrictPlan and PlanCheck.
-No sidecar fields or byte layout changed; no save or model code changed.
+The painter reads heading and corner bits, not an arm number; the mark
+format is unchanged. Final review found that a new crossing away from the
+founding origin also needs the second stroke restored (below). Changes are
+confined to DistrictPlan, TileRaster, PlanCheck and MapCheck. No sidecar
+fields or byte layout changed; no save or model code changed.
 
 ## Selected verification
 
@@ -106,3 +107,52 @@ Only generated harness and file indexes conflicted; the merged fast check
 rebuilt them, compiled and passed Stale. No FA1 implementation or fixture
 changed. The new trace reference is the orchestrator's R0h run:
 `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0h-NrRv6F33/traces/trace-*.csv`.
+
+## The first completed gate and the painter mend
+
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-FA1-BJZZNAHT`: branch
+`d5af3da2b955a5807e2322a23530be39b5b3d3f9`, main
+`a3fb38c06de26cf44e462597e48278413b31300a`. Gate exit 0; its suite took
+1,906 seconds and exited 3, known red only in DeathRecordCheck, InvestCheck,
+MapCheck, MoneyDatesCheck and ResearchViewCheck. All eight CSVs captured in
+this gate (`target/FA1-gate-trace-R0h-*.csv`) are byte-identical to the
+orchestrator's R0h reference; no ensemble. The copied reference and hashes
+are local under `target/fa1-R0h-reference*`.
+
+The existing MapCheck findings and its two path observations match R0h's
+retained main log: the played-city raster has 561 road plots, two pieces,
+the largest 494, one joinable piece; the other logged network figures match
+too. They were not introduced by frontage. The gate finished before the
+attempted launcher stop; that stop returned 'name an active run directory',
+and killed nothing. This green run is superseded by the following source
+mend and is not claimed for reuse.
+
+★ Final painter review found that the first mark on a shared plot hides a
+second diagonal at a new crossing away from the founding origin. The old
+painter repairs that at the founding origin alone. A real-raster probe on
+FA1's actual plan missed 5 of 24 centre-line samples. Permanent MapCheck 24
+was committed first (`02d6e008`) and run with `c5bd5df2`'s painter compiled
+separately: 92 of 384 centre-line samples missing, zero four-road signals,
+exit 1. It causes both slopes, both staircase phases, both frontage sides,
+4/8 pixels a plot and a crossing inside a tile or on four tiles' corner.
+
+The mend infers the occluded step from the real same-heading step on each
+side, restores its band and free outer corners, and lets the crossing's
+normal road count choose its signal or roundabout. It uses the existing
+surface, bridge, ownership and blocked-plot rules; no new origin or saved
+mark is added. The permanent case now has 0 missing centre samples, 0
+missing width samples, 32 four-road signals, identical overlapping tile
+reads and identical redraws. Existing avenue section 16 passes unchanged.
+An intermediate centre-only repair exposed 16 missing side samples; keeping
+the original band-width law required restoring the outer corners too.
+
+Final painter verification before its next gate: named `JunctionCheck`
+passed, then its whole harness passed again after restoring the outer
+corners; existing MapCheck 16 and new 24 passed together, including the
+original origin, signals, roundabout, seam, width and screen laws. Final
+`--fast` compiled, regenerated indexes and found zero firm Stale findings.
+The strengthened permanent fixture on the original painter also reports
+200 missing side samples; the final painter reports zero. Existing check
+strings retain their original UTF-8 bytes (verified in the final diff).
+The updated pick selects 28 harnesses, not ALL; review is not needed (no
+money, saves or threading in the diff). The final selected run follows.

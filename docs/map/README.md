@@ -4,7 +4,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 577 files, 628,715 lines, 27,427 methods, 5,985 constants. `GameVersion.VERSION` is "0.9.121", `SAVE_FORMAT` 53.
+**The tree:** 577 files, 628,873 lines, 27,430 methods, 5,985 constants. `GameVersion.VERSION` is "0.9.121", `SAVE_FORMAT` 53.
 
 ## model (265 files)
 
@@ -241,7 +241,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TaxPolicy.java](TaxPolicy.md) | 2,023 | 124 | The city's tax rates - the revenue half of what the player actually decides. | 67 |
 | [TempDirs.java](TempDirs.md) | 141 | 7 | The one place a harness, or a scratch city, gets a temporary folder from: one folder per JVM under the system temp folder, deleted when that JVM ex... | 90 |
 | [TilePainter.java](TilePainter.md) | 920 | 44 | Paints one tile of the city map: from the tile's ground, what the city owns of it, its district's street plan through it - each street's kind, widt... | 26 |
-| [TileRaster.java](TileRaster.md) | 4,347 | 160 | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixe... | 32 |
+| [TileRaster.java](TileRaster.md) | 4,424 | 162 | A painted tile as pixels: an int[] of 0xAARRGGBB, a row at a time, at a whole number of pixels a plot - what the map view hands PixelWriter.setPixe... | 32 |
 | [TimeSkipReport.java](TimeSkipReport.md) | 682 | 68 | What happened while you were not watching. | 7 |
 | [Timing.java](Timing.md) | 208 | 16 | The suite's clock verdicts and the soft skip for work whose only verdict is time. | 24 |
 | [TrackCurves.java](TrackCurves.md) | 377 | 27 | The railway's curves as one geometry, for the drawing and for the trains' routes alike (FX5, 0.8.18): a polyline's corners rounded with arcs of a r... | 9 |
@@ -495,7 +495,7 @@ Generated 2026-11-15 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LongPlaytest.java](LongPlaytest.md) | 9,024 | 168 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 65 |
 | [MainLineCheck.java](MainLineCheck.md) | 1,743 | 56 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 643 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
-| [MapCheck.java](MapCheck.md) | 15,632 | 412 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 13 |
+| [MapCheck.java](MapCheck.md) | 15,713 | 413 | The city map's data and painter: the districts add up to the model's counts every month and nothing placed moves, the painter draws each district's... | 13 |
 | [MarketCheck.java](MarketCheck.md) | 684 | 22 | Verifies the efficient market (EM1, 2026-10-29): one value for a share, every holder reading it, and a price that follows it - each claim on a fixt... | 1 |
 | [MaterialsCheck.java](MaterialsCheck.md) | 1,541 | 31 | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), a... | 21 |
 | [MiningCheck.java](MiningCheck.md) | 600 | 10 | Ore and scrap, from the bands they clear in to what an arc furnace makes of scrap and a mine of ore. | 12 |
