@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-R2f-ZrCQW0dE -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — R2f, Research: the medical rows — 2026-11-16, ready, see docs/queue/R2f-notes.md

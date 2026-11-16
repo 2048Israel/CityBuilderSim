@@ -2,7 +2,7 @@
 
 ## Where it stands
 
-Being built on `batch/R2f` from origin/main 1e88c546 (0.9.126).
+Ready on `batch/R2f`: cut from origin/main 1e88c546 (0.9.126), main fb378433 merged; the dry run exit 0 at aad5e75e7.
 
 ## The design (decided before the code)
 
@@ -165,3 +165,17 @@ it finds the rows itself.
   `cbs-gate-R0h-NrRv6F33/traces/` (2,405 lines each, borrow 55). Size of the
   move: none, as designed (a default city is `MedicalRows.TODAY`, and every
   new path falls back to main's arithmetic), so no ensemble.
+- **The pick** (`./batch-check.sh --pick`, at aad5e75e7): exit 3, all 210
+  harnesses (AllChecks changed), known red only (InvestCheck, MapCheck,
+  DeathRecordCheck, PrizeCheck, main's); `tools/pick.sh`: review not
+  needed, no money, saves or threading in the diff.
+
+## The dry run
+
+`sh tools/gate.sh R2f --dry-run`, 2026-11-16, exit 0: the suite in 1,868 s,
+known red only (DeathRecordCheck, InvestCheck, MapCheck, PrizeCheck), and no
+unnamed lines. It ran batch/R2f at aad5e75e79d909ff9a39de1631385581d4b2db3d
+over main at fb3784334233843d4086ef3dd6a40f81d19aafae. The log is kept in
+`/tmp/cbs-gate-R2f-ZrCQW0dE/ship.log`
+(`C:\Users\Jerus\AppData\Local\Temp\cbs-gate-R2f-ZrCQW0dE`). Only the notes
+and the ship file changed after it.
