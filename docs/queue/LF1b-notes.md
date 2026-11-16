@@ -164,3 +164,10 @@ seeds, their range in brackets; ZERO_HOT and HIGH end before m801):
 The direct effect is small and one way: the currency a little stronger in the median city, within a few per cent through m800 and
 within 0.2% through m400. After that the cities part and the range is mostly the path, both ways. The default playtest's -53.2% in
 m401-800 (section 4) lies outside the sixteen AUTO2 seeds' range there (-27.9% to +40.5%): it is the heavy case, not the usual one.
+
+## 6. The dry run
+
+`sh tools/gate.sh LF1b --dry-run` on the branch at d0bb4a64 (main 06294ee2, RE3's notes merged) over main 06294ee2, kept as
+`/tmp/cbs-gate-LF1b-6DFxKPRz`: the pick ALL, 210 harnesses (MoneyAudit has 65 readers), the suite in 1,034 s, exit 3 with known reds
+only (DeathRecordCheck, InvestCheck, MapCheck, PrizeCheck, main's recorded lines), no unnamed lines; gate exit 0. The ship file names the
+run on its first line.

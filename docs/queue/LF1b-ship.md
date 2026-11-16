@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-LF1b-6DFxKPRz -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — LF1b, the cells' share trades with the world, in the financial account — 2026-11-16, ready, see docs/queue/LF1b-notes.md
