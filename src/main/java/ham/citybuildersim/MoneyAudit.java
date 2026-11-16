@@ -265,7 +265,10 @@ public final class MoneyAudit {
      *               when a city's first branch takes over from the lenders it
      *               replaces. These improve what the city owes the world without
      *               a single dollar being earned, so they belong in the audit -
-     *               the pools really do move - and NOT in the reserve.
+     *               the pools really do move - and NOT in the reserve. One
+     *               goes the other way (LF1c): a short closed for nothing at a
+     *               company with no shares in issue, which the world is let off
+     *               and its buyers lose - valuationOut, against the city.
      *
      *               Measured before this was split out: a city's reserve swung
      *               from -$88M to +$50M and back on bank resolutions alone,
@@ -871,6 +874,23 @@ public final class MoneyAudit {
          */
         in += credit.apply("+ bank OwnersWipedAbroad", g.getOwnersWipedAbroadThisMonth(), Scope.VALUATION);
         /*
+         * ...AND A COMPANY WITH NO SHARES IN ISSUE AND A SHORT OPEN (LF1c): the
+         * exchange cancels what the short sold with the company (Exchange.
+         * cancelShortHeld()), and two claims cross the border without a
+         * dollar. The world's own shares in it go for nothing, as a resolution's
+         * do: the city owes the world less at the quote - the same pair, the
+         * credit for the balance of payments ("forgiven"), the debit keeping the
+         * cash identity whole. And the short is closed for nothing, the world
+         * keeping what it was paid: what it owed the buyers is gone, a valuation
+         * AGAINST the city (valuationOut), the debit for the balance of payments
+         * and the credit the other half. Neither moves a pool. Only the wipe moves
+         * the position figure (what the world holds here carried its shares, and
+         * the short was never on it); the close is a valuation the balance of
+         * payments counts against the city and the position never held.
+         */
+        in += credit.apply("+ desk WorldSharesWiped", g.getExchange().getWorldSharesWiped(), Scope.VALUATION);
+        in += credit.apply("+ desk ShortClosedForNothing (no cash)", g.getExchange().getShortClosedForNothing(), Scope.DOMESTIC);
+        /*
          * A bankrupt sector's creditors absorbing its overdraft, the same
          * way. The bills were paid with money the sector did not have; the
          * restructure admits it and somebody outside eats it. See
@@ -1210,6 +1230,9 @@ public final class MoneyAudit {
         // ...and the world's shares wiped out at a resolution (0.7.14): the
         // other half of the pair above, no cash.
         out += debit.apply("- bank OwnersWipedAbroad (no cash)", g.getOwnersWipedAbroadThisMonth(), Scope.DOMESTIC);
+        // ...and a short company's wipe and close for nothing (LF1c), the other halves of the two lines above: no cash.
+        out += debit.apply("- desk WorldSharesWiped (no cash)", g.getExchange().getWorldSharesWiped(), Scope.DOMESTIC);
+        out += debit.apply("- desk ShortClosedForNothing", g.getExchange().getShortClosedForNothing(), Scope.VALUATION);
         out += debit.apply("- equity BuybackToHouseholds", g.getExchange().getBuybackToHouseholds(), Scope.DOMESTIC);
         out += debit.apply("- equity BuybackAbroad", g.getExchange().getBuybackAbroad(), Scope.FINANCIAL);
         out += debit.apply("- treasury BoughtReserves",

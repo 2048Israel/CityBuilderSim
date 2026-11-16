@@ -357,6 +357,7 @@ public class Game {
                 && !(debtManager.isAutopilot() && debtManager.getAim() == DebtManager.Aim.INFLATION)));   // a peg ties the dial to the US's, and the curve is priced on the tied path (XR5); so does the gold, unless the autopilot aims at inflation (GD3)
         debtManager.setTieMoneySource(() -> foreign.getRegime() == ForeignAccounts.Regime.GOLD ? "USD" : foreign.getPegAnchorCode());   // ...to its anchor's rate: the money the peg is kept in (WN4b), the US$ unless the player chose another; the gold's is always the US$ (GD3)
         businessInvestment = new BusinessInvestment(buildingManager, economyManager);
+        buildingManager.setOnScrap(stack -> fittings.scrapped(stack.getBuilding().getId(), stack::getUnfitted));
         businessInvestment.watchOrders(orderWatch);   // a harness's watch outlives a load (0.7.54)
         businessInvestment.setLicenceCost(t -> LicenceFees.forNew(this, t));
         businessInvestment.setStandingLicenceCost(t -> LicenceFees.forStanding(this, t));
@@ -396,6 +397,7 @@ public class Game {
         // ...and the builders' month for the sites with every post offered, which
         // says whether the crews' rule would starve a depot (0.7.130).
         buildingManager.setSitesAtEveryPost(this::getBuildingOutputAtEveryPost);
+        buildingManager.setPriorityWork(fittings::pointsOwed);
         // ...and their whole month, every post offered, which with the sites' says how short they are:
         // the scarcity price of a point and the foreign contractor's orders (FC1; BuildersShort).
         buildingManager.setOutputAtEveryPost(this::getConstructionOutputAtEveryPost);
@@ -743,9 +745,15 @@ public class Game {
     }
 
     public void run() {
+        boolean starting = !initialized;
+        if (starting) {
+            layTheLadder(true);
+            basketHearsTheYear();
+        }
         initialize();
         foundingBank();
         foundingYard();
+        if (starting && founding.isUnfitted()) unfitTheFounding();
     }
         
     private void initialize() {
@@ -846,6 +854,8 @@ public class Game {
          * and state their own settings over. An older save keeps whatever it
          * saved: the dial's hand (DataSave.getPolicyAutopilot(), off when the
          * key is missing), and the rollover as MANUAL - see the load path.
+         * In a city founded the 1900 way the rule waits for the central bank
+         * (March 1935, R0f) and takes the dial then (DebtManager.isAutopilotAtOpening()).
          */
         debtManager.setAutopilot(true);
         rollover.setMode(Rollover.Mode.SAME_STRUCTURE);
@@ -1233,18 +1243,18 @@ public class Game {
     /* ===== THE CITY FOUNDED THE 1900 WAY, AND WHAT A NEW BUILDING COMES WITH (R1b, 2026-11-05; docs/studies/research-design.md 2.2 step 6) =====
      *
      * R1 made a piece of equipment a count of the buildings still without it, empty in every played city: a building that finishes came
-     * fitted. A city founded the 1900 way (Founding.isUnfitted(), off by default until R1d) starts with every piece its buildings can carry
+     * fitted. A city founded the 1900 way (Founding.isUnfitted(): the founding screen's "1900" chip and the playtest's flag since R1d) starts with every piece its buildings can carry
      * unfitted, and a building that finishes in it comes with a piece only where the piece pays for a new building. A city founded the
      * default way calls nothing here: every building finishes fitted, as it did. */
 
-    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): false for every city a player or a harness founds until R1d. */
+    /** Whether the city was founded the 1900 way, its buildings' equipment unfitted (R1b; Founding.isUnfitted()): the founding screen's "1900" chip and the playtest's flag since R1d. */
     public boolean foundedUnfitted() { return founding.isUnfitted(); }
 
     /**
      * Every building standing without every piece of equipment its template carries, and the forms set from it, so that the first month opens on
      * them (R1b): on every stack, each piece's unfitted count is the stack. The tractor's too: a 1900 farm cannot have one before its discovery
-     * (its "since" is PE14, June 1917 in research.json: NOT_KNOWN before that month, and no gain written for it yet), so its farms stay on horses. newGame() calls it after the
-     * buildings the founding stands up are placed (the bank, the yard: neither carries a piece, so today it sets nothing); package-private so that a
+     * (its "since" is PE14, June 1917 in research.json: NOT_KNOWN before that month, and its gain including the horse form's saved feed and hands), so its farms stay on horses. newGame() calls it after the
+     * buildings the founding stands up are placed (the bank's later pieces remain unknown in 1900); package-private so that a
      * harness, which places its village by hand after newGame() as the playtest does, can say it over that village.
      */
     void unfitTheFounding() {
@@ -1485,6 +1495,28 @@ public class Game {
         return t.knownAt(month, research);
     }
 
+    /** The suppliers' sales tax credited on a local draw, weighted exactly as Markets.draw() divides their stock (R1d). */
+    private double fittingSupplierRate(Good good) {
+        double held = 0, taxed = 0;
+        for (Sector supplier : getSectors().all()) {
+            if (!supplier.isMaker(good) || !(supplier.getStock(good) > 0)) continue;
+            double stock = supplier.getStock(good);
+            held += stock;
+            taxed += stock * economyManager.getTaxPolicy().effectiveSalesRate(supplier);
+        }
+        return held > 0 ? taxed / held : 0;
+    }
+
+    /** A fitting's exact goods and work quote, including builders' sales tax and their suppliers' input credits (R1d). */
+    public double quoteFitting(Equipment piece) {
+        double net = piece.getWork() * buildingManager.nonMaterialPricePerPoint();
+        for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) {
+            Markets.Draw draw = getMarkets().quote(e.getKey(), e.getValue(), getSectors());
+            net += draw.cost() - draw.localCost() * fittingSupplierRate(e.getKey());
+        }
+        return net / (1 - buildersSalesRate());
+    }
+
     /**
      * Orders the fitting of ONE building of `stack` with `piece`, for `payer` (R1b): refuses with the reason in words and nothing drawn or paid, or
      * returns null once it is ordered. Refused when the piece is not on the stack's template, not known at the city's month, or no building of the
@@ -1493,7 +1525,7 @@ public class Game {
      * The money is asked BEFORE any good is drawn, on the exact quote of each good (Markets.quote(): the split a draw makes, so the quote is what is
      * charged) and the work at the builders' price a point (BuildingManager.nonMaterialPricePerPoint(), what EquipmentFit.verdict() prices it at):
      * a shortfall over the payer's cash is borrowed if the payer can (buildFor()'s rule, SHORTFALL_DUST included) and refuses the order if it
-     * cannot. The cost is what the draws came to, not the quote; the payer pays it, and the builders earn it (no sales tax in this batch).
+     * cannot. The cost is what the draws came to, not the quote; the payer pays it, and the builders earn what was paid, including sales tax and local input credits (R1d).
      * A piece that ends CART_HORSES delivers its trucks into Freight's fleet (Freight.deliverTrucks()), because they are Haulage's trucks and the
      * fleet would otherwise buy them a second time. The count of unfitted does not move until the work is done.
      */
@@ -1511,8 +1543,7 @@ public class Game {
 
         ham.citybuildersim.sectors.Construction builders = getSectors().construction();
         double work = piece.getWork() * buildingManager.nonMaterialPricePerPoint();
-        double quoted = work;
-        for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) quoted += getMarkets().quote(e.getKey(), e.getValue(), getSectors()).cost();
+        double quoted = quoteFitting(piece);
         if (!(quoted >= 0) || !Double.isFinite(quoted)) return "the " + piece.getName().toLowerCase(Locale.ROOT) + " cannot be priced";
         double short_ = quoted - payer.getCash();
         if (short_ > SHORTFALL_DUST * Math.max(1, quoted) && !payer.canBorrow(short_)) {
@@ -1523,19 +1554,25 @@ public class Game {
 
         double goods = 0;
         for (java.util.Map.Entry<Good, Double> e : piece.getBuys().entrySet()) {
+            double inputRate = fittingSupplierRate(e.getKey());
             Markets.Draw d = getMarkets().draw(e.getKey(), builders, null, e.getValue(), getSectors());
-            goods += d.cost();
+            goods += d.cost() - d.localCost() * inputRate;
             if (piece.getEnds() == Equipment.Form.CART_HORSES && e.getKey() == Good.TRUCKS) getSectors().freight().deliverTrucks(d.units());
         }
-        double total = goods + work;
+        double total = (goods + work) / (1 - buildersSalesRate());
         double over = total - payer.getCash();
         if (over > SHORTFALL_DUST * Math.max(1, total)) payer.borrow(over, month);
         if (payer == government) {
             // The city's own money goes out through its journal, as the player's buildings do (processBuildOrder()): a capital line.
-            treasuryPays(TreasuryLine.BUILDINGS, total);
+            total = treasuryPays(TreasuryLine.BUILDINGS, total);
             cityCapitalSpending += total;
         } else {
             payer.spend(total);
+            // ...and the share of the builders' tax on it the owner gets back, by the build orders' own rule (buildFor(): a business's credit,
+            // a landlord's rebate), so the credit is struck on that share and no more (R1d).
+            Sector owner = getSectors().byKey(payer.getName());
+            if (owner != null) owner.recordCapitalPurchase(builders.key(),
+                    total * economyManager.taxRecoveredShare(payer.getName(), t, total * buildersSalesRate()));
         }
         builders.earnFitting(total);
         fittings.add(t.getId(), id, payer.getName(), piece.getWork());
@@ -8032,7 +8069,7 @@ public class Game {
                 * servicesManager.getRoadRatio() * health.getWorkRatio());
     }
 
-    /** ...and what that leaves for the sites after the repairs: getBuildingOutput() with every post offered. */
+    /** ...and what that leaves for the sites after repairs with every post offered; fittings add a finite priority delay to the wait, not a permanent capacity loss (R1d). */
     public int getBuildingOutputAtEveryPost() {
         return (int) Math.max(0,
                 Math.round(getConstructionOutputAtEveryPost() - getMaintenancePoints()));
@@ -9811,10 +9848,10 @@ public class Game {
         // The yard's share to the sites now, free, as the quote priced it; the
         // rest drawn as the crews build - see processBuildOrder().
         double fromYard = deliverYardToSites(t, q.materialsNeeded);
-        buildingManager.bookContract(t, "City", 0, q.total, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
-        treasuryPays(TreasuryLine.BUILDINGS, q.total);
-        cityCapitalSpending += q.total;
-        getSectors().construction().bill(q.total, pointsLeft);
+        double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
+        buildingManager.bookContract(t, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        cityCapitalSpending += paid;
+        getSectors().construction().bill(paid, pointsLeft);
         decisions.record(DecisionLog.CONSTRUCTION, "Restarted " + t.getName() + " for " + DecisionLog.money(q.total));
         GameLog.note(String.format("The city restarted %d %s, for %s.", shell.buildings, t.getName(),
                 cityK("%,.0fk", q.total)));
@@ -9906,10 +9943,10 @@ public class Game {
         double fromYard = deliverYardToSites(to, q.materialsNeeded);
         // ...and the surface's bitumen, bought by the builders with it (0.7.83; drawBitumen()).
         drawBitumen(q.bitumenNeeded);
-        buildingManager.bookContract(to, "City", 0, q.total, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
-        treasuryPays(TreasuryLine.BUILDINGS, q.total);
-        cityCapitalSpending += q.total;
-        getSectors().construction().bill(q.total, to.getConstructionPoints() * (double) n);
+        double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
+        buildingManager.bookContract(to, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        cityCapitalSpending += paid;
+        getSectors().construction().bill(paid, to.getConstructionPoints() * (double) n);
         buildingManager.getControl().addPaving(n, ahead, month);
         decisions.record(DecisionLog.CONSTRUCTION, "Paved " + n + " " + from.getName()
                 + (n == 1 ? "" : "s") + " for " + DecisionLog.money(q.total));
@@ -10188,6 +10225,7 @@ public class Game {
         }
 
         if (totalCost <= cash) {
+            totalCost = treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             if (island) landManager.allocateOn(landmass, landNeeded);
             else landManager.allocate(landNeeded, selected.getSector(), works);
             this.hasNewReceipt = true;
@@ -10247,7 +10285,6 @@ public class Game {
             }
 
             // 4. Subtract everything at once
-            treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             cityCapitalSpending += totalCost;
 
             // ...and it lands somewhere now. The construction sector did the
@@ -17180,7 +17217,7 @@ public class Game {
         dataSave.setTradedExchangeRate(economyManager.getExchangeRate());
         dataSave.setStruckRate(economyManager.getStruckRate());   // ...and the D$ it was struck at (AN1)
         dataSave.setPolicyRate(debtManager.getPolicyRate());
-        dataSave.setPolicyAutopilot(debtManager.isAutopilot());
+        dataSave.setPolicyAutopilot(debtManager.isAutopilot() || debtManager.isAutopilotAtOpening());   // the saved key carries a rule still waiting for its bank (R1d), which the load's setAutopilot() and moneyHearsTheMonth() put back to waiting
         // ...and what the autopilot aims at and the spread the dial stands at under a peg (XR2).
         dataSave.setPolicyAim(debtManager.getAim().name());
         dataSave.setPegSpread(debtManager.getPegSpread());
@@ -22499,4 +22536,4 @@ public class Game {
 
 
  
-   
+

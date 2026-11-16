@@ -1,4 +1,4 @@
-# Forms1900Check.java - 999 lines · 39 methods · 5 constants · harnesses
+# Forms1900Check.java - 1,012 lines · 39 methods · 5 constants · harnesses
 
 `ham/citybuildersim/Forms1900Check.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -44,7 +44,7 @@
 > STEAM_COAL_KG_A_KWH, HydroSites.KWH_PER_UNIT, Haulage.HORSES_A_TEAM, HORSE_FEED_TONNES_A_MONTH, TONNES_A_TEAM_MONTH, CARTERS_A_TEAM,
 > HomeFuel.LAMP_OIL_LITRES_A_HOME_MONTH, COAL_TONNES_A_HOME_MONTH, Retail.pumpPrice()) and its own getters, never numbers copied from the brief.
 
-**Uses:** [Good](Good.md) (81), [Game](Game.md) (39), [Sector](Sector.md) (26), [Haulage](Haulage.md) (17), [Agriculture](Agriculture.md) (10), [Retail](Retail.md) (9), [HouseholdAccounts](HouseholdAccounts.md) (7), [MoneyAudit](MoneyAudit.md) (6), [HomeFuel](HomeFuel.md) (6), [Household](Household.md) (5), [Freight](Freight.md) (4), [HydroSites](HydroSites.md) (4), [GameFiles](GameFiles.md) (3), [BuildingManager](BuildingManager.md) (3), [CementConcrete](CementConcrete.md) (3), [HaulageCheck](HaulageCheck.md) (3), [Founding](Founding.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2), [GoodsMarket](GoodsMarket.md) (2), [TaxPolicy](TaxPolicy.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Statement](Statement.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
+**Uses:** [Good](Good.md) (81), [Game](Game.md) (39), [Sector](Sector.md) (26), [Haulage](Haulage.md) (20), [Agriculture](Agriculture.md) (10), [Retail](Retail.md) (9), [HouseholdAccounts](HouseholdAccounts.md) (7), [MoneyAudit](MoneyAudit.md) (6), [HomeFuel](HomeFuel.md) (6), [Freight](Freight.md) (5), [Household](Household.md) (5), [HydroSites](HydroSites.md) (4), [GameFiles](GameFiles.md) (3), [BuildingManager](BuildingManager.md) (3), [CementConcrete](CementConcrete.md) (3), [HaulageCheck](HaulageCheck.md) (3), [Founding](Founding.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [PriceLevel](PriceLevel.md) (2), [JobType](JobType.md) (2), [GoodsMarket](GoodsMarket.md) (2), [TaxPolicy](TaxPolicy.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Statement](Statement.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 **Used by (7):** [BasketYearCheck](BasketYearCheck.md), [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [RecipeCheck](RecipeCheck.md)
 
@@ -58,7 +58,7 @@
 | 413 | 5. a works that already burns coal |
 | 441 | 6. the money adds up |
 | 466 | 7 to 11. road freight's horse and wagon |
-| 745 | 12 to 15. the homes' lamp oil and coal |
+| 758 | 12 to 15. the homes' lamp oil and coal |
 
 ## Constants
 
@@ -67,8 +67,8 @@
 | 87 | `Forms1900Check.SETTLE` | `6` | The months a fixture city is played before anything is asked of it, so its farms and bakeries are running. |
 | 90 | `Forms1900Check.MONTHS` | `12` | The months the twin cities are compared over, and the money audit is held over. |
 | 469 | `Forms1900Check.CART_MONTHS` | `12` | The months the cart cities are played: the fleet and the money audit are held over them. |
-| 546 | `Forms1900Check.READ` | `6` | The month the per-tonne comparisons are read in: the trucks are seeded, the plant has run, and none of the three cities is short of trucks. |
-| 549 | `Forms1900Check.FARM_MONTHS` | `4` | The months the farm city is played before its books are read: the farms have a shelf by the third. |
+| 551 | `Forms1900Check.READ` | `6` | The month the per-tonne comparisons are read in: the trucks are seeded, the plant has run, and none of the three cities is short of trucks. |
+| 554 | `Forms1900Check.FARM_MONTHS` | `4` | The months the farm city is played before its books are read: the farms have a shelf by the third. |
 
 ## Fields (state)
 
@@ -82,12 +82,13 @@
 | 475 | `boolean quoteKnown, auditCloses` |  |
 | 476 | `String audit` |  |
 | 478 | `double cropsHome` | What Freight's statement booked of crops at home and abroad (-1: no line), and of trucks. |
+| 480 | `double struck` | The rate the world's prices were struck at that month (Markets.getExchangeRate()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 943 | **type** `public class Forms1900Check` | The farm's horses, the factory's steam, road freight's horse and wagon and the homes' lamp oil and coal, as forms a share of a sector or of the homes runs. |
+| 57 | 956 | **type** `public class Forms1900Check` | The farm's horses, the factory's steam, road freight's horse and wagon and the homes' lamp oil and coal, as forms a share of a sector or of the homes runs. |
 | 63 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 68 | 1 | `static void check(String label, boolean ok)` |  |
 | 71 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the model's, to a relative tolerance (and an absolute floor for a figure that is nothing). |
@@ -131,37 +132,37 @@
 |---:|---:|---|---|
 | 443 | 22 | `static void sectionSix(Game c, Game untouched)` |  |
 
-### 7 to 11. road freight's horse and wagon (lines 466-744)
+### 7 to 11. road freight's horse and wagon (lines 466-757)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 472 | 8 | **type** `static final class Month` | One month of a city's Haulage, as the sections read it, taken the moment the month was played. |
-| 482 | 5 | `static Game cartTown(String label, double horses)` | HaulageCheck's city (mines and a pelletising plant that lands its coal and ships its pellets, trade both ways, the goods' literals) with Haulage's horse share set before the first month. |
-| 488 | 3 | `static void step(Game g, int months)` |  |
-| 493 | 38 | `static Month[] run(Game g, int months)` | Plays `months` months one at a time, and takes Haulage's figures after each (index 1 to months). |
-| 532 | 12 | `static void sectionsSevenToEleven()` |  |
-| 551 | 59 | `static void sectionSeven(Month[] z, Month[] hh, Month[] f)` |  |
-| 611 | 1 | **type** `interface Pick` |  |
-| 611 | 1 | `boolean of(Month m)` _(in Forms1900Check.Pick)_ |  |
-| 614 | 4 | `static boolean allMonths(Month[] rows, Pick pick)` | Whether every month of a run (1 to its last) satisfies the test. |
-| 619 | 58 | `static void sectionEight()` |  |
-| 678 | 14 | `static void sectionNine(double founding, Month[] z, Month[] hh, Month[] f)` |  |
-| 693 | 38 | `static void sectionTen(Game full, Month[] f)` |  |
-| 732 | 12 | `static void sectionEleven(Month[] f)` |  |
+| 472 | 10 | **type** `static final class Month` | One month of a city's Haulage, as the sections read it, taken the moment the month was played. |
+| 484 | 5 | `static Game cartTown(String label, double horses)` | HaulageCheck's city (mines and a pelletising plant that lands its coal and ships its pellets, trade both ways, the goods' literals) with Haulage's horse share set before the first month. |
+| 490 | 3 | `static void step(Game g, int months)` |  |
+| 495 | 41 | `static Month[] run(Game g, int months)` | Plays `months` months one at a time, and takes Haulage's figures after each (index 1 to months). |
+| 537 | 12 | `static void sectionsSevenToEleven()` |  |
+| 556 | 67 | `static void sectionSeven(Month[] z, Month[] hh, Month[] f)` |  |
+| 624 | 1 | **type** `interface Pick` |  |
+| 624 | 1 | `boolean of(Month m)` _(in Forms1900Check.Pick)_ |  |
+| 627 | 4 | `static boolean allMonths(Month[] rows, Pick pick)` | Whether every month of a run (1 to its last) satisfies the test. |
+| 632 | 58 | `static void sectionEight()` |  |
+| 691 | 14 | `static void sectionNine(double founding, Month[] z, Month[] hh, Month[] f)` |  |
+| 706 | 38 | `static void sectionTen(Game full, Month[] f)` |  |
+| 745 | 12 | `static void sectionEleven(Month[] f)` |  |
 
-### 12 to 15. the homes' lamp oil and coal (lines 745-999)
+### 12 to 15. the homes' lamp oil and coal (lines 758-1012)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 748 | 4 | `static double unitsSold(Sector s, Good g)` | The units of a good a sector sold to local buyers in its last month, as its output line has them (0 for no line). |
-| 754 | 4 | `static double soldValue(Sector s, Good g)` | The money a sector's statement books for the sale of a good (0 for no line). |
-| 760 | 4 | `static double boughtValue(Sector s, Good g)` | ...and for its purchase of a good, in all and from the world alone. |
-| 765 | 4 | `static double boughtAbroad(Sector s, Good g)` |  |
-| 771 | 3 | `static void same(String label, double actual, double expected)` | A figure against the model's, to the bit. |
-| 776 | 7 | `static double fixedBills(Game g)` | What the cells of a city owe before they spend: the take-home less what is left after the fixed bills (rent, fees, interest, loans), summed over their households. |
-| 785 | 12 | `static double homeFuelSettled(Game g)` | The home fuel bill the settled cells were handed: each row's part, by the people in the cells that settle (a cell under HouseholdBalance.EMPTY_CELL households settles nothing), as the balance splits a row's fees. |
-| 798 | 57 | `static void sectionTwelve()` |  |
-| 856 | 49 | `static void sectionThirteen()` |  |
-| 906 | 72 | `static void sectionFourteen()` |  |
-| 979 | 20 | `static void sectionFifteen()` |  |
+| 761 | 4 | `static double unitsSold(Sector s, Good g)` | The units of a good a sector sold to local buyers in its last month, as its output line has them (0 for no line). |
+| 767 | 4 | `static double soldValue(Sector s, Good g)` | The money a sector's statement books for the sale of a good (0 for no line). |
+| 773 | 4 | `static double boughtValue(Sector s, Good g)` | ...and for its purchase of a good, in all and from the world alone. |
+| 778 | 4 | `static double boughtAbroad(Sector s, Good g)` |  |
+| 784 | 3 | `static void same(String label, double actual, double expected)` | A figure against the model's, to the bit. |
+| 789 | 7 | `static double fixedBills(Game g)` | What the cells of a city owe before they spend: the take-home less what is left after the fixed bills (rent, fees, interest, loans), summed over their households. |
+| 798 | 12 | `static double homeFuelSettled(Game g)` | The home fuel bill the settled cells were handed: each row's part, by the people in the cells that settle (a cell under HouseholdBalance.EMPTY_CELL households settles nothing), as the balance splits a row's fees. |
+| 811 | 57 | `static void sectionTwelve()` |  |
+| 869 | 49 | `static void sectionThirteen()` |  |
+| 919 | 72 | `static void sectionFourteen()` |  |
+| 992 | 20 | `static void sectionFifteen()` |  |
 

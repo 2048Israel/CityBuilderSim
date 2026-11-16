@@ -175,13 +175,23 @@ public final class RecipeChanges {
 
     /** The next actual one-building refit, over the fleet's same rounded figures as payroll. */
     static double netGainForRefit(Game game, BuildingsTemplate t, Equipment piece) {
+        return gainForRefit(game, t, piece, true);
+    }
+
+    /** The same actual one-building counterfactual before patent rent (R1d). */
+    static double grossGainForRefit(Game game, BuildingsTemplate t, Equipment piece) {
+        return gainForRefit(game, t, piece, false);
+    }
+
+    private static double gainForRefit(Game game, BuildingsTemplate t, Equipment piece, boolean net) {
         BuildingsStacks stack = game.getBuildingManager().getStack(t);
         if (stack == null || stack.getQuantity() <= 0 || stack.getUnfitted(piece.getId()) <= 0) return 0;
         Map<String, Integer> before = new TreeMap<>(stack.getUnfittedView()), after = new TreeMap<>(before);
         after.put(piece.getId(), stack.getUnfitted(piece.getId()) - 1);
         Recipes.Prices prices = Recipes.pricesOf(game);
         String[] ids = t.hasRunningRecipes() ? t.runningRecipeIds() : newChoices(game, t, prices);
-        return netDifferenceAt(game, t, after, before, stack.getQuantity(), ids, prices);
+        return net ? netDifferenceAt(game, t, after, before, stack.getQuantity(), ids, prices)
+                : differenceAt(game, t, after, before, stack.getQuantity(), ids, prices);
     }
 
     /** The whole actual production fleet's benefit from the pieces it really has. */
@@ -208,19 +218,29 @@ public final class RecipeChanges {
         without.remove(piece.getId());
         Recipes.Prices prices = Recipes.pricesOf(game);
         String[] ids = newChoices(game, t, prices);
-        return net ? netDifferenceAt(game, t, counts(t, with), counts(t, without), 1, ids, prices)
-                : differenceAt(game, t, counts(t, with), counts(t, without), 1, ids, prices);
+        return net ? netDifferenceAt(game, t, counts(t, with), counts(t, without), 1, ids, prices, true)
+                : differenceAt(game, t, counts(t, with), counts(t, without), 1, ids, prices, true);
     }
 
     private static double netDifferenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without,
                                           int quantity, String[] ids, Recipes.Prices prices) {
-        return differenceAt(game, t, with, without, quantity, ids, prices)
-                - feesAt(game, t, with, quantity, ids) + feesAt(game, t, without, quantity, ids);
+        return netDifferenceAt(game, t, with, without, quantity, ids, prices, false);
+    }
+
+    private static double netDifferenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without,
+                                          int quantity, String[] ids, Recipes.Prices prices, boolean proposed) {
+        return differenceAt(game, t, with, without, quantity, ids, prices, proposed)
+                - feesAt(game, t, with, quantity, ids, proposed) + feesAt(game, t, without, quantity, ids, proposed);
     }
 
     private static double differenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without,
                                        int quantity, String[] ids, Recipes.Prices prices) {
-        return valueAt(game, t, with, quantity, ids, prices) - valueAt(game, t, without, quantity, ids, prices);
+        return differenceAt(game, t, with, without, quantity, ids, prices, false);
+    }
+
+    private static double differenceAt(Game game, BuildingsTemplate t, Map<String, Integer> with, Map<String, Integer> without,
+                                       int quantity, String[] ids, Recipes.Prices prices, boolean proposed) {
+        return valueAt(game, t, with, quantity, ids, prices, proposed) - valueAt(game, t, without, quantity, ids, prices, proposed);
     }
 
     static Recipe recipeForNew(Game game, BuildingsTemplate t, java.util.Set<String> fitted) {
@@ -248,14 +268,49 @@ public final class RecipeChanges {
     }
 
     private static double valueAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity,
-                                  String[] ids, Recipes.Prices prices) {
+                                  String[] ids, Recipes.Prices prices, boolean proposed) {
         Map<String, Double> absent = absencesAt(game, t, counts, quantity, ids);
         int unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0));
         Recipe recipe = compose(t, base(t, ids[0]), quantity - unfitted, base(t, ids[1]), unfitted, absent, ids[0]);
         double value = Recipes.value(recipe, prices);
         for (RecipeChange change : t.getRecipeChanges())
             value += share(change, absent) * extraValue(t, change, prices, t.feedPerMonth());
-        return value * quantity;
+        return value * quantity - horseCostAt(game, t, counts, quantity, recipe, prices, proposed);
+    }
+
+    /** Agriculture's actual form uses one land-weighted share on the whole sector's crops and rounded posts (R1d review). */
+    private static double horseCostAt(Game game, BuildingsTemplate target, Map<String, Integer> counts, int quantity,
+                                      Recipe recipe, Recipes.Prices prices, boolean proposed) {
+        if (!target.getSector().equals(game.getSectors().agriculture().key())) return 0;
+        double land = quantity * (double) target.getLandSqFt();
+        double offLand = missingHorses(target, counts, quantity) * (double) target.getLandSqFt();
+        double crops = quantity * recipe.makes().getOrDefault(Good.CROPS, 0.0);
+        long[] posts = new long[JobType.values().length];
+        for (JobType job : JobType.values()) posts[job.ordinal()] = quantity * (long) recipe.getJobs(job);
+        for (BuildingsStacks stack : game.getBuildingManager().getStacksView()) {
+            BuildingsTemplate other = stack.getBuilding();
+            if (!other.getSector().equals(target.getSector()) || !proposed && other.getId() == target.getId()) continue;
+            int n = stack.getQuantity();
+            land += n * (double) other.getLandSqFt();
+            offLand += missingHorses(other, stack.getUnfittedView(), n) * (double) other.getLandSqFt();
+            crops += n * other.makes(Good.CROPS);
+            for (JobType job : JobType.values()) posts[job.ordinal()] += n * (long) other.getJobs(job);
+        }
+        double horses = land > 0 ? offLand / land : 0;
+        double cost = horses * ham.citybuildersim.sectors.Agriculture.HORSE_FEED_SHARE * crops * prices.good().applyAsDouble(Good.CROPS);
+        for (JobType job : JobType.values()) {
+            long base = posts[job.ordinal()];
+            long extra = Math.round(base * (1 + horses * (ham.citybuildersim.sectors.Agriculture.HORSE_POSTS_FACTOR - 1))) - base;
+            cost += extra * prices.wages()[job.ordinal()];
+        }
+        return cost;
+    }
+
+    private static int missingHorses(BuildingsTemplate t, Map<String, Integer> counts, int quantity) {
+        int missing = 0;
+        for (Equipment piece : t.getEquipment())
+            if (piece.getEnds() == Equipment.Form.FARM_HORSES) missing += counts.getOrDefault(piece.getId(), 0);
+        return Math.min(quantity, missing);
     }
 
     private static Map<String, Double> absencesAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids) {
@@ -274,6 +329,10 @@ public final class RecipeChanges {
 
     /** Every royalty on the same rounded physical state used to judge a fitting. */
     static double feesAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids) {
+        return feesAt(game, t, counts, quantity, ids, false);
+    }
+
+    private static double feesAt(Game game, BuildingsTemplate t, Map<String, Integer> counts, int quantity, String[] ids, boolean proposed) {
         if (!t.isOwnedBySector()) return 0;
         java.util.Set<String> charged = new java.util.HashSet<>();
         double bill = 0;
@@ -301,8 +360,8 @@ public final class RecipeChanges {
                     || !charged.add(piece.getSince())) continue;
             Map<String, Integer> without = new TreeMap<>(counts);
             without.put(piece.getId(), quantity);
-            double benefit = t.changeNeeds(piece.getId()) || piece.getEnds() == null && piece.getId().equals(t.recipePieceId())
-                    ? differenceAt(game, t, counts, without, quantity, ids, prices)
+            double benefit = t.changeNeeds(piece.getId()) || piece.getId().equals(t.recipePieceId())
+                    ? differenceAt(game, t, counts, without, quantity, ids, prices, proposed)
                     : EquipmentFit.grossGainOf(game, t, piece) * (quantity - counts.getOrDefault(piece.getId(), 0));
             bill += LicenceFees.onGain(piece.getSince(), game.getMonth(), game.getResearch(), benefit);
         }

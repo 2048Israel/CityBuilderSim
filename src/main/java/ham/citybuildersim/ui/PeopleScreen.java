@@ -3198,6 +3198,13 @@ final class PeopleScreen {
         page.getChildren().add(Kept.scope("vitals", this::moneyVitals));
         page.getChildren().add(Kept.scope("verdict", this::verdictRow));
 
+        Consumption.YearPoint basket = ui.game.basketYear();
+        if (basket != null) {
+            page.getChildren().add(Kept.scope("year basket", () -> sentence(String.format(
+                    "The year's basket: %.0f%% of bread bought ready made; %.0f%% of homes on lamp oil, %.0f%% on coal; up to %.2f cars a household.",
+                    basket.bought("BREAD") * 100, basket.lampShare() * 100, basket.coalShare() * 100, basket.carCeiling()), Palette.TEXT_MUTED)));
+        }
+
         // The grid is a scope, and the open cell's books a scope keyed by the cell: another cell opened is drawn from
         // nodes of its own, not over the last one's (the quiet books are the key "").
         VBox grid = Kept.scope("grid", () -> affordabilityGrid(hh, bal, families));

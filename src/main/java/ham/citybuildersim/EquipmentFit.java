@@ -25,7 +25,7 @@ import java.util.function.ToDoubleFunction;
  *   4. it passes the money gate as a building does: g is at least the interest hurdle on its WHOLE cost.
  *
  * Both of 3 and 4 must hold, and a gain of nothing never pays. The verdict (Verdict, Kind) is a record the screens print and R1b ranks;
- * nothing in a played city's month calls any of this (since R1b only a city founded the 1900 way reads verdictForNew(), when a building opens:
+ * the all-fitted alternative calls none of this (since R1b only a city founded the 1900 way reads verdictForNew(), when a building opens:
  * Game.fitWhatFinished()), and it books, buys and fits nothing (call 10). T is the piece's own life, not the lesser of that
  * and the building's remaining life, because a stack keeps no building's age (call 11).
  *
@@ -157,8 +157,7 @@ public final class EquipmentFit {
 
     /**
      * One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the
-     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks. The tractor's (FARM_HORSES) is NaN
-     * (so NOT_YET, never PAYS) until its petrol is written: its "since" is PE14, June 1917, and before that month no verdict reaches it. A piece that ends a form keeps its form's gain whether or not
+     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks. The tractor's FARM_HORSES comparison values saved feed and hands beside its fuel recipe (R1d); PE14 is known from June 1917 or a local discovery. A piece that ends a form keeps its form's gain whether or not
      * it is also the template's recipe piece. A piece that ends NO form (R1c) is there to enable a recipe: its gain is the value of the best recipe
      * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
      * nothing for one that is not the template's recipe piece.
@@ -166,7 +165,9 @@ public final class EquipmentFit {
     private static double gainOf(Game game, BuildingsTemplate t, Equipment piece, Set<String> proposed) {
         if (!game.foundedUnfitted()) return grossGainOf(game, t, piece);
         boolean recipePiece = piece.getId().equals(t.recipePieceId());
-        if (t.changeNeeds(piece.getId()) || piece.getEnds() == null && recipePiece) {
+        // A piece that ends a form keeps its form's gain though a recipe needs it (R1c; RecipeCheck 6), but the horse form's gain is a recipe
+        // change, the feed and hands it saves less the tractor's fuel (R1d call 7), so the tractor is judged on that comparison, its rent with it.
+        if (t.changeNeeds(piece.getId()) || recipePiece && (piece.getEnds() == null || piece.getEnds() == Equipment.Form.FARM_HORSES)) {
             return proposed == null ? RecipeChanges.netGainForRefit(game, t, piece)
                     : RecipeChanges.netGainForSet(game, t, piece, proposed);
         }
@@ -179,6 +180,9 @@ public final class EquipmentFit {
     /** Gain before patent rent, also used to bill the pieces actually fitted (R2c). */
     static double grossGainOf(Game game, BuildingsTemplate t, Equipment piece) {
         if (game.foundedUnfitted() && t.changeNeeds(piece.getId())) return RecipeChanges.gainOf(game, t, piece);
+        if (game.foundedUnfitted() && piece.getEnds() == Equipment.Form.FARM_HORSES)
+            return RecipeChanges.gainForSet(game, t, piece,
+                    t.getEquipment().stream().map(Equipment::getId).collect(java.util.stream.Collectors.toSet()));
         if (piece.getEnds() == null) {
             if (!piece.getId().equals(t.recipePieceId())) return 0;
             Recipes.Prices p = Recipes.pricesOf(game);
@@ -262,7 +266,8 @@ public final class EquipmentFit {
         if (settled(piece, month, unfitted, found) != null) return judge(piece, t, month, unfitted, Double.NaN, Double.NaN, 0, 0, found);
 
         double gain = gainOf(game, t, piece, proposed);
-        double cost = cost(piece, good -> cityPrice(game, good), game.getBuildingManager().nonMaterialPricePerPoint());
+        double cost = cost(piece, good -> cityPrice(game, good), game.getBuildingManager().nonMaterialPricePerPoint())
+                / (1 - game.getEconomyManager().getTaxPolicy().effectiveSalesRate(game.getSectors().construction()));
         Sector sector = game.getSectors().byKey(t.getSector());
         BusinessInvestment plans = game.getBusinessInvestment();
         BusinessDebtManager credit = game.getEconomyManager().getBusinessDebtManager();
