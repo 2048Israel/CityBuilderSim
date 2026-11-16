@@ -556,3 +556,9 @@ R0h's Health, Sickness, DataSave, load path, checks and publication records
 merge without a source conflict. Generated-index conflicts are regenerated
 by the following fast rebuild. The historical pre-R0h model dependencies
 are retained with the46c321bbd counterfactual to keep its control exact.
+
+REV-R2e-7 returns SHIP for the complete fitting-side diff in mail220034.
+On the merged R0h model all sixteen named readers above also exit0.
+The merged fast rebuild exits0 after74s compile, with zero firm Stale.
+No R2e source change follows the accepted fitting commit beyond the
+explicit upstream R0h merge. The final ALL check is the launcher dry run.
