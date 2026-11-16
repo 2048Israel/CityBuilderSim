@@ -130,3 +130,32 @@ it finds the rows itself.
 13. **★ No save field and no format bump**: the rows are read each month from
     the research the save already carries (the found months that
     `Research.restore()` puts back), so an old save reads rightly.
+
+## What the checks showed
+
+- **MedicineCheck** (new, in `AllChecks` after `CausesOfDeathCheck`, 4-6 s):
+  196 assertions, 0 failing, at 07016391c. Its seven sections: the mapping
+  table (every one of the sixteen rows is a STEP, a STAYS, LONG, SERVED or
+  BUILDING row, or NOTHING with its reason, and the catalogue's medicine rows
+  are `MedicalRows.CODES` in file order); history's knot ratios hold each
+  step's factor; a city that finds nothing is history's to the bit; each
+  step's row found 120 and 12 months ahead moves its cause by the step's
+  formula and nothing else; the switches flip at the world's month, or at
+  the find 60 months ahead; Sickness twins (one with the row unknown) for
+  M1, M2 and the stays; real villages (`FittingCheck.village` with two
+  General Hospitals) founded the 1900 way, with M1 found here, a PM1 twin
+  pair whose TB deaths differ by `ahead()` within 1e-6, and M8's template.
+- **The effect skipped by hand, once** (`CausesOfDeath.ahead()` returning 1
+  and `Sickness.setMedicine()` returning at once, then reverted): exit 1,
+  32 FAILED. Among them: every step's "a month before history's ramp,
+  ahead() is the product of the row's factors on the cause", "the rates()
+  cell of that band is the cell with no rows times the factor" and
+  "...and ahead() is the step's formula" (PM1, PM3, PM4 twice, PM5, PM6);
+  "the M1-unknown ring's last slot over the one before is q over one less
+  (1 - h)(1 - r x LONG_RECOVERY_BEFORE_M1)"; "with only M2 unknown at half
+  coverage the death lift is SERVED_DEATHS_BEFORE_M2 times a half"; "the
+  1900 village's stays factor after two months is STAYS_BEFORE_PM5 times
+  STAYS_BEFORE_LATER_ROW for each later row"; "PM1 found at month 1 brings
+  milk's step on TB forward: the factor in the month played is below 1".
+  The 164 that stayed green are the default city, the no-find twins and the
+  mapping table, which the skip leaves true.
