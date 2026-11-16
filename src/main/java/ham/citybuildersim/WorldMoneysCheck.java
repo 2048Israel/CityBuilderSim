@@ -948,9 +948,29 @@ public class WorldMoneysCheck {
             }
             tally("WorldMarket.lnTermsOfTrade in " + year + " is the log of the export price index over the import price index, recomputed from the file's pairs and the solved prices (all nations, 1e-9)", recomputed);
             if (year == baseYear) {
-                double worst = 0;
-                for (double x : ln) worst = Math.max(worst, Math.abs(x));
-                assertTrue(String.format("in the base year %d every price is the base year's to the solve's tolerance, so no nation's terms of trade has moved (the largest |ln| %.2e)", year, worst), worst < 10 * WorldMarket.SOLVE_TOL);
+                // CU2: the January is chained, and in the base year it no longer gives back the base year's prices: a root is anchored on its reference
+                // band (the band meets the path, not the makers' mean), and concentrate and anode carry the year's copper charge (on the Historical
+                // path 2024 is a peak of the swing, against the 5.4% the literals stand for; spec-world-prices.md 3.6, 3.8). Both move a good as one,
+                // the base year's flows unchanged, so what stands is that no nation's price moves against another's: each good is one number
+                // across every maker, and a nation's terms of trade moves only by its own mix of those numbers.
+                double spread = 0, widestGood = 0, worst = 0;
+                String spreadGood = "", widestName = "", worstWho = "";
+                for (int g = 0; g < goods.size(); g++) {
+                    double lo = Double.POSITIVE_INFINITY, hi = Double.NEGATIVE_INFINITY;
+                    for (int j = 0; j < n; j++) {
+                        lo = Math.min(lo, prices[g * n + j]);
+                        hi = Math.max(hi, prices[g * n + j]);
+                    }
+                    double gap = lo > 0 ? Math.log(hi / lo) : Double.POSITIVE_INFINITY;
+                    if (!(gap <= spread)) { spread = gap; spreadGood = String.valueOf(goods.get(g)); }
+                    double far = Math.max(Math.abs(Math.log(lo)), Math.abs(Math.log(hi)));
+                    if (far > widestGood) { widestGood = far; widestName = String.valueOf(goods.get(g)); }
+                }
+                for (int i = 0; i < n; i++) if (Math.abs(ln[i]) > worst) { worst = Math.abs(ln[i]); worstWho = data.nation(i + 1).iso3(); }
+                out.printf("  finding: in the base year %d the chained January moves goods as one: the widest a good's price is off the base year's is %.4f in ln (%s), and the widest ln terms of trade %.4f (%s)%n",
+                        year, widestGood, widestName, worst, worstWho);
+                assertTrue(String.format("in the base year %d every good's price is one number across every maker to the solve's tolerance (the anchor and the year's copper charge move a good as one), so no nation's price moves against another's (the largest ln(high/low) %.2e%s)",
+                        year, spread, spread > 0 ? ", " + spreadGood : ""), spread < 10 * WorldMarket.SOLVE_TOL);
             } else {
                 double widest = 0;
                 String who = "";

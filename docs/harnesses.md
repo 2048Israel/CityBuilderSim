@@ -30717,35 +30717,35 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L914 Base.commodityShare is each nation's base-year exports in bulk goods over all its exports, recomputed from the file's pairs (all
   - L921 before any year is solved every price is the base year's: the ln terms of trade are 0 for all
   - L949 WorldMarket.lnTermsOfTrade in
-  - L960 in 2008 the commodity boom moved some nation's terms of trade (the widest \|ln\| above 0.01)
-  - L987 cross(a, b) is rate(b) / rate(a) for the eight, in every month of both paths (0-
-  - L988 the dollar's rate is 1 in every month of both paths
-  - L989 a cross through a third money is the cross: cross(a, b) x cross(b, c) = cross(a, c) for the eight and the euro and the yen
-  - L990 the eight in their load-bearing order:
-- **L1084 the full file's own: the commodity shares, the boards, the pegs**
-  - L1094 Canada exports more commodities than Germany, and Australia more than Canada
-  - L1099 the file's currency boards
-- **L1142 10. in a city: the moneys stand in the city's month, the D$ feels them, and a save continues both**
-  - L1149 fixture: a city that has not played a month has no moneys yet; the first month builds them with the market
-  - L1162 saved after
-  - L1167 the loaded city has the moneys, in the month it was saved in, and the very same state to the bit
-  - L1169 ...and the D$ with its world as it was (slots 95-104 and every other)
-  - L1185 the moneys' month is the city's every month of
-  - L1186 the world moved the D$ in most of the months (
-  - L1187 the loaded city plays
-  - L1188 ...its moneys the saved city's to the bit, every month
-  - L1189 ...its D$ the saved city's to the bit, every month: the rate
-  - L1190 ...and every slot of the foreign accounts
-  - L1196 the town sold abroad in its first year, so the January that followed stepped its terms of trade into the D$ (
-  - L1200 a town that sold nothing abroad has no terms of trade to step
-  - L1214 the history keeps the seven majors' rates, the cycle and the risk-off, a point a month, the last the moneys' own
-  - L1215 ...and every one of them has a rule in the year book
-  - L1233 fixture: two goods the file prices are goods of the game
-  - L1237 fixture: it is the next January's turn (
-  - L1243 the January steps the D$ by minus TOT_PASS times the export-weighted ln of their prices against normal: a third of it in that month's reprice
-  - L1247 ...and all of it after TOT_MONTHS reprices, and no more after
-  - L1250 ...held there the month after
-  - L1260 a city that plays on the literals has no moneys, and its D$ has no world, six months on
+  - L980 in 2008 the commodity boom moved some nation's terms of trade (the widest \|ln\| above 0.01)
+  - L1007 cross(a, b) is rate(b) / rate(a) for the eight, in every month of both paths (0-
+  - L1008 the dollar's rate is 1 in every month of both paths
+  - L1009 a cross through a third money is the cross: cross(a, b) x cross(b, c) = cross(a, c) for the eight and the euro and the yen
+  - L1010 the eight in their load-bearing order:
+- **L1104 the full file's own: the commodity shares, the boards, the pegs**
+  - L1114 Canada exports more commodities than Germany, and Australia more than Canada
+  - L1119 the file's currency boards
+- **L1162 10. in a city: the moneys stand in the city's month, the D$ feels them, and a save continues both**
+  - L1169 fixture: a city that has not played a month has no moneys yet; the first month builds them with the market
+  - L1182 saved after
+  - L1187 the loaded city has the moneys, in the month it was saved in, and the very same state to the bit
+  - L1189 ...and the D$ with its world as it was (slots 95-104 and every other)
+  - L1205 the moneys' month is the city's every month of
+  - L1206 the world moved the D$ in most of the months (
+  - L1207 the loaded city plays
+  - L1208 ...its moneys the saved city's to the bit, every month
+  - L1209 ...its D$ the saved city's to the bit, every month: the rate
+  - L1210 ...and every slot of the foreign accounts
+  - L1216 the town sold abroad in its first year, so the January that followed stepped its terms of trade into the D$ (
+  - L1220 a town that sold nothing abroad has no terms of trade to step
+  - L1234 the history keeps the seven majors' rates, the cycle and the risk-off, a point a month, the last the moneys' own
+  - L1235 ...and every one of them has a rule in the year book
+  - L1253 fixture: two goods the file prices are goods of the game
+  - L1257 fixture: it is the next January's turn (
+  - L1263 the January steps the D$ by minus TOT_PASS times the export-weighted ln of their prices against normal: a third of it in that month's reprice
+  - L1267 ...and all of it after TOT_MONTHS reprices, and no more after
+  - L1270 ...held there the month after
+  - L1280 a city that plays on the literals has no moneys, and its D$ has no world, six months on
 
 ## YearBookCheck.java - 139 labelled assertions
 
