@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-SR1-Z0ArLg8T -->
 ## changelog
 ### SR1 — A city stocked complete in bulk reloads with its cash drifting — 2026-11-16, ready, no tag (harness), see docs/queue/SR1-notes.md
