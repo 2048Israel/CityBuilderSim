@@ -611,3 +611,35 @@ The incoming strengthened OilCheck also passes unchanged, including its
 rebuilt load-path probe and positive lamp-oil/coal footing. All nineteen
 named readers therefore finish with only the existing View sector-filter
 line. The merged compile takes49s and Stale reports zero firm findings.
+
+## Final kept launcher receipt
+
+The second normal launcher dry run is green at
+/tmp/cbs-gate-R2e-final-20261116-003153, equivalently
+C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R2e-final-20261116-003153.
+It tests branch90ad9b2c2f6dbdbcbaddee39280b760830b4a2ef against
+maina316d19bda47a7c3ea6b583264e1f2e0e86620dc, candidate0.9.123.
+The ship file names this kept run for reuse. checks.complete exists,
+checks.sha256 verifies completely with exit0, and unnamed.txt is empty.
+
+The suite runs207 harnesses in2359s, with200 passed and7 existing known-red
+harnesses. Check exit3 and launcher exit0 are green. The known harnesses
+are DeathRecordCheck, InvestCheck, KeptCheck, MapCheck, MoneyDatesCheck,
+PrizeCheck and ResearchViewCheck. There are no NEW lines. Eleven timing
+assertions are SOFT and four path assertions OBSERVED. Neither is counted
+as a red. The final Stale check has zero firm findings.
+
+PostwarRecipeCheck210 and ResearchPreviewCheck94 pass in the sealed run.
+ResearchViewCheck has only the pre-existing sector-filter line,1 of217.
+The accepted fixture premises remain explicit. No red is added to coverage.
+
+All eight final CSVs match the orchestrator-supplied R0h reference byte for
+byte. The completed comparison is target/R2e-evidence/final-trace-compare.txt
+and the run retains its trace-*.csv files. The original32ec5a5d capture
+and its pre-R0h equality remain retained separately. R2e introduces no
+additional default-trace movement, so no R2e ensemble is run.
+
+Only these notes and the ship receipt advance after the accepted run.
+The final readiness commit removes the provisional marker alone. Four
+Pending rows retain the documented missing axes/recipe and PE4 calibration
+call. QN1 is queued for the separately bounded prospective quote alignment.
