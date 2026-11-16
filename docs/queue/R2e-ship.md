@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-R2e-final-20261116-003153 -->
 
 ## changelog
