@@ -5,7 +5,7 @@ that share a harness or a file go through one build, one review and one dry run,
 not one each. WHY: over 11-14 to 11-16 a fix batch held the dry-run slot 34
 minutes on average, most of them for the whole suite.
 
-- **Rows:** MQ1, HX1, FPK1, below as QUEUE.md had them; their briefs stand.
+- **Rows:** MQ1, HX1, FPK1, below as QUEUE.md had them, and RN1-F, folded in from Pending on 2026-11-16; their briefs stand.
 - **Files it expects to change:** `MonetaryCheck.java`, `HealthCheck.java`, `FoodProcessingCheck.java`.
 - **Moves the playtest:** no: harnesses only.
 - **Not beside:** FB4 (`HealthCheck`).
@@ -33,3 +33,11 @@ Brief: [GW1 notes §4](GW1-notes.md)
 FoodProcessingCheck 5's meat bet sets its own farm-floor and ship prices so the Meat Works' profit sum is tested independently of the city's path.
 
 Brief: [BS1 notes](BS1-notes.md#fpk1)
+
+### RN1-F
+
+HealthCheck's poor city at three prices never caused its general-care gap: on main the x1 and x15 twins serve 83.0% and read 86.20% coverage alike, a household above subsistence paying the dear bill by eating less (hunger 13% against 20%), and its four assertions pass by hundredths; RN1's larger twins tip the beds' one (99.66% against 99.69%) (0.9.63)
+
+It waited: a fix: put the general-care households between the two bills, as WN3 did for senior care; the red passes by name until then (Jerus 11-04)
+
+Brief: [RN1 notes, The gate's reds](RN1-notes.md)

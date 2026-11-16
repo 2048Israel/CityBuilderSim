@@ -18,6 +18,7 @@ Speed is judged nightly with machine-local paired confirmation (GR1).
 
 1. Read `docs/map/README.md` and the touched files' maps, grep
    `docs/harnesses.md`, and use `sh tools/pick.sh` to see the selection.
+   Settle in the notes each Pending row that names this batch ("For ID").
 2. Main's last gate supplies the baseline reds. While building, use
    `./batch-check.sh --fast` and named harnesses.
    WHY (BP1) a fresh baseline suite repeats the recorded gate.
@@ -47,7 +48,7 @@ Speed is judged nightly with machine-local paired confirmation (GR1).
    ## pending
    | ID-X | what remains ({next}) | why | link |
    ## queued
-   | NEW | what was decided | brief |
+   | <new id: tools/batch-id.sh> | what was decided | brief |
    ## known-reds
    Harness | part of the red line | queued fix | date | cause
    ```
