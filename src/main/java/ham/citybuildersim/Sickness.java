@@ -220,6 +220,12 @@ public class Sickness {
     /** How much more often the long sick die this month than deathChance() says (R2f). */
     public double getDeathLift()     { return deathLift; }
 
+    /** The share of the sick who get better this month at a coverage, with the month's stays factor: what a notice or a screen quotes (R2f). */
+    public double recoveryAt(double generalCoverage) { return recovery(generalCoverage, staysFactor); }
+
+    /** The share of the sick who get better this month with everybody served: RECOVERY_SERVED once the stays rows are known (R2f). */
+    public double servedRecovery()   { return recoveryAt(1); }
+
     /** A band's monthly chance of dying once sick past two months, this month: deathChance() raised by the lift before M2. */
     public double chanceThisMonth(AgeBand band) {
         return deathLift == 0 ? deathChance(band) : deathChance(band) * (1 + deathLift);

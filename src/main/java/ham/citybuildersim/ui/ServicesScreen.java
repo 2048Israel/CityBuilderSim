@@ -1201,7 +1201,7 @@ final class ServicesScreen {
             default: {
                 buys = pct(ui.game.getSickness().getLastRecovery());
                 buysWords = " of the sick get better";
-                range = pct(Sickness.RECOVERY_UNTREATED) + " → " + pct(Sickness.RECOVERY_SERVED) + " if everyone";
+                range = pct(Sickness.RECOVERY_UNTREATED) + " → " + pct(ui.game.getSickness().servedRecovery()) + " if everyone";
                 icon = Icons.HEALTH;
                 page = "General care";
             }
@@ -1360,11 +1360,11 @@ final class ServicesScreen {
         double cover = service.getCoverage(CareType.GENERAL);
         javafx.scene.layout.GridPane two = equalColumns(2, TILE_GAP);
         two.add(Kept.scope("cures", () -> card(cardHead(Icons.HEALTH, "What care cures", RECOVERY_INFO, null),
-                effectScale("", sickness.getLastRecovery(), Sickness.RECOVERY_UNTREATED, Sickness.RECOVERY_SERVED,
+                effectScale("", sickness.getLastRecovery(), Sickness.RECOVERY_UNTREATED, sickness.servedRecovery(),
                         false, ServicesScreen::pct, Palette.PEOPLE, 0,
                         words(CityNeeds.servedPct(cover) + " " + CityNeeds.SERVED, Palette.SIZE_LABEL, Palette.TEXT_LABEL), 90),
                 words("of the sick get better each month: " + pct(Sickness.RECOVERY_UNTREATED)
-                        + " with nobody served, " + pct(Sickness.RECOVERY_SERVED) + " with everybody.",
+                        + " with nobody served, " + pct(sickness.servedRecovery()) + " with everybody.",
                         Palette.SIZE_CAPTION, Palette.TEXT_MUTED))), 0, 0);
         two.add(Kept.scope("doctor", () -> card(cardHead(Icons.STAFF, "Who gets a doctor", careInfo(CareType.GENERAL, cover), null),
                 careFunnel(CareType.GENERAL))), 1, 0);
@@ -1398,7 +1398,9 @@ final class ServicesScreen {
     static final String RECOVERY_INFO = String.format(
             "The share of the sick who get better in a month: %.0f%% with no general care, %.0f%% with "
             + "everybody covered, and in between by the coverage the month applied. The rest stay ill "
-            + "another month; from two months on they can die of it.",
+            + "another month; from two months on they can die of it. A city founded the 1900 way cures "
+            + "less with everybody covered until it knows the medicine that shortens a hospital stay: "
+            + "penicillin, then hip replacement, the CT scanner, keyhole surgery and statins.",
             Sickness.RECOVERY_UNTREATED * 100, Sickness.RECOVERY_SERVED * 100);
 
     /** The death chances by age, with the share of each band past two months and its dead last month. */

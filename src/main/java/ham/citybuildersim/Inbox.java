@@ -925,7 +925,7 @@ public class Inbox {
                 lines.add(String.format("%,.0f people have been ill for more than two months, and",
                         longSick));
                 lines.add(String.format("%,.0f died of it last month. Only %.0f%% of the sick get",
-                        sickness.getLastDeaths(), Sickness.recovery(generalCover) * 100));
+                        sickness.getLastDeaths(), sickness.recoveryAt(generalCover) * 100));
                 lines.add("better each month here.");
             }
             lines.add("");

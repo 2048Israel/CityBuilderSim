@@ -324,11 +324,11 @@ public class CausesOfDeath {
 
     /**
      * The diphtheria toxoid (PM3) leaves the childhood outbreaks at this factor:
-     * diphtheria was 40.3 of the four outbreaks' 75.4 deaths per 100,000 in the
-     * US in 1900 (CDC, leading causes of death 1900) and three doses cut its
-     * cases at least 90% (Toronto) [CON-R].
+     * diphtheria killed 40.3 per 100,000 in the US in 1900 [MMWR99], of the
+     * outbreaks' RATE_1900, and three doses cut its cases at least 90%
+     * (Toronto) [CON-R].
      */
-    public static final double TOXOID_OUTBREAK = 1 - .9 * 40.3 / 75.4;
+    public static final double TOXOID_OUTBREAK = 1 - .9 * 40.3 / RATE_1900[Cause.OUTBREAK.ordinal()];
 
     /** The toxoid's step starts in history with Connaught's trials, September 1925 [CON-D]... */
     public static final double TOXOID_FROM = 1925 + 8 / 12.0;
