@@ -172,6 +172,9 @@ BA1's question (Jerus): whether lending to orders on site wants a brake of its o
   at the shortfall desk (interest 8.4 to 19.4 a month); the Fabrication Shop's fell due 12 months after it opened
   and rolled at a policy rate of 15-38% (3.9 to 9-16 a month, more than it made).
 - The losses are the estimate's: open, the kiln made +0.3 to +1.3 a month before interest, which no term clears.
+- BA1's own town, FloatLinkCheck's (0.9.16: the bank's 1,246 of equity at -3,200 by month 75), was tried with every
+  sector free on 0.9.128: the harness passes but its played sale no longer covers its fixed fee, the fixture not
+  reached and the sales' comparisons skipped. Its hold is for the sales' size, as BA1 wrote it, and stays.
 
 ★ No brake of its own. One would have refused both works and every young town's first works with them (each was
 two to four years on site): the room form's stunting by another road. The term's clock running from the order,
@@ -199,5 +202,7 @@ nobody has decided on it; it is here for whoever reads the bank's desk next.
 
 ## 9. Checks
 
-- Trace: (below, at the run).
+- Trace: `-Dplaytest.trace` on this branch against `cbs-trace-main-08c8727d` (main has no source change since
+  08c8727d): all eight files identical to the byte (2,405 lines each, the borrow file 39). No ensemble: the
+  trace did not move.
 - Pick: (below).
