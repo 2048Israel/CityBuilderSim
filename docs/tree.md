@@ -341,6 +341,13 @@ adds its line here, not in `CLAUDE.md`.
                                    gains, firms' IP service imports at the strike, saved statement and history
         LicenceFeesCheck.java      positive payments, same-month money and foreign accounts, expiry,
                                    exemptions, equal-gross ranking and nonzero save/read fixtures
+        MedicalRows.java           which medical rows (M, PM) a 1900-way city knows in a month and how far
+                                   ahead of the world it found each (R2f, 2026-11-16; research-design Q17);
+                                   TODAY in a default city. CausesOfDeath's steps and Sickness's undone
+                                   constants read it
+        MedicineCheck.java         R2f's rows: every medical row mapped, the steps history's, no find to the
+                                   bit, a find ahead brings a step forward, the undone constants switch at
+                                   the row's month or a find, a ring and a real 1900 city read them
         ResearchCatalog.java       the research catalogue (R2, 2026-11-05; research-design 4, research-1900
                                    8): research.json's 89 discoveries, each with its field, kind, history's
                                    month (the law rows PolicyDates' own), what it needs, its fee and its
