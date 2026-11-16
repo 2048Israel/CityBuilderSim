@@ -1,5 +1,4 @@
 <!-- gate-run: /tmp/cbs-gate-RE3-EABbXC8m -->
-<!-- readiness: provisional -->
 ## changelog
 ### RE3 — the landlords' payroll with the rent: the trap is gone on main — 2026-11-16, ready, no tag (docs)
 RE1's probe on main 0.9.126, eight AUTO2 runs (seeds 1, 3, 11 and 13, with and without the data files): RE2's trap is
