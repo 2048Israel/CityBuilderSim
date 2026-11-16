@@ -1,4 +1,4 @@
-# ShortSellingCheck.java - 1,238 lines · 48 methods · 6 constants · harnesses
+# ShortSellingCheck.java - 1,255 lines · 48 methods · 6 constants · harnesses
 
 `ham/citybuildersim/ShortSellingCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -43,7 +43,7 @@
 > Every claim is CAUSED: a book emptied and given one trade, then the orders a line names and no others; a bid or an ask put on it by a participant
 > with the means to stand behind it.
 
-**Uses:** [Exchange](Exchange.md) (98), [Equity](Equity.md) (31), [OrderBook](OrderBook.md) (30), [MarketCheck](MarketCheck.md) (23), [FundLedger](FundLedger.md) (19), [ExchangeCheck](ExchangeCheck.md) (17), [Game](Game.md) (17), [KeptBench](KeptBench.md) (16), [FundView](FundView.md) (15), [Household](Household.md) (12), [MoneyAudit](MoneyAudit.md) (11), [LongPlaytest](LongPlaytest.md) (9), [HouseholdBalance](HouseholdBalance.md) (6), [TreasuryFund](TreasuryFund.md) (4), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Exchange](Exchange.md) (100), [OrderBook](OrderBook.md) (32), [Equity](Equity.md) (31), [MarketCheck](MarketCheck.md) (23), [KeptBench](KeptBench.md) (21), [FundLedger](FundLedger.md) (19), [ExchangeCheck](ExchangeCheck.md) (17), [Game](Game.md) (17), [FundView](FundView.md) (15), [Household](Household.md) (12), [MoneyAudit](MoneyAudit.md) (12), [LongPlaytest](LongPlaytest.md) (9), [HouseholdBalance](HouseholdBalance.md) (6), [TreasuryFund](TreasuryFund.md) (4), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1)
 
 ## Sections
 
@@ -62,7 +62,7 @@
 | 148 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
 | 231 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
 | 345 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
-| 1022 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
+| 1035 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
 
 ## Fields (state)
 
@@ -87,18 +87,18 @@
 | 164 | `final double fair` |  |
 | 515 | `final Game city` |  |
 | 516 | `final int firm` |  |
-| 1026 | `Exchange ex` |  |
-| 1027 | `Equity reg` |  |
-| 1028 | `int months, auditBad, driftBad, shortCompanyMonths, bubbleMonths, bankBubbleMonths` |  |
-| 1029 | `double worstAudit, worstDrift, mostShort` |  |
-| 1030 | `String worstWhere` |  |
-| 1031 | `long seconds` |  |
+| 1039 | `Exchange ex` |  |
+| 1040 | `Equity reg` |  |
+| 1041 | `int months, auditBad, driftBad, shortCompanyMonths, bubbleMonths, bankBubbleMonths` |  |
+| 1042 | `double worstAudit, worstDrift, mostShort` |  |
+| 1043 | `String worstWhere` |  |
+| 1044 | `long seconds` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 52 | 1187 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
+| 52 | 1204 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
 | 59 | 5 | `static void assertTrue(String label, boolean ok)` |  |
 | 65 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 78 | 4 | `static void section(String title)` |  |
@@ -136,7 +136,7 @@
 | 224 | 5 | `static double rateAt(double utilisation)` | The fee a year the lenders are paid at this many shares short of this many lendable (Exchange.lendingRate()), as the dials say. |
 | 233 | 98 | `public static void main(String[] args) throws Exception` |  |
 
-### THE LINES OF SECTIONS 2 TO 5 (lines 332-1238)
+### THE LINES OF SECTIONS 2 TO 5 (lines 332-1255)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -150,15 +150,15 @@
 | 517 | 1 | `Shorted(Game city, int firm)` _(in ShortSellingCheck.Shorted)_ |  |
 | 525 | 39 | `static Shorted openShort(String label)` | The playtest's town, 48 months old, with the world short of the company that pays a dividend and has most in the households' hands: the fund comes to hold 4% of it, bought from the cell that holds most, and the world ... |
 | 566 | 68 | `static void theCity()` | A whole month of a city, with a short open, a dividend paid on it and the lending fee: the audit balances. |
-| 641 | 63 | `static void theWipe(Game city, int firm)` | A company with no shares in issue and no book, with a short open and the world holding some of it, in the real month (LF1c): the month's listing finds no book and leaves it unlisted, the exchange's step cancels what t... |
-| 710 | 35 | `static void theWords(Game city, int firm, double feesRowed)` | The Fund screen's words for what the short's lending fee added to the fund's record (LF1c): the row of the month's fees says what it is instead of its kind's name, a share's write-off is not a bond's ("its face gone")... |
-| 747 | 9 | `static double lineOf(String detail, String label)` | The number a line of the audit's detail ends in (its label, then the amount at two places), 0 when the month has no such line. |
-| 757 | 76 | `static void theLender()` |  |
-| 834 | 88 | `static void theCalls()` |  |
-| 927 | 33 | `static void sameShort(String when, Game live, Game back, int f, double tol)` | Section 6's two cities, the saved and the loaded, read the same way: every figure of the short the exchange carries (Exchange.State), on the company the world is short of and over all of them, to this tolerance of eac... |
-| 961 | 60 | `static void theSave() throws Exception` |  |
-| 1025 | 8 | **type** `static final class Run` | What a run of the playtest's city counted. |
-| 1038 | 52 | `static Run play(boolean shorts, String label)` | The playtest's city (the default founding, its player's rhythm) played to RUN_MONTHS, with the world's shorts on or off, every month audited and every company's register checked: the holdings against the shares in iss... |
-| 1097 | 117 | `static void theBooks() throws Exception` | Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's review found at EM2's gate, each caused by a fixture first: the fee charged on shar... |
-| 1215 | 23 | `static void howOften()` |  |
+| 641 | 76 | `static void theWipe(Game city, int firm)` | A company with no shares in issue and no book, with a short open and the world holding some of it, in the real month (LF1c): the month's listing finds no book and leaves it unlisted, the exchange's step cancels what t... |
+| 723 | 35 | `static void theWords(Game city, int firm, double feesRowed)` | The Fund screen's words for what the short's lending fee added to the fund's record (LF1c): the row of the month's fees says what it is instead of its kind's name, a share's write-off is not a bond's ("its face gone")... |
+| 760 | 9 | `static double lineOf(String detail, String label)` | The number a line of the audit's detail ends in (its label, then the amount at two places), 0 when the month has no such line. |
+| 770 | 76 | `static void theLender()` |  |
+| 847 | 88 | `static void theCalls()` |  |
+| 940 | 33 | `static void sameShort(String when, Game live, Game back, int f, double tol)` | Section 6's two cities, the saved and the loaded, read the same way: every figure of the short the exchange carries (Exchange.State), on the company the world is short of and over all of them, to this tolerance of eac... |
+| 974 | 60 | `static void theSave() throws Exception` |  |
+| 1038 | 8 | **type** `static final class Run` | What a run of the playtest's city counted. |
+| 1051 | 52 | `static Run play(boolean shorts, String label)` | The playtest's city (the default founding, its player's rhythm) played to RUN_MONTHS, with the world's shorts on or off, every month audited and every company's register checked: the holdings against the shares in iss... |
+| 1110 | 121 | `static void theBooks() throws Exception` | Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's review found at EM2's gate, each caused by a fixture first: the fee charged on shar... |
+| 1232 | 23 | `static void howOften()` |  |
 

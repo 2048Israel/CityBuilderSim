@@ -169,7 +169,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 114. **L13804** `tradeShares();` → [Game.tradeShares](map/Game.md) (L4911)
 115. **L13814** `settleThePreferred();` → [Game.settleThePreferred](map/Game.md) (L5485)  
    _...and the city's preferred (0.7.14): every block at its third anniversary repaid whole at par with its unpaid dividends, from the bank's capital over its target and the rest by an offering of new ..._
-116. **L13824** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1154), [Exchange.cityMarketValue](map/Exchange.md) (L1851)  
+116. **L13824** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1154), [Exchange.cityMarketValue](map/Exchange.md) (L1853)  
    _...AND THE BONDS TRADE (0.7.12): the month's coupons paid to their holders, last month's orders withdrawn, every bond valued and every participant's orders posted again - after the shares, and befo..._
 117. **L13825** `strikeBankBonds();` → [Game.strikeBankBonds](map/Game.md) (L5118)
 118. **L13830** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L452), [DebtManager.firmBookRatio](map/DebtManager.md) (L2966), [DebtManager.firmBookYield](map/DebtManager.md) (L2972)  
