@@ -63,3 +63,12 @@ RE2's fixture is gone on main: seed 3 unnamed has no loss month and no hold over
 
 Outputs (not committed): target/re3/out/main-{s,n}{1,3,11,13}.{csv,tsv,log}; scripts in
 target/re3/bin (run.sh, q1.sh, q2.sh, table.py, why.py, jobs.py, who.py, loss.py).
+
+## The dry run
+
+`sh tools/gate.sh RE3 --dry-run --no-tag`, 2026-11-16 10:42-10:44: exit 0, kept at
+/tmp/cbs-gate-RE3-EABbXC8m (ship.log; unnamed.txt empty), of batch/RE3 75b874084 on main
+6f4e3886c (0.9.127, R2f merged in). Docs only, so the gate ran batch-check.sh --fast alone:
+compile OK, stale 0 firm, records RE3's block on top, 1 Pending row, its Queued row out, no
+tag. The merge's title is the queue row's ("billed with the rent at once"), though nothing was
+billed: the publisher's to word.

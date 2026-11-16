@@ -1,3 +1,4 @@
+<!-- gate-run: /tmp/cbs-gate-RE3-EABbXC8m -->
 <!-- readiness: provisional -->
 ## changelog
 ### RE3 — the landlords' payroll with the rent: the trap is gone on main — 2026-11-16, ready, no tag (docs)
