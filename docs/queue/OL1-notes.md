@@ -32,8 +32,8 @@ Built 2026-11-16 by a Claude session (Sonnet 5.5) on `batch/OL1`, cut from
 - **Left alone on purpose**: the screen-check session's "its id is in the
   hand-off note" (the note still exists and still holds it); `day.sh`'s
   "the morning" (a replacement orchestrator starts from it the same way);
-  `docs/notes/batch-history.md` (its one BP1 line on `day.sh` is history, and
-  no longer story was left over: the measurement is in the PC note and below).
+  `docs/notes/batch-history.md` (its one BP1 line on `day.sh` is history; the
+  longer story, the 11-08 measurement, is in the PC note and the table below).
 
 ## The process count (One in, one out)
 
