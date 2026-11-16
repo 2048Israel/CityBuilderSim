@@ -4,7 +4,9 @@
 ### {next} — R2e, Research: the 1951-2000 entries undone — 2026-11-15, ready, see docs/queue/R2e-notes.md
 The postwar engineering and business catalogue now removes 27 sourced changes
 from unfitted templates, with independent fitting, saved process decisions and
-exact modern destination figures. Zeolite composes with catalytic cracking,
+exact modern destination figures. New fitting and royalties share a paying
+equipment set; refits value one count over the rounded fleet.
+Zeolite composes with catalytic cracking,
 keeping the thermal process and dispatched-feed licence charges consistent.
 Panel Mill opens through E19 in 1981 on FPL-GTR-59; Wood Pellet Mill through
 E20 at retained 1970, explicitly undated within FPL-RP-656's 1970s.

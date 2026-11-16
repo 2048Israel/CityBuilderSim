@@ -353,3 +353,11 @@ large-kiln chosen set, fresh changed-input selection, the synthetic
 positive royalty, the next scanner's zero rounded gain and the installed
 robot's201-post saving. Logs are review3-before/check.log and
 focused/PostwarRecipeCheck.log under target/R2e-evidence.
+
+The final ten named readers all exit0. PostwarRecipeCheck has202
+assertions, HistoricalRecipeCheck120, HistoricalLicenceCheck80,
+ResearchCheck207 and LicenceFeesCheck43. RecipeCheck, EquipmentCheck,
+DiscoveryCheck, BuildingDataCheck and FittingCheck are also green on the
+same final classes. The unchanged RecipeCheck now passes its fresh-price
+break-even experiment. All jobs ran serially with the default settings.
+The selection is ALL209; the launcher dry run is the ALL verification.
