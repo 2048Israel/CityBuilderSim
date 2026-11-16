@@ -74,6 +74,7 @@ public final class LicenceFees {
     // thread, so simultaneous screen reads still price their own licences.
     private static final ThreadLocal<Boolean> pricing = ThreadLocal.withInitial(() -> false);
 
+
     private static double buildingFee(Game game, BuildingsTemplate t, Sector owner, boolean standing, double rate) {
         int accrualMonth = game.getMonth();
         if (!payable(t.getSinceText(), accrualMonth, game.getResearch())
@@ -165,12 +166,13 @@ public final class LicenceFees {
             bill += standing ? standingRecipeFee(game, t, recipe, prices, rate)
                     : recipeFee(t, recipe, accrualMonth, prices, game.getResearch()) * rate;
         }
-        bill += RecipeChanges.recipeFee(game, t, owner, recipe, standing, rate, charged);
+        bill += RecipeChanges.recipeFee(game, t, owner, recipe, standing, rate, charged, standing ? null : fitted);
         for (Equipment piece : t.getEquipment()) {
             if (!fitted.contains(piece.getId()) || !charged.add(piece.getSince()) || !piece.knownAt(game.getMonth(), game.getResearch())
                     || !payable(piece.getSince(), game.getMonth(), game.getResearch())) continue;
-            bill += onGain(piece.getSince(), accrualMonth, game.getResearch(),
-                    EquipmentFit.grossGainOf(game, t, piece)) * rate;
+            double gain = !standing && t.changeNeeds(piece.getId()) ? RecipeChanges.gainForSet(game, t, piece, fitted)
+                    : EquipmentFit.grossGainOf(game, t, piece);
+            bill += onGain(piece.getSince(), accrualMonth, game.getResearch(), gain) * rate;
         }
         return bill;
     }
@@ -180,12 +182,8 @@ public final class LicenceFees {
         if (!game.foundedUnfitted() || pricing.get() || t == null || !t.isOwnedBySector()) return 0;
         Sector owner = game.getSectors().byKey(t.getSector());
         if (owner == null) return 0;
-        Set<String> fitted = new HashSet<>();
-        for (Equipment piece : t.getEquipment()) {
-            if (EquipmentFit.verdictForNew(game, t, piece).kind() == EquipmentFit.Kind.PAYS) fitted.add(piece.getId());
-        }
-        Recipe recipe = Recipes.best(t, t.recipePieceId() == null || fitted.contains(t.recipePieceId()),
-                game.getMonth(), Recipes.pricesOf(game), game.getResearch());
+        Set<String> fitted = EquipmentFit.fittedForNew(game, t);
+        Recipe recipe = RecipeChanges.recipeForNew(game, t, fitted);
         return one(game, t, owner, recipe, fitted, false, 0);
     }
 
@@ -311,8 +309,9 @@ public final class LicenceFees {
                     || !piece.knownAt(game.getMonth(), game.getResearch())
                     || !payable(piece.getSince(), game.getMonth(), game.getResearch())) continue;
             int count = stack.getQuantity() - stack.getUnfitted(piece.getId());
-            double bill = onGain(piece.getSince(), game.getMonth(), game.getResearch(),
-                    EquipmentFit.grossGainOf(game, t, piece)) * count
+            double gain = t.changeNeeds(piece.getId()) ? RecipeChanges.gainForStanding(game, t, piece)
+                    : EquipmentFit.grossGainOf(game, t, piece) * count;
+            double bill = onGain(piece.getSince(), game.getMonth(), game.getResearch(), gain)
                     * Math.max(0, Math.min(1, rate));
             if (bill > 0) total += bill;
         }

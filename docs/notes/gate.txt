@@ -1,8 +1,8 @@
-# gate of Merge batch/PD1b: pD1's review follow-ups (the drivers' petrol, OilCheck 20): its load-path line cannot fail, because `households.restoreStatement` (`Game.java:21550`) writes the saved shopping and fuel line over the rebuilt ones - read the rebuilt figures before that overwrite; its footing line leaves out the homes' lamp oil and coal, right only while their bill is 0 (assert that, or count them); and `Game.java:4179`'s comment, which claims the rebuilt fuel line is the bill's own month while a save carries Motoring's bill a month ahead of Retail's statement (PD1's gate review, 2026-11-07), 0.9.122
+# gate of Merge batch/FA1: a frontage avenue along each side of a diagonal highway, so the grid's streets meet it at junctions and the wedges beside it are built (Jerus's Bergen city, MF2's item 4, "the highway cuts the blocks"); its fixture is MF2's probe, red on main, 0.9.124
 # date: 2026-11-16
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 194 harnesses run in 2607s: 188 passed, 6 failed
+# suite: 200 harnesses run in 2085s: 195 passed, 5 failed
 MoneyDatesCheck | exit 1
 MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
 InvestCheck | exit 1
@@ -13,17 +13,17 @@ MapCheck | at every 30th month the map draws exactly what the city has: each typ
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
 MapCheck | 3 FAILED
-KeptCheck | exit 2
-KeptCheck | the kept page and the new page are the same picture at 3 months, to SHADE_LEVELS (2) FAIL
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 2 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 ResearchViewCheck | exit 1
 ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 1 rows, Agriculture: 3 of 6), and the sectors' rows add up to the city's
 ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217
+KeptCheck | exit 2
+KeptCheck | the kept page and the new page are the same picture at 3 months, to SHADE_LEVELS (2) FAIL
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+KeptCheck | 2 FAILED
 PrizeCheck | exit 2
-PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1011.1291940951232 of 1004.6942298626966)
-PrizeCheck | FAIL ...and its till (at most 388) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
+PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1024.9701218825003 of 1021.3374306117544)
+PrizeCheck | FAIL ...and its till (at most 410) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284

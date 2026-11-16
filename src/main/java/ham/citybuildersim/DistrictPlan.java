@@ -568,6 +568,9 @@ public final class DistrictPlan {
     /** The least steps between two junctions kept on one arm (the + floor along an avenue): LATTICE. */
     public static final int AVENUE_APART = LATTICE;
 
+    /** A frontage staircase's normal offset from its highway's: four plots of x -/+ y, beyond H5's one-plot verge. */
+    public static final int FRONTAGE_GAP = 4;
+
     /* =====================================================================
        THE INPUTS
        ===================================================================== */
@@ -1225,7 +1228,8 @@ public final class DistrictPlan {
         byte[] avDone;
         /** The plots the avenue made a street of (MF2's avOwn), kept with the rest so a plan resumed here takes up only those. */
         boolean[] avOwn;
-        int[] avN, avKept;
+        int[] avN;
+        long[] avKept;
         int avKeptN;
         /** The curves' state (CL4, slice C): the plots kept free of buildings, the curves laid, the crescents the ground refused. */
         int[] cvKeepList;
@@ -1443,6 +1447,7 @@ public final class DistrictPlan {
             this.proto = in.asPrototype;
             this.avOn = !proto && !in.latticeOnly;
             this.cvOn = avOn;
+            bOut = null;
             this.hash = in.hashes != null ? in.hashes : worldHashes(in.seed, in.x0, in.y0);
             turnsUsed = 0;
             cutLines.clear();
@@ -2617,6 +2622,12 @@ public final class DistrictPlan {
                 laid++;
             }
             if (n == 0 && laid == 0) return;
+            boolean frontageAdded = runs && frontage();
+            if (frontageAdded && keeping) {
+                System.arraycopy(occStart, 0, occWas, 0, AREA);
+                System.arraycopy(fieldOk, 0, fieldWas, 0, AREA);
+            }
+            if (frontageAdded) keeping = false;
             // The ground worked out again: only where the records and the land touch it (THE GROUND KEPT), else the whole.
             if (keeping) {
                 groundKept(n);
@@ -2653,8 +2664,10 @@ public final class DistrictPlan {
             }
             // An open cell's own ring and streets on the ground just bought (FX9), then the avenues on it (CL4): an open cell lays the staircase plots it could not when it opened.
             boolean[] laidIn = null;
+            if (n > 0) frontageKeepGrid();
             if (streetsOnBought && !proto && n > 0) laidIn = cellsOnGrown(n);
             if (avOn && n > 0) avOnGrown(n, laidIn);
+            if (frontageAdded) frontageLate();
             cutLines.clear();
             // The order: the cells either pointer has taken keep their places; between them the cells of the grown ground in
             // its growth order, then any that stood between and the new order lacks, in their old order.
@@ -3484,7 +3497,7 @@ public final class DistrictPlan {
             // and the pointers stop where they meet: bFar is the order's last cell outside them.)
             boolean far = ev && g == 2 && in.types[bandType[g][i]].site() == null;
             while (best < 0 && bNext <= bFar) {
-                int pick = campus ? campusNext(out, group) : -1;
+                int pick = campus ? campusNext(out, group) : g == 0 ? frontageNext(out) : -1;
                 // A later step's turn: the cell about to open is the one it opens otherwise.
                 if (bTurnAt != null && out.cellKind[pick >= 0 ? order[pick] : order[bNext]] == CLOSED) {
                     int at = bByHomes ? (g == 0 ? bHomes : -1) : bOpened;
@@ -3633,7 +3646,7 @@ public final class DistrictPlan {
             t.avDone = copyInto(avDone, t.avDone);
             t.avOwn = copyInto(avOwn, t.avOwn);
             t.avN = copyInto(avN, avN.length, t.avN);
-            t.avKept = copyInto(avKept, avKeptN, t.avKept);
+            t.avKept = copyInto(avKept, t.avKept);
             t.avKeptN = avKeptN;
             t.cvKeepList = copyInto(cvKeepList, cvKeepN, t.cvKeepList);
             t.cvKeepN = cvKeepN;
@@ -3693,7 +3706,7 @@ public final class DistrictPlan {
             nRsv = 0;
             System.arraycopy(t.avN, 0, avN, 0, avN.length);
             avKeptN = t.avKeptN;
-            if (avKept.length < avKeptN) avKept = new int[Math.max(avKeptN, avKept.length * 2)];
+            if (avKept.length < avKeptN) avKept = new long[Math.max(avKeptN, avKept.length * 2)];
             System.arraycopy(t.avKept, 0, avKept, 0, avKeptN);
             cvReset();
             for (int i = 0; i < t.cvKeepN; i++) cvKeepPlot(t.cvKeepList[i]);
@@ -3790,6 +3803,7 @@ public final class DistrictPlan {
 
         /** Cell c opened as `kind` at its rank, squared or a boulevard as the ladder's step asks: its ring and its streets laid - a homes cell's by the layout its place hashes to (a homes cell's layout, CL2), an estate cell's sized to the w x h building it opens for (ESTATE LINES). */
         void openCell(DistrictPlan out, int c, byte kind, int rank, boolean square, boolean bl, int w, int h) {
+            frontageKeepGrid();
             int ci = c % CELLS_A_SIDE, cj = c / CELLS_A_SIDE;
             int x0 = CELL * ci + 1, y0 = CELL * cj + 1, x1 = x0 + INTERIOR, y1 = y0 + INTERIOR;
             boolean across = hash.dir(ci, cj) < 0.5;
@@ -3834,11 +3848,16 @@ public final class DistrictPlan {
                 out.cellStreets[c] = lines;
             }
             layLayout(c, x0, y0, kind, square, across, layout, crescent, lines, st);
+            if (frontageProtect) frontageSnapshot();
             // THE AVENUES (CL4): the arms' staircase plots in its box laid as arterials, then the + floor along them.
             avBegin();
             boolean avBroke = layAvenues(x0, y0, x1, y1, true);
             if (avOn) {
                 avFloor(x0 - 1, y0 - 1, x1, y1);
+                if (frontageProtect) {
+                    do { frontageStops(); } while (frontageTails());
+                    frontageProtect = false;
+                }
                 // A piece of avenue the ground leaves touching no other street is taken up again, undecided (avAlone()).
                 if (avAlone()) {
                     int m = 0;
@@ -3933,7 +3952,9 @@ public final class DistrictPlan {
         boolean avOn;
         /** The origin, in the frame's plots (it may lie outside the frame). */
         int avOx, avOy;
-        /** A staircase plot's mark in CityRuns' bits (M_DIAG, its arm at M_DIAG_SHIFT, M_CORNER on a corner), the first arm's where two share a plot; 0 for none - a pure function of the origin. */
+        /** Each avenue arm's origin and heading; frontage arms have their own node and dated extent (FA1). */
+        final ArrayList<int[]> avArms = new ArrayList<>();
+        /** A staircase plot's mark in CityRuns' bits (M_DIAG, heading at M_DIAG_SHIFT, M_CORNER on a corner); the first arm's where two share it. Founding arms are fixed, frontage follows current fx. */
         final byte[] avMark = new byte[AREA];
         /** The outer plots of the arms in the frame (no building stands on one): by plot, and listed. */
         final boolean[] avOuter = new boolean[AREA];
@@ -3944,14 +3965,14 @@ public final class DistrictPlan {
         int nAvList;
         /** The plots where an avenue would run over fresh water too wide for a bridge (AVENUE_BRIDGE_STEPS): a run of more than twice that many staircase plots. */
         final boolean[] avWet = new boolean[AREA];
-        /** One build's state: each staircase plot decided (0 not yet, 1 laid, 2 not laid), the counts (AV_PLOTS...), and the cell-street junctions kept so far as arm << 28 | step. */
+        /** One build's state: each staircase plot decided (0 not yet, 1 laid, 2 not laid), the counts (AV_PLOTS...), and junction keys with the arm above the step's 32 bits. */
         final byte[] avDone = new byte[AREA];
         /** ...and the kind of fixed ground each laid plot was laid on (THE RUNS DATED: the ground may be another by the time it is taken up, and the counts of what lies beneath and across are given back as they were taken). */
         final byte[] avFx = new byte[AREA];
         /** The plots an avenue made a street of, where none was (MF2): a plot it ran along a street of a cell's is that street's still when the avenue is taken up there. */
         final boolean[] avOwn = new boolean[AREA];
         final int[] avN = new int[8];
-        int[] avKept = new int[512];
+        long[] avKept = new long[512];
         int avKeptN;
         /** avPlots()'s results (the plot, its step, whether a corner) and avFloor()'s steps, kept from call to call. */
         final int[] avBuf = new int[160], avBufK = new int[160], avSteps = new int[320];
@@ -3969,11 +3990,13 @@ public final class DistrictPlan {
             Arrays.fill(avWet, false);
             nOuter = 0;
             nAvList = 0;
+            avArms.clear();
             if (!avOn) return;
             long sx = (long) Math.floor(in.x0 + in.hubX), sy = (long) Math.floor(in.y0 + in.hubY);
             avOx = (int) (Math.floorDiv(sx + LATTICE / 2, (long) LATTICE) * LATTICE - in.x0);
             avOy = (int) (Math.floorDiv(sy + LATTICE / 2, (long) LATTICE) * LATTICE - in.y0);
             for (int a = 0; a < 4; a++) {
+                avArms.add(new int[] { avOx, avOy, a, 0, Integer.MAX_VALUE });
                 int dx = AVENUE_DX[a], dy = AVENUE_DY[a];
                 int kLo = Math.max(0, Math.max(dx > 0 ? -1 - avOx : avOx - FRAME, dy > 0 ? -1 - avOy : avOy - FRAME));
                 int kHi = Math.min(dx > 0 ? FRAME - avOx : avOx + 1, dy > 0 ? FRAME - avOy : avOy + 1);
@@ -4007,6 +4030,214 @@ public final class DistrictPlan {
                 avOuterList[m++] = p;
             }
             nOuter = m;
+            frontage();
+        }
+
+        /**
+         * FRONTAGE AVENUES (FA1): a diagonal staircase already in fx supplies two further avenue arms. Their
+         * origins and headings are independent of the founding arms. Only a run at least a block long counts, so a bend
+         * or a crossing of straight highways is not mistaken for a diagonal. The extent follows the plots laid so far;
+         * neither the final fixed array nor future journal records may reserve a street before its highway arrives.
+         */
+        boolean frontage() {
+            if (!avOn) return false;
+            boolean added = false;
+            for (int code : new int[] { 0, 3 }) {
+                int dy = AVENUE_DY[code];
+                for (int y = 0; y < FRAME; y++) for (int x = 0; x < FRAME - 1; x++) {
+                    if (!highwayStep(x, y, dy) || highwayStep(x - 1, y - dy, dy)) continue;
+                    int end = x;
+                    while (highwayStep(end, y + dy * (end - x), dy)) end++;
+                    if (end - x < LATTICE) continue;
+                    long line = in.x0 + x - dy * (in.y0 + y);
+                    long low = line - FRONTAGE_GAP;
+                    long high = line + FRONTAGE_GAP;
+                    added |= frontageArm(code, low, x, end);
+                    added |= frontageArm(code, high, x, end);
+                }
+            }
+            return added;
+        }
+
+        /** Whether (x,y), its horizontal corner and the next diagonal plot form a highway step, on current ground. */
+        boolean highwayStep(int x, int y, int dy) {
+            return x >= 0 && x + 1 < FRAME && y >= 0 && y < FRAME && y + dy >= 0 && y + dy < FRAME
+                    && fx[y * FRAME + x] == FIXED_HIGHWAY && fx[y * FRAME + x + 1] == FIXED_HIGHWAY
+                    && fx[(y + dy) * FRAME + x + 1] == FIXED_HIGHWAY;
+        }
+
+        /** Adds or extends one frontage arm; an open cell's standing buildings and curved bands keep their plots. */
+        boolean frontageArm(int code, long line, int fromX, int toX) {
+            int ox = (int) (Math.floorDiv(in.x0, LATTICE) * LATTICE - in.x0) - LATTICE;
+            int oy = (int) (AVENUE_DY[code] * (in.x0 + ox - line) - in.y0);
+            int a = 4;
+            for (; a < avArms.size(); a++) {
+                int[] arm = avArms.get(a);
+                if (arm[0] == ox && arm[1] == oy && arm[2] == code) break;
+            }
+            int lo = Math.max(0, fromX - ox - LATTICE), hi = toX - ox + LATTICE;
+            if (a == avArms.size()) avArms.add(new int[] { ox, oy, code, lo, hi });
+            else {
+                int[] arm = avArms.get(a);
+                if (lo >= arm[3] && hi <= arm[4]) return false;
+                arm[3] = Math.min(arm[3], lo);
+                arm[4] = Math.max(arm[4], hi);
+            }
+            for (int k = lo; k <= hi; k++) {
+                for (int c = 1; c >= 0; c--) {
+                    int x = ox + k, y = oy + AVENUE_DY[code] * (k - c);
+                    if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) continue;
+                    int p = y * FRAME + x;
+                    // The smooth band's outer plot belongs to the avenue too; never take a standing box's ground.
+                    int outerY = oy + AVENUE_DY[code] * k;
+                    int outer = x > 0 && outerY >= 0 && outerY < FRAME ? outerY * FRAME + x - 1 : -1;
+                    if (bOut != null && (occ[p] == 1 || cvKeep[p] || outer >= 0 && (occ[outer] == 1 || cvKeep[outer]))) continue;
+                    if (outer >= 0 && !avOuter[outer] && avMark[outer] == 0) {
+                        avOuter[outer] = true;
+                        if (nOuter == avOuterList.length) avOuterList = Arrays.copyOf(avOuterList, nOuter * 2);
+                        avOuterList[nOuter++] = outer;
+                    }
+                    if (avMark[p] == 0) {
+                        avMark[p] = (byte) (CityRuns.M_DIAG | (code << CityRuns.M_DIAG_SHIFT) | (c == 1 ? CityRuns.M_CORNER : 0));
+                        if (nAvList == avList.length) avList = Arrays.copyOf(avList, nAvList * 2);
+                        avList[nAvList++] = p;
+                    }
+                }
+            }
+            frontageWet(a);
+            return true;
+        }
+
+        /** The same bridge-length law as the founding arms, over the frontage extent currently known. */
+        void frontageWet(int a) {
+            int[] arm = avArms.get(a);
+            int run = 0;
+            for (int k = arm[3]; k <= arm[4]; k++) for (int c = 1; c >= 0; c--) {
+                int x = arm[0] + k, y = arm[1] + AVENUE_DY[arm[2]] * (k - c);
+                if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) { run = wetRun(run); continue; }
+                int p = y * FRAME + x;
+                if (World.bridgeable(in.terrain[p])) avRun[run++] = p; else run = wetRun(run);
+            }
+            wetRun(run);
+        }
+
+        /** Existing cells keep their grid: later frontage takes only free plots, without flooring their old streets. */
+        void frontageLate() {
+            avBegin();
+            nChanged = 0;
+            frontageSnapshot();
+            for (int c = 0; c < CELLS; c++) {
+                if (bOut.cellKind[c] == CLOSED) continue;
+                int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
+                layAvenues(x0, y0, x0 + INTERIOR, y0 + INTERIOR, false);
+            }
+            do {
+                frontageStops();
+            } while (frontageTails());
+            avAlone();
+            for (int k = 0; k < nChanged; k++) if (str[changed[k]] || under[changed[k]]) occ[changed[k]] = -1;
+            for (int c = 0; c < CELLS; c++) if (bOut.cellKind[c] != CLOSED) {
+                refreeCell(c);
+                forgetFails(c);
+                staleAround(c);
+            }
+            nChanged = 0;
+        }
+
+        /** A new cell may floor its new feet, while the neighbouring cells keep the grid they already had. */
+        void frontageKeepGrid() {
+            frontageProtect = avArms.size() > 4;
+            if (!frontageProtect) return;
+            if (frontageGrid == null) frontageGrid = new boolean[AREA];
+            for (int p = 0; p < AREA; p++) frontageGrid[p] = str[p] || under[p];
+        }
+
+        boolean frontageProtect;
+        boolean[] frontageGrid;
+
+        /** Street and avenue state before the current pass, for taking back its new band at a protected crossing. */
+        void frontageSnapshot() {
+            if (frontageWas == null) frontageWas = new int[AREA];
+            if (frontageHad == null) frontageHad = new boolean[AREA];
+            for (int i = 0; i < nAvList; i++) {
+                int p = avList[i];
+                frontageWas[p] = stateOf(p);
+                frontageHad[p] = avDone[p] == 1;
+            }
+        }
+
+        /** The grid before a late frontage pass; only that pass's avenue plots may be taken back. */
+        int[] frontageWas;
+        boolean[] frontageHad;
+
+        /** Stops at unavailable plots leave no new dangling street: trim only this pass's new tips, never old grid. */
+        boolean frontageTails() {
+            boolean changed = false;
+            for (int i = 0; i < nAvNow; i++) {
+                int p = avNowList[i], x = p % FRAME, y = p / FRAME;
+                if (avDone[p] != 1 || !str[p] || x == 0 || y == 0 || x == FRAME - 1 || y == FRAME - 1) continue;
+                int neighbours = 0;
+                for (int d = 0; d < 4; d++) {
+                    int q = p + TilePainter.DX[d] + FRAME * TilePainter.DY[d];
+                    if (str[q] || under[q]) neighbours++;
+                }
+                if (neighbours >= 2) continue;
+                frontageTakeUp(p);
+                changed = true;
+            }
+            return changed;
+        }
+
+        /** Gives back one new frontage plot exactly as it stood before the pass, retaining every existing street. */
+        void frontageTakeUp(int p) {
+            avUnlay(p);
+            int was = frontageWas[p];
+            setStr(p, (was & 64) != 0);
+            under[p] = (was & 32) != 0;
+            art[p] = (was & 8) != 0;
+            role[p] = (byte) (was & 7);
+            avOwn[p] = false;
+        }
+
+        /**
+         * A frontage arriving in an open cell cannot floor its old grid. Stop its new band at any crossing too near
+         * another instead, retaining the old street through the gap. As with a standing box, that plot is unavailable
+         * to the new avenue. Repeat because a stopped band's last grid plot may itself become a junction foot.
+         */
+        void frontageStops() {
+            for (int a = 4; a < avArms.size(); a++) {
+                boolean changed;
+                do {
+                    changed = false;
+                    int[] arm = avArms.get(a);
+                    int last = -AVENUE_APART;
+                    for (int j = arm[3]; j <= arm[4]; j++) {
+                        boolean meets = false;
+                        for (int f = 0; f < 4; f++) {
+                            int p = avFoot(a, j, f, 0, 0, FRAME - 1, FRAME - 1);
+                            if (p >= 0 && avFloorFoot(a, p, f)) meets = true;
+                        }
+                        if (!meets) continue;
+                        if (j - last >= AVENUE_APART) { last = j; continue; }
+                        changed |= frontageStopAt(arm, j) || frontageStopAt(arm, last);
+                    }
+                } while (changed);
+            }
+        }
+
+        /** Stops the new band at step j's feet; an older band is retained and the other crossing is stopped instead. */
+        boolean frontageStopAt(int[] arm, int j) {
+            boolean changed = false;
+            for (int k = j; k <= j + 1; k++) for (int corner = 0; corner <= 1; corner++) {
+                if (k > j && corner == 0) continue;
+                int x = arm[0] + k, y = arm[1] + AVENUE_DY[arm[2]] * (k - corner);
+                if (x < 0 || y < 0 || x >= FRAME || y >= FRAME) continue;
+                int p = y * FRAME + x;
+                if (avDone[p] != 1 || frontageHad[p] || (avMark[p] >> CityRuns.M_DIAG_SHIFT & 3) != arm[2]) continue;
+                frontageTakeUp(p);
+                changed = true;
+            }
+            return changed;
         }
 
         /** A run of `run` bridgeable (fresh or shallow) staircase plots (avRun) ended: all of them barred to the avenue when it is longer than the bridge (AVENUE_BRIDGE_STEPS, two plots a step). 0, the run now. */
@@ -4017,11 +4248,12 @@ public final class DistrictPlan {
 
         /** Arm a's staircase plots, corner before step, inside the box (inclusive, within the frame), in the order of the path: into avBuf, avBufK (the step) and avBufC (a corner). The count. */
         int avPlots(int a, int bx0, int by0, int bx1, int by1) {
-            int dx = AVENUE_DX[a], dy = AVENUE_DY[a];
+            int[] arm = avArms.get(a);
+            int avOx = arm[0], avOy = arm[1], dx = AVENUE_DX[arm[2]], dy = AVENUE_DY[arm[2]];
             int kLo = Math.max(dx > 0 ? bx0 - avOx : avOx - bx1, dy > 0 ? by0 - avOy : avOy - by1);
             int kHi = Math.min(dx > 0 ? bx1 - avOx : avOx - bx0, (dy > 0 ? by1 - avOy : avOy - by0) + 1);
             int n = 0;
-            for (int k = Math.max(0, kLo); k <= kHi; k++) {
+            for (int k = Math.max(arm[3], kLo); k <= Math.min(arm[4], kHi); k++) {
                 int x = avOx + dx * k, y = avOy + dy * (k - 1);
                 if (k >= 1 && x >= bx0 && x <= bx1 && y >= by0 && y <= by1) { avBuf[n] = y * FRAME + x; avBufK[n] = k; avBufC[n++] = true; }
                 y = avOy + dy * k;
@@ -4033,14 +4265,9 @@ public final class DistrictPlan {
         /** Whether any arm has a staircase plot inside the box (inclusive): the cell's interior, for a homes cell to keep the comb and an estate cell to keep its streets. */
         boolean avAny(int bx0, int by0, int bx1, int by1) {
             if (!avOn) return false;
-            for (int a = 0; a < 4; a++) {
-                int dx = AVENUE_DX[a], dy = AVENUE_DY[a];
-                int kLo = Math.max(dx > 0 ? bx0 - avOx : avOx - bx1, dy > 0 ? by0 - avOy : avOy - by1);
-                int kHi = Math.min(dx > 0 ? bx1 - avOx : avOx - bx0, (dy > 0 ? by1 - avOy : avOy - by0) + 1);
-                for (int k = Math.max(0, kLo); k <= kHi; k++) {
-                    int x = avOx + dx * k, y = avOy + dy * k, yc = avOy + dy * (k - 1);
-                    if (x >= bx0 && x <= bx1 && ((y >= by0 && y <= by1) || (k >= 1 && yc >= by0 && yc <= by1))) return true;
-                }
+            for (int a = 0; a < avArms.size(); a++) {
+                int n = avPlots(a, bx0, by0, bx1, by1);
+                for (int i = 0; i < n; i++) if (avMark[avBuf[i]] != 0) return true;
             }
             return false;
         }
@@ -4068,10 +4295,11 @@ public final class DistrictPlan {
             if (!avOn) return false;
             boolean broke = false;
             if (opening && avAny(x0, y0, x1 - 1, y1 - 1)) avN[AV_CELLS]++;
-            for (int a = 0; a < 4; a++) {
+            for (int a = 0; a < avArms.size(); a++) {
                 int n = avPlots(a, x0 - 1, y0 - 1, x1, y1);
                 for (int i = 0; i < n; i++) {
                     int p = avBuf[i];
+                    if (avMark[p] == 0) continue;
                     if (avDone[p] != 0) continue;
                     int kind = avKind(p);
                     if (kind == AVK_OFF) {
@@ -4122,12 +4350,21 @@ public final class DistrictPlan {
 
         /** Whether step m of arm a is a junction of the ring, by geometry alone: its column or its row is a cell's arterial line (a multiple of CELL in the frame, as every district's are). */
         boolean avRing(int a, int m) {
-            return Math.floorMod(avOx + AVENUE_DX[a] * m, CELL) == 0 || Math.floorMod(avOy + AVENUE_DY[a] * m, CELL) == 0;
+            int[] arm = avArms.get(a);
+            return Math.floorMod(arm[0] + AVENUE_DX[arm[2]] * m, CELL) == 0
+                    || a < 4 && Math.floorMod(arm[1] + AVENUE_DY[arm[2]] * m, CELL) == 0;
+        }
+
+        /** A new frontage may floor a ring's foot too: its two ring crossings need not share a lattice step. */
+        boolean avFloorFoot(int a, int p, int foot) {
+            if (role[p] == ROLE_STREET && !art[p]) return true;
+            return a >= 4 && (role[p] == ROLE_ARTERIAL || role[p] == ROLE_BOULEVARD)
+                    && (foot < 2 ? p % FRAME : p / FRAME) % CELL == 0;
         }
 
         /** Whether a cell-street junction at step m of arm a was kept. */
         boolean avKeptHas(int a, int m) {
-            int key = a << 28 | m;
+            long key = (long) a << 32 | (m & 0xffffffffL);
             for (int i = 0; i < avKeptN; i++) if (avKept[i] == key) return true;
             return false;
         }
@@ -4140,7 +4377,8 @@ public final class DistrictPlan {
          * two steps belongs to the street that runs on from it; the arms' plots about the origin are no street running on). The plot, or -1.
          */
         int avFoot(int a, int j, int f, int bx0, int by0, int bx1, int by1) {
-            int dx = AVENUE_DX[a], dy = AVENUE_DY[a], x, y, qx, qy;
+            int[] arm = avArms.get(a);
+            int avOx = arm[0], avOy = arm[1], dx = AVENUE_DX[arm[2]], dy = AVENUE_DY[arm[2]], x, y, qx, qy;
             switch (f) {
                 case 0: if (j < 1) return -1; x = avOx + dx * j; y = avOy + dy * (j - 2); qx = x; qy = y + dy; break;
                 case 1: x = avOx + dx * j; y = avOy + dy * (j + 1); qx = x; qy = y - dy; break;
@@ -4149,9 +4387,9 @@ public final class DistrictPlan {
             }
             if (x < bx0 || x > bx1 || y < by0 || y > by1 || qx < 0 || qy < 0 || qx >= FRAME || qy >= FRAME) return -1;
             int p = y * FRAME + x, q = qy * FRAME + qx;
-            if (avDone[q] != 1 || avMark[p] != 0 || !(str[p] || under[p])) return -1;
+            if (avDone[q] != 1 || (a < 4 ? avMark[p] != 0 : avDone[p] == 1) || !(str[p] || under[p])) return -1;
             int bx = x + (x - qx), by = y + (y - qy);
-            if (bx < 0 || by < 0 || bx >= FRAME || by >= FRAME || avMark[by * FRAME + bx] != 0 || !(str[by * FRAME + bx] || under[by * FRAME + bx])) return -1;
+            if (bx < 0 || by < 0 || bx >= FRAME || by >= FRAME || (a < 4 ? avMark[by * FRAME + bx] != 0 : avDone[by * FRAME + bx] == 1) || !(str[by * FRAME + bx] || under[by * FRAME + bx])) return -1;
             return p;
         }
 
@@ -4189,7 +4427,8 @@ public final class DistrictPlan {
                     }
                 }
             }
-            if (!any) return;
+            if (!any) { frontageProtect = false; return; }
+            if (frontageProtect) frontageSnapshot();
             avBegin();
             nChanged = 0;
             for (int c = 0; c < CELLS; c++) {
@@ -4203,6 +4442,10 @@ public final class DistrictPlan {
                 avFloor(x0 - 1, y0 - 1, x0 + INTERIOR, y0 + INTERIOR);
                 // What the floor took up is ground again.
                 for (int k = 0; k < nAvTaken; k++) occ[avTakenAt[k]] = cvKeep[avTakenAt[k]] ? -1 : occStart[avTakenAt[k]];
+            }
+            if (frontageProtect) {
+                do { frontageStops(); } while (frontageTails());
+                frontageProtect = false;
             }
             avAlone();
             // What holds a street now is no building's; what avAlone() took up again is the avenue's, kept off (blocked).
@@ -4289,8 +4532,10 @@ public final class DistrictPlan {
         void avFloor(int bx0, int by0, int bx1, int by1) {
             boolean taken = false;
             nAvTaken = 0;
-            for (int a = 0; a < 4; a++) {
-                int n = avPlots(a, bx0, by0, bx1, by1);
+            for (int a = 0; a < avArms.size(); a++) {
+                int ax0 = a < 4 ? bx0 : Math.max(0, bx0 - 2), ay0 = a < 4 ? by0 : Math.max(0, by0 - 2);
+                int ax1 = a < 4 ? bx1 : Math.min(FRAME - 1, bx1 + 2), ay1 = a < 4 ? by1 : Math.min(FRAME - 1, by1 + 2);
+                int n = avPlots(a, ax0, ay0, ax1, ay1);
                 if (n == 0) continue;
                 // The steps whose feet may lie in the box, ascending: a corner touches the column of its step and the row of the one before.
                 int m = 0;
@@ -4310,8 +4555,8 @@ public final class DistrictPlan {
                     last = j;
                     boolean cellStreet = false;
                     for (int f = 0; f < 4; f++) {
-                        int p = avFoot(a, j, f, bx0, by0, bx1, by1);
-                        if (p >= 0 && !art[p] && role[p] == ROLE_STREET) cellStreet = true;
+                        int p = avFoot(a, j, f, ax0, ay0, ax1, ay1);
+                        if (p >= 0 && avFloorFoot(a, p, f)) cellStreet = true;
                     }
                     if (!cellStreet) continue;
                     boolean near = false;
@@ -4323,15 +4568,26 @@ public final class DistrictPlan {
                         // A box floored again keeps a junction once (FX9: cellsOnGrown()'s cells are floored over their old ground too).
                         if (avKeptHas(a, j)) continue;
                         if (avKeptN == avKept.length) avKept = Arrays.copyOf(avKept, avKeptN * 2);
-                        avKept[avKeptN++] = a << 28 | j;
+                        avKept[avKeptN++] = (long) a << 32 | (j & 0xffffffffL);
                         continue;
                     }
                     avN[AV_STOPS]++;
                     for (int f = 0; f < 4; f++) {
-                        int p = avFoot(a, j, f, bx0, by0, bx1, by1);
-                        if (p < 0 || art[p] || role[p] != ROLE_STREET) continue;
+                        int p = avFoot(a, j, f, ax0, ay0, ax1, ay1);
+                        if (p < 0 || !avFloorFoot(a, p, f)) continue;
+                        if (a >= 4 && frontageProtect && frontageGrid[p]) {
+                            // The foot was an old cell's end; only the new continuation made it a junction. Stop that
+                            // continuation instead of taking up an old street plot.
+                            int[] arm = avArms.get(a);
+                            int dx = AVENUE_DX[arm[2]], dy = AVENUE_DY[arm[2]];
+                            int toward = f < 2 ? (f == 0 ? dy : -dy) * FRAME : f == 2 ? dx : -dx;
+                            int beyond = p - toward;
+                            if (frontageGrid[beyond] || !(str[beyond] || under[beyond]) || avDone[beyond] == 1) continue;
+                            p = beyond;
+                        }
                         if (str[p]) setStr(p, false);
                         under[p] = false;
+                        art[p] = false;
                         role[p] = 0;
                         taken = true;
                         if (nAvTaken == avTakenAt.length) avTakenAt = Arrays.copyOf(avTakenAt, nAvTaken * 2);
@@ -5614,6 +5870,21 @@ public final class DistrictPlan {
             // Repacked as the caller reads it: x at bits 40-47, y at 32-39, turned at bit 0.
             long r = best >>> 48, y = (best >>> 40) & 0xff, x = (best >>> 32) & 0xff;
             return (x << 40) | (y << 32) | (r << 8) | (best & 1);
+        }
+
+        /** Small homes take frontage cells before their square hinterland, so the avenue's wedges are built too. */
+        int frontageNext(DistrictPlan out) {
+            if (avArms.size() <= 4) return -1;
+            for (int k = bNext; k <= bFar; k++) {
+                int c = order[k];
+                if (out.cellKind[c] != CLOSED) continue;
+                int x0 = CELL * (c % CELLS_A_SIDE) + 1, y0 = CELL * (c / CELLS_A_SIDE) + 1;
+                for (int a = 4; a < avArms.size(); a++) {
+                    int n = avPlots(a, x0, y0, x0 + INTERIOR - 1, y0 + INTERIOR - 1);
+                    for (int i = 0; i < n; i++) if (avMark[avBuf[i]] != 0) return k;
+                }
+            }
+            return -1;
         }
 
         /**

@@ -18,6 +18,29 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.124 — FA1, frontage avenues beside diagonal highways — 2026-11-16, ready, see docs/queue/FA1-notes.md
+Diagonal highways gain a frontage avenue just outside each verge, using the
+avenue planner with separate origins and dated highway plots. New cells
+build along them; existing cells retain their grid and standing buildings,
+and frontage uses only available plots that keep junction spacing. Streets
+still pass beneath the highway. The painter keeps both strokes and their
+width where avenues cross, including across tile edges. PlanCheck and
+MapCheck guard strip use, both headings, late-city use against main, retained
+grid and boxes, the junction floor and the new crossings. The launcher dry
+run passed and the eight traces match main's. Map only; no model or save-format change.
+
+### 0.9.123 — R2e, Research: the 1951-2000 entries undone — 2026-11-16, ready, see docs/queue/R2e-notes.md
+The postwar engineering and business catalogue now removes 27 sourced changes
+from unfitted templates, with independent fitting, saved process decisions and
+exact modern destination figures. Completion fitting selects one paying
+equipment set; refits value one count over the rounded fleet.
+Zeolite composes with catalytic cracking,
+keeping the thermal process and dispatched-feed licence charges consistent.
+Panel Mill opens through E19 in 1981 on FPL-GTR-59; Wood Pellet Mill through
+E20 at retained 1970, explicitly undated within FPL-RP-656's 1970s.
+The eight default traces match main byte for byte. Source, estimates and
+verification evidence are recorded in the batch notes.
+
 ### 0.9.122 — PD1b, PD1's review follow-ups (the drivers' petrol, OilCheck 20) — 2026-11-16, ready, see docs/queue/PD1b-notes.md
 
 OilCheck reads rebuilt shopping and fuel before the saved household statement

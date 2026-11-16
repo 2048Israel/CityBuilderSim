@@ -776,7 +776,7 @@ public class BuildingDataCheck {
         for (int id = ham.citybuildersim.sectors.WoodProducts.SAWMILL; id <= ham.citybuildersim.sectors.WoodProducts.PELLET_MILL; id++) {
             years.put(id, 1900);
         }
-        years.put(ham.citybuildersim.sectors.WoodProducts.PANEL_MILL, 1980);
+        years.put(ham.citybuildersim.sectors.WoodProducts.PANEL_MILL, 1981);
         years.put(ham.citybuildersim.sectors.WoodProducts.PELLET_MILL, 1970);
         // R2: the rows research-1900.md 1.2 says did not exist in 1900, dated by the entry that opens each (its year here; the codes are ResearchCheck 7's)
         years.put(11, 1900);    // PE1 Electric Arc Furnace, December 1900
@@ -813,8 +813,8 @@ public class BuildingDataCheck {
                         + " Cement Plant, 1902 (Edison's long kilns, research-1900.md 1.2); and batch I8's eight 1900 but the Large Copper"
                         + " Mine, 1906 (Bingham Canyon, research-1900.md 1.2), and the Leach & SX-EW Plant, 1968 (E12, Bluebird); and"
                         + " batch I9's four 1900 but the Harvesting Operation, 1973 (E14, PIKA 75) - the Tree Plantation and the Woodlot"
-                        + " available from the start (research-1900.md 12); and batch I10's six 1900 but the Panel Mill, 1980 (OSB about"
-                        + " 1980), and the Wood Pellet Mill, 1970 (the 1970s) - research-1900.md 1.2's words, both unverified; and HY1's"
+                        + " available from the start (research-1900.md 12); and batch I10's six 1900 but the Panel Mill, 1981 (OSB first commercial, FPL-GTR-59; formerly about"
+                        + " 1980), and the Wood Pellet Mill, 1970 (the 1970s) - R2e E19/E20: FPL-GTR-59 dates OSB 1981, FPL-RP-656 dates only the pellet decade; and HY1's"
                         + " Hydro Station, 1900 (standing before it: Appleton 1882, Niagara 1895); and ET6's Rail and Road Bridge, 1900 (the Forth Bridge,"
                         + " 1890), the Highway Bridge undated as the Elevated Highway is; and R2's twenty-one more, undated before, dated by the entry that opens each (the Electric Arc Furnace PE1 1900, the Filling Station PB1 1905,"
                         + " the cracking units PE11 1913, the Assembly Plant PE13 1913, the cokers PE23 1929, the alkylation units PE25 1938, the reformers PE27"

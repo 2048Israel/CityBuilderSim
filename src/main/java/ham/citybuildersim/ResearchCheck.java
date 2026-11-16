@@ -26,14 +26,14 @@ import java.util.regex.Pattern;
  * The research catalogue is read whole from research.json, every discovery is on history's date with what it needs first, and the reader refuses
  * what is not a discovery (R2, slice A: ResearchCatalog and research.json; docs/studies/research-design.md 4, research-1900.md 8).
  *
- * WHY. research.json is 89 entries typed from two studies' tables, and a wrong figure in it is no error anywhere: a discovery a year late is an
+ * WHY. research.json is 91 entries typed from two studies' tables, and a wrong figure in it is no error anywhere: a discovery a year late is an
  * oxygen converter that arrives in 1953, and nobody sees it until the ensemble moves. So the dates, the needs, the work and the fees are held to
  * the studies' tables here, with spot values typed out below as the specification and not read back from the class under test; the law rows are
  * held to PolicyDates, whose dates the Policy gate already reads, so the catalogue and the gate cannot disagree about when a lever opens.
  *
  * What it has to prove:
  *
- *   1. THE FILE READS. The packaged file gives 89 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
+ *   1. THE FILE READS. The packaged file gives 91 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
  *      unique and in the studies' order; the counts by prefix and by field are the studies'; every entry has a name, a world, a touches and an
  *      effect; the kinds, the kind notes and the names of a few are the tables'.
  *   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 26
@@ -51,8 +51,8 @@ import java.util.regex.Pattern;
  *      yes and no of a few engineering, medicine and business entries are as typed.
  *   7. BUILDINGS.JSON'S CODES (slice B). Every "since" that is not a year, on a template, a recipe or a piece, is a code in the catalogue: a
  *      template's one that unlocks a building, a piece's one that unlocks equipment, a recipe's one that is not a building alone. The
- *      code-dated templates are exactly research-1900.md 1.2's list typed out by id (29), the Oxygen Steel Shop is dated 1900, the Panel Mill 1980
- *      and the Wood Pellet Mill 1970, every other row undated or 1900; every building entry opens a template but PE12 and B8; a template's year
+ *      code-dated templates are exactly research-1900.md 1.2's list typed out by id (31), the Oxygen Steel Shop is dated 1900, the Panel Mill E19 1981
+ *      and the Wood Pellet Mill E20 1970, every other row undated or 1900; every building entry opens a template but PE12 and B8; a template's year
  *      is its entry's. A building file read from text keeps a code as written, reports one the catalogue lacks and never knows it.
  *   8. KNOWN FROM HISTORY'S MONTH. The tractor's piece and recipe are known from PE14's month and not the month before, the oxygen converter's
  *      recipe from E1's (November 1952), the Container Terminal from E5's, the Electric Arc Furnace from PE1's December 1900, the Pulp Mill's kraft
@@ -136,7 +136,7 @@ public class ResearchCheck {
 
     /** The prefixes in the studies' order, and how many entries each has. */
     static final String[] PREFIXES = {"E", "M", "B", "L", "PE", "PM", "PB", "PL"};
-    static final int[] PREFIX_COUNTS = {18, 10, 8, 5, 27, 6, 3, 12};
+    static final int[] PREFIX_COUNTS = {20, 10, 8, 5, 27, 6, 3, 12};
 
     /** Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. */
     static final Object[][] WORK = {
@@ -212,16 +212,16 @@ public class ResearchCheck {
         String real = text("/" + ResearchCatalog.FILE_NAME);
 
         /* ==================== 1. the file reads ==================== */
-        System.out.println("--- the packaged file gives 89 entries and reports nothing ---");
+        System.out.println("--- the packaged file gives 91 entries and reports nothing ---");
         Read fresh = read(real);
         int inFile = JsonParser.parseString(real).getAsJsonObject().getAsJsonArray("entries").size();
-        check("the file has 89 entries and the catalogue read " + cat.entries().size() + " of them", inFile == 89 && cat.entries().size() == 89);
-        check("a fresh reading of the file's text reads all 89 and writes nothing to the log", fresh.catalogue().entries().size() == 89 && fresh.log().isEmpty());
+        check("the file has 91 entries and the catalogue read " + cat.entries().size() + " of them", inFile == 91 && cat.entries().size() == 91);
+        check("a fresh reading of the file's text reads all 91 and writes nothing to the log", fresh.catalogue().entries().size() == 91 && fresh.log().isEmpty());
         check("nothing was skipped: the fresh reading has the same codes, in the same order, as the file",
                 codes(fresh.catalogue()).equals(codes(cat)));
         Set<String> unique = new HashSet<>(codes(cat));
-        check("the 89 codes are unique", unique.size() == 89);
-        check("the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5", codes(cat).equals(orderOf()));
+        check("the 91 codes are unique", unique.size() == 91);
+        check("the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E20", codes(cat).equals(orderOf()));
         Map<String, Integer> byPrefix = new HashMap<>();
         for (Entry e : cat.entries()) byPrefix.merge(prefixOf(e.code()), 1, Integer::sum);
         for (int p = 0; p < PREFIXES.length; p++) {
@@ -229,7 +229,7 @@ public class ResearchCheck {
         }
         Map<Field, Integer> byField = new HashMap<>();
         for (Entry e : cat.entries()) byField.merge(e.field(), 1, Integer::sum);
-        check("ENGINEERING has 45, MEDICINE 16, BUSINESS 11 and LAW 17 (" + byField + ")", byField.get(Field.ENGINEERING) == 45
+        check("ENGINEERING has 47, MEDICINE 16, BUSINESS 11 and LAW 17 (" + byField + ")", byField.get(Field.ENGINEERING) == 47
                 && byField.get(Field.MEDICINE) == 16 && byField.get(Field.BUSINESS) == 11 && byField.get(Field.LAW) == 17);
         boolean fieldOfPrefix = true;
         for (Entry e : cat.entries()) {
@@ -531,7 +531,7 @@ public class ResearchCheck {
             Map.entry(102, "E4"), Map.entry(109, "E4"), Map.entry(110, "E4"), Map.entry(96, "E5"), Map.entry(73, "E6"),
             Map.entry(81, "E7"), Map.entry(82, "E7"), Map.entry(46, "B2"), Map.entry(123, "E12"), Map.entry(12, "E13"),
             Map.entry(107, "E13"), Map.entry(130, "E14"), Map.entry(18, "B4"), Map.entry(41, "E16"), Map.entry(23, "M8"),
-            Map.entry(47, "B6")));
+            Map.entry(47, "B6"), Map.entry(135, "E19"), Map.entry(138, "E20")));
 
     static BuildingsTemplate byId(List<BuildingsTemplate> templates, int id) {
         for (BuildingsTemplate t : templates) if (t.getId() == id) return t;
@@ -572,15 +572,15 @@ public class ResearchCheck {
                 + codeDated.size() + " of them)", templateFault == null && !codeDated.isEmpty(), templateFault);
         check("...every piece of equipment whose since is a code has one that unlocks equipment (" + pieces + " of them)", pieceFault == null && pieces > 0, pieceFault);
         check("...and every recipe whose since is a code has one that is not a building alone (" + recipes + " of them)", recipeFault == null && recipes > 0, recipeFault);
-        check("the templates dated by a code are exactly research-1900.md 1.2's list, 29 of them, each by the entry that opens it",
-                codeDated.equals(CODED) && CODED.size() == 29, codeDated + " vs " + CODED);
+        check("the templates dated by a code are exactly research-1900.md 1.2's list, 31 of them, each by the entry that opens it",
+                codeDated.equals(CODED) && CODED.size() == 31, codeDated + " vs " + CODED);
 
         BuildingsTemplate oxygen = byId(shipped, 106), panel = byId(shipped, 135), pellets = byId(shipped, 138);
         check("the Oxygen Steel Shop is dated 1900 (its Bessemer and open-hearth recipes are its 1900 ways; E1 dates its recipe, not the building)",
                 oxygen != null && oxygen.getSinceText().equals("1900") && oxygen.getSince() == 1900);
-        check("the Panel Mill stays 1980 and the Wood Pellet Mill 1970, years: research-1900.md's words, no entry yet (Q13)",
-                panel != null && panel.getSinceText().equals("1980") && panel.getSince() == 1980
-                        && pellets != null && pellets.getSinceText().equals("1970") && pellets.getSince() == 1970);
+        check("the Panel Mill is E19 at sourced 1981 and the Wood Pellet Mill E20 at retained 1970 (Q13, R2e)",
+                panel != null && panel.getSinceText().equals("E19") && panel.getSince() == 1981
+                        && pellets != null && pellets.getSinceText().equals("E20") && pellets.getSince() == 1970);
         List<String> odd = new ArrayList<>();
         for (BuildingsTemplate t : shipped) {
             if (CODED.containsKey(t.getId()) || t == panel || t == pellets) continue;
@@ -596,7 +596,7 @@ public class ResearchCheck {
             if (!codeDated.containsValue(e.code())) unopened.add(e.code());
         }
         check("every discovery that unlocks a building (" + buildingEntries + ") opens at least one template but PE12 (no fertiliser works: no FERTILISER good yet) and B8 (the Fulfilment Centre, not built yet)",
-                buildingEntries == 23 && new HashSet<>(unopened).equals(Set.of("PE12", "B8")) && unopened.size() == 2, unopened.toString());
+                buildingEntries == 25 && new HashSet<>(unopened).equals(Set.of("PE12", "B8")) && unopened.size() == 2, unopened.toString());
 
         // A file read from text: a year, a code, nothing, and a code the catalogue lacks.
         String json = "{\"buildings\": [{\"id\": 1, \"name\": \"Coded Works\", \"category\": \"INDUSTRIAL\", \"since\": \"PE4\"},"
@@ -876,14 +876,16 @@ public class ResearchCheck {
         return out;
     }
 
-    /** The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5. */
+    /** The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E20. */
     static List<String> orderOf() {
         List<String> out = new ArrayList<>();
         for (int p = 0; p < PREFIXES.length; p++) {
-            int n = PREFIX_COUNTS[p] - (PREFIXES[p].equals("L") ? 1 : 0);
+            int n = PREFIX_COUNTS[p] - (PREFIXES[p].equals("L") ? 1 : PREFIXES[p].equals("E") ? 2 : 0);
             for (int i = 1; i <= n; i++) out.add(PREFIXES[p] + i);
         }
         out.add("L5");
+        out.add("E19");
+        out.add("E20");
         return out;
     }
 
