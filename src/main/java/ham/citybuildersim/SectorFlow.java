@@ -223,7 +223,7 @@ public final class SectorFlow {
 
     /** The plant alone (the Sectors list's cards and every page's RUNNING AT). */
     public static Plant plant(Sector sector) {
-        double[] ratios = { sector.getAverageFill(), sector.getEnergyRatio(), sector.getWaterRatio(),
+        double[] ratios = { sector.getAverageFill(), sector.getPowerRatio(), sector.getWaterRatio(),
                 sector.getRoadRatio(), sector.getHealthRatio(), sector.getFreightRatio() };
         // The running product in getOperatingRate()'s own order, so its last
         // step is the rate to the bit.

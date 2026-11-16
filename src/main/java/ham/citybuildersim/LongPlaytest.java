@@ -2410,6 +2410,21 @@ public class LongPlaytest {
                 .withPath(PATH, PATH_SEED);
     }
 
+    /** Whether the run founds its city the 1900 way, under -Dplaytest.founded=1900 (R1d): today's city when unset. */
+    static final boolean FOUNDED_1900 = "1900".equals(System.getProperty("playtest.founded", "today").trim());
+
+    /**
+     * The city the playtest itself plays - main(), probeCity() and the ensemble: founding(), or earthFounding() round {@code earthSpot} when
+     * it is not null, founded the 1900 way under FOUNDED_1900 (research known as of 1900, its equipment unfitted, 1901's wages). WHY A FLAG
+     * (R1d call 1): the 1900 city stalls - R1d's run had 472 people at month 60 and 159 at month 900, against today's city's 1,674 and
+     * 23,180 - so the gate keeps auditing today's grown city until R1g makes the 1900 one grow; the harnesses that borrow founding() keep
+     * today's city either way.
+     */
+    static Founding played(String earthSpot) {
+        Founding city = earthSpot == null ? founding() : earthFounding(earthSpot);
+        return FOUNDED_1900 ? city.withUnfitted(true) : city;
+    }
+
     /* =====================================================================
        THE WORLD BEYOND THE CITY (WN1; spec-nations 7.3)
 
@@ -4210,21 +4225,23 @@ public class LongPlaytest {
      * first.
      */
     static final java.util.Map<String, Integer> refinersOpened = new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>();
-    static int[] refinersLast;
+    /**
+     * Each refiner's count last month, by template id (R1d): the refiners' known templates grow as a 1900 city
+     * researches them, so a count kept by the list's index ran past the first month's list (month 157 of the default
+     * playtest, once 1900 became the default founding).
+     */
+    static final java.util.Map<Integer, Integer> refinersLast = new java.util.HashMap<>();
     static int mostCrudeUnits, mostConversionUnits, firstRefinerMonth;
 
     static void countRefiners(Game g) {
         BuildingManager b = g.getBuildingManager();
-        List<BuildingsTemplate> all = b.getTemplatesBySector(Sectors.REFINING);
-        if (refinersLast == null) refinersLast = new int[all.size()];
         int crude = 0, units = 0;
-        for (int i = 0; i < all.size(); i++) {
-            BuildingsTemplate t = all.get(i);
-            int q = b.getQuantity(t.getId());
+        for (BuildingsTemplate t : b.getTemplatesBySector(Sectors.REFINING)) {
+            int q = b.getQuantity(t.getId()), last = refinersLast.getOrDefault(t.getId(), 0);
             if (ham.citybuildersim.sectors.Refining.isCrudeUnit(t)) crude += q; else units += q;
-            if (q > refinersLast[i]) refinersOpened.merge(t.getName(), q - refinersLast[i], Integer::sum);
-            if (q < refinersLast[i]) refinersSold.merge(t.getName(), refinersLast[i] - q, Integer::sum);
-            refinersLast[i] = q;
+            if (q > last) refinersOpened.merge(t.getName(), q - last, Integer::sum);
+            if (q < last) refinersSold.merge(t.getName(), last - q, Integer::sum);
+            refinersLast.put(t.getId(), q);
         }
         if (firstRefinerMonth == 0 && crude + units > 0) firstRefinerMonth = g.getMonth();
         mostCrudeUnits = Math.max(mostCrudeUnits, crude);
@@ -6370,7 +6387,7 @@ public class LongPlaytest {
 
         // On the flag's preset (0.7.10): Standard when unset. See THE FOUNDING, AS A CHOICE.
         // ...and on the real Earth under --earth (0.7.121): ON THE REAL EARTH.
-        Game g = new Game(files, EARTH == null ? founding() : earthFounding(EARTH));
+        Game g = new Game(files, played(EARTH));
         retirementWatch = new RetirementWatch();
         landLedgerMonths = landLedgerDiffMonths = landLedgerWorstMonth = 0;
         landLedgerWorstSqFt = 0;
@@ -8348,7 +8365,7 @@ public class LongPlaytest {
         System.setOut(PROBE_QUIET);
         try {
             resetTheFloat();
-            Game g = new Game(files, earthSpot == null ? founding() : earthFounding(earthSpot));
+            Game g = new Game(files, played(earthSpot));
             g.run();
             childcareWhenNeeded(g);
             g.getDebtManager().setAutopilot(AUTOPILOT);

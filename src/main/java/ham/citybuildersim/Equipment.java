@@ -25,6 +25,10 @@ import java.util.Map;
  * June 1917, and not before; a code that is not in the catalogue is never known. knownAt() asks by the game month, knownIn() by the year.
  */
 public final class Equipment {
+    /** Estimated installation points per tonne of motor, shafting and switchgear; replaces a tenth of an unrelated building's work (R1d). */
+    public static final double DRIVE_WORK_PER_TONNE = 10;
+    /** A crew's fixed setup for an electric-drive installation, in BUILDING_WORK points (R1d, estimate). */
+    public static final double DRIVE_SETUP_POINTS = 1;
 
     /** The 1900 form a piece ends: the share of a sector (or of the carts) that still runs the old way, EquipmentForms sets it from the count of buildings unfitted. */
     public enum Form {

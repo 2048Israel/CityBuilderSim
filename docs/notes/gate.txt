@@ -1,10 +1,8 @@
-# gate of Merge batch/LF1c: lF1's review follow-ups (the short's lending fee): the Fund screen's words (`ui/FundScreen.java:946` shows the raw LENDING_FEE, `:924` a bond's "face gone" for shares, `:431`/`:674` "dividends" holding the fees); `Exchange.cancelShortHeld`'s wipe with no VALUATION line, so `ForeignAccounts`' forgiven misses it; ShortSellingCheck 8's fixture in an order the month never runs (LF1's gate review, 2026-11-08: SHIP + FOLLOW-UP), 0.9.125
+# gate of Merge batch/R1d: research: the 1900 city switched on, with R0d's 1901 wages - founded with the known equipment unfitted, judged on a 1900 city: the carters' sizing and the team's price (R0c ★6-7), steam in the brownout ratio (★8), the electric drive's fitting work (R1 notes, found), the ensemble; and R1b's gate review (2026-11-05): a building scrapped while its fitting is on site (`Game.java:1325`: the job keeps its points and fits another unfitted building or none, the builders keep the money; refund or not, and a harness), and `fit()` crediting the builders the quote rather than what `treasuryPays()` paid (`Game.java:1270`, at most `SHORTFALL_DUST`; the build paths do the same), 0.9.126
 # date: 2026-11-16
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 198 harnesses run in 2156s: 191 passed, 7 failed
-MoneyDatesCheck | exit 1
-MoneyDatesCheck | the exhausted-gold city's whole foreign-account twin matches after the next month                          FAIL
+# suite: 208 harnesses run in 2580s: 203 passed, 5 failed
 InvestCheck | exit 1
 InvestCheck | an older save's contract on site is read as its template's owner's - the landlords', for Houses, with the share of the tax a House of theirs gets back, which is not all of it FAIL
 InvestCheck | 1 FAILED
@@ -21,9 +19,6 @@ DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
 PrizeCheck | exit 2
-PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1024.9701218825003 of 1021.3374306117544)
+PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1024.9603884263051 of 1021.3278039553579)
 PrizeCheck | FAIL ...and its till (at most 410) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284
-ResearchViewCheck | exit 1
-ResearchViewCheck | FAIL the sector filter keeps only its sector's templates (Industry: 1 rows, Agriculture: 3 of 6), and the sectors' rows add up to the city's
-ResearchViewCheck | ResearchViewCheck: 1 FAILED of 217

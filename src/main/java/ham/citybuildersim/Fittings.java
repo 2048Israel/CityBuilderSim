@@ -81,6 +81,32 @@ public final class Fittings {
     }
 
     /**
+     * After buildings of a template were scrapped (R1d; BuildingsStacks.lowerUnfitted(), the unfitted ones first): of each piece, the jobs past
+     * the count of its buildings still unfitted, `unfittedLeft`, are cancelled, the newest first, and nothing else. A job stands for one unfitted
+     * building, and the buildings of a stack are a count: while one unfitted building is left for a job, the scrapped ones were the plants no
+     * one was refitting, as an owner would choose, and the job goes on. A job with no building left is cancelled, the newest first because the
+     * oldest are furthest along (work() works them first).
+     *
+     * ★ NO REFUND. The fitting was paid and booked at the order (Game.fit(): the builders' revenue and the national accounts' investment that
+     * month), so unlike a site's contract (ConstructionControl, CANCEL) there is no unearned balance for a refund to come out of; the goods
+     * were bought and the work begun. The loss is one fitting's price at most a job, and only when the last unfitted building goes.
+     */
+    public void scrapped(int templateId, java.util.function.ToIntFunction<String> unfittedLeft) {
+        java.util.Map<String, Integer> excess = new java.util.HashMap<>();
+        for (Job j : jobs) if (j.templateId == templateId) excess.merge(j.pieceId, 1, Integer::sum);
+        if (excess.isEmpty()) return;
+        excess.replaceAll((piece, onSite) -> onSite - Math.max(0, unfittedLeft.applyAsInt(piece)));
+        for (int i = jobs.size() - 1; i >= 0; i--) {
+            Job j = jobs.get(i);
+            if (j.templateId != templateId) continue;
+            int over = excess.getOrDefault(j.pieceId, 0);
+            if (over <= 0) continue;
+            jobs.remove(i);
+            excess.put(j.pieceId, over - 1);
+        }
+    }
+
+    /**
      * Works `points` off the jobs in the order placed: the first job's remainder first, then the next, and so on until the points are gone. A
      * job whose points reach nothing is finished and taken off the list; a job of no points finishes at the first call, whatever `points` is.
      *

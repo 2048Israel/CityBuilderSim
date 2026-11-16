@@ -128,6 +128,12 @@ public class FittingCheck {
         sectionTen();
         sectionEleven();
         sectionTwelve();
+        scrappedMidFitting();
+        actualPayment();
+        steamAndTractor();
+        taxedFitting();
+        mixedFarmTractor();
+        foreignWhileFitting();
 
         out.println(fails == 0 ? "\nAll FittingCheck assertions passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -239,12 +245,12 @@ public class FittingCheck {
         check("clear() forgets which shares were driven", g.getEquipmentForms().driven().isEmpty(), g.getEquipmentForms().driven().toString());
         step(g, 1);
         check("fixture: the counts drive them again from the next month", !g.getEquipmentForms().driven().isEmpty());
-        quietly(g::newGame);
+        quietly(() -> g.newGame(Founding.defaults()));
         check("a new game on the same object drives none", g.getEquipmentForms().driven().isEmpty(), g.getEquipmentForms().driven().toString());
         check("...with every steam share and the horse shares at 0", EquipmentCheck.maxSteam(g) == 0 && g.getSectors().agriculture().getHorseShare() == 0
                 && g.getSectors().freight().haulage().getHorseShare() == 0 && !EquipmentCheck.anyUnfitted(g), shares(g));
         Game founded = new Game(GameFiles.scratch("fitting-cleared-fresh"));
-        quietly(founded::newGame);
+        quietly(() -> founded.newGame(Founding.defaults()));
         check("...as a fresh Game's new game has", shares(g).equals(shares(founded)) && founded.getEquipmentForms().driven().equals(g.getEquipmentForms().driven()));
     }
 
@@ -563,8 +569,9 @@ public class FittingCheck {
         });
         BuildingsStacks bakery = stack(g, "Bakery");
         if (bakery.getQuantity() < unfitted) quietly(() -> g.buildStack(bakery.getBuilding(), unfitted - bakery.getQuantity(), true));
-        bakery.setUnfitted(DRIVE, unfitted);
         step(g, 1);
+        bakery.setUnfitted(DRIVE, unfitted);
+        g.getEquipmentForms().apply(g);
         return g;
     }
 
@@ -855,8 +862,13 @@ public class FittingCheck {
                 a.getBuildingOutput() == b.getBuildingOutput() && a.getBuildingOutput() > drive.getWork() && bakeryA.getUnderConstruction() == 12 && bakeryB.getUnderConstruction() == 12
                         && a.getCash() == b.getCash() && afterRepairs(a) == a.getBuildingOutput(), a.getBuildingOutput() + " vs " + b.getBuildingOutput());
         int without = b.getBuildingOutput();
+        int allPostsWithout = a.getBuildingOutputAtEveryPost();
+        double waitWithout = a.getBuildingManager().waitFor(t, 1, allPostsWithout);
         String ordered = a.fitForCity(t, DRIVE);
         check("fixture: the city orders one drive in A", ordered == null && a.getFittings().onSite(t.getId(), DRIVE) == 1, String.valueOf(ordered));
+        check("fitting work leaves steady site throughput unchanged", a.getBuildingOutputAtEveryPost() == allPostsWithout);
+        near("the planners add the fitting's work once as a priority delay",
+                a.getBuildingManager().waitFor(t, 1, allPostsWithout) - waitWithout, drive.getWork() / allPostsWithout, 1e-12);
         check("the output between the presses reads what the next advance will give the sites: the repairs' left less the fittings' points, whole",
                 a.getBuildingOutput() == without - (int) Math.min(without, Math.ceil(drive.getWork())), a.getBuildingOutput() + " vs " + without + " - " + drive.getWork());
         step(a, 1);
@@ -879,25 +891,34 @@ public class FittingCheck {
         BuildingsTemplate fabT = fab.getBuilding();
         Equipment fabDrive = fabT.getEquipment(DRIVE);
         Sector fabSector = c.getSectors().byKey(fabT.getSector());
-        // RN1 (2026-11-09): a glut's rent no longer lifted, the town came out of the settle larger and its crews fuller (59% of the posts
-        // against 39% on 0.9.62), so four depots' month after the repairs (829) was more than the drive's work (612). The fixture retires
-        // depots, one at a time, until even every post filled would leave the crews less than the drive's work after the repairs.
-        BuildingsTemplate depot = c.getBuildingManager().getTemplateByName("Construction Depot");
-        while (c.getBuildingManager().getQuantity(depot.getId()) > 0
-                && c.getBuildingManager().getTotalConstructionCapacity() * c.getRoadRatio() * c.getHealth().getWorkRatio() - c.getMaintenancePoints() >= fabDrive.getWork())
-            quietly(() -> c.getBuildingManager().retire(depot, 1));
-        fab.setUnfitted(DRIVE, 1);
+        // Cause a multi-month installation independently of the current balance estimate.
+        // The real drive can now fit in one month; this fixture needs a long piece, not a whole city starved of repairs.
         step(c, 1);
+        Equipment longDrive = new Equipment(fabDrive.getId(), fabDrive.getName(), fabDrive.getSince(), fabDrive.getEnds(),
+                fabDrive.getBuys(), Math.max(fabDrive.getWork(), 3.0 * c.getBuildingOutputAtEveryPost()), fabDrive.getLifeMonths());
+        java.util.List<Equipment> pieces = new java.util.ArrayList<>(fabT.getEquipment());
+        pieces.replaceAll(piece -> piece.getId().equals(DRIVE) ? longDrive : piece);
+        fabT.setEquipment(pieces);
+        fabDrive = longDrive;
+        fab.setUnfitted(DRIVE, 1);
+        c.getEquipmentForms().apply(c);
         int month = afterRepairs(c);
         check("fixture: a Fabrication Works stands and lacks its drive, and fitting it is more work than a month's output after the repairs",
                 fab.getQuantity() == 1 && fab.getUnfitted(DRIVE) == 1 && fabDrive.getWork() > month && month > bake.getBuilding().getEquipment(DRIVE).getWork(),
                 "work " + fabDrive.getWork() + " vs output " + month);
         double shareBefore = fabSector.getSteamShare();
+        int steadyOutput = c.getBuildingOutputAtEveryPost();
+        double steadyWait = c.getBuildingManager().waitFor(fabT, 1, steadyOutput);
         String o1 = c.fitForCity(fabT, DRIVE);
         String o2 = c.fitForCity(bake.getBuilding(), DRIVE);
         check("fixture: the city orders the Works' drive first and a Bakery's second", o1 == null && o2 == null && c.getFittings().view().size() == 2
                 && c.getFittings().view().get(0).templateId == fabT.getId() && c.getFittings().view().get(1).templateId == bake.getBuilding().getId(), o1 + " / " + o2);
         check("fixture: the Works' share of steam is up (a building in it lacks its drive)", shareBefore > 0 && fabSector.getSteamShare() == shareBefore, shareBefore + "");
+        double delayed = c.getBuildingManager().waitFor(fabT, 1, steadyOutput);
+        check("a fitting of at least two full months leaves a finite longer quoted wait and the same steady throughput",
+                fabDrive.getWork() >= 2.0 * steadyOutput && Double.isFinite(delayed) && delayed < Double.MAX_VALUE
+                        && delayed > steadyWait && c.getBuildingOutputAtEveryPost() == steadyOutput);
+        near("the entire fittings queue delays this order once", delayed - steadyWait, c.getFittings().pointsOwed() / steadyOutput, 1e-12);
         double bakeWork = bake.getBuilding().getEquipment(DRIVE).getWork();
         int presses = 0;
         boolean countHeld = true, secondHeld = true, taken = true, shareAtRest = true;
@@ -1157,4 +1178,226 @@ public class FittingCheck {
         check("no job is on site in any of the 24 months, and the builders were paid no fitting", noJob && g.getSectors().construction().getFittingThisMonth() == 0);
         check("no sector's line says Fitted in any month, and the choice hands every sector's plan back, the very object, every month", noFitted && planKept, fault);
     }
+    /** R1d: demolition really removes a building while its paid job is partly worked. */
+    static void scrappedMidFitting() {
+        out.println("\n--- 13. a building scrapped mid-fitting: its job goes on while an unfitted building is left for it, and with none left"
+                + " is cancelled, the newest first, with no refund and no transfer ---");
+        Game g = fitTown("fitting-scrap", 4);
+        BuildingsStacks bakery = stack(g, "Bakery");
+        int id = bakery.getBuilding().getId();
+        Equipment piece = bakery.getBuilding().getEquipment(DRIVE);
+        ham.citybuildersim.sectors.Construction builders = g.getSectors().construction();
+        double each = piece.getWork();
+
+        // (a) one job, two unfitted bakeries: a scrap leaves one unfitted for it.
+        g.getFittings().clear();
+        bakery.setUnfitted(DRIVE, 2);
+        check("fixture: the city pays for a fitting on one of two unfitted bakeries", g.fitForCity(bakery.getBuilding(), DRIVE) == null
+                && g.getFittings().onSite(id, DRIVE) == 1 && each > 0);
+        g.getFittings().work(each / 2);
+        double left = g.getFittings().pointsOwed();
+        check("fixture: its work has begun and is not done", left > 0 && left < each);
+        double cash = g.getCash(), earned = builders.getFittingThisMonth();
+        int standing = bakery.getQuantity();
+        bakery.removeQuantity(1);
+        check("fixture: the scrap took an unfitted bakery (the unfitted first), one still without the drive",
+                bakery.getQuantity() == standing - 1 && bakery.getUnfitted(DRIVE) == 1);
+        check("an unfitted bakery is left for the job: it goes on, its points as they were", g.getFittings().onSite(id, DRIVE) == 1
+                && g.getFittings().pointsOwed() == left);
+        check("...and the scrap moved no money: the city's cash and the builders' fitting revenue as they were",
+                g.getCash() == cash && builders.getFittingThisMonth() == earned);
+        for (int m = 0; m < 12 && !g.getFittings().isEmpty(); m++) g.workTheFittings();
+        check("the job, worked out, fits the bakery left: none without the drive", g.getFittings().isEmpty() && bakery.getUnfitted(DRIVE) == 0);
+
+        // (b) two jobs, two unfitted bakeries: each scrap leaves one fewer unfitted than jobs.
+        bakery.setUnfitted(DRIVE, 2);
+        check("fixture: the city pays for fittings on both of two unfitted bakeries", g.fitForCity(bakery.getBuilding(), DRIVE) == null
+                && g.fitForCity(bakery.getBuilding(), DRIVE) == null && g.getFittings().onSite(id, DRIVE) == 2);
+        g.getFittings().work(each / 2);
+        java.util.List<Fittings.Job> jobs = g.getFittings().view();
+        double older = jobs.get(0).pointsLeft;
+        check("fixture: the older job is part worked, the newer not begun", jobs.size() == 2 && older < each && jobs.get(1).pointsLeft == each);
+        cash = g.getCash();
+        earned = builders.getFittingThisMonth();
+        bakery.removeQuantity(1);
+        jobs = g.getFittings().view();
+        check("one unfitted bakery for two jobs: the newest is cancelled, the part-worked older one goes on", bakery.getUnfitted(DRIVE) == 1
+                && jobs.size() == 1 && jobs.get(0).pointsLeft == older);
+        bakery.removeQuantity(1);
+        check("the last unfitted bakery scrapped: its job, with no building left to fit, is cancelled", bakery.getUnfitted(DRIVE) == 0
+                && g.getFittings().isEmpty() && g.getFittings().pointsOwed() == 0);
+        check("...and neither scrap refunded anything: the city's cash and the builders' fitting revenue as they were",
+                g.getCash() == cash && builders.getFittingThisMonth() == earned);
+        int fitted = bakery.getQuantity() - bakery.getUnfitted(DRIVE);
+        g.workTheFittings();
+        check("the cancelled work fits nothing: the bakeries standing keep the drive they had", g.getFittings().isEmpty()
+                && bakery.getQuantity() - bakery.getUnfitted(DRIVE) == fitted);
+
+        bakery.setUnfitted(DRIVE, 1);
+        check("a bakery left without the drive needs a fresh paid order", g.fitForCity(bakery.getBuilding(), DRIVE) == null
+                && g.getFittings().pointsOwed() == each && g.getCash() < cash);
+        g.workTheFittings();
+        int stillUnfitted = bakery.getUnfitted(DRIVE);
+        double afterPayment = g.getCash();
+        g.run();
+        check("running an initialized city again keeps its purchased fitting and money", bakery.getUnfitted(DRIVE) == stillUnfitted
+                && g.getCash() == afterPayment);
+    }
+
+    /** R1d: the dust exemption admits the order, while the bound treasury can pay less than its quote. */
+    static void actualPayment() {
+        out.println("\n--- 14. the builders earn what the treasury actually paid, even inside SHORTFALL_DUST ---");
+        Game g = fitTown("fitting-dust", 1);
+        BuildingsStacks bakery = stack(g, "Bakery");
+        g.getFittings().clear();
+        bakery.setUnfitted(DRIVE, 1);
+        Equipment piece = bakery.getBuilding().getEquipment(DRIVE);
+        g.getCentralBank().advanceToTreasury(g.getCentralBank().ceiling() + 1);
+        double quote = g.quoteFitting(piece);
+        double available = quote - Game.SHORTFALL_DUST * Math.max(1, quote) / 2;
+        g.setCashForTest(available);
+        double before = g.getSectors().construction().getFittingThisMonth();
+        check("fixture: the advance ceiling binds and cash is strictly below the quote within dust", g.getCentralBank().ceilingBound()
+                && available < quote && quote - available <= Game.SHORTFALL_DUST * Math.max(1, quote));
+        check("the dust-sized shortfall admits the fitting", g.fitForCity(bakery.getBuilding(), DRIVE) == null);
+        double earned = g.getSectors().construction().getFittingThisMonth() - before;
+        check("the builders' increment is the actual payment, strictly less than the quote", earned == available && earned < quote,
+                earned + " paid " + available + " quoted " + quote);
+        check("the treasury pays exactly its available cash", g.getCash() == 0);
+    }
+
+    /** R1d: the power restriction belongs to the electric share, and the tractor buys more than a fuel invoice. */
+    static void steamAndTractor() {
+        out.println("\n--- 15. steam survives a grid brownout; a tractor earns back horse feed and hands ---");
+        Game g = village("fitting-historical-gains", Founding.defaults().withUnfitted(true), true, false);
+        g.unfitTheFounding();
+        Sector industry = g.getSectors().industry();
+        industry.setEnergyRatio(1);
+        double full = industry.getOperatingRate();
+        industry.setSteamShare(0.5);
+        industry.setEnergyRatio(0);
+        near("half steam and half electric: a total brownout leaves half of the otherwise available output", industry.getOperatingRate(), full / 2, 1e-12);
+        industry.setSteamShare(1);
+        near("all steam: output survives the same total grid brownout", industry.getOperatingRate(), full, 1e-12);
+        industry.setSteamShare(0);
+        check("all electric: the same total brownout stops output", industry.getOperatingRate() == 0);
+
+        g.getResearch().restore(null, null, null, java.util.Map.of("PE14", g.getMonth()));
+        BuildingsTemplate farm = stack(g, "Grain Farm").getBuilding();
+        Equipment tractor = farm.getEquipment(TRACTOR);
+        java.util.Set<String> fitted = farm.getEquipment().stream().map(Equipment::getId).collect(java.util.stream.Collectors.toSet());
+        check("fixture: the real tractor is known early, and the crop price can be moved", tractor.knownAt(g.getMonth(), g.getResearch())
+                && EquipmentCheck.priceAt(g, Good.CROPS, 1));
+        double low = RecipeChanges.gainForSet(g, farm, tractor, fitted);
+        EquipmentCheck.priceAt(g, Good.CROPS, 2);
+        double high = RecipeChanges.gainForSet(g, farm, tractor, fitted);
+        check("a dearer harvest increases the tractor's gain: saved horse feed is valued", Double.isFinite(low) && high > low, low + " -> " + high);
+        double fuel = ham.citybuildersim.sectors.SpreadPlanner.cityValue(g.getMarkets().get(Good.PETROL));
+        check("fixture: the tractor's petrol price can be doubled", fuel > 0 && EquipmentCheck.priceAt(g, Good.PETROL, fuel * 2));
+        double dearFuel = RecipeChanges.gainForSet(g, farm, tractor, fitted);
+        check("dearer petrol reduces that same gain, so the fuel cost is charged too", dearFuel < high, high + " -> " + dearFuel);
+        check("the real fitting verdict now has a finite gain and includes the form", Double.isFinite(EquipmentFit.verdictForNew(g, farm, tractor).gain()));
+    }
+
+    /** An opened sales tax is a caused premise, and its capital credit must actually reach the owner (R1d). */
+    static void taxedFitting() {
+        out.println("\n--- 16. a fitting quotes sales tax and credits the owner's capital purchase ---");
+        Game g = village("fitting-vat", Founding.defaults(), true, false);
+        holdAll(g);
+        g.getEconomyManager().getTaxPolicy().reset();
+        g.getEconomyManager().getTaxPolicy().openAll();
+        BuildingsStacks bakery = stack(g, "Bakery");
+        bakery.setUnfitted(DRIVE, 1);
+        Equipment piece = bakery.getBuilding().getEquipment(DRIVE);
+        Sector builders = g.getSectors().construction(), owner = g.getSectors().industry();
+        double rate = g.getEconomyManager().getTaxPolicy().effectiveSalesRate(builders);
+        Markets.Draw goods = g.getMarkets().quote(Good.MACHINERY, piece.getBuys().get(Good.MACHINERY), g.getSectors());
+        double net = goods.cost() + piece.getWork() * g.getBuildingManager().nonMaterialPricePerPoint();
+        double quote = g.quoteFitting(piece);
+        check("fixture: sales tax is open and the installation imports its machinery", rate > 0 && goods.imported() > 0 && goods.local() == 0 && quote > net);
+        near("the quote grosses up the goods and work at the builders' own rate", quote, net / (1 - rate), 1e-12);
+        Investor payer = g.getSectorInvestor(owner.key());
+        payer.receive(quote);
+        check("the business orders that taxed fitting", g.fit(payer, bakery, piece) == null);
+        step(g, 1);
+        near("its capital input credit is the tax on the fitting, at the supplier's rate", owner.statement().capitalTaxCredit, quote * rate, 1e-9);
+        check("the owner's capital credit is positive", owner.statement().capitalTaxCredit > 0);
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        check("the month with that tax and capital credit closes its money audit", audit != null
+                && Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved()));
+    }
+
+    /** Value the live sector's crop, input and job getters; a tractor changes these three and no utility draw. */
+    static double farmContribution(Game g) {
+        Sector farms = g.getSectors().agriculture();
+        Recipes.Prices prices = Recipes.pricesOf(g);
+        double value = farms.getCapacity(Good.CROPS) * prices.good().applyAsDouble(Good.CROPS);
+        for (Good good : Good.values()) value -= farms.getInputAtCapacity(good) * prices.good().applyAsDouble(good);
+        long[] posts = farms.postsPerTier();
+        for (JobType job : JobType.values()) value -= posts[job.ordinal()] * prices.wages()[job.ordinal()];
+        return value;
+    }
+
+    /** R1d review: compare one real fitted tractor against mixed-stack Agriculture at its world date. */
+    static void mixedFarmTractor() throws Exception {
+        out.println("\n--- 17. one tractor in mixed farm stacks earns the actual sector savings; PE14 is free in the catalogue ---");
+        Game g = village("fitting-mixed-tractor", Founding.defaults().withUnfitted(true), true, false);
+        holdAll(g);
+        g.unfitTheFounding();
+        java.lang.reflect.Field clock = Game.class.getDeclaredField("month");
+        clock.setAccessible(true);
+        clock.setInt(g, ResearchCatalog.get().entry("PE14").worldMonth());
+        g.getRecipes().choose(g);
+        g.getRecipes().apply(g);
+        g.getEquipmentForms().apply(g);
+        EquipmentCheck.priceAt(g, Good.CROPS, 1);
+        BuildingsStacks grain = stack(g, "Grain Farm");
+        Equipment tractor = grain.getBuilding().getEquipment(TRACTOR);
+        check("fixture: distinct farm templates stand, with no tractor fitted, at history's PE14 month",
+                stack(g, "Mixed Farm").getQuantity() > 0 && grain.getQuantity() > 0
+                        && g.getSectors().agriculture().getHorseShare() == 1 && tractor.knownAt(g.getMonth(), g.getResearch()));
+        double gross = RecipeChanges.grossGainForRefit(g, grain.getBuilding(), tractor);
+        double net = EquipmentFit.verdict(g, grain, tractor).gain();
+        check("fixture: saved feed and hands exceed this tractor's fuel cost", gross > 0);
+        check("the catalogue marks this tractor free of patent rent", !ResearchCatalog.get().entry("PE14").fee());
+        near("the unpatented tractor's net gain is its whole physical contribution", net, gross, 1e-9);
+        double before = farmContribution(g);
+        check("the city buys that real tractor fitting", g.fitForCity(grain.getBuilding(), TRACTOR) == null);
+        g.workTheFittings();
+        g.getRecipes().apply(g);
+        g.getEquipmentForms().apply(g);
+        check("one tractor is fitted while other farms remain on horses", grain.getUnfitted(TRACTOR) == grain.getQuantity() - 1
+                && g.getSectors().agriculture().getHorseShare() > 0 && g.getSectors().agriculture().getHorseShare() < 1);
+        near("the forecast equals the changed crop, input and rounded-job value of the whole mixed farm sector", farmContribution(g) - before, gross, 1e-9);
+        step(g, 1);
+        check("production charges no patent rent on that free world-supplied tractor",
+                g.getSectors().agriculture().statement().otherInputs.getOrDefault(LicenceFees.IP_CHARGES, 0.0) == 0);
+    }
+
+    /** Repairs can occupy all local crews while the foreign contractor still advances sites (R1d review). */
+    static void foreignWhileFitting() {
+        out.println("\n--- 18. foreign crews keep an order's wait finite while local crews cannot fit ---");
+        Game g = fitTown("fitting-foreign-wait", 1);
+        holdAll(g);
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate road = bm.getTemplateByName("Paved Road");
+        int more = 1;
+        while (g.getBuildingOutputAtEveryPost() > 0 && more <= Integer.MAX_VALUE / 2) {
+            bm.addStack(road, more, true);
+            more *= 2;
+        }
+        BuildingsStacks bakery = stack(g, "Bakery");
+        double output = g.orderWaitOutput();
+        double before = bm.waitFor(bakery.getBuilding(), 1, output);
+        check("fixture: real standing roads consume every local site point and the foreign contractor offers positive output",
+                g.getBuildingOutputAtEveryPost() == 0 && bm.foreignCrewsTakeOrders() && output > 0);
+        check("fixture: the city orders a fitting that still owes local work", g.fitForCity(bakery.getBuilding(), DRIVE) == null
+                && g.getFittings().pointsOwed() > 0);
+        double wait = bm.waitFor(bakery.getBuilding(), 1, g.orderWaitOutput());
+        check("the foreign-backed order retains the same finite wait", Double.isFinite(wait) && wait < Double.MAX_VALUE && wait == before);
+        double owed = g.getFittings().pointsOwed();
+        g.workTheFittings();
+        check("the foreign offer does not work the local fitting", g.getFittings().pointsOwed() == owed);
+    }
+
 }

@@ -47,7 +47,6 @@ stuff".
 | PW3 | Wind and solar by place and season, and the power planner (after PW2): capacity factors by month, block and latitude, credits falling with their share; the reserve test and the re-dispatched spread in the advice and the auto-builder | [spec-electricity §5](docs/studies/spec-electricity.md#5-the-batches) |
 | PW4 | Uranium and the Nuclear Plant (after PW2): uranium (U3O8) as a good, Uranium Mining's mine and mill, the reactor from 1957, its conversion, enrichment and fabrication bought abroad, uranium's world price in the world file | [spec-electricity §5](docs/studies/spec-electricity.md#5-the-batches) |
 | PW6 | The power screen (after PW1): the month's merit order as a supply stack against the blocks, the clearing prices and the bill's parts, the reserve gauge, the curtailed and the unserved | [spec-electricity §5](docs/studies/spec-electricity.md#5-the-batches) |
-| R1d | Research: the 1900 city switched on, with R0d's 1901 wages - founded with the known equipment unfitted, judged on a 1900 city: the carters' sizing and the team's price (R0c ★6-7), steam in the brownout ratio (★8), the electric drive's fitting work (R1 notes, found), the ensemble; and R1b's gate review (2026-11-05): a building scrapped while its fitting is on site (`Game.java:1325`: the job keeps its points and fits another unfitted building or none, the builders keep the money; refund or not, and a harness), and `fit()` crediting the builders the quote rather than what `treasuryPays()` paid (`Game.java:1270`, at most `SHORTFALL_DUST`; the build paths do the same) | [R1 notes §1](docs/queue/R1-notes.md), [R0 notes call 2](docs/queue/R0-notes.md) |
 | R2f | Research: the medical rows - each M and PM entry mapped to the constants it moves (research-design Q17), with R1c-R's X-ray and antitoxin | [R2-notes §1](docs/queue/R2-notes.md), [research-design §4](docs/studies/research-design.md#4-the-catalogue-40) |
 | LF1b | The cells' share trades with the world as a FINANCIAL/DOMESTIC pair in MoneyAudit, as BondMarket books the cells' bonds: the financial account leaves their shares out today; moves the exchange rate and the trace, so the size first and the ensemble (LF1's notes, 2) | [LF1b](docs/queue/LF1b.md) |
 | RE3 | The landlords' payroll billed with the rent at once (RE1-T's way (a), settled 2026-10-31 on Jerus's "Take all (Recommended)"), its fixture AUTO2 seed 3 on RE2's model: 125 loss months, a 59-month down-payment hold and the town near 20,000 for 160 months while main's doubles | [RE3](docs/queue/RE3.md) |
@@ -104,6 +103,9 @@ stuff".
 | R2c-P | Public works and berths: treasury-paid IP service imports, with their planners' gains less the fee (research-design 2.4; R2c scope ruling) | [R2c-P](docs/queue/R2c-P.md) |
 | HN1 | A played seed-12 city leaves households without matching homes for four months on main too; retain the hard housing watch and mend the model | [HN1](docs/queue/HN1.md) |
 | NEW | QN1 — Align new-building recipe, posts, costs and gates through a proposal value beside a canonical template, including saved processes, queued jobs and kept order identity. | docs/queue/QN1.md |
+| R1g | The 1900 city grows: R1d's 1900 playtest stalls (472 people at month 60, 159 at month 900, against today's 1,674 and 23,180; not the 1901 ladder alone); find why nobody builds, make it grow, then open the founding screen and the playtest on 1900, with the ensemble | [R1g](docs/queue/R1g.md) |
+| R1f | The playtest's harnesses on a 1900 city: the D$'s six moves through the August 1914 suspension (-33.8% in a month), `ScaleCheck`'s K copy (3-15% off in six months) and its posts identity without R0c's horse hands | [R1f](docs/queue/R1f.md) |
+| R1e | Price and save a new building's equipment at its order: the shell's price and the order's frozen set of pieces, after QN1 (R1b-R's ★3, left open by R1d) | [R1e](docs/queue/R1e.md) |
 
 ## Pending
 
@@ -111,6 +113,7 @@ Not done, and waiting on Jerus.
 
 | item | what is left | why it waits | brief |
 |---|---|---|---|
+| R1d-B | Two balance calls: the electric drive's 10 fitting points a tonne (★6), the horse team's $300 of 1900 money over 120 months (★8) (0.9.126) | Estimates, Jerus's to confirm or move | [R1d notes](docs/queue/R1d-notes.md) |
 | R2e-E3 | Jack-up drilling's depth effect (0.9.123) | T21 dates deeper access but supplies no comparable output ratio; a model water-depth axis is missing. | docs/queue/R2e-notes.md |
 | R2e-E17 | Double-stack rail's container effect (0.9.123) | T55 supplies containers/train; the container share of the model's all-cargo rail tonnes is missing. | docs/queue/R2e-notes.md |
 | R2e-B8 | Online shop's Fulfilment Centre (0.9.123) | M-B9 supplies adoption shares; a sourced fulfilment throughput/staff/input recipe and the distinct template/mechanic are missing. | docs/queue/R2e-notes.md |

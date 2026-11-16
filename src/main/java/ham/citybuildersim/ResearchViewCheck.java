@@ -581,7 +581,7 @@ public class ResearchViewCheck {
         check("...found here (PE14 in month " + (month - 1) + "), the tractor's two rows appear, unfitted, with a verdict that is no longer NOT_KNOWN and the discovery that made it known on them",
                 farms && withTractor.size() == rows.size() + 2);
 
-        // The sector filter, over the city with both sectors' rows.
+        // The sector filter, over the city with both sectors' rows (and, since R1d, a Fabrication Shop the town builds, its pieces fitted).
         String sector = bakery.getSector(), farmSector = mixed.getSector();
         List<ResearchView.PieceRow> mine = ResearchView.equipment(town, sector);
         List<ResearchView.PieceRow> theirs = ResearchView.equipment(town, farmSector);
@@ -593,12 +593,14 @@ public class ResearchViewCheck {
         for (ResearchView.PieceRow row : withTractor) sectors.add(row.template().getSector());
         for (String key : sectors) summed += ResearchView.equipment(town, key).size();
         check("the sector filter keeps only its sector's templates (" + sector + ": " + mine.size() + " rows, " + farmSector + ": " + theirs.size() + " of " + withTractor.size() + "), and the sectors' rows add up to the city's",
-                onlyMine && summed == withTractor.size() && sectors.size() == 2 && mine.size() + theirs.size() == withTractor.size());
+                onlyMine && summed == withTractor.size() && sectors.contains(sector) && sectors.contains(farmSector));
         check("...a sector with no stack, or no sector at all, has none", ResearchView.equipment(town, "No Such Sector").isEmpty());
         setFinds(town, Map.of("PE1", pe1Month));
 
-        // On site: a fitting ordered is counted, and cleared.
+        // On site: a fitting ordered is counted, and cleared. Since R1d the town orders the Bakery's drive itself (4 points of work, it pays), so
+        // the fixture clears what the town has on site before it orders the one it counts.
         BuildingsStacks bakeryStack = FittingCheck.stack(town, "Bakery");
+        town.getFittings().clear();
         town.getFittings().add(bakery.getId(), drive.getId(), "research-view-check", 100);
         ResearchView.PieceRow fitting = ResearchView.equipment(town, null).stream().filter(r -> r.template() == bakery && r.piece() == drive).findFirst().orElse(null);
         check("a fitting on site is counted on its row: one Bakery drive being fitted", fitting != null && fitting.onSite() == 1 && fitting.buildings() == bakeryStack.getQuantity());

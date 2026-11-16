@@ -534,7 +534,7 @@ public final class Construction extends Sector {
      * THE FITTINGS (R1b, 2026-11-05; Game.fit(), Fittings): the builders are paid for the goods they bought and the work they will do to fit a
      * piece of equipment to a standing building, at the order. Other revenue, named apart, and CAPITAL: Game reads getFittingThisMonth() beside
      * getRecognisedThisMonth() for the national accounts' investment line, so a fitting is investment once, on the builders' side (the payer's
-     * spend() is its own cash flow and is not read there). No sales tax is struck on it in this batch.
+     * spend() is its own cash flow and is not read there). R1d includes sales tax in the price and records the owner's capital credit.
      *
      * WHY a figure of its own, and not recognisedThisMonth: that one is cleared by recogniseWork() in the middle of the tick, and a fitting is
      * ordered before it (the investment round at the top of the month, the player's hand between two presses), so it would be cleared

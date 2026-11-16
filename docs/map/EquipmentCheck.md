@@ -1,4 +1,4 @@
-# EquipmentCheck.java - 1,169 lines · 46 methods · 3 constants · harnesses
+# EquipmentCheck.java - 1,181 lines · 46 methods · 3 constants · harnesses
 
 `ham/citybuildersim/EquipmentCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
 
@@ -52,7 +52,7 @@
 > HaulageCheck's city with a depot built. The figures are asserted against the stacks' own quantities and the templates' own getters, never
 > numbers copied from the brief.
 
-**Uses:** [EquipmentFit](EquipmentFit.md) (160), [Game](Game.md) (51), [Good](Good.md) (28), [BuildingsStacks](BuildingsStacks.md) (27), [Equipment](Equipment.md) (25), [BuildingsTemplate](BuildingsTemplate.md) (18), [Sector](Sector.md) (13), [Haulage](Haulage.md) (12), [Forms1900Check](Forms1900Check.md) (11), [GameFiles](GameFiles.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [BuildAdvice](BuildAdvice.md) (5), [BuildingManager](BuildingManager.md) (4), [BuildingCatalog](BuildingCatalog.md) (2), [PolicyDates](PolicyDates.md) (2), [Agriculture](Agriculture.md) (2), [HydroSites](HydroSites.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [JobType](JobType.md) (2), [HaulageCheck](HaulageCheck.md) (1), [ResearchCatalog](ResearchCatalog.md) (1), [CityCalendar](CityCalendar.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Freight](Freight.md) (1)
+**Uses:** [EquipmentFit](EquipmentFit.md) (160), [Game](Game.md) (51), [Good](Good.md) (28), [BuildingsStacks](BuildingsStacks.md) (27), [Equipment](Equipment.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (18), [Sector](Sector.md) (13), [Haulage](Haulage.md) (12), [Forms1900Check](Forms1900Check.md) (11), [GameFiles](GameFiles.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [BuildAdvice](BuildAdvice.md) (5), [BuildingManager](BuildingManager.md) (4), [BuildingCatalog](BuildingCatalog.md) (2), [PolicyDates](PolicyDates.md) (2), [Agriculture](Agriculture.md) (2), [HydroSites](HydroSites.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [JobType](JobType.md) (2), [HaulageCheck](HaulageCheck.md) (1), [ResearchCatalog](ResearchCatalog.md) (1), [CityCalendar](CityCalendar.md) (1), [GoodsMarket](GoodsMarket.md) (1), [FittingCheck](FittingCheck.md) (1), [Freight](Freight.md) (1)
 
 **Used by (11):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [FittingCheck](FittingCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PrizeCheck](PrizeCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [WageLadderCheck](WageLadderCheck.md)
 
@@ -71,8 +71,8 @@
 | 673 | R1 slice B: the payback rule and each piece's verdict (EquipmentFit) |
 | 692 | 8. the rule's arithmetic |
 | 820 | 9. the steam verdict at the city's prices |
-| 940 | 10. the truck's, the tractor's and the rank |
-| 1108 | 11. the verdict changes nothing |
+| 942 | 10. the truck's, the tractor's and the rank |
+| 1111 | 11. the verdict changes nothing |
 
 ## Constants
 
@@ -94,7 +94,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 1095 | **type** `public class EquipmentCheck` | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would earn and cost and whether it pays, read on demand. |
+| 75 | 1107 | **type** `public class EquipmentCheck` | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would earn and cost and whether it pays, read on demand. |
 | 83 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 88 | 1 | `static void check(String label, boolean ok)` |  |
 | 91 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
@@ -176,7 +176,7 @@
 |---:|---:|---|---|
 | 694 | 125 | `static void sectionEight(Game g)` |  |
 
-### 9. the steam verdict at the city's prices (lines 820-939)
+### 9. the steam verdict at the city's prices (lines 820-941)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -184,26 +184,26 @@
 | 828 | 16 | `static boolean priceAt(Game g, Good good, double target)` | Moves the city's price of any good to `target`, the same way (RecipeCheck moves the crops' and the bread's). |
 | 846 | 1 | `static double gainNeeded(EquipmentFit.Verdict v)` | The gain a verdict's piece needs to pay: the greater of the line (cost over factor) and the hurdle. |
 | 849 | 3 | `static double breakEvenCoal(Game g, BuildingsTemplate t, EquipmentFit.Verdict v)` | The coal price at which a drive on this building just pays, from a verdict's own figures. |
-| 853 | 86 | `static void sectionNine(Game g)` |  |
+| 853 | 88 | `static void sectionNine(Game g)` |  |
 
-### 10. the truck's, the tractor's and the rank (lines 940-1107)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 943 | 12 | `static List<EquipmentFit.Verdict> payingPieces(Game g, Sector sector)` | The harness's own list of the pieces that pay on a sector's stacks, from verdict() alone, in the order it comes. |
-| 956 | 114 | `static void sectionTen(Game g, Game c)` |  |
-| 1072 | 5 | `static List<String> rankIds(Game g, Sector s)` | The ids of a sector's ranked verdicts, template and piece: for a failure's detail. |
-| 1079 | 3 | `static EquipmentFit.Verdict fixed(int templateId, String pieceId, double earningsOnCost)` | A verdict that pays, with the figures a ranking reads: its template, piece and earnings on cost. |
-| 1083 | 5 | `static EquipmentFit.Verdict sortedFirst(List<EquipmentFit.Verdict> list)` |  |
-| 1090 | 5 | `static<T> List<List<T>> permutations(List<T> items)` | Every order a list of distinct items can come in. |
-| 1096 | 11 | `private static<T> void permute(List<T> items, int k, List<List<T>> all)` |  |
-
-### 11. the verdict changes nothing (lines 1108-1169)
+### 10. the truck's, the tractor's and the rank (lines 942-1110)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1111 | 6 | `static void askEverything(Game g)` | Asks the city every verdict and every rank there is: each piece of each stack, fitted or not, and each sector's ranking. |
-| 1119 | 11 | `static String formsAndCounts(Game g)` | The shares and counts the forms and the stacks hold, as text: for the twins' comparison beside Forms1900Check's snapshot. |
-| 1132 | 12 | `static String twinsAfter(Game asked, Game left, int months, boolean carts)` | Plays two twin cities for `months` (the cart towns by toggleNextMonth, the others by simulateMonths, as their sections do), asking the first everything before and after each month; the first month they differ in, or n... |
-| 1145 | 24 | `static void sectionEleven()` |  |
+| 945 | 12 | `static List<EquipmentFit.Verdict> payingPieces(Game g, Sector sector)` | The harness's own list of the pieces that pay on a sector's stacks, from verdict() alone, in the order it comes. |
+| 958 | 115 | `static void sectionTen(Game g, Game c)` |  |
+| 1075 | 5 | `static List<String> rankIds(Game g, Sector s)` | The ids of a sector's ranked verdicts, template and piece: for a failure's detail. |
+| 1082 | 3 | `static EquipmentFit.Verdict fixed(int templateId, String pieceId, double earningsOnCost)` | A verdict that pays, with the figures a ranking reads: its template, piece and earnings on cost. |
+| 1086 | 5 | `static EquipmentFit.Verdict sortedFirst(List<EquipmentFit.Verdict> list)` |  |
+| 1093 | 5 | `static<T> List<List<T>> permutations(List<T> items)` | Every order a list of distinct items can come in. |
+| 1099 | 11 | `private static<T> void permute(List<T> items, int k, List<List<T>> all)` |  |
+
+### 11. the verdict changes nothing (lines 1111-1181)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1114 | 6 | `static void askEverything(Game g)` | Asks the city every verdict and every rank there is: each piece of each stack, fitted or not, and each sector's ranking. |
+| 1122 | 11 | `static String formsAndCounts(Game g)` | The shares and counts the forms and the stacks hold, as text: for the twins' comparison beside Forms1900Check's snapshot. |
+| 1135 | 12 | `static String twinsAfter(Game asked, Game left, int months, boolean carts)` | Plays two twin cities for `months` (the cart towns by toggleNextMonth, the others by simulateMonths, as their sections do), asking the first everything before and after each month; the first month they differ in, or n... |
+| 1148 | 33 | `static void sectionEleven()` |  |
 
