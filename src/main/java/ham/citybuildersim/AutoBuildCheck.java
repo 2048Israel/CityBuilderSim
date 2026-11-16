@@ -1477,6 +1477,7 @@ public class AutoBuildCheck {
         AutoBuilder ab = g.getAutoBuilder();
         BuildAdvice.Measure chosen = null;
         BuildAdvice.Suggestion first = null, second = null;
+        List<String> ranked = List.of();
         // The first measure the pass will order for - the cash is its - one whose next card costs less for one than its
         // first: the measures before it brought ahead with their own cards, standing (Game.buildStack(..., true)).
         for (int tries = 0; tries < 12 && chosen == null; tries++) {
@@ -1489,13 +1490,26 @@ public class AutoBuildCheck {
             BuildAdvice.Suggestion a = BuildAdvice.suggestFor(g, AutoBuilder.rowFor(now, m), m, g.getCash(),
                     g.getLandManager().getAvailableSqFt(), ab.getSlack(), java.util.Set.of(), false, true);
             if (a == null || a.paving()) break;
-            BuildAdvice.Suggestion b = BuildAdvice.suggestFor(g, AutoBuilder.rowFor(now, m), m, g.getCash(),
-                    g.getLandManager().getAvailableSqFt(), ab.getSlack(), java.util.Set.of(a.template()), true);
-            out.printf("    (the first measure short: %s - its first card %s, %s for one; its next %s, %s for one)%n", m.label(),
-                    a.template().getName(), DecisionLog.money(oneCosts(g, a)), b == null ? "none" : b.template().getName(),
-                    b == null ? "-" : DecisionLog.money(oneCosts(g, b)));
-            if (b != null && !b.paving() && AutoBuilder.inRemit(b.template()) && 1.5 * oneCosts(g, b) < oneCosts(g, a)) {
-                chosen = m; first = a; second = b;
+            // Its ranking walked as the pass walks it (AutoBuilder: each card the money refuses skipped, the next asked for): the first
+            // card one and a half of which cost less than one of every card ranked above it. On CU2's prices Childcare ranks the Large
+            // Childcare Centre second, above the Small one main ranked second; the pass refuses both the first and it on that cash.
+            java.util.Set<BuildingsTemplate> passed = new java.util.HashSet<>(java.util.Set.of(a.template()));
+            double cheapestAbove = oneCosts(g, a);
+            List<String> between = new ArrayList<>();
+            BuildAdvice.Suggestion b = null;
+            while (true) {
+                BuildAdvice.Suggestion c = BuildAdvice.suggestFor(g, AutoBuilder.rowFor(now, m), m, g.getCash(),
+                        g.getLandManager().getAvailableSqFt(), ab.getSlack(), passed, true);
+                if (c == null || c.paving() || !AutoBuilder.inRemit(c.template()) || passed.contains(c.template())) break;
+                out.printf("    (the first measure short: %s - its first card %s, %s for one; ranked next %s, %s for one)%n", m.label(),
+                        a.template().getName(), DecisionLog.money(oneCosts(g, a)), c.template().getName(), DecisionLog.money(oneCosts(g, c)));
+                if (1.5 * oneCosts(g, c) < cheapestAbove) { b = c; break; }
+                cheapestAbove = Math.min(cheapestAbove, oneCosts(g, c));
+                between.add(c.template().getName());
+                passed.add(c.template());
+            }
+            if (b != null) {
+                chosen = m; first = a; second = b; ranked = between;
                 break;
             }
             // ...this one brought ahead with its own card, standing, its ground and its cash given.
@@ -1512,8 +1526,8 @@ public class AutoBuildCheck {
             // ...and a month run, auto-build off, so the networks read what stands (the road's capacity is the month's).
             quietly(() -> g.simulateMonths(1));
         }
-        assertTrue("fixture: the first measure the town is short of (those before it brought ahead, standing) has a second card one"
-                + " and a half of which cost less than one of its first", chosen != null);
+        assertTrue("fixture: the first measure the town is short of (those before it brought ahead, standing) has a card in its ranking"
+                + " one and a half of which cost less than one of its first and of every card ranked between them", chosen != null);
         if (chosen == null) return;
         // No bond within the limit, room (withRoom()), and the cash over the reserve: one and a half of the second, its ground
         // and all - one, not two, and not one of the first, however its price moves at the turn of the month.
@@ -1530,9 +1544,10 @@ public class AutoBuildCheck {
         AutoBuilder.Step st = stepFor(ab, m);
         AutoBuilder.Entry e = null;
         for (AutoBuilder.Entry x : ab.log()) if (x.measure().equals(m.label())) e = x;
-        assertTrue(String.format("with the cash for one %s, not two, and not for one %s, the advice's first, and no bond within the"
-                        + " limit, it orders the %s: the next in the ranking (0.7.101; it held the measure until then)",
-                        second.template().getName(), first.template().getName(), second.template().getName()),
+        assertTrue(String.format("with the cash for one %s, not two, and not for one %s, the advice's first%s, and no bond within the"
+                        + " limit, it orders the %s: the next in the ranking the money pays for (0.7.101; it held the measure until then)",
+                        second.template().getName(), first.template().getName(),
+                        ranked.isEmpty() ? "" : ", nor " + String.join(" or ", ranked) + " ranked between", second.template().getName()),
                 st != null && st.outcome() == AutoBuilder.Outcome.ORDERED && st.building().equals(second.template().getName())
                         && ab.getBonds() == 0 && paper[0] == paper[1]);
         assertTrue("...and its log says the first was more than the money would pay for", e != null
