@@ -137,3 +137,24 @@ LongPlaytest and the model are unchanged, so the default trace does not move
 and the in-flight 4a6f3ebf ensemble remains valid. Three generated-index conflicts
 (harnesses, LongPlaytest's map and the map README) took main temporarily and are
 regenerated from the merged sources after the ensemble, before the dry run.
+
+## Ensemble: final accepted model
+
+80/80 runs completed, none short or missing, in 92.0 minutes. Snapshot 4a6f3ebf7,
+label R0h, Earth earth-2.bin and world-1.bin at the instructed native paths,
+default five jobs, no parallelism override. Raw score: **18/25**, against the
+newest main baseline docs/ensemble/0.9.117.md. The raw score, every changed verdict
+and full summary are committed in docs/ensemble/R0h.md before the dry run.
+
+M1 passes for all five policies: no failed or unread money audits. Raw hard
+verdict: **8/10, FAIL**, exit 4, because AUTO2 F1 and ZERO_SLACK F1 each have one
+finding run against the baseline's zero. Both are seed 12, the same
+"households with no home" at m744 (repeated through m747); their policies have
+not diverged at that date. No other finding type occurred. A same-state main
+counterfactual is required before disposition; the watch's threshold stays >1.
+The orchestrator requires a capacity go before that probe, after the ensemble.
+
+Informational PASS-to-FAIL changes: AUTO2 A3, AUTO2 T2 and ZERO_SLACK T2.
+They retain their raw values in the baseline; the only shipping criteria are
+M1 and F1. Logs: target/r0h-ensemble.log; score, times, all CSVs and snapshot:
+target/ensemble/R0h/. No main ensemble was rerun.
