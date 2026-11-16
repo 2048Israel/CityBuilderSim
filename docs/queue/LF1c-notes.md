@@ -102,12 +102,30 @@ company that has been bought out entirely; if it is ever wanted it is a batch of
 
 ## 5. Checks
 
-`sh tools/pick.sh origin/main HEAD` after merging main (SR1): **ALL**, because `MoneyAudit.java` has 65 readers; review "needed - money:
-ui/FundScreen.java" (the review line sent to the orchestrator). So the verdict is the launcher dry run, not a local pick.
-ShortSellingCheck alone (about 3 minutes on the PC): see the end of this file for its last green run. FundScreen/KeptBench compile; KeptCheck,
-FundLedgerCheck, SaveFileCheck, ReadPathCheck, ForeignCheck, MoneyAuditCheck and the rest run in the dry run.
+`sh tools/pick.sh origin/main HEAD`: **ALL**, because `MoneyAudit.java` has 65 readers; review "needed - money: ui/FundScreen.java". The
+review was REV-LF1c-1 (Claude Opus, on a203e3414): SHIP, with three notes - the audit comment's words (the card holds the wipe, never the
+close), the figures at the month-end quote `quoteBefore` and not the last trade of the emptied book, and the Trade screen's words for a
+valuation against the city - all three done and accepted at 17218b0fc (orchestrator, no second review). Before the run:
+ShortSellingCheck green alone (about 3 minutes; the last full run after the review's changes, exit 0), and FundLedgerCheck, ForeignCheck,
+ExchangeCheck, SaveFileCheck, ReadPathCheck by `batch-check.sh` names.
 
-The trace: no short opens in a real run, the default trace is expected unmoved; the dry run is started with `-Dplaytest.trace` and its
-eight CSVs compared byte for byte with the R0h reference (see the end of this file).
+## 6. The dry run (kept) and the trace
+
+`sh tools/gate.sh LF1c --dry-run`, branch `9c77d8187f3e21d5822309e6e37d5ef100ef2899` (LF1c with CD9b's merge, 437e05a2, merged in and its
+generated docs conflicts resolved by regenerating) on main `437e05a2a68d03b5fbed022c537ad23f2cbf70fe` (0.9.124). Kept run:
+`/tmp/cbs-gate-LF1c-7jBjE1Uz` (`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-LF1c-7jBjE1Uz`). **Gate exit 0**, `unnamed.txt` empty,
+`checks.complete` present. Its ship.log: ALL 209 harnesses (MoneyAudit.java, 65 readers), records `{next}`=0.9.125, compile OK in 48 s, the
+suite finished in 2,256 s with exit 3, **known red only, seven harnesses**: DeathRecordCheck, InvestCheck, KeptCheck, MapCheck,
+MoneyDatesCheck, PrizeCheck, ResearchViewCheck - the lines already on record (`known-reds.txt`; KeptCheck's two are KS1-UI's), none of them
+this batch's: no line of theirs names a Fund or Trade word, the audit's lines or a short. ShortSellingCheck, FundLedgerCheck, ForeignCheck,
+SaveFileCheck and ReadPathCheck are green in the run. Twelve timing assertions soft, four path assertions observed, five starts held for
+CPU (none changed a result). Stale: 0 firm findings. The dry run left the tree as it was.
+
+**Trace equality:** the dry run was started with `-Dplaytest.trace`; the eight CSVs it captured
+(`target/LF1c-trace-9c77d818-{bank,bonds,borrow,build,house,labour,month,pop}.csv` in the worktree) are **byte-identical** to main's
+reference, R0h's run (`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-R0h-NrRv6F33/traces/trace-*.csv`), `cmp` eight of eight. No ensemble: the
+trace did not move.
+
+After this kept run only this file and `LF1c-ship.md` advance; the last commit alone removes the provisional marker.
 
 Process lines: none changed.
