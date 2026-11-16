@@ -395,9 +395,7 @@ final class FundScreen {
                 d(g, p.takenOut()), d(g, p.value()), signed(g, p.gain()));
         String cashNote = p.reserved() > 0 ? d(g, p.reserved()) + " held for your orders; it earns nothing"
                 : "waits for the book; it earns nothing";
-        String incomeNote = p.transferLastMonth() > 0 && p.incomeLastMonth() > 0
-                ? "covered " + pct1(p.incomeLastMonth() / p.transferLastMonth()).replace(".0%", "%") + " of the transfer"
-                : "dividends and coupons";
+        String incomeNote = incomeNote(p.transferLastMonth(), p.incomeLastMonth());
         String transferNote = p.transferShort() > 0 ? d(g, p.transferShort()) + (g.getFund().getToRaise() > 0
                         ? " of it sold for, to pay next month" : " of it not paid, for want of cash")
                 : withdrawalShare(g.getFund().getWithdrawal());
@@ -434,6 +432,37 @@ final class FundScreen {
 
     /** The holdings' groups, in the page's order. */
     static final String SHARES = "COMPANY SHARES", RESCUE = "THE RESCUE BOOK", BONDS = "BONDS";
+
+    /**
+     * What the fund's income is made of, in words (LF1c): a share lot's income holds the lending fees the world pays for the shares the
+     * market book lent a short (FundLedger.lendingFee()) beside its dividends, and a bond's its coupons. It said dividends and coupons
+     * only, and the fees were in the figure with no name.
+     */
+    static final String INCOME_KINDS = "dividends, coupons and lending fees";
+
+    /** The note under INCOME LAST MONTH: how much of the transfer the income covered when there was both, else what the income is made of. */
+    static String incomeNote(double transferLastMonth, double incomeLastMonth) {
+        return transferLastMonth > 0 && incomeLastMonth > 0
+                ? "covered " + pct1(incomeLastMonth / transferLastMonth).replace(".0%", "%") + " of the transfer"
+                : INCOME_KINDS;
+    }
+
+    /** The label of a lot's income on its page, by its kind: coupons for a bond; dividends and the lending fees for the market book's shares, which the fee is credited to; dividends for the rescue book's, the preferred's and the rest. */
+    static String incomeLabel(String kind) {
+        if (FundView.BOND.equals(kind)) return "Coupons";
+        return FundView.SHARE.equals(kind) ? "Dividends and lending fees" : "Dividends";
+    }
+
+    /** The record's line for a security written off with what it was: a bond's face is gone, a company's shares go with the company (LF1c: it said "its face gone" of both). */
+    static String writtenOffWords(String name, boolean bond) {
+        return "Written off: " + name + (bond ? ", its face gone" : ", its shares gone with the company");
+    }
+
+    /** The record's one line a month for the fees the world paid on the shares the market book lent a short, in this many companies (LF1c: it was the row's kind, LENDING_FEE). */
+    static String lendingFeeWords(double companies) {
+        int n = (int) Math.round(companies);
+        return "Lending fees from the world on the shares lent to a short in " + n + (companies == 1 ? " company" : " companies");
+    }
 
     static List<Holding> holdings(Game g) {
         List<Holding> out = new ArrayList<>();
@@ -698,7 +727,7 @@ final class FundScreen {
             Pnl re = pnl(sym(g), p.realized(), Double.NaN);
             out.add(new PositionLine("Realized", re.text(), re.tone(), null));
             String since = p.since() >= 0 ? "since " + month(p.since()) : null;
-            out.add(new PositionLine(bond ? "Coupons" : "Dividends", d(g, p.income()), null,
+            out.add(new PositionLine(incomeLabel(p.kind()), d(g, p.income()), null,
                     p.incomeBefore() > 0 ? "before " + month(p.since()) + ": " + d(g, p.incomeBefore()) : since));
             if (FundView.RESCUE.equals(p.kind())) {
                 double yoc = FundView.yieldOnCost(g, p);
@@ -950,8 +979,9 @@ final class FundScreen {
                     + (a.note() == null ? "nothing to post" : a.note());
             case FundLedger.DIVIDEND -> what = "Dividends from " + (int) Math.round(a.units()) + (a.units() == 1 ? " company" : " companies");
             case FundLedger.COUPON -> what = "Coupons on " + (int) Math.round(a.units()) + (a.units() == 1 ? " bond" : " bonds");
+            case FundLedger.LENDING_FEE -> what = lendingFeeWords(a.units());
             case FundLedger.MATURED -> what = name + " repaid at par";
-            case FundLedger.WRITTEN_DOWN -> what = "gone".equals(a.note()) ? "Written off: " + name + ", its face gone"
+            case FundLedger.WRITTEN_DOWN -> what = "gone".equals(a.note()) ? writtenOffWords(name, bond)
                     : "Written down: " + name + ", " + d(g, a.units()) + " of its face";
             case FundLedger.RESCUE -> what = "Rescued the bank for its shares: " + d(g, a.money())
                     + (a.realized() < 0 ? "; its market-book shares went with the rest, for nothing" : "");
@@ -1139,7 +1169,7 @@ final class FundScreen {
             + "method: a buy adds what it paid to the lot's adjusted cost base, a sale takes out the cost of what it "
             + "sold in proportion, and the average is the cost base over the units - so a split moves the average and "
             + "not the cost. The rule's buys and yours are one lot a company; the bank's rescue book is its own. "
-            + "Dividends and coupons are income, not cost. A holding bought before this build tracked costs is counted "
+            + "Dividends, coupons and lending fees are income, not cost. A holding bought before this build tracked costs is counted "
             + "at its market value in the month it began, and says so.";
 
     VBox holdingsCard(Game g) {
@@ -2418,7 +2448,7 @@ final class FundScreen {
     static final String WITHDRAWAL_CAVEAT = "next month's on the fund as it stands - its prices and what the book takes will move it";
     /** ...and the sentence behind it, its (i). */
     static final String WITHDRAWAL_CAVEAT_INFO = "Next month's withdrawal is struck on what the fund is worth at the top of "
-            + "next month; this reads it on the fund as it stands. Its prices move by then, its dividends and coupons come "
+            + "next month; this reads it on the fund as it stands. Its prices move by then, its dividends, coupons and lending fees come "
             + "in, and a sale fills only as far as somebody bids for it - what it cannot sell is not paid.";
 
     /**
