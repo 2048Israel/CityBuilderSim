@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /c/Users/Jerus/AppData/Local/Temp/cbs-gate-BK2b-20261115-1920 -->
 ## changelog
 ### {next} — BK2b, BK2's review follow-ups (each holder's own discount) — 2026-11-15, ready, see docs/queue/BK2b-notes.md
-A partial buyback taking all but rounding-level face now takes the seller's whole unearned discount, as a transfer already does, leaving no discount dust on no face. HoldersCheck causes the ulp-short case for every seller at two price levels and covers the existing retained loss when the bank pays a premium beyond its own discount. The reopening comment now describes each holder keeping its own discount until settlement. HoldersCheck and BuybackCheck pass; full merge checks pending.
+A partial buyback taking all but rounding-level face now takes the seller's whole unearned discount, as a transfer already does, leaving no discount dust on no face. HoldersCheck causes the ulp-short case for every seller at two price levels and covers the existing retained loss when the bank pays a premium beyond its own discount. The reopening comment now describes each holder keeping its own discount until settlement. HoldersCheck and BuybackCheck pass. The fresh-clone merge dry run is green (launcher exit 0; suite exit 3, known reds only); the default playtest trace is unchanged.
