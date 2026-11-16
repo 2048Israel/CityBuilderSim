@@ -104,6 +104,11 @@ Restored, 21 of 21.
 four lines against the two figures every month: sold to the world in 336 months (27,702), bought from it in 7 (217,245), no month's
 lines off. ShortSellingCheck whole through `batch-check.sh`: exit 0, all checks passed (its two HS1 known reds did not show in this run).
 
+**The pick** on the merged code (b0308c95): exit 3, known red only (InvestCheck, MapCheck, DeathRecordCheck, PrizeCheck, main's recorded
+lines); Stale 0 firm; tree unchanged. `pick.sh` ran all 209 harnesses (MoneyAudit has 65 readers); its review line said "not needed - no
+money", a `pick.sh` gap the orchestrator noted for Jerus. **The review** (REV-LF1b-1, Opus, at b0308c95): SHIP, no findings - the signs
+copy the bonds', the scope is the desk's, no double count, the month order clean, no save needed, section 9 on the real month's path.
+
 ## 4. The trace, and how far the rate moved
 
 The default playtest on the branch at 816ac0e3 (with the uncommitted size probe; it moves nothing, section 1), `-Dplaytest.trace`, against
