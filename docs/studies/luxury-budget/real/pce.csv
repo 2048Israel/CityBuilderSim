@@ -1,0 +1,37 @@
+line,item,2023_musd,2024_musd,2025_musd,share_of_PCE_2023_pct_derived,share_of_PCE_2024_pct_derived,share_of_PCE_2025_pct_derived
+1,Personal consumption expenditures,18772629,19822499,20870150,100.000,100.000,100.000
+2,Goods,6119579,6263410,6489219,32.598,31.597,31.093
+3,Durable goods,2144970,2180615,2263762,11.426,11.001,10.847
+4,Motor vehicles and parts,754357,736531,765504,4.018,3.716,3.668
+23,Furnishings and durable household equipment,479857,489548,504131,2.556,2.470,2.416
+38,Recreational goods and vehicles,633005,663218,692986,3.372,3.346,3.320
+62,Other durable goods,277751,291318,301141,1.480,1.470,1.443
+63,Jewelry and watches (part of 119),99191,104488,106218,0.528,0.527,0.509
+64,Jewelry,81859,86173,87792,0.436,0.435,0.421
+65,Watches,17332,18315,18426,0.092,0.092,0.088
+66,Therapeutic appliances and equipment (42),90724,95561,99040,0.483,0.482,0.475
+70,Luggage and similar personal items (part of 119),45823,47968,51032,0.244,0.242,0.245
+71,Telephone and related communication equipment,33717,34808,35942,0.180,0.176,0.172
+72,Nondurable goods,3974609,4082795,4225457,21.172,20.597,20.246
+73,Food and beverages purchased for off-premises consumption,1438280,1478810,1524002,7.662,7.460,7.302
+104,Clothing and footwear,513334,529730,559768,2.734,2.672,2.682
+113,Gasoline and other energy goods,464897,441625,418814,2.476,2.228,2.007
+120,Other nondurable goods,1558098,1632630,1722873,8.300,8.236,8.255
+121,Pharmaceutical and other medical products (40 and 41),634164,677598,728650,3.378,3.418,3.491
+126,"Recreational items (parts of 80, 92, and 93)",300440,313435,332625,1.600,1.581,1.594
+131,Household supplies (parts of 32 and 36),184393,190982,197995,0.982,0.963,0.949
+137,Personal care products (part of 118),194996,203281,212512,1.039,1.026,1.018
+138,"Hair, dental, shaving, and miscellaneous personal care products except electrical products",114094,119026,124275,0.608,0.600,0.595
+139,Cosmetic / perfumes / bath / nail preparations and implements,69622,72443,75854,0.371,0.365,0.363
+140,Electric appliances for personal care,11281,11812,12383,0.060,0.060,0.059
+141,Tobacco (127),119585,115212,111574,0.637,0.581,0.535
+142,"Magazines, newspapers, and stationery (part of 90)",111983,118892,126132,0.597,0.600,0.604
+150,Services,12653050,13559089,14380931,67.402,68.403,68.907
+190,Transportation services,617473,662564,703254,3.289,3.342,3.370
+209,Recreation services,734531,766420,804681,3.913,3.866,3.856
+234,Food services and accommodations,1362619,1428319,1495998,7.259,7.206,7.168
+235,Food services,1169768,1230792,1294155,6.231,6.209,6.201
+280,Other services,1554978,1645000,1734046,8.283,8.299,8.309
+307,Personal care and clothing services (14 and parts of 17 and 118),214245,232250,239558,1.141,1.172,1.148
+308,Personal care services,192558,208998,215774,1.026,1.054,1.034
+311,Clothing and footwear services,21687,23252,23784,0.116,0.117,0.114
