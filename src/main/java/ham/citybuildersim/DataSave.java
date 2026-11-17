@@ -2734,6 +2734,7 @@ public class DataSave implements Cloneable {
      * retirement needs six in a row, so forgetting it across a load reset the
      * clock and made scrapping capacity save-scummable. `populationTrend` is the
      * twelve-month window the retail and industry planners forecast from.
+     * `sectorOperatingLossMonths` is the same for the months its plant ran at an operating loss (AQ1, the streak a price taker's bleed reads); a save without it restarts the streak at 0.
      *
      * The last three accumulate DURING the player's turn and are read by next
      * month's national accounts. Save mid-turn without them and a building the
@@ -2741,6 +2742,7 @@ public class DataSave implements Cloneable {
      * borrowing rate, since the debt market prices off GDP.
      */
     private java.util.Map<String, Integer> sectorLossMonths;
+    private java.util.Map<String, Integer> sectorOperatingLossMonths;
     private java.util.List<Long> populationTrend;
     private double cityCapitalSpending;
     private double monthlyMaterialImports;
@@ -2755,6 +2757,8 @@ public class DataSave implements Cloneable {
 
     public void setSectorLossMonths(java.util.Map<String, Integer> m){ this.sectorLossMonths = m; }
     public java.util.Map<String, Integer> getSectorLossMonths(){ return sectorLossMonths; }
+    public void setSectorOperatingLossMonths(java.util.Map<String, Integer> m){ this.sectorOperatingLossMonths = m; }
+    public java.util.Map<String, Integer> getSectorOperatingLossMonths(){ return sectorOperatingLossMonths; }
     public void setPopulationTrend(java.util.List<Long> l){ this.populationTrend = l; }
     public java.util.List<Long> getPopulationTrend(){ return populationTrend; }
     public void setCityCapitalSpending(double v){ this.cityCapitalSpending = v; }

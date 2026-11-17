@@ -151,6 +151,9 @@ public class BusinessInvestment {
     /** Consecutive months each sector has lost money. Resets on a profitable one. */
     private final java.util.Map<String, Integer> lossMonths = new java.util.HashMap<>();
 
+    /** Consecutive months each sector's plant has run at an operating loss, the old metal it sold left out (AQ1): the streak the bleed reads, apart from lossMonths, which interest alone can keep climbing. */
+    private final java.util.Map<String, Integer> operatingLossMonths = new java.util.HashMap<>();
+
     /* What the city has left to sell, and what it is charging for it. */
     private double landAvailable;
     private double landPricePerSqFt;
@@ -590,12 +593,35 @@ public class BusinessInvestment {
      */
     public static final int DISTRESS_LOSS_MONTHS = 24;
 
+    /**
+     * The months a price taker takes to sell its biggest holding once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running (its own saved streak, getOperatingLossMonths(), the old metal it sold left out, not the net-loss streak that interest alone can keep climbing) while a lender covers it, the shortfall desk's principal for the sector above zero (AQ1, ★): a twenty-fourth of it a month, the losses' runway again.
+     * Below twenty-four buildings that is one building on each count of those operating-loss months that is a multiple of ceil(BLEED_MONTHS / held)
+     * past DISTRESS_LOSS_MONTHS, the step read off the holding that month (no saved state: a reload keeps it), so eight held go at
+     * counts 24, 28, 32, 34, 36, 40, 48 and 72. Sector.bleedsWhileLent() says which sectors; a sector living on its own cash is not lent and does not bleed;
+     * overdrawn with no lender, any sector sells MAX_RETIREMENT_FRACTION a month as before.
+     */
+    public static final int BLEED_MONTHS = DISTRESS_LOSS_MONTHS;
+
     /** Call once a month with each sector's net income. */
     public void recordSectorResult(String sector, double netIncome) {
         if (netIncome < 0) {
             lossMonths.put(sector, lossMonths.getOrDefault(sector, 0) + 1);
         } else {
             lossMonths.put(sector, 0);
+        }
+    }
+
+    /**
+     * Call once a month with each sector, after its statement is closed: adds a month to its operating-loss streak when its running result (operating income less the old metal it sold to the Scrap Yards, the sale of a scrapped plant not being the running of one) is below zero, else resets it (AQ1).
+     */
+    public void recordOperatingResult(Sector sector) {
+        Sector.Statement s = sector.statement();
+        double running = s.operatingIncome - s.otherParts.getOrDefault(OldMetal.SOLD, 0.0);
+        String key = sector.key();
+        if (running < 0) {
+            operatingLossMonths.put(key, operatingLossMonths.getOrDefault(key, 0) + 1);
+        } else {
+            operatingLossMonths.put(key, 0);
         }
     }
 
@@ -612,7 +638,10 @@ public class BusinessInvestment {
      * months it asked for; what it does with them is its own affair.
      */
     public void noteOpened(String sector) {
-        if (sector != null) lossMonths.put(sector, 0);
+        if (sector != null) {
+            lossMonths.put(sector, 0);
+            operatingLossMonths.put(sector, 0);
+        }
     }
 
     /*
@@ -631,6 +660,17 @@ public class BusinessInvestment {
         if (saved != null) lossMonths.putAll(saved);
     }
 
+    /** The operating-loss streaks as saved, keyed by sector name (AQ1). */
+    public java.util.Map<String, Integer> getOperatingLossMonthsState() {
+        return new java.util.HashMap<>(operatingLossMonths);
+    }
+
+    /** Puts the saved operating-loss streaks back; a save written before AQ1 has none and the streak starts again at 0 (AQ1). */
+    public void restoreOperatingLossMonths(java.util.Map<String, Integer> saved) {
+        operatingLossMonths.clear();
+        if (saved != null) operatingLossMonths.putAll(saved);
+    }
+
     public java.util.List<Long> getPopulationHistory() {
         return new ArrayList<>(populationHistory);
     }
@@ -644,6 +684,11 @@ public class BusinessInvestment {
 
     public int getLossMonths(String sector) {
         return lossMonths.getOrDefault(sector, 0);
+    }
+
+    /** The months in a row a sector's plant has run at an operating loss, the old metal it sold left out (AQ1). */
+    public int getOperatingLossMonths(String sector) {
+        return operatingLossMonths.getOrDefault(sector, 0);
     }
 
     /**
@@ -748,7 +793,11 @@ public class BusinessInvestment {
      * three sectors ended a 4,000-month run at billions of negative cash,
      * owed to nobody, with mining wages still paid 1,400 months after the
      * ore ran out. A firm with no money and no lender lays people off, and
-     * here the jobs come with the plant.
+     * here the jobs come with the plant. Since AQ1 a price taker whose plant
+     * has run at an operating loss DISTRESS_LOSS_MONTHS running (its own saved
+     * streak, the old metal it sold left out) sells too while the shortfall
+     * desk still lends it, principal above zero, a BLEED_MONTHS-th of its
+     * holding a month; its own cash is not a lender.
      *
      * @param cash the sector's balance after this month's credit settled
      */
@@ -761,8 +810,27 @@ public class BusinessInvestment {
         if (losses < DISTRESS_LOSS_MONTHS) {
             return Decision.no(key, losses == 0 ? "profitable" : losses + " months of losses");
         }
+        int opLosses = getOperatingLossMonths(key);
 
-        if (cash >= 0) return Decision.no(key, "losing money, but still solvent");
+        /*
+         * A PRICE TAKER BLEEDS WHILE IT IS LENT (AQ1, 2026-11-17). Waiting for
+         * the refusal let a sector with no demand reading hold every building
+         * through years of losses the shortfall desk lent it (Business
+         * Services on main's AUTO2 seed 2: 101 months, $409M) and then sell a
+         * quarter of its biggest holding a month: 6,000 posts in twelve
+         * months, the town from 8% to 38% out of work. Its plant having run at
+         * an operating loss DISTRESS_LOSS_MONTHS running (its own saved streak,
+         * the old metal it sold left out, not the net-loss streak that interest
+         * alone keeps climbing) while the shortfall desk lent it (its principal
+         * above zero; a sector's own cash is not a lender), it sells its
+         * biggest holding over BLEED_MONTHS instead; overdrawn with no lender,
+         * the quarter below as before.
+         */
+        boolean bleed = cash >= 0;
+        boolean lent = economyManager.getBusinessDebtManager().getPrincipal(key) > 0;
+        if (bleed && !(sector.bleedsWhileLent() && lent && opLosses >= DISTRESS_LOSS_MONTHS)) {
+            return Decision.no(key, "losing money, but still solvent");
+        }
 
         BuildingsTemplate worst = null;
         long mostHeld = 0;
@@ -779,6 +847,19 @@ public class BusinessInvestment {
         }
 
         if (worst == null) return Decision.no(key, sector.noRetirementReason(true));
+
+        if (bleed) {
+            // A BLEED_MONTHS-th of the holding a month, in whole buildings; below one a month, one building on the
+            // counts that are a multiple of the step past the dial, read off the saved operating-loss streak so a reload keeps it.
+            long every = (BLEED_MONTHS + mostHeld - 1) / mostHeld;
+            if (every > 1 && (opLosses - DISTRESS_LOSS_MONTHS) % every != 0) {
+                return Decision.no(key, String.format("%d months of operating losses its lender covered: one %s every %d months of them",
+                        opLosses, worst.getName(), every));
+            }
+            return new Decision(key, worst, Math.max(1, mostHeld / BLEED_MONTHS),
+                    String.format("%d months of operating losses its lender covered", opLosses),
+                    true);
+        }
 
         long quantity = Math.min(mostHeld,
                 Math.max(1, (long) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION)));

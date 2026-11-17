@@ -1,4 +1,4 @@
-# SaveFileCheck.java - 4,710 lines · 30 methods · 2 constants · harnesses
+# SaveFileCheck.java - 4,717 lines · 30 methods · 2 constants · harnesses
 
 `ham/citybuildersim/SaveFileCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -68,7 +68,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 4683 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
+| 28 | 4690 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
 | 35 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 40 | 10 | `static void assertEquals(String label, Object actual, Object expected)` |  |
 | 52 | 9 | `static void same(String label, double actual, double expected)` | Two readings of one month, which must not differ at all. |
@@ -93,11 +93,11 @@
 | 4357 | 6 | `static String printedMonths(Game city, int months)` | The narration of some months of a city, as text. |
 | 4365 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
 | 4374 | 46 | `static void landLoadFallbacks() throws Exception` | HA1: current-format land is repaired, or refused before a live city is rebuilt. |
-| 4469 | 241 | **type** `static final class LoadConservation` | Nothing is created and nothing is destroyed. |
+| 4469 | 248 | **type** `static final class LoadConservation` | Nothing is created and nothing is destroyed. |
 | 4478 | 6 | `static void check(String label, double actual, double expected, double tol)` _(in SaveFileCheck.LoadConservation)_ |  |
 | 4485 | 4 | `static void assertTrue(String label, boolean ok)` _(in SaveFileCheck.LoadConservation)_ |  |
 | 4491 | 43 | `static Game city(Path root, String name, int months) throws Exception` _(in SaveFileCheck.LoadConservation)_ | A city with something of everything in it, so every law has something to test. |
-| 4535 | 153 | `static void run(String[] args) throws Exception` _(in SaveFileCheck.LoadConservation)_ |  |
-| 4690 | 11 | `static double[] snapshot(Game g)` _(in SaveFileCheck.LoadConservation)_ | The figures a load must not move. |
-| 4702 | 7 | `static void cleanUp(Path root)` _(in SaveFileCheck.LoadConservation)_ |  |
+| 4535 | 160 | `static void run(String[] args) throws Exception` _(in SaveFileCheck.LoadConservation)_ |  |
+| 4697 | 11 | `static double[] snapshot(Game g)` _(in SaveFileCheck.LoadConservation)_ | The figures a load must not move. |
+| 4709 | 7 | `static void cleanUp(Path root)` _(in SaveFileCheck.LoadConservation)_ |  |
 

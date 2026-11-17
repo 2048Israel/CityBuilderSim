@@ -953,6 +953,10 @@ adds its line here, not in `CLAUDE.md`.
         CreditsCheck.java          the page held to the files: every ATTRIBUTION copy in Build EXE.bat is a section whose text is
                                    the file exactly, the fonts' notice over OFL.txt in full, a missing file named beside the exe,
                                    the paragraphs losing no line, and both files saying "Credits page"
+        DistressBleedCheck.java    the distress rule for a lent price taker (AQ1), on a town of eight Contact Centres and a minimum wage
+                                   lifted until Business Services loses money on its operations: nothing sold under the dial, one a
+                                   step from the dial while the desk lends, never faster than BLEED_MONTHS, nothing sold on a loss that
+                                   is only interest, the quarter once overdrawn, and only a sector with no demand reading bleeds
         MarketCheck.java           the efficient market (EM1), each case on a fixture that causes it: one value for a share, one
                                    yardstick, two shares alike but for price, the buyback finding its sellers, a share earning
                                    less than dollars abroad sold, a quiet market, the save

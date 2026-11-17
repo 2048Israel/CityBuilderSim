@@ -258,6 +258,10 @@ public final class Automotive extends Sector {
     @Override
     public double[] retirementDemandAndCapacity(Game game) { return null; }
 
+    /** With no demand reading it shrinks on its losses alone, so it sells plant while still lent (AQ1: GW1's seed 2 lent it 92 months of them). */
+    @Override
+    public boolean bleedsWhileLent() { return true; }
+
     /* ------------------------------------------------------------ the screen */
 
     @Override
