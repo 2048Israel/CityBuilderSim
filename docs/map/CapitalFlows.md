@@ -1,4 +1,4 @@
-# CapitalFlows.java - 890 lines · 57 methods · 17 constants · model
+# CapitalFlows.java - 904 lines · 58 methods · 17 constants · model
 
 `ham/citybuildersim/CapitalFlows.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -31,7 +31,7 @@
 
 **Uses:** [PriceLevel](PriceLevel.md) (1)
 
-**Used by (20):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
+**Used by (21):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [LongPlaytest](LongPlaytest.md), [ReadPathCheck](ReadPathCheck.md), [ReloadCheck](ReloadCheck.md), [SaveFileCheck](SaveFileCheck.md), [SummaryScreen](SummaryScreen.md), [TradeScreen](TradeScreen.md)
 
 ## Sections
 
@@ -112,7 +112,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 858 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
+| 33 | 872 | **type** `public class CapitalFlows` | Hot money: what comes in chasing a spread, and what happens when it leaves. |
 
 ### HOW MUCH WANTS TO COME (lines 35-135)
 
@@ -199,15 +199,16 @@
 | 748 | 1 | `public void setMonth(int month)` |  |
 | 751 | 1 | `public int stopMonthsLeft()` | Months of the stop still to run, or 0. |
 
-### carrying (lines 753-890)
+### carrying (lines 753-904)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 755 | 17 | `public double[] toSaveArray()` |  |
-| 773 | 37 | `public void restore(double[] saved)` |  |
-| 815 | 3 | `public void setStockForTest(double stock)` | A harness's stock, set by the field's name (HZ1): SaveFileCheck held it at half its target through raw slots of toSaveArray(), which a reordering of that array would have moved to another field without a word. |
-| 823 | 6 | `public void placeArrivalForTest(double amount)` | ...and a month's arrival placed, by name (HZ1): the stock, the arrivals since founding and the month's, each grown by it, as takeMonth() leaves them when that much came in. |
-| 835 | 3 | `public void restoreStopReason(String reason)` | The words the stop gave, put back on load (FW6, 2026-10-25): a String, so it cannot ride in the array above, and a city saved during a stop showed a blank reason on the Trade screen's card for the rest of it (PANIC_MO... |
-| 839 | 19 | `public void reset()` |  |
-| 860 | 29 | `public void redenominate(double scale)` | Hot money, in the new unit. |
+| 755 | 19 | `public double[] toSaveArray()` |  |
+| 775 | 42 | `public void restore(double[] saved)` |  |
+| 822 | 3 | `public void setStockForTest(double stock)` | A harness's stock, set by the field's name (HZ1): SaveFileCheck held it at half its target through raw slots of toSaveArray(), which a reordering of that array would have moved to another field without a word. |
+| 830 | 6 | `public void placeArrivalForTest(double amount)` | ...and a month's arrival placed, by name (HZ1): the stock, the arrivals since founding and the month's, each grown by it, as takeMonth() leaves them when that much came in. |
+| 838 | 5 | `public void startStopForTest(String reason)` | A harness's stop, by name (FB3, FW6-C): starts a break as takeMonth() does when a new one begins, with the reason given, for PANIC_MONTHS from the month last told. |
+| 849 | 3 | `public void restoreStopReason(String reason)` | The words the stop gave, put back on load (FW6, 2026-10-25): a String, so it cannot ride in the array above, and a city saved during a stop showed a blank reason on the Trade screen's card for the rest of it (PANIC_MO... |
+| 853 | 19 | `public void reset()` |  |
+| 874 | 29 | `public void redenominate(double scale)` | Hot money, in the new unit. |
 
