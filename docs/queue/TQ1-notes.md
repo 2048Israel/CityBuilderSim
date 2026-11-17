@@ -208,3 +208,52 @@ Final people, median: AUTO2 1,627,676 against 1,578,924; ZERO_SLACK 1,207,162 ag
 4,933; SHOCK 32,754 against 31,300; HIGH 26,026 against 26,102. K1 16.97% against 15.92%; R1-R3 pass, a little
 smaller (R1 -3.47% against -4.22%). The first ensemble's costs GW1 saw (the founding's deflation, A2's longer spells)
 are not here; nor is a gain on H2.
+
+## 8. The same-state probe of seed 3's finding
+
+The orchestrator's instruction (2026-11-16): find the month seed 3's homes stopped being ordered, play on from the same
+state on main's model and on TQ1's, and read which gate refuses. The probe (scratch, `target/tq1-homes/`, not committed)
+is the ensemble's own driver and class snapshot with two changes: `Sector.Staffing.held()` keeps the first of a tie
+(main's rule, which section 4 showed is byte-identical to main) from a month named on the command line, and every month
+from 290 logs what the landlords and the builders said, the holds, the latent posts, the premiums, the land, the
+treasury and the works' orders. No save is written and loaded: the switch happens inside the one run, so the state at
+the switch is the ensemble's to the bit (the run with no switch equals the ensemble's AUTO2-3 CSV, all 480 rows), and the
+player's script after it is the ensemble's too.
+
+Homes were last ordered at month 320 (63 doors finished at 324); from 324 nothing is on site.
+
+| main's rule from | parts from TQ1's run | homes on site again | "households with no home" |
+|---|---|---|---|
+| (TQ1 throughout) | - | 455 | 428 |
+| 300 | 325 | 381 | none |
+| 316 | 325 | 381 | none |
+| 340 | 341 | 381 | none |
+| 360 | 361 | 455 | 428 |
+| 380 | 381 | 455 | 428 |
+| 400 | 464 | 455 | 428 |
+
+**No staffing gate refuses the homes.** In every run, Real Estate says "Holding: no land - needs 5,570 m², 2,520 m²
+free" every month from 324 to the escape. It never asks the gate (`RealEstate.ordersOnlyWhatItCanStaff()` is false).
+Construction says "0.0 months of work queued": it holds for want of work, not for staff. The landlords' plan wants
+homes the whole time: the head shortfall is 2,137, against 3,080 places for 2,140 posts. The treasury is overdrawn
+($30k to $76k) from 330, and its debt stays flat at $13.1M (the works' ratio is 1.2 to 1.6 of a year's output, under
+the 2.40 limit). Nothing buys ground for a sector that is held for land. The player's "room to grow" is a move the
+treasury's cash pays, and the works buy ground only for an order of their own.
+
+**What lets homes through is a works order that buys ground.** On main's path from 300, 316 or 340, the works order a
+Small Childcare Centre at month 380 ("115% served, 136% once what is on site opens") on a $185k bond. They buy 0.0288
+km² (West 19) for it first, leaving 17,251 m² free, and the landlords build 2 Low-Rise Apartments at 381. The town then
+takes off: 38 to 58 arrivals a month and 1,076 homes by 415. On TQ1's path, and on main's from 360, 380 or 400, that
+order does not come. Ground arrives only with the player's "bought room to grow" at 454, homes at 455, and the
+watch has fired at 428 by then.
+
+**What the tie changed is the path.** From 325 TQ1's run has one tie a month, so its holds are 7 (4 asked) against
+main's 6 (3 asked). The second building's ask moves the latent posts a few places (m340: [75.5, 0, 5.5, 0] against
+[73, 0, 0, 0]) and the premiums in the third decimal. That is the rule's designed effect, the asks priced on the
+mean. Whether the childcare order lands at 380 rides on that path. Main's own model, switched on at 360 or later,
+misses it as TQ1's does. Switched on at 340 or earlier, it catches it.
+
+So the finding is main's: a town at full employment whose landlords are held for land for 130 months, while nothing
+buys them any and the treasury cannot. TQ1's path reaches it, and so does main's model from TQ1's state at 360, 380
+and 400. The escape is a works order that happens to buy more ground than it uses, not a mechanism. The tie rule is
+not changed for it. The orchestrator's disposition is recorded below.
