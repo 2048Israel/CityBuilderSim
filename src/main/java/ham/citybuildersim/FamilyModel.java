@@ -505,6 +505,7 @@ public class FamilyModel {
         // Last month's adults at home and the children with them, before they are rebuilt: who comes back this month (OX1).
         double hadAtHome = this.atHomeAdults;
         double[] hadWithThem = outsideDependants.clone();
+        double hadInFamilies = adultsFormed();
 
         for (double[] row : households) java.util.Arrays.fill(row, 0);
         unhoused = 0;
@@ -664,7 +665,7 @@ public class FamilyModel {
         }
 
         // ---- 2c. the adults back in the families bring their children home (OX1; the banner below) ----
-        if (keep) bringHome(hadAtHome, hadWithThem, order, tierShare, remaining);
+        if (keep) bringHome(hadAtHome, hadWithThem, adults - hadInFamilies, order, tierShare, remaining);
 
         for (int i = 0; i < order.length; i++) {
             FamilyStructure shape = order[i];
@@ -755,7 +756,13 @@ public class FamilyModel {
        NOW THE ADULTS BACK IN THE FAMILIES BRING THEIR CHILDREN WITH THEM.
        They are last month's adults at home less this month's - the net, which
        is all an aggregate model has, and the same for a job found and a
-       course finished - and their children are last month's children at home,
+       course finished - and never more than the families' own adults grew
+       by since last month's builder: the at-home count also falls when
+       nobody comes home (the out of work who leave the city, go to prison,
+       are set aside as owners, die or turn 65), and then the families did
+       not grow by them (REV-OX1-1: without this a month of jobless leaving
+       placed the pool's children with the pool's adults as if they had come
+       home). Their children are last month's children at home,
        band by band, at that household's own rate to an adult. They are placed
        after the kept households and before the city's pool, by the builder's
        own order and its own half a shape, pass after pass, into the shapes
@@ -780,7 +787,7 @@ public class FamilyModel {
 
     private double lastBackAdults, lastBackChildren, lastBackChildrenHome;
 
-    /** Adults back in the families this month: last month's adults at home less this month's, when that fell. */
+    /** Adults back in the families this month: last month's adults at home less this month's, when that fell, and no more than the families' adults grew by. */
     public double getLastBackAdults() { return lastBackAdults; }
     /** The children who came back with them, at last month's rate to an adult at home. */
     public double getLastBackChildren() { return lastBackChildren; }
@@ -788,10 +795,10 @@ public class FamilyModel {
     public double getLastBackChildrenHome() { return lastBackChildrenHome; }
 
     /** Places the adults back in the families with their children, after the kept households and before the pool; see the banner above. */
-    private void bringHome(double hadAtHome, double[] hadWithThem, FamilyStructure[] order,
+    private void bringHome(double hadAtHome, double[] hadWithThem, double familiesGrew, FamilyStructure[] order,
                            double[] tierShare, double[] remaining) {
         int adult = AgeBand.ADULT.ordinal();
-        double back = Math.min(hadAtHome - atHomeAdults, remaining[adult]);
+        double back = Math.min(Math.min(hadAtHome - atHomeAdults, familiesGrew), remaining[adult]);
         if (back <= 0 || hadAtHome <= 0) return;
         double[] group = new double[remaining.length];
         group[adult] = back;
@@ -822,6 +829,16 @@ public class FamilyModel {
         }
         for (int b = 0; b < group.length; b++) remaining[b] -= came[b] - group[b];
         return childrenIn(came) - childrenIn(group);
+    }
+
+    /** The adults in last month's formed households: the families' adults when the builder last ran, since the single adults take every adult the other shapes leave. */
+    private double adultsFormed() {
+        double sum = 0;
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            int a = shape.membersOf(AgeBand.ADULT);
+            if (a > 0) for (double v : formed[shape.ordinal()]) sum += v * a;
+        }
+        return sum;
     }
 
     private static double childrenIn(double[] group) {
