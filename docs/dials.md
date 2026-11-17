@@ -2,9 +2,9 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,076 constants in 583 files.**
+**6,104 constants in 586 files.**
 
-## model (2908 constants)
+## model (2910 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -265,11 +265,11 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 71 | `BuildingManager.MATERIALS_WORLD_PRICE` | `Good.MATERIALS.worldImportPrice()` | What a unit of construction material costs, in the city's money. |
-| 5218 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
-| 5887 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
-| 6069 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
-| 7357 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 8592 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 5268 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
+| 5937 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
+| 6119 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
+| 7407 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 8642 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -1328,7 +1328,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 281 | `EquipmentFit.BEST_FIRST` | `Comparator.comparingDouble(Verdict : : earningsOnCost).reversed().thenComparingInt(Verd...` | How R1b orders what pays: earnings on cost, the best first; the same earnings by template id and then piece id, so that no list order biases it. |
+| 298 | `EquipmentFit.BEST_FIRST` | `Comparator.comparingDouble(Verdict : : earningsOnCost).reversed().thenComparingInt(Verd...` | How R1b orders what pays: earnings on cost, the best first; the same earnings by template id and then piece id, so that no list order biases it. |
 
 ### Equity.java ([map](map/Equity.md))
 
@@ -1591,38 +1591,38 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 243 | `Game.MARKET_SEED_SALT` | `0x4D41524B45545852L` | Salt for the D$'s market seed, so the market's path is not the world's own seed spelled again ("MARKETXR"). |
-| 804 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
-| 933 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
-| 1731 | `Game.FOUNDING_CASH` | `100_000 * PriceLevel.FACTOR` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
-| 1734 | `Game.FOUNDING_RESERVE_USD` | `25_000 * PriceLevel.FACTOR` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
-| 1737 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
-| 2068 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
-| 3321 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
-| 4004 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 4007 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
-| 7215 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 7218 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 8204 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
-| 8970 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 9182 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 10347 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 10907 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 11693 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
-| 12336 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 12506 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 12550 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 12710 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
-| 14602 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 14614 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 14617 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
-| 14634 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 14645 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 14685 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 16429 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 16832 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 17466 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 17469 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 17472 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 805 | `Game.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 934 | `Game.FOUNDING_YARD` | `"Builders' Yard"` | The builders' building a city is founded with (PT1-M4): see foundingYard(). |
+| 1733 | `Game.FOUNDING_CASH` | `100_000 * PriceLevel.FACTOR` | What the founders leave in the treasury, in thousands: D$100M since 0.7.10 (D$2.5B before) - the founding village and one of the first big works; the city borrows for the rest. |
+| 1736 | `Game.FOUNDING_RESERVE_USD` | `25_000 * PriceLevel.FACTOR` | What the founders leave in the vault, in thousands of US dollars: US$25M since 0.7.10 (US$1B before), bought on day one at the opening rate - years of a young city's imports, three months of a town... |
+| 1739 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
+| 2070 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
+| 3323 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
+| 4006 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 4009 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
+| 7217 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 7220 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 8206 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0)` | No contractor at work: every figure nothing. |
+| 8972 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 9184 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 10349 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 10909 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 11695 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
+| 12338 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 12508 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 12552 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 12712 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | The granule the build screen's note's face is rounded up to, in thousands: $1M, the step the Finances tab's notes are sold in (its Note instrument's rounding). |
+| 14604 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 14616 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 14619 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | The granule the build screen's bond's face is rounded up to, in thousands: $100k, what the playtest's own term bonds round to. |
+| 14636 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 14647 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 14687 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 16431 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 16834 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 17468 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 17471 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 17474 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -2037,7 +2037,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 42 | `Inbox.LANDLOCK_REPEAT_MONTHS` | `12` | How long the "nowhere to build" notice stands before the wait is told again in a new one (PT1-M2): a year. |
 | 45 | `Inbox.WEALTH_BAND_PREFIX` | `"wealth-band:"` | The standing wealth band's saved key (GV1): the suffix is GovernmentView.Band's name. |
 | 270 | `Inbox.NOTICED` | `noticed()` | The levers whose opening is told: the ones TaxPolicy holds, the minimum wage (LabourMarket's floor, which TaxPolicy dates but does not hold) zoning (Game.setZone's gate), and the two dated Money in... |
-| 506 | `Inbox.BODY_COLUMNS` | `62` | A body line's most characters (0.7.73): the measure the bodies written by hand keep, inside the list's width in its mono face. |
+| 507 | `Inbox.BODY_COLUMNS` | `62` | A body line's most characters (0.7.73): the measure the bodies written by hand keep, inside the list's width in its mono face. |
 
 ### IndustryPicture.java ([map](map/IndustryPicture.md))
 
@@ -3028,8 +3028,10 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 59 | `ResearchCatalog.WORK_DRUG` | `500` | Researcher-years a drug took at WORK_RULE_YEAR, clinical trials included (est.; [BJVW]). |
 | 62 | `ResearchCatalog.WORK_GROWTH` | `0.053` | How much more research costs each year, as a fraction, in every field but medicine: 5.3% (the US aggregate, [BJVW]). |
 | 65 | `ResearchCatalog.MEDICINE_WORK_GROWTH` | `0.035` | The same in medicine, where a drug's trials make the cost grow more slowly: 3.5% a year ([BJVW]). |
-| 91 | `ResearchCatalog.KINDS` | `List.of("building", "equipment", "recipe", "drug")` | What a discovery can unlock, as the file spells it; an entry names one or two. |
-| 129 | `ResearchCatalog.Holder.INSTANCE` | `load()` |  |
+| 106 | `ResearchCatalog.HISTORY_ENDS` | `PolicyDates.monthOf(2026, 11)` | The month the catalogue was last read against the world, November 2026: a row dated after it is projected, one on or before it is history (research-near-future 2 rule 5). |
+| 109 | `ResearchCatalog.NEAR_FUTURE` | `PolicyDates.monthOf(2025, 1)` | The first month of the near future, January 2025 (research-near-future 2 rule 6, "2025 and later only"): a row dated from it on is no part of today's figures, so a city founded the default way neve... |
+| 112 | `ResearchCatalog.KINDS` | `List.of("building", "equipment", "recipe", "drug")` | What a discovery can unlock, as the file spells it; an entry names one or two. |
+| 169 | `ResearchCatalog.Holder.INSTANCE` | `load()` |  |
 
 ### ResearchPreview.java ([map](map/ResearchPreview.md))
 
@@ -3047,16 +3049,16 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 42 | `ResearchView.FIRST_MONTH` | `1` | The month every city is founded in. |
-| 49 | `ResearchView.NEW_MONTHS` | `12` | How many months a building is NEW on its card after it became known in the city: it is new while its age (the city's month less the month it became known) is under this. |
-| 52 | `ResearchView.FLAG_KIND` | `"discovery"` | The kind of the flags a discovery puts on City History's decision lane (flagEntries()); a discovery is not a decision, so it is no DecisionLog kind. |
-| 758 | `ResearchView.CACHE_SIZE` | `32` | The preview's answers kept, the least recently read dropped first: a card's dials are read again at every redraw of the screen, and the answer does not change until a dial or the month does. |
-| 759 | `ResearchView.CACHE` | `new java.util.LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean removeEld...` |  |
-| 853 | `ResearchView.GRANT_REACH` | `1.2` | How far past the room the grant dial reaches, as a share of the room, and the least number of posts it reaches past it (a grant past the room buys nothing, and the player may try one). |
-| 854 | `ResearchView.GRANT_REACH_POSTS` | `3` |  |
-| 880 | `ResearchView.PRIZE_DIAL_YEARS` | `1000` | The researcher-years of work a prize dial reaches for, at the least: a problem of that size, paid at a post's cost a month, is its top. |
-| 883 | `ResearchView.PRIZE_REACH` | `2` | How many times the least prize that brings a lab the prize dial reaches, at the least. |
-| 886 | `ResearchView.PRIZE_STEPS` | `100` | The steps a prize dial is divided into. |
+| 43 | `ResearchView.FIRST_MONTH` | `1` | The month every city is founded in. |
+| 50 | `ResearchView.NEW_MONTHS` | `12` | How many months a building is NEW on its card after it became known in the city: it is new while its age (the city's month less the month it became known) is under this. |
+| 53 | `ResearchView.FLAG_KIND` | `"discovery"` | The kind of the flags a discovery puts on City History's decision lane (flagEntries()); a discovery is not a decision, so it is no DecisionLog kind. |
+| 784 | `ResearchView.CACHE_SIZE` | `32` | The preview's answers kept, the least recently read dropped first: a card's dials are read again at every redraw of the screen, and the answer does not change until a dial or the month does. |
+| 785 | `ResearchView.CACHE` | `new java.util.LinkedHashMap<>(16, 0.75f, true) { @ Override protected boolean removeEld...` |  |
+| 879 | `ResearchView.GRANT_REACH` | `1.2` | How far past the room the grant dial reaches, as a share of the room, and the least number of posts it reaches past it (a grant past the room buys nothing, and the player may try one). |
+| 880 | `ResearchView.GRANT_REACH_POSTS` | `3` |  |
+| 906 | `ResearchView.PRIZE_DIAL_YEARS` | `1000` | The researcher-years of work a prize dial reaches for, at the least: a problem of that size, paid at a post's cost a month, is its top. |
+| 909 | `ResearchView.PRIZE_REACH` | `2` | How many times the least prize that brings a lab the prize dial reaches, at the least. |
+| 912 | `ResearchView.PRIZE_STEPS` | `100` | The steps a prize dial is divided into. |
 
 ### Resource.java ([map](map/Resource.md))
 
@@ -3989,7 +3991,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 43 | `ZoningView.SHORT_SHARE` | `1e-6` | A zone holds less than it wants by more than this share of its want: SHORT (Z10's "holds 12.4 of 40 km²"), not a rounding. |
 
-## sectors (196 constants)
+## sectors (204 constants)
 
 ### Agriculture.java ([map](map/Agriculture.md))
 
@@ -4041,11 +4043,14 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 70 | `CopperMining.MINE_AND_MILL` | `121` | The Copper Mine & Mill's permanent id in buildings.json (0.7.133): 2,200 t of concentrate a month on one sulphide site. |
-| 73 | `CopperMining.LARGE_MINE` | `122` | The Large Copper Mine's (0.7.133): 26,400 t of concentrate a month on eight sites of one sulphide field. |
-| 76 | `CopperMining.LEACH_PLANT` | `123` | The Leach & SX-EW Plant's (0.7.133): 1,000 t of cathode a month on one oxide site, of 3,500 t of acid. |
-| 79 | `CopperMining.CONC_DIG` | `.341` | Tonnes of a sulphide field's copper a tonne of concentrate takes: .341 (spec 2.4; the study's 4.3 - 150,000 t of ore at 0.5% into 2,200 t of concentrate). |
-| 82 | `CopperMining.LEACH_DIG` | `1.4` | Tonnes of an oxide field's copper a tonne of leached cathode takes: 1.4 (spec 2.4; the study's 4.3 - 280,000 t of ore at 0.5% into 1,000 t). |
+| 79 | `CopperMining.MINE_AND_MILL` | `121` | The Copper Mine & Mill's permanent id in buildings.json (0.7.133): 2,200 t of concentrate a month on one sulphide site. |
+| 82 | `CopperMining.LARGE_MINE` | `122` | The Large Copper Mine's (0.7.133): 26,400 t of concentrate a month on eight sites of one sulphide field. |
+| 85 | `CopperMining.LEACH_PLANT` | `123` | The Leach & SX-EW Plant's (0.7.133): 1,000 t of cathode a month on one oxide site, of 3,500 t of acid. |
+| 88 | `CopperMining.CONC_DIG` | `.341` | Tonnes of a sulphide field's copper a tonne of concentrate takes: .341 (spec 2.4; the study's 4.3 - 150,000 t of ore at 0.5% into 2,200 t of concentrate). |
+| 91 | `CopperMining.LEACH_DIG` | `1.4` | Tonnes of an oxide field's copper a tonne of leached cathode takes: 1.4 (spec 2.4; the study's 4.3 - 280,000 t of ore at 0.5% into 1,000 t). |
+| 94 | `CopperMining.SULPHIDE_LEACH` | `153` | The Sulphide Leach & SX-EW Plant's (R6b, FE2): 1,000 t of cathode a month on one sulphide site, heap-leached with no concentrator or smelter. |
+| 97 | `CopperMining.SULPHIDE_LEACH_RECOVERY` | `.85` | The share of a sulphide heap's copper the plant recovers as cathode: the builder's "up to 85% from primary sulphides" (Rio Tinto, 4 Dec 2025; a ceiling, not an average). |
+| 100 | `CopperMining.SULPHIDE_LEACH_DIG` | `1 / SULPHIDE_LEACH_RECOVERY` | Tonnes of a sulphide field's copper a tonne of heap-leached cathode takes: 1 / SULPHIDE_LEACH_RECOVERY, about 1.18, against LEACH_DIG's 1.4 on oxide. |
 
 ### CopperRefining.java ([map](map/CopperRefining.md))
 
@@ -4115,31 +4120,36 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 108 | `Haulage.MIN_TRUCKS_A_MONTH` | `1` | The fewest trucks a month's order is capped at (bid()): one - a haulier can always buy a truck, however small its fleet. |
 | 111 | `Haulage.DRIVERS_A_TRUCK` | `1` | Drivers a truck the depots keep needs: one, on one shift (spec 3.2; US fleets run 0.93 a truck, the spec's R2). |
 | 114 | `Haulage.BILLED_AS` | `"Haulage"` | What a bill is called on the shipper's input line. |
-| 918 | `Haulage.HORSES_A_TEAM` | `2` | Horses in a team: a dray's pair (research-1900 section 2.3, est.). |
-| 921 | `Haulage.HORSE_FEED_TONNES_A_MONTH` | `0.29` | What a city horse ate a month, in tonnes: 1.3 t of oats and 2.2 t of hay a year (research-1900 section 2.3, [P1.19], est.). |
-| 924 | `Haulage.TONNES_A_TEAM_MONTH` | `10` | Tonnes a team and wagon carries a month over the city leg: about a tonne a load at 20 km a day loaded over 25 working days, the haul behind the 1895 wagon rate of about $0.17 a tonne-km (research-1... |
-| 927 | `Haulage.CARTERS_A_TEAM` | `1` | Carters a team employs: one (a carter needed no diploma; Montreal had 1,429 carters heading households in 1901, research-1900 section 2.3). |
-| 930 | `Haulage.TEAM_CAPITAL_1900` | `0.3` | Assumed capital of a pair and wagon in thousands of 1900 dollars; hired abroad rather than a new traded good (R1d, estimate). |
-| 933 | `Haulage.TEAM_LIFE_MONTHS` | `120` | Estimated blended working life of a hired pair and wagon, in months (R1d). |
-| 936 | `Haulage.TEAM_HIRE` | `"Horse teams hired"` | The named imported service already carried by the sector's saved statement (R1d). |
-| 1234 | `Haulage.MOVE_FIELDS` | `{ "tonnes", "rail", "sea", "lorry", "truck", "siding", "yard" }` | The seven figures of a move, in the order a save keeps them. |
-| 1237 | `Haulage.MOVE_PREFIX` | `"haul.move."` | The save keys' prefix (Freight's extras); the figure names avoid the scaler's intensive words (ScaleCheck), so a scaled copy's tonnes are scaled. |
-| 1240 | `Haulage.SHARE_PREFIX` | `"haul.share."` | The save keys' prefix for a sector's dealt share (FR8, deal()), the sector's key after it; "share" in the name keeps the scaler's hands off a share (ScaleCheck). |
-| 1243 | `Haulage.STANDING_PREFIX` | `"haul.standing."` | ...and for the tonnes it was dealt, its next standing demand: tonnes, so scaled with the city, and so no intensive word in the name (ScaleCheck). |
+| 915 | `Haulage.SHIFT_HOURS` | `10` | Hours a driven truck works in a day: the one ten-hour shift TONNES_A_TRUCK_MONTH is struck on. |
+| 918 | `Haulage.DRIVERLESS_HOURS` | `20` | Hours a day a truck with no driver works: day and night but for loading, fuelling and upkeep; the 11-hour driving limit (49 CFR 395.3) binds the cab, not the truck (est., unpublished; R6b's call). |
+| 921 | `Haulage.OVERSIGHT_A_TRUCK` | `0.1` | Remote-assistance and terminal posts a driverless truck needs, per truck (est., unpublished; R6b's call). |
+| 978 | `Haulage.HORSES_A_TEAM` | `2` | Horses in a team: a dray's pair (research-1900 section 2.3, est.). |
+| 981 | `Haulage.HORSE_FEED_TONNES_A_MONTH` | `0.29` | What a city horse ate a month, in tonnes: 1.3 t of oats and 2.2 t of hay a year (research-1900 section 2.3, [P1.19], est.). |
+| 984 | `Haulage.TONNES_A_TEAM_MONTH` | `10` | Tonnes a team and wagon carries a month over the city leg: about a tonne a load at 20 km a day loaded over 25 working days, the haul behind the 1895 wagon rate of about $0.17 a tonne-km (research-1... |
+| 987 | `Haulage.CARTERS_A_TEAM` | `1` | Carters a team employs: one (a carter needed no diploma; Montreal had 1,429 carters heading households in 1901, research-1900 section 2.3). |
+| 990 | `Haulage.TEAM_CAPITAL_1900` | `0.3` | Assumed capital of a pair and wagon in thousands of 1900 dollars; hired abroad rather than a new traded good (R1d, estimate). |
+| 993 | `Haulage.TEAM_LIFE_MONTHS` | `120` | Estimated blended working life of a hired pair and wagon, in months (R1d). |
+| 996 | `Haulage.TEAM_HIRE` | `"Horse teams hired"` | The named imported service already carried by the sector's saved statement (R1d). |
+| 1309 | `Haulage.MOVE_FIELDS` | `{ "tonnes", "rail", "sea", "lorry", "truck", "siding", "yard" }` | The seven figures of a move, in the order a save keeps them. |
+| 1312 | `Haulage.MOVE_PREFIX` | `"haul.move."` | The save keys' prefix (Freight's extras); the figure names avoid the scaler's intensive words (ScaleCheck), so a scaled copy's tonnes are scaled. |
+| 1315 | `Haulage.SHARE_PREFIX` | `"haul.share."` | The save keys' prefix for a sector's dealt share (FR8, deal()), the sector's key after it; "share" in the name keeps the scaler's hands off a share (ScaleCheck). |
+| 1318 | `Haulage.STANDING_PREFIX` | `"haul.standing."` | ...and for the tonnes it was dealt, its next standing demand: tonnes, so scaled with the city, and so no intensive word in the name (ScaleCheck). |
 
 ### HeavyIndustry.java ([map](map/HeavyIndustry.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 85 | `HeavyIndustry.ARC_FURNACE` | `11` | The Electric Arc Furnace's permanent id in buildings.json, the Steel Foundry's until 0.7.120 (batch I3; spec-materials 4): what the harnesses and the test player find it by. |
-| 88 | `HeavyIndustry.MINI_MILL` | `12` | The Steel Mini-Mill's permanent id in buildings.json (0.7.120). |
-| 91 | `HeavyIndustry.SCRAP_YARD` | `101` | The Scrap Yard's permanent id in buildings.json (0.7.123, batch I4): the city's old steel into scrap. |
-| 94 | `HeavyIndustry.PELLETISING_PLANT` | `102` | The Pelletising Plant's permanent id (0.7.123): ore into pellets. |
-| 97 | `HeavyIndustry.COKE_OVENS` | `103` | The Coke Ovens' permanent id (0.7.123): coking coal into coke, and power. |
-| 100 | `HeavyIndustry.MINI_BLAST_FURNACE` | `104` | The Mini Blast Furnace's permanent id (0.7.123): ore, coke and limestone into pig iron. |
-| 103 | `HeavyIndustry.BLAST_FURNACE` | `105` | The Blast Furnace's permanent id (0.7.123): the big furnace, its sinter plant and its top-gas turbine. |
-| 106 | `HeavyIndustry.OXYGEN_STEEL_SHOP` | `106` | The Oxygen Steel Shop's permanent id (0.7.123): pig iron, scrap and lime into steel. |
-| 109 | `HeavyIndustry.LARGE_MINI_MILL` | `107` | The Large Mini-Mill's permanent id (0.7.123): the big arc-furnace plant. |
+| 95 | `HeavyIndustry.ARC_FURNACE` | `11` | The Electric Arc Furnace's permanent id in buildings.json, the Steel Foundry's until 0.7.120 (batch I3; spec-materials 4): what the harnesses and the test player find it by. |
+| 98 | `HeavyIndustry.MINI_MILL` | `12` | The Steel Mini-Mill's permanent id in buildings.json (0.7.120). |
+| 101 | `HeavyIndustry.SCRAP_YARD` | `101` | The Scrap Yard's permanent id in buildings.json (0.7.123, batch I4): the city's old steel into scrap. |
+| 104 | `HeavyIndustry.PELLETISING_PLANT` | `102` | The Pelletising Plant's permanent id (0.7.123): ore into pellets. |
+| 107 | `HeavyIndustry.COKE_OVENS` | `103` | The Coke Ovens' permanent id (0.7.123): coking coal into coke, and power. |
+| 110 | `HeavyIndustry.MINI_BLAST_FURNACE` | `104` | The Mini Blast Furnace's permanent id (0.7.123): ore, coke and limestone into pig iron. |
+| 113 | `HeavyIndustry.BLAST_FURNACE` | `105` | The Blast Furnace's permanent id (0.7.123): the big furnace, its sinter plant and its top-gas turbine. |
+| 116 | `HeavyIndustry.OXYGEN_STEEL_SHOP` | `106` | The Oxygen Steel Shop's permanent id (0.7.123): pig iron, scrap and lime into steel. |
+| 119 | `HeavyIndustry.LARGE_MINI_MILL` | `107` | The Large Mini-Mill's permanent id (0.7.123): the big arc-furnace plant. |
+| 122 | `HeavyIndustry.HYDROGEN_WORKS` | `154` | The Hydrogen Steel Works' permanent id (R6b, FE4): pellets and power into steel by hydrogen reduction, no coke - one integrated works, the game having no DRI good. |
+| 125 | `HeavyIndustry.HYDROGEN_MWH_A_TONNE` | `3.48` | The grid's megawatt-hours a tonne of liquid steel the Hydrogen Steel Works draws, 3.48: the study's N9 and N10, the electrolysers' hydrogen, the shaft furnace and the arc furnace together (an estim... |
 
 ### LuxuryRetail.java ([map](map/LuxuryRetail.md))
 
@@ -4814,10 +4824,10 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1678 | `InfrastructureScreen.BAND_INFO` | `"Every traded good's price has a cost of MOVING it inside the gap between " + "what the...` | The bars' (i) (P18 and P20, for bars rather than a grid). |
 | 1828 | `InfrastructureScreen.LORRY_INFO` | `String.format("A vehicle moves about %,.0f tonnes a month and lasts %.0f years.The " + ...` | The lorries' (i) (P23). |
 | 1930 | `InfrastructureScreen.HAULAGE_QUOTE_INFO` | `String.format("What it charges for a tonne's city leg, from the depot or the siding to ...` | Haulage's quote (i) (FR4). |
-| 1939 | `InfrastructureScreen.TRUCKS_INFO` | `String.format("A truck carries about %,.0f tonnes a month.Haulage owns the fleet and bu...` | The trucks' (i) (FR4). |
-| 1947 | `InfrastructureScreen.DEPOTS_INFO` | `String.format("A Truck Depot keeps trucks, and its posts are the drivers and the mechan...` | The depots' (i) (FR4). |
-| 1954 | `InfrastructureScreen.PORTS_INFO` | `"The sea terminals are the city's: only the player builds them.Freight works them." + "...` | The ports' (i) (FR4). |
-| 1961 | `InfrastructureScreen.BERTHS_INFO` | `"A berth handles one kind of cargo: liquid bulk, dry bulk, containers or " + "general c...` | The berths' (i) (FR4). |
+| 1939 | `InfrastructureScreen.TRUCKS_INFO` | `String.format("A truck carries about %,.0f tonnes a month on its driver's shift, and ab...` | The trucks' (i) (FR4). |
+| 1950 | `InfrastructureScreen.DEPOTS_INFO` | `String.format("A Truck Depot keeps trucks, and its posts are the drivers and the mechan...` | The depots' (i) (FR4). |
+| 1957 | `InfrastructureScreen.PORTS_INFO` | `"The sea terminals are the city's: only the player builds them.Freight works them." + "...` | The ports' (i) (FR4). |
+| 1964 | `InfrastructureScreen.BERTHS_INFO` | `"A berth handles one kind of cargo: liquid bulk, dry bulk, containers or " + "general c...` | The berths' (i) (FR4). |
 
 ### InputRecorder.java ([map](map/InputRecorder.md))
 
@@ -5393,26 +5403,26 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 98 | `ResearchScreen.AREA_INFO` | `"Who is at research and what is in reach of them, the grant and the prize of each field...` | The area's (i). |
 | 174 | `ResearchScreen.FIELDS_INFO` | `"Each field's researchers - the city's own, from the schools' faculty and the posts its...` |  |
 | 178 | `ResearchScreen.SCHOOLS_INFO` | `"The kinds of school that host research: the University, hosting every field, and the I...` |  |
-| 320 | `ResearchScreen.GRANT_INFO` | `"A month's money for research posts at the schools that host the field: one post a step...` |  |
-| 324 | `ResearchScreen.PRIZE_INFO` | `"What the city pays for a discovery made here, once, and only on a find: nothing is spe...` |  |
-| 328 | `ResearchScreen.PREVIEW_INFO` | `"What the field's researchers would find here before the world does over the next ten y...` |  |
-| 332 | `ResearchScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press: each field's grant and ...` |  |
-| 337 | `ResearchScreen.CARD_W` | `540, INNER_W = CARD_W - 24` | A card's width, and what its rows and dials are drawn within it (the card's padding takes twelve a side). |
-| 566 | `ResearchScreen.TIMELINE_INFO` | `"Every discovery the city has come to know since its founding, a row a field.A hollow d...` |  |
-| 570 | `ResearchScreen.FOUND_INFO` | `"What the city's own researchers found before the world did, the newest first, and how ...` |  |
-| 572 | `ResearchScreen.RECIPES_INFO` | `"The ways of running a building, other than its usual one, that the city knows: how man...` |  |
-| 575 | `ResearchScreen.EQUIPMENT_INFO` | `"The pieces of equipment the city knows, on the buildings they suit: how many of those ...` |  |
-| 578 | `ResearchScreen.OVER_TIME_INFO` | `"Four charts of the city's research since its founding: the researchers at work, what r...` |  |
-| 747 | `ResearchScreen.ROW_STYLE` | `"-fx-padding: 5 6 5 6; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 ...` | A row's ground: a hairline under it. |
-| 750 | `ResearchScreen.DOOR_STYLE` | `ROW_STYLE + " -fx-background-radius: 6; -fx-cursor: hand;"` | ...and a row that is a door's: the pointer's hand and, under it, a ground. |
-| 751 | `ResearchScreen.DOOR_LIT` | `DOOR_STYLE + " -fx-background-color: " + Palette.CONTROL + ";"` |  |
-| 816 | `ResearchScreen.DOT` | `12, DOT_GAP = 3` | A dot's width, and the gap two dots of a row keep from each other before one stacks above the other. |
-| 819 | `ResearchScreen.LEVEL` | `26` | How far a stacked dot stands above the one under it: the dot, the figure that sits over it and a margin. |
-| 822 | `ResearchScreen.LABEL_W` | `150, PAD_R = 16, TICK_ROOM = 60` | The room a row's name takes at the left, the room kept at the right, and the least apart two year ticks stand. |
-| 825 | `ResearchScreen.ROW_TOP` | `18, ROW_FOOT = 8, ROW_MIN = 46` | A row's room over its top dot (the figure "+1.5y"), under its bottom one, and its least height (its two lines of words). |
-| 828 | `ResearchScreen.AXIS_H` | `20` | The room under the last row for the years' names. |
-| 893 | `ResearchScreen.PLACE` | `"research.place"` | The key a timeline child carries its Place under. |
-| 1124 | `ResearchScreen.CHART_W` | `575, CHART_H = 150` | A small chart's size: the Bank's two-across cards'. |
+| 319 | `ResearchScreen.GRANT_INFO` | `"A month's money for research posts at the schools that host the field: one post a step...` |  |
+| 323 | `ResearchScreen.PRIZE_INFO` | `"What the city pays for a discovery made here, once, and only on a find: nothing is spe...` |  |
+| 327 | `ResearchScreen.PREVIEW_INFO` | `"What the field's researchers would find here before the world does over the next ten y...` |  |
+| 331 | `ResearchScreen.TRAY_INFO` | `"Everything staged on this page, applied together by one press: each field's grant and ...` |  |
+| 336 | `ResearchScreen.CARD_W` | `540, INNER_W = CARD_W - 24` | A card's width, and what its rows and dials are drawn within it (the card's padding takes twelve a side). |
+| 565 | `ResearchScreen.TIMELINE_INFO` | `"Every discovery the city has come to know since its founding, a row a field.A hollow d...` |  |
+| 569 | `ResearchScreen.FOUND_INFO` | `"What the city's own researchers found before the world did, the newest first, and how ...` |  |
+| 571 | `ResearchScreen.RECIPES_INFO` | `"The ways of running a building, other than its usual one, that the city knows: how man...` |  |
+| 574 | `ResearchScreen.EQUIPMENT_INFO` | `"The pieces of equipment the city knows, on the buildings they suit: how many of those ...` |  |
+| 577 | `ResearchScreen.OVER_TIME_INFO` | `"Four charts of the city's research since its founding: the researchers at work, what r...` |  |
+| 745 | `ResearchScreen.ROW_STYLE` | `"-fx-padding: 5 6 5 6; -fx-border-color: " + Palette.HAIRLINE + "; -fx-border-width: 0 ...` | A row's ground: a hairline under it. |
+| 748 | `ResearchScreen.DOOR_STYLE` | `ROW_STYLE + " -fx-background-radius: 6; -fx-cursor: hand;"` | ...and a row that is a door's: the pointer's hand and, under it, a ground. |
+| 749 | `ResearchScreen.DOOR_LIT` | `DOOR_STYLE + " -fx-background-color: " + Palette.CONTROL + ";"` |  |
+| 814 | `ResearchScreen.DOT` | `12, DOT_GAP = 3` | A dot's width, and the gap two dots of a row keep from each other before one stacks above the other. |
+| 817 | `ResearchScreen.LEVEL` | `26` | How far a stacked dot stands above the one under it: the dot, the figure that sits over it and a margin. |
+| 820 | `ResearchScreen.LABEL_W` | `150, PAD_R = 16, TICK_ROOM = 60` | The room a row's name takes at the left, the room kept at the right, and the least apart two year ticks stand. |
+| 823 | `ResearchScreen.ROW_TOP` | `18, ROW_FOOT = 8, ROW_MIN = 46` | A row's room over its top dot (the figure "+1.5y"), under its bottom one, and its least height (its two lines of words). |
+| 826 | `ResearchScreen.AXIS_H` | `20` | The room under the last row for the years' names. |
+| 891 | `ResearchScreen.PLACE` | `"research.place"` | The key a timeline child carries its Place under. |
+| 1122 | `ResearchScreen.CHART_W` | `575, CHART_H = 150` | A small chart's size: the Bank's two-across cards'. |
 
 ### SectorScreen.java ([map](map/SectorScreen.md))
 
@@ -5768,7 +5778,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1704 constants)
+## harnesses (1722 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5904,7 +5914,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 981 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING }...` | The examples: a word shaped as the model files it, and the kind it must read as. |
+| 989 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING }...` | The examples: a word shaped as the model files it, and the kind it must read as. |
 
 ### BuildersFirstCheck.java ([map](map/BuildersFirstCheck.md))
 
@@ -6259,6 +6269,12 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 109 | `DiscoveryCheck.STUDY_ROUNDING` | `0.06` | How far from the study's figure a post may be: the study's rounding to a tenth. |
 | 112 | `DiscoveryCheck.STUDY_LAG_YEARS` | `new EnumMap<>(Map.of(Field.ENGINEERING, 7, Field.MEDICINE, 9, Field.BUSINESS, 4, Field....` | research-design 1.8: how many years before history's date the science exists. |
 | 114 | `DiscoveryCheck.CAT` | `ResearchCatalog.get()` |  |
+
+### DriverlessTruckCheck.java ([map](map/DriverlessTruckCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 50 | `DriverlessTruckCheck.TRUCK` | `EquipmentCheck.TRUCK, KIT = "driverless-kit"` |  |
 
 ### ER1Check.java ([map](map/ER1Check.md))
 
@@ -6779,6 +6795,16 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 166 | `HydroCheck.ALL` | `(cx, cy) -> true` |  |
 | 483 | `HydroCheck.PLACES` | `{ new Place("Shawinigan QC", 46.556, - 72.748, true), new Place("Niagara Falls ON", 43....` |  |
 | 493 | `HydroCheck.HALF` | `333` | The half-side of the square a place is scanned in, in plots: 333 (10 km), a square of world 20 km a side. |
+
+### HydrogenSteelCheck.java ([map](map/HydrogenSteelCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 54 | `HydrogenSteelCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
+| 56 | `HydrogenSteelCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
+| 87 | `HydrogenSteelCheck.PELLET_FE` | `.65` | The iron the row's pellets carry, 65% Fe: the row's own comment (1 / 0.65 t of pellets a tonne of steel); the model keeps no constant for it. |
+| 89 | `HydrogenSteelCheck.PLAYED_MONTHS` | `24` | The months section 6 plays from FE4's: two years. |
+| 91 | `HydrogenSteelCheck.PLANTS` | `2` | The Pelletising Plants section 3 and 4 stand: enough for the works' pellets twice over at nameplate. |
 
 ### InboxCheck.java ([map](map/InboxCheck.md))
 
@@ -7839,12 +7865,16 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 90 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Spot("E12", ...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
-| 135 | `ResearchCheck.MONTH_KNOWN` | `30` | The entries whose World column names a month: the table's count. |
-| 138 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has. |
-| 139 | `ResearchCheck.PREFIX_COUNTS` | `{ 20, 10, 8, 5, 27, 6, 3, 12 }` |  |
-| 142 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594 }, { "M10...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
-| 527 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
+| 97 | `ResearchCheck.DATES` | `List.of(new Spot("E1", 1952, 11, true), new Spot("E5", 1956, 4, true), new Spot("E12", ...` | research-design.md 4 and research-1900.md 8: the World column's month where it names one, the prototype's where it does not. |
+| 142 | `ResearchCheck.MONTH_KNOWN` | `32` | The entries whose World column names a month: the tables' 30 and the near future's FE1 and FE2 (FE4 is a projection, a year's window). |
+| 145 | `ResearchCheck.PREFIXES` | `{ "E", "M", "B", "L", "PE", "PM", "PB", "PL" }` | The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 91 rows (HISTORY_ROWS). |
+| 146 | `ResearchCheck.PREFIX_COUNTS` | `{ 20, 10, 8, 5, 27, 6, 3, 12 }` |  |
+| 147 | `ResearchCheck.HISTORY_ROWS` | `91` |  |
+| 150 | `ResearchCheck.NEAR_PREFIXES` | `{ "FE", "FM", "FB", "FL" }` | The near future's prefixes (the first letter F, the second the field, research-near-future's call 7), and how many rows each has: FE1, FE2 and FE4 (the study has no FE3). |
+| 151 | `ResearchCheck.NEAR_COUNTS` | `{ 3, 0, 0, 0 }` |  |
+| 154 | `ResearchCheck.NEAR_CODES` | `List.of("FE1", "FE2", "FE4")` | The near future's rows, in the file's order, after the studies' 91. |
+| 157 | `ResearchCheck.WORK` | `{ { "E1", 444 }, { "E5", 545 }, { "E12", 1013 }, { "E18", 2998 }, { "M3", 594 }, { "M10...` | Work typed from the tables (researcher-years at the date); PL1 and PL12 are the 8.4 text's, L5 the 8.6 rule's. |
+| 560 | `ResearchCheck.CODED` | `new TreeMap<>(Map.ofEntries(Map.entry(11, "PE1"), Map.entry(119, "PE4"), Map.entry(91, ...` | research-1900.md 1.2 and the R2 brief: the templates dated by a code, id to the entry that opens each; typed here as the specification. |
 
 ### ResearchPreviewCheck.java ([map](map/ResearchPreviewCheck.md))
 
@@ -7859,9 +7889,9 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 123 | `ResearchViewCheck.CAT` | `ResearchCatalog.get()` |  |
-| 291 | `ResearchViewCheck.NOW_SECTION_TWO` | `50` | A month well past the first discoveries, for the cores of section 2. |
-| 338 | `ResearchViewCheck.FINDS` | `Map.of("PE1", 4, "PE14", 150, "PE2", 20, "PE3", ResearchView.FIRST_MONTH, "PL5", Resear...` | The finds of section 3's research: PE1 and PE14 before history's date, PE2 after it, PE3 at the founding month and PL5 the month after it. |
-| 346 | `ResearchViewCheck.NOW` | `400` |  |
+| 296 | `ResearchViewCheck.NOW_SECTION_TWO` | `50` | A month well past the first discoveries, for the cores of section 2. |
+| 343 | `ResearchViewCheck.FINDS` | `Map.of("PE1", 4, "PE14", 150, "PE2", 20, "PE3", ResearchView.FIRST_MONTH, "PL5", Resear...` | The finds of section 3's research: PE1 and PE14 before history's date, PE2 after it, PE3 at the founding month and PL5 the month after it. |
+| 351 | `ResearchViewCheck.NOW` | `400` |  |
 
 ### RestaurantsCheck.java ([map](map/RestaurantsCheck.md))
 
@@ -8026,6 +8056,19 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 270 | `StaleCheck.GAMMA` | `""" package ham.citybuildersim; /** Added on the branch; this comment names madeUpInJav...` | A file the branch adds, read as the branch has it. |
 | 281 | `StaleCheck.NAMES_DIFF` | `""" diff --git a/fixture/names.md b/fixture/names.md --- a/fixture/names.md +++ b/fixtu...` | The diff: a document's six lines (2 to 7), the Java file whole, and a generated page. |
 | 312 | `StaleCheck.SOUND` | `""" package ham.citybuildersim; /** * A fixture with nothing wrong with it. * * The one...` | The same shapes, all of them true. |
+
+### SulphideLeachCheck.java ([map](map/SulphideLeachCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 45 | `SulphideLeachCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
+| 47 | `SulphideLeachCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
+| 76 | `SulphideLeachCheck.CU` | `Resource.COPPER` |  |
+| 77 | `SulphideLeachCheck.SULPHIDE` | `Deposit.FieldType.SULPHIDE, OXIDE = Deposit.FieldType.OXIDE` |  |
+| 80 | `SulphideLeachCheck.LITRES_A_KG` | `71` | The builder's water, litres a kilogram of cathode (Johnson Camp: "71 litres per kilogram copper", the source of the row's water). |
+| 82 | `SulphideLeachCheck.KG_A_TONNE` | `1000` | Kilograms in a tonne, the unit of the row's nameplate. |
+| 84 | `SulphideLeachCheck.LITRES_A_WATER_UNIT` | `37_854` | The game's unit of water, litres: 10,000 US gallons (UtilitiesHandler's units; WaterCheck's 37.854 m3) - the model keeps no constant for it. |
+| 86 | `SulphideLeachCheck.PLAYED_MONTHS` | `24` | The months section 5 plays from FE2's: two years. |
 
 ### SupplierCreditCheck.java ([map](map/SupplierCreditCheck.md))
 
