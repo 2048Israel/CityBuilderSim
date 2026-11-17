@@ -1,7 +1,7 @@
 <!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-DQ1-lQ8UUo4a -->
 ## changelog
-### {next} — DQ1, Young towns borrow ahead of their people and default — 2026-11-16, ready, see docs/queue/DQ1-notes.md
+### DQ1 — Young towns borrow ahead of their people and default — 2026-11-16, ready, no tag (harness)
 Measured first: the AUTO2 bank's months under its minimum to m600 are 2 [0-17] on 0.9.128, 23 of their 65 in
 write-off spells, six of those a young town's lone Fabrication Shop sold empty (86-100% of its loan written off,
 a quarter priced). Four ways of holding or pricing a lone plant's loan at the bank were measured; none is taken.
