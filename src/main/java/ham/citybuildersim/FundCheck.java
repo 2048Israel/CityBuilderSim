@@ -228,6 +228,8 @@ public class FundCheck {
         theTransfer();
         theWithdrawal();
         theIdleCash();
+        theIdleCashAfterToRaise();
+        theRealRun();
         theHand();
         theSave();
         insane();
@@ -1326,6 +1328,167 @@ public class FundCheck {
         play(z);
         check("...and the month pays none", z.getFund().getTransferDue() == 0 && z.getFund().getTransferPaid() == 0
                 && z.getFund().getTransferFromIdle() == 0 && z.getFund().getTransfersFromIdle() == 0);
+    }
+
+    /* ================= 9d. the idle cash after last month's toRaise (RB1-R) ================= */
+
+    /**
+     * THE CASH THE TOP OF THE MONTH PAYS LAST MONTH'S toRaise FROM IS NOT IDLE (RB1-R). Over the default, payTransfer() pays last
+     * month's toRaise out of the cash first, and struck the due on an idle figure read before that: with the dial under 17 steps
+     * (the idle part going at the 24th, more than the dial) the cash that left as late was charged again as idle, the due was
+     * overstated, and what the cash could not cover became the next toRaise. The figure is read on the cash less toRaise now
+     * (Game.fundIdleCash()), and the preview reads the same.
+     */
+    static void theIdleCashAfterToRaise() {
+        out.println("\n--- 9d. the idle cash is read after last month's toRaise (RB1-R) ---");
+        double step = TreasuryFund.WITHDRAWAL_STEP, share = TreasuryFund.IDLE_TRANSFER_SHARE;
+        int def = TreasuryFund.DEFAULT_WITHDRAWAL_STEPS;
+        int s = def;
+        while ((s + 1) * step < share && s + 1 <= TreasuryFund.MAX_WITHDRAWAL_STEPS) s++;
+        check("fixture: S is over the default, its share of the dial is under the 24th and one more step's is not",
+                s > def && s * step < share && (s + 1) * step >= share);
+
+        Game g = copy();
+        int[] two = holdTwoAndARescueBook(g);
+        check("fixture: a market book in two companies, a rescue book, no cash", two[1] >= 0 && g.getFund().getCash() == 0
+                && g.fundRescueSharesValue() > 0);
+        g.setFundWithdrawal(s * step);
+        check("fixture: the dial is at S steps, over the default", g.getFund().getWithdrawalSteps() == s && g.getFund().sellsToPay());
+        play(g);
+        TreasuryFund f = g.getFund();
+        check("fixture: its cash could not cover the month, so there is a toRaise", f.getToRaise() > 0);
+
+        double rooms = g.getExchange().fundShareRoom() + g.getBondMarket().fundBondRoom(g.getMonth());
+        check("fixture: the rule's rooms are a number, finite", Double.isFinite(rooms) && rooms > 0);
+        double payIn = 4 * rooms + f.getToRaise();
+        g.setCashForTest(g.getCash() + payIn);
+        g.fundPayIn(payIn);
+        double toRaise = f.getToRaise(), cash = f.getCash();
+        double shareRoom = g.getExchange().fundShareRoom(), bondRoom = g.getBondMarket().fundBondRoom(g.getMonth());
+        double idleWhole = TreasuryFund.idleCash(cash, f.handReserve(), shareRoom, bondRoom);
+        double idle = TreasuryFund.idleCash(cash - toRaise, f.handReserve(), shareRoom, bondRoom);
+        check("fixture: paid in past its rooms, the cash is over the toRaise and the whole cash has idle cash in it",
+                toRaise > 0 && cash > toRaise && idleWhole > 0);
+        check("the idle cash is the model's on the cash less last month's toRaise, to the bit", g.fundIdleCash() == idle);
+        check("...and less than the idle cash on the whole cash, which counted the toRaise as idle", idle < idleWhole);
+
+        PolicyPreview.Withdrawal w = PolicyPreview.fundWithdrawalAt(g, g.getFundWithdrawal());
+        double value = g.fundValue();
+        double due = TreasuryFund.dueAt(s, value, idle);
+        check("the preview's due at the dial in force is the city's, and the model's on the idle cash after toRaise",
+                w.due() == g.fundTransferDue() && w.due() == due);
+        check("...and what its cash pays of it is the due or the cash after toRaise, the less of the two",
+                w.fromCash() == Math.min(due, cash - toRaise));
+
+        // The month at the top: the same figures, by payTransfer(). The cash, the value and the share room are as the preview read them;
+        // what the month's prices, rates and clock move before the step's top is the bond room (fundBondRoom(month): measured at 1% of it
+        // here, $28 of $2.65k, and the due with it). So the month's figures are the preview's to the bond room, whole - the tightest
+        // bound the model gives without a hook in the month - and the old read, which counted the toRaise as idle, is off by far more.
+        check("fixture: the bond room is under the toRaise, so the bound tells the old read from the new", bondRoom < toRaise);
+        double idlePart = TreasuryFund.idlePartAt(s, value, idle);
+        boolean closed = play(g);
+        check("the month's audit closes", closed);
+        double paidLate = f.getTransferPaidLate();
+        close("the month's due is the model's on the idle cash after toRaise (and so the preview's), to the 24th less the dial of the bond room",
+                f.getTransferDue(), due, (share - s * step) * bondRoom);
+        close("...its idle part is the model's on the idle cash after toRaise, to the 24th of the bond room (all of it paid)",
+                f.getTransferFromIdle(), idlePart, share * bondRoom);
+        close("last month's toRaise was paid first, from the cash", paidLate, Math.min(toRaise, cash), 0);
+        close("...the month's own due was paid from what was left", f.getTransferPaid(),
+                Math.max(0, Math.min(f.getTransferDue(), cash - paidLate)), 0);
+        close("...and the new toRaise is what its cash could not cover of the month", f.getToRaise(),
+                f.getTransferDue() - f.getTransferPaid(), 0);
+        check("fixture: its cash covered the month, so none is to raise", f.getToRaise() == 0 && f.getTransferShort() == 0);
+    }
+
+    /* ================= 9e. a real run at the default dial (RB1-R) ================= */
+
+    /**
+     * How many months 9e plays: 240 is twenty years, 5 seconds; the counts (the cap sale in 230 months, the idle transfer in 90) would allow 120 with
+     * margin, and the longer run gives the fixed point more buybacks to be held to. MEASURED (RB1-R): on its own this town's fund reaches no cap in 600 months - it holds
+     * the Bank at its 10% from the first month and the Bank never buys back, and the companies that do buy back are held under 1% - so the
+     * run places the fund at the limit of the company that buys back (see theRealRun()) and the cap sale has a buyback to answer.
+     */
+    static final int MONTHS_9E = 240;
+
+    /** How many months 9e's probe of a copy plays to see which company buys its own shares back (the one the fund is then placed in). */
+    static final int PROBE_MONTHS_9E = 24;
+
+    /**
+     * A REAL RUN AT THE DEFAULT DIAL: THE CAP SALE AND THE IDLE TRANSFER FIRE, AND NO HOLDING PASSES THE FIXED POINT (RB1-R). The cap sale
+     * fires only when a buyback lifts a holding the fund has at the limit, and this town's fund is at the limit of the Bank alone, which
+     * never buys back. So the fixture places it: a probe of a copy finds the company, not the Bank, that retires the most of its own
+     * shares (Exchange.getBuybackToHouseholds() and the others), and the households hand the fund the shares that make its holding
+     * exactly TreasuryFund.OWNERSHIP_LIMIT of it - a fixture of a holding, not a trade, as holdTwoAndARescueBook() does. Then the city
+     * pays in four times its rooms, the rule fills them and some cash is idle, and the town plays as itself for MONTHS_9E: the company's
+     * buybacks are its own. A buyback cannot outrun the rule's tenth of the excess a month: the most the fund holds of any company is
+     * L x s / (s - b) for the fastest b a month can retire (LongPlaytest's fixed point, the buyback filled at the desk's bid, the
+     * emigrants' price, the cheapest, which retires the most shares for the money).
+     */
+    static void theRealRun() {
+        out.println("\n--- 9e. a real run at the default dial: the cap sale and the idle transfer fire, and no holding passes the fixed point (RB1-R) ---");
+        double limit = TreasuryFund.OWNERSHIP_LIMIT;
+        // The company that buys back: a probe on a copy, by the model's own getters, over those a holding can be placed in.
+        Game probe = copy();
+        double[] retired = new double[Equity.COMPANIES.length];
+        for (int m = 0; m < PROBE_MONTHS_9E; m++) {
+            play(probe);
+            Exchange px = probe.getExchange();
+            for (int c = 0; c < retired.length; c++) retired[c] += px.getBuybackToHouseholds(c) + px.getBuybackToDesk(c) + px.getBuybackAbroad(c);
+        }
+        Game g = copy();
+        Equity reg = g.getEquity();
+        int buyer = -1;
+        double mostRetired = 0;
+        for (int c = 0; c < retired.length; c++) {
+            if (c == Equity.BANK || !(reg.getShares(c) > 0) || !(g.getExchange().fair(c) > 0)) continue;
+            double take = limit * reg.getShares(c) - reg.getCityMarketShares(c);
+            if (g.getHouseholdBalance().sharesHeld(c) < take) continue;
+            double rate = retired[c] / reg.getShares(c);
+            if (rate > mostRetired) { mostRetired = rate; buyer = c; }
+        }
+        check("fixture: a company that is not the Bank buys back in the probe, and its households hold what the limit takes", buyer >= 0);
+        if (buyer < 0) return;
+        double take = limit * reg.getShares(buyer) - reg.getCityMarketShares(buyer);
+        double households = g.getHouseholdBalance().sharesHeld(buyer);
+        double keep = 1 - take / households;
+        for (Household cell : g.getHouseholdBalance().cellsForMarket()) cell.shares[buyer] *= keep;
+        reg.moveCity(buyer, take);
+        close("fixture: the fund holds the limit of it, " + Equity.COMPANIES[buyer],
+                reg.getCityMarketShares(buyer) / reg.getShares(buyer), limit, 1e-12);
+
+        check("fixture: the dial is at the default", g.getFund().getWithdrawalSteps() == TreasuryFund.DEFAULT_WITHDRAWAL_STEPS);
+        double rooms = g.getExchange().fundShareRoom() + g.getBondMarket().fundBondRoom(g.getMonth());
+        check("fixture: the rule's rooms are a number, finite", Double.isFinite(rooms) && rooms > 0);
+        double payIn = 4 * rooms;
+        g.setCashForTest(g.getCash() + payIn);
+        g.fundPayIn(payIn);
+        check("fixture: paid in past its rooms, the fund holds idle cash", g.fundIdleCash() > 0);
+
+        double fastest = Exchange.BUYBACK_PACE / 12 / (1 - Exchange.SPREAD / 2);
+        double fixedPoint = TreasuryFund.OWNERSHIP_LIMIT * TreasuryFund.LIMIT_SALE_SHARE / (TreasuryFund.LIMIT_SALE_SHARE - fastest);
+        int capMonths = 0, idleMonths = 0, closedMonths = 0, buybackMonths = 0;
+        double most = 0;
+        long t0 = System.nanoTime();
+        for (int m = 0; m < MONTHS_9E; m++) {
+            if (play(g)) closedMonths++;
+            if (g.getExchange().getFundLimitAsked() > 0) capMonths++;
+            if (g.getFund().getTransferFromIdle() > 0) idleMonths++;
+            Exchange ex = g.getExchange();
+            if (ex.getBuybackToHouseholds(buyer) + ex.getBuybackToDesk(buyer) + ex.getBuybackAbroad(buyer) > 0) buybackMonths++;
+            for (int c = 0; c < Equity.COMPANIES.length; c++) {
+                double shares = g.getEquity().getShares(c);
+                if (shares > 0) most = Math.max(most, g.getEquity().getCityMarketShares(c) / shares);
+            }
+        }
+        double seconds = (System.nanoTime() - t0) / 1e9;
+        out.printf("   %d months in %.1fs: the cap sale asked in %d, the idle cash paid in %d, %s bought back in %d; the most of any company the fund held %.4f%%, the fixed point %.4f%%%n",
+                MONTHS_9E, seconds, capMonths, idleMonths, Equity.COMPANIES[buyer], buybackMonths, most * 100, fixedPoint * 100);
+        check("the dial stayed at the default", g.getFund().getWithdrawalSteps() == TreasuryFund.DEFAULT_WITHDRAWAL_STEPS);
+        check("every month's audit closed", closedMonths == MONTHS_9E);
+        check("the cap sale fired: the rule asked shares past the limit in some month", capMonths > 0);
+        check("the idle transfer fired: a month's transfer had a part struck on the idle cash", idleMonths > 0);
+        check("no company was held past the fixed point", most <= fixedPoint * (1 + 1e-9));
     }
 
     /* ================= 10. the hand ================= */

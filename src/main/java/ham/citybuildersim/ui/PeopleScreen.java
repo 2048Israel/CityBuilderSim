@@ -121,7 +121,7 @@ final class PeopleScreen {
     /** Under this share out of work, nobody is spare: amber, "jobs going unfilled". */
     static final double OUT_OF_WORK_SHORT = .03;
 
-    /** Over this share out of work, high: amber (Toronto runs 8.0% and Madrid 9.0%, the high end of the big rich-country cities). */
+    /** Over this share out of work, high: amber (Toronto runs 8.0% and Madrid 9.0%, the high end of the big rich-country cities). Arrivals already slow from Migration.HEALTHY_OUT_OF_WORK (6%), a sixth slower at 7%, which the migration word says while the tile is still green. */
     static final double OUT_OF_WORK_HIGH = .07;
 
     /** Over this, a city in trouble: red, and the share at which nobody moves here for work (Migration.ARRIVALS_STOP_OUT_OF_WORK). */
@@ -596,9 +596,9 @@ final class PeopleScreen {
         double target = m.getLastTarget();
         PopulationManager pm = ui.game.getPopulationManager();
         long population = pm.getPopulation();
-        // WG2: today's out-of-work share, which the next month's arrivals take their brake from.
+        // WG2: today's out-of-work share, for the words; the brake is the one last month's arrivals took (WG2-R), so the word agrees with them.
         double outOfWork = pm.getUnemploymentRate();
-        double brake = m.arrivalBrakeNow(outOfWork);
+        double brake = m.getLastBrake();
         String why, tone, word;
         if (m.getLastCrowding() <= 0) {
             why = "Nobody else can fit. Every flatshare and every doubled-up household "
@@ -619,20 +619,22 @@ final class PeopleScreen {
             tone = Palette.BAD;
             word = "leaving";
         } else if (target > population && brake < 1) {
-            // WG2: the brake on arrivals, read off today's out-of-work share as next month's arrivals will read it.
+            // WG2: the brake on arrivals, as the month's arrivals took it (WG2-R: getLastBrake(), not today's share, which may have crossed 6% or 12% since).
             // It comes before the plain "leaving": past the healthy rate the jobless drift away every month, so
             // the departures are the brake's other half, not news of their own.
             String drift = m.getLastDepartures() > 0
                     ? " Meanwhile the jobless over it drift away." : "";
             why = brake <= 0
-                ? String.format("Nobody is moving here for work while %.1f%% of the labour force is out of "
-                    + "work, past the %.0f%% at which newcomers stay away. Arrivals pick up again as it "
-                    + "falls back toward the healthy %.0f%%.%s", outOfWork * 100,
-                    Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, Migration.HEALTHY_OUT_OF_WORK * 100, drift)
-                : String.format("Arrivals are running at %.0f%% of the draw's pace while %.1f%% of the "
-                    + "labour force is out of work, past the healthy %.0f%%. They slow further as it "
-                    + "climbs, stop at %.0f%%, and quicken as it falls back.%s", brake * 100, outOfWork * 100,
-                    Migration.HEALTHY_OUT_OF_WORK * 100, Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, drift);
+                ? String.format("Nobody moved here for work last month: the out-of-work share was past the "
+                    + "%.0f%% at which newcomers stay away (%.1f%% now). Arrivals pick up again as it "
+                    + "falls back toward the healthy %.0f%%.%s",
+                    Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, outOfWork * 100,
+                    Migration.HEALTHY_OUT_OF_WORK * 100, drift)
+                : String.format("Arrivals ran at %.0f%% of the draw's pace last month, slowed by an "
+                    + "out-of-work share past the healthy %.0f%% (%.1f%% now). They slow further as it "
+                    + "climbs, stop at %.0f%%, and quicken as it falls back.%s", brake * 100,
+                    Migration.HEALTHY_OUT_OF_WORK * 100, outOfWork * 100,
+                    Migration.ARRIVALS_STOP_OUT_OF_WORK * 100, drift);
             tone = Palette.WARN;
             word = brake <= 0 ? "stalled" : "slowing";
         } else if (m.getLastDepartures() > 0) {

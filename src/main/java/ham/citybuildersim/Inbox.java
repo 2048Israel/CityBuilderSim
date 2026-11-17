@@ -223,12 +223,14 @@ public class Inbox {
      * to announce. Later changes settle that notice and raise an unread one.
      * Keeping the current notice live preserves the baseline beyond the
      * resolved notices' two-year cull, including across a save and a load.
+     * The notice leaves its band only once the wealth is GovernmentView.BAND_MARGIN
+     * past the band's bound (GV1-R), so wealth sitting on a bound posts one
+     * notice, not one a month; the held band is the standing notice's own.
      */
     private void takeWealth(Game game, int month) {
         GovernmentView view = GovernmentView.of(game);
         if (!Double.isFinite(view.wealthYears()) || view.band() == null) return;
 
-        String key = WEALTH_BAND_PREFIX + view.band().name();
         Notice previous = null;
         for (int i = notices.size() - 1; i >= 0; i--) {
             Notice notice = notices.get(i);
@@ -237,10 +239,23 @@ public class Inbox {
                 break;
             }
         }
-        String title = "Government wealth: " + view.band().label();
-        List<String> body = wrapped(String.format(
-                "The government holds %.1f years of its revenue. Its wealth band is %s.",
-                view.wealthYears(), view.band().label()), BODY_COLUMNS);
+        GovernmentView.Band held = null;
+        if (previous != null) {
+            try {
+                held = GovernmentView.Band.valueOf(previous.getKey().substring(WEALTH_BAND_PREFIX.length()));
+            } catch (IllegalArgumentException unknown) {
+                held = null;
+            }
+        }
+        GovernmentView.Band band = GovernmentView.bandFrom(held, view.wealthYears());
+        String key = WEALTH_BAND_PREFIX + band.name();
+        String title = "Government wealth: " + band.label();
+        List<String> body = wrapped(band == view.band()
+                ? String.format("The government holds %.1f years of its revenue. Its wealth band is %s.",
+                        view.wealthYears(), band.label())
+                : String.format("The government holds %.1f years of its revenue, %s by the bands. Its notice stays at %s until the wealth is %.0f%% past that band's bound.",
+                        view.wealthYears(), view.band().label(), band.label(), GovernmentView.BAND_MARGIN * 100),
+                BODY_COLUMNS);
         if (previous != null && previous.getKey().equals(key)) {
             previous.refresh(title, body);
             return;

@@ -293,13 +293,39 @@ final class MapView {
     /** Who hears a click: a side, and an offer's place on it or -1. */
     interface Picker { void picked(int side, int place); }
 
-    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the minimap's (MiniMap), so the map's jobs run on one thread in the order handed out. Low priority; it dies with the window. Built as Executors.newSingleThreadExecutor() builds its own, but kept a ThreadPoolExecutor (CM1): its getTaskCount() is the camera tally's count of asks (MoveTally). */
-    static final ThreadPoolExecutor WORKER = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), r -> {
+    /** The one thread the view's arithmetic runs on away from the screen: the first draw of a map, the far nodes' ground, the district plans (0.7.88) and their pictures (0.7.128) - and since 0.7.134 the minimap's (MiniMap), so the map's jobs run on one thread in the order handed out. Low priority; it dies with the window. Built as Executors.newSingleThreadExecutor() builds its own, but a Worker (CM1, FB7): its asked() is the camera tally's count of asks (MoveTally) and the load's. */
+    static final Worker WORKER = new Worker(new LinkedBlockingQueue<>(), r -> {
         Thread t = new Thread(r, "city-map");
         t.setDaemon(true);
         t.setPriority(Thread.MIN_PRIORITY);
         return t;
     });
+
+    /**
+     * The map's one worker thread, counting each job as it is handed in (FB7, 2026-11-17).
+     * WHY: the camera tally and the load counted asks by getTaskCount(), which the JDK calls an approximation: a job the
+     * thread has taken off its queue and not yet begun is counted nowhere, one just finished is counted twice for a moment.
+     * Under load a loaded glide that asked nothing tallied asks -1 (CM1b's known red, GR2-R); ReplayCheck 5d causes that moment.
+     */
+    static final class Worker extends ThreadPoolExecutor {
+        private final java.util.concurrent.atomic.AtomicLong asked = new java.util.concurrent.atomic.AtomicLong();
+
+        Worker(java.util.concurrent.BlockingQueue<Runnable> queue, java.util.concurrent.ThreadFactory threads) {
+            super(1, 1, 0L, TimeUnit.MILLISECONDS, queue, threads);
+        }
+
+        /** Every job comes through here, submit()'s too: counted before it is queued, so a count read after a hand-in has it. */
+        @Override
+        public void execute(Runnable job) {
+            asked.incrementAndGet();
+            super.execute(job);
+        }
+
+        /** The jobs handed in since the worker was made; it never goes down, so a difference of two readings is the asks between them. */
+        long asked() {
+            return asked.get();
+        }
+    }
 
     /** The thread a hover's block is quoted on (WN5b): its own, not WORKER's, because one quote can take seconds at a big level near a foreign coast and would hold the map's own jobs (plans, nodes, the minimap) behind it. Low priority; it dies with the window. */
     static final ExecutorService QUOTES = Executors.newSingleThreadExecutor(r -> {
@@ -5716,7 +5742,7 @@ final class MapView {
         else if (shot.move() != null) applyMove(shot.move());
         if (shot.view() != null && move != null && move.running && !move.planned.contains(shot.view())) moveTally.offPlan++;
         if (wasMoving || cam.moving()) {
-            tallyTasks = WORKER.getTaskCount();
+            tallyTasks = WORKER.asked();
             tallyEvicted = evictedNow();
             tallyThisFrame = true;
         }
@@ -5888,7 +5914,7 @@ final class MapView {
                 m.planned.add(v);
                 m.applied = true;
             }
-            long tasks = WORKER.getTaskCount();
+            long tasks = WORKER.asked();
             boolean wasDirty = dirty;
             dirty = false;
             boolean more = tiles != null && paint(until);
@@ -5899,7 +5925,7 @@ final class MapView {
                 if (System.nanoTime() > until) break;
                 continue;
             }
-            if (WORKER.getTaskCount() == tasks && loadSettled(m)) {
+            if (WORKER.asked() == tasks && loadSettled(m)) {
                 if (m.months) scanView(m, true, cam.shownMonth());
                 if (m.deficient) m.passed++;
                 m.next++;
@@ -6232,6 +6258,8 @@ final class MapView {
         long black, coarse, stale;
         /** WORKER tasks submitted, and pictures let go by the caches, during the frames (from the camera's frame to the tally's, summed). */
         long asks, evicted;
+        /** Frames whose asks came out below nothing: none can, Worker.asked() only grows (FB7: getTaskCount() could, under load). */
+        long asksBelowNothing;
         /** Frames of a loaded move's run that showed a view its load never painted (CM1: the run stays on the plan, at any frame rate). */
         long offPlan;
         /** The gaps between consecutive tallied frames, summed and the worst, in nanoseconds (the first frame after reset() has no gap). */
@@ -6245,7 +6273,7 @@ final class MapView {
 
         /** Back to nothing counted: a move is about to begin. */
         void reset() {
-            frames = unpaintedFrames = halfFrames = black = coarse = stale = asks = evicted = offPlan = frameNanosSum = worstFrameNanos = 0;
+            frames = unpaintedFrames = halfFrames = black = coarse = stale = asks = evicted = offPlan = frameNanosSum = worstFrameNanos = asksBelowNothing = 0;
             byWhere.clear();
             lastNanos = 0;
             timed = false;
@@ -6268,6 +6296,7 @@ final class MapView {
             coarse += coarseCells;
             stale += staleCells;
             asks += asked;
+            if (asked < 0) asksBelowNothing++;
             evicted += letGo;
             long[] w = byWhere.computeIfAbsent(where, k -> new long[5]);
             w[0]++;
@@ -6302,7 +6331,7 @@ final class MapView {
     /** The camera move tally (CM1), for ReplayMoveProbe: reset it before a move, read it after. */
     MoveTally moveTally() { return moveTally; }
 
-    /** Set by replayCamera() for a frame of a glide or fly, and cleared by tick() when it has tallied the frame; WORKER's task count and the caches' evictions as that frame began. */
+    /** Set by replayCamera() for a frame of a glide or fly, and cleared by tick() when it has tallied the frame; WORKER's asks (Worker.asked()) and the caches' evictions as that frame began. */
     private boolean tallyThisFrame;
     private long tallyTasks, tallyEvicted;
 
@@ -6402,6 +6431,6 @@ final class MapView {
                 }
             }
         }
-        moveTally.frame(System.nanoTime(), where, black, coarse, stale, half, WORKER.getTaskCount() - tallyTasks, evictedNow() - tallyEvicted);
+        moveTally.frame(System.nanoTime(), where, black, coarse, stale, half, WORKER.asked() - tallyTasks, evictedNow() - tallyEvicted);
     }
 }

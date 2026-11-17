@@ -18,6 +18,47 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.140 — FB4, three gate reviews' follow-ups — 2026-11-17, ready, see docs/queue/FB4-notes.md
+GV1-R: the wealth band's notice leaves a band only 10% past its bound (`GovernmentView.BAND_MARGIN`), so wealth on a
+bound no longer posts a notice a month (241 over 243 readings before, 3 now, InboxCheck); the government's debt counts
+the central bank's advances and the linked bonds' indexation; the buyback advice keeps its quote while nothing it
+reads has moved. WG2-R: the brake migration applied is kept and saved (`Migration.getLastBrake()`), and the People
+screen's slowing word reads it; SaveFileCheck reloads a city at 239 and 240 months recorded. RB1-R: the fund's idle
+cash is read after last month's toRaise is paid, the idle figures count what was paid, and FundCheck 9e counts the cap
+sale (230 of 240 months) and the idle transfer (90) firing at the default dial, the holding never past the fixed
+point. The playtest moves from m1322, through GV1-R's debt in its player's January read; the ensemble passes
+(docs/ensemble/FB4.md: 24/26, hard 10/10, F1 as the baseline). Queued: PK1 (two fixtures that pick a month) and RB2
+(the fund's due struck on a value that counts the toRaise).
+
+### KR1 — the ship file's known-reds template has no header row — 2026-11-17, ready, see docs/queue/KR1-notes.md
+`docs/batch.md` step 5's ship-file template wrote the `## known-reds` section with a header row, `Harness | part of the
+red line | queued fix | date | cause`. A builder copied it as a row, and `tools/known-reds.sh` rejected it (its third
+field has a space), so `batch-check.sh` stopped with exit 1 and "malformed known-reds row" (SQ1). The template now
+shows the line as a placeholder row, `<Harness> | <part of the red line> | <queued fix id> | <date> | <cause>`, and says
+that no section takes a header row and a known-reds row is one red. The script is not changed: it is the gate's judge,
+and a malformed row stays an error. Checked on scratch copies: a header row and the unfilled placeholder are still
+rejected, a filled row passes. No code, no tag; one in, one out: batch.md 5 lines added, 5 removed.
+
+### MA1 — what carries the city next — 2026-11-17, ready, see docs/queue/MA1-notes.md
+`docs/studies/manufacturing-margin.md`, its probe, the census and BEA extracts and the runs' tables in
+`docs/studies/manufacturing-margin/`: Manufacturing's and Automotive's margins against the 2022 Economic Census and BEA's
+use tables, as CU1 did for copper. On 0.9.138 the two carry 52-76% of the exports and 42-51% of GDP. Their goods and
+wages are real, but a works buys nothing beyond its recipe, where a real one buys half to two thirds of its sales, so it
+keeps 21-41% against the census's 13-23%; fabricated steel's world price floats 1.1-1.8 times its chain; a works costs
+two to four times the census's assets a sale; the Machine Works has three times a machine shop's crew. On five
+prototypes, with everything in line two cities of three take off, on the same two sectors at the census's margin, and
+the third stays at 40 thousand people. Five calls (MA1-K); MA2 (the hold) and MA3 (the books) queued, MA4 pending on
+MA3's ensemble. No code.
+
+### 0.9.139 — FB7, counters read under load — 2026-11-17, ready, see docs/queue/FB7-notes.md
+Two counters that load could move are read so that it cannot; the model and the playtest are main's. SaveSlotCheck 7d's swap counter
+and its seam are the whole program's: 7d now counts with the shared save writer settled and held, the seam answering only its own
+thread, and asserts the writer wrote nothing meanwhile. With another job on the writer waiting for a file inside 7d, main went red in
+36 of 40 runs, FB7 in none (SS1; the first red, RT1's, was the clock SS2 mended). ReplayCheck 5d's asks were getTaskCount() deltas,
+which miss a job the thread has taken and not begun: a loaded glide that asked nothing could tally -1. The map's worker now counts each
+job as it is handed in (MapView.Worker), a fixture causes the moment (the old count 2 to 1, the new one holding), and no frame's asks
+may come out below nothing (GR2-R). Both harnesses green 4 of 4 as two copies beside a 20-thread CPU load; FB7's three known reds retire.
+
 ### MED1 — a health study — 2026-11-17, ready, see docs/queue/MED1-notes.md
 `docs/studies/health.md`, its sheets in `docs/studies/health/`: the causes of death the game lacks, 1900 to today in
 Canada, and a mental hospital. Heart disease, stroke, cancer, diabetes and kidney failure become named shares of today's

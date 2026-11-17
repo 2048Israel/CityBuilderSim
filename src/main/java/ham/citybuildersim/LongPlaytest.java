@@ -7362,7 +7362,7 @@ public class LongPlaytest {
                     fundMonths > 0 ? fundCashShareSum / fundMonths * 100 : 0,
                     book.length() > 0 ? book.toString() : " nothing");
             // ...and against its cap (RB1): the company-months over the limit, the most of any company against the fixed point
-            // L x s / (s - b) at the fastest buyback a month can be (Exchange.BUYBACK_PACE a year, filled at the desk's ask), and the idle cash it paid the budget.
+            // L x s / (s - b) at the fastest buyback a month can be (Exchange.BUYBACK_PACE a year, filled at the desk's bid, the emigrants' price, the cheapest, which retires the most shares for the money), and the idle cash it paid the budget.
             double mostOfAny = 0;
             for (double most : mostHeld) mostOfAny = Math.max(mostOfAny, most);
             double fastestBuyback = Exchange.BUYBACK_PACE / 12 / (1 - Exchange.SPREAD / 2);

@@ -758,7 +758,7 @@ final class GovernmentScreen {
     VBox wealthCard() {
         GovernmentView view = GovernmentView.of(ui.game);
         String info = "Net financial wealth is treasury cash + fund cash + the fund's holdings at market value + "
-                + "the vault's reserves in local money, less the city's debt. It is compared with the last twelve "
+                + "the vault's reserves in local money, less the city's debt (its paper at face, the central bank's advances and the linked bonds' indexation). It is compared with the last twelve "
                 + "months of revenue once a full year has been recorded.\n\nTreasury: " + m(view.treasury())
                 + "\nFund cash: " + m(view.fundCash()) + "\nFund holdings: " + m(view.fundHoldings())
                 + "\nVault: " + m(view.vault()) + "\nDebt: " + m(view.debt())
@@ -774,7 +774,7 @@ final class GovernmentScreen {
                 m(view.buybackMonthlySaving()) + " a month in coupons", buyback ? "Open buyback" : null,
                 buyback ? () -> ui.financesScreen.openClose(view.buybackDebt()) : null,
                 buyback ? "The coupon stopped by the quoted buyback. A discount bill has no coupon; its saving is the price below its maturity payment. Open the ticket and ladder to review the price."
-                        : view.debt() <= 0 ? "There is no paper to buy back."
+                        : view.paper() <= 0 ? "There is no paper to buy back."
                         : "Needs treasury cash above the city's debt and paper with a positive yield. Cash earns nothing."));
 
         String tax = view.largestTaxName();
