@@ -1408,14 +1408,17 @@ public class BuildingsTemplate {
          * the three add to roadLoad to the bit rather than to within three
          * roundings of it. The network's total is what has to be preserved and
          * this is the cheapest way to make that arithmetic rather than a
-         * tolerance.
+         * tolerance. The remainder is taken from the two shares' sum, in
+         * the order they are added back (LX1, 2026-11-17): taken one at a
+         * time it was rounded twice, and the Boutique's 8 of road load on
+         * 7 pieces came back as 7.999999999999999.
          */
         double asCommuters = roadLoad * commuters / total;
         double asGoods = roadLoad * goods / total;
         switch (stream) {
             case COMMUTERS: return asCommuters;
             case GOODS:     return asGoods;
-            default:        return roadLoad - asCommuters - asGoods;
+            default:        return roadLoad - (asCommuters + asGoods);
         }
     }
 

@@ -18,6 +18,20 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.138 — LX1, Luxury Retail's sales per post — 2026-11-17, ready, see docs/queue/LX1-notes.md
+A Boutique covered 320 pieces of a $22,000 good a month with seven posts, so Luxury Retail's payroll was 0.5-1.7% of
+its margin on main after CU2, where BEA's other retail pays 41.7% (LS1). A Boutique now covers 7 pieces with 8 posts
+and the Department Store 80 with its 91 (ids 69 and 70); their floor, cost and the piece's price are held.
+`LuxuryRetail.LABOUR_SHARE` (41.7%) and a factor of two either way are the band `LuxuryRetailCheck` holds the
+catalogue and a town's year to (red on main: 0.6% and 1.3%). On LS1's probe the share reads 36-41% (in the band 313
+of seed 0's 331 years, none on main); the shops take a quarter of the old city's business workers, and the default
+city is 912k at m2399 against main's 413k. The Department Store is never the planner's choice, as on main (LQ1's
+call). A road load's last stream is the remainder of the other two's sum (`TradeCostCheck`). A 4,000-month run has
+the map's save refused at m3589 and m3952, FB8's. GroceryCheck's twins hold their planners, so its vouchers' poor are
+caused; fixtures that read the old path go to HP2 (PriceLevelCheck, HealthCheck, ScaleCheck, DistressBleedCheck), FB9
+(MapCheck 2h-c) and KRT1 (KeptCheck 78), and PlanCheck 6's + floor on its played city to PX2. No save field, no format
+bump.
+
 ### 0.9.137 — FB5, the played cities' placement — 2026-11-17, ready, see docs/queue/FB5-notes.md
 The map draws every building the city has. What no plot of the city's own ground holds at its edge now stands just past it, on dry
 ground the city does not own, beside a street and never in the field. In MapCheck's played city 133 stand there; 135 went
