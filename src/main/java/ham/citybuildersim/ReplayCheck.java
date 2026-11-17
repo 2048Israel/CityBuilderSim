@@ -826,7 +826,17 @@ public class ReplayCheck {
         /* ====== 5d. a replay's camera move loads first, then runs with nothing unpainted and nothing asked (CM1) ====== */
         System.out.println("\n--- 5d. a replay move loads first, then runs with nothing unpainted and nothing asked (CM1) ---");
         double glideSeconds = 2;        // short, to keep the suite quick: ReplayMoveProbe's main() measures the ten-second moves
-        ReplayMoveProbe.Checked cm = ReplayMoveProbe.check(changedLand.folder(), GameFiles.scratch("replaywindow"), glideSeconds);
+        // FB7 (GR2-R): the asks a glide is held to are the map's worker's own count, made as each job is handed in. The old count,
+        // getTaskCount(), lost a job the thread had taken and not begun, and under load a glide that asked nothing tallied asks -1.
+        ReplayMoveProbe.Transit transit = ReplayMoveProbe.inTransit();
+        helper("fixture: a job the map's worker has taken off its queue and not yet begun is in neither of getTaskCount()'s counts, so with nothing asked "
+                + "the old count went from " + transit.taskCountQueued() + " to " + transit.taskCountInTransit() + " (asks "
+                + (transit.taskCountInTransit() - transit.taskCountQueued()) + ")", transit.taskCountInTransit() == transit.taskCountQueued() - 1);
+        helper("...while the map's worker counts each job as it is handed in: across that moment its count holds (asks "
+                + (transit.askedInTransit() - transit.askedQueued()) + "), and one more job handed in is one more ask ("
+                + (transit.askedAnother() - transit.askedInTransit()) + ")",
+                transit.askedInTransit() == transit.askedQueued() && transit.askedAnother() == transit.askedInTransit() + 1 && transit.ended());
+        ReplayMoveProbe.Checked cm =ReplayMoveProbe.check(changedLand.folder(), GameFiles.scratch("replaywindow"), glideSeconds);
         if (cm.cannot() != null) {
             System.out.println("      skipped: " + cm.cannot());
         } else {
@@ -988,6 +998,8 @@ public class ReplayCheck {
         boolean levels = acrossLevels ? m.levelFrames().containsKey("L0") && m.levelFrames().containsKey("FAR") : !m.levelFrames().isEmpty();
         helper("...no frame of its run asked the worker, drew unpainted ground or let a picture go (asks " + m.asks() + ", unpainted frames "
                 + m.unpaintedFrames() + ", let go " + m.evicted() + ")", m.ready() && m.asks() == 0 && m.unpaintedFrames() == 0 && m.evicted() == 0);
+        helper("...and no frame's asks came out below nothing, so a sum of none is no ask and no -1 (" + m.asksBelowNothing() + " frames)",
+                m.ready() && m.asksBelowNothing() == 0);
         helper("...and every frame of its run showed a view its load had painted, whatever the frames' clock (off the plan " + m.offPlan() + " of "
                 + m.frames() + " frames)", m.ready() && m.frames() > 0 && m.offPlan() == 0);
         helper("...and it ran frame by frame to its end, at least " + (int) (glideSeconds * 10) + " frames" + (acrossLevels ? " over at least L0 and FAR" : "") + " (" + m.frames() + ")", frames && levels);

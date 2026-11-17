@@ -551,12 +551,67 @@ public final class ReplayMoveProbe {
      * it passed; while it waited, whether the map held the move and how many of the six caches were pinned; how it was run (the click
      * or the key), whether the key was taken and the phase at once after; then the run's tally (frames, frames with anything
      * unpainted, the worker's asks, the pictures let go, and the frames by where they drew) and, after the run, whether the map still
-     * held the move and how many caches were pinned (and the seconds it took to let go, -1 if it did not in 3 s).
+     * held the move and how many caches were pinned (and the seconds it took to let go, -1 if it did not in 3 s); last, the frames
+     * whose asks came out below nothing (FB7: none can).
      */
     public record Moved(String name, boolean ready, double loadSeconds, int planViews, int passed, boolean heldWhileReady,
                         int pinnedWhileReady, String ranBy, boolean taken, String phaseAfterTrigger, double runSeconds,
                         long frames, long unpaintedFrames, long asks, long evicted, Map<String, Long> levelFrames,
-                        boolean heldAfter, int pinnedAfter, double letGoAfterS, long offPlan, int preparedMonths, int preparedContexts) { }
+                        boolean heldAfter, int pinnedAfter, double letGoAfterS, long offPlan, int preparedMonths, int preparedContexts,
+                        long asksBelowNothing) { }
+
+    /**
+     * FB7's fixture for the count of asks the glides are held to, on a Worker built as the map's own (MapView.Worker, one thread)
+     * whose queue stops the thread after it takes a job and before it begins it: the moment getTaskCount(), the old count, counts
+     * the job nowhere, and which a loaded machine makes long. The readings, of getTaskCount() and of Worker.asked(): with one job
+     * handed in and the thread not yet taking it (queued), with the thread holding it unbegun (inTransit), and after one more job is
+     * handed in during that moment (another); and whether the Worker ended when let go.
+     */
+    public record Transit(long taskCountQueued, long taskCountInTransit, long askedQueued, long askedInTransit, long askedAnother,
+                          boolean ended) { }
+
+    /** Causes the moment Transit names, by latches and no clock, and reads both counts across it. Needs no JavaFX. */
+    public static Transit inTransit() throws Exception {
+        CountDownLatch atTake = new CountDownLatch(1), mayTake = new CountDownLatch(1), taken = new CountDownLatch(1), mayBegin = new CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicInteger takes = new java.util.concurrent.atomic.AtomicInteger();
+        java.util.concurrent.LinkedBlockingQueue<Runnable> queue = new java.util.concurrent.LinkedBlockingQueue<>() {
+            @Override
+            public Runnable take() throws InterruptedException {
+                if (takes.getAndIncrement() > 0) return super.take();
+                // The thread's first take, after its first job (run as the job it was made with, never queued) has ended.
+                atTake.countDown();
+                mayTake.await();
+                Runnable job = super.take();
+                taken.countDown();
+                mayBegin.await();
+                return job;
+            }
+        };
+        MapView.Worker worker = new MapView.Worker(queue, r -> {
+            Thread t = new Thread(r, "transit-fixture");
+            t.setDaemon(true);
+            return t;
+        });
+        try {
+            worker.execute(() -> { });
+            if (!atTake.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("the fixture's worker never came to take a job");
+            worker.execute(() -> { });
+            long countQueued = worker.getTaskCount(), askedQueued = worker.asked();
+            mayTake.countDown();
+            if (!taken.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("the fixture's worker never took its job");
+            long countInTransit = worker.getTaskCount(), askedInTransit = worker.asked();
+            worker.execute(() -> { });
+            long askedAnother = worker.asked();
+            mayBegin.countDown();
+            worker.shutdown();
+            boolean ended = worker.awaitTermination(10, TimeUnit.SECONDS);
+            return new Transit(countQueued, countInTransit, askedQueued, askedInTransit, askedAnother, ended);
+        } finally {
+            mayTake.countDown();
+            mayBegin.countDown();
+            worker.shutdownNow();
+        }
+    }
 
     /** Escape pressed while a glide loads: whether it was loading, whether the key was taken, and where the camera and the map were left. */
     public record Cancelled(boolean wasLoading, boolean taken, String phaseAfter, boolean heldAfter, int pinnedAfter) { }
@@ -835,16 +890,16 @@ public final class ReplayMoveProbe {
                     map, new java.util.ArrayList<>(java.util.List.of(new long[] { nx, ny, k })), plots, (long) ham.citybuildersim.MapFrame.NODE_PX, null, wanted);
             return new long[] { k, nx, ny };
         });
-        java.util.concurrent.ThreadPoolExecutor worker = (java.util.concurrent.ThreadPoolExecutor) get(field(MapView.class, "WORKER"), null);
+        MapView.Worker worker = MapView.WORKER;
         worker.submit(() -> {}).get(10, TimeUnit.SECONDS);
         results.put("a failed worker job is given up on FX and later paints never ask it again", fx(() -> {
             Object m = get(field(MapView.class, "move"), map);
             boolean failed = m != null && ((java.util.Set<Long>) get(field(m.getClass(), "stuckNodes"), m)).contains(key[0]);
-            long tasks = worker.getTaskCount();
+            long tasks = worker.asked();
             for (int i = 0; i < 3; i++) call(method(MapView.class, "paintNodes", long.class, long.class, long.class, long.class, long.class, long.class, long.class, ham.citybuildersim.MapFrame.class),
                     map, 1L, key[1], key[1], key[2], key[2], System.nanoTime() + 1_000_000_000L, ui.game.getCityMap().picturesKept(), new ham.citybuildersim.MapFrame(100, 100));
             finishFixtureLoad();
-            return failed && tasks == worker.getTaskCount();
+            return failed && tasks == worker.asked();
         }));
         CountDownLatch busy = new CountDownLatch(1), release = new CountDownLatch(1);
         worker.submit(() -> { busy.countDown(); try { release.await(10, TimeUnit.SECONDS); } catch (InterruptedException e) { Thread.currentThread().interrupt(); } });
@@ -949,7 +1004,7 @@ public final class ReplayMoveProbe {
             if (m.find()) passed = Integer.parseInt(m.group(1));
         }
         String by = byKey ? "key" : "click";
-        if (!ready) return new Moved(name, false, loadS, views, passed, false, 0, by, false, phase, 0, 0, 0, 0, 0, Map.of(), false, 0, -1, 0, 0, 0);
+        if (!ready) return new Moved(name, false, loadS, views, passed, false, 0, by, false, phase, 0, 0, 0, 0, 0, Map.of(), false, 0, -1, 0, 0, 0, 0);
         Thread.sleep(300);      // it waits: nothing runs it, nothing lets go of what it loaded
         boolean held = fx(() -> map.moveHeld() && cam.ready());
         int pinned = fx(() -> map.cachesPinned());
@@ -988,7 +1043,7 @@ public final class ReplayMoveProbe {
         Object[] figures = fx(() -> {
             Map<String, Long> levels = new LinkedHashMap<>();
             for (Map.Entry<String, long[]> e : tally.byWhere.entrySet()) levels.put(e.getKey(), e.getValue()[0]);
-            return new Object[] { tally.frames, tally.unpaintedFrames, tally.asks, tally.evicted, levels, tally.offPlan };
+            return new Object[] { tally.frames, tally.unpaintedFrames, tally.asks, tally.evicted, levels, tally.offPlan, tally.asksBelowNothing };
         });
         // The map lets go of the move on its next frame (endMove()); give it a few seconds to have one.
         long t2 = System.nanoTime();
@@ -1002,7 +1057,8 @@ public final class ReplayMoveProbe {
         @SuppressWarnings("unchecked")
         Map<String, Long> levels = (Map<String, Long>) figures[4];
         return new Moved(name, true, loadS, views, passed, held, pinned, by, taken, after, runS, (Long) figures[0], (Long) figures[1],
-                (Long) figures[2], (Long) figures[3], levels, heldAfter, pinnedAfter, letGo, (Long) figures[5], preparedMonths, preparedContexts);
+                (Long) figures[2], (Long) figures[3], levels, heldAfter, pinnedAfter, letGo, (Long) figures[5], preparedMonths, preparedContexts,
+                (Long) figures[6]);
     }
 
     /** Test the actual chartNodes range while a real move is retained, then leave without yielding another FX frame. */

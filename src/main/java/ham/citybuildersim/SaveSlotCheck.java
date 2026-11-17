@@ -408,6 +408,8 @@ public class SaveSlotCheck {
      * against the wall clock, and slipped under load, RT1's gate); one whose handle outlasts every
      * retry fails, says so, and leaves the file whole; and the next write lands. Another filesystem lets a file be
      * replaced while it is open, and there is nothing to wait for: the section says so and asserts nothing.
+     * The swap counter and the seam are the whole program's, so the counting runs with the shared save writer settled and
+     * held, the seam answering only 7d's own thread (FB7, SS1: GR2 filed the counter as open to another writer's swap).
      */
     static void heldOpen() throws Exception {
         System.out.println("\n--- 7d. a file held open while a write swaps over it: the write waits for it ---");
@@ -436,38 +438,54 @@ public class SaveSlotCheck {
         }
         assertTrue("fixture: on Windows a reader holding the file open makes a plain move over it fail", refused);
         Files.deleteIfExists(probe);
-        int waitedBefore = GameFiles.swapsThatWaited();
 
-        java.io.Reader held = Files.newBufferedReader(target);
-        int[] refusals = {0};
-        GameFiles.onSwapRefused = tries -> {
-            refusals[0] = tries;
-            if (tries == RELEASE_ON_REFUSAL) {
-                try {
-                    held.close();
-                } catch (java.io.IOException ignored) {
-                    // The write's assertions below say what happened.
-                }
-            }
-        };
-        GameFiles.Result waited;
+        // FB7 (SS1): swapsThatWaited() and the seam are the whole program's, so 7d counts in a program where nothing else
+        // writes: the shared save writer settled and then held (a job handed to it meanwhile waits for 7d's end), and the
+        // seam answering only this thread's swaps. The writer's count of writes says nothing slipped through.
+        SaveWriter writer = SaveWriter.shared();
+        writer.awaitIdle();
+        writer.hold();
         try {
-            waited = files.write(target, out -> out.write("new"));
-        } finally {
-            GameFiles.onSwapRefused = null;
-        }
-        assertTrue("a write over a file let go at its refused try " + RELEASE_ON_REFUSAL + " lands", waited.ok && Files.readString(target).equals("new"));
-        assertEquals("...having been refused exactly that many times first", refusals[0], RELEASE_ON_REFUSAL);
-        assertTrue("...after waiting for it: its swap was refused and landed on a later try (GameFiles.swapsThatWaited)", GameFiles.swapsThatWaited() == waitedBefore + 1);
-        assertTrue("...with the .tmp gone and the file before it in the .bak", !Files.exists(tmp) && Files.readString(bak).equals("old"));
+            int writesBefore = writer.writes();
+            int waitedBefore = GameFiles.swapsThatWaited();
+            Thread own = Thread.currentThread();
 
-        GameFiles.Result refusedWrite;
-        try (java.io.Reader stays = Files.newBufferedReader(target)) {
-            refusedWrite = files.write(target, out -> out.write("newer"));
+            java.io.Reader held = Files.newBufferedReader(target);
+            int[] refusals = {0};
+            GameFiles.onSwapRefused = tries -> {
+                if (Thread.currentThread() != own) return;
+                refusals[0] = tries;
+                if (tries == RELEASE_ON_REFUSAL) {
+                    try {
+                        held.close();
+                    } catch (java.io.IOException ignored) {
+                        // The write's assertions below say what happened.
+                    }
+                }
+            };
+            GameFiles.Result waited;
+            try {
+                waited = files.write(target, out -> out.write("new"));
+            } finally {
+                GameFiles.onSwapRefused = null;
+            }
+            assertTrue("a write over a file let go at its refused try " + RELEASE_ON_REFUSAL + " lands", waited.ok && Files.readString(target).equals("new"));
+            assertEquals("...having been refused exactly that many times first", refusals[0], RELEASE_ON_REFUSAL);
+            assertTrue("...after waiting for it: its swap was refused and landed on a later try (GameFiles.swapsThatWaited)", GameFiles.swapsThatWaited() == waitedBefore + 1);
+            assertTrue("...with the .tmp gone and the file before it in the .bak", !Files.exists(tmp) && Files.readString(bak).equals("old"));
+
+            GameFiles.Result refusedWrite;
+            try (java.io.Reader stays = Files.newBufferedReader(target)) {
+                refusedWrite = files.write(target, out -> out.write("newer"));
+            }
+            assertTrue("a write over a file held past every retry fails, and says so (" + refusedWrite.error + ")", !refusedWrite.ok && refusedWrite.error != null);
+            assertTrue("...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed",
+                    Files.readString(target).equals("new") && !Files.exists(tmp) && GameFiles.swapsThatWaited() == waitedBefore + 1);
+            assertTrue("fixture: the counts are 7d's own: the shared save writer, settled and held, wrote nothing while 7d counted ("
+                    + (writer.writes() - writesBefore) + " writes)", writer.writes() == writesBefore);
+        } finally {
+            writer.release();
         }
-        assertTrue("a write over a file held past every retry fails, and says so (" + refusedWrite.error + ")", !refusedWrite.ok && refusedWrite.error != null);
-        assertTrue("...leaving the file whole as it was, and no .tmp, and it is no swap that waited and landed",
-                Files.readString(target).equals("new") && !Files.exists(tmp) && GameFiles.swapsThatWaited() == waitedBefore + 1);
         GameFiles.Result after = files.write(target, out -> out.write("newest"));
         assertTrue("...and once it is let go the next write lands", after.ok && Files.readString(target).equals("newest"));
         cleanUp(root);
