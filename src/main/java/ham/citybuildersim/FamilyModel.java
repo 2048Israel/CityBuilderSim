@@ -502,6 +502,11 @@ public class FamilyModel {
     public void rebuild(PopulationCohorts cohorts, double[] jobsByTier,
                         double awayAdults, double atHomeAdults, double ownerAdults) {
 
+        // Last month's adults at home and the children with them, before they are rebuilt: who comes back this month (OX1).
+        double hadAtHome = this.atHomeAdults;
+        double[] hadWithThem = outsideDependants.clone();
+        double hadInFamilies = adultsFormed();
+
         for (double[] row : households) java.util.Arrays.fill(row, 0);
         unhoused = 0;
         doubledUp = 0;
@@ -550,6 +555,7 @@ public class FamilyModel {
 
         boolean keep = remembers && haveFormed;
         lastKept = 0; lastReformed = 0; lastNoLongerFit = 0; lastNew = 0;
+        lastBackAdults = 0; lastBackChildren = 0; lastBackChildrenHome = 0;
 
         if (adults <= 0 && seniors <= 0 && elders <= 0) {
             orphans[AgeBand.BABY.ordinal()]  = Math.max(0, babies);
@@ -658,6 +664,9 @@ public class FamilyModel {
             keptBefore = keptAfter;
         }
 
+        // ---- 2c. the adults back in the families bring their children home (OX1; the banner below) ----
+        if (keep) bringHome(hadAtHome, hadWithThem, adults - hadInFamilies, order, tierShare, remaining);
+
         for (int i = 0; i < order.length; i++) {
             FamilyStructure shape = order[i];
 
@@ -682,7 +691,7 @@ public class FamilyModel {
              * only household that can absorb an odd number of people.
              */
             boolean last = (i == order.length - 1);
-            double take = last ? possible : possible * .5;
+            double take = last ? possible : possible * SHAPE_TAKE;
 
             place(shape, take, tierShare, remaining);
         }
@@ -720,6 +729,122 @@ public class FamilyModel {
             System.arraycopy(households[s], 0, formed[s], 0, households[s].length);
         }
         haveFormed = true;
+    }
+
+    /** The share of what is still possible a shape takes in one pass of the builder, every shape but the last: half, so a large family does not eat every child and the couples leave single adults behind. */
+    public static final double SHAPE_TAKE = .5;
+
+    /* =======================================================================
+       THE CHILDREN COME HOME WITH THEIR PARENTS (OX1, 2026-11-17)
+
+       An adult who leaves work takes their children with them (the banner on
+       the kitchen table, above), and until this the way back was not the same
+       door. When the adults went back into work, their children came back to
+       the builder as loose children, in the pool with everybody else; the
+       half a shape (SHAPE_TAKE) left about one in seven of them over, and the
+       memory, which had already kept 99% of last month's households and with
+       them every adult, gave the leftover children an adult free to take them
+       only as fast as REFORMING_EACH_MONTH freed one. Measured on a bare model
+       with the memory on: a fifth of 6,000 adults out of work for six months,
+       then all of them back in one month - 470 children came back, 67.7 were
+       left in the orphan section that month against a twin's 6.6, and it took
+       nine months to fall back. On DeathRecordCheck's played town (0.9.131)
+       a month that took 234 back into work took the orphans from 12.6 to
+       28.2, and its open twin's from 11.6 to 27.1 a month later, behind a
+       wave of its own.
+
+       NOW THE ADULTS BACK IN THE FAMILIES BRING THEIR CHILDREN WITH THEM.
+       They are last month's adults at home less this month's - the net, which
+       is all an aggregate model has, and the same for a job found and a
+       course finished - and never more than the families' own adults grew
+       by since last month's builder: the at-home count also falls when
+       nobody comes home (the out of work who leave the city, go to prison,
+       are set aside as owners, die or turn 65), and then the families did
+       not grow by them (REV-OX1-1: without this a month of jobless leaving
+       placed the pool's children with the pool's adults as if they had come
+       home). Their children are last month's children at home,
+       band by band, at that household's own rate to an adult. They are placed
+       after the kept households and before the city's pool, by the builder's
+       own order and its own half a shape, pass after pass, into the shapes
+       that hold a child, until every child who came back is in a household
+       with the adults who came back. Passes rather than every shape taking
+       all it could: the full take puts nearly all of them in large families
+       (the first shape eats every baby), and the passes keep the builder's
+       own mix. Their adults left over, the second earners and those with no
+       child, join the pool, where the couples and the single adults take them
+       as before. A month in which the adults at home rose brings nobody back.
+
+       WITH THE MEMORY ON ONLY. A bare model rebuilds everybody every month,
+       and nobody in it has a household to come home to.
+
+       NOTHING NEW IS SAVED: last month's adults at home and the children with
+       them are already in the save (toSaveArray(), the kin slots), so a loaded
+       city's next month brings the same children home as the live one's.
+       ======================================================================= */
+
+    /** The most passes the children who came back are placed in: each places at least SHAPE_TAKE of every band while the adults last, so this leaves under a child in 10^19. */
+    static final int HOME_PASSES = 64;
+
+    private double lastBackAdults, lastBackChildren, lastBackChildrenHome;
+
+    /** Adults back in the families this month: last month's adults at home less this month's, when that fell, and no more than the families' adults grew by. */
+    public double getLastBackAdults() { return lastBackAdults; }
+    /** The children who came back with them, at last month's rate to an adult at home. */
+    public double getLastBackChildren() { return lastBackChildren; }
+    /** ...of whom this many were placed in a household with them: all, while their adults last. */
+    public double getLastBackChildrenHome() { return lastBackChildrenHome; }
+
+    /** Places the adults back in the families with their children, after the kept households and before the pool; see the banner above. */
+    private void bringHome(double hadAtHome, double[] hadWithThem, double familiesGrew, FamilyStructure[] order,
+                           double[] tierShare, double[] remaining) {
+        int adult = AgeBand.ADULT.ordinal();
+        double back = Math.min(Math.min(hadAtHome - atHomeAdults, familiesGrew), remaining[adult]);
+        if (back <= 0 || hadAtHome <= 0) return;
+        double[] group = new double[remaining.length];
+        group[adult] = back;
+        double children = 0;
+        for (int b = 0; b < adult; b++) {
+            group[b] = Math.max(0, Math.min(remaining[b], hadWithThem[b] * back / hadAtHome));
+            children += group[b];
+        }
+        double home = placeTogether(group, order, tierShare, remaining);
+        lastBackAdults = back;
+        lastBackChildren = children;
+        lastBackChildrenHome = home;
+    }
+
+    /** Forms a group's households by the builder's order and half a shape, pass after pass, until its children are placed; returns the children placed and takes the group's placed people out of the pool. */
+    private double placeTogether(double[] group, FamilyStructure[] order, double[] tierShare, double[] remaining) {
+        double[] came = group.clone();
+        for (int pass = 0; pass < HOME_PASSES && childrenIn(group) > 0; pass++) {
+            double formed = 0;
+            for (FamilyStructure shape : order) {
+                if (shape.dependants() <= 0) continue;
+                double take = capacityFor(shape, group) * SHAPE_TAKE;
+                if (take <= 0) continue;
+                place(shape, take, tierShare, group);
+                formed += take;
+            }
+            if (formed <= 0) break;
+        }
+        for (int b = 0; b < group.length; b++) remaining[b] -= came[b] - group[b];
+        return childrenIn(came) - childrenIn(group);
+    }
+
+    /** The adults in last month's formed households: the families' adults when the builder last ran, since the single adults take every adult the other shapes leave. */
+    private double adultsFormed() {
+        double sum = 0;
+        for (FamilyStructure shape : FamilyStructure.values()) {
+            int a = shape.membersOf(AgeBand.ADULT);
+            if (a > 0) for (double v : formed[shape.ordinal()]) sum += v * a;
+        }
+        return sum;
+    }
+
+    private static double childrenIn(double[] group) {
+        double sum = 0;
+        for (int b = 0; b < AgeBand.ADULT.ordinal(); b++) sum += Math.max(0, group[b]);
+        return sum;
     }
 
     /**
@@ -2104,6 +2229,7 @@ public class FamilyModel {
         for (double[] cells : formed) java.util.Arrays.fill(cells, 0);
         haveFormed = false;
         lastKept = 0; lastReformed = 0; lastNoLongerFit = 0; lastNew = 0;
+        lastBackAdults = 0; lastBackChildren = 0; lastBackChildrenHome = 0;
         if (saved.length >= base + 3 + outside) {
             outsideAdults = saved[i++];
             for (int b = 0; b < bandNames.length; b++) {
@@ -2240,5 +2366,6 @@ public class FamilyModel {
         for (double[] cells : formed) java.util.Arrays.fill(cells, 0);
         haveFormed = false;
         lastKept = 0; lastReformed = 0; lastNoLongerFit = 0; lastNew = 0;
+        lastBackAdults = 0; lastBackChildren = 0; lastBackChildrenHome = 0;
     }
 }
