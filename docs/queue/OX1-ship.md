@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-OX1-9eG8xQIY -->
 ## changelog
 ### {next} — OX1, the orphans behind a wave that ends at once — 2026-11-17, ready, see docs/queue/OX1-notes.md
