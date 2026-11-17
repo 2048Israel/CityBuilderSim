@@ -3,20 +3,28 @@
 ### {next} — LX1, Luxury Retail's sales per post — 2026-11-17, ready, see docs/queue/LX1-notes.md
 A Boutique covered 320 pieces of a $22,000 good a month with seven posts, so Luxury Retail's payroll was 0.5-1.7% of
 its margin on main after CU2, where BEA's other retail pays 41.7% (LS1). A Boutique now covers 7 pieces with 8 posts
-and the Department Store 80 with its 91 (ids 69 and 70), about a piece a post a month; the buildings, their floor and
-cost and the piece's price are held. `LuxuryRetail.LABOUR_SHARE` (BEA's 41.7%) and a factor of two either way are the
-band `LuxuryRetailCheck` holds the catalogue and a town's year of Boutiques to (red on main: 0.6% and 1.3%). On LS1's
-probe the share reads 36-41% (median from m240; in the band 313 of seed 0's 331 years, none on main), and the shops
-take a quarter of the old city's business workers; the default city is 912k at m2399 against main's 413k (551k
-against 633k before OX1 and AQ1). The Department Store is never the planner's choice, as on main (a call, LQ1's).
-A road load's last stream is now the remainder of the other two's sum (`TradeCostCheck`). A 4,000-month run on this
-balance has the city map's save refused at months 3589 and 3952 (5.5M people), FB8's to mend. No save field, no
-format bump.
+and the Department Store 80 with its 91 (ids 69 and 70); their floor, cost and the piece's price are held.
+`LuxuryRetail.LABOUR_SHARE` (41.7%) and a factor of two either way are the band `LuxuryRetailCheck` holds the
+catalogue and a town's year to (red on main: 0.6% and 1.3%). On LS1's probe the share reads 36-41% (in the band 313
+of seed 0's 331 years, none on main); the shops take a quarter of the old city's business workers, and the default
+city is 912k at m2399 against main's 413k. The Department Store is never the planner's choice, as on main (LQ1's
+call). A road load's last stream is the remainder of the other two's sum (`TradeCostCheck`). A 4,000-month run has
+the map's save refused at m3589 and m3952, FB8's. GroceryCheck's twins hold their planners, so its vouchers' poor are
+caused; fixtures that read the old path go to HP2 (PriceLevelCheck, HealthCheck, ScaleCheck, DistressBleedCheck), FB9
+(MapCheck 2h-c) and KRT1 (KeptCheck 78). No save field, no format bump.
 ## queued
 | LQ1 | The luxury queue's size, a study: Luxury Retail's margin is 10-30% of the business sectors' value added on main (BEA's other retail is a few per cent of GDP), the households' luxury budget out of the wealth term and the surplus; at BEA's share of it the shops employ a quarter or more of the old city's workers (LX1), so what the budget should be is the next question ({next}) | [LX1's notes](docs/queue/LX1-notes.md) |
+| HP2 | Harness premises LX1's path broke in its gate ({next}), each main's code on a fixture town LX1's balance moved; the premises stand, the readings are mended: (1) PriceLevelCheck's "some partner is given a lane" finds none on LX1's path (main 2 city-months, R1d's gate red too): cause a lane; (2) HealthCheck's dear-vs-free hunger (at most .05) is 14.3 points on LX1's path (6.6 priced out, 7.7 short on the shelf; main -0.9, 7.5 and -8.4): judge the priced-out part, or hold the shelves alike; (3) ScaleCheck 9's savings miss 2.83e-2 against .016 (main 8.51e-3), the K = 1,000 copy's Manufacturing, Automotive and Materials sales 2-4% under on both paths: find that granule; (4) DistressBleedCheck 5's interest-only months (LIFT_AT measured on main's town; on LX1's the net count resets at 25): cause them through the desk's debt or rate, not the floor's timing. Done: the lines green on LX1's path and on main's; not beside HP1 (`PriceLevelCheck`), FB14 or any batch on `HealthCheck` | [LX1's notes](docs/queue/LX1-notes.md) |
 ## known-reds
 KeptCheck | the played city's market causes at least three Search pages | FB6 | 2026-11-17 | LX1's 600-month played city has 61 securities in the fund's reach; the fixture reads the city rather than causing the market
 KeptCheck | Search Show more reaches page 3 | FB6 | 2026-11-17 | Follows the line above: on LX1's played city the Search list does not reach a third page
 KeptCheck | the played city's record causes multiple older year folds | FB6 | 2026-11-17 | On LX1's played city the fund's last ACTIVITY_ROWS rows held one older year in one run of two; the fixture reads the record rather than causing it
 LongPlaytest | the city map across a save | FB8 | 2026-11-17 | LX1's balance, seed 0 to 4,000 months: the map read back from its sidecar is not the same at m3589 and m3952 (slot 9, a 5.5M city; main's 1.9M run is clean); the sidecar refused whole on a reload, FB8's DM2-B
 LongPlaytest | the played city sidecar was refused or lost history | FB8 | 2026-11-17 | The same two reloads read directly: CityMap.readSidecar refuses the sidecar (or loses its history) at m3589 and m3952 of LX1's seed-0 4,000-month run, beyond the gate's 2,400
+PriceLevelCheck | some partner is given a lane in some month of at least one of the two cities | HP2 | 2026-11-17 | LX1's two cities draw no partner lane in any month (0 city-months; main 0c43757b's 2, at most 1 partner; R1d's gate red on it too): the fixture looks for a lane rather than causing one
+HealthCheck | the dear city is no hungrier than the free one by more than the price of care | HP2 | 2026-11-17 | On LX1's path the dear city is 14.3 points hungrier over the last year, 6.6 priced out and 7.7 short on the shelf; main's -0.9 is 7.5 and -8.4: the priced-out part is over .05 on both, and main passes by the shelf term's sign, the food shops' path
+ScaleCheck | ...savings: the copy is K times the city's within | HP2 | 2026-11-17 | 2.83e-2 against TRACK_SAVINGS .016 on LX1's grown city (7,331 people, household deposits 2.0e4), main's 8.51e-3 (10,885, 3.06e4); probed by sector on both, the same sign and sectors: the K = 1,000 copy's Manufacturing, Automotive and Materials sales 2-4% under, Luxury Retail's part under 5% of the miss
+DistressBleedCheck | fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0 | HP2 | 2026-11-17 | LIFT_AT is a timing measured on main's town (recovered by a net count of 26); on LX1's town the plant came back by 23, and held lifted past the dial its net income turns positive at 25 (at most two interest-only months for lifts at 12-18)
+DistressBleedCheck | a loss that is only interest holds | HP2 | 2026-11-17 | Follows the line above: one interest-only month at the dial on LX1's town against RECOVERED_MONTHS (3); main 0c43757b's four
+MapCheck | fixture: boxes stand on the mine source's actual future ground before month 100 | FB9 | 2026-11-17 | Section 2h-c on LX1's played city: 0 of 2,000 boxes stood on the mine's future ground before month 100 (main's 25 of 1,752); the fixture reads where the city built rather than causing a box there
+KeptCheck | ...and the page is the same slider, kept, equal to a page built new | KRT1 | 2026-11-17 | Section 78's tax dial on LX1's played city: after the release the kept content is 1454x556 against a page built new 1446x572 (one 16-px effects row fewer, the fresh one narrowed by a scroll bar; arrows 0, 3 dragged, 2 a month on); main's played city passes and LX1 touches no interface code

@@ -76,6 +76,9 @@ only the margin moves it, and only between the planner's settling point and `MAR
   first run of the harness on this balance the played city's fund record had one older year: "the played city's
   record causes multiple older year folds" failed, and the next line's `subList(0, 2)` threw on the FX thread,
   leaving the JVM up until the suite's 1,740 s timeout. The check stands; only the throw is gone (section 5).
+- **`GroceryCheck.founding`** (b4c395965, after the first dry run, section 8): the twins hold every sector's planner, so
+  the town's posts are the fixture's own orders, fewer than its workers, and households are out of work under half a
+  dial's line. The section's premises and tolerances are as they were.
 
 ## 3. The calls (Jerus's, taken the recommended way)
 
@@ -304,3 +307,66 @@ against 69,263; the shops' sales are 16.9% of GDP against 19.4%, their net 34% o
   R2 FAIL to PASS. Still failing, as on main (info): AUTO2 A1 (3.21% a year, 5/16 in band; main 3.46%) and A2 (24
   months; main 25). FB3 (0.9.136) shipped during it and does not move the trace, so it stands as the run that
   counts. Committed as `docs/ensemble/LX1.md`.
+
+## 8. The first dry run, and what it found
+
+**The run.** `tools/gate.sh LX1 --dry-run`, on ce9d73125 (main 0c43757b merged), in `/tmp/cbs-gate-LX1-FhdauSAa`:
+gate exit 1. The suite was red on 21 lines no record named, in seven harnesses: eight FAIL assertions, plus each
+harness's exit and count lines, which follow once every FAIL of the harness is known. Main's own gates (FB3's on
+0c43757b's tree, AQ1's) pass all eight. None of them is in LX1's code (the balance, `loadOf`'s sum, `KeptCheck`'s
+guard, `LuxuryRetailCheck`). Each is main's fixture or premise on a town whose path LX1's balance moves, and each was
+classified against main's own run before anything was mended (the orchestrator's call: mend the fixtures that can
+cause their condition here, and queue the rest with a known-reds row per FAIL line).
+
+- **GroceryCheck 9, mended.** "fixture: the twin without the dial has households half a dial would pay vouchers to".
+  The fixture waited up to 12 months for somebody under half a dial's line; on LX1's town nobody was, for all 12. On
+  main the town's only households under the line are 55 unemployed on EI (a probe of both builds). On LX1's town the
+  Boutiques' posts took up every worker, and the orphans who are under the line buy no groceries, so a voucher pays
+  them nothing. The twins now hold every sector's planner: the posts are the fixture's own orders, fewer than the
+  workers. Green on the branch and on main 0c43757b's classes, with the same figures on both (a year at 50%: five kinds
+  of household held a voucher, the treasury paid $11.0k; the previews read at the year's end, no month waited).
+- **PriceLevelCheck, HP2.** "some partner is given a lane in some month of at least one of the two cities": 0
+  city-months on LX1's path; main has 2, at most 1 partner (the least that passes); R1d's gate was red on it too. The
+  fixture looks for a lane rather than causing one.
+- **HealthCheck, HP2.** "...the dear city is no hungrier than the free one by more than the price of care" (at most
+  .05): on LX1's path the dear city is 14.3 points hungrier, 6.6 priced out of a basket and 7.7 short on the shelf;
+  on main -0.9, 7.5 and -8.4. The priced-out part is over .05 on both; main passes only by the shelf term's sign,
+  which is the food shops' path.
+- **ScaleCheck 9, HP2.** "...savings: the copy is K times the city's within 0.0160": 2.83e-2 on LX1's grown city (7,331
+  people, household deposits 2.0e4), 8.51e-3 on main's (10,885 people, 3.06e4). Probed by sector on both builds (the
+  same probe on LX1's classes and main fe7102e4's), the miss has the same sign, months and sectors on both. The
+  K = 1,000 copy's Manufacturing, Automotive and Materials sales are 2-4% under K times the city's, and Luxury Retail's
+  served pieces 2-4% under. Luxury Retail's own part is under 5% of the miss: the same absolute drift is a larger share
+  of thinner savings. R1d's gate crossed this dial too.
+- **MapCheck 2h-c, FB9.** "fixture: boxes stand on the mine source's actual future ground before month 100": 0 of 2,000
+  boxes stood on the mine's future ground (main: 25 of 1,752). The fixture reads where the played city built.
+- **KeptCheck 78, KRT1.** "...and the page is the same slider, kept, equal to a page built new", on the tax dial: after
+  the release, the kept page's content is 1454x556 and a page built new 1446x572. The kept page has one 16-pixel
+  effects row fewer, and the fresh one is narrowed by a scroll bar; the effects' arrows read 0, 3 while dragged and 2 a
+  month later. Main's played city passes, and LX1 touches no interface code: a kept-against-fresh bounds fault,
+  KRT1's class.
+- **DistressBleedCheck 5, HP2.** "fixture: the floor is raised again with the net count already at the dial and the
+  operating streak back at 0" and "a loss that is only interest holds". `LIFT_AT` (12) is a timing measured on main's
+  town, where the plant's own result came back for three months by a net count of 26. On LX1's town it came back by
+  23, so the floor went up again short of the dial, with one interest-only month after it (three asked). The
+  orchestrator's mend, the floor held lifted until the net count reaches the dial, leaves main's run as it was (green,
+  raised at 26, four interest-only months). On LX1's town, though, the plant's net income turns positive at a net count
+  of 25 and the count resets: lifted at 12, 14, 16 or 18, the interest carries it at most two months past the dial.
+  The floor's timing cannot cause the months the premise asks for on this town; the interest itself has to be caused.
+  Reverted, so the file is main's; the two lines go to HP2.
+
+**HP2, the brief.** Harness premises LX1's path broke in its gate, each main's code on a fixture town LX1's balance
+moved; the premises stand, and the fixtures and readings are mended:
+
+1. PriceLevelCheck's partner lane: cause a partner's lane in one of the two cities (a partner drawn at the floor at the
+   factor) instead of looking for one.
+2. HealthCheck's dear-against-free hunger: judge the part the claim is about (priced out of a basket by the bill), or
+   hold the two cities' shelves alike, so the food shops' path cannot carry the line either way.
+3. ScaleCheck 9's savings: find the scaler's granule in Manufacturing's, Automotive's and Materials' sales, which
+   leaves the copy 2-4% under K times the city's on both paths; or read the miss against a figure the grown city's
+   size does not set.
+4. DistressBleedCheck 5's interest-only months: cause them through the desk's debt or its rate, so that the interest
+   outweighs the plant's recovered result for `RECOVERED_MONTHS` past the dial, not through the floor's timing.
+
+Done: each line green on LX1's path (its merge) and on main's. Not beside HP1 (`PriceLevelCheck`), FB14, or any batch
+on `HealthCheck`.
