@@ -409,3 +409,23 @@ keys a row by harness and part, and a ship-file row replaces the registry's entr
 "LongPlaytest | (no FAIL line) | FB11 | 2026-11-17 | ..." in a copy of this ship file: the merged list kept the FB11
 row and dropped FB5's, so it would not stand beside it. When FB5 turns its own red green, this red would be unnamed
 again. One clause of the changelog paragraph names it.
+
+## 10. The dry run
+
+**The first** (the orchestrator's go, 2026-11-17): `sh tools/gate.sh TQ1 --dry-run` on e09907c4 (main f38eafbc, FB1,
+merged in at 5d64b938, its three generated indexes taken from main and regenerated), run `/tmp/cbs-gate-TQ1-Z9cmgz6L`.
+The suite ran in 1,505 s, exit 4; the gate exited 1 on one unnamed red, MapCheck's "fixture: an offer of the city's
+own level holds two or more blocks of free ground, each wholly its own" (`MapCheck.java:11256`). Its other red line
+there, "at every 30th month the map draws exactly what the city has", is main's (FB5). Known red only besides:
+InvestCheck, PlanCheck, DeathRecordCheck, PrizeCheck, YoungBankCheck, and LongPlaytest, whose finding is section 9's
+"households with no home" (54 times, months 692-745), passed by FB5's "(no FAIL line)" entry and named FB11 here.
+
+**The MapCheck fixture reads the path.** It takes the first standing offer `ownBlocks()` finds, and on TQ1's merged
+path none stands at the city's level when the section runs. Scratch overlays (`target/tq1-map/`, probe only, run
+alone): on main's rule (`Sector.Staffing.mainRule` from the start) MapCheck unmended passes the fixture, with a
+different played city at level 4 and 22,288 plots. On TQ1's rule, with the section given FR8's own fallback (the
+section after it, in the same file: where no such offer stands, the city buys the largest standing offer first,
+through the office), it buys 2,048 plots, rises to level 5, and the whole section passes. The sections after it
+then read the city the gate's run read (40,080 plots at level 5, South 15 bought). That run's other four reds are main's
+FB5 line and three wall-clock timings, which the suite runs soft. The harness is unchanged on this branch until the
+orchestrator's call.
