@@ -155,4 +155,15 @@ byte for byte the same, both times. The trace did not move, so no ensemble.
 
 ## 6. The dry run
 
-DRY_PLACEHOLDER
+`sh tools/gate.sh FB5 --dry-run` on a6a45c3e (the review's mends and these notes) against main
+0c43757b, kept as `/tmp/cbs-gate-FB5-LQLnuYWR` (log `ship.log` there, the session's copy
+target/FB5-dry.txt): gate exit 0. The merge took 8 commits of batch/FB5; `--pick` ran 32 of 217
+harnesses for the 13 files changed; the suite finished in 2,827 s with exit 3, known reds only:
+DeathRecordCheck, LandmassCheck, MapCheck, PopulationCheck, PriceLevelCheck, RoadCheck,
+YoungBankCheck. PlanCheck and LongPlaytest are green; MapCheck's reds are the two of section 4 (the
+m61 road, to FB9 by the ship file, and FB9's network line). Stale had 0 firm findings, and no
+line went unnamed (`unnamed.txt` empty). It would commit the merge as 0.9.137 with FB5's block on
+top and CL7's Queued row added.
+
+Two commits follow it on the branch, notes and ship file alone: this section with the ship file's
+`gate-run` comment naming the kept run, then the removal of the `readiness: provisional` marker.

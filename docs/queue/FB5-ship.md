@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-FB5-LQLnuYWR -->
 ## changelog
 ### {next} — FB5, the played cities' placement — 2026-11-17, ready, see docs/queue/FB5-notes.md
 The map draws every building the city has. What no plot of the city's own ground holds at its edge now stands just past it, on dry
