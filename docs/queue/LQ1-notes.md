@@ -134,7 +134,13 @@ each is recommended (a).
 ## Process
 
 - No dry run: the pick is NONE (docs only).
-- `./batch-check.sh --fast` is the check: <!-- FAST -->
+- `./batch-check.sh --fast` is the check: compile OK, Stale 0 firm (187
+  soft), the tree 0 changed, endings clean. The tables first came out of
+  Python with CRLF, caught by the endings check and converted.
+- `sh tools/pick.sh origin/main HEAD`: NONE of 218 harnesses (33 files, none
+  a harness's), review not needed.
+- The downloads (15 MB) were moved out of the tree to
+  `target/lq1/real-raw/`; `sources.md` names each file as it was fetched.
 - **The incident.** Seed 0's first run printed "line 53: unexpected EOF"
   because I edited `run.sh` while its bash was reading it. Its Java had
   finished ("All checks passed"; the CSV runs to m3996). Since then the runs
