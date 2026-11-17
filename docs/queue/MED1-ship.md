@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-MED1-dcferhvX -->
 ## changelog
 ### MED1 — a health study — 2026-11-17, ready, see docs/queue/MED1-notes.md
