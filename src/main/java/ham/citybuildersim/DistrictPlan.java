@@ -2895,9 +2895,11 @@ public final class DistrictPlan {
          * T, on the ground the city owned when it was laid. When the city buys the ground past the cut, cellsOnGrown() lays the
          * cell's own streets on it, joined to the streets that stand, and a line laid across the old cut can meet that T from
          * its open side: a + where the plan allows none - inside an estate cell (ESTATE LINES: T junctions only) or fewer than
-         * LATTICE plots along a street from another + (the + floor, spec 2.4). Each such + of the plots laid in this call is
-         * stopped a plot short: the first of its arms laid in this call (TilePainter's order) is taken up, or the junction
-         * itself when only it was, so the old T stays a T and no street laid before - none a building stands by - is touched.
+         * LATTICE plots along a street from another junction (the + floor, spec 2.4; a T counts, plusBreaks()). Each such + of
+         * the plots laid in this call is stopped a plot short: the first of its arms laid in this call (TilePainter's order)
+         * that can go without parting the streets that stood (keepsJoined(): one network comes first) is taken up, or the
+         * junction itself when only it was, so the old T stays a T and no street laid before - none a building stands by - is
+         * touched; a + no such plot of can go is kept.
          * WHY: on LM1's path PlanCheck 6's played city laid two + junctions four plots apart in a homes cell, (48, 64) and
          * (48, 68); on AQ1's, a + inside estate cells of district (0, 0) in PlanCheck 6's and MapCheck 1's cities, each where a
          * line laid on ground bought (m48-m59, m80-m89) met the T a join along the old cut had made. The plots taken up.
@@ -2915,11 +2917,14 @@ public final class DistrictPlan {
                     for (int d = -1; d < 4 && !again; d++) {
                         int j = d < 0 ? p : stepOf(p, d);
                         if (j < 0 || !plusAt(j) || !plusBreaks(j)) continue;
-                        int arm = j;
-                        for (int e = 0; e < 4; e++) {
+                        int arm = -1;
+                        for (int e = 0; e < 4 && arm < 0; e++) {
                             int a = stepOf(j, e);
-                            if (a >= 0 && laidMark[a] == now && (str[a] || under[a])) { arm = a; break; }
+                            if (a >= 0 && laidMark[a] == now && road(a) && keepsJoined(a, now)) arm = a;
                         }
+                        if (arm < 0 && laidMark[j] == now && keepsJoined(j, now)) arm = j;
+                        // No plot of it laid in this call can go without parting the streets that stood: the + is kept.
+                        if (arm < 0) continue;
                         if (avDone[arm] == 1) avUnlay(arm);
                         setStr(arm, false);
                         under[arm] = false;
@@ -2941,6 +2946,42 @@ public final class DistrictPlan {
             return taken;
         }
 
+        /** floorBought()'s walks: a stamp a plot, and the queue. */
+        int[] floorSeen, floorQueue;
+        int floorStamp;
+
+        /**
+         * Whether street plot c can be taken up without parting the streets that stood before this call (laidMark != now):
+         * of the pieces the streets beside it fall into without it, at most one holds such a street - a piece of only plots
+         * laid in this call is taken up after (prune(), pruneApart()). Where a line laid across the cut is the only way between
+         * two pieces that stood, taking it up would part what the ground joins (MapCheck 8's one network, PlanCheck's pieces).
+         */
+        boolean keepsJoined(int c, int now) {
+            if (floorSeen == null) { floorSeen = new int[AREA]; floorQueue = new int[AREA]; }
+            int stamp = ++floorStamp, olds = 0;
+            floorSeen[c] = stamp;
+            for (int e = 0; e < 4; e++) {
+                int s = stepOf(c, e);
+                if (s < 0 || !road(s) || floorSeen[s] == stamp) continue;
+                boolean old = false;
+                int head = 0, tail = 0;
+                floorQueue[tail++] = s;
+                floorSeen[s] = stamp;
+                while (head < tail) {
+                    int q = floorQueue[head++];
+                    old |= laidMark[q] != now;
+                    for (int f = 0; f < 4; f++) {
+                        int a = stepOf(q, f);
+                        if (a < 0 || floorSeen[a] == stamp || !road(a)) continue;
+                        floorSeen[a] = stamp;
+                        floorQueue[tail++] = a;
+                    }
+                }
+                if (old && ++olds > 1) return false;
+            }
+            return true;
+        }
+
         /** The plot a step from p in direction d (TilePainter.DX, DY), or -1 past the frame. */
         static int stepOf(int p, int d) {
             int x = p % FRAME + TilePainter.DX[d], y = p / FRAME + TilePainter.DY[d];
@@ -2955,12 +2996,25 @@ public final class DistrictPlan {
             return !road(p - FRAME - 1) && !road(p - FRAME + 1) && !road(p + FRAME - 1) && !road(p + FRAME + 1);
         }
 
+        /** Whether plot p is a T junction: a street with streets on three of its four sides and none on its corners, off the frame's edge. */
+        boolean teeAt(int p) {
+            int x = p % FRAME, y = p / FRAME;
+            if (x < 1 || y < 1 || x > FRAME - 2 || y > FRAME - 2 || !road(p)) return false;
+            int sides = (road(p - 1) ? 1 : 0) + (road(p + 1) ? 1 : 0) + (road(p - FRAME) ? 1 : 0) + (road(p + FRAME) ? 1 : 0);
+            return sides == 3 && !road(p - FRAME - 1) && !road(p - FRAME + 1) && !road(p + FRAME - 1) && !road(p + FRAME + 1);
+        }
+
         /** A street plot, beneath a highway included. */
         boolean road(int p) {
             return str[p] || under[p];
         }
 
-        /** Whether the + at p breaks the plan's rules: inside an estate cell's interior (ESTATE LINES), or another + fewer than LATTICE plots from it along a street (the + floor). */
+        /**
+         * Whether the + at p breaks the plan's rules: inside an estate cell's interior (ESTATE LINES), or another junction
+         * fewer than LATTICE plots from it along a street - a +, the + floor (spec 2.4), or a T, which a street laid later on
+         * its open side makes a + (the cell beside opening onto a ring line's T; on AQ1's ground-bought fixture, a + laid
+         * across a cut 4 plots from the ring's T at (128, 144), a + when cell (4, 4) opened in the month after).
+         */
         boolean plusBreaks(int p) {
             int x = p % FRAME, y = p / FRAME;
             if (x % CELL != 0 && y % CELL != 0 && x < SIDE && y < SIDE && bOut.cellKind[x / CELL + (y / CELL) * CELLS_A_SIDE] == ESTATE) return true;
@@ -2969,7 +3023,7 @@ public final class DistrictPlan {
                 for (int k = 1; k < LATTICE; k++) {
                     q = stepOf(q, d);
                     if (q < 0 || !road(q)) break;
-                    if (plusAt(q)) return true;
+                    if (plusAt(q) || teeAt(q)) return true;
                 }
             }
             return false;

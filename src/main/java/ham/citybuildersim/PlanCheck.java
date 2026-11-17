@@ -92,6 +92,11 @@ import java.util.List;
  *      purchase, some on the new cells, where the same ground owned from the
  *      start moves boxes; a purchase dated at or before the first batch's
  *      month, or no dates at all, is ground from the start;
+ *  12b. the + floor on ground bought (FB5; DistrictPlan's THE + FLOOR ON
+ *      GROUND BOUGHT): ground cut across open cells, the ground past the cut
+ *      bought and the cells beyond opened after: without the floor a line laid
+ *      across the old cut breaks the + rules in some plan; with it every plan
+ *      keeps every check at every cut and no box moves;
  *  13. the avenues (batch CL4; DistrictPlan's AVENUES): four avenues at 45
  *      degrees from the founding site, laid when a cell opens - each arm's
  *      staircase plot for plot in the open cells and none in a closed one,
@@ -383,6 +388,7 @@ public class PlanCheck {
         streetLayouts(types);
         arrivals(types);
         groundBought(types);
+        floorBought(types);
         avenues(types);
         curves(types);
         runsDated(types);
@@ -1058,6 +1064,9 @@ public class PlanCheck {
         int districts, held, network, apart, floor, reach, onStreet, surface, beside, estate, mines, minesBeyond;
         /** Districts planned again with the way to a piece the buildings wall in kept clear (FW11), and the plots so kept clear in them; and those of them whose way crossed houses on a resource field's plots (LC3). */
         int walled, kept, fieldWalled;
+        /** Street plots the + floor took up on ground bought (FB5's DistrictPlan.boughtFloored), summed over the plans, and the plans it took any in. */
+        long boughtFloored;
+        int flooredPlans;
         long buildings, placed, overflow, overflowPlots, needPlots, streets, tracks, seams, under, surplusDistricts;
         double surplus, worstFill, worstLost;
         String worstWhere = "", firstFail = "";
@@ -1107,6 +1116,8 @@ public class PlanCheck {
             if (p.wallTries > 0) walled++;
             if (p.wallField > 0) fieldWalled++;
             kept += p.wallClear;
+            boughtFloored += p.boughtFloored;
+            if (p.boughtFloored > 0) flooredPlans++;
             if (f.closestPlus >= DistrictPlan.LATTICE) floor++;
             if (f.outOfReach == 0) reach++;
             if (f.onStreet == 0) onStreet++;
@@ -1354,6 +1365,7 @@ public class PlanCheck {
         count(t);
         check("at every " + MapCheck.DRAWN_EVERY + "th month every district's plan keeps every check", t.allHold() && samples == MapCheck.MONTHS / MapCheck.DRAWN_EVERY);
         playedAvenues = t.av.clone();
+        playedFloored = new long[] { t.boughtFloored, t.flooredPlans, t.districts };
         playedCurves = t.cv.clone();
         check("...the avenues were laid in the played city (" + t.av[0] + " plots in " + t.av[7] + " open cells over the samples), every check holding with them", t.av[0] > 0 && t.allHold());
         // CL2: how often the variety fired in this run. A city of a few homes cells says little, so the assertion waits for enough of them.
@@ -2729,6 +2741,85 @@ public class PlanCheck {
                 && lateDated.buildings == lateNone.buildings);
         DistrictPlan again = DistrictPlan.make(grownIn);
         check("a plan is a pure function of its input: the plan with the land bought, made twice, is the same plan box for box and street for street", samePlan(after, again));
+    }
+
+    /* ----- 12b. the + floor on ground bought (FB5) ----- */
+
+    /** Section 6's played city: the street plots the + floor took up on ground bought over its samples' plans, the plans it took any in, and the plans (Tally): null until section 6 has run. */
+    static long[] playedFloored;
+
+    /** The input of 12b's district: cells 2 to 5 each way owned whole, the hub at their middle; the ground past plot `cut` (a column when `across`, else a row) left out when `cutOff`. */
+    static DistrictPlan.Input floorGround(BuildingVisual.Type[] types, int cut, boolean across, boolean cutOff) {
+        DistrictPlan.Input in = cellsOwned(types, 2, 5, 2, 5);
+        if (cutOff) for (int p = 0; p < DistrictPlan.AREA; p++) if ((across ? p % DistrictPlan.FRAME : p / DistrictPlan.FRAME) > cut) in.owned[p] = false;
+        return in;
+    }
+
+    /** The plan made with the + floor on ground bought (`on`, play's) or without it; the switch back to play's after. */
+    static DistrictPlan makeFloored(DistrictPlan.Input in, boolean on) {
+        DistrictPlan.floorOnBought = on;
+        try {
+            return DistrictPlan.make(in);
+        } finally {
+            DistrictPlan.floorOnBought = true;
+        }
+    }
+
+    static void floorBought(BuildingVisual.Type[] types) {
+        out.println("\n--- 12b. the + floor on ground bought: streets laid across an old cut stop a plot short of a + the plan allows nowhere else (FB5) ---");
+        final int house = pick(types, 1, t -> t.category() == BuildingType.RESIDENTIAL && !t.outer() && t.site() == null);
+        final int works = pick(types, 16, t -> t.cls() == BuildingVisual.INDUSTRY && !t.outer() && t.site() == null && t.campusGroup() == BuildingVisual.NO_GROUP);
+        final int paved = pavedRoad(types);
+        final int bought = 5, cell = DistrictPlan.CELL;
+        // Works and houses fill cells 2 to 5 cut at a plot column (or row): the cells the cut crosses open with their lines
+        // ending at it and joined along it (shore()); the ground past the cut is bought after month 5's arrivals, and
+        // month 6's works open the cells beyond, so cellsOnGrown() lays the cut cells' lines across the old cut.
+        Log log = new Log();
+        log.add(0, house, 60).add(0, works, 6).add(0, paved, 3).batch();
+        for (int m = 1; m <= bought; m++) log.add(m, works, 8).add(m, house, 40).add(m, paved, 2);
+        log.add(bought + 1, works, 30).add(bought + 1, paved, 2);
+        Log until = log.until(bought);
+        int cuts = 0, breaks = 0, held = 0, flooredCuts = 0, moved = 0, estatePluses = 0, closest = Integer.MAX_VALUE;
+        long floored = 0;
+        String firstBreak = "", firstFail = "";
+        DistrictPlan.Input pureIn = null;
+        for (int a = 0; a < 2; a++) {
+            boolean across = a == 0;
+            for (int cut = 2 * cell + 6; cut <= 6 * cell - 6; cut += 3) {
+                if (cut % cell == 0) continue;
+                cuts++;
+                DistrictPlan.Input in = log.into(floorGround(types, cut, across, false));
+                in.boughtAt = boughtOn(floorGround(types, cut, across, false), floorGround(types, cut, across, true), bought);
+                DistrictPlan off = makeFloored(in, false), on = makeFloored(in, true);
+                DistrictPlan before = DistrictPlan.make(until.into(floorGround(types, cut, across, true)));
+                Figures fo = figures(off, in), fn = figures(on, in);
+                if (!fo.holds(off, in)) {
+                    breaks++;
+                    estatePluses += fo.estatePlus;
+                    closest = Math.min(closest, fo.closestPlus);
+                    if (firstBreak.isEmpty()) firstBreak = String.format("%s %d: %s", across ? "column" : "row", cut, line(off, fo));
+                    if (pureIn == null && on.boughtFloored > 0) pureIn = in;
+                }
+                if (fn.holds(on, in)) held++;
+                else if (firstFail.isEmpty()) firstFail = String.format("%s %d: %s", across ? "column" : "row", cut, line(on, fn));
+                if (on.boughtFloored > 0) flooredCuts++;
+                floored += on.boughtFloored;
+                moved += missing(before, on);
+            }
+        }
+        DistrictPlan.Input wholeIn = log.into(floorGround(types, 0, true, false));
+        DistrictPlan whole = DistrictPlan.make(wholeIn);
+        out.printf("      %d cuts across cells 2 to 5 (every third plot column, then row), the ground past each bought in month %d: without the floor %d plans break a check (%d + junctions inside"
+                + " estate cells, the closest pair of + %s plots apart against LATTICE %d; the first, %s); with it %d of %d keep every check, the floor taking up %,d plots in %d of them%s%n",
+                cuts, bought, breaks, estatePluses, closest == Integer.MAX_VALUE ? "none" : Integer.toString(closest), DistrictPlan.LATTICE, firstBreak.isEmpty() ? "none" : firstBreak, held,
+                cuts, floored, flooredCuts, firstFail.isEmpty() ? "" : "; the first that breaks, " + firstFail);
+        if (playedFloored != null) out.printf("      section 6's played city: the floor took up %,d plots on ground bought, in %d of its %d samples' district plans%n", playedFloored[0], playedFloored[1], playedFloored[2]);
+        check("the fixture: the same arrivals on the ground owned from the start keep every check, and with the floor off the ground bought past a cut breaks the + rules in some plan"
+                + " (a + inside an estate cell or within LATTICE plots of another)", figures(whole, wholeIn).holds(whole, wholeIn) && breaks > 0);
+        check("with the floor every plan keeps every check, at every cut, the floor taking up plots on ground bought", held == cuts && floored > 0);
+        check("...and it moves no box: every box of month " + bought + "'s plan on the old ground stands in month " + (bought + 1) + "'s, at every cut", moved == 0);
+        check("a plan is a pure function of its input: a plan the floor took plots up in, made twice, is the same plan box for box and street for street",
+                pureIn != null && samePlan(DistrictPlan.make(pureIn), DistrictPlan.make(pureIn)));
     }
 
     /* =====================================================================
