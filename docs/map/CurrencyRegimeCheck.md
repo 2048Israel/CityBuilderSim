@@ -64,7 +64,7 @@
 >   5. THE DOUBT TAKES THE HOT MONEY HOME. A bare CapitalFlows: setDoubt(h)
 > ... (104 more lines in the source)
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (205), [Game](Game.md) (62), [DebtManager](DebtManager.md) (34), [CapitalFlows](CapitalFlows.md) (29), [Expectations](Expectations.md) (19), [ExchangeRateCheck](ExchangeRateCheck.md) (13), [CurrencyCheck](CurrencyCheck.md) (11), [Founding](Founding.md) (11), [MoneyAudit](MoneyAudit.md) (11), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [Observation](Observation.md) (6), [YieldCurve](YieldCurve.md) (5), [PriceLevel](PriceLevel.md) (3), [Nations](Nations.md) (2), [DataSave](DataSave.md) (2), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (205), [Game](Game.md) (62), [DebtManager](DebtManager.md) (34), [CapitalFlows](CapitalFlows.md) (30), [Expectations](Expectations.md) (19), [ExchangeRateCheck](ExchangeRateCheck.md) (13), [CurrencyCheck](CurrencyCheck.md) (11), [Founding](Founding.md) (11), [MoneyAudit](MoneyAudit.md) (11), [ForeignCheck](ForeignCheck.md) (8), [CentralBank](CentralBank.md) (7), [Observation](Observation.md) (6), [YieldCurve](YieldCurve.md) (5), [PriceLevel](PriceLevel.md) (3), [Nations](Nations.md) (2), [DataSave](DataSave.md) (2), [GameFiles](GameFiles.md) (1), [TreasuryJournal](TreasuryJournal.md) (1), [FloatLinkCheck](FloatLinkCheck.md) (1)
 
 **Used by (6):** [GoldStandardCheck](GoldStandardCheck.md), [InterventionCheck](InterventionCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [VaultMoneysCheck](VaultMoneysCheck.md)
 
@@ -107,7 +107,7 @@
 | 650 | `CurrencyRegimeCheck.DOUBT_CRAWL_MONTHS` | `8` | The months doubtTown() plays at the shadow, the peg following it, before the revaluation: the eight months the hot money takes to gather. |
 | 658 | `CurrencyRegimeCheck.BREAK_LOOK_MONTHS` | `3` | GW1: the months after the revaluation whose breaks section 3 can use: a break by doubt needs the month before it and its own month to be months where the smoothed miss is within TOLERANCE (the city's climb, the twin's... |
 | 661 | `CurrencyRegimeCheck.climbMonths` | `new java.util.HashMap<>()` | The months a probe town is played to, by (depots, causes held off): where the climbing town is pegged is found once (climbMonth()). |
-| 1187 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLO...` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). |
+| 1187 | `CurrencyRegimeCheck.SLOT_DOUBT_LIFETIME` | `15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLO...` | Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them, FB3 the peaks; the model's own count). |
 | 1468 | `CurrencyRegimeCheck.EDGE_BILL` | `"The band's or the peg's dollars"` | The label the treasury's journal gives the edge's bill (Game.settleTheEdge()). |
 | 1485 | `CurrencyRegimeCheck.SURPLUS_DEPOTS` | `{ PEG_DEPOTS, 18, 20, 22, 24, 30, 36 }` | BA1, 2026-11-05: THE DEPOTS A SURPLUS TOWN STANDS ON. |
 

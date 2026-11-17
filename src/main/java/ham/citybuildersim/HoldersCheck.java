@@ -1536,9 +1536,9 @@ public class HoldersCheck {
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(
                 Files.readString(files.saveFile(3))).getAsJsonObject();
         com.google.gson.JsonArray full = json.getAsJsonArray("capitalFlows");
-        // The array's whole length, not "at least": an append past it (XR2's slot 15, what left on doubt; FX8's 16-18, the month's flows; XR4's 19-23, what a risk-off unwound) is
+        // The array's whole length, not "at least": an append past it (XR2's slot 15, what left on doubt; FX8's 16-18, the month's flows; XR4's 19-23, what a risk-off unwound; FB3's 24-25, the peaks) is
         // caught here, so whoever appends looks again at whether cutting it at 12 is still a save from before the world held any (FX8).
-        assertTrue("fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is 24 slots long", full != null && full.size() == new CapitalFlows().toSaveArray().length);
+        assertTrue("fixture: the save carries the world's paper in slots 12-14 of the capital flows array, which is CapitalFlows.SAVE_SLOTS (" + CapitalFlows.SAVE_SLOTS + ") long", full != null && full.size() == CapitalFlows.SAVE_SLOTS && new CapitalFlows().toSaveArray().length == CapitalFlows.SAVE_SLOTS);
         com.google.gson.JsonArray cut12 = new com.google.gson.JsonArray();
         for (int i = 0; i < 12; i++) cut12.add(full.get(i));
         json.add("capitalFlows", cut12);

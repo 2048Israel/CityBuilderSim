@@ -11,6 +11,8 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,10 +54,21 @@ import java.util.function.Function;
  *      imported; (c) every market's month tally right after the load, and the
  *      investment notes a month on; (d) each sector book's shares right after
  *      the load; (e) the price index's rent and food weights right after the
- *      load; (f) a time skip reports what the running city's skip reports.
+ *      load; (f) a time skip reports what the running city's skip reports;
+ *      (g) the sudden stop's words and the hot money's peaks; (h) Quarrying's
+ *      carry; (i) each market's draws since the month closed, and the seller
+ *      rows they put back a month on; (j) a seller-priced market's trades of a
+ *      month are off its list the month after.
  *   4. THE REAL EARTH: sections 1 and 2 at one checkpoint (about month 120)
  *      on LongPlaytest.probeCity(files, "rotterdam"), where earth-2.bin is
  *      named; a line saying it did not run, never a FAIL, where it is not.
+ *   5. THE AUTOSAVE (FB3, REV-FB3-1): the live city played on to the month its
+ *      own autosave falls due in, written by the game at that month's end, and
+ *      loaded from the autosave slot: right after the load every market's draws
+ *      are the live city's, and a month on every history figure and every
+ *      figure in the save is. A save carries the draws since FW6-C, and the
+ *      autosave was taken before the month closed them, so a load put the
+ *      month's draws back and the next month filled them again.
  *
  * Every fixture is asserted: the history holds more than a hundred series and
  * the save more than ten thousand numbers (so the comparison is not empty),
@@ -84,6 +97,21 @@ public class ReloadCheck {
 
     /** Where section 4's city is founded: the real Earth round Rotterdam, as LongPlaytest --earth rotterdam plays it. */
     static final String EARTH_SPOT = "rotterdam";
+
+    /** The words of the sudden stop the harness starts on the live city before its caused point (FB3, FW6-C): no checkpoint of the probe city is in a stop, and the words ride in a String no array carries. */
+    static final String CAUSED_STOP = "the reload check's own sudden stop";
+
+    /** The share of what the makers of one good hold that the harness's hand order between the presses takes (FB3, FW6-C): part of it, so the order is all filled at home and none imported. */
+    static final double HAND_ORDER_SHARE = .5;
+
+    /** What the carry's fixture counts (FB3, FW6-C): also how main() asks whether any checkpoint carried limestone before it places one. */
+    static final String CARRY_SAW = "cities that carried limestone into aggregate";
+
+    /** The tonnes of limestone the harness places as a carry when no checkpoint's city had one (FB3, FW6-C). */
+    static final double CAUSED_CARRY = 100;
+
+    /** The seller-priced goods no sector sells through its market (FB3, FW6-C): building work is the crews' own points, so its list is empty at every checkpoint and no fixture can ask that it sold. */
+    static final Set<Good> NEVER_FILLED = Set.of(Good.BUILDING_WORK);
 
     /** A time skip of section 3f: two months, so it is a skip (the game autosaves before one), and two are run on each city. */
     static final int SKIP_MONTHS = 2;
@@ -169,11 +197,17 @@ public class ReloadCheck {
         String problem;
         Compared history1, history2, save1, save2;
         final Cause revalued = new Cause(), drawn = new Cause(), tally = new Cause(), notes = new Cause(),
-                shares = new Cause(), weights = new Cause(), skipped = new Cause();
-        int skips, skipsWithOutbreak;
+                shares = new Cause(), weights = new Cause(), skipped = new Cause(),
+                stop = new Cause(), carry = new Cause(), draws = new Cause(), sellerPriced = new Cause();
+        int skips, skipsWithOutbreak, skipsSick;
+        /** The hand order the harness made on the live city before this point (FB3, FW6-C), or null: a point with one is the caused point. */
+        HandOrder order;
 
         Point(String city, int month) { this.city = city; this.month = month; }
     }
+
+    /** A hand order made between the presses (FB3, FW6-C): the good and the draws it logged, one a seller, with the units taken from its stock. */
+    record HandOrder(Good good, List<Trade> rows) { }
 
     /* --------------------------------- the numbers --------------------------------- */
 
@@ -244,6 +278,36 @@ public class ReloadCheck {
         }
     }
 
+    /* ---------------------------- the caused point ---------------------------- */
+
+    /**
+     * FB3 (FW6-C): three restores that no checkpoint's save causes the case of, caused on the live city as it stands (between the
+     * presses, a month just closed): a sudden stop begun (the words are a String no array carries); a hand order, half of what the
+     * makers of the good they hold the most of have in stock, drawn as the player's orders draw (Game.drawMaterials(), drawBitumen(),
+     * fit(): the builders the buyer, their purchase booked), the seller rows of which only the draws list can put back; and,
+     * when no checkpoint's city carried any, a carry of limestone placed. Returns the hand order (null if no maker holds any
+     * stock of a traded good the builders do not make).
+     */
+    static HandOrder causeTheConditions(Game g, boolean placeACarry) {
+        g.getCapitalFlows().startStopForTest(CAUSED_STOP);
+        if (placeACarry) g.getSectors().quarrying().setCarriedForTest(CAUSED_CARRY);
+        Sector builders = g.getSectors().construction();
+        Good most = null;
+        double mostHeld = 0;
+        for (Good good : Good.values()) {
+            if (!good.traded()) continue;
+            if (builders.isMaker(good)) continue;   // the builders buy it, so not from themselves
+            double held = 0;
+            for (Sector s : g.getSectors().all()) if (s.isMaker(good)) held += s.getStock(good);
+            if (held > mostHeld) { most = good; mostHeld = held; }
+        }
+        if (most == null) return null;
+        GoodsMarket market = g.getMarkets().get(most);
+        int before = market.monthsDraws().size();
+        g.getMarkets().draw(most, builders, null, mostHeld * HAND_ORDER_SHARE, g.getSectors());
+        return new HandOrder(most, new ArrayList<>(market.monthsDraws().subList(before, market.monthsDraws().size())));
+    }
+
     /* ------------------------------ one checkpoint ------------------------------ */
 
     /**
@@ -252,8 +316,12 @@ public class ReloadCheck {
      * the investment notes), saved and compared, a month more and compared again, then two time skips of each.
      * The game's narration is silenced throughout; nothing here asserts - section by section the report does.
      */
-    static Point reload(GameFiles files, Game g, String city) {
+    static Point reload(GameFiles files, Game g, String city) { return reload(files, g, city, null); }
+
+    /** ...with the hand order the harness made on the live city before it, if any (FB3, FW6-C), so a month on can read the seller rows it put back. */
+    static Point reload(GameFiles files, Game g, String city, HandOrder order) {
         Point p = new Point(city, g.getMonth());
+        p.order = order;
         PrintStream real = System.out;
         System.setOut(QUIET);
         try {
@@ -266,11 +334,13 @@ public class ReloadCheck {
             g.simulateMonths(1);
             back.simulateMonths(1);
             observeAMonthOn(p, g, back);
+            Map<Good, Set<Trade>> firstMonthsTrades = sellerPricedTrades(p, g);
             Compared[] monthOn = saveAndCompare(files, g, back, "a month on");
             p.history1 = monthOn[0];
             p.save1 = monthOn[1];
             g.simulateMonths(1);
             back.simulateMonths(1);
+            tradesOfTheFirstMonthGone(p, g, firstMonthsTrades);
             Compared[] twoOn = saveAndCompare(files, g, back, "two months on");
             p.history2 = twoOn[0];
             p.save2 = twoOn[1];
@@ -291,9 +361,11 @@ public class ReloadCheck {
 
     /**
      * Right after the load, before any month: (c) every market's tally of the month just closed - the goods imported,
-     * exported, filled at home, offered and bid for; the trades list and the month's draws have no getter that is a
-     * figure (getTrades() is the fills, monthsDraws() is package-private), so they are not compared - (d) each sector
-     * book's shares, this month's and last month's, and (e) the price index's two weights.
+     * exported, filled at home, offered and bid for, and the units drawn since (FB3, FW6-C); the trades list has no getter
+     * that is a figure, so it is not compared - (d) each sector book's shares, this month's and last month's, (e) the
+     * price index's two weights, and since FB3 (FW6-C) the restores no checkpoint's save used to cause the case of: (g) the
+     * sudden stop's words and the hot money's peaks, (h) Quarrying's carry, which produceFlow() zeroes at the top of the next
+     * month so only here can it be read, and (i) every market's draws since the month closed, row by row.
      */
     private static void observeTheLoad(Point p, Game g, Game back) {
         for (GoodsMarket live : g.getMarkets().all()) {
@@ -306,7 +378,24 @@ public class ReloadCheck {
             p.tally.compare(good + ": filled at home", live.getLocalFilled(), re == null ? Double.NaN : re.getLocalFilled());
             p.tally.compare(good + ": offered", live.getOffered(), re == null ? Double.NaN : re.getOffered());
             p.tally.compare(good + ": bid", live.getBid(), re == null ? Double.NaN : re.getBid());
+            // FB3 (FW6-C): the units drawn on demand since the strike, which the next strike counts as demand; no harness compared them.
+            p.tally.saw("markets with units drawn since the strike", live.getDrawn() > 0 ? 1 : 0);
+            p.tally.compare(good + ": drawn since the strike", live.getDrawn(), re == null ? Double.NaN : re.getDrawn());
+            compareDraws(p.draws, good, live.monthsDraws(), re == null ? List.of() : re.monthsDraws());
         }
+        CapitalFlows hot = g.getCapitalFlows(), hotBack = back.getCapitalFlows();
+        p.stop.saw("cities in a sudden stop", hot.isStopped() ? 1 : 0);
+        p.stop.saw("...of them with the stop's words", hot.isStopped() && !hot.getStopReason().isBlank() ? 1 : 0);
+        p.stop.saw("cities with a hot money peak", hot.getPeakStock() > 0 ? 1 : 0);
+        p.stop.saw("...of them with the stock below its peak", hot.getPeakStock() > hot.getStock() ? 1 : 0);
+        p.stop.saw("cities with a widest spread", hot.getPeakSpread() > 0 ? 1 : 0);
+        p.stop.compare("the sudden stop: its words", hot.getStopReason(), hotBack.getStopReason());
+        p.stop.compare("the sudden stop: isStopped", String.valueOf(hot.isStopped()), String.valueOf(hotBack.isStopped()));
+        p.stop.compare("the sudden stop: months left", hot.stopMonthsLeft(), hotBack.stopMonthsLeft());
+        p.stop.compare("the hot money: the most that was ever here", hot.getPeakStock(), hotBack.getPeakStock());
+        p.stop.compare("the hot money: the widest the gap ever got", hot.getPeakSpread(), hotBack.getPeakSpread());
+        p.carry.saw(CARRY_SAW, g.getSectors().quarrying().carried() > 0 ? 1 : 0);
+        p.carry.compare("Quarrying: the limestone carried", g.getSectors().quarrying().carried(), back.getSectors().quarrying().carried());
         for (Sector s : g.getSectors().all()) {
             String key = s.key();
             p.shares.saw("sectors with shares this month", g.getSectorBooks().shares(key) != null ? 1 : 0);
@@ -317,6 +406,20 @@ public class ReloadCheck {
         p.weights.saw("weights above zero", g.getPriceIndex().getRentWeight() > 0 && g.getPriceIndex().getFoodWeight() > 0 ? 1 : 0);
         p.weights.compare("the price index: rent weight", g.getPriceIndex().getRentWeight(), back.getPriceIndex().getRentWeight());
         p.weights.compare("the price index: food weight", g.getPriceIndex().getFoodWeight(), back.getPriceIndex().getFoodWeight());
+    }
+
+    /** (i) One market's draws since the month closed, the live city's against the reloaded city's: how many, and each one's seller, buyer, units and price. */
+    private static void compareDraws(Cause c, String good, List<Trade> live, List<Trade> re) {
+        c.saw("markets with draws since the month closed", live.isEmpty() ? 0 : 1);
+        c.compare(good + ": draws since the month closed", live.size(), re.size());
+        for (int i = 0; i < Math.min(live.size(), re.size()); i++) {
+            Trade a = live.get(i), b = re.get(i);
+            String row = good + ": draw " + i;
+            c.compare(row + ", seller", a.seller(), b.seller());
+            c.compare(row + ", buyer", a.buyer(), b.buyer());
+            c.compare(row + ", units", a.units(), b.units());
+            c.compare(row + ", price", a.price(), b.price());
+        }
     }
 
     private static void compareShares(Cause c, String what, SectorBooks.Shares live, SectorBooks.Shares re) {
@@ -357,11 +460,53 @@ public class ReloadCheck {
         p.drawn.compare("Construction: drawn at home", live.getDrawnLocal(), re.getDrawnLocal());
         p.drawn.compare("Construction: drawn imported", live.getDrawnImported(), re.getDrawnImported());
 
+        // (i) The hand order between the presses, a month on (FB3, FW6-C): the month's strike clears every row and puts the draws back on their sellers',
+        // so a seller's units sold at home hold the order on the live city, and on the reloaded one only if the draws crossed the save.
+        if (p.order != null) {
+            for (Trade t : p.order.rows()) {
+                if (t.isImport()) continue;
+                double liveSold = soldAtHome(g.getSectors().byKey(t.seller()), t.good()), reSold = soldAtHome(back.getSectors().byKey(t.seller()), t.good());
+                p.draws.saw("hand-ordered seller rows that hold the order a month on", liveSold >= t.units() ? 1 : 0);
+                p.draws.compare(t.seller() + " " + t.good() + ": units sold at home a month on", liveSold, reSold);
+            }
+        }
+
         Map<String, String> liveNotes = g.getLastInvestments(), reNotes = back.getLastInvestments();
         p.notes.saw("investment notes the live city left", liveNotes.size());
         Set<String> keys = new TreeSet<>(liveNotes.keySet());
         keys.addAll(reNotes.keySet());
         for (String k : keys) p.notes.compare(k + ": lastInvestment", liveNotes.get(k), reNotes.get(k));
+    }
+
+    private static double soldAtHome(Sector s, Good good) {
+        Sector.Output row = s == null ? null : s.outputRow(good);
+        return row == null ? 0 : row.soldLocal;
+    }
+
+    /**
+     * (j) Every seller-priced market's trades as the live city has them a month on (FB3, FW6-C), kept by object: Trade is a
+     * record, so a set that asked equals() would call this month's sale the last one's. The markets that sold at all are counted.
+     */
+    private static Map<Good, Set<Trade>> sellerPricedTrades(Point p, Game g) {
+        Map<Good, Set<Trade>> month = new LinkedHashMap<>();
+        for (GoodsMarket m : g.getMarkets().all()) {
+            if (m.good().traded()) continue;
+            Set<Trade> these = Collections.newSetFromMap(new IdentityHashMap<>());
+            these.addAll(m.getTrades());
+            month.put(m.good(), these);
+            if (!NEVER_FILLED.contains(m.good())) p.sellerPriced.saw(m.good() + " markets that sold in the first month on", these.isEmpty() ? 0 : 1);
+        }
+        return month;
+    }
+
+    /** ...and a month later none of those trades is on its market's list: a seller-priced good's month begins as a traded good's does (Markets.startSellerPricedMonth()). */
+    private static void tradesOfTheFirstMonthGone(Point p, Game g, Map<Good, Set<Trade>> firstMonth) {
+        for (Map.Entry<Good, Set<Trade>> e : firstMonth.entrySet()) {
+            int lingering = 0;
+            for (Trade t : g.getMarkets().get(e.getKey()).getTrades()) if (e.getValue().contains(t)) lingering++;
+            p.sellerPriced.compared++;
+            if (lingering > 0) p.sellerPriced.differ(e.getKey() + ": the first month's trades still on the list a month later", lingering + " of " + e.getValue().size(), "none");
+        }
     }
 
     /**
@@ -373,13 +518,15 @@ public class ReloadCheck {
     private static void skips(Point p, Game g, Game back) {
         g.simulateMonths(SKIP_MONTHS);
         back.simulateMonths(SKIP_MONTHS);
-        int first = outbreakMonths(back.getSkipReport());
+        int first = outbreakMonths(back.getSkipReport()), firstSick = back.getSkipReport().getMonthsSick();
         g.simulateMonths(SKIP_MONTHS);
         back.simulateMonths(SKIP_MONTHS);
-        int second = outbreakMonths(back.getSkipReport());
+        int second = outbreakMonths(back.getSkipReport()), secondSick = back.getSkipReport().getMonthsSick();
         TimeSkipReport live = g.getSkipReport(), re = back.getSkipReport();
         p.skips = 2;
         p.skipsWithOutbreak = (first > 0 ? 1 : 0) + ((second < first ? second > 0 : second > first) ? 1 : 0);
+        // ...and the skips with months sick, read the same way (FB3, FW6-C): the fixture asked only for skips, so a city never sick in one passed.
+        p.skipsSick = (firstSick > 0 ? 1 : 0) + ((secondSick < firstSick ? secondSick > 0 : secondSick > firstSick) ? 1 : 0);
         p.skipped.compare("the report: outbreaks", live.getOutbreaks(), re.getOutbreaks());
         p.skipped.compare("the report: months in outbreak", live.getMonthsInOutbreak(), re.getMonthsInOutbreak());
         p.skipped.compare("the report: months sick", live.getMonthsSick(), re.getMonthsSick());
@@ -463,19 +610,43 @@ public class ReloadCheck {
         cause(points, p -> p.revalued, "3a", "a month on", "every sector's stock revaluation is counted in the reload's first month and equals the live city's");
         cause(points, p -> p.drawn, "3b", "a month on", "Construction's materials drawn at home and imported equal the live city's");
         cause(points, p -> p.tally, "3c, the tally", "right after the load",
-                "every market's month tally (imported, exported, filled at home, offered, bid) is the live city's");
+                "every market's month tally (imported, exported, filled at home, offered, bid, drawn since the strike) is the live city's");
         cause(points, p -> p.notes, "3c, the notes", "a month on", "each sector's lastInvestment note is the live city's");
         cause(points, p -> p.shares, "3d", "right after the load", "each sector book's shares month, this and last, is the live city's");
         cause(points, p -> p.weights, "3e", "right after the load", "the price index's rent and food weights are the live city's");
-        int skips = 0, withOutbreak = 0;
-        for (Point p : points) if (p.problem == null) { skips += p.skips; withOutbreak += p.skipsWithOutbreak; }
-        check("fixture 3f: time skips were run on both cities from the same month", skips > 0, skips + " skips, " + withOutbreak + " with an outbreak (read off the reloaded city's reports)");
+        int skips = 0, withOutbreak = 0, sick = 0;
+        for (Point p : points) if (p.problem == null) { skips += p.skips; withOutbreak += p.skipsWithOutbreak; sick += p.skipsSick; }
+        check("fixture 3f: time skips were run on both cities from the same month, one with an outbreak and one with months sick",
+                skips > 0 && withOutbreak > 0 && sick > 0,
+                skips + " skips, " + withOutbreak + " with an outbreak, " + sick + " with months sick (read off the reloaded city's reports)");
         for (Point p : points) {
             if (p.problem != null) continue;
             String over = p.skipsWithOutbreak == 0 ? "no outbreak in either of the " + p.skips + " skips, so only the sick months and the ratios were tried"
                     : p.skipsWithOutbreak + " of " + p.skips + " skips with an outbreak";
             nothingDiffers("3f. " + p.city + " month " + p.month + ", the second time skip after the load reports what the running city's does (" + over
                     + "): outbreaks, months in outbreak, months sick, worst work ratio, peak unburied", p.skipped, p.skipped.compared + " figures the same");
+        }
+        // FB3 (FW6-C): the restores no checkpoint's save caused the case of, each one's fixture passing on the caused point (the detail says what the checkpoints alone showed).
+        causedCause(points, p -> p.stop, "3g", "right after the load",
+                "the sudden stop's words, whether it runs and the months left, and the hot money's peaks, are the live city's");
+        causedCause(points, p -> p.carry, "3h", "right after the load", "Quarrying's limestone carried into aggregate is the live city's");
+        causedCause(points, p -> p.draws, "3i", "right after the load and a month on",
+                "every market's draws since the month closed (seller, buyer, units, price) and the seller rows a hand order lifts are the live city's");
+        cause(points, p -> p.sellerPriced, "3j", "two months on",
+                "a seller-priced market's trades of the first month on are off its list a month later, as a traded good's are");
+    }
+
+    /** A cause whose fixture the caused point supplies (FB3, FW6-C): the line says what the checkpoints alone showed. */
+    static void causedCause(List<Point> points, Function<Point, Cause> which, String id, String when, String label) {
+        Map<String, Integer> saw = sawTogether(points, which), natural = new LinkedHashMap<>();
+        for (Point p : points) if (p.problem == null && p.order == null) which.apply(p).saw.forEach((k, v) -> natural.merge(k, v, Integer::sum));
+        check("fixture " + id + ": the live city exercised it", allAbove0(saw),
+                seen(saw) + "; the checkpoints alone showed " + seen(natural) + ", the rest is the caused point's (a stop started, a hand order made between the presses"
+                        + ", and a carry placed if no checkpoint had one)");
+        for (Point p : points) {
+            if (p.problem != null) continue;
+            Cause c = which.apply(p);
+            nothingDiffers(id + ". " + p.city + " month " + p.month + ", " + when + ": " + label, c, c.compared + " compared, the same");
         }
     }
 
@@ -488,6 +659,85 @@ public class ReloadCheck {
             Cause c = which.apply(p);
             nothingDiffers(id + ". " + p.city + " month " + p.month + ", " + when + ": " + label, c, c.compared + " compared, the same");
         }
+    }
+
+    /* ------------------------------ the autosave (FB3, REV-FB3-1) ------------------------------ */
+
+    /** What section 5 found: the city the month-end autosave holds, loaded from that slot, against the city that wrote it. */
+    static final class Autosaved {
+        /** Why it could not be compared (a load that failed), or null. */
+        String problem;
+        /** The month the live city stood at once its autosave was written, and the slot's header: its name and month. */
+        int month, savedMonth;
+        String name;
+        /** Whether the month's end wrote it: the counter started again. */
+        boolean fired;
+        /** The draws the autosaved month closed at its end (Markets.drawsClosedLastMonth()): what its autosave would have carried before FB3 closed them first. */
+        int drawsClosed;
+        /** Every market's draws since the month closed, right after the load (as cause 3i compares them). */
+        final Cause draws = new Cause();
+        Compared history, save;
+    }
+
+    /**
+     * The live city played on, a month at a time, to the month its autosave falls due in, under a save clock past the
+     * floor at every look (SaveSlotCheck's), so the game writes the autosave where it writes it: at that month's end,
+     * slot GameFiles.AUTOSAVE_SLOT of the harness's scratch folder. Loaded from that slot into a second game, the draws
+     * compared right after the load, both run a month, and their saves compared.
+     */
+    static Autosaved autosaveAndReload(GameFiles files, Game g) {
+        Autosaved a = new Autosaved();
+        PrintStream real = System.out;
+        System.setOut(QUIET);
+        try {
+            long[] now = { System.nanoTime() };
+            g.useSaveClockForChecks(() -> now[0] += (long) (SaveWriter.FLOOR_SECONDS * 1e9) + 1);
+            // Single months, so nothing but the interval autosaves: on to the month before it falls due, then that month.
+            while (g.getMonthsUntilAutosave() > 1) g.simulateMonths(1);
+            g.simulateMonths(1);
+            g.awaitSaves();
+            a.month = g.getMonth();
+            a.fired = g.getMonthsUntilAutosave() == Game.AUTOSAVE_MONTHS;
+            SaveHeader h = files.readHeader(GameFiles.AUTOSAVE_SLOT);
+            a.savedMonth = h == null ? -1 : h.getMonth();
+            a.name = h == null || !h.hasName() ? null : h.getSlotName();
+            a.drawsClosed = g.getMarkets().drawsClosedLastMonth();
+            Game back = new Game(files);
+            back.loadGameSave(GameFiles.AUTOSAVE_SLOT);
+            if (back.getLoadFailure() != null) { a.problem = "the load of the autosave failed: " + back.getLoadFailure(); return a; }
+            for (GoodsMarket live : g.getMarkets().all()) {
+                GoodsMarket re = back.getMarkets().get(live.good());
+                compareDraws(a.draws, String.valueOf(live.good()), live.monthsDraws(), re == null ? List.of() : re.monthsDraws());
+            }
+            g.simulateMonths(1);
+            back.simulateMonths(1);
+            Compared[] on = saveAndCompare(files, g, back, "a month on from the autosave");
+            a.history = on[0];
+            a.save = on[1];
+        } finally {
+            System.setOut(real);
+        }
+        return a;
+    }
+
+    /** Section 5's lines: the two fixtures (the game wrote the autosave at its month's end, in a month that drew), then the draws, the history and the save. */
+    static void section5(Autosaved a) {
+        System.out.println("--- 5. a city loaded from its month-end autosave plays its next month as the one that kept running ---");
+        if (a.problem != null) {
+            check("the autosave was loaded", false, a.problem);
+            return;
+        }
+        check("fixture: the month the autosave fell due in wrote slot " + GameFiles.AUTOSAVE_SLOT + " at its end, as the game takes it",
+                a.fired && a.savedMonth == a.month && ("Autosave - month " + a.month).equals(a.name),
+                "the slot reads \"" + a.name + "\" at month " + a.savedMonth + ", the city at " + a.month
+                        + (a.fired ? ", the counter started again" : ", the counter did not start again"));
+        check("fixture: ...a month that drew from the markets, so it had draws to close at its end", a.drawsClosed > 0,
+                a.drawsClosed + " draws closed");
+        nothingDiffers("5. month " + a.month + ", right after the load from the autosave: every market's draws since the month closed are the live city's",
+                a.draws, a.draws.compared + " compared, the same");
+        nothingDiffers("5. month " + a.month + ", a month on from the autosave: every history figure is the live city's",
+                a.history, a.history.numbers + " numbers in " + a.history.series + " series, the same");
+        nothingDiffers("5. ...and every figure in its save, to the cent", a.save, a.save.numbers + " numbers the same");
     }
 
     /* ------------------------------------ the Earth ------------------------------------ */
@@ -525,6 +775,18 @@ public class ReloadCheck {
             points.add(reload(files, g, "Danzik"));
             System.out.printf("  played, saved, reloaded and compared at month %d (%.0f s)%n", points.get(points.size() - 1).month, (System.nanoTime() - t0) / 1e9);
         }
+        // FB3 (FW6-C): the live city as it stands, with the three conditions no checkpoint's save had caused: a sudden stop, a hand order between the
+        // presses and, only if no checkpoint carried limestone, a carry; reloaded through the same path, and counted with the rest.
+        boolean carried = false;
+        for (Point q : points) carried |= q.problem == null && q.carry.saw.getOrDefault(CARRY_SAW, 0) > 0;
+        long c0 = System.nanoTime();
+        HandOrder order = causeTheConditions(g, !carried);
+        points.add(reload(files, g, "Danzik, caused", order));
+        System.out.printf("  caused (a sudden stop, a hand order%s), saved, reloaded and compared at month %d (%.0f s)%n", carried ? "" : ", a carry", points.get(points.size() - 1).month, (System.nanoTime() - c0) / 1e9);
+        // FB3 (REV-FB3-1): the live city on to its own autosave, written by the game at the month's end, and loaded from that slot.
+        long a0 = System.nanoTime();
+        Autosaved autosaved = autosaveAndReload(files, g);
+        System.out.printf("  autosaved at month %d, loaded from the autosave and compared (%.0f s)%n", autosaved.month, (System.nanoTime() - a0) / 1e9);
         Point earth = null;
         if (earthHere()) {
             GameFiles earthFiles = GameFiles.scratch("reloadcheck-earth");
@@ -544,6 +806,7 @@ public class ReloadCheck {
             history(List.of(earth));
             whole(List.of(earth));
         }
+        section5(autosaved);
 
         System.out.printf("%n%.0f s%n", (System.nanoTime() - started) / 1e9);
         System.out.println(fails == 0 ? "All checks passed." : "\n" + fails + " FAILED");
