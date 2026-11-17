@@ -4462,7 +4462,9 @@ public final class CityMap {
         for (int i = 0; i < edges.length; i++) {
             if (free[i] == null || streets[i] == null) continue;
             gr[i] = new Ground(free[i].length > plane ? Arrays.copyOf(free[i], plane) : free[i], streets[i]);
-            // The ground past the city's: its own masks, the plan's streets shared (a street laid to one is a street to both).
+            // The ground past the city's: its own free plots and its own against, reach and near, dilated from the plan's streets and
+            // grown only by the streets laid to its own boxes. The street mask alone is the same array, so a street laid to a box on
+            // either plane is one the other's laidTo() walk can end at (where its near lets it look); its against and reach do not grow.
             if (free[i].length > plane) past[i] = new Ground(Arrays.copyOfRange(free[i], plane, 2 * plane), streets[i]);
         }
         int[][] tiOf = new int[edges.length][TILES];

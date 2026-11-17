@@ -21,15 +21,27 @@ the T of a join.
 `cellsOnGrown()` after the joins, before `pruneApart()`. For each + among the plots laid in that call
 that breaks the floor (`plusBreaks()`: inside an estate, or a + or a T (`teeAt()`) within
 `LATTICE - 1` along a street), it takes up the first arm laid in that call that can go without
-parting the streets that stood (`keepsJoined()`). Failing that, it takes up the junction itself when
-only the junction was laid in that call. So the old T stays a T, and no street laid before is
-touched. The switch is `floorOnBought`.
+parting any street (`keepsJoined()`): the streets beside it stay one piece, and that piece holds a
+street that stood. Failing that, it takes up the junction itself when only the junction was laid in
+that call, and when nothing can go the + is kept. So the old T stays a T, no street laid before is
+touched, and the streets laid on the ground bought stay joined. The switch is `floorOnBought`.
+
+**The review (REV-FB5-1, on d9bce95d):** `keepsJoined()` then guarded only the pieces that held old
+streets. An arm whose removal cut a piece of only new plots off from every old street was still
+taken, and `pruneApart()` then took the whole piece, undoing FX9 there, uncounted. Now such an arm is
+kept. 12b compares, at every cut, the streets laid on ground bought with the floor off and on (the
+difference must be exactly the plots the floor counts) and month 6's works placed (no fewer with
+it). On d9bce95d the first is red: row 82 has 192 street plots without the floor and 185 with it,
+against 4 counted. Its "breaks" now counts only plans that break the + rules (a + inside an estate
+cell, or two nearer than `LATTICE`), as its label says.
 
 **Fixture:** PlanCheck 12b (`floorBought()`) is a works cell whose ground ends at a cut, with the
 ground past it bought at month 5. It tries 76 cuts, both ways. Without the floor 36 of them break
-the plan's checks. With the floor all 76 hold, 122 plots are taken up in 44 of them, no building
-moves, and the plan stays a pure function of its input. In the played city the floor takes up 12
-plots, in 3 of 9 samples.
+the + rules. With the floor all 76 hold every check, 121 plots are taken up in 44 of them, the
+streets laid on ground bought are those without the floor less exactly those plots (13,387 against
+13,266), month 6's works stand as many (5,695), no building moves, and the plan stays a pure
+function of its input. In the played city the floor takes up 12
+plots, in 3 of 9 samples, as before the review.
 
 ## 2. DM3 - what the city's own ground cannot hold
 

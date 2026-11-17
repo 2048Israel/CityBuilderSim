@@ -2897,9 +2897,9 @@ public final class DistrictPlan {
          * its open side: a + where the plan allows none - inside an estate cell (ESTATE LINES: T junctions only) or fewer than
          * LATTICE plots along a street from another junction (the + floor, spec 2.4; a T counts, plusBreaks()). Each such + of
          * the plots laid in this call is stopped a plot short: the first of its arms laid in this call (TilePainter's order)
-         * that can go without parting the streets that stood (keepsJoined(): one network comes first) is taken up, or the
-         * junction itself when only it was, so the old T stays a T and no street laid before - none a building stands by - is
-         * touched; a + no such plot of can go is kept.
+         * that can go without parting any street (keepsJoined(): one network comes first, and the streets laid on the ground
+         * bought stay joined to it) is taken up, or the junction itself when only it was, so the old T stays a T and no street
+         * laid before - none a building stands by - is touched; a + no such plot of can go is kept.
          * WHY: on LM1's path PlanCheck 6's played city laid two + junctions four plots apart in a homes cell, (48, 64) and
          * (48, 68); on AQ1's, a + inside estate cells of district (0, 0) in PlanCheck 6's and MapCheck 1's cities, each where a
          * line laid on ground bought (m48-m59, m80-m89) met the T a join along the old cut had made. The plots taken up.
@@ -2923,7 +2923,7 @@ public final class DistrictPlan {
                             if (a >= 0 && laidMark[a] == now && road(a) && keepsJoined(a, now)) arm = a;
                         }
                         if (arm < 0 && laidMark[j] == now && keepsJoined(j, now)) arm = j;
-                        // No plot of it laid in this call can go without parting the streets that stood: the + is kept.
+                        // No plot of it laid in this call can go without parting a street: the + is kept.
                         if (arm < 0) continue;
                         if (avDone[arm] == 1) avUnlay(arm);
                         setStr(arm, false);
@@ -2951,10 +2951,11 @@ public final class DistrictPlan {
         int floorStamp;
 
         /**
-         * Whether street plot c can be taken up without parting the streets that stood before this call (laidMark != now):
-         * of the pieces the streets beside it fall into without it, at most one holds such a street - a piece of only plots
-         * laid in this call is taken up after (prune(), pruneApart()). Where a line laid across the cut is the only way between
-         * two pieces that stood, taking it up would part what the ground joins (MapCheck 8's one network, PlanCheck's pieces).
+         * Whether street plot c can be taken up without parting any street: the streets beside it stay one piece without it,
+         * and that piece holds a street that stood before this call (laidMark != now). Where a line laid across the cut is the
+         * only way between two pieces that stood, taking it up would part what the ground joins (MapCheck 8's one network,
+         * PlanCheck's pieces); where it is the only way from the streets that stood to those laid on the ground bought, the
+         * new piece would be taken up after it (prune(), pruneApart()), the cell's streets with it (FX9 undone; REV-FB5-1).
          */
         boolean keepsJoined(int c, int now) {
             if (floorSeen == null) { floorSeen = new int[AREA]; floorQueue = new int[AREA]; }
@@ -2977,7 +2978,7 @@ public final class DistrictPlan {
                         floorQueue[tail++] = a;
                     }
                 }
-                if (old && ++olds > 1) return false;
+                if (!old || ++olds > 1) return false;
             }
             return true;
         }

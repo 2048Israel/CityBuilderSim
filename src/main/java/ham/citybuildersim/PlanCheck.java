@@ -2779,9 +2779,9 @@ public class PlanCheck {
         for (int m = 1; m <= bought; m++) log.add(m, works, 8).add(m, house, 40).add(m, paved, 2);
         log.add(bought + 1, works, 30).add(bought + 1, paved, 2);
         Log until = log.until(bought);
-        int cuts = 0, breaks = 0, held = 0, flooredCuts = 0, moved = 0, estatePluses = 0, closest = Integer.MAX_VALUE;
-        long floored = 0;
-        String firstBreak = "", firstFail = "";
+        int cuts = 0, breaks = 0, held = 0, flooredCuts = 0, moved = 0, estatePluses = 0, closest = Integer.MAX_VALUE, uncounted = 0, worksLost = 0;
+        long floored = 0, streetsOff = 0, streetsOn = 0, worksOff = 0, worksOn = 0;
+        String firstBreak = "", firstFail = "", firstLoss = "";
         DistrictPlan.Input pureIn = null;
         for (int a = 0; a < 2; a++) {
             boolean across = a == 0;
@@ -2793,7 +2793,20 @@ public class PlanCheck {
                 DistrictPlan off = makeFloored(in, false), on = makeFloored(in, true);
                 DistrictPlan before = DistrictPlan.make(until.into(floorGround(types, cut, across, true)));
                 Figures fo = figures(off, in), fn = figures(on, in);
-                if (!fo.holds(off, in)) {
+                // The streets the floor takes are the ones it counts, and no works of month 6 loses its place for them: a street it
+                // took up that parted a piece of new streets from the old ones would take the piece with it (pruneApart()).
+                int wOff = boxesOfType(off, works), wOn = boxesOfType(on, works);
+                streetsOff += off.boughtStreets;
+                streetsOn += on.boughtStreets;
+                worksOff += wOff;
+                worksOn += wOn;
+                if (off.boughtStreets - on.boughtStreets != on.boughtFloored) uncounted++;
+                if (wOn < wOff) worksLost++;
+                if ((off.boughtStreets - on.boughtStreets != on.boughtFloored || wOn < wOff) && firstLoss.isEmpty())
+                    firstLoss = String.format("%s %d: %,d street plots on ground bought without the floor, %,d with it, %,d counted taken; works %d and %d", across ? "column" : "row", cut,
+                            off.boughtStreets, on.boughtStreets, on.boughtFloored, wOff, wOn);
+                // A break of the + rules (a + inside an estate cell, or two nearer than LATTICE): what the floor is for.
+                if (fo.estatePlus > 0 || fo.closestPlus < DistrictPlan.LATTICE) {
                     breaks++;
                     estatePluses += fo.estatePlus;
                     closest = Math.min(closest, fo.closestPlus);
@@ -2809,15 +2822,21 @@ public class PlanCheck {
         }
         DistrictPlan.Input wholeIn = log.into(floorGround(types, 0, true, false));
         DistrictPlan whole = DistrictPlan.make(wholeIn);
-        out.printf("      %d cuts across cells 2 to 5 (every third plot column, then row), the ground past each bought in month %d: without the floor %d plans break a check (%d + junctions inside"
+        out.printf("      %d cuts across cells 2 to 5 (every third plot column, then row), the ground past each bought in month %d: without the floor %d plans break the + rules (%d + junctions inside"
                 + " estate cells, the closest pair of + %s plots apart against LATTICE %d; the first, %s); with it %d of %d keep every check, the floor taking up %,d plots in %d of them%s%n",
                 cuts, bought, breaks, estatePluses, closest == Integer.MAX_VALUE ? "none" : Integer.toString(closest), DistrictPlan.LATTICE, firstBreak.isEmpty() ? "none" : firstBreak, held,
                 cuts, floored, flooredCuts, firstFail.isEmpty() ? "" : "; the first that breaks, " + firstFail);
+        out.printf("      over the %d cuts: %,d street plots laid on ground bought without the floor, %,d with it (%,d the floor counts taken, %d cuts where the difference is not that);"
+                + " month %d's works placed %,d without the floor and %,d with it (%d cuts with fewer)%s%n", cuts, streetsOff, streetsOn, floored, uncounted, bought + 1, worksOff, worksOn, worksLost,
+                firstLoss.isEmpty() ? "" : "; the first, " + firstLoss);
         if (playedFloored != null) out.printf("      section 6's played city: the floor took up %,d plots on ground bought, in %d of its %d samples' district plans%n", playedFloored[0], playedFloored[1], playedFloored[2]);
         check("the fixture: the same arrivals on the ground owned from the start keep every check, and with the floor off the ground bought past a cut breaks the + rules in some plan"
                 + " (a + inside an estate cell or within LATTICE plots of another)", figures(whole, wholeIn).holds(whole, wholeIn) && breaks > 0);
         check("with the floor every plan keeps every check, at every cut, the floor taking up plots on ground bought", held == cuts && floored > 0);
         check("...and it moves no box: every box of month " + bought + "'s plan on the old ground stands in month " + (bought + 1) + "'s, at every cut", moved == 0);
+        check("...and it takes up no street on ground bought but the plots it counts: at every cut the plan's streets laid there are the plan's without the floor less those plots",
+                uncounted == 0 && streetsOff > streetsOn);
+        check("...and costs no works its place: at every cut month " + (bought + 1) + "'s works stand as many with the floor as without it", worksLost == 0 && worksOff > 0);
         check("a plan is a pure function of its input: a plan the floor took plots up in, made twice, is the same plan box for box and street for street",
                 pureIn != null && samePlan(DistrictPlan.make(pureIn), DistrictPlan.make(pureIn)));
     }
