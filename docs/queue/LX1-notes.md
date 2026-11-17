@@ -99,6 +99,15 @@ only the margin moves it, and only between the planner's settling point and `MAR
 - **The fixture's fortune.** ★ `LuxuryRetailCheck` credits its 200-house town a wealth sized from
   `WEALTH_SPENT_A_MONTH` to ask for two Boutiques' coverage. Why: a 24-month town has no luxury queue of its own (the
   first fixture's 60 houses bought nothing at the planner's margin), and the share is a ratio a queue of any size reads.
+- **The Department Store is never chosen.** ★ Left as it is, for LQ1 or Jerus (REV-LX1-1's finding). The planner
+  scores a template by coverage x margin over cost and reads no city size (`LuxuryRetail.plan()`), so at 80 pieces on
+  $21,600 against the Boutique's 7 on $1,180 (0.0037 a dollar against 0.0059) it never builds one while a Boutique
+  can be staffed. It was so on main too (4,200 and 320: 0.19 against 0.27), and no Department Store stood on any run
+  read (section 1); `BuildingManager`'s comment said it became the better buy as the city grew, and now says this.
+  Other ways: price it to the Boutique's coverage a dollar (about $13,500 where it is $21,600), so the planner weighs
+  the two alike; give the planner a scale term (the big shop where the queue is large), a mechanic of its own; take
+  it off the planner's list, its id kept. Why left: LX1 is what a post sells; which shop a large city builds is part
+  of LQ1's question, the luxury queue's size.
 
 ## 4. LS1's probe, before and after
 
@@ -149,12 +158,18 @@ margin here 10-30% of the business sectors' value added.
   (`PayTier`) over its coverage's month of margin at the planner's settling margin (2.6585x, `TARGET_HEADROOM`'s
   queue, struck from the model's own `MARGIN_FLOOR`/`MARGIN_CEILING`) is in BEA's band, `LABOUR_SHARE` divided and
   multiplied by `LABOUR_SHARE_FACTOR` (20.8-83.4%). Section 2, the fixture: a 200-house town of 24 months, Luxury
-  Retail held; the households credited a wealth that asks for two Boutiques' coverage; the Boutiques the queue asks for
-  built standing; 24 months played; a year of its `SectorBooks` read as LS1 reads them. Section 3: the investor's
-  estimate of one more Boutique is still a profit. On this balance (and on the merged tree, 3ea6cf35b): all passed,
-  Boutique 33.4%, Department Store 32.9%, the town's year 54.7% ($32.937k of payroll on $61.622k of margin less
-  $1.444k; 22.1 of 24 posts filled, 0.48 pieces a post a month, the town's pay 1.10 of the ladder), one more Boutique
-  +$1.68k a month.
+  Retail held; the households credited a wealth that asks for `BOUTIQUES_ASKED` (2) Boutiques' coverage; those two
+  built standing; 24 months played; a year of its `SectorBooks` read as LS1 reads them, each month checked sold and
+  staffed. Section 3: the households given three Boutiques' worth more and a month, so the queue past the counters is
+  a whole Boutique's coverage; the investor's estimate of one more Boutique is then a profit. First form (96dae306b,
+  and on 3ea6cf35b): all passed, the town's year 54.7% on three Boutiques. REV-LX1-1 found three faults, mended:
+  section 3 never read a queue (three Boutiques over a queue of about 15, so `estimatedMonthlyProfit()` fell back to
+  half the coverage); the count was the ceiling of the town's own queue over a Boutique's, so the town's demand set
+  it rather than `BOUTIQUES_ASKED`; "sold every month" checked the year's sums. Now (on a21b0cc32's tree, main
+  69a29638 merged): all passed, Boutique 33.4%, Department Store 32.9%; the queue 16 against 14 pieces of counters;
+  12 of 12 months sold; the town's year 57.6% ($22.885k of payroll on $40.698k of margin less $0.964k; 14.9 of 16
+  posts filled, 6 pieces served of 25 wanted a month at 2.943x); 44.0 pieces wanted past 14 of counters; one more
+  Boutique +$2.69k a month.
 - **Red on main, by hand**: main's two templates put back in `buildings.json` and `BuildingManager` for one run, then
   restored (log `target/lx1/check-main.txt`): exit 1, "LuxuryRetailCheck: 3 FAILED":
   - "Boutique: its payroll at the ladder over a full month's margin is in BEA's band FAIL 0.6%: 7 posts, $0.787k of
@@ -163,7 +178,9 @@ margin here 10-30% of the business sectors' value added.
     $10.181k of wages, on 4,200 pieces at $0.3864k of margin each"
   - "a year of the town's Boutiques: payroll over value added (LS1's share) is in BEA's band FAIL 1.3%: $30.124k of
     payroll on $2,339.858k of margin less $1.450k of power, water and upkeep"
-  Section 3 passes on main too ($62.96k a month): it guards the change, not main.
+  Section 3 passes on main too ($62.96k a month): it guards the change, not main. The red run was of the first
+  form; section 1's two lines are unchanged since, and on main's balance the mended section 2 cannot stand its
+  fixture (two Boutiques are 640 pieces of counters on a queue of about 16). Not rerun on main after the mends.
 - **The fixture's first two forms failed, and why** (kept so the fixture's size is not taken as arbitrary): a 60-house
   town had no buyer at the planner's margin after 24 months, so the fortune; a town too small for its posts filled
   6.1 of 24 at twice the ladder and read 107% with a loss, so 200 houses (439 people, its workers outnumbering the
@@ -218,3 +235,36 @@ gate's 2,400 months do not reach it; the nightly's 4,000 may. It is the map's si
 FB8's DM2-B row studies ("no normal-play route to that mismatch" was DM2's finding): this is one, in a city larger
 than main's runs reach, and is left to FB8 (not this batch's code: `CityMap`, `MapSiteHistory`). The nightly prints
 both as findings, so the ship file records them as known reds against FB8.
+
+**Against main 69a29638 (0.9.134, after OX1), the merged tree.** OX1 moved main's own trace (its city 820k at m2399
+where ec481b4a's was 630k), so main's reference was made again (`C:/Users/Jerus/AppData/Local/Temp/
+cbs-trace-main-69a29638/`, one JVM from a `git archive` of 69a29638: exit 0, findings "Nothing.", run to m2405), and
+the merged tree's (a21b0cc32's model; the harness and comment mends after it move nothing the playtest reads) set
+beside it: exit 0 in 279 s, "All checks passed.", findings "Nothing.", run to m2402. All eight files move: `bank`,
+`build`, `house`, `labour`, `month` and `pop` from month 11, `bonds` from 12, `borrow` from its first paper (m63 on
+both, its figures apart; 44 papers on main, 37 here). The size, main 69a29638 then LX1 merged:
+
+| month | people | out of work | jobs | inflation, a year | unskilled premium | diploma premium |
+|---|---|---|---|---|---|---|
+| 60 | 888; 814 | 0; 0 | 559; 531 | 10.7%; 15.0% | 1.060; 1.285 | 0.876; 0.996 |
+| 120 | 1,205; 1,356 | 1.1%; 6.3% | 623; 665 | 14.0%; 3.2% | 0.960; 0.930 | 0.661; 0.682 |
+| 240 | 1,295; 1,468 | 6.0%; 3.6% | 603; 705 | -4.8%; -3.6% | 0.976; 0.981 | 0.710; 0.711 |
+| 600 | 3,496; 8,894 | 12.8%; 0 | 1,509; 4,171 | 2.9%; 2.5% | 0.907; 1.021 | 0.689; 0.783 |
+| 1,200 | 36,343; 40,420 | 7.4%; 10.4% | 15,261; 16,418 | 8.2%; 9.8% | 0.879; 0.850 | 0.670; 0.676 |
+| 1,800 | 49,857; 175,374 | 3.5%; 0.8% | 22,082; 74,405 | -2.3%; -2.5% | 0.915; 0.971 | 0.704; 0.735 |
+| 2,399 | 819,808; 1,306,447 | 4.3%; 7.6% | 331,441; 528,581 | -3.9%; -3.6% | 0.987; 0.936 | 0.721; 0.716 |
+
+On OX1's main the branch's city is the larger from m120 on (1.31M against 820k at m2399), where on ec481b4a it was
+the smaller: one path each, the ensemble's to judge. The price index at m2399 is 8,237 against 25,268; the shops'
+sales are 25.4% of GDP against 19.4%, their net 36% of their sales against 45%.
+
+## 7. The ensemble
+
+- **On 2faef9e6's model (main 48eb9b42 merged), against `docs/ensemble/0.9.132.md`**, run as information while OX1
+  shipped (target/ensemble/LX1/score.md): 80 of 80 runs in 49.4 min, exit 4, criteria 21/26, hard 7/10. M1 (the
+  money audit): 0 in all five scenarios. F1 (the findings): FAIL in AUTO2 2/16, ZERO_SLACK 2/16 and ZERO_HOT 1/16,
+  PASS in SHOCK 0/16 and HIGH 0/16 (HIGH FAIL to PASS, ZERO_HOT PASS to FAIL; ZERO_HOT H2 VACUOUS to PASS, info).
+  Every F1 city is one cause class, "households with no home", one month each: AUTO2-4 and ZERO_SLACK-4 at m728 (one
+  city), AUTO2-10 and ZERO_SLACK-10 at m1088 (one city), ZERO_HOT-2 at m353. TQ1's class, raised by main's
+  ec481b4a default run too (months 692-745); main 69a29638's default run and the merged branch's raise none. Not
+  committed as `docs/ensemble/LX1.md`: the run on the merged model is the one that counts.

@@ -7,7 +7,8 @@ and the Department Store 80 with its 91 (ids 69 and 70), about a piece a post a 
 cost and the piece's price are held. `LuxuryRetail.LABOUR_SHARE` (BEA's 41.7%) and a factor of two either way are the
 band `LuxuryRetailCheck` holds the catalogue and a town's year of Boutiques to (red on main: 0.6% and 1.3%). On LS1's
 probe the share reads 36-41% (median from m240; in the band 313 of seed 0's 331 years, none on main), and the shops
-take a quarter of the old city's business workers; the default city is 551k at m2400 against 633k. A road load's
+take a quarter of the old city's business workers; the default city is 1.31M at m2399 against main's 820k (551k
+against 633k before OX1). The Department Store is never the planner's choice, as on main (a call, LQ1's). A road load's
 last stream is now the remainder of the other two's sum (`TradeCostCheck`). A 4,000-month run on this balance has
 the city map's save refused at months 3589 and 3952 (5.5M people), FB8's to mend. No save field, no format bump.
 ## queued
