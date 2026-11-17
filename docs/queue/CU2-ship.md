@@ -11,6 +11,8 @@ Chile's +0.28. Checks: WorldMarketCheck's chain, recipe, guard and charge; Coppe
 a smelter that pay, the cycle seen; seed 1's Rod Mills played); SaveFileCheck's and WorldMoneysCheck's fixtures
 restated for the chain. Six rows' recipe shares are the file's, not the study's. Saves: format 54, and the floor
 with it, so older cities no longer open.
+## pending
+| CU2-W | Recommended (a), accept: a 1900 village earns .56-.60 of today's unskilled wage after two years on CU2's prices (main's .34), where R0d's 1901 ladder starts it at about a quarter (.238) - the curve's scarcity premium on an untouched 1901 base (WageLadderCheck 6 asserts the cause month by month), falling as arrivals fill the posts (.60 at month 13, .556 at 24); (b) cap a 1900 city's multiple below MAX_MULTIPLE, or slow its hiring, if a 1900 village should stay near a quarter ({next}) | Jerus's call (REV-CU2-1): the chained prices grow the village to 2,501 people in two years (main's 1,358), its unskilled band at 4.84 posts a head at month 24 and at the curve's ceiling at its tightest | [CU2's notes](docs/queue/CU2-notes.md) |
 ## queued
 | CY1 | The planner appraises a processing works over its cycle: SpreadPlanner reads one month's margin as lasting, so a sector builds at the copper charge's peak and is left at the trough owing more than it holds, its own borrowing lifting the hurdle past every later build (DS1's answer, CU2: seed 2's five smelters from m1598, 30.44% and an 82-month loss streak at m2400; seed 1's Scrap Copper Refinery on a one-month spike). Read the margin over the charge's swing or a trailing year, and look at a sector whose rate has outrun its works' earnings; any processing sector can be left this way | [CU2's notes, DS1](docs/queue/CU2-notes.md) |
 ## known-reds

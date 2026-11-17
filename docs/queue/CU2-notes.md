@@ -127,14 +127,16 @@ condition again, with its premise unchanged.
   digit (the wage, the rent, and the food, materials, ore, ground and share prices). Worst real gaps now
   5.7e-14, 3.1e-11, 3.2e-13 and 1.5e-13 in sections 6-9; HistoryCheck passes.
 
-- **WageLadderCheck 6** (the played 1900 village), **restated: a call for the reviewer**. "Its unskilled wage
+- **WageLadderCheck 6** (the played 1900 village), **restated, and Jerus's call CU2-W**. "Its unskilled wage
   still under half of today's after two years' scarcity" held the share main's village reached (.34 at month
   24, .45 at its most), not a bound the model keeps. On the chained prices the village grows to 2,501 people
-  in the two years (main's 1,358, already 689 against 519 at month 3). Its shortage lifts the unskilled wage
-  to .60 of today's at month 13 and .556 at month 24, 2.33 times 1901's base (.238 of today's); the cost of
-  living stays 1. The check now holds what the ladder keeps: at most `LabourMarket.MAX_MULTIPLE` (4) of 1901's
-  base with the cost of living, and under today's. The share is printed. This widens the bound from .5 to .95
-  of today's. The old `roundSig` gives the same .556, so the cause is the prices.
+  in the two years (main's 1,358, already 689 against 519 at month 3). Its unskilled band reaches the curve's
+  ceiling (`MAX_MULTIPLE`, 4) at its tightest and stands at 4.84 posts a head at month 24 (multiple 2.20). The
+  wage reaches .60 of today's at month 13 and .556 at month 24, 2.33 times 1901's base (.238 of today's); the
+  cost of living stays 1. The old `roundSig` gives the same .556, so the cause is the prices. The check now
+  asserts the cause, month by month (REV-CU2-1): the going rate and the ratio are 1901's, the band's multiple
+  is the curve's at its tightness, and the wage moves `ADJUST_RATE` of the way to their product (worst miss
+  0). The share is printed. Whether a 1900 village may earn it is CU2-W, in the ship file's pending rows.
 
 Passed by name, in code CU2 does not touch, each with its fix queued (the ship file's `## known-reds`):
 
@@ -146,6 +148,16 @@ Passed by name, in code CU2 does not touch, each with its fix queued (the ship f
   class at 47 of 378 and 40 of 384: the unchanged Government code recreates transient fiscal rows. (Before the
   `roundSig` fix the played city differed, and the red was instead Policy, Promises' Food page, 12 quiet months
   of 25; it passes now.)
+
+## The review (REV-CU2-1, Opus): SHIP once its first finding was mended
+
+1. **WageLadderCheck 6's restated bound** was `LabourMarket`'s own clamp, true by construction. Mended: the
+   check asserts the cause (above), and CU2-W puts the wage to Jerus, the recommendation first.
+2. **WorldMarketCheck's guard run** asserted nothing when the guard fired (`assertTrue(..., true)`), and
+   `WorldMarket.guards()` counts the process's every January, whoever solved it. Mended: the count is a
+   printed reading. The started-from-NaN solve keeps its `put >= 1`.
+3. **`roundSig`'s `r x FACTOR`** is not a short decimal, so each six-figure value writes about 17 digits.
+   Measured on a default playtest's history file: (to come).
 
 ## WN4: what moved
 

@@ -1598,7 +1598,8 @@ public class WorldMarketCheck {
         out.printf(Locale.ROOT, "Random seed %d, every January %d-%d (%.1f s): the guard fired %d times%n", GUARD_SEED, Nations.FIRST_YEAR, GUARD_LAST, (System.nanoTime() - t0) / 1e9, fired);
         assertTrue("no good's solve reached SOLVE_MAX_PASSES (" + WorldMarket.SOLVE_MAX_PASSES + ") in any January " + Nations.FIRST_YEAR + "-" + GUARD_LAST + " of Random seed " + GUARD_SEED + ": the worst took " + took + " sweeps (" + mostAt + ")",
                 took < WorldMarket.SOLVE_MAX_PASSES);
-        if (fired > 0) assertTrue("the guard fired during that run (" + fired + " times): the world whose crude left the numbers on main still causes the condition", true);
+        // A reading, not an assertion (REV-CU2-1): guards() counts the process's every January, whoever solved it.
+        if (fired > 0) out.println("the guard fired " + fired + " times during that run (the process's count): the world whose crude left the numbers on main still reaches it");
         else out.println("guards 0 on the chained solve: it starts a root on the year's level and anchors it, so this world no longer leaves the numbers; the started-from-NaN solve above causes the condition");
     }
 
