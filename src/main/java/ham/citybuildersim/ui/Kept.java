@@ -143,6 +143,8 @@ public final class Kept {
         private final Map<Class<?>, Integer> taken = new HashMap<>();
         private Map<Object, Scope> inner = new HashMap<>();
         private Map<Object, Scope> innerMaking = new HashMap<>();
+        /** Whether this scope's nodes outlive a draw that does not ask for it (parkedScope()). */
+        private boolean parked;
 
         void begin() {
             making = new HashMap<>();
@@ -150,12 +152,22 @@ public final class Kept {
             taken.clear();
         }
 
-        /** What was not asked for this draw is let go: the next draw hands back only this one's. */
+        /**
+         * What was not asked for this draw is let go: the next draw hands back only this one's - except the parked scopes (FB2, KS1-Gov),
+         * which stay as their last draw left them, up to PARKED_MAX of them in a scope, for the draw that asks for them again.
+         */
         void end() {
             made = making;
+            int kept = 0;
+            for (Map.Entry<Object, Scope> e : inner.entrySet()) {
+                if (e.getValue().parked && !innerMaking.containsKey(e.getKey()) && kept++ < PARKED_MAX) innerMaking.put(e.getKey(), e.getValue());
+            }
             inner = innerMaking;
         }
     }
+
+    /** The most scopes a scope parks (parkedScope()): rows are keyed by what they say, and a few dozen is every row a page has had in a year. */
+    static final int PARKED_MAX = 48;
 
     /** A draw in progress. */
     private static final class Draw {
@@ -271,6 +283,44 @@ public final class Kept {
         } finally {
             d.scopes.pop();
         }
+    }
+
+    /**
+     * A scope for a row that comes and goes (FB2, KS1-Gov): as scope(), but the row's nodes are kept for the draw that asks for it again, not
+     * let go at the first draw that does not. WHY: a line the model writes in some months and not in others (a tax's slice of the ring, a
+     * step of the bridge, the arrears' lines) was made new at every return, and the Government Overview's busiest month made 45 nodes of 400
+     * (47 of 378, 40 of 384, 46 of 400 on other cities' paths) against the tenth KeptCheck allows. A parked row is handed back as any kept node
+     * is, set again where the draw sets it and cleared where it does not, so it equals a row built new; it is off the page while it is absent
+     * (the box's children are the draw's own). A row's first appearance still makes its nodes, once; at most PARKED_MAX rows are parked in a
+     * scope, the rest let go as before.
+     */
+    static <T> T parkedScope(Object key, Supplier<T> code) {
+        Draw d = drawing;
+        if (d == null) return code.get();
+        Scope parent = d.scopes.peek();
+        Scope s = parent.innerMaking.get(key);
+        if (s == null) {
+            s = parent.inner.get(key);
+            if (s == null) s = new Scope();
+            s.parked = true;
+            s.begin();
+            d.begun.add(s);
+            parent.innerMaking.put(key, s);
+        }
+        d.scopes.push(s);
+        try {
+            return code.get();
+        } finally {
+            d.scopes.pop();
+        }
+    }
+
+    /** parkedScope() for code that makes nothing to return. */
+    static void parkedScope(Object key, Runnable code) {
+        parkedScope(key, () -> {
+            code.run();
+            return null;
+        });
     }
 
     /** The same, for code that makes nothing to return. */

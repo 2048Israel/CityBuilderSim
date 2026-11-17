@@ -333,6 +333,11 @@ import java.util.concurrent.TimeUnit;
  *      real Rankings and History redraws keep their handlers and cursors; equal raw size and margin setters are counted, guarded ones skipped;
  *      a policy thumb holds across greying, ungreying and temporary reparenting in one drag, and releases at the player's snapped value;
  *      comparison roots, retired pictures and no-stage scene dirty nodes are released, with a quarter of the suite heap left free.
+ * ...and the geometry and retention repairs of FB2, each caused on its own whatever the played city does:
+ * 103. the buyback ladder stays the same picture while its quote moves under the picture's resolution and draws again when it moves past it (KL1); a header
+ *      tile's hidden wordings and sparkline stand where a tile built new leaves them, and a bar's tick name that comes and goes leaves no label behind it
+ *      (KS1-UI, HW1's Your rate); Partners' buyer-entry triangles and Search's empty price, move and held words equal a picture and rows built new (BF1-K);
+ *      the lines of the Government Overview that leave and come back make no node on their return (KS1-Gov).
  */
 public class KeptCheck {
 
@@ -9070,6 +9075,122 @@ public class KeptCheck {
         return s.count() == 2 && words && style;
     }
 
+    /**
+     * Section 103 (FB2): the kept screens' geometry and retention, each repair caused on its own. A kept screen was found equal to a page
+     * built new only on the path of the city it was found on (GW1's, KS1's, HW1's, BF1's: the header's 18 states, Wood Products' month 1868,
+     * the Government Overview's 47 of 378), and the cities' paths move; so each repair is caused here by the states that need it, in a
+     * picture of its own, whatever the played city does: KL1 (the ladder's quote moved where nothing is drawn), KS1-UI (a header wording and
+     * a sparkline hidden, a bar's name emptied), BF1-K (the triangles of Partners' chart and Search's empty price and held), KS1-Gov (the
+     * lines of the Government Overview that leave and come back).
+     */
+    static void fb2Repairs(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 103: the geometry and retention repairs of FB2, each caused on its own ---");
+
+        // KL1: the buyback ladder is the same picture while what moved is under the picture's resolution.
+        int[] ladder = fx(bench::ladderProbe);
+        String[] cities = {"nothing taken", "part of it taken"};
+        for (int k = 0; k < 2; k++) {
+            String city = "the buyback ladder with " + cities[k];
+            check(city + ", told a quote whose faces moved by 1.4e-8 of themselves, stays the nodes it was", ladder[k * 4] == 1);
+            check(city + ", told that quote, shows what a ladder built new and told it shows", ladder[k * 4 + 2] == 1);
+            check(city + ", told a quote whose faces moved by a hundredth, draws again", ladder[k * 4 + 1] == 1);
+            check(city + ", told that quote, shows what a ladder built new and told it shows", ladder[k * 4 + 3] == 1);
+        }
+
+        // KS1-UI: a header tile's hidden wordings and sparkline stand where a tile built new leaves them.
+        List<List<String>> tile = fx(bench::headerTileProbe);
+        int shown = 0, hiddenAfter = 0;
+        for (int i = 0; i < tile.size(); i += 2) {
+            boolean longestOn = tile.get(i).stream().anyMatch(l -> l.contains("Label \"D$1,000,000,000.00 per US$ and a good") && !l.contains(" hidden"));
+            if (longestOn) shown++;
+            else hiddenAfter++;
+        }
+        check("fixture: the header tile shows its longest wording at some widths and hides it at others (" + shown + " and " + hiddenAfter + " of "
+                + tile.size() / 2 + ")", shown > 0 && hiddenAfter > 0);
+        int tileDiffer = 0;
+        String tileFirst = null;
+        for (int i = 0; i + 1 < tile.size(); i += 2) {
+            String d = firstDifference(tile.get(i), tile.get(i + 1));
+            if (d != null) {
+                tileDiffer++;
+                if (tileFirst == null) tileFirst = "width " + i / 2 + ", " + d;
+            }
+        }
+        check("the header tile told the same words at each width equals a tile built new at that width (" + tileDiffer + " of " + tile.size() / 2 + " differ)",
+                tileDiffer == 0, tileFirst);
+
+        // KS1-UI (HW1's Your rate): a SegmentBar's tick whose name comes and goes.
+        List<List<String>> bar = fx(bench::segmentBarProbe);
+        int named = 0, unnamed = 0;
+        for (int i = 0; i < bar.size(); i += 2) {
+            if (bar.get(i).stream().anyMatch(l -> l.contains("Label \"the dial 3.00%\""))) named++;
+            else unnamed++;
+        }
+        check("fixture: the bar's dial tick is named in some states and not in others (" + named + " and " + unnamed + " of " + bar.size() / 2 + ")",
+                named > 0 && unnamed > 0);
+        int barDiffer = 0;
+        String barFirst = null;
+        for (int i = 0; i + 1 < bar.size(); i += 2) {
+            String d = firstDifference(bar.get(i), bar.get(i + 1));
+            if (d != null) {
+                barDiffer++;
+                if (barFirst == null) barFirst = "state " + i / 2 + ", " + d;
+            }
+        }
+        check("the bar whose dial tick comes and goes equals a bar built new in each state (" + barDiffer + " of " + bar.size() / 2 + " differ)",
+                barDiffer == 0, barFirst);
+
+        // BF1-K: Partners' chart's buyer-entry triangles, moved a fraction of a pixel from one telling to the next.
+        int[][] triangles = fx(() -> bench.partnersChartProbe(SHADE_LEVELS));
+        StringBuilder moved = new StringBuilder();
+        int triangleDiffer = 0, notDrawn = 0;
+        for (int[] t : triangles) {
+            if (t[0] < 0) notDrawn++;
+            else if (t[0] > 0) triangleDiffer++;
+            moved.append(' ').append(t[0]);
+        }
+        check("fixture: Partners' chart is drawn at the one size in every telling (" + notDrawn + " not)", notDrawn == 0);
+        check("Partners' chart told other places for the buyers to join is the same picture as one built new, to the pixel (pixels that differ:" + moved + ")",
+                triangleDiffer == 0 && notDrawn == 0);
+
+        // BF1-K: Search's rows whose price, move and held words come and go (the empty ones have their own nodes).
+        List<List<String>> rows = fx(bench::fundRowsProbe);
+        check("fixture: Search's rows are told words that come and go (the kept page reads differently in the second state than the first)",
+                !rows.get(0).equals(rows.get(2)));
+        int rowDiffer = 0;
+        String rowFirst = null;
+        for (int i = 0; i + 1 < rows.size(); i += 2) {
+            String d = firstDifference(rows.get(i), rows.get(i + 1));
+            if (d != null) {
+                rowDiffer++;
+                if (rowFirst == null) rowFirst = "state " + i / 2 + ", " + d;
+            }
+        }
+        check("Search's rows whose price, move and held words come and go equal rows built new in each state (" + rowDiffer + " of " + rows.size() / 2
+                + " differ)", rowDiffer == 0, rowFirst);
+
+        // KS1-Gov: the lines of the Government Overview that leave and come back are kept while they are away.
+        KeptBench.RowsProbe gov = fx(bench::governmentRowsProbe);
+        String madeEach = java.util.Arrays.toString(gov.made());
+        check("fixture: the lines made their nodes when they first came, and the lines never seen before made theirs (made, a state each: " + madeEach + ")",
+                gov.made()[1] > 0 && gov.made()[5] > 0);
+        check("the lines that came back made no node, the ring's slices, the key's rows, the bridge's steps and the statement's rows among them (" + madeEach + ")",
+                gov.made()[3] == 0 && gov.made()[4] == 0);
+        check("...and the lines away made none either (" + madeEach + "), nor did a redraw of an unchanged state (" + java.util.Arrays.toString(gov.madeAgain()) + ")",
+                gov.made()[2] == 0 && java.util.Arrays.stream(gov.madeAgain()).sum() == 0);
+        int govDiffer = 0;
+        String govFirst = null;
+        for (int i = 0; i + 1 < gov.signatures().size(); i += 2) {
+            String d = firstDifference(gov.signatures().get(i), gov.signatures().get(i + 1));
+            if (d != null) {
+                govDiffer++;
+                if (govFirst == null) govFirst = "state " + i / 2 + ", " + d;
+            }
+        }
+        check("the page of lines that come and go equals a page built new in each state (" + govDiffer + " of " + gov.signatures().size() / 2 + " differ)",
+                govDiffer == 0, govFirst);
+    }
+
     /** A full KeptCheck leaves at least a quarter of its suite heap for the next pages (KP2c). */
     static final double KEPT_HEAP_SHARE = .75;
 
@@ -9359,6 +9480,7 @@ public class KeptCheck {
         up7Frame(g, bench);
         up7Speed(g, bench);
         kp2cMends(g, bench);
+        fb2Repairs(g, bench);
 
         System.out.println("\n" + (fails == 0 ? "ALL OK" : fails + " FAILED"));
         Platform.exit();

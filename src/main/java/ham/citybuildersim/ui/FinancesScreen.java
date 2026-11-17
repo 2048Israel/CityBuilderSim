@@ -4929,38 +4929,81 @@ final class FinancesScreen {
         private double drawnAt;
         /** Whether it has been told a quote (Kept, KP5). */
         private boolean told;
+        /** What the picture on show was drawn from: only a quote that reads differently draws it again (FB2, KL1). */
+        private Reading drawn;
+
+        /** The finest a length is drawn at, in pixels: a bar a fraction of a quarter pixel different is the same bar. */
+        static final double PIXEL_QUANTUM = .25;
+
+        /**
+         * One slice as the picture reads it: who offers it, the price and the face as they are written, the bar's length and the solid
+         * part's (-1: none of it is taken) at PIXEL_QUANTUM, and the tooltip's words.
+         */
+        record Slice(Buyback.Holder holder, String price, String face, double length, double solid, String tip) { }
+
+        /**
+         * Everything draw() reads of a quote at a width, at the resolution it is drawn at: the slices, the fair price as written, the
+         * last slice taken and the stop's name, the last slice at or under the most to pay and the line's name.
+         */
+        record Reading(List<Slice> slices, String fair, int lastTaken, String stop, int lastWithin, String most) { }
 
         /** The picture, its offers to come from set() (Kept, KP5: a kept ladder is told each month's quote and draws again only where it moved). */
         BuybackLadder() { }
 
-        /** The quote to draw and the most to pay: drawn again, and its height set to its slices, only when either moved. */
+        /** The quote to draw and the most to pay: drawn again, and its height set to its slices, only when what they read of it moved. */
         void set(Buyback.Result q, double maxPer100, java.util.function.DoubleFunction<String> money) {
             this.money = money;
-            if (told && drawsAlike(q, this.q) && Double.compare(maxPer100, this.maxPer100) == 0) {
-                this.q = q;
-                return;
-            }
-            told = true;
+            double at = drawnAt > 0 ? drawnAt : FIRST_W;
+            boolean alike = told && reading(q, maxPer100, at).equals(drawn);
+            // The newest quote is the one a draw at another width reads; what was last drawn is what the next is compared with.
             this.q = q;
             this.maxPer100 = maxPer100;
+            if (alike) return;
+            told = true;
             int n = q.ladder().size();
             this.row = n > 24 ? 13 : 18;
             double h = TOP + n * row + FOOT;
             setMinSize(LEAST_W, h);
             Pieces.prefSize(this, FIRST_W, h);
             setMaxSize(Double.MAX_VALUE, h);
-            draw(drawnAt > 0 ? drawnAt : FIRST_W);
+            draw(at);
         }
 
         /**
-         * Whether two quotes draw the same ladder: the offers, the face taken and the fair price, all the picture reads.
-         * Not the whole quote: what the books carry of the face taken grows a little every month (a bond's discount
-         * accreting) and is not drawn, so a quote compared whole moved every month and drew the ladder again for nothing
-         * (KP5's gate, on R1c's city).
+         * A length at the picture's resolution. WHY (FB2, KL1): the picture was kept while two quotes compared bit for bit, so a holder's
+         * face that moved by 1e-8 of itself (18,935 of 1.3265e12 in months 2 and 6 of GW1's city, with nothing typed) drew the ladder
+         * again as the same picture: a face is written to the unit and a bar is a few hundred pixels long. What it does not show it
+         * does not read, and a kept ladder and one built new, told the same quote, read the same.
          */
-        static boolean drawsAlike(Buyback.Result a, Buyback.Result b) {
-            return a.ladder().equals(b.ladder()) && Double.compare(a.takenFace(), b.takenFace()) == 0
-                    && Double.compare(a.fairPer100(), b.fairPer100()) == 0;
+        private static double snap(double pixels) {
+            return Math.round(pixels / PIXEL_QUANTUM) * PIXEL_QUANTUM;
+        }
+
+        /** What a quote reads as at a width: the figures draw() puts on the picture, as written and at pixel resolution. */
+        private Reading reading(Buyback.Result q, double maxPer100, double w) {
+            List<Buyback.Offer> ladder = q.ladder();
+            int n = ladder.size();
+            double biggest = 0;
+            for (Buyback.Offer o : ladder) biggest = Math.max(biggest, o.face());
+            final double barMax = Math.max(60, w - LEFT - FACE_ROOM - MARKS);
+            List<Slice> slices = new ArrayList<>(n);
+            int lastTaken = -1, lastWithin = -1;
+            double left = q.takenFace();
+            for (int i = 0; i < n; i++) {
+                Buyback.Offer o = ladder.get(i);
+                double took = Math.min(o.face(), Math.max(0, left));
+                left -= took;
+                if (took > 0) lastTaken = i;
+                if (Double.isNaN(maxPer100) || o.per100() <= maxPer100) lastWithin = i;
+                String price = String.format("%.3f", o.per100()), face = money.apply(o.face());
+                String tip = holderName(o.holder()) + " offers " + face + " at " + price
+                        + " for each 100" + (took > 0 ? "; " + money.apply(took) + " of it is taken." : "; none of it is taken.");
+                slices.add(new Slice(o.holder(), price, face, snap(biggest > 0 ? barMax * o.face() / biggest : 0),
+                        took > 0 ? Math.max(2, snap(biggest > 0 ? barMax * took / biggest : 0)) : -1, tip));
+            }
+            return new Reading(slices, String.format("fair %.3f", q.fairPer100()), lastTaken,
+                    lastTaken >= 0 ? String.format("stop %.3f", ladder.get(lastTaken).per100()) : null, lastWithin,
+                    Double.isNaN(maxPer100) ? null : String.format("most to pay %.3f", maxPer100));
         }
 
         @Override protected void layoutChildren() {
@@ -4973,70 +5016,57 @@ final class FinancesScreen {
         private void draw(double w) {
             drawnAt = w;
             getChildren().clear();
-            List<Buyback.Offer> ladder = q.ladder();
-            int n = ladder.size();
-            double biggest = 0;
-            for (Buyback.Offer o : ladder) biggest = Math.max(biggest, o.face());
-            final double barMax = Math.max(60, w - LEFT - FACE_ROOM - MARKS);
+            final Reading read = reading(q, maxPer100, w);
+            drawn = read;
+            int n = read.slices().size();
             final double plotRight = w - MARKS;
             double barH = Math.max(6, row - 5);
 
-            int lastTaken = -1, lastWithin = -1;
-            double left = q.takenFace();
             for (int i = 0; i < n; i++) {
-                Buyback.Offer o = ladder.get(i);
+                Slice s = read.slices().get(i);
                 double y = TOP + i * row;
-                double len = biggest > 0 ? barMax * o.face() / biggest : 0;
-                double took = Math.min(o.face(), Math.max(0, left));
-                left -= took;
-                if (took > 0) lastTaken = i;
-                if (Double.isNaN(maxPer100) || o.per100() <= maxPer100) lastWithin = i;
-                String colour = holderColour(o.holder());
+                String colour = holderColour(s.holder());
 
                 // The whole slice as a ghost; what the ticket takes of it, solid over it.
-                javafx.scene.shape.Rectangle ghost = new javafx.scene.shape.Rectangle(LEFT, y + 2.5, Math.max(2, len), barH);
+                javafx.scene.shape.Rectangle ghost = new javafx.scene.shape.Rectangle(LEFT, y + 2.5, Math.max(2, s.length()), barH);
                 ghost.setFill(javafx.scene.paint.Color.web(colour, .25));
                 ghost.setStroke(javafx.scene.paint.Color.web(colour));
                 ghost.setArcWidth(4);
                 ghost.setArcHeight(4);
-                Tooltip tip = new Tooltip(holderName(o.holder()) + " offers " + money.apply(o.face()) + String.format(" at %.3f", o.per100())
-                        + " for each 100" + (took > 0 ? "; " + money.apply(took) + " of it is taken." : "; none of it is taken."));
+                Tooltip tip = new Tooltip(s.tip());
                 tip.setShowDelay(Duration.millis(150));
                 Tooltip.install(ghost, tip);
                 getChildren().add(ghost);
-                if (took > 0) {
-                    javafx.scene.shape.Rectangle solid = new javafx.scene.shape.Rectangle(LEFT, y + 2.5,
-                            Math.max(2, biggest > 0 ? barMax * took / biggest : 0), barH);
+                if (s.solid() >= 0) {
+                    javafx.scene.shape.Rectangle solid = new javafx.scene.shape.Rectangle(LEFT, y + 2.5, s.solid(), barH);
                     solid.setFill(javafx.scene.paint.Color.web(colour));
                     solid.setArcWidth(4);
                     solid.setArcHeight(4);
                     Tooltip.install(solid, tip);
                     getChildren().add(solid);
                 }
-                label(String.format("%.3f", o.per100()), LEFT - 8, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_RIGHT, LEFT - 10,
-                        took > 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED);
-                label(money.apply(o.face()), LEFT + len + 6, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_LEFT, FACE_ROOM - 6,
+                label(s.price(), LEFT - 8, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_RIGHT, LEFT - 10,
+                        s.solid() >= 0 ? Palette.TEXT_HEAD : Palette.TEXT_MUTED);
+                label(s.face(), LEFT + s.length() + 6, y + (row - 12) / 2, javafx.geometry.Pos.CENTER_LEFT, FACE_ROOM - 6,
                         Palette.TEXT_MUTED);
             }
 
             // Fair, at the top: every offer is at or over it.
             horizontal(TOP, plotRight, Palette.TEXT_MUTED);
-            label(String.format("fair %.3f", q.fairPer100()), plotRight + 8, TOP - 15, javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.TEXT_LABEL);
+            label(read.fair(), plotRight + 8, TOP - 15, javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.TEXT_LABEL);
             label("price for each 100 of face", LEFT - 8, 2, javafx.geometry.Pos.CENTER_LEFT, 200, Palette.TEXT_MUTED);
 
             // The stop, under the dearest slice taken: the name above its line, in the right-hand room.
-            if (lastTaken >= 0) {
-                double y = TOP + (lastTaken + 1) * row;
+            if (read.lastTaken() >= 0) {
+                double y = TOP + (read.lastTaken() + 1) * row;
                 horizontal(y, plotRight, Palette.WARN);
-                label(String.format("stop %.3f", ladder.get(lastTaken).per100()), plotRight + 8, y - 14,
-                        javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.WARN);
+                label(read.stop(), plotRight + 8, y - 14, javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.WARN);
             }
             // The most to pay, between the last slice at or under it and the first over: its name below the line.
-            if (!Double.isNaN(maxPer100)) {
-                double y = TOP + (lastWithin + 1) * row;
+            if (read.most() != null) {
+                double y = TOP + (read.lastWithin() + 1) * row;
                 horizontal(y, plotRight, Palette.BAD);
-                label(String.format("most to pay %.3f", maxPer100), plotRight + 8, y + 1,
-                        javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.BAD_SOFT);
+                label(read.most(), plotRight + 8, y + 1, javafx.geometry.Pos.CENTER_LEFT, MARKS - 8, Palette.BAD_SOFT);
             }
         }
 

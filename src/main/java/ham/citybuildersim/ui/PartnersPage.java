@@ -1052,7 +1052,8 @@ final class PartnersPage {
                 l.setStroke(text);
                 l.getStrokeDashArray().setAll(2.0, 3.0);
                 joinLines.add(l);
-                Polygon tri = new Polygon(-4.0, 0.0, 4.0, 0.0, 0.0, -6.0);
+                // FB2 (BF1-K): the points are set at layout, in the chart's own coordinates, never moved by layoutX/Y (see layoutChildren).
+                Polygon tri = new Polygon();
                 tri.setFill(text);
                 joinMarks.add(tri);
                 if (joinLabels.size() < 3) joinLabels.add(small());
@@ -1153,9 +1154,10 @@ final class PartnersPage {
                 l.setEndX(x);
                 l.setStartY(plotT);
                 l.setEndY(plotB);
-                Polygon tri = joinMarks.get(i);
-                tri.setLayoutX(x);
-                tri.setLayoutY(plotB);
+                // FB2 (BF1-K): the buyer's triangle stands on the axis at its own points, not at fixed points moved by layoutX/Y. A node moved by a
+                // fractional layoutX/Y keeps the outline it was first rasterised at, so a kept chart and one built new, signed equal, differed by 62
+                // pixels at m3169 (BF1-K); at its own points it is the same shape whichever way it got there.
+                joinMarks.get(i).getPoints().setAll(x - 4, plotB, x + 4, plotB, x, plotB - 6);
             }
             for (int i = 0; i < joinLabels.size(); i++) {
                 Label t = joinLabels.get(i);
