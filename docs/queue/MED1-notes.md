@@ -123,4 +123,12 @@ runs beside another. FM2 and FM3 are untouched.
 
 ## The dry run
 
-(To be filled in after the dry run.)
+`sh tools/gate.sh MED1 --dry-run --no-tag`, 2026-11-17 14:26, exit 0.
+
+- **It ran:** branch a5f7f341d over main f18b10537.
+- **The kept run:** `/tmp/cbs-gate-MED1-dcferhvX`. Its `ship.log` is there,
+  and `unnamed.txt` is empty.
+- **Result:** the fast checks passed in 119 s, with Stale at 0 firm findings.
+  No harness was picked: the diff is docs only.
+- **What it would merge:** `QUEUE.md` and the changelog take the ship file's
+  rows and block.

@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-MED1-dcferhvX -->
 ## changelog
 ### MED1 — a health study — 2026-11-17, ready, see docs/queue/MED1-notes.md
 `docs/studies/health.md`, its sheets in `docs/studies/health/`: the causes of death the game lacks, 1900 to today in
