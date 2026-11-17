@@ -148,7 +148,21 @@ The brief expected only RB1-R to move the playtest.
 - The fund's line: 0 company-months over the cap, as on main. The most of any company is 2.3% (main 0.0%), since the
   player lowers the dial a step in a poor January.
 
-The ensemble's rules apply, so the mends mail asks for one ("FB4 ensemble?").
+**The ensemble:** `tools/ensemble/ensemble.sh FB4` on ee321e67c (the mends), against `docs/ensemble/0.9.135.md`.
+It ran 80 of 80 runs in 96.3 min, beside LX1's dry run, exit 0, and is committed as `docs/ensemble/FB4.md`.
+- **Score:** 24 of 26 criteria, hard 10 of 10.
+- **M1 passes:** 0 months the money audit failed, in every policy.
+- **F1 passes:** one city in each of AUTO2, ZERO_SLACK, SHOCK and HIGH (0 in ZERO_HOT), "households with no home", as
+  the baseline had.
+  - It is one city, seed 9 at month 390, before every policy's switch, so its twins share it.
+  - Its AUTO2 run is byte-identical to AQ1's run of 0.9.135.
+  - The class is FB11's, as OX1's notes named it: Real Estate holding land while nothing buys ground. It is main's,
+    not FB4's.
+- **53 of the 80 runs** are byte-identical to AQ1's 0.9.135 runs.
+- **Changed verdict, information only:** HIGH R2, FAIL to PASS (unemployment over the twin 0.52 points against the
+  baseline's 0.34, the bar +0.50).
+- **A1 and A2 fail as on the baseline:** inflation from m240 3.49% against 3.46%; the longest spell over 10%, 23 months
+  against 25.
 
 ## 5. Filed back
 
