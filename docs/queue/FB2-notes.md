@@ -131,6 +131,5 @@ quote for the six months) is the fixture's, FB6's KBF1 family (cause stable auct
 `f38eafbcf90edb68d06b6423f785a9aa7c3596d9` (0.9.130). The pick named 15 of 212 harnesses for the diff, with the nightly tier's
 KeptCheck besides; the check suite finished in 1,216 s (exit 3) with **known reds only: DeathRecordCheck, InvestCheck, MapCheck,
 YoungBankCheck**, main's own, none of this batch's. KeptCheck ALL OK on the merged tree: section 103's 25 lines, and the Government
-Overview at 34 of 400 (6 of 25 months made none; the Overview of the first page at 26 of 712), where main reads 45 of 400 on the
-same sort of path. The eight entries filed under FB2 were retired by the merge; 22 went to KRT1 and 38 to FB6 by the ship's
+Overview at 34 of 400 (6 of 25 months made none), where the unchanged tree read 45 of 400 on a path with the same first draw. The eight entries filed under FB2 were retired by the merge; 22 went to KRT1 and 38 to FB6 by the ship's
 `## known-reds` rows. After the dry run only these notes and the ship file changed.
