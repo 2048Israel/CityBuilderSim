@@ -138,6 +138,161 @@ public final class WorksFinanceCheck {
                 close(plan.planValue(), oracle[0]));
     }
 
+    /** Hand-priced parcels: each has only one and a half orders of reusable ground. */
+    static void carriedGround(Path root, boolean zoned) throws Exception {
+        carriedGround(root, zoned, false);
+    }
+
+    static void carriedGround(Path root, boolean zoned, boolean unlinkedForest) throws Exception {
+        out.println("--- projected parcels retain usable ground, zoned=" + zoned + " ---");
+        Game g = new Game(new GameFiles(root.resolve("carried-ground-" + zoned), root.resolve("no-legacy-" + zoned)));
+        EssentialWorksCheck.quietly(g::run);
+        LandManager land = g.getLandManager();
+        land.setOwnedSqFt(land.getAllocatedSqFt());
+        g.getCityLand().setCentreRelief(new double[] {LandManager.km2(land.getOwnedSqFt()), 0, 0, 0, 0});
+        land.restoreWorks(0);
+        land.restoreRuns(0);
+        double area = 10_000;
+        if (zoned) {
+            land.getZoning().set(Sectors.MANUFACTURING, Zoning.Size.SHARE, .25, 1);
+            land.getZoning().addUsed(Sectors.MANUFACTURING, .25 * land.getOwnedSqFt());
+        }
+        // In the zoning case the last quarter of each dry parcel is held for industry.
+        // Otherwise that quarter is steep too. Flat + foothill remain usable for a clinic.
+        if (unlinkedForest) land.getZoning().setForestLaw(0, 1);
+        double dryOrders = unlinkedForest ? 6 : 4;
+        double dry = LandManager.km2(dryOrders * area);
+        List<LandParcel> offers = new ArrayList<>();
+        for (int id = 1; id <= 3; id++) {
+            double[] areas = LandClassCheck.areas(dry, 0, 0);
+            areas[CityLand.FOREST] = unlinkedForest ? LandManager.km2(2 * area) : 0;
+            offers.add(new LandParcel(id, 0, id - 1, 0, 0, 0, 0, 0, areas,
+                    new double[] {LandManager.km2((unlinkedForest ? 3 : 1) * area),
+                            LandManager.km2((zoned ? 1.5 : .5) * area),
+                            LandManager.km2((zoned ? 1.5 : 2.5) * area), 0, 0},
+                    new int[CityLand.KINDS], new double[CityLand.KINDS], id * 100, 0));
+        }
+        land.getMarket().restoreOffers(offers.stream().map(LandParcel::offerRow).toArray(double[][]::new),
+                offers.stream().map(LandParcel::reliefRow).toArray(double[][]::new), 4);
+        if (unlinkedForest) for (LandParcel p : offers) land.getMarket().find(p.getId()).setUnlinked(
+                LandManager.km2(2 * area), LandManager.km2(2 * area), LandManager.km2(2 * area), 2);
+        BuildingsTemplate clinic = g.getBuildingManager().getTemplateByName("Walk-in Clinic");
+        check("fixture: no clinic ground is free, and each listed parcel has " + dryOrders + " orders of dry ground but only 1.5 usable",
+                close(land.freeForAnyone(Game.groundUse(clinic)), 0)
+                        && offers.stream().allMatch(p -> {
+                            LandParcel listed = land.getMarket().find(p.getId());
+                            double linked = listed.getSizeSqFt() - LandManager.sqFt(listed.getUnlinkedDryKm2());
+                            double usable = LandManager.sqFt(listed.getReliefKm2(CityLand.RELIEF_FLAT)
+                                    + listed.getReliefKm2(CityLand.RELIEF_FOOTHILL) - listed.getUnlinkedBuildableKm2());
+                            if (zoned) usable -= .25 * linked;
+                            return close(listed.getSizeSqFt(), dryOrders * area) && close(usable, 1.5 * area);
+                        }));
+        double rate = g.getForeignAccounts().getRate();
+        for (Class<?> type : new Class<?>[] {WorksValue.class, AdviceValueOracle.class}) {
+            Class<?> ground = Class.forName(type.getName() + (type == WorksValue.class ? "$GroundPlan" : "$Ground"));
+            var constructor = ground.getDeclaredConstructor(Game.class, BuildingsTemplate.class, double.class);
+            constructor.setAccessible(true);
+            Object projection = constructor.newInstance(g, clinic, 0);
+            var take = ground.getDeclaredMethod(type == WorksValue.class ? "take" : "use", double.class);
+            take.setAccessible(true);
+            double first = (double) take.invoke(projection, area);
+            double second = (double) take.invoke(projection, area);
+            double third = (double) take.invoke(projection, area);
+            double fourth = (double) take.invoke(projection, area);
+            check(type.getSimpleName() + ": the first parcel is bought whole", close(first, 100 * rate));
+            check(type.getSimpleName() + ": the next addition buys a second parcel instead of reusing steep or zoned ground",
+                    close(second, 200 * rate));
+            check(type.getSimpleName() + ": the third addition reuses exactly the usable remainder", close(third, 0));
+            check(type.getSimpleName() + ": exhaustion buys the third parcel at its whole price", close(fourth, 300 * rate));
+            Object unavailable = constructor.newInstance(g, clinic, 0);
+            double estimate = (double) take.invoke(unavailable, 20 * area);
+            double smaller = (double) take.invoke(unavailable, area);
+            check(type.getSimpleName() + ": an unavailable large plan uses the office estimate without taking the shelf",
+                    close(estimate, 20 * area * land.getOfficePricePerSqFt()));
+            check(type.getSimpleName() + ": a later smaller addition still buys the first parcel's usable ground once",
+                    close(smaller, 100 * rate));
+        }
+        check("projecting purchases leaves the live shelf and ownership alone",
+                land.getMarket().getOffersState().length == 3 && close(land.getOwnedSqFt(), land.getAllocatedSqFt()));
+    }
+
+    /** The physical calendar supplies counts; this ledger independently carries each quote's cash. */
+    static void roundedCash(Path root, boolean borrowFirst) {
+        out.println("--- rounded bond cash survives projected additions, borrowFirst=" + borrowFirst + " ---");
+        Game g = flat(root, "rounded-cash-" + borrowFirst);
+        LandManager land = g.getLandManager();
+        land.setOwnedSqFt(land.getAllocatedSqFt() + 1_000 * LandManager.SQ_FT_PER_KM2);
+        long people = g.getPopulationManager().getPopulation();
+        var history = g.getHistorySave();
+        history.getMonth().add(0);
+        history.getMonth().add(g.getMonth());
+        history.getPopulation().add(people / 2);
+        history.getPopulation().add(people);
+        BuildingsTemplate clinic = g.getBuildingManager().getTemplateByName("Walk-in Clinic");
+        BuildAdvice.Measure care = BuildAdvice.Measure.care(CareType.GENERAL);
+        Set<BuildingsTemplate> skip = new HashSet<>(g.getBuildingManager().getTemplates());
+        skip.remove(clinic);
+        g.setCashForTest(1e14);
+        BuildAdvice.Suggestion draft = BuildAdvice.suggestFor(g, null, care, g.getCash(),
+                land.getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip, true);
+        check("fixture: the growing clinic plan exists", draft != null);
+        if (draft == null) return;
+        g.getAutoBuilder().setCap(Auction.Cap.FILL, null);
+        g.setCashForTest(AutoBuilder.reserve(g) + (borrowFirst ? 0 : draft.price()));
+        BuildAdvice.Suggestion plan = BuildAdvice.suggestFor(g, null, care, g.getCash(),
+                land.getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip, true);
+        check("fixture: the actual plan has later clinic additions", plan != null && plan.value().futureUnits() > 1);
+        if (plan == null) return;
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, care);
+        double available = g.getAutoBuilder().spendableForMeasure(g, care);
+        double invoice = g.quoteBuild(clinic, plan.count()).total;
+        double gap = Math.max(0, invoice - available);
+        double expected = financing(g, gap, BuildAdvice.LIFE_MONTHS);
+        double raised = gap > 0 ? g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS,
+                Game.BUILD_BOND_GRANULE, g.getAutoBuilder().getCap()).cashReceived() : 0;
+        available = Math.max(0, available + raised - invoice);
+        check("fixture: the initial bond strictly exceeds the gap, or the first plan is paid entirely in cash",
+                borrowFirst ? gap > 0 && raised > gap : gap == 0);
+        boolean initialExcess = available > 0;
+        boolean reusedInitial = false, reusedLater = false, laterExcess = false;
+        long additions = 0;
+        int purchases = 0;
+        double rate = Math.max(0, BuildAdvice.lifeRate(g)) / 12;
+        double nextLead = g.quoteBuild(clinic, 1).months;
+        for (int start = 0; start < BuildAdvice.LIFE_MONTHS - plan.lead(); start += 12) {
+            double duration = Math.min(12, BuildAdvice.LIFE_MONTHS - plan.lead() - start);
+            double date = plan.lead() + start + duration / 2;
+            Map<BuildingsTemplate, Long> with = BuildAdvice.plus(site, Map.of(clinic, plan.count() + additions));
+            BuildAdvice.Ahead target = new BuildAdvice.Ahead(date, BuildAdvice.lifeTrend(g, date), g.getAutoBuilder().getSlack());
+            if (BuildAdvice.maintained(g, care, with, target)) continue;
+            long extra = BuildAdvice.count(g, care, with, Map.of(clinic, 1L), target, BuildAdvice.MOST, true)[0];
+            if (extra == 0) continue;
+            double bill = g.quoteBuild(clinic, extra).total;
+            if (available > 0) {
+                if (purchases == 0) reusedInitial = true;
+                else reusedLater = true;
+            }
+            double lack = Math.max(0, bill - available);
+            double paid = Math.max(0, date - nextLead);
+            expected += financing(g, lack, BuildAdvice.LIFE_MONTHS - paid) * Math.pow(1 + rate, -paid);
+            double proceeds = lack > 0 ? g.quoteLongBondForCash(lack, Game.BUILD_BOND_YEARS,
+                    Game.BUILD_BOND_GRANULE, g.getAutoBuilder().getCap()).cashReceived() : 0;
+            available = Math.max(0, available + proceeds - bill);
+            laterExcess |= lack > 0 && proceeds > lack;
+            additions += extra;
+            purchases++;
+        }
+        check("fixture: at least two later purchase dates, with rounded later cash spent at the next date",
+                purchases >= 2 && laterExcess && reusedLater && additions == plan.value().futureUnits());
+        check("fixture: the initial quote's rounded excess is spent by the first later addition when it borrows",
+                !borrowFirst || initialExcess && reusedInitial);
+        check("projected financing retains the initial and later quoted proceeds above their gaps",
+                close(plan.value().financing(), expected));
+        double oracleNet = AdviceValueOracle.value(g, plan, land.getAvailableSqFt(), g.getCash())[0];
+        double expectedNet = plan.planValue() - plan.value().financing() + expected;
+        check("the independent advice oracle retains the same hard-ledger cash", close(oracleNet, expectedNet));
+    }
+
     static AutoBuilder.OpenAsk ask(BuildAdvice.Suggestion plan, int month, double raised) {
         AutoBuilder.OpenAsk ask = new AutoBuilder.OpenAsk();
         ask.measure = plan.measure().label();
@@ -769,6 +924,19 @@ public final class WorksFinanceCheck {
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("worksfinancecheck");
+        if (args.length > 0 && args[0].startsWith("--projection")) {
+            if (!args[0].equals("--projection-cash")) {
+                carriedGround(root, false);
+                carriedGround(root, true);
+                carriedGround(root, false, true);
+            }
+            if (!args[0].equals("--projection-ground")) {
+                roundedCash(root, false);
+                roundedCash(root, true);
+            }
+            out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
+            System.exit(fails == 0 ? 0 : 1);
+        }
         commonCalendar(root);
         growingCalendarChoice(root);
         reservationRelease(root);
@@ -786,6 +954,11 @@ public final class WorksFinanceCheck {
         parcelCash(root, true);
         remainingCoupons(root);
         laterQuotes(root);
+        carriedGround(root, false);
+        carriedGround(root, true);
+        carriedGround(root, false, true);
+        roundedCash(root, false);
+        roundedCash(root, true);
         out.println(fails == 0 ? "All checks passed." : fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
