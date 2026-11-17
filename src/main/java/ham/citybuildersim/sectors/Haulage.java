@@ -897,8 +897,10 @@ public final class Haulage {
      * At share s (the share still driven):
      *
      *   - A TRUCK CARRIES MORE: a driven truck works one shift (SHIFT_HOURS, the shift TONNES_A_TRUCK_MONTH is struck on) and a driverless one
-     *     DRIVERLESS_HOURS, at the same diesel a tonne, so tonnesATruck() blends the two by the share and the same need asks for fewer trucks
-     *     (trucksNeeded(), trucksAsked(), the capacity the share is struck over).
+     *     DRIVERLESS_HOURS, at the same diesel a tonne, so tonnesATruck() blends the two and the same need asks for fewer trucks
+     *     (trucksNeeded(), trucksAsked(), the capacity the share is struck over). The blend is over the trucks the depots keep: a truck past
+     *     their room stands on the street, under no kit, and is driven (driverlessShare(); REV-R6b-1). Read at the fleet held, the count a
+     *     need asks for settles where the fleet's tonnes meet it, a month's fleet moving toward it as the vans' rule allows.
      *   - THE DRIVERS ARE LAID OFF BUT FOR THE OVERSIGHT: driverPostsATruck() blends DRIVERS_A_TRUCK with OVERSIGHT_A_TRUCK, and
      *     strikeDrivers() lays off the posts of the depots' driverless trucks beyond it, as it lays off the places no truck fills.
      *   - THE QUOTE's estimate is struck on the same two figures: the tonnes a truck carries and the driver posts it keeps.
@@ -930,16 +932,30 @@ public final class Haulage {
 
     public double getDriverShare() { return driverShare; }
 
-    /** The tonnes a truck carries in a month: TONNES_A_TRUCK_MONTH itself while every truck is driven, more as the driverless ones work DRIVERLESS_HOURS where a driven one works SHIFT_HOURS. */
-    public double tonnesATruck() {
-        if (driverShare >= 1) return TONNES_A_TRUCK_MONTH;
-        return TONNES_A_TRUCK_MONTH * (driverShare + (1 - driverShare) * DRIVERLESS_HOURS / SHIFT_HOURS);
+    /**
+     * The share of the fleet held that runs driverless: the depots' driverless share (1 - the driven share) of the trucks the depots keep,
+     * min(trucks, depotRoom) over trucks, as strikeDrivers() counts them. A truck past the room is parked on the street, in no depot and
+     * under no kit, and is driven (REV-R6b-1). With no truck held, the first ones go to the depots, if any stand.
+     */
+    public double driverlessShare() {
+        if (driverShare >= 1) return 0;
+        double n = trucks(), room = depotRoom();
+        double kept = n > 0 ? Math.min(n, room) / n : (room > 0 ? 1 : 0);
+        return (1 - driverShare) * kept;
     }
 
-    /** The driver posts a truck the depots keep needs: DRIVERS_A_TRUCK itself while every truck is driven, the oversight's OVERSIGHT_A_TRUCK for each driverless one. */
+    /** The tonnes a truck of the fleet held carries in a month: TONNES_A_TRUCK_MONTH itself while every truck is driven, more as the driverless ones (driverlessShare()) work DRIVERLESS_HOURS where a driven one works SHIFT_HOURS. */
+    public double tonnesATruck() {
+        if (driverShare >= 1) return TONNES_A_TRUCK_MONTH;
+        double d = driverlessShare();
+        return TONNES_A_TRUCK_MONTH * ((1 - d) + d * DRIVERLESS_HOURS / SHIFT_HOURS);
+    }
+
+    /** The driver posts a truck of the fleet held needs: DRIVERS_A_TRUCK itself while every truck is driven, the oversight's OVERSIGHT_A_TRUCK for each driverless one (driverlessShare()). */
     public double driverPostsATruck() {
         if (driverShare >= 1) return DRIVERS_A_TRUCK;
-        return driverShare * DRIVERS_A_TRUCK + (1 - driverShare) * OVERSIGHT_A_TRUCK;
+        double d = driverlessShare();
+        return (1 - d) * DRIVERS_A_TRUCK + d * OVERSIGHT_A_TRUCK;
     }
 
     /** What a driver's post costs a month, a diploma's wage (Freight's, package-private): the figure a driver saved is worth, for EquipmentFit.driverGain(). */

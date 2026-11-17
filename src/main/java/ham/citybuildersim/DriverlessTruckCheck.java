@@ -297,6 +297,25 @@ public class DriverlessTruckCheck {
         near("the estimate a tonne's city leg is struck on carries both: the driver's month is the posts a truck keeps",
                 h.truckRunningEstimate() * h.tonnesATruck() - h.tonnesATruck() * Haulage.DIESEL_LITRES_A_TONNE * dieselPrice(g),
                 h.driverWage() * h.driverPostsATruck(), 1e-6 * h.driverWage() * h.driverPostsATruck());
+
+        // REV-R6b-1: the fleet raised past the depots' room, every depot fitted. A truck on the street stands in no depot and under no
+        // kit: it is driven, carries TONNES_A_TRUCK_MONTH and keeps DRIVERS_A_TRUCK, and only the trucks the depots keep run driverless.
+        Sector fr = g.getSectors().freight();
+        double held = fr.getPantry(Good.TRUCKS), street = Math.max(1, Math.ceil(room / 2));
+        fr.setPantry(Good.TRUCKS, room + street);
+        check("fixture: every depot fitted (share 0), and the fleet held past the depots' room, some trucks on the street",
+                h.getDriverShare() == 0 && h.trucks() > room && h.onStreet() == street, h.trucks() + " trucks, " + room + " room, " + h.onStreet() + " on the street");
+        near("the fleet carries the depots' trucks at DRIVERLESS_HOURS / SHIFT_HOURS the tonnes, the street's at TONNES_A_TRUCK_MONTH: a street truck is driven",
+                h.tonnesATruck() * h.trucks(), room * Haulage.TONNES_A_TRUCK_MONTH * f + street * Haulage.TONNES_A_TRUCK_MONTH, 1e-9 * room * Haulage.TONNES_A_TRUCK_MONTH * f);
+        near("...and keeps the depots' trucks' OVERSIGHT_A_TRUCK posts and the street's DRIVERS_A_TRUCK",
+                h.driverPostsATruck() * h.trucks(), room * Haulage.OVERSIGHT_A_TRUCK + street * Haulage.DRIVERS_A_TRUCK, 1e-9 * (room + street));
+        check("...so a truck of the fleet carries less than a driverless one, more than a driven one", h.tonnesATruck() < Haulage.TONNES_A_TRUCK_MONTH * f
+                && h.tonnesATruck() > Haulage.TONNES_A_TRUCK_MONTH, "" + h.tonnesATruck());
+        h.strikeDrivers();
+        near("the posts struck are the depots' trucks', min(trucks, room): every place filled, none idle, the street's trucks' drivers kept",
+                h.offeredShare(JobType.DIPLOMA), (diploma - room * (Haulage.DRIVERS_A_TRUCK - Haulage.OVERSIGHT_A_TRUCK)) / diploma, 1e-12);
+        near("the driverless share of the fleet is the depots' room over the fleet (driverlessShare())", h.driverlessShare(), room / (room + street), 1e-12);
+        fr.setPantry(Good.TRUCKS, held);
         play(g, 1);
         check("a month played leaves the share at 0 (the counts are the saved truth, the share is derived each month)", h.getDriverShare() == 0 && h.tonnesATruck() > Haulage.TONNES_A_TRUCK_MONTH);
     }
