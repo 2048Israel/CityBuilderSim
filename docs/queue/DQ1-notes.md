@@ -210,3 +210,11 @@ nobody has decided on it; it is here for whoever reads the bank's desk next.
   23rd founding while 35 harness starts were held for memory (RAM down to 2.7 GB, other batches running). It
   reads none of the files changed here, and the model is main's; run alone (`./batch-check.sh CentralBankCheck`)
   it passed, exit 0. Every other harness passed; the timing assertions were soft, as off the gate.
+- Merge: origin/main at 0.9.129 (d08c8116, SQ1) merged at 4aff46fc5. Only the generated maps conflicted (main's
+  taken, then regenerated); SQ1's int-to-long edits and DQ1's holds merged clean. The changed harnesses and
+  YoungBankCheck passed on the merge (`./batch-check.sh` exit 0, CentralBankCheck with them).
+- Dry run: `sh tools/gate.sh DQ1 --dry-run` on 4aff46fc5 against main d08c8116. The first, at 19:43, was cancelled
+  at 20:05 with exit 130 and no red read: Git Bash could not fork under load (CreateProcessW errno 27, 0xC0000142,
+  CU2's ensemble beside it), its ship-run shell died and the guardian stopped with its caller. The rerun, kept as
+  `/tmp/cbs-gate-DQ1-lQ8UUo4a`, ended with exit 0: the suite's 212 harnesses in 3,306 s, exit 3, known red only
+  (DeathRecordCheck, InvestCheck, MapCheck, main's recorded), no unnamed line; the tree as it was.
