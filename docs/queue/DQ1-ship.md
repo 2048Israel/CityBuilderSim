@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-DQ1-lQ8UUo4a -->
 ## changelog
 ### {next} — DQ1, Young towns borrow ahead of their people and default — 2026-11-16, ready, see docs/queue/DQ1-notes.md
