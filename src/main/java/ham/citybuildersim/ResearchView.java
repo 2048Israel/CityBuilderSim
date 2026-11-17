@@ -25,8 +25,9 @@ import java.util.Map;
  * HistorySave keeps it (researchersKey(), RESEARCH_SPEND, EQUIPMENT_FITTED).
  *
  * ONLY A CITY FOUNDED THE 1900 WAY HAS ANYTHING TO SHOW (Game.foundedUnfitted(); Research's and Recipes' headers say the same). In a city founded the
- * default way every discovery is known from the start, nothing arrives, nothing is chosen and nothing is unfitted, so every list here is empty, every
- * origin null and knownAtFounding() the whole catalogue: the screens then draw nothing new, and every city a player has played keeps its screens.
+ * default way every discovery but the near future's (R6b's call 1) is known from the start, nothing arrives, nothing is chosen and nothing is unfitted, so
+ * every list here is empty, every origin null and knownAtFounding() the catalogue less the near future's: the screens then draw nothing new, and every city
+ * a player has played keeps its screens.
  *
  * TWO LAYERS, as EquipmentFit and Recipes are: the cores that take a catalogue, a research and a month (package-private) let a harness put the city at
  * any month and the catalogue at any shape; the public reads take the game and pass its own.
@@ -117,12 +118,36 @@ public final class ResearchView {
     }
 
     /**
-     * How many discoveries the city knew at the founding: the entries history dates at FIRST_MONTH or before in a city founded the 1900 way, and the whole
-     * catalogue in a city founded the default way, which "founded knowing all N".
+     * How many discoveries the city knew at the founding: the entries history dates at FIRST_MONTH or before in a city founded the 1900 way, and in a city
+     * founded the default way every entry that is not the near future's (Entry.isNearFuture(), R6b's call 1), which "founded knowing all N".
      */
     public static int knownAtFounding(Game game) {
         ResearchCatalog catalogue = ResearchCatalog.get();
-        return game.foundedUnfitted() ? knownAtFounding(catalogue, game.getResearch()) : catalogue.entries().size();
+        return game.foundedUnfitted() ? knownAtFounding(catalogue, game.getResearch()) : catalogue.entries().size() - nearFutureCount();
+    }
+
+    /** How many of the catalogue's discoveries are the near future's (Entry.isNearFuture()): the ones a city founded the default way never knows. */
+    public static int nearFutureCount() {
+        int n = 0;
+        for (Entry e : ResearchCatalog.get().entries()) if (e.isNearFuture()) n++;
+        return n;
+    }
+
+    /**
+     * What the Research screens say of a city founded the default way, for each to finish: "founded knowing all 91 of the catalogue's discoveries dated
+     * before January 2025; the near future's 3 come only to a city founded the 1900 way".
+     */
+    public static String foundedKnowingWords(Game game) {
+        return "founded knowing all " + knownAtFounding(game) + " of the catalogue's discoveries dated before " + CityCalendar.format(ResearchCatalog.NEAR_FUTURE)
+                + "; the near future's " + nearFutureCount() + " come only to a city founded the 1900 way";
+    }
+
+    /**
+     * A date's words with the entry's mark after them in brackets ("from abroad, June 2028 (projected, 2027-2030)"), and the words alone for a history row
+     * or no entry, so that no screen prints a projection as history (the study's rule 5).
+     */
+    public static String marked(Entry entry, String words) {
+        return entry == null || entry.mark().isEmpty() ? words : words + " (" + entry.mark() + ")";
     }
 
     /** How many of the discoveries came by a source. */
@@ -167,15 +192,15 @@ public final class ResearchView {
 
     /**
      * One entry for each discovery of the timeline, oldest first, of kind FLAG_KIND at the discovery's month: "Found here: Electric arc steel furnace,
-     * 0.8 years before the world" (one decimal, and always "years") or "From abroad: Electric arc steel furnace". They are NOT put into the decision
+     * 0.8 years before the world" (one decimal, and always "years") or "From abroad: Electric arc steel furnace", each with the mark of a projected row after it (marked()). They are NOT put into the decision
      * log - a discovery is not a decision - and the chart is handed them beside the log's flags (ChartModel.flags(DecisionLog, List)).
      */
     public static List<DecisionLog.Entry> flagEntries(Game game) {
         List<DecisionLog.Entry> out = new ArrayList<>();
         for (Discovery d : timeline(game)) {
-            String words = d.source() == Source.HERE
+            String words = marked(d.entry(), d.source() == Source.HERE
                     ? String.format(Locale.ROOT, "Found here: %s, %.1f years before the world", d.entry().name(), d.yearsAhead())
-                    : "From abroad: " + d.entry().name();
+                    : "From abroad: " + d.entry().name());
             out.add(new DecisionLog.Entry(d.month(), FLAG_KIND, words));
         }
         return out;
@@ -423,8 +448,9 @@ public final class ResearchView {
         return Math.max(0, all - knownAtFounding - here - abroad);
     }
 
-    /** How many of the catalogue's discoveries are still to come in the city: those history has not yet dated and the city has not found, in a city founded the 1900 way; none in any other. */
+    /** How many of the catalogue's discoveries are still to come in the city: those history has not yet dated and the city has not found, in a city founded the 1900 way; none in any other (the near future's come to no city founded the default way). */
     public static int stillToCome(Game game) {
+        if (!game.foundedUnfitted()) return 0;
         List<Discovery> timeline = timeline(game);
         return stillToCome(ResearchCatalog.get().entries().size(), knownAtFounding(game), count(timeline, Source.HERE), count(timeline, Source.ABROAD));
     }

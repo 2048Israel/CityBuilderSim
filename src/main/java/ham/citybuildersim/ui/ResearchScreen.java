@@ -210,10 +210,9 @@ final class ResearchScreen {
 
     /** What a city founded the default way says on the Overview: nothing is in reach and nothing is found, and a grant's posts, if one is set, have nothing to work on. */
     VBox defaultOverviewCard(ResearchView.Overview ov) {
-        int all = ResearchView.knownAtFounding(ui.game);
         VBox card = PolicyScreen.card(
                 PolicyScreen.cardHead(Icons.FLASK, Palette.DISCOVERY, "NOTHING TO RESEARCH", null, null),
-                PolicyScreen.words("This city was founded knowing all " + all + " discoveries in the catalogue, so no problem is in reach and nothing is "
+                PolicyScreen.words("This city was " + ResearchView.foundedKnowingWords(ui.game) + ", so no problem is in reach and nothing is "
                         + "found here.", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL),
                 PolicyScreen.muted("A grant still buys research posts, but their researchers have nothing to work on: this page fills in a city founded "
                         + "the 1900 way."));
@@ -643,10 +642,9 @@ final class ResearchScreen {
 
     /** What a city founded the default way says: it knew every discovery from the start, so nothing arrives and nothing is found. */
     VBox defaultCard() {
-        int all = ResearchView.knownAtFounding(ui.game);
         return PolicyScreen.card(
                 PolicyScreen.cardHead(Icons.FLASK, Palette.DISCOVERY, "NOTHING TO FIND", null, null),
-                PolicyScreen.words("This city was founded knowing all " + all + " discoveries in the catalogue, so nothing arrives from abroad and "
+                PolicyScreen.words("This city was " + ResearchView.foundedKnowingWords(ui.game) + ", so nothing arrives from abroad and "
                         + "nothing is found here.", Palette.SIZE_BODY + 1, Palette.TEXT_LABEL),
                 PolicyScreen.muted("A grant still buys research posts, but their researchers have nothing to work on: this page fills in a city "
                         + "founded the 1900 way."));
@@ -683,11 +681,11 @@ final class ResearchScreen {
         };
     }
 
-    /** How the city came to know a discovery: "found here in June 1973, 4.6 years before the world" or "from abroad, June 1955". */
+    /** How the city came to know a discovery: "found here in June 1973, 4.6 years before the world" or "from abroad, June 1955", with the mark after it for a projected row ("from abroad, June 2028 (projected, 2027-2030)"). */
     static String whenWords(Discovery d) {
-        return d.source() == Source.HERE
+        return ResearchView.marked(d.entry(), d.source() == Source.HERE
                 ? String.format(Locale.ROOT, "found here in %s, %.1f years before the world", CityCalendar.format(d.month()), d.yearsAhead())
-                : "from abroad, " + CityCalendar.format(d.month());
+                : "from abroad, " + CityCalendar.format(d.month()));
     }
 
     /** ...and "known since the founding" for what no discovery made known. */
@@ -755,7 +753,7 @@ final class ResearchScreen {
         Label name = PolicyScreen.words(d.entry().name(), Palette.SIZE_BODY + 1, Palette.TEXT_BODY);
         Label field = chip(fieldName(d.field()), fieldColour(d.field()));
         Label when = PolicyScreen.figure(CityCalendar.format(d.month()), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
-        Label ahead = PolicyScreen.words(String.format(Locale.ROOT, "%.1f years before the world", d.yearsAhead()), Palette.SIZE_LABEL + 1,
+        Label ahead = PolicyScreen.words(ResearchView.marked(d.entry(), String.format(Locale.ROOT, "%.1f years before the world", d.yearsAhead())), Palette.SIZE_LABEL + 1,
                 Palette.TEXT_HEAD);
         HBox row = Kept.row(12, cell(250, name), cell(90, field), cell(110, when), ahead);
         HBox.setHgrow(ahead, Priority.ALWAYS);

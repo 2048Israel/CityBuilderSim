@@ -7085,7 +7085,7 @@ public class KeptCheck {
         KeptBench.Page overview = fx(() -> defaultBench.policy("Policy, Research's Overview in a default city", "Research", "Overview"));
         List<String> quiet = shownWith(defaultBench, overview, null);
         check("the Overview is the one card that says there is nothing to research (" + ResearchView.knownAtFounding(g) + " known at the founding), without the rows",
-                has(quiet, label("NOTHING TO RESEARCH")) && has(quiet, "discoveries in the catalogue, so no problem is in reach") && !has(quiet, label("BY FIELD"))
+                has(quiet, label("NOTHING TO RESEARCH")) && has(quiet, ResearchView.foundedKnowingWords(g) + ", so no problem is in reach") && !has(quiet, label("BY FIELD"))
                         && !has(quiet, label("BY SCHOOL")));
 
         KeptBench.Page funding = fx(() -> defaultBench.policy("Policy, Research's Funding in a default city", "Research", "Funding"));
@@ -7526,7 +7526,7 @@ public class KeptCheck {
             return defaultBench.signature();
         });
         check("the default city's page is the one card that says nothing is found (" + ResearchView.knownAtFounding(g) + " known at the founding)",
-                has(quietPage, label("NOTHING TO FIND")) && has(quietPage, "discoveries in the catalogue, so nothing arrives from abroad")
+                has(quietPage, label("NOTHING TO FIND")) && has(quietPage, ResearchView.foundedKnowingWords(g) + ", so nothing arrives from abroad")
                         && !has(quietPage, label("THE TIMELINE")) && !has(quietPage, label("FOUND HERE")));
         check("...and City History draws no discovery flag there", ResearchView.flagEntries(g).isEmpty());
 

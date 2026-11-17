@@ -621,7 +621,7 @@
     "effect": "sulphide ore to cathode on the heap, with no concentrator, smelter or refinery; recovery up to 85% (the builder's ceiling); 71 L of water a kg of copper against about 130",
     "sources": ["N4", "N5"], "needs": ["E12"], "requires": "a sulphide field; acid", "fee": true, "feeNote": "", "work": 9620, "study": "research-near-future 3" },
   { "code": "FE4", "name": "Hydrogen-reduced iron", "field": "ENGINEERING", "kind": ["building"], "size": "building",
-    "year": 2028, "month": 6, "monthKnown": false, "world": "projected 2028, Boden, Sweden", "projected": true, "window": "2027-2030",
+    "year": 2028, "month": 6, "monthKnown": false, "world": "2028, Boden, Sweden", "projected": true, "window": "2027-2030",
     "touches": "Hydrogen Steel Works (new), in place of the Blast Furnace and the Oxygen Steel Shop",
     "effect": "3.48 MWh of electricity a tonne of liquid steel, most of it making hydrogen (54 kg a tonne of iron by the chemistry); no coke",
     "sources": ["N8", "N9", "N10"], "needs": ["PE1", "E4"], "requires": "", "fee": true, "feeNote": "", "work": 22463, "study": "research-near-future 3" }

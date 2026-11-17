@@ -135,13 +135,18 @@ public final class ResearchCatalog {
             return worldMonth() >= NEAR_FUTURE;
         }
 
+        /** The mark a projected row's date carries wherever it is printed: "" for a history row, "projected" for a projection with no window, else "projected, 2027-2030". */
+        public String mark() {
+            if (!projected) return "";
+            return window.isBlank() ? "projected" : "projected, " + window;
+        }
+
         /**
          * Its date as the screens print it: the world column as the file has it ("May 2025, Dallas to Houston"), and for a projected row the
-         * mark and its window after it ("projected 2028, Boden, Sweden (projected, 2027-2030)"), so that no screen prints a projection as history.
+         * mark after it ("2028, Boden, Sweden; projected, 2027-2030"), so that no screen prints a projection as history.
          */
         public String dateWords() {
-            if (!projected) return world;
-            return world + (window.isBlank() ? " (projected)" : " (projected, " + window + ")");
+            return projected ? world + "; " + mark() : world;
         }
 
         /** Whether it unlocks that kind ("building", "equipment", "recipe" or "drug"). */
