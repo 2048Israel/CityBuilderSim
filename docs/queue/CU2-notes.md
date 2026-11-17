@@ -227,8 +227,39 @@ longer exercises a large wire industry. CopperRefiningCheck's own fixtures still
 
 ## The ensemble
 
-(to come: `docs/ensemble/CU2.md`, the 80 runs against the newest baseline; whether Fabrication and Automotive
-still carry the chained city, which decides ★8's MA1)
+`docs/ensemble/CU2.md`: the classes of dce27a4a1, 80 of 80 runs (ZERO_HOT-15 on a resume), scored against
+0.9.128's baseline. Batch verdict FAIL, hard criteria 9 of 10.
+
+- **M1 passes** for all five policies: no month's money audit failed.
+- **F1 fails for SHOCK**: 1 of 16 runs (seed 13) flags "households with no home", 39 months from m738 to
+  m776, at most 174.3 households (m774) beside 3,056 homes. The baseline's SHOCK runs flag none.
+- Info verdicts that changed: AUTO2 A3 FAIL → PASS, ZERO_HOT H2 VACUOUS → FAIL, SHOCK K2 PASS → FAIL.
+
+**What held the homes: the bank's capital, not placement.** SHOCK-13 replayed in-process, its CSV the
+ensemble's to the byte:
+
+- **The landlords kept asking.** Every month from m705 to m772, `RealEstate.plan()` asks for 20-33 Low-Rise
+  Apartments for the unhoused demand.
+- **The bank refused almost every order.** Each order but one block (m715) is refused at the mortgage with
+  "the bank is short of capital against everything it has lent". That is
+  `BusinessDebtManager.canFundMortgage`'s `MORTGAGE_CAPITAL`, while the leverage ratio binds (round 2),
+  after the import shock's rate of 26% at m603. Two months it is the down payment, and at m716-717 the
+  lender's cover at a 20% real rate.
+- **The homes stood still and the households outgrew them.**
+  - Homes stand at 3,052 from m722 to m772, the builders idle.
+  - Households grow from 5,836 to 6,372.
+  - Doubling up takes them until m738. After that, up to 174 households have neither a home nor a home to
+    double up in.
+- **The crunch ended by itself.** At m773 the bank has room again, 1,134 homes go on site in two months, and
+  the shortfall is gone at m777.
+
+This is not HN1's class (a four-month lag behind homes already coming). It is main's capital rule
+rationing every mortgage, housing included, for six years, which CU2's path reaches in one SHOCK seed. CU2
+does not touch the bank or the mortgage. Queued as **MC1** (the ship file's queued rows), for the
+orchestrator to pass by name or hold.
+
+★8 (MA1): the ensemble's CSVs carry no sector columns. Whether Fabrication and Automotive still carry the
+chained city is read from the default playtest's kept city (below, to come).
 
 ## The dry run
 
