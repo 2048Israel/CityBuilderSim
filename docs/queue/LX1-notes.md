@@ -370,3 +370,19 @@ moved; the premises stand, and the fixtures and readings are mended:
 
 Done: each line green on LX1's path (its merge) and on main's. Not beside HP1 (`PriceLevelCheck`), FB14, or any batch
 on `HealthCheck`.
+
+## 9. The second dry run, after FB5
+
+**The run.** `tools/gate.sh LX1 --dry-run`, on 13a470756 (main f18b1053, 0.9.137, FB5, merged), in
+`/tmp/cbs-gate-LX1-MV0wqgUr`: the suite finished in 2,594 s, gate exit 1. All 21 of the first run's lines are green or
+named (GroceryCheck green). Four lines are new: PlanCheck 6's two FAIL lines, plus its exit and count lines.
+
+- **PlanCheck 6, PX2.** "at every 30th month every district's plan keeps every check" and "...the avenues were laid in
+  the played city". On LX1's played city (MapCheck 1's, 120 months) at month 121, 2 of the 8 districts break the +
+  floor: district (0, 0) has two + junctions 7 plots apart against `LATTICE` 8 (9 cells, 1,022 street plots, 21 avenue
+  plots bridging water, 38 streets along a cut drawn as curves); every other check holds. The first dry run, before
+  FB5, had the same figures (3,035 street plots against 3,028 now), named then by main's FB5 rows ("LM1 exposes CL4
+  comb junctions four plots apart"). FB5's floor on ground bought (PX1) made main's played city green (364 plots in 17
+  open cells, every check kept) and leaves this one. It is main's `DistrictPlan` on LX1's path, not LX1's code: PX2 is
+  queued for it, with a known-reds row for each FAIL line. Re-judging a copy of the run's suite log
+  (`target/checks/LX1-dry2-suite.txt`) with those rows leaves no NEW line.
