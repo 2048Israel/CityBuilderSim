@@ -8,7 +8,7 @@ reads has moved. WG2-R: the brake migration applied is kept and saved (`Migratio
 screen's slowing word reads it; SaveFileCheck reloads a city at 239 and 240 months recorded. RB1-R: the fund's idle
 cash is read after last month's toRaise is paid, the idle figures count what was paid, and FundCheck 9e counts the cap
 sale (230 of 240 months) and the idle transfer (90) firing at the default dial, the holding never past the fixed
-point. The playtest moved, through GV1-R's debt: its player no longer cuts the taxes at m217; the ensemble passes
+point. The playtest moves from m1322, through GV1-R's debt in its player's January read; the ensemble passes
 (docs/ensemble/FB4.md: 24/26, hard 10/10, F1 as the baseline). Queued: PK1 (two fixtures that pick a month) and RB2
 (the fund's due struck on a value that counts the toRaise).
 ## queued

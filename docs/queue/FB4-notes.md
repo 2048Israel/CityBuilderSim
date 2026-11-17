@@ -148,8 +148,9 @@ The brief expected only RB1-R to move the playtest.
 - The fund's line: 0 company-months over the cap, as on main. The most of any company is 2.3% (main 0.0%), since the
   player lowers the dial a step in a poor January.
 
-**The ensemble:** `tools/ensemble/ensemble.sh FB4` on ee321e67c (the mends), against `docs/ensemble/0.9.135.md`.
-It ran 80 of 80 runs in 96.3 min, beside LX1's dry run, exit 0, and is committed as `docs/ensemble/FB4.md`.
+**The first ensemble, before LX1:** `tools/ensemble/ensemble.sh FB4` on ee321e67c (the mends), against
+`docs/ensemble/0.9.135.md`. It ran 80 of 80 runs in 96.3 min, beside LX1's dry run, exit 0. Its file was replaced by
+the final model's (below).
 - **Score:** 24 of 26 criteria, hard 10 of 10.
 - **M1 passes:** 0 months the money audit failed, in every policy.
 - **F1 passes:** one city in each of AUTO2, ZERO_SLACK, SHOCK and HIGH (0 in ZERO_HOT), "households with no home", as
@@ -163,6 +164,40 @@ It ran 80 of 80 runs in 96.3 min, beside LX1's dry run, exit 0, and is committed
   baseline's 0.34, the bar +0.50).
 - **A1 and A2 fail as on the baseline:** inflation from m240 3.49% against 3.46%; the longest spell over 10%, 23 months
   against 25.
+
+### After LX1 (0.9.138): the final model
+
+LX1 moved the default path a long way, so the batch was merged with main at 886bd92dc (LX1's model and MED1's docs) and
+measured again (docs/batch.md 6, the orchestrator's mail).
+
+**The merged trace** (10cc0ca20) against main's 886bd92dc (built in a worktree of its own):
+- the same to month 1321;
+- every file differs from month 1322, the month after the January of m1321;
+- at m1322 the branch has $5.3bn more tax income, and main's advances there are $207.5bn.
+
+This is the same cause as before, GovernmentPlayer's January read of a debt that now counts the advances. LX1's path
+did not cross a band at m217, so the first move is later. Both runs exit 0 with no finding. At m2405 the branch has
+1,339,820 people against main's 938,080.
+
+**The ensemble on the final model:** `tools/ensemble/ensemble.sh FB4-merged` on 10cc0ca20, against
+`docs/ensemble/0.9.138.md` (LX1's). It ran 80 of 80 runs (617 run-minutes, five at once), exit 0, and is committed as
+`docs/ensemble/FB4.md`.
+- **How it ran:** the call's 2-hour limit stopped its shell at 68 runs. xargs and the JVMs ran on to 80, as the
+  script's comment says they do. A resume under the same label then ran nothing and scored.
+- **Score:** 24 of 26 criteria, hard 10 of 10, no changed verdict.
+- **M1 passes:** 0 months the money audit failed, in every policy.
+- **F1 passes**, as the baseline: AUTO2 1/16 and ZERO_SLACK 1/16, ZERO_HOT, SHOCK and HIGH 0/16.
+  - It is one city, AUTO2 seed 8 and its ZERO_SLACK twin, "households with no home" in one month, m1340.
+  - It is LX1's own: the ZERO_SLACK twin is byte-identical to LX1's run, and AUTO2-8 is identical to LX1's until month
+    2282.
+  - The class is TQ1's, FB11's (Real Estate holding land while nothing buys ground), as LX1's notes named it. It is
+    main's.
+- **55 of the 80 runs** are byte-identical to LX1's.
+- **A1 and A2 fail as on the baseline:** inflation from m240 3.25% against 3.21%; the longest spell over 10%, 24 months
+  against 24.
+
+FB7 (0.9.139) shipped after this run. It changes harnesses and a job counter in `ui/MapView.java`, not the model or
+the trace (the orchestrator), so the run stands.
 
 ## 5. Filed back
 
