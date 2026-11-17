@@ -2223,12 +2223,59 @@ public final class KeptBench {
         return null;
     }
 
+    /**
+     * A run the market cannot lend for, for the funding page with its shortfall (FB6, KBF1): fundingRun()'s building first and then the
+     * others, each at ten times the count until the model lets none of it ahead, the first whose two offers, quoted at the cap the page is
+     * set to as runOffers() quotes them, are both short with the bids reaching at most one part in `shortBy` of the gap. A run short that
+     * many times over stays short through a month's moves in the market and the cash, so the shortfall's lines and the cap's chips are
+     * on the page from its first draw to its last; {the building, the count, the gap, what the bond's bids reach, what the bill's reach},
+     * or null when no run the model lets ahead is.
+     */
+    public Object[] fundingRunShort(double shortBy) {
+        Object[] first = fundingRun();
+        if (first == null) return null;
+        Game g = ui.game;
+        Auction.Cap cap = ui.buildScreen.fundingCap();
+        List<BuildingsTemplate> order = new ArrayList<>();
+        order.add((BuildingsTemplate) first[0]);
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t != null && !order.contains(t)) order.add(t);
+        for (BuildingsTemplate t : order) {
+            for (int q = 1; q <= 100_000_000; q *= 10) {
+                java.util.LinkedHashMap<BuildingsTemplate, Long> run = BuildScreen.runOf(t, q);
+                int ahead = g.buildRunAhead(run);
+                if (ahead <= 0) break;
+                double gap = g.buildFundingGap(BuildScreen.firstOf(run, ahead));
+                if (!(gap > 0)) continue;
+                ham.citybuildersim.DebtQuote bond = g.quoteLongBondForCash(gap, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+                ham.citybuildersim.DebtQuote note = g.quoteTBill(gap, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE, cap);
+                if (bond.isShort() && note.isShort() && bond.cashReceived() * shortBy <= gap && note.cashReceived() * shortBy <= gap) {
+                    return new Object[]{t, q, gap, bond.cashReceived(), note.cashReceived()};
+                }
+            }
+        }
+        return null;
+    }
+
+    /** The title over the funding page's cap chips, as BuildScreen.shortAnswers() writes it. */
+    public static final String FUNDING_CAP_TITLE = "THE HIGHEST YIELD YOU WILL TAKE";
+
+    /** The funding page's shortfall lines for a run, as its answers draw them (BuildScreen.shortWords() over runOffers()): none when both offers cover it. */
+    public List<String> fundingShortWords(BuildingsTemplate t, int quantity) {
+        BuildScreen s = ui.buildScreen;
+        return BuildScreen.shortWords(s.runOffers(BuildScreen.runOf(t, quantity), fundingFrom(t)));
+    }
+
+    /** Where a run of one building is placed from, as buildFunding() draws it. */
+    private static BuildScreen.RunFrom fundingFrom(BuildingsTemplate t) {
+        BuildAdvice.Category from = BuildAdvice.categoryOf(t);
+        return new BuildScreen.RunFrom(from == null ? BuildAdvice.OVERVIEW : from.name(),
+                from == null ? java.util.EnumSet.noneOf(BuildingType.class) : from.types(), true);
+    }
+
     /** The build funding page for a run of one order (the run must have a gap: fundingRun() finds one). */
     public Page buildFunding(BuildingsTemplate t, int quantity) {
         BuildScreen s = ui.buildScreen;
-        BuildAdvice.Category from = BuildAdvice.categoryOf(t);
-        BuildScreen.RunFrom where = new BuildScreen.RunFrom(from == null ? BuildAdvice.OVERVIEW : from.name(),
-                from == null ? java.util.EnumSet.noneOf(BuildingType.class) : from.types(), true);
+        BuildScreen.RunFrom where = fundingFrom(t);
         return new Page("the build funding page (" + quantity + " x " + t.getName() + ")", "showBuildFunding", () -> s.pool, pool -> {
             s.fundChips.noteFocus();
             return timed(pool, () -> s.drawFunding(BuildScreen.runOf(t, quantity), where));
@@ -4817,6 +4864,18 @@ public final class KeptBench {
     public boolean rankingsReadLanded() {
         RankingsScreen s = ui.rankingsScreen;
         return !s.reading && s.saved != null;
+    }
+
+    /** What the screen's snapshot left off the board, by why (SavedCities.left()), or "no snapshot" before a read has landed (FB6, KS1-Saved's trace). */
+    public String rankingsSavedLeft() {
+        ham.citybuildersim.SavedCities saved = ui.rankingsScreen.saved;
+        return saved == null ? "no snapshot" : String.valueOf(saved.left());
+    }
+
+    /** The read's state on the screen, for a read that has not landed: on the worker or not, and a snapshot held or none. */
+    public String rankingsReadState() {
+        RankingsScreen s = ui.rankingsScreen;
+        return (s.reading ? "on the worker" : "not on the worker") + (s.saved == null ? ", no snapshot" : ", a snapshot held");
     }
 
     /** How many saved cities the screen's snapshot puts on the board (0 before the first read has landed). */
