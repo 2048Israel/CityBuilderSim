@@ -1,4 +1,4 @@
-# PlanCheck.java - 5,350 lines · 180 methods · 53 constants · harnesses
+# PlanCheck.java - 5,441 lines · 183 methods · 53 constants · harnesses
 
 `ham/citybuildersim/PlanCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -62,9 +62,9 @@
 >      varied layout has a dead end and no plan has more than the comb's -
 >      and a city played as the playtest plays it shows the variety firing;
 >  11. the order of arrival (batch CL3; DistrictPlan's THE ORDER OF ARRIVAL):
-> ... (137 more lines in the source)
+> ... (142 more lines in the source)
 
-**Uses:** [DistrictPlan](DistrictPlan.md) (1261), [BuildingVisual](BuildingVisual.md) (110), [MapCheck](MapCheck.md) (66), [CityMap](CityMap.md) (56), [BuildingType](BuildingType.md) (48), [World](World.md) (41), [LongPlaytest](LongPlaytest.md) (16), [TilePainter](TilePainter.md) (14), [CityRuns](CityRuns.md) (13), [Founding](Founding.md) (13), [Timing](Timing.md) (6), [GameFiles](GameFiles.md) (5), [Game](Game.md) (5), [StreetCurves](StreetCurves.md) (5), [BuildingCatalog](BuildingCatalog.md) (3), [Mining](Mining.md) (3), [TempDirs](TempDirs.md) (3), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [TrackCurves](TrackCurves.md) (2), [Resource](Resource.md) (1)
+**Uses:** [DistrictPlan](DistrictPlan.md) (1283), [BuildingVisual](BuildingVisual.md) (114), [MapCheck](MapCheck.md) (66), [CityMap](CityMap.md) (56), [BuildingType](BuildingType.md) (49), [World](World.md) (41), [LongPlaytest](LongPlaytest.md) (16), [TilePainter](TilePainter.md) (14), [CityRuns](CityRuns.md) (13), [Founding](Founding.md) (13), [Timing](Timing.md) (6), [GameFiles](GameFiles.md) (5), [Game](Game.md) (5), [StreetCurves](StreetCurves.md) (5), [BuildingCatalog](BuildingCatalog.md) (3), [Mining](Mining.md) (3), [TempDirs](TempDirs.md) (3), [MiningCheck](MiningCheck.md) (2), [TreasuryFund](TreasuryFund.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [TrackCurves](TrackCurves.md) (2), [Resource](Resource.md) (1)
 
 **Used by (5):** [CrossingCheck](CrossingCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [JunctionCheck](JunctionCheck.md), [MapCheck](MapCheck.md), [SlopeCheck](SlopeCheck.md)
 
@@ -72,460 +72,472 @@
 
 | line | section |
 |---:|---|
-| 405 | THE FIGURES OF ONE PLAN |
-| 613 | THE AVENUES, THE HARNESS'S OWN WORKING (batch CL4) |
-| 841 | 1. THE PORT: THE PROTOTYPE'S TEST DISTRICT, REPLAYED |
-| 913 | 2. THE GAME'S RULES ON THE TEST DISTRICT |
-| 951 | 3. THE HIGHWAYS (H5) |
-| 979 | 4. HOW FULL A DISTRICT THE PLAN CAN DRAW (spec 2.10) |
-| 1052 | THE DISTRICTS OF A CITY: EVERY ONE PLANNED, ITS CHECKS AND FIGURES |
-| 1219 | 5. MAPCHECK'S FIXTURE OF JERUS'S CITY, AND THE DENSE SCREEN |
-| 1302 | 6. A CITY PLAYED AS THE PLAYTEST PLAYS IT |
-| 1379 | 7. ESTATE CELLS LAID TO FIT WHAT THEY HOLD (0.7.90, batch RD5) |
-| 1473 | 8. INDUSTRY AND THE OUTER KINDS SHARE ESTATE CELLS (0.7.92, batch RD6) |
-| 1560 | 10. HOMES CELLS' STREETS BY A HASH OF THEIR PLACE (CL2) |
-| 1921 | 11. THE ORDER OF ARRIVAL (batch CL3) |
-| 2547 | 12. THE GROUND BOUGHT (batch FX6) |
-| 2734 | 13. THE AVENUES (batch CL4) |
-| 3097 | 14. THE CURVES (batch CL4, slice C) |
-| 3772 | 9. A SAVE NAMED ON THE COMMAND LINE: EVERY DISTRICT |
-| 3867 | 15. THE RUNS DATED (batch FX7) |
-| 4060 | 15b. BUILDINGS MOVE OFF A RUN (batch MF1, 2026-10-28) |
-| 4312 | 15c. THE GROUND KEPT (batch UP5; FX7's star 3) |
-| 4529 | · 16. the far bank (FW3) |
-| 4578 | · 17. a street piece buildings wall in (FW11) |
-| 4711 | · 18. a street piece the houses on a resource field wall in (LC3, EM1-M) |
-| 5025 | 19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08) |
+| 411 | THE FIGURES OF ONE PLAN |
+| 619 | THE AVENUES, THE HARNESS'S OWN WORKING (batch CL4) |
+| 847 | 1. THE PORT: THE PROTOTYPE'S TEST DISTRICT, REPLAYED |
+| 919 | 2. THE GAME'S RULES ON THE TEST DISTRICT |
+| 957 | 3. THE HIGHWAYS (H5) |
+| 985 | 4. HOW FULL A DISTRICT THE PLAN CAN DRAW (spec 2.10) |
+| 1058 | THE DISTRICTS OF A CITY: EVERY ONE PLANNED, ITS CHECKS AND FIGURES |
+| 1230 | 5. MAPCHECK'S FIXTURE OF JERUS'S CITY, AND THE DENSE SCREEN |
+| 1313 | 6. A CITY PLAYED AS THE PLAYTEST PLAYS IT |
+| 1391 | 7. ESTATE CELLS LAID TO FIT WHAT THEY HOLD (0.7.90, batch RD5) |
+| 1485 | 8. INDUSTRY AND THE OUTER KINDS SHARE ESTATE CELLS (0.7.92, batch RD6) |
+| 1572 | 10. HOMES CELLS' STREETS BY A HASH OF THEIR PLACE (CL2) |
+| 1933 | 11. THE ORDER OF ARRIVAL (batch CL3) |
+| 2559 | 12. THE GROUND BOUGHT (batch FX6) |
+| 2746 | · 12b. the + floor on ground bought (FB5) |
+| 2825 | 13. THE AVENUES (batch CL4) |
+| 3188 | 14. THE CURVES (batch CL4, slice C) |
+| 3863 | 9. A SAVE NAMED ON THE COMMAND LINE: EVERY DISTRICT |
+| 3958 | 15. THE RUNS DATED (batch FX7) |
+| 4151 | 15b. BUILDINGS MOVE OFF A RUN (batch MF1, 2026-10-28) |
+| 4403 | 15c. THE GROUND KEPT (batch UP5; FX7's star 3) |
+| 4620 | · 16. the far bank (FW3) |
+| 4669 | · 17. a street piece buildings wall in (FW11) |
+| 4802 | · 18. a street piece the houses on a resource field wall in (LC3, EM1-M) |
+| 5116 | 19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 225 | `PlanCheck.TIMED` | `5` | Repeats a district's plan is timed over, after one untimed: its median is its time. |
-| 236 | `PlanCheck.PLAN_MS` | `MapCheck.SCREEN_MS / 2` | The most a district's plan may take, the slowest of the dense screen's districts (each its median of TIMED): half MapCheck's screen, 40 ms (star) - one plan and a screen painted from plans within SCREEN_MS, so long as... |
-| 239 | `PlanCheck.TABLE` | `{ { 49, 15, 9802, 828, 8974, 0, 13, 26, 280, 2995 }, { 48, 13, 6052, 3137, 29...` | The prototype's figures of the spec's 2.5 table, for his roads, the same trips paved and half that: cells, homes cells, street plots, narrow, full, tracks, square cells, boulevard cells, + junctions, buildings touchin... |
-| 245 | `PlanCheck.TABLE_BUILDINGS` | `3617, TABLE_BUILDING_PLOTS = 32217` | ...its buildings and their plots... |
-| 247 | `PlanCheck.TABLE_BUDGET` | `{ 9388, 4484, 2242 }` | ...and the road of each budget, whole plots. |
-| 250 | `PlanCheck.TEST_HUB_X` | `66, TEST_HUB_Y = 86` | The prototype's hub on its test district, in the district's plots: (70, 90) in its frame, 4 plots in. |
-| 253 | `PlanCheck.TEST_UNOWNED_ROWS` | `40, TEST_UNOWNED_FROM = 196` | The part of the test district the prototype did not own: its first 40 rows east of plot 196 (O[:44, 200:] in its frame). |
-| 256 | `PlanCheck.FILLS` | `{ 0.75, 0.80, 0.85, 0.92 }` | The fills of 2.10's table: the model's buildings and roads at these shares of a flat district's ground. |
-| 259 | `PlanCheck.PROTO_FRAME` | `264` | The ground 2.10's fills are shares of: the prototype's frame, the district and 4 plots about it, 264 x 264 (its n = OFF + 32 x 8 + 4) - so its 75% is 79.8% of the district's own 256 x 256. |
-| 262 | `PlanCheck.GRAVEL_TRIPS` | `900, PAVED_TRIPS = 1200` | Gravel's and paved road's trips a road (buildings.json's capacities, as the prototype read them): the same city paved holds his roads' trips on Paved Roads. |
-| 272 | `PlanCheck.TEST_GROUND` | `"g36f14g13f1g14f29g89u61/g36f15g11f2g14f28g90u61/g35f17g10f2g13f29g90u61/g35f...` | THE PROTOTYPE'S TEST DISTRICT (claude/roads-prototype/proto2.py and roads_proto.py, written out by batch RD1): district_ground(264, 7) - grass, forest, a river two to four plots wide, a bay of sea - its district's fra... |
-| 315 | `PlanCheck.TEST_NUDGE` | `{ 0.3727494347187473, 0.03906684873305479, 0.22912251263578634, 0.52450302674...` | Each cell's nudge, h32(4127, 'cell', c) as a fraction, cell ci + cj x CELLS_A_SIDE. |
-| 333 | `PlanCheck.TEST_ACROSS` | `2483539012620168834L` | Each cell's direction, a bit a cell: set where h32(4127, 'dir', c) is under a half (east-west), read as 0.25, else 0.75. |
-| 335 | `PlanCheck.TEST_TYPES` | `{ 0, 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 17, 18, 19, 20, 22, 23, 25, 27, 28, 31,...` | The types its buildings are, by id (BuildingVisual.table())... |
-| 337 | `PlanCheck.TEST_COUNTS` | `{ 899, 94, 569, 30, 2, 799, 2, 1, 2, 23, 5, 112, 54, 1, 1, 13, 6, 4, 1, 2, 22...` | ...how many of each, scaled_buildings at 70% of its dry ground... |
-| 339 | `PlanCheck.TEST_DEAL` | `{ 0.8623860022826665, 0.4688361493186886, 0.49244847032280087, 0.910102558251...` | ...and each type's start, h32(4127, 'deal', t) as a fraction. |
-| 353 | `PlanCheck.TEST_GRAVEL` | `8407.741935483871, TEST_PAVED = 980.6451612903226, TEST_PAVED_ALL = 4483.8709...` | Its road plots (Input.gravel and Input.paved): his Gravel and Paved Roads, and the same trips all paved (the third budget half of it). |
-| 355 | `PlanCheck.TEST_PLACED_JERUS` | `- 1980402857778823524L, TEST_STREETS_JERUS = - 7143981648789130548L` | Each budget's plan as the prototype made it, its buildings' and its streets' FNV-1a digests (placedDigest(), streetDigest()): his roads... |
-| 357 | `PlanCheck.TEST_PLACED_PAVED` | `9000504916410474359L, TEST_STREETS_PAVED = - 4283127041626870812L` | ...the same trips paved... |
-| 359 | `PlanCheck.TEST_PLACED_THIN` | `9000504916410474359L, TEST_STREETS_THIN = 4092048347058802282L` | ...and half that. |
-| 618 | `PlanCheck.ARM_DX` | `{ 1, - 1, - 1, 1 }, ARM_DY = { 1, 1, - 1, - 1 }` | The four avenues' headings (dx, dy) by arm, CityRuns.diagCode()'s numbering: south-east 0, south-west 1, north-west 2, north-east 3. |
-| 886 | `PlanCheck.BUDGETS` | `{ "his roads", "the same trips paved", "half that" }` | The three budgets' names, as the sections print them. |
-| 1307 | `PlanCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } ...` | A stream that drops what is written to it: the game's and the playtest's prose while a section plays or loads a city. |
-| 1377 | `PlanCheck.HOMES_ENOUGH` | `10` | The homes cells a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all keeping the comb by the hash alone has a chance of 1 in 59,049. |
-| 1384 | `PlanCheck.ESTATE_FILL` | `0.4` | The share of a flat district's plots each estate-band type is set at, alone: 0.4 - room to spare, so what differs is the cells they take. |
-| 1478 | `PlanCheck.SPARE_FILL` | `FILLS [ 0 ], FULL_FILL = FILLS [ FILLS.length - 1 ]` | Section 4's fill with cells to spare (2.10's first, 75%) and its fullest (92%: every cell open, and outer kinds left without a place when the bands keep apart). |
-| 1565 | `PlanCheck.LONG_ROADS` | `0.5` | LONG's roads, a factor of his (section 4's 75% fill): 0.5 - too little road for the ladder to square a homes cell, so all of them keep long blocks. |
-| 1568 | `PlanCheck.SQUARED_ROADS` | `0.7` | SQUARED's: 0.7 - road enough to square most of the homes cells and not to make boulevards of them. |
-| 1571 | `PlanCheck.BOULEVARD_ROADS` | `1` | BOULEVARD's: 1, his own - road enough for boulevards, squared cells among them. |
-| 1574 | `PlanCheck.LAYOUT_FIXTURES` | `{ "LONG", "SQUARED", "BOULEVARD", "CUT0", "CUT1" }` | Section 10's fixtures: flat ground at his fill with his roads times a factor (the first three), and the test district's ground, a river and the sea cutting cells, on its first two budgets. |
-| 1577 | `PlanCheck.COMB_DIGESTS` | `{ { - 8123742265030361694L, - 580478996347052330L }, { 6065673935051394403L, ...` | Each fixture's plan with Input.combOnly, its buildings' and its streets' digests (placedDigest(), streetDigest()) as 0.8.11 drew them: the switch off is that plan, box for box and street for street. |
-| 1585 | `PlanCheck.SHARE_SIDE` | `200` | The cells on a side of the square of the lattice layoutOf() is asked about to measure its shares: 200, 40,000 cells. |
-| 1588 | `PlanCheck.SHARE_TOLERANCE` | `0.01` | How far a layout's share of those cells may stand from its dial: 0.01. |
-| 1591 | `PlanCheck.MORE_HOMES` | `0.1` | The part more of the homes band's largest type LONG is given, to see a cell keep its layout as its district grows: a tenth. |
-| 1594 | `PlanCheck.OTHER_SEED` | `Founding.DEFAULT_WORLD_SEED + 1` | Another world's seed, to see the layouts read it. |
-| 2136 | `PlanCheck.BATCHES` | `40` | The batches the dense screen's counts are dealt in (h): forty months. |
-| 2139 | `PlanCheck.COVER_LEAST` | `0.95` | What the order of arrival must cover of the ground today's plans cover on the dense screen: 95%. |
-| 2562 | `PlanCheck.HOUSES_A_MONTH` | `1000` | The houses each month from the first to the fifth brings: with the shops, works and farms beside them, enough to fill the old ground. |
-| 3105 | `PlanCheck.FAR_CELLS` | `(int) DistrictPlan.CRESCENT_FROM + 4` | How many cells west of the frame section 14's far fixture puts the founding site: CRESCENT_FROM and four more, so every cell of the frame lies beyond CRESCENT_FROM. |
-| 3108 | `PlanCheck.CROWDED_FILL` | `0.90, CROWDED_ROADS = 0.7` | Section 14's crowded fixture: 90% of the ground, with 0.7 of his roads - the ladder takes several builds (the later ones from its turns), squares a few homes cells and leaves a few buildings out, and the far homes cel... |
-| 3111 | `PlanCheck.ROAD_RICH` | `BOULEVARD_ROADS` | The roads section 14's road-rich fixture is given, a factor of his: BOULEVARD_ROADS, 1 - road enough for the ladder to square cells and make boulevards. |
-| 3114 | `PlanCheck.MID_WEST` | `1.25` | Section 14 (b)'s site, in cells west of the frame's edge short of CRESCENT_FROM: 1.25 - the frame's first column of cells lies within CRESCENT_FROM of it and its second beyond. |
-| 3117 | `PlanCheck.ARM_SITE` | `21 * DistrictPlan.CELL` | Section 14 (c)'s site for an avenue across the frame: (-ARM_SITE, -ARM_SITE), 21 cells out along the diagonal, so its south-east arm runs through the frame's diagonal cells - the ones nearest it, where the homes cells... |
-| 3605 | `PlanCheck.HOUSES_A_MONTH_FAR` | `3000` | The houses each month brings in (f): enough to open a homes cell or three a month beyond CRESCENT_FROM. |
-| 3722 | `PlanCheck.RIM_FROM` | `3` | The rim of the dense city (rimCurves()): districts this many or more from the one the founding site lies in, by the larger of their columns and rows. |
-| 3725 | `PlanCheck.RIM_EVERY` | `37` | ...and of those, one in this many is planned: 37, a stride that takes districts all round it. |
-| 3910 | `PlanCheck.RUN_HOUSES` | `250` | The houses each month of the runs' fixtures brings: with the shops, works and farms beside them, a district that grows by some hundreds of boxes a month. |
-| 4066 | `PlanCheck.Across.YW` | `8, YH = 7, HW = 40` |  |
-| 5045 | `PlanCheck.RESERVE_SIDE` | `19` | The reserve of a cloverleaf, in plots a side: CityRuns.F_RESERVE's 19 x 19 (InterchangeGround). |
-| 5113 | `PlanCheck.STRIP` | `TilePainter.JUNCTION_APART` | How far from the verge the strip reaches, in plots beyond it: 8, the width of one block of the lattice (TilePainter.JUNCTION_APART). |
-| 5123 | `PlanCheck.STRIP_MARGIN` | `0.02` | The most the highway may cost the strip, in share of its plots (a building or a street) used, against the same district with no highway (the same fill, the same arrivals; the verge, which H5 bars to buildings, is coun... |
-| 5126 | `PlanCheck.FRONTAGE_OFFSET` | `37` | The highway's offset, in plots: its staircase is the plots with y = x - OFFSET and y = x - OFFSET - 1, off the avenues' arms (which lie on x - y = 0). |
-| 5129 | `PlanCheck.MAIN_LATE_STRIP_USED` | `4373` | Used strip plots on main 01402a54e in this section's identical late-run fixture (2026-11-15), 4373/6936. |
+| 230 | `PlanCheck.TIMED` | `5` | Repeats a district's plan is timed over, after one untimed: its median is its time. |
+| 241 | `PlanCheck.PLAN_MS` | `MapCheck.SCREEN_MS / 2` | The most a district's plan may take, the slowest of the dense screen's districts (each its median of TIMED): half MapCheck's screen, 40 ms (star) - one plan and a screen painted from plans within SCREEN_MS, so long as... |
+| 244 | `PlanCheck.TABLE` | `{ { 49, 15, 9802, 828, 8974, 0, 13, 26, 280, 2995 }, { 48, 13, 6052, 3137, 29...` | The prototype's figures of the spec's 2.5 table, for his roads, the same trips paved and half that: cells, homes cells, street plots, narrow, full, tracks, square cells, boulevard cells, + junctions, buildings touchin... |
+| 250 | `PlanCheck.TABLE_BUILDINGS` | `3617, TABLE_BUILDING_PLOTS = 32217` | ...its buildings and their plots... |
+| 252 | `PlanCheck.TABLE_BUDGET` | `{ 9388, 4484, 2242 }` | ...and the road of each budget, whole plots. |
+| 255 | `PlanCheck.TEST_HUB_X` | `66, TEST_HUB_Y = 86` | The prototype's hub on its test district, in the district's plots: (70, 90) in its frame, 4 plots in. |
+| 258 | `PlanCheck.TEST_UNOWNED_ROWS` | `40, TEST_UNOWNED_FROM = 196` | The part of the test district the prototype did not own: its first 40 rows east of plot 196 (O[:44, 200:] in its frame). |
+| 261 | `PlanCheck.FILLS` | `{ 0.75, 0.80, 0.85, 0.92 }` | The fills of 2.10's table: the model's buildings and roads at these shares of a flat district's ground. |
+| 264 | `PlanCheck.PROTO_FRAME` | `264` | The ground 2.10's fills are shares of: the prototype's frame, the district and 4 plots about it, 264 x 264 (its n = OFF + 32 x 8 + 4) - so its 75% is 79.8% of the district's own 256 x 256. |
+| 267 | `PlanCheck.GRAVEL_TRIPS` | `900, PAVED_TRIPS = 1200` | Gravel's and paved road's trips a road (buildings.json's capacities, as the prototype read them): the same city paved holds his roads' trips on Paved Roads. |
+| 277 | `PlanCheck.TEST_GROUND` | `"g36f14g13f1g14f29g89u61/g36f15g11f2g14f28g90u61/g35f17g10f2g13f29g90u61/g35f...` | THE PROTOTYPE'S TEST DISTRICT (claude/roads-prototype/proto2.py and roads_proto.py, written out by batch RD1): district_ground(264, 7) - grass, forest, a river two to four plots wide, a bay of sea - its district's fra... |
+| 320 | `PlanCheck.TEST_NUDGE` | `{ 0.3727494347187473, 0.03906684873305479, 0.22912251263578634, 0.52450302674...` | Each cell's nudge, h32(4127, 'cell', c) as a fraction, cell ci + cj x CELLS_A_SIDE. |
+| 338 | `PlanCheck.TEST_ACROSS` | `2483539012620168834L` | Each cell's direction, a bit a cell: set where h32(4127, 'dir', c) is under a half (east-west), read as 0.25, else 0.75. |
+| 340 | `PlanCheck.TEST_TYPES` | `{ 0, 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 17, 18, 19, 20, 22, 23, 25, 27, 28, 31,...` | The types its buildings are, by id (BuildingVisual.table())... |
+| 342 | `PlanCheck.TEST_COUNTS` | `{ 899, 94, 569, 30, 2, 799, 2, 1, 2, 23, 5, 112, 54, 1, 1, 13, 6, 4, 1, 2, 22...` | ...how many of each, scaled_buildings at 70% of its dry ground... |
+| 344 | `PlanCheck.TEST_DEAL` | `{ 0.8623860022826665, 0.4688361493186886, 0.49244847032280087, 0.910102558251...` | ...and each type's start, h32(4127, 'deal', t) as a fraction. |
+| 358 | `PlanCheck.TEST_GRAVEL` | `8407.741935483871, TEST_PAVED = 980.6451612903226, TEST_PAVED_ALL = 4483.8709...` | Its road plots (Input.gravel and Input.paved): his Gravel and Paved Roads, and the same trips all paved (the third budget half of it). |
+| 360 | `PlanCheck.TEST_PLACED_JERUS` | `- 1980402857778823524L, TEST_STREETS_JERUS = - 7143981648789130548L` | Each budget's plan as the prototype made it, its buildings' and its streets' FNV-1a digests (placedDigest(), streetDigest()): his roads... |
+| 362 | `PlanCheck.TEST_PLACED_PAVED` | `9000504916410474359L, TEST_STREETS_PAVED = - 4283127041626870812L` | ...the same trips paved... |
+| 364 | `PlanCheck.TEST_PLACED_THIN` | `9000504916410474359L, TEST_STREETS_THIN = 4092048347058802282L` | ...and half that. |
+| 624 | `PlanCheck.ARM_DX` | `{ 1, - 1, - 1, 1 }, ARM_DY = { 1, 1, - 1, - 1 }` | The four avenues' headings (dx, dy) by arm, CityRuns.diagCode()'s numbering: south-east 0, south-west 1, north-west 2, north-east 3. |
+| 892 | `PlanCheck.BUDGETS` | `{ "his roads", "the same trips paved", "half that" }` | The three budgets' names, as the sections print them. |
+| 1318 | `PlanCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } ...` | A stream that drops what is written to it: the game's and the playtest's prose while a section plays or loads a city. |
+| 1389 | `PlanCheck.HOMES_ENOUGH` | `10` | The homes cells a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all keeping the comb by the hash alone has a chance of 1 in 59,049. |
+| 1396 | `PlanCheck.ESTATE_FILL` | `0.4` | The share of a flat district's plots each estate-band type is set at, alone: 0.4 - room to spare, so what differs is the cells they take. |
+| 1490 | `PlanCheck.SPARE_FILL` | `FILLS [ 0 ], FULL_FILL = FILLS [ FILLS.length - 1 ]` | Section 4's fill with cells to spare (2.10's first, 75%) and its fullest (92%: every cell open, and outer kinds left without a place when the bands keep apart). |
+| 1577 | `PlanCheck.LONG_ROADS` | `0.5` | LONG's roads, a factor of his (section 4's 75% fill): 0.5 - too little road for the ladder to square a homes cell, so all of them keep long blocks. |
+| 1580 | `PlanCheck.SQUARED_ROADS` | `0.7` | SQUARED's: 0.7 - road enough to square most of the homes cells and not to make boulevards of them. |
+| 1583 | `PlanCheck.BOULEVARD_ROADS` | `1` | BOULEVARD's: 1, his own - road enough for boulevards, squared cells among them. |
+| 1586 | `PlanCheck.LAYOUT_FIXTURES` | `{ "LONG", "SQUARED", "BOULEVARD", "CUT0", "CUT1" }` | Section 10's fixtures: flat ground at his fill with his roads times a factor (the first three), and the test district's ground, a river and the sea cutting cells, on its first two budgets. |
+| 1589 | `PlanCheck.COMB_DIGESTS` | `{ { - 8123742265030361694L, - 580478996347052330L }, { 6065673935051394403L, ...` | Each fixture's plan with Input.combOnly, its buildings' and its streets' digests (placedDigest(), streetDigest()) as 0.8.11 drew them: the switch off is that plan, box for box and street for street. |
+| 1597 | `PlanCheck.SHARE_SIDE` | `200` | The cells on a side of the square of the lattice layoutOf() is asked about to measure its shares: 200, 40,000 cells. |
+| 1600 | `PlanCheck.SHARE_TOLERANCE` | `0.01` | How far a layout's share of those cells may stand from its dial: 0.01. |
+| 1603 | `PlanCheck.MORE_HOMES` | `0.1` | The part more of the homes band's largest type LONG is given, to see a cell keep its layout as its district grows: a tenth. |
+| 1606 | `PlanCheck.OTHER_SEED` | `Founding.DEFAULT_WORLD_SEED + 1` | Another world's seed, to see the layouts read it. |
+| 2148 | `PlanCheck.BATCHES` | `40` | The batches the dense screen's counts are dealt in (h): forty months. |
+| 2151 | `PlanCheck.COVER_LEAST` | `0.95` | What the order of arrival must cover of the ground today's plans cover on the dense screen: 95%. |
+| 2574 | `PlanCheck.HOUSES_A_MONTH` | `1000` | The houses each month from the first to the fifth brings: with the shops, works and farms beside them, enough to fill the old ground. |
+| 3196 | `PlanCheck.FAR_CELLS` | `(int) DistrictPlan.CRESCENT_FROM + 4` | How many cells west of the frame section 14's far fixture puts the founding site: CRESCENT_FROM and four more, so every cell of the frame lies beyond CRESCENT_FROM. |
+| 3199 | `PlanCheck.CROWDED_FILL` | `0.90, CROWDED_ROADS = 0.7` | Section 14's crowded fixture: 90% of the ground, with 0.7 of his roads - the ladder takes several builds (the later ones from its turns), squares a few homes cells and leaves a few buildings out, and the far homes cel... |
+| 3202 | `PlanCheck.ROAD_RICH` | `BOULEVARD_ROADS` | The roads section 14's road-rich fixture is given, a factor of his: BOULEVARD_ROADS, 1 - road enough for the ladder to square cells and make boulevards. |
+| 3205 | `PlanCheck.MID_WEST` | `1.25` | Section 14 (b)'s site, in cells west of the frame's edge short of CRESCENT_FROM: 1.25 - the frame's first column of cells lies within CRESCENT_FROM of it and its second beyond. |
+| 3208 | `PlanCheck.ARM_SITE` | `21 * DistrictPlan.CELL` | Section 14 (c)'s site for an avenue across the frame: (-ARM_SITE, -ARM_SITE), 21 cells out along the diagonal, so its south-east arm runs through the frame's diagonal cells - the ones nearest it, where the homes cells... |
+| 3696 | `PlanCheck.HOUSES_A_MONTH_FAR` | `3000` | The houses each month brings in (f): enough to open a homes cell or three a month beyond CRESCENT_FROM. |
+| 3813 | `PlanCheck.RIM_FROM` | `3` | The rim of the dense city (rimCurves()): districts this many or more from the one the founding site lies in, by the larger of their columns and rows. |
+| 3816 | `PlanCheck.RIM_EVERY` | `37` | ...and of those, one in this many is planned: 37, a stride that takes districts all round it. |
+| 4001 | `PlanCheck.RUN_HOUSES` | `250` | The houses each month of the runs' fixtures brings: with the shops, works and farms beside them, a district that grows by some hundreds of boxes a month. |
+| 4157 | `PlanCheck.Across.YW` | `8, YH = 7, HW = 40` |  |
+| 5136 | `PlanCheck.RESERVE_SIDE` | `19` | The reserve of a cloverleaf, in plots a side: CityRuns.F_RESERVE's 19 x 19 (InterchangeGround). |
+| 5204 | `PlanCheck.STRIP` | `TilePainter.JUNCTION_APART` | How far from the verge the strip reaches, in plots beyond it: 8, the width of one block of the lattice (TilePainter.JUNCTION_APART). |
+| 5214 | `PlanCheck.STRIP_MARGIN` | `0.02` | The most the highway may cost the strip, in share of its plots (a building or a street) used, against the same district with no highway (the same fill, the same arrivals; the verge, which H5 bars to buildings, is coun... |
+| 5217 | `PlanCheck.FRONTAGE_OFFSET` | `37` | The highway's offset, in plots: its staircase is the plots with y = x - OFFSET and y = x - OFFSET - 1, off the avenues' arms (which lie on x - y = 0). |
+| 5220 | `PlanCheck.MAIN_LATE_STRIP_USED` | `4373` | Used strip plots on main 01402a54e in this section's identical late-run fixture (2026-11-15), 4373/6936. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 216 | `static int fails` |  |
-| 217 | `static PrintStream out` |  |
-| 411 | `int pieces, plus, closestPlus` |  |
-| 412 | `int placed, overflow, buildingPlots, streetPlots, tracks, narrow, full, seams, under, minesBeyond` |  |
-| 414 | `int estatePlus, estateLinesOff` | + junctions inside an estate cell's interior, and estate cells whose streets leave ESTATE LINES' lines (0.7.90). |
-| 416 | `int avenueBad, avenueOuter` | (CL4) pairs of junctions along an avenue fewer than LATTICE steps apart, and buildings with a plot on an avenue's outer plot. |
-| 417 | `boolean groundParts` |  |
-| 419 | `double gravel, paved, highway` | Surface drawn by kind: gravel, paved, a highway's. |
-| 421 | `final long[] cellStreets` | Street plots and dry ground in the open cells' tiles: homes cells of long blocks, of square blocks, estate cells; and the boulevard cells. |
-| 422 | `final int[] cellCount` |  |
-| 623 | `int ox, oy` | The origin in the frame's plots: the lattice node nearest the founding site. |
-| 625 | `final byte[] mark` | Per plot, the mark an avenue plot there carries (the first arm's where two share it), else 0. |
-| 627 | `final boolean[] outer` | ...and the outer plots, where no building stands. |
-| 629 | `final int[] from` | Each arm's first and last step to look at: those whose plots can touch the frame. |
-| 1058 | `int districts, held, network, apart, floor, reach, onStreet, surface, beside, estate, mines, minesBeyond` |  |
-| 1060 | `int walled, kept, fieldWalled` | Districts planned again with the way to a piece the buildings wall in kept clear (FW11), and the plots so kept clear in them; and those of them whose way crossed houses on a resource field's plots (LC3). |
-| 1061 | `long buildings, placed, overflow, overflowPlots, needPlots, streets, tracks, seams, under, surplusDistricts` |  |
-| 1062 | `double surplus, worstFill, worstLost` |  |
-| 1063 | `String worstWhere` |  |
-| 1064 | `final long[] cellStreets` |  |
-| 1065 | `final int[] cellCount` |  |
-| 1067 | `final int[][] homes` | The open homes cells by kind (0 long blocks, 1 squared) and layout (CL2), and the merges undone in them. |
-| 1068 | `long mergesUndone` |  |
-| 1070 | `final long[] av` | The avenues' counts summed (CL4): plots laid, beneath a highway, across the railway, bridging, not laid at a yard, reserve or mine, at water too wide, stops, open cells crossed; and the floor and outer-plot breaches. |
-| 1071 | `int avenueBad, avenueOuter` |  |
-| 1073 | `final long[] cv` | The curves' counts summed (CL4, slice C): crescents, crescents the ground would not lay whole, streets along a cut drawn as curves, curves in all. |
-| 1074 | `final List<Double> planMs` |  |
-| 1075 | `boolean timed` |  |
-| 1170 | `final java.util.Set<String> homesSeen` | The open homes cells seen, by where they are (the district and the cell in it), each once however many samples it stands in (EM1, 2026-10-29). |
-| 1242 | `static CityMap denseCity` | The dense copy of his city (MapCheck.DENSE) and the districts its screen shows, made once and kept: section 5 times their plans and section 11 deals their counts as a log. |
-| 1243 | `static List<CityMap.District> denseShown` |  |
-| 1930 | `final List<int[]> rec` |  |
-| 1931 | `int firstBatch` |  |
-| 1932 | `int[] carry` |  |
-| 1993 | `static boolean pinLattice` | Whether flat() lays no avenue (Input.latticeOnly): set for a fixture whose premise is a plan from before the avenues (CL4). |
-| 2118 | `static boolean arrivalRules` | Whether every plan this section has made keeps every check (figures().holds()): each plan goes through plan(). |
-| 2119 | `static int arrivalPlans` |  |
-| 2739 | `static long[] x1Avenues, playedAvenues` | The avenues' counts of section 5's city x 1 and section 6's played city, summed over their districts (Tally.av), for (i). |
-| 3102 | `static long[] x1Curves, playedCurves` | The curves' counts of section 5's city x 1 and section 6's played city, summed over their districts (Tally.cv): crescents, crescents the ground refused, streets along a cut drawn as curves, curves in all. |
-| 3139 | `final int bulge, a` |  |
-| 3140 | `final double cu, cv, r` |  |
-| 3141 | `final boolean[][] stair` |  |
-| 3142 | `final boolean[][] tight` |  |
-| 3143 | `double firstV, lastV` |  |
-| 3263 | `boolean wrongLayout, exact` |  |
-| 3264 | `int homes, squared, crescents, wanted, mergedElsewhere, wideBoxes, wideInCrescent, onBand, acrossCells, alo...` |  |
-| 3265 | `final int[] bulges` |  |
-| 3266 | `String first` |  |
-| 3876 | `final List<int[]> rec` |  |
-| 4067 | `final Runs runs` |  |
-| 4068 | `int yx, yy, hx, hy, underYard, besideHw, hit` |  |
-| 4069 | `boolean decoyed` |  |
-| 4581 | `static int citiesDistricts, citiesWalled, citiesKept, citiesLeft` | The districts of this harness's cities (sections 5 and 6), those planned again to join a piece the buildings wall in, the plots so kept clear, and the districts still left with a piece the ground does not part (FW11). |
-| 4584 | `static int citiesField` | ...and, of those planned again, the districts whose way crossed houses on a resource field's plots (LC3). |
-| 4596 | `static int[] playedCase` | Section 17's cities, kept for section 18's count (LC3): {districts, planned again, of them over a field's houses, left apart} of MapCheck's played city, and of its river fixture alone. |
+| 221 | `static int fails` |  |
+| 222 | `static PrintStream out` |  |
+| 417 | `int pieces, plus, closestPlus` |  |
+| 418 | `int placed, overflow, buildingPlots, streetPlots, tracks, narrow, full, seams, under, minesBeyond` |  |
+| 420 | `int estatePlus, estateLinesOff` | + junctions inside an estate cell's interior, and estate cells whose streets leave ESTATE LINES' lines (0.7.90). |
+| 422 | `int avenueBad, avenueOuter` | (CL4) pairs of junctions along an avenue fewer than LATTICE steps apart, and buildings with a plot on an avenue's outer plot. |
+| 423 | `boolean groundParts` |  |
+| 425 | `double gravel, paved, highway` | Surface drawn by kind: gravel, paved, a highway's. |
+| 427 | `final long[] cellStreets` | Street plots and dry ground in the open cells' tiles: homes cells of long blocks, of square blocks, estate cells; and the boulevard cells. |
+| 428 | `final int[] cellCount` |  |
+| 629 | `int ox, oy` | The origin in the frame's plots: the lattice node nearest the founding site. |
+| 631 | `final byte[] mark` | Per plot, the mark an avenue plot there carries (the first arm's where two share it), else 0. |
+| 633 | `final boolean[] outer` | ...and the outer plots, where no building stands. |
+| 635 | `final int[] from` | Each arm's first and last step to look at: those whose plots can touch the frame. |
+| 1064 | `int districts, held, network, apart, floor, reach, onStreet, surface, beside, estate, mines, minesBeyond` |  |
+| 1066 | `int walled, kept, fieldWalled` | Districts planned again with the way to a piece the buildings wall in kept clear (FW11), and the plots so kept clear in them; and those of them whose way crossed houses on a resource field's plots (LC3). |
+| 1068 | `long boughtFloored` | Street plots the + floor took up on ground bought (FB5's DistrictPlan.boughtFloored), summed over the plans, and the plans it took any in. |
+| 1069 | `int flooredPlans` |  |
+| 1070 | `long buildings, placed, overflow, overflowPlots, needPlots, streets, tracks, seams, under, surplusDistricts` |  |
+| 1071 | `double surplus, worstFill, worstLost` |  |
+| 1072 | `String worstWhere` |  |
+| 1073 | `final long[] cellStreets` |  |
+| 1074 | `final int[] cellCount` |  |
+| 1076 | `final int[][] homes` | The open homes cells by kind (0 long blocks, 1 squared) and layout (CL2), and the merges undone in them. |
+| 1077 | `long mergesUndone` |  |
+| 1079 | `final long[] av` | The avenues' counts summed (CL4): plots laid, beneath a highway, across the railway, bridging, not laid at a yard, reserve or mine, at water too wide, stops, open cells crossed; and the floor and outer-plot breaches. |
+| 1080 | `int avenueBad, avenueOuter` |  |
+| 1082 | `final long[] cv` | The curves' counts summed (CL4, slice C): crescents, crescents the ground would not lay whole, streets along a cut drawn as curves, curves in all. |
+| 1083 | `final List<Double> planMs` |  |
+| 1084 | `boolean timed` |  |
+| 1181 | `final java.util.Set<String> homesSeen` | The open homes cells seen, by where they are (the district and the cell in it), each once however many samples it stands in (EM1, 2026-10-29). |
+| 1253 | `static CityMap denseCity` | The dense copy of his city (MapCheck.DENSE) and the districts its screen shows, made once and kept: section 5 times their plans and section 11 deals their counts as a log. |
+| 1254 | `static List<CityMap.District> denseShown` |  |
+| 1942 | `final List<int[]> rec` |  |
+| 1943 | `int firstBatch` |  |
+| 1944 | `int[] carry` |  |
+| 2005 | `static boolean pinLattice` | Whether flat() lays no avenue (Input.latticeOnly): set for a fixture whose premise is a plan from before the avenues (CL4). |
+| 2130 | `static boolean arrivalRules` | Whether every plan this section has made keeps every check (figures().holds()): each plan goes through plan(). |
+| 2131 | `static int arrivalPlans` |  |
+| 2749 | `static long[] playedFloored` | Section 6's played city: the street plots the + floor took up on ground bought over its samples' plans, the plans it took any in, and the plans (Tally): null until section 6 has run. |
+| 2830 | `static long[] x1Avenues, playedAvenues` | The avenues' counts of section 5's city x 1 and section 6's played city, summed over their districts (Tally.av), for (i). |
+| 3193 | `static long[] x1Curves, playedCurves` | The curves' counts of section 5's city x 1 and section 6's played city, summed over their districts (Tally.cv): crescents, crescents the ground refused, streets along a cut drawn as curves, curves in all. |
+| 3230 | `final int bulge, a` |  |
+| 3231 | `final double cu, cv, r` |  |
+| 3232 | `final boolean[][] stair` |  |
+| 3233 | `final boolean[][] tight` |  |
+| 3234 | `double firstV, lastV` |  |
+| 3354 | `boolean wrongLayout, exact` |  |
+| 3355 | `int homes, squared, crescents, wanted, mergedElsewhere, wideBoxes, wideInCrescent, onBand, acrossCells, alo...` |  |
+| 3356 | `final int[] bulges` |  |
+| 3357 | `String first` |  |
+| 3967 | `final List<int[]> rec` |  |
+| 4158 | `final Runs runs` |  |
+| 4159 | `int yx, yy, hx, hy, underYard, besideHw, hit` |  |
+| 4160 | `boolean decoyed` |  |
+| 4672 | `static int citiesDistricts, citiesWalled, citiesKept, citiesLeft` | The districts of this harness's cities (sections 5 and 6), those planned again to join a piece the buildings wall in, the plots so kept clear, and the districts still left with a piece the ground does not part (FW11). |
+| 4675 | `static int citiesField` | ...and, of those planned again, the districts whose way crossed houses on a resource field's plots (LC3). |
+| 4687 | `static int[] playedCase` | Section 17's cities, kept for section 18's count (LC3): {districts, planned again, of them over a field's houses, left apart} of MapCheck's played city, and of its river fixture alone. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 214 | 5137 | **type** `public class PlanCheck` | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway, and the model's road drawn exactly as the streets' surface - on the ... |
-| 219 | 4 | `static void check(String label, boolean ok)` |  |
-| 361 | 43 | `public static void main(String[] args) throws Exception` |  |
+| 219 | 5223 | **type** `public class PlanCheck` | The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway, and the model's road drawn exactly as the streets' surface - on the ... |
+| 224 | 4 | `static void check(String label, boolean ok)` |  |
+| 366 | 44 | `public static void main(String[] args) throws Exception` |  |
 
-### THE FIGURES OF ONE PLAN (lines 405-612)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 410 | 34 | **type** `static final class Figures` | What a plan draws, and its checks. |
-| 425 | 7 | `boolean surfaceHolds(DistrictPlan p, DistrictPlan.Input in)` _(in PlanCheck.Figures)_ | Whether the surface is the road by kind to within half a plot, and with the surplus exactly. |
-| 434 | 4 | `boolean holds(DistrictPlan p, DistrictPlan.Input in)` _(in PlanCheck.Figures)_ | Whether every check holds: one network (or the ground parts it), the + floor, reach, none on a street, the surface, none beside a highway, T junctions only in an estate cell. |
-| 440 | 3 | `boolean estateHolds()` _(in PlanCheck.Figures)_ | Whether its estate cells keep ESTATE LINES (0.7.90): no + inside one, its streets on their lines. |
-| 446 | 166 | `static Figures figures(DistrictPlan p, DistrictPlan.Input in)` | A plan's figures and checks. |
-
-### THE AVENUES, THE HARNESS'S OWN WORKING (batch CL4) (lines 613-840)
+### THE FIGURES OF ONE PLAN (lines 411-618)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 621 | 10 | **type** `static final class Stairs` | An input's avenues as the harness works them out from the founding site (CL4) - not by calling the plan's code: the origin, each staircase plot's mark in CityRuns' bits and the outer plots. |
-| 633 | 5 | `static void mark(Stairs s, int a, int x, int y, int corner)` | The harness's staircase plot at (x, y) of arm a, a corner or not; kept if the frame holds it and no earlier arm marked it. |
-| 640 | 23 | `static Stairs stairs(DistrictPlan.Input in)` | An input's avenues, worked out here (CL4): step k >= 0 of an arm is S_k = (ox + dx k, oy + dy k), for k >= 1 its corner C_k = (ox + dx k, oy + dy (k - 1)) and its outer plot O_k = (ox + dx (k - 1), oy + dy k). |
-| 665 | 10 | `static boolean inOpenBox(DistrictPlan p, int x, int y)` | Whether plot (x, y) lies in the box of a cell the plan opened - its interior or one of its ring lines. |
-| 677 | 5 | `static boolean avenueInCell(Stairs s, int ci, int cj)` | Whether the harness's staircase has a plot in the interior of the cell (ci, cj). |
-| 690 | 32 | `static int[] junctions(DistrictPlan p, Stairs s, int a, boolean[] laid, int[] cellStreets)` | The junctions of arm a (CL4's + floor), ascending and distinct, by the harness's own walk: step j has one when a street plot that is no avenue's - role ROLE_STREET, or ROLE_ARTERIAL or ROLE_BOULEVARD on the ring line ... |
-| 724 | 5 | `static int floorBad(int[] steps)` | The pairs of consecutive junctions fewer than LATTICE steps apart. |
-| 730 | 4 | `static boolean onLattice(int q)` |  |
-| 735 | 3 | `static boolean lat(boolean[] st, int q)` |  |
-| 740 | 22 | `static int[] reach(boolean[] st)` | Each plot's distance from a street across corners, up to REACH; 99 beyond. |
-| 776 | 26 | `static boolean groundParts(DistrictPlan p, DistrictPlan.Input in, int[] lab, List<Integer> sizes)` | Whether the ground parts a plan's street pieces: no way from its largest piece to another over the city's own ground - dry, fresh water no wider along the way than its line may bridge (an arterial's on an arterial's l... |
-| 804 | 6 | `static int waterRun(DistrictPlan.Input in, int a, int d)` | Fresh water's run at plot a along direction d's axis. |
-| 812 | 7 | `static long placedDigest(DistrictPlan p)` | A digest of a plan's buildings, in the order placed: x, y, across, down and type of each (FNV-1a over 64 bits). |
-| 821 | 10 | `static long streetDigest(DistrictPlan p)` | ...and of its streets, row by row: each plot, its width in half plots and its kind (track 0, gravel 1, paved 2). |
-| 833 | 7 | `static String line(DistrictPlan p, Figures f)` | One line of a plan's figures. |
+| 416 | 34 | **type** `static final class Figures` | What a plan draws, and its checks. |
+| 431 | 7 | `boolean surfaceHolds(DistrictPlan p, DistrictPlan.Input in)` _(in PlanCheck.Figures)_ | Whether the surface is the road by kind to within half a plot, and with the surplus exactly. |
+| 440 | 4 | `boolean holds(DistrictPlan p, DistrictPlan.Input in)` _(in PlanCheck.Figures)_ | Whether every check holds: one network (or the ground parts it), the + floor, reach, none on a street, the surface, none beside a highway, T junctions only in an estate cell. |
+| 446 | 3 | `boolean estateHolds()` _(in PlanCheck.Figures)_ | Whether its estate cells keep ESTATE LINES (0.7.90): no + inside one, its streets on their lines. |
+| 452 | 166 | `static Figures figures(DistrictPlan p, DistrictPlan.Input in)` | A plan's figures and checks. |
 
-### 1. THE PORT: THE PROTOTYPE'S TEST DISTRICT, REPLAYED (lines 841-912)
+### THE AVENUES, THE HARNESS'S OWN WORKING (batch CL4) (lines 619-846)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 846 | 38 | `static DistrictPlan.Input testDistrict(BuildingVisual.Type[] types, int budget, boolean prototype)` | The prototype's test district: its ground (TEST_GROUND, the district's frame), its buildings, and one of its three budgets (0 his roads, 1 the same trips paved, 2 half that). |
-| 888 | 24 | `static void replay(BuildingVisual.Type[] types)` |  |
+| 627 | 10 | **type** `static final class Stairs` | An input's avenues as the harness works them out from the founding site (CL4) - not by calling the plan's code: the origin, each staircase plot's mark in CityRuns' bits and the outer plots. |
+| 639 | 5 | `static void mark(Stairs s, int a, int x, int y, int corner)` | The harness's staircase plot at (x, y) of arm a, a corner or not; kept if the frame holds it and no earlier arm marked it. |
+| 646 | 23 | `static Stairs stairs(DistrictPlan.Input in)` | An input's avenues, worked out here (CL4): step k >= 0 of an arm is S_k = (ox + dx k, oy + dy k), for k >= 1 its corner C_k = (ox + dx k, oy + dy (k - 1)) and its outer plot O_k = (ox + dx (k - 1), oy + dy k). |
+| 671 | 10 | `static boolean inOpenBox(DistrictPlan p, int x, int y)` | Whether plot (x, y) lies in the box of a cell the plan opened - its interior or one of its ring lines. |
+| 683 | 5 | `static boolean avenueInCell(Stairs s, int ci, int cj)` | Whether the harness's staircase has a plot in the interior of the cell (ci, cj). |
+| 696 | 32 | `static int[] junctions(DistrictPlan p, Stairs s, int a, boolean[] laid, int[] cellStreets)` | The junctions of arm a (CL4's + floor), ascending and distinct, by the harness's own walk: step j has one when a street plot that is no avenue's - role ROLE_STREET, or ROLE_ARTERIAL or ROLE_BOULEVARD on the ring line ... |
+| 730 | 5 | `static int floorBad(int[] steps)` | The pairs of consecutive junctions fewer than LATTICE steps apart. |
+| 736 | 4 | `static boolean onLattice(int q)` |  |
+| 741 | 3 | `static boolean lat(boolean[] st, int q)` |  |
+| 746 | 22 | `static int[] reach(boolean[] st)` | Each plot's distance from a street across corners, up to REACH; 99 beyond. |
+| 782 | 26 | `static boolean groundParts(DistrictPlan p, DistrictPlan.Input in, int[] lab, List<Integer> sizes)` | Whether the ground parts a plan's street pieces: no way from its largest piece to another over the city's own ground - dry, fresh water no wider along the way than its line may bridge (an arterial's on an arterial's l... |
+| 810 | 6 | `static int waterRun(DistrictPlan.Input in, int a, int d)` | Fresh water's run at plot a along direction d's axis. |
+| 818 | 7 | `static long placedDigest(DistrictPlan p)` | A digest of a plan's buildings, in the order placed: x, y, across, down and type of each (FNV-1a over 64 bits). |
+| 827 | 10 | `static long streetDigest(DistrictPlan p)` | ...and of its streets, row by row: each plot, its width in half plots and its kind (track 0, gravel 1, paved 2). |
+| 839 | 7 | `static String line(DistrictPlan p, Figures f)` | One line of a plan's figures. |
 
-### 2. THE GAME'S RULES ON THE TEST DISTRICT (lines 913-950)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 917 | 33 | `static void gameRules(BuildingVisual.Type[] types)` |  |
-
-### 3. THE HIGHWAYS (H5) (lines 951-978)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 955 | 23 | `static void highways(BuildingVisual.Type[] types)` |  |
-
-### 4. HOW FULL A DISTRICT THE PLAN CAN DRAW (spec 2.10) (lines 979-1051)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 984 | 25 | `static void scaled(DistrictPlan.Input in, long[] counts, int dry, double fill, boolean pavedCity)` | Jerus's mix (MapCheck.JERUS_COUNTS) scaled to a share of a district's dry plots, his roads with it - the prototype's scaled_buildings, its fractions by the world's hash. |
-| 1010 | 38 | `static void howFull(BuildingVisual.Type[] types)` |  |
-| 1049 | 3 | `static double pct(long a, long b)` |  |
-
-### THE DISTRICTS OF A CITY: EVERY ONE PLANNED, ITS CHECKS AND FIGURES (lines 1052-1218)
+### 1. THE PORT: THE PROTOTYPE'S TEST DISTRICT, REPLAYED (lines 847-918)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1057 | 161 | **type** `static final class Tally` | Every district of a map planned: how many keep each check, what they draw, what has no place, and what a plan costs. |
-| 1078 | 19 | `void add(CityMap m, CityMap.District d, boolean time)` _(in PlanCheck.Tally)_ | District d of map m planned (and timed, TIMED times after one untimed, when `time`). |
-| 1098 | 58 | `void add(DistrictPlan p, DistrictPlan.Input in, String where)` _(in PlanCheck.Tally)_ |  |
-| 1158 | 5 | `int varied()` _(in PlanCheck.Tally)_ | The open homes cells that took a layout other than the comb or the whole square. |
-| 1165 | 3 | `int homesCells()` _(in PlanCheck.Tally)_ | All the open homes cells, counted once for every plan that has them: a cell that stands in four samples is four. |
-| 1173 | 3 | `int distinctHomesCells()` _(in PlanCheck.Tally)_ | How many different open homes cells the plans held: what HOMES_ENOUGH is a number of. |
-| 1177 | 6 | `static double median(List<Double> v)` _(in PlanCheck.Tally)_ |  |
-| 1184 | 5 | `static double max(List<Double> v)` _(in PlanCheck.Tally)_ |  |
-| 1190 | 22 | `void report(String what)` _(in PlanCheck.Tally)_ |  |
-| 1214 | 3 | `boolean allHold()` _(in PlanCheck.Tally)_ | Whether every check holds on every district (one network where the ground does not part it). |
+| 852 | 38 | `static DistrictPlan.Input testDistrict(BuildingVisual.Type[] types, int budget, boolean prototype)` | The prototype's test district: its ground (TEST_GROUND, the district's frame), its buildings, and one of its three budgets (0 his roads, 1 the same trips paved, 2 half that). |
+| 894 | 24 | `static void replay(BuildingVisual.Type[] types)` |  |
 
-### 5. MAPCHECK'S FIXTURE OF JERUS'S CITY, AND THE DENSE SCREEN (lines 1219-1301)
+### 2. THE GAME'S RULES ON THE TEST DISTRICT (lines 919-956)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1224 | 16 | `static CityMap squareCity(BuildingVisual.Type[] types, long seed, long[] place, double k)` | Jerus's city x k on the design's square city at the dry place, as MapCheck's copies (MapCheck.Squares): his mines no more than its iron sites of their type (since 0.8.0, an Iron Mine's hematite). |
-| 1246 | 16 | `static void denseScreen(BuildingVisual.Type[] types)` | denseCity and denseShown made, if they are not. |
-| 1263 | 38 | `static void fixture(BuildingVisual.Type[] types)` |  |
+| 923 | 33 | `static void gameRules(BuildingVisual.Type[] types)` |  |
 
-### 6. A CITY PLAYED AS THE PLAYTEST PLAYS IT (lines 1302-1378)
+### 3. THE HIGHWAYS (H5) (lines 957-984)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1312 | 55 | `static void played() throws Exception` |  |
+| 961 | 23 | `static void highways(BuildingVisual.Type[] types)` |  |
 
-### 7. ESTATE CELLS LAID TO FIT WHAT THEY HOLD (0.7.90, batch RD5) (lines 1379-1472)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1387 | 13 | `static DistrictPlan.Input estateAlone(BuildingVisual.Type[] types, int type, int count, boolean prototype)` | Each estate-band type on flat owned ground, `count` of it alone, with the game's rules or the prototype's (one spine across every estate cell). |
-| 1402 | 20 | `static long[] estateShare(DistrictPlan p, DistrictPlan.Input in)` | Box plots in a plan's estate cells and their dry ground (the cell's tile, its own arterials with it), and how many it opened. |
-| 1423 | 49 | `static void estateLines(BuildingVisual.Type[] types)` |  |
-
-### 8. INDUSTRY AND THE OUTER KINDS SHARE ESTATE CELLS (0.7.92, batch RD6) (lines 1473-1559)
+### 4. HOW FULL A DISTRICT THE PLAN CAN DRAW (spec 2.10) (lines 985-1057)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1481 | 3 | `static int band(BuildingVisual.Type t)` | A building's band in the plan (spec 2.4): 0 what follows people, 1 industry, 2 the outer kinds - as DistrictPlan deals them. |
-| 1486 | 11 | `static int outerInIndustry(DistrictPlan p, BuildingVisual.Type[] types)` | The outer-kind buildings standing in a cell whose first building is industry's: industry's cells they share. |
-| 1499 | 11 | `static DistrictPlan.Input flatMix(BuildingVisual.Type[] types, double fill, boolean roads, boolean apart)` | Jerus's mix on a flat district at a fill (section 4's), with his roads or none, the bands sharing or apart. |
-| 1511 | 48 | `static void sharedEstates(BuildingVisual.Type[] types)` |  |
+| 990 | 25 | `static void scaled(DistrictPlan.Input in, long[] counts, int dry, double fill, boolean pavedCity)` | Jerus's mix (MapCheck.JERUS_COUNTS) scaled to a share of a district's dry plots, his roads with it - the prototype's scaled_buildings, its fractions by the world's hash. |
+| 1016 | 38 | `static void howFull(BuildingVisual.Type[] types)` |  |
+| 1055 | 3 | `static double pct(long a, long b)` |  |
 
-### 10. HOMES CELLS' STREETS BY A HASH OF THEIR PLACE (CL2) (lines 1560-1920)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1597 | 13 | `static DistrictPlan.Input layoutInput(BuildingVisual.Type[] types, int k, boolean combOnly)` | Section 10's fixture k (LAYOUT_FIXTURES): the flat district with his roads times a factor, or the test district's ground and budget k - 3; with combOnly when asked. |
-| 1612 | 5 | `static int[][] homesByLayout(DistrictPlan p)` | A plan's open homes cells counted by kind (0 long blocks, 1 squared; a boulevard's interior by whether it is squared) and layout. |
-| 1619 | 3 | `static String layoutLine(int[][] n)` | Homes cells by kind and layout as a line. |
-| 1624 | 11 | `static int[] homesKinds(DistrictPlan p)` | A plan's open homes cells: how many, how many squared, how many boulevards, how many of those squared, and how many squared and not boulevards. |
-| 1637 | 22 | `static int deadEnds(DistrictPlan p, boolean variedOnly)` | The dead ends of a plan: street plots (any kind but none) of the frame's interior, not its first or last row or column, with at most one street among their four neighbours - only those inside the interior of a homes c... |
-| 1661 | 19 | `static long[][] homesStreetShare(DistrictPlan p, DistrictPlan.Input in)` | Street plots and dry ground in the open homes cells' tiles (a cell's interior and its own west and north arterials, as Figures.cellStreets has them), by kind and layout: row kind x 3 + layout, {street plots, dry ground}. |
-| 1682 | 4 | `static String shareLine(long[][] s)` | The street share of homesStreetShare() as a line, a layout of a kind at a time. |
-| 1688 | 4 | `static boolean allComb(DistrictPlan p)` | Whether every cell of a plan keeps LAYOUT_TODAY: the comb, the whole square, an estate. |
-| 1694 | 9 | `static boolean crossedCell(DistrictPlan.Input in, int ci, int cj)` | Whether a highway, railway, yard or reserve (Input.fixed) has a plot in the box of the cell (ci, cj), its interior and its ring, or an avenue one in its interior: DistrictPlan's crossed(), such a homes cell keeping th... |
-| 1705 | 5 | `static byte expectedLayout(DistrictPlan p, DistrictPlan.Input in, int c)` | The layout cell c of a plan has to have: its place's (layoutOf of the seed and the cell's north-west plot in the world) for a homes cell no highway, railway, yard or reserve crosses, else LAYOUT_TODAY. |
-| 1711 | 209 | `static void streetLayouts(BuildingVisual.Type[] types)` |  |
-
-### 11. THE ORDER OF ARRIVAL (batch CL3) (lines 1921-2546)
+### THE DISTRICTS OF A CITY: EVERY ONE PLANNED, ITS CHECKS AND FIGURES (lines 1058-1229)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1929 | 62 | **type** `static final class Log` | A log built by hand (CL3): records {month, type, change} in order, how many of the first are one batch, and a carry of {month, type} pairs - what CityMap.District's log is to a plan, written down in a fixture. |
-| 1934 | 4 | `Log add(int month, int type, int change)` _(in PlanCheck.Log)_ |  |
-| 1940 | 4 | `Log batch()` _(in PlanCheck.Log)_ | The records so far are the first batch. |
-| 1946 | 7 | `Log until(int m)` _(in PlanCheck.Log)_ | The log as it stood at the end of month m: its records of that month or before (the first batch kept), the same carry. |
-| 1955 | 5 | `Log copy()` _(in PlanCheck.Log)_ | A copy that goes on from here. |
-| 1962 | 12 | `DistrictPlan.Input into(DistrictPlan.Input in)` _(in PlanCheck.Log)_ | Input `in` given this log, as its arrays and as the counts and road they come to (the drawn types' sums; the road types' plots by kind). |
-| 1976 | 14 | `DistrictPlan.Input attach(DistrictPlan.Input in)` _(in PlanCheck.Log)_ | Input `in` given this log's arrays alone: its counts and road are what it has. |
-| 1996 | 10 | `static DistrictPlan.Input flat(BuildingVisual.Type[] types)` | A flat district, every plot owned, the hub at its middle: the order of arrival's fixture. |
-| 2008 | 8 | `static DistrictPlan.Input input(BuildingVisual.Type[] types, Log log, boolean withLog)` | The flat district with a log, or (`withLog` false) with the counts and road it comes to and no log - today's plan from them, the carry joined. |
-| 2018 | 9 | `static int pick(BuildingVisual.Type[] types, int least, java.util.function.Predicate<BuildingVisual.Type> ok)` | The first type, by id, of the smallest footprint no smaller than `least` plots that `ok` holds of; -1 for none. |
-| 2029 | 9 | `static int pickLargest(BuildingVisual.Type[] types, java.util.function.Predicate<BuildingVisual.Type> ok)` | The first type, by id, of the largest footprint that `ok` holds of. |
-| 2040 | 4 | `static int pavedRoad(BuildingVisual.Type[] types)` | The paved road type: the first whose road is paved. |
-| 2046 | 5 | `static java.util.Set<Long> boxes(DistrictPlan p)` | A plan's boxes, each packed from its place, size and type. |
-| 2052 | 3 | `static long boxKey(DistrictPlan p, int i)` |  |
-| 2057 | 6 | `static int missing(DistrictPlan a, DistrictPlan b)` | How many of a's boxes b does not have: those that moved or went. |
-| 2065 | 6 | `static int missingOff(DistrictPlan a, DistrictPlan b, int x, int y, int w, int h)` | How many of a's boxes with no plot in the w x h rectangle from (x, y) b does not have: those off the rectangle that moved or went. |
-| 2073 | 7 | `static boolean sameCounts(DistrictPlan a, DistrictPlan b)` | Whether two plans hold as many of each type, those placed and those without a place together (MF1: a building moved off a run is placed again or goes on, it is never lost). |
-| 2082 | 5 | `static long boxPlots(DistrictPlan p)` | A plan's box total: its buildings' plots. |
-| 2089 | 4 | `static int cellOfRank(DistrictPlan p, int r)` | The cell with rank r among those a plan opened, or -1. |
-| 2095 | 5 | `static int cellsOpened(DistrictPlan p)` | The cells a plan opened (CLOSED aside). |
-| 2102 | 3 | `static int cellOfBox(DistrictPlan p, int i)` | The cell a box of a plan stands in. |
-| 2107 | 3 | `static int cellApart(int a, int b)` | How many cells apart two cells are, the larger of their columns' and rows' (the eight about a cell are 1). |
-| 2112 | 4 | `static boolean cornerCell(int c)` | Whether cell c is at the corner of the district's grid of cells. |
-| 2122 | 6 | `static DistrictPlan plan(DistrictPlan.Input in)` | The plan of an input, its checks held to account. |
-| 2130 | 4 | `static void siteIn(DistrictPlan.Input in, int c)` | A site plot in the middle of cell c's interior (a resource's field, SITE_FIELD). |
-| 2142 | 3 | `static double slowest(List<Double> ms)` | The slowest of a list of times. |
-| 2146 | 354 | `static void arrivals(BuildingVisual.Type[] types)` |  |
-| 2502 | 5 | `static Log chained(Log own, int[] carry)` | A copy of a log with the carry `carry` in. |
-| 2509 | 6 | `static int[] withoutPair(int[] list, int k)` | A carry with its k-th pair taken out of the list's middle, as a departure of a building passed on once did (before the carry was append-only). |
-| 2517 | 5 | `static int boxesOfType(DistrictPlan p, int t)` | How many of a plan's boxes are of type t. |
-| 2524 | 7 | `static String monthsOf(int[] log)` | The months of an overflow log, as counts: "month x count, ...". |
-| 2533 | 13 | `static Log dealt(DistrictPlan.Input in, CityMap.District d, int batches)` | Each dense-screen district's counts and road dealt over BATCHES months: batch k a share of each type, the first batch the first (CL3). |
+| 1063 | 166 | **type** `static final class Tally` | Every district of a map planned: how many keep each check, what they draw, what has no place, and what a plan costs. |
+| 1087 | 19 | `void add(CityMap m, CityMap.District d, boolean time)` _(in PlanCheck.Tally)_ | District d of map m planned (and timed, TIMED times after one untimed, when `time`). |
+| 1107 | 60 | `void add(DistrictPlan p, DistrictPlan.Input in, String where)` _(in PlanCheck.Tally)_ |  |
+| 1169 | 5 | `int varied()` _(in PlanCheck.Tally)_ | The open homes cells that took a layout other than the comb or the whole square. |
+| 1176 | 3 | `int homesCells()` _(in PlanCheck.Tally)_ | All the open homes cells, counted once for every plan that has them: a cell that stands in four samples is four. |
+| 1184 | 3 | `int distinctHomesCells()` _(in PlanCheck.Tally)_ | How many different open homes cells the plans held: what HOMES_ENOUGH is a number of. |
+| 1188 | 6 | `static double median(List<Double> v)` _(in PlanCheck.Tally)_ |  |
+| 1195 | 5 | `static double max(List<Double> v)` _(in PlanCheck.Tally)_ |  |
+| 1201 | 22 | `void report(String what)` _(in PlanCheck.Tally)_ |  |
+| 1225 | 3 | `boolean allHold()` _(in PlanCheck.Tally)_ | Whether every check holds on every district (one network where the ground does not part it). |
 
-### 12. THE GROUND BOUGHT (batch FX6) (lines 2547-2733)
+### 5. MAPCHECK'S FIXTURE OF JERUS'S CITY, AND THE DENSE SCREEN (lines 1230-1312)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2552 | 8 | `static DistrictPlan.Input cellsOwned(BuildingVisual.Type[] types, int ci0, int ci1, int cj0, int cj1)` | A flat district that owns whole cells ci0 to ci1 across and cj0 to cj1 down, their rings too, the hub at its middle: the ground bought's fixture. |
-| 2565 | 5 | `static int countOwned(DistrictPlan.Input in)` | The plots an input owns. |
-| 2572 | 4 | `static DistrictPlan.Input westOf(DistrictPlan.Input in, int x)` | The input with the ground east of plot column x not owned. |
-| 2578 | 5 | `static int[] boughtOn(DistrictPlan.Input grown, DistrictPlan.Input old, int month)` | The months the ground of `grown` was bought in: `month` for each plot it owns that `old` does not, 0 for the rest. |
-| 2585 | 4 | `static boolean samePlan(DistrictPlan a, DistrictPlan b)` | Whether two plans are the same plan: every box in the order placed, every street, what was left out. |
-| 2591 | 5 | `static int boxesEastOf(DistrictPlan p, int x)` | How many of a plan's boxes lie wholly east of plot column x (the cells bought are east of the old ground). |
-| 2598 | 8 | `static DistrictPlan makeBought(DistrictPlan.Input in, boolean on)` | The plan made with the streets laid on the ground bought inside the open cells (`on`) or without them (FX6's way); the switch back to play's after. |
-| 2608 | 11 | `static boolean[] halfStreets(DistrictPlan p, int cut, int east, int cj0, int cj1, boolean interiors)` | The plots of a plan's cell streets (no avenue plot: the avenues are laid on ground bought as ever) on a cut cell's new half: x past `cut` to `east`, y over the rows of cells cj0 to cj1 and their ring lines; with `inte... |
-| 2621 | 5 | `static int plotsIn(boolean[] a, boolean[] b)` | How many plots a (and b, when it is not null) hold. |
-| 2628 | 4 | `static boolean openedAlike(DistrictPlan a, DistrictPlan b, int c)` | Whether the two plans open cell c the same way: its kind, layout, direction, squareness and boulevard. |
-| 2633 | 100 | `static void groundBought(BuildingVisual.Type[] types)` |  |
+| 1235 | 16 | `static CityMap squareCity(BuildingVisual.Type[] types, long seed, long[] place, double k)` | Jerus's city x k on the design's square city at the dry place, as MapCheck's copies (MapCheck.Squares): his mines no more than its iron sites of their type (since 0.8.0, an Iron Mine's hematite). |
+| 1257 | 16 | `static void denseScreen(BuildingVisual.Type[] types)` | denseCity and denseShown made, if they are not. |
+| 1274 | 38 | `static void fixture(BuildingVisual.Type[] types)` |  |
 
-### 13. THE AVENUES (batch CL4) (lines 2734-3096)
+### 6. A CITY PLAYED AS THE PLAYTEST PLAYS IT (lines 1313-1390)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2742 | 9 | `static boolean allArterial(DistrictPlan p)` | Whether the plan's avenue plot q is a street of an arterial's role (ROLE_ARTERIAL, or ROLE_BOULEVARD on a boulevard's second row). |
-| 2753 | 8 | `static boolean headingsOk()` | Whether CityRuns' heading numbering gives each arm the (dx, dy) and diagCode the harness uses: the arm in a mark is the one CityRuns' own stretches carry. |
-| 2763 | 15 | `static int[] avenueAgainst(DistrictPlan p, Stairs s, java.util.function.IntPredicate allowed)` | The plan's avenue laid against the harness's own: {expected, laid, wrong}, a staircase plot expected where it lies in an open cell's box and `allowed` says the rules let it be laid; wrong counts the plots laid where n... |
-| 2780 | 5 | `static boolean[] avenueMask(DistrictPlan p)` | The plan's avenue plots laid, by plot (a mask of avenue[]), or none. |
-| 2787 | 4 | `static boolean stepLaid(DistrictPlan p, Stairs s, int a, int k)` | Whether the avenue plot of arm a at step k (its S_k) is laid in plan p. |
-| 2792 | 304 | `static void avenues(BuildingVisual.Type[] types)` |  |
+| 1323 | 56 | `static void played() throws Exception` |  |
 
-### 14. THE CURVES (batch CL4, slice C) (lines 3097-3771)
+### 7. ESTATE CELLS LAID TO FIT WHAT THEY HOLD (0.7.90, batch RD5) (lines 1391-1484)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3120 | 6 | `static DistrictPlan.Input farHomes(BuildingVisual.Type[] types, double hubX, double hubY)` | Section 10's LONG fixture (flat ground at his fill, his roads times LONG_ROADS: every homes cell long blocks) with the founding site at (hubX, hubY) in the frame's plots - outside the frame, for a far one. |
-| 3128 | 3 | `static DistrictPlan.Input farHomes(BuildingVisual.Type[] types)` | The far fixture: the founding site FAR_CELLS cells west of the frame, level with its middle. |
-| 3133 | 3 | `static int cellPlot(int x0, int y0, boolean across, int u, int v)` | The frame plot of the cell-axes plot (u, v) of the cell whose interior starts at (x0, y0): u along the long streets, v across them, the long streets running east-west where `across`. |
-| 3138 | 52 | **type** `static final class Crescent` | The harness's own working of a crescent for one bulge (CL4), in the cell's axes, by walking the circle in small steps rather than by DistrictPlan's rows: the plots (u, v) the arc passes through (stair), and those outs... |
-| 3145 | 38 | `Crescent(int s)` _(in PlanCheck.Crescent)_ |  |
-| 3185 | 4 | `static boolean longRow(int v)` _(in PlanCheck.Crescent)_ | Whether (u, v) is on one of the cell's three long streets' rows. |
-| 3192 | 16 | `static int bulgeOf(DistrictPlan p, int c, Crescent[] arcs)` | The cell c's bulge as its streets show it: +1 or -1 where the street plots of its interior are exactly its three long streets and the harness's arc of that bulge (and a boulevard cell's second row of ring), 0 where th... |
-| 3210 | 5 | `static boolean farEnough(DistrictPlan.Input in, int c)` | Whether the middle of cell c of an input lies DistrictPlan.CRESCENT_FROM cells or more from its founding site, in a straight line, as the harness measures it (the squares in plots, against CRESCENT_FROM x CELL squared). |
-| 3217 | 3 | `static boolean hashWants(DistrictPlan.Input in, int c)` | Whether the place's hash and CL2 layout make cell c a crescent, whatever its distance and its ground (DistrictPlan.crescentOf at the cell's place in the world). |
-| 3222 | 4 | `static boolean expectedCrescent(DistrictPlan p, DistrictPlan.Input in, int c)` | The crescent cell a plan opened, as the harness expects it of a long-block homes cell: the place's hash and layout, beyond CRESCENT_FROM, no highway, railway, yard, reserve or avenue in it - and the ground laying the ... |
-| 3228 | 4 | `static DistrictPlan.Curve crescentCurve(DistrictPlan p, int first)` | A crescent curve of plan p whose first plot is the frame plot `first`, or null. |
-| 3234 | 5 | `static boolean[] bandMask(DistrictPlan p)` | The plots every curve of the plan reaches with its band, by plot. |
-| 3241 | 9 | `static int boxesOn(DistrictPlan p, boolean[] mask)` | How many of a plan's boxes stand on a plot of mask. |
-| 3252 | 8 | `static boolean sameCurves(DistrictPlan a, DistrictPlan b)` | Whether two plans have the same curves: kind, circle or vertices, radius, plots and band, in order. |
-| 3262 | 6 | **type** `static final class CrescentStats` | What section 14 finds of a plan's homes cells and crescents (crescentStats()). |
-| 3270 | 69 | `static CrescentStats crescentStats(DistrictPlan p, DistrictPlan.Input in, Crescent[] arcs)` | A plan's homes cells held to what the harness expects of them: each crescent exactly the cell the place, the distance and the crossings make one, its streets its three long streets and the arc the harness walks out, i... |
-| 3341 | 3 | `static boolean holdsApartFromNetwork(Figures f, DistrictPlan p, DistrictPlan.Input in)` | Every check but the one network, which holds on a district planned alone only where the ground leaves it one piece: the map joins a district's pieces across the districts before it, and a district of the dense city's ... |
-| 3345 | 258 | `static void curves(BuildingVisual.Type[] types)` |  |
-| 3608 | 5 | `static int homesIn(DistrictPlan p)` | The homes cells a plan opened. |
-| 3615 | 5 | `static int countTrue(boolean[] mask)` | The plots a mask holds. |
-| 3622 | 67 | `static void shoreCurves(BuildingVisual.Type[] types)` | Section 14 (e): the test district cut by its river and the sea, the game's rules - each street along a cut a curve whose line starts and ends where its plots do, with corners no tighter than their radius, and no box o... |
-| 3691 | 29 | `static void rimCurves(BuildingVisual.Type[] types)` | Section 14 (g), the rim of the dense city: the plans of districts far from its founding site, where crescents are laid in a real city (the screen and the samples of sections 5 and 6 lie within CRESCENT_FROM cells of it). |
-| 3727 | 44 | `static void packing(BuildingVisual.Type[] types)` |  |
+| 1399 | 13 | `static DistrictPlan.Input estateAlone(BuildingVisual.Type[] types, int type, int count, boolean prototype)` | Each estate-band type on flat owned ground, `count` of it alone, with the game's rules or the prototype's (one spine across every estate cell). |
+| 1414 | 20 | `static long[] estateShare(DistrictPlan p, DistrictPlan.Input in)` | Box plots in a plan's estate cells and their dry ground (the cell's tile, its own arterials with it), and how many it opened. |
+| 1435 | 49 | `static void estateLines(BuildingVisual.Type[] types)` |  |
 
-### 9. A SAVE NAMED ON THE COMMAND LINE: EVERY DISTRICT (lines 3772-3866)
+### 8. INDUSTRY AND THE OUTER KINDS SHARE ESTATE CELLS (0.7.92, batch RD6) (lines 1485-1571)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3777 | 89 | `static void save(Path dir) throws Exception` | A save folder's autosave, loaded from a copy (a game run autosaves into any city it loads): every district planned, checked and timed. |
+| 1493 | 3 | `static int band(BuildingVisual.Type t)` | A building's band in the plan (spec 2.4): 0 what follows people, 1 industry, 2 the outer kinds - as DistrictPlan deals them. |
+| 1498 | 11 | `static int outerInIndustry(DistrictPlan p, BuildingVisual.Type[] types)` | The outer-kind buildings standing in a cell whose first building is industry's: industry's cells they share. |
+| 1511 | 11 | `static DistrictPlan.Input flatMix(BuildingVisual.Type[] types, double fill, boolean roads, boolean apart)` | Jerus's mix on a flat district at a fill (section 4's), with his roads or none, the bands sharing or apart. |
+| 1523 | 48 | `static void sharedEstates(BuildingVisual.Type[] types)` |  |
 
-### 15. THE RUNS DATED (batch FX7) (lines 3867-4059)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3875 | 33 | **type** `static final class Runs` | The runs of a fixture, dated (FX7): a record {month, plot, before, after} for each plot whose kind of fixed ground a month changes, in the order laid - what CityMap's journal hands a plan as Input.fixedLog, written do... |
-| 3879 | 4 | `Runs lay(int month, int x, int y, int w, int h, byte kind)` _(in PlanCheck.Runs)_ | A w x h rectangle from plot (x, y) laid as `kind` at `month`, on ground that held no run. |
-| 3885 | 4 | `Runs lift(int month, int x, int y, int w, int h, byte kind)` _(in PlanCheck.Runs)_ | ...and the same rectangle taken away again at `month`. |
-| 3891 | 16 | `DistrictPlan.Input into(DistrictPlan.Input in, int through, boolean dated)` _(in PlanCheck.Runs)_ | `in` given the runs as they stand after the records of the months up to `through` as its fixed ground, and with `dated` those records as its Input.fixedLog. |
-| 3913 | 6 | `static Log runsLog(int house, int shop, int works, int farm, int paved, int months)` | A log of a first batch in month 0 and `months` months of arrivals after it. |
-| 3921 | 3 | `static boolean boxIn(DistrictPlan p, int i, int x, int y, int w, int h)` | Whether box i of plan p has a plot in the w x h rectangle from (x, y). |
-| 3926 | 6 | `static int boxesIn(DistrictPlan p, DistrictPlan old, int x, int y, int w, int h)` | How many of plan p's boxes have a plot in the rectangle; with `old`, only those that plan does not have (the arrivals since it). |
-| 3933 | 126 | `static void runsDated(BuildingVisual.Type[] types)` |  |
-
-### 15b. BUILDINGS MOVE OFF A RUN (batch MF1, 2026-10-28) (lines 4060-4311)
+### 10. HOMES CELLS' STREETS BY A HASH OF THEIR PLACE (CL2) (lines 1572-1932)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4065 | 72 | **type** `static final class Across` | A yard and a highway laid in one month across the boxes of a plan: the runs, where they lie, and how many boxes lie across the yard, beside or on the highway (its verge, H5), and across either. |
-| 4071 | 3 | `Across(DistrictPlan before, int month)` _(in PlanCheck.Across)_ |  |
-| 4076 | 3 | `Across(DistrictPlan before, int month, int decoyMonth)` _(in PlanCheck.Across)_ | ...with a decoy laid in month `decoyMonth` (none for a negative one). |
-| 4081 | 31 | `Across(DistrictPlan before, int month, int decoyMonth, boolean late)` _(in PlanCheck.Across)_ | ...across the boxes placed last when `late` (those in the cells opened last), not those a third and two thirds through. |
-| 4114 | 1 | `boolean onYard(DistrictPlan p, int i)` _(in PlanCheck.Across)_ | Whether box i of p has a plot on the yard. |
-| 4117 | 1 | `boolean onHighway(DistrictPlan p, int i)` _(in PlanCheck.Across)_ | ...or on the highway or in its verge (the ring of plots about it, corners included). |
-| 4120 | 1 | `boolean apart()` _(in PlanCheck.Across)_ | Whether the yard and the highway's ring share no plot. |
-| 4123 | 5 | `int standing(DistrictPlan p)` _(in PlanCheck.Across)_ | How many boxes of p lie on the yard, on the highway or in its verge. |
-| 4130 | 6 | `int missingOff(DistrictPlan a, DistrictPlan b)` _(in PlanCheck.Across)_ | How many of a's boxes off the yard and off the highway's ring b does not have. |
-| 4139 | 21 | `static int[] whereMoved(DistrictPlan before, DistrictPlan after, Across run)` | What became of the boxes a run lies across, the runs laid after the plan before's last month so the moved boxes are the only change: {boxes of before the runs lie across, boxes after has that before has not, of those ... |
-| 4162 | 6 | `static DistrictPlan.Input tightInput(BuildingVisual.Type[] types, Log log)` | The input of a district that owns two cells only, either side of the hub: a district that fills at once. |
-| 4170 | 4 | `static boolean monthsNeverFall(int[] log)` | Whether an overflow log's months never fall (it is append-only, in the order of the events). |
-| 4176 | 5 | `static int[] pairsBefore(int[] log, int month)` | An overflow log's pairs of the months before `month`. |
-| 4183 | 5 | `static int pairsAt(int[] log, int month)` | ...and how many of its pairs are arrivals at `month`. |
-| 4189 | 112 | `static void movedOffRuns(BuildingVisual.Type[] types)` |  |
-| 4303 | 8 | `static int crossingsOn(DistrictPlan p, int x)` | How many plots of column x a plan's streets cross a railway on (the surface's CROSSING flag). |
+| 1609 | 13 | `static DistrictPlan.Input layoutInput(BuildingVisual.Type[] types, int k, boolean combOnly)` | Section 10's fixture k (LAYOUT_FIXTURES): the flat district with his roads times a factor, or the test district's ground and budget k - 3; with combOnly when asked. |
+| 1624 | 5 | `static int[][] homesByLayout(DistrictPlan p)` | A plan's open homes cells counted by kind (0 long blocks, 1 squared; a boulevard's interior by whether it is squared) and layout. |
+| 1631 | 3 | `static String layoutLine(int[][] n)` | Homes cells by kind and layout as a line. |
+| 1636 | 11 | `static int[] homesKinds(DistrictPlan p)` | A plan's open homes cells: how many, how many squared, how many boulevards, how many of those squared, and how many squared and not boulevards. |
+| 1649 | 22 | `static int deadEnds(DistrictPlan p, boolean variedOnly)` | The dead ends of a plan: street plots (any kind but none) of the frame's interior, not its first or last row or column, with at most one street among their four neighbours - only those inside the interior of a homes c... |
+| 1673 | 19 | `static long[][] homesStreetShare(DistrictPlan p, DistrictPlan.Input in)` | Street plots and dry ground in the open homes cells' tiles (a cell's interior and its own west and north arterials, as Figures.cellStreets has them), by kind and layout: row kind x 3 + layout, {street plots, dry ground}. |
+| 1694 | 4 | `static String shareLine(long[][] s)` | The street share of homesStreetShare() as a line, a layout of a kind at a time. |
+| 1700 | 4 | `static boolean allComb(DistrictPlan p)` | Whether every cell of a plan keeps LAYOUT_TODAY: the comb, the whole square, an estate. |
+| 1706 | 9 | `static boolean crossedCell(DistrictPlan.Input in, int ci, int cj)` | Whether a highway, railway, yard or reserve (Input.fixed) has a plot in the box of the cell (ci, cj), its interior and its ring, or an avenue one in its interior: DistrictPlan's crossed(), such a homes cell keeping th... |
+| 1717 | 5 | `static byte expectedLayout(DistrictPlan p, DistrictPlan.Input in, int c)` | The layout cell c of a plan has to have: its place's (layoutOf of the seed and the cell's north-west plot in the world) for a homes cell no highway, railway, yard or reserve crosses, else LAYOUT_TODAY. |
+| 1723 | 209 | `static void streetLayouts(BuildingVisual.Type[] types)` |  |
 
-### 15c. THE GROUND KEPT (batch UP5; FX7's star 3) (lines 4312-4528)
+### 11. THE ORDER OF ARRIVAL (batch CL3) (lines 1933-2558)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4317 | 23 | `static boolean deepSame(Object a, Object b)` | Whether two values are the same all the way down: arrays by their elements, lists by theirs, the rest by equals(). |
-| 4342 | 13 | `static List<String> fieldsDiffering(DistrictPlan a, DistrictPlan b)` | The names of the fields of DistrictPlan, every one of them, on which plans a and b differ: none when they are the same plan in all they hold (boxes, streets, cells, curves, avenues, the overflow, the moves). |
-| 4357 | 10 | `static DistrictPlan makeGround(DistrictPlan.Input in, boolean keep, boolean verify)` | The plan of `in` made with the ground kept between passes (`keep`) or worked whole each time, and with each limited pass checked against the whole ground (`verify`); the switches back to play's after. |
-| 4369 | 12 | `static double planMs(DistrictPlan.Input in, boolean keep, int reps)` | The median of the time, in ms, `reps` plans of `in` take made one way, after two to warm it. |
-| 4387 | 30 | `static DistrictPlan.Input keptInput(BuildingVisual.Type[] types, Log log, Runs runs, boolean bought)` | A district for THE GROUND KEPT: flat, with a river eight plots wide down column 100, a lake, a salt corner with a shallows, steep ground, a field's sites and a mine's, a reserve fixed from the start; its runs, dated, ... |
-| 4419 | 19 | `static Runs keptRuns(int months)` | `runs` given the arms of THE GROUND KEPT's districts: two highway arms and a staircase one growing a plot a month for `months` months, a railway a few plots a month, the last arm's end taken up again, yards laid and l... |
-| 4440 | 11 | `static Log keptLog(int house, int shop, int works, int farm, int paved, int months, int housesAMonth)` | A district's log for THE GROUND KEPT: a first batch in month 0, then a few dozen boxes a month to month `months`, some of them leaving. |
-| 4453 | 5 | `static int boxesOutsideCore(DistrictPlan p)` | How many of a plan's boxes have a plot outside keptInput()'s core (cells 2 to 5 each way): on the ground bought later. |
-| 4459 | 69 | `static void groundKept(BuildingVisual.Type[] types)` |  |
+| 1941 | 62 | **type** `static final class Log` | A log built by hand (CL3): records {month, type, change} in order, how many of the first are one batch, and a carry of {month, type} pairs - what CityMap.District's log is to a plan, written down in a fixture. |
+| 1946 | 4 | `Log add(int month, int type, int change)` _(in PlanCheck.Log)_ |  |
+| 1952 | 4 | `Log batch()` _(in PlanCheck.Log)_ | The records so far are the first batch. |
+| 1958 | 7 | `Log until(int m)` _(in PlanCheck.Log)_ | The log as it stood at the end of month m: its records of that month or before (the first batch kept), the same carry. |
+| 1967 | 5 | `Log copy()` _(in PlanCheck.Log)_ | A copy that goes on from here. |
+| 1974 | 12 | `DistrictPlan.Input into(DistrictPlan.Input in)` _(in PlanCheck.Log)_ | Input `in` given this log, as its arrays and as the counts and road they come to (the drawn types' sums; the road types' plots by kind). |
+| 1988 | 14 | `DistrictPlan.Input attach(DistrictPlan.Input in)` _(in PlanCheck.Log)_ | Input `in` given this log's arrays alone: its counts and road are what it has. |
+| 2008 | 10 | `static DistrictPlan.Input flat(BuildingVisual.Type[] types)` | A flat district, every plot owned, the hub at its middle: the order of arrival's fixture. |
+| 2020 | 8 | `static DistrictPlan.Input input(BuildingVisual.Type[] types, Log log, boolean withLog)` | The flat district with a log, or (`withLog` false) with the counts and road it comes to and no log - today's plan from them, the carry joined. |
+| 2030 | 9 | `static int pick(BuildingVisual.Type[] types, int least, java.util.function.Predicate<BuildingVisual.Type> ok)` | The first type, by id, of the smallest footprint no smaller than `least` plots that `ok` holds of; -1 for none. |
+| 2041 | 9 | `static int pickLargest(BuildingVisual.Type[] types, java.util.function.Predicate<BuildingVisual.Type> ok)` | The first type, by id, of the largest footprint that `ok` holds of. |
+| 2052 | 4 | `static int pavedRoad(BuildingVisual.Type[] types)` | The paved road type: the first whose road is paved. |
+| 2058 | 5 | `static java.util.Set<Long> boxes(DistrictPlan p)` | A plan's boxes, each packed from its place, size and type. |
+| 2064 | 3 | `static long boxKey(DistrictPlan p, int i)` |  |
+| 2069 | 6 | `static int missing(DistrictPlan a, DistrictPlan b)` | How many of a's boxes b does not have: those that moved or went. |
+| 2077 | 6 | `static int missingOff(DistrictPlan a, DistrictPlan b, int x, int y, int w, int h)` | How many of a's boxes with no plot in the w x h rectangle from (x, y) b does not have: those off the rectangle that moved or went. |
+| 2085 | 7 | `static boolean sameCounts(DistrictPlan a, DistrictPlan b)` | Whether two plans hold as many of each type, those placed and those without a place together (MF1: a building moved off a run is placed again or goes on, it is never lost). |
+| 2094 | 5 | `static long boxPlots(DistrictPlan p)` | A plan's box total: its buildings' plots. |
+| 2101 | 4 | `static int cellOfRank(DistrictPlan p, int r)` | The cell with rank r among those a plan opened, or -1. |
+| 2107 | 5 | `static int cellsOpened(DistrictPlan p)` | The cells a plan opened (CLOSED aside). |
+| 2114 | 3 | `static int cellOfBox(DistrictPlan p, int i)` | The cell a box of a plan stands in. |
+| 2119 | 3 | `static int cellApart(int a, int b)` | How many cells apart two cells are, the larger of their columns' and rows' (the eight about a cell are 1). |
+| 2124 | 4 | `static boolean cornerCell(int c)` | Whether cell c is at the corner of the district's grid of cells. |
+| 2134 | 6 | `static DistrictPlan plan(DistrictPlan.Input in)` | The plan of an input, its checks held to account. |
+| 2142 | 4 | `static void siteIn(DistrictPlan.Input in, int c)` | A site plot in the middle of cell c's interior (a resource's field, SITE_FIELD). |
+| 2154 | 3 | `static double slowest(List<Double> ms)` | The slowest of a list of times. |
+| 2158 | 354 | `static void arrivals(BuildingVisual.Type[] types)` |  |
+| 2514 | 5 | `static Log chained(Log own, int[] carry)` | A copy of a log with the carry `carry` in. |
+| 2521 | 6 | `static int[] withoutPair(int[] list, int k)` | A carry with its k-th pair taken out of the list's middle, as a departure of a building passed on once did (before the carry was append-only). |
+| 2529 | 5 | `static int boxesOfType(DistrictPlan p, int t)` | How many of a plan's boxes are of type t. |
+| 2536 | 7 | `static String monthsOf(int[] log)` | The months of an overflow log, as counts: "month x count, ...". |
+| 2545 | 13 | `static Log dealt(DistrictPlan.Input in, CityMap.District d, int batches)` | Each dense-screen district's counts and road dealt over BATCHES months: batch k a share of each type, the first batch the first (CL3). |
 
-### 16. the far bank (FW3) (lines 4529-4577)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4532 | 9 | `static DistrictPlan.Input farBankInput(BuildingVisual.Type[] types, double gravel)` | A river too wide for any bridge across a root district south of its hub: its streets' road counted from the hub's side. |
-| 4543 | 11 | `static double[] farBankWidths(DistrictPlan p)` | The surfaced width over a plan's surfaced streets (kind TRACK to HIGHWAY), [network, parted], and their plot counts. |
-| 4555 | 22 | `static void farBank(BuildingVisual.Type[] types)` |  |
-
-### 17. a street piece buildings wall in (FW11) (lines 4578-4710)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4587 | 7 | `static void count(Tally t)` | A section's tally of one city added to the cities' (FW11). |
-| 4604 | 16 | `static void planDrawn(CityMap map, Tally t, List<DistrictPlan.Input> walledIns, boolean[] ok)` | Every district of a map planned as the map draws it, each from its job's input, and tallied: those planned again kept in walledIns, ok[0] cleared where a plan is not the same plan made twice (boxes, streets, ways kept... |
-| 4622 | 22 | `static boolean wallBounds(DistrictPlan p, DistrictPlan.Input in)` | The incoming journal survives, its active plots are exactly the kept way, and a new keep requires and results from a retry. |
-| 4645 | 65 | `static void walledIn(BuildingVisual.Type[] catalog) throws Exception` |  |
-
-### 18. a street piece the houses on a resource field wall in (LC3, EM1-M) (lines 4711-5024)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4721 | 16 | `static DistrictPlan.Input fieldBelt(BuildingVisual.Type[] types, int house, int houses)` | LC3's district, built to cause the case: the hub's own cell, owned whole, with a band LATTICE - 1 plots wide across it between two of its lattice columns that is a mine's site (SITE_MINED: no street, no building, no w... |
-| 4739 | 9 | `static int[] housesOnField(DistrictPlan p, DistrictPlan.Input in)` | The boxes of a plan with a plot on a resource field's plots, and those plots. |
-| 4749 | 41 | `static void fieldWall(BuildingVisual.Type[] types)` |  |
-| 4792 | 66 | `static void fieldWallArrivals(BuildingVisual.Type[] types)` | A dated field belt keeps its first way while later houses arrive (DM2). |
-| 4860 | 27 | `static void datedWallEvents(BuildingVisual.Type[] types)` | A recorded way moves only its intersecting box. |
-| 4889 | 80 | `static void firstExclusion(BuildingVisual.Type[] types)` | A first site or shore adjustment changes today's units without reordering or netting the district's earlier raw history. |
-| 4971 | 5 | `static Object[] exclusionState(CityMap.District district)` | A copy of every source exclusion record, its totals and stamps, and the district's unchanged raw log and boundary. |
-| 4978 | 7 | `static DistrictPlan.Input exclusionInput(CityMap map, CityMap.District district, BuildingVisual.Type[] types, Log log, int excl...` | Rebuilds the raw input after the source records have already established how many units are excluded now. |
-| 4987 | 37 | `static void wallPurchaseMonth(BuildingVisual.Type[] types)` | A purchase in the picture's month can release an unused way without dating a record in the future (DM2). |
-
-### 19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08) (lines 5025-5350)
+### 12. THE GROUND BOUGHT (batch FX6) (lines 2559-2745)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5030 | 12 | `static int[] streetsIn(DistrictPlan p, int x, int y, int w, int h)` | The street plots (any kind), the avenue plots and the plots beneath a highway in the w x h box from (x, y) of plan p. |
-| 5047 | 63 | `static void interchangeAvenue(BuildingVisual.Type[] types)` |  |
-| 5132 | 160 | `static void diagonalFrontage(BuildingVisual.Type[] types)` | MF2's unchanged probe, now the next permanent section (FA1). |
-| 5294 | 24 | `static void frontageGrowth(BuildingVisual.Type[] types)` | Later arrivals open more frontage cells without disturbing the cells already built. |
-| 5320 | 30 | `static int frontageFloorBad(DistrictPlan p)` | The extra arms' lines read independently from the painted staircase marks, with the existing junction law. |
+| 2564 | 8 | `static DistrictPlan.Input cellsOwned(BuildingVisual.Type[] types, int ci0, int ci1, int cj0, int cj1)` | A flat district that owns whole cells ci0 to ci1 across and cj0 to cj1 down, their rings too, the hub at its middle: the ground bought's fixture. |
+| 2577 | 5 | `static int countOwned(DistrictPlan.Input in)` | The plots an input owns. |
+| 2584 | 4 | `static DistrictPlan.Input westOf(DistrictPlan.Input in, int x)` | The input with the ground east of plot column x not owned. |
+| 2590 | 5 | `static int[] boughtOn(DistrictPlan.Input grown, DistrictPlan.Input old, int month)` | The months the ground of `grown` was bought in: `month` for each plot it owns that `old` does not, 0 for the rest. |
+| 2597 | 4 | `static boolean samePlan(DistrictPlan a, DistrictPlan b)` | Whether two plans are the same plan: every box in the order placed, every street, what was left out. |
+| 2603 | 5 | `static int boxesEastOf(DistrictPlan p, int x)` | How many of a plan's boxes lie wholly east of plot column x (the cells bought are east of the old ground). |
+| 2610 | 8 | `static DistrictPlan makeBought(DistrictPlan.Input in, boolean on)` | The plan made with the streets laid on the ground bought inside the open cells (`on`) or without them (FX6's way); the switch back to play's after. |
+| 2620 | 11 | `static boolean[] halfStreets(DistrictPlan p, int cut, int east, int cj0, int cj1, boolean interiors)` | The plots of a plan's cell streets (no avenue plot: the avenues are laid on ground bought as ever) on a cut cell's new half: x past `cut` to `east`, y over the rows of cells cj0 to cj1 and their ring lines; with `inte... |
+| 2633 | 5 | `static int plotsIn(boolean[] a, boolean[] b)` | How many plots a (and b, when it is not null) hold. |
+| 2640 | 4 | `static boolean openedAlike(DistrictPlan a, DistrictPlan b, int c)` | Whether the two plans open cell c the same way: its kind, layout, direction, squareness and boulevard. |
+| 2645 | 100 | `static void groundBought(BuildingVisual.Type[] types)` |  |
+
+### 12b. the + floor on ground bought (FB5) (lines 2746-2824)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2752 | 5 | `static DistrictPlan.Input floorGround(BuildingVisual.Type[] types, int cut, boolean across, boolean cutOff)` | The input of 12b's district: cells 2 to 5 each way owned whole, the hub at their middle; the ground past plot `cut` (a column when `across`, else a row) left out when `cutOff`. |
+| 2759 | 8 | `static DistrictPlan makeFloored(DistrictPlan.Input in, boolean on)` | The plan made with the + floor on ground bought (`on`, play's) or without it; the switch back to play's after. |
+| 2768 | 56 | `static void floorBought(BuildingVisual.Type[] types)` |  |
+
+### 13. THE AVENUES (batch CL4) (lines 2825-3187)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2833 | 9 | `static boolean allArterial(DistrictPlan p)` | Whether the plan's avenue plot q is a street of an arterial's role (ROLE_ARTERIAL, or ROLE_BOULEVARD on a boulevard's second row). |
+| 2844 | 8 | `static boolean headingsOk()` | Whether CityRuns' heading numbering gives each arm the (dx, dy) and diagCode the harness uses: the arm in a mark is the one CityRuns' own stretches carry. |
+| 2854 | 15 | `static int[] avenueAgainst(DistrictPlan p, Stairs s, java.util.function.IntPredicate allowed)` | The plan's avenue laid against the harness's own: {expected, laid, wrong}, a staircase plot expected where it lies in an open cell's box and `allowed` says the rules let it be laid; wrong counts the plots laid where n... |
+| 2871 | 5 | `static boolean[] avenueMask(DistrictPlan p)` | The plan's avenue plots laid, by plot (a mask of avenue[]), or none. |
+| 2878 | 4 | `static boolean stepLaid(DistrictPlan p, Stairs s, int a, int k)` | Whether the avenue plot of arm a at step k (its S_k) is laid in plan p. |
+| 2883 | 304 | `static void avenues(BuildingVisual.Type[] types)` |  |
+
+### 14. THE CURVES (batch CL4, slice C) (lines 3188-3862)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3211 | 6 | `static DistrictPlan.Input farHomes(BuildingVisual.Type[] types, double hubX, double hubY)` | Section 10's LONG fixture (flat ground at his fill, his roads times LONG_ROADS: every homes cell long blocks) with the founding site at (hubX, hubY) in the frame's plots - outside the frame, for a far one. |
+| 3219 | 3 | `static DistrictPlan.Input farHomes(BuildingVisual.Type[] types)` | The far fixture: the founding site FAR_CELLS cells west of the frame, level with its middle. |
+| 3224 | 3 | `static int cellPlot(int x0, int y0, boolean across, int u, int v)` | The frame plot of the cell-axes plot (u, v) of the cell whose interior starts at (x0, y0): u along the long streets, v across them, the long streets running east-west where `across`. |
+| 3229 | 52 | **type** `static final class Crescent` | The harness's own working of a crescent for one bulge (CL4), in the cell's axes, by walking the circle in small steps rather than by DistrictPlan's rows: the plots (u, v) the arc passes through (stair), and those outs... |
+| 3236 | 38 | `Crescent(int s)` _(in PlanCheck.Crescent)_ |  |
+| 3276 | 4 | `static boolean longRow(int v)` _(in PlanCheck.Crescent)_ | Whether (u, v) is on one of the cell's three long streets' rows. |
+| 3283 | 16 | `static int bulgeOf(DistrictPlan p, int c, Crescent[] arcs)` | The cell c's bulge as its streets show it: +1 or -1 where the street plots of its interior are exactly its three long streets and the harness's arc of that bulge (and a boulevard cell's second row of ring), 0 where th... |
+| 3301 | 5 | `static boolean farEnough(DistrictPlan.Input in, int c)` | Whether the middle of cell c of an input lies DistrictPlan.CRESCENT_FROM cells or more from its founding site, in a straight line, as the harness measures it (the squares in plots, against CRESCENT_FROM x CELL squared). |
+| 3308 | 3 | `static boolean hashWants(DistrictPlan.Input in, int c)` | Whether the place's hash and CL2 layout make cell c a crescent, whatever its distance and its ground (DistrictPlan.crescentOf at the cell's place in the world). |
+| 3313 | 4 | `static boolean expectedCrescent(DistrictPlan p, DistrictPlan.Input in, int c)` | The crescent cell a plan opened, as the harness expects it of a long-block homes cell: the place's hash and layout, beyond CRESCENT_FROM, no highway, railway, yard, reserve or avenue in it - and the ground laying the ... |
+| 3319 | 4 | `static DistrictPlan.Curve crescentCurve(DistrictPlan p, int first)` | A crescent curve of plan p whose first plot is the frame plot `first`, or null. |
+| 3325 | 5 | `static boolean[] bandMask(DistrictPlan p)` | The plots every curve of the plan reaches with its band, by plot. |
+| 3332 | 9 | `static int boxesOn(DistrictPlan p, boolean[] mask)` | How many of a plan's boxes stand on a plot of mask. |
+| 3343 | 8 | `static boolean sameCurves(DistrictPlan a, DistrictPlan b)` | Whether two plans have the same curves: kind, circle or vertices, radius, plots and band, in order. |
+| 3353 | 6 | **type** `static final class CrescentStats` | What section 14 finds of a plan's homes cells and crescents (crescentStats()). |
+| 3361 | 69 | `static CrescentStats crescentStats(DistrictPlan p, DistrictPlan.Input in, Crescent[] arcs)` | A plan's homes cells held to what the harness expects of them: each crescent exactly the cell the place, the distance and the crossings make one, its streets its three long streets and the arc the harness walks out, i... |
+| 3432 | 3 | `static boolean holdsApartFromNetwork(Figures f, DistrictPlan p, DistrictPlan.Input in)` | Every check but the one network, which holds on a district planned alone only where the ground leaves it one piece: the map joins a district's pieces across the districts before it, and a district of the dense city's ... |
+| 3436 | 258 | `static void curves(BuildingVisual.Type[] types)` |  |
+| 3699 | 5 | `static int homesIn(DistrictPlan p)` | The homes cells a plan opened. |
+| 3706 | 5 | `static int countTrue(boolean[] mask)` | The plots a mask holds. |
+| 3713 | 67 | `static void shoreCurves(BuildingVisual.Type[] types)` | Section 14 (e): the test district cut by its river and the sea, the game's rules - each street along a cut a curve whose line starts and ends where its plots do, with corners no tighter than their radius, and no box o... |
+| 3782 | 29 | `static void rimCurves(BuildingVisual.Type[] types)` | Section 14 (g), the rim of the dense city: the plans of districts far from its founding site, where crescents are laid in a real city (the screen and the samples of sections 5 and 6 lie within CRESCENT_FROM cells of it). |
+| 3818 | 44 | `static void packing(BuildingVisual.Type[] types)` |  |
+
+### 9. A SAVE NAMED ON THE COMMAND LINE: EVERY DISTRICT (lines 3863-3957)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3868 | 89 | `static void save(Path dir) throws Exception` | A save folder's autosave, loaded from a copy (a game run autosaves into any city it loads): every district planned, checked and timed. |
+
+### 15. THE RUNS DATED (batch FX7) (lines 3958-4150)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3966 | 33 | **type** `static final class Runs` | The runs of a fixture, dated (FX7): a record {month, plot, before, after} for each plot whose kind of fixed ground a month changes, in the order laid - what CityMap's journal hands a plan as Input.fixedLog, written do... |
+| 3970 | 4 | `Runs lay(int month, int x, int y, int w, int h, byte kind)` _(in PlanCheck.Runs)_ | A w x h rectangle from plot (x, y) laid as `kind` at `month`, on ground that held no run. |
+| 3976 | 4 | `Runs lift(int month, int x, int y, int w, int h, byte kind)` _(in PlanCheck.Runs)_ | ...and the same rectangle taken away again at `month`. |
+| 3982 | 16 | `DistrictPlan.Input into(DistrictPlan.Input in, int through, boolean dated)` _(in PlanCheck.Runs)_ | `in` given the runs as they stand after the records of the months up to `through` as its fixed ground, and with `dated` those records as its Input.fixedLog. |
+| 4004 | 6 | `static Log runsLog(int house, int shop, int works, int farm, int paved, int months)` | A log of a first batch in month 0 and `months` months of arrivals after it. |
+| 4012 | 3 | `static boolean boxIn(DistrictPlan p, int i, int x, int y, int w, int h)` | Whether box i of plan p has a plot in the w x h rectangle from (x, y). |
+| 4017 | 6 | `static int boxesIn(DistrictPlan p, DistrictPlan old, int x, int y, int w, int h)` | How many of plan p's boxes have a plot in the rectangle; with `old`, only those that plan does not have (the arrivals since it). |
+| 4024 | 126 | `static void runsDated(BuildingVisual.Type[] types)` |  |
+
+### 15b. BUILDINGS MOVE OFF A RUN (batch MF1, 2026-10-28) (lines 4151-4402)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4156 | 72 | **type** `static final class Across` | A yard and a highway laid in one month across the boxes of a plan: the runs, where they lie, and how many boxes lie across the yard, beside or on the highway (its verge, H5), and across either. |
+| 4162 | 3 | `Across(DistrictPlan before, int month)` _(in PlanCheck.Across)_ |  |
+| 4167 | 3 | `Across(DistrictPlan before, int month, int decoyMonth)` _(in PlanCheck.Across)_ | ...with a decoy laid in month `decoyMonth` (none for a negative one). |
+| 4172 | 31 | `Across(DistrictPlan before, int month, int decoyMonth, boolean late)` _(in PlanCheck.Across)_ | ...across the boxes placed last when `late` (those in the cells opened last), not those a third and two thirds through. |
+| 4205 | 1 | `boolean onYard(DistrictPlan p, int i)` _(in PlanCheck.Across)_ | Whether box i of p has a plot on the yard. |
+| 4208 | 1 | `boolean onHighway(DistrictPlan p, int i)` _(in PlanCheck.Across)_ | ...or on the highway or in its verge (the ring of plots about it, corners included). |
+| 4211 | 1 | `boolean apart()` _(in PlanCheck.Across)_ | Whether the yard and the highway's ring share no plot. |
+| 4214 | 5 | `int standing(DistrictPlan p)` _(in PlanCheck.Across)_ | How many boxes of p lie on the yard, on the highway or in its verge. |
+| 4221 | 6 | `int missingOff(DistrictPlan a, DistrictPlan b)` _(in PlanCheck.Across)_ | How many of a's boxes off the yard and off the highway's ring b does not have. |
+| 4230 | 21 | `static int[] whereMoved(DistrictPlan before, DistrictPlan after, Across run)` | What became of the boxes a run lies across, the runs laid after the plan before's last month so the moved boxes are the only change: {boxes of before the runs lie across, boxes after has that before has not, of those ... |
+| 4253 | 6 | `static DistrictPlan.Input tightInput(BuildingVisual.Type[] types, Log log)` | The input of a district that owns two cells only, either side of the hub: a district that fills at once. |
+| 4261 | 4 | `static boolean monthsNeverFall(int[] log)` | Whether an overflow log's months never fall (it is append-only, in the order of the events). |
+| 4267 | 5 | `static int[] pairsBefore(int[] log, int month)` | An overflow log's pairs of the months before `month`. |
+| 4274 | 5 | `static int pairsAt(int[] log, int month)` | ...and how many of its pairs are arrivals at `month`. |
+| 4280 | 112 | `static void movedOffRuns(BuildingVisual.Type[] types)` |  |
+| 4394 | 8 | `static int crossingsOn(DistrictPlan p, int x)` | How many plots of column x a plan's streets cross a railway on (the surface's CROSSING flag). |
+
+### 15c. THE GROUND KEPT (batch UP5; FX7's star 3) (lines 4403-4619)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4408 | 23 | `static boolean deepSame(Object a, Object b)` | Whether two values are the same all the way down: arrays by their elements, lists by theirs, the rest by equals(). |
+| 4433 | 13 | `static List<String> fieldsDiffering(DistrictPlan a, DistrictPlan b)` | The names of the fields of DistrictPlan, every one of them, on which plans a and b differ: none when they are the same plan in all they hold (boxes, streets, cells, curves, avenues, the overflow, the moves). |
+| 4448 | 10 | `static DistrictPlan makeGround(DistrictPlan.Input in, boolean keep, boolean verify)` | The plan of `in` made with the ground kept between passes (`keep`) or worked whole each time, and with each limited pass checked against the whole ground (`verify`); the switches back to play's after. |
+| 4460 | 12 | `static double planMs(DistrictPlan.Input in, boolean keep, int reps)` | The median of the time, in ms, `reps` plans of `in` take made one way, after two to warm it. |
+| 4478 | 30 | `static DistrictPlan.Input keptInput(BuildingVisual.Type[] types, Log log, Runs runs, boolean bought)` | A district for THE GROUND KEPT: flat, with a river eight plots wide down column 100, a lake, a salt corner with a shallows, steep ground, a field's sites and a mine's, a reserve fixed from the start; its runs, dated, ... |
+| 4510 | 19 | `static Runs keptRuns(int months)` | `runs` given the arms of THE GROUND KEPT's districts: two highway arms and a staircase one growing a plot a month for `months` months, a railway a few plots a month, the last arm's end taken up again, yards laid and l... |
+| 4531 | 11 | `static Log keptLog(int house, int shop, int works, int farm, int paved, int months, int housesAMonth)` | A district's log for THE GROUND KEPT: a first batch in month 0, then a few dozen boxes a month to month `months`, some of them leaving. |
+| 4544 | 5 | `static int boxesOutsideCore(DistrictPlan p)` | How many of a plan's boxes have a plot outside keptInput()'s core (cells 2 to 5 each way): on the ground bought later. |
+| 4550 | 69 | `static void groundKept(BuildingVisual.Type[] types)` |  |
+
+### 16. the far bank (FW3) (lines 4620-4668)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4623 | 9 | `static DistrictPlan.Input farBankInput(BuildingVisual.Type[] types, double gravel)` | A river too wide for any bridge across a root district south of its hub: its streets' road counted from the hub's side. |
+| 4634 | 11 | `static double[] farBankWidths(DistrictPlan p)` | The surfaced width over a plan's surfaced streets (kind TRACK to HIGHWAY), [network, parted], and their plot counts. |
+| 4646 | 22 | `static void farBank(BuildingVisual.Type[] types)` |  |
+
+### 17. a street piece buildings wall in (FW11) (lines 4669-4801)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4678 | 7 | `static void count(Tally t)` | A section's tally of one city added to the cities' (FW11). |
+| 4695 | 16 | `static void planDrawn(CityMap map, Tally t, List<DistrictPlan.Input> walledIns, boolean[] ok)` | Every district of a map planned as the map draws it, each from its job's input, and tallied: those planned again kept in walledIns, ok[0] cleared where a plan is not the same plan made twice (boxes, streets, ways kept... |
+| 4713 | 22 | `static boolean wallBounds(DistrictPlan p, DistrictPlan.Input in)` | The incoming journal survives, its active plots are exactly the kept way, and a new keep requires and results from a retry. |
+| 4736 | 65 | `static void walledIn(BuildingVisual.Type[] catalog) throws Exception` |  |
+
+### 18. a street piece the houses on a resource field wall in (LC3, EM1-M) (lines 4802-5115)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4812 | 16 | `static DistrictPlan.Input fieldBelt(BuildingVisual.Type[] types, int house, int houses)` | LC3's district, built to cause the case: the hub's own cell, owned whole, with a band LATTICE - 1 plots wide across it between two of its lattice columns that is a mine's site (SITE_MINED: no street, no building, no w... |
+| 4830 | 9 | `static int[] housesOnField(DistrictPlan p, DistrictPlan.Input in)` | The boxes of a plan with a plot on a resource field's plots, and those plots. |
+| 4840 | 41 | `static void fieldWall(BuildingVisual.Type[] types)` |  |
+| 4883 | 66 | `static void fieldWallArrivals(BuildingVisual.Type[] types)` | A dated field belt keeps its first way while later houses arrive (DM2). |
+| 4951 | 27 | `static void datedWallEvents(BuildingVisual.Type[] types)` | A recorded way moves only its intersecting box. |
+| 4980 | 80 | `static void firstExclusion(BuildingVisual.Type[] types)` | A first site or shore adjustment changes today's units without reordering or netting the district's earlier raw history. |
+| 5062 | 5 | `static Object[] exclusionState(CityMap.District district)` | A copy of every source exclusion record, its totals and stamps, and the district's unchanged raw log and boundary. |
+| 5069 | 7 | `static DistrictPlan.Input exclusionInput(CityMap map, CityMap.District district, BuildingVisual.Type[] types, Log log, int excl...` | Rebuilds the raw input after the source records have already established how many units are excluded now. |
+| 5078 | 37 | `static void wallPurchaseMonth(BuildingVisual.Type[] types)` | A purchase in the picture's month can release an unused way without dating a record in the future (DM2). |
+
+### 19. NO AVENUE THROUGH AN INTERCHANGE (batch MF2, 2026-11-08) (lines 5116-5441)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5121 | 12 | `static int[] streetsIn(DistrictPlan p, int x, int y, int w, int h)` | The street plots (any kind), the avenue plots and the plots beneath a highway in the w x h box from (x, y) of plan p. |
+| 5138 | 63 | `static void interchangeAvenue(BuildingVisual.Type[] types)` |  |
+| 5223 | 160 | `static void diagonalFrontage(BuildingVisual.Type[] types)` | MF2's unchanged probe, now the next permanent section (FA1). |
+| 5385 | 24 | `static void frontageGrowth(BuildingVisual.Type[] types)` | Later arrivals open more frontage cells without disturbing the cells already built. |
+| 5411 | 30 | `static int frontageFloorBad(DistrictPlan p)` | The extra arms' lines read independently from the painted staircase marks, with the existing junction law. |
 
