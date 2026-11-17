@@ -168,27 +168,32 @@ same-Tooltip and per-screen carry checks are hard again.
 **The runs.**
 - Run 4: KeptCheck direct on `3aa0c92e`.
 - Run 5: KeptCheck direct on `0a2bb6a4`.
-- Run 6: `./batch-check.sh KeptCheck` on `20a5b55e`, exit 0 ("suite OK - 1 harnesses"; Stale 0 firm).
+- Run 6: `./batch-check.sh KeptCheck` on `20a5b55e`, exit 0. This was the commit REV-FB6-1 read (`7ce10a73` with its records).
+- Run 7: `./batch-check.sh KeptCheck` on `316fedfa`, after REV-FB6-1's mends, exit 4. 63's settled run was red at
+  76.2%: it watched the first settled bond, #3089, which was repaid at par a month later.
+- Run 8: `./batch-check.sh KeptCheck` on `41132745`, exit 3 ("known red only"; Stale 0 firm). That commit takes the
+  settled bond that runs longest.
 
-Runs 4 and 5 were direct because the suite's 1,740 s limit ended run 1 under the ensemble's load. Run 5's one
-red was the hand buy that run 6 replaced. Every KeptCheck section is green in run 6, 78 included.
+Runs 4 and 5 were direct because the suite's 1,740 s limit ended run 1 under the ensemble's load. In runs 7 and 8
+the one other red is section 78's slider ("...and the page is the same slider, kept, equal to a page built new").
+That is LX1's known red under KRT1, which the brief leaves alone; it was green in run 6.
 
 **The pick.** `sh tools/pick.sh origin/main HEAD` picks 9 of 218: ChartFitCheck, KeptCheck, MapCheck,
 MoneyWordsCheck, ResearchViewCheck, SaveFileCheck, ShortSellingCheck, TimingCheck, ToastCheck. Only KeptCheck was
 run before the dry run, as the brief says.
 
-| row | red before | green after (run 6 unless named) |
+| row | red before | green after (run 8 unless named) |
 |---|---|---|
-| KBF1, 44 | BS1's path: 79.6%, 74 of 93 kept (BS1 notes) | 100000 x Crude Pipeline, short by 601.4B, bids 47.7B and 42.8B: both short four times over; the first draw's 4 lines and the cap's chips; 93 of 93 handed back (run 4) |
+| KBF1, 44 | BS1's path: 79.6%, 74 of 93 kept (BS1 notes) | short page: 100000 x Crude Pipeline, short by 601.4B, bids 47.7B and 42.8B, both short four times over; the first draw's 4 lines and the cap's chips; 93 of 93 handed back. Covered page: 100 x Electric Arc Furnace, short of cash by 317.9M, both offers lending four times that; no shortfall line, no chips; 74 of 74 |
 | KS2, 51 | RB1 §7: "no month in twelve moved the figures", the count-up line FAIL | Construction swung 1.500% to 1.562% (3 steps of $100.0M), every rung OK, the guards out |
 | KS2, 66 | this branch before the fix: the only paper fell due at month 2323, "the box is not on the page a month later" FAIL | paper due month 3581, 60 months more; the boxes OK |
 | KS2, 67 | RB1 §7 and this branch: "a bookRow was found..." FAIL / OBSERVED | the same paper; "a bookRow was found on a money page of this city" OK |
-| KF63, line 16 | this branch: 81.5% after "every row that folds opened on Portfolio", and 46.0% after "B:3015: sell by amount at fair"; main/PO1: 88.7% | held bond B:3094 runs 22 months, past its 2; free bond B:3213 runs 119, past its 28; the rule held still (33 lots, then 15, none new); every run over nine in ten |
-| lines 48 to 50 | LX1's played city: 61 securities against 80; one older year | 131 securities against 80; Show more reaches page 3; 9 older years |
+| KF63, line 16 | this branch: 81.5% after "every row that folds opened on Portfolio", and 46.0% after "B:3015: sell by amount at fair"; main/PO1: 88.7% | held bond B:3050 runs 16 months, past its 2; free bond B:3151 runs 119, past its 28; the rule held still (28 lots, then 14, none new). Let go a month: 44 holdings settled; B:3168 (113 months) watched with its buy and sell reviews; 97.5% at the fewest; nothing else came after (14 lots, then 56) |
+| lines 48 to 50 | LX1's played city: 61 securities against 80; one older year | 131 securities against 80; Show more reaches page 3; 9 older years. The fixtures did not fire on this path (§3) |
 | line 33, 64 | FB2: 7 of 10 | 12 of 12 |
-| KHT1, 89 | BS1's path: a kept Label lost its tip to an emptied cell | 0 emptied on every page; none lost; the same Tooltip; every screen carries tips |
-| KS1-Saved, line 15 | run 1 and run 4: not landed after 60 s | runs 5 and 6 landed (16.8 s and 8.8 s, the machine 47% busy in run 6); filed back as KRW1 (§4) |
-| line 35, 55 | R6b's dry run only (256 of 299) | 193 of 192 in runs 4 to 6; filed back as KBP1 (§6) |
+| KHT1, 89 | BS1's path: a kept Label lost its tip to an emptied cell | 0 cells closed on all six pages, and the month alone would have closed 0 here; none lost; the same Tooltip; every screen carries tips |
+| KS1-Saved, line 15 | run 1 and run 4: not landed after 60 s | landed in runs 5, 6 and 8 (16.8 s, 8.8 s, 22.9 s; run 8: 0.3 s of CPU, the machine 43% busy); filed back as KRW1 (§4) |
+| line 35, 55 | R6b's dry run only (256 of 299) | the Bank's Profit page 192 of 192; filed back as KBP1 (§6) |
 
 ## 8. The dry run
 
