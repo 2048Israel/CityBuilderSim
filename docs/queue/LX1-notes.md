@@ -143,14 +143,58 @@ after (seed 0 551k against 633k at m2400 and 5.5M against 1.9M at m3996; seed 1 
 budget's size is LQ1's question (the ship file's queued row): BEA's other retail is a few per cent of GDP, the luxury
 margin here 10-30% of the business sectors' value added.
 
+## 5. The checks
+
+- **`LuxuryRetailCheck`** (new). Section 1, the catalogue: each luxury template's payroll at the ladder's wages
+  (`PayTier`) over its coverage's month of margin at the planner's settling margin (2.6585x, `TARGET_HEADROOM`'s
+  queue, struck from the model's own `MARGIN_FLOOR`/`MARGIN_CEILING`) is in BEA's band, `LABOUR_SHARE` divided and
+  multiplied by `LABOUR_SHARE_FACTOR` (20.8-83.4%). Section 2, the fixture: a 200-house town of 24 months, Luxury
+  Retail held; the households credited a wealth that asks for two Boutiques' coverage; the Boutiques the queue asks for
+  built standing; 24 months played; a year of its `SectorBooks` read as LS1 reads them. Section 3: the investor's
+  estimate of one more Boutique is still a profit. On this balance (and on the merged tree, 3ea6cf35b): all passed,
+  Boutique 33.4%, Department Store 32.9%, the town's year 54.7% ($32.937k of payroll on $61.622k of margin less
+  $1.444k; 22.1 of 24 posts filled, 0.48 pieces a post a month, the town's pay 1.10 of the ladder), one more Boutique
+  +$1.68k a month.
+- **Red on main, by hand**: main's two templates put back in `buildings.json` and `BuildingManager` for one run, then
+  restored (log `target/lx1/check-main.txt`): exit 1, "LuxuryRetailCheck: 3 FAILED":
+  - "Boutique: its payroll at the ladder over a full month's margin is in BEA's band FAIL 0.6%: 7 posts, $0.787k of
+    wages, on 320 pieces at $0.3864k of margin each"
+  - "Department Store: its payroll at the ladder over a full month's margin is in BEA's band FAIL 0.6%: 91 posts,
+    $10.181k of wages, on 4,200 pieces at $0.3864k of margin each"
+  - "a year of the town's Boutiques: payroll over value added (LS1's share) is in BEA's band FAIL 1.3%: $30.124k of
+    payroll on $2,339.858k of margin less $1.450k of power, water and upkeep"
+  Section 3 passes on main too ($62.96k a month): it guards the change, not main.
+- **The fixture's first two forms failed, and why** (kept so the fixture's size is not taken as arbitrary): a 60-house
+  town had no buyer at the planner's margin after 24 months, so the fortune; a town too small for its posts filled
+  6.1 of 24 at twice the ladder and read 107% with a loss, so 200 houses (439 people, its workers outnumbering the
+  posts).
+- **`BuildingDataCheck`**: the built-ins match `buildings.json` exactly, before and after the merge.
+- **The harnesses that name the luxury shops** (`BankCheck`, `BuildCardCheck`, `ForeignCheck`, `GdpCheck`,
+  `InvestCheck`, `KeptCheck`, `LuxuryRetailCheck`, `MonetaryCheck`, `NewGameCheck`, `RestaurantsCheck`,
+  `SectorStatementCheck`, `TradeCostCheck`, `TreasuryCheck`, `VanCheck`, `BuildingDataCheck`, with `CentralBankCheck`
+  and `YoungBankCheck` the suite added), on 96dae306b: 13 passed; `InvestCheck` and `YoungBankCheck` red on main's
+  recorded lines; two NEW. `TradeCostCheck`: "Boutique: three loads add to the one FAIL 7.999999999999999 != 8.0",
+  mended in `loadOf` (section 2), passing since. `KeptCheck`: the fund's fold fixture, below.
+- **`KeptCheck`, section 63, the city's fund.** Its fixtures read the played city (`LongPlaytest.probeCity`, 600
+  months), which on this balance is the smaller city of section 6 (8,493 people at m600 against main's 14,441). In
+  the first run "the played city's record causes multiple older year folds" failed (one older year in the fund's
+  last `ACTIVITY_ROWS` rows) and the harness threw and hung (section 2). In the second, on a3e714c69, that line
+  passed and "the played city's market causes at least three Search pages" and "Search Show more reaches page 3: the
+  redraw and the next equal a page built new" failed (61 securities in the fund's reach); its other three reds are
+  main's recorded FB6 lines. The two runs played the same model; what the section's city holds by then moves with
+  the harness's run, and on LX1's path it stands at the fixtures' edge. They are fixtures that do not cause their
+  condition: the class of KS1-rest ("KeptCheck on another city's path"). Recorded in the ship file's `## known-reds`
+  against KF1 (queued: section 63's fixtures make the market and the record they read), not mended here.
+- **The fast checks** on the merged tree (7bf9a4276): compile, maps, Stale 0 firm, tree clean but the generated docs.
+
 ## 6. The trace
 
 `-Dplaytest.trace` on the default playtest (2,400 months, exit 0 in 243 s, "All checks passed.", findings: "Nothing.")
-of the balance (96dae306b) against main's reference made for this batch (`C:/Users/Jerus/AppData/Local/Temp/
-cbs-trace-main-ec481b4a/`; main's own run exits 1 on TQ1's "households with no home", months 692-745, not this
-batch's). All eight files move: `bank`, `build`, `house`, `labour`, `month` and `pop` from month 11,
-`bonds` from 12, `borrow` from its first paper (main's month 59, LX1's 63; 44 papers in the run on main, 37 on LX1).
-One city's path, so the ensemble judges; the size, main then LX1:
+of the balance (96dae306b; a3e714c69's, after the remainder fix, is the same to the byte) against main's reference
+made for this batch (`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-ec481b4a/`; main's own run exits 1 on TQ1's
+"households with no home", months 692-745, not this batch's). All eight files move: `bank`, `build`, `house`,
+`labour`, `month` and `pop` from month 11, `bonds` from 12, `borrow` from its first paper (main's month 59, LX1's
+63; 44 papers in the run on main, 37 on LX1). One city's path, so the ensemble judges; the size, main then LX1:
 
 | month | people | out of work | jobs | inflation, a year | unskilled premium | diploma premium |
 |---|---|---|---|---|---|---|

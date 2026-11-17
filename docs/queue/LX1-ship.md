@@ -5,7 +5,14 @@ A Boutique covered 320 pieces of a $22,000 good a month with seven posts, so Lux
 its margin on main after CU2, where BEA's other retail pays 41.7% (LS1). A Boutique now covers 7 pieces with 8 posts
 and the Department Store 80 with its 91 (ids 69 and 70), about a piece a post a month; the buildings, their floor and
 cost and the piece's price are held. `LuxuryRetail.LABOUR_SHARE` (BEA's 41.7%) and a factor of two either way are the
-band `LuxuryRetailCheck` holds the catalogue and a town's year of Boutiques to (red on main: 0.6% and 1.3%). No save
-field, no format bump. The figures of LS1's probe and the city's size are pending.
+band `LuxuryRetailCheck` holds the catalogue and a town's year of Boutiques to (red on main: 0.6% and 1.3%). On LS1's
+probe the share reads 36-41% (median from m240; in the band 313 of seed 0's 331 years, none on main), and the shops
+take a quarter of the old city's business workers; the default city is 551k at m2400 against 633k. A road load's
+last stream is now the remainder of the other two's sum (`TradeCostCheck`). No save field, no format bump.
 ## queued
 | LQ1 | The luxury queue's size, a study: Luxury Retail's margin is 10-30% of the business sectors' value added on main (BEA's other retail is a few per cent of GDP), the households' luxury budget out of the wealth term and the surplus; at BEA's share of it the shops employ a quarter or more of the old city's workers (LX1), so what the budget should be is the next question ({next}) | [LX1's notes](docs/queue/LX1-notes.md) |
+| KF1 | KeptCheck section 63's fixtures make the market and the record they read: "the played city's market causes at least three Search pages", "Search Show more reaches page 3" and "the played city's record causes multiple older year folds" read the 600-month played city, which on LX1's smaller path stands at their edge and fails one or the other run to run; known reds since LX1 ({next}) | [LX1's notes, section 5](docs/queue/LX1-notes.md) |
+## known-reds
+KeptCheck | the played city's market causes at least three Search pages | KF1 | 2026-11-17 | LX1's 600-month played city has 61 securities in the fund's reach; the fixture reads the city rather than causing the market
+KeptCheck | Search Show more reaches page 3 | KF1 | 2026-11-17 | Follows the line above: on LX1's played city the Search list does not reach a third page
+KeptCheck | the played city's record causes multiple older year folds | KF1 | 2026-11-17 | On LX1's played city the fund's last ACTIVITY_ROWS rows held one older year in one run of two; the fixture reads the record rather than causing it
