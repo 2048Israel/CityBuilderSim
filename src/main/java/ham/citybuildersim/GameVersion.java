@@ -8288,8 +8288,22 @@ public final class GameVersion {
      *     for bit; the product itself would take seventeen digits, FACTOR
      *     being a long decimal. A series a reform or a fold moved off that
      *     grid stays a plain array. Memory holds the same values as before.
+     *
+     * 55 - THE DRIVERLESS TRUCK (batch R6b, FE1; REV-R6b-1): the Truck
+     *     Depot holds a driverless kit, an equipment piece whose unfitted
+     *     count a 1900 city saves per stack, and Haulage's share of trucks
+     *     still driven (EquipmentForms.setDriven) is read from it. No field
+     *     is added; the piece is new.
+     *
+     *     THE FLOOR RISES TO 55 WITH IT (the rule): a save of format 54 or
+     *     older would load WRONGLY. It holds no unfitted count for the kit,
+     *     and the load path reads a missing count as fitted, so a 1900 city's
+     *     depots would run driverless from its first month on, in 1930 as in
+     *     2030: twice the tonnes a truck, its drivers laid off, no kit bought
+     *     and no fee paid. It is refused, naming the build that still opens
+     *     it. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 54;
+    public static final int SAVE_FORMAT = 55;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8299,7 +8313,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 54 since batch CU2 (WORLD PRICES CHAINED above: a save's world prices
+     * 55 since batch R6b (THE DRIVERLESS TRUCK above: a save holds no count
+     * of the depots' kit unfitted, which reads as fitted). 54 from batch CU2
+     * (WORLD PRICES CHAINED above: a save's world prices
      * and scales are the unchained solve's). 51 from batch BK2 (EACH HOLDER'S
      * OWN DISCOUNT above: a save's pieces carry one pool of discount, and
      * every holder would read none of it).
@@ -8340,7 +8356,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 54;
+    public static final int OLDEST_LOADABLE_FORMAT = 55;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose
