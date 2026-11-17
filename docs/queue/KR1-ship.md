@@ -1,3 +1,4 @@
+<!-- readiness: provisional -->
 ## changelog
 ### KR1 — the ship file's known-reds template has no header row — 2026-11-17, ready, see docs/queue/KR1-notes.md
 `docs/batch.md` step 5's ship-file template wrote the `## known-reds` section with a header row, `Harness | part of the
