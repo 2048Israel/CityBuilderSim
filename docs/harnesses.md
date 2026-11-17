@@ -28786,69 +28786,69 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L783 fixture (
   - L784 the twin's share, share now and drawn workers are the original's, to the bit, for every sector and template (
   - L791 fixture: the reader that is to be given \"no census\" holds a room now
-  - L803 fixture: a month with room has a room that is a number over 0
-  - L804 the room a month struck rides the array and is read back to the bit
-  - L806 ...and a room of nothing (fixture: placed) is read back as nothing, not as the lack of a census
-  - L808 fixture: a Migration with no census holds no room figure, and its array has no NaN in it for the save to refuse
-  - L810 ...and read back by a Migration that held a room it is no census again
-- **L816 7. how often the draw opens an order in a played city**
-  - L839 fixture: the played city was asked questions
-  - L840 the draw opened at least one ask
-  - L841 none opened in a month of no room
-  - L856 fixture: the last month struck reads no room
-  - L857 fixture: there are asks the spare refuses in it
-  - L858 none of them is opened by the draw in a month of no room
-- **L867 8. the gap's positive part: only what the order makes positive is drawn**
-  - L891 fixture: a played city reached a month its population stands over migration's target, with orders on both sides of the gap
-  - L893 fixture: the brake lets some through that month (the city is out of work under the stop), so the bridge's draw is not nothing for that
-  - L910 fixture: the gap is under 0 and each of these orders adds less than it is short: the population stands over the target even with the order
-  - L912 fixture: the crowding is over 0, so it is the gap and not the doors that leaves the draw nothing
-  - L913 fixture: the count before the gap was read (the addition closed over the window) was over nothing for each of them
-  - L914 the draw is nothing, to the bit, in every band, for every one of them
-  - L915 ...as the formula has it
-  - L916 ...so the share is the spare's alone, to the bit
-  - L925 fixture: the order's addition takes the gap from negative to positive
-  - L926 fixture: the room does not bind: the doors left after last month's arrivals take more than the positive part's draw
-  - L928 fixture: the crowding is over 0
-  - L929 the draw is the positive part of the gap, closed over the window, cut by the brake, in workers
-  - L931 ...the formula's
-  - L932 ...and it is less than the whole addition's, which the count before drew whatever the gap
-- **L939 9. within the room: no more than the doors last month left free**
-  - L957 fixture: a played city reached a month with a census, doors left over 0, and orders on both sides of them
-  - L962 fixture: last month's room is a number, and what its arrivals left of it is over 0 and fewer than the order's uncapped draw
-  - L964 fixture: the gap is positive, so it is the room and not the gap that is short
-  - L965 fixture: the city has a workforce, so people turn to workers
-  - L968 fixture: the order draws workers
-  - L969 the draw, as people before the workforce share, is the room left, last month's room less its arrivals, cut by the brake
-  - L971 ...the formula's, in workers
-  - L972 ...and less than the uncapped draw's
-  - L973 an order whose draw is under the room left is not cut by it: it draws the uncapped figure, cut by the brake
-  - L983 fixture: no month was struck, so last month's room is no number
-  - L984 fixture: the order's addition takes the gap from negative to positive
-  - L985 with no census the draw is uncut: the positive part's, closed, in workers
-- **L997 10. the brake and the pull rule turn the draw down as they turn arrivals**
-  - L1001 fixture: the brake village has recorded BRAKE_FROM_MONTH months, so its brake acts
-  - L1021 fixture: the second month has all the senior care pull and the first none
-  - L1022 fixture: the gap is positive both ways, so the order's whole addition is drawn in each
-  - L1023 fixture: senior care lifted the target by the homes' draw x SENIOR_CARE_PULL, as the model has it
-  - L1025 fixture: the draw is workers, so the comparison is not of zeros
-  - L1026 full senior care draws the same workers as none, band by band, to the bit: it lifts the homes' draw and not the jobs'
-  - L1053 fixture: the first village is out of work under the healthy rate (
-  - L1055 fixture: the second is between the healthy rate and the stop
-  - L1057 fixture: the third is past the stop (
-  - L1058 fixture: the same spare workers in each, so the spare share is the same
-  - L1060 fixture: the unbraked draw is workers in the third village (the gap is positive and the room does not bind), so the brake is what makes it nothing
-  - L1062 under the healthy rate the draw is the unbraked draw, whole
-  - L1063 between the dials the draw is the unbraked draw x the brake at the rate it reads
-  - L1064 ...which is less than the healthy village's, and more than nothing
-  - L1065 past the stop the draw is nothing, to the bit, in every band
-  - L1066 ...so the share is the spare's alone, to the bit
-  - L1067 the order the healthy village passed on the draw
-  - L1068 ...is refused past the stop, where the spare is what it was
-  - L1086 fixture: the young village has no months recorded and is out of work past the stop, with the same spare as the old one's
-  - L1088 fixture: the unbraked draw is workers there (the gap is positive and the room does not bind)
-  - L1090 a village younger than BRAKE_FROM_MONTH, past the stop, draws the unbraked draw, whole
-  - L1091 ...and the order it passes on that draw is not refused for want of the brake
+  - L804 fixture: a month with room has a room that is a number over 0
+  - L805 the room a month struck rides the array and is read back to the bit
+  - L807 ...and a room of nothing (fixture: placed) is read back as nothing, not as the lack of a census
+  - L809 fixture: a Migration with no census holds no room figure, and its array has no NaN in it for the save to refuse
+  - L811 ...and read back by a Migration that held a room it is no census again
+- **L817 7. how often the draw opens an order in a played city**
+  - L840 fixture: the played city was asked questions
+  - L841 the draw opened at least one ask
+  - L842 none opened in a month of no room
+  - L857 fixture: the last month struck reads no room
+  - L858 fixture: there are asks the spare refuses in it
+  - L859 none of them is opened by the draw in a month of no room
+- **L868 8. the gap's positive part: only what the order makes positive is drawn**
+  - L892 fixture: a played city reached a month its population stands over migration's target, with orders on both sides of the gap
+  - L894 fixture: the brake lets some through that month (the city is out of work under the stop), so the bridge's draw is not nothing for that
+  - L911 fixture: the gap is under 0 and each of these orders adds less than it is short: the population stands over the target even with the order
+  - L913 fixture: the crowding is over 0, so it is the gap and not the doors that leaves the draw nothing
+  - L914 fixture: the count before the gap was read (the addition closed over the window) was over nothing for each of them
+  - L915 the draw is nothing, to the bit, in every band, for every one of them
+  - L916 ...as the formula has it
+  - L917 ...so the share is the spare's alone, to the bit
+  - L926 fixture: the order's addition takes the gap from negative to positive
+  - L927 fixture: the room does not bind: the doors left after last month's arrivals take more than the positive part's draw
+  - L929 fixture: the crowding is over 0
+  - L930 the draw is the positive part of the gap, closed over the window, cut by the brake, in workers
+  - L932 ...the formula's
+  - L933 ...and it is less than the whole addition's, which the count before drew whatever the gap
+- **L940 9. within the room: no more than the doors last month left free**
+  - L958 fixture: a played city reached a month with a census, doors left over 0, and orders on both sides of them
+  - L963 fixture: last month's room is a number, and what its arrivals left of it is over 0 and fewer than the order's uncapped draw
+  - L965 fixture: the gap is positive, so it is the room and not the gap that is short
+  - L966 fixture: the city has a workforce, so people turn to workers
+  - L969 fixture: the order draws workers
+  - L970 the draw, as people before the workforce share, is the room left, last month's room less its arrivals, cut by the brake
+  - L972 ...the formula's, in workers
+  - L973 ...and less than the uncapped draw's
+  - L974 an order whose draw is under the room left is not cut by it: it draws the uncapped figure, cut by the brake
+  - L984 fixture: no month was struck, so last month's room is no number
+  - L985 fixture: the order's addition takes the gap from negative to positive
+  - L986 with no census the draw is uncut: the positive part's, closed, in workers
+- **L998 10. the brake and the pull rule turn the draw down as they turn arrivals**
+  - L1002 fixture: the brake village has recorded BRAKE_FROM_MONTH months, so its brake acts
+  - L1022 fixture: the second month has all the senior care pull and the first none
+  - L1023 fixture: the gap is positive both ways, so the order's whole addition is drawn in each
+  - L1024 fixture: senior care lifted the target by the homes' draw x SENIOR_CARE_PULL, as the model has it
+  - L1026 fixture: the draw is workers, so the comparison is not of zeros
+  - L1027 full senior care draws the same workers as none, band by band, to the bit: it lifts the homes' draw and not the jobs'
+  - L1054 fixture: the first village is out of work under the healthy rate (
+  - L1056 fixture: the second is between the healthy rate and the stop
+  - L1058 fixture: the third is past the stop (
+  - L1059 fixture: the same spare workers in each, so the spare share is the same
+  - L1061 fixture: the unbraked draw is workers in the third village (the gap is positive and the room does not bind), so the brake is what makes it nothing
+  - L1063 under the healthy rate the draw is the unbraked draw, whole
+  - L1064 between the dials the draw is the unbraked draw x the brake at the rate it reads
+  - L1065 ...which is less than the healthy village's, and more than nothing
+  - L1066 past the stop the draw is nothing, to the bit, in every band
+  - L1067 ...so the share is the spare's alone, to the bit
+  - L1068 the order the healthy village passed on the draw
+  - L1069 ...is refused past the stop, where the spare is what it was
+  - L1087 fixture: the young village has no months recorded and is out of work past the stop, with the same spare as the old one's
+  - L1089 fixture: the unbraked draw is workers there (the gap is positive and the room does not bind)
+  - L1091 a village younger than BRAKE_FROM_MONTH, past the stop, draws the unbraked draw, whole
+  - L1092 ...and the order it passes on that draw is not refused for want of the brake
 
 ## StaffingTieCheck.java - 17 labelled assertions
 

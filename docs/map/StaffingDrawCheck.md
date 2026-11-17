@@ -1,4 +1,4 @@
-# StaffingDrawCheck.java - 1,094 lines · 50 methods · 16 constants · harnesses
+# StaffingDrawCheck.java - 1,095 lines · 50 methods · 16 constants · harnesses
 
 `ham/citybuildersim/StaffingDrawCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -38,7 +38,7 @@
 >      Migration.BRAKE_FROM_MONTH (the villages are that old); and past Migration.ARRIVALS_STOP_OUT_OF_WORK it is nothing, and the
 >      order the village passed is refused. A village younger than BRAKE_FROM_MONTH draws the unbraked draw whole, past the stop too.
 
-**Uses:** [Sector](Sector.md) (71), [Migration](Migration.md) (60), [Game](Game.md) (35), [BuildingsTemplate](BuildingsTemplate.md) (25), [WageBand](WageBand.md) (24), [PopulationManager](PopulationManager.md) (16), [JobType](JobType.md) (13), [BuildCard](BuildCard.md) (10), [Founding](Founding.md) (7), [GameFiles](GameFiles.md) (5), [PayTier](PayTier.md) (4), [FamilyModel](FamilyModel.md) (4), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [RealEstate](RealEstate.md) (2), [EducationType](EducationType.md) (2), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [TempDirs](TempDirs.md) (1), [ArrivalMix](ArrivalMix.md) (1)
+**Uses:** [Sector](Sector.md) (71), [Migration](Migration.md) (61), [Game](Game.md) (35), [BuildingsTemplate](BuildingsTemplate.md) (25), [WageBand](WageBand.md) (24), [PopulationManager](PopulationManager.md) (16), [JobType](JobType.md) (13), [BuildCard](BuildCard.md) (10), [Founding](Founding.md) (7), [GameFiles](GameFiles.md) (5), [PayTier](PayTier.md) (4), [FamilyModel](FamilyModel.md) (4), [PopulationCohorts](PopulationCohorts.md) (4), [LabourMarket](LabourMarket.md) (3), [RealEstate](RealEstate.md) (2), [EducationType](EducationType.md) (2), [BuildingManager](BuildingManager.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [TempDirs](TempDirs.md) (1), [ArrivalMix](ArrivalMix.md) (1)
 
 ## Sections
 
@@ -51,10 +51,10 @@
 | 553 | 4. the Shared Services Centre in a town without its bands is still refused |
 | 665 | 5. the hold's words name both counts |
 | 698 | 6. a loaded city's gate is its twin's |
-| 813 | 7. how often the draw opens an order in a played city |
-| 861 | 8. the gap's positive part: only what the order makes positive is drawn |
-| 936 | 9. within the room: no more than the doors last month left free |
-| 989 | 10. the brake and the pull rule turn the draw down as they turn arrivals |
+| 814 | 7. how often the draw opens an order in a played city |
+| 862 | 8. the gap's positive part: only what the order makes positive is drawn |
+| 937 | 9. within the room: no more than the doors last month left free |
+| 990 | 10. the brake and the pull rule turn the draw down as they turn arrivals |
 
 ## Constants
 
@@ -75,7 +75,7 @@
 | 87 | `StaffingDrawCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
 | 88 | `StaffingDrawCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
 | 89 | `StaffingDrawCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
-| 864 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
+| 865 | `StaffingDrawCheck.MOST_PLAYED_MONTHS` | `60` | The most months a played city is run, one press of the clock at a time, to reach the month a section asks for. |
 
 ## Fields (state)
 
@@ -94,7 +94,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 1047 | **type** `public class StaffingDrawCheck` | The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff Sector.MIN_STAFFABLE_TO_ORDER of its posts, and since GW1 that count is the spare workers and the w... |
+| 48 | 1048 | **type** `public class StaffingDrawCheck` | The harness for GW1's staffing gate that counts the draw: a business orders a building only when the city could staff Sector.MIN_STAFFABLE_TO_ORDER of its posts, and since GW1 that count is the spare workers and the w... |
 
 ### the helpers (lines 98-399)
 
@@ -171,34 +171,34 @@
 |---:|---:|---|---|
 | 667 | 30 | `static void sectionFive(Path root)` |  |
 
-### 6. a loaded city's gate is its twin's (lines 698-812)
+### 6. a loaded city's gate is its twin's (lines 698-813)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 700 | 112 | `static void sectionSix(Path root)` |  |
+| 700 | 113 | `static void sectionSix(Path root)` |  |
 
-### 7. how often the draw opens an order in a played city (lines 813-860)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 815 | 45 | `static void sectionSeven(Path root)` |  |
-
-### 8. the gap's positive part: only what the order makes positive is drawn (lines 861-935)
+### 7. how often the draw opens an order in a played city (lines 814-861)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 866 | 69 | `static void sectionEight(Path root)` |  |
+| 816 | 45 | `static void sectionSeven(Path root)` |  |
 
-### 9. within the room: no more than the doors last month left free (lines 936-988)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 938 | 50 | `static void sectionNine(Path root)` |  |
-
-### 10. the brake and the pull rule turn the draw down as they turn arrivals (lines 989-1094)
+### 8. the gap's positive part: only what the order makes positive is drawn (lines 862-936)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 992 | 3 | `static double unbraked(Game g, BuildingsTemplate t)` | The workers the village's draw would bring before the brake: the order's uncapped people, within the room, in this village's workers. |
-| 996 | 98 | `static void sectionTen(Path root, long workers)` |  |
+| 867 | 69 | `static void sectionEight(Path root)` |  |
+
+### 9. within the room: no more than the doors last month left free (lines 937-989)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 939 | 50 | `static void sectionNine(Path root)` |  |
+
+### 10. the brake and the pull rule turn the draw down as they turn arrivals (lines 990-1095)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 993 | 3 | `static double unbraked(Game g, BuildingsTemplate t)` | The workers the village's draw would bring before the brake: the order's uncapped people, within the room, in this village's workers. |
+| 997 | 98 | `static void sectionTen(Path root, long workers)` |  |
 

@@ -1555,7 +1555,7 @@ public class Migration {
     }
 
     /** The slots after the licences: lastBrake (WG2-R), which a save from before it does not have. */
-    private static final int BRAKE_SLOTS = 1;
+    static final int BRAKE_SLOTS = 1;
 
     public double[] toSaveArray() {
         double[] out = new double[HISTORY_SLOTS + lastSlots() + BRAKE_SLOTS];

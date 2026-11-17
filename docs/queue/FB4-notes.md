@@ -222,3 +222,22 @@ the trace (the orchestrator), so the run stands.
     atomic counter).
 
   The full pick was not run.
+
+**The first dry run:** `/tmp/cbs-gate-FB4-1zp4n63E`, on 31b60952a over main c471e961f, versioned 0.9.140. It
+exited 1, with the suite (3094 s) showing two NEW reds.
+- **StaffingDrawCheck, FB4's own:** "...and a room of nothing (fixture: placed) is read back as nothing, not as the
+  lack of a census".
+  - The fixture finds the room's slot by counting back from the end of Migration's array, past the two band mixes and
+    the licences.
+  - WG2-R appended the brake's tail slot after the licences, so the fixture wrote its 0 into the first mix slot. The
+    room came back as struck.
+  - The fix: the count includes `Migration.BRAKE_SLOTS`, now package-visible like `LAST_SCALARS`; the premise is
+    unchanged. The red before is the dry run's line. After the fix, `./batch-check.sh StaffingDrawCheck` exits 0
+    (placed at 0, read back 0.0).
+  - My own checks missed it: the pick was ALL, and the named run did not include StaffingDrawCheck.
+- **ShortSellingCheck, main's (LX1's):** "the cells traded shares with the world in the real run: they sold to it in
+  269 months and bought from it in 0".
+  - Run on main's own classes, the same figures to the cent: 886bd92dc (0.9.138) and c471e961f (0.9.139).
+  - Run on f18b10537 (0.9.137, before LX1): green, bought in 63 months.
+  - LX1's last gate reused a kept run in which it was not red.
+  - Passed by name in the ship file's `## known-reds`, with **SX2** queued ([SX2](SX2.md)).

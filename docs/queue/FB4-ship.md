@@ -14,3 +14,6 @@ point. The playtest moves from m1322, through GV1-R's debt in its player's Janua
 ## queued
 | PK1 | ScaleCheck's copy month and FundCheck's 73 months cause their conditions at any month, not at a picked one (WG2-R item 5, filed back by FB4) | [PK1](docs/queue/PK1.md) |
 | RB2 | The fund's withdrawal is struck on its value less last month's toRaise, in the model and the preview; moves the playtest (found in FB4) | [RB2](docs/queue/RB2.md) |
+| SX2 | Why the cells never buy shares from the world on LX1's path (ShortSellingCheck 7: 0 months in 1,000 on 0.9.138, 63 on 0.9.137); a model fix or a fixture that causes the purchase, the count's premise kept (found at FB4's dry run) | [SX2](docs/queue/SX2.md) |
+## known-reds
+ShortSellingCheck | the cells traded shares with the world in the real run | SX2 | 2026-11-17 | LX1 (0.9.138): section 7's 1,000-month city never buys shares from the world (0 months; 63 on f18b10537, before LX1); red on main 886bd92dc and c471e961f with FB4's figures to the cent, not FB4's code
