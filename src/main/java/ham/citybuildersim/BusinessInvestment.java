@@ -592,8 +592,10 @@ public class BusinessInvestment {
 
     /**
      * The months a price taker takes to sell its biggest holding once it has lost money DISTRESS_LOSS_MONTHS running, its plant short of its own running costs, while a lender still covers the loss (AQ1, ★): a twenty-fourth of it a month, the losses' runway again.
-     * Below twenty-four buildings that is one building every so many months of the losses. Sector.bleedsWhileLent() says
-     * which sectors; overdrawn with no lender, any sector sells MAX_RETIREMENT_FRACTION a month as before.
+     * Below twenty-four buildings that is one building on each count of the losses that is a multiple of ceil(BLEED_MONTHS / held)
+     * past DISTRESS_LOSS_MONTHS, the step read off the holding that month (no saved state: a reload keeps it), so eight held go at
+     * counts 24, 28, 32, 34, 36, 40, 48 and 72. Sector.bleedsWhileLent() says which sectors; overdrawn with no lender, any sector
+     * sells MAX_RETIREMENT_FRACTION a month as before.
      */
     public static final int BLEED_MONTHS = DISTRESS_LOSS_MONTHS;
 
@@ -804,11 +806,11 @@ public class BusinessInvestment {
         if (worst == null) return Decision.no(key, sector.noRetirementReason(true));
 
         if (bleed) {
-            // A BLEED_MONTHS-th of the holding a month, in whole buildings; below one a month, one building every
-            // so many months of the losses, read off the saved loss counter so a reload keeps the step.
+            // A BLEED_MONTHS-th of the holding a month, in whole buildings; below one a month, one building on the
+            // counts that are a multiple of the step past the dial, read off the saved loss counter so a reload keeps it.
             long every = (BLEED_MONTHS + mostHeld - 1) / mostHeld;
             if (every > 1 && (losses - DISTRESS_LOSS_MONTHS) % every != 0) {
-                return Decision.no(key, String.format("%d months of losses its lender covered: one %s every %d months",
+                return Decision.no(key, String.format("%d months of losses its lender covered: one %s every %d months of them",
                         losses, worst.getName(), every));
             }
             return new Decision(key, worst, Math.max(1, mostHeld / BLEED_MONTHS),
