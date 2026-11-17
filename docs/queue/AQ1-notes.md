@@ -249,3 +249,36 @@ m1818 on e17ee67f9's path, Heavy Industry at m2151-2155 on the merge's, operatin
 of principal). Whether such a sector should be sold at a quarter a month rather than restructured is the
 distress rule's question for the debt it carries, not the bleed's; queued as QR1 (the ship file's ## queued row, its
 recommended way and the other ways there).
+
+## 10. The gate's dry run
+
+`/tmp/cbs-gate-AQ1-Z3yUUeW5`, versioned ({next}), on d9bf1b2ea (the branch) and 69a29638 (main): 205 harnesses in
+2,724 s, 194 passed, 11 failed, gate exit 1 on five lines in four harnesses no record named. The gate picked
+CopperRefiningCheck and LandmassCheck from AQ1's diff and ran them in full; OX1's gate ran them short, so main's
+record had never seen those sections. Each line traced on 69a29638's own classes, one JVM at a time:
+
+| line | main 69a29638 | cause | named under |
+|---|---|---|---|
+| LandmassCheck 12, "home filled by a fixture" | the same, word for word | the month after the fill frees ground (12,178,110 sq ft against the half's 12,094,868); fill at m184, the bleed's first sale there m335 | FF1 (new) |
+| CopperRefiningCheck (f), "the rule cut an order" | the same (0 months; []) | the Rotterdam run reaches no cut; the bleed never sells in it | FF1 |
+| CopperRefiningCheck, "the child ran seed 1" | exit 0 | seed 1 on AQ1's path ends with "industry stands farther out than the homes" at m2400 (0.95 km against 0.71) | FB5 |
+| PriceLevelCheck 10, the town "shown or left out alike" | 0 of 28,798 differ | both twins bleed the same Fabrication Shop at m73, then part at m99/m100 on main's capacity rule (Houses), 79 months past the town's nudge horizon (20, main's too), which section 10 does not trim to | HP1 |
+| PopulationCheck, "...but it does fill, given a decade" | 1,108 of 1,285 (86%) | AQ1's path: 1,141 of 1,524 (75%), below | MR1 (new) |
+
+PopulationCheck's played city, month by month (a probe in `target/`, never committed): the bleed sells one of two
+Fabrication Shops at m73, 24 months of operating losses its lender covered, principal 1,000 (main's town keeps both,
+its net streak at 72 by m121). The lone shop pays from m86; `Manufacturing.plan()` then orders a 276-post Fabrication
+Works on credit (principal 538 to 3,341), which stands by m105 and loses again from m110: operating income -19 a month
+and principal 4,126 at m121, against 1,489 in main's town. The target jumps 225 in the city's last 24 months, and the
+city fills behind it at about 3.6 people a month. A gate in `Game.consider()` on the bleed's own predicate (lent, 24
+operating-loss months) holds the order at m85 and lets it go at m86, the streak broken by the lone shop's profit
+(measured: the same 1,141 of 1,524). An AQ1 gate only delays the order; the cause is a planner that weighs one works'
+estimated profit and not a market whose plant lost money for 24 months.
+
+The call (the orchestrator's, 2026-11-17; Jerus may overturn it): ★ pass the line by name and queue MR1
+(Manufacturing's re-order after a bleed sale; done when PopulationCheck is green on AQ1's path and main's). The other
+way: back to AQ1 for a planner mend before it ships, then a new trace, ensemble and dry run.
+
+The five rows are under ## known-reds in the ship file; FF1 and MR1 are in its ## queued. Judged again on a copy of the
+run's `suite.txt` (`target/checks/AQ1-dry-suite.txt`, `CBS_REJUDGE=--rejudge ./batch-check.sh --judge`): "known red
+only - 11 harnesses", exit 3.
