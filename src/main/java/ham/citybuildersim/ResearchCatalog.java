@@ -87,6 +87,27 @@ public final class ResearchCatalog {
         public double workGrowth() { return this == MEDICINE ? MEDICINE_WORK_GROWTH : WORK_GROWTH; }
     }
 
+    /* =====================================================================
+       THE NEAR FUTURE (R6b, 2026-11-16; docs/studies/research-near-future.md 2 rules 5 and 6, its 9's calls 1 and 2)
+
+       A row history has not reached is a projection: its date is the builder's plus the study's allowance (its 4), and the file marks it
+       "projected" with the window of years it may fall in, so that every screen that prints a row's date can say so (dateWords()). Which rows
+       are projected is not a judgement made row by row: it is the month the catalogue was last read against the world, HISTORY_ENDS, and
+       ResearchCheck holds every row to it. When a projected row's real date arrives a later batch corrects the row and moves HISTORY_ENDS;
+       the code never changes.
+
+       WHY A SECOND MONTH, NEAR_FUTURE (R6b's call 1). Before R6b every row was the past of buildings.json's figures, which are today's, and a
+       city founded the default way knew every row from its first month (Game.knows(): research idles there). A row from 2025 on is no part of
+       those figures - no Truck Depot of today's runs without drivers - so such a city never knows one: not on history's date, and not by its
+       own research, which never runs. A city founded the 1900 way meets it on history's date, or earlier if its schools find it.
+       ===================================================================== */
+
+    /** The month the catalogue was last read against the world, November 2026: a row dated after it is projected, one on or before it is history (research-near-future 2 rule 5). */
+    public static final int HISTORY_ENDS = PolicyDates.monthOf(2026, 11);
+
+    /** The first month of the near future, January 2025 (research-near-future 2 rule 6, "2025 and later only"): a row dated from it on is no part of today's figures, so a city founded the default way never knows it. */
+    public static final int NEAR_FUTURE = PolicyDates.monthOf(2025, 1);
+
     /** What a discovery can unlock, as the file spells it; an entry names one or two. */
     public static final List<String> KINDS = List.of("building", "equipment", "recipe", "drug");
 
@@ -96,7 +117,7 @@ public final class ResearchCatalog {
      */
     public record Entry(String code, String name, Field field, List<String> kinds, String kindNote, Size size, int year, int monthOfYear,
                         boolean monthKnown, String world, String touches, String effect, List<String> sources, List<String> needs,
-                        String requires, boolean fee, String feeNote, int work, String study) {
+                        String requires, boolean fee, String feeNote, int work, String study, boolean projected, String window) {
 
         public Entry {
             kinds = List.copyOf(kinds);
@@ -107,6 +128,20 @@ public final class ResearchCatalog {
         /** The game month history has it in: PolicyDates.monthOf(year, monthOfYear), the game's one formula (month 1 = January 1900). */
         public int worldMonth() {
             return PolicyDates.monthOf(year, monthOfYear);
+        }
+
+        /** Whether its date is from NEAR_FUTURE on: no part of today's figures, so a city founded the default way never knows it (R6b's call 1). */
+        public boolean isNearFuture() {
+            return worldMonth() >= NEAR_FUTURE;
+        }
+
+        /**
+         * Its date as the screens print it: the world column as the file has it ("May 2025, Dallas to Houston"), and for a projected row the
+         * mark and its window after it ("projected 2028, Boden, Sweden (projected, 2027-2030)"), so that no screen prints a projection as history.
+         */
+        public String dateWords() {
+            if (!projected) return world;
+            return world + (window.isBlank() ? " (projected)" : " (projected, " + window + ")");
         }
 
         /** Whether it unlocks that kind ("building", "equipment", "recipe" or "drug"). */
@@ -163,6 +198,16 @@ public final class ResearchCatalog {
         } catch (NumberFormatException notAYear) {
             return get().worldMonth(s);
         }
+    }
+
+    /**
+     * Whether a "since" names a near-future row (Entry.isNearFuture()): a code in the catalogue dated from NEAR_FUTURE on. A year, a blank and a
+     * code not in the catalogue are not; the one test Game.knows() and EquipmentForms share for a city founded the default way.
+     */
+    public static boolean nearFuture(String since) {
+        if (since == null || since.isBlank()) return false;
+        Entry e = get().entry(since.trim());
+        return e != null && e.isNearFuture();
     }
 
     /** The researcher-years a kind of discovery took in WORK_RULE_YEAR. */
@@ -283,7 +328,7 @@ public final class ResearchCatalog {
 
         return new Entry(code, string(o, "name"), field, kinds, string(o, "kindNote"), size, year, month, flag(o, "monthKnown"),
                 string(o, "world"), string(o, "touches"), string(o, "effect"), strings(o, "sources"), strings(o, "needs"),
-                string(o, "requires"), flag(o, "fee"), string(o, "feeNote"), work, string(o, "study"));
+                string(o, "requires"), flag(o, "fee"), string(o, "feeNote"), work, string(o, "study"), flag(o, "projected"), string(o, "window"));
     }
 
     /** Reports each need that is not a code in the catalogue and each that history dates after its entry; the entry stays. */
