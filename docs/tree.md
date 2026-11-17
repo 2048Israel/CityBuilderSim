@@ -515,6 +515,11 @@ adds its line here, not in `CLAUDE.md`.
                                    file to 2025, Random's swings and crises against their dials over a
                                    thousand seeded years, goods' swings, pegs held, output never negative,
                                    the ease past 2100 and a missing figure filled (WN1)
+        WorldChain.java            the world market's chain (batch CU2; docs/studies/spec-world-prices.md 3):
+                                   forty rows, each made good on its works' inputs at their shares of its
+                                   price in buildings.json, and the order the January solves the goods in,
+                                   inputs first, so a made good's price follows what it is made of (CU1
+                                   found rod priced apart from its cathode)
         WorldMarket.java           the world market (batch WN3; docs/studies/spec-nations.md 4): each traded
                                    good's mill price in each of the 196 nations on a smooth spatial
                                    equilibrium (a CES gravity model on the base year's flows, exact hat
@@ -529,13 +534,18 @@ adds its line here, not in `CLAUDE.md`.
                                    the file's, once a process (pairs, freight, the calibration that keeps
                                    the literals the prices at Halifax in 2025); WorldMarket is one city's.
                                    Game's THE WORLD MARKET solves it every January and strikes its band
-                                   into each traded good's GoodsMarket every month (WN3)
+                                   into each traded good's GoodsMarket every month (WN3). Since CU2 the
+                                   January is chained (WorldChain): a root anchored on its reference band,
+                                   a made good its inputs' landed cost plus its own part, the copper charge
+                                   as money (Nations' swing), a guard against a non-finite pass
         WorldMarketCheck.java      WorldMarket held to its equations: every maker clears and the level
                                    meets the path (recomputed from the file's pairs), the reference city
                                    sees Good's literals to 1e-9, the floor never above the ceiling in every
                                    good, year, path and site, a small city a price-taker and a big one not,
                                    the month's step against a re-solve with the city's tonnes in, seeds
-                                   repeat to the bit, the save round trip, the stand-in, the timings (WN3)
+                                   repeat to the bit, the save round trip, the stand-in, the timings (WN3);
+                                   the chained January, the recipe table against buildings.json, the guard
+                                   and the copper charge (CU2)
         WorldMeasures.java         the Rankings' real-world figures (batch LB1, 2026-10-30; docs/studies/
                                    spec-leaderboards.md 6-8): the reader of the resource
                                    world/world-2025.json, tools/world/measures.py's file - the 196 nations

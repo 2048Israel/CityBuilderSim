@@ -51,7 +51,7 @@ public class AllChecks {
         "ConsumptionCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "CausesOfDeathCheck", "MedicineCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "ManufacturingCheck", "AgricultureCheck", "FoodIndustryCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "QuayRailCheck", "QuayCraneCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "GoldMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "ObservationCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
         "IslandNetCheck", "IslandRailCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "RecipeCheck", "HistoricalRecipeCheck", "HistoricalLicenceCheck", "LicenceFeesCheck", "ResearchCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck",
         "ReplayCheck", "StaffingDrawCheck", "StaffingTieCheck", "OwnerCheck",
-        "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck"
+        "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "YoungBankCheck"
     };
 
     /** How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. */
@@ -85,7 +85,7 @@ public class AllChecks {
     static final int CPU_SAMPLES = 3;
 
     /** Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). */
-    static final List<String> LONGEST_FIRST = List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "EarthTerrainCheck");
+    static final List<String> LONGEST_FIRST = List.of("KeptCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "CopperRefiningCheck", "EarthTerrainCheck");
 
     /** Runs nightly, and at the gate only when a direct pick names it (HA1). */
     static final List<String> NIGHTLY = List.of(

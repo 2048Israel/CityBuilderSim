@@ -18,6 +18,30 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.130 — CU2, World prices chained — 2026-11-16, ready, see docs/queue/CU2-notes.md
+The world market's January is chained (WorldChain, forty rows from buildings.json): a made good is the cheapest
+maker's landed cost of its inputs plus its own part, so rod follows its cathode and wire its rod; a root is
+anchored on its reference band; the copper charge is money on Nations' own swing (the record, ★4, waits on Jerus
+as WP1-C). Seed 1 stands no Rod Mill (main's 363), seed 0 four Wire & Cable Works (main's 61); at 2100 DR Congo's
+terms of trade are +0.07 (main's -0.44). Checks: WorldMarketCheck's chain, recipe, guard and charge;
+CopperRefiningCheck 10-11; HistoryCheck 7, the history's six-figure prices written at today's prices (15% off the
+file). Ensemble: M1 passes; F1's one finding (SHOCK seed 13, up to 174 households with no home in months 738-776)
+is the bank's leverage ratio refusing the landlords' mortgages for 70 months, main's capital rule on CU2's path,
+passed by name with MC1 queued; AUTO2 A3, ZERO_HOT H2 and SHOCK K2 changed, information only. A young town on
+CU2's prices can now lose its bank to an over-estimated first works until OE1 (YoungBankCheck 2, named). Saves:
+format 54, the floor with it.
+
+### DQ1 — Young towns borrow ahead of their people and default — 2026-11-16, ready, no tag (harness)
+Measured first: the AUTO2 bank's months under its minimum to m600 are 2 [0-17] on 0.9.128, 23 of their 65 in
+write-off spells, six of those a young town's lone Fabrication Shop sold empty (86-100% of its loan written off,
+a quarter priced). Four ways of holding or pricing a lone plant's loan at the bank were measured; none is taken.
+Weighed, it froze the young bank; held in the project room or priced, it halved or stalled the towns; kept in the
+bank's own target, it was lent on (120 months under, write-offs +37%). The miss is the order's estimate (a Lime
+Kiln weighed at an operating rate of 0.97 ran at 0.52-0.61), queued as OE1 after SQ1. YoungBankCheck runs
+BankCheck 19's town held nowhere: the kiln's default puts its bank at 0.7%, never in resolution. Holds released:
+BankCheck 19's four, SaveFileCheck's year, CurveCheck 5's run-on, PolicyPreviewCheck's Cement and Heavy Industry,
+BondCheck 7c; HoldersCheck's two, the steep city's and Freight kept, each tried. The model and trace are main's.
+
 ### 0.9.129 — SQ1, a building stack past 2^31 — 2026-11-16, ready, see docs/queue/SQ1-notes.md
 A building type's units merge into one stack, and the stack kept its quantity, its on-site count and its unfitted
 counts in an int: a ten-billion city housed in Houses holds about 2e9 of them, past an int's 2,147,483,647, and

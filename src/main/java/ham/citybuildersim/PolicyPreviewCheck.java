@@ -155,16 +155,12 @@ public class PolicyPreviewCheck {
             g.getEconomyManager().getTaxPolicy().openAll();
             // AN1 (2026-10-22): the D$ is held (see above); the reload twin of section 5 runs no month, so no side of it floats.
             g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
-            // WN3: the cement sector builds nothing here. On the world's band it borrows $53M by month 13 for a Lime Kiln the town's
-            // crews take 45 months to open (its plan reads "already building" the while), pays $343k a month of interest on it with
-            // nothing coming in, defaults in months 48 to 56 ($9.7M of write-offs in month 53 alone) and the bank, at $35M of equity,
-            // makes a loss through month 63: sections 6 and 7 are about the bank's profit tax, and there is none to preview. The
-            // fixture measures the Policy tab's previews, not the credit cycle, so no sector borrows a works the town cannot build.
-            g.getBusinessInvestment().holdSector(Sectors.CEMENT_CONCRETE);
-            // LD1 (2026-10-31): nor does Freight build a Rail Depot.
+            // LD1 (2026-10-31): Freight builds no Rail Depot here. WN3 held Cement & Concrete too (its Lime Kiln, 45 months on site,
+            // defaulted in months 48-56 and the bank made a loss through month 63, so sections 6 and 7 had no profit tax to preview),
+            // and GW1 Heavy Industry (its Blast Furnace, ordered at month 60, put the bank's month-61 profit at a loss). DQ1
+            // released those two (2026-11-16): on 0.9.128 the bank makes a profit to be taxed on with both free. Freight stays:
+            // released with them, the bank's profit and the minimum wage's two fixtures were not reached.
             g.getBusinessInvestment().holdSector(Sectors.FREIGHT);
-            // GW1: the gate counts a year's draw (Sector.GATE_DRAW_MONTHS), so the Blast Furnace Heavy Industry was held for want of staff ("could staff 35%") is ordered in month 60 ($44.7M: $8.4M of bonds, $37.0M from the bank) and the bank's profit is a loss in months 60 and 61 (-576k, -986k) where it was +59k: bankTaxUnder() is nothing in the month section 6 reads. Same cause as the Lime Kiln and the Rail Depot above and the same remedy: Heavy Industry builds nothing here.
-            g.getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY);
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getGovernmentInvestor().spend(-2_000_000 * PriceLevel.FACTOR);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 200_000_000L);

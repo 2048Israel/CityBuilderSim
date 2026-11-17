@@ -398,11 +398,8 @@ public class CurveCheck {
         out.println("\n--- 5. the autopilot's gap is nothing ---");
         Game c = city(root, "x5", 54);
         DebtManager dm = c.getDebtManager();
-        // GW1: the draw lets a young city's businesses order earlier, and this founding (pop 1,273 at month 54, 413 on main's path) is deflating at 54:
-        // inflation -2.27%, the year's prices having fallen, so the rule at Standard and at Strict both sit on the 0% floor and agree - the fixture below
-        // asks for a month where the dial's strictness matters. Run on, a month at a time (at most MAX_RUN_ON), to the first month where Strict and Standard
-        // advise different rates at the inflation the city reads; this founding is at 2.58% a year at month 56 (Standard 3.87%, Strict 4.39%).
-        for (int m = 0; m < MAX_RUN_ON && !strictnessMatters(c); m++) pressQuietly(c);
+        // GW1 ran this city on from month 54 to the first month where Strict and Standard advise different rates (it was deflating at 54,
+        // both rules on the 0% floor); DQ1 released it (2026-11-16): on 0.9.128 it reads 9.03% at month 54 (Standard 13.55%, Strict 15.68%).
         out.printf("   the autopilot city at month %d: inflation %.4f, Standard's rule %.4f, Strict's %.4f%n", c.getMonth(),
                 c.getPriceIndex().hasRate() ? c.getPriceIndex().inflation() : Double.NaN,
                 dm.advisedPolicyRate(c.getPriceIndex().inflation(), DebtManager.Strictness.STANDARD),
@@ -417,8 +414,6 @@ public class CurveCheck {
         autopilotMonth(c, "Strict");
     }
 
-    /** The most months section 5 runs its city on to find one where the dial's strictness changes the rule (GW1). */
-    static final int MAX_RUN_ON = 60;
 
     /** Whether, at the inflation the price index reads now, Strict advises a rate more than a tenth of a point from Standard's. */
     static boolean strictnessMatters(Game c) {
@@ -520,7 +515,8 @@ public class CurveCheck {
      * target, which is the month's own strike.
      */
     static Game steepCity(Path root, String label) {
-        // On the world's band since WN3-R (2026-11-08).
+        // On the world's band since WN3-R (2026-11-08). Manufacturing and Wood Products held (GW1); DQ1 tried them free
+        // (2026-11-16) and the curve came out 1.39 points from the 1-month to the 10-year, under the 2 section 7 asks: held.
         Game g = city(root, label, 38, true, Sectors.MANUFACTURING, Sectors.WOOD_PRODUCTS);
         DebtManager dm = g.getDebtManager();
         double rule = dm.advisedPolicyRate(inflationRead(g));

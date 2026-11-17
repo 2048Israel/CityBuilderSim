@@ -2,9 +2,9 @@
 
 Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,025 constants in 581 files.**
+**6,072 constants in 583 files.**
 
-## model (2887 constants)
+## model (2908 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -1663,10 +1663,10 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.129"` | Bump on release. |
-| 8267 | `GameVersion.SAVE_FORMAT` | `53` | The save shape. |
-| 8316 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `53` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
-| 8324 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
+| 7372 | `GameVersion.VERSION` | `"0.9.130"` | Bump on release. |
+| 8292 | `GameVersion.SAVE_FORMAT` | `54` | The save shape. |
+| 8343 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `54` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
+| 8351 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
 
 ### Gateways.java ([map](map/Gateways.md))
 
@@ -1910,12 +1910,12 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 109 | `HistorySave.MONTHLY_KEPT` | `6_000` | Months kept a month to an entry, the newest: five hundred years (0.7.55). |
-| 566 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
-| 595 | `HistorySave.RESEARCH_SPEND` | `"researchSpend"` | The month's research bill and prizes paid, the city's money. |
-| 598 | `HistorySave.EQUIPMENT_FITTED` | `"equipmentFitted"` | The share of the equipment standing that is fitted, 0 to 1; begins when there is equipment to count. |
-| 1112 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
-| 1134 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices ... |
+| 110 | `HistorySave.MONTHLY_KEPT` | `6_000` | Months kept a month to an entry, the newest: five hundred years (0.7.55). |
+| 567 | `HistorySave.WORLD_CYCLE` | `"worldCycle", WORLD_RISK_OFF = "worldRiskOff"` | The dollar cycle's series and the risk-off's. |
+| 596 | `HistorySave.RESEARCH_SPEND` | `"researchSpend"` | The month's research bill and prizes paid, the city's money. |
+| 599 | `HistorySave.EQUIPMENT_FITTED` | `"equipmentFitted"` | The share of the equipment standing that is fitted, 0 to 1; begins when there is equipment to count. |
+| 1113 | `HistorySave.LONG_SERIES` | `java.util.Set.of("jobs", "workforce", "outOfWork", "population", "births", "deaths", "a...` | The series kept as whole numbers, a List<Long> each: what appendMonth() adds as longs to an empty one. |
+| 1135 | `HistorySave.SHARE_PRICE_DIGITS` | `6` | Share prices are recorded to six significant figures: a consolidated company's price per founding share is far under a ten-thousandth (C5); and, since EP1, so are the wage, the rent and the prices ... |
 
 ### HomeFuel.java ([map](map/HomeFuel.md))
 
@@ -2600,6 +2600,16 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 186 | `Nations.WORLD` | `1, REGION = 2, OWN = 3, CRISIS = 4, CRISIS_DEPTH = 5, INFLATION = 6, RATE = 7, PRICE = 8` | The kinds of draw, and where a draw that belongs to no nation sits among the nations' numbers. |
 | 187 | `Nations.WORLD_NATION` | `0, REGION_BASE = 1000, GOOD_BASE = 2000` |  |
 | 211 | `Nations.NO_DRAWS` | `new Draws(0, 0, 0, 0, false)` |  |
+| 476 | `Nations.CHARGE_MID` | `.055` | The middle of the copper charge's swing, over the reference year's copper price at the reference year's manufactures: the two charges together (treatment and refining) as the record has them over t... |
+| 479 | `Nations.CHARGE_HALF` | `.022` | The swing's half-height, over the same price: the charge runs between about 3% and 8%. |
+| 482 | `Nations.CHARGE_YEARS` | `9` | The years between two large peaks of the swing (the record's 1997, 2006, 2015 and 2024 stand nine years apart). |
+| 485 | `Nations.CHARGE_PEAK_YEAR` | `1997` | The year the Historical path's large peaks stand on, and every CHARGE_YEARS after it (the record's 1997, 2006, 2015, 2024). |
+| 488 | `Nations.CHARGE_SLOW` | `2.7` | The slower turn beside the main one runs at one over this many times the main turn's rate, so no two swings are the same height. |
+| 491 | `Nations.CHARGE_MAIN_WEIGHT` | `.75, CHARGE_SLOW_WEIGHT =.45` | The weight of the main turn in the swing, and of the slower turn beside it (est.: the two make the peaks differ by about a third). |
+| 494 | `Nations.CHARGE_SLOW_PHASE` | `1` | The slower turn's phase against the main one, radians. |
+| 497 | `Nations.CHARGE_DRAW` | `0x7C2CL` | Added to a path's seed, before the mix, for the draw of a path's phase (the draw's "what"): a path off the record has its peaks where this puts them. |
+| 500 | `Nations.CHARGE_RECORD_FROM` | `2000` | The first year of CHARGE_RECORD. |
+| 507 | `Nations.CHARGE_RECORD` | `{ }` | The two charges together over the copper price, each year from CHARGE_RECORD_FROM on the Historical path. |
 
 ### NationsMap.java ([map](map/NationsMap.md))
 
@@ -3797,6 +3807,12 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1755 | `World.POOL_SIDE` | `new int [ Resource.values().length ]` | Each resource's pool side in cells, in Resource's order (poolCells()). |
 | 1808 | `World.NO_POOL` | `new Pool(new long [ 0 ], new long [ 0 ], new int [ 0 ], new double [ 0 ], 0, 0)` | The pool of a place whose land cells hold no old draw of the resource: no field, no tonnes. |
 
+### WorldChain.java ([map](map/WorldChain.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 48 | `WorldChain.RECIPE` | `List.of(row(COPPER_CONC, null, in(COPPER, 1)), row(ANODE, null, in(COPPER, 1)), row(COP...` | The forty rows: each good a works makes, on that works' inputs at the shares buildings.json gives at the literals' mid-band prices (the rest of its price is its conversion, on the manufactures inde... |
+
 ### WorldData.java ([map](map/WorldData.md))
 
 | line | constant | value | says |
@@ -3846,37 +3862,47 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 65 | `WorldMarket.SOLVE_TOL` | `1e-4` | How close every maker's sales must come to its supply, and the price index to its path, for a January to stop: 0.01% (spec-nations 4.3). |
-| 68 | `WorldMarket.SOLVE_MAX_PASSES` | `2_000` | The most sweeps a good's January takes before it stops and says so in the log. |
-| 71 | `WorldMarket.SUPPLY_ELASTICITY` | `.4` | Supply's elasticity to a maker's own mill price (est.: the nations prototype's ES). |
-| 74 | `WorldMarket.DEMAND_ELASTICITY` | `.5` | Demand's elasticity to a buyer's price index (est.: the nations prototype's ED). |
-| 77 | `WorldMarket.HOME_KM` | `300` | A nation's haul to itself, km by land, no handling: the city's leg to its host (est.: the prototype's). |
-| 80 | `WorldMarket.ENTRY_NODES` | `6` | How many other nations' nodes, nearest by great circle, a city can enter the world through, besides its host. |
-| 83 | `WorldMarket.MAX_LAND_KM` | `2_500` | The farthest, by great circle, a node is reached by land from the city, km; a city with a berth reaches a coastal node by sea at any distance (est.). |
-| 86 | `WorldMarket.REFERENCE_LAT` | `44.65, REFERENCE_LON = - 63.57` | The reference city's place, Halifax: where the game's literals are the world's prices (D12). |
-| 89 | `WorldMarket.REFERENCE_YEAR` | `2025` | The year the literals are set in (the Historical path's last year of data, seed-free). |
-| 92 | `WorldMarket.SOLVES_KEPT` | `64` | The solved years kept in the process-wide cache, so harness cities on one world share a January. |
-| 95 | `WorldMarket.BASE_MS` | `2_000` | The Base on the full file, read and calibrated, takes at most this many milliseconds. |
-| 98 | `WorldMarket.SOLVE_COLD_MS` | `600` | The founding solve (the calendar's first year, every good, from p-hat = 1) takes at most this many milliseconds. |
-| 101 | `WorldMarket.SOLVE_WARM_MS` | `60` | A January (every good, from last year's answer) takes at most this many milliseconds. |
-| 104 | `WorldMarket.BAND_MONTH_US` | `200` | A month's bands for every good take at most this many microseconds. |
-| 107 | `WorldMarket.ACCEL_MEMORY` | `5` | The steps Anderson's acceleration remembers: the solve is a fixed-point iteration that closes about a tenth of its distance a pass, and the last few steps tell it where it is going. |
-| 110 | `WorldMarket.ACCEL_BACK` | `10` | The solve forgets what the acceleration remembers when a pass's worst error is this many times the pass before's (the model has stopped being linear there). |
-| 113 | `WorldMarket.SHARE_FLOOR` | `1e-3` | The least share of a buyer's composite a binding supplier is taken to have, so that a supplier that sells the buyer next to nothing does not make its sink's slope infinite (est.). |
-| 116 | `WorldMarket.MAX_STEP` | `1` | The most a maker's log price moves in one pass, whatever its imbalance (a factor of e: the first passes of a cold solve start far away). |
-| 119 | `WorldMarket.RESOLVE_TOL` | `1e-7` | The tolerance of the re-solve the check judges the month's step against (the nations' solve with the city's tonnes delivered). |
-| 122 | `WorldMarket.RESOLVE_FLOOR` | `1e-6` | The least share of a buyer's demand a delivered city can leave to the nations in the re-solve (a floor, so spending stays above zero). |
-| 125 | `WorldMarket.RHO_MIN` | `1e-5, RHO_MAX = 1e5` | The range the freight scale is looked for in, a multiple of the file's reference freight (the scan then bisects between two neighbours). |
-| 128 | `WorldMarket.RHO_SCAN` | `80, RHO_BISECT = 200` | The scan's steps across RHO_MIN to RHO_MAX, and the bisection's cap. |
-| 131 | `WorldMarket.PHI_FALLBACK` | `1` | The freight scale a world with no good that calibrates stands on (est.: the file's reference freight as it is). |
-| 296 | `WorldMarket.Base.LOADED` | `new HashMap<>()` |  |
-| 297 | `WorldMarket.Base.OF` | `new IdentityHashMap<>()` |  |
-| 723 | `WorldMarket.STAND_IN` | `0x57A4D1` | Draws a stand-in's nation (Nations.scramble's "what"). |
-| 991 | `WorldMarket.SOLVES` | `new LinkedHashMap<>(16,.75f, true) { @ Override protected boolean removeEldestEntry(Map...` |  |
-| 1163 | `WorldMarket.Curve.POINTS_FROM_SHARE` | `1e-5` | Where the points() grid starts, as a share of the world's use of the good a year (WN6). |
-| 1165 | `WorldMarket.Curve.POINTS_TO_SHARE` | `.30` | Where the points() grid stops at the latest, as a share of the world's use a year: sooner if the sale side's caps end first (WN6). |
-| 1167 | `WorldMarket.Curve.POINTS` | `48` | How many points() draws (WN6: the chart's resolution). |
-| 1684 | `WorldMarket.SCARCITY_MULTIPLE` | `4` | Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill has no level (infinity), and a market's strike needs a fi... |
+| 71 | `WorldMarket.SOLVE_TOL` | `1e-4` | How close every maker's sales must come to its supply, and the price index to its path, for a January to stop: 0.01% (spec-nations 4.3). |
+| 74 | `WorldMarket.SOLVE_MAX_PASSES` | `2_000` | The most sweeps a good's January takes before it stops and says so in the log. |
+| 77 | `WorldMarket.SUPPLY_ELASTICITY` | `.4` | Supply's elasticity to a maker's own mill price (est.: the nations prototype's ES). |
+| 80 | `WorldMarket.DEMAND_ELASTICITY` | `.5` | Demand's elasticity to a buyer's price index (est.: the nations prototype's ED). |
+| 83 | `WorldMarket.HOME_KM` | `300` | A nation's haul to itself, km by land, no handling: the city's leg to its host (est.: the prototype's). |
+| 86 | `WorldMarket.ENTRY_NODES` | `6` | How many other nations' nodes, nearest by great circle, a city can enter the world through, besides its host. |
+| 89 | `WorldMarket.MAX_LAND_KM` | `2_500` | The farthest, by great circle, a node is reached by land from the city, km; a city with a berth reaches a coastal node by sea at any distance (est.). |
+| 92 | `WorldMarket.REFERENCE_LAT` | `44.65, REFERENCE_LON = - 63.57` | The reference city's place, Halifax: where the game's literals are the world's prices (D12). |
+| 95 | `WorldMarket.REFERENCE_YEAR` | `2025` | The year the literals are set in (the Historical path's last year of data, seed-free). |
+| 98 | `WorldMarket.SOLVES_KEPT` | `64` | The solved years kept in the process-wide cache, so harness cities on one world share a January. |
+| 101 | `WorldMarket.BASE_MS` | `2_000` | The Base on the full file, read and calibrated, takes at most this many milliseconds. |
+| 104 | `WorldMarket.SOLVE_COLD_MS` | `600` | The founding solve (the calendar's first year, every good, from p-hat = 1) takes at most this many milliseconds. |
+| 107 | `WorldMarket.SOLVE_WARM_MS` | `60` | A January (every good, from last year's answer) takes at most this many milliseconds. |
+| 110 | `WorldMarket.BAND_MONTH_US` | `200` | A month's bands for every good take at most this many microseconds. |
+| 113 | `WorldMarket.ACCEL_MEMORY` | `5` | The steps Anderson's acceleration remembers: the solve is a fixed-point iteration that closes about a tenth of its distance a pass, and the last few steps tell it where it is going. |
+| 116 | `WorldMarket.ACCEL_BACK` | `10` | The solve forgets what the acceleration remembers when a pass's worst error is this many times the pass before's (the model has stopped being linear there). |
+| 119 | `WorldMarket.SHARE_FLOOR` | `1e-3` | The least share of a buyer's composite a binding supplier is taken to have, so that a supplier that sells the buyer next to nothing does not make its sink's slope infinite (est.). |
+| 122 | `WorldMarket.MAX_STEP` | `1` | The most a maker's log price moves in one pass, whatever its imbalance (a factor of e: the first passes of a cold solve start far away). |
+| 125 | `WorldMarket.RESOLVE_TOL` | `1e-7` | The tolerance of the re-solve the check judges the month's step against (the nations' solve with the city's tonnes delivered). |
+| 128 | `WorldMarket.RESOLVE_FLOOR` | `1e-6` | The least share of a buyer's demand a delivered city can leave to the nations in the re-solve (a floor, so spending stays above zero). |
+| 131 | `WorldMarket.RHO_MIN` | `1e-5, RHO_MAX = 1e5` | The range the freight scale is looked for in, a multiple of the file's reference freight (the scan then bisects between two neighbours). |
+| 134 | `WorldMarket.RHO_SCAN` | `80, RHO_BISECT = 200` | The scan's steps across RHO_MIN to RHO_MAX, and the bisection's cap. |
+| 137 | `WorldMarket.PHI_FALLBACK` | `1` | The freight scale a world with no good that calibrates stands on (est.: the file's reference freight as it is). |
+| 140 | `WorldMarket.CHARGE_LITERAL` | `.054` | The two charges the literals were set on (treatment and refining), over that year's copper price: 2024's benchmark over 2024's price (CU1 section 5; call star 6 (a)). |
+| 143 | `WorldMarket.REFINING_PART` | `.36` | The refining charge's part of the two charges (2024's benchmark: 8.0 of 22.2 cents a pound); anode carries this part, concentrate both. |
+| 146 | `WorldMarket.CHARGE_LEAVES` | `.05` | The least a charge leaves of the copper in a good (a charge is taken off the copper's cost before the floor). |
+| 149 | `WorldMarket.PRICE_FLOOR` | `1e-6` | The least a made good's price ratio may be: a price is floored above zero. |
+| 152 | `WorldMarket.ANCHOR_TOL` | `1e-10` | The anchor's root-find stops within this of its target, in logs, or after ANCHOR_READS reads of the reference band, whichever comes first. |
+| 155 | `WorldMarket.ANCHOR_READS` | `40` | The most reads of the reference band one root's anchor takes. |
+| 158 | `WorldMarket.ANCHOR_OPEN_STEPS` | `12` | The most steps the anchor takes while its bracket is open, each at most ANCHOR_STEP in the log of the move. |
+| 161 | `WorldMarket.ANCHOR_STEP` | `3` | The most the anchor moves the prices in one step of its search, in logs (a factor of e cubed). |
+| 164 | `WorldMarket.ANCHOR_LOW` | `- 50` | What the anchor's search reads where the band's side is not above 0 (a price below its freight): this far below the target, in logs, so the prices are moved up. |
+| 329 | `WorldMarket.Base.LOADED` | `new HashMap<>()` |  |
+| 330 | `WorldMarket.Base.OF` | `new IdentityHashMap<>()` |  |
+| 1047 | `WorldMarket.STAND_IN` | `0x57A4D1` | Draws a stand-in's nation (Nations.scramble's "what"). |
+| 1234 | `WorldMarket.GUARDS` | `new java.util.concurrent.atomic.AtomicLong()` | How many passes the solve's guard has put back, this process (see solve): 0 on a solve that never left the numbers. |
+| 1352 | `WorldMarket.SOLVES` | `new LinkedHashMap<>(16,.75f, true) { @ Override protected boolean removeEldestEntry(Map...` |  |
+| 1524 | `WorldMarket.Curve.POINTS_FROM_SHARE` | `1e-5` | Where the points() grid starts, as a share of the world's use of the good a year (WN6). |
+| 1526 | `WorldMarket.Curve.POINTS_TO_SHARE` | `.30` | Where the points() grid stops at the latest, as a share of the world's use a year: sooner if the sale side's caps end first (WN6). |
+| 1528 | `WorldMarket.Curve.POINTS` | `48` | How many points() draws (WN6: the chart's resolution). |
+| 2081 | `WorldMarket.SCARCITY_MULTIPLE` | `4` | Where the ceiling stops when the city buys more than every seller makes, as a multiple of the cheapest landed cost: past every cap the fill has no level (infinity), and a market's strike needs a fi... |
 
 ### WorldMeasures.java ([map](map/WorldMeasures.md))
 
@@ -5742,7 +5768,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1674 constants)
+## harnesses (1700 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -5814,8 +5840,8 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1133 | `AutoBuildCheck.LOOK_MONTHS` | `6` | The months between the test player's looks, as section 3's loop plays: it plays on, then moves. |
 | 1136 | `AutoBuildCheck.YOUNG_PEOPLE` | `100_000` | A young city has fewer people than this at the refusal: a town, not the city it grows into. |
 | 1441 | `AutoBuildCheck.ROOM` | `50_000 * PriceLevel.FACTOR` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
-| 1543 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
-| 1584 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
+| 1558 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
+| 1599 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
 
 ### BankFailureCheck.java ([map](map/BankFailureCheck.md))
 
@@ -6089,22 +6115,30 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 112 | `CopperRefiningCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
-| 114 | `CopperRefiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
-| 203 | `CopperRefiningCheck.ROWS` | `{ CopperRefining.SMELTER, CopperRefining.ELECTROLYTIC_REFINERY, CopperRefining.SCRAP_RE...` | The rows, by their permanent ids, in the study's 4.3 order: Copper Refining's four and Manufacturing's wire works. |
-| 207 | `CopperRefiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(500_000, 180_000, 280_000, 45_000, 110_000)` | The study's 4.3: each one's cost, D$ thousands all in. |
-| 210 | `CopperRefiningCheck.STUDY_POSTS` | `{ 700, 200, 200, 80, 400 }` | ...its posts. |
-| 213 | `CopperRefiningCheck.STUDY_KW` | `{ 13_400, 6_000, 5_500, 1_100, 2_500 }` | ...its draw, kW. |
-| 216 | `CopperRefiningCheck.STUDY_MADE` | `{ { Good.ANODE, Good.ACID }, { Good.COPPER }, { Good.COPPER }, { Good.COPPER_ROD }, { G...` | ...what it makes a month, t. |
-| 218 | `CopperRefiningCheck.STUDY_MAKES` | `{ { 9_750, 29_700 }, { 9_700 }, { 4_000 }, { 8_000 }, { 2_000 } }` | ...and how many tonnes of each, a month. |
-| 221 | `CopperRefiningCheck.STUDY_FEED` | `{ Good.COPPER_CONC, Good.ANODE, Good.COPPER_SCRAP, Good.COPPER, Good.COPPER_ROD }` | ...and what it takes, t a month. |
-| 223 | `CopperRefiningCheck.STUDY_USES` | `{ 33_000, 9_750, 4_400, 8_016, 2_000 }` | ...and how many tonnes of it, a month. |
-| 226 | `CopperRefiningCheck.STUDY_TABLE` | `{ { - 0.3, 1.2, 2.7, 1.2 }, { - 1.9, 0.8, 3.5, 0.8 }, { 0.0, 2.2, 2.9, 0.7 }, { - 6.7, ...` | The study's 4.4 table, % of the cost a month, cases A to D. |
-| 230 | `CopperRefiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(5_253, 1_460, 1_776, 846, 4_820)` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table - but the scrap refinery... |
-| 233 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
-| 236 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
-| 318 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |
-| 1049 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
+| 136 | `CopperRefiningCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
+| 138 | `CopperRefiningCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
+| 229 | `CopperRefiningCheck.ROWS` | `{ CopperRefining.SMELTER, CopperRefining.ELECTROLYTIC_REFINERY, CopperRefining.SCRAP_RE...` | The rows, by their permanent ids, in the study's 4.3 order: Copper Refining's four and Manufacturing's wire works. |
+| 233 | `CopperRefiningCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(500_000, 180_000, 280_000, 45_000, 110_000)` | The study's 4.3: each one's cost, D$ thousands all in. |
+| 236 | `CopperRefiningCheck.STUDY_POSTS` | `{ 700, 200, 200, 80, 400 }` | ...its posts. |
+| 239 | `CopperRefiningCheck.STUDY_KW` | `{ 13_400, 6_000, 5_500, 1_100, 2_500 }` | ...its draw, kW. |
+| 242 | `CopperRefiningCheck.STUDY_MADE` | `{ { Good.ANODE, Good.ACID }, { Good.COPPER }, { Good.COPPER }, { Good.COPPER_ROD }, { G...` | ...what it makes a month, t. |
+| 244 | `CopperRefiningCheck.STUDY_MAKES` | `{ { 9_750, 29_700 }, { 9_700 }, { 4_000 }, { 8_000 }, { 2_000 } }` | ...and how many tonnes of each, a month. |
+| 247 | `CopperRefiningCheck.STUDY_FEED` | `{ Good.COPPER_CONC, Good.ANODE, Good.COPPER_SCRAP, Good.COPPER, Good.COPPER_ROD }` | ...and what it takes, t a month. |
+| 249 | `CopperRefiningCheck.STUDY_USES` | `{ 33_000, 9_750, 4_400, 8_016, 2_000 }` | ...and how many tonnes of it, a month. |
+| 252 | `CopperRefiningCheck.STUDY_TABLE` | `{ { - 0.3, 1.2, 2.7, 1.2 }, { - 1.9, 0.8, 3.5, 0.8 }, { 0.0, 2.2, 2.9, 0.7 }, { - 6.7, ...` | The study's 4.4 table, % of the cost a month, cases A to D. |
+| 256 | `CopperRefiningCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(5_253, 1_460, 1_776, 846, 4_820)` | Each row's running cost a month, D$ thousands, backed out of its 4.4 table (its 4.3 gives none): the middle of the range on which all four of its returns round to the table - but the scrap refinery... |
+| 259 | `CopperRefiningCheck.STUDY_SCRAP_A` | `- 0.02, STUDY_SCRAP_A_ROUNDING =.005` | The scrap refinery's case A as the study states it (its 4.4: "imported scrap just breaks even (case A, -0.02%)"), and that figure's rounding. |
+| 262 | `CopperRefiningCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its returns to a tenth of a point. |
+| 344 | `CopperRefiningCheck.ACID_A_TONNE` | `.9` | The acid a smelter makes a tonne of concentrate: 0.9 t (the study's 4.1, [K27]). |
+| 1075 | `CopperRefiningCheck.RUN_MONTHS` | `1000` | The months the Rotterdam run plays. |
+| 1162 | `CopperRefiningCheck.WORLD_YEARS` | `40` | The years section 10 plays: four of the charge's large peaks (Nations.CHARGE_YEARS apart) and a year over, about what a minute of the section holds. |
+| 1165 | `CopperRefiningCheck.PEAKS_HELD` | `3` | The large peaks of the charge the years played must hold: three, so the cycle is seen more than once. |
+| 1168 | `CopperRefiningCheck.CYCLE_SEEN` | `.95` | The least correlation of the smelter's margin over cathode with the treatment part over cathode, over the solves played: .98 measured (.9818 over the 41 solves of 1900-1940, 2026-11-16), this a lit... |
+| 1171 | `CopperRefiningCheck.RANGE_KEPT` | `.5` | The share of the treatment part's range the margin's range must keep: half, so the market does not damp the swing away (1.28 of it measured, over the same 41 solves). |
+| 1345 | `CopperRefiningCheck.PLAYED` | `! "false".equalsIgnoreCase(System.getProperty("copperRefining.played"))` | Whether section 11 plays: -DcopperRefining.played=false skips it while section 10 is iterated on; the suite never sets it. |
+| 1348 | `CopperRefiningCheck.ROD_CHILD_MINUTES` | `28` | The minutes the child may take before it is ended and the section fails: the 12 to 14 the playtest took under the suite's load, doubled. |
+| 1351 | `CopperRefiningCheck.ROD_MILLS_STANDING` | `1` | The Rod Mills seed 1's 2,400 months may leave standing: one, as the study's chained seed 1 stood one, losing; main's 363 fails it (spec-world-prices.md 5). |
+| 1354 | `CopperRefiningCheck.WORKS_LINE` | `"copper works at the end:"` | The playtest's own line of the copper works it ended with. |
 
 ### CreditCheck.java ([map](map/CreditCheck.md))
 
@@ -6163,9 +6197,8 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 169 | `CurveCheck.BEHIND` | `new Study("behind",.01,.05,.60, 0, new double[] { 1.12, 3.65, 4.46, 5.00, 5.35, 5.79, 6...` | ...the city behind: the dial at 1% against inflation at 5%, credibility .60. |
 | 172 | `CurveCheck.QE` | `new Study("QE",.03,.02,.80,.25, new double[] { 3.12, 3.12, 3.15, 3.24, 3.37, 3.57, 3.70...` | ...and QE: the calm city with the central bank holding a quarter of the term paper. |
 | 175 | `CurveCheck.CITIES` | `{ CALM, HIKING, BEHIND, QE }` | The four, in the study's order. |
-| 421 | `CurveCheck.MAX_RUN_ON` | `60` | The most months section 5 runs its city on to find one where the dial's strictness changes the rule (GW1). |
-| 513 | `CurveCheck.ASK` | `20_000 * PriceLevel.FACTOR` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
-| 583 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
+| 508 | `CurveCheck.ASK` | `20_000 * PriceLevel.FACTOR` | What the issue sections borrow: small against what the founding city earns (its output is about 3,300 a month). |
+| 579 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
 
 ### DeathCareFirstCheck.java ([map](map/DeathCareFirstCheck.md))
 
@@ -6691,17 +6724,18 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 43 | `HistoryCheck.OUT` | `System.out` | The game narrates every month to stdout; the findings are the output here. |
-| 44 | `HistoryCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 54 | `HistoryCheck.OUT` | `System.out` | The game narrates every month to stdout; the findings are the output here. |
+| 55 | `HistoryCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 876 | `HistoryCheck.PRICES` | `{ "minimumWage", "landPrice", "foodPrice", "materialsPrice", "orePrice", "rentPrice" }` |  |
 
 ### HoldersCheck.java ([map](map/HoldersCheck.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1271 | `HoldersCheck.CENT` | `MoneyAudit.CENT` | The audit's tolerance for a figure read from it: the model's own cent, MoneyAudit.CENT (EP2). |
-| 1683 | `HoldersCheck.MATERIAL_PART` | `.01` | A holder took part of a sale, and not the rounding left when the others paid in full, when it holds over this share of the face sold (GW1: the bank's 3.2e-14 of a face of 54 passed "took face" on n... |
-| 1835 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
-| 2009 | `HoldersCheck.PREMIUM_RISE` | `.04` | 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. |
+| 1272 | `HoldersCheck.CENT` | `MoneyAudit.CENT` | The audit's tolerance for a figure read from it: the model's own cent, MoneyAudit.CENT (EP2). |
+| 1684 | `HoldersCheck.MATERIAL_PART` | `.01` | A holder took part of a sale, and not the rounding left when the others paid in full, when it holds over this share of the face sold (GW1: the bank's 3.2e-14 of a face of 54 passed "took face" on n... |
+| 1836 | `HoldersCheck.CITY_FIGURES` | `{ "net income", "tax", "dividends", "gains on paper", "the treasury's cash", "the bank'...` |  |
+| 2010 | `HoldersCheck.PREMIUM_RISE` | `.04` | 13a's rise in the policy rate for the line's first sale, taken back off for its reopening. |
 
 ### HomeRailCheck.java ([map](map/HomeRailCheck.md))
 
@@ -7091,9 +7125,10 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 6161 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
 | 6214 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
 | 6222 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
-| 8196 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
-| 8345 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
-| 8351 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
+| 6373 | `LongPlaytest.COPPER_WORKS` | `{ "Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill", "Wire...` | The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. |
+| 8205 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
+| 8354 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
+| 8360 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
 
 ### MainLineCheck.java ([map](map/MainLineCheck.md))
 
@@ -7581,8 +7616,8 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 91 | `PolicyPreviewCheck.CENT` | `1e-5` | Money is in thousands, so this is a cent. |
-| 181 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
-| 247 | `PolicyPreviewCheck.EI_POOL_ROUNDS` | `6` | The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. |
+| 177 | `PolicyPreviewCheck.ORDERS` | `{ { "House", "800" }, { "Convenience Store", "12" }, { "Diner", "2" }, { "Construction ...` | The fixture's orders (the houses 800 since PT1-M4: see city()). |
+| 243 | `PolicyPreviewCheck.EI_POOL_ROUNDS` | `6` | The most employers anEiPool() closes before it gives up on a pool (IC1): the city with a post for everyone is closed into one in two or three. |
 
 ### PopulationCheck.java ([map](map/PopulationCheck.md))
 
@@ -7815,9 +7850,9 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 123 | `ResearchViewCheck.CAT` | `ResearchCatalog.get()` |  |
-| 288 | `ResearchViewCheck.NOW_SECTION_TWO` | `50` | A month well past the first discoveries, for the cores of section 2. |
-| 335 | `ResearchViewCheck.FINDS` | `Map.of("PE1", 4, "PE14", 150, "PE2", 20, "PE3", ResearchView.FIRST_MONTH, "PL5", Resear...` | The finds of section 3's research: PE1 and PE14 before history's date, PE2 after it, PE3 at the founding month and PL5 the month after it. |
-| 343 | `ResearchViewCheck.NOW` | `400` |  |
+| 291 | `ResearchViewCheck.NOW_SECTION_TWO` | `50` | A month well past the first discoveries, for the cores of section 2. |
+| 338 | `ResearchViewCheck.FINDS` | `Map.of("PE1", 4, "PE14", 150, "PE2", 20, "PE3", ResearchView.FIRST_MONTH, "PL5", Resear...` | The finds of section 3's research: PE1 and PE14 before history's date, PE2 after it, PE3 at the founding month and PL5 the month after it. |
+| 346 | `ResearchViewCheck.NOW` | `400` |  |
 
 ### RestaurantsCheck.java ([map](map/RestaurantsCheck.md))
 
@@ -7857,7 +7892,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 33 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nations.Path.R...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 4004 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 4010 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ### SaveSlotCheck.java ([map](map/SaveSlotCheck.md))
 
@@ -8177,18 +8212,33 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 80 | `WorldMarketCheck.out` | `System.out` | Where the harness prints: the console. |
-| 86 | `WorldMarketCheck.BASE_SEED` | `11` | The seed the single-world sections use. |
-| 89 | `WorldMarketCheck.SHARES` | `{ 0,.001,.01,.1,.5 }` | The city's yearly exports and imports in sections 3 and 4, as shares of the good's world use. |
-| 92 | `WorldMarketCheck.STEPS` | `{.001,.01,.05,.10 }` | The volumes of section 5, shares of the world's use. |
-| 95 | `WorldMarketCheck.STEP_TOL` | `.03` | The month's step is within this share of the price (the served buyers' landed price, tonne-weighted) of the re-solve's figure: a freight-heavy good's netback is a small remainder of its price, so a... |
-| 98 | `WorldMarketCheck.SMALL_MOVE` | `.01, BIG_MOVE =.05` | An ordinary city (0.01% of the world's use) moves its netback by less than this share of the price it sells at, a big one (10%) by at least BIG_MOVE of it. |
-| 101 | `WorldMarketCheck.ORDINARY_SHARE` | `.0001, LARGE_SHARE =.001, BIG_SHARE =.1` | The shares of a good's world use section 4 reads: an ordinary city's, a large mill town's (printed only: the host's market is small), and a big city's. |
-| 104 | `WorldMarketCheck.ONE_PERCENT` | `{ Good.LUMBER, Good.CRUDE, Good.IRON, Good.GRAINS }` | The goods whose step is asserted within STEP_TOL at 1% of world use, beside the median: the study's and the brief's four. |
-| 107 | `WorldMarketCheck.SAME` | `1e-9` | Two figures that should be one are the same within this share. |
-| 110 | `WorldMarketCheck.STAND_IN_SEEDS` | `2_000` | Seeds drawn for the stand-in. |
-| 113 | `WorldMarketCheck.SIGMAS` | `4.5` | A frequency is judged within this many standard deviations of a binomial. |
-| 534 | `WorldMarketCheck.NAMED` | `{ Good.LUMBER, Good.IRON, Good.CRUDE, Good.GRAINS, Good.MACHINERY, Good.CARS }` | The goods the study and the brief name, always printed. |
+| 112 | `WorldMarketCheck.out` | `System.out` | Where the harness prints: the console. |
+| 118 | `WorldMarketCheck.BASE_SEED` | `11` | The seed the single-world sections use. |
+| 121 | `WorldMarketCheck.SHARES` | `{ 0,.001,.01,.1,.5 }` | The city's yearly exports and imports in sections 3 and 4, as shares of the good's world use. |
+| 124 | `WorldMarketCheck.STEPS` | `{.001,.01,.05,.10 }` | The volumes of section 5, shares of the world's use. |
+| 127 | `WorldMarketCheck.STEP_TOL` | `.03` | The month's step is within this share of the price (the served buyers' landed price, tonne-weighted) of the re-solve's figure: a freight-heavy good's netback is a small remainder of its price, so a... |
+| 130 | `WorldMarketCheck.SMALL_MOVE` | `.01, BIG_MOVE =.05` | An ordinary city (0.01% of the world's use) moves its netback by less than this share of the price it sells at, a big one (10%) by at least BIG_MOVE of it. |
+| 133 | `WorldMarketCheck.ORDINARY_SHARE` | `.0001, LARGE_SHARE =.001, BIG_SHARE =.1` | The shares of a good's world use section 4 reads: an ordinary city's, a large mill town's (printed only: the host's market is small), and a big city's. |
+| 136 | `WorldMarketCheck.ONE_PERCENT` | `{ Good.LUMBER, Good.CRUDE, Good.IRON, Good.GRAINS }` | The goods whose step is asserted within STEP_TOL at 1% of world use, beside the median: the study's and the brief's four. |
+| 139 | `WorldMarketCheck.SAME` | `1e-9` | Two figures that should be one are the same within this share. |
+| 142 | `WorldMarketCheck.STAND_IN_SEEDS` | `2_000` | Seeds drawn for the stand-in. |
+| 145 | `WorldMarketCheck.SIGMAS` | `4.5` | A frequency is judged within this many standard deviations of a binomial. |
+| 148 | `WorldMarketCheck.ARITHMETIC` | `1e-12` | Two figures that are one piece of arithmetic done twice (a price that is the sum of its parts, a ratio of two charges) agree within this share. |
+| 151 | `WorldMarketCheck.ANCHOR_CHECK_TOL` | `10 * WorldMarket.ANCHOR_TOL` | A root's reference band stands on its path's target within this, in logs: ten times the anchor's own stop (WorldMarket.ANCHOR_TOL), the worst measured on these years being 9.4e-11 (a band off its p... |
+| 154 | `WorldMarketCheck.CHARGE_ROOM` | `1e-12` | The played 2025 band of concentrate or anode moves off its literal by the charge's whole difference, within this share of it: the worst measured is 6.0e-14 of it. |
+| 157 | `WorldMarketCheck.ROD_ON_CATHODE` | `.10` | Rod's floor over its literal export price stands within this of cathode's in every January read: the worst measured is 0.0933 (Random seed 9, the reference site, 1900), main's world stands 1.4 off ... |
+| 160 | `WorldMarketCheck.WIRE_ON_ROD_MEDIAN` | `.05` | The median over every January read of wire's floor over its literal export price, over rod's, stands within this of 1: the measured median is 1.038, main's world stands 0.12 to 0.18 off (0.82 and 0... |
+| 163 | `WorldMarketCheck.WORKS_MEDIAN` | `.10` | A works' median feed over its sales, over every January read, stands within this share of its literal margin: the widest measured is 0.074 (Panel Mill and Pulp Mill), main's Rod Mill stands 0.55 of... |
+| 166 | `WorldMarketCheck.RECIPE_TOL` | `.03` | A recipe row's share of an input is within this (absolute) of the works' uses and makes at the literals' mid-band prices: a few points, as the dial is rounded to the hundredth. |
+| 781 | `WorldMarketCheck.NAMED` | `{ Good.LUMBER, Good.IRON, Good.CRUDE, Good.GRAINS, Good.MACHINERY, Good.CARS }` | The goods the study and the brief name, always printed. |
+| 1273 | `WorldMarketCheck.CHAIN_GROUND` | `7` | The ground seed the stand-in site of section 12 is drawn from (setStandIn: the site a generated world's city is founded at); the single-world sections use 7 as well. |
+| 1276 | `WorldMarketCheck.CHAIN_SEEDS` | `{ 1, 5, 9, Nations.DEFAULT_SEED }` | The Random seeds section 12 plays beside the Historical path: 9 is the guard's world (its crude left the numbers in 2165 on main), 48213 the game's default. |
+| 1279 | `WorldMarketCheck.CHAIN_LAST` | `2200, CHAIN_EVERY = 5` | The last January section 12 reads, and the years between the Januaries it reads (from the calendar's first). |
+| 1282 | `WorldMarketCheck.EXTRA_WORKS` | `{ "Electrolytic Refinery", "Electric Arc Furnace" }` | The works section 12 holds beside the recipe's own: the cathode's and the arc furnace's, which no row of the table names. |
+| 1547 | `WorldMarketCheck.GUARD_SEED` | `9` | The drawn world whose crude left the numbers in 2165 on main (spec-world-prices 3.7), and the last January section 14 plays it to. |
+| 1548 | `WorldMarketCheck.GUARD_LAST` | `2170` |  |
+| 1611 | `WorldMarketCheck.CHARGE_FROM` | `1900, CHARGE_TO = 2230` | The years the charge's swing is read over: the calendar's first to well past the paths' end. |
+| 1614 | `WorldMarketCheck.PEAKS_FROM` | `1990, PEAKS_TO = 2030` | The years round the record's peaks the local maxima are listed over (printed beside them, not asserted). |
 
 ### WorldMeasuresCheck.java ([map](map/WorldMeasuresCheck.md))
 
@@ -8260,7 +8310,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 99 | `WorldMoneysCheck.STUDY_CODES` | `{ "EUR", "JPY", "GBP", "CHF", "CAD", "AUD" }` | The study's table (spec-exchange-rates 3.7), for the findings: volatility a year model and real, the half-life an economist measures, the worst month. |
 | 100 | `WorldMoneysCheck.STUDY` | `{ { 8.9, 9.3, 4.7, 8.3 }, { 9.9, 9.4, 4.4, 10.9 }, { 8.6, 8.5, 4.5, 8.8 }, { 9.1, 9.6, ...` |  |
 | 101 | `WorldMoneysCheck.STUDY_EMERGING` | `{ 16.6, 14, 3.5, 26.5 }` |  |
-| 1108 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
+| 1128 | `WorldMoneysCheck.quiet` | `new PrintStream(java.io.OutputStream.nullOutputStream())` | The game's narration sent nowhere. |
 
 ### YearBookCheck.java ([map](map/YearBookCheck.md))
 
@@ -8271,6 +8321,13 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 52 | `YearBookCheck.ARDEN` | `Currency.fromCityName("Arden")` | The money a hand-built history is written in (0.7.10). |
 | 953 | `YearBookCheck.COMMA_CO` | `"Acme, Inc."` | Two companies on the fixture's register, named the way a CSV has to quote. |
 | 955 | `YearBookCheck.QUOTE_CO` | `"The \"Good\" Co"` | ...and the second, with a double quote in its name, which the CSV doubles. |
+
+### YoungBankCheck.java ([map](map/YoungBankCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 38 | `YoungBankCheck.MONTHS` | `120` | The young town's first ten years: the months the bank is watched for. |
+| 41 | `YoungBankCheck.WEIGHED_BY` | `24` | By this month the town has weighed its first works (BankCheck 19's Lime Kiln was weighed from month 9). |
 
 ### ZoningCheck.java ([map](map/ZoningCheck.md))
 

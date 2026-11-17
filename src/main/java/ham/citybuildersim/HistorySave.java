@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
+import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -148,7 +149,7 @@ public class HistorySave {
     private List<Double> totalWage = new ArrayList<>();
 
     /** The dial the player sets, and what the labour market did with it. */
-    private List<Double> minimumWage = new ArrayList<>();
+    @JsonAdapter(TodaysSeries.class) private List<Double> minimumWage = new ArrayList<>();
 
     /**
      * What an unskilled hour costs relative to its base, and how much of the
@@ -188,10 +189,10 @@ public class HistorySave {
      * of US DOLLARS since 0.7.6 (LandManager.getGroundUsdPerSqFt()); the
      * months an older save recorded are local money, and stay as recorded.
      */
-    private List<Double> landPrice = new ArrayList<>();
-    private List<Double> foodPrice = new ArrayList<>();
-    private List<Double> materialsPrice = new ArrayList<>();
-    private List<Double> orePrice = new ArrayList<>();
+    @JsonAdapter(TodaysSeries.class) private List<Double> landPrice = new ArrayList<>();
+    @JsonAdapter(TodaysSeries.class) private List<Double> foodPrice = new ArrayList<>();
+    @JsonAdapter(TodaysSeries.class) private List<Double> materialsPrice = new ArrayList<>();
+    @JsonAdapter(TodaysSeries.class) private List<Double> orePrice = new ArrayList<>();
 
     /* --------------------------- the edge ---------------------------
 
@@ -384,7 +385,7 @@ public class HistorySave {
        is homes and households, and a stored third copy could disagree with
        both.
        ------------------------------------------------------------------ */
-    private List<Double> rentPrice = new ArrayList<>();
+    @JsonAdapter(TodaysSeries.class) private List<Double> rentPrice = new ArrayList<>();
     private List<Long> homes = new ArrayList<>();
     private List<Double> households = new ArrayList<>();
 
@@ -514,8 +515,8 @@ public class HistorySave {
        Exchange.pricePerFoundingShare() - the last trade since 0.7.12 round 2,
        the dealer's quote before. Money, so a reform scales it.
        ------------------------------------------------------------------ */
-    private Map<String, List<Double>> sharePrice = new LinkedHashMap<>();
-    private Map<String, List<Double>> shareValue = new LinkedHashMap<>();
+    @JsonAdapter(TodaysSeriesByCompany.class) private Map<String, List<Double>> sharePrice = new LinkedHashMap<>();
+    @JsonAdapter(TodaysSeriesByCompany.class) private Map<String, List<Double>> shareValue = new LinkedHashMap<>();
 
     /** The series name the screens ask for, per company. */
     public static String priceKey(String company) { return "sharePrice:" + company; }
@@ -1136,7 +1137,19 @@ public class HistorySave {
     /** A price per founding share to SHARE_PRICE_DIGITS significant figures; 0 stays 0, and a figure that is not a number is kept as 0, as finite() keeps the rest (JSON holds no NaN). */
     static double roundSig(double v) {
         if (v == 0 || !Double.isFinite(v)) return finite(v);
-        return new BigDecimal(v).round(new MathContext(SHARE_PRICE_DIGITS)).doubleValue();
+        // CU2: six figures of the value at today's prices, scaled back: the grid is the same real size at every price level, so the bank's volatility (Game.bankVolatility) and the warrants it prices read one history.
+        return atTodaysPrices(v) * PriceLevel.FACTOR;
+    }
+
+    /** The value at today's prices to SHARE_PRICE_DIGITS significant figures, before roundSig scales it back by FACTOR; a zero (and a negative one) stays itself. */
+    static double atTodaysPrices(double d) {
+        if (d == 0) return d;
+        return new BigDecimal(d / PriceLevel.FACTOR).round(new MathContext(SHARE_PRICE_DIGITS)).doubleValue();
+    }
+
+    /** True if d is a figure roundSig could have recorded: its six figures at today's prices, times FACTOR, give these very bits back; a figure that is not finite, or that a reform or a fold moved off the grid, is not. */
+    static boolean onTodaysGrid(double d) {
+        return Double.isFinite(d) && Double.doubleToLongBits(atTodaysPrices(d) * PriceLevel.FACTOR) == Double.doubleToLongBits(d);
     }
     /** Six places, for a price in thousands that four would round to a dime - and to nothing after a reform (0.7.45: the shelf). */
     private static double round6(double v) { return Math.round(v * 1_000_000.0) / 1_000_000.0; }
@@ -2126,10 +2139,35 @@ public class HistorySave {
                 .create();
         HistorySave read = gson.fromJson(in, HistorySave.class);
         if (read == null) return null;
+        // CU2 (REV-CU2-1): the six prices of TodaysSeries come off the file as ArrayLists (a field's adapter outranks the registered one); a kept one is held as primitives, and a null one as an empty one.
+        if (fields.contains("minimumWage")) read.minimumWage = packed(read.minimumWage);
+        if (fields.contains("landPrice")) read.landPrice = packed(read.landPrice);
+        if (fields.contains("foodPrice")) read.foodPrice = packed(read.foodPrice);
+        if (fields.contains("materialsPrice")) read.materialsPrice = packed(read.materialsPrice);
+        if (fields.contains("orePrice")) read.orePrice = packed(read.orePrice);
+        if (fields.contains("rentPrice")) read.rentPrice = packed(read.rentPrice);
         read.month = copy(read.month);
         read.foldedMonths = copy(read.foldedMonths);
         read.trimFoldedMonths();
         return read;
+    }
+
+    /** A series as a PackedDoubles, null entries kept; a null series is an empty one. */
+    private static List<Double> packed(List<Double> list) {
+        if (list == null) return new PackedDoubles(new double[0], null);
+        if (list instanceof PackedDoubles) return list;
+        double[] values = new double[list.size()];
+        BitSet nulls = null;
+        for (int i = 0; i < values.length; i++) {
+            Double d = list.get(i);
+            if (d == null) {
+                if (nulls == null) nulls = new BitSet();
+                nulls.set(i);
+            } else {
+                values[i] = d;
+            }
+        }
+        return new PackedDoubles(values, nulls);
     }
 
     /** The names of the fields readKept reads: the axis and foldedMonths (all slim copies besides the series) and the field behind each kept series, found as slim finds it, through seriesByName(). */
@@ -2195,6 +2233,122 @@ public class HistorySave {
             }
             out.endArray();
         }
+    }
+
+    /**
+     * CU2 (REV-CU2-1): the file's form of the eight prices roundSig records (the wage, the rent, food, materials, ore, ground and each company's
+     * two share prices): six figures at today's prices write short, {"todays":[1.23456,...]}, and read back times FACTOR, bit for bit, which the
+     * value itself never can - FACTOR is a long decimal, and the product's shortest text is seventeen digits. A series a reform (redenominate) or a
+     * fold (foldOldYears) moved off that grid is written as the plain array it always was, so its reload is exact too. Memory is not touched:
+     * a running game never reads the file, and the list read back is a mutable ArrayList whatever form the file had.
+     */
+    private static final class TodaysSeries extends TypeAdapter<List<Double>> {
+        @Override
+        public List<Double> read(JsonReader in) throws IOException {
+            return readTodaysSeries(in);
+        }
+
+        @Override
+        public void write(JsonWriter out, List<Double> list) throws IOException {
+            writeTodaysSeries(out, list);
+        }
+    }
+
+    /** CU2 (REV-CU2-1): the same form for a company's series, an object of company to series, in the map's order, each series by the rule of TodaysSeries. */
+    private static final class TodaysSeriesByCompany extends TypeAdapter<Map<String, List<Double>>> {
+        @Override
+        public Map<String, List<Double>> read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            Map<String, List<Double>> byCompany = new LinkedHashMap<>();
+            in.beginObject();
+            while (in.hasNext()) {
+                String company = in.nextName();
+                byCompany.put(company, readTodaysSeries(in));
+            }
+            in.endObject();
+            return byCompany;
+        }
+
+        @Override
+        public void write(JsonWriter out, Map<String, List<Double>> byCompany) throws IOException {
+            if (byCompany == null) {
+                out.nullValue();
+                return;
+            }
+            out.beginObject();
+            for (Map.Entry<String, List<Double>> e : byCompany.entrySet()) {
+                out.name(e.getKey());
+                writeTodaysSeries(out, e.getValue());
+            }
+            out.endObject();
+        }
+    }
+
+    /** A series as {"todays":[...]} if it has a value and every value is on roundSig's grid, else as the plain array Gson writes a List<Double>; null stays null. */
+    private static void writeTodaysSeries(JsonWriter out, List<Double> list) throws IOException {
+        if (list == null) {
+            out.nullValue();
+            return;
+        }
+        boolean valued = false, onGrid = true;
+        for (Double d : list) {
+            if (d == null) continue;
+            valued = true;
+            if (!onTodaysGrid(d)) {
+                onGrid = false;
+                break;
+            }
+        }
+        boolean todays = valued && onGrid;
+        if (todays) {
+            out.beginObject();
+            out.name("todays");
+        }
+        out.beginArray();
+        for (Double d : list) {
+            if (d == null) out.nullValue();
+            else out.value(todays ? atTodaysPrices(d) : d);
+        }
+        out.endArray();
+        if (todays) out.endObject();
+    }
+
+    /** A series from either form: the plain array as written, or "todays" times FACTOR (the product roundSig makes); null entries stay where they were, a null series is null. */
+    private static List<Double> readTodaysSeries(JsonReader in) throws IOException {
+        if (in.peek() == JsonToken.NULL) {
+            in.nextNull();
+            return null;
+        }
+        List<Double> series = new ArrayList<>();
+        if (in.peek() == JsonToken.BEGIN_OBJECT) {
+            in.beginObject();
+            while (in.hasNext()) {
+                if (in.nextName().equals("todays")) readDoublesInto(in, series, true);
+                else in.skipValue();
+            }
+            in.endObject();
+        } else {
+            readDoublesInto(in, series, false);
+        }
+        return series;
+    }
+
+    /** The array at the reader as boxed doubles, nulls kept; the entries of a "todays" array are multiplied by FACTOR, as roundSig multiplies, the others are the file's own doubles. */
+    private static void readDoublesInto(JsonReader in, List<Double> into, boolean todays) throws IOException {
+        in.beginArray();
+        while (in.hasNext()) {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                into.add(null);
+            } else {
+                double v = in.nextDouble();
+                into.add(todays ? v * PriceLevel.FACTOR : v);
+            }
+        }
+        in.endArray();
     }
 
     /** The Gson adapter of a kept List<Long> series: a PackedLongs, null entries kept, a null list read as an empty one. */
