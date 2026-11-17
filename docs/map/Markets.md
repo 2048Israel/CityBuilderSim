@@ -1,4 +1,4 @@
-# Markets.java - 670 lines · 32 methods · 0 constants · model
+# Markets.java - 681 lines · 33 methods · 0 constants · model
 
 `ham/citybuildersim/Markets.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -58,8 +58,8 @@
 |---:|---|
 | 148 | THE MONTH |
 | 439 | DRAWS - taken on demand, at the price of the month |
-| 564 | READERS |
-| 572 | SAVE, RESET, THE REFORM |
+| 575 | READERS |
+| 583 | SAVE, RESET, THE REFORM |
 
 ## Fields (state)
 
@@ -67,21 +67,22 @@
 |---:|---|---|
 | 57 | `private final Map<Good, GoodsMarket> markets` |  |
 | 81 | `private CityTrader city` | The city's trader, or null - a harness's bare market (0.7.85). |
-| 583 | `public String good` |  |
-| 584 | `public double price, flow, stock, demand` |  |
-| 585 | `public double[] taken` |  |
-| 586 | `public double imported, exported, localFilled, offered, bid, drawn` |  |
-| 591 | `public List<DrawRow> draws` | The month's draws since it last closed (FB3, FW6-C): who sold, who bought, how many units, at what price; the good is this State's. |
-| 594 | `public String seller, buyer` |  |
-| 595 | `public double units, price` |  |
-| 601 | `public Double worldImport, worldExport` | The world's band the month was struck at (WN3): its import and export prices, thousands of world dollars a unit. |
-| 603 | `public Double goldExchangeRate` | Gold's spot D$ quote, separate from ordinary goods' lagged, inflation-adjusted rate (GD4). |
+| 544 | `private int drawsClosed` | How many draws the last closeMonth() forgot, every market's together (FB3): what a save taken before it would have carried. |
+| 594 | `public String good` |  |
+| 595 | `public double price, flow, stock, demand` |  |
+| 596 | `public double[] taken` |  |
+| 597 | `public double imported, exported, localFilled, offered, bid, drawn` |  |
+| 602 | `public List<DrawRow> draws` | The month's draws since it last closed (FB3, FW6-C): who sold, who bought, how many units, at what price; the good is this State's. |
+| 605 | `public String seller, buyer` |  |
+| 606 | `public double units, price` |  |
+| 612 | `public Double worldImport, worldExport` | The world's band the month was struck at (WN3): its import and export prices, thousands of world dollars a unit. |
+| 614 | `public Double goldExchangeRate` | Gold's spot D$ quote, separate from ordinary goods' lagged, inflation-adjusted rate (GD4). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 616 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
+| 55 | 627 | **type** `public final class Markets` | Every goods market in the city, and the month they clear in. |
 | 67 | 12 | **type** `public interface CityTrader` | The city as a trader in a market (0.7.85): what it bids for and offers in the month's clearing of a good, and what it bought and sold there - its strategic reserve's crude (StrategicReserve). |
 | 69 | 1 | `double cityBid(Good g)` _(in Markets.CityTrader)_ | Units of a good the city bids for in this month's clearing. |
 | 71 | 1 | `double cityOffer(Good g)` _(in Markets.CityTrader)_ | ...and offers in it. |
@@ -109,7 +110,7 @@
 | 271 | 158 | `private void clear(Good g, Sectors sectors)` | Prices one good, then everybody trades it. |
 | 431 | 7 | `private void trade(GoodsMarket m, Sector seller, Sector buyer, double units, double price)` | One local fill between two sectors, booked both sides. |
 
-### DRAWS - taken on demand, at the price of the month (lines 439-563)
+### DRAWS - taken on demand, at the price of the month (lines 439-574)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -118,24 +119,25 @@
 | 453 | 3 | `public Draw quote(Good g, double units, Sectors sectors)` | What a draw WOULD come to, at today's prices, without taking anything - the quote the build screen shows and the affordability check uses. |
 | 463 | 12 | `public Draw quote(Good g, double units, Sectors sectors, double takenAhead)` | ...with `takenAhead` units of the makers' stock drawn first by orders placed before this one (0.7.83: the refiners' bitumen a run's earlier roads take as they are placed - Game.buildRunInvoice()). |
 | 483 | 43 | `public Draw draw(Good g, Sector buyer, String buyerKey, double units, Sectors sectors)` | Takes units of a good now, from whoever makes and holds it, and imports the rest. |
-| 534 | 3 | `public void closeMonth()` | The month is over: every market forgets the draws it kept (FW5, 2026-10-25). |
-| 554 | 9 | `public void rowDrawsBeforeStrike(Sectors sectors)` | Puts the draws made before the strike back on their sellers' rows (FW5, 2026-10-25). |
+| 535 | 7 | `public void closeMonth()` | The month is over: every market forgets the draws it kept (FW5, 2026-10-25). |
+| 547 | 1 | `public int drawsClosedLastMonth()` | ...read. |
+| 565 | 9 | `public void rowDrawsBeforeStrike(Sectors sectors)` | Puts the draws made before the strike back on their sellers' rows (FW5, 2026-10-25). |
 
-### READERS (lines 564-571)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 569 | 1 | `public double importedUnits(Good g)` | Units the world sold the city this month, of one good, from the markets' own record. |
-| 570 | 1 | `public double exportedUnits(Good g)` |  |
-
-### SAVE, RESET, THE REFORM (lines 572-670)
+### READERS (lines 575-582)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 582 | 23 | **type** `public static final class State` | One market as a save carries it: the price it traded at, the strike behind it and, since FW6 (2026-10-25), the month's tally (units imported, exported, filled at home, offered, bid) and the units drawn since the last ... |
-| 593 | 4 | **type** `public static final class DrawRow` _(in Markets.State)_ | One of the month's draws, as a save carries it (FB3, FW6-C): a Trade without its good. |
-| 606 | 36 | `public List<State> toState()` |  |
-| 643 | 19 | `public void restore(List<State> saved)` |  |
-| 663 | 3 | `public void reset()` |  |
-| 667 | 3 | `public void redenominate(double scale)` |  |
+| 580 | 1 | `public double importedUnits(Good g)` | Units the world sold the city this month, of one good, from the markets' own record. |
+| 581 | 1 | `public double exportedUnits(Good g)` |  |
+
+### SAVE, RESET, THE REFORM (lines 583-681)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 593 | 23 | **type** `public static final class State` | One market as a save carries it: the price it traded at, the strike behind it and, since FW6 (2026-10-25), the month's tally (units imported, exported, filled at home, offered, bid) and the units drawn since the last ... |
+| 604 | 4 | **type** `public static final class DrawRow` _(in Markets.State)_ | One of the month's draws, as a save carries it (FB3, FW6-C): a Trade without its good. |
+| 617 | 36 | `public List<State> toState()` |  |
+| 654 | 19 | `public void restore(List<State> saved)` |  |
+| 674 | 3 | `public void reset()` |  |
+| 678 | 3 | `public void redenominate(double scale)` |  |
 

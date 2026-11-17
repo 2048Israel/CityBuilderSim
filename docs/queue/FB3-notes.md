@@ -104,9 +104,47 @@ premise holds. On the branch both are green.
 
    FW6's ★1, the map after a load, was settled by CC1-M: `mapStamp` is compared since.
 
+## REV-FB3-1 - the mends
+
+1. **The capital flows array's length is the model's.** `CapitalFlows.PEAK_STOCK_SLOT` (24),
+   `PEAK_SPREAD_SLOT` (25) and `SAVE_SLOTS` (26) name the peaks' slots and the array's length;
+   `restore()` reads the peaks by them. CurrencyRegimeCheck's `SAVE_SLOTS` is `CapitalFlows.SAVE_SLOTS`,
+   where it was a bare 24 (red on 6ef3b419: `theDoubtTakesTheHotMoneyHome`), with its label and javadoc
+   naming FB3's two peaks. HoldersCheck's line now says "CapitalFlows.SAVE_SLOTS (26) long", where it
+   said "24 slots long", and asserts the length against the constant.
+2. **The draws close before the month's saves.** `getMarkets().closeMonth()` moved in `Game.nextMonth()`
+   from the method's last line to just after `reconcileMap()`, before `reportSaves()`, the autosave and
+   the recording. A save carries the draws since FW6-C, and the autosave was filled before the month
+   closed them. A city loaded from it got the month's draws back: the next strike rowed them on the
+   sellers again, and the next clearing filled them into the new month's trades, so `tallyThePartners`
+   counted last month's drawn imports twice. Nothing between the old place and the new draws or reads
+   the draws. `reportSaves()`, the autosave's fill and `recordForReplay()` only write, so no figure of
+   the month moves, and a recording's month now holds what a save between the presses holds. The other
+   autosaves are all taken between the presses, after the close: before and after a skip, on quit and
+   on close. `Markets.drawsClosedLastMonth()` counts what the close forgot (not saved; the fixture's
+   witness).
+   - **ReloadCheck section 5:** the live Danzik, after the caused point, played a month at a time
+     under SaveSlotCheck's save clock until its own autosave fell due. The game wrote slot 0 of the
+     scratch folder at the month's end ("Autosave - month 1229"). The city was loaded from that slot,
+     the draws compared right after the load, and both cities run a month, history and save compared.
+   - **Red on 6ef3b419**, proven with ReloadCheck on 6ef3b419's Game.java over the branch's classes:
+     - the draws right after the load differ (MATERIALS, CARS and PETROL one draw each, DIESEL nine);
+     - a month on, the save's partner trade differs in 11 places, the imports doubled (goodUnits[23]
+       unitsIn 5,794,273 against 11,595,611).
+   - Green on the branch (below).
+3. **The hand order books its buyer.** ReloadCheck's caused hand order now draws as the player's
+   orders do (`Game.drawMaterials()`, `drawBitumen()`, `fit()`): `Markets.draw(good, construction,
+   null, ...)`, which books Construction's purchase, where it drew for `Trade.CITY` with no buyer. A
+   good the builders make is passed over, so they never buy from themselves. A literal Game order was
+   not taken: materials come off the yard first, and bitumen is held only where refiners stand, so
+   neither is sure to leave a seller's row at the caused point, which is the row 3i asks for.
+
 ## The checks
 
-`./batch-check.sh SaveFileCheck MoneyDatesCheck InvestCheck ReloadCheck`: see the mends line below.
+`./batch-check.sh SaveFileCheck MoneyDatesCheck InvestCheck ReloadCheck CurrencyRegimeCheck HoldersCheck SaveSlotCheck ReplayCheck`
+on 4b9181cf (the mends; the last two read the month-end autosave and the recording, which moved): exit 0, "suite OK -
+8 harnesses" (SaveSlotCheck's one timing line soft, as every non-gate run). ReloadCheck 5: 12 draws closed, 69
+compared the same right after the load, 348,913 history numbers and 94,842 save figures the same a month on.
 `sh tools/pick.sh origin/main HEAD`: ALL 216 harnesses (Game.java, 180 readers), "review not needed".
 
 **The named harnesses** on 98967c03 (`./batch-check.sh SaveFileCheck MoneyDatesCheck InvestCheck ReloadCheck`,
@@ -114,7 +152,8 @@ both data files named): exit 0, "suite OK - 4 harnesses"; Stale 0 firm; the maps
 
 **The trace:** the default playtest traced (`-Dplaytest.trace`, both data files named), one JVM at a time:
 main 69a29638, built from a scratch tree, against `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-69a29638/`, and
-the branch at 98967c03 against `.../cbs-trace-FB3-98967c03/`. All eight trace files are byte-identical, and the
-reports differ only in run time, the layout watch's seconds and the clock's timestamps. Both runs printed "All checks
+the branch at 98967c03 against `.../cbs-trace-FB3-98967c03/`, and after the mends at 4b9181cf against
+`.../cbs-trace-FB3-mends/`. Both times all eight trace files are byte-identical, and the
+reports differ only in run time, the layout watch's seconds and the clock's timestamps. Every run printed "All checks
 passed." and exited 0. The trace did not move, so no ensemble was run (EN1). The seller-priced months (FW6-C 2) move
-no model figure, as the readers above say.
+no model figure, as the readers above say, and nor does the draws' earlier close (REV-FB3-1 2).

@@ -29,7 +29,7 @@
 
 **Uses:** [GameFiles](GameFiles.md) (14), [HistorySave](HistorySave.md) (7), [DataSave](DataSave.md) (5)
 
-**Used by (6):** [Game](Game.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Recording](Recording.md), [ReplayCheck](ReplayCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UiProbe](UiProbe.md)
+**Used by (7):** [Game](Game.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Recording](Recording.md), [ReloadCheck](ReloadCheck.md), [ReplayCheck](ReplayCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [UiProbe](UiProbe.md)
 
 ## Constants
 
