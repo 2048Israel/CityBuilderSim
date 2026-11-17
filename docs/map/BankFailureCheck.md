@@ -1,6 +1,6 @@
 # BankFailureCheck.java - 475 lines · 15 methods · 2 constants · harnesses
 
-`ham/citybuildersim/BankFailureCheck.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BankFailureCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > The hands-off bank's failures, caused separately and counted across Random cities.
 > WHY. BF1 follows LD2's sawmill loans: a warehouse with no buyers, an empty

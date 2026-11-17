@@ -1,6 +1,6 @@
 # TradeScreen.java - 4,037 lines · 172 methods · 68 constants · interface
 
-`ham/citybuildersim/ui/TradeScreen.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/TradeScreen.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > The Trade & the world tab: how the city stands against the world this
 > month - what it sells and buys abroad, the month's balance of payments,
