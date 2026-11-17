@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-R6b-WnmIOf8F -->
 ## changelog
 ### {next} — R6b, Research: the near-future rows — 2026-11-17, ready, see docs/queue/R6b-notes.md
 The near future's first rows, each with what it gives. `research.json` learns `projected` and `window`, held to
@@ -18,3 +19,4 @@ and FM2 wait for their batches.
 | EDU1 | `EducationCheck`'s "a poor city at x3 enrols fewer than at x1: the trap is back", red on main and seen by no gate, the harness being nightly-only (HA1): main's aeac6e5a classes enrol 1,652 at x1 and 1,632 at x3 (willing .72 and .35, the test wanting under .9 of x1); find which change closed the trap's gap, and whether the model or the premise moved (found by R6b's pick, 2026-11-17) | [R6b's notes](docs/queue/R6b-notes.md) |
 ## known-reds
 EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back | EDU1 | 2026-11-17 | main's own, a nightly harness the gate skips: main's aeac6e5a classes give the same line and figures
+KeptCheck | each month hands back nine in ten of the nodes the first draw made, or more (256 of 299) | FB6 | 2026-11-17 | Section 55, the Bank's Profit page, in R6b's dry run on main ec481b4a only: the first draw 299 nodes and one month 93 made, a block of the page dropped and redrawn; run alone, main ec481b4a and this branch both draw 297 and keep 289 (at most 14 made a month), so the fixture's page is not held still under the suite's load, FB6's family (KBF1, KF63)

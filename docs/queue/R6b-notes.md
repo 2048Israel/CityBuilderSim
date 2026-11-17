@@ -165,4 +165,18 @@ merged after, changed harnesses only.
 
 ## The dry run
 
-(filled after it)
+On the orchestrator's go after TQ1 shipped: `sh tools/gate.sh R6b --dry-run` on bc6e0dc6 (main ec481b4a, 0.9.132,
+merged in: `AllChecks`' registry took both sides' harnesses, the generated indexes taken from main and regenerated),
+run `/tmp/cbs-gate-R6b-WnmIOf8F`. The suite ran in 1,769 s. **Gate exit 1**, on one unnamed line:
+`KeptCheck` 55, the Bank's Profit page, "each month hands back nine in ten of the nodes the first draw made, or
+more (256 of 299)". The first draw made 299 nodes, and one month made 93, so a block of the page dropped and was
+drawn again. Run alone, main ec481b4a's classes (built apart) and this branch's both draw 297 nodes and keep 289,
+at most 14 made in a month. Both give the same three reds as each other: the Build Overview's `KEPT_BUILD_MS`
+timing (hard when alone) and FB6's two "after each choice" lines. So it is not R6b's code; it is a fixture whose
+page does not hold still under the suite's load, FB6's family (KBF1, KF63). It is named in the ship file's known
+reds under FB6, with its cause. **Judged again** (`CBS_REJUDGE=1`, the registry with the ship file's rows, on
+the run's own `checks/suite.txt`): **exit 3**, known red only, nine harnesses. Main's own: DeathRecordCheck,
+InvestCheck, LongPlaytest, MapCheck, PlanCheck, PrizeCheck, YoungBankCheck (TQ1's list). Named in this ship
+file: EducationCheck (EDU1) and KeptCheck (FB6's line and this one). Records: `{next}` = 0.9.133, R6b's block on
+top, 1 Pending row, 1 Queued row added (EDU1).
+<!-- gate-run: /tmp/cbs-gate-R6b-WnmIOf8F -->
