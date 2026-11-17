@@ -2533,8 +2533,7 @@ public class KeptCheck {
      */
     static String workerThread(String name) {
         java.lang.management.ThreadMXBean mx = java.lang.management.ManagementFactory.getThreadMXBean();
-        double load = java.lang.management.ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os
-                ? os.getCpuLoad() : -1;
+        double load = cpuLoad();
         for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
             Thread t = e.getKey();
             if (!t.getName().equals(name)) continue;
@@ -2552,6 +2551,11 @@ public class KeptCheck {
             return s.toString();
         }
         return "is no thread (" + name + " never started)";
+    }
+
+    /** The machine's CPU load since the last call, 0 to 1, or -1 when the platform will not say (its first call answers 0: call it once to start). */
+    static double cpuLoad() {
+        return java.lang.management.ManagementFactory.getOperatingSystemMXBean() instanceof com.sun.management.OperatingSystemMXBean os ? os.getCpuLoad() : -1;
     }
 
     /** Whether a label on the page as drawn says these words (its whole text, or the start of it). */
@@ -4412,41 +4416,6 @@ public class KeptCheck {
         });
     }
 
-    /** How many months 63's fixture tries the hand's bid for a bond that runs long enough before it gives up (KF63). */
-    static final int FUND_HAND_TRIES = 6;
-
-    /** How far over the market's value the fixture's bid is named, so that it crosses the asks a month posts (KF63). */
-    static final double FUND_HAND_PREMIUM = .10;
-
-    /**
-     * KF63: a bond the fund holds that runs more than `months` from now, and whether the fixture bought it. While the rule is held still the
-     * fund's bonds only fall due (FB6's played city: by 63's security pages every bond it held had gone), so when none runs that long the
-     * fund buys one by hand, as the ticket's button does: the minimum issue of the longest live bond in its reach but `not`, bid
-     * FUND_HAND_PREMIUM over its value, a month landing on each try, and one month more once it holds it so the order's record has settled.
-     */
-    static Object[] heldLasting(Game g, KeptBench bench, int months, String not) throws Exception {
-        boolean bought = false;
-        for (int tried = 0; ; tried++) {
-            List<String> held = fx(bench::fundHoldings);
-            String bond = lastingBond(g, held, List.of());
-            if (bond != null && monthsLeft(g, bond) > months) {
-                if (bought) fx(() -> { month(g); return null; });
-                return new Object[]{bond, bought};
-            }
-            List<String> others = new ArrayList<>(held);
-            if (not != null) others.add(not);
-            String buy = lastingBond(g, fx(bench::fundSecurities), others);
-            if (buy == null || tried == FUND_HAND_TRIES) return new Object[]{bond, bought};
-            bought = true;
-            fx(() -> {
-                CorporateBond b = g.getBondMarket().bond(Integer.parseInt(buy.substring(2)));
-                g.fundBuyBond(b.id(), g.minimumIssueSize(), g.getBondMarket().modelPrice(b, g.getMonth()) * (1 + FUND_HAND_PREMIUM));
-                month(g);
-                return null;
-            });
-        }
-    }
-
     /** Sections 61 to 63: the city's fund kept. */
     static void fund(Game g, KeptBench bench) throws Exception {
         System.out.println("\n=== The city's fund (KP5) ===");
@@ -4490,9 +4459,19 @@ public class KeptCheck {
 
         // 63: what reshapes the fund, with the fund's rule held still (fundHeld): only the choices reshape it.
         Runnable fundBack = fundHeld(g);
-        List<String> lots = new ArrayList<>(fx(bench::fundHoldings));
+        List<String> lots = fx(bench::fundHoldings);
         KeptBench.Page tab = fx(() -> bench.finances("the city's fund", "The city's fund", "Portfolio"));
         List<Choice> pages = new ArrayList<>();
+        // A bond the fund holds, its page from Portfolio and from Search, first: while the rule is held still the fund's bonds only fall due
+        // (FB6's played city held none by the security pages below), so it is the bond held that runs longest as the hold begins, and it must
+        // run past the month after its second page (KF63).
+        String bond = lastingBond(g, lots, List.of());
+        if (bond != null) {
+            pages.add(acting("the page of " + bond + " from Portfolio", securityOf(bond, "Portfolio")));
+            pages.add(acting("the page of " + bond + " from Search", securityOf(bond, "Search")));
+        }
+        int bondLeft = bond == null ? 0 : monthsLeft(g, bond);
+        check("fixture: the fund holds a bond, " + bond + ", that runs " + bondLeft + " months, past the 2 months its pages are watched", bondLeft > 2);
         for (String page : KeptBench.financePages("The city's fund")) {
             // (Activity's rows are the month's events: see the Activity choices below.)
             pages.add(page.equals("Activity") ? acting("the fund's " + page, fundOn(page)) : choice("the fund's " + page, fundOn(page)));
@@ -4552,23 +4531,15 @@ public class KeptCheck {
 
         // A security's page, from Portfolio and from Search, with the ticket's choices.
         List<String> none = List.of();
-        // (The fund's lots and reach as they stand now, after 63's months. The bonds are the ones that run the longest: a bond repaid while
-        // its page is watched is a page the model reshaped, FB6's free bond; the held bond is bought by hand when none the fund holds lasts.)
+        // (The fund's lots and reach as they stand now, after 63's months; the bond held was watched first, above. The free bond is the one
+        // that runs the longest: a bond repaid while its page is watched is a page the model reshaped, FB6's free bond.)
         List<String> heldNow = fx(bench::fundHoldings), reach = fx(bench::fundSecurities);
         String share = lotOf(heldNow, "S:", none, false), rescue = lotOf(heldNow, "S:", none, true);
         String freeShare = lotOf(reach, "S:", heldNow, false), freeBond = lastingBond(g, reach, heldNow);
-        // (The share's two pages and then the bond's: choice i is drawn and then a month lands, as the check below counts.)
-        Object[] lasting = heldLasting(g, bench, (share == null ? 0 : 2) + 2, freeBond);
-        String bond = (String) lasting[0];
-        if ((Boolean) lasting[1]) {
-            check("fixture: the fund holds a bond that runs past its page's months, bought by hand when none it held lasted (" + bond + ")",
-                    bond != null && !lots.contains(bond));
-            if (bond != null) lots.add(bond);
-        }
-        System.out.println("  securities drawn: a share held " + share + ", a bond held " + bond + ", the rescue book " + rescue
-                + ", a share not held " + freeShare + ", a bond not held " + freeBond);
+        System.out.println("  securities drawn: a share held " + share + ", a bond held " + bond + " (on the fund's pages, above), the rescue book "
+                + rescue + ", a share not held " + freeShare + ", a bond not held " + freeBond);
         List<Choice> security = new ArrayList<>();
-        for (String key : new String[]{share, bond, rescue, freeShare, freeBond}) {
+        for (String key : new String[]{share, rescue, freeShare, freeBond}) {
             if (key == null) continue;
             // (A security's page lists its own record, a dozen lines of the month's events: the nodes a month makes there are the new lines.)
             security.add(acting("the page of " + key + " from Portfolio", securityOf(key, "Portfolio")));
@@ -4593,13 +4564,12 @@ public class KeptCheck {
                 }
             }
         }
-        for (String key : new String[]{bond, freeBond}) {
-            if (key == null) continue;
+        if (freeBond != null) {
             // (Choice i is drawn and then a month lands, its (i + 1)th: the bond is on the market through the month after its last choice.)
             int last = -1;
-            for (int i = 0; i < security.size(); i++) if (security.get(i).name().contains(key + " ") || security.get(i).name().contains(key + ":")) last = i;
-            int left = monthsLeft(g, key);
-            check("fixture: " + key + " runs " + left + " months, past the " + (last + 1) + " months its page is watched", left > last + 1);
+            for (int i = 0; i < security.size(); i++) if (security.get(i).name().contains(freeBond + " ") || security.get(i).name().contains(freeBond + ":")) last = i;
+            int left = monthsLeft(g, freeBond);
+            check("fixture: " + freeBond + " runs " + left + " months, past the " + (last + 1) + " months its page is watched", left > last + 1);
         }
         pageReshaped(g, bench, tab, 63, security);
         fx(() -> {
@@ -8286,6 +8256,7 @@ public class KeptCheck {
         boolean wrote = quietly(() -> fx(bench::rankingsSaveSlot10));
         check("the city is saved into slot 10 of the harness's scratch folder (the player's own folder is refused)", wrote);
         long asked = System.nanoTime();
+        cpuLoad();
         fx(() -> {
             bench.rankingsRead();
             return null;
