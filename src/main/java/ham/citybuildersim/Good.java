@@ -996,7 +996,7 @@ public enum Good {
     /** Copper anode, by the tonne: a smelter's, of concentrate, the electrolytic refinery's feed. A flow good. */
     ANODE("Copper anode", "tonne", 10.150, 9.650, .1875, false, Pricing.BAND, false),
 
-    /** Copper cathode, by the tonne, LME grade A: an electrolytic refinery's of anode, a scrap refinery's of the city's old copper and scrap, and an oxide field's leach plant's at the mine; the rod mills' feed. Copper's pricing good (Resource.COPPER). Stockable. */
+    /** Copper cathode, by the tonne, LME grade A: an electrolytic refinery's of anode, a scrap refinery's of the city's old copper and scrap, and an oxide field's leach plant's at the mine (a sulphide field's too where FE2 is known, R6b); the rod mills' feed. Copper's pricing good (Resource.COPPER). Stockable. */
     COPPER("Copper cathode", "tonne", 10.500, 10.000, .1875, true, Pricing.BAND, false),
 
     /** Copper scrap, sorted, by the tonne: what the Scrap Copper Refinery buys past the city's own old copper (OldMetal). A flow good. */

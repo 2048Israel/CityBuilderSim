@@ -216,7 +216,7 @@
   "Only a city founded unfitted applies the undos. The modern top level stays the default city's figures.",
   "R2e: optional after names another change on this template. Its undo applies only while that earlier change is present (E11 zeolite requires PE24 catalytic cracking); saved missing-change flags retain both decisions."
  ],
- "nextId": 153,
+ "nextId": 155,
  "buildings": [
   {
    "id": 0,
@@ -5479,6 +5479,17 @@
      },
      "work": 0,
      "lifeMonths": 120
+    },
+    {
+     "id": "driverless-kit",
+     "name": "Driverless kit",
+     "since": "FE1",
+     "ends": "CAB_DRIVERS",
+     "buys": {
+      "MACHINERY": 802.24
+     },
+     "work": 0,
+     "lifeMonths": 120
     }
    ]
   },
@@ -5760,6 +5771,67 @@
     "dig": 1
    },
    "since": 1900
+  },
+  {
+   "id": 153,
+   "name": "Sulphide Leach & SX-EW Plant",
+   "category": "MINING",
+   "sector": "Copper Mining",
+   "cashCost": 192310,
+   "constructionPoints": 96155,
+   "constructionMaterials": 3205,
+   "electricity": 6000,
+   "water": 1876,
+   "consumables": 1025.35,
+   "jobs": {
+    "NO_DIPLOMA": 90,
+    "DIPLOMA": 41,
+    "COLLEGE_ENGINEERING": 15,
+    "UNIV_SCIENCE": 4
+   },
+   "land": 5381955,
+   "roadLoad": 756,
+   "stock": 3000,
+   "makes": {
+    "COPPER": 1000
+   },
+   "uses": {
+    "ACID": 3500
+   },
+   "site": {
+    "resource": "COPPER",
+    "type": "SULPHIDE",
+    "sites": 1,
+    "dig": 1.1764705882352942
+   },
+   "since": "FE2"
+  },
+  {
+   "id": 154,
+   "name": "Hydrogen Steel Works",
+   "category": "HEAVY_INDUSTRY",
+   "sector": "Heavy Industry",
+   "cashCost": 1153838,
+   "constructionPoints": 576919,
+   "constructionMaterials": 19231,
+   "electricity": 483333,
+   "water": 8389,
+   "consumables": 4506.82,
+   "jobs": {
+    "NO_DIPLOMA": 432,
+    "DIPLOMA": 280,
+    "COLLEGE_ENGINEERING": 72,
+    "UNIV_SCIENCE": 16
+   },
+   "land": 6544457,
+   "roadLoad": 11080,
+   "makes": {
+    "STEEL": 100000
+   },
+   "uses": {
+    "PELLETS": 153846
+   },
+   "since": "FE4"
   }
  ]
 }

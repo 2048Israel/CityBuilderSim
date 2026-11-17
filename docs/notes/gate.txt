@@ -1,17 +1,24 @@
-# gate of Merge batch/TQ1: the staffing gate's tie rule: in a city with no spare every template at or below the diploma band shares drawn/posts (about 0.60), so refused templates tie, and `staffing.share > staffingHold.share` in thirteen planners (`sectors/Construction.java:796`, `BusinessInvestment.java:923` and eleven more) gives every hold to the first template, which WantedPosts then prices. On GW1's first draw this made H2 vacuous, deflated the founding and lengthened A2. A tie broken by a rule that names it (or the holds shared), one place for the thirteen, and a harness that two tied templates are treated alike, 0.9.132
+# gate of Merge batch/R6b: research: the near-future rows - the `projected` mark and its window in `research.json` and `ResearchCatalog`, held to a `HISTORY_ENDS` dial and shown wherever a row's date is; then the rows that have something behind them, each with what it gives: FE1 the driverless truck at the Truck Depot, FE2 sulphide heap leaching at the Leach & SX-EW Plant, FE4 hydrogen-reduced iron as a works in the steel chain; the power rows (FE3, FE5, FE6) and the medical rows (FM1, FM2) named for their owners' batches. On R6's recommended calls (★1, ★2, ★6, ★7) unless Jerus says otherwise; ★3 overturned (Jerus, 2026-11-09: "Keep to 2060"): the 2030-2060 tier is R6-T's; FE12, superhot rock geothermal, is in research-speculative §7 (R6-T-P, 2026-11-16), 0.9.133
 # date: 2026-11-17
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 206 harnesses run in 1205s: 199 passed, 7 failed
+# suite: 213 harnesses run in 1715s: 204 passed, 9 failed
 InvestCheck | exit 1
 InvestCheck | an older save's contract on site is read as its template's owner's - the landlords', for Houses, with the share of the tax a House of theirs gets back, which is not all of it FAIL
 InvestCheck | 1 FAILED
+EducationCheck | exit 1
+EducationCheck | a poor city at x3 enrols fewer than at x1: the trap is back      FAIL
+EducationCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | at every 30th month the map draws exactly what the city has: each type's buildings, its road kind by kind as its streets' surface and what they do not carry, every plot of its track, a mine once on its site FAIL
 MapCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
 PlanCheck | 1 FAILED
+KeptCheck | exit 3
+KeptCheck | each month hands back nine in ten of the nodes the first draw made, or more (256 of 299) FAIL
+KeptCheck | a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
+KeptCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED

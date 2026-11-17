@@ -388,6 +388,15 @@ adds its line here, not in `CLAUDE.md`.
         FittingCheck.java          R1b's fit acted on: the forms at rest and cleared, the 1900 founding, what
                                    a new building comes with, the order ranked with the buildings, its money,
                                    goods and work, one at a time, the depot's trucks, the player's Fit, the save
+        DriverlessTruckCheck.java  R6b's FE1: the driven share's dials, the kit unknown then known by history or
+                                   a find, its gain, the depots fitted (tonnes a truck, the drivers struck), the
+                                   room-weighted share, a city founded today's way at 1, a played count
+        SulphideLeachCheck.java    R6b's FE2: the Sulphide Leach & SX-EW Plant's row, known from FE2's month in a
+                                   1900 city and never in one founded today's way, its cathode on a sulphide
+                                   field with no smelter, the plan against the Mine & Mill, a played count
+        HydrogenSteelCheck.java    R6b's FE4: the Hydrogen Steel Works' row, known from FE4's month, where it
+                                   pays and where it does not on the grid's price, its captive pellets, nothing
+                                   moved without it, a played count
         EquipmentCheck.java        R1's equipment: the data read, none unfitted in a played city, the counts
                                    setting the forms and the save carrying them, the rule's arithmetic, the
                                    verdicts at the city's prices, and the verdict changing nothing

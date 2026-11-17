@@ -1,4 +1,4 @@
-# FreightView.java - 471 lines · 23 methods · 1 constants · model
+# FreightView.java - 472 lines · 23 methods · 1 constants · model
 
 `ham/citybuildersim/FreightView.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -99,7 +99,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 413 | **type** `public final class FreightView` | The Freight sector's divisions as the screens draw them (batch FR4; docs/studies/spec-freight-and-infrastructure.md 6): the city's freight this month in legs, and the Haulage, Rail and Ports pages with each division's... |
+| 59 | 414 | **type** `public final class FreightView` | The Freight sector's divisions as the screens draw them (batch FR4; docs/studies/spec-freight-and-infrastructure.md 6): the city's freight this month in legs, and the Haulage, Rail and Ports pages with each division's... |
 | 61 | 1 | `private FreightView()` |  |
 
 ### THE VOCABULARY (lines 63-118)
@@ -147,7 +147,7 @@
 | 294 | 37 | `static PortsPage portsPage(Game game, Freight fr, Ports ports, BuildingManager buildings)` |  |
 | 333 | 15 | `static List<Shipper> shippers(Game game, Freight fr)` | The shippers billed, largest bill first (the sector order breaking ties): each sector's three lines of the month, those with nothing billed left out. |
 
-### THE WORKS' STRIP: HOW ITS TONNES MOVE (board 3) (lines 349-471)
+### THE WORKS' STRIP: HOW ITS TONNES MOVE (board 3) (lines 349-472)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -155,9 +155,9 @@
 | 388 | 4 | `private static Tonnes none(String sector, double quote, double homeShare, double standing)` | The all-zero strip: no sector, Freight itself (it bills, it is not billed), or a sector that moved nothing. |
 | 397 | 30 | `public static Tonnes tonnesOf(Game game, Sector sector)` | A sector's tonnes of the month billed: the tally Haulage struck at the haul, the statement's freight lines and the siding's saving. |
 | 429 | 1 | **type** `public record PlantLine(Good good, boolean made, double tonnes)` | One BULK good a building makes or uses, tonnes a month at nameplate. |
-| 432 | 1 | **type** `public record Plan(double truckTonnes, double sidingTonnes, double trucks, double drivers, double haulage)` | One way of moving a building's tonnes: those the trucks carry and the siding does, the trucks and drivers that takes (Haulage.TONNES_A_TRUCK_MONTH, DRIVERS_A_TRUCK), and a month of haulage at the quote. |
+| 432 | 1 | **type** `public record Plan(double truckTonnes, double sidingTonnes, double trucks, double drivers, double haulage)` | One way of moving a building's tonnes: those the trucks carry and the siding does, the trucks and drivers that takes (Haulage.tonnesATruck(), driverPostsATruck()), and a month of haulage at the quote. |
 | 440 | 2 | **type** `public record Plant(String building, List<PlantLine> lines, double tonnes, double quote, double relief, Pla...` | A building's city legs at nameplate, before and after a siding (spec 3.6, the Pelletising Plant): every tonne of the BULK goods it makes and uses (Freight.bulkTonnesOf()) a city leg, carried all by truck, or with a si... |
-| 444 | 17 | `public static Plant plantOf(Game game, BuildingsTemplate t)` | A building's legs at nameplate, at Haulage's quote in force (the estimate before a month struck one): all by truck, and with a siding. |
-| 462 | 4 | `private static Plan plan(double truckTonnes, double sidingTonnes, double quote)` |  |
-| 468 | 3 | `private static double fin(double v)` | A finite figure: NaN and infinity read 0, so no page ever draws or divides by one. |
+| 444 | 18 | `public static Plant plantOf(Game game, BuildingsTemplate t)` | A building's legs at nameplate, at Haulage's quote in force (the estimate before a month struck one): all by truck, and with a siding. |
+| 463 | 4 | `private static Plan plan(Haulage haulage, double truckTonnes, double sidingTonnes, double quote)` |  |
+| 469 | 3 | `private static double fin(double v)` | A finite figure: NaN and infinity read 0, so no page ever draws or divides by one. |
 
