@@ -1,4 +1,4 @@
-# FamilyModel.java - 2,354 lines · 112 methods · 12 constants · model
+# FamilyModel.java - 2,371 lines · 113 methods · 12 constants · model
 
 `ham/citybuildersim/FamilyModel.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -47,7 +47,7 @@
 >     because a household with no tier has nowhere to sit in the matrix.
 >   - Households do not persist. Nobody has a family they keep.
 
-**Uses:** [FamilyStructure](FamilyStructure.md) (89), [AgeBand](AgeBand.md) (49), [PayTier](PayTier.md) (27), [PopulationCohorts](PopulationCohorts.md) (5)
+**Uses:** [FamilyStructure](FamilyStructure.md) (91), [AgeBand](AgeBand.md) (50), [PayTier](PayTier.md) (27), [PopulationCohorts](PopulationCohorts.md) (5)
 
 **Used by (26):** [ArrivalMixCheck](ArrivalMixCheck.md), [BusinessInvestment](BusinessInvestment.md), [CityNeeds](CityNeeds.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [DebtExchangeCheck](DebtExchangeCheck.md), [EconomyManager](EconomyManager.md), [EducationCheck](EducationCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HousingCheck](HousingCheck.md), [KeptBench](KeptBench.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [RealEstate](RealEstate.md), [StaffingDrawCheck](StaffingDrawCheck.md)
 
@@ -61,13 +61,13 @@
 | 297 | READING THE TIER COLUMN HONESTLY |
 | 370 | · building |
 | 393 | THE ADULTS WHO LEFT WORK ARE STILL AT THE KITCHEN TABLE (2026-09-15) |
-| 736 | THE CHILDREN COME HOME WITH THEIR PARENTS (OX1, 2026-11-17) |
-| 898 | WHEN THERE ARE NOT ENOUGH HOMES |
-| 1062 | PUTTING HOUSEHOLDS BEHIND DOORS THAT FIT |
-| 1091 | TWO SEGMENTS, BECAUSE A STUDIO AND A THREE-BED ARE NOT THE SAME GOOD |
-| 1616 | THE ROOM THE PLACEMENT HAS LEFT (0.7.17) |
-| 1736 | AND WHEN THEY CANNOT AFFORD ONE |
-| 1927 | · saving |
+| 737 | THE CHILDREN COME HOME WITH THEIR PARENTS (OX1, 2026-11-17) |
+| 915 | WHEN THERE ARE NOT ENOUGH HOMES |
+| 1079 | PUTTING HOUSEHOLDS BEHIND DOORS THAT FIT |
+| 1108 | TWO SEGMENTS, BECAUSE A STUDIO AND A THREE-BED ARE NOT THE SAME GOOD |
+| 1633 | THE ROOM THE PLACEMENT HAS LEFT (0.7.17) |
+| 1753 | AND WHEN THEY CANNOT AFFORD ONE |
+| 1944 | · saving |
 
 ## Enum constants
 
@@ -82,16 +82,16 @@
 |---:|---|---|---|
 | 90 | `FamilyModel.REFORMING_EACH_MONTH` | `.01` | The share of households that re-form on their own each month. |
 | 155 | `FamilyModel.SEEKERS` | `Seeker.values().length` |  |
-| 734 | `FamilyModel.SHAPE_TAKE` | `.5` | The share of what is still possible a shape takes in one pass of the builder, every shape but the last: half, so a large family does not eat every child and the couples leave single adults behind. |
-| 779 | `FamilyModel.HOME_PASSES` | `64` | The most passes the children who came back are placed in: each places at least SHAPE_TAKE of every band while the adults last, so this leaves under a child in 10^19. |
-| 1135 | `FamilyModel.STUDIO_MAX_SIZE` | `2` | The largest unit that counts as a studio. |
-| 1760 | `FamilyModel.MAX_SHARING` | `.85` | Not everybody doubles up, however dear the rent. |
-| 1821 | `FamilyModel.COUPLED_SENIORS` | `.55` | What share of a retired band lives as a couple rather than alone. |
-| 1822 | `FamilyModel.COUPLED_ELDERS` | `.25` |  |
-| 1938 | `FamilyModel.LEGACY_SHAPES` | `{ "SENIOR_ALONE", "SENIOR_COUPLE", "SINGLE_ADULT", "COUPLE", "SINGLE_PARENT",...` | The shapes a save written before the names travelled must be read with. |
-| 1960 | `FamilyModel.OUTSIDE_SLOTS` | `outsideSlots(AgeBand.values().length)` | What the people outside the families add to the save: see toSaveArray(). |
-| 2005 | `FamilyModel.KIN_SLOTS` | `kinSlots(AgeBand.values().length)` |  |
-| 2022 | `FamilyModel.MEMORY_SLOTS` | `FamilyStructure.values().length * PayTier.values().length + 1 + 4` | ...and what the households remember: the formed matrix, whether there is one, the month's four counts. |
+| 735 | `FamilyModel.SHAPE_TAKE` | `.5` | The share of what is still possible a shape takes in one pass of the builder, every shape but the last: half, so a large family does not eat every child and the couples leave single adults behind. |
+| 786 | `FamilyModel.HOME_PASSES` | `64` | The most passes the children who came back are placed in: each places at least SHAPE_TAKE of every band while the adults last, so this leaves under a child in 10^19. |
+| 1152 | `FamilyModel.STUDIO_MAX_SIZE` | `2` | The largest unit that counts as a studio. |
+| 1777 | `FamilyModel.MAX_SHARING` | `.85` | Not everybody doubles up, however dear the rent. |
+| 1838 | `FamilyModel.COUPLED_SENIORS` | `.55` | What share of a retired band lives as a couple rather than alone. |
+| 1839 | `FamilyModel.COUPLED_ELDERS` | `.25` |  |
+| 1955 | `FamilyModel.LEGACY_SHAPES` | `{ "SENIOR_ALONE", "SENIOR_COUPLE", "SINGLE_ADULT", "COUPLE", "SINGLE_PARENT",...` | The shapes a save written before the names travelled must be read with. |
+| 1977 | `FamilyModel.OUTSIDE_SLOTS` | `outsideSlots(AgeBand.values().length)` | What the people outside the families add to the save: see toSaveArray(). |
+| 2022 | `FamilyModel.KIN_SLOTS` | `kinSlots(AgeBand.values().length)` |  |
+| 2039 | `FamilyModel.MEMORY_SLOTS` | `FamilyStructure.values().length * PayTier.values().length + 1 + 4` | ...and what the households remember: the formed matrix, whether there is one, the month's four counts. |
 
 ## Fields (state)
 
@@ -117,29 +117,29 @@
 | 437 | `private final double[] outsideDependants` | Children of the adults who left work but not the house, by band. |
 | 440 | `private double atHomeAdults` | Adults outside the families who still live with their dependants. |
 | 455 | `private double ownerAdults` | Adults of the owner families (BO1): outside the families, no dependants. |
-| 781 | `private double lastBackAdults, lastBackChildren, lastBackChildrenHome` |  |
-| 922 | `private double doubledUp` |  |
-| 1060 | `private long[] lastHomesBySize` | The door census house() was last handed. |
-| 1089 | `private double rentWeight` | What the landlords can bill for, in person-equivalents. |
-| 1121 | `private double studioRentWeight` | The part of rentWeight billed on units of size 1-2. |
-| 1124 | `private double familyRentWeight` | ...and on units of size 3 and up. |
-| 1178 | `private double crowdedHouseholds` | Households living somewhere too small for them. |
-| 1181 | `private double refusedByStudio` | Households a studio turned away because they have a child. |
-| 1512 | `private double stillUnplaced` | Households both valves failed to place. |
-| 1657 | `public final double familyDoorsFree, studiosFree` | Doors of size three and up, and studios, that nobody would be behind. |
-| 1659 | `public final double doublingRoom` | Households the families' doubling valve could still take. |
-| 1661 | `public final double seeking, withADoor` | Households that want a door (householdsSeekingDoors()), and those that would have one of their own. |
-| 1663 | `public final double withDependants, peoplePerHousehold` | The arrivals' mix: the share of their households with a dependant, and people to a household. |
-| 1762 | `private double pricedOutShares` |  |
-| 2276 | `private double carriedUnplaced` | What the save said was left with nowhere, or -1 on a save from before it was carried. |
-| 2282 | `private double carriedDoubledUp` | ...and what it said was crowded. |
-| 2283 | `private double[] carriedSeekersDoubled` |  |
+| 788 | `private double lastBackAdults, lastBackChildren, lastBackChildrenHome` |  |
+| 939 | `private double doubledUp` |  |
+| 1077 | `private long[] lastHomesBySize` | The door census house() was last handed. |
+| 1106 | `private double rentWeight` | What the landlords can bill for, in person-equivalents. |
+| 1138 | `private double studioRentWeight` | The part of rentWeight billed on units of size 1-2. |
+| 1141 | `private double familyRentWeight` | ...and on units of size 3 and up. |
+| 1195 | `private double crowdedHouseholds` | Households living somewhere too small for them. |
+| 1198 | `private double refusedByStudio` | Households a studio turned away because they have a child. |
+| 1529 | `private double stillUnplaced` | Households both valves failed to place. |
+| 1674 | `public final double familyDoorsFree, studiosFree` | Doors of size three and up, and studios, that nobody would be behind. |
+| 1676 | `public final double doublingRoom` | Households the families' doubling valve could still take. |
+| 1678 | `public final double seeking, withADoor` | Households that want a door (householdsSeekingDoors()), and those that would have one of their own. |
+| 1680 | `public final double withDependants, peoplePerHousehold` | The arrivals' mix: the share of their households with a dependant, and people to a household. |
+| 1779 | `private double pricedOutShares` |  |
+| 2293 | `private double carriedUnplaced` | What the save said was left with nowhere, or -1 on a save from before it was carried. |
+| 2299 | `private double carriedDoubledUp` | ...and what it said was crowded. |
+| 2300 | `private double[] carriedSeekersDoubled` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 2306 | **type** `public class FamilyModel` | How the city's people are arranged into households, and what each earns. |
+| 49 | 2323 | **type** `public class FamilyModel` | How the city's people are arranged into households, and what each earns. |
 
 ### THE HOUSEHOLDS REMEMBER (2026-09-11) (lines 64-118)
 
@@ -205,7 +205,7 @@
 | 378 | 3 | `public void rebuild(PopulationCohorts cohorts, double[] jobsByTier)` | Rebuilds every household from the current pyramid and job mix. |
 | 389 | 3 | `public void rebuild(PopulationCohorts cohorts, double[] jobsByTier, double outsideAdults)` | counted as away: nobody takes a child with them. |
 
-### THE ADULTS WHO LEFT WORK ARE STILL AT THE KITCHEN TABLE (2026-09-15) (lines 393-735)
+### THE ADULTS WHO LEFT WORK ARE STILL AT THE KITCHEN TABLE (2026-09-15) (lines 393-736)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -217,103 +217,104 @@
 | 468 | 3 | `public void restoreOwnerAdults(double adults)` | On a load: the owner adults the save's census counted (DataSave's, zero on a save from before BO1). |
 | 479 | 3 | `public double dependantsPerOutsideHousehold()` | Dependants per outside household, for the cells that carry them. |
 | 491 | 4 | `public void rebuild(PopulationCohorts cohorts, double[] jobsByTier, double awayAdults, double atHomeAdults)` | not at home either - the prisoners. |
-| 502 | 222 | `public void rebuild(PopulationCohorts cohorts, double[] jobsByTier, double awayAdults, double atHomeAdults, double ownerAdults)` | are the owner families' (two a company; BO1): no job and no dependants, so they take none with them. |
-| 726 | 6 | `private void recordFormed()` | What this month's builder formed, before the valves: next month's reference. |
+| 502 | 223 | `public void rebuild(PopulationCohorts cohorts, double[] jobsByTier, double awayAdults, double atHomeAdults, double ownerAdults)` | are the owner families' (two a company; BO1): no job and no dependants, so they take none with them. |
+| 727 | 6 | `private void recordFormed()` | What this month's builder formed, before the valves: next month's reference. |
 
-### THE CHILDREN COME HOME WITH THEIR PARENTS (OX1, 2026-11-17) (lines 736-897)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 784 | 1 | `public double getLastBackAdults()` | Adults back in the families this month: last month's adults at home less this month's, when that fell. |
-| 786 | 1 | `public double getLastBackChildren()` | The children who came back with them, at last month's rate to an adult at home. |
-| 788 | 1 | `public double getLastBackChildrenHome()` | ...of whom this many were placed in a household with them: all, while their adults last. |
-| 791 | 17 | `private void bringHome(double hadAtHome, double[] hadWithThem, FamilyStructure[] order, double[] tierShare, double[] remaining)` | Places the adults back in the families with their children, after the kept households and before the pool; see the banner above. |
-| 810 | 16 | `private double placeTogether(double[] group, FamilyStructure[] order, double[] tierShare, double[] remaining)` | Forms a group's households by the builder's order and half a shape, pass after pass, until its children are placed; returns the children placed and takes the group's placed people out of the pool. |
-| 827 | 5 | `private static double childrenIn(double[] group)` |  |
-| 848 | 49 | `private void fitTiers(FamilyStructure[] shapes, double[] tierShare)` | THE PAY TIERS FOLLOW THE JOBS, and each shape keeps its total. |
-
-### WHEN THERE ARE NOT ENOUGH HOMES (lines 898-1061)
+### THE CHILDREN COME HOME WITH THEIR PARENTS (OX1, 2026-11-17) (lines 737-914)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 925 | 5 | `public double getDoubledUpHouseholds()` | Households with no door of their own, living in somebody else's: the families', and the seekers' with their own kind. |
-| 931 | 3 | `public double getSharedHouseholds()` |  |
-| 936 | 1 | `public double getDoubledUpFamilies()` | The families' own doubled-up households - guests in somebody else's home - without the seekers'. |
-| 944 | 4 | `public double doubledUpShare()` | The share of the families' households living crowded because of doubling up: every guest and the host they moved in with. |
-| 953 | 7 | `public double seekerCrowdedShare(Seeker g)` | The share of a seeker group WITH a door who are crowded: five to a home with their own kind, or two to a door - guest and host alike. |
-| 962 | 7 | `public double homesNeeded()` | Homes actually occupied, counting doubled-up households as one home. |
-| 992 | 12 | `public double minimumHomesTolerable()` | The fewest homes this household mix could crowd into before somebody would genuinely have nowhere to go. |
-| 1038 | 17 | `private double doorsThatCannotHelp()` | Doors the city has that the households who need one cannot enter. |
+| 791 | 1 | `public double getLastBackAdults()` | Adults back in the families this month: last month's adults at home less this month's, when that fell, and no more than the families' adults grew by. |
+| 793 | 1 | `public double getLastBackChildren()` | The children who came back with them, at last month's rate to an adult at home. |
+| 795 | 1 | `public double getLastBackChildrenHome()` | ...of whom this many were placed in a household with them: all, while their adults last. |
+| 798 | 17 | `private void bringHome(double hadAtHome, double[] hadWithThem, double familiesGrew, FamilyStructure[] order, double[] tierShare...` | Places the adults back in the families with their children, after the kept households and before the pool; see the banner above. |
+| 817 | 16 | `private double placeTogether(double[] group, FamilyStructure[] order, double[] tierShare, double[] remaining)` | Forms a group's households by the builder's order and half a shape, pass after pass, until its children are placed; returns the children placed and takes the group's placed people out of the pool. |
+| 835 | 8 | `private double adultsFormed()` | The adults in last month's formed households: the families' adults when the builder last ran, since the single adults take every adult the other shapes leave. |
+| 844 | 5 | `private static double childrenIn(double[] group)` |  |
+| 865 | 49 | `private void fitTiers(FamilyStructure[] shapes, double[] tierShare)` | THE PAY TIERS FOLLOW THE JOBS, and each shape keeps its total. |
 
-### PUTTING HOUSEHOLDS BEHIND DOORS THAT FIT (lines 1062-1090)
-
-### TWO SEGMENTS, BECAUSE A STUDIO AND A THREE-BED ARE NOT THE SAME GOOD (lines 1091-1615)
+### WHEN THERE ARE NOT ENOUGH HOMES (lines 915-1078)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1126 | 1 | `public double studioRentWeight()` |  |
-| 1127 | 1 | `public double familyRentWeight()` |  |
-| 1130 | 3 | `public static boolean needsFamilyDoor(FamilyStructure shape)` | Whether a household of this shape needs a door a child is allowed in. |
-| 1138 | 8 | `public double studioSeekers()` | Households that could live in a studio: adults only, one or two of them - the seekers outside the families among them. |
-| 1148 | 7 | `public double familySeekers()` | Households that need a door of size three or more. |
-| 1164 | 1 | `public double studioSeekerHeads()` | The PEOPLE in each segment, as opposed to the households. |
-| 1166 | 1 | `public double familySeekerHeads()` |  |
-| 1168 | 8 | `private double seekerHeads(boolean family)` |  |
-| 1198 | 1 | `public double rentWeight()` | The rent base: what the let homes add up to, in people of capacity. |
-| 1213 | 1 | `public void setRentWeight(double weight)` | Puts back the weight the month was actually billed on. |
-| 1222 | 5 | `public void setRentWeight(double studio, double family)` | Puts back BOTH weights the month was billed on. |
-| 1227 | 1 | `public double getCrowdedHouseholds()` |  |
-| 1228 | 1 | `public double getRefusedByStudio()` |  |
-| 1231 | 3 | `public static double rentWeightOf(int unitSize)` | What one let home of this size bills, whoever is in it. |
-| 1250 | 10 | `public double marginalRentWeight(int unitSize)` | What one more home of this size would earn, in person-equivalents. |
-| 1267 | 15 | `public double house(long[] homesBySize)` | Matches households to homes by size, and reports what would not fit. |
-| 1294 | 106 | `private double[] match(long[] homesBySize, double[] free, boolean record)` | The match itself: house() when it records, and the room the placement has left when it does not (roomLeft(), 0.7.17) - one loop, so the two cannot come to disagree about who fits where. |
-| 1409 | 6 | `private void bill(int unitSize, double homes)` | Books a let: its weight to the whole, and to the segment the DOOR is in. |
-| 1421 | 7 | `public void squeeze(long homesAvailable)` | Crowds households until they fit the homes available. |
-| 1436 | 64 | `public void squeezeUnplaced(double excess)` | The same two valves, on households house() could not place. |
-| 1513 | 1 | `public double getStillUnplaced()` |  |
-| 1523 | 92 | `public void noteUnplaced(double left)` | Records what the FINAL match left over, after both valves have run. |
+| 942 | 5 | `public double getDoubledUpHouseholds()` | Households with no door of their own, living in somebody else's: the families', and the seekers' with their own kind. |
+| 948 | 3 | `public double getSharedHouseholds()` |  |
+| 953 | 1 | `public double getDoubledUpFamilies()` | The families' own doubled-up households - guests in somebody else's home - without the seekers'. |
+| 961 | 4 | `public double doubledUpShare()` | The share of the families' households living crowded because of doubling up: every guest and the host they moved in with. |
+| 970 | 7 | `public double seekerCrowdedShare(Seeker g)` | The share of a seeker group WITH a door who are crowded: five to a home with their own kind, or two to a door - guest and host alike. |
+| 979 | 7 | `public double homesNeeded()` | Homes actually occupied, counting doubled-up households as one home. |
+| 1009 | 12 | `public double minimumHomesTolerable()` | The fewest homes this household mix could crowd into before somebody would genuinely have nowhere to go. |
+| 1055 | 17 | `private double doorsThatCannotHelp()` | Doors the city has that the households who need one cannot enter. |
 
-### THE ROOM THE PLACEMENT HAS LEFT (0.7.17) (lines 1616-1735)
+### PUTTING HOUSEHOLDS BEHIND DOORS THAT FIT (lines 1079-1107)
+
+### TWO SEGMENTS, BECAUSE A STUDIO AND A THREE-BED ARE NOT THE SAME GOOD (lines 1108-1632)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1655 | 46 | **type** `public static final class Room` | What the placement could still take, and the arithmetic it was struck from. |
-| 1665 | 10 | `Room(double familyDoorsFree, double studiosFree, double doublingRoom, double seeking, double withADoor, double withDependants, ...` _(in FamilyModel.Room)_ |  |
-| 1689 | 6 | `public double households()` _(in FamilyModel.Room)_ | Households of the arrivals' mix the placement could still take. |
-| 1697 | 3 | `public double people()` _(in FamilyModel.Room)_ | ...and as people, at the arrivals' own people to a household. |
-| 1708 | 27 | `public Room roomLeft(long[] homesBySize)` | The room the placement has left against a door census, asked of the match rather than worked out from totals (see the banner above). |
+| 1143 | 1 | `public double studioRentWeight()` |  |
+| 1144 | 1 | `public double familyRentWeight()` |  |
+| 1147 | 3 | `public static boolean needsFamilyDoor(FamilyStructure shape)` | Whether a household of this shape needs a door a child is allowed in. |
+| 1155 | 8 | `public double studioSeekers()` | Households that could live in a studio: adults only, one or two of them - the seekers outside the families among them. |
+| 1165 | 7 | `public double familySeekers()` | Households that need a door of size three or more. |
+| 1181 | 1 | `public double studioSeekerHeads()` | The PEOPLE in each segment, as opposed to the households. |
+| 1183 | 1 | `public double familySeekerHeads()` |  |
+| 1185 | 8 | `private double seekerHeads(boolean family)` |  |
+| 1215 | 1 | `public double rentWeight()` | The rent base: what the let homes add up to, in people of capacity. |
+| 1230 | 1 | `public void setRentWeight(double weight)` | Puts back the weight the month was actually billed on. |
+| 1239 | 5 | `public void setRentWeight(double studio, double family)` | Puts back BOTH weights the month was billed on. |
+| 1244 | 1 | `public double getCrowdedHouseholds()` |  |
+| 1245 | 1 | `public double getRefusedByStudio()` |  |
+| 1248 | 3 | `public static double rentWeightOf(int unitSize)` | What one let home of this size bills, whoever is in it. |
+| 1267 | 10 | `public double marginalRentWeight(int unitSize)` | What one more home of this size would earn, in person-equivalents. |
+| 1284 | 15 | `public double house(long[] homesBySize)` | Matches households to homes by size, and reports what would not fit. |
+| 1311 | 106 | `private double[] match(long[] homesBySize, double[] free, boolean record)` | The match itself: house() when it records, and the room the placement has left when it does not (roomLeft(), 0.7.17) - one loop, so the two cannot come to disagree about who fits where. |
+| 1426 | 6 | `private void bill(int unitSize, double homes)` | Books a let: its weight to the whole, and to the segment the DOOR is in. |
+| 1438 | 7 | `public void squeeze(long homesAvailable)` | Crowds households until they fit the homes available. |
+| 1453 | 64 | `public void squeezeUnplaced(double excess)` | The same two valves, on households house() could not place. |
+| 1530 | 1 | `public double getStillUnplaced()` |  |
+| 1540 | 92 | `public void noteUnplaced(double left)` | Records what the FINAL match left over, after both valves have run. |
 
-### AND WHEN THEY CANNOT AFFORD ONE (lines 1736-1926)
+### THE ROOM THE PLACEMENT HAS LEFT (0.7.17) (lines 1633-1752)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1765 | 1 | `public double getPricedOutShares()` | Flatshares formed because a wage could not cover a home, not because there was none. |
-| 1770 | 22 | `public void shareByAffordability(double[] pressure)` |  |
-| 1801 | 8 | `public void shareSeekersByAffordability(double[] pressure)` | The seekers' own affordability valve: the share of each group living alone who share five to a home rather than go short. |
-| 1832 | 24 | `private void placeRetired(AgeBand band, FamilyStructure coupleShape, FamilyStructure aloneShape, double people, boolean keep, d...` | One retired band into its own two shapes. |
-| 1858 | 10 | `private double capacityFor(FamilyStructure shape, double[] remaining)` | How many of this shape the remaining people could fill. |
-| 1870 | 14 | `private void place(FamilyStructure shape, double count, double[] tierShare, double[] remaining)` | Commits a number of households of one shape, split across the tiers. |
-| 1893 | 8 | `private static FamilyStructure[] byDependantsDescending()` | Working-age shapes, most dependants first, then most adults. |
-| 1917 | 9 | `private static FamilyStructure[] formableShapes()` | The shapes rebuild() may actually form, in the order it forms them. |
+| 1672 | 46 | **type** `public static final class Room` | What the placement could still take, and the arithmetic it was struck from. |
+| 1682 | 10 | `Room(double familyDoorsFree, double studiosFree, double doublingRoom, double seeking, double withADoor, double withDependants, ...` _(in FamilyModel.Room)_ |  |
+| 1706 | 6 | `public double households()` _(in FamilyModel.Room)_ | Households of the arrivals' mix the placement could still take. |
+| 1714 | 3 | `public double people()` _(in FamilyModel.Room)_ | ...and as people, at the arrivals' own people to a household. |
+| 1725 | 27 | `public Room roomLeft(long[] homesBySize)` | The room the placement has left against a door census, asked of the match rather than worked out from totals (see the banner above). |
 
-### saving (lines 1927-2354)
+### AND WHEN THEY CANNOT AFFORD ONE (lines 1753-1943)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1945 | 6 | `public static String[] saveShapes()` | The shape names this build would write beside the matrix. |
-| 1953 | 5 | `private static FamilyStructure shapeNamed(String name)` | The shape of that name, or null if this build has no such shape. |
-| 1977 | 3 | `private static int outsideSlots(int bands)` | The same block measured against a SAVE's band count, not this build's. |
-| 1981 | 3 | `private static int outsideSlots(int bands, int shapes)` |  |
-| 1986 | 3 | `private static int memorySlots(int shapes)` | The formed-household memory, measured against a SAVE's shape count. |
-| 2001 | 3 | `private static int kinSlots(int bands)` | The children who went out of work with their parent, appended 2026-09-15 as a TAIL rather than widened into the outside block. |
-| 2017 | 3 | `public static int slotsBeforeMemory()` | Slots a save carries before the formed-household memory. |
-| 2035 | 77 | `public double[] toSaveArray()` | Flattened row by row. |
-| 2145 | 3 | `public void restore(double[] saved)` | Puts the households back. |
-| 2149 | 3 | `public void restore(String[] bands, double[] saved)` |  |
-| 2163 | 101 | `public void restore(String[] bands, String[] shapes, double[] saved)` | BOTH AXES COME FROM THE SAVE. |
-| 2266 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
-| 2295 | 3 | `public void adoptCarriedUnplaced()` | The saved residual wins over the load path's one-pass re-derivation. |
-| 2324 | 7 | `public void adoptCarriedDoubling()` | The saved crowding wins over the load path's one-pass re-derivation. |
-| 2332 | 22 | `public void reset()` |  |
+| 1782 | 1 | `public double getPricedOutShares()` | Flatshares formed because a wage could not cover a home, not because there was none. |
+| 1787 | 22 | `public void shareByAffordability(double[] pressure)` |  |
+| 1818 | 8 | `public void shareSeekersByAffordability(double[] pressure)` | The seekers' own affordability valve: the share of each group living alone who share five to a home rather than go short. |
+| 1849 | 24 | `private void placeRetired(AgeBand band, FamilyStructure coupleShape, FamilyStructure aloneShape, double people, boolean keep, d...` | One retired band into its own two shapes. |
+| 1875 | 10 | `private double capacityFor(FamilyStructure shape, double[] remaining)` | How many of this shape the remaining people could fill. |
+| 1887 | 14 | `private void place(FamilyStructure shape, double count, double[] tierShare, double[] remaining)` | Commits a number of households of one shape, split across the tiers. |
+| 1910 | 8 | `private static FamilyStructure[] byDependantsDescending()` | Working-age shapes, most dependants first, then most adults. |
+| 1934 | 9 | `private static FamilyStructure[] formableShapes()` | The shapes rebuild() may actually form, in the order it forms them. |
+
+### saving (lines 1944-2371)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1962 | 6 | `public static String[] saveShapes()` | The shape names this build would write beside the matrix. |
+| 1970 | 5 | `private static FamilyStructure shapeNamed(String name)` | The shape of that name, or null if this build has no such shape. |
+| 1994 | 3 | `private static int outsideSlots(int bands)` | The same block measured against a SAVE's band count, not this build's. |
+| 1998 | 3 | `private static int outsideSlots(int bands, int shapes)` |  |
+| 2003 | 3 | `private static int memorySlots(int shapes)` | The formed-household memory, measured against a SAVE's shape count. |
+| 2018 | 3 | `private static int kinSlots(int bands)` | The children who went out of work with their parent, appended 2026-09-15 as a TAIL rather than widened into the outside block. |
+| 2034 | 3 | `public static int slotsBeforeMemory()` | Slots a save carries before the formed-household memory. |
+| 2052 | 77 | `public double[] toSaveArray()` | Flattened row by row. |
+| 2162 | 3 | `public void restore(double[] saved)` | Puts the households back. |
+| 2166 | 3 | `public void restore(String[] bands, double[] saved)` |  |
+| 2180 | 101 | `public void restore(String[] bands, String[] shapes, double[] saved)` | BOTH AXES COME FROM THE SAVE. |
+| 2283 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
+| 2312 | 3 | `public void adoptCarriedUnplaced()` | The saved residual wins over the load path's one-pass re-derivation. |
+| 2341 | 7 | `public void adoptCarriedDoubling()` | The saved crowding wins over the load path's one-pass re-derivation. |
+| 2349 | 22 | `public void reset()` |  |
 

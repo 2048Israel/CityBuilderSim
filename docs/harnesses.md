@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**213 harness files, 24,870 labelled assertions.** AllChecks runs 213 of them.
+**213 harness files, 24,874 labelled assertions.** AllChecks runs 213 of them.
 
 ## Which harnesses read which class
 
@@ -6796,7 +6796,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L532 the money audit's worst month is within 0.01% of what moved
   - L533 ...and nothing moved a pool after it
 
-## DeathRecordCheck.java - 34 labelled assertions
+## DeathRecordCheck.java - 38 labelled assertions
 
 > The running totals of the dead, by age and for the orphans and the unhoused.
 > 
@@ -6806,45 +6806,50 @@ _(this harness does not label its checks through a helper - it prints its findin
 > its own cause.
 
 - **L61 the layoff beside its twin, each month of two years**
-  - L98 fixture: the paired city's closing put adults out of work: more at home than its twin in the same month
-  - L99 ...and the old rule would have at least doubled its orphans
-  - L100 the children went with the laid-off parents
-  - L101 the layoff adds at most one orphan against its twin in every month of the two years
-- **L113 a wave of the out of work that ends at once: the children go home with their parents**
-  - L137 fixture: a fifth of the adults went out of work, and their children with them at the city's own rate
-  - L156 fixture: the wave ended at once: nobody is out of work the month after, and no child is out with them
-  - L158 the month it ends, every adult who was out of work is back in the families
-  - L159 ...and every child who went out with them came back with them
-  - L160 ...and is placed in a household with them
-  - L161 the wave adds at most one orphan against its twin in any month of it
-  - L162 the month it ends adds at most one orphan against the twin: the children went home with their parents
-  - L163 ...and so does every month of the year after it
-- **L168 1. who among the dead**
-  - L182 a tenth of the babies orphaned, at forty times the rate: their share of the dead
-  - L184 a tenth of the adults with no home, at 3.7 times: their share
-  - L189 the sick die alike across the band, so an orphan takes a tenth of the babies' illness deaths
-  - L191 ...and the unhoused a tenth of the adults'
-  - L195 a city with no orphans and nobody unhoused attributes none of its dead to them
-- **L198 2. the running total**
-  - L202 months before a series was recorded stay unrecorded
-  - L204 ...then it sums
-  - L205 ...carries across a gap
-  - L206 ...and goes on
-- **L208 3. a city whose employer closes**
-  - L222 the graph holds this month's dead:
-  - L226 ...and the bands add up to the month's dead
-  - L230 the running total is every month's dead since the founding
-  - L231 fixture: the city has buried somebody
-- **L233 CLOSING THE MILL USED TO ORPHAN CHILDREN, AND IT NO LONGER DOES.**
-  - L321 fixture: the closing put adults out of work
-  - L336 ...and big enough that the old rule would have at least doubled the orphans
-  - L359 the orphan section does not fill behind it, in any month of the two years
-  - L362 ...because the children went with their parents
-  - L364 fixture: the city still has orphans for the record to count
-  - L366 ...and some of them died
-  - L367 the graph holds this month's orphans who died
-  - L369 ...and this month's dead with no home
-  - L372 ...and its running total grew with them
+  - L103 fixture: the paired city's closing put adults out of work: more at home than its twin in the same month
+  - L104 ...and the old rule would have at least doubled its orphans
+  - L105 the children went with the laid-off parents
+  - L106 the layoff adds at most one orphan against its twin in every month of the two years
+- **L118 a wave of the out of work that ends at once: the children go home with their parents**
+  - L143 fixture: a fifth of the adults went out of work, and their children with them at the city's own rate
+  - L163 fixture: the wave ended at once: the month after, the model has nobody out of work at home and no child out with them
+  - L165 the month it ends, every adult who was out of work is back in the families
+  - L166 ...and every child who went out with them came back with them
+  - L167 ...and is placed in a household with them
+  - L168 the wave adds at most one orphan against its twin in any month of it
+  - L169 the month it ends adds at most one orphan against the twin: the children went home with their parents
+  - L170 ...and so does every month of the year after it
+- **L180 the adults at home fall and nobody comes home: prison, and the jobless leaving**
+  - L209 fixture: the wave went to prison, and the adults at home fell by all of it
+  - L210 ...and the wave that left the city took the adults at home down by all of it
+  - L211 nobody is brought home when the out of work go to prison
+  - L212 ...nor when they leave the city
+- **L217 1. who among the dead**
+  - L231 a tenth of the babies orphaned, at forty times the rate: their share of the dead
+  - L233 a tenth of the adults with no home, at 3.7 times: their share
+  - L238 the sick die alike across the band, so an orphan takes a tenth of the babies' illness deaths
+  - L240 ...and the unhoused a tenth of the adults'
+  - L244 a city with no orphans and nobody unhoused attributes none of its dead to them
+- **L247 2. the running total**
+  - L251 months before a series was recorded stay unrecorded
+  - L253 ...then it sums
+  - L254 ...carries across a gap
+  - L255 ...and goes on
+- **L257 3. a city whose employer closes**
+  - L271 the graph holds this month's dead:
+  - L275 ...and the bands add up to the month's dead
+  - L279 the running total is every month's dead since the founding
+  - L280 fixture: the city has buried somebody
+- **L282 CLOSING THE MILL USED TO ORPHAN CHILDREN, AND IT NO LONGER DOES.**
+  - L370 fixture: the closing put adults out of work
+  - L385 ...and big enough that the old rule would have at least doubled the orphans
+  - L408 the orphan section does not fill behind it, in any month of the two years
+  - L411 ...because the children went with their parents
+  - L413 fixture: the city still has orphans for the record to count
+  - L415 ...and some of them died
+  - L416 the graph holds this month's orphans who died
+  - L418 ...and this month's dead with no home
+  - L421 ...and its running total grew with them
 
 ## DebtExchangeCheck.java - 125 labelled assertions
 

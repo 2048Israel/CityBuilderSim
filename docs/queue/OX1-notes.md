@@ -38,7 +38,8 @@ births, the re-forming), Jerus's "they're the orphans" (FamilyModel's banner, 20
 
 - **`FamilyModel`**: a banner, THE CHILDREN COME HOME WITH THEIR PARENTS. In `rebuild()`, step 2c, after the kept
   households and before the pool, `bringHome()`: the adults back in the families are last month's adults at home
-  less this month's (the net), their children last month's children at home at that household's rate to an adult,
+  less this month's (the net), never more than the families' own adults grew by since last month's builder
+  (`adultsFormed()`, REV-OX1-1), their children last month's children at home at that household's rate to an adult,
   band by band; `placeTogether()` forms their households by the builder's own order and half a shape, into the
   shapes that hold a child, pass after pass (`HOME_PASSES`, 64) until every child is placed while their adults last;
   their leftover adults join the pool. Memory on only. Counters `getLastBackAdults()`, `getLastBackChildren()`,
@@ -47,32 +48,56 @@ births, the re-forming), Jerus's "they're the orphans" (FamilyModel's banner, 20
   save (the kin slots, `toSaveArray()` and `restore()`), and the load path restores the households without a
   rebuild, so a loaded city's next month brings the same children home. The counters are this month's and read in it.
 - **`DeathRecordCheck`** section 4, `waveEndsAtOnce()` (above; its fixture lines read the model's own rule, the
-  children out at `outOfWork / adults` of each band, and the mend's counters), and the m60 pair now prints its months.
+  children out at `outOfWork / adults` of each band, and the mend's counters); 4b, `nobodyComesHome()`, the same wave
+  ending in prison or in leaving the city, with nobody brought home (REV-OX1-1); and the m60 pair prints its months,
+  with the children back and placed with them in each town.
 
 ## What each check showed
 
-- DeathRecordCheck on the merged model: section 4 green (5.26 against 6.58 the month it ends, 0.000 at most in the
-  year after; 1,200 back, 470 children back, all 470 home); section 3's "does not fill behind it" green (peak 7.92
-  against the twin's 7.73). The m60 line red at 3.851, below: re-filed.
-- In the default playtest on the final model (77a7ccc9, a probe line not committed): the adults at home fell in 998 of
-  2,400 months and the mend brought 41,999.5 children home with them; one month left any over (m1634, 0.018 of a
-  child, 0.335 adults back with 0.185 children: the two-adult shapes ran their adults out). The adults at home fell by
-  a quarter and 50 or more at once in 25 months.
+- DeathRecordCheck on 1acfc4f3 (`target/OX1-drc-8.txt`): section 4 green (5.26 against 6.58 the month it ends, 0.000
+  at most in the year after; 1,200 back, 470 children back, all 470 home); 4b green (nobody brought home, 0.000000
+  adults and children, in prison and in leaving); section 3's "does not fill behind it" green (peak 7.92 against the
+  twin's 7.73). The m60 line red at 3.996 (3.851 before the cap), below: re-filed.
+- The default playtest on 1acfc4f3 (a probe line not committed): the adults at home fell in 977 of 2,400 months; the
+  mend brought adults home in 838 of them and 62,470.6 children with them, every one placed. In 598 of the 977 the cap
+  held the adults brought home below the fall, by 7,368 adults in all, who left the at-home count without coming home.
+  Before the cap (e4e238a0's model, run on 77a7ccc9): 998 months, 41,999.5 children, one month 0.018 of a child over.
+
+## The review, REV-OX1-1 (not SHIP), and what was mended
+
+1. **The net fall counted adults who never came home.** The adults at home also fall when the out of work leave the
+   city (`Migration.HEALTHY_OUT_OF_WORK`), go to prison, are set aside as owners, die or turn 65, and `bringHome()`
+   then took that many from the pool and placed the pool's children with them: arrivals as families, which call 1
+   leaves to Jerus. Mended: the adults brought home are capped by the families' own adult gain, this month's adults in
+   the families less those in last month's formed households (`adultsFormed()`, read off `formed`, which is saved, so
+   a loaded city caps the same). Red by hand once: the new 4b against e4e238a0's FamilyModel (`target/OX1-drc-red2.txt`)
+   read "adults at home 1200 then 0 (prison), 1200 then 0 (leaving); brought home 48.000000 adults with 18.800000
+   children (prison), 48.000000 with 18.800000 (leaving)", FAIL on "nobody is brought home when the out of work go to
+   prison" and "...nor when they leave the city" (3 FAILED with the m60 line). What the cap cannot part, the aggregate
+   holding no flow by person: a month in which the families grow by others (arrivals hired, eighteenth birthdays)
+   while the at-home count falls by leaving still brings up to the smaller of the two home.
+2. **The m60 record.** Section 3's twin trace prints the children back and placed in each town. In each wave-end month
+   they are equal: the closed town's (month 8, 239 at home to 0) 119.70 back, 119.70 placed; the twin's (month 10, 216
+   to 0) 108.57 and 108.57; the small ones too (11.25, 3.46, 2.56). Every child who came back went home with their
+   adults, so the line stays re-filed to OX2.
+3. **The nit.** Section 4's fixture line, "nobody is out of work the month after", is read off the model the month
+   after the wave ends, not twelve months on.
 
 ## The m60 line is not OX1's own: re-filed to OX2
 
 "The layoff adds at most one orphan against its twin in every month of the two years" (known-reds, OX1, 2026-11-15)
 was the rehire fault on main (8.404). With the mend its months read (closed / open, adults at home in brackets):
-1.0/1.3 (239/215), 3.1/1.5 (0/215), 5.4/1.6 (0/215), 6.7/3.4 (0/0) ... 11.3/10.5. The closed town's wave ends two
+1.3/1.4 (239/215), 3.2/1.6 (0/215, the closed town's 119.70 children back, all placed), 5.5/1.5 (0/216), 6.8/3.4 (0/0,
+the twin's 108.57 back, all placed) ... 11.3/10.5; the greatest same-month excess 3.996 on 1acfc4f3. The closed town's wave ends two
 months before its twin's (the eighth month after the closing against the tenth); behind each end the arrivals rise
 (9 to 114 a month on 9a5d8113's model, the same months; the labour short)
 and the builder's half a shape leaves part of their children over, as it does any month, so the closed town's
 orphans fill two months sooner. That is the builder's residue on arrivals, not a child of a re-employed adult;
-the twins' timing and the one-orphan allowance stand. Measured ways to green it, all beyond this batch:
+the twins' timing and the one-orphan allowance stand. Measured ways to green it, all beyond this batch (before the cap):
 
 | way | m60 excess | what it does |
 |---|---|---|
-| OX1 as shipped | 3.851 | the re-employed's children home |
+| OX1, e4e238a0; with the cap, 1acfc4f3 | 3.851; 3.996 | the re-employed's children home |
 | + arrivals placed as families, after the kept households | 0.387 on 9a5d8113, 2.162 merged | the played town's orphans fall from about 7 to about 2 |
 | + newcomers (back and arrivals) before the kept households | 1.099 merged | a layoff month's kept households still take every adult, so that month's births and last orphans wait |
 
@@ -93,28 +118,34 @@ Queued OX2 (the ship file), built on the recommended way of call 1 (arriving chi
 
 ## The trace
 
-The default playtest traced (`-Dplaytest.trace`, both data files named) on 77a7ccc9, the merged final model, against
-main's reference `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-ec481b4a/`; ours is
-`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-OX1-77a7ccc9/`. It ran 2,400 months, "All checks passed.", exit 0 (main's
-reference exits 1 on TQ1's recorded finding, households with no home m692-745; this path does not reach it). All eight
-files move: `house`, `pop` and `build` from month 14, `month`, `bank`, `bonds` and `labour` from 15, `borrow` from its
-first paper (main's month 59). One city's path, so the ensemble judges. The size, main then OX1:
+The default playtest traced (`-Dplaytest.trace`, both data files named) on 1acfc4f3, the capped model, against main's
+reference `C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-ec481b4a/`; ours is
+`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-OX1-1acfc4f3/`. It ran 2,400 months, "All checks passed.", exit 0 (main's
+reference exits 1 on TQ1's recorded finding, households with no home m692-745; a run of ec481b4a with the same probe
+reproduced it, and gave main's orphans). All eight files move: `house`, `pop` and `build` from month 14, `month`,
+`bank`, `bonds` and `labour` from 15, `borrow` from its first paper (main's month 59). The size, main then OX1, with the
+orphans and the orphans who died to date:
 
-| month | people | out of work | jobs | households | children | inflation, a year | unskilled premium |
-|---|---|---|---|---|---|---|---|
-| 60 | 977; 888 | 0; 0 | 596; 559 | 351; 320 | 291; 264 | 15.5%; 10.7% | 1.079; 1.060 |
-| 120 | 1,471; 1,204 | 0; 1.0% | 767; 623 | 498; 406 | 519; 426 | 10.6%; 14.1% | 0.963; 0.960 |
-| 240 | 1,833; 1,294 | 9.4%; 5.9% | 819; 603 | 522; 376 | 761; 541 | -4.2%; -4.8% | 0.939; 0.977 |
-| 600 | 14,441; 9,088 | 0; 0 | 7,244; 4,484 | 4,347; 2,682 | 6,085; 3,856 | 15.1%; 10.5% | 1.037; 1.024 |
-| 1,200 | 33,302; 35,335 | 9.4%; 7.0% | 13,852; 15,091 | 9,420; 10,006 | 14,027; 14,941 | 7.4%; 11.6% | 0.850; 0.865 |
-| 1,800 | 40,436; 32,829 | 9.1%; 10.8% | 16,856; 13,086 | 11,394; 9,168 | 16,965; 13,732 | -3.8%; -1.8% | 0.868; 0.850 |
-| 2,399 | 630,320; 238,511 | 5.9%; 0 | 258,580; 99,183 | 179,388; 70,583 | 263,204; 99,259 | -7.8%; -4.8% | 0.971; 1.037 |
+| month | people | out of work | jobs | households | children | orphans | orphan deaths | inflation, a year | unskilled premium |
+|---|---|---|---|---|---|---|---|---|---|
+| 60 | 977; 888 | 0; 0 | 596; 559 | 351; 320 | 291; 264 | 3.9; 2.1 | 0.4; 0.3 | 15.5%; 10.7% | 1.079; 1.060 |
+| 120 | 1,471; 1,205 | 0; 1.1% | 767; 623 | 498; 405 | 519; 426 | 19.1; 11.9 | 2.2; 1.2 | 10.6%; 14.0% | 0.963; 0.960 |
+| 240 | 1,833; 1,295 | 9.4%; 6.0% | 819; 603 | 522; 375 | 761; 542 | 38.9; 26.8 | 8.9; 5.8 | -4.2%; -4.8% | 0.939; 0.976 |
+| 600 | 14,441; 3,496 | 0; 12.8% | 7,244; 1,509 | 4,347; 997 | 6,085; 1,469 | 318.1; 49.3 | 68.0; 23.8 | 15.1%; 2.9% | 1.037; 0.907 |
+| 1,200 | 33,302; 36,343 | 9.4%; 7.4% | 13,852; 15,261 | 9,420; 10,602 | 14,027; 15,222 | 710.0; 676.7 | 539.5; 295.4 | 7.4%; 8.2% | 0.850; 0.879 |
+| 1,800 | 40,436; 49,857 | 9.1%; 3.5% | 16,856; 22,082 | 11,394; 14,889 | 16,965; 20,925 | 782.5; 810.8 | 1,000.7; 729.1 | -3.8%; -2.3% | 0.868; 0.915 |
+| 2,399 | 630,320; 819,808 | 5.9%; 4.3% | 258,580; 331,441 | 179,388; 239,453 | 263,204; 341,457 | 12,666.1; 18,717.2 | 4,010.0; 5,126.1 | -7.8%; -3.9% | 0.971; 0.987 |
 
-People to a household: 2.78 and 2.78 at month 60, 3.51 and 3.38 at month 2,399, in cities of very different size.
+Orphans to a hundred children, main then OX1: 1.3 and 0.8 at month 60, 5.2 and 3.4 at 600, 5.1 and 4.4 at 1,200, 4.6
+and 3.9 at 1,800, 4.8 and 5.5 at 2,399, where both cities grow tenfold and more in their last 600 months and the
+section is the builder's residue on the arrivals. The runs' closing summaries: main 13,074 orphans and 4,101 orphan
+deaths over the run, OX1 19,856 and 5,265. The end size is the path's, not the mend's: e4e238a0's model, the same
+until month 60, ended at 238,511 people (9,088 at month 600) and 1acfc4f3's at 819,808 (3,496 at 600), against main's
+630,320 (14,441). One city's path each, so the ensemble judges.
 
 ## The pick
 
-`./batch-check.sh --pick` on 77a7ccc9 (both data files named): 15 of 213 harnesses, 13 green, 2 red; review line
+`./batch-check.sh --pick` on 77a7ccc9, before the review (both data files named): 15 of 213 harnesses, 13 green, 2 red; review line
 "not needed - no money, saves or threading in the diff". The reds:
 
 - **DeathRecordCheck**: the m60 line alone (3.851), carried to OX2 by the ship file's `## known-reds` row; the

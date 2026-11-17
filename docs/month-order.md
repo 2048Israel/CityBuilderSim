@@ -501,17 +501,17 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _The student body above is last month's education step, and so are the ones who finished: they leave it with their loans at this month's census._
 83. **L15527** `long[] stock = buildingManager.homesBySize();` → [BuildingManager.homesBySize](map/BuildingManager.md) (L7261)  
    _HOMES HAVE SIZES NOW, so this is a match rather than a count._
-84. **L15528** `double unplaced = families.house(stock);` → [FamilyModel.house](map/FamilyModel.md) (L1267)
-85. **L15529** `families.squeezeUnplaced(unplaced);` → [FamilyModel.squeezeUnplaced](map/FamilyModel.md) (L1436)
-86. **L15530** `families.noteUnplaced(families.house(stock));` → [FamilyModel.noteUnplaced](map/FamilyModel.md) (L1523), [FamilyModel.house](map/FamilyModel.md) (L1267)
-87. **L15535** `getSectors().realEstate().setRentWeight(` → [Game.getSectors](map/Game.md) (L3126), [FamilyModel.studioRentWeight](map/FamilyModel.md) (L1126), [FamilyModel.familyRentWeight](map/FamilyModel.md) (L1127)  
+84. **L15528** `double unplaced = families.house(stock);` → [FamilyModel.house](map/FamilyModel.md) (L1284)
+85. **L15529** `families.squeezeUnplaced(unplaced);` → [FamilyModel.squeezeUnplaced](map/FamilyModel.md) (L1453)
+86. **L15530** `families.noteUnplaced(families.house(stock));` → [FamilyModel.noteUnplaced](map/FamilyModel.md) (L1540), [FamilyModel.house](map/FamilyModel.md) (L1284)
+87. **L15535** `getSectors().realEstate().setRentWeight(` → [Game.getSectors](map/Game.md) (L3126), [FamilyModel.studioRentWeight](map/FamilyModel.md) (L1143), [FamilyModel.familyRentWeight](map/FamilyModel.md) (L1144)  
    _What the landlords can bill, off the match rather than off an average, and split by which segment the door was in._
 88. **L15539** `businessInvestment.setFamilies(families);` → [BusinessInvestment.setFamilies](map/BusinessInvestment.md) (L1358)  
    _And the advisor prices a new home on who would move into it._
 89. **L15540** `businessInvestment.setBank(bank);` → [BusinessInvestment.setBank](map/BusinessInvestment.md) (L1363)
-90. **L15556** `families.shareByAffordability(households.livingAlonePressure(families));` → [FamilyModel.shareByAffordability](map/FamilyModel.md) (L1770), [HouseholdAccounts.livingAlonePressure](map/HouseholdAccounts.md) (L915)  
+90. **L15556** `families.shareByAffordability(households.livingAlonePressure(families));` → [FamilyModel.shareByAffordability](map/FamilyModel.md) (L1787), [HouseholdAccounts.livingAlonePressure](map/HouseholdAccounts.md) (L915)  
    _...and the ones who cannot afford one either._
-91. **L15558** `families.shareSeekersByAffordability(households.seekerPressure(new double[] {` → [FamilyModel.shareSeekersByAffordability](map/FamilyModel.md) (L1801), [HouseholdAccounts.seekerPressure](map/HouseholdAccounts.md) (L1022), [Unemployment.getHoused](map/Unemployment.md) (L153), [FamilyModel.getSeekers](map/FamilyModel.md) (L209)  
+91. **L15558** `families.shareSeekersByAffordability(households.seekerPressure(new double[] {` → [FamilyModel.shareSeekersByAffordability](map/FamilyModel.md) (L1818), [HouseholdAccounts.seekerPressure](map/HouseholdAccounts.md) (L1022), [Unemployment.getHoused](map/Unemployment.md) (L153), [FamilyModel.getSeekers](map/FamilyModel.md) (L209)  
    _...and the people outside the families, with their own kind._
 92. **L15597** `healthcare.setFeeScale(economyManager.getTaxPolicy().getHealthFeeScale());` → [Healthcare.setFeeScale](map/Healthcare.md) (L161), [EconomyManager.getTaxPolicy](map/EconomyManager.md) (L54)  
    _At the player's fee scale (2026-09-19), and with the share of each kind of care's people who could pay - see Healthcare.advanceMonth()._
