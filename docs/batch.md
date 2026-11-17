@@ -50,13 +50,13 @@ Speed is judged nightly with machine-local paired confirmation (GR1).
    ## queued
    | <new id: tools/batch-id.sh> | what was decided | brief |
    ## known-reds
-   Harness | part of the red line | queued fix | date | cause
+   <Harness> | <part of the red line> | <queued fix id> | <date> | <cause>
    ```
 
-   Only changelog is mandatory. Pending/queued sections hold needed rows.
-   Trace unrelated NEW reds in notes and name their queued fixes. The judge
-   removes a batch's own cover, including exact records. Transferring an
-   entry needs a ship row naming the replacement fix and cause.
+   Only changelog is mandatory; sections hold rows, never a header row, and a
+   known-reds row is one red. Trace unrelated NEW reds in notes with their
+   queued fixes. The judge removes a batch's own cover, including exact
+   records. Transferring an entry needs a ship row naming the fix and cause.
    WHY (GG1, KS1/DM2) re-filed reds passed locally and failed at the gate.
    Name a kept run above the sections with `<!-- gate-run: RUN_DIRECTORY -->`.
    It is rejudged when branch, main and selection qualify. Afterward only
