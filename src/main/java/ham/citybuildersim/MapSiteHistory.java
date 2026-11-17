@@ -308,7 +308,14 @@ final class MapSiteHistory {
                 && Arrays.equals(left.rec, 0, n, right.rec, 0, n);
     }
 
-    /** A loaded journal must end on the actual claims; only districts with transitions need a mask read. */
+    /**
+     * A loaded journal must end on the actual claims; only districts with transitions need a mask read. One district that does not
+     * refuses the whole sidecar (CityMap.readSidecar() answers null and the game draws the map afresh), never that district alone.
+     * WHY (DM2-B, 2026-11-17): the one mismatch on record, LX1's 4,000-month city at m3589 and m3952, was the writer's, not the
+     * reader's: relay() took a district's last runs off without moving its version, so the month's history was written from its kept
+     * site list (MapCheck 4c). Re-born at the load month, its journal would have loaded a map whose dates were wrong there and hidden
+     * the bug the refusal found; a recovery waits for a mismatch no writer caused (DM4).
+     */
     boolean matchesCurrent(MaskReader reader) {
         if (journals.isEmpty() && pendingBirths.isEmpty()) return true;
         for (Map.Entry<CityMap.District, MinedBirth> entry : pendingBirths.entrySet()) {

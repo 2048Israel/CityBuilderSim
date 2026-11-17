@@ -552,6 +552,7 @@ public class MapCheck {
         network(sq, city, saves);
         sidecar(city, root, sq);
         siteCodecEdges();
+        relayTakesLastRuns(sq);
         cost(sq);
         viewHalf(city, sq, root);
         atSea(sq.types, sq.seed);
@@ -2361,6 +2362,83 @@ public class MapCheck {
             check("the " + name + " source growth, departure and return round trip with their dates and layout", end != null && back.same(end)
                     && sameSourcePlans(back, end) && Arrays.equals(after, end.writeSidecar(156)));
         }
+    }
+
+    /**
+     * 4c (DM2-B): the route LX1's 4,000-month city took to a refused sidecar at m3589, caused here on a fresh copy of Jerus's city x 1
+     * where its square holds iron (Squares.ironX1's square). A works whose sites run past its walk's entry is owed the rest from the
+     * next (CityMap.fill()): that district holds runs and no works counted, so no count of its moves its version. A month that moves
+     * two of the resource's claims lays its works again (relay()), and the walks laid anew need nothing of that district. Until DM2-B
+     * its runs were taken off and its version left, its sites' list (kept against the version) was read as it was, its mines drawn
+     * still, the month's site history saw no change in it, and the reread found none where the journal kept them: the whole sidecar
+     * refused.
+     */
+    static void relayTakesLastRuns(Squares sq) {
+        out.println("\n--- 4c. a relay that takes a district's last site runs off draws, journals and saves its sites afresh (DM2-B) ---");
+        BuildingVisual.Type[] types = sq.types;
+        long[] model = sq.ironCounts.clone();
+        CityMap probe = CityMap.square(sq.seed, sq.ironX, sq.ironY, types, x1Side(types), (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), model);
+        int[] cl = probe.claims(Arrays.asList(CityMap.SITED).indexOf(Resource.IRON));
+        int spread = -1, other = -1;
+        for (int t : cl) if (spread < 0 || types[t].sites() > types[spread].sites()) spread = t;
+        for (int t : cl) if (t != spread && other < 0) other = t;
+        check("fixture: iron has two claims on its sites, one a works on more than one site", other >= 0 && types[spread].sites() > 1);
+        if (other < 0 || types[spread].sites() <= 1) return;
+        // The square's iron claims none at month 0; the spread claim then grows a works a month until one is owed into a district that counts none,
+        // and the map is viewed, every district planned, so each one's sites' list is kept.
+        for (int t : cl) model[t] = 0;
+        CityMap map = CityMap.square(sq.seed, sq.ironX, sq.ironY, types, x1Side(types), (int) Math.round(JERUS_FILL * CityMap.DISTRICT * CityMap.DISTRICT), model);
+        CityLand land = map.land();
+        java.util.function.Function<Resource, double[]> remaining = land::amountsInOrder;
+        boolean reconciled = true;
+        CityMap.District owed = null;
+        int month = 1;
+        for (; month <= RELAY_GROWTH_MONTHS && owed == null; month++) {
+            model[spread]++;
+            reconciled &= map.reconcile(model, month);
+            for (CityMap.District d : map.districts()) if (owed == null && hasRuns(d) && countedOnSites(d, cl) == 0) owed = d;
+        }
+        for (CityMap.District d : map.districts()) map.plan(d);
+        out.printf("      %d works of type %d (%d sites each) by m%d on %,d iron sites; owed into district %s%n", model[spread], spread, types[spread].sites(),
+                month - 1, map.ownedSites(Resource.IRON), owed == null ? "none" : owed.dx + "," + owed.dy);
+        check("fixture: a works is owed sites in a district that counts no works on its sites, its sites' list drawn", reconciled && owed != null);
+        if (owed == null) return;
+        // ...then the spread claim's works all leave in the month the other claim's first arrives: two claims moved, the works laid again from the first site.
+        int relayMonth = month;
+        model[spread] = 0;
+        model[other] = 1;
+        reconciled &= map.reconcile(model, relayMonth);
+        check("fixture: two claims moving in one month lay the works again and take that district's last runs off", reconciled && !hasRuns(owed)
+                && map.districts().stream().anyMatch(MapCheck::hasRuns));
+        int stale = 0;
+        for (CityMap.District d : map.districts()) if (!hasRuns(d)) for (CityMap.DrawnSite s : map.siteList(d.dx, d.dy)) if (s.mine() >= 0) stale++;
+        check("a district a relay took its last runs off draws no mine on its sites", stale == 0);
+        DistrictPlan.Input in = map.planInput(owed);
+        int left = 0;
+        for (int q = 0; in.siteLog != null && q < in.siteLog.length; q++) {
+            if (in.siteLogMonth[q] == relayMonth && (in.siteLog[q] >>> 2 & 3) == DistrictPlan.SITE_MINED && (in.siteLog[q] & 3) == DistrictPlan.SITE_FIELD) left++;
+        }
+        check("its mined plots are journalled back to field in the relay's month", left > 0);
+        byte[] side = map.writeSidecar(relayMonth);
+        CityMap back = CityMap.readSidecar(side, land, remaining, types, relayMonth, CityMap.stampIn(side));
+        check("the city's sidecar written that month is read back, the same map and plans, byte for byte", back != null && map.same(back)
+                && sameSourcePlans(map, back) && Arrays.equals(side, back.writeSidecar(relayMonth)));
+    }
+
+    /** The months 4c grows its spread claim at most, a works a month, to find one owed into a district that counts none: 60. */
+    static final int RELAY_GROWTH_MONTHS = 60;
+
+    /** Whether any slot of a district holds site runs. */
+    static boolean hasRuns(CityMap.District d) {
+        for (int[] rs : d.siteRuns) if (rs != null) return true;
+        return false;
+    }
+
+    /** The works of the given claims counted on sites in a district. */
+    static int countedOnSites(CityMap.District d, int[] claims) {
+        int n = 0;
+        if (d.sited != null) for (int t : claims) n += d.sited[t];
+        return n;
     }
 
     /** The visual-unit adjustment recorded by actual sources for a type and month, over the whole map. */

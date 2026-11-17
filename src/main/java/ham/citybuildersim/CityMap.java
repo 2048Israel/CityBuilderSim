@@ -2316,7 +2316,15 @@ public final class CityMap {
                 for (int e = 0; e < w.length; e++) {
                     siteHistory.changed(w.at[e]);
                     siteExclusionDirty.add(w.at[e]);
-                    w.at[e].siteRuns[w.slot] = null;
+                    // DM2-B: a district whose runs are taken off moves its version, as markRun()'s writes do: its sites' list (siteList()) and
+                    // every plan whose frame it is in (ownKey()) are kept against that version, and a district the new walks lay nothing on
+                    // again was otherwise read from its old list - its mines still drawn, the month's site history written from them, the
+                    // sidecar refused on its next load (MapCheck 4c; LX1's 4,000-month city at m3589).
+                    if (w.at[e].siteRuns[w.slot] != null) {
+                        w.at[e].siteRuns[w.slot] = null;
+                        moved(w.at[e]);
+                        changes++;
+                    }
                     minedTouched.add((baseDX + w.at[e].dx) << 32 ^ ((baseDY + w.at[e].dy) & 0xffffffffL));
                 }
             }
