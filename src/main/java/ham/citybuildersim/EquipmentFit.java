@@ -29,7 +29,7 @@ import java.util.function.ToDoubleFunction;
  * Game.fitWhatFinished()), and it books, buys and fits nothing (call 10). T is the piece's own life, not the lesser of that
  * and the building's remaining life, because a stack keeps no building's age (call 11).
  *
- * Two layers: a pure core (annuityFactor(), steamGain(), cartGain(), cost(), judge()) that takes its prices as arguments, so a harness can move
+ * Two layers: a pure core (annuityFactor(), steamGain(), cartGain(), driverGain(), cost(), judge()) that takes its prices as arguments, so a harness can move
  * one across the break-even, and the game layer (verdict(), rank()) that reads the city's.
  */
 public final class EquipmentFit {
@@ -105,6 +105,19 @@ public final class EquipmentFit {
         return truckRoom * Haulage.TONNES_A_TRUCK_MONTH * (teamsPerTonne - trucksPerTonne);
     }
 
+    /**
+     * The driverless kit's gain a month on one depot (step 1, R6b): the same tonnes carried by fewer trucks and fewer posts. At nameplate the
+     * room's trucks carry what they carry driven; fitted, one truck carries F = DRIVERLESS_HOURS / SHIFT_HOURS times as much, so the room's tonnes
+     * need 1 / F of the trucks. It saves the drivers' wages (DRIVERS_A_TRUCK a truck in the room, driverWage a month each) less the oversight posts
+     * of the trucks that are left (OVERSIGHT_A_TRUCK a truck at the same wage), and the capital month (truckCapitalMonth(): wear and the return on
+     * the price) of the trucks no longer needed. The diesel a tonne is the same, so it is nowhere in it.
+     */
+    public static double driverGain(double truckRoom, double driverWage, double truckCapitalMonth) {
+        double f = Haulage.DRIVERLESS_HOURS / Haulage.SHIFT_HOURS;
+        return truckRoom * Haulage.DRIVERS_A_TRUCK * driverWage - truckRoom / f * Haulage.OVERSIGHT_A_TRUCK * driverWage
+                + truckRoom * (1 - 1 / f) * truckCapitalMonth;
+    }
+
     /** What fitting one building costs (step 2): each good the piece buys at its price, plus the piece's work at the price of a point. NaN if a price is. */
     public static double cost(Equipment piece, ToDoubleFunction<Good> price, double pointPrice) {
         double c = piece.getWork() * pointPrice;
@@ -157,7 +170,7 @@ public final class EquipmentFit {
 
     /**
      * One building's gain a month from a piece, at the city's prices: the electric drive's from the coal's and the grid's price (the unit price the
-     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks. The tractor's FARM_HORSES comparison values saved feed and hands beside its fuel recipe (R1d); PE14 is known from June 1917 or a local discovery. A piece that ends a form keeps its form's gain whether or not
+     * sectors are billed, EconomyManager.getPricePerWatt()), the motor truck's from Haulage's teams and trucks, the driverless kit's from the drivers and trucks it saves (R6b). The tractor's FARM_HORSES comparison values saved feed and hands beside its fuel recipe (R1d); PE14 is known from June 1917 or a local discovery. A piece that ends a form keeps its form's gain whether or not
      * it is also the template's recipe piece. A piece that ends NO form (R1c) is there to enable a recipe: its gain is the value of the best recipe
      * a fitted building of the template could run less that of the best an unfitted one could, at the city's prices (Recipes.gainOf()), and
      * nothing for one that is not the template's recipe piece.
@@ -198,6 +211,10 @@ public final class EquipmentFit {
             case CART_HORSES: {
                 Haulage haulage = game.getSectors().freight().haulage();
                 return cartGain(t.getTruckRoom(), haulage.horseEstimate(), haulage.truckRunningEstimate());
+            }
+            case CAB_DRIVERS: {
+                Haulage haulage = game.getSectors().freight().haulage();
+                return driverGain(t.getTruckRoom(), haulage.driverWage(), haulage.truckCapitalMonth());
             }
             default:
                 return Double.NaN;

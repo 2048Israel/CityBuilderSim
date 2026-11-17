@@ -234,7 +234,8 @@ public class EquipmentCheck {
         quietly(bm::initializeTemplates);
 
         // R1c: a piece may end no form (it enables a recipe), so "ends" may be missing from the file; the pieces that DO end one are the notes' whole.
-        int expectedPieces = DRIVES.length + 1 + FARMS.length, carried = 0, filePieces = 0, fileForms = 0, mismatched = 0;
+        // The depot's two: the motor truck (R1) and the driverless kit (R6b, FE1: it ends CAB_DRIVERS), which is why it is 2 and not 1 here.
+        int expectedPieces = DRIVES.length + 2 + FARMS.length, carried = 0, filePieces = 0, fileForms = 0, mismatched = 0;
         String firstMismatch = null;
         for (JsonObject o : file.values()) {
             if (!o.has("equipment")) continue;
@@ -298,8 +299,8 @@ public class EquipmentCheck {
 
         BuildingsTemplate depot = bm.getTemplateByName("Truck Depot");
         Equipment truck = depot == null ? null : depot.getEquipment(TRUCK);
-        check("the motor truck is on the Truck Depot alone, ending CART_HORSES, its room in TRUCKS and no work",
-                truck != null && depot.getEquipment().size() == 1 && truck.getEnds() == Equipment.Form.CART_HORSES && truck.isYear()
+        check("the motor truck is on the Truck Depot, ending CART_HORSES, its room in TRUCKS and no work; the depot carries two pieces since R6b, it and the driverless kit",
+                truck != null && depot.getEquipment().size() == 2 && depot.getEquipment("driverless-kit") != null && truck.getEnds() == Equipment.Form.CART_HORSES && truck.isYear()
                         && truck.getBuys().size() == 1 && truck.getBuys().getOrDefault(Good.TRUCKS, -1.0) == depot.getTruckRoom()
                         && truck.getWork() == 0 && truck.getLifeMonths() > 0);
 
