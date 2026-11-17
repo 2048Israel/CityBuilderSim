@@ -269,9 +269,10 @@ public class HydrogenSteelCheck {
         Figure free = figure(cheap);
         cheap.getEconomyManager().setPricePerWatt(ownTariff);
         double slope = (free.c().earns() - on.c().earns()) / ownTariff;   // money a month a unit of tariff: what the planner bills 154's power at
-        assertTrue("fixture: the planner bills 154's power by its draw: its earnings fall as the tariff rises, by no more than the draw a unit of it",
-                slope > 0 && slope <= draw * (1 + 1e-9) && free.c().cost() == on.c().cost());
-        out.printf("    the planner bills %,.0f of the %,.0f units 154 draws at the tariff%n", slope, draw);
+        // ...less the licence: FE4 is patented, and the world takes LicenceFees.SHARE of the gain, so the works keeps (1 - SHARE) of each unit's saving or cost.
+        assertTrue("fixture: the planner bills 154's power by its draw less FE4's licence: its earnings fall as the tariff rises, by the draw x (1 - LicenceFees.SHARE) a unit of it",
+                Math.abs(slope - draw * (1 - LicenceFees.SHARE)) <= 1e-9 * draw && free.c().cost() == on.c().cost());
+        out.printf("    the planner bills %,.0f of the %,.0f units 154 draws at the tariff (1 - LicenceFees.SHARE = %.2f)%n", slope, draw, 1 - LicenceFees.SHARE);
         double breakEven = ownTariff + (on.c().earns() - on.hurdle()) / slope;
         report("the cheaper city: the model's own tariff, the city's fabricators having imported the works' whole output of steel, no month played - 154 is weighed,"
                         + " passes the ground, the staff and the feed, and its earnings on its whole cost clear Heavy Industry's own hurdle at its own gate",
