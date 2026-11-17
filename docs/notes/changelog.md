@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### MED1 — a health study — 2026-11-17, ready, see docs/queue/MED1-notes.md
+`docs/studies/health.md`, its sheets in `docs/studies/health/`: the causes of death the game lacks, 1900 to today in
+Canada, and a mental hospital. Heart disease, stroke, cancer, diabetes and kidney failure become named shares of today's
+base rate, each with a history factor (heart disease 5.5 times today's in 1950), so insulin, angioplasty, statins, the
+smoking ban, imatinib, checkpoint drugs and PCV7 get steps a city can take early. Polio runs on Canada's own years with
+the Salk vaccine as its step, and dialysis keeps a pool the hospitals serve once M4 is known. The mental hospital stays
+out: nothing measures what a served patient gains. Settles R2f's ★10, R6-G-K ★2 and ★3 and R6-G-P's medical rows. Six
+calls (MED1-K); MED2-MED5 queued. No code.
+
 ### 0.9.138 — LX1, Luxury Retail's sales per post — 2026-11-17, ready, see docs/queue/LX1-notes.md
 A Boutique covered 320 pieces of a $22,000 good a month with seven posts, so Luxury Retail's payroll was 0.5-1.7% of
 its margin on main after CU2, where BEA's other retail pays 41.7% (LS1). A Boutique now covers 7 pieces with 8 posts
