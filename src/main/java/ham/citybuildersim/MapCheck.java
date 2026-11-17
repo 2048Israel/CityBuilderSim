@@ -551,6 +551,7 @@ public class MapCheck {
         String[] saves = Arrays.stream(args).filter(a -> !a.startsWith("-")).toArray(String[]::new);
         network(sq, city, saves);
         sidecar(city, root, sq);
+        siteCodecEdges();
         cost(sq);
         viewHalf(city, sq, root);
         atSea(sq.types, sq.seed);
@@ -1193,6 +1194,8 @@ public class MapCheck {
         /** The month the next one is run in. */
         int month;
         boolean reconciled = true;
+        /** A second map of the same city reconciled beside it to the same counts in the same months, or null: one nothing plans (DM2-A). */
+        CityMap twin;
 
         Months(CityMap map, long[] model, int house, int month) {
             this.map = map;
@@ -1207,7 +1210,9 @@ public class MapCheck {
         /** One month of `houses` more houses. */
         void run(int houses) {
             model[house] += houses;
-            reconciled &= map.reconcile(model, month++);
+            int at = month++;
+            reconciled &= map.reconcile(model, at);
+            if (twin != null) reconciled &= twin.reconcile(model, at);
         }
     }
 
@@ -2084,6 +2089,9 @@ public class MapCheck {
         // Like MainLineCheck's open-ground fixture, choose the eastward gateway: its first main-line arm then follows the owned neck.
         map.runs().setGateway(0);
         Months h = new Months(map, model, house, 1);
+        // Its unseen twin (DM2-A): the same ground and counts, reconciled beside it every month and never planned (unseenWallTwin()).
+        h.twin = CityMap.canonical(land, land::amountsInOrder, types, model, 0);
+        h.twin.runs().setGateway(0);
         CityMap.District d = map.districts().get(0);
         int firstWall = 0, movesAfterWall = 0;
         Snap previous = new Snap(map, d);
@@ -2159,6 +2167,38 @@ public class MapCheck {
                 && back[0] == back[1] && back[2] == 0 && back[6] == 0 && back[7] == 0);
         wallRunArrivals(h, d, store, "after the actual rail and yard return");
         wallRunRoundTrip(map, land, types, "after actual removal, new wall and return");
+        unseenWallTwin(map, h.twin, land, types, d);
+    }
+
+    /**
+     * 2h-f's city unseen (DM2-A): its twin, reconciled beside the watched map to the same counts in the same months through the wall's
+     * birth, its cure by the actual rail and yard, their removal, the wall's return and its second cure, is never planned. Saved before
+     * its first view it holds the watched map's source journals and no wall, and that view must discover every wall event in the month
+     * the watched map's monthly plans dated it and draw the same boxes and streets.
+     */
+    static void unseenWallTwin(CityMap watched, CityMap unseen, CityLand land, BuildingVisual.Type[] types, CityMap.District d) {
+        int month = watched.month(), kept = 0, released = 0;
+        for (int r : d.wallChange) if ((r & 1) != 0) kept++; else released++;
+        int wallMonths = (int) Arrays.stream(d.wallMonth).distinct().count();
+        CityMap.District u = unseen.district(d.dx, d.dy);
+        out.printf("      the watched map's wall journal: %d ways kept and %d released in %d months; the unseen twin's before its first view: %d records%n",
+                kept, released, wallMonths, u == null ? -1 : u.wallMonth.length);
+        check("fixture: the unseen twin is the watched city at its month, reconciled beside it and never planned: its source journals and no wall yet",
+                unseen.month() == month && u != null && u.wallMonth.length == 0 && unseen.sameSources(watched));
+        check("fixture: the watched map dated the wall's birth, its cure, its return and its second cure (ways kept and released, in four months at least)",
+                kept > 0 && released > 0 && wallMonths >= 4);
+        byte[] side = unseen.writeSidecar(month);
+        CityMap back = CityMap.readSidecar(side, land, land::amountsInOrder, types, month, CityMap.stampIn(side));
+        check("the unseen twin's sidecar, saved before its first view, round trips byte for byte", back != null && back.same(unseen)
+                && Arrays.equals(side, back.writeSidecar(month)));
+        if (back == null) return;
+        CityMap.District b = back.district(d.dx, d.dy);
+        back.plan(b);
+        check("first viewed after the wall's birth, cure, return and second cure, the twin dates every wall event in the watched map's month",
+                Arrays.equals(b.wallMonth, d.wallMonth) && Arrays.equals(b.wallChange, d.wallChange));
+        check("...draws the watched map's boxes and streets in every district", sameSourcePlans(watched, back));
+        check("...and keeps the source journals it was saved with: the whole twin is then the watched map, wall journals and all",
+                back.sameSources(unseen) && watched.same(back));
     }
 
     /** Standing moves, legal intersections, outside moves, newly kept/released ways, old way plots covered by new work, bad dates and a changed prefix. */
@@ -5051,6 +5091,54 @@ public class MapCheck {
             check("...and is written and read back in no more than SIDECAR_MS (" + (int) SIDECAR_MS + " ms) each", Timing.within(wms, SIDECAR_MS)
                     && Timing.within(rms, SIDECAR_MS));
         }
+    }
+
+    /**
+     * The source history's rectangle codec at the district's own edges (DM2-C): through the history's own recording, one month turns a
+     * whole district to field, the next mines a whole row, half the row under it from the same column, and the last column down the
+     * rest. A key too narrow for a width of DISTRICT would match the whole row and the half row (one column, one transition) and write
+     * them as one rectangle two rows high, mining plots no record names; the right key writes the four rectangles the spans make.
+     */
+    static void siteCodecEdges() throws java.io.IOException {
+        out.println("\n--- 4b. the source history's rectangles hold at the district's edges: a whole district, a whole row and the last column (DM2-C) ---");
+        int side = CityMap.DISTRICT;
+        check("CityMap.DISTRICT is within DISTRICT_MOST, the longest side whose plots fit a run record's plot << 8, and no side longer fits",
+                side >= 1 && side <= CityMap.DISTRICT_MOST && ((long) CityMap.DISTRICT_MOST * CityMap.DISTRICT_MOST << 8) <= Integer.MAX_VALUE
+                && ((long) (CityMap.DISTRICT_MOST + 1) * (CityMap.DISTRICT_MOST + 1) << 8) > Integer.MAX_VALUE);
+        CityMap.District d = new CityMap.District(0, 0, 1, 0);
+        byte[][] masks = { new byte[side * side], null };
+        // The month's mask as it ends, and (an override given) as it began.
+        MapSiteHistory.MaskReader reader = (district, overrides) -> (overrides.isEmpty() ? masks[0] : masks[1]).clone();
+        java.util.function.BiFunction<Integer, Integer, CityMap.District> lookup = (x, y) -> x == 0 && y == 0 ? d : null;
+        MapSiteHistory history = new MapSiteHistory();
+        masks[1] = masks[0].clone();
+        Arrays.fill(masks[0], DistrictPlan.SITE_FIELD);
+        history.begin();
+        history.changed(d);
+        history.end(lookup, reader, 1);
+        masks[1] = masks[0].clone();
+        for (int x = 0; x < side; x++) masks[0][x] = DistrictPlan.SITE_MINED;
+        for (int x = 0; x < side / 2; x++) masks[0][side + x] = DistrictPlan.SITE_MINED;
+        for (int y = 2; y < side; y++) masks[0][y * side + side - 1] = DistrictPlan.SITE_MINED;
+        history.begin();
+        history.changed(d);
+        history.end(lookup, reader, 2);
+        java.io.ByteArrayOutputStream written = new java.io.ByteArrayOutputStream();
+        history.writeDistrict(new java.io.DataOutputStream(written), d, reader);
+        byte[] bytes = written.toByteArray();
+        java.io.DataInputStream head = new java.io.DataInputStream(new java.io.ByteArrayInputStream(bytes));
+        int mode = CityMap.readVarint(head), rectangles = CityMap.readVarint(head);
+        MapSiteHistory back = new MapSiteHistory();
+        back.readDistrict(new java.io.DataInputStream(new java.io.ByteArrayInputStream(bytes)), d, 2, bytes.length);
+        java.io.ByteArrayOutputStream again = new java.io.ByteArrayOutputStream();
+        back.writeDistrict(new java.io.DataOutputStream(again), d, reader);
+        out.printf("      %d plots a side: %d rectangles in %d bytes for the district's field and the row, half row and last column mined%n",
+                side, rectangles, bytes.length);
+        check("fixture: the history records both months, the whole district and then its spans at the edges, as rectangles", history.hash(d) != 0 && mode == 1);
+        check("the codec writes the four rectangles the spans make: the whole district, the whole row, the half row under it and the last column",
+                rectangles == 4);
+        check("...and reads back the same dated transitions, plot for plot, written again byte for byte", back.same(d, history, d)
+                && Arrays.equals(bytes, again.toByteArray()));
     }
 
     /**
