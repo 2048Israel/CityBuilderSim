@@ -545,8 +545,8 @@ public class NationalAccounts {
                warehouse, and now the luxury shelf.
 
                IT SHOWED AS GDP OF -$8,636k IN MONTH 7 of a fresh city, which
-               is one Boutique's three-month stockroom - 960 pieces at $9 -
-               imported in a single month and counted on one side only. Sixty
+               is one Boutique's three-month stockroom before LX1 - 960 pieces
+               at $9 - imported in a single month and counted on one side only. Sixty
                months in a long playtest read negative before this line; one
                did after it, and that one is the same shape in construction
                that the rounding note below already describes.

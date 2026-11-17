@@ -2874,7 +2874,7 @@
    "name": "Boutique",
    "category": "LUXURY",
    "sector": "Luxury Retail",
-   "coverage": 320,
+   "coverage": 7,
    "cashCost": 1180,
    "constructionPoints": 190,
    "constructionMaterials": 26,
@@ -2882,25 +2882,25 @@
    "water": 1,
    "jobs": {
     "NO_DIPLOMA": 2,
-    "DIPLOMA": 4,
+    "DIPLOMA": 5,
     "COLLEGE_BUSINESS": 1
    },
    "land": 6000,
    "roadLoad": 8,
    "makes": {
-    "LUXURY_TRADE": 320
+    "LUXURY_TRADE": 7
    },
    "uses": {
-    "LUXURIES": 320
+    "LUXURIES": 7
    },
-   "stock": 960
+   "stock": 21
   },
   {
    "id": 70,
    "name": "Department Store",
    "category": "LUXURY",
    "sector": "Luxury Retail",
-   "coverage": 4200,
+   "coverage": 80,
    "cashCost": 21600,
    "constructionPoints": 2900,
    "constructionMaterials": 560,
@@ -2915,12 +2915,12 @@
    "land": 90000,
    "roadLoad": 70,
    "makes": {
-    "LUXURY_TRADE": 4200
+    "LUXURY_TRADE": 80
    },
    "uses": {
-    "LUXURIES": 4200
+    "LUXURIES": 80
    },
-   "stock": 12600
+   "stock": 240
   },
   {
    "id": 71,
