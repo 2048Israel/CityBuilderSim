@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-CU2-iRo73CaP -->
 ## changelog
 ### {next} — CU2, World prices chained — 2026-11-16, ready, see docs/queue/CU2-notes.md
 The world market's January is chained (WorldChain, forty rows from buildings.json): a made good is the cheapest
