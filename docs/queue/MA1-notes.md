@@ -125,4 +125,8 @@ Pending: MA1-K (the calls) and MA4 (waits on MA3's ensemble).
 
 ## The dry run
 
-Not yet run.
+None. `docs/batch.md` step 4 asks one only for a pick of ALL; this pick is
+NONE (no harness reads what changed, the diff docs only) and
+`./batch-check.sh --fast` is clean, Stale 0 firm, on c7b32cafe. FB4's dry run
+held the slot, and the orchestrator gates MA1 `--no-tag` after FB4 ships
+(its mail, 2026-11-17 17:52).
