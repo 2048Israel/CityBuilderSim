@@ -4683,6 +4683,13 @@ public class SaveFileCheck {
             System.out.printf("   loss streaks carried: %s%n", liveBi.getLossMonthsState());
             assertTrue("every sector's losing streak survives a load", streaksMatch);
 
+            boolean operatingMatch = true;
+            for (java.util.Map.Entry<String, Integer> e : liveBi.getOperatingLossMonthsState().entrySet()) {
+                if (!e.getValue().equals(backBi.getOperatingLossMonths(e.getKey()))) operatingMatch = false;
+            }
+            System.out.printf("   operating-loss streaks carried: %s%n", liveBi.getOperatingLossMonthsState());
+            assertTrue("every sector's operating-loss streak (AQ1, the one the bleed reads) survives a load", operatingMatch);
+
             cleanUp(root);
 
             System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");

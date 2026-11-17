@@ -9,32 +9,43 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The distress rule for a price taker whose losses the bank's shortfall desk is still lending: it sells its plant over
- * BusinessInvestment.BLEED_MONTHS while it is lent, and a quarter of its biggest holding a month only once it is
- * overdrawn with no lender (AQ1).
+ * The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over
+ * BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running while it owes the desk,
+ * and a quarter of its biggest holding a month only once it is overdrawn with no lender (AQ1).
  *
  * WHY: on main's AUTO2 ensemble, seed 2, Business Services lost money 101 months running. The shortfall desk lent it
  * $409M of the losses and the sector held every office through all of it, until the desk refused at month 1091; then the
  * rule sold a quarter of its biggest holding a month, 6,000 posts in twelve months, and the town went from 8% to 38%
  * out of work. The same happened in 8 of 16 seeds. A sector that makes nothing of what it sells and has no demand reading
  * (Business Services, Automotive, Manufacturing: Sector.bleedsWhileLent()) has no rule but this one, so the wait for the
- * refusal was a wait for a cliff.
+ * refusal was a wait for a cliff. The first form of the rule read the net-loss count, which interest alone keeps climbing, and
+ * this month's operating income, and counted a sector living on its own cash as lent; it now reads its own saved
+ * operating-loss streak (BusinessInvestment.getOperatingLossMonths(), the old metal sold left out) and the desk's principal.
  *
  * WHAT THIS HAS TO PROVE (the fixture is a town with eight Contact Centres, then the minimum wage lifted until the
  * sector's own operations lose money; nothing is set but the cause):
  *
- *   1. the fixture: Business Services loses money on its operations every month while the desk lends it, its debt
- *      rising, until its loss count reaches DISTRESS_LOSS_MONTHS
- *   2. nothing is sold in any month that ends with fewer than DISTRESS_LOSS_MONTHS months of losses
- *   3. plant goes while it is still lent: a centre is sold in the month the count reaches DISTRESS_LOSS_MONTHS, and by
- *      DISTRESS_LOSS_MONTHS + BLEED_MONTHS months of losses at least half the centres are gone
+ *   1. the fixture: Business Services loses money on its operations every month while the desk lends it (it owes the desk
+ *      throughout), its debt rising, until its operating-loss streak reaches DISTRESS_LOSS_MONTHS; and that streak is the
+ *      run of months its running result (operating income less old metal sold) was below zero
+ *   2. nothing is sold in any month that ends with fewer than DISTRESS_LOSS_MONTHS months of operating losses
+ *   3. plant goes while it is still lent: a centre is sold in the month the streak reaches DISTRESS_LOSS_MONTHS, and by
+ *      DISTRESS_LOSS_MONTHS + BLEED_MONTHS months of it at least half the centres are gone
  *   4. never faster than the pace: at most max(1, held / BLEED_MONTHS) a month, on the months the dial names
- *   5. a loss that is only interest holds: operating income back above zero, net income still below it, the count
- *      climbing, and nothing is sold
+ *   5. a net-loss count carried past the dial by interest sells nothing: the floor lifted so the plant's own result comes
+ *      back while interest keeps the net count climbing, then raised again with the net count past the dial and the
+ *      operating streak begun again; in every month the net count is at the dial and the streak under it, nothing is sold
+ *      (the first form of the rule would have sold), and the centres go when the streak reaches the dial
  *   6. overdrawn with no lender, the quarter as before
- *   7. only a sector the spare-capacity rule cannot reach bleeds (kept last: the one call main lacks)
+ *   7. only a sector the spare-capacity rule cannot reach bleeds (the three overrides), and, as behaviour, a sector that
+ *      does not bleed, not overdrawn, sells nothing to the rule however long it has lost money (Freight, run on)
  *
- * Every fixture here CAUSES its condition. The count is never set, nor the cash, nor a statement: the wage floor is
+ * Not proved here, for want of a fixture that can cause it: that a sector living on its own cash (an operating streak past the
+ * dial, no principal, cash at or above zero) is not lent and sells nothing. No run of months in a founded town builds the cash
+ * that would carry two years of losses without the desk (measured: Business Services' cash stayed under $500k across five
+ * years of profit); the line in the rule is `lent = principal > 0`.
+ *
+ * Every fixture here CAUSES its condition. The counts are never set, nor the cash, nor a statement: the wage floor is
  * moved and the months are run.
  */
 public class DistressBleedCheck {
@@ -66,11 +77,14 @@ public class DistressBleedCheck {
     static final double FLOOR_TIMES = 1.8;
 
     /**
-     * The loss count at which section 5 lifts the floor again: wages come back down over about a dozen months, so lifted this far
-     * ahead of DISTRESS_LOSS_MONTHS the sector's operating income crosses zero just as the count passes it (measured: it crossed
-     * at a count of 24 from a lift at 12).
+     * The net count at which section 5 lifts the floor: wages come back down over about a dozen months, so lifted this far
+     * ahead of DISTRESS_LOSS_MONTHS the sector's operating income crosses zero just as the net count passes it (measured: it crossed
+     * at a count of 24 from a lift at 12), the interest on what was borrowed keeping net income below zero a few months longer.
      */
     static final int LIFT_AT = 12;
+
+    /** Months running the plant's own result must have held at or above zero (the operating streak at 0, the net count still climbing on interest) before section 5 raises the floor again. */
+    static final int RECOVERED_MONTHS = 3;
 
     /** Months a run may take before it is given up, whatever the sector does. */
     static final int MOST_MONTHS = 120;
@@ -80,9 +94,11 @@ public class DistressBleedCheck {
 
     /** One month of the sector, read at the month's end. Money in thousands. */
     static final class Row {
-        int count;
+        /** The net-loss streak (interest in it) and the operating-loss streak the bleed reads (AQ1). */
+        int count, opCount;
         long held, others;
-        double opInc, interest, net, cash, debt;
+        /** running is the plant's own result: operating income less the old metal it sold that month. */
+        double opInc, oldMetal, running, interest, net, cash, debt;
     }
 
     /** A scratch city with the sector's fixture in it, and what a month reads of it. */
@@ -107,12 +123,15 @@ public class DistressBleedCheck {
         Row read() {
             Row r = new Row();
             r.count = plans.getLossMonths(key);
+            r.opCount = plans.getOperatingLossMonths(key);
             BuildingManager bm = city.getBuildingManager();
             r.held = bm.getQuantity(contact.getId());
             for (BuildingsTemplate t : bm.getTemplatesBySector(key)) {
                 if (t != contact) r.others += bm.getQuantity(t.getId());
             }
             r.opInc = bs.statement().operatingIncome;
+            r.oldMetal = bs.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0);
+            r.running = r.opInc - r.oldMetal;
             r.interest = bs.statement().interest;
             r.net = bs.getNetIncome();
             r.cash = bs.getCash();
@@ -127,7 +146,7 @@ public class DistressBleedCheck {
 
         /** The cause: the minimum wage law opened and the floor lifted. Opened by the lever's own date rule, as BusinessServicesCheck does. */
         void raiseFloor() {
-            foundingFloor = city.getLabourMarket().getMinimumWage();
+            if (foundingFloor == 0) foundingFloor = city.getLabourMarket().getMinimumWage();
             quietly(() -> {
                 city.getEconomyManager().getTaxPolicy().openNow(PolicyDates.Lever.MINIMUM_WAGE);
                 city.getLabourMarket().setFloorBinding(true);
@@ -167,6 +186,14 @@ public class DistressBleedCheck {
         return (long) Math.ceil((double) BLEED / held);
     }
 
+    /** Whether a sector that does not bleed has lost money DISTRESS_LOSS_MONTHS running and ends the month with cash at or above zero. */
+    static boolean pastDialSolvent(Town t) {
+        for (Sector s : t.city.getSectors().all()) {
+            if (!s.bleedsWhileLent() && s.getCash() >= 0 && t.plans.getLossMonths(s.key()) >= DISTRESS) return true;
+        }
+        return false;
+    }
+
     static String list(List<Long> xs) {
         StringBuilder s = new StringBuilder();
         for (long x : xs) s.append(s.length() == 0 ? "" : ", ").append(x);
@@ -199,44 +226,56 @@ public class DistressBleedCheck {
             rows.add(r);
             // Section 6's call, made while the sector still holds something: an overdrawn balance handed to the rule as its argument,
             // the one way to ask the quarter's question of a sector that is not overdrawn. The rule reads nothing it changes.
+            // (The quarter reads the net-loss count, as before AQ1; the bleed reads the operating streak.)
             if (quarter == null && r.count >= DISTRESS && r.held > 0) {
                 overdrawnProbe = r;
                 quarterHeld = r.held;
                 quarter = a.plans.planDistressRetirement(a.bs, -1000, 0);
             }
-            if (r.count >= DISTRESS + BLEED || (r.count >= DISTRESS && r.held == 0)) break;
+            if (r.opCount >= DISTRESS + BLEED || (r.opCount >= DISTRESS && r.held == 0)) break;
         }
 
         int first = -1, iDistress = -1;
         for (int i = 1; i < rows.size(); i++) {
-            if (first < 0 && rows.get(i).count >= 1) first = i;
-            if (iDistress < 0 && rows.get(i).count >= DISTRESS) iDistress = i;
+            if (first < 0 && rows.get(i).opCount >= 1) first = i;
+            if (iDistress < 0 && rows.get(i).opCount >= DISTRESS) iDistress = i;
         }
         boolean reached = iDistress > 0 && first > 0;
-        assertTrue(String.format("its loss count reaches DISTRESS_LOSS_MONTHS, %d months, with the cause and nothing else", DISTRESS), reached);
+        assertTrue(String.format("its operating-loss streak reaches DISTRESS_LOSS_MONTHS, %d months, with the cause and nothing else", DISTRESS), reached);
         if (!reached) {
             // Nothing below can be read; say so once and stop rather than index a month that is not there.
             out.println("The fixture did not lose money; the sections after it have nothing to read.");
             System.exit(fails);
         }
 
-        boolean allLoss = true, allSolvent = true;
-        double lowestCash = Double.MAX_VALUE, worstOp = -Double.MAX_VALUE;
+        boolean allLoss = true, allSolvent = true, allLent = true, streakIsTheRun = true;
+        double lowestCash = Double.MAX_VALUE, worstOp = -Double.MAX_VALUE, oldMetalSold = 0;
         long othersHeld = 0;
+        int run = 0;
+        for (int i = 1; i < rows.size(); i++) {
+            // The streak, counted here from the rows alone: the run of months the plant's own result (operating income less old metal) was below zero.
+            run = rows.get(i).running < 0 ? run + 1 : 0;
+            streakIsTheRun &= rows.get(i).opCount == run;
+            oldMetalSold += rows.get(i).oldMetal;
+        }
         for (int i = first; i <= iDistress; i++) {
             Row r = rows.get(i);
-            allLoss &= r.opInc < 0;
+            allLoss &= r.running < 0;
             allSolvent &= r.cash >= 0;
+            allLent &= r.debt > 0;
             lowestCash = Math.min(lowestCash, r.cash);
             worstOp = Math.max(worstOp, r.opInc);
         }
         for (Row r : rows) othersHeld += r.others;
         Row atDistress = rows.get(iDistress);
-        out.printf("   %d months of losses by month %d: operating income never better than $%,.0fk a month, cash never under $%,.0fk, debt $%,.0fk -> $%,.0fk%n",
-                atDistress.count, iDistress, worstOp, lowestCash, founded.debt, atDistress.debt);
+        out.printf("   %d months of operating losses (%d of net losses) by month %d: operating income never better than $%,.0fk a month, cash never under $%,.0fk, debt $%,.0fk -> $%,.0fk; old metal sold in the run $%,.0fk%n",
+                atDistress.opCount, atDistress.count, iDistress, worstOp, lowestCash, founded.debt, atDistress.debt, oldMetalSold);
+        assertTrue("the operating-loss streak is the run of months the plant's own result (operating income less old metal sold) was below zero, in every month",
+                streakIsTheRun);
         assertTrue(String.format("it loses money on its operations in each of the %d months of losses it takes to reach the dial", DISTRESS),
                 allLoss && iDistress - first + 1 >= DISTRESS);
         assertTrue("...and in none of them is it overdrawn: the shortfall desk lends the loss", allSolvent);
+        assertTrue("...and in every one of them it owes the desk: the fixture is lent, not living on its own cash", allLent);
         assertTrue("...so what it owes the desk is more at the dial than it was at the founding", atDistress.debt > founded.debt);
         assertTrue("fixture: the Contact Centres are the only plant the sector holds, so they are its biggest holding", othersHeld == 0);
 
@@ -246,32 +285,32 @@ public class DistressBleedCheck {
         int under = 0;
         boolean unchanged = true;
         for (int i = 1; i < rows.size(); i++) {
-            if (rows.get(i).count >= DISTRESS) continue;
+            if (rows.get(i).opCount >= DISTRESS) continue;
             under++;
             unchanged &= rows.get(i).held == CENTRES;
         }
-        out.printf("   %d months ended under %d months of losses, the centres held at %d in each%n", under, DISTRESS, CENTRES);
-        assertTrue("a month that ends with fewer months of losses than the dial sells no centre", unchanged && under >= DISTRESS - 1);
+        out.printf("   %d months ended under %d months of operating losses, the centres held at %d in each%n", under, DISTRESS, CENTRES);
+        assertTrue("a month that ends with fewer months of operating losses than the dial sells no centre", unchanged && under >= DISTRESS - 1);
 
         /* ============ 3. plant goes while it is still lent ============ */
         out.println("\n--- plant goes while the sector is still lent ---");
 
         Row before = rows.get(iDistress - 1);
         long soldAtDistress = before.held - atDistress.held;
-        out.printf("   the month the count reached %d: %d centre(s) sold, cash $%,.0fk, operating income $%,.0fk, debt $%,.0fk%n",
-                atDistress.count, soldAtDistress, atDistress.cash, atDistress.opInc, atDistress.debt);
+        out.printf("   the month the operating streak reached %d: %d centre(s) sold, cash $%,.0fk, operating income $%,.0fk, debt $%,.0fk%n",
+                atDistress.opCount, soldAtDistress, atDistress.cash, atDistress.opInc, atDistress.debt);
         assertTrue("a centre is sold in the month the count reaches the dial", soldAtDistress >= 1);
         assertTrue("...in a month the sector's cash is not below zero", atDistress.cash >= 0);
 
-        // A lent month: past the dial, its operations losing money, its cash above zero at the month's end. An overdrawn month ends at
-        // zero (the sale settles what it can), so a month above zero is one the quarter's overdrawn rule did not sell in.
+        // A lent month: past the dial, its plant losing money, its cash above zero at the month's end and a debt to the desk. An
+        // overdrawn month ends at zero (the sale settles what it can), so a month above zero is one the quarter's overdrawn rule did not sell in.
         long soldLent = 0;
         int halfAt = -1;
         for (int i = iDistress; i < rows.size(); i++) {
             Row r = rows.get(i), p = rows.get(i - 1);
-            if (r.count >= DISTRESS + BLEED || !(r.cash > 0 && r.opInc < 0)) continue;
+            if (r.opCount >= DISTRESS + BLEED || !(r.cash > 0 && r.running < 0 && r.debt > 0)) continue;
             soldLent += p.held - r.held;
-            if (halfAt < 0 && 2 * soldLent >= CENTRES) halfAt = r.count;
+            if (halfAt < 0 && 2 * soldLent >= CENTRES) halfAt = r.opCount;
         }
         out.printf("   %d of the %d centres sold in months the lender still covered; half gone at a count of %s (the dial's end: %d)%n",
                 soldLent, CENTRES, halfAt < 0 ? "never" : String.valueOf(halfAt), DISTRESS + BLEED);
@@ -281,8 +320,8 @@ public class DistressBleedCheck {
         /* ============ 4. never faster than the pace ============ */
         out.println("\n--- never faster than the dial's pace ---");
 
-        // Sales are read off the months a lender still covered (see above) where the operations lose money - the months the rule's
-        // lent branch decides. The step is read off the loss counter: a sale is due on a count where (count - DISTRESS_LOSS_MONTHS) is a
+        // Sales are read off the months a lender still covered (see above) where the plant loses money - the months the rule's
+        // lent branch decides. The step is read off the operating streak: a sale is due on a count where (count - DISTRESS_LOSS_MONTHS) is a
         // multiple of ceil(BLEED_MONTHS / held), so when the holding falls the step changes and the next due count can come sooner than
         // the old step. Measured below as the gaps against the steps; the first gap, taken from a count that is a multiple of every step,
         // is the one that cannot be shorter.
@@ -290,14 +329,14 @@ public class DistressBleedCheck {
         List<Long> saleCounts = new ArrayList<>(), saleHeld = new ArrayList<>();
         for (int i = iDistress; i < rows.size(); i++) {
             Row r = rows.get(i), p = rows.get(i - 1);
-            if (!(r.cash > 0 && r.opInc < 0) || p.held <= 0) continue;
+            if (!(r.cash > 0 && r.running < 0 && r.debt > 0) || p.held <= 0) continue;
             lentMonths++;
             long sold = p.held - r.held;
             if (sold > Math.max(1, p.held / BLEED)) tooFast++;
-            boolean due = (r.count - DISTRESS) % stepFor(p.held) == 0;
+            boolean due = (r.opCount - DISTRESS) % stepFor(p.held) == 0;
             if (due != sold > 0) offStep++;
             if (sold > 0) {
-                saleCounts.add((long) r.count);
+                saleCounts.add((long) r.opCount);
                 saleHeld.add(p.held);
             }
         }
@@ -310,17 +349,19 @@ public class DistressBleedCheck {
                 saleCounts.size(), lentMonths, list(saleCounts), list(saleHeld));
         out.printf("   the months between them: %s; the dial's step at the sale before each: %s%n", list(gaps), list(steps));
         assertTrue("in every lent month the centres sold are at most max(1, held / BLEED_MONTHS)", lentMonths > 0 && tooFast == 0);
-        assertTrue("a lent sale falls on a count the dial names, and a count it names with the operations losing money passes none",
+        assertTrue("a lent sale falls on a count the dial names, and a count it names with the plant losing money passes none",
                 lentMonths > 0 && offStep == 0);
         assertTrue("the first two sales are at least the dial's step apart for the holding at the first",
                 gaps.size() >= 1 && gaps.get(0) >= steps.get(0));
 
-        /* ============ 5. a loss that is only interest holds ============ */
-        out.println("\n--- a loss that is only interest sells nothing ---");
+        /* ============ 5. a net-loss count carried past the dial by interest sells nothing ============ */
+        out.println("\n--- a net-loss count past the dial that interest helped carry sells nothing ---");
 
-        // A second town, the same cause, taken away again before the count can reach the dial: the pay comes down over months, the
-        // operating income crosses zero as the count passes the dial, and what keeps the net income below zero is the interest on what
-        // the first months borrowed. The count is the model's own; nothing is set.
+        // A second town, the same cause given, taken away and given again. Lifted, the plant's own result comes back to zero or above
+        // (its operating streak back to 0) while the interest on what the first months borrowed keeps net income below zero and the net
+        // count climbing; the floor raised again, the plant loses on its operations again with the net count already past the dial.
+        // The rule as e17ee67f9 had it (net count at the dial, this month's operating income below zero, lent, the step read off the net
+        // count) would sell in those months; this one reads the operating streak, which has only just begun again. Nothing is set.
         Town b = town("dbleed-b");
         b.raiseFloor();
         List<Row> rowsB = new ArrayList<>();
@@ -330,37 +371,60 @@ public class DistressBleedCheck {
         boolean unsoldBeforeLift = true;
         for (Row r : rowsB) unsoldBeforeLift &= r.held == CENTRES;
         b.liftFloor();
+        int recovered = 0;
         while (rowsB.size() <= MOST_MONTHS) {
             Row r = b.month();
             rowsB.add(r);
-            // Until a profit resets the count, or the dial's own months are out.
-            if (r.count == 0 || r.count >= DISTRESS + BLEED) break;
+            recovered = r.opCount == 0 ? recovered + 1 : 0;
+            // Until the plant's own result has held at or above zero long enough, or a profit resets the net count too.
+            if (recovered >= RECOVERED_MONTHS || r.count == 0) break;
         }
-        int interestOnly = 0, interestSold = 0, dueInside = 0;
-        boolean climbing = true, solvent = true;
-        Row prevB = null;
+        Row raisedAt = rowsB.get(rowsB.size() - 1);
+        b.raiseFloor();
+        while (rowsB.size() <= MOST_MONTHS) {
+            Row r = b.month();
+            rowsB.add(r);
+            if (r.opCount >= DISTRESS || r.count == 0) break;
+        }
+        Row endB = rowsB.get(rowsB.size() - 1);
+
+        // The months this section is about: the net count at or past the dial, the operating streak under it.
+        int pastDial = 0, interestOnly = 0, soldInterestOnly = 0, bites = 0, oldRuleDue = 0, soldPast = 0;
+        boolean solventPast = true;
+        List<String> biteMonths = new ArrayList<>();
         for (int i = 1; i < rowsB.size(); i++) {
             Row r = rowsB.get(i), p = rowsB.get(i - 1);
-            if (r.count < DISTRESS || !(r.opInc >= 0 && r.net < 0)) continue;
-            interestOnly++;
-            interestSold += (int) (p.held - r.held);
-            solvent &= r.cash >= 0 && r.debt > 0;
-            if (p.held > 0 && (r.count - DISTRESS) % stepFor(p.held) == 0) dueInside++;
-            if (prevB != null) climbing &= r.count == prevB.count + 1;
-            prevB = r;
+            if (r.count < DISTRESS || r.opCount >= DISTRESS) continue;
+            pastDial++;
+            soldPast += (int) (p.held - r.held);
+            solventPast &= r.cash >= 0 && r.debt > 0;
+            if (r.running >= 0 && r.net < 0) {
+                interestOnly++;
+                soldInterestOnly += (int) (p.held - r.held);
+            }
+            if (r.opInc < 0 && r.cash >= 0 && r.debt > 0) {
+                bites++;
+                if (p.held > 0 && (r.count - DISTRESS) % stepFor(p.held) == 0) oldRuleDue++;
+                biteMonths.add(String.format("%d/%d", r.count, r.opCount));
+            }
         }
-        out.printf("   the floor lifted back at a count of %d; operating income back above zero with net income still below it for %d months at counts of %d and over%n",
-                liftedAt.count, interestOnly, DISTRESS);
-        if (prevB != null) {
-            out.printf("   the last of them: operating income $%,.0fk, interest $%,.0fk, net income $%,.0fk, cash $%,.0fk, debt $%,.0fk, %d centres held%n",
-                    prevB.opInc, prevB.interest, prevB.net, prevB.cash, prevB.debt, prevB.held);
-        }
-        assertTrue("fixture: the floor is lifted with the count under the dial and every centre still held", liftedAt.count < DISTRESS && unsoldBeforeLift);
-        assertTrue("fixture: operating income is back above zero and net income still below it, past the dial, for several months running",
-                interestOnly >= 3 && climbing);
-        assertTrue("...in months the sector is solvent and still owes the desk", solvent);
-        assertTrue("fixture: at least one of those months is one the dial would have sold in had the operations been losing", dueInside >= 1);
-        assertTrue("a loss that is only interest sells nothing while the lender covers it", interestOnly >= 3 && interestSold == 0);
+        out.printf("   the floor lifted at a net count of %d, the plant's own result back at or above zero for %d months by a net count of %d, raised again%n",
+                liftedAt.count, RECOVERED_MONTHS, raisedAt.count);
+        out.printf("   %d months with the net count at %d or over and the operating streak under it: %d interest only (operating result at or above zero, net income below), %d with the plant losing, cash at or above zero and a debt to the desk; %d centre(s) sold in them%n",
+                pastDial, DISTRESS, interestOnly, bites, soldPast);
+        out.printf("   net count / operating streak in the months with the plant losing: %s%n", String.join(" ", biteMonths));
+        out.printf("   e17ee67f9's rule would have sold in %d of them; the run ended at a net count of %d, an operating streak of %d, %d centres held%n",
+                oldRuleDue, endB.count, endB.opCount, endB.held);
+        assertTrue("fixture: the floor is lifted with the net count under the dial and every centre still held", liftedAt.count < DISTRESS && unsoldBeforeLift);
+        assertTrue("fixture: the floor is raised again with the net count already at the dial and the operating streak back at 0",
+                raisedAt.count >= DISTRESS && raisedAt.opCount == 0);
+        assertTrue("fixture: the sector is solvent and owes the desk in each month the net count is at the dial and the operating streak under it", pastDial > 0 && solventPast);
+        assertTrue("fixture: at least one such month has the plant losing money, which e17ee67f9's rule would have sold in", bites >= 1 && oldRuleDue >= 1);
+        assertTrue("a net count past the dial with the operating streak under it sells nothing, the plant losing money or not", soldPast == 0);
+        assertTrue("a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold",
+                interestOnly >= RECOVERED_MONTHS && soldInterestOnly == 0);
+        assertTrue("...and the rule is not dead: the centres go when the operating streak reaches the dial", endB.opCount >= DISTRESS && endB.held < CENTRES);
+
 
         /* ============ 6. overdrawn with no lender, the quarter as before ============ */
         out.println("\n--- overdrawn with no lender, a quarter ---");
@@ -390,6 +454,32 @@ public class DistressBleedCheck {
                     s.retirementDemandAndCapacity(a.city) == null);
         }
         assertTrue("at least one sector bleeds while lent", bleeders >= 1);
+
+        // The other direction, as behaviour: a sector that does not bleed, solvent, asked the rule in town a's last month sells nothing, however
+        // long it has lost money. (A read: the rule changes nothing it is asked of, so asking it of every sector moves nothing.) It bites only
+        // on a sector at or past the dial on its net count, so town a is run on, with nothing set, until one that does not bleed has cash at or
+        // above zero at a month's end past it: Freight, which the shortfall desk lends, loses money in this town without help.
+        int more = 0;
+        while (more < MOST_MONTHS && !pastDialSolvent(a)) {
+            a.month();
+            more++;
+        }
+        List<String> asked = new ArrayList<>();
+        int askedPastDial = 0, sold = 0;
+        for (Sector s : a.city.getSectors().all()) {
+            if (s.bleedsWhileLent() || s.getCash() < 0) continue;
+            int n = a.plans.getLossMonths(s.key());
+            BusinessInvestment.Decision d = a.plans.planDistressRetirement(s, s.getCash(), 0);
+            if (n >= DISTRESS) {
+                askedPastDial++;
+                asked.add(String.format("%s (%d months of losses, cash $%,.0fk, owes $%,.0fk: %s)", s.key(), n, s.getCash(), a.desk.getPrincipal(s.key()), d.reason));
+            }
+            if (d.build) sold++;
+        }
+        out.printf("   town a run %d months on; asked of every sector that does not bleed and is not overdrawn, at or past %d months of losses: %s%n",
+                more, DISTRESS, asked.isEmpty() ? "none" : String.join("; ", asked));
+        assertTrue("fixture: at least one sector that does not bleed has lost money for the dial's months and is not overdrawn", askedPastDial >= 1);
+        assertTrue("a sector that does not bleed, not overdrawn, sells nothing to the distress rule however long it has lost money", sold == 0);
 
         if (fails == 0) {
             out.println("The distress rule bleeds a lent price taker over the dial, holds a loss that is only interest,"

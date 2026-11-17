@@ -6449,6 +6449,7 @@ public class Game {
             double net = sector.getNetIncome();
             double covered = paySubsidyIfOwed(sector, net);
             businessInvestment.recordSectorResult(sector.key(), net + covered);
+            businessInvestment.recordOperatingResult(sector);
         }
 
         // ...and the Research Labs a field has had too many of for too long are sold back (R4), before the sectors below plan their month.
@@ -17371,6 +17372,7 @@ public class Game {
          * a month ended in. See the note in DataSave.
          */
         dataSave.setSectorLossMonths(businessInvestment.getLossMonthsState());
+        dataSave.setSectorOperatingLossMonths(businessInvestment.getOperatingLossMonthsState());
         dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
         dataSave.setCityMaintenancePaid(cityMaintenancePaid);
@@ -21790,6 +21792,7 @@ public class Game {
             // Hoisted here with the rest: rebuildSimulationState() reads
             // cityCapitalSpending when it refreshes the government's books.
             businessInvestment.restoreLossMonths(restoredFlows.getSectorLossMonths());
+            businessInvestment.restoreOperatingLossMonths(restoredFlows.getSectorOperatingLossMonths());
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
             cityMaintenancePaid = restoredFlows.getCityMaintenancePaid();
