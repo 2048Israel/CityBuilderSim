@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### DQ1 — Young towns borrow ahead of their people and default — 2026-11-16, ready, no tag (harness)
+Measured first: the AUTO2 bank's months under its minimum to m600 are 2 [0-17] on 0.9.128, 23 of their 65 in
+write-off spells, six of those a young town's lone Fabrication Shop sold empty (86-100% of its loan written off,
+a quarter priced). Four ways of holding or pricing a lone plant's loan at the bank were measured; none is taken.
+Weighed, it froze the young bank; held in the project room or priced, it halved or stalled the towns; kept in the
+bank's own target, it was lent on (120 months under, write-offs +37%). The miss is the order's estimate (a Lime
+Kiln weighed at an operating rate of 0.97 ran at 0.52-0.61), queued as OE1 after SQ1. YoungBankCheck runs
+BankCheck 19's town held nowhere: the kiln's default puts its bank at 0.7%, never in resolution. Holds released:
+BankCheck 19's four, SaveFileCheck's year, CurveCheck 5's run-on, PolicyPreviewCheck's Cement and Heavy Industry,
+BondCheck 7c; HoldersCheck's two, the steep city's and Freight kept, each tried. The model and trace are main's.
+
 ### 0.9.129 — SQ1, a building stack past 2^31 — 2026-11-16, ready, see docs/queue/SQ1-notes.md
 A building type's units merge into one stack, and the stack kept its quantity, its on-site count and its unfitted
 counts in an int: a ten-billion city housed in Houses holds about 2e9 of them, past an int's 2,147,483,647, and
