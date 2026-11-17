@@ -2,7 +2,7 @@
 
 Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,026 constants in 582 files.**
+**6,030 constants in 582 files.**
 
 ## model (2887 constants)
 
@@ -5742,7 +5742,7 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 748 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1028 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (1675 constants)
+## harnesses (1679 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6678,6 +6678,15 @@ Generated 2026-11-16 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 116 | `HaulageCheck.RELIEF` | `InfrastructureManager.RAIL_ROAD_RELIEF` | The relief a siding gives a railed tonne's city leg (InfrastructureManager). |
 | 118 | `HaulageCheck.T` | `Haulage.TONNES_A_TRUCK_MONTH` |  |
 | 124 | `HaulageCheck.SLOT` | `11` | Freight's place in Sectors.KEYS: FR2.md calls it "position 12" and "KEYS[12]", counting from one - the twelfth sector, Rail's old place, index 11 (retail is the first). |
+
+### HealthCheck.java ([map](map/HealthCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 1746 | `HealthCheck.BETWEEN_THE_BILLS` | `Math.sqrt(TaxPolicy.MAX_HEALTH_FEE_SCALE / TaxPolicy.DEFAULT_HEALTH_FEE_SCALE)` | Where a poor household's money is left, in bills: the geometric middle of the span from the founding fee's bill to the dial's top (HX1, RN1-F). |
+| 1753 | `HealthCheck.MATERIAL_TURNED_AWAY` | `.05` | HX1: how much more of the care offered the dear twin must turn away than the founding fee's, a fraction: five points. |
+| 1756 | `HealthCheck.CHARGED` | `new java.util.IdentityHashMap<>()` | What each cell was charged for care in the month just run (the bill its last plan struck), by cell: betweenTheBills() reads the month's money before that bill. |
+| 1792 | `HealthCheck.BEDS_AHEAD` | `1.2` | HX1: how many places the clinics keep ahead of the people: a fifth over. |
 
 ### HistoricalRecipeCheck.java ([map](map/HistoricalRecipeCheck.md))
 
