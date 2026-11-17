@@ -304,7 +304,8 @@ public class Game {
         }
 
         buildingManager = new BuildingManager();
-        buildingManager.setTemplateKnown(t -> !foundedUnfitted() || knows(t));
+        // ...a city founded the default way knows every building but the near future's (R6b's call 1: ResearchCatalog.NEAR_FUTURE).
+        buildingManager.setTemplateKnown(t -> foundedUnfitted() ? knows(t) : !ResearchCatalog.nearFuture(t.getSinceText()));
         economyManager = new EconomyManager(buildingManager);
         // ...and the city's strategic reserve, its trader in crude's market (0.7.85).
         reserve = new StrategicReserve();
@@ -1489,7 +1490,8 @@ public class Game {
 
     /**
      * Whether a building is known in this city this month (R3): history's month for its "since", or the month the city found its code.
-     * BuildingManager's candidate rule applies this reading only in a city founded the 1900 way (R2b).
+     * BuildingManager's candidate rule applies this reading only in a city founded the 1900 way (R2b); in one founded the default way it knows
+     * every building but those a near-future row opens, which it never knows (R6b's call 1, ResearchCatalog.nearFuture()).
      */
     public boolean knows(BuildingsTemplate t) {
         return t.knownAt(month, research);

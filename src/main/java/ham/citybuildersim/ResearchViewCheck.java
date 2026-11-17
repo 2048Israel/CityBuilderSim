@@ -30,7 +30,7 @@ import java.util.Map;
  * What this has to prove:
  *
  *   1. A CITY FOUNDED THE DEFAULT WAY. The timeline, the equipment, the recipes in use, the new templates and the flags are all empty, every origin is null
- *      and no template is new even where a find sits in its research, knownAtFounding() is the catalogue's size, and the history has none of the three
+ *      and no template is new even where a find sits in its research, knownAtFounding() is the catalogue's size less the near future's (R6b), and the history has none of the three
  *      series (the share of the equipment fitted reads NaN in every month).
  *   2. A 1900 CITY AT ITS FOUNDING. An empty timeline; knownAtFounding() counts exactly the entries history dates at FIRST_MONTH or before, and an entry
  *      of the month after is a discovery, from both sides of FIRST_MONTH; its equipment stands, every piece unfitted.
@@ -246,7 +246,12 @@ public class ResearchViewCheck {
             noneNew &= !ResearchView.isNew(d, t);
         }
         check("...every template's origin is null and none is new", noOrigin && noneNew);
-        check("...and it knew every discovery at its founding: knownAtFounding() is the catalogue's " + CAT.entries().size(), ResearchView.knownAtFounding(d) == CAT.entries().size());
+        long beforeNear = CAT.entries().stream().filter(e -> e.worldMonth() < ResearchCatalog.NEAR_FUTURE).count();
+        check("...and it knew every discovery but the near future's at its founding (R6b's call 1): knownAtFounding() is the entries dated before NEAR_FUTURE, " + beforeNear + " of the catalogue's " + CAT.entries().size(),
+                ResearchView.knownAtFounding(d) == beforeNear && beforeNear > 0 && beforeNear < CAT.entries().size() && ResearchView.nearFutureCount() == CAT.entries().size() - beforeNear);
+        String founded = ResearchView.foundedKnowingWords(d);
+        check("...and the words both Research screens give it name that count, the date and the near future's: " + founded, founded.contains("all " + beforeNear + " of the catalogue")
+                && founded.contains(CityCalendar.format(ResearchCatalog.NEAR_FUTURE)) && founded.contains("the near future's " + (CAT.entries().size() - beforeNear) + " come only to a city founded the 1900 way"));
 
         // The guard is what makes it so: the same research read as a 1900 city's would have a discovery, an origin and a NEW template.
         BuildingsTemplate furnace = template(d, "Electric Arc Furnace");
@@ -1409,7 +1414,7 @@ public class ResearchViewCheck {
                 ResearchView.funding(d, Field.ENGINEERING).posts() == r.posts(Field.ENGINEERING) && ResearchView.atGrant(d, Field.ENGINEERING, 2 * r.grant(Field.ENGINEERING)).posts() >= r.posts(Field.ENGINEERING));
         check("the preview has nothing to find, as is and staged", ResearchView.preview(d, ResearchView.Staged.none()) == ResearchPreview.NOTHING
                 && ResearchView.preview(d, ResearchView.Staged.none().withGrant(Field.ENGINEERING, 1e9)) == ResearchPreview.NOTHING && ResearchPreview.NOTHING.total() == 0);
-        check("what is still to come is none, the city having known them all at its founding", ResearchView.stillToCome(d) == 0, "" + ResearchView.stillToCome(d));
+        check("what is still to come is none, the city having known all but the near future's at its founding and never coming to know those (R6b)", ResearchView.stillToCome(d) == 0, "" + ResearchView.stillToCome(d));
     }
 
     /* =====================================================================

@@ -66,7 +66,7 @@
 
 **Uses:** [LandManager](LandManager.md) (214), [CityLand](CityLand.md) (159), [LandParcel](LandParcel.md) (127), [Resource](Resource.md) (106), [Game](Game.md) (93), [World](World.md) (91), [LandMarket](LandMarket.md) (50), [LongPlaytest](LongPlaytest.md) (35), [Deposit](Deposit.md) (26), [Sectors](Sectors.md) (17), [PriceLevel](PriceLevel.md) (16), [LandGrid](LandGrid.md) (15), [OreView](OreView.md) (13), [MiningCheck](MiningCheck.md) (12), [LandDrawing](LandDrawing.md) (10), [GameFiles](GameFiles.md) (10), [CityNeeds](CityNeeds.md) (10), [Mining](Mining.md) (9), [ForeignAccounts](ForeignAccounts.md) (7), [Research](Research.md) (7), [GridOffers](GridOffers.md) (6), [BuildingsTemplate](BuildingsTemplate.md) (6), [MoneyAudit](MoneyAudit.md) (6), [LandMap](LandMap.md) (6), [Good](Good.md) (5), [Founding](Founding.md) (5), [EarthData](EarthData.md) (5), [BuildingManager](BuildingManager.md) (4), [DebtQuote](DebtQuote.md) (4), [EarthCheck](EarthCheck.md) (4)... and 13 more
 
-**Used by (8):** [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [QuarryingCheck](QuarryingCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (9):** [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [EarthTerrainCheck](EarthTerrainCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MapCheck](MapCheck.md), [MaterialsCheck](MaterialsCheck.md), [QuarryingCheck](QuarryingCheck.md), [SaveFileCheck](SaveFileCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md)
 
 ## Sections
 
