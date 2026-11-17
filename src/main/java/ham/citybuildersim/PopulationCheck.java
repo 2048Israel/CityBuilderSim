@@ -991,6 +991,9 @@ public class PopulationCheck {
                         : wgRate >= Migration.ARRIVALS_STOP_OUT_OF_WORK);
                 check("arrivals " + wgNames[i] + " are the unbraked arrivals x the brake at the rate it reads",
                         wgBraked.getLastArrivals(), wgTwin.getLastArrivals() * Migration.arrivalBrake(wgRate), 1e-9);
+                check("...and the brake it kept (what the People screen's word reads) is the brake at the rate it read",
+                        wgBraked.getLastBrake(), Migration.arrivalBrake(wgRate), 1e-12);
+                check("...and the twin with no people read kept none: a brake of 1", wgTwin.getLastBrake(), 1, 1e-12);
                 check("...and the mix by band is of the braked arrivals", wgMixed, wgBraked.getLastArrivals(), 1e-6);
             }
             PopulationManager wgPast = cityOutOfWork(wgAdults, Migration.ARRIVALS_STOP_OUT_OF_WORK + .04);
@@ -1011,6 +1014,7 @@ public class PopulationCheck {
                             && wgYoungTwin.getLastArrivals() > 0);
             check("a city younger than BRAKE_FROM_MONTH is not braked past the stop: its arrivals are its unbraked twin's, whole",
                     wgYoung.getLastArrivals(), wgYoungTwin.getLastArrivals(), 1e-9);
+            check("...and its kept brake is 1, whatever share it read", wgYoung.getLastBrake(), 1, 1e-12);
 
             // ---- 3. the jobless past the healthy rate leave ----
             System.out.println("   3. the jobless past the healthy rate leave");

@@ -55,9 +55,12 @@ package ham.citybuildersim;
  *
  * One push has joined it since WG2, and it is the unemployment the paragraph
  * above says is no exodus: the jobless past HEALTHY_OUT_OF_WORK of the labour
- * force leave too, at SURPLUS_DEPARTURE_RATE a month and whatever their wage,
- * a drift and no evacuation: a fiftieth of the excess over the healthy rate a
- * month, while arrivals have slowed to meet it.
+ * force leave too, whatever their wage, a drift and no evacuation: the excess
+ * over the healthy rate is counted in labour-force adults, but SURPLUS_DEPARTURE_RATE
+ * of it (a fiftieth) a month is counted in PEOPLE, and the people who go leave as
+ * the city's own do, households and all (cohorts.migrate() takes them out of every
+ * age band at the city's shape). So the jobless excess itself falls by about that
+ * rate times the adult share of those who go, while arrivals have slowed to meet it.
  */
 public class Migration {
 
@@ -409,8 +412,8 @@ public class Migration {
             ARRIVALS_STOP_OUT_OF_WORK, a straight line between
             (arrivalBrake(), arrivalBrakeNow()).
          3. THE JOBLESS PAST THE HEALTHY RATE LEAVE, from BRAKE_FROM_MONTH.
-            Those over it, of the
-            labour force, go at SURPLUS_DEPARTURE_RATE a month whatever their
+            SURPLUS_DEPARTURE_RATE a month of the excess over it (of the
+            labour force) leaves, counted in people and whatever their
             wage, less those the pinned bands already sent. Until now only a
             pinned band's surplus left, so under a real minimum wage that pins
             nobody, nobody left for want of work.
@@ -561,6 +564,9 @@ public class Migration {
     /** The people the placement had room for, the month's bound on arrivals (0.7.17); NaN with no census. */
     private double lastRoom = Double.NaN;
 
+    /** The share of the draw's arrivals the brake let through last month (WG2-R): 1 unbraked, 0 stopped. */
+    private double lastBrake = 1;
+
     /*
      * THE BRIDGE AND THE LEAVERS, KEPT (0.7.27). The two halves of the draw
      * before its pulls - the jobs' and the homes', each at its weight, with
@@ -582,6 +588,8 @@ public class Migration {
     /** What senior care multiplied the homes' draw by (since WG2 the jobs' draw is not lifted by it). 1 when there is none. */
     public double getLastSeniorPull()     { return lastSeniorPull; }
     public double getLastArrivals()       { return lastArrivals; }
+    /** What the People screen's migration word reads, so it agrees with getLastArrivals(): the share of the draw's arrivals the brake let through that month; 1 unbraked (a young city, or no people read), 0 stopped. */
+    public double getLastBrake()          { return lastBrake; }
     public double[] getLastArrivalMix()   { return lastArrivalMix; }
     public double[] getLastOpportunity()  { return lastOpportunity; }
     public double[] getLastArrivalLicences() { return lastArrivalLicences; }
@@ -962,6 +970,7 @@ public class Migration {
         lastTarget = JOB_WEIGHT * jobTarget * jobsPull(lastAffordabilityPull, lastCrimePull)
                 + HOME_WEIGHT * homeTarget * homesPull(lastSeniorPull, lastAffordabilityPull, lastCrimePull);
         lastArrivals = 0;
+        lastBrake = 1;   // the 10-argument overload sets it where it brakes
         lastDepartures = 0;
         lastCrimeDepartures = 0;
         lastWorkDepartures = 0;
@@ -1073,6 +1082,7 @@ public class Migration {
             double f = arrivalBrakeNow(people.getUnemploymentRate());
             net -= lastArrivals * (1 - f);
             lastArrivals *= f;
+            lastBrake = f;
         }
 
         composeArrivals(market, people);
@@ -1106,10 +1116,15 @@ public class Migration {
         }
 
         /*
-         * AND THE JOBLESS PAST THE HEALTHY RATE (WG2). Those over
-         * HEALTHY_OUT_OF_WORK of the labour force go at SURPLUS_DEPARTURE_RATE,
-         * whatever their wage - so no mobility weight, and none of the pinned
-         * band's wait for a floor - less those the pinned bands just sent.
+         * AND THE JOBLESS PAST THE HEALTHY RATE (WG2). SURPLUS_DEPARTURE_RATE
+         * of the excess over HEALTHY_OUT_OF_WORK of the labour force leaves a
+         * month, whatever their wage - so no mobility weight, and none of the
+         * pinned band's wait for a floor - less those the pinned bands just
+         * sent. The excess is in labour-force adults but what leaves is
+         * counted in PEOPLE: cohorts.migrate() takes them out of every age
+         * band, so the jobless excess falls by about that rate times the adult
+         * share of those who go (applySkilledFlows() takes the adults'
+         * share of the mix).
          * The labour force, not the workforce: getUnemploymentRate() is the
          * unemployed over the labour force, and the students are not looking.
          * They go from the bands that have a surplus, on each band's share of
@@ -1518,6 +1533,13 @@ public class Migration {
      * (GW1 appended lastRoom, the seventeenth scalar) has sixteen: it reads
      * them and the mixes, the room NaN ("no census", which drawFor() reads
      * as no cap), so its history, streaks and month are not lost on load.
+     * WG2-R appended one slot after the licences: lastBrake, the share of
+     * the draw's arrivals the brake let through, which the People screen's
+     * migration word reads so that it agrees with the month's arrivals
+     * rather than with today's out-of-work share. A save without it (the
+     * length before it, or either of the two shorter before the room) reads
+     * the brake as 1, "unbraked", for its first month: incomplete, not wrong,
+     * and the next month strikes it. No save format bump.
      * Any other length is refused whole.
      */
 
@@ -1532,8 +1554,11 @@ public class Migration {
         return LAST_SCALARS + 2 * WageBand.values().length + JobType.values().length;
     }
 
+    /** The slots after the licences: lastBrake (WG2-R), which a save from before it does not have. */
+    private static final int BRAKE_SLOTS = 1;
+
     public double[] toSaveArray() {
-        double[] out = new double[HISTORY_SLOTS + lastSlots()];
+        double[] out = new double[HISTORY_SLOTS + lastSlots() + BRAKE_SLOTS];
         int i = 0;
         for (double[] row : history) {
             for (double v : row) out[i++] = v;
@@ -1550,13 +1575,16 @@ public class Migration {
         for (double v : lastArrivalMix) out[i++] = v;
         for (double v : lastDepartureMix) out[i++] = v;
         for (double v : lastArrivalLicences) out[i++] = v;
+        out[i++] = lastBrake;
         return out;
     }
 
     public void restore(double[] saved) {
         if (saved == null) return;
-        boolean beforeRoom = saved.length == HISTORY_SLOTS + lastSlots() - 1;   // written before GW1 appended lastRoom
-        boolean withMonth = beforeRoom || saved.length == HISTORY_SLOTS + lastSlots();
+        boolean withBrake = saved.length == HISTORY_SLOTS + lastSlots() + BRAKE_SLOTS;
+        boolean beforeBrake = saved.length == HISTORY_SLOTS + lastSlots();   // written before WG2-R appended lastBrake
+        boolean beforeRoom = saved.length == HISTORY_SLOTS + lastSlots() - 1;   // written before GW1 appended lastRoom, and so before the brake
+        boolean withMonth = withBrake || beforeBrake || beforeRoom;
         if (!withMonth && saved.length != HISTORY_SLOTS) {
             return;   // refused whole rather than half-read
         }
@@ -1588,6 +1616,7 @@ public class Migration {
         for (int b = 0; b < lastArrivalMix.length; b++) lastArrivalMix[b] = saved[i++];
         for (int b = 0; b < lastDepartureMix.length; b++) lastDepartureMix[b] = saved[i++];
         for (int j = 0; j < lastArrivalLicences.length; j++) lastArrivalLicences[j] = saved[i++];
+        lastBrake             = withBrake ? saved[i++] : 1;   // a save from before the brake was kept reads it unbraked
     }
 
     public void reset() {
@@ -1596,6 +1625,7 @@ public class Migration {
         monthsRecorded = 0;
         lastTarget = 0;
         lastArrivals = 0;
+        lastBrake = 1;
         lastDepartures = 0;
         lastCrowding = 1;
         lastRoom = Double.NaN;

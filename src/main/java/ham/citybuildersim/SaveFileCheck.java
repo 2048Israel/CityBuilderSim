@@ -2202,6 +2202,7 @@ public class SaveFileCheck {
         same("the payroll in trades whose people may leave", drawsAgain.getLastDecliningShare(),
                 drew.getLastDecliningShare());
         same("the month's arrivals", drawsAgain.getLastArrivals(), drew.getLastArrivals());
+        same("...and the brake they took (WG2-R)", drawsAgain.getLastBrake(), drew.getLastBrake());
         same("...and its departures", drawsAgain.getLastDepartures(), drew.getLastDepartures());
         same("...the ones the work pushed out", drawsAgain.getLastWorkDepartures(), drew.getLastWorkDepartures());
         same("...the ones who went broke", drawsAgain.getLastBankruptcyDepartures(),
@@ -2284,7 +2285,9 @@ public class SaveFileCheck {
         assertTrue("fixture: the city's migration saved a room, the doors counted",
                 Double.isFinite(drew.getLastRoom()) && drew.getLastRoom() >= 0 && migrationNow[roomSlot] == drew.getLastRoom());
         assertTrue("fixture: ...and months of wage history, and a draw", migrationNow[wageHistory - 1] > 0 && drew.getLastTarget() != 0);
-        double[] beforeRoom = new double[migrationNow.length - 1];
+        // A save written before GW1 had neither the room nor (WG2-R) the brake after the licences: two slots fewer.
+        int brakeSlot = migrationNow.length - 1;
+        double[] beforeRoom = new double[migrationNow.length - 2];
         System.arraycopy(migrationNow, 0, beforeRoom, 0, roomSlot);
         System.arraycopy(migrationNow, roomSlot + 1, beforeRoom, roomSlot, beforeRoom.length - roomSlot);
         Migration format16 = new Migration();
@@ -2296,8 +2299,22 @@ public class SaveFileCheck {
         assertTrue("...with no room read: NaN, no census", Double.isNaN(format16.getLastRoom()));
         double[] roomless = migrationNow.clone();
         roomless[roomSlot] = -1;
+        roomless[brakeSlot] = 1;   // what a save from before the brake reads
         assertTrue("...and every other slot as it was saved, the months recorded and the mixes with them",
                 java.util.Arrays.equals(format16.toSaveArray(), roomless));
+        /*
+         * ...AND ONE FROM BEFORE THE BRAKE LOADS ALL ELSE (WG2-R). WG2-R
+         * appended lastBrake after the licences; the array without that last
+         * slot reads every figure it has and the brake as 1, unbraked, for
+         * its first month.
+         */
+        double[] beforeBrake = java.util.Arrays.copyOf(migrationNow, brakeSlot);
+        Migration format17 = new Migration();
+        format17.restore(beforeBrake);
+        double[] unbraked = migrationNow.clone();
+        unbraked[brakeSlot] = 1;
+        assertTrue("a migration array from before the brake (WG2-R) loads all else, the brake read as 1",
+                format17.getLastBrake() == 1 && java.util.Arrays.equals(format17.toSaveArray(), unbraked));
         double[] pyramidNow = died.toSaveArray();
         PopulationCohorts olderPyramid = new PopulationCohorts();
         olderPyramid.restore(PopulationCohorts.saveBands(),
@@ -3239,6 +3256,7 @@ public class SaveFileCheck {
         allocatedLandCrossesASave();
         landPlotsCrossASave();
         constructionContinuesAfterALoad(root);
+        brakeThresholdCrossesASave(root);
 
         cleanUp(root);
 
@@ -3248,6 +3266,87 @@ public class SaveFileCheck {
         fails += LoadConservation.fails;
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** Two readings that must be the same double, to the bit. */
+    static void bits(String label, double actual, double expected) {
+        boolean ok = Double.compare(actual, expected) == 0;
+        if (!ok) {
+            fails++;
+            System.out.printf("%-58s FAIL  %s != %s%n", label, actual, expected);
+        } else {
+            System.out.printf("%-58s OK%n", label);
+        }
+    }
+
+    /**
+     * THE BRAKE'S THRESHOLD THROUGH A SAVE (WG2-R). The brake and the drift act
+     * from BRAKE_FROM_MONTH months recorded, and months recorded is the one
+     * slot of the migration array a load could read a month out without any
+     * other section noticing: nothing asserted brakeApplies(), the jobs' pull
+     * or the brake at the threshold, so a load that read 239 as 240 would have
+     * passed. Two cities, saved one month short of the threshold and on it,
+     * each with its months recorded set through Migration's own restore() to
+     * the month before and played one month (the brake bites in that month
+     * from the threshold on, so the 240 city saves a month the brake cut), then
+     * loaded: the twin reads brakeApplies(), the jobs' pull, the brake and the
+     * arrivals as the original has them, to the bit, and so one month on.
+     */
+    static void brakeThresholdCrossesASave(Path root) throws IOException {
+        System.out.println("--- the brake's threshold through a save: months recorded "
+                + (Migration.BRAKE_FROM_MONTH - 1) + " and " + Migration.BRAKE_FROM_MONTH + " (WG2-R) ---");
+        int tiers = PayTier.values().length;
+        int monthsSlot = tiers * Migration.DECLINE_MONTHS + tiers;   // the months recorded: the last slot of the wage history
+        for (int n = Migration.BRAKE_FROM_MONTH - 1; n <= Migration.BRAKE_FROM_MONTH; n++) {
+            String at = "at " + n + " months recorded: ";
+            Game city = new Game(new GameFiles(root.resolve("brake-" + n), root.resolve("no-legacy")));
+            city.run();
+            city.setCashForTest(Founding.WEALTHY_CASH);
+            city.buildStack(template(city, "House"), 300, false);
+            city.buildStack(template(city, "Convenience Store"), 6, false);
+            city.simulateMonths(40);
+
+            Migration migration = city.getMigration();
+            double[] aged = migration.toSaveArray();
+            aged[monthsSlot] = n - 1;
+            migration.restore(aged);
+            city.simulateMonths(1);
+            PopulationManager people = city.getPopulationManager();
+            System.out.printf("   %s city month: out of work %.4f, brake %.4f, arrivals %,.2f%n",
+                    at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
+            assertTrue(at + "fixture: months recorded are " + n, migration.toSaveArray()[monthsSlot] == n);
+            assertTrue(at + "fixture: brakeApplies() is n >= BRAKE_FROM_MONTH",
+                    migration.brakeApplies() == (n >= Migration.BRAKE_FROM_MONTH));
+            assertTrue(at + "fixture: the city drew people", migration.getLastTarget() > 0);
+            // The lever is jobs: 300 houses and 6 shops leave the town far past the healthy share out of work (past the stop, so the
+            // brake that bites cuts the arrivals to 0). The month before the threshold, the same town is young and unbraked.
+            assertTrue(at + "fixture: out of work past HEALTHY_OUT_OF_WORK, so there is a brake to read",
+                    people.getUnemploymentRate() > Migration.HEALTHY_OUT_OF_WORK);
+            assertTrue(at + "fixture: the month's brake " + (n >= Migration.BRAKE_FROM_MONTH ? "bit, under 1" : "is 1, the city is young"),
+                    n >= Migration.BRAKE_FROM_MONTH ? migration.getLastBrake() < 1 : migration.getLastBrake() == 1);
+
+            assertTrue(at + "saved", city.saveGame(1, "brake").ok);
+            Game twin = new Game(city.getGameFiles());
+            twin.loadGameSave(1);
+            assertTrue(at + "the twin loaded", twin.getLoadFailure() == null);
+            sameBrake(at + "the twin ", twin, city, monthsSlot);
+
+            city.simulateMonths(1);
+            twin.simulateMonths(1);
+            System.out.printf("   %s month on: out of work %.4f, brake %.4f, arrivals %,.2f%n",
+                    at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
+            sameBrake(at + "a month on, the twin ", twin, city, monthsSlot);
+        }
+    }
+
+    /** The reading of the brake a twin must share with its original: whether it applies, the jobs' pull, the brake, the arrivals and the months recorded. */
+    private static void sameBrake(String at, Game twin, Game city, int monthsSlot) {
+        Migration t = twin.getMigration(), c = city.getMigration();
+        assertTrue(at + "reads brakeApplies() as the original", t.brakeApplies() == c.brakeApplies());
+        bits(at + "...the jobs' pull", t.getLastJobsPull(), c.getLastJobsPull());
+        bits(at + "...the brake", t.getLastBrake(), c.getLastBrake());
+        bits(at + "...the arrivals", t.getLastArrivals(), c.getLastArrivals());
+        bits(at + "...the months recorded", t.toSaveArray()[monthsSlot], c.toSaveArray()[monthsSlot]);
     }
 
     /** R0h: nonzero acute shares cross JSON and the actual load, and a missing old field clears them. */
