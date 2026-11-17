@@ -149,6 +149,15 @@ Passed by name, in code CU2 does not touch, each with its fix queued (the ship f
   `roundSig` fix the played city differed, and the red was instead Policy, Promises' Food page, 12 quiet months
   of 25; it passes now.)
 
+- **YoungBankCheck** (DQ1's, merged at a395e69a), "the bank is never in resolution" → **OE1** (the
+  orchestrator's call). On CU2's prices the young town's Cement & Concrete builds three Lime Kilns, at m9, m11
+  and m21, borrowing $64k, $1,245k and $1,756k. Each was ordered on an estimate of $16-19k a month on
+  $2.2-2.4M. The estimates turn to losses by m37 ("would lose $1-5k a month"). The kilns open m26-m56 and are
+  sold at m62-64. The $3,469k write-off at m64 takes the bank's ratio to -0.36, and it is in resolution for 43
+  months. Main builds one kiln, writes off $1,602k at m58, and bottoms at 0.7%. So a young town on CU2's prices
+  can now lose its bank to an over-estimated first works until OE1 mends the order's estimate (main's code,
+  which CU2 does not touch). Section 1, the lone plant's spell, passes. DQ1's premise stands as written.
+
 ## The review (REV-CU2-1, Opus): SHIP once its first finding was mended
 
 1. **WageLadderCheck 6's restated bound** was `LabourMarket`'s own clamp, true by construction. Mended: the
