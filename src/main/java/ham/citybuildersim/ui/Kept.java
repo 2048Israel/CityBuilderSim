@@ -73,7 +73,9 @@ import java.util.function.Consumer;
  * <li>Rows that come and go are a scope each, keyed by what they show
  * ({@code Kept.scope(sector, () -> row(sector))}): a row that goes takes its own nodes with it,
  * and the rows after it keep theirs. A card is a scope too, so a chip that appears in one card
- * does not shift every label below it onto a neighbour's.</li>
+ * does not shift every label below it onto a neighbour's. A row the model writes in some months and
+ * not in others (a tax's slice of a ring, a step of a bridge) is a {@link #parkedScope}: its nodes
+ * wait, off the page, for the month it comes back, and are handed back as any kept node is.</li>
  * <li>A node handed back loses, at the draw's end, what the code did not give it this time - its click and hover
  * handlers, its action, its cursor, visibility, opacity, disabling and tooltip - where the code
  * set them (a value an inline style set is the style's, and left alone); so a row clickable last

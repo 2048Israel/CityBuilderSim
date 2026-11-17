@@ -1,4 +1,4 @@
-# KeptBench.java - 5,150 lines · 565 methods · 11 constants · interface
+# KeptBench.java - 5,435 lines · 577 methods · 11 constants · interface
 
 `ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -30,7 +30,7 @@
 > a snapshot all the same, so the bench lays the page out there, at the menu column's width.
 > The FX toolkit must be up and every call made on its thread; KeptCheck sees to both.
 
-**Uses:** [Kept](Kept.md) (107), [FinancesScreen](FinancesScreen.md) (31), [Pieces](Pieces.md) (30), [FundScreen](FundScreen.md) (28), [SectorScreen](SectorScreen.md) (23), [RankingsScreen](RankingsScreen.md) (22), [BuildAdvice](BuildAdvice.md) (21), [UserInterface](UserInterface.md) (19), [Palette](Palette.md) (19), [TradeScreen](TradeScreen.md) (19), [Game](Game.md) (18), [BuildScreen](BuildScreen.md) (18), [TimeChart](TimeChart.md) (17), [FreightView](FreightView.md) (17), [Rankings](Rankings.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (13), [ResearchScreen](ResearchScreen.md) (13), [PolicyScreen](PolicyScreen.md) (12), [Auction](Auction.md) (10), [PartnersView](PartnersView.md) (9), [WorldMeasures](WorldMeasures.md) (9), [HistoryScreen](HistoryScreen.md) (7), [ServicesScreen](ServicesScreen.md) (6), [GovernmentScreen](GovernmentScreen.md) (6), [BankScreen](BankScreen.md) (5), [Sector](Sector.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4), [BuildingType](BuildingType.md) (4), [ConstructionScreen](ConstructionScreen.md) (4)... and 40 more
+**Uses:** [Kept](Kept.md) (125), [Pieces](Pieces.md) (51), [FinancesScreen](FinancesScreen.md) (37), [Palette](Palette.md) (32), [FundScreen](FundScreen.md) (32), [UserInterface](UserInterface.md) (25), [SectorScreen](SectorScreen.md) (23), [RankingsScreen](RankingsScreen.md) (22), [BuildAdvice](BuildAdvice.md) (21), [Game](Game.md) (20), [TradeScreen](TradeScreen.md) (19), [BuildScreen](BuildScreen.md) (18), [TimeChart](TimeChart.md) (17), [FreightView](FreightView.md) (17), [Rankings](Rankings.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (13), [ResearchScreen](ResearchScreen.md) (13), [PolicyScreen](PolicyScreen.md) (12), [Buyback](Buyback.md) (11), [Auction](Auction.md) (10), [PartnersView](PartnersView.md) (9), [WorldMeasures](WorldMeasures.md) (9), [PartnersPage](PartnersPage.md) (8), [HistoryScreen](HistoryScreen.md) (7), [GovernmentScreen](GovernmentScreen.md) (7), [ServicesScreen](ServicesScreen.md) (6), [BankScreen](BankScreen.md) (5), [Sector](Sector.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4)... and 42 more
 
 **Used by (3):** [KeptCheck](KeptCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
@@ -74,6 +74,7 @@
 | 4649 | THE RANKINGS TAB (KP7, slice B): the tab as it opens, kept and built new, the hands on what reshapes it (a board, the... |
 | 4844 | HOUSEHOLD MONEY (KP7, slice A): People's second page, kept and built new, the hands on what reshapes it (the view, a ... |
 | 4943 | THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7) |
+| 5151 | FB2: THE CAUSAL FIXTURES OF THE REPAIRS (KL1, KS1-UI, BF1-K) |
 
 ## Constants
 
@@ -134,7 +135,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 5075 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
+| 76 | 5360 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
 | 109 | 36 | `public KeptBench(Game game)` | The bench on a city: the window's object with no stage, its menu column in a scene of its own. |
 | 147 | 5 | `public double drawKept()` | People's page drawn kept from its pool (the first draw makes every node): the draw's own milliseconds. |
 | 154 | 3 | `public int lastMade()` | The nodes the last kept draw made new. |
@@ -879,4 +880,22 @@
 | 5137 | 3 | `public double speedHeight()` | The reading's preferred height, as laid out. |
 | 5142 | 3 | `public Sets speedSets(Runnable draw)` | What the reading and the nodes round it wrote while `draw` ran, by redrawSets (the header's second draw, or paintSpeed()). |
 | 5147 | 3 | `public double headerChildX(int i)` | The x of the header's i-th child, as laid out. |
+
+### FB2: THE CAUSAL FIXTURES OF THE REPAIRS (KL1, KS1-UI, BF1-K) (lines 5151-5435)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 5162 | 6 | `private Pane probeHost(Node n, double w, double h)` | A node on a scene of its own, themed as the bench's pages are, so that its CSS and layout can be run. |
+| 5170 | 4 | `private Pane probeFixed(Region n, double w, double h)` | ...with the node left to be sized by hand: a plain Pane autosizes its managed children to their preferred sizes at every layout. |
+| 5175 | 5 | `private static List<String> signLines(Node n)` |  |
+| 5182 | 10 | `private static ham.citybuildersim.Buyback.Result ladderQuote(double scale, boolean taken)` | A quote of the buyback ladder: six slices of Buyback.Holder's four, their faces times `scale`, the face taken (when `taken`) too. |
+| 5200 | 29 | `public int[] ladderProbe() throws Exception` | KL1: a kept BuybackLadder told a quote and then the same quote with every face moved by 1.4e-8 of itself (what GW1's city moved them by in months 2 and 6 with nothing typed), with nothing taken and with part of it tak... |
+| 5235 | 22 | `public List<List<String>> headerTileProbe() throws Exception` | KS1-UI: a header tile told the same words at widths that make it show its longest wording, then the next, then the shortest, and back (the RATE tile's "D$1,000,000,000.00 per US$" at the rate's ceiling is the longest ... |
+| 5263 | 20 | `public List<List<String>> segmentBarProbe() throws Exception` | HW1's Your rate, mended under KS1-UI: a SegmentBar whose dial tick is named when the rate is away from the dial and not when it is near (FinancesScreen.realCard's `near ? |
+| 5289 | 43 | `public int[][] partnersChartProbe(int levels) throws Exception` | BF1-K: Partners' chart told where the next buyers join, then other places (a fraction of a pixel on), then the first again: for each telling, how the kept chart's picture and a chart built new's, told the last, part -... |
+| 5338 | 25 | `public List<List<String>> fundRowsProbe() throws Exception` | BF1-K: Fund Search's rows told securities whose price, move and held words come and go (a bond has a price and none held, a share held has both...) at the same places, as FP1's rows are kept in their place when the ma... |
+| 5364 | 9 | `private static Node foundRows(FundScreen fs, Game g, String[][] state)` |  |
+| 5375 | 1 | **type** `public record RowsProbe(List<List<String>> signatures, int[] made, int[] madeAgain)` | KS1-Gov's probe: what each state's draw made new and what its unchanged redraw made, and the page's signature, kept beside built new. |
+| 5385 | 33 | `public RowsProbe governmentRowsProbe() throws Exception` | KS1-Gov: the pieces the Government Overview's lines come and go in - the ring's arcs and its key's rows (a slice a line), the bridge's steps (a step a line, the ones at nothing left out) and the treasury statement's r... |
+| 5419 | 16 | `private static Node governmentRows(String[] lines, String[] steps)` |  |
 
