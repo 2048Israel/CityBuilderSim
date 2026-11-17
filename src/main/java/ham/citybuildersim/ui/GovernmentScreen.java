@@ -738,9 +738,9 @@ final class GovernmentScreen {
         CentralBank cb = ui.game.getCentralBank();
         if (cb.getAdvancesToTreasury() > 0 || cb.getPrintedLifetime() > 0 || ui.game.hasArrears()) {
             // ...and the pair side by side, for the month the central bank's card comes or goes.
-            page.getChildren().add(Kept.scope("beside", () -> {
+            page.getChildren().add(Kept.parkedScope("beside", () -> {
                 javafx.scene.layout.GridPane two = equalColumns(2, TILE_GAP);
-                VBox bank = Kept.scope("central bank", () -> centralBankCard(cb));
+                VBox bank = Kept.parkedScope("central bank", () -> centralBankCard(cb));
                 javafx.scene.layout.GridPane.setFillHeight(bank, true);
                 javafx.scene.layout.GridPane.setFillHeight(economy, true);
                 two.add(bank, 0, 0);
@@ -903,7 +903,7 @@ final class GovernmentScreen {
                 final String name = names.get(i);
                 final double amount = amounts.get(i);
                 // Kept (KP6): a netted line is a scope keyed by the line it names.
-                out.add(Kept.scope(name, () -> words("less " + name.toLowerCase() + " " + s(amount),
+                out.add(Kept.parkedScope(name, () -> words("less " + name.toLowerCase() + " " + s(amount),
                         Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
             }
         }
@@ -1177,11 +1177,11 @@ final class GovernmentScreen {
         if (banked) {
             BridgeStep most = mostly(balance);
             // Kept (KP6): a chip that comes or goes is a scope of its own.
-            if (most != null) chips.add(Kept.scope("mostly", () ->
+            if (most != null) chips.add(Kept.parkedScope("mostly", () ->
                     chip("mostly: " + most.label() + " " + s(most.amount()), Palette.TEXT_LABEL)));
             double printed = ui.game.getCentralBank().getAdvancedToTreasury();
             if (printed > 0) {
-                chips.add(Kept.scope("printed", () -> {
+                chips.add(Kept.parkedScope("printed", () -> {
                     // ...handed its icon where it is made, so a kept chip is not stripped of it and given it back.
                     Label p = chip("printed " + m(printed), Palette.MONEY, icon(Icons.BANK, Palette.MONEY, 11));
                     p.setGraphicTextGap(4);
@@ -1372,7 +1372,7 @@ final class GovernmentScreen {
     /** One row of the fold's grid: a movement, signed, and a zero written as one. */
     static int moved(javafx.scene.layout.GridPane grid, int row, String label, double amount, boolean under) {
         // Kept (KP6): a row of the grid, two cells, is a scope keyed by its words, for the rows that come and go.
-        Kept.scope("moved:" + label, () -> {
+        Kept.parkedScope("moved:" + label, () -> {
             Label what = gridCell(label, under ? Palette.TEXT_MUTED : Palette.TEXT_BODY, Palette.SIZE_CAPTION, false);
             // (A style is set whole, never built on getStyle(): the cell's own, with the indent.)
             if (under) what.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED) + " -fx-padding: 0 0 0 16;");
@@ -1425,7 +1425,7 @@ final class GovernmentScreen {
         java.util.Map<TreasuryLine, Double> owed = ui.game.getArrearsByLine();
         if (!owed.isEmpty()) {
             // Kept (KP6): the arrears, a caption and a line each, are a scope of their own (cardLine() keys a line by its words).
-            List<Node> lines = Kept.scope("arrears", () -> {
+            List<Node> lines = Kept.parkedScope("arrears", () -> {
                 List<Node> made = new ArrayList<>();
                 made.add(caption("OWED AND UNPAID, BY LINE", ARREARS_INFO));
                 for (java.util.Map.Entry<TreasuryLine, Double> line : owed.entrySet()) {
