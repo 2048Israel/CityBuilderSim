@@ -2256,6 +2256,37 @@ public final class KeptBench {
         return null;
     }
 
+    /**
+     * The usual funding page's run, an offer covering the gap (REV-FB6-1): fundingRun()'s building first and then the others, each at ten
+     * times the count until the model lets none of it ahead, the first with a gap whose two offers, quoted at the page's cap as runOffers()
+     * quotes them, would each still cover `coverBy` times that gap. A run covered that many times over stays covered through a month's moves
+     * in the market and the cash, so no shortfall line is on the page from its first draw to its last; {the building, the count, the gap},
+     * or null when no run the model lets ahead is.
+     */
+    public Object[] fundingRunCovered(double coverBy) {
+        Object[] first = fundingRun();
+        if (first == null) return null;
+        Game g = ui.game;
+        Auction.Cap cap = ui.buildScreen.fundingCap();
+        List<BuildingsTemplate> order = new ArrayList<>();
+        order.add((BuildingsTemplate) first[0]);
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t != null && !order.contains(t)) order.add(t);
+        for (BuildingsTemplate t : order) {
+            for (int q = 1; q <= 100_000_000; q *= 10) {
+                java.util.LinkedHashMap<BuildingsTemplate, Long> run = BuildScreen.runOf(t, q);
+                int ahead = g.buildRunAhead(run);
+                if (ahead <= 0) break;
+                double gap = g.buildFundingGap(BuildScreen.firstOf(run, ahead));
+                if (!(gap > 0)) continue;
+                ham.citybuildersim.DebtQuote bond = g.quoteLongBondForCash(gap * coverBy, Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE, cap);
+                ham.citybuildersim.DebtQuote note = g.quoteTBill(gap * coverBy, Game.BUILD_NOTE_MONTHS, Game.BUILD_NOTE_GRANULE, cap);
+                if (!bond.isShort() && !note.isShort()) return new Object[]{t, q, gap};
+                break;
+            }
+        }
+        return null;
+    }
+
     /** The title over the funding page's cap chips, as BuildScreen.shortAnswers() writes it. */
     public static final String FUNDING_CAP_TITLE = "THE HIGHEST YIELD YOU WILL TAKE";
 
