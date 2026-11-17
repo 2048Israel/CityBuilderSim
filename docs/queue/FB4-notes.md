@@ -239,5 +239,5 @@ exited 1, with the suite (3094 s) showing two NEW reds.
   269 months and bought from it in 0".
   - Run on main's own classes, the same figures to the cent: 886bd92dc (0.9.138) and c471e961f (0.9.139).
   - Run on f18b10537 (0.9.137, before LX1): green, bought in 63 months.
-  - LX1's last gate reused a kept run in which it was not red.
+  - No gate has run it since LX1's model change: it has no log in LX1's kept run or in FB7's (the orchestrator).
   - Passed by name in the ship file's `## known-reds`, with **SX2** queued ([SX2](SX2.md)).

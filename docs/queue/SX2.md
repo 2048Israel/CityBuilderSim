@@ -14,8 +14,9 @@ or the leavers.
 
 FB4's branch (31b60952a) has main's figures to the cent.
 
-LX1's last gate did not show the red: it reused a kept run in which ShortSellingCheck was not red. FB4 passes it by
-name (its ship file's `## known-reds`).
+No gate has run ShortSellingCheck since LX1's model change: it has no log in LX1's kept run
+(`/tmp/cbs-gate-LX1-MV0wqgUr`) or in FB7's (`/tmp/cbs-gate-FB7-Gss1vBX6`), as the orchestrator checked. FB4
+passes it by name (its ship file's `## known-reds`).
 
 **Done** means:
 - find why the cells' purchases from the world stop on LX1's path. LX1 changed luxury retail; which part of it stops
@@ -23,3 +24,6 @@ name (its ship file's `## known-reds`).
 - then either a model fix, or a section-7 fixture that causes a purchase from the world.
 
 The assertion's premise stays: a count of how often the trade fires in a real run.
+
+Also find why the pick left ShortSellingCheck out of LX1's and FB7's suites, though LX1 moved the model: a pick gap,
+like the MoneyAudit one.
