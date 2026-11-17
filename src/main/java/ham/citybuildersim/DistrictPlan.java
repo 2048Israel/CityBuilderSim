@@ -996,6 +996,9 @@ public final class DistrictPlan {
     /** Cell layings of an open cell's own ring and streets on ground bought inside it (Builder.cellsOnGrown(), FX9): a harness's figure. */
     public int boughtCells;
 
+    /** Street plots laid on ground bought and taken up again for the + floor (Builder.floorBought(), FB5): a harness's figure. */
+    public int boughtFloored;
+
     /** The most wall retries at one source month (for an unlogged plan, its rebuilds), and the plots kept clear in the returned picture. */
     public int wallTries, wallClear;
     /** The wall-way journal returned for the map to keep, including this plan's discoveries (DM2). */
@@ -1285,6 +1288,9 @@ public final class DistrictPlan {
 
     /** Whether an open cell's own ring and streets are laid on the ground the city buys inside it (Builder.cellsOnGrown(), FX9): true in play; a harness sets it false for FX6's way, the bought ground with no streets of its own. */
     static volatile boolean streetsOnBought = true;
+
+    /** Whether a + the streets laid on ground bought make against the plan's rules is stopped a plot short (Builder.floorBought(), FB5): true in play; a harness sets it false to show the case its fixture causes. */
+    static volatile boolean floorOnBought = true;
 
     /** Whether each limited pass of the ground is followed by the whole ground worked out, every array it writes compared with what the pass left, the plots that differ counted in groundDiffers: false in play (a harness's check, PlanCheck 15c). */
     static volatile boolean verifyGround;
@@ -2819,6 +2825,12 @@ public final class DistrictPlan {
                     bOut.strays += prune();
                     bOut.shoreJoins += joined;
                 }
+                // The + floor kept where the new streets meet the old (FB5): a + they make against the rules is stopped a plot short.
+                int floored = floorOnBought ? floorBought() : 0;
+                if (floored > 0) {
+                    bOut.boughtFloored += floored;
+                    bOut.strays += prune();
+                }
                 bOut.strays += pruneApart();
                 cvPending.clear();
                 for (int k = 0; k < nChanged; k++) {
@@ -2876,6 +2888,146 @@ public final class DistrictPlan {
                 nChanged = m;
             }
             return taken;
+        }
+
+        /**
+         * THE + FLOOR ON GROUND BOUGHT (FB5, 2026-11-17; PX1). A join along the cut (shore()) meets the street it ends on in a
+         * T, on the ground the city owned when it was laid. When the city buys the ground past the cut, cellsOnGrown() lays the
+         * cell's own streets on it, joined to the streets that stand, and a line laid across the old cut can meet that T from
+         * its open side: a + where the plan allows none - inside an estate cell (ESTATE LINES: T junctions only) or fewer than
+         * LATTICE plots along a street from another junction (the + floor, spec 2.4; a T counts, plusBreaks()). Each such + of
+         * the plots laid in this call is stopped a plot short: the first of its arms laid in this call (TilePainter's order)
+         * that can go without parting any street (keepsJoined(): one network comes first, and the streets laid on the ground
+         * bought stay joined to it) is taken up, or the junction itself when only it was, so the old T stays a T and no street
+         * laid before - none a building stands by - is touched; a + no such plot of can go is kept.
+         * WHY: on LM1's path PlanCheck 6's played city laid two + junctions four plots apart in a homes cell, (48, 64) and
+         * (48, 68); on AQ1's, a + inside estate cells of district (0, 0) in PlanCheck 6's and MapCheck 1's cities, each where a
+         * line laid on ground bought (m48-m59, m80-m89) met the T a join along the old cut had made. The plots taken up.
+         */
+        int floorBought() {
+            if (nChanged == 0) return 0;
+            int now = ++laidStamp, taken = 0;
+            for (int k = 0; k < nChanged; k++) laidMark[changed[k]] = now;
+            boolean again = true;
+            while (again) {
+                again = false;
+                for (int k = 0; k < nChanged && !again; k++) {
+                    int p = changed[k];
+                    if (!(str[p] || under[p])) continue;
+                    for (int d = -1; d < 4 && !again; d++) {
+                        int j = d < 0 ? p : stepOf(p, d);
+                        if (j < 0 || !plusAt(j) || !plusBreaks(j)) continue;
+                        int arm = -1;
+                        for (int e = 0; e < 4 && arm < 0; e++) {
+                            int a = stepOf(j, e);
+                            if (a >= 0 && laidMark[a] == now && road(a) && keepsJoined(a, now)) arm = a;
+                        }
+                        if (arm < 0 && laidMark[j] == now && keepsJoined(j, now)) arm = j;
+                        // No plot of it laid in this call can go without parting a street: the + is kept.
+                        if (arm < 0) continue;
+                        if (avDone[arm] == 1) avUnlay(arm);
+                        setStr(arm, false);
+                        under[arm] = false;
+                        art[arm] = false;
+                        blvd[arm] = false;
+                        role[arm] = 0;
+                        occ[arm] = cvKeep[arm] ? -1 : occStart[arm];
+                        taken++;
+                        again = true;
+                    }
+                }
+            }
+            if (taken > 0) {
+                // The changed list keeps only what is still laid.
+                int m = 0;
+                for (int k = 0; k < nChanged; k++) if (str[changed[k]] || under[changed[k]]) changed[m++] = changed[k];
+                nChanged = m;
+            }
+            return taken;
+        }
+
+        /** floorBought()'s walks: a stamp a plot, and the queue. */
+        int[] floorSeen, floorQueue;
+        int floorStamp;
+
+        /**
+         * Whether street plot c can be taken up without parting any street: the streets beside it stay one piece without it,
+         * and that piece holds a street that stood before this call (laidMark != now). Where a line laid across the cut is the
+         * only way between two pieces that stood, taking it up would part what the ground joins (MapCheck 8's one network,
+         * PlanCheck's pieces); where it is the only way from the streets that stood to those laid on the ground bought, the
+         * new piece would be taken up after it (prune(), pruneApart()), the cell's streets with it (FX9 undone; REV-FB5-1).
+         */
+        boolean keepsJoined(int c, int now) {
+            if (floorSeen == null) { floorSeen = new int[AREA]; floorQueue = new int[AREA]; }
+            int stamp = ++floorStamp, olds = 0;
+            floorSeen[c] = stamp;
+            for (int e = 0; e < 4; e++) {
+                int s = stepOf(c, e);
+                if (s < 0 || !road(s) || floorSeen[s] == stamp) continue;
+                boolean old = false;
+                int head = 0, tail = 0;
+                floorQueue[tail++] = s;
+                floorSeen[s] = stamp;
+                while (head < tail) {
+                    int q = floorQueue[head++];
+                    old |= laidMark[q] != now;
+                    for (int f = 0; f < 4; f++) {
+                        int a = stepOf(q, f);
+                        if (a < 0 || floorSeen[a] == stamp || !road(a)) continue;
+                        floorSeen[a] = stamp;
+                        floorQueue[tail++] = a;
+                    }
+                }
+                if (!old || ++olds > 1) return false;
+            }
+            return true;
+        }
+
+        /** The plot a step from p in direction d (TilePainter.DX, DY), or -1 past the frame. */
+        static int stepOf(int p, int d) {
+            int x = p % FRAME + TilePainter.DX[d], y = p / FRAME + TilePainter.DY[d];
+            return x < 0 || y < 0 || x >= FRAME || y >= FRAME ? -1 : y * FRAME + x;
+        }
+
+        /** Whether plot p is a + junction as PlanCheck and MapCheck 8 count one: a street with streets on its four sides and none on its corners, off the frame's edge. */
+        boolean plusAt(int p) {
+            int x = p % FRAME, y = p / FRAME;
+            if (x < 1 || y < 1 || x > FRAME - 2 || y > FRAME - 2) return false;
+            if (!road(p) || !road(p - 1) || !road(p + 1) || !road(p - FRAME) || !road(p + FRAME)) return false;
+            return !road(p - FRAME - 1) && !road(p - FRAME + 1) && !road(p + FRAME - 1) && !road(p + FRAME + 1);
+        }
+
+        /** Whether plot p is a T junction: a street with streets on three of its four sides and none on its corners, off the frame's edge. */
+        boolean teeAt(int p) {
+            int x = p % FRAME, y = p / FRAME;
+            if (x < 1 || y < 1 || x > FRAME - 2 || y > FRAME - 2 || !road(p)) return false;
+            int sides = (road(p - 1) ? 1 : 0) + (road(p + 1) ? 1 : 0) + (road(p - FRAME) ? 1 : 0) + (road(p + FRAME) ? 1 : 0);
+            return sides == 3 && !road(p - FRAME - 1) && !road(p - FRAME + 1) && !road(p + FRAME - 1) && !road(p + FRAME + 1);
+        }
+
+        /** A street plot, beneath a highway included. */
+        boolean road(int p) {
+            return str[p] || under[p];
+        }
+
+        /**
+         * Whether the + at p breaks the plan's rules: inside an estate cell's interior (ESTATE LINES), or another junction
+         * fewer than LATTICE plots from it along a street - a +, the + floor (spec 2.4), or a T, which a street laid later on
+         * its open side makes a + (the cell beside opening onto a ring line's T; on AQ1's ground-bought fixture, a + laid
+         * across a cut 4 plots from the ring's T at (128, 144), a + when cell (4, 4) opened in the month after).
+         */
+        boolean plusBreaks(int p) {
+            int x = p % FRAME, y = p / FRAME;
+            if (x % CELL != 0 && y % CELL != 0 && x < SIDE && y < SIDE && bOut.cellKind[x / CELL + (y / CELL) * CELLS_A_SIDE] == ESTATE) return true;
+            for (int d = 0; d < 4; d++) {
+                int q = p;
+                for (int k = 1; k < LATTICE; k++) {
+                    q = stepOf(q, d);
+                    if (q < 0 || !road(q)) break;
+                    if (plusAt(q) || teeAt(q)) return true;
+                }
+            }
+            return false;
         }
 
         /* ------------------------------------------------ the runs dated (batch FX7) */

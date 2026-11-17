@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.137 — FB5, the played cities' placement — 2026-11-17, ready, see docs/queue/FB5-notes.md
+The map draws every building the city has. What no plot of the city's own ground holds at its edge now stands just past it, on dry
+ground the city does not own, beside a street and never in the field. In MapCheck's played city 133 stand there; 135 went
+undrawn on main. A + junction no longer forms where streets laid on newly bought ground meet the T of a join along the old cut (PX1).
+Instead, the newest arm that can go without parting the streets is stopped a plot short. PlanCheck's new fixture breaks the plan
+in 36 of 76 cuts without this, and holds in all 76 with it. The industry ring (CL6) no longer shows on the playtest's default
+path (industry 2.78 km from the founding site against the homes' 3.92). Seed 1's ring is measured and goes back to the queue as
+CL7: a new cell goes to the works that bought its ground, while the homes already wait at the edge. MapCheck 1's road at month
+61 is the renderer's stale tile, FB9's DM3-R. Nothing in the model reads the map, and the playtest's trace is unchanged.
+
 ### 0.9.136 — FB3, reloads that read as they were saved — 2026-11-17, ready, see docs/queue/FB3-notes.md
 A loaded city now reads as it was saved in four more places. The shops' want and means are put back always, zeros too: a city saved in its
 second month, when its shops want nothing, came back wanting what the load's rebuild struck (0.0625; MoneyDatesCheck). An older save's

@@ -1646,6 +1646,7 @@ public class MapCheck {
         check("...works and flats added together displace only the flats, which come after the works in the order they are packed in: none of the works moved (" + shifted + " boxes, " + dearer + " of works)",
                 then.size() > 0 && dearer == 0 && later.size() > then.size());
         laidByHand(r.types);
+        pastByHand(r.types);
     }
 
     /** A plot of a district's mask (a bit a plot, DISTRICT / 64 words a row). */
@@ -1725,6 +1726,77 @@ public class MapCheck {
         for (int y = 10 - TilePainter.REACH; y <= 10 + TilePainter.REACH; y++) for (int x = 63 - TilePainter.REACH; x <= 63 + TilePainter.REACH; x++) whole &= plotIs(grown, x, y);
         check("a plot's reach crosses a word's edge: REACH plots out every way, across corners, the whole square and nothing more (" + n + " plots)",
                 whole && n == (2 * TilePainter.REACH + 1) * (2 * TilePainter.REACH + 1) && !plotIs(grown, 63 - TilePainter.REACH - 1, 10));
+    }
+
+    /** The houses pastByHand() packs: more than its owned block's 100 plots hold (FB5). */
+    static final int PAST_HOUSES = 140;
+
+    /** One hand-made edge district packed with `n` buildings of type t, its free ground the owned plane and (when not null) the plane past it, as freeGround() lays them. */
+    static CityMap.Pack handPack(BuildingVisual.Type[] types, int t, int n, long[] owned, long[] past, long[] street, CityMap.District e) {
+        long[] order = new long[CityMap.TILES];
+        for (int k = 0; k < CityMap.TILES; k++) order[k] = k;
+        int[] carry = new int[types.length];
+        carry[t] = n;
+        long[] free = owned.clone();
+        if (past != null) {
+            free = Arrays.copyOf(owned, 2 * owned.length);
+            System.arraycopy(past, 0, free, owned.length, past.length);
+        }
+        return CityMap.packAtEdge(carry, types, new CityMap.District[] { e }, new long[][] { free }, new long[][] { street.clone() }, order);
+    }
+
+    /** A packing's boxes on ground a mask has: each as "tile:box", every plot of it on the mask (inMask) or none (!inMask). */
+    static java.util.Set<String> boxesOn(CityMap.Pack p, CityMap.District e, long[] mask, boolean inMask) {
+        java.util.Set<String> s = new java.util.TreeSet<>();
+        int[][] per = p.boxes.get(e);
+        if (per == null) return s;
+        for (int k = 0; k < per.length; k++) {
+            if (per[k] == null) continue;
+            for (int b : per[k]) {
+                int x0 = (k % CityMap.TILES_A_SIDE) * World.TILE + (b & 31), y0 = (k / CityMap.TILES_A_SIDE) * World.TILE + ((b >> 5) & 31);
+                int w = ((b >> 10) & 31) + 1, h = ((b >> 15) & 31) + 1;
+                boolean all = true, any = false;
+                for (int y = y0; y < y0 + h; y++) for (int x = x0; x < x0 + w; x++) { boolean on = plotIs(mask, x, y); all &= on; any |= on; }
+                if (inMask ? all : !any) s.add(k + ":" + b);
+            }
+        }
+        return s;
+    }
+
+    /**
+     * ...past the city's ground (FB5, DM3): a street down x = 40 and the city's own free ground a block of 100 plots beside it (x 41 to 50, y 97 to 106),
+     * given PAST_HOUSES houses. With its own ground alone those the block cannot hold find no ground and are not drawn - the played city's 133 at
+     * month 121, its land 99.3% built; with the dry ground the city does not own beside it (x 41 to 62, y 107 to 126) they stand there, whole and
+     * beside the street, every one drawn, and the block holds what it held, box for box; with that ground far from every street (x 200 to 220) none
+     * stands in the field past the city's ground: they are counted, not drawn, as before.
+     */
+    static void pastByHand(BuildingVisual.Type[] types) {
+        int house = -1;
+        for (int t = 0; t < types.length && house < 0; t++) {
+            if (types[t] != null && types[t].drawn() && types[t].site() == null && Arrays.equals(BuildingVisual.footprint(types[t]), new int[] { 1, 1 })) house = t;
+        }
+        CityMap.District e = new CityMap.District(0, 0, types.length, 0);
+        int cells = CityMap.DISTRICT * (CityMap.DISTRICT / 64);
+        long[] street = new long[cells], owned = new long[cells], past = new long[cells], far = new long[cells];
+        for (int y = 0; y < CityMap.DISTRICT; y++) plotOn(street, 40, y);
+        for (int y = 97; y <= 106; y++) for (int x = 41; x <= 50; x++) plotOn(owned, x, y);
+        for (int y = 107; y <= 126; y++) for (int x = 41; x <= 62; x++) plotOn(past, x, y);
+        for (int y = 97; y <= 126; y++) for (int x = 200; x <= 220; x++) plotOn(far, x, y);
+        CityMap.Pack alone = handPack(types, house, PAST_HOUSES, owned, null, street, e), beside = handPack(types, house, PAST_HOUSES, owned, past, street, e);
+        CityMap.Pack afar = handPack(types, house, PAST_HOUSES, owned, far, street, e);
+        java.util.Set<String> ownAlone = boxesOn(alone, e, owned, true), ownBeside = boxesOn(beside, e, owned, true), onPast = boxesOn(beside, e, past, true);
+        int drawn = 0;
+        if (beside.boxes.get(e) != null) for (int[] tl : beside.boxes.get(e)) if (tl != null) drawn += tl.length;
+        out.printf("      past the city's ground: %d houses, a block of 100 owned plots beside a street; its own ground alone draws %d (%d with no ground); with the ground past it %d"
+                        + " (%d past it, %d with no ground; %d against a street, %d within reach, %d at a street laid, %d in the field); that ground far from every street: %d past it, %d with no ground%n",
+                PAST_HOUSES, ownAlone.size(), alone.none, drawn, beside.beyond, beside.none, beside.touching, beside.reached, beside.laidTo, beside.field, afar.beyond, afar.none);
+        check("fixture: a city whose own ground is full - with its own ground alone some of what it packs finds no ground and is not drawn", alone.none > 0 && alone.beyond == 0);
+        check("what no plot of its own ground holds stands past it, on the dry ground beside it it does not own: every building drawn, none with no ground, counted apart",
+                beside.none == 0 && beside.beyond == alone.none && drawn == PAST_HOUSES && onPast.size() == beside.beyond);
+        check("...each beside a street - against it, within REACH or at a street laid - never in the field",
+                beside.field == alone.field && beside.touching + beside.reached + beside.laidTo - (alone.touching + alone.reached + alone.laidTo) == beside.beyond);
+        check("...and its own ground holds what it held, box for box", ownBeside.equals(ownAlone));
+        check("...and ground past it that no street is near holds none: what finds no ground is counted, not drawn, as before", afar.beyond == 0 && afar.none == alone.none);
     }
 
     /* =====================================================================
@@ -4059,8 +4131,8 @@ public class MapCheck {
                 + " own ground joins to it; %,d alone; %,d + junctions, %d pairs nearer than %d%n", what, m.districts().size(), roadPlots, net[0], net[1],
                 net[2], alone, cr[0], cr[1], TilePainter.JUNCTION_APART);
         out.printf("      ...%,d buildings, %,d within %d plots of a street, %d farther; %d mines on their sites, %d packed at the city's edge (%d drawn"
-                + " smaller, %d with no ground); surface: %s; %,d buildings drawn of the model's %,d%n", near + far, near, TilePainter.REACH, far, mines,
-                packed, pk[1], pk[2], sf, drawnN, modelN);
+                + " smaller, %d with no ground, %d past the ground the city owns); surface: %s; %,d buildings drawn of the model's %,d%n", near + far, near, TilePainter.REACH, far, mines,
+                packed, pk[1], pk[2], pk[3], sf, drawnN, modelN);
         if (!crosses) out.printf("      (%s: %,d + junctions - its cells opened while its road was short, so its junctions are T's: the + rule bites on Jerus's city x 1)%n", what, cr[0]);
         check(what + ": fixture: the city has streets" + (crosses ? " and + junctions" : ""), roadPlots > 0 && (cr[0] > 0 || !crosses));
         check("...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an"

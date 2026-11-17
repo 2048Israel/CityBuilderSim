@@ -3198,7 +3198,7 @@ public final class CityMap {
         if ((code & TilePainter.S_KIND) == DistrictPlan.NONE) in.seamOpen[y * DistrictPlan.FRAME + x] = true;
     }
 
-    /** What the city has no room for, packed at its edge (R7): each edge district's packed boxes by tile, an int each as Drawn.boxes; how many were packed, how many drawn smaller than their own land, and how many found no ground at all. Since MF1 each stands beside a street: the streets laid to those with none in reach are `laid` (by district, each tile's street codes, null for none), and `touching`, `reached`, `laidTo` and `field` say how many stand against a street, within REACH of one, at the end of a laid one, or (no street near) in the field; `laidStreets` and `laidPlots` how many were laid and how long. */
+    /** What the city has no room for, packed at its edge (R7): each edge district's packed boxes by tile, an int each as Drawn.boxes; how many were packed, how many drawn smaller than their own land, how many found no ground at all, and (since FB5) how many stand past the ground the city owns, beside its streets (`beyond`). Since MF1 each stands beside a street: the streets laid to those with none in reach are `laid` (by district, each tile's street codes, null for none), and `touching`, `reached`, `laidTo` and `field` say how many stand against a street, within REACH of one, at the end of a laid one, or (no street near) in the field; `laidStreets` and `laidPlots` how many were laid and how long. */
     static final class Pack {
         long stamp;
         final Map<District, int[][]> boxes = new HashMap<>();
@@ -3217,7 +3217,7 @@ public final class CityMap {
             digests.put(d, h);
             return h;
         }
-        int packed, smaller, none;
+        int packed, smaller, none, beyond;
         int touching, reached, laidTo, field, laidStreets, laidPlots, laidLongest;
     }
 
@@ -4145,24 +4145,25 @@ public final class CityMap {
         }
     }
 
-    /** The bands' packings summed: {packed, smaller, none}; null when one is not current. */
+    /** The bands' packings summed: {packed, smaller, none, beyond}; null when one is not current. */
     private int[] packSums() {
         if (!allDrawn()) return null;
-        int[] out = new int[3];
+        int[] out = new int[4];
         for (int b = 0; b < bands(); b++) {
             Pack p = packs.get(b);
             out[0] += p.packed;
             out[1] += p.smaller;
             out[2] += p.none;
+            out[3] += p.beyond;
         }
         return out;
     }
 
-    /** How many buildings the city has no room for in any district's plan, packed at its edge (R7; since 0.7.89 at its band's edge) - and how many of them drawn smaller than their own land or with no ground at all: {packed, smaller, none}. The legend's words read it. */
+    /** How many buildings the city has no room for in any district's plan, packed at its edge (R7; since 0.7.89 at its band's edge) - and how many of them drawn smaller than their own land, with no ground at all, or past the ground the city owns (FB5): {packed, smaller, none, beyond}. The legend's words read it. */
     public int[] packedCounts() {
         packed();
         int[] p = packSums();
-        return p == null ? new int[3] : p;
+        return p == null ? new int[4] : p;
     }
 
     /** ...the same, or null when the packing is not current: the screen's thread, which never plans. */
@@ -4259,10 +4260,14 @@ public final class CityMap {
      * stand on (ET2: World.buildable(), dry and flat or foothill) no street,
      * building, highway or its verge (H5), track or mine's site takes - a
      * field's plots among it, built on last as the plan builds on them.
+     * A second plane after it (from DISTRICT x DISTRICT / 64 on, the same
+     * way): the dry ground the city does not own that none of those takes,
+     * where what no plot of the first holds stands beside the city's streets
+     * (FB5, packAtEdge()).
      */
     static long[] freeGround(DistrictPlan.Input in, DistrictPlan p) {
-        int f = DistrictPlan.FRAME, words = DISTRICT / 64;
-        long[] out = new long[DISTRICT * words];
+        int f = DistrictPlan.FRAME, words = DISTRICT / 64, past = DISTRICT * words;
+        long[] out = new long[2 * past];
         boolean[] taken = new boolean[DistrictPlan.AREA];
         for (int b = 0; b < p.buildings; b++) {
             for (int y = p.by[b]; y < p.by[b] + p.bh[b]; y++) for (int x = p.bx[b]; x < p.bx[b] + p.bw[b]; x++) taken[y * f + x] = true;
@@ -4270,7 +4275,7 @@ public final class CityMap {
         for (int y = 0; y < DISTRICT; y++) {
             for (int x = 0; x < DISTRICT; x++) {
                 int q = y * f + x;
-                if (!in.owned[q] || !World.buildable(in.terrain[q], in.relief[q])) continue;
+                if (!World.buildable(in.terrain[q], in.relief[q])) continue;
                 if (taken[q] || p.street[q] != 0 || in.fixed[q] != 0 || in.site[q] == DistrictPlan.SITE_MINED || p.siding != null && p.siding[q] != 0) continue;
                 boolean verge = false;
                 for (int dy = -1; dy <= 1 && !verge; dy++) {
@@ -4280,7 +4285,7 @@ public final class CityMap {
                     }
                 }
                 if (verge) continue;
-                out[y * words + (x >>> 6)] |= 1L << (x & 63);
+                out[(in.owned[q] ? 0 : past) + y * words + (x >>> 6)] |= 1L << (x & 63);
             }
         }
         return out;
@@ -4431,18 +4436,41 @@ public final class CityMap {
      * the next; one none of these holds, in the field, on the first tile
      * that holds it. One no free box holds whole is drawn as the largest square
      * any tile still has (0.7.64's rule for a building no box held), at least a
-     * plot; with none left at all it is counted, not drawn.
+     * plot; with none left at all it stands past the city's own ground, whole,
+     * on the dry ground beside it the city does not own (freeGround()'s second
+     * plane) - against a street, within REACH of one or with a street laid to
+     * it, never in the field (FB5, below) - and only one none of those holds
+     * is counted, not drawn.
+     *
+     * PAST THE CITY'S GROUND (FB5, 2026-11-17; DM3). The model's land is the
+     * city's holdings, and a building takes its type's land of them (a house
+     * 0.83 of a plot); the map draws it on whole plots (a house one), and the
+     * plans' streets take a share besides. So a city the model has built to
+     * its last plot has more buildings than its ground has plots: MapCheck 1's
+     * city on AQ1's path, its land 99.3% built at month 121, had 3,251 plots of
+     * buildings against 3,055 dry plots owned, and 133 to 135 buildings found no
+     * ground and were not drawn (DM3; WG2's path, 27 at month 91). What the
+     * city's ground cannot hold now stands at its edge past it, as a town's
+     * last sheds stand past its line, and is counted apart (`beyond`); a city
+     * whose own ground holds all it packs is drawn as before, plot for plot.
      */
     static Pack packAtEdge(int[] carry, BuildingVisual.Type[] types, District[] edges, long[][] free, long[][] streets, long[] tileOrder) {
         Pack out = new Pack();
         if (carry == null) return out;
-        int nt = tileOrder.length;
-        Ground[] gr = new Ground[edges.length];
-        for (int i = 0; i < edges.length; i++) if (free[i] != null && streets[i] != null) gr[i] = new Ground(free[i], streets[i]);
+        int nt = tileOrder.length, plane = DISTRICT * (DISTRICT / 64);
+        Ground[] gr = new Ground[edges.length], past = new Ground[edges.length];
+        for (int i = 0; i < edges.length; i++) {
+            if (free[i] == null || streets[i] == null) continue;
+            gr[i] = new Ground(free[i].length > plane ? Arrays.copyOf(free[i], plane) : free[i], streets[i]);
+            // The ground past the city's: its own free plots and its own against, reach and near, dilated from the plan's streets and
+            // grown only by the streets laid to its own boxes. The street mask alone is the same array, so a street laid to a box on
+            // either plane is one the other's laidTo() walk can end at (where its near lets it look); its against and reach do not grow.
+            if (free[i].length > plane) past[i] = new Ground(Arrays.copyOfRange(free[i], plane, 2 * plane), streets[i]);
+        }
         int[][] tiOf = new int[edges.length][TILES];
         for (int m = 0; m < nt; m++) tiOf[(int) (tileOrder[m] >>> 32)][(int) tileOrder[m]] = m;
-        Fails[] fails = new Fails[WAYS];
-        for (int w = 0; w < WAYS; w++) fails[w] = new Fails(nt);
+        Fails[] fails = new Fails[WAYS], pastFails = new Fails[WAYS];
+        for (int w = 0; w < WAYS; w++) { fails[w] = new Fails(nt); pastFails[w] = new Fails(nt); }
         List<Integer>[][] boxes = new List[edges.length][TILES];
         int[] ranked = BuildingVisual.rankedTypes(types);
         for (int t : ranked) {
@@ -4452,6 +4480,7 @@ public final class CityMap {
             int[][] cursor = new int[INTERIOR_MOST + 1][];
             int top = Math.min(INTERIOR_MOST, Math.max(fp[0], fp[1]) - 1);
             int[] sqFrom = { top, top };
+            int[] pastCursor = new int[WAYS];
             for (int j = 0; j < carry[t]; j++) {
                 out.packed++;
                 Spot s = null;
@@ -4466,9 +4495,16 @@ public final class CityMap {
                         if (s != null) { small = true; sqFrom[pass] = sq; }
                     }
                 }
+                // None of the city's own ground holds it: whole, past it, beside a street.
+                boolean beyond = false;
+                if (s == null) {
+                    s = place(past, tileOrder, pastFails, pastCursor, AGAINST, LAID, fp[0], fp[1]);
+                    beyond = s != null;
+                }
                 if (s == null) { out.none++; continue; }
                 if (small) out.smaller++;
-                Ground g = gr[s.di()];
+                if (beyond) out.beyond++;
+                Ground g = beyond ? past[s.di()] : gr[s.di()];
                 int bx = (s.k() % TILES_A_SIDE) * World.TILE + s.x(), by = (s.k() / TILES_A_SIDE) * World.TILE + s.y();
                 if (boxes[s.di()][s.k()] == null) boxes[s.di()][s.k()] = new ArrayList<>();
                 boxes[s.di()][s.k()].add(box(s.x(), s.y(), s.w(), s.h(), true) | (t << BOX_TYPE_SHIFT));
@@ -4503,12 +4539,14 @@ public final class CityMap {
                         for (int dx = -1; dx <= 1; dx++) {
                             int ux = tk % TILES_A_SIDE + dx, uy = tk / TILES_A_SIDE + dy;
                             if (ux < 0 || uy < 0 || ux >= TILES_A_SIDE || uy >= TILES_A_SIDE) continue;
-                            for (int w = 0; w < WAYS; w++) fails[w].clear(tiOf[s.di()][uy * TILES_A_SIDE + ux]);
+                            for (int w = 0; w < WAYS; w++) { fails[w].clear(tiOf[s.di()][uy * TILES_A_SIDE + ux]); pastFails[w].clear(tiOf[s.di()][uy * TILES_A_SIDE + ux]); }
                         }
                     }
                 }
                 // ...and the buildings of this type still to stand look again from the first tile, against the street just laid.
                 for (int[] c : cursor) if (c != null) { c[AGAINST] = 0; c[REACHED] = 0; }
+                pastCursor[AGAINST] = 0;
+                pastCursor[REACHED] = 0;
             }
         }
         for (int i = 0; i < edges.length; i++) {
@@ -4520,6 +4558,16 @@ public final class CityMap {
                 for (int b = 0; b < per[k].length; b++) per[k][b] = boxes[i][k].get(b);
             }
             if (per != null) out.boxes.put(edges[i], per);
+            // The streets laid past the city's ground drawn with those on it: one tile's codes.
+            if (past[i] != null && past[i].laid != null) {
+                if (gr[i].laid == null) gr[i].laid = new byte[TILES][];
+                for (int k = 0; k < TILES; k++) {
+                    byte[] b = past[i].laid[k];
+                    if (b == null) continue;
+                    if (gr[i].laid[k] == null) gr[i].laid[k] = b;
+                    else for (int q = 0; q < b.length; q++) if (b[q] != 0) gr[i].laid[k][q] = b[q];
+                }
+            }
             if (gr[i] != null && gr[i].laid != null) out.laid.put(edges[i], gr[i].laid);
         }
         return out;
