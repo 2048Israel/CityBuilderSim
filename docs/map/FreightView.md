@@ -1,6 +1,6 @@
 # FreightView.java - 471 lines · 23 methods · 1 constants · model
 
-`ham/citybuildersim/FreightView.java` - generated 2026-11-16 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FreightView.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
 > The Freight sector's divisions as the screens draw them (batch FR4;
 > docs/studies/spec-freight-and-infrastructure.md 6): the city's freight this
