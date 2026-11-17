@@ -62,6 +62,13 @@ import java.util.function.Function;
  *   4. THE REAL EARTH: sections 1 and 2 at one checkpoint (about month 120)
  *      on LongPlaytest.probeCity(files, "rotterdam"), where earth-2.bin is
  *      named; a line saying it did not run, never a FAIL, where it is not.
+ *   5. THE AUTOSAVE (FB3, REV-FB3-1): the live city played on to the month its
+ *      own autosave falls due in, written by the game at that month's end, and
+ *      loaded from the autosave slot: right after the load every market's draws
+ *      are the live city's, and a month on every history figure and every
+ *      figure in the save is. A save carries the draws since FW6-C, and the
+ *      autosave was taken before the month closed them, so a load put the
+ *      month's draws back and the next month filled them again.
  *
  * Every fixture is asserted: the history holds more than a hundred series and
  * the save more than ten thousand numbers (so the comparison is not empty),
@@ -276,17 +283,20 @@ public class ReloadCheck {
     /**
      * FB3 (FW6-C): three restores that no checkpoint's save causes the case of, caused on the live city as it stands (between the
      * presses, a month just closed): a sudden stop begun (the words are a String no array carries); a hand order, half of what the
-     * makers of the good they hold the most of have in stock, drawn as the player's hand order is, the seller rows of which only the
-     * draws list can put back; and, when no checkpoint's city carried any, a carry of limestone placed. Returns the hand order
-     * (null if no maker holds any stock of a traded good).
+     * makers of the good they hold the most of have in stock, drawn as the player's orders draw (Game.drawMaterials(), drawBitumen(),
+     * fit(): the builders the buyer, their purchase booked), the seller rows of which only the draws list can put back; and,
+     * when no checkpoint's city carried any, a carry of limestone placed. Returns the hand order (null if no maker holds any
+     * stock of a traded good the builders do not make).
      */
     static HandOrder causeTheConditions(Game g, boolean placeACarry) {
         g.getCapitalFlows().startStopForTest(CAUSED_STOP);
         if (placeACarry) g.getSectors().quarrying().setCarriedForTest(CAUSED_CARRY);
+        Sector builders = g.getSectors().construction();
         Good most = null;
         double mostHeld = 0;
         for (Good good : Good.values()) {
             if (!good.traded()) continue;
+            if (builders.isMaker(good)) continue;   // the builders buy it, so not from themselves
             double held = 0;
             for (Sector s : g.getSectors().all()) if (s.isMaker(good)) held += s.getStock(good);
             if (held > mostHeld) { most = good; mostHeld = held; }
@@ -294,7 +304,7 @@ public class ReloadCheck {
         if (most == null) return null;
         GoodsMarket market = g.getMarkets().get(most);
         int before = market.monthsDraws().size();
-        g.getMarkets().draw(most, null, Trade.CITY, mostHeld * HAND_ORDER_SHARE, g.getSectors());
+        g.getMarkets().draw(most, builders, null, mostHeld * HAND_ORDER_SHARE, g.getSectors());
         return new HandOrder(most, new ArrayList<>(market.monthsDraws().subList(before, market.monthsDraws().size())));
     }
 
@@ -651,6 +661,85 @@ public class ReloadCheck {
         }
     }
 
+    /* ------------------------------ the autosave (FB3, REV-FB3-1) ------------------------------ */
+
+    /** What section 5 found: the city the month-end autosave holds, loaded from that slot, against the city that wrote it. */
+    static final class Autosaved {
+        /** Why it could not be compared (a load that failed), or null. */
+        String problem;
+        /** The month the live city stood at once its autosave was written, and the slot's header: its name and month. */
+        int month, savedMonth;
+        String name;
+        /** Whether the month's end wrote it: the counter started again. */
+        boolean fired;
+        /** The draws the autosaved month closed at its end (Markets.drawsClosedLastMonth()): what its autosave would have carried before FB3 closed them first. */
+        int drawsClosed;
+        /** Every market's draws since the month closed, right after the load (as cause 3i compares them). */
+        final Cause draws = new Cause();
+        Compared history, save;
+    }
+
+    /**
+     * The live city played on, a month at a time, to the month its autosave falls due in, under a save clock past the
+     * floor at every look (SaveSlotCheck's), so the game writes the autosave where it writes it: at that month's end,
+     * slot GameFiles.AUTOSAVE_SLOT of the harness's scratch folder. Loaded from that slot into a second game, the draws
+     * compared right after the load, both run a month, and their saves compared.
+     */
+    static Autosaved autosaveAndReload(GameFiles files, Game g) {
+        Autosaved a = new Autosaved();
+        PrintStream real = System.out;
+        System.setOut(QUIET);
+        try {
+            long[] now = { System.nanoTime() };
+            g.useSaveClockForChecks(() -> now[0] += (long) (SaveWriter.FLOOR_SECONDS * 1e9) + 1);
+            // Single months, so nothing but the interval autosaves: on to the month before it falls due, then that month.
+            while (g.getMonthsUntilAutosave() > 1) g.simulateMonths(1);
+            g.simulateMonths(1);
+            g.awaitSaves();
+            a.month = g.getMonth();
+            a.fired = g.getMonthsUntilAutosave() == Game.AUTOSAVE_MONTHS;
+            SaveHeader h = files.readHeader(GameFiles.AUTOSAVE_SLOT);
+            a.savedMonth = h == null ? -1 : h.getMonth();
+            a.name = h == null || !h.hasName() ? null : h.getSlotName();
+            a.drawsClosed = g.getMarkets().drawsClosedLastMonth();
+            Game back = new Game(files);
+            back.loadGameSave(GameFiles.AUTOSAVE_SLOT);
+            if (back.getLoadFailure() != null) { a.problem = "the load of the autosave failed: " + back.getLoadFailure(); return a; }
+            for (GoodsMarket live : g.getMarkets().all()) {
+                GoodsMarket re = back.getMarkets().get(live.good());
+                compareDraws(a.draws, String.valueOf(live.good()), live.monthsDraws(), re == null ? List.of() : re.monthsDraws());
+            }
+            g.simulateMonths(1);
+            back.simulateMonths(1);
+            Compared[] on = saveAndCompare(files, g, back, "a month on from the autosave");
+            a.history = on[0];
+            a.save = on[1];
+        } finally {
+            System.setOut(real);
+        }
+        return a;
+    }
+
+    /** Section 5's lines: the two fixtures (the game wrote the autosave at its month's end, in a month that drew), then the draws, the history and the save. */
+    static void section5(Autosaved a) {
+        System.out.println("--- 5. a city loaded from its month-end autosave plays its next month as the one that kept running ---");
+        if (a.problem != null) {
+            check("the autosave was loaded", false, a.problem);
+            return;
+        }
+        check("fixture: the month the autosave fell due in wrote slot " + GameFiles.AUTOSAVE_SLOT + " at its end, as the game takes it",
+                a.fired && a.savedMonth == a.month && ("Autosave - month " + a.month).equals(a.name),
+                "the slot reads \"" + a.name + "\" at month " + a.savedMonth + ", the city at " + a.month
+                        + (a.fired ? ", the counter started again" : ", the counter did not start again"));
+        check("fixture: ...a month that drew from the markets, so it had draws to close at its end", a.drawsClosed > 0,
+                a.drawsClosed + " draws closed");
+        nothingDiffers("5. month " + a.month + ", right after the load from the autosave: every market's draws since the month closed are the live city's",
+                a.draws, a.draws.compared + " compared, the same");
+        nothingDiffers("5. month " + a.month + ", a month on from the autosave: every history figure is the live city's",
+                a.history, a.history.numbers + " numbers in " + a.history.series + " series, the same");
+        nothingDiffers("5. ...and every figure in its save, to the cent", a.save, a.save.numbers + " numbers the same");
+    }
+
     /* ------------------------------------ the Earth ------------------------------------ */
 
     /** Whether section 4 can run: earth-2.bin named (-Dcbs.earth, or at data/earth-2.bin) and the game reading it; says so in one line where not. */
@@ -694,6 +783,10 @@ public class ReloadCheck {
         HandOrder order = causeTheConditions(g, !carried);
         points.add(reload(files, g, "Danzik, caused", order));
         System.out.printf("  caused (a sudden stop, a hand order%s), saved, reloaded and compared at month %d (%.0f s)%n", carried ? "" : ", a carry", points.get(points.size() - 1).month, (System.nanoTime() - c0) / 1e9);
+        // FB3 (REV-FB3-1): the live city on to its own autosave, written by the game at the month's end, and loaded from that slot.
+        long a0 = System.nanoTime();
+        Autosaved autosaved = autosaveAndReload(files, g);
+        System.out.printf("  autosaved at month %d, loaded from the autosave and compared (%.0f s)%n", autosaved.month, (System.nanoTime() - a0) / 1e9);
         Point earth = null;
         if (earthHere()) {
             GameFiles earthFiles = GameFiles.scratch("reloadcheck-earth");
@@ -713,6 +806,7 @@ public class ReloadCheck {
             history(List.of(earth));
             whole(List.of(earth));
         }
+        section5(autosaved);
 
         System.out.printf("%n%.0f s%n", (System.nanoTime() - started) / 1e9);
         System.out.println(fails == 0 ? "All checks passed." : "\n" + fails + " FAILED");

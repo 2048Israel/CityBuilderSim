@@ -14218,6 +14218,12 @@ public class Game {
         // The city map takes the month's buildings (0.7.60): THE CITY MAP. Moves no pool.
         reconcileMap();
 
+        // The month's draws were shown with its fills; a draw from here on is the next month's (FW5, 2026-10-25). Closed BEFORE the
+        // autosave and the recording (FB3, REV-FB3-1): a save carries the draws (FW6-C), and one taken with the month's still open put
+        // them back on a load, where the next strike rowed them and the next clearing filled them again - last month's imports
+        // counted twice into the partners' trade. Nothing below draws. ReloadCheck's autosave section holds it.
+        getMarkets().closeMonth();
+
         /*
          * THE AUTOSAVE HOLDS A WHOLE MONTH (0.7.52). It was written near the
          * top of this method until 0.7.51, after the calendar had turned and
@@ -14249,8 +14255,6 @@ public class Game {
         }
         // A recorded city keeps this whole month, beside the autosave (TR1; THE RECORDING), from the autosave's fill when it made one (TR2). Moves no pool.
         recordForReplay(autosaved);
-        // The month's draws were shown with its fills; a draw from here on is the next month's (FW5, 2026-10-25). Last, on purpose.
-        getMarkets().closeMonth();
     }
     
     private void startOfMonthUpdate(){

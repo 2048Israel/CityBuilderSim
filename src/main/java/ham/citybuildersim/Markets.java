@@ -526,14 +526,25 @@ public final class Markets {
 
     /**
      * The month is over: every market forgets the draws it kept (FW5,
-     * 2026-10-25). Called last in Game.nextMonth(); the month's draws were
-     * shown with its fills, and a draw from here on - a hand order between
-     * the presses, the auto-builder at the top of the next month - is the
-     * next month's.
+     * 2026-10-25). Called in Game.nextMonth() after its last draw and before
+     * its saves (FB3): the month's draws were shown with its fills, and a
+     * draw from here on - a hand order between the presses, the
+     * auto-builder at the top of the next month - is the next month's, the
+     * only draws a save carries.
      */
     public void closeMonth() {
-        for (GoodsMarket m : markets.values()) m.closeDraws();
+        drawsClosed = 0;
+        for (GoodsMarket m : markets.values()) {
+            drawsClosed += m.monthsDraws().size();
+            m.closeDraws();
+        }
     }
+
+    /** How many draws the last closeMonth() forgot, every market's together (FB3): what a save taken before it would have carried. Not saved; ReloadCheck reads it. */
+    private int drawsClosed;
+
+    /** ...read. */
+    public int drawsClosedLastMonth() { return drawsClosed; }
 
     /**
      * Puts the draws made before the strike back on their sellers' rows
