@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-FB1-I1vH4jjs -->
 ## changelog
 ### FB1 — three fixtures that read the city's path — 2026-11-16, ready, no tag (harness)
