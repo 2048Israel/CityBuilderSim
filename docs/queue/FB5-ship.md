@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 <!-- gate-run: /tmp/cbs-gate-FB5-LQLnuYWR -->
 ## changelog
 ### {next} — FB5, the played cities' placement — 2026-11-17, ready, see docs/queue/FB5-notes.md
