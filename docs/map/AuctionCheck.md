@@ -211,7 +211,7 @@
 | 1157 | 4 | `static Game reload(Game g)` | A city saved to its own scratch folder's slot 10 and loaded into another Game, as a player's reload. |
 | 1163 | 5 | `static Game load(Game g)` | ...the same save loaded again, into a city of its own. |
 | 1170 | 5 | `static int salesBy(Game g, String by)` | The sales automatic building and the rollover made in the month just run, by whom. |
-| 1176 | 5 | `static int siteCount(Game g)` |  |
+| 1176 | 5 | `static long siteCount(Game g)` |  |
 
 ### 9. the rollover's own cap, and a short sale paid in full (lines 1182-1355)
 

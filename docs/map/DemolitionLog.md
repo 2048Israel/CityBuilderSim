@@ -35,7 +35,7 @@
 | line | field | says |
 |---:|---|---|
 | 37 | `public final String building` |  |
-| 38 | `public final int quantity` |  |
+| 38 | `public final long quantity` |  |
 | 39 | `public final String sector` |  |
 | 40 | `public final int month` |  |
 | 43 | `public final double proceeds` | What the city paid for the plot - a business's bought back, or since 0.7.22 a bought-out building's ground - or 0: abandoned, or the city's own. |
@@ -47,11 +47,11 @@
 |---:|---:|---|---|
 | 27 | 116 | **type** `public class DemolitionLog` | What the city has lost, and when. |
 | 35 | 35 | **type** `public static class Entry` |  |
-| 45 | 7 | `Entry(String building, int quantity, String sector, int month, double proceeds)` _(in DemolitionLog.Entry)_ |  |
+| 45 | 7 | `Entry(String building, long quantity, String sector, int month, double proceeds)` _(in DemolitionLog.Entry)_ |  |
 | 53 | 3 | `public boolean wasPaidFor()` _(in DemolitionLog.Entry)_ |  |
 | 58 | 3 | `public int monthsAgo(int currentMonth)` _(in DemolitionLog.Entry)_ | How long ago, in months. |
 | 63 | 6 | `public String when(int currentMonth)` _(in DemolitionLog.Entry)_ | "this month", "last month", "3 months ago". |
-| 73 | 13 | `public void record(String building, int quantity, String sector, int month, double proceeds)` |  |
+| 73 | 13 | `public void record(String building, long quantity, String sector, int month, double proceeds)` |  |
 | 94 | 13 | `public List<Entry> recent(int currentMonth)` | What to show right now: everything within KEEP_MONTHS, newest first. |
 | 109 | 5 | `public List<Entry> all()` | Every entry ever kept, newest first. |
 | 124 | 10 | `public void restore(List<Entry> saved)` | Puts a saved log back, in the order it was written. |

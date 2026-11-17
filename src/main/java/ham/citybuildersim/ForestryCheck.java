@@ -496,7 +496,7 @@ public class ForestryCheck {
         quietly(() -> b.addStack(b.getTemplate(Forestry.HARVESTING_OPERATION), 1, true));
         fo.addCash(1_000_000);
         cutAMonth(g);
-        int stands0 = b.getUnderConstructionById()[Forestry.TREE_PLANTATION];
+        long stands0 = b.getUnderConstructionById()[Forestry.TREE_PLANTATION];
         report("fixture: a Harvesting Operation's month cut, more than the regrowth; no zone", fo.getCutThisMonth() > land.regrowthDue()
                 && g.getZoning().zone(Sectors.FORESTRY) == null, String.format("%,.0f m3 cut", fo.getCutThisMonth()));
         quietly(() -> fo.endOfMonth(g));
@@ -562,8 +562,8 @@ public class ForestryCheck {
     }
 
     /** Planted stands on site. */
-    static int onOrder(BuildingManager b) {
-        int[] site = b.getUnderConstructionById();
+    static long onOrder(BuildingManager b) {
+        long[] site = b.getUnderConstructionById();
         return site[Forestry.TREE_PLANTATION] + site[Forestry.WOODLOT];
     }
 

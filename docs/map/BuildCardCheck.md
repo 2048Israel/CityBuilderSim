@@ -125,7 +125,7 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 472 | 171 | `static void heroAndBars(Game g)` |  |
-| 644 | 4 | `static int onSite(BuildingManager bm, BuildingsTemplate t)` |  |
+| 644 | 4 | `static long onSite(BuildingManager bm, BuildingsTemplate t)` |  |
 | 650 | 6 | `static BuildAdvice.Measure measureOf(BuildCard.Group gr)` | The measure a city group was drawn for: the ring whose label is its title. |
 
 ### 3. THE TAGS (lines 657-692)
@@ -168,7 +168,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1131 | 5 | `static Map<BuildingsTemplate, Integer> run(Object...pairs)` |  |
+| 1131 | 5 | `static Map<BuildingsTemplate, Long> run(Object...pairs)` |  |
 | 1137 | 82 | `static void theRun(Game g)` |  |
 
 ### 10. SERVED (0.7.41). Jerus, playing 0.7.39: the roads read "180%" and (lines 1220-1363)

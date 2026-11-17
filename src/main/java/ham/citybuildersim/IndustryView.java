@@ -121,14 +121,14 @@ public final class IndustryView {
      * @param owned     what the city owns of it, as listed (getOwnedAmount(r, type)) - the vessel
      * @param remaining ...and what remains in it (getRemaining(r, type)) - the fill
      */
-    public record Vessel(Resource resource, Deposit.FieldType type, int sites, int worked, int onAny, double owned,
+    public record Vessel(Resource resource, Deposit.FieldType type, long sites, long worked, long onAny, double owned,
                          double remaining) {
         /** The share of the vessel still in the ground; 0 with none owned. */
         public double filled() { return owned > 0 ? Math.min(1, remaining / owned) : 0; }
         /** What has been taken out of it. */
         public double taken() { return Math.max(0, owned - remaining); }
         /** The sites its works take, on its type and on ANY. */
-        public int taking() { return worked + onAny; }
+        public long taking() { return worked + onAny; }
     }
 
     /**
@@ -157,7 +157,7 @@ public final class IndustryView {
     public record Forest(double owned, double standing, double protectedWood, double cuttable, double cleared,
                          double cut, double nameplate, double committed, double salvage, double regrowth,
                          double plantingLine, double plantedGrowth, double protectedShare, double settlesWithLaw,
-                         double settlesWithout, int plantations, int woodlots, String planting) {
+                         double settlesWithout, long plantations, long woodlots, String planting) {
         /** Months the forest the crews may cut lasts every crew's cut, on site too; infinite with no crew. */
         public double lastsMonths() { return committed > 0 ? cuttable / committed : Double.POSITIVE_INFINITY; }
         /** Whether the month's cut is past the planting line. */
@@ -268,7 +268,7 @@ public final class IndustryView {
      * @param oneMore    one more of it weighed by its sector's plan, every gate asked (ProcessingSector.appraise(),
      *                   ExtractionSector.appraise()); null for a building the plan does not weigh (a planted stand)
      */
-    public record Unit(BuildingsTemplate template, int standing, int onSite, double rate, double feedShare, boolean workedOut,
+    public record Unit(BuildingsTemplate template, long standing, long onSite, double rate, double feedShare, boolean workedOut,
                        double lastEarns, int idleMonths, double growth, SpreadPlanner.Candidate oneMore) {
         /** The share of nameplate it ran at this month: its sector's rate times its feed's share. */
         public double run() { return rate * feedShare; }
@@ -344,7 +344,7 @@ public final class IndustryView {
      * @param power     its works' power
      * @param lorries   its lorries
      */
-    public record View(Sector sector, Roof roof, boolean counted, double rate, int standing, int onSite, List<Vessel> fields,
+    public record View(Sector sector, Roof roof, boolean counted, double rate, long standing, long onSite, List<Vessel> fields,
                        Forest forest, Metal oldMetal, CoalMining.Flow wash, double carried, List<Feed> feeds, List<Unit> units,
                        List<Product> products, Power power, Lorries lorries) {
         /** Whether there is a month to draw: a building standing, and the month counted. */
@@ -428,14 +428,14 @@ public final class IndustryView {
 
         /* ----- the units ----- */
         List<Unit> units = new ArrayList<>();
-        int[] building = b.getUnderConstructionById();
+        long[] building = b.getUnderConstructionById();
         for (BuildingsTemplate t : b.getTemplatesBySector(sector.key())) {
             boolean stand = sector instanceof Forestry && Forestry.isStand(t);
             boolean weighed = sector instanceof ProcessingSector ps ? ps.isWeighed(t)
                     : sector instanceof ExtractionSector ex && ex.isWeighed(t);
             if (!weighed && !stand) continue;
-            int n = b.getQuantity(t.getId());
-            int coming = t.getId() < building.length ? building[t.getId()] : 0;
+            long n = b.getQuantity(t.getId());
+            long coming = t.getId() < building.length ? building[t.getId()] : 0;
             double lastEarns = Double.NaN, growth = 0;
             int idle = 0;
             boolean workedOut = false;
@@ -792,7 +792,7 @@ public final class IndustryView {
     }
 
     /** A building's name, plural for more than one: "Coke Ovens", "Quarries", "Sawmills". */
-    static String names(String name, int n) {
+    static String names(String name, long n) {
         if (n == 1 || name.endsWith("s")) return name;
         if (name.endsWith("y") && !name.endsWith("ay") && !name.endsWith("ey")) return name.substring(0, name.length() - 1) + "ies";
         if (name.endsWith("ch") || name.endsWith("sh") || name.endsWith("x")) return name + "es";

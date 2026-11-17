@@ -508,7 +508,7 @@ final class ResearchScreen {
     }
 
     /** "2 labs". */
-    static String labsWords(int labs) {
+    static String labsWords(long labs) {
         return labs + (labs == 1 ? " lab" : " labs");
     }
 
@@ -709,7 +709,7 @@ final class ResearchScreen {
     }
 
     /** "12 of 20 buildings". */
-    static String ofWords(int n, int of, String what) {
+    static String ofWords(long n, long of, String what) {
         return n + " of " + of + " " + what + (of == 1 ? "" : "s");
     }
 

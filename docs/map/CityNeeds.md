@@ -138,7 +138,7 @@
 | 93 | 9 | `public boolean cityBuilds()` _(in CityNeeds.Need)_ | A need the city answers with a building of its own (BuildAdvice): roads, care, schools, police, cells, power and water. |
 | 109 | 12 | `public Served served()` _(in CityNeeds.Need)_ | What the row's figure serves, read the one way (0.7.41), for the rows that are a supply against a demand - power, water, the road, care and the schools - or null for the rest. |
 | 127 | 4 | `public int verdictLevel()` _(in CityNeeds.Need)_ | The row's colour on a screen (0.7.41): a served row's verdict, so a gauge and its row read one colour everywhere; any other row's level. |
-| 132 | 4 | `Need withOnSite(String moreReading, int units, double months, int newLevel)` _(in CityNeeds.Need)_ |  |
+| 132 | 4 | `Need withOnSite(String moreReading, long units, double months, int newLevel)` _(in CityNeeds.Need)_ |  |
 | 143 | 6 | **type** `public interface Words` | How the interface writes a figure, passed in so the readings are its own: a headcount, an amount of money in the model's thousands, a short number for a narrow cell, and a build time. |
 | 144 | 1 | `String people(double count)` _(in CityNeeds.Words)_ |  |
 | 145 | 1 | `String money(double thousands)` _(in CityNeeds.Words)_ |  |

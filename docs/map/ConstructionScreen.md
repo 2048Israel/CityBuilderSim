@@ -72,7 +72,7 @@
 | 68 | `String focus` | The site the page was opened at from a build card or the right panel's site name, drawn raised until another tab is opened. |
 | 71 | `String pick` | The Demolish tab's staging: what is picked - a template's name, or a shell's - and how many. |
 | 72 | `boolean pickShell` |  |
-| 73 | `int count` |  |
+| 73 | `long count` |  |
 | 74 | `String filter` |  |
 | 93 | `final Kept.Pool pool` | The Construction tab's kept nodes (Kept; study UP4, KP3): the page is drawn over them on each redraw, each tab in a scope of its own. |
 | 711 | `private List<Double> months` |  |
@@ -138,7 +138,7 @@
 | 829 | 40 | `private HBox demolish()` |  |
 | 871 | 29 | `private void fillPicker(VBox list)` | The picker's rows: the city's buildings, the shells, then the businesses' and the landlords'. |
 | 901 | 6 | `private Label listHead(String text)` |  |
-| 908 | 24 | `private Node pickRow(String name, int n, boolean shell)` |  |
+| 908 | 24 | `private Node pickRow(String name, long n, boolean shell)` |  |
 | 933 | 22 | `private VBox stagingCard()` |  |
 | 957 | 121 | `private List<Node> pickedParts(BuildingsTemplate t, ConstructionControl.Shell shell)` | The staging card's parts for a pick: its head with the count, what it would do, the buttons, the rules. |
 | 1080 | 20 | `private HBox rulesLine()` | The rules behind the card, a line and an (i). |
@@ -150,8 +150,8 @@
 | line | len | member | says |
 |---:|---:|---|---|
 | 1140 | 13 | `private void confirmCancel(String key)` |  |
-| 1154 | 15 | `private void confirmDemolition(BuildingsTemplate t, int n, Game.DemolitionQuote q)` |  |
-| 1170 | 19 | `private void confirmBuyOut(BuildingsTemplate t, int n, Game.BuyOutQuote q)` |  |
+| 1154 | 15 | `private void confirmDemolition(BuildingsTemplate t, long n, Game.DemolitionQuote q)` |  |
+| 1170 | 19 | `private void confirmBuyOut(BuildingsTemplate t, long n, Game.BuyOutQuote q)` |  |
 | 1190 | 18 | `private void confirmRestart(ConstructionControl.Shell shell)` |  |
 | 1209 | 16 | `private void confirmShellDemolition(ConstructionControl.Shell shell)` |  |
 | 1227 | 3 | `private void refused(String why)` | A hand the model refused, said where the player is looking. |

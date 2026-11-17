@@ -1346,7 +1346,7 @@ public class OilCheck {
                 measure != null && measure[0] == 0 && measure[1] == wells.getCapacity(Good.CRUDE));
         BusinessInvestment.Decision d = wells.plan(g.getBusinessInvestment(), g);
         report("...and nobody drills more: the word names the deposit", !d.build && d.reason.contains("deposit"), "\"" + d.reason + "\"");
-        int standing = wells.buildingsStanding(), waited = 0;
+        long standing = wells.buildingsStanding(), waited = 0;
         while (wells.buildingsStanding() == standing && waited < 36) {
             quietly(() -> g.simulateMonths(1));
             waited++;

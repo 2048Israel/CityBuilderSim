@@ -55,7 +55,7 @@
 | 191 | 5 | `public static double forStanding(Game game, BuildingsTemplate t)` | The installed building's saved share of the last production's captured royalty. |
 | 203 | 78 | **type** `static final class Production` | One market pass's production record, confined to that pass. |
 | 204 | 1 | **type** `private record Ground(Resource resource, Deposit.FieldType type)` _(in LicenceFees.Production)_ |  |
-| 205 | 1 | **type** `private record Bill(Sector owner, int id, int quantity, double amount)` _(in LicenceFees.Production)_ |  |
+| 205 | 1 | **type** `private record Bill(Sector owner, int id, long quantity, double amount)` _(in LicenceFees.Production)_ |  |
 | 211 | 7 | `Production(Game game)` _(in LicenceFees.Production)_ |  |
 | 220 | 3 | `private static boolean stockPhase(BuildingsTemplate t)` _(in LicenceFees.Production)_ | A conversion unit makes streams in the refinery's stock phase. |
 | 224 | 4 | `private Ground ground(ExtractionSector owner, BuildingsTemplate t)` _(in LicenceFees.Production)_ |  |

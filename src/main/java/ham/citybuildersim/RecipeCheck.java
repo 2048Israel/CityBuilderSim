@@ -159,10 +159,10 @@ public class RecipeCheck {
     static boolean runs(BuildingsTemplate t, Recipe r) { return differs(t, r) == null; }
 
     /** R2d: the original process-mix law, with every independent equipment undo composed on it. */
-    static String notMixWithChanges(Game g, BuildingsTemplate t, Recipe fitted, int nf, Recipe unfitted, int nu) {
+    static String notMixWithChanges(Game g, BuildingsTemplate t, Recipe fitted, long nf, Recipe unfitted, long nu) {
         Map<String, Double> absent = new java.util.TreeMap<>();
         BuildingsStacks stack = g.getBuildingManager().getStack(t);
-        int n = stack == null ? 0 : stack.getQuantity();
+        long n = stack == null ? 0 : stack.getQuantity();
         for (RecipeChange c : t.getRecipeChanges()) {
             if (c.piece() == null) continue; // Already included in the decoded chosen process ids.
             double share = !c.knownAt(g.getMonth(), g.getResearch()) ? 1
@@ -962,7 +962,7 @@ public class RecipeCheck {
     /** Stands at least n of the template in the town: bought without construction where the ground has room for it, else put on the books; each order that took the second way adds one to direct[0]. */
     static void stand(Game g, BuildingsTemplate t, int n, int[] direct) {
         BuildingsStacks have = g.getBuildingManager().getStack(t);
-        int missing = n - (have == null ? 0 : have.getQuantity());
+        long missing = n - (have == null ? 0 : have.getQuantity());
         if (missing <= 0) return;
         Game.BuildResult[] result = new Game.BuildResult[1];
         quietly(() -> result[0] = g.buildStack(t, missing, true));

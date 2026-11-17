@@ -459,7 +459,7 @@ public class BuildAdviceCheck {
         double landLeft = g.getLandManager().getAvailableSqFt();
         for (BuildAdvice.Suggestion s : advice) {
             BuildAdvice.Measure m = s.measure();
-            Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
+            Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, m);
             anyOnSite |= BuildAdvice.units(site) > 0;
             String what = s.need().label() + ", " + s.template().getName();
             assertTrue(what + ": not on credit - the Wealthy city's cash covers its quote", !s.needsCredit() && s.credit() == 0);
@@ -496,13 +496,13 @@ public class BuildAdviceCheck {
     static boolean fitsOrNone(Game g, BuildAdvice.Suggestion s, double landLeft) {
         if (s.template().getLandSqFt() * (double) s.count() <= landLeft) return true;
         BuildAdvice.Measure m = s.measure();
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, m);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             boolean cand = m.kind() == BuildAdvice.Kind.ROADS ? t.getCategory() == BuildingType.INFRASTRUCTURE : m.serves(t);
             if (!cand || !(BuildAdvice.unit(g, m, t) > 0)) continue;
-            int[] today = BuildAdvice.count(g, m, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
+            long[] today = BuildAdvice.count(g, m, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
             if (today[0] <= 0) continue;
-            int[] c = BuildAdvice.count(g, m, site, t, BuildAdvice.opening(g, g.quoteBuild(t, today[0]).months));
+            long[] c = BuildAdvice.count(g, m, site, t, BuildAdvice.opening(g, g.quoteBuild(t, today[0]).months));
             if (c[1] == 1 && t.getLandSqFt() * (double) c[0] <= landLeft) return false;
         }
         return true;
@@ -613,11 +613,11 @@ public class BuildAdviceCheck {
      * university graduates - would let an order make its own demand. Until
      * 0.7.51 it was who would come, which no building moves.
      */
-    static double builtAndRead(Game twin, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> add) {
+    static double builtAndRead(Game twin, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> add) {
         BuildingManager bm = twin.getBuildingManager();
         wantBefore = m.kind() == BuildAdvice.Kind.SCHOOL && !m.school().isBasic()
                 ? CityNeeds.wanted(twin, m.school(), 0, 1) : Double.NaN;
-        for (Map.Entry<BuildingsTemplate, Integer> e : add.entrySet()) {
+        for (Map.Entry<BuildingsTemplate, Long> e : add.entrySet()) {
             bm.addStack(template(twin, e.getKey().getName()), e.getValue(), true);
         }
         ServicesManager services = twin.getServicesManager();
@@ -737,7 +737,7 @@ public class BuildAdviceCheck {
                 }
                 if (first == null) continue;
                 int n = m.kind() == BuildAdvice.Kind.CELLS ? 1 : 3;
-                Map<BuildingsTemplate, Integer> add = BuildAdvice.plus(BuildAdvice.onSite(g, m), first, n);
+                Map<BuildingsTemplate, Long> add = BuildAdvice.plus(BuildAdvice.onSite(g, m), first, n);
                 double advised = BuildAdvice.figure(g, m, add);
                 Game t = twin(g);
                 double read = builtAndRead(t, m, add);
@@ -748,7 +748,7 @@ public class BuildAdviceCheck {
         // ...and the burial plots, which have a NEEDS YOU row and no ring of their own.
         BuildAdvice.Measure plots = BuildAdvice.Measure.of(BuildAdvice.Kind.PLOTS);
         BuildingsTemplate cemetery = template(g, "Memorial Cemetery");
-        Map<BuildingsTemplate, Integer> add = BuildAdvice.plus(BuildAdvice.onSite(g, plots), cemetery, 3);
+        Map<BuildingsTemplate, Long> add = BuildAdvice.plus(BuildAdvice.onSite(g, plots), cemetery, 3);
         close("Healthcare, burial plots: 3 Memorial Cemetery - the months of plots left are the model's",
                 BuildAdvice.figure(g, plots, add), builtAndRead(twin(g), plots, add), 1e-9);
     }
@@ -949,7 +949,7 @@ public class BuildAdviceCheck {
         // its offers afresh from it; the prices below are the listing above's.
         market.restoreOffers(base, nextId);
         BuildAdvice.Measure m = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(g, m);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, m);
         /*
          * FR7 (Jerus's star 4, 2026-10-18) RETIRED THIS BLOCK'S PREMISE: that the Elevated Highway is the cheapest road past
          * a price of ground, and the gravel road at nothing. The highway is not a street (it gives no access), so it is not
@@ -983,7 +983,7 @@ public class BuildAdviceCheck {
                 if (t.getCategory() != BuildingType.INFRASTRUCTURE || t.isHighway()) continue;
                 double u = BuildAdvice.unit(g, m, t);
                 if (!(u > 0)) continue;
-                int[] today = BuildAdvice.count(g, m, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
+                long[] today = BuildAdvice.count(g, m, site, t, new BuildAdvice.Ahead(0, 1, BuildAdvice.SLACK));
                 if (today[0] <= 0) continue;
                 if (BuildAdvice.count(g, m, site, t, BuildAdvice.opening(g, g.quoteBuild(t, today[0]).months))[1] != 1) continue;
                 double ga = t.getLandSqFt() / u;
@@ -1064,7 +1064,7 @@ public class BuildAdviceCheck {
         boolean more = false;
         for (BuildAdvice.Suggestion s : advice) {
             BuildAdvice.Measure m = s.measure();
-            Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(BuildAdvice.onSite(g, m), s.template(), s.count());
+            Map<BuildingsTemplate, Long> with = BuildAdvice.plus(BuildAdvice.onSite(g, m), s.template(), s.count());
             String what = s.need().label() + ", " + s.count() + " " + s.template().getName();
             bits(what + ": sized with the player's automatic reserve as its slack", s.ahead().slack(), g.getAutoBuilder().getSlack());
             if (BuildAdvice.isServed(m) && m.kind() != BuildAdvice.Kind.TRANSIT) {
@@ -1076,13 +1076,13 @@ public class BuildAdviceCheck {
                     double[] now = BuildAdvice.supplyDemand(g, m, with);
                     bits(what + ": ...that demand is today's times k and 1 + SLACK", there[1], s.ahead().scale() * now[1]);
                 }
-                Map<BuildingsTemplate, Integer> oneFewer = BuildAdvice.plus(
+                Map<BuildingsTemplate, Long> oneFewer = BuildAdvice.plus(
                         BuildAdvice.onSite(g, m), s.template(), s.count() - 1);
                 double[] shortOf = BuildAdvice.supplyDemand(g, m, oneFewer, s.ahead());
                 assertTrue(what + ": one fewer misses the full projected demand and shared reserve",
                         CityNeeds.servedShare(shortOf[0], shortOf[1]) < 1);
             }
-            int old = BuildAdvice.count(g, m, BuildAdvice.onSite(g, m), s.template())[0];
+            long old = BuildAdvice.count(g, m, BuildAdvice.onSite(g, m), s.template())[0];
             if (!BuildAdvice.isServed(m) || m.kind() == BuildAdvice.Kind.TRANSIT) {
                 assertTrue(what + ": never fewer than the old rule's count (" + old + ")", s.count() >= old);
             }
@@ -1097,7 +1097,7 @@ public class BuildAdviceCheck {
         skip.remove(clinic);
         BuildAdvice.Suggestion fallback = BuildAdvice.suggestFor(g, null, care, g.getCash(),
                 g.getLandManager().getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip, true);
-        int oldFallback = BuildAdvice.count(g, care, BuildAdvice.onSite(g, care), clinic)[0];
+        long oldFallback = BuildAdvice.count(g, care, BuildAdvice.onSite(g, care), clinic)[0];
         assertTrue("fixture: the slack and projection add buildings to a listed or fallback card in the same city",
                 more || fallback != null && fallback.count() > oldFallback);
     }
@@ -1299,9 +1299,9 @@ public class BuildAdviceCheck {
     static void theRun(Path root, Game g, List<BuildAdvice.Suggestion> advice) {
         out.println("\n--- 11. the run: Build all three goes all the way exactly when no card is short of land,"
                 + " and charges the header's total ---");
-        LinkedHashMap<BuildingsTemplate, Integer> run = BuildAdvice.run(advice);
-        LinkedHashMap<BuildingsTemplate, Integer> mine = new LinkedHashMap<>();
-        for (BuildAdvice.Suggestion s : advice) mine.merge(s.template(), s.count(), Integer::sum);
+        LinkedHashMap<BuildingsTemplate, Long> run = BuildAdvice.run(advice);
+        LinkedHashMap<BuildingsTemplate, Long> mine = new LinkedHashMap<>();
+        for (BuildAdvice.Suggestion s : advice) mine.merge(s.template(), s.count(), Long::sum);
         assertTrue("the run is the cards' orders in their order, two of one building added together",
                 new ArrayList<>(run.entrySet()).equals(new ArrayList<>(mine.entrySet())));
         boolean anyShort = false;
@@ -1315,7 +1315,7 @@ public class BuildAdviceCheck {
         boolean[] placed = {true};
         quietly(() -> {
             t.setCashForTest(invoice * 2 + Founding.WEALTHY_CASH);
-            for (Map.Entry<BuildingsTemplate, Integer> e : run.entrySet()) {
+            for (Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
                 placed[0] &= t.buildStack(template(t, e.getKey().getName()), e.getValue(), false) == Game.BuildResult.SUCCESS;
                 charged[0] += t.getTotalBuildingCost();
             }
@@ -1330,7 +1330,7 @@ public class BuildAdviceCheck {
         List<BuildAdvice.Suggestion> cut = BuildAdvice.suggest(h);
         int firstShort = -1;
         for (int i = 0; i < cut.size() && firstShort < 0; i++) if (cut.get(i).landShort() > 0) firstShort = i;
-        LinkedHashMap<BuildingsTemplate, Integer> stops = BuildAdvice.run(cut);
+        LinkedHashMap<BuildingsTemplate, Long> stops = BuildAdvice.run(cut);
         out.printf("      ground for the first card alone: %,.0f sq ft free; the first short card: %d of %d%n",
                 land.getAvailableSqFt(), firstShort + 1, cut.size());
         assertTrue("fixture: with the ground for the first card alone, a card after it is short of land", firstShort > 0);
@@ -1393,8 +1393,8 @@ public class BuildAdviceCheck {
         close("BUILD'S RING READS THE SAME", BuildAdvice.cover(g, m, Map.of()), Health.coverageOf(beds - priced, people), 1e-12);
         BuildingsTemplate t = null;
         for (BuildingsTemplate c : bm.getTemplates()) if (t == null && c.getCare() == care) t = c;
-        Map<BuildingsTemplate, Integer> one = new LinkedHashMap<>();
-        one.put(t, 1);
+        Map<BuildingsTemplate, Long> one = new LinkedHashMap<>();
+        one.put(t, 1L);
         close("AN ORDER'S AFTER: its staffed places added, the month's priced out held",
                 BuildAdvice.supplyDemand(g, m, one)[0],
                 beds + t.getCapacity() * BuildAdvice.staffing(t, fill) - priced, 1e-9);

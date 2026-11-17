@@ -829,8 +829,8 @@ public class PortCheck {
                 quietlyGet(() -> g.buildStack(terminal, 1, false)) == Game.BuildResult.NO_COAST && !g.hasCoastFor(terminal, 1));
         assertTrue("...the card's verdict says so before the click",
                 BuildCard.verdict(g, terminal, 1).kind() == BuildCard.VerdictKind.NO_COAST);
-        java.util.LinkedHashMap<BuildingsTemplate, Integer> run = new java.util.LinkedHashMap<>();
-        run.put(terminal, 1);
+        java.util.LinkedHashMap<BuildingsTemplate, Long> run = new java.util.LinkedHashMap<>();
+        run.put(terminal, 1L);
         assertTrue("...and a run stops at it", g.buildRunAhead(run) == 0 && g.buildRunStop(run) == Game.BuildResult.NO_COAST);
         boolean coast = buyCoast(g);
         report("fixture: the city buys an offer that runs out to the sea", coast,

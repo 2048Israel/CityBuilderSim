@@ -195,7 +195,7 @@ public class SlopeCheck {
             Game.BuildQuote q = g.quoteBuild(house, ORDER);
             Game.BuildResult r = order(g, house, ORDER);
             BuildingsStacks stack = g.getBuildingManager().getStack(house);
-            int onSite = stack == null ? 0 : stack.getUnderConstruction();
+            long onSite = stack == null ? 0 : stack.getUnderConstruction();
             if (may) {
                 report(name + ": the city's order of " + ORDER + " goes through - ground taken, the quote's money paid, the Houses on site",
                         r == Game.BuildResult.SUCCESS && onSite == ORDER
@@ -500,7 +500,7 @@ public class SlopeCheck {
     /** One month, played and audited as the playtest audits one: the money, the GDP identity, GDP's construction against the builders' own books, and every sector's statements (SectorStatementCheck.audit()). */
     static void month(Game g, BuildingsStacks stack, Months m) {
         Construction construction = g.getSectors().construction();
-        int before = stack.getQuantity();
+        long before = stack.getQuantity();
         quietly(() -> g.simulateMonths(1));
         m.played++;
         m.applied += stack.getLastApplied();

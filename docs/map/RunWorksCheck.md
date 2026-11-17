@@ -124,7 +124,7 @@
 |---:|---:|---|---|
 | 165 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
 | 178 | 18 | `static Game hills(String label, double owned, double flat, double foothill, double steep, double veryStep)` | A city founded as a harness founds one, OWNED square feet of dry ground (its founded size where `owned` is 0, which is what a save keeps the ground by relief of: the relief must add up to the centre's own) of the shar... |
-| 198 | 5 | `static Game.BuildResult order(Game g, BuildingsTemplate t, int n)` | The city's own order, as the build screen places it. |
+| 198 | 5 | `static Game.BuildResult order(Game g, BuildingsTemplate t, long n)` | The city's own order, as the build screen places it. |
 | 205 | 6 | `static boolean businessOrder(Game g, String sector, BuildingsTemplate t, int n)` | A business's order, built by hand from cash it is given. |
 | 213 | 7 | `static void closeBooks(Game g)` | The books as a month's close leaves them (Game.recordMonth(): the land's price and its classes pushed, the sheets pushed, the books taken), without playing the month. |
 | 222 | 4 | `static double[] shares(LandManager lm)` | The share of the city's owned dry ground that is flat, foothill and steep (steep and very steep together): what a run's ground is spread by. |

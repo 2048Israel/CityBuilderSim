@@ -249,12 +249,12 @@ public abstract class ExtractionSector extends Sector {
     }
 
     /** The sites of its resource the city owns: how many of its buildings can stand. */
-    public int sitesOwned() {
+    public long sitesOwned() {
         return game == null ? 0 : game.getLandManager().getSites(resource);
     }
 
     /** ...and those its buildings stand on, standing, on site or ordered (Game.committedOn()). */
-    public int sitesWorked() {
+    public long sitesWorked() {
         return game == null ? 0 : game.committedOn(resource);
     }
 
@@ -290,7 +290,7 @@ public abstract class ExtractionSector extends Sector {
         String sector = key();
 
         LandManager land = game.getLandManager();
-        int unminedDeposits = land.getSites(resource) - game.committedOn(resource);
+        long unminedDeposits = land.getSites(resource) - game.committedOn(resource);
         double reserveTonnes = land.getRemaining(resource);
 
         if (unminedDeposits <= 0) return BusinessInvestment.Decision.no(sector, "no deposit to dig");
@@ -490,7 +490,7 @@ public abstract class ExtractionSector extends Sector {
         if (buildings == null || land == null) return 0;
         Good g = groundGood();
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-            int held = buildings.getQuantity(t.getId());
+            long held = buildings.getQuantity(t.getId());
             if (held > 0 && workedOut(land, t)) spare += held * t.makes(g);
         }
         return spare;
@@ -524,7 +524,7 @@ public abstract class ExtractionSector extends Sector {
         List<Line> lines = new java.util.ArrayList<>();
         if (game == null) return lines;
         Formats f = Formats.INSTANCE;
-        int owned = sitesOwned(), worked = sitesWorked();
+        long owned = sitesOwned(), worked = sitesWorked();
         lines.add(Line.head("What is under the ground"));
         lines.add(Line.of("Deposits found", f.count(owned)));
         lines.add(Line.of("Being worked", f.count(worked),

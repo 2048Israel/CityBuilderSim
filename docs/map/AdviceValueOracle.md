@@ -26,16 +26,16 @@
 | 16 | 311 | **type** `final class AdviceValueOracle` | Independent discounted arithmetic for BuildAdviceCheck's complete-plan law. |
 | 17 | 1 | `private AdviceValueOracle()` |  |
 | 19 | 98 | `static double[] value(Game g, BuildAdvice.Suggestion s, double land, double treasury)` |  |
-| 118 | 12 | `private static boolean maintained(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> stock, BuildAdvice.Ahead at, M...` |  |
-| 131 | 16 | `private static int powerCount(Game g, Map<BuildingsTemplate, Integer> stock, BuildingsTemplate t, BuildAdvice.Ahead at, int lim...` |  |
-| 149 | 29 | `private static double[] powerService(Game g, Map<BuildingsTemplate, Integer> stock, BuildAdvice.Ahead at, Map<BuildingsTemplate...` | Independent utility pooling and pending electrical draw, including the demand used by sizing. |
+| 118 | 12 | `private static boolean maintained(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> stock, BuildAdvice.Ahead at, Map<...` |  |
+| 131 | 16 | `private static long powerCount(Game g, Map<BuildingsTemplate, Long> stock, BuildingsTemplate t, BuildAdvice.Ahead at, long limi...` |  |
+| 149 | 29 | `private static double[] powerService(Game g, Map<BuildingsTemplate, Long> stock, BuildAdvice.Ahead at, Map<BuildingsTemplate, L...` | Independent utility pooling and pending electrical draw, including the demand used by sizing. |
 | 179 | 17 | `private static double credit(Game g, double gap, double discount, double months)` |  |
 | 197 | 31 | **type** `private static final class Ground` |  |
 | 201 | 5 | `Ground(Game g, BuildingsTemplate t, double free)` _(in AdviceValueOracle.Ground)_ |  |
 | 206 | 21 | `double use(double area)` _(in AdviceValueOracle.Ground)_ |  |
-| 229 | 12 | `private static Map<BuildingsTemplate, Integer> ready(Game g, Map<BuildingsTemplate, Integer> orders, double month)` |  |
+| 229 | 12 | `private static Map<BuildingsTemplate, Long> ready(Game g, Map<BuildingsTemplate, Long> orders, double month)` |  |
 | 242 | 9 | `private static double gross(Game g, BuildingsTemplate t, double use)` |  |
-| 252 | 16 | `private static double running(Game g, Map<BuildingsTemplate, Integer> before, Map<BuildingsTemplate, Integer> after, BuildAdvic...` |  |
+| 252 | 16 | `private static double running(Game g, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate, Long> after, BuildAdvice.Ahea...` |  |
 | 269 | 3 | `private static double fraction(double[] service)` |  |
-| 273 | 53 | `private static double restored(Game g, BuildAdvice.Measure measure, Map<BuildingsTemplate, Integer> before, Map<BuildingsTempla...` |  |
+| 273 | 53 | `private static double restored(Game g, BuildAdvice.Measure measure, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate,...` |  |
 

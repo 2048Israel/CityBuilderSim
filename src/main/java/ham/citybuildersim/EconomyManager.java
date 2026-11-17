@@ -1163,7 +1163,7 @@ public class EconomyManager {
         // ...and the bank's branches, which are commercial buildings nobody in the private sector owns.
         BuildingsTemplate branch = buildingManager.getTemplateByName("Commercial Bank");
         if (branch != null) {
-            int n = buildingManager.getQuantity(branch.getId());
+            long n = buildingManager.getQuantity(branch.getId());
             double bill = withBuildersTax(n * (buildingManager.nonMaterialCost(branch)
                     + branch.getConstructionMaterials() * Math.max(0, materialPrice)) * MAINTENANCE_RATE);
             if (Double.isFinite(bill) && bill > 0) {
@@ -1196,7 +1196,7 @@ public class EconomyManager {
      * count, not named buildings - and the operating cost is the rest's. See
      * Bank, THE BRANCHES, BY THEIR CUSTOMERS.
      */
-    public double bankOperatingCost(int branches) {
+    public double bankOperatingCost(long branches) {
         if (branches <= 1) return 0;
         double running = (branches - 1) * bankOperatingCostPerLaterBranch();
         return Double.isFinite(running) && running > 0 ? running : 0;

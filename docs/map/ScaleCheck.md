@@ -66,7 +66,7 @@
 
 **Uses:** [Game](Game.md) (30), [MoneyAudit](MoneyAudit.md) (26), [LongPlaytest](LongPlaytest.md) (23), [GameFiles](GameFiles.md) (17), [CityLand](CityLand.md) (10), [Observation](Observation.md) (7), [TreasuryCheck](TreasuryCheck.md) (7), [Sector](Sector.md) (6), [JobType](JobType.md) (6), [PriceIndex](PriceIndex.md) (6), [PopulationManager](PopulationManager.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [HistorySave](HistorySave.md) (4), [BusinessInvestment](BusinessInvestment.md) (4), [BuildingManager](BuildingManager.md) (3), [LandManager](LandManager.md) (3), [Formats](Formats.md) (3), [Equity](Equity.md) (3), [Bank](Bank.md) (3), [Crime](Crime.md) (3), [EducationType](EducationType.md) (3), [Timing](Timing.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Sectors](Sectors.md) (2), [SaveHeader](SaveHeader.md) (2), [BuildingType](BuildingType.md) (2), [Mortgage](Mortgage.md) (2), [Health](Health.md) (1), [TempDirs](TempDirs.md) (1), [LandDrawing](LandDrawing.md) (1)... and 13 more
 
-**Used by (1):** [OrderSearchCheck](OrderSearchCheck.md)
+**Used by (2):** [BuildingStackCheck](BuildingStackCheck.md), [OrderSearchCheck](OrderSearchCheck.md)
 
 ## Sections
 
@@ -137,7 +137,8 @@
 | 997 | `double previousClosing` |  |
 | 998 | `int arrearsMonths` |  |
 | 1145 | `int orders, passed, heldForDownPayment, declinedOnRent` |  |
-| 1164 | `int invested, mortgaged, largestInvested, largestMortgage, mostDesk` |  |
+| 1164 | `int invested, mortgaged, mostDesk` |  |
+| 1164 | `long largestInvested, largestMortgage` |  |
 | 1165 | `int overDesk` |  |
 | 1166 | `final Lender lender` |  |
 
@@ -176,12 +177,12 @@
 | 1035 | 89 | `void readings(Game g)` _(in ScaleCheck.Books)_ |  |
 | 1125 | 12 | `void verdicts()` _(in ScaleCheck.Books)_ |  |
 | 1144 | 17 | **type** `static final class Lender implements BusinessInvestment.OrderWatch` | The landlords' orders as the mortgage lender meets them (SC1): how many were decided, how many the lender passed, how many it held for the down payment and how many it declined on the rent. |
-| 1148 | 7 | `public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRa...` _(in ScaleCheck.Lender)_ |  |
+| 1148 | 7 | `public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annual...` _(in ScaleCheck.Lender)_ |  |
 | 1156 | 4 | `void verdicts(String whose)` _(in ScaleCheck.Lender)_ |  |
 | 1163 | 32 | **type** `static final class Orders implements BusinessInvestment.OrderWatch` | Every order the free copy decides: how big, and how many times it asked the bond desk (the order's size reads no wait since BA1). |
-| 1169 | 1 | `int largestNeeded()` _(in ScaleCheck.Orders)_ | The largest order decided, whichever way it is judged: what a sector's shortfall asked for and the plots allowed (BusinessInvestment.orderSize()), the size the old "needed" counted. |
+| 1169 | 1 | `long largestNeeded()` _(in ScaleCheck.Orders)_ | The largest order decided, whichever way it is judged: what a sector's shortfall asked for and the plots allowed (BusinessInvestment.orderSize()), the size the old "needed" counted. |
 | 1172 | 6 | `public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found)` _(in ScaleCheck.Orders)_ |  |
-| 1180 | 6 | `public void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash, double noiPerUnit, double annualRa...` _(in ScaleCheck.Orders)_ |  |
+| 1180 | 6 | `public void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annual...` _(in ScaleCheck.Orders)_ |  |
 | 1187 | 7 | `void verdicts()` _(in ScaleCheck.Orders)_ |  |
 | 1203 | 23 | `static void orderSizeAtScale(Game g)` | ORDER SIZE AT SCALE (BA1). |
 | 1232 | 30 | `static void addsUp(Game g, String when)` | Every way of adding up the posts, the doors and the household places agrees, to the last one - a long sum of K-times counts is exact where an int sum would have wrapped. |

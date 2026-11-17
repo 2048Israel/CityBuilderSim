@@ -38,7 +38,7 @@
 | 159 | 65 | `static void reservationRelease(Path root, boolean fullyRaised)` |  |
 | 225 | 33 | `static void groundUse(String name)` |  |
 | 259 | 30 | `static void independentPending(Path root)` |  |
-| 290 | 4 | `static double addedPoints(Game.BuildQuote quote, BuildingsTemplate t, int count)` |  |
+| 290 | 4 | `static double addedPoints(Game.BuildQuote quote, BuildingsTemplate t, long count)` |  |
 | 295 | 32 | `static void prospectiveQueue(Path root)` |  |
 | 328 | 97 | `static void crewPromise(Path root, boolean partial) throws Exception` |  |
 | 426 | 14 | `static Game reserveTown(Path root, String name)` |  |

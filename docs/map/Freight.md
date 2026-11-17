@@ -176,7 +176,7 @@
 | 1072 | 6 | `public boolean hasPortYard()` | Whether the port yard stands (FR6, D7): a station (a Rail Depot or a Rail Terminal) and a sea terminal both standing. |
 | 1093 | 11 | `public static double bulkTonnesOf(BuildingsTemplate t)` | The tonnes a month of BULK goods a template makes and uses at nameplate (FR7); zero for a building that touches none. |
 | 1113 | 4 | `public static boolean isBulkWorks(BuildingsTemplate t)` | Whether a template is a bulk works (FR7): a building, in any sector but Freight's own, that makes and uses BULK goods (Good.traffic()) in tonnes enough to fill a wagon set a month (BULK_WORKS_MIN_TONNES) - a mine, a q... |
-| 1119 | 3 | `public int bulkWorks()` | How many bulk works stand in the city (FR7; isBulkWorks()): the most spurs worth laying, a siding to each. |
+| 1119 | 3 | `public long bulkWorks()` | How many bulk works stand in the city (FR7; isBulkWorks()): the most spurs worth laying, a siding to each. |
 | 1136 | 1 | **type** `public record Shortfalls(double track, double station, double siding)` | The three shortfalls plan() orders against, tonnes a month (FR7), from the month's figures and what stands now. |
 | 1146 | 6 | `public Shortfalls shortfalls()` | The month's shortfalls against what stands now and what is on site (Shortfalls; BA1, 2026-11-02: it was what stands only, while a sector could have one order on site). |
 | 1154 | 1 | `public double getBulkOffered()` | The bulk the railway was offered in the month billed (FR7): rTonnes less the goods; none after a load until the next haul. |
@@ -272,7 +272,7 @@
 | 1671 | 178 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape: the best template by profit over cost, floored on staffing. |
 | 1856 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Offered tonnes against standing track, the nameplate unitsOf() counts (RT2). |
 | 1861 | 1 | `public double unitsOf(BuildingsTemplate t)` |  |
-| 1872 | 16 | `public int limitSpareRetirement(BuildingsTemplate t, int quantity, double keepAtLeast)` | A track sale must leave the operating minimum above the planner's headroom too (RT2). |
+| 1872 | 16 | `public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast)` | A track sale must leave the operating minimum above the planner's headroom too (RT2). |
 | 1912 | 10 | `public boolean mayRetire(BuildingsTemplate t)` | A Truck Depot is never retired by the railway's measure (FR2): the retirement rule weighs track against the tonnes offered it, and a depot has no track to weigh. |
 | 1928 | 8 | `public BuildingsTemplate firstStation()` | The smallest station of this sector's catalogue by the tonnes it sorts: the one plan() orders first, before any track; null with no catalogue or no station in it. |
 | 1946 | 6 | `public boolean wouldOrderAgain(BuildingsTemplate station)` | Whether selling this station would leave the stations short by the first station's rung (FD1): the shortfall the stations leave, with this one's tonnes added back, is at least the tonnes plan() orders a first station ... |

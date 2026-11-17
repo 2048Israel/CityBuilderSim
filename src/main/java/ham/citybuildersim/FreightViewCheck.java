@@ -175,8 +175,8 @@ public class FreightViewCheck {
     }
 
     /** The terminals of a kind standing, counted from the catalogue by the building manager's own quantities. */
-    static int standing(Game g, Ports.Cargo kind) {
-        int n = 0;
+    static long standing(Game g, Ports.Cargo kind) {
+        long n = 0;
         BuildingManager bm = g.getBuildingManager();
         for (BuildingsTemplate t : bm.getTemplates()) {
             if (t.isPort() && t.berthCargo() == kind) n += bm.getQuantity(t.getId());
@@ -300,7 +300,7 @@ public class FreightViewCheck {
         report("trucks, the need and the order are the model's", same(p.trucks(), h.trucks()) && same(p.needed(), h.trucksNeeded()) && same(p.asked(), h.trucksAsked()),
                 String.format("%,.2f trucks of %,.2f needed, %,.2f asked", p.trucks(), p.needed(), p.asked()));
         report("the shortfall is the need less the fleet, never below zero", same(p.shortBy(), Math.max(0, h.trucksNeeded() - h.trucks())), String.format("%,.2f", p.shortBy()));
-        int depots = 0;
+        long depots = 0;
         BuildingManager bm = g.getBuildingManager();
         for (BuildingsTemplate t : bm.getTemplates()) if (t.getTruckRoom() > 0 && Sectors.FREIGHT.equals(t.getSector())) depots += bm.getQuantity(t.getId());
         report("the depots are the Truck Depots standing, counted from the catalogue", p.depots() == depots && depots > 0, p.depots() + " against " + depots);
@@ -386,7 +386,7 @@ public class FreightViewCheck {
         double[] capacity = Ports.berths(g.getBuildingManager());
         boolean counts = true, room = true, mirrors = true, rows = p.kinds().size() == K;
         double dues = 0, handling = 0, tonnes = 0;
-        int calls = 0, berths = 0;
+        int calls = 0; long berths = 0;
         BoatSchedule boats = g.boats(List.of());
         for (Ports.Cargo kind : Ports.Cargo.values()) {
             Berth b = p.of(kind);

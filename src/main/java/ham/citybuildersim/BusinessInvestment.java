@@ -230,7 +230,7 @@ public class BusinessInvestment {
 
         public final String sector;
         public final BuildingsTemplate template;
-        public final int quantity;
+        public final long quantity;
         public final String reason;
         public final boolean build;
 
@@ -248,12 +248,12 @@ public class BusinessInvestment {
          */
         public final Sector.Staffing heldForStaff;
 
-        public Decision(String sector, BuildingsTemplate template, int quantity,
+        public Decision(String sector, BuildingsTemplate template, long quantity,
                         String reason, boolean build) {
             this(sector, template, quantity, reason, build, false);
         }
 
-        public Decision(String sector, BuildingsTemplate template, int quantity,
+        public Decision(String sector, BuildingsTemplate template, long quantity,
                         String reason, boolean build, boolean landBlocked) {
             this(sector, template, quantity, reason, build, landBlocked, null);
         }
@@ -264,12 +264,12 @@ public class BusinessInvestment {
          */
         public final Equipment piece;
 
-        private Decision(String sector, BuildingsTemplate template, int quantity,
+        private Decision(String sector, BuildingsTemplate template, long quantity,
                          String reason, boolean build, boolean landBlocked, Sector.Staffing heldForStaff) {
             this(sector, template, quantity, reason, build, landBlocked, heldForStaff, null);
         }
 
-        private Decision(String sector, BuildingsTemplate template, int quantity,
+        private Decision(String sector, BuildingsTemplate template, long quantity,
                          String reason, boolean build, boolean landBlocked, Sector.Staffing heldForStaff, Equipment piece) {
             this.sector = sector;
             this.template = template;
@@ -356,7 +356,7 @@ public class BusinessInvestment {
      * @param siteOutput the builders' output for the sites after the repairs,
      *                   with every post offered (Game.getBuildingOutputAtEveryPost())
      */
-    public double leadTime(BuildingsTemplate template, int quantity, double siteOutput) {
+    public double leadTime(BuildingsTemplate template, long quantity, double siteOutput) {
         if (siteOutput <= 0) return Double.MAX_VALUE;
         return buildingManager.waitFor(template, quantity, siteOutput);
     }
@@ -426,7 +426,7 @@ public class BusinessInvestment {
         /** Game.consider(): the order, the till it was judged on, one building's profit, and what was found. */
         default void invested(Decision decision, double cash, double perUnitProfit, Game.Afford found) { }
         /** Game.considerOnMortgage(): what Mortgage.decide() was asked, and its answer. */
-        default void mortgaged(int asked, java.util.function.IntToDoubleFunction costOf, double cash,
+        default void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash,
                                double noiPerUnit, double annualRate, Mortgage.Decision found) { }
     }
 
@@ -655,7 +655,7 @@ public class BusinessInvestment {
      * @return a Decision whose quantity is buildings to scrap; build is
      *         false and reason says why not when nothing should go
      */
-    public Decision planRetirement(Sector sector, double demand, double capacity, int ordersInFlight) {
+    public Decision planRetirement(Sector sector, double demand, double capacity, long ordersInFlight) {
 
         String key = sector.key();
         if (ordersInFlight > 0) return Decision.no(key, "building, not shrinking");
@@ -679,11 +679,11 @@ public class BusinessInvestment {
          * sheddable if the sector says so - see Sector.mayRetire().
          */
         BuildingsTemplate worst = null;
-        int mostHeld = 0;
+        long mostHeld = 0;
         boolean refused = false;
         for (BuildingsTemplate template : buildingManager.getTemplatesBySector(key)) {
             if (!sector.mayRetire(template)) { refused = true; continue; }
-            int held = buildingManager.getQuantity(template.getId());
+            long held = buildingManager.getQuantity(template.getId());
             if (held > mostHeld) {
                 mostHeld = held;
                 worst = template;
@@ -699,9 +699,9 @@ public class BusinessInvestment {
         double keepAtLeast = Math.max(demand * (1 + TARGET_HEADROOM), demand);
         double sheddable = capacity - keepAtLeast;
 
-        int wanted = (int) Math.floor(sheddable / unitsEach);
-        int gradual = (int) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION);
-        int quantity = Math.max(0, Math.min(wanted, Math.min(gradual, mostHeld)));
+        long wanted = (long) Math.floor(sheddable / unitsEach);
+        long gradual = (long) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION);
+        long quantity = Math.max(0, Math.min(wanted, Math.min(gradual, mostHeld)));
         quantity = Math.max(0, Math.min(quantity, sector.limitSpareRetirement(worst, quantity, keepAtLeast)));
 
         if (quantity <= 0) {
@@ -752,7 +752,7 @@ public class BusinessInvestment {
      *
      * @param cash the sector's balance after this month's credit settled
      */
-    public Decision planDistressRetirement(Sector sector, double cash, int ordersInFlight) {
+    public Decision planDistressRetirement(Sector sector, double cash, long ordersInFlight) {
 
         String key = sector.key();
         if (ordersInFlight > 0) return Decision.no(key, "building, not shrinking");
@@ -765,13 +765,13 @@ public class BusinessInvestment {
         if (cash >= 0) return Decision.no(key, "losing money, but still solvent");
 
         BuildingsTemplate worst = null;
-        int mostHeld = 0;
+        long mostHeld = 0;
         for (BuildingsTemplate template : buildingManager.getTemplatesBySector(key)) {
             if (!sector.mayRetire(template)) continue;
             // Only plant that contributes to the sector's own measure -
             // ...or makes anything it sells (0.7.12 round 7): see below.
             if (sector.unitsOf(template) <= 0 && !makesWhatItSells(sector, template)) continue;
-            int held = buildingManager.getQuantity(template.getId());
+            long held = buildingManager.getQuantity(template.getId());
             if (held > mostHeld) {
                 mostHeld = held;
                 worst = template;
@@ -780,8 +780,8 @@ public class BusinessInvestment {
 
         if (worst == null) return Decision.no(key, sector.noRetirementReason(true));
 
-        int quantity = Math.min(mostHeld,
-                Math.max(1, (int) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION)));
+        long quantity = Math.min(mostHeld,
+                Math.max(1, (long) Math.ceil(mostHeld * MAX_RETIREMENT_FRACTION)));
 
         return new Decision(key, worst, quantity,
                 String.format("%d months of losses, %s overdrawn and no lender", losses, Currency.writing().write(String.format("%,.0fk", -cash))),
@@ -1145,7 +1145,7 @@ public class BusinessInvestment {
         }
         // The branches STANDING, as the city counts them - one that opened
         // last month included (Bank, THE BRANCHES, BY THEIR CUSTOMERS).
-        int standing = buildingManager.countByName("Commercial Bank");
+        long standing = buildingManager.countByName("Commercial Bank");
         if (!bank.wantsBranch(standing)) {
             String why = bank.branchHoldReason(standing);
             return Decision.no(sector, why == null ? "no branch wanted" : why);
@@ -1306,7 +1306,7 @@ public class BusinessInvestment {
      *
      * @param annualRate the rate the order is judged at, nominal: realTestRate() is applied here, as servicesItsOwnDebt() applies it
      */
-    public double carryOf(BuildingsTemplate t, int n, double annualRate) {
+    public double carryOf(BuildingsTemplate t, long n, double annualRate) {
         if (orderWaitOutput == null || t == null || n < 1) return 1;
         // ...and while contracts are dear, by what waiting for them to be cheap would save (DEAR CONTRACTS, below).
         return waitCarry(annualRate, leadTime(t, n, orderWaitOutput.getAsDouble())) * dearOf(t, n);
@@ -1352,7 +1352,7 @@ public class BusinessInvestment {
      * the builders' price (BuildingManager.orderPriceMultiplier() for `n` of `t`'s points), counted once more. Exactly 1 at
      * or under the knee, with no builders' month to read (a bare fixture), for no template and for fewer than one.
      */
-    public double dearOf(BuildingsTemplate t, int n) {
+    public double dearOf(BuildingsTemplate t, long n) {
         if (t == null || n < 1) return 1;
         return buildingManager.orderPriceMultiplier(0, t.getConstructionPoints(), n);
     }
@@ -1461,7 +1461,7 @@ public class BusinessInvestment {
      * and the works carry the builders' scarcity multiple (FC1), the mean over the order's buildings, each on the queue the
      * ones before it leave (BA1); the material and the ground do not.
      */
-    private double totalCostOf(BuildingsTemplate t, int quantity, double deepFactor) {
+    private double totalCostOf(BuildingsTemplate t, long quantity, double deepFactor) {
         double stock = buildingManager.getConstructionMaterials();
         double required = t.getConstructionMaterials() * (double) quantity;
         double shortfall = Math.max(required - stock, 0);
@@ -1482,10 +1482,10 @@ public class BusinessInvestment {
      * tax (ET4; Game.runWorksCost(), wired by Game): the Freight sector's investor sees what a rail line costs on the
      * hills. Nothing until handed in, as on a city of flat ground.
      */
-    private java.util.function.ToDoubleBiFunction<BuildingsTemplate, Integer> runWorksCost = (t, n) -> 0;
+    private java.util.function.ToDoubleBiFunction<BuildingsTemplate, Long> runWorksCost = (t, n) -> 0;
 
     /** Hands in the price of a run's works on the city's slopes (Game.runWorksCost()); null clears it. */
-    public void setRunWorksCost(java.util.function.ToDoubleBiFunction<BuildingsTemplate, Integer> price) {
+    public void setRunWorksCost(java.util.function.ToDoubleBiFunction<BuildingsTemplate, Long> price) {
         this.runWorksCost = price == null ? (t, n) -> 0 : price;
     }
 
@@ -1495,7 +1495,7 @@ public class BusinessInvestment {
      * (0.7.107, LandManager.priceFor(sqFt, sector)); with no zone, the going
      * price.
      */
-    private double groundCostOf(BuildingsTemplate t, int quantity) {
+    private double groundCostOf(BuildingsTemplate t, long quantity) {
         double[] z = zoneLand.isEmpty() ? null : zoneLand.get(t.getSector());
         if (z == null) return t.getLandSqFt() * quantity * landPricePerSqFt;
         double sqFt = t.getLandSqFt() * quantity;
@@ -1503,7 +1503,7 @@ public class BusinessInvestment {
         return (sqFt - inZone) * landPricePerSqFt + inZone * (z[1] * landPricePerSqFt);
     }
 
-    public double getCostOf(BuildingsTemplate t, int quantity) {
+    public double getCostOf(BuildingsTemplate t, long quantity) {
         return totalCostOf(t, quantity, deepWaterFactorOf(t));
     }
 
@@ -1514,7 +1514,7 @@ public class BusinessInvestment {
      */
     @FunctionalInterface
     public interface DeepWaterPrice {
-        double moneyBeforeTax(BuildingsTemplate t, int quantity, double factor);
+        double moneyBeforeTax(BuildingsTemplate t, long quantity, double factor);
     }
 
     private DeepWaterPrice deepWaterPrice = (t, n, f) -> 0;
@@ -1537,7 +1537,7 @@ public class BusinessInvestment {
      * next unit (DW1): the Oil planner judges a platform and its wells together, on the field it would stand them in.
      * getCostOf() exactly at 1.
      */
-    public double getCostOfAt(BuildingsTemplate t, int quantity, double deepFactor) {
+    public double getCostOfAt(BuildingsTemplate t, long quantity, double deepFactor) {
         return totalCostOf(t, quantity, deepFactor);
     }
 

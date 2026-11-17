@@ -52,14 +52,14 @@
 | 87 | `private Long pathSeed` |  |
 | 94 | `private Boolean foundedUnfitted` | ...AND WHETHER IT WAS FOUNDED THE 1900 WAY (R1b; Founding.isUnfitted()): written only for a city that was, so a city founded the default way writes no key and a save without one reads false (getFounding()). |
 | 97 | `private double cash` | save variables |
-| 98 | `private int[] buildings` |  |
+| 98 | `private long[] buildings` |  |
 | 99 | `private int month` |  |
 | 100 | `private JsonArray debts` |  |
 | 108 | `private JsonArray businessDebts` | Private-sector loans. |
 | 115 | `private double[] progress` | LEGACY construction state: one entry per stack, in build order. |
 | 116 | `private int[] underConstruction` |  |
 | 127 | `private double[] constructionProgressById` | Construction, keyed by template id - the same key buildings[] uses. |
-| 128 | `private int[] underConstructionById` |  |
+| 128 | `private long[] underConstructionById` |  |
 | 130 | `private double[] materialsOwedById` | Material the sites still have to draw, by id. |
 | 132 | `private double[] contractValueById` | The builders' contract still on each template's sites, by id. |
 | 134 | `private java.util.List<BuildingManager.ContractRecord> contractRecords` | ...and who placed each part of it, with its material still to draw and the allowance priced in for it (0.7.19). |
@@ -161,7 +161,7 @@
 | 866 | `private double cityDiscountUnsettled` |  |
 | 904 | `private double[] governmentMonth` | The government's own month: twenty-three revenue and spending lines, saved and restored as one. |
 | 1169 | `private int[] stackOrder` | THE ORDER THE CITY'S BUILDINGS STAND IN (0.7.43): their template ids in BuildingManager's list, which is the order each was first bought. |
-| 1186 | `private java.util.Map<Integer, java.util.Map<String, Integer>> unfittedById` | The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written only for the stacks that have any: null, or empty, is every building fitted. |
+| 1186 | `private java.util.Map<Integer, java.util.Map<String, Long>> unfittedById` | The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written only for the stacks that have any: null, or empty, is every building fitted. |
 | 1203 | `private java.util.Map<Integer, java.util.List<String>> recipeChoices` | The recipes the two parts of a stack run (R1c; Recipes), by template id: [the fitted part's recipe id, the unfitted part's], written only for a template where a part runs a recipe other than the default, so only a cit... |
 | 1206 | `private java.util.Map<Integer, Double> licenceFees` | The last captured royalty per installed building, by template id; a saved flow for standing readers (R2c). |
 | 1230 | `private java.util.List<Fittings.Job> fittings` | The fittings on site (R1b; Fittings), in the order placed, each with the template, the piece, who ordered it and the points still owed: written only while there is a job, so a city with none writes no key and a save w... |
@@ -394,7 +394,7 @@
 | 960 | 3 | `public void setCash(double money)` | setters |
 | 964 | 3 | `public void setMonth(int month)` |  |
 | 968 | 3 | `public void setBuildingNum(int i)` |  |
-| 972 | 6 | `public void setBuildingQuantity(int index, int quantity)` |  |
+| 972 | 6 | `public void setBuildingQuantity(int index, long quantity)` |  |
 | 986 | 3 | `public void setDebt(List<Debt> debts)` |  |
 | 990 | 3 | `public void setProgress(double[] progress)` |  |
 | 994 | 3 | `public void setConstructionMaterials(int constructionMaterials)` |  |
@@ -414,9 +414,9 @@
 |---:|---:|---|---|
 | 1171 | 1 | `public void setStackOrder(int[] templateIds)` |  |
 | 1172 | 1 | `public int[] getStackOrder()` |  |
-| 1174 | 6 | `public void setConstructionById(int[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue)` |  |
-| 1188 | 3 | `public void setUnfittedById(java.util.Map<Integer, java.util.Map<String, Integer>> byId)` |  |
-| 1193 | 3 | `public java.util.Map<Integer, java.util.Map<String, Integer>> getUnfittedById()` | The unfitted counts the save carries by template id, or an empty map for a save with none (every building fitted). |
+| 1174 | 6 | `public void setConstructionById(long[] underConstruction, double[] progress, double[] materialsOwed, double[] contractValue)` |  |
+| 1188 | 3 | `public void setUnfittedById(java.util.Map<Integer, java.util.Map<String, Long>> byId)` |  |
+| 1193 | 3 | `public java.util.Map<Integer, java.util.Map<String, Long>> getUnfittedById()` | The unfitted counts the save carries by template id, or an empty map for a save with none (every building fitted). |
 | 1208 | 3 | `public void setLicenceFees(java.util.Map<Integer, Double> byId)` |  |
 | 1212 | 3 | `public java.util.Map<Integer, Double> getLicenceFees()` |  |
 | 1216 | 3 | `public void setRecipeChoices(java.util.Map<Integer, java.util.List<String>> byId)` |  |
@@ -460,7 +460,7 @@
 | 1390 | 1 | `public Ports.State getPortMonth()` | Null on a save from before 0.7.86. |
 | 1393 | 3 | `public boolean hasConstructionById()` | False for a save written before the format changed. |
 | 1397 | 3 | `public int getConstructionByIdLength()` |  |
-| 1401 | 6 | `public int getUnderConstructionById(int templateId)` |  |
+| 1401 | 6 | `public long getUnderConstructionById(int templateId)` |  |
 | 1408 | 6 | `public double getConstructionProgressById(int templateId)` |  |
 | 1415 | 6 | `public double getContractValueById(int templateId)` |  |
 | 1423 | 6 | `public double getMaterialsOwedById(int templateId)` | Zero on a save that has no record: its orders drew their material the day they were placed. |
@@ -766,7 +766,7 @@
 | 2878 | 3 | `public int getUnderConstruction(int index)` |  |
 | 2881 | 3 | `public double getCash()` |  |
 | 2885 | 3 | `public int getMonth()` |  |
-| 2889 | 3 | `public int getBuildingQuantity(int index)` |  |
+| 2889 | 3 | `public long getBuildingQuantity(int index)` |  |
 | 2893 | 3 | `public int getBuildingsLength()` |  |
 | 2897 | 3 | `public JsonArray getDebt()` |  |
 | 2902 | 3 | `public void setBusinessDebt(List<BusinessDebt> loans)` | All instrument fields, including BF1 retirementClaim, go out and back through the loan JSON. |

@@ -689,7 +689,7 @@ public class MaterialsCheck {
         quietly(() -> land.restoreSites(Resource.IRON, 3, 5_000_000));
         assertTrue("Mining is an ExtractionSector on iron's ground, its good iron ore", mining instanceof ExtractionSector
                 && mining.resource() == Resource.IRON && mining.groundGood() == Good.IRON);
-        int sites = mining.sitesOwned();
+        long sites = mining.sitesOwned();
         report("its sites owned and worked are the iron ones (LandManager.getIronDeposits(), Game.minesCommitted())",
                 sites == land.getIronDeposits() && mining.sitesWorked() == g.minesCommitted() && sites >= 3
                         && mining.sitesWorked() == 0, String.format("%d sites, %d worked", sites, mining.sitesWorked()));
@@ -1377,12 +1377,12 @@ public class MaterialsCheck {
         report("...and the plan orders the one of the two that earns more on its whole cost, its freight in it",
                 both.build && both.template == (pitScore > mineScore ? pit : mine),
                 String.format("%s; the pit %.3f%%, the Iron Mine %.3f%% a month", both.reason, 100 * pitScore, 100 * mineScore));
-        Map<BuildingsTemplate, Integer> run = new LinkedHashMap<>();
-        run.put(mine, 1);
-        run.put(pit, 1);
-        Map<BuildingsTemplate, Integer> pitFirst = new LinkedHashMap<>();
-        pitFirst.put(pit, 1);
-        pitFirst.put(mine, 1);
+        Map<BuildingsTemplate, Long> run = new LinkedHashMap<>();
+        run.put(mine, 1L);
+        run.put(pit, 1L);
+        Map<BuildingsTemplate, Long> pitFirst = new LinkedHashMap<>();
+        pitFirst.put(pit, 1L);
+        pitFirst.put(mine, 1L);
         assertTrue("a run counts the sites its orders take, not the orders: an Iron Mine ahead leaves the pit nineteen, the pit ahead"
                         + " leaves the mine none", g.buildRunAhead(run) == 1 && g.buildRunStop(run) == Game.BuildResult.NO_DEPOSIT
                         && g.buildRunAhead(pitFirst) == 1 && g.buildRunStop(pitFirst) == Game.BuildResult.NO_DEPOSIT);

@@ -107,10 +107,10 @@
 | 82 | 1 | **type** `public enum Roof` | The roof an industry's works are drawn under (the spec's 2.13: furnace, mill, kiln, pit) - and ★ the crews' camp, Forestry's: a forest has no pit. |
 | 85 | 10 | `public static Roof roofOf(Sector s)` | An industry's roof: the four that dig a pit's, Forestry's camp, the smelters' furnace, the kilns', the mills'. |
 | 97 | 14 | **type** `public enum Origin` | Where a part of what an industry works came from, or where a part of what it made went. |
-| 124 | 9 | **type** `public record Vessel(Resource resource, Deposit.FieldType type, int sites, int worked, int onAny, double ow...` | A field type's ground, drawn as a vessel filled to what remains. |
+| 124 | 9 | **type** `public record Vessel(Resource resource, Deposit.FieldType type, long sites, long worked, long onAny, double...` | A field type's ground, drawn as a vessel filled to what remains. |
 | 127 | 1 | `public double filled()` _(in IndustryView.Vessel)_ | The share of the vessel still in the ground; 0 with none owned. |
 | 129 | 1 | `public double taken()` _(in IndustryView.Vessel)_ | What has been taken out of it. |
-| 131 | 1 | `public int taking()` _(in IndustryView.Vessel)_ | The sites its works take, on its type and on ANY. |
+| 131 | 1 | `public long taking()` _(in IndustryView.Vessel)_ | The sites its works take, on its type and on ANY. |
 | 157 | 9 | **type** `public record Forest(double owned, double standing, double protectedWood, double cuttable, double cleared, ...` | Forestry's forest (the spec's 2.11; Q13). |
 | 162 | 1 | `public double lastsMonths()` _(in IndustryView.Forest)_ | Months the forest the crews may cut lasts every crew's cut, on site too; infinite with no crew. |
 | 164 | 1 | `public boolean pastPlantingLine()` _(in IndustryView.Forest)_ | Whether the month's cut is past the planting line. |
@@ -124,7 +124,7 @@
 | 240 | 1 | `public double intoStock()` _(in IndustryView.Product)_ | Into the warehouse this month (below nothing: out of it): made and carried in, less every way it left. |
 | 242 | 1 | `public double tonnes()` _(in IndustryView.Product)_ | Made, as tonnes. |
 | 244 | 8 | `public List<Part> parts()` _(in IndustryView.Product)_ | Its parts in drawing order: to its own works, each buyer in the city, carried into another of its goods, the world. |
-| 271 | 30 | **type** `public record Unit(BuildingsTemplate template, int standing, int onSite, double rate, double feedShare, boo...` | One kind of an industry's buildings. |
+| 271 | 30 | **type** `public record Unit(BuildingsTemplate template, long standing, long onSite, double rate, double feedShare, b...` | One kind of an industry's buildings. |
 | 274 | 1 | `public double run()` _(in IndustryView.Unit)_ | The share of nameplate it ran at this month: its sector's rate times its feed's share. |
 | 276 | 1 | `public double makes(Good g)` _(in IndustryView.Unit)_ | Units of a good its buildings standing make at its run. |
 | 278 | 1 | `public double uses(Good g)` _(in IndustryView.Unit)_ | ...and use. |
@@ -137,7 +137,7 @@
 | 312 | 4 | **type** `public record Power(double made, double drawn, double bought, double sold, double soldValue)` | The power an industry's works make, draw and trade with the grid, kW at nameplate (Sector, THE POWER ITS WORKS MAKE THEMSELVES). |
 | 314 | 1 | `public boolean makes()` _(in IndustryView.Power)_ | Whether its works make any power. |
 | 324 | 1 | **type** `public record Lorries(double vans, double needed, double diesel)` | The lorries an industry keeps for its tonnes (Sector, THE FLEET). |
-| 347 | 46 | **type** `public record View(Sector sector, Roof roof, boolean counted, double rate, int standing, int onSite, List<V...` | An industry's month. |
+| 347 | 46 | **type** `public record View(Sector sector, Roof roof, boolean counted, double rate, long standing, long onSite, List...` | An industry's month. |
 | 351 | 1 | `public boolean drawn()` _(in IndustryView.View)_ | Whether there is a month to draw: a building standing, and the month counted. |
 | 353 | 4 | `public Feed feed(Good g)` _(in IndustryView.View)_ | A feed, or null for a good its works neither use nor bought. |
 | 358 | 4 | `public Product product(Good g)` _(in IndustryView.View)_ | A product, or null for a good it has no plant for, made none of and holds none of. |
@@ -200,7 +200,7 @@
 | 776 | 6 | `public static String partyWords(String party, Game game)` | A party in the city by name: a sector's label, "the households", "the city". |
 | 784 | 3 | `public static String metalName(Metal m)` | The old metal's name: "old steel", "old copper". |
 | 789 | 4 | `public static String metalWords(Metal m)` | The old metal's line: "old steel: 12,353 t arose · 10,500 t bought at $210.00 · 1,853 t to landfill". |
-| 795 | 6 | `static String names(String name, int n)` | A building's name, plural for more than one: "Coke Ovens", "Quarries", "Sawmills". |
+| 795 | 6 | `static String names(String name, long n)` | A building's name, plural for more than one: "Coke Ovens", "Quarries", "Sawmills". |
 | 803 | 16 | `public static String unitWords(Unit u)` | A kind's line: "2 Coke Ovens · runs 87% · 1 on site"; a mine worked out says so; a stand its growth: "3 Woodlots · grow 500 m³ a month"; with none standing "1 Harvesting Operation on site", "no Sawmill". |
 | 821 | 7 | `public static String lastWords(Unit u)` | What the last one standing earns, as the idle book counts it: "the last one earns $12.3k a month", "...loses $4.1k a month · idle 3 months"; "" for a mine or none standing. |
 | 830 | 9 | `public static String gateWords(Unit u)` | One more, in the plan's words: "one more earns $1,234.5k a month on $123,456k at the city's prices, 1.00% a month" (ProcessingSector.plan()'s), or the first gate it fails, its refusal: "one more: would lose $295.8k a ... |

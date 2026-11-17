@@ -57,7 +57,7 @@ public final class EquipmentForms {
         Weight farm = new Weight(), carts = new Weight();
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
-            int quantity = stack.getQuantity();
+            long quantity = stack.getQuantity();
             String owner = t.getSector();
             if (!owner.isEmpty()) {
                 double draw = t.getElectricityConsumption();
@@ -103,9 +103,9 @@ public final class EquipmentForms {
     }
 
     /** How many of a stack's buildings lack a piece that ends this form: the pieces' counts added, never more than stand (a building lacking two such pieces is counted once). */
-    private static int unfitted(BuildingsStacks stack, Equipment.Form form) {
+    private static long unfitted(BuildingsStacks stack, Equipment.Form form) {
         if (!stack.hasUnfitted()) return 0;
-        int n = 0;
+        long n = 0;
         for (Equipment e : stack.getBuilding().getEquipment()) {
             if (e.getEnds() == form) n += stack.getUnfitted(e.getId());
         }

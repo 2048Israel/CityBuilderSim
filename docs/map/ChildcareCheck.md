@@ -110,7 +110,7 @@
 | 192 | 3 | `static CityNeeds.Need need(Game g)` |  |
 | 196 | 5 | `static BuildAdvice.Suggestion advice(Game g)` |  |
 | 203 | 4 | `static double lacks(Game g, BuildAdvice.Ahead p)` | The places the need lacks at a suggestion's own projection: its demand less what is on site. |
-| 209 | 1 | **type** `record Weighed(BuildingsTemplate t, int count, BuildAdvice.Ahead p, double per, double net)` | One centre weighed as suggestFor() weighs it: its count at the demand it opens to, and its figure. |
+| 209 | 1 | **type** `record Weighed(BuildingsTemplate t, long count, BuildAdvice.Ahead p, double per, double net)` | One centre weighed as suggestFor() weighs it: its count at the demand it opens to, and its figure. |
 | 211 | 9 | `static Weighed weigh(Game g, BuildingsTemplate t)` |  |
 | 221 | 16 | `public static void main(String[] args) throws Exception` |  |
 

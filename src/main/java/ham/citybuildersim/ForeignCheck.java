@@ -1648,16 +1648,16 @@ public class ForeignCheck {
         // refused for cash (NEEDS_FUNDING with D$15k left) - a city that built less than the parity city, the premise of the
         // comparison gone. So the treasury is made up by the model's own figure for the rest of the run, its invoice less
         // the cash (Game.buildFundingGap()), in the city that is short of it, and the orders are asserted placed.
-        java.util.Map<BuildingsTemplate, Integer> programme = new java.util.LinkedHashMap<>();
-        programme.put(template(g, "Coal Power Plant"), 1);
-        programme.put(template(g, "Water Treatment Plant"), 1);
-        programme.put(template(g, "Industrial Bakery"), 2);
-        programme.put(template(g, "Paved Road"), 40);
-        programme.put(template(g, "Walk-in Clinic"), 4);
-        programme.put(template(g, "Municipal Cemetery"), 1);
+        java.util.Map<BuildingsTemplate, Long> programme = new java.util.LinkedHashMap<>();
+        programme.put(template(g, "Coal Power Plant"), 1L);
+        programme.put(template(g, "Water Treatment Plant"), 1L);
+        programme.put(template(g, "Industrial Bakery"), 2L);
+        programme.put(template(g, "Paved Road"), 40L);
+        programme.put(template(g, "Walk-in Clinic"), 4L);
+        programme.put(template(g, "Municipal Cemetery"), 1L);
         g.setCashForTest(g.getCash() + g.buildFundingGap(programme));
         boolean programmeOrdered = true;
-        for (java.util.Map.Entry<BuildingsTemplate, Integer> order : programme.entrySet()) {
+        for (java.util.Map.Entry<BuildingsTemplate, Long> order : programme.entrySet()) {
             programmeOrdered &= g.buildStack(order.getKey(), order.getValue(), false) == Game.BuildResult.SUCCESS;
         }
         assertTrue("fixture: every order of the programme is placed, at " + rate, programmeOrdered);

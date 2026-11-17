@@ -225,7 +225,7 @@ public final class CopperMining extends ExtractionSector {
         double spare = 0;
         if (buildings == null || land == null) return 0;
         for (BuildingsTemplate t : buildings.getTemplatesBySector(key())) {
-            int held = buildings.getQuantity(t.getId());
+            long held = buildings.getQuantity(t.getId());
             if (held > 0 && workedOut(land, t)) spare += held * tonnesOf(t);
         }
         return spare;

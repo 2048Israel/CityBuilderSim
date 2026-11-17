@@ -227,10 +227,10 @@ public class PolicyPreviewCheck {
          */
         for (int round = 0; round < EI_POOL_ROUNDS; round++) {
             BuildingsTemplate biggest = null;
-            int biggestJobs = 0;
+            long biggestJobs = 0;
             for (BuildingsTemplate b : g.getBuildingManager().getTemplates()) {
                 if (b.getSector() == null || b.getTotalJobs() <= 0) continue;
-                int jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
+                long jobs = b.getTotalJobs() * g.getBuildingManager().getQuantity(b.getId());
                 if (jobs > biggestJobs) { biggestJobs = jobs; biggest = b; }
             }
             final BuildingsTemplate closing = biggest;

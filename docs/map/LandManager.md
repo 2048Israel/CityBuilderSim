@@ -326,7 +326,7 @@
 | 1119 | 24 | `private long seaSites(CityLand l, Resource r)` |  |
 | 1145 | 1 | **type** `public record SeaField(Deposit field, int sites, double depth)` | A field of a resource whose centre is in the sea, the sites of it the city owns, and its depth there in metres (0.7.91). |
 | 1161 | 42 | `public java.util.List<SeaField> seaFields(Resource r)` | The fields of a resource the city owns whose centre is in the sea (0.7.91, batch O10; spec-oil 2.7): each field once, its owned sites summed over the holdings that hold them (CityLand.heldFields()), in the order the h... |
-| 1204 | 3 | `public boolean hasUnminedDeposit(int minesStanding)` |  |
+| 1204 | 3 | `public boolean hasUnminedDeposit(long minesStanding)` |  |
 | 1216 | 5 | `public double extractIron(double tonnes)` | Lifts ore out of the ground. |
 | 1230 | 5 | `public double extractIron(Deposit.FieldType type, double tonnes, boolean more)` | ...of one type (0.7.124, batch I5; THE GROUND BY TYPE): up to `tonnes` of the type's ground taken out (extract(r, type, amount)) - rock, for a magnetite works, three tonnes of it to a tonne of concentrate - and kept f... |
 | 1241 | 10 | `public double extract(Resource r, double amount)` | Takes up to `amount` of a resource out of the city's ground (0.7.57): what was there, and E rises by exactly that. |
@@ -341,8 +341,8 @@
 | 1313 | 1 | `public double[] getWorldTotalsState()` | The world's totals as stored, every resource in Resource's order (DataSave's worldTotals). |
 | 1321 | 14 | `public double[] remainingByHolding(Resource r)` | What remains of a resource in each holding, in acquisition order - the centre, then each purchase (spec-land star 12): E is taken out of the first until it is worked out, then the next, so a holding's remainder is wha... |
 | 1337 | 12 | `private double[] oilRemainingByHolding(double[] held)` | ...oil's since 0.7.93: each pool's E taken out of its own part of each holding in turn, the two parts' remainders added. |
-| 1358 | 3 | `public void restoreIron(int deposits, double reserveTonnes)` | A FIXTURE'S ORE: the city holds exactly `deposits` iron sites and `reserveTonnes` in the ground. |
-| 1363 | 22 | `public void restoreSites(Resource r, int deposits, double reserveTonnes)` | ...the same for any resource in fields (0.7.62): a fixture's oil, as restoreIron() is its ore. |
+| 1358 | 3 | `public void restoreIron(long deposits, double reserveTonnes)` | A FIXTURE'S ORE: the city holds exactly `deposits` iron sites and `reserveTonnes` in the ground. |
+| 1363 | 22 | `public void restoreSites(Resource r, long deposits, double reserveTonnes)` | ...the same for any resource in fields (0.7.62): a fixture's oil, as restoreIron() is its ore. |
 
 ### THE GROUND BY TYPE (0.7.110, batch I1; docs/studies/spec-materials.md 2.4) (lines 1386-2101)
 
@@ -365,7 +365,7 @@
 | 1655 | 11 | `private double[] typedRemainingByHolding(Resource r, double[] held)` | ...remainingByHolding() once the resource keeps its E by type: each type's E taken out of its own pieces in turn, holding by holding. |
 | 1668 | 10 | `public double[][] getDepletionByTypeState()` | E by type, every typed resource's as kept, in Resource's order (DataSave's depletionByType): null while every one is the walk's reading of E, so a save carries it only once a works has dug by type. |
 | 1685 | 12 | `public void restoreDepletionByType(double[][] saved)` | Puts E by type back from a save (Game's load path, after the land and E are in place): each typed resource's as saved; a resource the save carries none for - every resource of a save from before 0.7.110 - is the walk'... |
-| 1699 | 1 | **type** `public record Claim(Deposit.FieldType type, int sites, int count)` | Standing works on a resource's sites, for fits(): the type they stand on (null for ANY), the sites each takes, and how many stand. |
+| 1699 | 1 | **type** `public record Claim(Deposit.FieldType type, int sites, long count)` | Standing works on a resource's sites, for fits(): the type they stand on (null for ANY), the sites each takes, and how many stand. |
 | 1711 | 25 | `public boolean fits(Resource r, Deposit.FieldType type, java.util.List<Claim> standing, int extra)` | Whether a works of `extra` sites on `type` (null for ANY) fits on the city's ground of a resource beside the standing works (0.7.110; THE GROUND BY TYPE): the standing packed first fit decreasing onto the pieces (City... |
 | 1749 | 27 | `public int[][] packed(Resource r, java.util.List<Claim> standing)` | Where fits()'s packing puts the standing works (0.7.131, batch I7): for each claim of `standing`, in its order, the sites its works take of each of the resource's types, in Resource.typesOf()'s order, summed over its ... |
 | 1778 | 23 | `private static boolean placeInto(Resource r, java.util.List<CityLand.Piece> pieces, int[] free, int[] w, boolean spread, int[] ...` | place(), noting the sites it takes of each type in `byType`; a placement that fails whole takes nothing, a spread what there was. |

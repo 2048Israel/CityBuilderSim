@@ -1,8 +1,8 @@
-# gate of Merge batch/LF1b: the cells' share trades with the world as a FINANCIAL/DOMESTIC pair in MoneyAudit, as BondMarket books the cells' bonds: the financial account leaves their shares out today; moves the exchange rate and the trace, so the size first and the ensemble (LF1's notes, 2), 0.9.128
+# gate of Merge batch/SQ1: a building stack past 2^31 (found by ST3): `BuildingsStacks`' quantity is an int, which a ten-billion city housed in Houses reaches (ScaleCheck's copy failed to load there); its quantity a long, or a second stack at the ceiling; no format bump, 0.9.129
 # date: 2026-11-16
 # earth-2.bin: named
 # nightly: 2026-11-12 01:57 0.9.94 15066de8 4,000 months: RED, exit 1 in 195 s: a building on the map moved 2 time(s), months 3002-3004; timing: 0 SLOWER, 0 standing miss(es), 12 first-night miss(es), 0 incomplete; loaded=1; /c/Users/Jerus/.cbs-timing/Jerusalem/2026-11-12-15066de8-O7Tpqtr5; no figure of last night's here
-# suite: 198 harnesses run in 998s: 194 passed, 4 failed
+# suite: 211 harnesses run in 4213s: 206 passed, 5 failed
 InvestCheck | exit 1
 InvestCheck | an older save's contract on site is read as its template's owner's - the landlords', for Houses, with the share of the tax a House of theirs gets back, which is not all of it FAIL
 InvestCheck | 1 FAILED
@@ -11,6 +11,11 @@ MapCheck | at every 30th month the map draws exactly what the city has: each typ
 MapCheck | ...its streets one network: every other piece one the city's own ground does not join to it (the sea, water wider than an arterial's bridge, ground it does not own) FAIL
 MapCheck | ...its streets' surface the model's road plots kind by kind, with what the plans have no street for (half a plot a district) FAIL
 MapCheck | 3 FAILED
+KeptCheck | exit 3
+KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 46 of 400; 6 of 25 months made none) FAIL
+KeptCheck | the read of the saved cities landed within a minute, with the saved city on the board (0 on it) FAIL
+KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
+KeptCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 1 FAILED
@@ -18,7 +23,3 @@ PrizeCheck | exit 2
 PrizeCheck | FAIL ...the owners put up money for it: Business Services raised more than its twin that built no lab, and no more than the lab's cost and its stake (1023.2880964439267 of 1019.6940354153619)
 PrizeCheck | FAIL ...and its till (at most 410) never stood above the six months of costs it keeps (at least 0), so there was no money for a buyback to take past the cushion even had it qualified
 PrizeCheck | PrizeCheck: 2 FAILED of 284
-KeptCheck | exit 2
-KeptCheck | the kept page and the new page are the same picture at 3 months, to SHADE_LEVELS (2) FAIL
-KeptCheck | the kept header's signature equals a header built new, at pace and short, at every rung (18 differ) FAIL
-KeptCheck | 2 FAILED

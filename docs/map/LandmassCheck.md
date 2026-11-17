@@ -138,7 +138,7 @@
 | 1120 | `City city` |  |
 | 1121 | `FieldAt away, home` |  |
 | 1122 | `double[] spot` |  |
-| 1874 | `int standing, onSite, shell` |  |
+| 1874 | `long standing, onSite, shell` |  |
 
 ## Methods, in file order, under their sections
 
@@ -273,8 +273,8 @@
 |---:|---:|---|---|
 | 1499 | 5 | `static BuildingsTemplate tpl(City c, String name)` |  |
 | 1506 | 1 | `static BuildingsTemplate own(City c, BuildingsTemplate t)` | A template as this city has it (a city's templates are its own; another city's object is never handed to its buildings). |
-| 1508 | 1 | `static int standing(City c, BuildingsTemplate t)` |  |
-| 1510 | 4 | `static int onSite(City c, BuildingsTemplate t)` |  |
+| 1508 | 1 | `static long standing(City c, BuildingsTemplate t)` |  |
+| 1510 | 4 | `static long onSite(City c, BuildingsTemplate t)` |  |
 | 1531 | 4 | `static boolean until(City c, java.util.function.BooleanSupplier done, int most)` | Months played quietly until `done` holds, at most `most`; whether it does. |
 | 1537 | 5 | `static Game.BuildResult order(City c, BuildingsTemplate t, int n, boolean instant, int asked)` | An order, quietly: `asked` is Landmasses.CHOSEN, RULE or a landmass's id. |
 | 1544 | 4 | `static Game.BuildResult orderOn(City c, BuildingsTemplate t, int n, boolean instant, int landmass)` | An order of a terminal for a landmass by the card's path: the pick, then the order. |
@@ -303,10 +303,10 @@
 | 1873 | 11 | **type** `static final class StubStock implements Landmasses.Stock` | What Landmasses reads of the buildings, for a unit test of the rule: one terminal template and fixed counts. |
 | 1875 | 1 | `public int[] portTemplates()` _(in LandmassCheck.StubStock)_ |  |
 | 1876 | 1 | `public boolean known(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1877 | 1 | `public int standing(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1878 | 1 | `public int onSite(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1879 | 1 | `public int shell(int template)` _(in LandmassCheck.StubStock)_ |  |
-| 1880 | 1 | `public List<int[]> demolitions(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1877 | 1 | `public long standing(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1878 | 1 | `public long onSite(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1879 | 1 | `public long shell(int template)` _(in LandmassCheck.StubStock)_ |  |
+| 1880 | 1 | `public List<long[]> demolitions(int template)` _(in LandmassCheck.StubStock)_ |  |
 | 1881 | 1 | `public double landSqFt(int template)` _(in LandmassCheck.StubStock)_ |  |
 | 1882 | 1 | `public int cargo(int template)` _(in LandmassCheck.StubStock)_ |  |
 | 1885 | 86 | `static void theChoice(Fixtures f)` |  |
@@ -351,7 +351,7 @@
 | 2928 | 63 | `static String audit(Game g)` | The model's books of the terminals and the ground, audited at one look: the linked free ground fits the linked owned ground less the linked built ground; the ground the unlinked landmasses' terminals hold is what the ... |
 | 2993 | 12 | `static String booksDiffer(List<Landmasses.Row> books, List<Landmasses.Row> recount)` | What differs between the books' rows and a recount's, ignoring the name and whether the landmass is linked; null when they are the same books. |
 | 3007 | 16 | `static void theAudit(Fixtures f)` | The audit, tried on books gone stale: land bought and the books never told. |
-| 3025 | 5 | `static int buildingsOf(Game g)` | The buildings standing, every template's. |
+| 3025 | 5 | `static long buildingsOf(Game g)` | The buildings standing, every template's. |
 | 3031 | 162 | `static void grown(Fixtures f)` |  |
 | 3205 | 35 | `static void grownShort(Fixtures f)` | 12 (AL1, 2026-11-09). |
 

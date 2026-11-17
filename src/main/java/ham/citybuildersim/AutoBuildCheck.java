@@ -289,7 +289,7 @@ public class AutoBuildCheck {
         assertTrue(String.format("fixture: the town within the debt limit (0.7.81) - %.0f%% of a year's GDP against %.0f%%",
                 AutoBuilder.ratio(g) * 100, ab.getDebtLimit() * 100), ab.within(g));
         BuildAdvice.Suggestion[] first = new BuildAdvice.Suggestion[1];
-        int[] expected = new int[1];
+        long[] expected = new long[1];
         g.autoBuildProbeForTest = after -> {
             if (after || first[0] != null) return;
             // What the pass will see first: the first measure it keeps that the advice has a card for.
@@ -301,7 +301,7 @@ public class AutoBuildCheck {
                 if (s == null) continue;
                 first[0] = s;
                 // The builders' rule, worked here: the most that opens inside AutoBuilder.ORDER_MONTHS (the city's own cut since BA1), one when none would.
-                int k = s.count();
+                long k = s.count();
                 while (!AutoBuilder.essential(m) && k > 1 && AutoBuilder.wait(g, s, k) > AutoBuilder.ORDER_MONTHS) k--;
                 expected[0] = k;
                 return;
@@ -342,7 +342,7 @@ public class AutoBuildCheck {
     /** The passes that held a kept service short of its target with nothing on site, by the cut that held it. */
     static final Map<AutoBuilder.Cut, Integer> heldBy = new LinkedHashMap<>();
     /** The buildings it ordered over the run, by measure. */
-    static final Map<String, Integer> builtBy = new LinkedHashMap<>();
+    static final Map<String, Long> builtBy = new LinkedHashMap<>();
     /** The city's debt over a year of GDP after the passes that borrowed, the worst (0.7.81); passes that began over the limit, and the orders and bonds placed in them. */
     static double worstShare = 0, worstLimit = 0;
     static int overPasses, overOrders, overBonds;
@@ -507,7 +507,7 @@ public class AutoBuildCheck {
     /** The decades' reading of a pass, before and after it, by look() (0.7.102: a function, so the copy that borrows is read the same). */
     static java.util.function.Consumer<Boolean> passReader(Game g) {
         AutoBuilder ab = g.getAutoBuilder();
-        int[][] before = new int[1][];
+        long[][] before = new long[1][];
         double[] snap = new double[5];      // land owned, cash, reserve, the debt over GDP, bonds placed
         return after -> {
             if (!ab.isOn()) return;
@@ -525,10 +525,10 @@ public class AutoBuildCheck {
     }
 
     /** Every template's standing and on-site count, by id. */
-    static int[] standingAndOnSite(Game g) {
+    static long[] standingAndOnSite(Game g) {
         BuildingManager bm = g.getBuildingManager();
-        int[] site = bm.getUnderConstructionById();
-        int[] out = new int[bm.getMaxTemplateId() + 1];
+        long[] site = bm.getUnderConstructionById();
+        long[] out = new long[bm.getMaxTemplateId() + 1];
         for (BuildingsTemplate t : bm.getTemplates()) {
             out[t.getId()] = bm.getQuantity(t.getId()) + (t.getId() < site.length ? site[t.getId()] : 0);
         }
@@ -536,9 +536,9 @@ public class AutoBuildCheck {
     }
 
     /** One pass, read: what rose, what it did measure by measure, the debt, the cash and (0.7.104) the payback. */
-    static void look(Game g, AutoBuilder ab, int[] before, double[] snap) {
+    static void look(Game g, AutoBuilder ab, long[] before, double[] snap) {
         passes++;
-        int[] now = standingAndOnSite(g);
+        long[] now = standingAndOnSite(g);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             int id = t.getId();
             if (id < before.length && now[id] > before[id] && !AutoBuilder.inRemit(t)) outsideRemit++;
@@ -567,7 +567,7 @@ public class AutoBuildCheck {
             raised += s.borrowed();
             if (s.outcome() == AutoBuilder.Outcome.ORDERED) {
                 ordered++;
-                builtBy.merge(s.measure().label(), s.ordered(), Integer::sum);
+                builtBy.merge(s.measure().label(), s.ordered(), Long::sum);
                 BuildingsTemplate t = g.getBuildingManager().getTemplateByName(s.building());
                 // A building the payback holds (0.7.104): paid back at the count placed, as weighed - its running that
                 // count's, read again after the pass (the month's wages and prices stand; what it ordered is on site).
@@ -1185,10 +1185,10 @@ public class AutoBuildCheck {
     }
 
     /** Every building that serves a measure retired, and how many were: the city short of that service (deficitTown() does as much to a town). */
-    static int retireServing(Game g, BuildAdvice.Measure m) {
-        int retired = 0;
+    static long retireServing(Game g, BuildAdvice.Measure m) {
+        long retired = 0;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
-            int n = m.serves(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;
+            long n = m.serves(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;
             if (n > 0) {
                 g.getBuildingManager().retire(t, n);
                 retired += n;
@@ -1198,9 +1198,9 @@ public class AutoBuildCheck {
     }
 
     /** How many of a measure's buildings are on site, not yet open (AutoBuilder.serving() less what stands). */
-    static int onSite(Game g, BuildAdvice.Measure m) {
-        int[] site = g.getBuildingManager().getUnderConstructionById();
-        int n = 0;
+    static long onSite(Game g, BuildAdvice.Measure m) {
+        long[] site = g.getBuildingManager().getUnderConstructionById();
+        long n = 0;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (m.serves(t) && t.getId() < site.length) n += site[t.getId()];
         }
@@ -1294,7 +1294,7 @@ public class AutoBuildCheck {
                 ab.setOn(true, g.getDecisions());
             });
             quietly(() -> retireServing(g, care));
-            int standing = AutoBuilder.serving(g, care);
+            long standing = AutoBuilder.serving(g, care);
             double[] supplyDemand = BuildAdvice.supplyDemand(g, care, new LinkedHashMap<>());
             // The limit pinned where no bond fits, and the city saved so, for the copies.
             double[] pinned = new double[1];
@@ -1425,7 +1425,7 @@ public class AutoBuildCheck {
         Game g = ChildcareCheck.town(root, name);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (t.getTeaches() != EducationType.ELEMENTARY) continue;
-            int had = g.getBuildingManager().getQuantity(t.getId());
+            long had = g.getBuildingManager().getQuantity(t.getId());
             if (had > 0) quietly(() -> g.getBuildingManager().retire(t, had));
         }
         return g;
@@ -1909,7 +1909,7 @@ public class AutoBuildCheck {
         double shareC = AutoBuilder.ratio(c), spare = c.getCash() - AutoBuilder.reserve(c);
         int[] paperC = new int[2];
         c.autoBuildProbeForTest = after -> paperC[after ? 1 : 0] = c.getDebtManager().getDebt().size();
-        int sitesC = siteCount(c);
+        long sitesC = siteCount(c);
         quietly(() -> c.simulateMonths(1));
         c.autoBuildProbeForTest = null;
         AutoBuilder.Step sc = stepFor(ac, roads);
@@ -1980,7 +1980,7 @@ public class AutoBuildCheck {
             Game g = deficitTown(root, "deficit-" + kind.name().toLowerCase(Locale.ROOT), care);
             AutoBuilder ab = g.getAutoBuilder();
             // ...read before the month, which orders what it orders.
-            int serving = AutoBuilder.serving(g, care);
+            long serving = AutoBuilder.serving(g, care);
             double[] sd = BuildAdvice.supplyDemand(g, care, new LinkedHashMap<>());
             double[] balance = { Double.NaN };
             g.autoBuildProbeForTest = after -> { if (!after) balance[0] = g.getEconomyManager().getNationalAccounts().getBalance(); };
@@ -2004,7 +2004,7 @@ public class AutoBuildCheck {
         BuildAdvice.Measure elementary = BuildAdvice.Measure.school(EducationType.ELEMENTARY);
         Game s = deficitTown(root, "deficit-school", elementary);
         AutoBuilder as = s.getAutoBuilder();
-        int servingS = AutoBuilder.serving(s, elementary);
+        long servingS = AutoBuilder.serving(s, elementary);
         double[] balanceS = { Double.NaN };
         s.autoBuildProbeForTest = after -> { if (!after) balanceS[0] = s.getEconomyManager().getNationalAccounts().getBalance(); };
         quietly(() -> s.simulateMonths(1));
@@ -2029,7 +2029,7 @@ public class AutoBuildCheck {
         Game g = ChildcareCheck.town(root, name);
         quietly(() -> {
             for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
-                int n = retired.serves(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;
+                long n = retired.serves(t) ? g.getBuildingManager().getQuantity(t.getId()) : 0;
                 if (n > 0) g.getBuildingManager().retire(t, n);
             }
         });
@@ -2044,9 +2044,9 @@ public class AutoBuildCheck {
         return null;
     }
 
-    static int siteCount(Game g) {
-        int n = 0;
-        for (int v : g.getBuildingManager().getUnderConstructionById()) n += v;
+    static long siteCount(Game g) {
+        long n = 0;
+        for (long v : g.getBuildingManager().getUnderConstructionById()) n += v;
         return n;
     }
 }

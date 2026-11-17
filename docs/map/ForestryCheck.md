@@ -167,7 +167,7 @@
 |---:|---:|---|---|
 | 489 | 66 | `static void planting()` |  |
 | 557 | 6 | `static void cutAMonth(Game g)` | The month's cut, as the market's first step makes it: both goods' produceFlow(). |
-| 565 | 4 | `static int onOrder(BuildingManager b)` | Planted stands on site. |
+| 565 | 4 | `static long onOrder(BuildingManager b)` | Planted stands on site. |
 
 ### 7. the salvage cut (lines 570-622)
 

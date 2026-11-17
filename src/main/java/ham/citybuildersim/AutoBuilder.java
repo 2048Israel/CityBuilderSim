@@ -295,9 +295,9 @@ public final class AutoBuilder {
         public int month;
         public String measure;
         public String building;
-        public int count;
+        public long count;
         /** What the advice's card asked for; more than count when the builders, the ground, the payback (the budget until 0.7.104) or the limit cut it. */
-        public int wanted;
+        public long wanted;
         public double cost;
         /** What the funding page's bond brought for it; 0 out of the cash. */
         public double borrowed;
@@ -319,7 +319,7 @@ public final class AutoBuilder {
             }
         }
 
-        Entry(int month, String measure, String building, int count, int wanted, double cost, double borrowed,
+        Entry(int month, String measure, String building, long count, long wanted, double cost, double borrowed,
               boolean paving, String why) {
             this.month = month;
             this.measure = measure;
@@ -335,8 +335,8 @@ public final class AutoBuilder {
         public int month() { return month; }
         public String measure() { return measure == null ? "" : measure; }
         public String building() { return building == null ? "" : building; }
-        public int count() { return count; }
-        public int wanted() { return wanted; }
+        public long count() { return count; }
+        public long wanted() { return wanted; }
         public double cost() { return cost; }
         public double borrowed() { return borrowed; }
         public boolean paving() { return paving; }
@@ -505,10 +505,10 @@ public final class AutoBuilder {
     }
 
     /** Buildings that serve a measure, standing and on site. */
-    static int serving(Game game, BuildAdvice.Measure m) {
+    static long serving(Game game, BuildAdvice.Measure m) {
         BuildingManager bm = game.getBuildingManager();
-        int[] site = bm.getUnderConstructionById();
-        int n = 0;
+        long[] site = bm.getUnderConstructionById();
+        long n = 0;
         for (BuildingsTemplate t : bm.getTemplates()) {
             if (!m.serves(t)) continue;
             n += bm.getQuantity(t.getId());
@@ -586,7 +586,7 @@ public final class AutoBuilder {
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
             if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
-            double[] after = BuildAdvice.supplyDemand(game, m, Map.of(t, 1));
+            double[] after = BuildAdvice.supplyDemand(game, m, Map.of(t, 1L));
             if (!(after[1] > 0) || after[0] / after[1] <= share + 1e-12) continue;
             Ground ground = groundFor(game, t, 1);
             Game.BuildQuote quote = game.quoteBuild(t, 1);
@@ -859,10 +859,10 @@ public final class AutoBuilder {
      * null where the payback does not hold the building, or the hold was for
      * the money, the ground or the builders.
      */
-    public record Step(BuildAdvice.Measure measure, Outcome outcome, String building, int wanted, int ordered,
+    public record Step(BuildAdvice.Measure measure, Outcome outcome, String building, long wanted, long ordered,
                        Cut cut, double cost, double borrowed, double landShort, List<LandParcel> land, double landCost,
                        Payback payback) {
-        Step(BuildAdvice.Measure measure, Outcome outcome, String building, int wanted, int ordered, Cut cut, double cost,
+        Step(BuildAdvice.Measure measure, Outcome outcome, String building, long wanted, long ordered, Cut cut, double cost,
              double borrowed) {
             this(measure, outcome, building, wanted, ordered, cut, cost, borrowed, 0, List.of(), 0, null);
         }
@@ -1053,7 +1053,7 @@ public final class AutoBuilder {
         double spend = na.getTotalExpenses() - na.getCapitalSpending() - na.getLandPurchases() - na.getArrearsPaid()
                 - na.getReserveCrudeBought();
         BuildingManager bm = game.getBuildingManager();
-        int[] site = bm.getUnderConstructionById();
+        long[] site = bm.getUnderConstructionById();
         for (BuildingsTemplate t : bm.getTemplates()) {
             if (!inRemit(t)) continue;
             int id = t.getId();
@@ -1099,7 +1099,7 @@ public final class AutoBuilder {
      * (BuildAdvice.shortfall()'s line, the unit a road's or a line's unit()
      * is in).
      */
-    static double[] need(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added, BuildAdvice.Ahead at) {
+    static double[] need(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added, BuildAdvice.Ahead at) {
         if (m.kind() == BuildAdvice.Kind.ROADS) {
             // The streets' (FR7): their load, and what is past STRAINED of their capacity - the whole road's with no highway standing.
             InfrastructureManager r = BuildAdvice.roads(game, added, at.scale());
@@ -1126,11 +1126,11 @@ public final class AutoBuilder {
      * people that year (today's times the same trend); each year weighted by
      * its twelve months discounted as lifeFactor() discounts the running.
      */
-    public static double coveredOverLife(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> site,
-                                         Map<BuildingsTemplate, Integer> order, BuildAdvice.Ahead p) {
+    public static double coveredOverLife(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site,
+                                         Map<BuildingsTemplate, Long> order, BuildAdvice.Ahead p) {
         double people = game.getPopulationManager().getPopulation();
         if (!(people > 0)) return 0;
-        Map<BuildingsTemplate, Integer> with = BuildAdvice.plus(site, order);
+        Map<BuildingsTemplate, Long> with = BuildAdvice.plus(site, order);
         double opens = BusinessInvestment.leadFor(p.months());
         double i = BuildAdvice.lifeRate(game) / 12;
         double covered = 0, weights = 0;
@@ -1166,7 +1166,7 @@ public final class AutoBuilder {
     }
 
     /** n of a suggestion's building, weighed for its payback at the demand its count is sized to (its ahead()). */
-    public Payback payback(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, int n) {
+    public Payback payback(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, long n) {
         BuildingsTemplate t = s.template();
         double runs = n * running(game, t);
         double covered = coveredOverLife(game, m, BuildAdvice.onSite(game, m),
@@ -1189,8 +1189,8 @@ public final class AutoBuilder {
     private final Map<String, Double> pendingUntil = new LinkedHashMap<>();
 
     /** Pending capacity stops covering an operating shortage after its original quote expires. */
-    public Map<BuildingsTemplate, Integer> pendingCapacity(Game game, BuildAdvice.Measure m) {
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
+    public Map<BuildingsTemplate, Long> pendingCapacity(Game game, BuildAdvice.Measure m) {
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(game, m);
         Double due = pendingUntil.get(m.label());
         boolean shortAhead = !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, 0, slack));
         if (shortAhead && due != null && game.getMonth() > due) return Map.of();
@@ -1211,7 +1211,7 @@ public final class AutoBuilder {
 
     private void rememberPending(Game game, BuildAdvice.Measure m, boolean newOrder) {
         if (!essential(m)) return;
-        Map<BuildingsTemplate, Integer> site = BuildAdvice.onSite(game, m);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(game, m);
         if (BuildAdvice.units(site) == 0) {
             pendingUntil.remove(m.label());
             return;
@@ -1269,7 +1269,7 @@ public final class AutoBuilder {
                 double first = firstCost(game, m);
                 double cost = Math.max(first, needed.price());
                 if (own != null) {
-                    int n = Math.max(1, Math.min(own.count, needed.count()));
+                    long n = Math.max(1, Math.min(own.count, needed.count()));
                     Ground ground = needed.paving() ? Ground.NONE : groundFor(game, needed.template(), n);
                     if (ground == null) continue;
                     cost = total(game, needed, n) + ground.cash();
@@ -1318,22 +1318,22 @@ public final class AutoBuilder {
         }
     }
 
-    private record CrewLimit(int count, String service) { }
+    private record CrewLimit(long count, String service) { }
 
     private static String crewWords(BuildAdvice.Measure measure, String service) {
         return measure.label() + " waits to preserve " + service + "'s quoted first completion.";
     }
 
     private CrewLimit crewLimit(Game game, List<BuildAdvice.Measure> kept, BuildAdvice.Measure measure,
-                                BuildAdvice.Suggestion suggestion, int wanted) {
+                                BuildAdvice.Suggestion suggestion, long wanted) {
         if (pendingUntil.isEmpty() || essential(measure)
                 && !BuildAdvice.maintained(game, measure, Map.of(), BuildAdvice.NOW))
             return new CrewLimit(wanted, null);
         String blocked = pendingDelay(game, kept, measure, suggestion, wanted);
         if (blocked == null) return new CrewLimit(wanted, null);
-        int lo = 0, hi = wanted;
+        long lo = 0, hi = wanted;
         while (hi - lo > 1) {
-            int mid = lo + (hi - lo) / 2;
+            long mid = lo + (hi - lo) / 2;
             if (pendingDelay(game, kept, measure, suggestion, mid) == null) lo = mid;
             else hi = mid;
         }
@@ -1341,7 +1341,7 @@ public final class AutoBuilder {
     }
 
     private String pendingDelay(Game game, List<BuildAdvice.Measure> kept, BuildAdvice.Measure measure,
-                                 BuildAdvice.Suggestion suggestion, int count) {
+                                 BuildAdvice.Suggestion suggestion, long count) {
         BuildingManager manager = game.getBuildingManager();
         double output = game.getBuildingOutputAtEveryPost();
         if (!(output > 0)) return null;
@@ -1358,7 +1358,7 @@ public final class AutoBuilder {
                         + quote.prepPoints + quote.worksPoints + quote.bridgePoints + quote.deepWaterPoints;
             }
             double before = Double.POSITIVE_INFINITY, after = Double.POSITIVE_INFINITY;
-            for (Map.Entry<BuildingsTemplate, Integer> site : BuildAdvice.onSite(game, current).entrySet()) {
+            for (Map.Entry<BuildingsTemplate, Long> site : BuildAdvice.onSite(game, current).entrySet()) {
                 if (site.getValue() <= 0 || current.kind() == BuildAdvice.Kind.HIGHWAYS
                         && !current.serves(site.getKey())) continue;
                 double old = manager.siteUnitMonths(site.getKey(), 1, output);
@@ -1374,7 +1374,7 @@ public final class AutoBuilder {
     }
 
     /** A card the money or the ground could not pay for one of (0.7.101), or none of which would pay back (0.7.104): the suggestion, why, how many it asked for, the inbox's line for it, and the payback weighed for one (null for the money or the ground). */
-    private record Refused(BuildAdvice.Suggestion s, Cut cut, int wanted, String line, Payback payback) { }
+    private record Refused(BuildAdvice.Suggestion s, Cut cut, long wanted, String line, Payback payback) { }
 
     /**
      * One measure's order, cut and placed. THE RANKING, WALKED PAST WHAT THE
@@ -1392,7 +1392,7 @@ public final class AutoBuilder {
      * nothing is paid for, and it holds at once.
      */
     private void step(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, BuildAdvice.Measure m) {
-        Map<BuildingsTemplate, Integer> site = pendingCapacity(game, m);
+        Map<BuildingsTemplate, Long> site = pendingCapacity(game, m);
         if (!essential(m) && BuildAdvice.maintained(game, m, site, BuildAdvice.opening(game, 0, slack))) {
             steps.add(new Step(m, Outcome.AHEAD, null, 0, 0, Cut.NONE, 0, 0));
             return;
@@ -1424,7 +1424,7 @@ public final class AutoBuilder {
             }
             BuildingsTemplate t = s.template();
             String name = s.paving() ? ConstructionControl.PAVE_FROM + ", paved" : t.getName();
-            int wanted = s.count();
+            long wanted = s.count();
 
             // THE BUILDERS: no more than opens inside ORDER_MONTHS.
             if (Double.isNaN(wait(game, s, 1))) {
@@ -1432,12 +1432,12 @@ public final class AutoBuilder {
                         + " site output to build them.", null);
                 return;
             }
-            int n = wanted;
+            long n = wanted;
             Cut cut = Cut.NONE;
             if (!essential(m) && wait(game, s, n) > ORDER_MONTHS) {
-                int lo = 0, hi = n;                      // lo opens inside, hi does not
+                long lo = 0, hi = n;                      // lo opens inside, hi does not
                 while (hi - lo > 1) {
-                    int mid = lo + (hi - lo) / 2;
+                    long mid = lo + (hi - lo) / 2;
                     if (wait(game, s, mid) > ORDER_MONTHS) hi = mid; else lo = mid;
                 }
                 n = lo;
@@ -1471,9 +1471,9 @@ public final class AutoBuilder {
                 Payback pb = payback(game, m, s, n);
                 weighed = pb;
                 if (!pb.paysBack()) {
-                    int lo = 0, hi = n;                  // lo pays back (or is 0), hi does not
+                    long lo = 0, hi = n;                  // lo pays back (or is 0), hi does not
                     while (hi - lo > 1) {
-                        int mid = lo + (hi - lo) / 2;
+                        long mid = lo + (hi - lo) / 2;
                         if (payback(game, m, s, mid).paysBack()) lo = mid; else hi = mid;
                     }
                     if (lo < 1) {
@@ -1503,9 +1503,9 @@ public final class AutoBuilder {
             Cut money = (!within(game) && cashAnyway) || (fromCash && within(game)) ? Cut.CASH : Cut.DEBT;
             if (ground == null || !pays(game, ground.cash() + total(game, s, n), fromCash)) {
                 Cut why = ground == null ? Cut.GROUND : money;
-                int lo = 0, hi = n;                      // lo is paid for, its ground and all; hi is not
+                long lo = 0, hi = n;                      // lo is paid for, its ground and all; hi is not
                 while (hi - lo > 1) {
-                    int mid = lo + (hi - lo) / 2;
+                    long mid = lo + (hi - lo) / 2;
                     Ground g = s.paving() ? Ground.NONE : groundFor(game, t, mid);
                     if (g != null && pays(game, g.cash() + total(game, s, mid), fromCash)) lo = mid; else hi = mid;
                 }
@@ -1565,7 +1565,7 @@ public final class AutoBuilder {
      *             in the cash and counts, so there is nothing to borrow - the
      *             same path, a bond of nothing - and the log says it waited.
      */
-    private boolean place(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, String name, int wanted, int n,
+    private boolean place(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, String name, long wanted, long n,
                           Cut cut, Ground ground, Refused first, Payback weighed, OpenAsk from) {
         if (m.kind() == BuildAdvice.Kind.POWER) powerValues.add(n + " " + name + ": "
                 + WorksValue.of(game, m, BuildAdvice.onSite(game, m), s.template(), n,
@@ -1853,7 +1853,7 @@ public final class AutoBuilder {
      * shortfall, or (none covering it) the best value of bare ground, offer
      * by offer.
      */
-    private static String boughtWords(BuildAdvice.Measure m, String name, int n, List<LandParcel> got, double landCost,
+    private static String boughtWords(BuildAdvice.Measure m, String name, long n, List<LandParcel> got, double landCost,
                                       double landShort, Ground ground) {
         List<String> places = new ArrayList<>();
         double sq = 0;
@@ -1914,7 +1914,7 @@ public final class AutoBuilder {
     }
 
     /** The ground n of a building lack past what is free, as groundFor() plans it: NONE when it fits, null when no bare ground on offer covers it - or (0.7.101) when the city's buildings already stand on more ground than it owns (overFull()), where an order on ground of its own could not be placed. */
-    public static Ground groundFor(Game game, BuildingsTemplate t, int n) {
+    public static Ground groundFor(Game game, BuildingsTemplate t, long n) {
         double lack = lacks(game, t, n);
         if (!(lack > 0)) return Ground.NONE;
         if (overFull(game) > 0) return null;
@@ -1957,7 +1957,7 @@ public final class AutoBuilder {
      * free ground from what is owned less what is used), so there it buys
      * none and says why (groundFor(), groundWords(); star P2-7).
      */
-    public static double lacks(Game game, BuildingsTemplate t, int n) {
+    public static double lacks(Game game, BuildingsTemplate t, long n) {
         // ...a works's on any dry ground (Game.groundUse(), ET2, ET4: a run on every class); every building the city builds on flat and foothill, as ever.
         return game.landNeededFor(t, n) - game.getLandManager().freeForAnyone(Game.groundUse(t));
     }
@@ -1999,18 +1999,18 @@ public final class AutoBuilder {
     }
 
     /** An order's wait for n: a paving's on the Paved Road site, a building's in the queue (a sea terminal's quoted on the landmass the rule gives it, as buildStack() is asked, ET5). */
-    static double wait(Game game, BuildAdvice.Suggestion s, int n) {
+    static double wait(Game game, BuildAdvice.Suggestion s, long n) {
         Game.BuildQuote q = s.paving() ? game.quotePave(n) : game.quoteBuildOn(s.template(), n, Landmasses.RULE);
         return q == null ? Double.NaN : q.months;
     }
 
     /** What n of the order costs: Game.quoteBuildOn() by the rule (ET5; Game.quoteBuild() for everything but a sea terminal), or Game.quotePave() for a paving. */
-    static double total(Game game, BuildAdvice.Suggestion s, int n) {
+    static double total(Game game, BuildAdvice.Suggestion s, long n) {
         Game.BuildQuote q = s.paving() ? game.quotePave(n) : game.quoteBuildOn(s.template(), n, Landmasses.RULE);
         return q == null ? Double.POSITIVE_INFINITY : q.total;
     }
 
-    private void hold(BuildAdvice.Measure m, BuildAdvice.Suggestion s, Cut cut, int wanted, String line, Payback pb) {
+    private void hold(BuildAdvice.Measure m, BuildAdvice.Suggestion s, Cut cut, long wanted, String line, Payback pb) {
         held.add(line);
         steps.add(new Step(m, Outcome.HELD, s.paving() ? ConstructionControl.PAVE_FROM + ", paved" : s.template().getName(),
                 wanted, 0, cut, 0, 0, 0, List.of(), 0, pb));
@@ -2097,7 +2097,7 @@ public final class AutoBuilder {
                 + " would move it now.";
     }
 
-    static String cutWords(Cut cut, int wanted, int n) {
+    static String cutWords(Cut cut, long wanted, long n) {
         if (n >= wanted) return "";
         switch (cut) {
             case BUILDERS: return " (" + wanted + " wanted; " + n + " open inside a year)";
@@ -2110,7 +2110,7 @@ public final class AutoBuilder {
     }
 
     /** A measure's figure as the Build tab reads it: served for a served gauge, its own reading for the rest. */
-    public static String reading(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Integer> added) {
+    public static String reading(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added) {
         if (BuildAdvice.isServed(m)) return CityNeeds.servedPct(BuildAdvice.served(game, m, added)) + " served";
         double f = BuildAdvice.figure(game, m, added);
         switch (m.kind()) {
@@ -2205,7 +2205,7 @@ public final class AutoBuilder {
         public String building;
         public int templateId = -1;
         public boolean paving;
-        public int count;
+        public long count;
         public double cost;
         public double raised;
         public double toRaise;
@@ -2216,7 +2216,7 @@ public final class AutoBuilder {
         public String measure()  { return measure == null ? "" : measure; }
         public String building() { return building == null ? "" : building; }
         public boolean paving()  { return paving; }
-        public int count()       { return count; }
+        public long count()       { return count; }
         /** What the order costs, its ground with it, as last priced. */
         public double cost()     { return cost; }
         /** What its bond sales have raised for it. */
@@ -2423,13 +2423,13 @@ public final class AutoBuilder {
             withdrawAsk(a, why, null);
             return;
         }
-        int n = Math.max(1, Math.min(a.count, c.count()));
+        long n = Math.max(1, Math.min(a.count, c.count()));
         BuildingsTemplate t = c.paving() ? null : c.template();
         if (!c.paving() && paysBackFirst(m, t) && !payback(game, m, c, n).paysBack()) {
             withdrawAsk(a, "it would no longer pay back", null);
             return;
         }
-        int askedCount = n;
+        long askedCount = n;
         CrewLimit crews = crewLimit(game, kept, m, c, n);
         if (crews.count() < n) {
             crewHolds.put(m.label(), crews.service());
