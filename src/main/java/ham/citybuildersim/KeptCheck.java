@@ -3449,16 +3449,23 @@ public class KeptCheck {
 
     /**
      * KS2: the plain business's month made to move while 51 is watched, and what puts it back. Section 51 reads a count-up on a business's
-     * figures in a month that moved them, and a business can stand still at the page's tenth of a million for a year (RB1's path: "no
-     * month in twelve moved the figures"). Its property tax is swung every month between the rate it pays and the far end of what the tax
-     * allows (none or MAX_PROPERTY_TAX, whichever is further), the way the player's zone tax row moves it, so its net income moves every
-     * month; the offset it had is put back after.
+     * figures in a month that moved them, and a business can stand still at the page's tenth of a unit for a year (RB1's path: "no month in
+     * twelve moved the figures"). Its property tax is swung every month, the way the player's zone tax row moves it, by SWING_STEPS of the
+     * steps its net income is printed in (Money.tightMoney: a tenth of a billion on "$1.2B"), up where the tax allows it and down otherwise,
+     * so the figure moves every month and the city's months are not upset (a swing to the far end of the tax was $41B a month on FB6's
+     * Construction); the offset it had is put back after.
      */
-    static Runnable businessMoving(Game g, String key) throws Exception {
+    static Runnable businessMoving(Game g, KeptBench bench, String key) throws Exception {
         Runnable before = afterMonth;
         TaxPolicy p = fx(() -> g.getEconomyManager().getTaxPolicy());
         double offset = fx(() -> p.getPropertyOffset(key)), rate = fx(() -> p.effectivePropertyRate(key));
-        double swung = offset + (rate < TaxPolicy.MAX_PROPERTY_TAX / 2 ? TaxPolicy.MAX_PROPERTY_TAX : 0) - rate;
+        double step = fx(() -> printedStep(bench.sectorsWords(key)[1][1]));
+        double assessed = fx(() -> g.getEconomyManager().getAssessedValue(g.getSectors().byKey(key)));
+        // The bill is the assessed value at the annual rate over the year's months (TaxPolicy.effectiveMonthlyPropertyRate).
+        double points = assessed > 0 ? SWING_STEPS * step * TreasuryFund.YEAR_MONTHS / assessed : TaxPolicy.MAX_PROPERTY_TAX;
+        double to = rate + points <= TaxPolicy.MAX_PROPERTY_TAX ? rate + points
+                : rate - points >= 0 ? rate - points : rate < TaxPolicy.MAX_PROPERTY_TAX / 2 ? TaxPolicy.MAX_PROPERTY_TAX : 0;
+        double swung = offset + to - rate;
         boolean[] high = {false};
         Runnable swing = () -> {
             high[0] = !high[0];
@@ -3470,8 +3477,8 @@ public class KeptCheck {
             swing.run();
             return Money.money(was) + " and " + Money.money(g.getEconomyManager().getPropertyTaxFor(s));
         });
-        System.out.printf("  %s's property tax swung every month between %.2f%% and %.2f%% a year: a bill of %s a month%n",
-                key, rate * 100, fx(() -> p.effectivePropertyRate(key)) * 100, bills);
+        System.out.printf("  %s's property tax swung every month between %.3f%% and %.3f%% a year (%d of its net income's printed steps of %s): a bill of %s a month%n",
+                key, rate * 100, fx(() -> p.effectivePropertyRate(key)) * 100, SWING_STEPS, Money.money(step), bills);
         afterMonth = () -> {
             if (before != null) before.run();
             swing.run();
@@ -3480,6 +3487,26 @@ public class KeptCheck {
             afterMonth = before;
             g.setZoneTax(key, Zoning.Tax.PROPERTY, offset);
         };
+    }
+
+    /** How many of its printed steps the swing moves the business's net income by each month (KS2): past a rounding with room to spare. */
+    static final int SWING_STEPS = 3;
+
+    /** The step a figure is printed in, in the model's thousands: its unit's tenth ("$1.2B" moves in tenths of a billion), a thousand on "$418k", a dollar below. */
+    static double printedStep(String words) {
+        // (The unit is the letter after the figure's last digit: a currency may write its sign after the number.)
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("[0-9]([QTBMk])").matcher(words);
+        char unit = ' ';
+        while (m.find()) unit = m.group(1).charAt(0);
+        double dollars = switch (unit) {
+            case 'Q' -> 1e14;
+            case 'T' -> 1e11;
+            case 'B' -> 1e8;
+            case 'M' -> 1e5;
+            case 'k' -> 1e3;
+            default -> 1;
+        };
+        return dollars / 1_000;
     }
 
     /** The figures on a Sectors page that count up: the KEPT, and on the list every card's net income. */
@@ -3577,7 +3604,7 @@ public class KeptCheck {
         System.out.printf("  the ladder has %d rungs, %d of them at or under COUNT_UP_TOP (%.0fx)%n", ladder.length, countingRungs, top);
         String[][] views = {{null, "Operations", "the list's KEPT and its cards'"}, {plain, "Income", "a business's KEPT and the Income page's waterfall"},
                 {plain, "Operations", "a business's KEPT and the Operations page's ring"}};
-        Runnable back = businessMoving(g, plain);
+        Runnable back = businessMoving(g, bench, plain);
         for (String[] view : views) {
             StringBuilder wrong = new StringBuilder();
             fx(() -> {
