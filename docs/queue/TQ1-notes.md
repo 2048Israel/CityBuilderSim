@@ -170,3 +170,41 @@ The wage's premiums stand higher from month 240 on, as the larger bids would hav
 where main's did not: out of land at month 62 ("Holding: no land"), then "housing ahead of jobs" with no order and the
 builders idle from month 70 to 170 (jobs 572-582, 15-38% out of work), while main's grew through the same months.
 A path that parted at month 4; the ensemble's founding rows say whether it is the rule's.
+
+## 7. The ensemble
+
+`tools/ensemble/ensemble.sh TQ1` on 88d9f81b (the model of dbc00115 and the harness), on the orchestrator's go after
+CU2's: 80 of 80 runs, 99.0 min, exit 4, scored against `docs/ensemble/0.9.128.md` (main's newest), committed as
+[docs/ensemble/TQ1.md](../ensemble/TQ1.md). Criteria 18 of 25 against main's 22; hard 6 of 10 against 10 of 10.
+
+**M1 passes** in all five policies (no failed or unread money audit). **F1 fails in four**: AUTO2, ZERO_SLACK, SHOCK
+and HIGH each have 1/16 runs with "households with no home", against main's 0/16. The four are one city: seed 3, the
+finding first at month 428, before any policy parts from its AUTO2 twin (the twins are identical to their switch,
+64/64). These four F1s are the only changed verdicts.
+
+**The finding, replayed.** Seed 3's AUTO2 run replayed alone to month 440 on the ensemble's own class snapshot, with
+the housing read beside it (`-Densemble.extra`; its columns 1-62 equal the ensemble's run to month 430):
+
+| month | people | homes | households | doubled up | unplaced | arrivals | doors left (room) | on site |
+|---|---|---|---|---|---|---|---|---|
+| 420 | 3,977 | 613 | 1,145.95 | 571.26 | 0 | 0 | 11.1 | 0 |
+| 425 | 3,994 | 613 | 1,152.04 | 576.51 | 0 | 0 | 3.7 | 0 |
+| 427 | 4,001 | 613 | 1,154.69 | 578.34 | 0.53 | 0 | 0 | 0 |
+| 428 | 4,004 | 613 | 1,155.95 | 578.98 | 1.03 | 0 | 0 | 0 |
+| 440 | 4,045 | 613 | 1,169.53 | 585.76 | 6.60 | 0 | 0 | 0 |
+
+A town of 4,000 at full employment, every home doubled (doubled up is the half-the-households-plus-one ceiling,
+`FamilyModel`), migration bringing nobody (it is damped as the valves run out, as designed), and the landlords
+building nothing: the town's own growth forms about 1.2 households a month past the ceiling, and LongPlaytest's
+watch (more than one household unplaced) fires at 428. Nothing in it is the tie: it is HN1's class ("a played seed-12
+city leaves households without matching homes for four months on main too; retain the hard housing watch and mend the
+model", `docs/queue/HN1.md`, from R0h's same-state probe), main's housing code reached on TQ1's path.
+
+**The rest, information.** H2 is vacuous as on main's baseline (-0.55% against 0.54%, both VACUOUS: the ZERO_HOT city
+has no burst to stop). A1 3.11% a year against 3.04%; A2 22 [14 to 36] against 22 [11 to 37]; A3 0 [0 to 20] against
+0 [0 to 12]; the young city's inflation (m240-600) 4.89% against 4.79%; the founding's spells (m120-240) 11 [0 to 24]
+and 0 [0 to 0] against 10 [0 to 24] and 0 [0 to 0]. T1 16/16 seeds to 40,000 people (month 1,044) against 15/16 (1,102).
+Final people, median: AUTO2 1,627,676 against 1,578,924; ZERO_SLACK 1,207,162 against 984,883; ZERO_HOT 5,220 against
+4,933; SHOCK 32,754 against 31,300; HIGH 26,026 against 26,102. K1 16.97% against 15.92%; R1-R3 pass, a little
+smaller (R1 -3.47% against -4.22%). The first ensemble's costs GW1 saw (the founding's deflation, A2's longer spells)
+are not here; nor is a gain on H2.
