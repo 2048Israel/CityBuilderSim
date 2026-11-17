@@ -1711,16 +1711,22 @@ public class BuildingManager {
            See Good.LUXURY_TRADE and LuxuryRetail.
 
            COVERAGE PER DOLLAR IS DELIBERATELY WORSE THAN A GROCER'S. A
-           Convenience Store covers 480 people for $442k; a Boutique covers 320
-           for $1,180k, which is eight times the money a head. Selling somebody
-           a watch takes more floor, more staff and more of both per customer
-           than selling them bread, and a city that wants to spend its money
-           has to build for it rather than have it happen.
+           Convenience Store covers 480 people for $442k; a Boutique covers 7
+           pieces for $1,180k. Selling somebody a watch takes more floor, more
+           staff and more of both per customer than selling them bread, and a
+           city that wants to spend its money has to build for it rather than
+           have it happen.
+
+           ...AND A POST SELLS ABOUT ONE PIECE A MONTH (LX1, 2026-11-17). Until
+           LX1 a Boutique covered 320 pieces with seven posts, so its payroll
+           was 1-2% of its margin where BEA's other retail pays 41.7%; the
+           coverage is what eight staff sell and the building is held
+           (LuxuryRetail, WHAT A POST SELLS).
            =================================================================== */
         BuildingsTemplate boutique = new BuildingsTemplate("Boutique", BuildingType.LUXURY)
                 .setSector("Luxury Retail")
-                .makes(Good.LUXURY_TRADE, 320)          // customers served a month
-                .uses(Good.LUXURIES, 320)               // one piece each, bought in
+                .makes(Good.LUXURY_TRADE, 7)            // customers served a month
+                .uses(Good.LUXURIES, 7)                 // one piece each, bought in
                 .setCashCost(1180)
                 .setConstructionPoints(190)
                 .setConstructionMaterials(26)
@@ -1728,24 +1734,29 @@ public class BuildingManager {
                 .setWaterConsumption(1)
                 .setLandSqFt(6000)
                 .setRoadLoad(8)
-                .setStock(960)                          // three months on the shelf
+                .setStock(21)                           // three months on the shelf
                 .setJobs(JobType.NO_DIPLOMA, 2)
-                .setJobs(JobType.DIPLOMA, 4)
+                .setJobs(JobType.DIPLOMA, 5)
                 .setJobs(JobType.COLLEGE_BUSINESS, 1)
                 .setId(69);
-        boutique.setCoverage(320);
+        boutique.setCoverage(7);
         templates.add(boutique);
 
         /*
-         * ...AND THE BIG ONE, which is where a large city actually spends.
-         * Thirteen times the customers on eighteen times the money, so it is
-         * the worse buy per head until the city is big enough to fill it -
-         * which is the same shape every other big building in this game has.
+         * ...AND THE BIG ONE. Eleven times the customers on eighteen times
+         * the money, so it is the worse buy per dollar at every size: the
+         * planner scores coverage x margin over cost (LuxuryRetail.plan()),
+         * 80 over $21,600 against the Boutique's 7 over $1,180 (0.0037 a
+         * dollar against 0.0059; 0.19 against 0.27 before LX1), and reads no
+         * city size, so it never chooses one while a Boutique can be staffed;
+         * one stands only where something else places it (LX1's notes, a call).
+         * Its 91 posts cover 80 pieces a month since LX1, the Boutique's 0.88
+         * a post, where they covered 4,200.
          */
         BuildingsTemplate departmentStore = new BuildingsTemplate("Department Store", BuildingType.LUXURY)
                 .setSector("Luxury Retail")
-                .makes(Good.LUXURY_TRADE, 4200)
-                .uses(Good.LUXURIES, 4200)
+                .makes(Good.LUXURY_TRADE, 80)
+                .uses(Good.LUXURIES, 80)
                 .setCashCost(21600)
                 .setConstructionPoints(2900)
                 .setConstructionMaterials(560)
@@ -1753,13 +1764,13 @@ public class BuildingManager {
                 .setWaterConsumption(18)
                 .setLandSqFt(90000)
                 .setRoadLoad(70)
-                .setStock(12600)
+                .setStock(240)
                 .setJobs(JobType.NO_DIPLOMA, 34)
                 .setJobs(JobType.DIPLOMA, 46)
                 .setJobs(JobType.COLLEGE_BUSINESS, 9)
                 .setJobs(JobType.UNIV_FINANCE, 2)
                 .setId(70);
-        departmentStore.setCoverage(4200);
+        departmentStore.setCoverage(80);
         templates.add(departmentStore);
 
 

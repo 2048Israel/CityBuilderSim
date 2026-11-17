@@ -18,6 +18,39 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### MED1 — a health study — 2026-11-17, ready, see docs/queue/MED1-notes.md
+`docs/studies/health.md`, its sheets in `docs/studies/health/`: the causes of death the game lacks, 1900 to today in
+Canada, and a mental hospital. Heart disease, stroke, cancer, diabetes and kidney failure become named shares of today's
+base rate, each with a history factor (heart disease 5.5 times today's in 1950), so insulin, angioplasty, statins, the
+smoking ban, imatinib, checkpoint drugs and PCV7 get steps a city can take early. Polio runs on Canada's own years with
+the Salk vaccine as its step, and dialysis keeps a pool the hospitals serve once M4 is known. The mental hospital stays
+out: nothing measures what a served patient gains. Settles R2f's ★10, R6-G-K ★2 and ★3 and R6-G-P's medical rows. Six
+calls (MED1-K); MED2-MED5 queued. No code.
+
+### 0.9.138 — LX1, Luxury Retail's sales per post — 2026-11-17, ready, see docs/queue/LX1-notes.md
+A Boutique covered 320 pieces of a $22,000 good a month with seven posts, so Luxury Retail's payroll was 0.5-1.7% of
+its margin on main after CU2, where BEA's other retail pays 41.7% (LS1). A Boutique now covers 7 pieces with 8 posts
+and the Department Store 80 with its 91 (ids 69 and 70); their floor, cost and the piece's price are held.
+`LuxuryRetail.LABOUR_SHARE` (41.7%) and a factor of two either way are the band `LuxuryRetailCheck` holds the
+catalogue and a town's year to (red on main: 0.6% and 1.3%). On LS1's probe the share reads 36-41% (in the band 313
+of seed 0's 331 years, none on main); the shops take a quarter of the old city's business workers, and the default
+city is 912k at m2399 against main's 413k. The Department Store is never the planner's choice, as on main (LQ1's
+call). A road load's last stream is the remainder of the other two's sum (`TradeCostCheck`). A 4,000-month run has
+the map's save refused at m3589 and m3952, FB8's. GroceryCheck's twins hold their planners, so its vouchers' poor are
+caused; fixtures that read the old path go to HP2 (PriceLevelCheck, HealthCheck, ScaleCheck, DistressBleedCheck), FB9
+(MapCheck 2h-c) and KRT1 (KeptCheck 78), and PlanCheck 6's + floor on its played city to PX2. No save field, no format
+bump.
+
+### 0.9.137 — FB5, the played cities' placement — 2026-11-17, ready, see docs/queue/FB5-notes.md
+The map draws every building the city has. What no plot of the city's own ground holds at its edge now stands just past it, on dry
+ground the city does not own, beside a street and never in the field. In MapCheck's played city 133 stand there; 135 went
+undrawn on main. A + junction no longer forms where streets laid on newly bought ground meet the T of a join along the old cut (PX1).
+Instead, the newest arm that can go without parting the streets is stopped a plot short. PlanCheck's new fixture breaks the plan
+in 36 of 76 cuts without this, and holds in all 76 with it. The industry ring (CL6) no longer shows on the playtest's default
+path (industry 2.78 km from the founding site against the homes' 3.92). Seed 1's ring is measured and goes back to the queue as
+CL7: a new cell goes to the works that bought its ground, while the homes already wait at the edge. MapCheck 1's road at month
+61 is the renderer's stale tile, FB9's DM3-R. Nothing in the model reads the map, and the playtest's trace is unchanged.
+
 ### 0.9.136 — FB3, reloads that read as they were saved — 2026-11-17, ready, see docs/queue/FB3-notes.md
 A loaded city now reads as it was saved in four more places. The shops' want and means are put back always, zeros too: a city saved in its
 second month, when its shops want nothing, came back wanting what the load's rebuild struck (0.0625; MoneyDatesCheck). An older save's
