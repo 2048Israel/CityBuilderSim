@@ -182,7 +182,8 @@ main loads and reads as it did.
   TQ1's base, main d08c8116, passes TreasuryCheck (it is in neither `gate.txt` nor `known-reds.txt` there), and dc8f4da6
   is d08c8116 plus TQ1. So TQ1's path shut the fixture's window, and what the merge brought, DQ1's young-town borrowing
   and CU2's chained world prices, opened it again. The fixture does not cause the open window it asserts; the path
-  does. That is a fragility of the fixture's own, which TQ1 does not mend (named in the mail).
+  does. That is a fragility of the fixture's own, which TQ1 does not mend. It is queued as **TW1**, "the fixture
+  causes its own open window", in the ship file (the orchestrator's call, 2026-11-17).
 
 ## 6. The trace
 
@@ -226,14 +227,51 @@ paper (month 59). The size, main then TQ1:
 
 Both towns stall after month 900. Main's falls to 21,664 at 1,000, stands near 24,000 to 1,300 and takes off at about
 1,400. TQ1's stands near 33,000 ("housing ahead of jobs (14,222 now; 0 coming)" from 1,300) until about 1,750, so it
-ends at less than half main's size. The ensemble judged the rule on the model before the merge (section 7). It has
-not been run on the merged model; that is the orchestrator's call.
+ends at less than half main's size. The ensemble was run again on the merged model (section 7).
 
 ## 7. The ensemble
 
-`tools/ensemble/ensemble.sh TQ1` on 88d9f81b (the model of dbc00115 and the harness), on the orchestrator's go after
-CU2's: 80 of 80 runs, 99.0 min, exit 4, scored against `docs/ensemble/0.9.128.md` (main's newest), committed as
-[docs/ensemble/TQ1.md](../ensemble/TQ1.md). Criteria 18 of 25 against main's 22; hard 6 of 10 against 10 of 10.
+**On the merged model** (the orchestrator's call, 2026-11-17: once on the final model, against the newest versioned
+baseline). `BASELINE=docs/ensemble/0.9.130.md tools/ensemble/ensemble.sh TQ1` ran on d0c9d575 (0.9.130 with TQ1): 80
+of 80 runs, 44.8 min, exit 4. It is committed as [docs/ensemble/TQ1.md](../ensemble/TQ1.md) in place of the first
+run's, whose folder is now `target/ensemble/TQ1-premerge/`. Criteria 20 of 25 against main's 21 of 26 (H2 is vacuous
+here, so not counted); hard 7 of 10 against 9 of 10.
+
+**M1 passes** in all five policies. **F1**: AUTO2, ZERO_SLACK and HIGH have 1/16 runs with "households with no home"
+against main's 0/16, so they FAIL. SHOCK has 1/16 against main's 1/16 and passes by count, but it is not main's city:
+main's is seed 13, months 738-776 (CU2's notes). The four are one city, seed 0, the finding once at month 182, before
+any policy parts from its AUTO2 twin. Seed 3, the first run's F1, is clean on the merged model.
+
+**Seed 0, replayed** with section 8's probe rebuilt on the merged snapshot (`target/tq1-homes/run0.sh`, output in
+`s0/`; the control's CSV equals the ensemble's AUTO2-0 to the byte for 230 rows). Real Estate is held "no land" from
+month 100 or earlier (5,570 m² needed and 684 free from 140), with homes at 215 and the treasury's cash just below
+zero (-2 to -5). Arrivals stop as the room runs out (none from 179). At 180 a Small Childcare Centre order buys
+0.0198 km² first (North 4), and the landlords build 3 Low-Rise Apartments at 181. A second order at 182 buys 0.0216
+km² more, and at 183 the town takes off (9 Houses, 37 arrivals). The watch fires once, at 182. Main's rule switched on:
+
+| main's rule from | the path moves from | households with no home |
+|---|---|---|
+| 2 | 36 | none |
+| 30 | 36 | none |
+| 60 | 65 | once, 182 |
+| 90, 100, 140, 170 | 186 | once, 182 |
+
+From month 2 (main's model in all but the founding's first month) it is the same city: the same 215 homes, the same
+hold for land, the same childcare order buying ground at 180, the same take-off at 183, its people within two (1,366
+against 1,367 at 182). Only the watch's threshold, more than one household unplaced, is crossed on TQ1's path at 182
+and not on main's. So it is FB11's class, as seed 3's and the default playtest's are: landlords held for land while
+nothing buys ground, the escape a works order that buys more ground than it uses.
+
+**The rest, information.** H2 is vacuous (-0.88%; main's -0.52%, FAIL). K2 passes (2.86%, the twin -0.20%; main's
+3.72%, FAIL). A1 3.68% a year against 3.86%; A2 24 [17 to 40] against 24 [16 to 41]; A3 0 [0 to 4] in both. T1 16/16
+seeds reach 40,000 people, at month 1,071 against 824. Final people, median: AUTO2 1,836,044 against 1,570,712;
+ZERO_SLACK 1,115,392 against 1,167,092; ZERO_HOT 6,955 against 7,036; SHOCK 38,110 against 37,853; HIGH 26,363 against
+29,262. K1 17.33% against 16.61%; R1 -4.08% against -3.81%.
+
+**Before the merge** (the first run, its verdicts as they stood). `tools/ensemble/ensemble.sh TQ1` on 88d9f81b (the
+model of dbc00115 and the harness), on the orchestrator's go after CU2's: 80 of 80 runs, 99.0 min, exit 4, scored
+against `docs/ensemble/0.9.128.md` (main's newest then), committed then as `docs/ensemble/TQ1.md` (da61276a). Criteria
+18 of 25 against main's 22; hard 6 of 10 against 10 of 10.
 
 **M1 passes** in all five policies (no failed or unread money audit). **F1 fails in four**: AUTO2, ZERO_SLACK, SHOCK
 and HIGH each have 1/16 runs with "households with no home", against main's 0/16. The four are one city: seed 3, the
@@ -356,6 +394,12 @@ or earlier, its path finds ground. This is seed 3's pattern (section 8: main's m
 treasury. Whether the town stalls rides on the path, which the tie rule moves by design.
 
 **On the gate** the full suite's LongPlaytest exits 1 with no FAIL line. `known-reds.txt`'s "LongPlaytest | (no FAIL
-line) | FB5" entry (CL6's industry ring) matches any such exit, so the judge would pass it under FB5's name. Its
-disposition is the orchestrator's (mailed with this commit). This note's recommendation is FB11 by name, as for seed 3:
-a ship-file `## known-reds` row of the same harness and part naming FB11, and one clause in the changelog paragraph.
+line) | FB5" entry (CL6's industry ring) matches any such exit, so the judge passes it under FB5's name.
+
+**The disposition** (the orchestrator, 2026-11-17, its call): the advisor's ground-ahead buy, stopped by the cash share
+while Real Estate is held for land, is ER1-F's cause, folded into FB11 ("the advisor's land funding"). It is main's
+latent fault, so it passes by name with FB11. **It is named here alone, not in the ship file.** `tools/known-reds.sh`
+keys a row by harness and part, and a ship-file row replaces the registry's entry of the same key. Tried with
+"LongPlaytest | (no FAIL line) | FB11 | 2026-11-17 | ..." in a copy of this ship file: the merged list kept the FB11
+row and dropped FB5's, so it would not stand beside it. When FB5 turns its own red green, this red would be unnamed
+again. One clause of the changelog paragraph names it.
