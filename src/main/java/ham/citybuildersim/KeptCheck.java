@@ -9097,6 +9097,14 @@ public class KeptCheck {
             check(city + ", told that quote, shows what a ladder built new and told it shows", ladder[k * 4 + 3] == 1);
         }
 
+        // ...and a bar that moves by less than the picture's quantum is the bar it was, and by more is drawn again (one holder's face, written to a tenth of a trillion).
+        KeptBench.LadderQuantum quantum = fx(bench::ladderQuantumProbe);
+        check("fixture: one holder's face moves its bar by " + quantum.tinyPx() + " pixel in one telling and " + quantum.bigPx() + " in the other, either side of the quantum ("
+                + quantum.quantum() + ")", quantum.tinyPx() < quantum.quantum() && quantum.quantum() < quantum.bigPx());
+        check("the buyback ladder whose one bar moved by a hundredth of a pixel stays the nodes it was, and shows what a ladder built new and told it shows",
+                quantum.tinyKept() && quantum.tinyEqualsNew());
+        check("...and when that bar moved by half a pixel it is drawn again, and shows what a ladder built new and told it shows", quantum.bigRedrawn() && quantum.bigEqualsNew());
+
         // KS1-UI: a header tile's hidden wordings and sparkline stand where a tile built new leaves them.
         List<List<String>> tile = fx(bench::headerTileProbe);
         int shown = 0, hiddenAfter = 0;
@@ -9178,6 +9186,11 @@ public class KeptCheck {
                 gov.made()[3] == 0 && gov.made()[4] == 0);
         check("...and the lines away made none either (" + madeEach + "), nor did a redraw of an unchanged state (" + java.util.Arrays.toString(gov.madeAgain()) + ")",
                 gov.made()[2] == 0 && java.util.Arrays.stream(gov.madeAgain()).sum() == 0);
+        // ...and a scope that parks more rows than it can lets go the ones asked for longest ago, not an arbitrary few (REV-FB2-1): a step named with
+        // its figure ("Bought land with D$12.4M of reserves") is asked once and parks a row under a key never asked again.
+        int[] cull = fx(bench::parkedCullProbe);
+        check("fixture: more one-off lines are parked than a scope can hold (" + cull[1] + " against " + cull[2] + ")", cull[1] > cull[2]);
+        check("the recurring lines asked again after the one-offs filled the scope were kept, not let go with them (" + cull[0] + " made anew)", cull[0] == 0);
         int govDiffer = 0;
         String govFirst = null;
         for (int i = 0; i + 1 < gov.signatures().size(); i += 2) {

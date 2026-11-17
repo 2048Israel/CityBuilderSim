@@ -145,8 +145,11 @@ public final class Kept {
         private final Map<Class<?>, Integer> taken = new HashMap<>();
         private Map<Object, Scope> inner = new HashMap<>();
         private Map<Object, Scope> innerMaking = new HashMap<>();
-        /** Whether this scope's nodes outlive a draw that does not ask for it (parkedScope()). */
-        private boolean parked;
+        /**
+         * The inner scopes parkedScope() was asked for, the least recently asked first (an access-ordered map: asking again moves a key to the
+         * end), so a scope that has more than PARKED_MAX lets go the eldest and never an arbitrary one.
+         */
+        private final java.util.LinkedHashMap<Object, Scope> parkedKeys = new java.util.LinkedHashMap<>(16, .75f, true);
 
         void begin() {
             making = new HashMap<>();
@@ -156,13 +159,21 @@ public final class Kept {
 
         /**
          * What was not asked for this draw is let go: the next draw hands back only this one's - except the parked scopes (FB2, KS1-Gov),
-         * which stay as their last draw left them, up to PARKED_MAX of them in a scope, for the draw that asks for them again.
+         * which stay as their last draw left them, up to PARKED_MAX of them in a scope, for the draw that asks for them again. When there
+         * are more, the ones asked for longest ago go: a row keyed by a figure ("Bought land with D$12.4M of reserves") is asked once and
+         * is the first to go, and the lines that recur stay.
          */
         void end() {
             made = making;
-            int kept = 0;
-            for (Map.Entry<Object, Scope> e : inner.entrySet()) {
-                if (e.getValue().parked && !innerMaking.containsKey(e.getKey()) && kept++ < PARKED_MAX) innerMaking.put(e.getKey(), e.getValue());
+            java.util.Iterator<Map.Entry<Object, Scope>> eldest = parkedKeys.entrySet().iterator();
+            for (int over = parkedKeys.size() - PARKED_MAX; eldest.hasNext(); ) {
+                Map.Entry<Object, Scope> e = eldest.next();
+                if (over > 0) {
+                    eldest.remove();
+                    over--;
+                } else if (!innerMaking.containsKey(e.getKey())) {
+                    innerMaking.put(e.getKey(), e.getValue());
+                }
             }
             inner = innerMaking;
         }
@@ -304,11 +315,11 @@ public final class Kept {
         if (s == null) {
             s = parent.inner.get(key);
             if (s == null) s = new Scope();
-            s.parked = true;
             s.begin();
             d.begun.add(s);
             parent.innerMaking.put(key, s);
         }
+        parent.parkedKeys.put(key, s);
         d.scopes.push(s);
         try {
             return code.get();

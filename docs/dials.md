@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,078 constants in 583 files.**
+**6,079 constants in 583 files.**
 
 ## model (2908 constants)
 
@@ -4322,7 +4322,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1201 constants)
+## interface (1202 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
@@ -4837,11 +4837,11 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 172 | `Kept.PARKED_MAX` | `48` | The most scopes a scope parks (parkedScope()): rows are keyed by what they say, and a few dozen is every row a page has had in a year. |
-| 780 | `Kept.TOOLTIP` | `"javafx.scene.control.Tooltip"` | The key Tooltip.install() keeps a node's tooltip under in its properties: what tipOf() reads. |
-| 782 | `Kept.ANIMATION` | `"kept.animation"` | The key play() keeps a node's last animation under in its properties, to stop it before the next. |
-| 829 | `Kept.HELD` | `"kept.held"` | The key grip() keeps a node's "held" flag under, and the marker that it has been gripped. |
-| 830 | `Kept.GRIP` | `"kept.grip"` |  |
+| 183 | `Kept.PARKED_MAX` | `48` | The most scopes a scope parks (parkedScope()): rows are keyed by what they say, and a few dozen is every row a page has had in a year. |
+| 791 | `Kept.TOOLTIP` | `"javafx.scene.control.Tooltip"` | The key Tooltip.install() keeps a node's tooltip under in its properties: what tipOf() reads. |
+| 793 | `Kept.ANIMATION` | `"kept.animation"` | The key play() keeps a node's last animation under in its properties, to stop it before the next. |
+| 840 | `Kept.HELD` | `"kept.held"` | The key grip() keeps a node's "held" flag under, and the marker that it has been gripped. |
+| 841 | `Kept.GRIP` | `"kept.grip"` |  |
 
 ### KeptBench.java ([map](map/KeptBench.md))
 
@@ -4858,6 +4858,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2137 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land")` | The stopped pages' kinds, by the way the model refuses an order. |
 | 2347 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
 | 3605 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
+| 5448 | `KeptBench.RECURRING_LINES` | `{ "Raised by issuing paper", "Principal repaid", "Interest that was no cash", "Gain(los...` | KS1-Gov: the rows a scope parks are the ones last asked for. |
 
 ### Ladder.java ([map](map/Ladder.md))
 
@@ -6923,7 +6924,7 @@ Generated 2026-11-17 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 7821 | `KeptCheck.KEPT_HOUSEHOLD_MS` | `8` | The budget for the kept Household money month - its draw, then the pulse's CSS and layout - on the page as it opens and with the first family cell's books open (the larger of the two being the figu... |
 | 7829 | `KeptCheck.KEPT_RANKINGS_MS` | `7` | The budget for the kept Rankings month - its draw, then the pulse's CSS and layout - on the tab as it opens and with every measure unfolded (Browse all: a line a measure; the larger of the two bein... |
 | 8608 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
-| 9195 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck leaves at least a quarter of its suite heap for the next pages (KP2c). |
+| 9208 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck leaves at least a quarter of its suite heap for the next pages (KP2c). |
 
 ### KnownRedsCheck.java ([map](map/KnownRedsCheck.md))
 

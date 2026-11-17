@@ -1,4 +1,4 @@
-# KeptCheck.java - 9,489 lines · 213 methods · 42 constants · harnesses
+# KeptCheck.java - 9,502 lines · 213 methods · 42 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      site, a month's draw keeps their top nodes, hands back nine in ten of the first draw's nodes
 > ... (260 more lines in the source)
 
-**Uses:** [KeptBench](KeptBench.md) (699), [Game](Game.md) (151), [ResearchView](ResearchView.md) (120), [Money](Money.md) (59), [Sectors](Sectors.md) (51), [FundView](FundView.md) (32), [Debt](Debt.md) (22), [Observation](Observation.md) (21), [DecisionLog](DecisionLog.md) (21), [ResearchViewCheck](ResearchViewCheck.md) (20), [Where](Where.md) (19), [BuildAdvice](BuildAdvice.md) (17), [ForeignAccounts](ForeignAccounts.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (16), [Timing](Timing.md) (15), [ResearchCatalog](ResearchCatalog.md) (15), [CityCalendar](CityCalendar.md) (13), [FundLedger](FundLedger.md) (13), [Notice](Notice.md) (12), [ChartModel](ChartModel.md) (11), [Auction](Auction.md) (9), [Research](Research.md) (7), [Equity](Equity.md) (7), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6), [ClockPace](ClockPace.md) (6), [BuildingManager](BuildingManager.md) (5), [IndustryView](IndustryView.md) (5), [DebtManager](DebtManager.md) (5), [Bank](Bank.md) (5)... and 38 more
+**Uses:** [KeptBench](KeptBench.md) (700), [Game](Game.md) (151), [ResearchView](ResearchView.md) (120), [Money](Money.md) (59), [Sectors](Sectors.md) (51), [FundView](FundView.md) (32), [Debt](Debt.md) (22), [Observation](Observation.md) (21), [DecisionLog](DecisionLog.md) (21), [ResearchViewCheck](ResearchViewCheck.md) (20), [Where](Where.md) (19), [BuildAdvice](BuildAdvice.md) (17), [ForeignAccounts](ForeignAccounts.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (16), [Timing](Timing.md) (15), [ResearchCatalog](ResearchCatalog.md) (15), [CityCalendar](CityCalendar.md) (13), [FundLedger](FundLedger.md) (13), [Notice](Notice.md) (12), [ChartModel](ChartModel.md) (11), [Auction](Auction.md) (9), [Research](Research.md) (7), [Equity](Equity.md) (7), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6), [ClockPace](ClockPace.md) (6), [BuildingManager](BuildingManager.md) (5), [IndustryView](IndustryView.md) (5), [DebtManager](DebtManager.md) (5), [Bank](Bank.md) (5)... and 38 more
 
 **Used by (4):** [ChartFitCheck](ChartFitCheck.md), [MapCheck](MapCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [ToastCheck](ToastCheck.md)
 
@@ -141,7 +141,7 @@
 | 7821 | `KeptCheck.KEPT_HOUSEHOLD_MS` | `8` | The budget for the kept Household money month - its draw, then the pulse's CSS and layout - on the page as it opens and with the first family cell's books open (the larger of the two being the figure), at month 3,400 ... |
 | 7829 | `KeptCheck.KEPT_RANKINGS_MS` | `7` | The budget for the kept Rankings month - its draw, then the pulse's CSS and layout - on the tab as it opens and with every measure unfolded (Browse all: a line a measure; the larger of the two being the figure), at mo... |
 | 8608 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
-| 9195 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck leaves at least a quarter of its suite heap for the next pages (KP2c). |
+| 9208 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck leaves at least a quarter of its suite heap for the next pages (KP2c). |
 
 ## Fields (state)
 
@@ -164,7 +164,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 342 | 9148 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 342 | 9161 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 346 | 5 | `static void check(String label, boolean ok)` |  |
 | 353 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure (R3b, sections 99 to 101). |
 | 370 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
@@ -489,7 +489,7 @@
 | 8519 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
 | 8549 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
 
-### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8603-9489)
+### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8603-9502)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -500,7 +500,7 @@
 | 8873 | 4 | `static void drawHeader(KeptBench bench) throws Exception` | The header drawn kept and laid out, as the clock's redraw leaves it. |
 | 8883 | 183 | `static void up7Speed(Game g, KeptBench bench) throws Exception` | Section 98: the speed's reading (UP7). |
 | 9068 | 9 | `static boolean onceEach(KeptBench.Sets s)` | Whether a draw wrote the reading's words once and its style once, and nothing else. |
-| 9086 | 107 | `static void fb2Repairs(Game g, KeptBench bench) throws Exception` | Section 103 (FB2): the kept screens' geometry and retention, each repair caused on its own. |
-| 9198 | 73 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
-| 9272 | 217 | `public static void main(String[] args) throws Exception` |  |
+| 9086 | 120 | `static void fb2Repairs(Game g, KeptBench bench) throws Exception` | Section 103 (FB2): the kept screens' geometry and retention, each repair caused on its own. |
+| 9211 | 73 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
+| 9285 | 217 | `public static void main(String[] args) throws Exception` |  |
 

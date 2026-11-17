@@ -5180,12 +5180,17 @@ public final class KeptBench {
 
     /** A quote of the buyback ladder: six slices of Buyback.Holder's four, their faces times `scale`, the face taken (when `taken`) too. */
     private static ham.citybuildersim.Buyback.Result ladderQuote(double scale, boolean taken) {
+        return ladderQuote(scale, taken, -1, 0);
+    }
+
+    /** ...with `add` more face on slice `only` (none: -1). */
+    private static ham.citybuildersim.Buyback.Result ladderQuote(double scale, boolean taken, int only, double add) {
         ham.citybuildersim.Buyback.Holder[] who = {ham.citybuildersim.Buyback.Holder.BANK, ham.citybuildersim.Buyback.Holder.HOUSEHOLDS,
                 ham.citybuildersim.Buyback.Holder.FIRMS, ham.citybuildersim.Buyback.Holder.WORLD, ham.citybuildersim.Buyback.Holder.BANK,
                 ham.citybuildersim.Buyback.Holder.HOUSEHOLDS};
         double[] face = {5.0e11, 4.1e11, 3.2e11, 1.9e11, 1.3e11, 0.9e11}, price = {98.6, 99.1, 99.7, 100.4, 100.9, 101.5};
         List<ham.citybuildersim.Buyback.Offer> ladder = new ArrayList<>();
-        for (int i = 0; i < face.length; i++) ladder.add(new ham.citybuildersim.Buyback.Offer(who[i], face[i] * scale, price[i]));
+        for (int i = 0; i < face.length; i++) ladder.add(new ham.citybuildersim.Buyback.Offer(who[i], face[i] * scale + (i == only ? add : 0), price[i]));
         return new ham.citybuildersim.Buyback.Result(ladder, 1.0e12, 1.3265e12 * scale, taken ? 6.0e11 * scale : 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 taken ? 99.1 : 0, 0, 100.0, 0, 0, 0);
     }
@@ -5431,5 +5436,78 @@ public final class KeptBench {
         int row = 0;
         for (String step : steps) row = GovernmentScreen.moved(grid, row, step, 12.5, false);
         return Kept.column(8, Kept.row(8, ring, key), bridge, grid);
+    }
+
+    /**
+     * KS1-Gov: the rows a scope parks are the ones last asked for. A page whose lines recur (fourteen, asked every fourth draw) and whose other
+     * lines are asked once and never again (a step named with its figure, "Bought land with D$12.4M of reserves": a key a draw each), over
+     * three times the most a scope parks. Returns the nodes the draws that ask for the recurring lines made beyond the one-off's own: 0
+     * when every recurring line was kept (a one-off's are never asked for again, so they are what a full scope lets go) and the number of
+     * recurring lines made anew when the scope let go the wrong ones, then the one-offs parked in all and the most a scope parks.
+     */
+    private static final String[] RECURRING_LINES = {"Raised by issuing paper", "Principal repaid", "Interest that was no cash",
+            "Gain (loss) on paper bought back", "Inflation uplift not yet paid", "Exchange gain (loss) on foreign debt", "Arrears paid down",
+            "Not accounted for", "Sales tax", "Business tax", "Income tax", "Property tax", "Central bank remittance", "Land sold"};
+
+    public int[] parkedCullProbe() {
+        Kept.Pool pool = new Kept.Pool();
+        VBox page = new VBox();
+        int excess = 0, draws = 3 * Kept.PARKED_MAX;
+        for (int d = 0; d < draws; d++) {
+            final int at = d;
+            Kept.draw(pool, () -> {
+                List<Node> rows = new ArrayList<>();
+                if (at % 4 == 0) {
+                    for (String line : RECURRING_LINES) rows.add(Kept.parkedScope(line, () -> Kept.label(line)));
+                }
+                String once = "Bought land with D$" + (12 + at) + ".4M of reserves";
+                rows.add(Kept.parkedScope(once, () -> Kept.label(once)));
+                page.getChildren().setAll(rows);
+            });
+            if (at % 4 == 0 && at > 0) excess += pool.lastMade() - 1;
+        }
+        return new int[]{excess, draws, Kept.PARKED_MAX};
+    }
+
+    /** KL1's quantum probe: what a face's drift does to a bar, against the picture's own quantum. */
+    public record LadderQuantum(double quantum, double tinyPx, double bigPx, boolean tinyKept, boolean tinyEqualsNew, boolean bigRedrawn,
+                                boolean bigEqualsNew) { }
+
+    /**
+     * KL1: one holder's face moved so that its bar moves by a hundredth of a pixel (under FinancesScreen.BuybackLadder.PIXEL_QUANTUM: the ladder
+     * is the picture it was, the nodes it held) and by half a pixel (over it: it is drawn again), each equal to a ladder built new and told the
+     * same quote. The faces are written to a tenth of a trillion, so only the bar can tell the quotes apart.
+     */
+    public LadderQuantum ladderQuantumProbe() throws Exception {
+        java.util.function.DoubleFunction<String> money = v -> String.format(Locale.ROOT, "D$%.1fT", v / 1e12);
+        FinancesScreen.BuybackLadder kept = new FinancesScreen.BuybackLadder();
+        Pane host = probeHost(kept, 1000, 400);
+        kept.set(ladderQuote(1, false, 1, 0), 98.5, money);
+        passes(host.getScene(), host);
+        double plot = Math.max(FinancesScreen.BuybackLadder.LEAST_W, kept.getWidth()) - FinancesScreen.BuybackLadder.LEFT
+                - FinancesScreen.BuybackLadder.FACE_ROOM - FinancesScreen.BuybackLadder.MARKS;
+        double biggest = 5.0e11;
+        // A hundredth of a pixel the way that keeps the bar in the cell of the quantum it is in (the bar's snap is a round, and a hundredth can cross a cell's edge).
+        double q = FinancesScreen.BuybackLadder.PIXEL_QUANTUM, was = plot * 4.1e11 / biggest;
+        double tiny = Math.round((was + .01) / q) == Math.round(was / q) ? .01 : -.01;
+        double tinyAdd = tiny / plot * biggest, bigAdd = .5 / plot * biggest;
+        List<Node> first = new ArrayList<>(kept.getChildren());
+        kept.set(ladderQuote(1, false, 1, tinyAdd), 98.5, money);
+        passes(host.getScene(), host);
+        boolean tinyKept = first.equals(kept.getChildren());
+        FinancesScreen.BuybackLadder fresh = new FinancesScreen.BuybackLadder();
+        Pane host2 = probeHost(fresh, 1000, 400);
+        fresh.set(ladderQuote(1, false, 1, tinyAdd), 98.5, money);
+        passes(host2.getScene(), host2);
+        boolean tinyEquals = pictureSignature(kept).equals(pictureSignature(fresh));
+        kept.set(ladderQuote(1, false, 1, bigAdd), 98.5, money);
+        passes(host.getScene(), host);
+        boolean bigRedrawn = !first.equals(kept.getChildren());
+        FinancesScreen.BuybackLadder fresh2 = new FinancesScreen.BuybackLadder();
+        Pane host3 = probeHost(fresh2, 1000, 400);
+        fresh2.set(ladderQuote(1, false, 1, bigAdd), 98.5, money);
+        passes(host3.getScene(), host3);
+        boolean bigEquals = pictureSignature(kept).equals(pictureSignature(fresh2));
+        return new LadderQuantum(FinancesScreen.BuybackLadder.PIXEL_QUANTUM, .01, .5, tinyKept, tinyEquals, bigRedrawn, bigEquals);
     }
 }

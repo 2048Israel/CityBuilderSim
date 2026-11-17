@@ -2,7 +2,7 @@
 
 Generated 2026-11-17 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**212 harness files, 24,840 labelled assertions.** AllChecks runs 212 of them.
+**212 harness files, 24,845 labelled assertions.** AllChecks runs 212 of them.
 
 ## Which harnesses read which class
 
@@ -15972,7 +15972,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2362 23b.
   - L2363 23c.
 
-## KeptCheck.java - 482 labelled assertions
+## KeptCheck.java - 487 labelled assertions
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -16498,54 +16498,59 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L9055 ...and back sets them once each (
   - L9056 ...and a header draw that finds the pace short sets them once each, the next draw nothing (
 - **L9087 103: the geometry and retention repairs of FB2, each caused on its own**
-  - L9108 fixture: the header tile shows its longest wording at some widths and hides it at others (
-  - L9119 the header tile told the same words at each width equals a tile built new at that width (
-  - L9129 fixture: the bar's dial tick is named in some states and not in others (
-  - L9140 the bar whose dial tick comes and goes equals a bar built new in each state (
-  - L9152 fixture: Partners' chart is drawn at the one size in every telling (
-  - L9153 Partners' chart told other places for the buyers to join is the same picture as one built new, to the pixel (pixels that differ:
-  - L9158 fixture: Search's rows are told words that come and go (the kept page reads differently in the second state than the first)
-  - L9169 Search's rows whose price, move and held words come and go equal rows built new in each state (
-  - L9175 fixture: the lines made their nodes when they first came, and the lines never seen before made theirs (made, a state each:
-  - L9177 the lines that came back made no node, the ring's slices, the key's rows, the bridge's steps and the statement's rows among them (
-  - L9179 ...and the lines away made none either (
-  - L9190 the page of lines that come and go equals a page built new in each state (
-- **L9199 102: unchanged state stays put, a press survives greying, retired pages are released**
-  - L9210 restored comparisons keep no saved page, boxes or pools (
-  - L9212 an unchanged greyed button and grid change no property or constraint identity
-  - L9213 the draw that omits optional state and constraints resets all of them
-  - L9214 the following draw resets nothing again
-  - L9215 a kept vitals cell from another maker receives the last cell's look on every draw
-  - L9217 the Rankings page starts with its four row handlers and hand cursor
-  - L9218 ...two kept redraws preserve all four handlers and the same row picture's hand
-  - L9219 History starts with its action button's hand cursor
-  - L9220 ...two kept redraws preserve that same action button's hand
-  - L9221 the header starts with mouse-transparent sparklines
-  - L9222 ...two kept redraws preserve those same sparklines' transparency
-  - L9223 Pieces.sparkline starts mouse-transparent when pooled directly
-  - L9224 ...two kept redraws preserve that same directly pooled sparkline's transparency
-  - L9226 an unchanged icon and HBox margin request no layout (
-  - L9227 the sweep counts an equal raw Region.setPrefSize (
-  - L9228 the sweep counts an equal raw HBox.setMargin (
-  - L9257 a real policy thumb holds through a greyed draw during its drag
-  - L9258 ...and through un-greying and a further draw in the same drag
-  - L9259 ...release commits the held value and ends the hold
-  - L9260 ...dropping the staged choice follows the city again
-  - L9265 the repaint counter does not keep a retired picture alive
-  - L9266 a no-stage chrome scene releases the fresh header after restore
-  - L9269 the full kept check leaves a quarter of AllChecks.HEAP_MB free
-- **L9273 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
-- **L9297 1 and 2: the kept page, month after month, against a page built new**
-  - L9321 an unchanged People draw creates no node
-  - L9355 each month's redraw keeps the page it drew (the same top node,
-  - L9366 the kept page's signature equals the new page's at every month (
-- **L9368 3: and its pixels**
-  - L9370 the kept page and the new page are the same picture at
-  - L9390 one figure made wrong on the kept page (\"
-  - L9392 ...and its picture
-  - L9393 ...and the next kept draw sets it right again
-- **L9395 4: what reshapes the page**
-- **L9431 5: what the kept month costs**
+  - L9102 fixture: one holder's face moves its bar by
+  - L9104 the buyback ladder whose one bar moved by a hundredth of a pixel stays the nodes it was, and shows what a ladder built new and told it shows
+  - L9106 ...and when that bar moved by half a pixel it is drawn again, and shows what a ladder built new and told it shows
+  - L9116 fixture: the header tile shows its longest wording at some widths and hides it at others (
+  - L9127 the header tile told the same words at each width equals a tile built new at that width (
+  - L9137 fixture: the bar's dial tick is named in some states and not in others (
+  - L9148 the bar whose dial tick comes and goes equals a bar built new in each state (
+  - L9160 fixture: Partners' chart is drawn at the one size in every telling (
+  - L9161 Partners' chart told other places for the buyers to join is the same picture as one built new, to the pixel (pixels that differ:
+  - L9166 fixture: Search's rows are told words that come and go (the kept page reads differently in the second state than the first)
+  - L9177 Search's rows whose price, move and held words come and go equal rows built new in each state (
+  - L9183 fixture: the lines made their nodes when they first came, and the lines never seen before made theirs (made, a state each:
+  - L9185 the lines that came back made no node, the ring's slices, the key's rows, the bridge's steps and the statement's rows among them (
+  - L9187 ...and the lines away made none either (
+  - L9192 fixture: more one-off lines are parked than a scope can hold (
+  - L9193 the recurring lines asked again after the one-offs filled the scope were kept, not let go with them (
+  - L9203 the page of lines that come and go equals a page built new in each state (
+- **L9212 102: unchanged state stays put, a press survives greying, retired pages are released**
+  - L9223 restored comparisons keep no saved page, boxes or pools (
+  - L9225 an unchanged greyed button and grid change no property or constraint identity
+  - L9226 the draw that omits optional state and constraints resets all of them
+  - L9227 the following draw resets nothing again
+  - L9228 a kept vitals cell from another maker receives the last cell's look on every draw
+  - L9230 the Rankings page starts with its four row handlers and hand cursor
+  - L9231 ...two kept redraws preserve all four handlers and the same row picture's hand
+  - L9232 History starts with its action button's hand cursor
+  - L9233 ...two kept redraws preserve that same action button's hand
+  - L9234 the header starts with mouse-transparent sparklines
+  - L9235 ...two kept redraws preserve those same sparklines' transparency
+  - L9236 Pieces.sparkline starts mouse-transparent when pooled directly
+  - L9237 ...two kept redraws preserve that same directly pooled sparkline's transparency
+  - L9239 an unchanged icon and HBox margin request no layout (
+  - L9240 the sweep counts an equal raw Region.setPrefSize (
+  - L9241 the sweep counts an equal raw HBox.setMargin (
+  - L9270 a real policy thumb holds through a greyed draw during its drag
+  - L9271 ...and through un-greying and a further draw in the same drag
+  - L9272 ...release commits the held value and ends the hold
+  - L9273 ...dropping the staged choice follows the city again
+  - L9278 the repaint counter does not keep a retired picture alive
+  - L9279 a no-stage chrome scene releases the fresh header after restore
+  - L9282 the full kept check leaves a quarter of AllChecks.HEAP_MB free
+- **L9286 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
+- **L9310 1 and 2: the kept page, month after month, against a page built new**
+  - L9334 an unchanged People draw creates no node
+  - L9368 each month's redraw keeps the page it drew (the same top node,
+  - L9379 the kept page's signature equals the new page's at every month (
+- **L9381 3: and its pixels**
+  - L9383 the kept page and the new page are the same picture at
+  - L9403 one figure made wrong on the kept page (\"
+  - L9405 ...and its picture
+  - L9406 ...and the next kept draw sets it right again
+- **L9408 4: what reshapes the page**
+- **L9444 5: what the kept month costs**
 
 ## KnownRedsCheck.java - 50 labelled assertions
 

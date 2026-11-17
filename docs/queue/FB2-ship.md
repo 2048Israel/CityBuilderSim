@@ -1,7 +1,7 @@
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — FB2, the kept screens' geometry and retention — 2026-11-17, ready, see docs/queue/FB2-notes.md
-The kept screens read the same as screens built new whatever the played city does, and each repair is caused by the states that need it (KeptCheck 103: seven of its twenty lines red on the old classes, none now).
+The kept screens read the same as screens built new whatever the played city does, and each repair is caused by the states that need it (KeptCheck 103, 25 lines: each repair's lines red by hand on the old classes, none now).
 The buyback ladder is drawn from what it reads of a quote, as written and at a quarter pixel, so faces moving by 1.4e-8 of themselves no longer draw it again (KL1). The header's hidden wordings and
 sparkline stand where a tile built new leaves them (the RATE tile's "D$1,000,000,000.00 per US$": 18 states), a bar's tick with no name has no label on it (Your rate's dial: 0 x 20 against 0 x 13), and
 Partners' buyer-entry triangles stand at their own points, not moved by a fractional layout offset (62 pixels at the finding, 0 now); Search's empty price and held words are FP1's scopes, now asserted. The Government

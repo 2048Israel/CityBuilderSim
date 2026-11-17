@@ -11,9 +11,9 @@ because the batch's own cover is taken off). The other nine entries filed under 
 has moved since (GW1's, KS1's, HW1's, BF1's), and the Government section's path moves from run to run besides (months advanced by
 earlier timing sections: the same tree gave 45 of 400 once and 6 of 347 the next). A screen that is right on one path and wrong on
 the next is the finding, so each repair is **caused** by the states that need it in a new section, KeptCheck 103
-(`fb2Repairs`), through hooks at the end of `KeptBench` that build the picture alone, tell it the states in turn and hand back
+(`fb2Repairs`; 25 lines after REV-FB2-1), through hooks at the end of `KeptBench` that build the picture alone, tell it the states in turn and hand back
 the kept picture beside one built new. Each was run by hand on the pre-fix classes (the same section compiled against
-`git show HEAD:` sources of the five screens, overlaid on `target/classes`): **7 lines red, all 20 green after**. The figures below
+`git show HEAD:` sources of the five screens, overlaid on `target/classes`): **7 lines red, all 20 green after** (then 5 more lines, two of them red by hand on their own: REV-FB2-1). The figures below
 are those runs.
 
 ## Rows
@@ -80,12 +80,31 @@ off the page, for the draw that asks for it again; at most `Kept.PARKED_MAX` = 4
 and `ringKey` (a slice), `Pieces.bridgeColumn` (a step), `GovernmentScreen.moved` (a statement row), `netted`, the arrears' block,
 the "beside" pair and the central bank's card, and the bridge's two chips. A parked row is handed back as any kept node is, so it
 equals a row built new; it is off the page while absent (truthful disappearance: the box's children are the draw's own). A line's
-first appearance still makes its nodes, once, and no floor moves.
+first appearance still makes its nodes, once, and no floor moves. A scope parks the rows asked for last (an access-ordered map, the
+eldest let go first: REV-FB2-1, below).
 *Check.* 103's rows probe (a ring, its key, a bridge's steps and a statement's rows told six states in which lines leave and come
 back): the first draw made 56 nodes, the lines' first coming 38, two lines never seen 19; the lines that came back made **0** (before: 38),
 the unchanged redraw made none in any state, and the page equals a page built new in all six. On the real page: this tree's full
 KeptCheck now reads 34 of 400 on the same path that gave 45 (the rest is first-time lines), and 6 of 347 with 24 of 25 months
 making none on a quieter run (the four returns that made 6 each on the same city before are now free).
+
+## REV-FB2-1 (84be0139): two mends
+
+*(1) The cull.* A parked row is keyed by its words, and some words carry a figure (`Game.java:3251`, "Bought land with %s of
+reserves": a bridge step and a statement row per vault-paid parcel), so one-offs park rows under keys never asked again, and past
+`PARKED_MAX` the scope kept the first 48 in `HashMap` order, not the newest: dead rows could stay and the recurring lines go.
+`Scope.parkedKeys` is now an access-ordered `LinkedHashMap` (asking for a key moves it to the end) and `end()` lets go the eldest
+beyond `PARKED_MAX`; the keys are not stripped of their figures (a one-off is the first to go, which is all the cull needs).
+KeptCheck 103's `parkedCullProbe`: fourteen recurring lines (the bridge's and the ring's, asked every fourth draw) and a "Bought land
+with D$12.4M of reserves" a draw, 144 one-offs against 48: the draws that ask for the recurring lines made **149** of them anew on
+the `HashMap` cull (red, by hand, on the pre-mend `Kept`: the only FAIL), **0** on the mended one. (A first fixture with eight
+`"recurring N"` keys was green on the `HashMap` by luck of their hash buckets; the real lines' names are not.)
+
+*(2) The quantum.* The ladder's drift scaled every face alike, so no bar moved and `PIXEL_QUANTUM`'s snapping was never exercised.
+`ladderQuantumProbe`: one holder's face (the second) moved so its bar moves by 0.01 px (the sign chosen to stay in its quantum's cell)
+and by 0.5 px, the faces written to a tenth of a trillion so that only the bar tells the quotes apart: the first leaves the nodes
+(and equals a ladder built new), the second draws it again (and equals one built new). By hand with `snap()` made the identity, the
+only FAIL is the first line (the 0.01 px bar redraws the ladder).
 
 ## Entry 38 (HW1's Columns on Borrow at home, 7 of 10): to FB6
 

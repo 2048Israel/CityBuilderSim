@@ -1,4 +1,4 @@
-# KeptBench.java - 5,435 lines · 577 methods · 11 constants · interface
+# KeptBench.java - 5,513 lines · 580 methods · 12 constants · interface
 
 `ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -30,7 +30,7 @@
 > a snapshot all the same, so the bench lays the page out there, at the menu column's width.
 > The FX toolkit must be up and every call made on its thread; KeptCheck sees to both.
 
-**Uses:** [Kept](Kept.md) (125), [Pieces](Pieces.md) (51), [FinancesScreen](FinancesScreen.md) (37), [Palette](Palette.md) (32), [FundScreen](FundScreen.md) (32), [UserInterface](UserInterface.md) (25), [SectorScreen](SectorScreen.md) (23), [RankingsScreen](RankingsScreen.md) (22), [BuildAdvice](BuildAdvice.md) (21), [Game](Game.md) (20), [TradeScreen](TradeScreen.md) (19), [BuildScreen](BuildScreen.md) (18), [TimeChart](TimeChart.md) (17), [FreightView](FreightView.md) (17), [Rankings](Rankings.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (13), [ResearchScreen](ResearchScreen.md) (13), [PolicyScreen](PolicyScreen.md) (12), [Buyback](Buyback.md) (11), [Auction](Auction.md) (10), [PartnersView](PartnersView.md) (9), [WorldMeasures](WorldMeasures.md) (9), [PartnersPage](PartnersPage.md) (8), [HistoryScreen](HistoryScreen.md) (7), [GovernmentScreen](GovernmentScreen.md) (7), [ServicesScreen](ServicesScreen.md) (6), [BankScreen](BankScreen.md) (5), [Sector](Sector.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4)... and 42 more
+**Uses:** [Kept](Kept.md) (134), [Pieces](Pieces.md) (51), [FinancesScreen](FinancesScreen.md) (49), [Palette](Palette.md) (32), [FundScreen](FundScreen.md) (32), [UserInterface](UserInterface.md) (25), [SectorScreen](SectorScreen.md) (23), [RankingsScreen](RankingsScreen.md) (22), [BuildAdvice](BuildAdvice.md) (21), [Game](Game.md) (20), [TradeScreen](TradeScreen.md) (19), [BuildScreen](BuildScreen.md) (18), [TimeChart](TimeChart.md) (17), [FreightView](FreightView.md) (17), [Rankings](Rankings.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (13), [ResearchScreen](ResearchScreen.md) (13), [PolicyScreen](PolicyScreen.md) (12), [Buyback](Buyback.md) (12), [Auction](Auction.md) (10), [PartnersView](PartnersView.md) (9), [WorldMeasures](WorldMeasures.md) (9), [PartnersPage](PartnersPage.md) (8), [HistoryScreen](HistoryScreen.md) (7), [GovernmentScreen](GovernmentScreen.md) (7), [ServicesScreen](ServicesScreen.md) (6), [BankScreen](BankScreen.md) (5), [Sector](Sector.md) (5), [CityNeeds](CityNeeds.md) (4), [LandScreen](LandScreen.md) (4)... and 42 more
 
 **Used by (3):** [KeptCheck](KeptCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
@@ -91,6 +91,7 @@
 | 2137 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land")` | The stopped pages' kinds, by the way the model refuses an order. |
 | 2347 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
 | 3605 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
+| 5448 | `KeptBench.RECURRING_LINES` | `{ "Raised by issuing paper", "Principal repaid", "Interest that was no cash",...` | KS1-Gov: the rows a scope parks are the ones last asked for. |
 
 ## Fields (state)
 
@@ -135,7 +136,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 5360 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
+| 76 | 5438 | **type** `public final class KeptBench` | The People page on a scene of its own - no stage, no window - drawn kept and built new, for KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui package's own. |
 | 109 | 36 | `public KeptBench(Game game)` | The bench on a city: the window's object with no stage, its menu column in a scene of its own. |
 | 147 | 5 | `public double drawKept()` | People's page drawn kept from its pool (the first draw makes every node): the draw's own milliseconds. |
 | 154 | 3 | `public int lastMade()` | The nodes the last kept draw made new. |
@@ -881,21 +882,25 @@
 | 5142 | 3 | `public Sets speedSets(Runnable draw)` | What the reading and the nodes round it wrote while `draw` ran, by redrawSets (the header's second draw, or paintSpeed()). |
 | 5147 | 3 | `public double headerChildX(int i)` | The x of the header's i-th child, as laid out. |
 
-### FB2: THE CAUSAL FIXTURES OF THE REPAIRS (KL1, KS1-UI, BF1-K) (lines 5151-5435)
+### FB2: THE CAUSAL FIXTURES OF THE REPAIRS (KL1, KS1-UI, BF1-K) (lines 5151-5513)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 5162 | 6 | `private Pane probeHost(Node n, double w, double h)` | A node on a scene of its own, themed as the bench's pages are, so that its CSS and layout can be run. |
 | 5170 | 4 | `private Pane probeFixed(Region n, double w, double h)` | ...with the node left to be sized by hand: a plain Pane autosizes its managed children to their preferred sizes at every layout. |
 | 5175 | 5 | `private static List<String> signLines(Node n)` |  |
-| 5182 | 10 | `private static ham.citybuildersim.Buyback.Result ladderQuote(double scale, boolean taken)` | A quote of the buyback ladder: six slices of Buyback.Holder's four, their faces times `scale`, the face taken (when `taken`) too. |
-| 5200 | 29 | `public int[] ladderProbe() throws Exception` | KL1: a kept BuybackLadder told a quote and then the same quote with every face moved by 1.4e-8 of itself (what GW1's city moved them by in months 2 and 6 with nothing typed), with nothing taken and with part of it tak... |
-| 5235 | 22 | `public List<List<String>> headerTileProbe() throws Exception` | KS1-UI: a header tile told the same words at widths that make it show its longest wording, then the next, then the shortest, and back (the RATE tile's "D$1,000,000,000.00 per US$" at the rate's ceiling is the longest ... |
-| 5263 | 20 | `public List<List<String>> segmentBarProbe() throws Exception` | HW1's Your rate, mended under KS1-UI: a SegmentBar whose dial tick is named when the rate is away from the dial and not when it is near (FinancesScreen.realCard's `near ? |
-| 5289 | 43 | `public int[][] partnersChartProbe(int levels) throws Exception` | BF1-K: Partners' chart told where the next buyers join, then other places (a fraction of a pixel on), then the first again: for each telling, how the kept chart's picture and a chart built new's, told the last, part -... |
-| 5338 | 25 | `public List<List<String>> fundRowsProbe() throws Exception` | BF1-K: Fund Search's rows told securities whose price, move and held words come and go (a bond has a price and none held, a share held has both...) at the same places, as FP1's rows are kept in their place when the ma... |
-| 5364 | 9 | `private static Node foundRows(FundScreen fs, Game g, String[][] state)` |  |
-| 5375 | 1 | **type** `public record RowsProbe(List<List<String>> signatures, int[] made, int[] madeAgain)` | KS1-Gov's probe: what each state's draw made new and what its unchanged redraw made, and the page's signature, kept beside built new. |
-| 5385 | 33 | `public RowsProbe governmentRowsProbe() throws Exception` | KS1-Gov: the pieces the Government Overview's lines come and go in - the ring's arcs and its key's rows (a slice a line), the bridge's steps (a step a line, the ones at nothing left out) and the treasury statement's r... |
-| 5419 | 16 | `private static Node governmentRows(String[] lines, String[] steps)` |  |
+| 5182 | 3 | `private static ham.citybuildersim.Buyback.Result ladderQuote(double scale, boolean taken)` | A quote of the buyback ladder: six slices of Buyback.Holder's four, their faces times `scale`, the face taken (when `taken`) too. |
+| 5187 | 10 | `private static ham.citybuildersim.Buyback.Result ladderQuote(double scale, boolean taken, int only, double add)` | ...with `add` more face on slice `only` (none: -1). |
+| 5205 | 29 | `public int[] ladderProbe() throws Exception` | KL1: a kept BuybackLadder told a quote and then the same quote with every face moved by 1.4e-8 of itself (what GW1's city moved them by in months 2 and 6 with nothing typed), with nothing taken and with part of it tak... |
+| 5240 | 22 | `public List<List<String>> headerTileProbe() throws Exception` | KS1-UI: a header tile told the same words at widths that make it show its longest wording, then the next, then the shortest, and back (the RATE tile's "D$1,000,000,000.00 per US$" at the rate's ceiling is the longest ... |
+| 5268 | 20 | `public List<List<String>> segmentBarProbe() throws Exception` | HW1's Your rate, mended under KS1-UI: a SegmentBar whose dial tick is named when the rate is away from the dial and not when it is near (FinancesScreen.realCard's `near ? |
+| 5294 | 43 | `public int[][] partnersChartProbe(int levels) throws Exception` | BF1-K: Partners' chart told where the next buyers join, then other places (a fraction of a pixel on), then the first again: for each telling, how the kept chart's picture and a chart built new's, told the last, part -... |
+| 5343 | 25 | `public List<List<String>> fundRowsProbe() throws Exception` | BF1-K: Fund Search's rows told securities whose price, move and held words come and go (a bond has a price and none held, a share held has both...) at the same places, as FP1's rows are kept in their place when the ma... |
+| 5369 | 9 | `private static Node foundRows(FundScreen fs, Game g, String[][] state)` |  |
+| 5380 | 1 | **type** `public record RowsProbe(List<List<String>> signatures, int[] made, int[] madeAgain)` | KS1-Gov's probe: what each state's draw made new and what its unchanged redraw made, and the page's signature, kept beside built new. |
+| 5390 | 33 | `public RowsProbe governmentRowsProbe() throws Exception` | KS1-Gov: the pieces the Government Overview's lines come and go in - the ring's arcs and its key's rows (a slice a line), the bridge's steps (a step a line, the ones at nothing left out) and the treasury statement's r... |
+| 5424 | 16 | `private static Node governmentRows(String[] lines, String[] steps)` |  |
+| 5452 | 19 | `public int[] parkedCullProbe()` |  |
+| 5473 | 2 | **type** `public record LadderQuantum(double quantum, double tinyPx, double bigPx, boolean tinyKept, boolean tinyEqua...` | KL1's quantum probe: what a face's drift does to a bar, against the picture's own quantum. |
+| 5481 | 32 | `public LadderQuantum ladderQuantumProbe() throws Exception` | KL1: one holder's face moved so that its bar moves by a hundredth of a pixel (under FinancesScreen.BuybackLadder.PIXEL_QUANTUM: the ladder is the picture it was, the nodes it held) and by half a pixel (over it: it is ... |
 
