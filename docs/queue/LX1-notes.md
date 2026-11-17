@@ -258,6 +258,26 @@ On OX1's main the branch's city is the larger from m120 on (1.31M against 820k a
 the smaller: one path each, the ensemble's to judge. The price index at m2399 is 8,237 against 25,268; the shops'
 sales are 25.4% of GDP against 19.4%, their net 36% of their sales against 45%.
 
+**Against main fe7102e4 (0.9.135, after AQ1), the final merged tree.** AQ1 moved main's trace from m1200 again, so
+main's reference was made a third time (`C:/Users/Jerus/AppData/Local/Temp/cbs-trace-main-fe7102e4/`, one JVM from
+a `git archive` of fe7102e4: exit 0 in 541 s, findings "Nothing.", run to m2405), and the merged tree's (2e042c283's
+model) beside it: exit 0 in 419 s, "All checks passed.", findings "Nothing.", run to m2405. All eight files move,
+from the same months as against 69a29638 (`borrow` from its first paper, m63; 46 papers on main, 41 here); the
+branch's own trace moves from m1189 between its 0.9.134 and 0.9.135 merges. The size, main fe7102e4 then LX1:
+
+| month | people | out of work | jobs | inflation, a year | unskilled premium | diploma premium |
+|---|---|---|---|---|---|---|
+| 60 | 888; 814 | 0; 0 | 559; 531 | 10.7%; 15.0% | 1.060; 1.285 | 0.876; 0.996 |
+| 120 | 1,205; 1,356 | 1.1%; 6.3% | 623; 665 | 14.0%; 3.2% | 0.960; 0.930 | 0.661; 0.682 |
+| 240 | 1,295; 1,468 | 6.0%; 3.6% | 603; 705 | -4.8%; -3.6% | 0.976; 0.981 | 0.710; 0.711 |
+| 600 | 3,496; 8,894 | 12.8%; 0 | 1,509; 4,171 | 2.9%; 2.5% | 0.907; 1.021 | 0.689; 0.783 |
+| 1,200 | 36,343; 39,008 | 7.4%; 13.7% | 15,261; 15,218 | 8.2%; 8.4% | 0.879; 0.850 | 0.670; 0.677 |
+| 1,800 | 52,737; 92,533 | 2.2%; 0 | 22,698; 44,620 | -1.9%; 3.8% | 0.957; 1.105 | 0.734; 0.843 |
+| 2,399 | 412,854; 912,302 | 3.3%; 6.3% | 168,213; 371,291 | -9.4%; -4.8% | 0.993; 0.940 | 0.750; 0.719 |
+
+The branch's city is again the larger from m120 (912k against 413k at m2399); the price index at m2399 is 9,275
+against 69,263; the shops' sales are 16.9% of GDP against 19.4%, their net 34% of their sales against 57%.
+
 ## 7. The ensemble
 
 - **On 2faef9e6's model (main 48eb9b42 merged), against `docs/ensemble/0.9.132.md`**, run as information while OX1

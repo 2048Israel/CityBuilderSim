@@ -7,10 +7,11 @@ and the Department Store 80 with its 91 (ids 69 and 70), about a piece a post a 
 cost and the piece's price are held. `LuxuryRetail.LABOUR_SHARE` (BEA's 41.7%) and a factor of two either way are the
 band `LuxuryRetailCheck` holds the catalogue and a town's year of Boutiques to (red on main: 0.6% and 1.3%). On LS1's
 probe the share reads 36-41% (median from m240; in the band 313 of seed 0's 331 years, none on main), and the shops
-take a quarter of the old city's business workers; the default city is 1.31M at m2399 against main's 820k (551k
-against 633k before OX1). The Department Store is never the planner's choice, as on main (a call, LQ1's). A road load's
-last stream is now the remainder of the other two's sum (`TradeCostCheck`). A 4,000-month run on this balance has
-the city map's save refused at months 3589 and 3952 (5.5M people), FB8's to mend. No save field, no format bump.
+take a quarter of the old city's business workers; the default city is 912k at m2399 against main's 413k (551k
+against 633k before OX1 and AQ1). The Department Store is never the planner's choice, as on main (a call, LQ1's).
+A road load's last stream is now the remainder of the other two's sum (`TradeCostCheck`). A 4,000-month run on this
+balance has the city map's save refused at months 3589 and 3952 (5.5M people), FB8's to mend. No save field, no
+format bump.
 ## queued
 | LQ1 | The luxury queue's size, a study: Luxury Retail's margin is 10-30% of the business sectors' value added on main (BEA's other retail is a few per cent of GDP), the households' luxury budget out of the wealth term and the surplus; at BEA's share of it the shops employ a quarter or more of the old city's workers (LX1), so what the budget should be is the next question ({next}) | [LX1's notes](docs/queue/LX1-notes.md) |
 ## known-reds
