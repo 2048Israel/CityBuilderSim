@@ -11,5 +11,7 @@ care the founding fee serves (100.0% against 85.1%), buries 14.6 a year per 1,00
 again. MQ1 is not mended: the index never steadies at the founding's own dial (month 97 on main and TQ1, not in 90 months on CU2) and the late rows' noise on a
 steady window is 0.64-0.95 points, over the 0.650 allowance; it stays queued with the evidence. FoodProcessingCheck's known red is gone.
 
-## pending
-| MQ1 | MonetaryCheck's steady town: a settle on the price index's rate (month 97 on main and TQ1, none within 90 months on CU2) leaves a month's delay moving the rows 0.64-0.95 points against the 0.650 allowance, so the premise misses and the ordering laws are skipped; by its own rule the allowance would be 1.4-1.9 | bigger than a fix: the index at the founding's own dial rises 16-30% a year for good and the shelf's yearly repricing moves with the hand, so a settle test does not make the town steady; needs a different experiment (a dial rule that holds the currency, or a window cut between the repricings); MonetaryCheck is main's and green | [FB1 notes](FB1-notes.md) |
+## queued
+| batch | what | brief |
+|---|---|---|
+| MQ1 | MonetaryCheck's steady town, a redesign and not a settle test: a settle on the price index's rate (month 97 on main and TQ1, none within 90 months on CU2) leaves a month's delay moving the rows 0.64-0.95 points against the 0.650 allowance, so the premise misses and the ordering laws are skipped (by its own rule the allowance would be 1.4-1.9, 14 to 19 times GW1's 0.100: widening it softens the law). The index at the founding's own dial rises 16-30% a year for good and the shelf's yearly repricing (months 49, 61, 73, 85) moves with the hand, so no settle makes the town steady. Design the experiment: a dial rule that holds the currency, or a window cut between the repricings; MonetaryCheck is main's and green meanwhile. No known red to carry | [FB1 notes](FB1-notes.md) |
