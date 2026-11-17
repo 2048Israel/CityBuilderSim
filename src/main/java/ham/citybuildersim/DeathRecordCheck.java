@@ -72,6 +72,7 @@ public class DeathRecordCheck {
          * town's own count at the closing says nothing of what the closing did. The twin is the same city to the month with the mill standing.
          */
         double[] peakExcess = { 0 }, peakAtHome = { atHomeBefore }, childrenAtPeak = { 0 }, oldRuleOrphans = { 0 }, mostAdded = { 0 };
+        StringBuilder trace = new StringBuilder("   orphans by month, the closed town / its open twin (out of work at home, closed / open):");
         quietly(() -> {
             BuildingsTemplate mill = closed.getBuildingManager().getTemplateByName("Industrial Bakery");
             closed.getBuildingManager().retire(mill, closed.getBuildingManager().getQuantity(mill.getId()));
@@ -80,6 +81,8 @@ public class DeathRecordCheck {
                 open.simulateMonths(1);
                 FamilyModel families = closed.getFamilies();
                 mostAdded[0] = Math.max(mostAdded[0], families.getOrphansTotal() - open.getFamilies().getOrphansTotal());
+                trace.append(String.format(" %.1f/%.1f(%.0f/%.0f)", families.getOrphansTotal(), open.getFamilies().getOrphansTotal(),
+                        families.getAtHomeAdults(), open.getFamilies().getAtHomeAdults()));
                 double excess = families.getAtHomeAdults() - open.getFamilies().getAtHomeAdults();
                 if (excess > peakExcess[0]) {
                     peakExcess[0] = excess;
@@ -91,6 +94,7 @@ public class DeathRecordCheck {
         });
         System.out.printf("   out of work at home %.0f at the closing, %.0f at the widest over the twin (%.0f more than it), children with them %.3f, old rule %.3f against %.3f orphans; greatest same-month excess %.3f%n",
                 atHomeBefore, peakAtHome[0], peakExcess[0], childrenAtPeak[0], oldRuleOrphans[0], orphansBefore, mostAdded[0]);
+        System.out.println(trace);
         assertTrue("fixture: the paired city's closing put adults out of work: more at home than its twin in the same month", peakExcess[0] > 0);
         assertTrue("...and the old rule would have at least doubled its orphans", oldRuleOrphans[0] > orphansBefore);
         assertTrue("the children went with the laid-off parents", childrenAtPeak[0] > 0);
@@ -123,7 +127,7 @@ public class DeathRecordCheck {
             open.rebuild(city, jobs, 0, 0);
         }
         double before = closed.getOrphansTotal();
-        double mostDuring = 0, mostAfter = 0, atTheEnd = 0;
+        double mostDuring = 0, mostAfter = 0, atTheEnd = 0, backAdults = 0, backChildren = 0, backHome = 0;
         for (int m = 0; m < 6; m++) {
             closed.rebuild(city, jobs, 0, outOfWork);
             open.rebuild(city, jobs, 0, 0);
@@ -137,7 +141,12 @@ public class DeathRecordCheck {
             closed.rebuild(city, jobs, 0, 0);
             open.rebuild(city, jobs, 0, 0);
             double excess = closed.getOrphansTotal() - open.getOrphansTotal();
-            if (m == 0) atTheEnd = excess;
+            if (m == 0) {
+                atTheEnd = excess;
+                backAdults = closed.getLastBackAdults();
+                backChildren = closed.getLastBackChildren();
+                backHome = closed.getLastBackChildrenHome();
+            }
             mostAfter = Math.max(mostAfter, excess);
             trace.append(String.format(" %.2f/%.2f", closed.getOrphansTotal(), open.getOrphansTotal()));
         }
@@ -146,6 +155,9 @@ public class DeathRecordCheck {
         System.out.println(trace);
         assertTrue("fixture: the wave ended at once: nobody is out of work the month after, and no child is out with them",
                 closed.getAtHomeAdults() == 0 && closed.getOutsideDependantsTotal() == 0);
+        check("the month it ends, every adult who was out of work is back in the families", backAdults, outOfWork, 1e-9);
+        check("...and every child who went out with them came back with them", backChildren, childrenOut, 1e-9);
+        check("...and is placed in a household with them", backHome, backChildren, 1e-9);
         assertTrue("the wave adds at most one orphan against its twin in any month of it", mostDuring <= 1);
         assertTrue("the month it ends adds at most one orphan against the twin: the children went home with their parents", atTheEnd <= 1);
         assertTrue("...and so does every month of the year after it", mostAfter <= 1);
