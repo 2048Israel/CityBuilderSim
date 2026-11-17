@@ -21,14 +21,15 @@ import java.nio.file.Path;
  *      shop earns at the margin the planner builds to (the position a queue TARGET_HEADROOM over the counters
  *      strikes), on what a piece lands at, is LuxuryRetail.LABOUR_SHARE within LABOUR_SHARE_FACTOR.
  *
- *   2. A TOWN'S BOUTIQUES BOOK IT. A town given the Boutiques its own queue asks for, at the margin the planner builds
- *      to, staffed and stocked, sells, and a year of its books puts payroll over value added (LS1's share: the
- *      margin less power, water and upkeep) inside the band. Twelve months summed, as LS1's probe sums them: a share
- *      is a ratio of two flows, and one month of one sector is noise.
+ *   2. A TOWN'S BOUTIQUES BOOK IT. A town given BOUTIQUES_ASKED Boutiques and a queue at the planner's margin that
+ *      fills them, staffed and stocked, sells every month, and a year of its books puts payroll over value added
+ *      (LS1's share: the margin less power, water and upkeep) inside the band. Twelve months summed, as LS1's probe
+ *      sums them: a share is a ratio of two flows, and one month of one sector is noise.
  *
- *   3. ...AND A BOUTIQUE STILL PAYS. The investor builds against estimatedMonthlyProfit(); a shop whose payroll is
- *      BEA's share of its margin still has the rest, so the town's Boutique is worth building and no city's queue
- *      stands at a door nobody will open.
+ *   3. ...AND A BOUTIQUE STILL PAYS. The investor builds against estimatedMonthlyProfit(); with a queue past the
+ *      counters standing of a whole Boutique's coverage (so the estimate reads the queue, not its half-coverage
+ *      fallback), a shop whose payroll is BEA's share of its margin still has the rest, so one more Boutique is worth
+ *      building and no city's queue stands at a door nobody will open.
  *
  * Every fixture CAUSES its condition: the town is given its shops, and Luxury Retail's planner is held so the count is
  * the fixture's, not a planner's.
@@ -73,7 +74,7 @@ public class LuxuryRetailCheck {
     /** The fixture town's houses: enough that its workers outnumber its posts, so its wages are the ladder's and not a short town's. */
     static final int TOWN_HOUSES = 200;
 
-    /** The Boutiques' worth of queue the fixture's households are given the fortune to ask for. */
+    /** The Boutiques the fixture town stands, and the queue its households are given the fortune to ask for: the count is the fixture's, not the town's own demand. */
     static final int BOUTIQUES_ASKED = 2;
 
     /**
@@ -165,30 +166,30 @@ public class LuxuryRetailCheck {
             game.getHouseholdBalance().creditByWeight(asked * price / HouseholdBalance.WEALTH_SPENT_A_MONTH, weight);
             game.simulateMonths(1);
             /*
-             * THE SHOPS THE QUEUE ASKS FOR, at the margin the planner builds to: the town's own buyers at that price,
-             * over a Boutique's coverage and the headroom, standing at once - the question is what they sell, not
-             * how long one waits on site.
+             * THE SHOPS THE FORTUNE ASKS FOR, BOUTIQUES_ASKED of them, standing at once - the question is what they
+             * sell, not how long one waits on site. The queue at the planner's margin is read to show it fills them.
              */
             price = shops.getLanded() * mStar;
             queueAt[0] = game.getHouseholdBalance().luxuriesWanted(price);
-            built[0] = Math.max(1, (long) Math.ceil(queueAt[0]
-                    / (boutique.getCoverage() * (1 + BusinessInvestment.TARGET_HEADROOM))));
+            built[0] = BOUTIQUES_ASKED;
             game.buildStack(boutique, built[0], true);
             // ...and two years for the margin charged to come to its target (a sixth of the way a month, in logs).
             game.simulateMonths(24);
         });
-        assertTrue("fixture: the town's households would buy at the planner's margin ("
-                + String.format("%,.0f pieces a month", queueAt[0]) + ")", queueAt[0] > 0);
+        report("fixture: the town's households would buy at the planner's margin what BOUTIQUES_ASKED Boutiques cover",
+                queueAt[0] >= BOUTIQUES_ASKED * boutique.getCoverage(),
+                String.format("%,.0f pieces a month, against %,d", queueAt[0], BOUTIQUES_ASKED * boutique.getCoverage()));
         long standing = game.getBuildingManager().countByName("Boutique");
-        report("fixture: the Boutiques that queue asks for stand", standing == built[0] && standing >= 1,
+        report("fixture: the BOUTIQUES_ASKED Boutiques stand", standing == BOUTIQUES_ASKED,
                 String.format("%d standing, %d built, %,d pieces of counters", standing, built[0], shops.coverage()));
 
         double revenue = 0, inputs = 0, payroll = 0, utilities = 0, served = 0, posts = 0, workers = 0, wanted = 0,
                 margin = 0;
-        int months = 12;
+        int months = 12, monthsSold = 0;
         for (int m = 0; m < months; m++) {
             quietly(() -> game.simulateMonths(1));
             SectorBooks.SectorMonth books = game.getSectorBooks().get(shops);
+            if (shops.getServed() > 0 && shops.getWorkers() > 0 && books.revenue() > books.inputs()) monthsSold++;
             revenue += books.revenue();
             inputs += books.inputs();
             payroll += books.payroll();
@@ -200,9 +201,9 @@ public class LuxuryRetailCheck {
             margin += shops.getMargin();
         }
         report("fixture: the shops sold every month of the year, staffed",
-                served > 0 && workers > 0 && revenue > inputs,
-                String.format("%,.0f pieces served of %,.0f wanted, %.1f of %.1f posts filled a month, at %.3fx",
-                        served / months, wanted / months, workers / months, posts / months, margin / months));
+                monthsSold == months,
+                String.format("%d of %d months; %,.0f pieces served of %,.0f wanted, %.1f of %.1f posts filled a month, at %.3fx",
+                        monthsSold, months, served / months, wanted / months, workers / months, posts / months, margin / months));
         double valueAdded = revenue - inputs - utilities;
         double share = payroll / valueAdded;
         report("a year of the town's Boutiques: payroll over value added (LS1's share) is in BEA's band",
@@ -218,6 +219,24 @@ public class LuxuryRetailCheck {
 
         /* ============== 3. a Boutique still pays ============== */
         out.println("\n--- 3. ...and a Boutique still pays: what the investor reads is a profit ---");
+        /*
+         * A QUEUE PAST THE COUNTERS, so the estimate reads it: estimatedMonthlyProfit() serves what the queue leaves
+         * past the counters standing and on site, up to a Boutique's coverage, and only with none past them falls
+         * back to half the coverage. The households are given BOUTIQUES_ASKED + 1 Boutiques' worth more, and a month.
+         */
+        quietly(() -> {
+            double price = shops.getLanded() * mStar;
+            double more = (BOUTIQUES_ASKED + 1) * boutique.getCoverage() * (1 + BusinessInvestment.TARGET_HEADROOM);
+            double[] weight = new double[game.getHouseholdBalance().cellCount()];
+            java.util.Arrays.fill(weight, 1);
+            game.getHouseholdBalance().creditByWeight(more * price / HouseholdBalance.WEALTH_SPENT_A_MONTH, weight);
+            game.simulateMonths(1);
+        });
+        double past = shops.getWanted() - shops.coverage() - shops.coverageOnSite();
+        report("fixture: the queue past the counters standing is a whole Boutique's coverage, so the estimate reads it",
+                past >= boutique.getCoverage(),
+                String.format("%,.1f pieces wanted past %,d of counters standing and %,d on site, against %,d",
+                        shops.getWanted(), shops.coverage(), shops.coverageOnSite(), boutique.getCoverage()));
         double profit = shops.estimatedMonthlyProfit(boutique, game.getBusinessInvestment());
         double running = game.getBusinessInvestment().runningCostOf(boutique);
         report("the investor's estimate of one more Boutique's month is a profit, after its payroll, power and water",

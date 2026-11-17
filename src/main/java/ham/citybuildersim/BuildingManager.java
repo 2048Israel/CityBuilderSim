@@ -1743,10 +1743,13 @@ public class BuildingManager {
         templates.add(boutique);
 
         /*
-         * ...AND THE BIG ONE, which is where a large city actually spends.
-         * Eleven times the customers on eighteen times the money, so it is
-         * the worse buy per head until the city is big enough to fill it -
-         * which is the same shape every other big building in this game has.
+         * ...AND THE BIG ONE. Eleven times the customers on eighteen times
+         * the money, so it is the worse buy per dollar at every size: the
+         * planner scores coverage x margin over cost (LuxuryRetail.plan()),
+         * 80 over $21,600 against the Boutique's 7 over $1,180 (0.0037 a
+         * dollar against 0.0059; 0.19 against 0.27 before LX1), and reads no
+         * city size, so it never chooses one while a Boutique can be staffed;
+         * one stands only where something else places it (LX1's notes, a call).
          * Its 91 posts cover 80 pieces a month since LX1, the Boutique's 0.88
          * a post, where they covered 4,200.
          */

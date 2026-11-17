@@ -168,9 +168,10 @@ public class GdpCheck {
 
         /*
          * ...and the month it SELLS is the month the margin scores, and only
-         * the margin. 320 pieces off the shelf at $14, refilled at $9: the
-         * shelf is level, so the inventory term is zero and the city's output
-         * is what the shop added, which is 320 x (14 - 9).
+         * the margin. 320 pieces off the shelf at $14, refilled at $9 (the
+         * old Boutique's month, kept as the fixture's figures since LX1 made
+         * it 7): the shelf is level, so the inventory term is zero and the
+         * city's output is what the shop added, which is 320 x (14 - 9).
          */
         boutique.update(4_480, 0, 0, 0, 0, 0, 0, 0, 960, 9, 0, 0, 0, 2_880, 0);
         check("...and a month of selling and restocking scores the margin alone",
