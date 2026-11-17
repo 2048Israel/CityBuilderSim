@@ -4789,7 +4789,11 @@ public class KeptCheck {
             return null;
         });
         List<Choice> folds = new ArrayList<>();
-        for (FundView.ActivityYear year : fx(() -> FundView.activityRecord(g, "All", fundDial("ACTIVITY_MONTHS")).years().subList(0, 2))) {
+        // At most the first two: a record of one older year fails the check above and still opens its one (LX1: it threw).
+        for (FundView.ActivityYear year : fx(() -> {
+            List<FundView.ActivityYear> years = FundView.activityRecord(g, "All", fundDial("ACTIVITY_MONTHS")).years();
+            return years.subList(0, Math.min(2, years.size()));
+        })) {
             folds.add(acting("Activity year " + year.year() + " open across a month", b -> { b.fundFold("fund:year:" + year.year(), true); return null; }));
         }
         folds.add(acting("Activity's years shut again", b -> { b.fundFoldsClosed(); return null; }));

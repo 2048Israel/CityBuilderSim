@@ -155,7 +155,8 @@ public class GdpCheck {
          * inventory or the month reads as a collapse in output.
          *
          * The numbers are one Boutique: 960 pieces at $9, which is the figure
-         * the playtest actually reported.
+         * the playtest actually reported (its stockroom until LX1, 21 pieces
+         * since; the arithmetic is the same at any count).
          */
         NationalAccounts boutique = new NationalAccounts();
         boutique.update(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -167,9 +168,10 @@ public class GdpCheck {
 
         /*
          * ...and the month it SELLS is the month the margin scores, and only
-         * the margin. 320 pieces off the shelf at $14, refilled at $9: the
-         * shelf is level, so the inventory term is zero and the city's output
-         * is what the shop added, which is 320 x (14 - 9).
+         * the margin. 320 pieces off the shelf at $14, refilled at $9 (the
+         * old Boutique's month, kept as the fixture's figures since LX1 made
+         * it 7): the shelf is level, so the inventory term is zero and the
+         * city's output is what the shop added, which is 320 x (14 - 9).
          */
         boutique.update(4_480, 0, 0, 0, 0, 0, 0, 0, 960, 9, 0, 0, 0, 2_880, 0);
         check("...and a month of selling and restocking scores the margin alone",
@@ -286,7 +288,7 @@ public class GdpCheck {
          * it goes books no change in that term, and the next measures from
          * what is left. The quantities are each building's own room
          * (BuildingsTemplate.stocks()) - a Bakery's 996,000 kg of bread, a
-         * Construction Materials Plant's 480 units, a Boutique's 960 pieces -
+         * Construction Materials Plant's 480 units, a Boutique's 21 pieces -
          * at a price of one, so the term reads in units.
          */
         System.out.println("\n--- a mill's warehouse, a plant's shed and a stockroom written off are a loss of assets, not negative output (0.7.136) ---");
