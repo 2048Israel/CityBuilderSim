@@ -463,6 +463,7 @@ public class Exchange {
     private final double[] split = new double[n];                 // this month's split factor, 0 if none
     private final int[] betweenHouseholdsTrades = new int[n];
     private double ownBoughtThisMonth, ownSoldThisMonth;          // the bank's own shares, for the pace
+    private double fundLimitAsked;                                // the shares the rule asked this month past its limit (RB1), a month's figure, not saved
 
     /* ---- the shorts (EM2): the world's position in each company, the account behind it, and who lends it ---- */
     /** Whether the world sells short at all: on, the default; the checks and -Dplaytest.shorts=off switch it off to see the market without it. */
@@ -1619,15 +1620,22 @@ public class Exchange {
      * withdrawal's and the price-driven sales beside it.
      */
     private void postFundOverLimit() {
+        fundLimitAsked = 0;
         if (fund == null || register == null) return;
         for (int c = 0; c < n; c++) {
             double mine = register.getCityMarketShares(c);
             double inIssue = register.getShares(c);
             if (!(mine > 0) || !(inIssue > 0) || fair[c] <= minFair) continue;
             double q = Math.min(mine, TreasuryFund.limitSale(mine, inIssue));
-            if (q > OrderBook.DUST) submit(c, FUND, OrderBook.Side.SELL, fair[c], q);
+            if (q > OrderBook.DUST) {
+                submit(c, FUND, OrderBook.Side.SELL, fair[c], q);
+                fundLimitAsked += q;
+            }
         }
     }
+
+    /** The shares the rule asked this month past OWNERSHIP_LIMIT (postFundOverLimit(), RB1): 0 in a month no holding was over it. A month's figure, not saved. */
+    public double getFundLimitAsked() { return fundLimitAsked; }
 
     /**
      * THE CITY'S FUND, BY ITS RULE AND THEN BY THE PLAYER'S HAND

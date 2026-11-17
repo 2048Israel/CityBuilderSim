@@ -5609,10 +5609,11 @@ public class Game {
     /**
      * The fund's idle cash (RB1): the cash its caps leave no room for - TreasuryFund.idleCash() on its cash less the hand's reserve,
      * past the room its share bids (Exchange.fundShareRoom()) and bond bids (BondMarket.fundBondRoom()) have left. The part of the
-     * transfer that is struck on it, at the larger of the dial and IDLE_TRANSFER_SHARE (TreasuryFund.dueAt()).
+     * transfer that is struck on it, at the larger of the dial and IDLE_TRANSFER_SHARE (TreasuryFund.dueAt()). RB1-R: the cash the top
+     * of the month pays last month's toRaise from first is not idle, so it is read on the cash less that toRaise (0 at or under the default).
      */
     public double fundIdleCash() {
-        return TreasuryFund.idleCash(fund.getCash(), fund.handReserve(), exchange.fundShareRoom(), bondMarket.fundBondRoom(month));
+        return TreasuryFund.idleCash(fund.getCash() - Math.max(0, fund.getToRaise()), fund.handReserve(), exchange.fundShareRoom(), bondMarket.fundBondRoom(month));
     }
     /** What this month's transfer is on the fund as it stands, at the withdrawal in force and the idle cash it holds: TreasuryFund.dueOn(fundValue(), fundIdleCash()) - transferOn() at the default with none idle (RB1). */
     public double fundTransferDue()       { return fund.dueOn(fundValue(), fundIdleCash()); }
@@ -19458,8 +19459,9 @@ public class Game {
          * and over the default, last month's sale first - a revenue line
          * beside the remittance. Before the advances are settled below, so a
          * treasury it lifts over nothing repays them with it. Nothing from an
-         * empty fund. The cash its rule cannot invest under its caps and its
-         * mix (fundIdleCash()) is taken at the larger of the dial and
+         * empty fund. The cash its rule cannot invest under its caps (not its
+         * mix, RB1's call b), on its cash less last month's toRaise (RB1-R)
+         * (fundIdleCash()), is taken at the larger of the dial and
          * TreasuryFund.IDLE_TRANSFER_SHARE, so it does not pile up (RB1);
          * at a dial of nothing, nothing.
          */
