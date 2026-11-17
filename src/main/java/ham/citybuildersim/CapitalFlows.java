@@ -752,6 +752,13 @@ public class CapitalFlows {
 
     /* --------------------------------- carrying --------------------------------- */
 
+    /** Saved slot of the most that was ever here (FB3, FW6-C). */
+    public static final int PEAK_STOCK_SLOT = 24;
+    /** Saved slot of the widest the gap ever got (FB3, FW6-C). */
+    public static final int PEAK_SPREAD_SLOT = 25;
+    /** Exact length of toSaveArray(), through the peaks. */
+    public static final int SAVE_SLOTS = PEAK_SPREAD_SLOT + 1;
+
     public double[] toSaveArray() {
         // Appended at the end, and restore() guards every slot past the first
         // two - so an older save reads back with no carry book, which is true
@@ -809,9 +816,9 @@ public class CapitalFlows {
             riskOffMonths = Math.max(0, (int) Math.round(saved[23]));
         }
         // FB3 (FW6-C): the peaks, so "the most that was ever here" is the city's and not the load's.
-        if (saved.length > 25) {
-            peakStock = Math.max(0, saved[24]);
-            peakSpread = Math.max(0, saved[25]);
+        if (saved.length >= SAVE_SLOTS) {
+            peakStock = Math.max(0, saved[PEAK_STOCK_SLOT]);
+            peakSpread = Math.max(0, saved[PEAK_SPREAD_SLOT]);
         }
     }
 

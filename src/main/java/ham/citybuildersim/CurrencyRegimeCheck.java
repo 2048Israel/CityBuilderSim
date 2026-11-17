@@ -1084,7 +1084,7 @@ public class CurrencyRegimeCheck {
         assertTrue("fixture: the month had hot money arrive, depart and leave on doubt (" + String.format("%,.1fk, %,.1fk, %,.1fk",
                 doubting.getArrived(), doubting.getDeparted(), doubting.getDoubtDeparted()) + ")",
                 doubting.getArrived() > 0 && doubting.getDeparted() > 0 && doubting.getDoubtDeparted() > 0);
-        assertTrue("the saved array is 24 slots long: XR2's 16, the month's three and XR4's five (what ran home in a risk-off)", saved.length == SAVE_SLOTS);
+        assertTrue("the saved array is CapitalFlows.SAVE_SLOTS (" + SAVE_SLOTS + ") long: XR2's 16, the month's three, XR4's five (what ran home in a risk-off) and FB3's two peaks", saved.length == SAVE_SLOTS);
         assertTrue("...slots 16, 17 and 18 are the month's arrived, departed and doubtDeparted", saved[SLOT_ARRIVED] == doubting.getArrived()
                 && saved[SLOT_DEPARTED] == doubting.getDeparted() && saved[SLOT_DOUBT_DEPARTED] == doubting.getDoubtDeparted());
         CapitalFlows back = restored(doubting);
@@ -1183,8 +1183,8 @@ public class CurrencyRegimeCheck {
         }
     }
 
-    /** Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them). */
-    static final int SLOT_DOUBT_LIFETIME = 15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = 24;
+    /** Where CapitalFlows.toSaveArray() puts the doubt's lifetime (XR2) and the month's three flows (FX8), and how long the array is (XR4 appended slots 19 to 23 after them, FB3 the peaks; the model's own count). */
+    static final int SLOT_DOUBT_LIFETIME = 15, SLOT_ARRIVED = 16, SLOT_DEPARTED = 17, SLOT_DOUBT_DEPARTED = 18, SAVE_SLOTS = CapitalFlows.SAVE_SLOTS;
 
     static CapitalFlows restored(CapitalFlows f) {
         CapitalFlows back = new CapitalFlows();
