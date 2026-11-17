@@ -224,3 +224,27 @@ and the cause. Its findings and what was done:
 The counted playtest (a copy of `Game` in target/ logging each sale, its trace identical to the branch's) also found
 that "lent" was not tested: Business Services bled six centres from m875 on $26M of its own cash with no debt to the
 desk. The bleed now needs the desk's principal above zero; a sector living on its own cash holds, as on main.
+
+## 9. The ensemble (docs/ensemble/AQ1.md)
+
+On 017f2ef19 (the merge with 0.9.134 and the mends; the classes the ensemble snapshots), against
+`docs/ensemble/0.9.134.md`: 80 of 80 runs in 45.8 min, 23/26 criteria, hard 10/10 (M1 0 in every policy; F1 one
+run with "households with no home" in AUTO2, ZERO_SLACK and SHOCK, as the baseline). Changed verdict: SHOCK K2 FAIL
+to PASS (the twin's excess 0.16% against 0.48%). A1, A2 and R2 are red as on main. A3 PASS, 0 [0 to 4]. T2's AUTO2
+median 1,886,738 against 1,949,996, its range 1,163,473-3,326,664 against 1,074,066-2,915,385.
+
+The brief's measure on AUTO2's sixteen seeds (each run's CSV from m400; 0.9.134's are OX1's runs):
+
+| | largest 10-month rise in out of work | seeds at 20 pts or more | months over 20%, all seeds | highest peak | mean people at the end |
+|---|---|---|---|---|---|
+| 0.9.134 | 9.7-26.1 pts | 9 | 264 | 38.7% | 1,984,804 |
+| AQ1 | 6.3-15.3 pts | 0 | 41 | 27.1% | 2,007,726 |
+
+Seed 7 is the same run to the person (the bleed never fired). The cliff the brief asked about is gone from the
+ensemble; what is left over 20% is four seeds' 7-15 months (4, 6, 14, 15).
+
+What remains of the old cliff is the quarter rule's own case, a sector overdrawn with no lender, and twice in the
+default playtests that sector's plant was paying its running costs and its loss was interest alone (Manufacturing at
+m1818 on e17ee67f9's path, Heavy Industry at m2151-2155 on the merge's, operating income +$571M a month on $283B
+of principal). Whether such a sector should be sold at a quarter a month rather than restructured is the
+distress rule's question for the debt it carries, not the bleed's; noted here, not queued.
