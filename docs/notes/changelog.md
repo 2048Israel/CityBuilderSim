@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.134 — OX1, the orphans behind a wave that ends at once — 2026-11-17, ready, see docs/queue/OX1-notes.md
+An adult back in work, or back from a course, now brings home the children who went out with them: the builder places them after last month's kept
+households and before the city's pool, by its own order and half a shape (`FamilyModel.SHAPE_TAKE`, the bare .5 named), pass after pass, until every
+one is in a household with the adults who came back, never more of them than the families' own adults grew by (an
+adult who left the city or went to prison left the out of work without coming home). They used to come back as loose children, the half a shape left one in seven over, and the
+households' memory kept them waiting for months: a fifth of 6,000 adults back at once left 67.7 orphans that month against a twin's 6.6, nine months
+to fall back (DeathRecordCheck's new section 4; now 5.26 against 6.58). In the default playtest adults came home in 838 of 2,400 months and 62,000
+children with them. DeathRecordCheck's played town (28.2 orphans against its twin's 27.1 on 0.9.131) is green. Its m60 twin line is
+re-filed to OX2: that town's wave ends two months before its twin's, and the arrivals behind it bring the builder's ordinary orphans sooner. Nothing
+new is saved. The playtest's path moves from month 14.
+
 ### 0.9.133 — R6b, Research: the near-future rows — 2026-11-17, ready, see docs/queue/R6b-notes.md
 The near future's first rows, each with what it gives. `research.json` learns `projected` and `window`, held to
 `ResearchCatalog.HISTORY_ENDS` (November 2026), and a projected row says so wherever its date shows: the inbox,
