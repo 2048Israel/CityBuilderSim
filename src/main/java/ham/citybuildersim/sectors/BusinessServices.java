@@ -219,6 +219,15 @@ public final class BusinessServices extends Sector {
     public double[] retirementDemandAndCapacity(Game game) { return null; }
 
     /**
+     * "Twenty-four months of losses sheds plant", as the header says, and it
+     * did not (AQ1): the shortfall desk lent the losses and nothing closed
+     * until it refused, then everything closed in a year. Past one hundred
+     * per cent of its billing the offices close while it is still lent.
+     */
+    @Override
+    public boolean bleedsWhileLent() { return true; }
+
+    /**
      * The licences of one kind this sector's practices on site will ask for
      * when they open (BA1, 2026-11-02): each one's licensed posts at the share
      * Game.licencesNeededFor() holds the first of a kind to.

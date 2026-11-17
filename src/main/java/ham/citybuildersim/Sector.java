@@ -3516,6 +3516,12 @@ public abstract class Sector {
     /** Whether a holding of this template may be sold back this month. The landlords say no to a door somebody wants. */
     public boolean mayRetire(BuildingsTemplate t) { return true; }
 
+    /**
+     * Whether this sector sells plant it is using while a lender still covers its losses (AQ1): a price taker with no
+     * demand reading, whose only shrink is the distress rule (BusinessInvestment.BLEED_MONTHS). Its own override says why.
+     */
+    public boolean bleedsWhileLent() { return false; }
+
     /** Limit a spare-capacity sale to what still leaves keepAtLeast units usable; additive sectors need no further limit. */
     public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast) { return quantity; }
 
