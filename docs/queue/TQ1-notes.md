@@ -78,3 +78,59 @@ calls `Staffing.held(staffingHold, staffing)` and words its hold with `staffingH
 | `sectors/Oil.java:598` | `planOnLand()` |
 | `sectors/Restaurants.java:400` | `plan()` |
 | `sectors/Retail.java:731` | `plan()` |
+
+## 3. The rule ★: a tie is shared
+
+**Refusals at the same share are tied, and the tie is shared.** The hold keeps every refusal at its share
+(`Staffing.alike()`); `Game.noteStaffingHold()` notes each tied building as it would note it alone (a crews' hold, an
+unpaid hold or an ask), in the order of their template ids, and each ask is its part of its posts, one of as many as
+tied (`WantedPosts.Ask.part()`), its pay factor its own. The words of the hold name the first building the planner
+met (the share in them is every tied building's); nothing priced depends on which that is. A larger share still wins
+outright, as on main.
+
+**Why this way.** The measurement made the call: main's tie rule was "the first listed", and the first listed was the
+smallest in 636 of 638, so "the fewest posts" would have named main's rule and left GW1's costs where they were. The
+costs were absent where float noise broke the tie as it fell (c3ca14fb); sharing is the deterministic form of that,
+every month, and makes the order a sector lists its buildings in decide nothing (the id order makes it so to the bit).
+
+**The other ways**, not taken:
+- *The fewest posts* (the nearest to opening in hands): main's outcome in 636 of 638 ties, the costs kept.
+- *The most posts*: the largest bid, every month; a Construction Depot's 50 where the yard and the depot asked alike,
+  a Wire & Cable Works' 400 in Manufacturing's four-way tie, past what the noise ever priced on average.
+- *The planner's own score* (what it would have built had it passed): thirteen scores, not one place, and a refused
+  template has no score in most planners (they score after the gate).
+- *The lowest id*: a rule by name only, as positional as the first listed.
+- *Each tied ask held to its own room* (below): a settle() change, LD1's rule for every month's asks.
+
+**What sharing does in `settle()`.** A month's asks are summed per band and held to the room of the best payer among
+them (LD1: "the most the best-paying building that wants them could still pay"), so a tie's two halves are priced as
+two sectors' asks always were. StaffingTieCheck's founding fixture shows the size: Retail's Convenience Store (5 posts)
+and Small Grocery Store (27) tied at 0; alone, the store's ask settles to 2 unskilled and 3 diploma posts, the
+grocery's to 1.31 unskilled (its pay factor's room); tied, the halves (8.5 unskilled and 6.5 diploma asked)
+settle to 6 and 5, held by the best payer's room or the band's posts (`MOST_OF_POSTS`), no longer the grocery's. Under the noise's pick the month would have priced one or the other. This is settle()'s rule, not the
+tie's, and TQ1 leaves it as it is.
+
+**No save field and no format bump.** The tie lives within a month's planning: `alike()` rides the decision to
+`noteStaffingHold()` in the same month, and `WantedPosts.getTiedHolds()` is a month's count, as its crews' and unpaid
+counts are, read by StaffingTieCheck in the month. The latent posts saved are the same field as before; a save from
+main loads and reads as it did.
+
+## 4. What was built, and where
+
+- `Sector.Staffing.held(kept, refused)` (`Sector.java`, banner "A TIE AT THE GATE IS SHARED"), the one place the
+  thirteen planners keep their hold; `alike()`, the refusals tied; `why()`, the hold's words for its own template; a
+  private copy constructor carrying the tied list (`tiedWith`).
+- The thirteen planners (section 2): each `if (... > ...)` block is the one call, and its name variable is gone.
+- `Game.noteStaffingHold(held)` notes each tied building in id order; the old body is
+  `noteStaffingHold(held, ways)`, whose ask is `a.part(ways)`.
+- `WantedPosts`: `Ask.part(int)`, `heldInATie()`, `getTiedHolds()` (reset in `beginMonth()`); `getHolds()` counts a
+  tied hold once for each of its buildings (its javadoc says so).
+- `StaffingTieCheck` (new, in `AllChecks` after StaffingDrawCheck), written by a Sonnet slice to this session's brief
+  and reviewed here (one printed line's wording mended). Four sections: 1 a fresh city played until the gate refuses
+  two of a sector's templates at the same share to the bit (Retail's Convenience Store and Small Grocery Store at 0,
+  month 1; the Convenience Store and the Filling Station at 0.333292257, month 10, a share the draw filled part of);
+  2 `held(a, b)` and `held(b, a)` carry both, a larger share met before, between or after is kept alone, a smaller
+  one leaves the two; 3 `noteStaffingHold()` of either order gives the same asks, counts and latent posts to the bit,
+  one tied hold counting both buildings, each building's outcome its outcome alone, each ask its ask alone halved and
+  the posts asked the mean of the two; 4 a city played 120 months: 466 holds noted, 37 tied in 34 months, 33 months in
+  which one sector asked for two of its buildings (Construction 29, Manufacturing 2, Retail 2). 53 assertions, 12 s.
