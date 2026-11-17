@@ -386,3 +386,7 @@ named (GroceryCheck green). Four lines are new: PlanCheck 6's two FAIL lines, pl
   open cells, every check kept) and leaves this one. It is main's `DistrictPlan` on LX1's path, not LX1's code: PX2 is
   queued for it, with a known-reds row for each FAIL line. Re-judging a copy of the run's suite log
   (`target/checks/LX1-dry2-suite.txt`) with those rows leaves no NEW line.
+
+**The kept run.** `/tmp/cbs-gate-LX1-MV0wqgUr`, the dry run of branch 13a470756 on main f18b1053 (0.9.137). Since
+13a470756 only these notes and the ship file have moved, so the gate reuses it and re-judges its suite with the
+merged known-reds: the copy's exit 3 (known red only) is that judgment (the orchestrator, 2026-11-17).
