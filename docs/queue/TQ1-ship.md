@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- gate-run: /tmp/cbs-gate-TQ1-yhW62wry -->
 ## changelog
 ### {next} — TQ1, the staffing gate's tie rule — 2026-11-17, ready, see docs/queue/TQ1-notes.md
 A planner whose buildings the staffing gate refused hands one hold to the wage (LD1), the refusal nearest to

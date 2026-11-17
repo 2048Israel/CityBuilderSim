@@ -436,3 +436,10 @@ does. `./batch-check.sh MapCheck` alone on the branch: exit 3, known red only. T
 stands at level 5, the fixture passes, and the next section reads 40,080 plots at level 5, South 15. The one red is
 main's FB5 line ("at every 30th month the map draws exactly what the city has"); four timings were soft and one path
 assertion observed. The second dry run waits for FB2 to ship, and merges the main FB2 makes.
+
+**The second**, on the orchestrator's go after FB2 shipped: `sh tools/gate.sh TQ1 --dry-run` on e942cbcd (main
+9a5d8113, 0.9.131, merged in; its three generated indexes taken from main and regenerated), run
+`/tmp/cbs-gate-TQ1-yhW62wry`. **Gate exit 0.** The suite ran in 1,246 s, exit 3, known red only, all main's:
+DeathRecordCheck, InvestCheck, LongPlaytest (section 9's finding, FB11's, under FB5's entry), MapCheck (FB5's line
+alone, the offer fixture passing), PlanCheck, PrizeCheck, YoungBankCheck. Records: `{next}` = 0.9.132, TQ1's block on
+top, one Queued row added (TW1).
