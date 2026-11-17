@@ -184,7 +184,7 @@ margin here 10-30% of the business sectors' value added.
   main's recorded FB6 lines. The two runs played the same model; what the section's city holds by then moves with
   the harness's run, and on LX1's path it stands at the fixtures' edge. They are fixtures that do not cause their
   condition: the class of KS1-rest ("KeptCheck on another city's path"). Recorded in the ship file's `## known-reds`
-  against KF1 (queued: section 63's fixtures make the market and the record they read), not mended here.
+  against FB6 (queued; its KF63 is section 63's fixtures), not mended here.
 - **The fast checks** on the merged tree (7bf9a4276): compile, maps, Stale 0 firm, tree clean but the generated docs.
 
 ## 6. The trace
@@ -216,4 +216,5 @@ city sidecar was refused or lost history", 2 times each, at months 3589 and 3952
 of 10 reloads read the map back the same), in a city of 5.5M; main's same run, 1.9M at its end, flags nothing. The
 gate's 2,400 months do not reach it; the nightly's 4,000 may. It is the map's sidecar refused whole on a reload, what
 FB8's DM2-B row studies ("no normal-play route to that mismatch" was DM2's finding): this is one, in a city larger
-than main's runs reach, and is left to FB8 (not this batch's code: `CityMap`, `MapSiteHistory`).
+than main's runs reach, and is left to FB8 (not this batch's code: `CityMap`, `MapSiteHistory`). The nightly prints
+both as findings, so the ship file records them as known reds against FB8.
