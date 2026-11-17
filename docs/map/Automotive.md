@@ -1,4 +1,4 @@
-# Automotive.java - 308 lines · 7 methods · 3 constants · sectors
+# Automotive.java - 312 lines · 8 methods · 3 constants · sectors
 
 `ham/citybuildersim/sectors/Automotive.java` - generated 2026-11-17 by CodeMap; line numbers are as of that run.
 
@@ -72,7 +72,7 @@
 | line | section |
 |---:|---|
 | 149 | PLANNING - can the city supply it, and then is it worth it |
-| 261 | · the screen |
+| 265 | · the screen |
 
 ## Constants
 
@@ -86,10 +86,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 233 | **type** `public final class Automotive extends Sector` | The automobile industry. |
+| 76 | 237 | **type** `public final class Automotive extends Sector` | The automobile industry. |
 | 133 | 15 | `public Automotive()` |  |
 
-### PLANNING - can the city supply it, and then is it worth it (lines 149-260)
+### PLANNING - can the city supply it, and then is it worth it (lines 149-264)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -97,11 +97,12 @@
 | 159 | 3 | `public double biggestDrawAllowed(Good g, Game game)` | The largest draw a new plant may have on that supply. |
 | 172 | 72 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Manufacturing's shape - the best template by profit over cost, floored on staffing - with a supply gate in front of it, the mills' shape to 0.7.119. |
 | 259 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with nobody at home to sell to - YET. |
+| 263 | 1 | `public boolean bleedsWhileLent()` | With no demand reading it shrinks on its losses alone, so it sells plant while still lent (AQ1: GW1's seed 2 lent it 92 months of them). |
 
-### the screen (lines 261-308)
+### the screen (lines 265-312)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 264 | 1 | `public boolean hasPlantBlock()` |  |
-| 267 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 268 | 1 | `public boolean hasPlantBlock()` |  |
+| 271 | 41 | `public List<Sector.Line> ownLines(Game game)` |  |
 
