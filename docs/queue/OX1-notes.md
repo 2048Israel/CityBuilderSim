@@ -76,13 +76,13 @@ the twins' timing and the one-orphan allowance stand. Measured ways to green it,
 | + arrivals placed as families, after the kept households | 0.387 on 9a5d8113, 2.162 merged | the played town's orphans fall from about 7 to about 2 |
 | + newcomers (back and arrivals) before the kept households | 1.099 merged | a layoff month's kept households still take every adult, so that month's births and last orphans wait |
 
-Queued OX2 (the ship file) with the call for Jerus.
+Queued OX2 (the ship file), built on the recommended way of call 1 (arriving children come with their adults), Jerus's to overturn.
 
 ## Calls (★ the way taken)
 
 1. ★ **The re-employed's children only.** Placing arriving children with their adults too greens m60 on one
    model and not the next, and empties most of the orphan section of a growing city, which Jerus named ("they're
-   the orphans", the half a shape's residue); his call, queued as OX2. Others: arrivals as families in OX1; every
+   the orphans", the half a shape's residue); queued as OX2 on the recommended way, they come with their adults (the orchestrator, 11-17), Jerus's to overturn. Others: arrivals as families in OX1; every
    child of the pool placed by passes while adults are free (the residue would end everywhere).
 2. ★ **Passes at half a shape, not the full take.** The full take puts nearly every returning baby in a large
    family (the first shape eats the band); the passes keep the builder's own mix. Other: the shapes of last
@@ -121,8 +121,9 @@ People to a household: 2.78 and 2.78 at month 60, 3.51 and 3.38 at month 2,399, 
   m48 entry filed under OX1 is green and so is vetoed by `tools/known-reds.sh` as the batch's own.
 - **EducationCheck**, "a poor city at x3 enrols fewer than at x1: the trap is back": main's. A clean origin/main
   ec481b4a checkout fails it the same (1,652 enrolled at x1, 1,615 at x3, the willing share 0.72 and 0.35), and so
-  does OX1 with the mend switched off; TQ1's gate record does not have it (that gate did not run it). Filed by name
-  under a new queued TF1 (the ship file), its cause in the row.
+  does OX1 with the mend switched off; TQ1's gate record does not have it (that gate did not run it). R6b files the
+  same line as EDU1 with its queued row (the orchestrator, 11-17), so OX1 files nothing for it (a TF1 row was dropped):
+  once R6b ships, main is merged here and the line is named.
 
-Judged again on the saved log with both rows (`CBS_REJUDGE=--rejudge ./batch-check.sh --judge`): "known red only -
-2 harnesses", exit 3.
+Judged again on the saved log with a TF1 row standing in for EDU1's (`CBS_REJUDGE=--rejudge ./batch-check.sh --judge`):
+"known red only - 2 harnesses", exit 3.
