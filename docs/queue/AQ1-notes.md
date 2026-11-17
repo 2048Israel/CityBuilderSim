@@ -247,4 +247,5 @@ What remains of the old cliff is the quarter rule's own case, a sector overdrawn
 default playtests that sector's plant was paying its running costs and its loss was interest alone (Manufacturing at
 m1818 on e17ee67f9's path, Heavy Industry at m2151-2155 on the merge's, operating income +$571M a month on $283B
 of principal). Whether such a sector should be sold at a quarter a month rather than restructured is the
-distress rule's question for the debt it carries, not the bleed's; noted here, not queued.
+distress rule's question for the debt it carries, not the bleed's; queued as QR1 (the ship file's ## queued row, its
+recommended way and the other ways there).
