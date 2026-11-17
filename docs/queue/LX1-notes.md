@@ -294,4 +294,13 @@ against 69,263; the shops' sales are 16.9% of GDP against 19.4%, their net 34% o
   0.9.134 had one city with "households with no home" in AUTO2, ZERO_SLACK, SHOCK and HIGH each), so no F1 city and
   no cause class. Changed verdicts, both information: SHOCK K2 FAIL to PASS, HIGH R2 FAIL to PASS. Still failing, as
   on main, both information: AUTO2 A1 (inflation from m240, 3.16% a year, 5/16 in band; main 3.53%) and A2 (the
-  longest spell of inflation over 10%, 22 months; main 24). Committed as `docs/ensemble/LX1.md`.
+  longest spell of inflation over 10%, 22 months; main 24). Committed as `docs/ensemble/LX1.md` then, and replaced
+  by the next run when AQ1 moved main's trace.
+- **On the final merged model (2e042c283's classes, snapshot named 93ea17dab; main fe7102e4 merged), against
+  `docs/ensemble/0.9.135.md`**, the run that counts: 80 of 80 in 96.0 min, exit 0, criteria 24/26, batch verdict
+  PASS, hard 10/10. M1: 0 in all five scenarios. F1: AUTO2 1/16 and ZERO_SLACK 1/16 (main's 0.9.135: the same
+  counts), ZERO_HOT, SHOCK and HIGH 0/16 (main 0, 1, 1); PASS everywhere. The F1 city is one, AUTO2-8 and its
+  ZERO_SLACK twin, "households with no home" in one month, m1340: TQ1's class, as main's own. Changed (info): HIGH
+  R2 FAIL to PASS. Still failing, as on main (info): AUTO2 A1 (3.21% a year, 5/16 in band; main 3.46%) and A2 (24
+  months; main 25). FB3 (0.9.136) shipped during it and does not move the trace, so it stands as the run that
+  counts. Committed as `docs/ensemble/LX1.md`.
