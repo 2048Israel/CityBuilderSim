@@ -139,12 +139,34 @@ premise holds. On the branch both are green.
    not taken: materials come off the yard first, and bitumen is held only where refiners stand, so
    neither is sure to leave a seller's row at the caused point, which is the row 3i asks for.
 
+## The dry run
+
+`sh tools/gate.sh FB3 --dry-run` on 614b8a79 over main 69a29638 (run `/tmp/cbs-gate-FB3-CP19hJD1`), beside LX1's
+ensemble: the suite in 3,285 s, gate exit 1, three unnamed reds, none in FB3's code.
+
+- **LandmassCheck**, "home filled by a fixture": 1,439 buildings drawn on the island; linked free 12,178,110 sq ft
+  of 12,094,868. AQ1's dry run on the same main read the same to the digit, and main 69a29638's own build, run
+  alone here, fails it word for word. AQ1's ship named it under FF1.
+- **CopperRefiningCheck**, "...the rule cut an order in at least one month of the run": 0 months. It was red in
+  AQ1's dry run too, and AQ1's ship named it under FF1.
+- **LandNationsCheck**, "a real level-12 seller split yields to the next hover within eight frames": 10,001.66 ms,
+  the next hover's measure never began inside the harness's 10 s `await`. Run alone on the branch it was green at
+  3.42 ms, with the harness at "All checks passed.". This is a wall-clock line in a correctness harness that misses
+  with an ensemble beside. It is named in the ship file under QW1, queued there.
+
+Main then moved to 0.9.135 (AQ1, fe7102e4). It was merged here: its saved operating-loss streak sits in DataSave,
+Game's save and load lines and SaveFileCheck, beside FB3's own lines, with no conflict but the generated docs.
+
 ## The checks
 
 `./batch-check.sh SaveFileCheck MoneyDatesCheck InvestCheck ReloadCheck CurrencyRegimeCheck HoldersCheck SaveSlotCheck ReplayCheck`
 on 4b9181cf (the mends; the last two read the month-end autosave and the recording, which moved): exit 0, "suite OK -
 8 harnesses" (SaveSlotCheck's one timing line soft, as every non-gate run). ReloadCheck 5: 12 draws closed, 69
 compared the same right after the load, 348,913 history numbers and 94,842 save figures the same a month on.
+
+**On the merge with 0.9.135** (c0d51fd9): `./batch-check.sh SaveFileCheck ReloadCheck ReadPathCheck DistressBleedCheck
+MoneyDatesCheck InvestCheck CurrencyRegimeCheck`, exit 0, "suite OK - 7 harnesses"; Stale 0 firm; the maps regenerated.
+The gate runs the suite fresh on the merge, so there is no second dry run.
 `sh tools/pick.sh origin/main HEAD`: ALL 216 harnesses (Game.java, 180 readers), "review not needed".
 
 **The named harnesses** on 98967c03 (`./batch-check.sh SaveFileCheck MoneyDatesCheck InvestCheck ReloadCheck`,
