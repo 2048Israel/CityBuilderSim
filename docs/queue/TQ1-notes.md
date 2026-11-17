@@ -427,5 +427,12 @@ different played city at level 4 and 22,288 plots. On TQ1's rule, with the secti
 section after it, in the same file: where no such offer stands, the city buys the largest standing offer first,
 through the office), it buys 2,048 plots, rises to level 5, and the whole section passes. The sections after it
 then read the city the gate's run read (40,080 plots at level 5, South 15 bought). That run's other four reds are main's
-FB5 line and three wall-clock timings, which the suite runs soft. The harness is unchanged on this branch until the
-orchestrator's call.
+FB5 line and three wall-clock timings, which the suite runs soft.
+
+**MapCheck mended** (the orchestrator's call, 2026-11-17: the fixture reads the path, and FR8's fallback is the plain
+mend, premise unchanged). In 53fde19b the section "an offer wholly picked is the offer" buys the largest standing
+offer first, up to four times, where `ownBlocks()` finds none, then reads the level again, as the section after it
+does. `./batch-check.sh MapCheck` alone on the branch: exit 3, known red only. The city bought 2,048 plots first and
+stands at level 5, the fixture passes, and the next section reads 40,080 plots at level 5, South 15. The one red is
+main's FB5 line ("at every 30th month the map draws exactly what the city has"); four timings were soft and one path
+assertion observed. The second dry run waits for FB2 to ship, and merges the main FB2 makes.

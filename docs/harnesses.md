@@ -19324,220 +19324,220 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L11238 a box from the city's east edge along its site's row, five blocks out and one deep, takes the free blocks joined through its own (
   - L11244 a box over the third block alone, two from the picked one, takes none; over the second and third it takes both, joined through the first
   - L11249 a box over the whole world takes at most
-  - L11256 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own
-  - L11271 picked block by block from the city's edge (
-  - L11272 ...and then it is: its id is the pick (an offer wholly picked is the offer), its blocks are out of the block set and no draft is left for them
-  - L11274 ...bought at its listed price: the card's figure is the offer's
-  - L11276 ...and its ground is not a block's: a click on one of its blocks picks none, a box over it adds none of them
-  - L11301 fixture: the offer to be bought, and a block bought after it, leave the city's blocks the size they are (level
-  - L11304 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to be bought from under a pick
-  - L11309 fixture: one of its blocks may be picked, and picking it, the offer is not wholly picked: a draft stands for that block
-  - L11318 the city's buying the offer over a picked block drops the block it owns whole, and the draft that held it, named (
-  - L11320 ...the note stands while nothing changes (live() runs every frame), and a click clears it
-  - L11328 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to bite
-  - L11332 fixture: one of its blocks may be picked
-  - L11345 a draft bought through Game.buyLandParcel() makes its block the city's and the picks drop it:
-  - L11347 ...and the offer whose ground it bit (
-  - L11365 fixture: a block is picked in a new city, and its draft stands
-  - L11372 the city's blocks changing size (its level rose from
-  - L11444 fixture: the hand-made city has a block it owns in part, a free one with an owned plot across an edge, three free blocks in a row out of its frontier, and no...
-  - L11458 fixture: the half-owned block holds a plot the city owns and a free one
-  - L11462 a press on a free plot of a block that may be picked boxes with no key held: one beside the city's ground, and a free plot of a block it owns part of
-  - L11465 ...but the city's own plot in that half-owned block pans: it is not ground the player may pick
-  - L11467 a press on a block two away from the city's ground, nothing picked, pans - the second and third of a row out of the frontier, which join nothing yet - and on...
-  - L11470 ...with the first picked, the second boxes (it joins through the picked block) and the third, still two away, pans
-  - L11473 a press on a picked block boxes, though it may not be picked again; Shift boxes from the third block too
-  - L11486 fixture: three free blocks in a row run out of the played city's frontier
-  - L11496 Picks.pressBoxes() reads the blocks and offers picked as they stand: a free plot of the picked block boxes, ground a quarter of the world out pans, Shift box...
-  - L11503 the blocks a box would take (Picks.boxBlocks()) are worked out and nothing is picked: no block, no draft, no card figure
-  - L11507 ...and the release takes exactly them (
-  - L11509 ...and over the same box again the preview takes none: what is picked is not taken twice
-  - L11512 the blocks the drafts hold, counted by draftBlocks() (
-  - L11526 the picked blocks' fill (LandMap.freeCells()) holds no plot the city owns, and exactly the plots of the blocks it does not own (
-  - L11529 ...and its edge (freeOutline()) is that ground's own: closed, the ground on its right, none of it the city's, enclosing exactly its free plots
-  - L11535 on the hand-made city's half-owned block and the free one beside it: the fill holds none of the city's plots, the edge is the free ground's, and the blocks' own
-  - L11540 freeCells() and ownedIn() of a rectangle are the offer's of that rectangle: the same cells, the owned leaves cut out
-  - L11548 the edge of two touching parcels' free ground is one shape, the seam between them no run: a rectangle's four; none for none
-  - L11555 a box's plots (plotBox()) run from the least corner's plot to one past the greatest's, whatever order the corners come in: the plot under every corner is in
-  - L11558 the bounds of picked blocks hold all of them and no more, and none for none
-  - L11571 the card's title names one offer by its place, several as a count, the drafts together as \"Your ground - N blocks\", and both joined:
-  - L11581 the hover card's words over a block that may be picked: its area by kind, led by its area, fresh or sea water only where the block holds some, and its price ...
-  - L11585 ...over a picked block what is picked in all (\"
-  - L11595 two separate pickings are two drafts, and dropping each draft's id in turn (the one chip's ×) leaves no block, no draft and no pick
-  - L11633 fixture: a fresh city has an offer and a block that may be picked sharing no ground with it and completing no offer
-  - L11639 a block picked first and an offer after: the card's ids put the offer before the draft - the order they are bought in, so no draft's purchase can take the of...
-  - L11647 ...and the card's Buy buys both through Game.buyLandParcels() (
-- **L11715 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type, each industry's works one ca...**
-  - L11741 every building of the nine materials industries has a look of its own - none a plain mine's or industry's box
-  - L11742 ...and every one on a resource's sites stands on its template's: the resource, its type of field, as many sites as it takes
-  - L11773 fixture: its square holds sites enough of every type for all its works
-  - L11774 its districts sum to its counts exactly, every type on its sites among them (coal's, stone's and copper's first types were placed nowhere until 0.8.0)
-  - L11780 every building drawn once - each type as many as the model has, a works on its sites once for all of them, none twice, none missing
-  - L11808 a works of twenty sites is drawn on twenty sites - every works on all of its sites - and each site under a works is of its type of field
-  - L11825 ...one more Iron Mine takes one more hematite site, and no works placed before it moves
-  - L11849 ...the
-  - L11902 each look is drawn on its tiles in its own colours - a pit's benches, a shaft's headframe, a quarry's stone, a leach plant's pond,
-  - L11906 with no zone set no district is tinted
-  - L11938 each zone's districts cover its ground, and one fewer would not: the tint where a zone is and nowhere else, no district twice
-  - L11940 ...the district holding the most of a zone's sector's buildings is the zone's (the map picks where they stand)
-  - L11941 ...and each zone in its sector's own colour
-  - L11975 a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of
-  - L12264 fixture: the avenues run open for steps across a district's seam and a tile's edge, on every arm
-  - L12265 THE LINE: along every arm's line between two open cells, every sample is the street's colour - across the tile edges and the seams, no gap and no staircase
-  - L12266 ...and the line's two sides, as far out as the street is wide less a pixel, are the street's too: no step where the band crosses an edge or a seam, no narrowing
-  - L12296 fixture: the tiles about the origin have avenues about them
-  - L12297 THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp
-  - L12298 ...and a copy whose mark beside the tile moved has another stamp: a tile repaints when an avenue plot beside it is laid
-  - L12319 ...and a tile of an avenue from a twin map built alike paints the same pixels
-  - L12343 NO BUILDING ON THE BAND: not one staircase plot and not one outer plot (the ground the band crosses) is under a building, and no sample of the line is a buil...
-  - L12354 CROSSINGS: a staircase's plots alone are no junction - an avenue's arm with no street across it draws no box, no zebra, no ring (and is drawn: its paved band...
-  - L12361 ...an avenue across an arterial is a signal: the box on the avenue's two plots in the arterial's column, a zebra on each of the arterial's arms, no ring (fou...
-  - L12367 ...two arterials crossing with no avenue: a signal, the box at the corner, no ring
-  - L12371 ...the avenue through that corner (
-  - L12376 ...the origin where the four arms meet and a street runs along each axis (eight roads): one ring about the origin's plot, ISLAND exactly within ROUNDABOUT_IS...
-  - L12379 ...and the four arms alone (four roads): a signal, the box on the origin's plot, no ring
-  - L12383 ...and the arms' second diagonal is drawn across the origin's plots from the origin's place (the plots a step of the other arm flanks: (16, 15) and (16, 17),...
-  - L12415 fixture: the tiles about the origin read crossings, roundabouts among them
-  - L12416 ...the ring of street codes each was handed is the map's streetAt() on all
-  - L12417 A CROSSING IS ONE CROSSING: wherever two tiles' reads of a crossing overlap they are the same rectangle and the same verdict - no half roundabout
-  - L12449 THE SCREEN: the dense screen at the founding site, the four avenues across it (tiles with avenues about them:
-  - L12794 fixture: the far districts hold crescents and shore curves, shore curves that cross a tile's edge and some that bend, and their plans are drawn (a Drawn coun...
-  - L12796 ...the curves' bytes are a small share of the plans' (compact: the geometry as numbers, the plots as one list of ints): at most 15%
-  - L12830 THE LINE at
-  - L12832 ...the band's middle stays within
-  - L12834 ...and between samples
-  - L12853 THE CONTROL: the same crescents drawn without the curves, as the staircase of bars they were, fail the audit - the band's middle off the line, its width wron...
-  - L12893 fixture: the tiles about the first crescents and shore curves have curves about them
-  - L12894 THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp
-  - L12895 ...and a copy with a curve mark added beside the tile has another stamp: a tile repaints when a curve plot beside it is laid
-  - L12916 ...and a tile of a curve from a twin map built alike paints the same pixels
-  - L12967 NO BUILDING UNDER OR OVER A CURVE: not one plot a curve is laid on or reaches is under a building of the plan (a works at the water, which CityShore places o...
-  - L12979 CROSSINGS: a crescent's plots alone are no junction - between its two rings it draws no box, no zebra, no ring (and is drawn: its paved band is on its apex p...
-  - L12991 ...a street that crosses it runs on across the band: along the long street's row, over the plots the arc crosses and three each side, its colour at the middl...
-  - L12999 ...and an arterial crossing another with the crescent in the tile is a signal as it was: the box on the crossing's plot, nowhere else, no ring
-  - L13008 ...and over a bridge a street along a cut is drawn through: its colour along the whole line from its first plot's middle to its last's, the deck on the four ...
-  - L13052 THE SCREEN: the dense screen over the far districts where curves are thickest, curves across it (tiles with curves about them:
-  - L13772 fixture:
-  - L13774 in the months that laid a run at
-  - L13817 the runs index enters a stretch of any heading, at any scale and start (on a node's edge, beside it, inside it), at exactly the nodes stroke()'s clip draws i...
-  - L13853 the runs key of a far node from the scale's index is the key the walk of every stretch and dot gives it, on x 1, x 80 and 5B, at six scales
-  - L13993 fixture: every month reconciled (the map was not restated), on x 1, x 80, 5B and the played city
-  - L13996 fixture: the chain settled - no job left to hand out - within
-  - L13997 the minimap's picture after a month - the stamp and the preview, from the kept nodes - equals a full redraw of the same map, pixel for pixel, asking the same...
-  - L13999 ...the played city before its land purchase and after it
-  - L14010 fixture: months left far nodes held (their key unmoved) on x 1, x 80 and 5B, to compare
-  - L14011 the far view's nodes whose key did not move hold the pixels a fresh nodePixels() gives them, every month on x 1, x 80 and 5B
-  - L14032 fixture:
-  - L14035 the stamp's static layer is not redrawn by a month that adds no run, and a month that lays a highway or a stretch of track redraws it once (its pixels equal ...
-  - L14040 fixture: the block lies inside the built-up ground's box, so inside the stamp's frame, the city owns it after its purchase and the frame is the one it was
-  - L14042 the land layer is drawn again by a purchase and only then: once in the month of the purchase, never in the
-  - L14053 stampOf and the margins' hash from the cache equal a fresh one for every link kept after each of
-  - L14078 fixture: x 80 has months in which a district's carry on moved (the district after it had to be planned again) and months in which none did
-  - L14079 every plan job the chain was handed was kept as a plan made, a link taken as it stood, or a job that could do neither (x 1, x 80)
-  - L14093 the jobs the map counts as handed out lazy are the plan jobs the month's rounds were handed with no input and a link to take, every month on
-  - L14094 a band whose lazy job failed hands none lazy at its next hand-out:
-  - L14095 a band that had a quiet eager hand-out (a job that took its link, none that failed, none that planned) hands the first round of jobs that could take their li...
-  - L14098 fixture: x 80 has a band whose lazy job failed and that was handed out again (
-  - L14105 fixture: x 80's band, with the link of district
-  - L14118 fixture: x 80 has a used district after district
-  - L14136 a link whose carry in is not the one arriving makes the lazy try fail, and the band hands its jobs out with the input gathered from then on: a district's car...
-  - L14139 ...at the next epoch none is handed lazy and none fails: the plans of the district let go and of the one whose link carried the other carry in are made (
-  - L14142 ...and at the epoch after, in which nothing moved but the link let go: none lazy, only that plan made (
-  - L14153 a district's link gone and nothing else moved: the chain plans that district and takes the link of every district after it, none planned that need not be -
-  - L14156 ...the links of every district after it gone too, it plans each one (the chain before the early exit), the same pictures current:
-  - L14161 a district's link gone and nothing else moved: the reserves are found again as kept -
-  - L14163 ...and the sites kept for every region are the ones a fresh find gives, after that round (
-  - L14164 a band that had a quiet eager epoch is lazy again at the next, and stays lazy while nothing fails (the chain that let its link go handed its jobs lazy, and t...
-  - L14169 the links and plans kept after
-  - L14188 fixture:
-  - L14190 an own stamp kept against its key equals ownStamp() worked out afresh for every district whose key held, after each of
-  - L14224 fixture: x 80's months ask the reserves (a median of
-  - L14226 the sites kept for every region are the ones a fresh find gives, after every month of x 80 (
-  - L14227 the guard's kept digest is the one worked out afresh from the shore's works and the districts' mined sites after every month of x 80 - no writer of a mine or...
-  - L14229 a month in which the guard's version did not move empties the cache by it never:
-  - L14230 ...and one in which it moved, with the reserves asked after it, empties the cache by it at least once:
-  - L14242 a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than
-  - L14266 a land purchase moves the key of every tile over the ground bought, in what the city owns of the tile, and of no tile about it
-  - L14274 fixture: the L0 screen on x 1, x 80 and 5B has tiles whose key held through a month, to compare, and tiles whose key moved, read again
-  - L14276 a tile whose key did not move holds the stamp a fresh input() gives it, every month on x 1, x 80 and 5B
-  - L14293 fixture:
-  - L14297 a month that places in one district re-colours only the far nodes over that district and its neighbours - at least one, all within the 3 x 3 districts round ...
-  - L14312 fixture:
-  - L14314 a month that places in one district re-colours only the far nodes over that district and its neighbours, pictures on, at
-  - L14319 ...the chain re-plans the district that moved and those whose carry or edges moved, and no other:
-  - L14596 a plot is painted by its cover and relief: flat ground its cover's colour; grass, the beach and the desert on a slope its grey, foothill lightest to very ste...
-  - L14598 ...forest on a slope its green shaded toward its slope's grey (neither forest's own nor the grey), ice white whatever the slope, water as it is
-  - L14626 Medellin's hills in the fixture: every plot painted by its relief, and the three greys and the three shades of forest all on the screen
-  - L14644 the map's tile input carries the world's relief (CityMap.tileInput(), MapTiles.input()), and the plots about Medellin's centre hold some
-  - L14657 a generated world is flat everywhere and paints its cover's colour at every plot, byte for byte as before (D19)
-  - L14689 a far node's cover is the same with its relief asked for, and its relief is on dry ground alone, all four classes present over Medellin
-  - L14691 ...its pixels painted by cover and relief (TileRaster.colour()), the city's ground and edge aside; with no relief, or all flat, the pixels as before; the kep...
-  - L14702 ...the node and its pixels drawn in no more than SCREEN_MS (
-  - L14708 a generated world's far node asked for its relief is all flat, its cover the same
-- **L14714 11 (ET1 slice D). the district pictures over relief: the far node's own ground under a built city is painted by its relief**
-  - L14743 a far node over a built city on Medellin's hills draws the city's own bare ground by its relief, undimmed, and the rest dimmed - no pixel but a building's, a...
-  - L14770 on an Earth world with relief the hover's first line is the plot's ground and grade: \"Foothill\" and its grade on open ground, \"Forest on steep ground\" an...
-  - L14784 on the sea the first line carries the depth: the Narrows \"Shallow sea\" and its metres, Bedford Basin \"Sea\" and its
-  - L14797 a generated world's hover first line is its ground's words, as before, and only the fixture's Earth worlds are drawn with relief (LandMap.reliefDrawn())
-  - L14814 the globe's hover past the plane says the ground it drew by its code: the class and its grade, ice as it is, the sea with its depth
-  - L14830 the legend on an Earth world with relief has the three greys, forest on a slope and the shallow sea, in the globe's tiers and the plane's; without, as it was
-  - L14838 the globe's colour table is a colour for every code - a class and its relief - the map's own, and the world off the city's land dimmed as the far nodes dim it
-- **L14868 19. the borders on the city's plane: only where a border crosses the city's ground (WN2)**
-  - L14870 WorldDataCheck's fixture is beside the classes (
-  - L14891 a box of the city's ground round Baarle-Nassau is crossed by the Belgium-Netherlands line, and each line crossing() gives has a segment meeting the box
-  - L14892 crossing() misses no line that has a segment meeting the box (each segment sampled a thousand times)
-  - L14893 the same box round Rotterdam is crossed by no line
-  - L14894 crossing() keeps its answer for the same box and spot, and gives a new one for another spot
-  - L14907 planeBorders() of the Baarle lines on a
-  - L14921 at the closest view, on one of the line's vertices, the line that runs far off the canvas is cut to its margin (
-  - L14923 the plane's level of detail is the coarsest whose tolerance is no more than LOD_PX of a pixel at PLOT_M / 1000 / scale km (level
-  - L14926 borders and nations are drawn on an Earth world and on none a generated one makes
-- **L15001 20. the one rail yard is dealt to the district whose frame holds it: a Rail Depot arriving in a district earlier in the map's order moves...**
-  - L15012 fixture: one Rail Depot lays one yard (
-  - L15033 fixture: the district that stands the yard counts its depot and has no room for another (
-  - L15041 fixture: the second Rail Depot arrives in the district ahead in the map's order (
-  - L15046 the yard's share stays with the district that stands it: it is dealt
-  - L15048 ...every yard laid is dealt to some district (
-  - L15055 no box of the district that stands the yard moves, and it gains none: its depot is still its yard's (
-  - L15057 no box of the district ahead moves, and the arrival is its one new box, drawn in its plan (
-- **L15156 21. ground bought inside a built district with large works standing moves no box of its plan (MF2; WN3-M(b))**
-  - L15162 fixture: the district is built to
-  - L15175 fixture: the
-  - L15177 ground bought inside a built district moves none of the boxes that stand:
-  - L15183 ...and six months of arrivals after it, large works among them, move none either (
-- **L15187 22. a Convenience Store that leaves takes only its own box out of the plan (MF2; HD1-M)**
-  - L15191 fixture: the district is built to
-  - L15207 a Convenience Store leaving takes one box out of the plan and no other moves:
-- **L15229 23. a Rail Depot leaving the district that stands the yard takes only its own box out of the plan (MF2; main's playtest, m2396)**
-  - L15247 fixture: one yard in the frame of the district that counts both Rail Depots (
-  - L15259 fixture: one Rail Depot leaves the district that stands the yard, and the yard stays its (
-  - L15261 a Rail Depot leaving takes its own box out of the plan and no other box moves or is new (
-- **L15384 LM1: the deposits zoomed out**
-  - L15413 fixture: a view at the cut-off within
-  - L15421 fixture: the frame is at the cut-off - its level() is FAR (more than
-  - L15423 fixture: the frame's box holds deposits, of
-  - L15430 every deposit LandMap.fieldsIn finds in the frame's box is drawn, or shares its
-  - L15432 ...no two icons share a square, and every icon is of a deposit the search found
-  - L15442 two fields in one square keep the one with more sites, whichever comes first; the next square keeps its own; a field off the screen is not drawn
-  - L15445 ...and two of equal sites in one square keep the earlier of the list
-  - L15459 fixture: a view
-  - L15461 ...every deposit in its box is drawn or covered by a larger one in its square, one icon to a square, and none more than squares are on the screen
-  - L15476 a drag of a few pixels keeps the same deposits drawn: of
-  - L15492 every resource in fields has a mark of its own, none empty (
-  - L15494 ...written dark on a light colour and white on a dark one: each resource's ink has at least the contrast of the other against its colour
-  - L15507 fixture: a box just inside
-  - L15509 past
-  - L15535 a view panned a quarter of its size inside the searched box does not search again (
-  - L15536 ...one that leaves the box searches (
-  - L15537 ...a new land key searches (
-  - L15569 finding and thinning the frame's deposits takes a median of
-  - L15570 ...a second frame panned inside the searched box does not search again, and thins in a median of
-  - L15595 a new GamePrefs reads resourcesOnMap on, and its setter flips it off and on again
-- **L15642 24. frontage avenues crossing another avenue away from the founding origin: both strokes and one junction**
-  - L15707 fixture: both frontage sides cross a founding arm away from its origin, both slopes and both staircase phases
-  - L15708 both avenue strokes are continuous through every crossing, also on a tile corner (
-  - L15709 the crossing keeps each band wide to its street width less a pixel (
-  - L15710 each four-road avenue crossing is a signal, every tile agreeing, and the same pixels on redraw
+  - L11268 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own
+  - L11283 picked block by block from the city's edge (
+  - L11284 ...and then it is: its id is the pick (an offer wholly picked is the offer), its blocks are out of the block set and no draft is left for them
+  - L11286 ...bought at its listed price: the card's figure is the offer's
+  - L11288 ...and its ground is not a block's: a click on one of its blocks picks none, a box over it adds none of them
+  - L11313 fixture: the offer to be bought, and a block bought after it, leave the city's blocks the size they are (level
+  - L11316 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to be bought from under a pick
+  - L11321 fixture: one of its blocks may be picked, and picking it, the offer is not wholly picked: a draft stands for that block
+  - L11330 the city's buying the offer over a picked block drops the block it owns whole, and the draft that held it, named (
+  - L11332 ...the note stands while nothing changes (live() runs every frame), and a click clears it
+  - L11340 fixture: an offer of the city's own level holds two or more blocks of free ground, each wholly its own, to bite
+  - L11344 fixture: one of its blocks may be picked
+  - L11357 a draft bought through Game.buyLandParcel() makes its block the city's and the picks drop it:
+  - L11359 ...and the offer whose ground it bit (
+  - L11377 fixture: a block is picked in a new city, and its draft stands
+  - L11384 the city's blocks changing size (its level rose from
+  - L11456 fixture: the hand-made city has a block it owns in part, a free one with an owned plot across an edge, three free blocks in a row out of its frontier, and no...
+  - L11470 fixture: the half-owned block holds a plot the city owns and a free one
+  - L11474 a press on a free plot of a block that may be picked boxes with no key held: one beside the city's ground, and a free plot of a block it owns part of
+  - L11477 ...but the city's own plot in that half-owned block pans: it is not ground the player may pick
+  - L11479 a press on a block two away from the city's ground, nothing picked, pans - the second and third of a row out of the frontier, which join nothing yet - and on...
+  - L11482 ...with the first picked, the second boxes (it joins through the picked block) and the third, still two away, pans
+  - L11485 a press on a picked block boxes, though it may not be picked again; Shift boxes from the third block too
+  - L11498 fixture: three free blocks in a row run out of the played city's frontier
+  - L11508 Picks.pressBoxes() reads the blocks and offers picked as they stand: a free plot of the picked block boxes, ground a quarter of the world out pans, Shift box...
+  - L11515 the blocks a box would take (Picks.boxBlocks()) are worked out and nothing is picked: no block, no draft, no card figure
+  - L11519 ...and the release takes exactly them (
+  - L11521 ...and over the same box again the preview takes none: what is picked is not taken twice
+  - L11524 the blocks the drafts hold, counted by draftBlocks() (
+  - L11538 the picked blocks' fill (LandMap.freeCells()) holds no plot the city owns, and exactly the plots of the blocks it does not own (
+  - L11541 ...and its edge (freeOutline()) is that ground's own: closed, the ground on its right, none of it the city's, enclosing exactly its free plots
+  - L11547 on the hand-made city's half-owned block and the free one beside it: the fill holds none of the city's plots, the edge is the free ground's, and the blocks' own
+  - L11552 freeCells() and ownedIn() of a rectangle are the offer's of that rectangle: the same cells, the owned leaves cut out
+  - L11560 the edge of two touching parcels' free ground is one shape, the seam between them no run: a rectangle's four; none for none
+  - L11567 a box's plots (plotBox()) run from the least corner's plot to one past the greatest's, whatever order the corners come in: the plot under every corner is in
+  - L11570 the bounds of picked blocks hold all of them and no more, and none for none
+  - L11583 the card's title names one offer by its place, several as a count, the drafts together as \"Your ground - N blocks\", and both joined:
+  - L11593 the hover card's words over a block that may be picked: its area by kind, led by its area, fresh or sea water only where the block holds some, and its price ...
+  - L11597 ...over a picked block what is picked in all (\"
+  - L11607 two separate pickings are two drafts, and dropping each draft's id in turn (the one chip's ×) leaves no block, no draft and no pick
+  - L11645 fixture: a fresh city has an offer and a block that may be picked sharing no ground with it and completing no offer
+  - L11651 a block picked first and an offer after: the card's ids put the offer before the draft - the order they are bought in, so no draft's purchase can take the of...
+  - L11659 ...and the card's Buy buys both through Game.buyLandParcels() (
+- **L11727 15. the materials drawn as themselves (0.8.0): each kind its own look, every works on its own sites by type, each industry's works one ca...**
+  - L11753 every building of the nine materials industries has a look of its own - none a plain mine's or industry's box
+  - L11754 ...and every one on a resource's sites stands on its template's: the resource, its type of field, as many sites as it takes
+  - L11785 fixture: its square holds sites enough of every type for all its works
+  - L11786 its districts sum to its counts exactly, every type on its sites among them (coal's, stone's and copper's first types were placed nowhere until 0.8.0)
+  - L11792 every building drawn once - each type as many as the model has, a works on its sites once for all of them, none twice, none missing
+  - L11820 a works of twenty sites is drawn on twenty sites - every works on all of its sites - and each site under a works is of its type of field
+  - L11837 ...one more Iron Mine takes one more hematite site, and no works placed before it moves
+  - L11861 ...the
+  - L11914 each look is drawn on its tiles in its own colours - a pit's benches, a shaft's headframe, a quarry's stone, a leach plant's pond,
+  - L11918 with no zone set no district is tinted
+  - L11950 each zone's districts cover its ground, and one fewer would not: the tint where a zone is and nowhere else, no district twice
+  - L11952 ...the district holding the most of a zone's sector's buildings is the zone's (the map picks where they stand)
+  - L11953 ...and each zone in its sector's own colour
+  - L11987 a 1,389 x 868 L0 screen over the industry paints and rasters in no more than 80 ms of
+  - L12276 fixture: the avenues run open for steps across a district's seam and a tile's edge, on every arm
+  - L12277 THE LINE: along every arm's line between two open cells, every sample is the street's colour - across the tile edges and the seams, no gap and no staircase
+  - L12278 ...and the line's two sides, as far out as the street is wide less a pixel, are the street's too: no step where the band crosses an edge or a seam, no narrowing
+  - L12308 fixture: the tiles about the origin have avenues about them
+  - L12309 THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp
+  - L12310 ...and a copy whose mark beside the tile moved has another stamp: a tile repaints when an avenue plot beside it is laid
+  - L12331 ...and a tile of an avenue from a twin map built alike paints the same pixels
+  - L12355 NO BUILDING ON THE BAND: not one staircase plot and not one outer plot (the ground the band crosses) is under a building, and no sample of the line is a buil...
+  - L12366 CROSSINGS: a staircase's plots alone are no junction - an avenue's arm with no street across it draws no box, no zebra, no ring (and is drawn: its paved band...
+  - L12373 ...an avenue across an arterial is a signal: the box on the avenue's two plots in the arterial's column, a zebra on each of the arterial's arms, no ring (fou...
+  - L12379 ...two arterials crossing with no avenue: a signal, the box at the corner, no ring
+  - L12383 ...the avenue through that corner (
+  - L12388 ...the origin where the four arms meet and a street runs along each axis (eight roads): one ring about the origin's plot, ISLAND exactly within ROUNDABOUT_IS...
+  - L12391 ...and the four arms alone (four roads): a signal, the box on the origin's plot, no ring
+  - L12395 ...and the arms' second diagonal is drawn across the origin's plots from the origin's place (the plots a step of the other arm flanks: (16, 15) and (16, 17),...
+  - L12427 fixture: the tiles about the origin read crossings, roundabouts among them
+  - L12428 ...the ring of street codes each was handed is the map's streetAt() on all
+  - L12429 A CROSSING IS ONE CROSSING: wherever two tiles' reads of a crossing overlap they are the same rectangle and the same verdict - no half roundabout
+  - L12461 THE SCREEN: the dense screen at the founding site, the four avenues across it (tiles with avenues about them:
+  - L12806 fixture: the far districts hold crescents and shore curves, shore curves that cross a tile's edge and some that bend, and their plans are drawn (a Drawn coun...
+  - L12808 ...the curves' bytes are a small share of the plans' (compact: the geometry as numbers, the plots as one list of ints): at most 15%
+  - L12842 THE LINE at
+  - L12844 ...the band's middle stays within
+  - L12846 ...and between samples
+  - L12865 THE CONTROL: the same crescents drawn without the curves, as the staircase of bars they were, fail the audit - the band's middle off the line, its width wron...
+  - L12905 fixture: the tiles about the first crescents and shore curves have curves about them
+  - L12906 THE SAME PIXELS: each such tile rastered twice paints the same; its kept copy (MapTiles.copy) the same, with the same stamp
+  - L12907 ...and a copy with a curve mark added beside the tile has another stamp: a tile repaints when a curve plot beside it is laid
+  - L12928 ...and a tile of a curve from a twin map built alike paints the same pixels
+  - L12979 NO BUILDING UNDER OR OVER A CURVE: not one plot a curve is laid on or reaches is under a building of the plan (a works at the water, which CityShore places o...
+  - L12991 CROSSINGS: a crescent's plots alone are no junction - between its two rings it draws no box, no zebra, no ring (and is drawn: its paved band is on its apex p...
+  - L13003 ...a street that crosses it runs on across the band: along the long street's row, over the plots the arc crosses and three each side, its colour at the middl...
+  - L13011 ...and an arterial crossing another with the crescent in the tile is a signal as it was: the box on the crossing's plot, nowhere else, no ring
+  - L13020 ...and over a bridge a street along a cut is drawn through: its colour along the whole line from its first plot's middle to its last's, the deck on the four ...
+  - L13064 THE SCREEN: the dense screen over the far districts where curves are thickest, curves across it (tiles with curves about them:
+  - L13784 fixture:
+  - L13786 in the months that laid a run at
+  - L13829 the runs index enters a stretch of any heading, at any scale and start (on a node's edge, beside it, inside it), at exactly the nodes stroke()'s clip draws i...
+  - L13865 the runs key of a far node from the scale's index is the key the walk of every stretch and dot gives it, on x 1, x 80 and 5B, at six scales
+  - L14005 fixture: every month reconciled (the map was not restated), on x 1, x 80, 5B and the played city
+  - L14008 fixture: the chain settled - no job left to hand out - within
+  - L14009 the minimap's picture after a month - the stamp and the preview, from the kept nodes - equals a full redraw of the same map, pixel for pixel, asking the same...
+  - L14011 ...the played city before its land purchase and after it
+  - L14022 fixture: months left far nodes held (their key unmoved) on x 1, x 80 and 5B, to compare
+  - L14023 the far view's nodes whose key did not move hold the pixels a fresh nodePixels() gives them, every month on x 1, x 80 and 5B
+  - L14044 fixture:
+  - L14047 the stamp's static layer is not redrawn by a month that adds no run, and a month that lays a highway or a stretch of track redraws it once (its pixels equal ...
+  - L14052 fixture: the block lies inside the built-up ground's box, so inside the stamp's frame, the city owns it after its purchase and the frame is the one it was
+  - L14054 the land layer is drawn again by a purchase and only then: once in the month of the purchase, never in the
+  - L14065 stampOf and the margins' hash from the cache equal a fresh one for every link kept after each of
+  - L14090 fixture: x 80 has months in which a district's carry on moved (the district after it had to be planned again) and months in which none did
+  - L14091 every plan job the chain was handed was kept as a plan made, a link taken as it stood, or a job that could do neither (x 1, x 80)
+  - L14105 the jobs the map counts as handed out lazy are the plan jobs the month's rounds were handed with no input and a link to take, every month on
+  - L14106 a band whose lazy job failed hands none lazy at its next hand-out:
+  - L14107 a band that had a quiet eager hand-out (a job that took its link, none that failed, none that planned) hands the first round of jobs that could take their li...
+  - L14110 fixture: x 80 has a band whose lazy job failed and that was handed out again (
+  - L14117 fixture: x 80's band, with the link of district
+  - L14130 fixture: x 80 has a used district after district
+  - L14148 a link whose carry in is not the one arriving makes the lazy try fail, and the band hands its jobs out with the input gathered from then on: a district's car...
+  - L14151 ...at the next epoch none is handed lazy and none fails: the plans of the district let go and of the one whose link carried the other carry in are made (
+  - L14154 ...and at the epoch after, in which nothing moved but the link let go: none lazy, only that plan made (
+  - L14165 a district's link gone and nothing else moved: the chain plans that district and takes the link of every district after it, none planned that need not be -
+  - L14168 ...the links of every district after it gone too, it plans each one (the chain before the early exit), the same pictures current:
+  - L14173 a district's link gone and nothing else moved: the reserves are found again as kept -
+  - L14175 ...and the sites kept for every region are the ones a fresh find gives, after that round (
+  - L14176 a band that had a quiet eager epoch is lazy again at the next, and stays lazy while nothing fails (the chain that let its link go handed its jobs lazy, and t...
+  - L14181 the links and plans kept after
+  - L14200 fixture:
+  - L14202 an own stamp kept against its key equals ownStamp() worked out afresh for every district whose key held, after each of
+  - L14236 fixture: x 80's months ask the reserves (a median of
+  - L14238 the sites kept for every region are the ones a fresh find gives, after every month of x 80 (
+  - L14239 the guard's kept digest is the one worked out afresh from the shore's works and the districts' mined sites after every month of x 80 - no writer of a mine or...
+  - L14241 a month in which the guard's version did not move empties the cache by it never:
+  - L14242 ...and one in which it moved, with the reserves asked after it, empties the cache by it at least once:
+  - L14254 a month's FX-side map work at 5B - the stamp, the far view's screen, an L0 screen re-stamped and the chain's handing out and adopting - takes no more than
+  - L14278 a land purchase moves the key of every tile over the ground bought, in what the city owns of the tile, and of no tile about it
+  - L14286 fixture: the L0 screen on x 1, x 80 and 5B has tiles whose key held through a month, to compare, and tiles whose key moved, read again
+  - L14288 a tile whose key did not move holds the stamp a fresh input() gives it, every month on x 1, x 80 and 5B
+  - L14305 fixture:
+  - L14309 a month that places in one district re-colours only the far nodes over that district and its neighbours - at least one, all within the 3 x 3 districts round ...
+  - L14324 fixture:
+  - L14326 a month that places in one district re-colours only the far nodes over that district and its neighbours, pictures on, at
+  - L14331 ...the chain re-plans the district that moved and those whose carry or edges moved, and no other:
+  - L14608 a plot is painted by its cover and relief: flat ground its cover's colour; grass, the beach and the desert on a slope its grey, foothill lightest to very ste...
+  - L14610 ...forest on a slope its green shaded toward its slope's grey (neither forest's own nor the grey), ice white whatever the slope, water as it is
+  - L14638 Medellin's hills in the fixture: every plot painted by its relief, and the three greys and the three shades of forest all on the screen
+  - L14656 the map's tile input carries the world's relief (CityMap.tileInput(), MapTiles.input()), and the plots about Medellin's centre hold some
+  - L14669 a generated world is flat everywhere and paints its cover's colour at every plot, byte for byte as before (D19)
+  - L14701 a far node's cover is the same with its relief asked for, and its relief is on dry ground alone, all four classes present over Medellin
+  - L14703 ...its pixels painted by cover and relief (TileRaster.colour()), the city's ground and edge aside; with no relief, or all flat, the pixels as before; the kep...
+  - L14714 ...the node and its pixels drawn in no more than SCREEN_MS (
+  - L14720 a generated world's far node asked for its relief is all flat, its cover the same
+- **L14726 11 (ET1 slice D). the district pictures over relief: the far node's own ground under a built city is painted by its relief**
+  - L14755 a far node over a built city on Medellin's hills draws the city's own bare ground by its relief, undimmed, and the rest dimmed - no pixel but a building's, a...
+  - L14782 on an Earth world with relief the hover's first line is the plot's ground and grade: \"Foothill\" and its grade on open ground, \"Forest on steep ground\" an...
+  - L14796 on the sea the first line carries the depth: the Narrows \"Shallow sea\" and its metres, Bedford Basin \"Sea\" and its
+  - L14809 a generated world's hover first line is its ground's words, as before, and only the fixture's Earth worlds are drawn with relief (LandMap.reliefDrawn())
+  - L14826 the globe's hover past the plane says the ground it drew by its code: the class and its grade, ice as it is, the sea with its depth
+  - L14842 the legend on an Earth world with relief has the three greys, forest on a slope and the shallow sea, in the globe's tiers and the plane's; without, as it was
+  - L14850 the globe's colour table is a colour for every code - a class and its relief - the map's own, and the world off the city's land dimmed as the far nodes dim it
+- **L14880 19. the borders on the city's plane: only where a border crosses the city's ground (WN2)**
+  - L14882 WorldDataCheck's fixture is beside the classes (
+  - L14903 a box of the city's ground round Baarle-Nassau is crossed by the Belgium-Netherlands line, and each line crossing() gives has a segment meeting the box
+  - L14904 crossing() misses no line that has a segment meeting the box (each segment sampled a thousand times)
+  - L14905 the same box round Rotterdam is crossed by no line
+  - L14906 crossing() keeps its answer for the same box and spot, and gives a new one for another spot
+  - L14919 planeBorders() of the Baarle lines on a
+  - L14933 at the closest view, on one of the line's vertices, the line that runs far off the canvas is cut to its margin (
+  - L14935 the plane's level of detail is the coarsest whose tolerance is no more than LOD_PX of a pixel at PLOT_M / 1000 / scale km (level
+  - L14938 borders and nations are drawn on an Earth world and on none a generated one makes
+- **L15013 20. the one rail yard is dealt to the district whose frame holds it: a Rail Depot arriving in a district earlier in the map's order moves...**
+  - L15024 fixture: one Rail Depot lays one yard (
+  - L15045 fixture: the district that stands the yard counts its depot and has no room for another (
+  - L15053 fixture: the second Rail Depot arrives in the district ahead in the map's order (
+  - L15058 the yard's share stays with the district that stands it: it is dealt
+  - L15060 ...every yard laid is dealt to some district (
+  - L15067 no box of the district that stands the yard moves, and it gains none: its depot is still its yard's (
+  - L15069 no box of the district ahead moves, and the arrival is its one new box, drawn in its plan (
+- **L15168 21. ground bought inside a built district with large works standing moves no box of its plan (MF2; WN3-M(b))**
+  - L15174 fixture: the district is built to
+  - L15187 fixture: the
+  - L15189 ground bought inside a built district moves none of the boxes that stand:
+  - L15195 ...and six months of arrivals after it, large works among them, move none either (
+- **L15199 22. a Convenience Store that leaves takes only its own box out of the plan (MF2; HD1-M)**
+  - L15203 fixture: the district is built to
+  - L15219 a Convenience Store leaving takes one box out of the plan and no other moves:
+- **L15241 23. a Rail Depot leaving the district that stands the yard takes only its own box out of the plan (MF2; main's playtest, m2396)**
+  - L15259 fixture: one yard in the frame of the district that counts both Rail Depots (
+  - L15271 fixture: one Rail Depot leaves the district that stands the yard, and the yard stays its (
+  - L15273 a Rail Depot leaving takes its own box out of the plan and no other box moves or is new (
+- **L15396 LM1: the deposits zoomed out**
+  - L15425 fixture: a view at the cut-off within
+  - L15433 fixture: the frame is at the cut-off - its level() is FAR (more than
+  - L15435 fixture: the frame's box holds deposits, of
+  - L15442 every deposit LandMap.fieldsIn finds in the frame's box is drawn, or shares its
+  - L15444 ...no two icons share a square, and every icon is of a deposit the search found
+  - L15454 two fields in one square keep the one with more sites, whichever comes first; the next square keeps its own; a field off the screen is not drawn
+  - L15457 ...and two of equal sites in one square keep the earlier of the list
+  - L15471 fixture: a view
+  - L15473 ...every deposit in its box is drawn or covered by a larger one in its square, one icon to a square, and none more than squares are on the screen
+  - L15488 a drag of a few pixels keeps the same deposits drawn: of
+  - L15504 every resource in fields has a mark of its own, none empty (
+  - L15506 ...written dark on a light colour and white on a dark one: each resource's ink has at least the contrast of the other against its colour
+  - L15519 fixture: a box just inside
+  - L15521 past
+  - L15547 a view panned a quarter of its size inside the searched box does not search again (
+  - L15548 ...one that leaves the box searches (
+  - L15549 ...a new land key searches (
+  - L15581 finding and thinning the frame's deposits takes a median of
+  - L15582 ...a second frame panned inside the searched box does not search again, and thins in a median of
+  - L15607 a new GamePrefs reads resourcesOnMap on, and its setter flips it off and on again
+- **L15654 24. frontage avenues crossing another avenue away from the founding origin: both strokes and one junction**
+  - L15719 fixture: both frontage sides cross a founding arm away from its origin, both slopes and both staircase phases
+  - L15720 both avenue strokes are continuous through every crossing, also on a tile corner (
+  - L15721 the crossing keeps each band wide to its street width less a pixel (
+  - L15722 each four-road avenue crossing is a signal, every tile agreeing, and the same pixels on redraw
 
 ## MarketCheck.java - 117 labelled assertions
 
