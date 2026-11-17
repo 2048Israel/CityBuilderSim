@@ -40,6 +40,15 @@ import java.util.Map;
  *   - the LEACH & SX-EW PLANT, 1,000 t of cathode from 280,000 t of ore and
  *     3,500 t of acid, on one oxide site - 1968 (Bluebird, Arizona).
  *
+ * AND A FOURTH, a city that knows FE2 (R6b; id 153): the SULPHIDE LEACH &
+ * SX-EW PLANT, the oxide plant's 1,000 t of cathode and 3,500 t of acid on
+ * one sulphide site, its heaps leached at the mine with no concentrator and
+ * no smelter - Johnson Camp, Arizona, Nov 2025. Its dig is
+ * SULPHIDE_LEACH_DIG, 1.18 t a tonne of cathode (85% recovered, the
+ * builder's ceiling: an estimate), its water 71 L a kg of cathode (the
+ * builder's). It runs on the machinery above - digs() keeps it a kind of its
+ * own on the sulphide ground - and a city founded today's way never knows it.
+ *
  * THE GROUND (spec 2.4). A field holds tonnes of copper metal, and a
  * building's site says how much of it a unit made takes: CONC_DIG, .341 t a
  * tonne of concentrate (the mill's 88% recovery of 0.5% ore into 30%), and
@@ -98,7 +107,8 @@ public final class CopperMining extends ExtractionSector {
         uses(Good.ACID);
         blurb("Digs the copper under the ground the city owns: a sulphide field's ore floated into "
                 + "concentrate at the mine, which the smelters buy, and an oxide field's leached with "
-                + "acid into finished copper cathode. The world takes what the city's works do not.");
+                + "acid into finished copper cathode - a sulphide field's too, heap-leached at the mine "
+                + "with no mill or smelter, where that is known. The world takes what the city's works do not.");
     }
 
     /* ----- the ground ----- */
@@ -160,7 +170,7 @@ public final class CopperMining extends ExtractionSector {
         return out;
     }
 
-    /** The month's cathode at the sector's rate, as far as the oxide ground holds it (pure): what the market is priced on and the month makes. */
+    /** The month's cathode at the sector's rate, as far as the ground of the type each plant leaches holds it (pure): what the market is priced on and the month makes. */
     public double lift() {
         double total = 0;
         for (double t : leached(digs(Good.COPPER))) total += t;
@@ -256,7 +266,11 @@ public final class CopperMining extends ExtractionSector {
         lines.add(Line.head("The copper, a month at nameplate"));
         if (conc > 0) lines.add(Line.of("Concentrate, on sulphide fields", f.count(conc) + " t"));
         if (cathode > 0) {
-            lines.add(Line.of("Cathode leached, on oxide fields", f.count(cathode) + " t"));
+            // ...the cathode by the ground it is leached from: the sulphide plants' (R6b, FE2) apart from the oxide plants', which are the rest.
+            double heaps = 0;
+            for (Dig d : digs(Good.COPPER)) if (d.type() == Deposit.FieldType.SULPHIDE) heaps += d.capacity();
+            if (cathode - heaps >= 1) lines.add(Line.of("Cathode leached, on oxide fields", f.count(cathode - heaps) + " t"));
+            if (heaps > 0) lines.add(Line.of("Cathode heap-leached, on sulphide fields", f.count(heaps) + " t"));
             lines.add(Line.of("Acid it takes", f.count(getInputAtCapacity(Good.ACID)) + " t"));
         }
         lines.addAll(ham.citybuildersim.BuildCard.chainLines(game, this));
