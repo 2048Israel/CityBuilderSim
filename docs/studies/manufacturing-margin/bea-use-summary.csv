@@ -1,0 +1,929 @@
+year,industry,industry_name,row_code,row_name,musd,over_output
+1997,332,Fabricated metal products,211,Oil and gas extraction,2.0,1e-05
+1997,332,Fabricated metal products,212,"Mining, except oil and gas",451.0,0.00185
+1997,332,Fabricated metal products,22,Utilities,3131.0,0.01285
+1997,332,Fabricated metal products,23,Construction,1287.0,0.00528
+1997,332,Fabricated metal products,321,Wood products,189.0,0.00078
+1997,332,Fabricated metal products,327,Nonmetallic mineral products,1019.0,0.00418
+1997,332,Fabricated metal products,331,Primary metals,48501.0,0.19904
+1997,332,Fabricated metal products,332,Fabricated metal products,23006.0,0.09441
+1997,332,Fabricated metal products,333,Machinery,3376.0,0.01385
+1997,332,Fabricated metal products,334,Computer and electronic products,3947.0,0.0162
+1997,332,Fabricated metal products,335,"Electrical equipment, appliances, and components",2051.0,0.00842
+1997,332,Fabricated metal products,3361MV,"Motor vehicles, bodies and trailers, and parts",974.0,0.004
+1997,332,Fabricated metal products,3364OT,Other transportation equipment,11.0,5e-05
+1997,332,Fabricated metal products,339,Miscellaneous manufacturing,39.0,0.00016
+1997,332,Fabricated metal products,313TT,Textile mills and textile product mills,1.0,0.0
+1997,332,Fabricated metal products,322,Paper products,1019.0,0.00418
+1997,332,Fabricated metal products,323,Printing and related support activities,17.0,7e-05
+1997,332,Fabricated metal products,324,Petroleum and coal products,638.0,0.00262
+1997,332,Fabricated metal products,325,Chemical products,4687.0,0.01923
+1997,332,Fabricated metal products,326,Plastics and rubber products,1510.0,0.0062
+1997,332,Fabricated metal products,42,Wholesale trade,8367.0,0.03434
+1997,332,Fabricated metal products,441,Motor vehicle and parts dealers,127.0,0.00052
+1997,332,Fabricated metal products,445,Food and beverage stores,1.0,0.0
+1997,332,Fabricated metal products,452,General merchandise stores,8.0,3e-05
+1997,332,Fabricated metal products,4A0,Other retail,57.0,0.00023
+1997,332,Fabricated metal products,481,Air transportation,466.0,0.00191
+1997,332,Fabricated metal products,482,Rail transportation,494.0,0.00203
+1997,332,Fabricated metal products,483,Water transportation,63.0,0.00026
+1997,332,Fabricated metal products,484,Truck transportation,1508.0,0.00619
+1997,332,Fabricated metal products,485,Transit and ground passenger transportation,101.0,0.00041
+1997,332,Fabricated metal products,486,Pipeline transportation,8.0,3e-05
+1997,332,Fabricated metal products,487OS,Other transportation and support activities,45.0,0.00018
+1997,332,Fabricated metal products,493,Warehousing and storage,355.0,0.00146
+1997,332,Fabricated metal products,511,"Publishing industries, except internet (includes software)",18.0,7e-05
+1997,332,Fabricated metal products,513,Broadcasting and telecommunications,445.0,0.00183
+1997,332,Fabricated metal products,514,"Data processing, internet publishing, and other information services",753.0,0.00309
+1997,332,Fabricated metal products,521CI,"Federal Reserve banks, credit intermediation, and related activities",938.0,0.00385
+1997,332,Fabricated metal products,523,"Securities, commodity contracts, and investments",1415.0,0.00581
+1997,332,Fabricated metal products,524,Insurance carriers and related activities,595.0,0.00244
+1997,332,Fabricated metal products,ORE,Other real estate,1760.0,0.00722
+1997,332,Fabricated metal products,532RL,Rental and leasing services and lessors of intangible assets,2580.0,0.01059
+1997,332,Fabricated metal products,5411,Legal services,493.0,0.00202
+1997,332,Fabricated metal products,5415,Computer systems design and related services,670.0,0.00275
+1997,332,Fabricated metal products,5412OP,"Miscellaneous professional, scientific, and technical services",4801.0,0.0197
+1997,332,Fabricated metal products,55,Management of companies and enterprises,4258.0,0.01747
+1997,332,Fabricated metal products,561,Administrative and support services,3298.0,0.01353
+1997,332,Fabricated metal products,562,Waste management and remediation services,372.0,0.00153
+1997,332,Fabricated metal products,711AS,"Performing arts, spectator sports, museums, and related activities",49.0,0.0002
+1997,332,Fabricated metal products,713,"Amusements, gambling, and recreation industries",14.0,6e-05
+1997,332,Fabricated metal products,721,Accommodation,267.0,0.0011
+1997,332,Fabricated metal products,722,Food services and drinking places,280.0,0.00115
+1997,332,Fabricated metal products,81,"Other services, except government",2347.0,0.00963
+1997,332,Fabricated metal products,GFE,Federal government enterprises,181.0,0.00074
+1997,332,Fabricated metal products,GSLE,State and local government enterprises,125.0,0.00051
+1997,332,Fabricated metal products,Used,"Scrap, used and secondhand goods",173.0,0.00071
+1997,332,Fabricated metal products,Other,Noncomparable imports and rest-of-the-world adjustment [1],370.0,0.00152
+1997,332,Fabricated metal products,T005,Total Intermediate,133657.0,0.54849
+1997,332,Fabricated metal products,V001,Compensation of employees,70801.0,0.29055
+1997,332,Fabricated metal products,V002,"Taxes on production and imports, less subsidies",1859.0,0.00763
+1997,332,Fabricated metal products,V003,Gross operating surplus,37362.0,0.15332
+1997,332,Fabricated metal products,T006,Total Value Added,110023.0,0.45151
+1997,332,Fabricated metal products,T018,Total Industry Output,243680.0,1.0
+1997,333,Machinery,212,"Mining, except oil and gas",91.0,0.00034
+1997,333,Machinery,22,Utilities,1938.0,0.0072
+1997,333,Machinery,23,Construction,953.0,0.00354
+1997,333,Machinery,321,Wood products,872.0,0.00324
+1997,333,Machinery,327,Nonmetallic mineral products,1301.0,0.00483
+1997,333,Machinery,331,Primary metals,28742.0,0.10681
+1997,333,Machinery,332,Fabricated metal products,20092.0,0.07467
+1997,333,Machinery,333,Machinery,25774.0,0.09578
+1997,333,Machinery,334,Computer and electronic products,7623.0,0.02833
+1997,333,Machinery,335,"Electrical equipment, appliances, and components",8463.0,0.03145
+1997,333,Machinery,3361MV,"Motor vehicles, bodies and trailers, and parts",7846.0,0.02916
+1997,333,Machinery,3364OT,Other transportation equipment,124.0,0.00046
+1997,333,Machinery,337,Furniture and related products,404.0,0.0015
+1997,333,Machinery,339,Miscellaneous manufacturing,1521.0,0.00565
+1997,333,Machinery,313TT,Textile mills and textile product mills,289.0,0.00107
+1997,333,Machinery,322,Paper products,1404.0,0.00522
+1997,333,Machinery,323,Printing and related support activities,6.0,2e-05
+1997,333,Machinery,324,Petroleum and coal products,785.0,0.00292
+1997,333,Machinery,325,Chemical products,2923.0,0.01086
+1997,333,Machinery,326,Plastics and rubber products,7300.0,0.02713
+1997,333,Machinery,42,Wholesale trade,12557.0,0.04666
+1997,333,Machinery,441,Motor vehicle and parts dealers,784.0,0.00291
+1997,333,Machinery,445,Food and beverage stores,10.0,4e-05
+1997,333,Machinery,452,General merchandise stores,60.0,0.00022
+1997,333,Machinery,4A0,Other retail,503.0,0.00187
+1997,333,Machinery,481,Air transportation,470.0,0.00175
+1997,333,Machinery,482,Rail transportation,320.0,0.00119
+1997,333,Machinery,483,Water transportation,29.0,0.00011
+1997,333,Machinery,484,Truck transportation,1911.0,0.0071
+1997,333,Machinery,485,Transit and ground passenger transportation,102.0,0.00038
+1997,333,Machinery,486,Pipeline transportation,11.0,4e-05
+1997,333,Machinery,487OS,Other transportation and support activities,7.0,3e-05
+1997,333,Machinery,493,Warehousing and storage,171.0,0.00064
+1997,333,Machinery,511,"Publishing industries, except internet (includes software)",8.0,3e-05
+1997,333,Machinery,513,Broadcasting and telecommunications,992.0,0.00369
+1997,333,Machinery,514,"Data processing, internet publishing, and other information services",935.0,0.00347
+1997,333,Machinery,521CI,"Federal Reserve banks, credit intermediation, and related activities",1074.0,0.00399
+1997,333,Machinery,523,"Securities, commodity contracts, and investments",1814.0,0.00674
+1997,333,Machinery,524,Insurance carriers and related activities,1215.0,0.00452
+1997,333,Machinery,ORE,Other real estate,1125.0,0.00418
+1997,333,Machinery,532RL,Rental and leasing services and lessors of intangible assets,2246.0,0.00835
+1997,333,Machinery,5411,Legal services,925.0,0.00344
+1997,333,Machinery,5415,Computer systems design and related services,1221.0,0.00454
+1997,333,Machinery,5412OP,"Miscellaneous professional, scientific, and technical services",5439.0,0.02021
+1997,333,Machinery,55,Management of companies and enterprises,8407.0,0.03124
+1997,333,Machinery,561,Administrative and support services,2136.0,0.00794
+1997,333,Machinery,562,Waste management and remediation services,298.0,0.00111
+1997,333,Machinery,711AS,"Performing arts, spectator sports, museums, and related activities",46.0,0.00017
+1997,333,Machinery,713,"Amusements, gambling, and recreation industries",13.0,5e-05
+1997,333,Machinery,721,Accommodation,317.0,0.00118
+1997,333,Machinery,722,Food services and drinking places,360.0,0.00134
+1997,333,Machinery,81,"Other services, except government",1684.0,0.00626
+1997,333,Machinery,GFE,Federal government enterprises,557.0,0.00207
+1997,333,Machinery,GSLE,State and local government enterprises,104.0,0.00039
+1997,333,Machinery,Used,"Scrap, used and secondhand goods",3.0,1e-05
+1997,333,Machinery,Other,Noncomparable imports and rest-of-the-world adjustment [1],553.0,0.00206
+1997,333,Machinery,T005,Total Intermediate,166859.0,0.62008
+1997,333,Machinery,V001,Compensation of employees,72354.0,0.26888
+1997,333,Machinery,V002,"Taxes on production and imports, less subsidies",1979.0,0.00735
+1997,333,Machinery,V003,Gross operating surplus,27900.0,0.10368
+1997,333,Machinery,T006,Total Value Added,102233.0,0.37992
+1997,333,Machinery,T018,Total Industry Output,269092.0,1.0
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",211,Oil and gas extraction,1.0,0.0
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",212,"Mining, except oil and gas",52.0,0.00012
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",22,Utilities,2218.0,0.00514
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",23,Construction,673.0,0.00156
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",321,Wood products,2697.0,0.00624
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",327,Nonmetallic mineral products,5887.0,0.01363
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",331,Primary metals,30680.0,0.07103
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",332,Fabricated metal products,18275.0,0.04231
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",333,Machinery,18572.0,0.043
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",334,Computer and electronic products,15420.0,0.0357
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",335,"Electrical equipment, appliances, and components",4166.0,0.00965
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",3361MV,"Motor vehicles, bodies and trailers, and parts",123953.0,0.28698
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",3364OT,Other transportation equipment,145.0,0.00034
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",337,Furniture and related products,15.0,3e-05
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",339,Miscellaneous manufacturing,2016.0,0.00467
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",313TT,Textile mills and textile product mills,5534.0,0.01281
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",315AL,Apparel and leather and allied products,935.0,0.00216
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",322,Paper products,2874.0,0.00665
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",323,Printing and related support activities,4.0,1e-05
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",324,Petroleum and coal products,238.0,0.00055
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",325,Chemical products,6803.0,0.01575
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",326,Plastics and rubber products,15429.0,0.03572
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",42,Wholesale trade,25035.0,0.05796
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",441,Motor vehicle and parts dealers,2121.0,0.00491
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",445,Food and beverage stores,7.0,2e-05
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",452,General merchandise stores,96.0,0.00022
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",4A0,Other retail,409.0,0.00095
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",481,Air transportation,658.0,0.00152
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",482,Rail transportation,841.0,0.00195
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",483,Water transportation,30.0,7e-05
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",484,Truck transportation,3621.0,0.00838
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",485,Transit and ground passenger transportation,142.0,0.00033
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",486,Pipeline transportation,3.0,1e-05
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",487OS,Other transportation and support activities,5.0,1e-05
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",493,Warehousing and storage,79.0,0.00018
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",511,"Publishing industries, except internet (includes software)",19.0,4e-05
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",513,Broadcasting and telecommunications,736.0,0.0017
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",514,"Data processing, internet publishing, and other information services",159.0,0.00037
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",521CI,"Federal Reserve banks, credit intermediation, and related activities",1750.0,0.00405
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",523,"Securities, commodity contracts, and investments",2064.0,0.00478
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",524,Insurance carriers and related activities,1321.0,0.00306
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",ORE,Other real estate,974.0,0.00226
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",532RL,Rental and leasing services and lessors of intangible assets,1898.0,0.00439
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",5411,Legal services,1796.0,0.00416
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",5415,Computer systems design and related services,283.0,0.00066
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",5412OP,"Miscellaneous professional, scientific, and technical services",4579.0,0.0106
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",55,Management of companies and enterprises,9502.0,0.022
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",561,Administrative and support services,2146.0,0.00497
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",562,Waste management and remediation services,228.0,0.00053
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",711AS,"Performing arts, spectator sports, museums, and related activities",41.0,9e-05
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",713,"Amusements, gambling, and recreation industries",16.0,4e-05
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",721,Accommodation,498.0,0.00115
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",722,Food services and drinking places,264.0,0.00061
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",81,"Other services, except government",1371.0,0.00317
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",GSLE,State and local government enterprises,73.0,0.00017
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",Other,Noncomparable imports and rest-of-the-world adjustment [1],553.0,0.00128
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",T005,Total Intermediate,319901.0,0.74066
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",V001,Compensation of employees,63330.0,0.14663
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",V002,"Taxes on production and imports, less subsidies",1639.0,0.00379
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",V003,Gross operating surplus,47046.0,0.10892
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",T006,Total Value Added,112015.0,0.25934
+1997,3361MV,"Motor vehicles, bodies and trailers, and parts",T018,Total Industry Output,431916.0,1.0
+2007,332,Fabricated metal products,211,Oil and gas extraction,6.0,2e-05
+2007,332,Fabricated metal products,212,"Mining, except oil and gas",725.0,0.00212
+2007,332,Fabricated metal products,22,Utilities,4571.0,0.01334
+2007,332,Fabricated metal products,23,Construction,744.0,0.00217
+2007,332,Fabricated metal products,321,Wood products,146.0,0.00043
+2007,332,Fabricated metal products,327,Nonmetallic mineral products,1354.0,0.00395
+2007,332,Fabricated metal products,331,Primary metals,78757.0,0.22977
+2007,332,Fabricated metal products,332,Fabricated metal products,37519.0,0.10946
+2007,332,Fabricated metal products,333,Machinery,3779.0,0.01103
+2007,332,Fabricated metal products,334,Computer and electronic products,5090.0,0.01485
+2007,332,Fabricated metal products,335,"Electrical equipment, appliances, and components",2645.0,0.00772
+2007,332,Fabricated metal products,3361MV,"Motor vehicles, bodies and trailers, and parts",1308.0,0.00382
+2007,332,Fabricated metal products,3364OT,Other transportation equipment,67.0,0.0002
+2007,332,Fabricated metal products,339,Miscellaneous manufacturing,42.0,0.00012
+2007,332,Fabricated metal products,313TT,Textile mills and textile product mills,2.0,1e-05
+2007,332,Fabricated metal products,322,Paper products,1604.0,0.00468
+2007,332,Fabricated metal products,323,Printing and related support activities,21.0,6e-05
+2007,332,Fabricated metal products,324,Petroleum and coal products,1624.0,0.00474
+2007,332,Fabricated metal products,325,Chemical products,6639.0,0.01937
+2007,332,Fabricated metal products,326,Plastics and rubber products,2037.0,0.00594
+2007,332,Fabricated metal products,42,Wholesale trade,14201.0,0.04143
+2007,332,Fabricated metal products,441,Motor vehicle and parts dealers,222.0,0.00065
+2007,332,Fabricated metal products,445,Food and beverage stores,1.0,0.0
+2007,332,Fabricated metal products,452,General merchandise stores,17.0,5e-05
+2007,332,Fabricated metal products,4A0,Other retail,84.0,0.00025
+2007,332,Fabricated metal products,481,Air transportation,794.0,0.00232
+2007,332,Fabricated metal products,482,Rail transportation,913.0,0.00266
+2007,332,Fabricated metal products,483,Water transportation,92.0,0.00027
+2007,332,Fabricated metal products,484,Truck transportation,3101.0,0.00905
+2007,332,Fabricated metal products,485,Transit and ground passenger transportation,202.0,0.00059
+2007,332,Fabricated metal products,486,Pipeline transportation,11.0,3e-05
+2007,332,Fabricated metal products,487OS,Other transportation and support activities,71.0,0.00021
+2007,332,Fabricated metal products,493,Warehousing and storage,366.0,0.00107
+2007,332,Fabricated metal products,511,"Publishing industries, except internet (includes software)",48.0,0.00014
+2007,332,Fabricated metal products,513,Broadcasting and telecommunications,1273.0,0.00371
+2007,332,Fabricated metal products,514,"Data processing, internet publishing, and other information services",1367.0,0.00399
+2007,332,Fabricated metal products,521CI,"Federal Reserve banks, credit intermediation, and related activities",1697.0,0.00495
+2007,332,Fabricated metal products,523,"Securities, commodity contracts, and investments",2412.0,0.00704
+2007,332,Fabricated metal products,524,Insurance carriers and related activities,994.0,0.0029
+2007,332,Fabricated metal products,ORE,Other real estate,1947.0,0.00568
+2007,332,Fabricated metal products,532RL,Rental and leasing services and lessors of intangible assets,2458.0,0.00717
+2007,332,Fabricated metal products,5411,Legal services,760.0,0.00222
+2007,332,Fabricated metal products,5415,Computer systems design and related services,1241.0,0.00362
+2007,332,Fabricated metal products,5412OP,"Miscellaneous professional, scientific, and technical services",7420.0,0.02165
+2007,332,Fabricated metal products,55,Management of companies and enterprises,4551.0,0.01328
+2007,332,Fabricated metal products,561,Administrative and support services,8017.0,0.02339
+2007,332,Fabricated metal products,562,Waste management and remediation services,651.0,0.0019
+2007,332,Fabricated metal products,711AS,"Performing arts, spectator sports, museums, and related activities",97.0,0.00028
+2007,332,Fabricated metal products,713,"Amusements, gambling, and recreation industries",43.0,0.00013
+2007,332,Fabricated metal products,721,Accommodation,470.0,0.00137
+2007,332,Fabricated metal products,722,Food services and drinking places,591.0,0.00172
+2007,332,Fabricated metal products,81,"Other services, except government",1565.0,0.00457
+2007,332,Fabricated metal products,GFE,Federal government enterprises,243.0,0.00071
+2007,332,Fabricated metal products,GSLE,State and local government enterprises,194.0,0.00057
+2007,332,Fabricated metal products,Used,"Scrap, used and secondhand goods",239.0,0.0007
+2007,332,Fabricated metal products,Other,Noncomparable imports and rest-of-the-world adjustment [1],881.0,0.00257
+2007,332,Fabricated metal products,T005,Total Intermediate,207915.0,0.60659
+2007,332,Fabricated metal products,V001,Compensation of employees,88907.0,0.25938
+2007,332,Fabricated metal products,V002,"Taxes on production and imports, less subsidies",2608.0,0.00761
+2007,332,Fabricated metal products,V003,Gross operating surplus,43331.0,0.12642
+2007,332,Fabricated metal products,T006,Total Value Added,134847.0,0.39341
+2007,332,Fabricated metal products,T018,Total Industry Output,342762.0,1.0
+2007,333,Machinery,212,"Mining, except oil and gas",128.0,0.00037
+2007,333,Machinery,22,Utilities,2514.0,0.00725
+2007,333,Machinery,23,Construction,559.0,0.00161
+2007,333,Machinery,321,Wood products,842.0,0.00243
+2007,333,Machinery,327,Nonmetallic mineral products,1566.0,0.00451
+2007,333,Machinery,331,Primary metals,42266.0,0.12185
+2007,333,Machinery,332,Fabricated metal products,27209.0,0.07844
+2007,333,Machinery,333,Machinery,31730.0,0.09148
+2007,333,Machinery,334,Computer and electronic products,6749.0,0.01946
+2007,333,Machinery,335,"Electrical equipment, appliances, and components",9238.0,0.02663
+2007,333,Machinery,3361MV,"Motor vehicles, bodies and trailers, and parts",10975.0,0.03164
+2007,333,Machinery,3364OT,Other transportation equipment,398.0,0.00115
+2007,333,Machinery,337,Furniture and related products,399.0,0.00115
+2007,333,Machinery,339,Miscellaneous manufacturing,2053.0,0.00592
+2007,333,Machinery,313TT,Textile mills and textile product mills,449.0,0.00129
+2007,333,Machinery,322,Paper products,1851.0,0.00534
+2007,333,Machinery,323,Printing and related support activities,7.0,2e-05
+2007,333,Machinery,324,Petroleum and coal products,1247.0,0.0036
+2007,333,Machinery,325,Chemical products,2702.0,0.00779
+2007,333,Machinery,326,Plastics and rubber products,9362.0,0.02699
+2007,333,Machinery,42,Wholesale trade,19812.0,0.05712
+2007,333,Machinery,441,Motor vehicle and parts dealers,1245.0,0.00359
+2007,333,Machinery,445,Food and beverage stores,11.0,3e-05
+2007,333,Machinery,452,General merchandise stores,119.0,0.00034
+2007,333,Machinery,4A0,Other retail,745.0,0.00215
+2007,333,Machinery,481,Air transportation,622.0,0.00179
+2007,333,Machinery,482,Rail transportation,508.0,0.00146
+2007,333,Machinery,483,Water transportation,49.0,0.00014
+2007,333,Machinery,484,Truck transportation,3276.0,0.00944
+2007,333,Machinery,485,Transit and ground passenger transportation,158.0,0.00046
+2007,333,Machinery,486,Pipeline transportation,9.0,3e-05
+2007,333,Machinery,487OS,Other transportation and support activities,8.0,2e-05
+2007,333,Machinery,493,Warehousing and storage,200.0,0.00058
+2007,333,Machinery,511,"Publishing industries, except internet (includes software)",29.0,8e-05
+2007,333,Machinery,513,Broadcasting and telecommunications,1439.0,0.00415
+2007,333,Machinery,514,"Data processing, internet publishing, and other information services",1265.0,0.00365
+2007,333,Machinery,521CI,"Federal Reserve banks, credit intermediation, and related activities",1768.0,0.0051
+2007,333,Machinery,523,"Securities, commodity contracts, and investments",2228.0,0.00642
+2007,333,Machinery,524,Insurance carriers and related activities,1537.0,0.00443
+2007,333,Machinery,ORE,Other real estate,1350.0,0.00389
+2007,333,Machinery,532RL,Rental and leasing services and lessors of intangible assets,2421.0,0.00698
+2007,333,Machinery,5411,Legal services,1418.0,0.00409
+2007,333,Machinery,5415,Computer systems design and related services,1622.0,0.00468
+2007,333,Machinery,5412OP,"Miscellaneous professional, scientific, and technical services",6407.0,0.01847
+2007,333,Machinery,55,Management of companies and enterprises,8652.0,0.02494
+2007,333,Machinery,561,Administrative and support services,3376.0,0.00973
+2007,333,Machinery,562,Waste management and remediation services,430.0,0.00124
+2007,333,Machinery,711AS,"Performing arts, spectator sports, museums, and related activities",75.0,0.00022
+2007,333,Machinery,713,"Amusements, gambling, and recreation industries",47.0,0.00014
+2007,333,Machinery,721,Accommodation,368.0,0.00106
+2007,333,Machinery,722,Food services and drinking places,521.0,0.0015
+2007,333,Machinery,81,"Other services, except government",1051.0,0.00303
+2007,333,Machinery,GFE,Federal government enterprises,705.0,0.00203
+2007,333,Machinery,GSLE,State and local government enterprises,119.0,0.00034
+2007,333,Machinery,Used,"Scrap, used and secondhand goods",3.0,1e-05
+2007,333,Machinery,Other,Noncomparable imports and rest-of-the-world adjustment [1],1441.0,0.00415
+2007,333,Machinery,T005,Total Intermediate,217280.0,0.62642
+2007,333,Machinery,V001,Compensation of employees,82800.0,0.23871
+2007,333,Machinery,V002,"Taxes on production and imports, less subsidies",3098.0,0.00893
+2007,333,Machinery,V003,Gross operating surplus,43681.0,0.12593
+2007,333,Machinery,T006,Total Value Added,129580.0,0.37358
+2007,333,Machinery,T018,Total Industry Output,346861.0,1.0
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",211,Oil and gas extraction,3.0,1e-05
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",212,"Mining, except oil and gas",95.0,0.00018
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",22,Utilities,4242.0,0.00824
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",23,Construction,602.0,0.00117
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",321,Wood products,2906.0,0.00565
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",327,Nonmetallic mineral products,6223.0,0.01209
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",331,Primary metals,37780.0,0.07342
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",332,Fabricated metal products,22824.0,0.04436
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",333,Machinery,24820.0,0.04824
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",334,Computer and electronic products,14563.0,0.0283
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",335,"Electrical equipment, appliances, and components",4931.0,0.00958
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",3361MV,"Motor vehicles, bodies and trailers, and parts",149839.0,0.2912
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",3364OT,Other transportation equipment,545.0,0.00106
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",337,Furniture and related products,31.0,6e-05
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",339,Miscellaneous manufacturing,1951.0,0.00379
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",313TT,Textile mills and textile product mills,2241.0,0.00436
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",315AL,Apparel and leather and allied products,1398.0,0.00272
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",322,Paper products,4092.0,0.00795
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",323,Printing and related support activities,4.0,1e-05
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",324,Petroleum and coal products,892.0,0.00173
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",325,Chemical products,9789.0,0.01902
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",326,Plastics and rubber products,19020.0,0.03696
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",42,Wholesale trade,37722.0,0.07331
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",441,Motor vehicle and parts dealers,1945.0,0.00378
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",445,Food and beverage stores,5.0,1e-05
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",452,General merchandise stores,133.0,0.00026
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",4A0,Other retail,445.0,0.00086
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",481,Air transportation,510.0,0.00099
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",482,Rail transportation,969.0,0.00188
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",483,Water transportation,51.0,0.0001
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",484,Truck transportation,5750.0,0.01117
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",485,Transit and ground passenger transportation,115.0,0.00022
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",486,Pipeline transportation,6.0,1e-05
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",487OS,Other transportation and support activities,5.0,1e-05
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",493,Warehousing and storage,67.0,0.00013
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",511,"Publishing industries, except internet (includes software)",20.0,4e-05
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",513,Broadcasting and telecommunications,654.0,0.00127
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",514,"Data processing, internet publishing, and other information services",206.0,0.0004
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",521CI,"Federal Reserve banks, credit intermediation, and related activities",2658.0,0.00517
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",523,"Securities, commodity contracts, and investments",1536.0,0.00299
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",524,Insurance carriers and related activities,1407.0,0.00273
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",ORE,Other real estate,1588.0,0.00309
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",532RL,Rental and leasing services and lessors of intangible assets,2431.0,0.00472
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",5411,Legal services,1591.0,0.00309
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",5415,Computer systems design and related services,395.0,0.00077
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",5412OP,"Miscellaneous professional, scientific, and technical services",4601.0,0.00894
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",55,Management of companies and enterprises,8532.0,0.01658
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",561,Administrative and support services,3184.0,0.00619
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",562,Waste management and remediation services,612.0,0.00119
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",711AS,"Performing arts, spectator sports, museums, and related activities",44.0,9e-05
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",713,"Amusements, gambling, and recreation industries",53.0,0.0001
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",721,Accommodation,253.0,0.00049
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",722,Food services and drinking places,368.0,0.00072
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",81,"Other services, except government",1209.0,0.00235
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",GSLE,State and local government enterprises,174.0,0.00034
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",Other,Noncomparable imports and rest-of-the-world adjustment [1],1527.0,0.00297
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",T005,Total Intermediate,389559.0,0.75708
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",V001,Compensation of employees,72483.0,0.14087
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",V002,"Taxes on production and imports, less subsidies",2923.0,0.00568
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",V003,Gross operating surplus,49588.0,0.09637
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",T006,Total Value Added,124994.0,0.24292
+2007,3361MV,"Motor vehicles, bodies and trailers, and parts",T018,Total Industry Output,514553.0,1.0
+2017,332,Fabricated metal products,212,"Mining, except oil and gas",494.0,0.00143
+2017,332,Fabricated metal products,22,Utilities,4866.0,0.01405
+2017,332,Fabricated metal products,23,Construction,1256.0,0.00363
+2017,332,Fabricated metal products,321,Wood products,155.0,0.00045
+2017,332,Fabricated metal products,327,Nonmetallic mineral products,1300.0,0.00375
+2017,332,Fabricated metal products,331,Primary metals,67720.0,0.19556
+2017,332,Fabricated metal products,332,Fabricated metal products,36220.0,0.1046
+2017,332,Fabricated metal products,333,Machinery,5325.0,0.01538
+2017,332,Fabricated metal products,334,Computer and electronic products,4646.0,0.01342
+2017,332,Fabricated metal products,335,"Electrical equipment, appliances, and components",2105.0,0.00608
+2017,332,Fabricated metal products,3361MV,"Motor vehicles, bodies and trailers, and parts",1475.0,0.00426
+2017,332,Fabricated metal products,3364OT,Other transportation equipment,49.0,0.00014
+2017,332,Fabricated metal products,339,Miscellaneous manufacturing,51.0,0.00015
+2017,332,Fabricated metal products,313TT,Textile mills and textile product mills,1.0,0.0
+2017,332,Fabricated metal products,322,Paper products,1891.0,0.00546
+2017,332,Fabricated metal products,323,Printing and related support activities,12.0,3e-05
+2017,332,Fabricated metal products,324,Petroleum and coal products,947.0,0.00273
+2017,332,Fabricated metal products,325,Chemical products,6472.0,0.01869
+2017,332,Fabricated metal products,326,Plastics and rubber products,2081.0,0.00601
+2017,332,Fabricated metal products,42,Wholesale trade,17907.0,0.05171
+2017,332,Fabricated metal products,441,Motor vehicle and parts dealers,279.0,0.00081
+2017,332,Fabricated metal products,445,Food and beverage stores,2.0,1e-05
+2017,332,Fabricated metal products,452,General merchandise stores,19.0,5e-05
+2017,332,Fabricated metal products,4A0,Other retail,124.0,0.00036
+2017,332,Fabricated metal products,481,Air transportation,554.0,0.0016
+2017,332,Fabricated metal products,482,Rail transportation,926.0,0.00267
+2017,332,Fabricated metal products,483,Water transportation,111.0,0.00032
+2017,332,Fabricated metal products,484,Truck transportation,3937.0,0.01137
+2017,332,Fabricated metal products,485,Transit and ground passenger transportation,129.0,0.00037
+2017,332,Fabricated metal products,486,Pipeline transportation,15.0,4e-05
+2017,332,Fabricated metal products,487OS,Other transportation and support activities,79.0,0.00023
+2017,332,Fabricated metal products,493,Warehousing and storage,584.0,0.00169
+2017,332,Fabricated metal products,511,"Publishing industries, except internet (includes software)",68.0,0.0002
+2017,332,Fabricated metal products,513,Broadcasting and telecommunications,1173.0,0.00339
+2017,332,Fabricated metal products,514,"Data processing, internet publishing, and other information services",1462.0,0.00422
+2017,332,Fabricated metal products,521CI,"Federal Reserve banks, credit intermediation, and related activities",1910.0,0.00552
+2017,332,Fabricated metal products,523,"Securities, commodity contracts, and investments",1563.0,0.00451
+2017,332,Fabricated metal products,524,Insurance carriers and related activities,1047.0,0.00302
+2017,332,Fabricated metal products,ORE,Other real estate,4429.0,0.01279
+2017,332,Fabricated metal products,532RL,Rental and leasing services and lessors of intangible assets,1560.0,0.00451
+2017,332,Fabricated metal products,5411,Legal services,1746.0,0.00504
+2017,332,Fabricated metal products,5415,Computer systems design and related services,1589.0,0.00459
+2017,332,Fabricated metal products,5412OP,"Miscellaneous professional, scientific, and technical services",4835.0,0.01396
+2017,332,Fabricated metal products,55,Management of companies and enterprises,4630.0,0.01337
+2017,332,Fabricated metal products,561,Administrative and support services,9198.0,0.02656
+2017,332,Fabricated metal products,562,Waste management and remediation services,365.0,0.00105
+2017,332,Fabricated metal products,711AS,"Performing arts, spectator sports, museums, and related activities",64.0,0.00018
+2017,332,Fabricated metal products,713,"Amusements, gambling, and recreation industries",16.0,5e-05
+2017,332,Fabricated metal products,721,Accommodation,308.0,0.00089
+2017,332,Fabricated metal products,722,Food services and drinking places,366.0,0.00106
+2017,332,Fabricated metal products,81,"Other services, except government",1577.0,0.00455
+2017,332,Fabricated metal products,GFE,Federal government enterprises,120.0,0.00035
+2017,332,Fabricated metal products,GSLE,State and local government enterprises,252.0,0.00073
+2017,332,Fabricated metal products,Used,"Scrap, used and secondhand goods",723.0,0.00209
+2017,332,Fabricated metal products,Other,Noncomparable imports and rest-of-the-world adjustment [1],771.0,0.00223
+2017,332,Fabricated metal products,T005,Total Intermediate,201509.0,0.58193
+2017,332,Fabricated metal products,V001,Compensation of employees,99341.0,0.28688
+2017,332,Fabricated metal products,V002,"Taxes on production and imports, less subsidies",3507.0,0.01013
+2017,332,Fabricated metal products,V003,Gross operating surplus,41922.0,0.12106
+2017,332,Fabricated metal products,T006,Total Value Added,144770.0,0.41807
+2017,332,Fabricated metal products,T018,Total Industry Output,346279.0,1.0
+2017,333,Machinery,212,"Mining, except oil and gas",111.0,0.00029
+2017,333,Machinery,22,Utilities,2771.0,0.00733
+2017,333,Machinery,23,Construction,900.0,0.00238
+2017,333,Machinery,321,Wood products,816.0,0.00216
+2017,333,Machinery,327,Nonmetallic mineral products,2176.0,0.00575
+2017,333,Machinery,331,Primary metals,37032.0,0.0979
+2017,333,Machinery,332,Fabricated metal products,25593.0,0.06766
+2017,333,Machinery,333,Machinery,32025.0,0.08466
+2017,333,Machinery,334,Computer and electronic products,6291.0,0.01663
+2017,333,Machinery,335,"Electrical equipment, appliances, and components",11738.0,0.03103
+2017,333,Machinery,3361MV,"Motor vehicles, bodies and trailers, and parts",12309.0,0.03254
+2017,333,Machinery,3364OT,Other transportation equipment,107.0,0.00028
+2017,333,Machinery,337,Furniture and related products,295.0,0.00078
+2017,333,Machinery,339,Miscellaneous manufacturing,2081.0,0.0055
+2017,333,Machinery,313TT,Textile mills and textile product mills,695.0,0.00184
+2017,333,Machinery,322,Paper products,2095.0,0.00554
+2017,333,Machinery,323,Printing and related support activities,7.0,2e-05
+2017,333,Machinery,324,Petroleum and coal products,807.0,0.00213
+2017,333,Machinery,325,Chemical products,2980.0,0.00788
+2017,333,Machinery,326,Plastics and rubber products,9951.0,0.02631
+2017,333,Machinery,42,Wholesale trade,28046.0,0.07414
+2017,333,Machinery,441,Motor vehicle and parts dealers,1535.0,0.00406
+2017,333,Machinery,445,Food and beverage stores,14.0,4e-05
+2017,333,Machinery,452,General merchandise stores,132.0,0.00035
+2017,333,Machinery,4A0,Other retail,1012.0,0.00268
+2017,333,Machinery,481,Air transportation,449.0,0.00119
+2017,333,Machinery,482,Rail transportation,540.0,0.00143
+2017,333,Machinery,483,Water transportation,56.0,0.00015
+2017,333,Machinery,484,Truck transportation,4112.0,0.01087
+2017,333,Machinery,485,Transit and ground passenger transportation,95.0,0.00025
+2017,333,Machinery,486,Pipeline transportation,14.0,4e-05
+2017,333,Machinery,487OS,Other transportation and support activities,18.0,5e-05
+2017,333,Machinery,493,Warehousing and storage,519.0,0.00137
+2017,333,Machinery,511,"Publishing industries, except internet (includes software)",43.0,0.00011
+2017,333,Machinery,513,Broadcasting and telecommunications,1172.0,0.0031
+2017,333,Machinery,514,"Data processing, internet publishing, and other information services",1646.0,0.00435
+2017,333,Machinery,521CI,"Federal Reserve banks, credit intermediation, and related activities",2073.0,0.00548
+2017,333,Machinery,523,"Securities, commodity contracts, and investments",1447.0,0.00383
+2017,333,Machinery,524,Insurance carriers and related activities,1762.0,0.00466
+2017,333,Machinery,ORE,Other real estate,2124.0,0.00562
+2017,333,Machinery,532RL,Rental and leasing services and lessors of intangible assets,1183.0,0.00313
+2017,333,Machinery,5411,Legal services,1651.0,0.00436
+2017,333,Machinery,5415,Computer systems design and related services,2440.0,0.00645
+2017,333,Machinery,5412OP,"Miscellaneous professional, scientific, and technical services",4802.0,0.01269
+2017,333,Machinery,55,Management of companies and enterprises,15461.0,0.04087
+2017,333,Machinery,561,Administrative and support services,3493.0,0.00923
+2017,333,Machinery,562,Waste management and remediation services,279.0,0.00074
+2017,333,Machinery,711AS,"Performing arts, spectator sports, museums, and related activities",50.0,0.00013
+2017,333,Machinery,713,"Amusements, gambling, and recreation industries",11.0,3e-05
+2017,333,Machinery,721,Accommodation,236.0,0.00062
+2017,333,Machinery,722,Food services and drinking places,308.0,0.00081
+2017,333,Machinery,81,"Other services, except government",1039.0,0.00275
+2017,333,Machinery,GFE,Federal government enterprises,291.0,0.00077
+2017,333,Machinery,GSLE,State and local government enterprises,200.0,0.00053
+2017,333,Machinery,Used,"Scrap, used and secondhand goods",9.0,2e-05
+2017,333,Machinery,Other,Noncomparable imports and rest-of-the-world adjustment [1],1582.0,0.00418
+2017,333,Machinery,T005,Total Intermediate,230625.0,0.60969
+2017,333,Machinery,V001,Compensation of employees,94780.0,0.25056
+2017,333,Machinery,V002,"Taxes on production and imports, less subsidies",3678.0,0.00972
+2017,333,Machinery,V003,Gross operating surplus,49184.0,0.13002
+2017,333,Machinery,T006,Total Value Added,147642.0,0.39031
+2017,333,Machinery,T018,Total Industry Output,378267.0,1.0
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",212,"Mining, except oil and gas",70.0,0.00012
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",22,Utilities,3318.0,0.00556
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",23,Construction,760.0,0.00127
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",321,Wood products,3138.0,0.00525
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",327,Nonmetallic mineral products,5659.0,0.00948
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",331,Primary metals,40188.0,0.0673
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",332,Fabricated metal products,23627.0,0.03956
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",333,Machinery,25620.0,0.0429
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",334,Computer and electronic products,12208.0,0.02044
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",335,"Electrical equipment, appliances, and components",5630.0,0.00943
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",3361MV,"Motor vehicles, bodies and trailers, and parts",172953.0,0.28962
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",3364OT,Other transportation equipment,427.0,0.00072
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",337,Furniture and related products,29.0,5e-05
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",339,Miscellaneous manufacturing,2040.0,0.00342
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",313TT,Textile mills and textile product mills,2765.0,0.00463
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",315AL,Apparel and leather and allied products,1330.0,0.00223
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",322,Paper products,3857.0,0.00646
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",323,Printing and related support activities,4.0,1e-05
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",324,Petroleum and coal products,437.0,0.00073
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",325,Chemical products,10856.0,0.01818
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",326,Plastics and rubber products,18692.0,0.0313
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",42,Wholesale trade,57938.0,0.09702
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",441,Motor vehicle and parts dealers,3029.0,0.00507
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",445,Food and beverage stores,8.0,1e-05
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",452,General merchandise stores,160.0,0.00027
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",4A0,Other retail,778.0,0.0013
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",481,Air transportation,476.0,0.0008
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",482,Rail transportation,1099.0,0.00184
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",483,Water transportation,65.0,0.00011
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",484,Truck transportation,6384.0,0.01069
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",485,Transit and ground passenger transportation,70.0,0.00012
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",486,Pipeline transportation,7.0,1e-05
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",487OS,Other transportation and support activities,10.0,2e-05
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",493,Warehousing and storage,81.0,0.00014
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",511,"Publishing industries, except internet (includes software)",15.0,3e-05
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",513,Broadcasting and telecommunications,475.0,0.0008
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",514,"Data processing, internet publishing, and other information services",482.0,0.00081
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",521CI,"Federal Reserve banks, credit intermediation, and related activities",2058.0,0.00345
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",523,"Securities, commodity contracts, and investments",1243.0,0.00208
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",524,Insurance carriers and related activities,2124.0,0.00356
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",ORE,Other real estate,1737.0,0.00291
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",532RL,Rental and leasing services and lessors of intangible assets,5215.0,0.00873
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",5411,Legal services,2075.0,0.00347
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",5415,Computer systems design and related services,663.0,0.00111
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",5412OP,"Miscellaneous professional, scientific, and technical services",4510.0,0.00755
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",55,Management of companies and enterprises,7369.0,0.01234
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",561,Administrative and support services,3286.0,0.0055
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",562,Waste management and remediation services,215.0,0.00036
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",711AS,"Performing arts, spectator sports, museums, and related activities",34.0,6e-05
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",713,"Amusements, gambling, and recreation industries",8.0,1e-05
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",721,Accommodation,165.0,0.00028
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",722,Food services and drinking places,204.0,0.00034
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",81,"Other services, except government",840.0,0.00141
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",GSLE,State and local government enterprises,152.0,0.00025
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",Other,Noncomparable imports and rest-of-the-world adjustment [1],1464.0,0.00245
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",T005,Total Intermediate,438047.0,0.73354
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",V001,Compensation of employees,75338.0,0.12616
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",V002,"Taxes on production and imports, less subsidies",3691.0,0.00618
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",V003,Gross operating surplus,80095.0,0.13412
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",T006,Total Value Added,159124.0,0.26646
+2017,3361MV,"Motor vehicles, bodies and trailers, and parts",T018,Total Industry Output,597171.0,1.0
+2022,332,Fabricated metal products,211,Oil and gas extraction,6.0,1e-05
+2022,332,Fabricated metal products,212,"Mining, except oil and gas",594.0,0.00138
+2022,332,Fabricated metal products,22,Utilities,5193.0,0.01207
+2022,332,Fabricated metal products,23,Construction,1678.0,0.0039
+2022,332,Fabricated metal products,321,Wood products,244.0,0.00057
+2022,332,Fabricated metal products,327,Nonmetallic mineral products,1307.0,0.00304
+2022,332,Fabricated metal products,331,Primary metals,99258.0,0.23074
+2022,332,Fabricated metal products,332,Fabricated metal products,42741.0,0.09936
+2022,332,Fabricated metal products,333,Machinery,4590.0,0.01067
+2022,332,Fabricated metal products,334,Computer and electronic products,5628.0,0.01308
+2022,332,Fabricated metal products,335,"Electrical equipment, appliances, and components",3184.0,0.0074
+2022,332,Fabricated metal products,3361MV,"Motor vehicles, bodies and trailers, and parts",1370.0,0.00318
+2022,332,Fabricated metal products,3364OT,Other transportation equipment,83.0,0.00019
+2022,332,Fabricated metal products,339,Miscellaneous manufacturing,62.0,0.00014
+2022,332,Fabricated metal products,313TT,Textile mills and textile product mills,1.0,0.0
+2022,332,Fabricated metal products,322,Paper products,2027.0,0.00471
+2022,332,Fabricated metal products,323,Printing and related support activities,8.0,2e-05
+2022,332,Fabricated metal products,324,Petroleum and coal products,1505.0,0.0035
+2022,332,Fabricated metal products,325,Chemical products,7355.0,0.0171
+2022,332,Fabricated metal products,326,Plastics and rubber products,2464.0,0.00573
+2022,332,Fabricated metal products,42,Wholesale trade,25492.0,0.05926
+2022,332,Fabricated metal products,441,Motor vehicle and parts dealers,394.0,0.00092
+2022,332,Fabricated metal products,445,Food and beverage stores,1.0,0.0
+2022,332,Fabricated metal products,452,General merchandise stores,20.0,5e-05
+2022,332,Fabricated metal products,4A0,Other retail,128.0,0.0003
+2022,332,Fabricated metal products,481,Air transportation,416.0,0.00097
+2022,332,Fabricated metal products,482,Rail transportation,1116.0,0.00259
+2022,332,Fabricated metal products,483,Water transportation,140.0,0.00033
+2022,332,Fabricated metal products,484,Truck transportation,5312.0,0.01235
+2022,332,Fabricated metal products,485,Transit and ground passenger transportation,175.0,0.00041
+2022,332,Fabricated metal products,486,Pipeline transportation,20.0,5e-05
+2022,332,Fabricated metal products,487OS,Other transportation and support activities,78.0,0.00018
+2022,332,Fabricated metal products,493,Warehousing and storage,513.0,0.00119
+2022,332,Fabricated metal products,511,"Publishing industries, except internet (includes software)",74.0,0.00017
+2022,332,Fabricated metal products,513,Broadcasting and telecommunications,1019.0,0.00237
+2022,332,Fabricated metal products,514,"Data processing, internet publishing, and other information services",1978.0,0.0046
+2022,332,Fabricated metal products,521CI,"Federal Reserve banks, credit intermediation, and related activities",2148.0,0.00499
+2022,332,Fabricated metal products,523,"Securities, commodity contracts, and investments",2131.0,0.00495
+2022,332,Fabricated metal products,524,Insurance carriers and related activities,1059.0,0.00246
+2022,332,Fabricated metal products,ORE,Other real estate,5938.0,0.0138
+2022,332,Fabricated metal products,532RL,Rental and leasing services and lessors of intangible assets,2317.0,0.00539
+2022,332,Fabricated metal products,5411,Legal services,1919.0,0.00446
+2022,332,Fabricated metal products,5415,Computer systems design and related services,1483.0,0.00345
+2022,332,Fabricated metal products,5412OP,"Miscellaneous professional, scientific, and technical services",5509.0,0.01281
+2022,332,Fabricated metal products,55,Management of companies and enterprises,4108.0,0.00955
+2022,332,Fabricated metal products,561,Administrative and support services,7864.0,0.01828
+2022,332,Fabricated metal products,562,Waste management and remediation services,291.0,0.00068
+2022,332,Fabricated metal products,711AS,"Performing arts, spectator sports, museums, and related activities",91.0,0.00021
+2022,332,Fabricated metal products,713,"Amusements, gambling, and recreation industries",64.0,0.00015
+2022,332,Fabricated metal products,721,Accommodation,285.0,0.00066
+2022,332,Fabricated metal products,722,Food services and drinking places,362.0,0.00084
+2022,332,Fabricated metal products,81,"Other services, except government",1511.0,0.00351
+2022,332,Fabricated metal products,GFE,Federal government enterprises,99.0,0.00023
+2022,332,Fabricated metal products,GSLE,State and local government enterprises,235.0,0.00055
+2022,332,Fabricated metal products,Used,"Scrap, used and secondhand goods",458.0,0.00106
+2022,332,Fabricated metal products,Other,Noncomparable imports and rest-of-the-world adjustment [1],639.0,0.00149
+2022,332,Fabricated metal products,T005,Total Intermediate,254688.0,0.59206
+2022,332,Fabricated metal products,V001,Compensation of employees,116058.0,0.26979
+2022,332,Fabricated metal products,V002,"Taxes on production and imports, less subsidies",4766.0,0.01108
+2022,332,Fabricated metal products,V003,Gross operating surplus,54665.0,0.12708
+2022,332,Fabricated metal products,T006,Total Value Added,175489.0,0.40795
+2022,332,Fabricated metal products,T018,Total Industry Output,430176.0,1.0
+2022,333,Machinery,212,"Mining, except oil and gas",123.0,0.00028
+2022,333,Machinery,22,Utilities,2775.0,0.00631
+2022,333,Machinery,23,Construction,1084.0,0.00246
+2022,333,Machinery,321,Wood products,910.0,0.00207
+2022,333,Machinery,327,Nonmetallic mineral products,1541.0,0.0035
+2022,333,Machinery,331,Primary metals,52035.0,0.11825
+2022,333,Machinery,332,Fabricated metal products,26676.0,0.06062
+2022,333,Machinery,333,Machinery,39515.0,0.0898
+2022,333,Machinery,334,Computer and electronic products,7366.0,0.01674
+2022,333,Machinery,335,"Electrical equipment, appliances, and components",17031.0,0.0387
+2022,333,Machinery,3361MV,"Motor vehicles, bodies and trailers, and parts",11834.0,0.02689
+2022,333,Machinery,3364OT,Other transportation equipment,280.0,0.00064
+2022,333,Machinery,337,Furniture and related products,208.0,0.00047
+2022,333,Machinery,339,Miscellaneous manufacturing,2063.0,0.00469
+2022,333,Machinery,313TT,Textile mills and textile product mills,759.0,0.00172
+2022,333,Machinery,322,Paper products,1898.0,0.00431
+2022,333,Machinery,323,Printing and related support activities,3.0,1e-05
+2022,333,Machinery,324,Petroleum and coal products,1097.0,0.00249
+2022,333,Machinery,325,Chemical products,2782.0,0.00632
+2022,333,Machinery,326,Plastics and rubber products,10362.0,0.02355
+2022,333,Machinery,42,Wholesale trade,36070.0,0.08197
+2022,333,Machinery,441,Motor vehicle and parts dealers,2160.0,0.00491
+2022,333,Machinery,445,Food and beverage stores,8.0,2e-05
+2022,333,Machinery,452,General merchandise stores,116.0,0.00026
+2022,333,Machinery,4A0,Other retail,819.0,0.00186
+2022,333,Machinery,481,Air transportation,376.0,0.00085
+2022,333,Machinery,482,Rail transportation,640.0,0.00145
+2022,333,Machinery,483,Water transportation,69.0,0.00016
+2022,333,Machinery,484,Truck transportation,5167.0,0.01174
+2022,333,Machinery,485,Transit and ground passenger transportation,125.0,0.00028
+2022,333,Machinery,486,Pipeline transportation,16.0,4e-05
+2022,333,Machinery,487OS,Other transportation and support activities,19.0,4e-05
+2022,333,Machinery,493,Warehousing and storage,399.0,0.00091
+2022,333,Machinery,511,"Publishing industries, except internet (includes software)",45.0,0.0001
+2022,333,Machinery,513,Broadcasting and telecommunications,853.0,0.00194
+2022,333,Machinery,514,"Data processing, internet publishing, and other information services",2012.0,0.00457
+2022,333,Machinery,521CI,"Federal Reserve banks, credit intermediation, and related activities",1695.0,0.00385
+2022,333,Machinery,523,"Securities, commodity contracts, and investments",1853.0,0.00421
+2022,333,Machinery,524,Insurance carriers and related activities,1562.0,0.00355
+2022,333,Machinery,ORE,Other real estate,2443.0,0.00555
+2022,333,Machinery,532RL,Rental and leasing services and lessors of intangible assets,1811.0,0.00412
+2022,333,Machinery,5411,Legal services,1605.0,0.00365
+2022,333,Machinery,5415,Computer systems design and related services,2010.0,0.00457
+2022,333,Machinery,5412OP,"Miscellaneous professional, scientific, and technical services",5089.0,0.01157
+2022,333,Machinery,55,Management of companies and enterprises,11423.0,0.02596
+2022,333,Machinery,561,Administrative and support services,2374.0,0.0054
+2022,333,Machinery,562,Waste management and remediation services,210.0,0.00048
+2022,333,Machinery,711AS,"Performing arts, spectator sports, museums, and related activities",66.0,0.00015
+2022,333,Machinery,713,"Amusements, gambling, and recreation industries",43.0,0.0001
+2022,333,Machinery,721,Accommodation,206.0,0.00047
+2022,333,Machinery,722,Food services and drinking places,288.0,0.00065
+2022,333,Machinery,81,"Other services, except government",906.0,0.00206
+2022,333,Machinery,GFE,Federal government enterprises,203.0,0.00046
+2022,333,Machinery,GSLE,State and local government enterprises,203.0,0.00046
+2022,333,Machinery,Used,"Scrap, used and secondhand goods",5.0,1e-05
+2022,333,Machinery,Other,Noncomparable imports and rest-of-the-world adjustment [1],1188.0,0.0027
+2022,333,Machinery,T005,Total Intermediate,264420.0,0.60091
+2022,333,Machinery,V001,Compensation of employees,110012.0,0.25001
+2022,333,Machinery,V002,"Taxes on production and imports, less subsidies",4664.0,0.0106
+2022,333,Machinery,V003,Gross operating surplus,60938.0,0.13848
+2022,333,Machinery,T006,Total Value Added,175613.0,0.39909
+2022,333,Machinery,T018,Total Industry Output,440034.0,1.0
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",211,Oil and gas extraction,1.0,0.0
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",212,"Mining, except oil and gas",73.0,0.0001
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",22,Utilities,3328.0,0.00471
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",23,Construction,931.0,0.00132
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",321,Wood products,4009.0,0.00567
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",327,Nonmetallic mineral products,6707.0,0.00949
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",331,Primary metals,57586.0,0.08151
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",332,Fabricated metal products,26359.0,0.03731
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",333,Machinery,31790.0,0.04499
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",334,Computer and electronic products,21573.0,0.03053
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",335,"Electrical equipment, appliances, and components",7398.0,0.01047
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",3361MV,"Motor vehicles, bodies and trailers, and parts",193467.0,0.27383
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",3364OT,Other transportation equipment,1224.0,0.00173
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",337,Furniture and related products,20.0,3e-05
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",339,Miscellaneous manufacturing,2106.0,0.00298
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",313TT,Textile mills and textile product mills,2692.0,0.00381
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",315AL,Apparel and leather and allied products,1475.0,0.00209
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",322,Paper products,5107.0,0.00723
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",323,Printing and related support activities,3.0,0.0
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",324,Petroleum and coal products,414.0,0.00059
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",325,Chemical products,13214.0,0.0187
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",326,Plastics and rubber products,22852.0,0.03234
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",42,Wholesale trade,81798.0,0.11578
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",441,Motor vehicle and parts dealers,3490.0,0.00494
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",445,Food and beverage stores,5.0,1e-05
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",452,General merchandise stores,151.0,0.00021
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",4A0,Other retail,795.0,0.00113
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",481,Air transportation,620.0,0.00088
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",482,Rail transportation,1365.0,0.00193
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",483,Water transportation,82.0,0.00012
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",484,Truck transportation,9614.0,0.01361
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",485,Transit and ground passenger transportation,111.0,0.00016
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",486,Pipeline transportation,5.0,1e-05
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",487OS,Other transportation and support activities,12.0,2e-05
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",493,Warehousing and storage,106.0,0.00015
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",511,"Publishing industries, except internet (includes software)",24.0,3e-05
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",513,Broadcasting and telecommunications,399.0,0.00056
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",514,"Data processing, internet publishing, and other information services",629.0,0.00089
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",521CI,"Federal Reserve banks, credit intermediation, and related activities",3451.0,0.00488
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",523,"Securities, commodity contracts, and investments",1911.0,0.0027
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",524,Insurance carriers and related activities,3687.0,0.00522
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",ORE,Other real estate,2268.0,0.00321
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",532RL,Rental and leasing services and lessors of intangible assets,7986.0,0.0113
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",5411,Legal services,2729.0,0.00386
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",5415,Computer systems design and related services,563.0,0.0008
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",5412OP,"Miscellaneous professional, scientific, and technical services",6715.0,0.0095
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",55,Management of companies and enterprises,8900.0,0.0126
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",561,Administrative and support services,3095.0,0.00438
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",562,Waste management and remediation services,149.0,0.00021
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",711AS,"Performing arts, spectator sports, museums, and related activities",46.0,7e-05
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",713,"Amusements, gambling, and recreation industries",32.0,5e-05
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",721,Accommodation,191.0,0.00027
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",722,Food services and drinking places,234.0,0.00033
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",81,"Other services, except government",767.0,0.00109
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",GSLE,State and local government enterprises,136.0,0.00019
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",Other,Noncomparable imports and rest-of-the-world adjustment [1],1882.0,0.00266
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",T005,Total Intermediate,546278.0,0.77319
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",V001,Compensation of employees,88336.0,0.12503
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",V002,"Taxes on production and imports, less subsidies",4723.0,0.00668
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",V003,Gross operating surplus,67187.0,0.0951
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",T006,Total Value Added,160247.0,0.22681
+2022,3361MV,"Motor vehicles, bodies and trailers, and parts",T018,Total Industry Output,706525.0,1.0
+2023,332,Fabricated metal products,211,Oil and gas extraction,6.0,1e-05
+2023,332,Fabricated metal products,212,"Mining, except oil and gas",466.0,0.00108
+2023,332,Fabricated metal products,22,Utilities,4610.0,0.01068
+2023,332,Fabricated metal products,23,Construction,1582.0,0.00367
+2023,332,Fabricated metal products,321,Wood products,227.0,0.00053
+2023,332,Fabricated metal products,327,Nonmetallic mineral products,1215.0,0.00281
+2023,332,Fabricated metal products,331,Primary metals,90923.0,0.21066
+2023,332,Fabricated metal products,332,Fabricated metal products,39465.0,0.09144
+2023,332,Fabricated metal products,333,Machinery,4732.0,0.01096
+2023,332,Fabricated metal products,334,Computer and electronic products,5903.0,0.01368
+2023,332,Fabricated metal products,335,"Electrical equipment, appliances, and components",3410.0,0.0079
+2023,332,Fabricated metal products,3361MV,"Motor vehicles, bodies and trailers, and parts",1200.0,0.00278
+2023,332,Fabricated metal products,3364OT,Other transportation equipment,77.0,0.00018
+2023,332,Fabricated metal products,339,Miscellaneous manufacturing,57.0,0.00013
+2023,332,Fabricated metal products,313TT,Textile mills and textile product mills,1.0,0.0
+2023,332,Fabricated metal products,322,Paper products,2038.0,0.00472
+2023,332,Fabricated metal products,323,Printing and related support activities,9.0,2e-05
+2023,332,Fabricated metal products,324,Petroleum and coal products,1326.0,0.00307
+2023,332,Fabricated metal products,325,Chemical products,7308.0,0.01693
+2023,332,Fabricated metal products,326,Plastics and rubber products,2343.0,0.00543
+2023,332,Fabricated metal products,42,Wholesale trade,24220.0,0.05611
+2023,332,Fabricated metal products,441,Motor vehicle and parts dealers,415.0,0.00096
+2023,332,Fabricated metal products,445,Food and beverage stores,1.0,0.0
+2023,332,Fabricated metal products,452,General merchandise stores,19.0,4e-05
+2023,332,Fabricated metal products,4A0,Other retail,120.0,0.00028
+2023,332,Fabricated metal products,481,Air transportation,362.0,0.00084
+2023,332,Fabricated metal products,482,Rail transportation,1114.0,0.00258
+2023,332,Fabricated metal products,483,Water transportation,158.0,0.00037
+2023,332,Fabricated metal products,484,Truck transportation,4648.0,0.01077
+2023,332,Fabricated metal products,485,Transit and ground passenger transportation,212.0,0.00049
+2023,332,Fabricated metal products,486,Pipeline transportation,23.0,5e-05
+2023,332,Fabricated metal products,487OS,Other transportation and support activities,71.0,0.00016
+2023,332,Fabricated metal products,493,Warehousing and storage,575.0,0.00133
+2023,332,Fabricated metal products,511,"Publishing industries, except internet (includes software)",84.0,0.00019
+2023,332,Fabricated metal products,513,Broadcasting and telecommunications,871.0,0.00202
+2023,332,Fabricated metal products,514,"Data processing, internet publishing, and other information services",2143.0,0.00497
+2023,332,Fabricated metal products,521CI,"Federal Reserve banks, credit intermediation, and related activities",2113.0,0.0049
+2023,332,Fabricated metal products,523,"Securities, commodity contracts, and investments",2535.0,0.00587
+2023,332,Fabricated metal products,524,Insurance carriers and related activities,1106.0,0.00256
+2023,332,Fabricated metal products,ORE,Other real estate,6729.0,0.01559
+2023,332,Fabricated metal products,532RL,Rental and leasing services and lessors of intangible assets,2751.0,0.00637
+2023,332,Fabricated metal products,5411,Legal services,2066.0,0.00479
+2023,332,Fabricated metal products,5415,Computer systems design and related services,1630.0,0.00378
+2023,332,Fabricated metal products,5412OP,"Miscellaneous professional, scientific, and technical services",5753.0,0.01333
+2023,332,Fabricated metal products,55,Management of companies and enterprises,4512.0,0.01045
+2023,332,Fabricated metal products,561,Administrative and support services,7819.0,0.01812
+2023,332,Fabricated metal products,562,Waste management and remediation services,275.0,0.00064
+2023,332,Fabricated metal products,711AS,"Performing arts, spectator sports, museums, and related activities",83.0,0.00019
+2023,332,Fabricated metal products,713,"Amusements, gambling, and recreation industries",69.0,0.00016
+2023,332,Fabricated metal products,721,Accommodation,309.0,0.00072
+2023,332,Fabricated metal products,722,Food services and drinking places,391.0,0.00091
+2023,332,Fabricated metal products,81,"Other services, except government",1617.0,0.00375
+2023,332,Fabricated metal products,GFE,Federal government enterprises,106.0,0.00025
+2023,332,Fabricated metal products,GSLE,State and local government enterprises,242.0,0.00056
+2023,332,Fabricated metal products,Used,"Scrap, used and secondhand goods",342.0,0.00079
+2023,332,Fabricated metal products,Other,Noncomparable imports and rest-of-the-world adjustment [1],613.0,0.00142
+2023,332,Fabricated metal products,T005,Total Intermediate,242998.0,0.56299
+2023,332,Fabricated metal products,V001,Compensation of employees,122779.0,0.28446
+2023,332,Fabricated metal products,V002,"Taxes on production and imports, less subsidies",4973.0,0.01152
+2023,332,Fabricated metal products,V003,Gross operating surplus,60868.0,0.14102
+2023,332,Fabricated metal products,T006,Total Value Added,188620.0,0.43701
+2023,332,Fabricated metal products,T018,Total Industry Output,431618.0,1.0
+2023,333,Machinery,212,"Mining, except oil and gas",91.0,0.0002
+2023,333,Machinery,22,Utilities,2416.0,0.00535
+2023,333,Machinery,23,Construction,989.0,0.00219
+2023,333,Machinery,321,Wood products,861.0,0.00191
+2023,333,Machinery,327,Nonmetallic mineral products,1391.0,0.00308
+2023,333,Machinery,331,Primary metals,47439.0,0.10496
+2023,333,Machinery,332,Fabricated metal products,24620.0,0.05447
+2023,333,Machinery,333,Machinery,37275.0,0.08247
+2023,333,Machinery,334,Computer and electronic products,7449.0,0.01648
+2023,333,Machinery,335,"Electrical equipment, appliances, and components",17311.0,0.0383
+2023,333,Machinery,3361MV,"Motor vehicles, bodies and trailers, and parts",10885.0,0.02408
+2023,333,Machinery,3364OT,Other transportation equipment,276.0,0.00061
+2023,333,Machinery,337,Furniture and related products,202.0,0.00045
+2023,333,Machinery,339,Miscellaneous manufacturing,1927.0,0.00426
+2023,333,Machinery,313TT,Textile mills and textile product mills,697.0,0.00154
+2023,333,Machinery,322,Paper products,1717.0,0.0038
+2023,333,Machinery,323,Printing and related support activities,3.0,1e-05
+2023,333,Machinery,324,Petroleum and coal products,902.0,0.002
+2023,333,Machinery,325,Chemical products,2498.0,0.00553
+2023,333,Machinery,326,Plastics and rubber products,9023.0,0.01996
+2023,333,Machinery,42,Wholesale trade,34659.0,0.07669
+2023,333,Machinery,441,Motor vehicle and parts dealers,2319.0,0.00513
+2023,333,Machinery,445,Food and beverage stores,7.0,2e-05
+2023,333,Machinery,452,General merchandise stores,114.0,0.00025
+2023,333,Machinery,4A0,Other retail,773.0,0.00171
+2023,333,Machinery,481,Air transportation,332.0,0.00073
+2023,333,Machinery,482,Rail transportation,613.0,0.00136
+2023,333,Machinery,483,Water transportation,76.0,0.00017
+2023,333,Machinery,484,Truck transportation,4500.0,0.00996
+2023,333,Machinery,485,Transit and ground passenger transportation,150.0,0.00033
+2023,333,Machinery,486,Pipeline transportation,17.0,4e-05
+2023,333,Machinery,487OS,Other transportation and support activities,13.0,3e-05
+2023,333,Machinery,493,Warehousing and storage,417.0,0.00092
+2023,333,Machinery,511,"Publishing industries, except internet (includes software)",46.0,0.0001
+2023,333,Machinery,513,Broadcasting and telecommunications,670.0,0.00148
+2023,333,Machinery,514,"Data processing, internet publishing, and other information services",2071.0,0.00458
+2023,333,Machinery,521CI,"Federal Reserve banks, credit intermediation, and related activities",1780.0,0.00394
+2023,333,Machinery,523,"Securities, commodity contracts, and investments",2112.0,0.00467
+2023,333,Machinery,524,Insurance carriers and related activities,1517.0,0.00336
+2023,333,Machinery,ORE,Other real estate,2711.0,0.006
+2023,333,Machinery,532RL,Rental and leasing services and lessors of intangible assets,2093.0,0.00463
+2023,333,Machinery,5411,Legal services,1675.0,0.00371
+2023,333,Machinery,5415,Computer systems design and related services,2002.0,0.00443
+2023,333,Machinery,5412OP,"Miscellaneous professional, scientific, and technical services",5099.0,0.01128
+2023,333,Machinery,55,Management of companies and enterprises,12169.0,0.02692
+2023,333,Machinery,561,Administrative and support services,2368.0,0.00524
+2023,333,Machinery,562,Waste management and remediation services,190.0,0.00042
+2023,333,Machinery,711AS,"Performing arts, spectator sports, museums, and related activities",59.0,0.00013
+2023,333,Machinery,713,"Amusements, gambling, and recreation industries",46.0,0.0001
+2023,333,Machinery,721,Accommodation,221.0,0.00049
+2023,333,Machinery,722,Food services and drinking places,304.0,0.00067
+2023,333,Machinery,81,"Other services, except government",934.0,0.00207
+2023,333,Machinery,GFE,Federal government enterprises,210.0,0.00046
+2023,333,Machinery,GSLE,State and local government enterprises,202.0,0.00045
+2023,333,Machinery,Used,"Scrap, used and secondhand goods",4.0,1e-05
+2023,333,Machinery,Other,Noncomparable imports and rest-of-the-world adjustment [1],1127.0,0.00249
+2023,333,Machinery,T005,Total Intermediate,251569.0,0.55662
+2023,333,Machinery,V001,Compensation of employees,116527.0,0.25782
+2023,333,Machinery,V002,"Taxes on production and imports, less subsidies",4986.0,0.01103
+2023,333,Machinery,V003,Gross operating surplus,78880.0,0.17453
+2023,333,Machinery,T006,Total Value Added,200393.0,0.44338
+2023,333,Machinery,T018,Total Industry Output,451962.0,1.0
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",211,Oil and gas extraction,2.0,0.0
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",212,"Mining, except oil and gas",74.0,0.0001
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",22,Utilities,3307.0,0.00426
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",23,Construction,1005.0,0.00129
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",321,Wood products,3681.0,0.00474
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",327,Nonmetallic mineral products,7213.0,0.00928
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",331,Primary metals,58758.0,0.07561
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",332,Fabricated metal products,27333.0,0.03517
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",333,Machinery,35122.0,0.0452
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",334,Computer and electronic products,22549.0,0.02902
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",335,"Electrical equipment, appliances, and components",8306.0,0.01069
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",3361MV,"Motor vehicles, bodies and trailers, and parts",215733.0,0.27761
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",3364OT,Other transportation equipment,1186.0,0.00153
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",337,Furniture and related products,21.0,3e-05
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",339,Miscellaneous manufacturing,2161.0,0.00278
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",313TT,Textile mills and textile product mills,2132.0,0.00274
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",315AL,Apparel and leather and allied products,1355.0,0.00174
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",322,Paper products,6138.0,0.0079
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",323,Printing and related support activities,4.0,1e-05
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",324,Petroleum and coal products,407.0,0.00052
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",325,Chemical products,14531.0,0.0187
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",326,Plastics and rubber products,24660.0,0.03173
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",42,Wholesale trade,92917.0,0.11957
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",441,Motor vehicle and parts dealers,4105.0,0.00528
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",445,Food and beverage stores,4.0,1e-05
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",452,General merchandise stores,164.0,0.00021
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",4A0,Other retail,835.0,0.00107
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",481,Air transportation,654.0,0.00084
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",482,Rail transportation,1458.0,0.00188
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",483,Water transportation,102.0,0.00013
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",484,Truck transportation,9467.0,0.01218
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",485,Transit and ground passenger transportation,155.0,0.0002
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",486,Pipeline transportation,6.0,1e-05
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",487OS,Other transportation and support activities,12.0,2e-05
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",493,Warehousing and storage,130.0,0.00017
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",511,"Publishing industries, except internet (includes software)",31.0,4e-05
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",513,Broadcasting and telecommunications,388.0,0.0005
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",514,"Data processing, internet publishing, and other information services",749.0,0.00096
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",521CI,"Federal Reserve banks, credit intermediation, and related activities",4719.0,0.00607
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",523,"Securities, commodity contracts, and investments",2625.0,0.00338
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",524,Insurance carriers and related activities,4648.0,0.00598
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",ORE,Other real estate,2627.0,0.00338
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",532RL,Rental and leasing services and lessors of intangible assets,9424.0,0.01213
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",5411,Legal services,3214.0,0.00414
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",5415,Computer systems design and related services,627.0,0.00081
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",5412OP,"Miscellaneous professional, scientific, and technical services",7548.0,0.00971
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",55,Management of companies and enterprises,10961.0,0.0141
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",561,Administrative and support services,3244.0,0.00417
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",562,Waste management and remediation services,157.0,0.0002
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",711AS,"Performing arts, spectator sports, museums, and related activities",46.0,6e-05
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",713,"Amusements, gambling, and recreation industries",38.0,5e-05
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",721,Accommodation,244.0,0.00031
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",722,Food services and drinking places,292.0,0.00038
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",81,"Other services, except government",932.0,0.0012
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",GSLE,State and local government enterprises,158.0,0.0002
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",Other,Noncomparable imports and rest-of-the-world adjustment [1],2343.0,0.00302
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",T005,Total Intermediate,600700.0,0.77299
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",V001,Compensation of employees,93737.0,0.12062
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",V002,"Taxes on production and imports, less subsidies",5052.0,0.0065
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",V003,Gross operating surplus,77619.0,0.09988
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",T006,Total Value Added,176408.0,0.22701
+2023,3361MV,"Motor vehicles, bodies and trailers, and parts",T018,Total Industry Output,777108.0,1.0
